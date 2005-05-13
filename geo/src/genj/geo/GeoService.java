@@ -19,8 +19,6 @@
  */
 package genj.geo;
 
-import genj.gedcom.Indi;
-import genj.gedcom.Property;
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 
@@ -61,7 +59,7 @@ public class GeoService {
     INSERT_COUNTRY = "INSERT INTO countries (country) VALUES (?)",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
     SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS = "SELECT lat, lon FROM locations WHERE city = ?";
+    SELECT_LOCATIONS = "SELECT state, country, lat, lon FROM locations WHERE city = ?";
 
   /*package*/ static final int
     DELETE_LOCATIONS_IN_COUNTRY = 1,
@@ -77,8 +75,10 @@ public class GeoService {
     SELECT_COUNTRIES_OUT_COUNTRY = 1,
     
     SELECT_LOCATIONS_IN_CITY = 1,
-    SELECT_LOCATIONS_OUT_LAT = 1,
-    SELECT_LOCATIONS_OUT_LON = 2;
+    SELECT_LOCATIONS_OUT_STATE = 1,
+    SELECT_LOCATIONS_OUT_COUNTRY = 2,
+    SELECT_LOCATIONS_OUT_LAT = 3,
+    SELECT_LOCATIONS_OUT_LON = 4;
 
   /** cached matches */
   private Map pattern2match = new HashMap();
@@ -139,17 +139,33 @@ public class GeoService {
    */
   public static void main(String[] args) {
     
-    Country[] countries = getInstance().getCountries();
-    for (int i=0;i<countries.length;i++)
-      System.out.println(countries[i]);
+//    Country[] countries = getInstance().getCountries();
+//    for (int i=0;i<countries.length;i++)
+//      System.out.println(countries[i]);
     
-    Indi indi = new Indi();
-    Property birt = indi.addProperty("BIRT", "");
-    birt.addProperty("PLAC", "Cardston");
+//    Indi indi = new Indi();
+//    Property birt = indi.addProperty("BIRT", "");
+//    birt.addProperty("PLAC", "Nantes");
+//    
+//    GeoLocation loc  = new GeoLocation(birt);
+//    getInstance().match(loc);
+//    System.out.println(loc);
     
-    GeoLocation loc  = new GeoLocation(birt);
-    getInstance().match(loc);
-    System.out.println(loc);
+    String city = "Nantes";
+    GeoService gs = getInstance();
+    try {
+      gs.selectLocations.setString(SELECT_LOCATIONS_IN_CITY, city);
+      ResultSet result = gs.selectLocations.executeQuery();
+      while (result.next()) {
+        System.out.println( result.getString(SELECT_LOCATIONS_OUT_STATE) 
+            +","+ result.getString(SELECT_LOCATIONS_OUT_COUNTRY)
+            +","+ result.getFloat(SELECT_LOCATIONS_OUT_LAT)
+            +","+ result.getFloat(SELECT_LOCATIONS_OUT_LON)
+          );
+      }
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, gs, t);
+    }
     
   }
   

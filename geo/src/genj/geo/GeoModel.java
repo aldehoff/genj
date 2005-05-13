@@ -28,10 +28,11 @@ import genj.util.Debug;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Map;
 
 /**
  * Geographic model wrapper for gedcom
@@ -44,8 +45,8 @@ import java.util.ListIterator;
   /** state */
   private List listeners = new ArrayList();
   private Gedcom gedcom;
-  private LinkedList knownLocations = new LinkedList();
-  private LinkedList unknownLocations = new LinkedList();
+  private Map knownLocations = new HashMap();
+  private Map unknownLocations = new HashMap();
 
   /**
    * Constructor
@@ -61,7 +62,7 @@ import java.util.ListIterator;
    * Accessor - locations
    */
   public synchronized List getKnownLocations() {
-    return new ArrayList(knownLocations);
+    return new ArrayList(knownLocations.keySet());
   }
   
   /**
@@ -72,7 +73,7 @@ import java.util.ListIterator;
 //    // clear location for modified props
 //    addProperties(tx.get(Transaction.PROPERTIES_MODIFIED));
     // take on added props
-    addProperties(tx.get(Transaction.PROPERTIES_ADDED));
+    parseProperties(tx.get(Transaction.PROPERTIES_ADDED));
     // remove deleted props
     delProperties(tx.get(Transaction.PROPERTIES_DELETED));
     // done
@@ -81,10 +82,10 @@ import java.util.ListIterator;
   /**
    * Tell listeners about a found location
    */
-  private void fireLocationFound(GeoLocation location) {
+  private void fireLocationUpdated(GeoLocation location) {
     GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
     for (int i = 0; i < ls.length; i++) {
-      ls[i].locationFound(location);
+      ls[i].locationUpdated(location);
     }
   }
 
@@ -104,67 +105,97 @@ import java.util.ListIterator;
    * Remove location
    */
   private synchronized void removeLocation(Property prop) {
-    for (ListIterator it = knownLocations.listIterator(); it.hasNext(); ) { 
-      GeoLocation location = (GeoLocation)it.next();
-      if (location.getProperty()==prop)
-        it.remove();
-    }
-    for (ListIterator it = unknownLocations.listIterator(); it.hasNext(); ) { 
-      GeoLocation location = (GeoLocation)it.next();
-      if (location.getProperty()==prop)
-        it.remove();
-    }
+// FIXME
+//    for (Iterator it = knownLocations.iterator(); it.hasNext(); ) { 
+//      GeoLocation location = (GeoLocation)it.next();
+//      if (location.getProperty()==prop) {
+//        it.remove();
+//      }
+//    }
+//    for (ListIterator it = unknownLocations.listIterator(); it.hasNext(); ) { 
+//      GeoLocation location = (GeoLocation)it.next();
+//      if (location.getProperty()==prop)
+//        it.remove();
+//    }
   }
   
   /**
-   * Add location
+   * Add a new location
    */
-  private void addLocation(Property prop) {
+  private void addLocation(PropertyEvent event) {
+    
+    // create a location for it
+    GeoLocation location;
     try {
-      // check if part of event (recursive parent lookup)
-      while (prop!=null) {
-        if (prop instanceof PropertyEvent) {
-          GeoLocation location = new GeoLocation(prop) {
-            protected void set(double lat,double lon) {
-              super.set(lat, lon);
-              synchronized (GeoModel.this) {
-                // this should be O(1) since first in unknown locations
-                if (!unknownLocations.remove(this))
-                  return;
-                if (isValid())
-                  knownLocations.addLast(this);
-              }
-              fireLocationFound(this);
-            }
-          };
-          synchronized (this) {
-            // first come first serve - add this last
-            unknownLocations.addLast(location);
+      location = new GeoLocation(event) {
+        // override location set to keep track of locations that become known
+        protected void set(double lat,double lon) {
+          super.set(lat, lon);
+          synchronized (GeoModel.this) {
+            if (unknownLocations.remove(this)==this && isValid())
+              knownLocations.put(this, this);
           }
-          LOCATOR.add(location);
-          return;
+          fireLocationUpdated(this);
         }
-        prop = prop.getParent();
-      }
-    } catch (IllegalArgumentException i) {
+      };
+    } catch (IllegalArgumentException e) {
+      return;
     }
+    
+    // check if we have a location like that
+    GeoLocation other;
+    synchronized (this) {
+      other = (GeoLocation)unknownLocations.get(location);
+      if (other==null) other = (GeoLocation)knownLocations.get(location);
+    }
+    
+    if (other!=null) {
+      other.add(location);
+      fireLocationUpdated(other);
+      return;
+    }
+      
+    // add this location as unknown and to-do
+    synchronized (this) {
+      unknownLocations.put(location, location);
+      LOCATOR.add(location);
+    }
+    
+    // done
+  }
+  
+  /**
+   * Check to find location worthy property
+   */
+  private void parseProperty(Property prop) {
+
+    // check if part of event (recursive parent lookup)
+    while (prop!=null) {
+      if (prop instanceof PropertyEvent) {
+        addLocation((PropertyEvent)prop);
+        return;
+      }
+      prop = prop.getParent();
+    }
+    
+    // didn't work out
   }
   
   /**
    * Add events
    */
-  private void addProperties(Collection props) {
+  private void parseProperties(Collection props) {
     for (Iterator adds=props.iterator(); adds.hasNext(); ) 
-      addLocation((Property)adds.next());
+      parseProperty((Property)adds.next());
   }
   
   /**
    * Add events of entities
    */
-  private void addEntities(Collection entities) {
+  private void parseEntities(Collection entities) {
     for (Iterator it = entities.iterator(); it.hasNext(); ) {
       Property entity = (Property)it.next();
-      addProperties(entity.getProperties(PropertyEvent.class));
+      parseProperties(entity.getProperties(PropertyEvent.class));
     }
   }
   
@@ -175,8 +206,8 @@ import java.util.ListIterator;
     knownLocations.clear();
     unknownLocations.clear();
     // collect events from indis and fams
-    addEntities(gedcom.getEntities(Gedcom.INDI));
-    addEntities(gedcom.getEntities(Gedcom.FAM));
+    parseEntities(gedcom.getEntities(Gedcom.INDI));
+    parseEntities(gedcom.getEntities(Gedcom.FAM));
     // done
   }
   

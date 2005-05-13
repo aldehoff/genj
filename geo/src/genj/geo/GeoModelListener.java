@@ -27,6 +27,6 @@ public interface GeoModelListener {
   /**
    * We found a location
    */
-  public void locationFound(GeoLocation location);
+  public void locationUpdated(GeoLocation location);
 
 }

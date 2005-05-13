@@ -119,8 +119,29 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // create our model & layer
     model = new GeoModel(gedcom);
+    gedcomLayer = new GedcomLayer();  
     
     // done
+  }
+  
+  /**
+   * component lifecycle - we're needed
+   */
+  public void addNotify() {
+    // override
+    super.addNotify();
+    // hook up layer to model
+    model.addGeoModelListener(gedcomLayer);
+  }
+  
+  /**
+   * component lifecycle - we're not needed anymore
+   */
+  public void removeNotify() {
+    // disconnect layer from model
+    model.removeGeoModelListener(gedcomLayer);
+    // override
+    super.removeNotify();
   }
     
   /**
@@ -161,7 +182,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // setup layer manager and add our own feature collection that's wrapping the model
     LayerManager layerManager = new LayerManager();
-    gedcomLayer = new GedcomLayer();
     layerManager.addLayer("GenJ", gedcomLayer);
     gedcomLayer.setLayerManager(layerManager);
 
@@ -179,7 +199,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     SwingUtilities.invokeLater(rezoom);
     
-    // test for gazetteers
+    // test for available countries
     WordBuffer missing = new WordBuffer("\n ");
     GeoService service = GeoService.getInstance();
     List available = Arrays.asList(service.getCountries());
@@ -265,9 +285,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       labels.setHidingOverlappingLabels(true);
       addStyle(labels);
       
-      // hook up to model
-      model.addGeoModelListener(this);
-      
       // done
     }
     
@@ -279,7 +296,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     
     /** geo model - a location has been found */
-    public void locationFound(GeoLocation location) {
+    public void locationUpdated(GeoLocation location) {
       timer.start();
     }
 

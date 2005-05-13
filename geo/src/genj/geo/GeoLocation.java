@@ -22,6 +22,9 @@ package genj.geo;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -45,10 +48,10 @@ public class GeoLocation extends Point implements Feature {
   
   private Coordinate coordinate;
 
-  private String city;
+  private String city, state, country;
   
-  /** state */
-  private Property property;
+  /** properties at that location */
+  private List properties = new ArrayList();
   
   /**
    * Constructor
@@ -56,19 +59,28 @@ public class GeoLocation extends Point implements Feature {
    */
   public GeoLocation(Property prop) {
     super(GEOMETRY_FACTORY.getCoordinateSequenceFactory().create(new Coordinate[]{ new Coordinate() } ), GEOMETRY_FACTORY);
+    
     // remember coordinate
     coordinate = super.getCoordinate();
+    
     // remember property
-    this.property = prop;
+    properties.add(prop);
     
     // FIXME add support for ADDR, CITY, STAE, CNTY
     // FIXME add support for jurisdications
     // got a place?
-    Property plac = property.getProperty("PLAC");
+    Property plac = prop.getProperty("PLAC");
     if (plac instanceof PropertyPlace)
        init((PropertyPlace)plac);
     else
-      throw new IllegalArgumentException("can't locate "+property.getTag()+" "+property);
+      throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
+  }
+  
+  /**
+   * Add poperties from another instance
+   */
+  public void add(GeoLocation other) {
+    properties.addAll(other.properties);
   }
   
   /**
@@ -92,6 +104,33 @@ public class GeoLocation extends Point implements Feature {
       throw new IllegalArgumentException("can't determine location for "+place);
 
     // done
+  }
+  
+  /**
+   * identify is defined as city, state and country
+   */
+  public int hashCode() {
+    int hash = 0;
+    if (city!=null) hash += city.hashCode();
+    if (state!=null) hash += state.hashCode();
+    if (country!=null) hash += country.hashCode();
+    return hash;
+  }
+
+  /**
+   * identify is defined as city, state and country
+   */
+  public boolean equals(Object obj) {
+    GeoLocation that = (GeoLocation)obj;
+    return equals(this.city, that.city) && equals(this.state, that.state) && equals(this.country, that.country);
+  }
+  
+  private static boolean equals(String a, String b) {
+    if (a==null&&b==null)
+      return true;
+    if (a==null||b==null)
+      return false;
+    return a.equals(b);
   }
 
   /**
@@ -130,13 +169,6 @@ public class GeoLocation extends Point implements Feature {
     return !Double.isNaN(coordinate.x) && !Double.isNaN(coordinate.y);
   }
   
-  /**
-   * Accessor - property
-   */
-  public Property getProperty() {
-    return property;
-  }
-
   /**
    * Feature - set attributes
    */
