@@ -24,6 +24,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -52,7 +53,7 @@ public class GeoLocation extends Point implements Feature {
   private String city, state, country;
   
   /** properties at that location */
-  private List properties = new ArrayList();
+  protected List properties = new ArrayList();
   
   /**
    * Constructor
@@ -81,7 +82,18 @@ public class GeoLocation extends Point implements Feature {
    * Add poperties from another instance
    */
   public void add(GeoLocation other) {
-    properties.addAll(other.properties);
+    for (Iterator it = other.properties.iterator(); it.hasNext(); ) {
+      Object prop = it.next();
+      if (!properties.contains(prop))
+        properties.add(prop);
+    }
+  }
+  
+  /**
+   * Remove a property
+   */
+  public boolean remove(Property prop) {
+    return properties.remove(prop);
   }
   
   /**

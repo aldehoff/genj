@@ -25,8 +25,13 @@ package genj.geo;
 public interface GeoModelListener {
   
   /**
-   * We found a location
+   * We've updated a location
    */
   public void locationUpdated(GeoLocation location);
+
+  /**
+   * We removed a location
+   */
+  public void locationRemoved(GeoLocation location);
 
 }

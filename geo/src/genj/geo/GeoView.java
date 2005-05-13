@@ -336,8 +336,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
         mgr.fireFeaturesChanged(new ArrayList(), FeatureEventType.ADDED, this);
     }
     
-    /** geo model - a location has been found */
+    /** geo model - a location has been updated */
     public void locationUpdated(GeoLocation location) {
+      timer.start();
+    }
+
+    /** geo model - a location has been removed */
+    public void locationRemoved(GeoLocation location) {
       timer.start();
     }
 
