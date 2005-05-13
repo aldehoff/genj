@@ -38,7 +38,6 @@ import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -50,6 +49,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -61,7 +61,6 @@ import javax.swing.ToolTipManager;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jump.feature.FeatureCollection;
 import com.vividsolutions.jump.feature.FeatureSchema;
 import com.vividsolutions.jump.workbench.model.FeatureEventType;
@@ -71,6 +70,7 @@ import com.vividsolutions.jump.workbench.ui.LayerViewPanel;
 import com.vividsolutions.jump.workbench.ui.LayerViewPanelContext;
 import com.vividsolutions.jump.workbench.ui.renderer.style.BasicStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.LabelStyle;
+import com.vividsolutions.jump.workbench.ui.renderer.style.RingVertexStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.SquareVertexStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.VertexStyle;
 
@@ -100,7 +100,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
   /** our model & layer */
   private GeoModel model;
-  private GedcomLayer gedcomLayer;  
+  private LocationsLayer locationLayer;  
+  private SelectionLayer selectionLayer;
   
   /** a rezoom runnable we can invokeLater() */
   private Runnable rezoom = new Runnable() {
@@ -134,7 +135,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // create our model & layer
     model = new GeoModel(gedcom);
-    gedcomLayer = new GedcomLayer();  
+    locationLayer = new LocationsLayer();  
+    selectionLayer = new SelectionLayer();
     
     // register for popups
     ToolTipManager.sharedInstance().registerComponent(this);
@@ -215,7 +217,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // override
     super.addNotify();
     // hook up layer to model
-    model.addGeoModelListener(gedcomLayer);
+    model.addGeoModelListener(locationLayer);
     // show map 
     String map = registry.get("map", (String)null);
     if (map!=null) {
@@ -238,7 +240,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     if (currentMap!=null)
       registry.put("map", currentMap.getKey());
     // disconnect layer from model
-    model.removeGeoModelListener(gedcomLayer);
+    model.removeGeoModelListener(locationLayer);
     // override
     super.removeNotify();
   }
@@ -247,22 +249,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    * Callback for context changes
    */
   public void setContext(Context context) {
-    // no layers no interaction
-    if (layerPanel==null)
-      return;
-    // ask model for locations 
-    List locations = model.getLocations(context);
-    if (!locations.isEmpty()) try {
-      
-      GeometryCollection collection = new GeometryCollection((GeoLocation[])locations.toArray(new GeoLocation[locations.size()]), GeoLocation.GEOMETRY_FACTORY);
-
-      layerPanel.flash(layerPanel.getViewport().getJava2DConverter().toShape(collection), Color.red,
-          new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND),
-          250);
-      
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
+    // change selection to model's locations for that context
+    selectionLayer.setLocations(model.getLocations(context));
     // done
   }
   
@@ -298,8 +286,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // setup layer manager and add our own feature collection that's wrapping the model
     LayerManager layerManager = new LayerManager();
-    layerManager.addLayer("GenJ", gedcomLayer);
-    gedcomLayer.setLayerManager(layerManager);
+    layerManager.addLayer("GenJ", locationLayer);
+    layerManager.addLayer("GenJ", selectionLayer);
+    
+    selectionLayer.setLayerManager(layerManager);
+    locationLayer.setLayerManager(layerManager);
 
     // load map
     map.load(layerManager);
@@ -371,22 +362,83 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   }//ChooseMap
  
   /**
-   * A layer for our model
+   * A layer for our selection
    */
-  private class GedcomLayer extends Layer implements FeatureCollection, GeoModelListener, ActionListener {
+  private class SelectionLayer extends LocationsLayer {
+    
+    private List selection = Collections.EMPTY_LIST;
+    
+    /** initializer */
+    protected void initStyles() {
+      
+      // prepare some styles
+      addStyle(new BasicStyle(Color.RED));
+       
+      VertexStyle vertices = new RingVertexStyle();
+      vertices.setEnabled(true);
+      vertices.setSize(5);
+      addStyle(vertices);
+       
+      LabelStyle labels = new LabelStyle();
+      labels.setEnabled(false);
+      addStyle(labels);
+      
+      // done
+    }
+    
+    /** set selection */
+    private void setLocations(List selection) {
+      this.selection = selection;
+      LayerManager mgr = getLayerManager();
+      if (mgr!=null)
+        mgr.fireFeaturesChanged(new ArrayList(), FeatureEventType.ADDED, this);
+    }
+    
+    /** geo model - a location has been updated */
+    public void locationUpdated(GeoLocation location) {
+      setLocations(Collections.EMPTY_LIST);
+    }
+
+    /** geo model - a location has been removed */
+    public void locationRemoved(GeoLocation location) {
+      setLocations(Collections.EMPTY_LIST);
+    }
+
+    /** selection size */
+    public int size() {
+      return selection.size();
+    }
+    
+    /** selection access */
+    public List getFeatures() {
+      return selection;
+    }
+    
+  } //SelectionLayer
+  
+  /**
+   * A layer for our model's locations
+   */
+  private class LocationsLayer extends Layer implements FeatureCollection, GeoModelListener, ActionListener {
     
     private Timer timer;
     
     /** constructor */
-    private GedcomLayer() {
-      
+    private LocationsLayer() {
       // prepare a timer for delayed updates
       timer = new Timer(500, this);
       timer.setRepeats(false);
       
       // connect us to Jumps internals
-      setName("Gedcom Locations");
+      setName(getClass().toString());
       setFeatureCollection(this);
+
+      // init styles
+      initStyles();
+    }
+    
+    /** initializer */
+    protected void initStyles() {
       
       // prepare some styles
       addStyle(new BasicStyle(Color.LIGHT_GRAY));
