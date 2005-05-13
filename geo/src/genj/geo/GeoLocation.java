@@ -19,7 +19,6 @@
  */
 package genj.geo;
 
-import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 
@@ -46,7 +45,7 @@ public class GeoLocation extends Point implements Feature {
    */
   /*package*/ final static FeatureSchema SCHEMA = new FeatureSchema();
   
-  private final static GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+  /*package*/  final static GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
   
   private Coordinate coordinate;
 
@@ -94,6 +93,17 @@ public class GeoLocation extends Point implements Feature {
    */
   public boolean remove(Property prop) {
     return properties.remove(prop);
+  }
+  
+  /**
+   * Check for containment
+   */
+  public boolean contains(List properties) {
+    for (Iterator it = properties.iterator(); it.hasNext(); ) {
+      if (this.properties.contains(it.next()))
+        return true;
+    }
+    return false;
   }
   
   /**
@@ -161,6 +171,13 @@ public class GeoLocation extends Point implements Feature {
   }
   
   /**
+   * Contained properties
+   */
+  public Property[] getProperties() {
+    return Property.toArray(properties);
+  }
+  
+  /**
    * Set location lat,lon
    */
   protected void set(double lat, double lon) {
@@ -171,21 +188,6 @@ public class GeoLocation extends Point implements Feature {
   /**
    * String representation
    */
-  public String toHTML() {
-    StringBuffer result = new StringBuffer();
-    result.append("<b>");
-    result.append(city);
-    result.append("</b>");
-    for (int i=0;i<properties.size();i++) {
-      Property prop = (Property)properties.get(i);
-      result.append("<br>");
-      result.append(Gedcom.getName(prop.getTag()));
-      result.append(" ");
-      result.append(prop.getEntity());
-    }
-    return result.toString();
-  }
-  
   public String toString() {
      return city + "[" + coordinate.y + "," +  coordinate.x+ "]";
   }

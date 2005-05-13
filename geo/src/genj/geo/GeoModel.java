@@ -20,15 +20,18 @@
 package genj.geo;
 
 import genj.gedcom.Change;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.Transaction;
 import genj.util.Debug;
+import genj.view.Context;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -57,6 +60,39 @@ import java.util.Map;
   public GeoModel(Gedcom gedcom) {
     // keep 
     this.gedcom = gedcom;
+  }
+  
+  /**
+   * Accessor - locations
+   */
+  public  List getLocations(Context context) {
+    
+    // got a property that is part of an event?
+    Property prop = context.getProperty();
+    if (prop!=null && !(prop instanceof Entity)) {
+      Property event = prop.getParent(PropertyEvent.class);
+      if (event!=null) 
+        return getLocations(Collections.singletonList(event));
+    }
+    
+    // try the entity itself
+    Entity entity = context.getEntity();
+    if (entity!=null) 
+      return getLocations(entity.getProperties(PropertyEvent.class));
+
+    // n/a
+    return Collections.EMPTY_LIST;
+  }
+  
+  private synchronized List getLocations(List events) {
+    ArrayList result = new ArrayList();
+    
+    for (Iterator it=knownLocations.keySet().iterator(); it.hasNext(); ) {
+      GeoLocation location = (GeoLocation)it.next();
+      if (location.contains(events))
+      result.add(location);
+    }
+    return result;
   }
   
   /**

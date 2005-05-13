@@ -20,6 +20,10 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyComparator;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyEvent;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -34,6 +38,7 @@ import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -56,6 +61,7 @@ import javax.swing.ToolTipManager;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jump.feature.FeatureCollection;
 import com.vividsolutions.jump.feature.FeatureSchema;
 import com.vividsolutions.jump.workbench.model.FeatureEventType;
@@ -89,6 +95,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /** the current layer view panel */
   private LayerViewPanel layerPanel;
   
+  /** registry */
+  private Registry registry;
+  
   /** our model & layer */
   private GeoModel model;
   private GedcomLayer gedcomLayer;  
@@ -112,6 +121,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     super(new BorderLayout());
     
     // state to remember
+    this.registry = registry;
     this.viewManager = viewManager;
     this.gedcom = gedcom;
     
@@ -129,31 +139,64 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // register for popups
     ToolTipManager.sharedInstance().registerComponent(this);
     
+    // ok this might not be fair but we'll increase
+    // the tooltip dismiss delay now for everyone
+    ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+    
     // done
   }
   
   /**
-   * tooltip callback
+   * Tooltip callback - check locations under mouse
    */
   public String getToolTipText(MouseEvent event) {
+    
     try {
       Coordinate coord  = layerPanel.getViewport().toModelCoordinate(event.getPoint());
       
-      WordBuffer text = new WordBuffer("");
+      StringBuffer text = new StringBuffer();
       text.append("<html><body>");
       text.append( toString(coord));
-      text.setFiller("<br>");
+      
       for (Iterator locations = layerPanel.featuresWithVertex(event.getPoint(), 5,  model.getKnownLocations()).iterator(); locations.hasNext(); )  {
         GeoLocation location = (GeoLocation)locations.next();
-        text.append(location.toHTML());
+        
+        text.append("<br><b>");
+        text.append(location.getCity());
+        text.append("</b>");
+
+        Property[] properties = location.getProperties();
+        Arrays.sort(properties, new PropertyComparator(".:DATE"));
+        
+        for (int i=0; i<properties.length; i++) {
+          text.append("<br>");
+          if (i==10) {
+            text.append("...");
+            break;
+          }
+          PropertyEvent prop = (PropertyEvent)properties[i];
+          PropertyDate date = prop.getDate();
+          if (date!=null) {
+            text.append(prop.getDate());
+            text.append(" ");
+          }
+          text.append(Gedcom.getName(prop.getTag()));
+          text.append(" ");
+          text.append(prop.getEntity());
+        }
+        
       }
-      
+
+      // done
       return text.toString();
     } catch (Throwable t) {
       return null;
     }
   }
   
+  /**
+   * Convert coord to lat/lon String
+   */
   private String toString(Coordinate coord) {
     double lat = coord.y, lon = coord.x;
     char we = 'E', ns = 'N';
@@ -173,12 +216,27 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     super.addNotify();
     // hook up layer to model
     model.addGeoModelListener(gedcomLayer);
+    // show map 
+    String map = registry.get("map", (String)null);
+    if (map!=null) {
+      GeoMap[] maps = GeoService.getInstance().getMaps();
+      for (int i=0;i<maps.length;i++) {
+        if (maps[i].getKey().equals(map)) {
+          try { setMap(maps[i], false); } catch (Throwable t) {}
+          break;
+        }
+      }
+    }
+    // done
   }
   
   /**
    * component lifecycle - we're not needed anymore
    */
   public void removeNotify() {
+    // remember map
+    if (currentMap!=null)
+      registry.put("map", currentMap.getKey());
     // disconnect layer from model
     model.removeGeoModelListener(gedcomLayer);
     // override
@@ -189,6 +247,23 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    * Callback for context changes
    */
   public void setContext(Context context) {
+    // no layers no interaction
+    if (layerPanel==null)
+      return;
+    // ask model for locations 
+    List locations = model.getLocations(context);
+    if (!locations.isEmpty()) try {
+      
+      GeometryCollection collection = new GeometryCollection((GeoLocation[])locations.toArray(new GeoLocation[locations.size()]), GeoLocation.GEOMETRY_FACTORY);
+
+      layerPanel.flash(layerPanel.getViewport().getJava2DConverter().toShape(collection), Color.red,
+          new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND),
+          250);
+      
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+    // done
   }
   
   /**
@@ -213,7 +288,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Choose current map
    */
-  public void setMap(GeoMap map) throws IOException {
+  public void setMap(GeoMap map, boolean warn) throws IOException {
     
     // remove old
     removeAll();
@@ -241,18 +316,20 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     SwingUtilities.invokeLater(rezoom);
     
     // test for available countries
-    WordBuffer missing = new WordBuffer("\n ");
-    GeoService service = GeoService.getInstance();
-    List available = Arrays.asList(service.getCountries());
-    Country[] required = map.getCountries();
-    for (int i = 0; i < required.length; i++) {
-      if (!available.contains(required[i])) 
-        missing.append(required[i]);
-    }
-    
-    if (missing.length()>0) {
-      String note = RESOURCES.getString("missing", missing);
-      viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), GeoView.this);
+    if (warn) {
+      WordBuffer missing = new WordBuffer("\n ");
+      GeoService service = GeoService.getInstance();
+      List available = Arrays.asList(service.getCountries());
+      Country[] required = map.getCountries();
+      for (int i = 0; i < required.length; i++) {
+        if (!available.contains(required[i])) 
+          missing.append(required[i]);
+      }
+      
+      if (missing.length()>0) {
+        String note = RESOURCES.getString("missing", missing);
+        viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), GeoView.this);
+      }
     }
     // done
   }
@@ -286,7 +363,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     protected void execute() {
       // set it
       try {
-        setMap(map);
+        setMap(map, true);
       } catch (IOException e) {
         e.printStackTrace();
       }

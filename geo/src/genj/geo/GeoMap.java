@@ -94,6 +94,11 @@ public class GeoMap {
 
   }
   
+  /** a key */
+  public String getKey() {
+    return fileOrDir.getName();
+  }
+  
   /** countries */
   public Country[] getCountries() {
     if (countries==null) {
