@@ -127,7 +127,7 @@ public class GeoLocation extends Point implements Feature {
    * Check - valid or not?
    */
   public boolean isValid() {
-    return coordinate.x!=Float.NaN && coordinate.y!=Float.NaN;
+    return !Double.isNaN(coordinate.x) && !Double.isNaN(coordinate.y);
   }
   
   /**
@@ -187,10 +187,10 @@ public class GeoLocation extends Point implements Feature {
   }
 
   /**
-   * Feature - attribute by name
+   * Feature - attribute by name - we always return city
    */
   public Object getAttribute(String arg0) {
-    throw new IllegalArgumentException();
+    return city;
   }
 
   /**

@@ -22,34 +22,21 @@ package genj.geo;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.util.Debug;
-import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
-import genj.util.Trackable;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.RandomAccessFile;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 
 /**
@@ -61,16 +48,37 @@ import java.util.zip.ZipInputStream;
  */
 public class GeoService {
   
-  private final static String UNKNOWN = "";
+  /** our work directory */
+  private static final String GEO_DIR = "./geo";
   
-  private final static Pattern MATCH_LAT_LON = Pattern.compile("^.*\t.*\t.*\t(.*)\t(.*)$");
-  
-  private static final Charset UTF8 = Charset.forName("UTF-8");
-  
-  private static final String 
-    GEO_DIR = "./geo",
-    TMP_SUFFIX = ".tmp",
-    GAZETTEER_SUFFIX = ".gzt";
+  /** our sqls */
+  /*package*/ static final String 
+    CREATE_TABLES =
+      "CREATE CACHED TABLE countries (country CHAR(2) PRIMARY KEY); " +
+      "CREATE CACHED TABLE locations (city VARCHAR(32), state CHAR(2), country CHAR(2) NOT NULL, lat FLOAT, lon FLOAT); "+
+      "CREATE INDEX cities ON locations (city)",
+    DELETE_LOCATIONS = "DELETE FROM locations WHERE country = ?",
+    INSERT_COUNTRY = "INSERT INTO countries (country) VALUES (?)",
+    INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
+    SELECT_COUNTRIES = "SELECT country FROM countries",
+    SELECT_LOCATIONS = "SELECT lat, lon FROM locations WHERE city = ?";
+
+  /*package*/ static final int
+    DELETE_LOCATIONS_IN_COUNTRY = 1,
+    
+    INSERT_COUNTRY_IN_COUNTRY = 1,
+    
+    INSERT_LOCATION_IN_CITY = 1,
+    INSERT_LOCATION_IN_STATE = 2,
+    INSERT_LOCATION_IN_COUNTRY = 3,
+    INSERT_LOCATION_IN_LAT = 4,
+    INSERT_LOCATION_IN_LON = 5,
+    
+    SELECT_COUNTRIES_OUT_COUNTRY = 1,
+    
+    SELECT_LOCATIONS_IN_CITY = 1,
+    SELECT_LOCATIONS_OUT_LAT = 1,
+    SELECT_LOCATIONS_OUT_LON = 2;
 
   /** cached matches */
   private Map pattern2match = new HashMap();
@@ -84,13 +92,64 @@ public class GeoService {
   /** maps */
   private List maps;
   
-  /** databases */
-  private Set gazetteers;
+  /** database ready */
+  private Connection connection;
+  private PreparedStatement selectLocations, selectCountries;
   
   /**
    * Constructor
    */
   private GeoService() {
+
+    File geo =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo/database", "", "looking for user's geo directory"));
+    geo.getParentFile().mkdir();
+
+    try {
+      // initialize database
+      Class.forName("org.hsqldb.jdbcDriver");
+  
+      // connect to the database.   
+      connection = DriverManager.getConnection("jdbc:hsqldb:file:"+geo.getAbsolutePath(), "sa",""); 
+      connection.setAutoCommit(true);
+
+      Statement statement = connection.createStatement();
+      statement.execute("SET PROPERTY \"hsqldb.cache_scale\" 8");  // less rows 3*2^x
+      statement.execute("SET PROPERTY \"hsqldb.cache_size_scale\" 7"); // less size per row 2^x
+            
+      // create tables
+      try {
+        connection.createStatement().executeUpdate(CREATE_TABLES);
+      } catch (SQLException e) {
+        // ignored
+      }
+      
+      // prepare prepared statements
+      selectLocations = connection.prepareStatement(SELECT_LOCATIONS);
+      selectCountries = connection.prepareStatement(SELECT_COUNTRIES);
+      
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, this, "Couldn't initialize database", t);
+    }
+    
+    // done
+  }
+  
+  /**
+   * Test
+   */
+  public static void main(String[] args) {
+    
+    Country[] countries = getInstance().getCountries();
+    for (int i=0;i<countries.length;i++)
+      System.out.println(countries[i]);
+    
+    Indi indi = new Indi();
+    Property birt = indi.addProperty("BIRT", "");
+    birt.addProperty("PLAC", "Cardston");
+    
+    GeoLocation loc  = new GeoLocation(birt);
+    getInstance().match(loc);
+    System.out.println(loc);
     
   }
   
@@ -105,6 +164,13 @@ public class GeoService {
       }
     }
     return instance;
+  }
+  
+  /**
+   * Return the database connection
+   */
+  /*package*/ Connection getConnection() {
+    return connection;
   }
   
   /**
@@ -135,60 +201,41 @@ public class GeoService {
   /**
    * Prepare an import 
    */
-  public Import getImport(Country country, String state) {
-    
-    // standardize to lower case
-    if (state!=null) {
-      state = state.trim().toLowerCase();
-      if (state.length()==0) state=null;
+  public Import getImport(Country country, String state) throws IOException {
+    // look it up
+    try {
+      return Import.get(country, state);
+    } catch (SQLException e) {
+      throw new IOException("error preparing import ["+e.getMessage()+"]");
     }
-    
-    // use NGA for everything but US
-    Import im;
-    if ("us".equals(country))
-      im = new USGSImport(state);
-    else
-      im = new NGAImport(country, state);
-    
-    // done
-    return im;
   }
 
   /**
-   * Returns gazetteers for given country
+   * Checks for country coverage
    */
-  public synchronized boolean hasGazetteer(Country country) {
-    Gazetteer[] gzts = getGazetteers();
-    for (int i = 0; i < gzts.length; i++) {
-      if (gzts[i].getCountry().equals(country))
-        return true;
-    }
-    return false;
+  public synchronized boolean covers(Country country) {
+    // FIXME check
+    return true;
   }
   
   /**
-   * Return all available gazetteers
+   * Return all available countries
    */
-  public synchronized Gazetteer[] getGazetteers() {
+  public synchronized Country[] getCountries() {
 
-    // don't have it yet?
-    if (gazetteers==null) {
-        
-      gazetteers = new HashSet();
-      
-      // check 'em files
-      File[] files = getGeoFiles();
-      for (int i=0;files!=null&&i<files.length;i++) {
-        File file = files[i];
-        if (file.getName().endsWith(GAZETTEER_SUFFIX))
-          gazetteers.add(new Gazetteer(file));
-      }
+    List countries = new ArrayList();
     
-      // got it now
+    try {
+      ResultSet rows = selectCountries.executeQuery();
+      while (rows.next()) 
+        countries.add(Country.get(rows.getString(SELECT_COUNTRIES_OUT_COUNTRY)));
+      
+    } catch (Throwable t) {
+      Debug.log(Debug.ERROR, this, t);
     }
     
     // done
-    return (Gazetteer[])gazetteers.toArray(new Gazetteer[gazetteers.size()]);
+    return (Country[])countries.toArray(new Country[countries.size()]);
   }
   
   /**
@@ -203,37 +250,24 @@ public class GeoService {
   /**
    * Locate given location
    */
-  public boolean match(GeoLocation location) {
+  public synchronized boolean match(GeoLocation location) {
 
-    // loop over all gazetteers
-    String result = null;
+    float lat = Float.NaN, lon = Float.NaN;
     
-    File[] files = getGeoFiles();
-    for (int i=0;result==null&&i<files.length;i++) {
-      String filename = files[i].getName();
-      if (filename.length()<GAZETTEER_SUFFIX.length()+2 || !filename.endsWith(GAZETTEER_SUFFIX))
-        continue;
-      // good country?
-      Country country = location.getCountry();
-      if (country!=null&&!country.equals(Country.get(filename.substring(0,2))))
-        continue;
-      // check each
-      try {
-        result = new BinarySearch().search(files[i], location);
-      } catch (Throwable t) {
-        Debug.log(Debug.ERROR, this, t);
+    // try to find 
+    try {
+      selectLocations.setString(SELECT_LOCATIONS_IN_CITY, location.getCity());
+      ResultSet result = selectLocations.executeQuery();
+      if (result.next()) {
+        lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
+        lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
       }
-      // next
+    } catch (Throwable t) {
+      Debug.log(Debug.WARNING, this, "throwable on looking for "+location, t);
     }
     
-    // got a result?
-    if (result!=null) {
-      DirectAccessTokenizer tokens = new DirectAccessTokenizer(result, "\t", true);
-      location.set(Double.parseDouble(tokens.get(3)), Double.parseDouble(tokens.get(4)));
-    } else {
-      location.set(Double.NaN, Double.NaN);
-      System.out.println("Didn't find "+location);
-    }
+    // set it
+    location.set(lat, lon);
 
     // not found
     return false;
@@ -272,455 +306,6 @@ public class GeoService {
     // done
     return (GeoMap[])maps.toArray(new GeoMap[maps.size()]);
   }
-  
-  /**
-   * Geographical dictionary with places and coordinates
-   */
-  public class Gazetteer  implements Comparable {
     
-    /** unique key, country and state id, name */
-    private String key, state;
-    private Country country;
-    
-    /** constructor */
-    /*package*/ Gazetteer(File file) {
-
-      // analyze filename
-      String filename = file.getName();
-      assert filename.endsWith(GAZETTEER_SUFFIX) : "need gazetteer file";
-      key = filename.substring(0, filename.length()-GAZETTEER_SUFFIX.length());
-      
-      // parse for country and state part
-      int i = key.indexOf('_');
-      assert i <0 || i>0 : "strange filename - should be country[_state].gzt";
-      if (i>0) { 
-        country = Country.get(key.substring(0, i));
-        state = key.substring(i+1);
-      } else {
-        country = Country.get(key);
-        state = null;
-      }
-      
-      // done
-    }
-    
-    /** string representation */
-    public String toString() {
-      return state==null ? country.getName() : country.getName()+ " (" + state.toUpperCase() + ")";
-    }
-    
-    /** comparison */
-    public int compareTo(Object o) {
-      Gazetteer that = (Gazetteer)o;
-      return this.country.compareTo(that.country);
-    }
-    
-    /** country */
-    public Country getCountry() {
-      return country;
-    }
-    
-    /** identity comparison */
-    public boolean equals(Object obj) {
-      Gazetteer that = (Gazetteer)obj;
-      return this.key.equals(that.key);
-    }
-    
-    /** identity */
-    public int hashCode() {
-      return key.hashCode();
-    }
-  } //Gazetteer
-    
-  /**
-   * Importer of geographic information
-   */
-  public abstract class Import implements Trackable {
-    
-    /** number of lines expected/written */
-    protected long linesExpected = -1;
-    private long linesWritten = 0;
-    
-    /** worker thread */
-    private Thread worker;
-    
-    /** key country[_state] */
-    private String key;
-    
-    /** state */
-    private BufferedWriter out;
-    
-    /** constructor */
-    protected Import(String isoCountry, String state) {
-      this.key = (state!=null ? isoCountry+"_"+state : isoCountry);
-    }
-    
-    /** trackable callback - cancel */
-    public synchronized void cancel() {
-      if (worker!=null) {
-        worker.interrupt();
-        worker = null;
-      }
-    }
-    
-    /** trackable callback - state */
-    public String getState() {
-      return "Importing";
-    }
-    
-    /** trackable callback - current progress */
-    public int getProgress() {
-      if (linesExpected<=0)
-        return 0;
-      return (int)Math.min(100, linesWritten*100/linesExpected);
-    }
-    
-    /** perform the import  */
-    public final Gazetteer run() throws IOException {
-      
-      // keep current thread as worker
-      worker = Thread.currentThread();
-      
-      // make sure the directory for file exists
-      File dir =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo", "", "geo import destination"));
-      File tmp = new File(dir, key +TMP_SUFFIX);
-      File dst = new File(dir, key +GAZETTEER_SUFFIX);
-      
-      // make sure we have the directories 
-      tmp.getParentFile().mkdirs();
-      
-      // do the io
-      InputStream in = null;
-      try {
-        
-        // open input
-        URL url = getURL();
-        Debug.log(Debug.INFO, getClass(), "Importing "+key+" from "+url);
-        URLConnection con = url.openConnection();
-        in = con.getInputStream();
-        
-        // always zipped - first entry is content
-        ZipInputStream zin = new ZipInputStream(in);
-        ZipEntry entry =  zin.getNextEntry();
-        linesExpected = entry.getSize() / 160;
-
-        // open output
-        out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tmp), UTF8));
-        write("place", "state", "country", "lat", "lon");
-        
-        // let implementation do its thing
-        parse(new BufferedReader(new InputStreamReader(zin, UTF8)));
-        
-        // close out
-        out .close();
-        out = null;
-        
-        // copy to final filename
-        Gazetteer result = new Gazetteer(dst);
-        dst.delete();
-        if (!tmp.renameTo(dst))
-          throw new IOException("Couldn't create output file "+dst);
-        
-        // keep gazetteer
-        synchronized (GeoService.this) {
-          gazetteers.add(result);
-        }
-        return result;
-
-      } finally {
-        if (out!=null) out.close();
-        if (in!=null) in.close();
-      }
-      
-      // done
-    }
-    
-    /** implementation dependent url */
-    protected abstract URL getURL() throws IOException;
-    
-    /** implementation dependent parse */
-    protected abstract void parse(BufferedReader in) throws IOException;
-    
-    /** declare one skipped line of information */
-    protected void skip() {
-      if (linesExpected>2) linesExpected--;
-    }
-    
-    /** write one line of information */
-    protected void write(String city, String state, String country, float lat, float lon) throws IOException {
-      write(city, state, country, Float.toString(lat), Float.toString(lon));
-    }
-    protected void write(String city, String state, String country, String lat, String lon) throws IOException {
-      
-      // interrupted?
-      if (worker==null)
-        throw new IOException("Import Cancelled");
-
-      out.write(city); out.write('\t');
-      out.write(state); out.write('\t');
-      out.write(country); out.write('\t');
-      out.write(lat); out.write('\t');
-      out.write(lon); 
-      out.newLine();
-      
-      linesWritten++;
-    }
-    
-  } //Import
-
-  /**
-   * An implementation to write location names/coordinates (us) grabbed from USGS
-   * http://geonames.usgs.gov/gnishome.html
-   * http://geonames.usgs.gov/geonames/stategaz/index.html
-   */
-  private class USGSImport extends Import {
-    
-    private final static String 
-      URL = "http://geonames.usgs.gov/geonames/stategaz/XX_DECI.zip";
-      
-    /** state */
-    private String state;
-    
-    /** constructor */
-    private USGSImport(String state) {
-      super("us", state);
-      if (state==null||state.length()==0)
-        throw new IllegalArgumentException("US State is required for USGS import");
-      this.state = state;
-    }
-    
-    /** our URL */
-    protected URL getURL() throws IOException {
-        return new URL(URL.replaceFirst("XX", state.toUpperCase()));
-    }
-    
-    /** parse USGS lines */
-    protected void parse(BufferedReader in) throws IOException {
-      
-      String name;
-      float lat, lon;
-      
-      while (true) {
-        // next line
-        String line = in.readLine();
-        if (line==null) 
-          return;
-        
-        // FID state (name) (type) county state# county# (lat) (lon) lat lon dmslat dmslon dmslat dmslon elev poption fedstat cell
-        DirectAccessTokenizer values = new DirectAccessTokenizer(line, "|");
-  
-        // grab name
-        name = values.get(2);
-        
-        // look for 'populated areas' only
-        if (!"ppl".equals(values.get(3))) {
-          skip();
-          continue;
-        }
-        
-        // grab lat lon
-        try {
-          String s = values.get(9); 
-          if (s.length()==0||"UNKNOWN".equals(s)) {
-            skip();
-            continue;
-          }
-          lat = Float.parseFloat(s); // LAT
-          if (s.length()==0||"UNKNOWN".equals(s)) {
-            skip();
-            continue;
-          }
-          lon = Float.parseFloat(s); // LON
-        } catch (NumberFormatException e) {
-          throw new IOException("Format problem - expected to find lat/lon");
-        }
-  
-        // keep it
-        write(name, state, "us", lat, lon);
-      }
-  
-      // done
-    }
-  }
-
-  /**
-   * An implementation to write location names/coordinates (non-us) grabbed from NGA
-   * http://gnswww.nga.mil/geonames/GNS/index.jsp
-   * http://www.nga.mil/gns/html/cntry_files.html
-   */
-  private class NGAImport extends Import {
-    
-    private final static String 
-      URL = "http://earth-info.nga.mil/gns/html/cntyfile/COUNTRY.zip";
-    
-    private Country country;
-    private String state;
-    
-    /** constructor */
-    private NGAImport(Country country, String state) {
-      super(country.getCode(), state);
-      this.country = country;
-      this.state = state;
-    }
-  
-    protected URL getURL() throws IOException {
-        return new URL(URL.replaceFirst("COUNTRY", country.getFips().toLowerCase()));
-    }
-    
-    /** parse NGA lines */
-    protected void parse(BufferedReader in) throws IOException {
-      
-      // skip header
-      in.readLine();
-      
-      String name;
-      float lat, lon;
-      
-      while (true) {
-        // next line
-        String line = in.readLine();
-        if (line==null) 
-          return;
-  
-        // RC UFI UNI (LAT) (LON) DMSLAT DMSLON UTM JOG (FC) DSG PC (CC1) ADM1 ADM2 DIM CC2 NT LC SHORT_FORM GENERIC SORT_NAME (NAME) FULL MOD
-        DirectAccessTokenizer values = new DirectAccessTokenizer(line, "\t");
-        
-        try {
-          lat = Float.parseFloat(values.get(3)); // LAT
-          lon = Float.parseFloat(values.get(4)); // LON
-        } catch (NumberFormatException e) {
-          throw new IOException("Format problem - expected to find lat/lon");
-        }
-  
-        // look for 'populated areas' only
-        if ('P'!=values.get(9).charAt(0)) {
-            skip();
-          continue;
-        }
-        
-        // and check country
-        if (!country.getFips().equalsIgnoreCase(values.get(12))) {
-          skip();
-          continue;
-        }
-        
-        // grab name
-        name = values.get(22); // FULL_NAME
-        
-        // keep it
-        write(name, "", country.getCode(), lat, lon);
-      }
-  
-      // done
-    }
-  
-  } //NGAImport
-
-  /**
-   * A O(log n) binary search on .gzt files
-   */
-  public static class BinarySearch {
-
-    /** file we read from */
-    private RandomAccessFile file;
-
-    /** one current byte/char buffer */
-    byte[] bytes = new byte[256];
-    CharBuffer line = CharBuffer.allocate(256);
-    
-    /** find an appropriate line for given location */
-    public String search(File gzt, GeoLocation location) throws IOException {
-      String result;
-      try {
-        file = new RandomAccessFile(gzt, "r");
-        result = search(0, file.length()-1, location, CharBuffer.wrap(location.getCity()));
-      } finally {
-        file.close();
-      }
-      return result;
-    }
-
-    /** find recursively */
-    private String search(long start, long end, GeoLocation location, CharBuffer city) throws IOException {
-
-      // break condition?
-      if (start>=end)
-        return null;
-      
-      // find pivot
-      long pivot = (start+end)/2;
-      
-      // go there
-      file.seek(pivot);
-      
-      // find trailing '\n' (newline)
-      long pivotEnd = pivot;
-      while (file.read()!='\n') pivotEnd++;
-
-      // find first char in line
-      long pivotStart = pivot;
-      while (pivotStart>start) {
-        file.seek(pivotStart-1);
-        if (file.read()=='\n') break;
-        pivotStart--;
-      }
-      
-      // read line
-      if (!readLine(pivotStart, pivotEnd))
-        return null;
-      
-      // find tab in line
-      int len = line.length();
-      while (line.length()>0 && line.charAt(0)!='\t') line.get();
-      line.limit(line.position());
-      line.position(0);
-      
-    //System.out.println(line);
-      
-      // compare city
-      int i = line.compareTo(city);
-      
-      // match?
-      if (i==0)  {
-        line.limit(len);
-        return line.toString();
-      }
-      
-      // recurse
-      return i<0 ? search(pivotEnd+1, end, location, city) : search(start, pivotStart-1, location, city);
-    }
-
-    /** read an UTF8 line from current position */
-    private boolean readLine(long from, long to) throws IOException {
-      file.seek(from);
-      int length = (int)(to-from);
-      // read up to length bytes
-      for (int i=0;i<length&&i<bytes.length;i++) 
-        bytes[i] = (byte)file.read();
-      // decode it
-      line.clear();
-      if (length==0)
-        return true;
-      if (Charset.forName("UTF-8").newDecoder().decode(ByteBuffer.wrap(bytes, 0, length), line, false).isError())
-        throw new IOException("error decoding utf8");
-      // setup resulting line
-      line.limit(line.position());
-      line.position(0);
-      return true;
-    }
-
-    /** test */
-    public static void main(String[] args) {
-      Indi indi = new Indi();
-      Property birt = indi.addProperty("BIRT", "");
-      birt.addProperty("PLAC", "Ottawa");
-      try {
-        System.out.println(new BinarySearch().search(new File("c:/Documents and Settings/nmeier/.genj/geo/ca.gzt"), new GeoLocation(birt)));
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
-    }
-    
-  } //GeoMatcher
   
 } //GeoService

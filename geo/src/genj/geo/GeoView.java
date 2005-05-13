@@ -36,15 +36,19 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jump.feature.FeatureCollection;
@@ -176,16 +180,17 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     SwingUtilities.invokeLater(rezoom);
     
     // test for gazetteers
-    WordBuffer unknown = new WordBuffer("\n ");
+    WordBuffer missing = new WordBuffer("\n ");
     GeoService service = GeoService.getInstance();
-    Country[] countries = map.getCountries();
-    for (int i = 0; i < countries.length; i++) {
-      if (!service.hasGazetteer(countries[i])) 
-        unknown.append(countries[i]);
+    List available = Arrays.asList(service.getCountries());
+    Country[] required = map.getCountries();
+    for (int i = 0; i < required.length; i++) {
+      if (!available.contains(required[i])) 
+        missing.append(required[i]);
     }
     
-    if (unknown.length()>0) {
-      String note = RESOURCES.getString("nogazetteers", unknown);
+    if (missing.length()>0) {
+      String note = RESOURCES.getString("missing", missing);
       viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), GeoView.this);
     }
     // done
@@ -230,17 +235,23 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * A layer for our model
    */
-  private class GedcomLayer extends Layer implements FeatureCollection, GeoModelListener {
+  private class GedcomLayer extends Layer implements FeatureCollection, GeoModelListener, ActionListener {
+    
+    private Timer timer;
     
     /** constructor */
     private GedcomLayer() {
+      
+      // prepare a timer for delayed updates
+      timer = new Timer(500, this);
+      timer.setRepeats(false);
       
       // connect us to Jumps internals
       setName("Gedcom Locations");
       setFeatureCollection(this);
       
       // prepare some styles
-      addStyle(new BasicStyle(Color.BLACK));
+      addStyle(new BasicStyle(Color.LIGHT_GRAY));
        
       VertexStyle vertices = new SquareVertexStyle();
       vertices.setEnabled(true);
@@ -248,9 +259,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       addStyle(vertices);
        
       LabelStyle labels = new LabelStyle();
-//    labels.setEnabled(true);
-//    labels.setAttribute("PLAC");
-//    labels.setHidingOverlappingLabels(false);
+      labels.setColor(Color.BLACK);
+      labels.setEnabled(true);
+      labels.setAttribute("PLAC");
+      labels.setHidingOverlappingLabels(true);
       addStyle(labels);
       
       // hook up to model
@@ -259,12 +271,16 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       // done
     }
     
-    
-    /** geo model - a location has been found */
-    public void locationFound(GeoLocation location) {
+    /** timer - time to propagate update */
+    public void actionPerformed(ActionEvent e) {
       LayerManager mgr = getLayerManager();
       if (mgr!=null)
         mgr.fireFeaturesChanged(new ArrayList(), FeatureEventType.ADDED, this);
+    }
+    
+    /** geo model - a location has been found */
+    public void locationFound(GeoLocation location) {
+      timer.start();
     }
 
     /** feature collection - our schema */

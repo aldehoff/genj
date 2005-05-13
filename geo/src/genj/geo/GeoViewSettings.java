@@ -74,10 +74,10 @@ public class GeoViewSettings extends JPanel implements Settings {
     listGazetteers = new JList();
     
     ButtonHelper bh = new ButtonHelper().setResources(GeoView.RESOURCES);
-    add("label", new JLabel(GeoView.RESOURCES.getString("label.gazetteers")));
+    add("label", new JLabel(GeoView.RESOURCES.getString("label.gazetteer")));
     add("up", bh.create(new UpDown(true)));
     add("down", bh.create(new UpDown(false)));
-    add("import", bh.create(new Import()));
+    add("import", bh.create(new DoImport()));
     add("delete", bh.create(new Delete()));
     add("list", new JScrollPane(listGazetteers));
     
@@ -108,11 +108,11 @@ public class GeoViewSettings extends JPanel implements Settings {
    */
   public void reset() {
     
-    final GeoService.Gazetteer[] gazetteers = GeoService.getInstance().getGazetteers();
-    Arrays.sort(gazetteers);
+    final Country[] countries = GeoService.getInstance().getCountries();
+    Arrays.sort(countries);
     listGazetteers.setModel(new AbstractListModel() {
-      public int getSize() { return gazetteers.length; }
-      public Object getElementAt(int i) { return gazetteers[i]; }
+      public int getSize() { return countries.length; }
+      public Object getElementAt(int i) { return countries[i]; }
     });
   }
 
@@ -148,15 +148,13 @@ public class GeoViewSettings extends JPanel implements Settings {
   /**
    * Action - Import
    */
-  private class Import extends ActionDelegate {
+  private class DoImport extends ActionDelegate {
     /** handle to progress dlg */
     private String progress;
     /** the import */
-    private GeoService.Import gztImport;
-    /** what we've imported */
-    private GeoService.Gazetteer imported;
+    private Import gztImport;
     /** constructor */
-    protected Import() {
+    protected DoImport() {
       setText( "action.import" );
       setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
     }
@@ -168,9 +166,13 @@ public class GeoViewSettings extends JPanel implements Settings {
       SelectImportWidget select = new SelectImportWidget();
       int choice = viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_QUESTION, select, CloseWindow.OKandCANCEL(), GeoViewSettings.this);
       // prepare import
-      gztImport = GeoService.getInstance().getImport(select.getCountry(), select.getState());
-      if (choice!=0)
+      try {
+        gztImport = GeoService.getInstance().getImport(select.getCountry(), select.getState());
+        if (choice!=0)
+          return false;
+      } catch (IOException e) {
         return false;
+      }
       // .. show progress dialog
       progress = viewManager.getWindowManager().openNonModalDialog(
         null, "Importing ...",
@@ -182,7 +184,7 @@ public class GeoViewSettings extends JPanel implements Settings {
     /** callback - run async */
     public void execute() {
       try {
-        imported = gztImport.run();
+        gztImport.run();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
