@@ -92,6 +92,11 @@ public abstract class Change {
       super(root.getEntity());
       this.root = root;
     }
+    
+    public Property getRoot() {
+      return root;
+    }
+   
   } //Structure
 
   /**
