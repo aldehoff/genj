@@ -231,7 +231,7 @@
   <!--
    Distribution - Application
    -->
-  <target name="dist.app" depends="compile">
+  <target name="dist.app" depends="compile, version">
 
      <!-- create genj.jar -->
      <delete file="${dir.build}/lib/genj.jar"/>
