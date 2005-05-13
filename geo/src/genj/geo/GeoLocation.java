@@ -19,6 +19,7 @@
  */
 package genj.geo;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 
@@ -158,6 +159,21 @@ public class GeoLocation extends Point implements Feature {
   /**
    * String representation
    */
+  public String toHTML() {
+    StringBuffer result = new StringBuffer();
+    result.append("<b>");
+    result.append(city);
+    result.append("</b>");
+    for (int i=0;i<properties.size();i++) {
+      Property prop = (Property)properties.get(i);
+      result.append("<br>");
+      result.append(Gedcom.getName(prop.getTag()));
+      result.append(" ");
+      result.append(prop.getEntity());
+    }
+    return result.toString();
+  }
+  
   public String toString() {
      return city + "[" + coordinate.y + "," +  coordinate.x+ "]";
   }

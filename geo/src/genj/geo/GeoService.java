@@ -274,7 +274,7 @@ public class GeoService {
     try {
       selectLocations.setString(SELECT_LOCATIONS_IN_CITY, location.getCity());
       ResultSet result = selectLocations.executeQuery();
-      if (result.next()) {
+      while (result.next()) {
         lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
         lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
       }

@@ -40,16 +40,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jump.feature.FeatureCollection;
 import com.vividsolutions.jump.feature.FeatureSchema;
@@ -121,7 +126,43 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     model = new GeoModel(gedcom);
     gedcomLayer = new GedcomLayer();  
     
+    // register for popups
+    ToolTipManager.sharedInstance().registerComponent(this);
+    
     // done
+  }
+  
+  /**
+   * tooltip callback
+   */
+  public String getToolTipText(MouseEvent event) {
+    try {
+      Coordinate coord  = layerPanel.getViewport().toModelCoordinate(event.getPoint());
+      
+      WordBuffer text = new WordBuffer("");
+      text.append("<html><body>");
+      text.append( toString(coord));
+      text.setFiller("<br>");
+      for (Iterator locations = layerPanel.featuresWithVertex(event.getPoint(), 5,  model.getKnownLocations()).iterator(); locations.hasNext(); )  {
+        GeoLocation location = (GeoLocation)locations.next();
+        text.append(location.toHTML());
+      }
+      
+      return text.toString();
+    } catch (Throwable t) {
+      return null;
+    }
+  }
+  
+  private String toString(Coordinate coord) {
+    double lat = coord.y, lon = coord.x;
+    char we = 'E', ns = 'N';
+    if (lat<0) { lat = -lat; ns='S'; }
+    if (lon<0) { lon = -lon; we='W'; }
+    NumberFormat format = NumberFormat.getNumberInstance();
+    format.setMaximumFractionDigits(1);
+    format.setMinimumFractionDigits(1);
+    return ns + format.format(lat) + " " + we + format.format(lon);
   }
   
   /**
