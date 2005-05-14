@@ -19,6 +19,7 @@
  */
 package genj.geo;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 
@@ -104,6 +105,13 @@ public class GeoLocation extends Point implements Feature {
         return true;
     }
     return false;
+  }
+  
+  /**
+   * Gedcom this location is for
+   */
+  public Gedcom getGedcom() {
+    return ((Property)properties.get(0)).getGedcom();
   }
   
   /**
