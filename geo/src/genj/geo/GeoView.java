@@ -29,6 +29,7 @@ import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.WordBuffer;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
@@ -40,6 +41,7 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -54,6 +56,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -68,18 +71,23 @@ import com.vividsolutions.jump.workbench.model.Layer;
 import com.vividsolutions.jump.workbench.model.LayerManager;
 import com.vividsolutions.jump.workbench.ui.LayerViewPanel;
 import com.vividsolutions.jump.workbench.ui.LayerViewPanelContext;
+import com.vividsolutions.jump.workbench.ui.cursortool.CursorTool;
 import com.vividsolutions.jump.workbench.ui.renderer.style.BasicStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.LabelStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.RingVertexStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.SquareVertexStyle;
 import com.vividsolutions.jump.workbench.ui.renderer.style.VertexStyle;
+import com.vividsolutions.jump.workbench.ui.zoom.PanTool;
+import com.vividsolutions.jump.workbench.ui.zoom.ZoomTool;
 
 /**
  * The view showing gedcom data in geographic context
  */
 public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
-  private final static ImageIcon IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png");
+  private final static ImageIcon 
+    IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png"),
+    IMG_ZOOM = new ImageIcon(GeoView.class, "images/Zoom.png");
   
   /*package*/ final static Resources RESOURCES = Resources.get(GeoView.class);
   
@@ -137,13 +145,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     model = new GeoModel(gedcom);
     locationLayer = new LocationsLayer();  
     selectionLayer = new SelectionLayer();
-    
-    // register for popups
-    ToolTipManager.sharedInstance().registerComponent(this);
-    
-    // ok this might not be fair but we'll increase
-    // the tooltip dismiss delay now for everyone
-    ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     
     // done
   }
@@ -270,6 +271,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     chooseMap.setEnabled(!actions.isEmpty());
     bar.add(chooseMap);
     
+    // add zoom/pan
+    ButtonHelper bh = new ButtonHelper();
+    bh.setContainer(bar).setButtonType(JToggleButton.class);
+    bh.create(new ZoomOnOff());
+    
     // done
   }
   
@@ -296,7 +302,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     map.load(layerManager);
     
     // pack into panel
-    layerPanel = new LayerViewPanel(layerManager, new ViewContext());    
+    layerPanel = new LayerViewPanel(layerManager, new ViewContext()) {
+      public String getToolTipText(MouseEvent event) {
+        return GeoView.this.getToolTipText(event);
+      }      
+    };
     layerPanel.setBackground(map.getBackground());
     
     add(BorderLayout.CENTER, layerPanel);
@@ -305,6 +315,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     repaint();
     
     SwingUtilities.invokeLater(rezoom);
+    
+    // enable tooltips
+    ToolTipManager.sharedInstance().registerComponent(layerPanel);
+    ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     
     // test for available countries
     if (warn) {
@@ -340,6 +354,21 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
   }
 
+  /**
+   * Action - Tool
+   */
+  private class ZoomOnOff extends ActionDelegate {
+    /** constructor */
+    private ZoomOnOff() {
+      setImage(IMG_ZOOM);
+    }
+    /** choose current map */
+    protected void execute() {
+      if (layerPanel!=null) 
+        layerPanel.setCurrentCursorTool( layerPanel.getCurrentCursorTool() instanceof ZoomTool ? (CursorTool)new PanTool(null) :  new ZoomTool(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)));
+    }
+  }//ZoomOnOff
+ 
   /**
    * Action - choose a map
    */
