@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.86 $ $Author: nmeier $ $Date: 2005-05-09 23:21:31 $
+ * $Revision: 1.87 $ $Author: nmeier $ $Date: 2005-05-14 00:40:01 $
  */
 package genj.gedcom;
 
@@ -859,10 +859,10 @@ public class Gedcom {
         // look for it
         Locale[] locales = Locale.getAvailableLocales();
         for (int i = 0; i < locales.length; i++) {
-          // same display language name - shortest one is best fit (e.g. 'en' instead of 'en_AU' for plain english)
-          if (locales[i].getDisplayLanguage(Locale.ENGLISH).equals(language)) {
-            if (cachedLocale==null||locales[i].toString().length()<cachedLocale.toString().length())
-              cachedLocale = locales[i];
+          if (locales[i].getDisplayLanguage(Locale.ENGLISH).equalsIgnoreCase(language)) {
+            cachedLocale = locales[i];
+            // stop looking if country code matches language code
+            if (cachedLocale.getCountry().equalsIgnoreCase(cachedLocale.getLanguage())) break;
           }
         }
         
