@@ -151,7 +151,7 @@ public class GeoService {
 //    getInstance().match(loc);
 //    System.out.println(loc);
     
-    String city = "Nantes";
+    String city = "Bordeaux";
     GeoService gs = getInstance();
     try {
       gs.selectLocations.setString(SELECT_LOCATIONS_IN_CITY, city);
@@ -268,15 +268,21 @@ public class GeoService {
    */
   public synchronized boolean match(GeoLocation location) {
 
-    float lat = Float.NaN, lon = Float.NaN;
-    
+    // check local country
+    String country = location.getGedcom().getLocale().getCountry().toLowerCase();
+
     // try to find 
+    float lat = Float.NaN, lon = Float.NaN;
     try {
       selectLocations.setString(SELECT_LOCATIONS_IN_CITY, location.getCity());
       ResultSet result = selectLocations.executeQuery();
       while (result.next()) {
+        // grab lat/lon
         lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
         lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
+        // look further?
+        if (country.equals(result.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+          break;
       }
     } catch (Throwable t) {
       Debug.log(Debug.WARNING, this, "throwable on looking for "+location, t);
