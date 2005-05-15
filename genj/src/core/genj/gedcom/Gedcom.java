@@ -17,10 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.87 $ $Author: nmeier $ $Date: 2005-05-14 00:40:01 $
+ * $Revision: 1.88 $ $Author: nmeier $ $Date: 2005-05-15 04:13:27 $
  */
 package genj.gedcom;
 
+import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.ReferenceSet;
 import genj.util.Resources;
@@ -267,6 +268,7 @@ public class Gedcom {
       try {
         gls[l].handleChange(transaction);
       } catch (Throwable t) {
+        Debug.log(Debug.ERROR, this, t);
       }
     }
     // done
