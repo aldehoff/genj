@@ -19,6 +19,7 @@
  */
 package genj.common;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
 
@@ -31,14 +32,19 @@ import java.util.List;
 public abstract class AbstractPropertyTableModel implements PropertyTableModel, GedcomListener {
   
   private List listeners = new ArrayList(3);
+  private Gedcom gedcom = null;
 
   /** 
    * Add listener
    */
   public void addListener(PropertyTableModelListener listener) {
     listeners.add(listener);
-    if (listeners.size()==1)
-      getGedcom().addGedcomListener(this);
+    if (listeners.size()==1) {
+      // cache gedcom now
+      if (gedcom==null) gedcom=getGedcom();
+      // and start listening
+      gedcom.addGedcomListener(this);
+    }
   }
   
   /** 
@@ -46,8 +52,9 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
    */
   public void removeListener(PropertyTableModelListener listener) {
     listeners.remove(listener);
+    // stop listening
     if (listeners.isEmpty())
-      getGedcom().removeGedcomListener(this);
+      gedcom.removeGedcomListener(this);
   }
   
   /**
