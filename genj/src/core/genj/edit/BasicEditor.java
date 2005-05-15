@@ -152,7 +152,7 @@ import javax.swing.event.ChangeListener;
     // listen to gedcom events
     gedcom.addGedcomListener(this);
     // setup split panel position
-    splitPanel.setDividerLocation(registry.get("basic.divider", 256));
+    splitPanel.setLastDividerLocation(registry.get("basic.divider", 256));
     // done
   }
 
@@ -160,10 +160,10 @@ import javax.swing.event.ChangeListener;
    * Intercepted remove notification
    */
   public void removeNotify() {
+    // keep split panel position (if still looking at entity)
+    registry.put("basic.divider", splitPanel.getDividerLocation());
     // clean up state
     setEntity(null);
-    // keep split panel position
-    registry.put("basic.divider", splitPanel.getDividerLocation());
     // let super continue
     super.removeNotify();
     // stop listening to gedcom events
@@ -237,10 +237,12 @@ import javax.swing.event.ChangeListener;
    */
   private void setEntity(Entity set) {
 
+    if (entity!=null)
+      splitPanel.setLastDividerLocation(splitPanel.getDividerLocation());
+    
     // remember
     entity = set;
-    int dividerLocation = splitPanel.getDividerLocation();
-
+    
     // remove all current beans and tabs
     splitPanel.setLeftComponent(null);
     splitPanel.setRightComponent(null);
@@ -303,7 +305,8 @@ import javax.swing.event.ChangeListener;
       // finally finish setting up split panel
      splitPanel.setLeftComponent(new JScrollPane(mainPanel));
      splitPanel.setRightComponent(new JScrollPane(tabPanel));
-     splitPanel.setDividerLocation(dividerLocation);
+     splitPanel.setDividerLocation(splitPanel.getLastDividerLocation());
+     
       
       // done
       
