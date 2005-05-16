@@ -20,6 +20,7 @@
 package genj.gedcom;
 
 import genj.util.DirectAccessTokenizer;
+import genj.util.ReferenceSet;
 import genj.util.swing.ImageIcon;
 
 import java.util.Collection;
@@ -80,19 +81,33 @@ public class PropertyPlace extends Property {
     Gedcom gedcom = getGedcom();
     if (gedcom==null)
       return;
+    // forget old value
+    if (theOld.length()>0)
+      gedcom.getReferenceSet(TAG).remove(theOld, this);
     // forget old jurisdictions
     DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(theOld, JURISDICTION_SEPARATOR, true);
     for (int i=0;;i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
-      if (jurisdiction.length()>0) gedcom.getReferenceSet(TAG+"."+i).remove(jurisdiction, this);
+      if (jurisdiction.length()==0) continue;
+      // forget PLAC.n & CITY
+      gedcom.getReferenceSet(TAG+"."+i).remove(jurisdiction, this);
+      if (i==0) gedcom.getReferenceSet("CITY").remove(jurisdiction, this);
+      // next
     }
+    // remember new value
+    if (theNew.length()>0)
+      gedcom.getReferenceSet(TAG).add(theNew, this);
     // remember new jurisdictions
     jurisdictions = new DirectAccessTokenizer(theNew, JURISDICTION_SEPARATOR, true);
     for (int i=0;;i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
-      if (jurisdiction.length()>0) gedcom.getReferenceSet(TAG+"."+i).add(jurisdiction, this);
+      if (jurisdiction.length()==0) continue;
+      // remember PLAC.n & CITY
+      gedcom.getReferenceSet(TAG+"."+i).add(jurisdiction, this);
+      if (i==0) gedcom.getReferenceSet("CITY").add(jurisdiction, this);
+      // next
     }
     // done
   }
@@ -127,33 +142,41 @@ public class PropertyPlace extends Property {
   }
 
   /**
-   * Format
+   * Accessor - the hierarchy of this place's value (non localized)
    */
   public String getHierarchy() {
-    return getHierarchy(getGedcom());
-  }
-  
-  /**
-   * Format
-   */
-  public String getHierarchy(Gedcom gedcom) {
     // look it up
     String result = "";
     Property pformat = getProperty(FORM);
     if (pformat!=null) 
       result = pformat.getValue();
     else {
-      if (gedcom!=null)
-        result = gedcom.getPlaceHierarchy();
+      Gedcom ged = getGedcom();
+      if (ged!=null)
+        result = ged.getPlaceHierarchy();
     }
     // done
-    return gedcom2local(result);
+    return result;
   }
   
   /**
-   * localize hierarchy
+   * Accessor - the hierarchy of this place's value (non localized)
    */
-  public static String gedcom2local(String hierarchy) {
+  public void setHierarchy(boolean global, String hierarchy) {
+    if (!global)
+      throw new IllegalArgumentException("non-global n/a");
+    // propagate
+    getGedcom().setPlaceHierarchy(hierarchy);
+    // mark changed
+    propagateChange(getValue());
+  }
+  
+  /**
+   * Accessor - the hierarchy of this place's value ( localized)
+   */
+  public String getDisplayHierarchy() {
+    
+    String hierarchy = getHierarchy();
     
     // loop over (assumed) english names
     StringBuffer buf = new StringBuffer();
@@ -181,7 +204,10 @@ public class PropertyPlace extends Property {
     return local;
   }
   
-  public static String local2gedcom(String hierarchy) {
+  /**
+   * Accessor - the hierarchy of this place's value (localized)
+   */
+  public void setDisplayHierarchy(boolean global, String hierarchy) {
     
     // loop over (assumed) local names
     StringBuffer buf = new StringBuffer();
@@ -194,7 +220,7 @@ public class PropertyPlace extends Property {
     }
     
     // done
-    return buf.toString();
+    setHierarchy(global, buf.toString());
   }
   
   private static String _local2gedcom(String token) {
@@ -217,6 +243,17 @@ public class PropertyPlace extends Property {
   }
   
   /**
+   * Accessor - all places with the same jurisdiction for given hierarchy level
+   */
+  public PropertyPlace[] getSameChoices(int hierarchyLevel) {
+    String jurisdiction = getJurisdiction(hierarchyLevel);
+    if (jurisdiction==null)
+      return null;
+    Collection places = getGedcom().getReferenceSet(TAG+"."+hierarchyLevel).getReferences(jurisdiction);
+    return (PropertyPlace[])places.toArray(new PropertyPlace[places.size()]);
+  }
+  
+  /**
    * Accessor - all jurisdictions of given level in same gedcom file
    */
   public String[] getJurisdictions(int hierarchyLevel, boolean sort) {
@@ -228,9 +265,11 @@ public class PropertyPlace extends Property {
   
   /**
    * Accessor - all jurisdictions of given level in gedcom
+   * @param hierarchyLevel either a zero-based level or -1 for whole place values
    */
   public static String[] getJurisdictions(Gedcom gedcom, int hierarchyLevel, boolean sort) {
-    Collection jurisdictions = gedcom.getReferenceSet(TAG+"."+hierarchyLevel).getKeys(sort ? gedcom.getCollator() : null);
+    ReferenceSet refset = gedcom.getReferenceSet( hierarchyLevel<0 ? TAG : TAG+"."+hierarchyLevel);
+    Collection jurisdictions = refset.getKeys(sort ? gedcom.getCollator() : null);
     return (String[])jurisdictions.toArray(new String[jurisdictions.size()]);
   }
   
@@ -240,18 +279,6 @@ public class PropertyPlace extends Property {
    */
   public String getJurisdiction(int hierarchyLevel) {
     return new DirectAccessTokenizer(place, JURISDICTION_SEPARATOR).get(hierarchyLevel);
-  }
-  
-  /**
-   * Setter of global place hierarchy
-   */
-  public void setHierarchy(boolean global, String hierarchy) {
-    if (!global)
-      throw new IllegalArgumentException("non-global n/a");
-    // propagate
-    getGedcom().setPlaceHierarchy(local2gedcom(hierarchy));
-    // mark changed
-    propagateChange(getValue());
   }
   
 } //PropertyPlace

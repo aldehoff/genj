@@ -83,17 +83,16 @@ public class PlaceBean extends PropertyBean {
     removeAll();
    
     // either a simple value or broken down into comma separated jurisdictions
-    String placeFormat = place.getHierarchy();
-    if (placeFormat.length()==0) {
-      createField(null, place.getValue(), 0);
+    if (place.getDisplayHierarchy().length()==0) {
+      createField(null, place.getValue(), -1);
     } else {
-      DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(placeFormat, ",", true);
-      DirectAccessTokenizer values = new DirectAccessTokenizer( place.getValue(), ",", true);
+      DirectAccessTokenizer hierarchyTokens = new DirectAccessTokenizer(place.getDisplayHierarchy(), ",", true);
+      DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",", true);
       for (int i=0;;i++) {
+        String hierarchyToken = hierarchyTokens.get(i);
         String jurisdiction = jurisdictions.get(i);
-        String value = values.get(i);
-        if (jurisdiction==null&&value==null) break;
-        createField(jurisdiction!=null ? jurisdiction : null, value!=null ? value : "", i);
+        if (hierarchyToken==null&&jurisdiction==null) break;
+        createField(hierarchyToken!=null ? hierarchyToken : null, jurisdiction!=null ? jurisdiction : "", i);
       }
     }
     
