@@ -151,17 +151,14 @@ public class GeoService {
 //    getInstance().match(loc);
 //    System.out.println(loc);
     
-    String city = "Bordeaux";
+    String city = "Saint%";
     GeoService gs = getInstance();
     try {
-      gs.selectLocations.setString(SELECT_LOCATIONS_IN_CITY, city);
-      ResultSet result = gs.selectLocations.executeQuery();
+      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, country FROM locations WHERE city LIKE  ?");
+      ps.setString(1, city);
+      ResultSet result = ps.executeQuery();
       while (result.next()) {
-        System.out.println( result.getString(SELECT_LOCATIONS_OUT_STATE) 
-            +","+ result.getString(SELECT_LOCATIONS_OUT_COUNTRY)
-            +","+ result.getFloat(SELECT_LOCATIONS_OUT_LAT)
-            +","+ result.getFloat(SELECT_LOCATIONS_OUT_LON)
-          );
+        System.out.println( result.getString(1)  +","+ result.getString(2));
       }
     } catch (Throwable t) {
       Debug.log(Debug.WARNING, gs, t);

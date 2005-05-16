@@ -68,14 +68,83 @@ public class GeoLocation extends Point implements Feature {
     // remember property
     properties.add(prop);
     
-    // FIXME add support for ADDR, CITY, STAE, CNTY
-    // FIXME add support for jurisdications
+    // init
+    init(prop);
+
+    }
+
+  /**
+   * Init
+   */
+  private boolean init(Property prop) {
+    
+    //  FIXME add support for jurisdications
+    
     // got a place?
     Property plac = prop.getProperty("PLAC");
     if (plac instanceof PropertyPlace)
-       init((PropertyPlace)plac);
-    else
-      throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
+       return initFromPlace((PropertyPlace)plac);
+    
+    // an address?
+    Property addr = prop.getProperty("ADDR");
+    if (addr!=null)
+      return initFromAddress(addr);
+    
+    // hmm
+    throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
+  }
+  
+  /**
+   * Init for Address
+   */
+  private boolean initFromAddress(Property addr) {
+    
+    // got a city?
+    Property city = addr.getProperty("CITY");
+    if (city==null)
+      throw new IllegalArgumentException("can't determine city from address");
+
+    // trim it
+    this.city = trim(city.getDisplayValue());
+    
+    // empty?
+    if (this.city.length()==0)
+      throw new IllegalArgumentException("address without city value");
+
+    // good
+    return true;
+  }
+  
+  /**
+   * Init for Place
+   */
+  private boolean initFromPlace(PropertyPlace place) {
+    
+    // simple - first jurisdiction
+    city = trim(place.getJurisdiction(0));
+    
+    // empty?
+    if (city.length()==0)
+      throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
+
+    // done
+    return true;
+  }
+  
+  /**
+   * trim a value - some folks add stuff to (e.g.) a city that we don't want to use in locations 
+   */
+  private String trim(String value) {
+    // null?
+    if (value==null)
+      return "";
+    // check for '(' and trim
+    int i = value.indexOf('(');
+    if (i>=0)
+      value = value.substring(0,i);
+    value = value.trim();
+    // done
+    return value;
   }
   
   /**
@@ -113,30 +182,7 @@ public class GeoLocation extends Point implements Feature {
   public Gedcom getGedcom() {
     return ((Property)properties.get(0)).getGedcom();
   }
-  
-  /**
-   * Init for PropertyPlace
-   */
-  private void init(PropertyPlace place) {
-    
-    // simple - first jurisdiction
-    city = place.getJurisdiction(0);
-    if (city==null)
-      throw new IllegalArgumentException("can't determine location for "+place);
-    
-    // check for '(' and trim
-    int i = city.indexOf('(');
-    if (i>=0)
-      city = city.substring(0,i);
-    city = city.trim();
-    
-    // empty?
-    if (city.length()==0)
-      throw new IllegalArgumentException("can't determine location for "+place);
 
-    // done
-  }
-  
   /**
    * identify is defined as city, state and country
    */
