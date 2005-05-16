@@ -24,7 +24,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyEvent;
 import genj.gedcom.Transaction;
 import genj.util.Debug;
 import genj.view.Context;
@@ -67,30 +66,32 @@ import java.util.Map;
    */
   public  List getLocations(Context context) {
     
-    // got a property that is part of an event?
+    // got a specific property?
     Property prop = context.getProperty();
     if (prop!=null && !(prop instanceof Entity)) {
-      Property event = prop.getParent(PropertyEvent.class);
-      if (event!=null) 
-        return getLocations(Collections.singletonList(event));
+      
+      // recurse up to root-property
+      while (!(prop.getParent() instanceof Entity))
+        prop = prop.getParent();
+      
+      return getLocations(new Property[]{ prop });
     }
     
     // try the entity itself
     Entity entity = context.getEntity();
     if (entity!=null) 
-      return getLocations(entity.getProperties(PropertyEvent.class));
+      return getLocations(entity.getProperties());
 
     // n/a
     return Collections.EMPTY_LIST;
   }
   
-  private synchronized List getLocations(List events) {
+  private synchronized List getLocations(Property[] props) {
     ArrayList result = new ArrayList();
-    
     for (Iterator it=knownLocations.keySet().iterator(); it.hasNext(); ) {
       GeoLocation location = (GeoLocation)it.next();
-      if (location.contains(events))
-      result.add(location);
+      if (location.contains(props))
+        result.add(location);
     }
     return result;
   }
@@ -110,9 +111,8 @@ import java.util.Map;
     for (Iterator it = tx.get(Transaction.PROPERTIES_MODIFIED).iterator(); it.hasNext(); ) {
       removeLocation((Property)it.next());
     }
-    parseProperties(tx.get(Transaction.PROPERTIES_MODIFIED));
-    // take on added props
-    parseProperties(tx.get(Transaction.PROPERTIES_ADDED));
+    // reparse entities changed
+    parseEntities(tx.get(Transaction.ENTITIES_MODIFIED));
     // remove deleted props
     Change[] changes = tx.getChanges();
     for (int i=0;i<changes.length;i++) {
@@ -148,33 +148,35 @@ import java.util.Map;
    */
   private synchronized void removeLocation(Property prop) {
 
-    // is part of an event?
-    Property event = prop.getParent(PropertyEvent.class);
-    if (event==null)
-      return;
-    
+    // collect property hierarchy
+    List affected = new ArrayList();
+    while (prop!=null) {
+      affected.add(prop);
+      prop = prop.getParent();
+    }
+
     // check locations
     for (Iterator it = knownLocations.keySet().iterator(); it.hasNext(); ) { 
       GeoLocation location = (GeoLocation)it.next();
-      if (location.remove(event)) return;
+      if (location.removeAll(affected)) return;
     }
     for (Iterator it = unknownLocations.keySet().iterator(); it.hasNext(); ) { 
       GeoLocation location = (GeoLocation)it.next();
-      if (location.remove(event)) return;
+      if (location.removeAll(affected)) return;
     }
     
     // done
   }
   
   /**
-   * Add a new location
+   * Add a new location for given property
    */
-  private void addLocation(PropertyEvent event) {
+  private void addLocation(Property prop) {
     
     // create a location for it
     GeoLocation location;
     try {
-      location = new GeoLocation(event) {
+      location = new GeoLocation(prop) {
         // override : keep track of location lat/lon
         protected void set(double lat,double lon) {
           super.set(lat, lon);
@@ -184,10 +186,10 @@ import java.util.Map;
           }
           fireLocationUpdated(this);
         }
-        // override : keep track of location lat/lon
-        public boolean remove(Property prop) {
+        // override : remove empty locations
+        public boolean removeAll(Collection props) {
           // no problem if not our property
-          if (!super.remove(prop))
+          if (!super.removeAll(props))
             return false;
           // check if still necessary
           if (properties.isEmpty()) synchronized (GeoModel.this) {
@@ -225,23 +227,17 @@ import java.util.Map;
   }
   
   /**
-   * Add events
-   */
-  private void parseProperties(Collection props) {
-    for (Iterator adds=props.iterator(); adds.hasNext(); ) {
-      Property event = ((Property)adds.next()).getParent(PropertyEvent.class);
-      if (event!=null) 
-        addLocation((PropertyEvent)event);
-    }
-  }
-  
-  /**
-   * Add events of entities
+   * Add root properties PLAC or ADDR of entities
    */
   private void parseEntities(Collection entities) {
+    
     for (Iterator it = entities.iterator(); it.hasNext(); ) {
       Property entity = (Property)it.next();
-      parseProperties(entity.getProperties(PropertyEvent.class));
+      for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
+        Property prop = entity.getProperty(i);
+        if (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null)
+          addLocation(prop);
+      }
     }
   }
   

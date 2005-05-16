@@ -24,6 +24,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -159,18 +160,18 @@ public class GeoLocation extends Point implements Feature {
   }
   
   /**
-   * Remove a property
+   * Remove properties from this location
    */
-  public boolean remove(Property prop) {
-    return properties.remove(prop);
+  public boolean removeAll(Collection props) {
+    return properties.removeAll(props);
   }
   
   /**
    * Check for containment
    */
-  public boolean contains(List properties) {
-    for (Iterator it = properties.iterator(); it.hasNext(); ) {
-      if (this.properties.contains(it.next()))
+  public boolean contains(Property[] properties) {
+    for (int i=0; i<properties.length; i++) {
+      if (this.properties.contains(properties[i]))
         return true;
     }
     return false;
