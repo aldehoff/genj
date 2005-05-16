@@ -23,7 +23,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyEvent;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -177,10 +176,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
             text.append("...");
             break;
           }
-          PropertyEvent prop = (PropertyEvent)properties[i];
-          PropertyDate date = prop.getDate();
+          Property prop = properties[i];
+          PropertyDate date = (PropertyDate)prop.getProperty(PropertyDate.TAG);
           if (date!=null) {
-            text.append(prop.getDate());
+            text.append(date);
             text.append(" ");
           }
           text.append(Gedcom.getName(prop.getTag()));
@@ -426,11 +425,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     /** geo model - a location has been updated */
     public void locationUpdated(GeoLocation location) {
       setLocations(Collections.EMPTY_LIST);
+      super.locationUpdated(location);
     }
 
     /** geo model - a location has been removed */
     public void locationRemoved(GeoLocation location) {
       setLocations(Collections.EMPTY_LIST);
+      super.locationRemoved(location);
     }
 
     /** selection size */
