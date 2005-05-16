@@ -20,15 +20,20 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A program starter that reads a classpath and runnable type from manifest-file. The
@@ -52,8 +57,10 @@ public class Run {
   public final static String 
     MANIFEST = "META-INF/MANIFEST.MF",
     CLASSPATH = "Run-Classpath",
-    RUNNABLE = "Run-Runnable";
+    MAIN_CLASS = "Run-Class";
   
+  private static Logger logger = Logger.getLogger(Run.class.getName());
+
   /**
    * Startup runnable with dynamically constructed classpath
    */
@@ -61,20 +68,23 @@ public class Run {
     
     try {
       
+      // cd into 'current' directoruy
+      cd(Run.class);
+      
       // init grabbing our meta-inf configuration
       Manifest mf = getManifest();
       
-      // lookup classpath
+      // prepare classpath
       URL[] classpath = getClasspath(mf);
       
-      // lookup runnable
-      String runnable = getRunnable(mf);
-      
-      // instantiate classloader and run GenJ
+      // prepare classloader
       ClassLoader cl  = new URLClassLoader(classpath);
       Thread.currentThread().setContextClassLoader(cl);
-      Runnable app = (Runnable)cl.loadClass(runnable).newInstance();
-      app.run();
+
+      // instantiate class and run main
+      Class clazz = cl.loadClass(getClass(mf));
+      Method method = clazz.getMethod("main", new Class[]{String[].class});
+      method.invoke(null, new Object[]{args});
       
     } catch (Throwable t) {
       t.printStackTrace(System.err);
@@ -84,14 +94,64 @@ public class Run {
   }
 
   /**
-   * Get runnable from manifest file information
+   * Try to change into the directory of jar file that contains given class.
+   * @param  clazz  class to get containing jar file for
+   * @return success or not 
    */
-  private static String getRunnable(Manifest mf) {
-    String runnable = mf.getMainAttributes().getValue(RUNNABLE);
-    if (runnable==null||runnable.length()==0)
-      throw new Error("No "+RUNNABLE+" defined in "+MANIFEST);
-    return runnable;
+  private static boolean cd(Class clazz) {
+    
+    try {         
+      
+      // jar:file:/C:/Program Files/FooMatic/./lib/foo.jar!/foo/Bar.class
+      JarURLConnection jarCon = (JarURLConnection)getClassURL(clazz).openConnection();
+
+      // file:/C:/Program Files/FooMatic/./lib/foo.jar
+      URL jarUrl = jarCon.getJarFileURL();
+  
+      // /C:/Program Files/FooMatic/./lib/foo.jar
+      File jarFile = new File(URLDecoder.decode(jarUrl.getPath(), "UTF-8"));   
+      
+      // /C:/Program Files/FooMatic/./lib
+      File jarDir = jarFile.getParentFile();
+
+      // cd C:/Program Files/FooMatic/.
+      System.setProperty("user.dir", jarDir.getAbsolutePath());
+
+      // done
+      logger.log(Level.FINE, "cd'd into "+jarDir+" with jar containing "+clazz);
+      return true;
+      
+    } catch (Exception ex) {
+
+      // didn't work
+      logger.log(Level.WARNING, "Couldn't cd into directory with jar containing "+clazz, ex);
+      return false;
+    }
+
   }
+  
+  /**
+   * Get URL of the given class.
+   * 
+   * @param  clazz  class to get URL for
+   * @return the URL this class was loaded from
+   */
+  private static URL getClassURL(Class clazz) {
+    String resourceName = "/" + clazz.getName().replace('.', '/') + ".class";
+    return clazz.getResource(resourceName);
+  }
+  
+ /**
+   * Get main class from manifest file information
+   */
+  private static String getClass(Manifest mf) {
+    String clazz = mf.getMainAttributes().getValue(MAIN_CLASS);
+    if (clazz == null || clazz.length() == 0) {
+      throw new Error("No " + MAIN_CLASS + " defined in " + MANIFEST);
+    }
+    
+    return clazz;
+  }  
   
   /**
    * Assemble classpath from manifest file information (optional)
@@ -106,9 +166,12 @@ public class Run {
     StringTokenizer tokens = new StringTokenizer(classpath, ",", false);
     List result = new ArrayList();
     while (tokens.hasMoreTokens()) {
-      File file = new File(tokens.nextToken());
-      if (!file.exists())
+      String token = tokens.nextToken();
+      File file = new File(token).getAbsoluteFile();
+      if (!file.exists()) {
+        logger.log(Level.WARNING, CLASSPATH+" contains "+token+" but file/directory "+file.getAbsolutePath()+" doesn't exist");
         continue;
+      }
       if (file.isDirectory()) {
         File[] files = file.listFiles();
         for (int i=0;i<files.length;i++) 
@@ -144,12 +207,12 @@ public class Run {
       Manifest mf = new Manifest(in);
       in.close();
       // careful with key here since Attributes.Name are used internally by Manifest file
-      if (mf.getMainAttributes().getValue(RUNNABLE)!=null)
+      if (mf.getMainAttributes().getValue(MAIN_CLASS)!=null)
         return mf;
     }
       
     // not found
-    throw new Error("No "+MANIFEST+" with "+RUNNABLE+" found");
+    throw new Error("No "+MANIFEST+" with "+MAIN_CLASS+" found");
   }
 
 } //Run

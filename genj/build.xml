@@ -253,7 +253,7 @@
        <manifest>
          <attribute name="Main-Class" value="Run"/>
       	 <attribute name="Run-Classpath" value="./lib"/>
-       	 <attribute name="Run-Runnable" value="genj.app.App"/>
+       	 <attribute name="Run-Class" value="genj.app.App"/>
        </manifest>
      </jar>
      
