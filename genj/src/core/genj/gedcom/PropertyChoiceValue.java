@@ -108,8 +108,9 @@ public class PropertyChoiceValue extends PropertySimpleValue {
       // change value of all with value
       Property[] others = getSameChoices();
       for (int i=0;i<others.length;i++) {
-        if (others[i]!=this) 
-          others[i].setValue(value);
+        Property other = others[i];
+        if (other instanceof PropertyChoiceValue&&other!=this) 
+          other.setValue(value);
       }
     }    
       
