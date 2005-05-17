@@ -77,7 +77,7 @@ public abstract class Import implements Trackable {
     }
     
     // use NGA for everything but US
-    return "us".equals(country) ? (Import)new USGSImport(state) : new NGAImport(country, state);
+    return "us".equals(country) ? (Import)new USGSImport(state) : new NGAImport(country);
     
   }
   
@@ -114,14 +114,14 @@ public abstract class Import implements Trackable {
       // remove old locations for country
       Connection connection = GeoService.getInstance().getConnection();
       PreparedStatement delete = connection.prepareStatement(GeoService.DELETE_LOCATIONS);
-      delete.setString(GeoService.DELETE_LOCATIONS_IN_COUNTRY, country.getCode());
+      delete.setString(GeoService.DELETE_LOCATIONS_COUNTRY, country.getCode());
       delete.executeUpdate();
       delete.close();
       
       // add the country (ignore error)
       try {
         PreparedStatement newcountry = connection.prepareStatement(GeoService.INSERT_COUNTRY);
-        newcountry.setString(GeoService.INSERT_COUNTRY_IN_COUNTRY, country.getCode());
+        newcountry.setString(GeoService.INSERT_COUNTRY_COUNTRY, country.getCode());
         newcountry.executeUpdate();
         newcountry.close();
       } catch (SQLException s) {
@@ -175,11 +175,11 @@ public abstract class Import implements Trackable {
       throw new IOException("Import Cancelled");
 
     // insert
-    insert.setString(GeoService.INSERT_LOCATION_IN_CITY, city);
-    insert.setString(GeoService.INSERT_LOCATION_IN_STATE, state);
-    insert.setString(GeoService.INSERT_LOCATION_IN_COUNTRY, country);
-    insert.setFloat(GeoService.INSERT_LOCATION_IN_LAT, lat);
-    insert.setFloat(GeoService.INSERT_LOCATION_IN_LON, lon);
+    insert.setString(GeoService.INSERT_LOCATION_CITY, city);
+    insert.setString(GeoService.INSERT_LOCATION_STATE, state);
+    insert.setString(GeoService.INSERT_LOCATION_COUNTRY, country);
+    insert.setFloat(GeoService.INSERT_LOCATION_LAT, lat);
+    insert.setFloat(GeoService.INSERT_LOCATION_LON, lon);
     insert.executeUpdate();
     
     // done
@@ -272,13 +272,11 @@ public abstract class Import implements Trackable {
       URL = "http://earth-info.nga.mil/gns/html/cntyfile/COUNTRY.zip";
     
     private Country country;
-    private String state;
     
     /** constructor */
-    private NGAImport(Country country, String state) throws SQLException {
-      super(country, state);
+    private NGAImport(Country country) throws SQLException {
+      super(country, null);
       this.country = country;
-      this.state = state;
     }
   
     protected URL getURL() throws IOException {
@@ -291,7 +289,7 @@ public abstract class Import implements Trackable {
       // skip header
       in.readLine();
       
-      String name;
+      String city, state;
       float lat, lon;
       
       while (true) {
@@ -300,7 +298,7 @@ public abstract class Import implements Trackable {
         if (line==null) 
           return;
   
-        // RC UFI UNI (LAT) (LON) DMSLAT DMSLON UTM JOG (FC) DSG PC (CC1) ADM1 ADM2 DIM CC2 NT LC SHORT_FORM GENERIC SORT_NAME (NAME) FULL MOD
+        // RC UFI UNI (LAT) (LON) DMSLAT DMSLON UTM JOG (FC) DSG PC (CC1) (ADM1) ADM2 DIM CC2 NT LC SHORT_FORM GENERIC SORT_NAME (NAME) FULL MOD
         DirectAccessTokenizer values = new DirectAccessTokenizer(line, "\t");
         
         try {
@@ -322,11 +320,18 @@ public abstract class Import implements Trackable {
           continue;
         }
         
+        // grab state
+        state = values.get(13);
+        if (state.length()>2) {
+          skip();
+          continue;
+        }        
+        
         // grab name
-        name = values.get(22); // FULL_NAME
+        city = values.get(22); // FULL_NAME
         
         // keep it
-        write(name, "", country.getCode(), lat, lon);
+        write(city, state, country.getCode(), lat, lon);
       }
   
       // done
