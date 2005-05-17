@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -154,29 +155,45 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   public String getToolTipText(MouseEvent event) {
     
     try {
+      
+      // convert to coordinate
       Coordinate coord  = layerPanel.getViewport().toModelCoordinate(event.getPoint());
       
+      // find features
+      Collection locations = layerPanel.featuresWithVertex(event.getPoint(), 3,  model.getKnownLocations());
+      
+      // collect text
       StringBuffer text = new StringBuffer();
       text.append("<html><body>");
       text.append( toString(coord));
+      int rows = 1;
       
-      for (Iterator locations = layerPanel.featuresWithVertex(event.getPoint(), 5,  model.getKnownLocations()).iterator(); locations.hasNext(); )  {
-        GeoLocation location = (GeoLocation)locations.next();
+      // loop over locations
+      outer: for (Iterator it = locations.iterator(); it.hasNext(); )  {
+        GeoLocation location = (GeoLocation)it.next();
         
         text.append("<br><b>");
         text.append(location.getCity());
         text.append("</b>");
+        rows++;
 
         Property[] properties = location.getProperties();
         Arrays.sort(properties, new PropertyComparator(".:DATE"));
         
+        List residents = new ArrayList();
+        
+        // loop over properties at location
         for (int i=0; i<properties.length; i++) {
-          text.append("<br>");
-          if (i==10) {
-            text.append("...");
-            break;
-          }
           Property prop = properties[i];
+          if (prop.getTag()=="RESI") {
+            residents.add(prop.getEntity());
+            continue;
+          }
+          text.append("<br>");
+          if (rows>16) {
+            text.append("...");
+            break outer;
+          }
           PropertyDate date = (PropertyDate)prop.getProperty(PropertyDate.TAG);
           if (date!=null) {
             text.append(date);
@@ -185,8 +202,21 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
           text.append(Gedcom.getName(prop.getTag()));
           text.append(" ");
           text.append(prop.getEntity());
+          rows++;
+          // next property at current location
         }
         
+        // add residents
+        if (!residents.isEmpty()) {
+          text.append("<br>");
+          text.append(Gedcom.getName("RESI", true)+": ");
+          for (int i=0;i<residents.size();i++) {
+            if (i>0) text.append( i%3==0 ? "<br>&nbsp;" : "  ");
+            text.append(residents.get(i));
+          }
+        }
+        
+        // next location
       }
 
       // done
