@@ -248,6 +248,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     super.addNotify();
     // hook up layer to model
     model.addGeoModelListener(locationLayer);
+    model.addGeoModelListener(selectionLayer);
     // show map 
     String map = registry.get("map", (String)null);
     if (map!=null) {
@@ -271,6 +272,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       registry.put("map", currentMap.getKey());
     // disconnect layer from model
     model.removeGeoModelListener(locationLayer);
+    model.removeGeoModelListener(selectionLayer);
     // override
     super.removeNotify();
   }
