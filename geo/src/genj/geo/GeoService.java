@@ -220,15 +220,15 @@ public class GeoService {
 //    getInstance().match(loc);
 //    System.out.println(loc);
     
-    String city = "Saint%";
+    String city = "Paris";
     GeoService gs = getInstance();
     try {
       
-      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, country FROM locations WHERE city LIKE  ?");
+      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, state, country, lat, lon FROM locations WHERE city LIKE  ?");
       ps.setString(1, city);
       ResultSet result = ps.executeQuery();
       while (result.next()) {
-        System.out.println( result.getString(1)  +","+ result.getString(2));
+        System.out.println( result.getString(1)  +","+ result.getString(2)+","+ result.getString(3)+","+ result.getString(4)+","+ result.getString(5));
       }
       
     } catch (Throwable t) {
@@ -330,7 +330,7 @@ public class GeoService {
 
     String city = location.getCity();
     String state = (String)state2code.get(location.getState());
-System.out.println("search "+state);    
+    
     // try to find 
     int matches = 0;
     float lat = Float.NaN, lon = Float.NaN;
@@ -347,13 +347,14 @@ System.out.println("search "+state);
         ResultSet result = select.executeQuery();
         while (result.next()) {
           // grab lat/lon
-          lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
-          lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
+          if (Float.isNaN(lat)) {
+            lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
+            lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
+          }
           matches ++;
-          System.out.println("["+result.getString(SELECT_LOCATIONS_OUT_STATE)+"]");
         }
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, "throwable on looking for "+location, t);
+        Debug.log(Debug.WARNING, this, "throwable while trying to match "+location, t);
       }
     }
     
