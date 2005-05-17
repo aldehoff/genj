@@ -105,6 +105,9 @@ public class GeoService {
     geo.getParentFile().mkdir();
 
     try {
+      
+      Debug.log(Debug.INFO, GeoService.this, "GeoService Startup");
+      
       // initialize database
       Class.forName("org.hsqldb.jdbcDriver");
   
@@ -130,6 +133,19 @@ public class GeoService {
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, "Couldn't initialize database", t);
     }
+
+    // prepare shutdown hook
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      public void run() {
+        synchronized(GeoService.this) {
+          Debug.log(Debug.INFO, GeoService.this, "GeoService Shutdown");
+          try {
+            connection.createStatement().execute("SHUTDOWN");
+          } catch (SQLException e) {
+            // ignored
+          }
+      }
+    }});
     
     // done
   }
@@ -154,12 +170,14 @@ public class GeoService {
     String city = "Saint%";
     GeoService gs = getInstance();
     try {
+      
       PreparedStatement ps = gs.connection.prepareStatement("SELECT city, country FROM locations WHERE city LIKE  ?");
       ps.setString(1, city);
       ResultSet result = ps.executeQuery();
       while (result.next()) {
         System.out.println( result.getString(1)  +","+ result.getString(2));
       }
+      
     } catch (Throwable t) {
       Debug.log(Debug.WARNING, gs, t);
     }
