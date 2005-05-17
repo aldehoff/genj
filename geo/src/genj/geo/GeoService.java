@@ -21,8 +21,10 @@ package genj.geo;
 
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
+import genj.util.Resources;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -33,8 +35,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 
 /**
@@ -76,14 +80,14 @@ public class GeoService {
     SELECT_COUNTRIES_OUT_COUNTRY = 1,
     
     SELECT_LOCATIONS_IN_CITY = 1,
-    SELECT_LOCATIONS_IN_STATE = 1,
+    SELECT_LOCATIONS_IN_STATE = 2,
     SELECT_LOCATIONS_OUT_STATE = 1,
     SELECT_LOCATIONS_OUT_COUNTRY = 2,
     SELECT_LOCATIONS_OUT_LAT = 3,
     SELECT_LOCATIONS_OUT_LON = 4;
 
-  /** cached matches */
-  private Map pattern2match = new HashMap();
+  /** states to state-codes */
+  private Map state2code = new HashMap();
   
   /** directories */
   private File localDir, globalDir;
@@ -101,7 +105,24 @@ public class GeoService {
    * Constructor
    */
   private GeoService() {
+    
+    // startup now
+    startup();
+    
+    // prepare database shutdown
+    Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown()));
 
+    // init gns information
+    initStateCodes();
+    
+    // done
+  }
+  
+  /**
+   * our startup routine
+   */
+  private synchronized void startup() { 
+    // startup database
     File geo =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo/database", "", "looking for user's geo directory"));
     geo.getParentFile().mkdir();
 
@@ -130,19 +151,54 @@ public class GeoService {
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, "Couldn't initialize database", t);
     }
-
-    // prepare shutdown hook
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      public void run() {
-        synchronized(GeoService.this) {
+  } 
+  
+  /**
+   * our shutdown
+   */
+  private class Shutdown implements Runnable {
+      public void run() { synchronized(GeoService.this) {
           Debug.log(Debug.INFO, GeoService.this, "GeoService Shutdown");
           try {
             connection.createStatement().execute("SHUTDOWN");
           } catch (SQLException e) {
             // ignored
           }
+      } }
+  } //Shutdown
+  
+  /**
+   * Initialize our state codes
+   */
+  private void initStateCodes() {
+
+    // try to find states.properties
+    File[] files = getGeoFiles();
+    for (int i = 0; i < files.length; i++) {
+      // the right file either local or global?
+      if (!files[i].getName().equals("states.properties"))
+        continue;
+      // read it
+      try {
+        Resources meta = new Resources(new FileInputStream(files[i]));
+        // look for all 'xx.yy = aaa,bbb,ccc'
+        // where 
+        //  xx = country
+        //  yy = state code
+        //  aaa,bbb,ccc = state names or abbreviations
+        for (Iterator keys = meta.getKeys(); keys.hasNext(); ) {
+          String key = keys.next().toString();
+          if (key.length()!=5) continue;
+          String code = key.substring(3,5);
+          for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
+            state2code.put(names.nextToken().trim(), code);
+        }
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, this, t);
       }
-    }});
+      
+      // next
+    }
     
     // done
   }
@@ -214,13 +270,13 @@ public class GeoService {
       globalDir = new File(EnvironmentChecker.getProperty(this, "genj.geo.dir", GEO_DIR, "Looking for map directory"));
     }
 
-    // local files
-    if (localDir.exists())
-      result.addAll(Arrays.asList(localDir.listFiles()));
-
     // global files
     if (globalDir.exists()) 
       result.addAll(Arrays.asList(globalDir.listFiles()));
+
+    // local files
+    if (localDir.exists())
+      result.addAll(Arrays.asList(localDir.listFiles()));
 
     // done
     return (File[])result.toArray(new File[result.size()]);
@@ -273,8 +329,8 @@ public class GeoService {
   public boolean match(GeoLocation location) {
 
     String city = location.getCity();
-    String state = location.getState();
-    
+    String state = (String)state2code.get(location.getState());
+System.out.println("search "+state);    
     // try to find 
     int matches = 0;
     float lat = Float.NaN, lon = Float.NaN;
@@ -294,6 +350,7 @@ public class GeoService {
           lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
           lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
           matches ++;
+          System.out.println("["+result.getString(SELECT_LOCATIONS_OUT_STATE)+"]");
         }
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, this, "throwable on looking for "+location, t);
@@ -311,6 +368,10 @@ public class GeoService {
    * Available Maps
    */
   public synchronized GeoMap[] getMaps() {
+    
+    
+instance.initStateCodes();    
+
     // know all maps already?
     if (maps==null) {
       
@@ -341,5 +402,4 @@ public class GeoService {
     return (GeoMap[])maps.toArray(new GeoMap[maps.size()]);
   }
     
-  
 } //GeoService

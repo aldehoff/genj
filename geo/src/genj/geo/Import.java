@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -40,8 +39,6 @@ import java.util.zip.ZipInputStream;
  * Importer of geographic information
  */
 public abstract class Import implements Trackable {
-  
-  private static final Charset UTF8 = Charset.forName("UTF-8");
   
   /** number of lines expected/written */
   protected long linesExpected = -1;
@@ -142,7 +139,7 @@ public abstract class Import implements Trackable {
       linesExpected = entry.getSize() / 160;
 
       // let implementation do its thing
-      parse(new BufferedReader(new InputStreamReader(zin, UTF8)));
+      parse(new BufferedReader(new InputStreamReader(zin, "UTF-8")));
       
       // cleanup
       insert.close();
