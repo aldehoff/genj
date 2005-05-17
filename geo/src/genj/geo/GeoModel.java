@@ -178,10 +178,10 @@ import java.util.Map;
     try {
       location = new GeoLocation(prop) {
         // override : keep track of location lat/lon
-        protected void set(double lat,double lon) {
-          super.set(lat, lon);
+        protected void set(double lat, double lon, int matches) {
+          super.set(lat, lon, matches);
           synchronized (GeoModel.this) {
-            if (unknownLocations.remove(this)==this && isValid())
+            if (unknownLocations.remove(this)==this && matches>0)
               knownLocations.put(this, this);
           }
           fireLocationUpdated(this);
@@ -192,8 +192,10 @@ import java.util.Map;
           if (!super.removeAll(props))
             return false;
           // check if still necessary
-          if (properties.isEmpty()) synchronized (GeoModel.this) {
-            knownLocations.remove(this);
+          if (properties.isEmpty()) {
+            synchronized (GeoModel.this) {
+              knownLocations.remove(this);
+            }
             fireLocationRemoved(this);
           }
           // done

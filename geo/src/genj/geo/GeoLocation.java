@@ -48,13 +48,18 @@ public class GeoLocation extends Point implements Feature {
   /*package*/ final static FeatureSchema SCHEMA = new FeatureSchema();
   
   /*package*/  final static GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
-  
+
+  /** the coordinate of this location */
   private Coordinate coordinate;
 
+  /** city state and country */
   private String city, state, country;
   
   /** properties at that location */
   protected List properties = new ArrayList();
+  
+  /** match count - 0 = couldn't be matched - 1 = exact match - n = too many matches */
+  private int matches = 0;
   
   /**
    * Constructor
@@ -109,9 +114,14 @@ public class GeoLocation extends Point implements Feature {
     this.city = trim(city.getDisplayValue());
     
     // empty?
-    if (this.city.length()==0)
+    if (city==null)
       throw new IllegalArgumentException("address without city value");
-
+    
+    // got a city?
+    Property state = addr.getProperty("STAE");
+    if (state!=null) 
+      this.state = trim(state.getDisplayValue());
+    
     // good
     return true;
   }
@@ -125,7 +135,7 @@ public class GeoLocation extends Point implements Feature {
     city = trim(place.getJurisdiction(0));
     
     // empty?
-    if (city.length()==0)
+    if (city==null)
       throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
 
     // done
@@ -138,14 +148,14 @@ public class GeoLocation extends Point implements Feature {
   private String trim(String value) {
     // null?
     if (value==null)
-      return "";
+      return null;
     // check for '(' and trim
     int i = value.indexOf('(');
     if (i>=0)
       value = value.substring(0,i);
     value = value.trim();
     // done
-    return value;
+    return value.length() == 0 ? null : value;
   }
   
   /**
@@ -219,6 +229,13 @@ public class GeoLocation extends Point implements Feature {
   }
 
   /**
+   * State or null
+   */
+  public String getState() {
+    return state;
+  }
+
+  /**
    * Country or null
    */
   public Country getCountry() {
@@ -235,9 +252,10 @@ public class GeoLocation extends Point implements Feature {
   /**
    * Set location lat,lon
    */
-  protected void set(double lat, double lon) {
+  protected void set(double lat, double lon, int matches) {
     coordinate.x = lon;
     coordinate.y = lat;
+    this.matches = matches;
   }
   
   /**
@@ -245,13 +263,6 @@ public class GeoLocation extends Point implements Feature {
    */
   public String toString() {
      return city + "[" + coordinate.y + "," +  coordinate.x+ "]";
-  }
-  
-  /** 
-   * Check - valid or not?
-   */
-  public boolean isValid() {
-    return !Double.isNaN(coordinate.x) && !Double.isNaN(coordinate.y);
   }
   
   /**

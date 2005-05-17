@@ -59,22 +59,24 @@ public class GeoService {
     INSERT_COUNTRY = "INSERT INTO countries (country) VALUES (?)",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
     SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS = "SELECT state, country, lat, lon FROM locations WHERE city = ?";
+    SELECT_LOCATIONS_WITH_CITY = "SELECT state, country, lat, lon FROM locations WHERE city = ?",
+    SELECT_LOCATIONS_WITH_CITYSTATE  = "SELECT state, country, lat, lon FROM locations WHERE city = ? AND state = ?";
 
   /*package*/ static final int
-    DELETE_LOCATIONS_IN_COUNTRY = 1,
+    DELETE_LOCATIONS_COUNTRY = 1,
     
-    INSERT_COUNTRY_IN_COUNTRY = 1,
+    INSERT_COUNTRY_COUNTRY = 1,
     
-    INSERT_LOCATION_IN_CITY = 1,
-    INSERT_LOCATION_IN_STATE = 2,
-    INSERT_LOCATION_IN_COUNTRY = 3,
-    INSERT_LOCATION_IN_LAT = 4,
-    INSERT_LOCATION_IN_LON = 5,
+    INSERT_LOCATION_CITY = 1,
+    INSERT_LOCATION_STATE = 2,
+    INSERT_LOCATION_COUNTRY = 3,
+    INSERT_LOCATION_LAT = 4,
+    INSERT_LOCATION_LON = 5,
     
     SELECT_COUNTRIES_OUT_COUNTRY = 1,
     
     SELECT_LOCATIONS_IN_CITY = 1,
+    SELECT_LOCATIONS_IN_STATE = 1,
     SELECT_LOCATIONS_OUT_STATE = 1,
     SELECT_LOCATIONS_OUT_COUNTRY = 2,
     SELECT_LOCATIONS_OUT_LAT = 3,
@@ -94,7 +96,6 @@ public class GeoService {
   
   /** database ready */
   private Connection connection;
-  private PreparedStatement selectLocations, selectCountries;
   
   /**
    * Constructor
@@ -125,10 +126,6 @@ public class GeoService {
       } catch (SQLException e) {
         // ignored
       }
-      
-      // prepare prepared statements
-      selectLocations = connection.prepareStatement(SELECT_LOCATIONS);
-      selectCountries = connection.prepareStatement(SELECT_COUNTRIES);
       
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, "Couldn't initialize database", t);
@@ -242,14 +239,6 @@ public class GeoService {
   }
 
   /**
-   * Checks for country coverage
-   */
-  public synchronized boolean covers(Country country) {
-    // FIXME check
-    return true;
-  }
-  
-  /**
    * Return all available countries
    */
   public synchronized Country[] getCountries() {
@@ -257,7 +246,7 @@ public class GeoService {
     List countries = new ArrayList();
     
     try {
-      ResultSet rows = selectCountries.executeQuery();
+      ResultSet rows = connection.prepareStatement(SELECT_COUNTRIES).executeQuery();
       while (rows.next()) 
         countries.add(Country.get(rows.getString(SELECT_COUNTRIES_OUT_COUNTRY)));
       
@@ -281,30 +270,38 @@ public class GeoService {
   /**
    * Locate given location
    */
-  public synchronized boolean match(GeoLocation location) {
+  public boolean match(GeoLocation location) {
 
-    // check local country
-    String country = location.getGedcom().getLocale().getCountry().toLowerCase();
-
+    String city = location.getCity();
+    String state = location.getState();
+    
     // try to find 
+    int matches = 0;
     float lat = Float.NaN, lon = Float.NaN;
-    try {
-      selectLocations.setString(SELECT_LOCATIONS_IN_CITY, location.getCity());
-      ResultSet result = selectLocations.executeQuery();
-      while (result.next()) {
-        // grab lat/lon
-        lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
-        lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
-        // look further?
-        if (country.equals(result.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
-          break;
+    synchronized (this) {
+      try {
+        PreparedStatement select;
+        if (state!=null)  {
+          select = connection.prepareStatement(SELECT_LOCATIONS_WITH_CITYSTATE);
+          select.setString(SELECT_LOCATIONS_IN_STATE, state);
+        } else {
+          select = connection.prepareStatement(SELECT_LOCATIONS_WITH_CITY);
+        }
+        select.setString(SELECT_LOCATIONS_IN_CITY, city);
+        ResultSet result = select.executeQuery();
+        while (result.next()) {
+          // grab lat/lon
+          lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
+          lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
+          matches ++;
+        }
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, this, "throwable on looking for "+location, t);
       }
-    } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this, "throwable on looking for "+location, t);
     }
     
     // set it
-    location.set(lat, lon);
+    location.set(lat, lon, matches);
 
     // not found
     return false;
