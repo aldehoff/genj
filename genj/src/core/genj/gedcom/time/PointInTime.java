@@ -195,6 +195,13 @@ public class PointInTime implements Comparable {
   }
   
   /**
+   * Setter
+   */
+  public void reset() {
+    set(UNKNOWN,UNKNOWN,UNKNOWN);
+  }
+  
+  /**
    * Calculate day of week
    */
   public String getDayOfWeek(boolean localize) throws GedcomException {
@@ -253,9 +260,11 @@ public class PointInTime implements Comparable {
    */
   public boolean set(StringTokenizer tokens) {
 
-    // no tokens no joy
-    if (!tokens.hasMoreTokens())
-      return false;
+    // no tokens - fine - no info
+    if (!tokens.hasMoreTokens()) {
+      reset();
+      return true;
+    }
 
     // first token might be calendar indicator @#....@
     String first = tokens.nextToken();
