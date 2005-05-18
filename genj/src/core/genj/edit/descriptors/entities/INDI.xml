@@ -13,11 +13,12 @@
   <col>
    <row><label path="INDI:OBJE"/></row>
    <row><label path="INDI:OBJE:TITL"/><bean path="INDI:OBJE:TITL" wx="1"/></row>
-   <row><bean path="INDI:OBJE:FILE" wx="1" wy="1"/></row>
+   <row><bean path="INDI:OBJE:FILE" wx="1" wy="0.5"/></row>
   </col>
  </row>
  <row><label path="INDI:FAMS"/></row>
- <row><bean path="INDI" type="Families" wx="1" wy="1"/></row>
+ <row><bean path="INDI" type="Families" wx="1" wy="0.1"/></row>
  <row><label path="INDI:FAMC" plural="1"/></row>
  <row><bean path="INDI" type="Parents" wx="1" wy="0.1"/></row>
+ <row><tabs wx="1" wy="1"/></row>
 </col>

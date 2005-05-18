@@ -66,7 +66,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.SwingConstants;
@@ -94,15 +93,15 @@ import javax.swing.event.ChangeListener;
   /** edit */
   private EditView view;
 
-  /** panels */
-  private JSplitPane splitPanel;
-  private JTabbedPane tabPanel;
-  
   /** beans */
   private List beans = new ArrayList(32);
 
   /** actions */
   private ActionDelegate ok = new OK(), cancel = new Cancel();
+  
+  /** current panels */
+  private JPanel beanPanel;
+  private JTabbedPane tabPanel;
 
   /** change callback */
   ChangeListener changeCallback = new ChangeListener() {
@@ -126,9 +125,6 @@ import javax.swing.event.ChangeListener;
     setFocusTraversalPolicy(new FocusPolicy());
     setFocusCycleRoot(true);
 
-    // split for content of components
-    splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    
     // create panel for actions
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
@@ -137,7 +133,6 @@ import javax.swing.event.ChangeListener;
     
     // layout
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, splitPanel);
     add(BorderLayout.SOUTH, buttons);
 
     // done
@@ -151,8 +146,6 @@ import javax.swing.event.ChangeListener;
     super.addNotify();
     // listen to gedcom events
     gedcom.addGedcomListener(this);
-    // setup split panel position
-    splitPanel.setLastDividerLocation(registry.get("basic.divider", 256));
     // done
   }
 
@@ -160,8 +153,6 @@ import javax.swing.event.ChangeListener;
    * Intercepted remove notification
    */
   public void removeNotify() {
-    // keep split panel position (if still looking at entity)
-    registry.put("basic.divider", splitPanel.getDividerLocation());
     // clean up state
     setEntity(null);
     // let super continue
@@ -237,15 +228,12 @@ import javax.swing.event.ChangeListener;
    */
   private void setEntity(Entity set) {
 
-    if (entity!=null)
-      splitPanel.setLastDividerLocation(splitPanel.getDividerLocation());
-    
     // remember
     entity = set;
     
-    // remove all current beans and tabs
-    splitPanel.setLeftComponent(null);
-    splitPanel.setRightComponent(null);
+    // remove all current beans
+    if (getComponentCount()>1l)
+      remove(1);
 
     // recycle beans
     BeanFactory factory = view.getBeanFactory();
@@ -261,54 +249,54 @@ import javax.swing.event.ChangeListener;
 
       // 'create' standard panel (and collect topLevelTags)
       Set topLevelTags = new HashSet();
-      JPanel mainPanel = createPanel(entity, getSharedDescriptor(entity.getMetaProperty()).copy(), topLevelTags);
+      beanPanel = createPanel(entity, getSharedDescriptor(entity.getMetaProperty()).copy(), topLevelTags);
       
       // 'create' tab panel
-      tabPanel = new JTabbedPane();
-      //tabPanel.addMouseListener(new RemoveTab());
-      
-      // .. and add all tabs
-      Set skippedTags = new HashSet();
-      props: for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
-        Property prop = entity.getProperty(i);
-        // check tag - skipped or covered already?
-        String tag = prop.getTag();
-        if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
-          continue;
-        topLevelTags.add(tag);
-        // create a tab for it
-        createTab(prop);
-        // next
+      try {
+        tabPanel = new JTabbedPane();
+        beanPanel.add("tabs", tabPanel);
+        //tabPanel.addMouseListener(new RemoveTab());
+        
+        // .. and add all tabs
+        Set skippedTags = new HashSet();
+        props: for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
+          Property prop = entity.getProperty(i);
+          // check tag - skipped or covered already?
+          String tag = prop.getTag();
+          if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
+            continue;
+          topLevelTags.add(tag);
+          // create a tab for it
+          createTab(tabPanel, prop);
+          // next
+        }
+        
+        // 'create' a tab for creating new properties
+        JPanel newTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        newTab.setPreferredSize(new Dimension(64,64));
+        tabPanel.addTab("", Images.imgNew, newTab);
+        
+        // add buttons for creating sub-properties 
+        MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+        Arrays.sort(nested);
+        for (int i=0;i<nested.length;i++) {
+          MetaProperty meta = nested[i];
+          // if there's a descriptor for it
+          NestedBlockLayout descriptor = getSharedDescriptor(meta);
+          if (descriptor==null)
+            continue;
+          // .. and if there's no other already with isSingleton
+          if (topLevelTags.contains(meta.getTag())&&meta.isSingleton())
+            continue;
+          // create a button for it
+          newTab.add(new LinkWidget(new NewTab(meta)));
+        }
+        
+      } catch (Throwable t) {
       }
       
-      // 'create' a tab for creating new properties
-      JPanel newTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
-      newTab.setPreferredSize(new Dimension(64,64));
-      tabPanel.addTab("", Images.imgNew, newTab);
-      
-      // add buttons for creating sub-properties 
-      MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
-      Arrays.sort(nested);
-      for (int i=0;i<nested.length;i++) {
-        MetaProperty meta = nested[i];
-        // if there's a descriptor for it
-        NestedBlockLayout descriptor = getSharedDescriptor(meta);
-        if (descriptor==null)
-          continue;
-        // .. and if there's no other already with isSingleton
-        if (topLevelTags.contains(meta.getTag())&&meta.isSingleton())
-          continue;
-        // create a button for it
-        newTab.add(new LinkWidget(new NewTab(meta)));
-      }
-
-      // finally finish setting up split panel
-     splitPanel.setLeftComponent(new JScrollPane(mainPanel));
-     splitPanel.setRightComponent(new JScrollPane(tabPanel));
-     splitPanel.setDividerLocation(splitPanel.getLastDividerLocation());
-     
-      
-      // done
+      // show it
+      add(BorderLayout.CENTER, new JScrollPane(beanPanel));
       
     } catch (Throwable t) {
       Debug.log(Debug.ERROR, this, t);
@@ -363,7 +351,7 @@ import javax.swing.event.ChangeListener;
   /**
    * Create a tab
    */
-  private void createTab(Property prop) {
+  private void createTab(JTabbedPane tabPanel, Property prop) {
     
     // got a descriptor for it?
     MetaProperty meta = prop.getMetaProperty();
@@ -405,10 +393,13 @@ import javax.swing.event.ChangeListener;
    */
   private JComponent createComponent(Property root, NestedBlockLayout.Cell cell, Set topLevelTags) {
     
+    // need path
+    if (cell.getAttribute("path")==null)
+      return null;
+    
+    // prepare some info and state
     TagPath path = new TagPath(cell.getAttribute("path"));
-    
     if (topLevelTags!=null&&path.length()>1) topLevelTags.add(path.get(1));
-    
     MetaProperty meta = root.getMetaProperty().getNestedRecursively(path, false);
     
     // a label?
@@ -590,7 +581,7 @@ import javax.swing.event.ChangeListener;
       Property root = new Proxy(meta.create(""), entity);
       
       // create a tab for it
-      createTab(root);
+      createTab(tabPanel, root);
       
       // and select it
       tabPanel.setSelectedIndex(0);
