@@ -165,6 +165,25 @@ public class PropertyDate extends Property {
     // O.K.
     return true;
   }
+  
+  /**
+   * Accessir value
+   */
+  public void setValue(Format newFormat, PointInTime newStart, PointInTime newEnd) {
+    
+    String old = getValue();
+    
+    // keep it
+    format = newFormat;
+    start.set(newStart);
+    if (newEnd!=null)
+      end.set(newEnd);
+    
+    // remember as modified      
+    propagateChange(old);
+
+    // Done
+  }
 
   /**
    * Accessor Format
