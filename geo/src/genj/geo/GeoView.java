@@ -111,6 +111,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   private GeoModel model;
   private LocationsLayer locationLayer;  
   private SelectionLayer selectionLayer;
+  private CursorTool currentTool;
   
   /**
    * Constructor
@@ -140,86 +141,75 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   }
   
   /**
-   * Tooltip callback - check locations under mouse
+   * Generate a textual representation of a bunch of locations
    */
-  public String getToolTipText(MouseEvent event) {
+  private String getSummary(Coordinate coord, Collection locations) {
+
+    // collect text
+    StringBuffer text = new StringBuffer();
+    text.append("<html><body>");
+    text.append( getString(coord));
+    int rows = 1;
     
-    try {
+    // loop over locations
+    outer: for (Iterator it = locations.iterator(); it.hasNext(); )  {
+      GeoLocation location = (GeoLocation)it.next();
       
-      // convert to coordinate
-      Coordinate coord  = layerPanel.getViewport().toModelCoordinate(event.getPoint());
-      
-      // find features
-      Collection locations = layerPanel.featuresWithVertex(event.getPoint(), 3,  model.getKnownLocations());
-      
-      // collect text
-      StringBuffer text = new StringBuffer();
-      text.append("<html><body>");
-      text.append( toString(coord));
-      int rows = 1;
-      
-      // loop over locations
-      outer: for (Iterator it = locations.iterator(); it.hasNext(); )  {
-        GeoLocation location = (GeoLocation)it.next();
-        
-        text.append("<br><b>");
-        text.append(location.getCity());
-        text.append("</b>");
-        rows++;
+      text.append("<br><b>");
+      text.append(location.getCity());
+      text.append("</b>");
+      rows++;
 
-        Property[] properties = location.getProperties();
-        Arrays.sort(properties, new PropertyComparator(".:DATE"));
-        
-        List residents = new ArrayList();
-        
-        // loop over properties at location
-        for (int i=0; i<properties.length; i++) {
-          Property prop = properties[i];
-          if (prop.getTag()=="RESI") {
-            residents.add(prop.getEntity());
-            continue;
-          }
-          text.append("<br>");
-          if (rows>16) {
-            text.append("...");
-            break outer;
-          }
-          PropertyDate date = (PropertyDate)prop.getProperty(PropertyDate.TAG);
-          if (date!=null) {
-            text.append(date);
-            text.append(" ");
-          }
-          text.append(Gedcom.getName(prop.getTag()));
+      Property[] properties = location.getProperties();
+      Arrays.sort(properties, new PropertyComparator(".:DATE"));
+      
+      List residents = new ArrayList();
+      
+      // loop over properties at location
+      for (int i=0; i<properties.length; i++) {
+        Property prop = properties[i];
+        if (prop.getTag()=="RESI") {
+          residents.add(prop.getEntity());
+          continue;
+        }
+        text.append("<br>");
+        if (rows>16) {
+          text.append("...");
+          break outer;
+        }
+        PropertyDate date = (PropertyDate)prop.getProperty(PropertyDate.TAG);
+        if (date!=null) {
+          text.append(date);
           text.append(" ");
-          text.append(prop.getEntity());
-          rows++;
-          // next property at current location
         }
-        
-        // add residents
-        if (!residents.isEmpty()) {
-          text.append("<br>");
-          text.append(Gedcom.getName("RESI", true)+": ");
-          for (int i=0;i<residents.size();i++) {
-            if (i>0) text.append( i%3==0 ? "<br>&nbsp;" : "  ");
-            text.append(residents.get(i));
-          }
-        }
-        
-        // next location
+        text.append(Gedcom.getName(prop.getTag()));
+        text.append(" ");
+        text.append(prop.getEntity());
+        rows++;
+        // next property at current location
       }
-
-      // done
-      return text.toString();
-    } catch (Throwable t) {
-      return null;
+      
+      // add residents
+      if (!residents.isEmpty()) {
+        text.append("<br>");
+        text.append(Gedcom.getName("RESI", true)+": ");
+        for (int i=0;i<residents.size();i++) {
+          if (i>0) text.append( i%3==0 ? "<br>&nbsp;" : "  ");
+          text.append(residents.get(i));
+        }
+      }
+      
+      // next location
     }
+
+    // done
+    return text.toString();
   }
   
   /**
    * Convert coord to lat/lon String
    */
-  private String toString(Coordinate coord) {
+  private String getString(Coordinate coord) {
     double lat = coord.y, lon = coord.x;
     char we = 'E', ns = 'N';
     if (lat<0) { lat = -lat; ns='S'; }
@@ -327,10 +317,21 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // pack into panel
     layerPanel = new LayerViewPanel(layerManager, new ViewContext()) {
       public String getToolTipText(MouseEvent event) {
-        return GeoView.this.getToolTipText(event);
+        try {
+          // convert to coordinate
+          Coordinate coord  = getViewport().toModelCoordinate(event.getPoint());
+          // find features
+          Collection locations = layerPanel.featuresWithVertex(event.getPoint(), 3,  model.getKnownLocations());
+          // generate text
+          return getSummary(coord, locations);
+        } catch (Throwable t) {
+          return null;
+        }
       }      
     };
     layerPanel.setBackground(map.getBackground());
+    if (currentTool!=null)
+      layerPanel.setCurrentCursorTool(currentTool);
     
     add(BorderLayout.CENTER, layerPanel);
 
@@ -373,7 +374,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       Debug.log(Debug.WARNING, GeoView.this, t);
     }
     public void setStatusMessage(String message) {
-      Debug.log(Debug.INFO, GeoView.this, message);
+      if (message!=null&&message.length()>0)
+        Debug.log(Debug.INFO, GeoView.this, message);
     }
   }
   
@@ -408,8 +410,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     /** choose current map */
     protected void execute() {
+      currentTool =  currentTool instanceof ZoomTool ? (CursorTool)new PanTool(null) :  new ZoomTool(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       if (layerPanel!=null) 
-        layerPanel.setCurrentCursorTool( layerPanel.getCurrentCursorTool() instanceof ZoomTool ? (CursorTool)new PanTool(null) :  new ZoomTool(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)));
+        layerPanel.setCurrentCursorTool(currentTool);
     }
   }//ZoomOnOff
  
