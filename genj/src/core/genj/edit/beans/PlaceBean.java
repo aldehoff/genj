@@ -81,6 +81,9 @@ public class PlaceBean extends PropertyBean {
     
     // remove all current fields - this is dynamic
     removeAll();
+    
+    // clear current default focus - will be decided on again
+    defaultFocus = null;
    
     // either a simple value or broken down into comma separated jurisdictions
     if (place.getDisplayHierarchy().length()==0) {
