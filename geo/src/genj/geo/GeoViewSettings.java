@@ -54,8 +54,8 @@ public class GeoViewSettings extends JPanel implements Settings {
     "UT","VT","VI","VA","WA","WV","WI","WY"
   };
   
-  /** a list of gazetters we have */
-  private JList listGazetteers;
+  /** a list of countries we have */
+  private JList listCountries;
   
   /** reference to view manager */
   private ViewManager viewManager;
@@ -71,7 +71,7 @@ public class GeoViewSettings extends JPanel implements Settings {
     setLayout(new NestedBlockLayout("<col><row><label/></row><row><col><up gx=\"1\"/><down gx=\"1\"/><import gx=\"1\"/><delete gx=\"1\"/></col><col><list wx=\"1\"/></col></row></col>"));
     
     // .. a list of gazetteers, buttons for up and down, delete, import
-    listGazetteers = new JList();
+    listCountries = new JList();
     
     ButtonHelper bh = new ButtonHelper().setResources(GeoView.RESOURCES);
     add("label", new JLabel(GeoView.RESOURCES.getString("label.gazetteer")));
@@ -79,7 +79,7 @@ public class GeoViewSettings extends JPanel implements Settings {
     add("down", bh.create(new UpDown(false)));
     add("import", bh.create(new DoImport()));
     add("delete", bh.create(new Delete()));
-    add("list", new JScrollPane(listGazetteers));
+    add("list", new JScrollPane(listCountries));
     
     // done
   }
@@ -110,7 +110,7 @@ public class GeoViewSettings extends JPanel implements Settings {
     
     final Country[] countries = GeoService.getInstance().getCountries();
     Arrays.sort(countries);
-    listGazetteers.setModel(new AbstractListModel() {
+    listCountries.setModel(new AbstractListModel() {
       public int getSize() { return countries.length; }
       public Object getElementAt(int i) { return countries[i]; }
     });
@@ -127,7 +127,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       this.up = up;
       setEnabled(false);
       setText( up ? "action.up" : "action.down");
-      listGazetteers.addListSelectionListener(this);
+      listCountries.addListSelectionListener(this);
     }
     /** callback - run */
     public void execute() {
@@ -136,10 +136,10 @@ public class GeoViewSettings extends JPanel implements Settings {
     public void valueChanged(ListSelectionEvent e) {
       boolean enabled;
       if (up)
-        enabled = listGazetteers.getSelectionModel().getMinSelectionIndex()>0;
+        enabled = listCountries.getSelectionModel().getMinSelectionIndex()>0;
       else {
-        int max = listGazetteers.getSelectionModel().getMaxSelectionIndex();
-        enabled = max>=0 && max < listGazetteers.getModel().getSize()-1;
+        int max = listCountries.getSelectionModel().getMaxSelectionIndex();
+        enabled = max>=0 && max < listCountries.getModel().getSize()-1;
       }
       // FIXME setEnabled(enabled);
     }
@@ -199,7 +199,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       viewManager.getWindowManager().close(progress);
       // enable actions againe
       setEnabled(true);
-      // FIXME listGazetteers.add
+      // reset our settings
       reset();
     }
   } //Import
@@ -212,15 +212,22 @@ public class GeoViewSettings extends JPanel implements Settings {
     protected Delete() {
       setText( "action.delete" );
       setEnabled(false);
-      listGazetteers.addListSelectionListener(this);
+      listCountries.addListSelectionListener(this);
     }
     /** callback - run */
     public void execute() {
+      Country country = (Country)listCountries.getSelectedValue();
+      if (country!=null) try {
+        GeoService.getInstance().drop(country);
+      } catch (IOException e) {
+        viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, e.getMessage(), CloseWindow.OK(), GeoViewSettings.this);
+      }
+      // reset our settings
+      reset();
     }
     /** callback - selection changed */
     public void valueChanged(ListSelectionEvent e) {
-      int index = listGazetteers.getSelectedIndex();
-      // FIXME setEnabled(index>=0);
+      setEnabled(listCountries.getSelectedIndex()>=0);
     }
   } //Delete
   

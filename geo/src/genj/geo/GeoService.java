@@ -52,7 +52,7 @@ public class GeoService {
   
   /** our work directory */
   private static final String GEO_DIR = "./geo";
-  
+
   /** our sqls */
   /*package*/ static final String 
     CREATE_TABLES =
@@ -61,15 +61,17 @@ public class GeoService {
       "CREATE INDEX cities ON locations (city)",
     DELETE_LOCATIONS = "DELETE FROM locations WHERE country = ?",
     INSERT_COUNTRY = "INSERT INTO countries (country) VALUES (?)",
+    DELETE_COUNTRY = "DELETE FROM countries WHERE country = ?",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
     SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS_WITH_CITY = "SELECT state, country, lat, lon FROM locations WHERE city = ?",
-    SELECT_LOCATIONS_WITH_CITYSTATE  = "SELECT state, country, lat, lon FROM locations WHERE city = ? AND state = ?";
+    SELECT_LOCATIONS_WITH_CITY = "SELECT  lat, lon FROM locations WHERE city = ?",
+    SELECT_LOCATIONS_WITH_CITYSTATE  = "SELECT lat, lon FROM locations WHERE city = ? AND state = ?";
 
   /*package*/ static final int
     DELETE_LOCATIONS_COUNTRY = 1,
     
     INSERT_COUNTRY_COUNTRY = 1,
+    DELETE_COUNTRY_COUNTRY = 1,
     
     INSERT_LOCATION_CITY = 1,
     INSERT_LOCATION_STATE = 2,
@@ -81,10 +83,8 @@ public class GeoService {
     
     SELECT_LOCATIONS_IN_CITY = 1,
     SELECT_LOCATIONS_IN_STATE = 2,
-    SELECT_LOCATIONS_OUT_STATE = 1,
-    SELECT_LOCATIONS_OUT_COUNTRY = 2,
-    SELECT_LOCATIONS_OUT_LAT = 3,
-    SELECT_LOCATIONS_OUT_LON = 4;
+    SELECT_LOCATIONS_OUT_LAT = 1,
+    SELECT_LOCATIONS_OUT_LON = 2;
 
   /** states to state-codes */
   private Map state2code = new HashMap();
@@ -220,7 +220,7 @@ public class GeoService {
 //    getInstance().match(loc);
 //    System.out.println(loc);
     
-    String city = "Paris";
+    String city = "Celle";
     GeoService gs = getInstance();
     try {
       
@@ -283,6 +283,27 @@ public class GeoService {
   }
   
   /**
+   * Drop information for given country 
+   */
+  public synchronized void drop(Country country) throws IOException {
+    
+    try {
+      PreparedStatement delete = connection.prepareStatement(DELETE_LOCATIONS);
+      delete.setString(DELETE_LOCATIONS_COUNTRY, country.getCode());
+      delete.executeUpdate();
+      
+      delete = connection.prepareStatement(DELETE_COUNTRY);
+      delete.setString(DELETE_COUNTRY_COUNTRY, country.getCode());
+      delete.executeUpdate();
+      
+    } catch (SQLException e) {
+      throw new IOException(e.getMessage());
+    }
+    
+    // done
+  }
+  
+  /**
    * Prepare an import 
    */
   public Import getImport(Country country, String state) throws IOException {
@@ -330,12 +351,14 @@ public class GeoService {
 
     String city = location.getCity();
     String state = (String)state2code.get(location.getState());
-    
+   
     // try to find 
     int matches = 0;
     float lat = Float.NaN, lon = Float.NaN;
     synchronized (this) {
       try {
+        
+        // prepare appropriate select
         PreparedStatement select;
         if (state!=null)  {
           select = connection.prepareStatement(SELECT_LOCATIONS_WITH_CITYSTATE);
@@ -344,12 +367,14 @@ public class GeoService {
           select = connection.prepareStatement(SELECT_LOCATIONS_WITH_CITY);
         }
         select.setString(SELECT_LOCATIONS_IN_CITY, city);
-        ResultSet result = select.executeQuery();
-        while (result.next()) {
+
+        // loop over rows
+        ResultSet rows = select.executeQuery();
+        while (rows.next()) {
           // grab lat/lon
           if (Float.isNaN(lat)) {
-            lat = result.getFloat(SELECT_LOCATIONS_OUT_LAT);
-            lon = result.getFloat(SELECT_LOCATIONS_OUT_LON);
+            lat = rows.getFloat(SELECT_LOCATIONS_OUT_LAT);
+            lon = rows.getFloat(SELECT_LOCATIONS_OUT_LON);
           }
           matches ++;
         }
