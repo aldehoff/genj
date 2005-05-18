@@ -381,13 +381,6 @@ public class PropertyDate extends Property {
       // done
     }
     
-    /**
-     * Setter
-     */
-    private void reset() {
-      set(UNKNOWN,UNKNOWN,UNKNOWN);
-    }
-    
   } // class PointInTime
   
   /**
