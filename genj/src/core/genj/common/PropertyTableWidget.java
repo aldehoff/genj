@@ -768,10 +768,15 @@ public class PropertyTableWidget extends JPanel {
       int row = model.getRowToInsert(prop);
       if (row<0)
         return;
-      // set selection row/col
-      table.getSelectionModel().setSelectionInterval(row,row);
       int col = Math.abs(model.sortColumn)-1;
-      table.getColumnModel().getSelectionModel().setSelectionInterval(col,col);
+      // set selection row/col
+      // 20050518 removed the selection change for now - if the user
+      // wants to change the selection he should do that by clicking in
+      // a row/col-cell. Using the shortcut just brings rows into view (like
+      // scrolling does) - so the user can utilize them without having
+      // to fear that context-changes are propagated right away
+//      table.getSelectionModel().setSelectionInterval(row,row);
+//      table.getColumnModel().getSelectionModel().setSelectionInterval(col,col);
       // scroll to visible
       Rectangle rect = table.getCellRect(row,col,true);
       rect.height = table.getParent().getHeight();
