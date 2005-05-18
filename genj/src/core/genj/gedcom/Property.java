@@ -682,7 +682,7 @@ public abstract class Property implements Comparable {
         return keep(prop, false);
       }
       protected boolean recursion(Property parent,String child) {
-        if (parent.getProperty(child)==null)
+        if (parent.getProperty(child, false)==null)
           parent.addProperty(child, "");
         return true;
       }
