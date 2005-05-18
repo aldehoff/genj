@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 import org.geotools.shapefile.Shapefile;
@@ -75,6 +76,15 @@ public class GeoMap {
       throw new IllegalArgumentException("archive file not supported yet");
     
     this.fileOrDir = fileOrDir;
+
+    // load properties
+    loadProperties();
+    
+    // done
+  }
+  
+  /** load properties */
+  private void loadProperties() {
     
     // load properties
     try {
@@ -90,8 +100,7 @@ public class GeoMap {
     } catch (Throwable t) {
     }
     
-    // done
-
+    
   }
   
   /** a key */
@@ -132,20 +141,27 @@ public class GeoMap {
    * load all feature collections for this geo map into LayerManager  
    */
   void load(LayerManager manager) throws IOException {
+    
+    // reload properties
+    loadProperties();
 
     // load shapes files
     File[] files = fileOrDir.listFiles();
+    Arrays.sort(files);
     for (int i=0;i<files.length;i++) {
+      
       // shape file?
       File file = files[i];
       if (!file.getName().endsWith(SUFFIX_SHP)) 
         continue;
       String name = file.getName().substring(0, file.getName().length()-SUFFIX_SHP.length());
+      
       // load it
       FeatureCollection fc = load(file);
       // create layer
       Layer layer = manager.addLayer(getName(), name, fc);
       // check for parameters
+      if (Character.isDigit(name.charAt(0))) name = name.substring(1);
       String color = i18n("color."+name, null);
       if (color!=null) try {
         Color c = new Color(Integer.decode(color).intValue());
@@ -156,6 +172,7 @@ public class GeoMap {
       } catch (NumberFormatException nfe) {
         Debug.log(Debug.WARNING, this, "Found undecodeable color "+color);
       }
+
       // next
     }
 
