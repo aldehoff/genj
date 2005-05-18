@@ -87,7 +87,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
   private final static ImageIcon 
     IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png"),
-    IMG_ZOOM = new ImageIcon(GeoView.class, "images/Zoom.png");
+    IMG_ZOOM = new ImageIcon(GeoView.class, "images/Zoom.png"),
+    IMG_ZOOM_EXTENT = new ImageIcon(GeoView.class, "images/ZoomExtend.png");
   
   /*package*/ final static Resources RESOURCES = Resources.get(GeoView.class);
   
@@ -111,17 +112,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   private LocationsLayer locationLayer;  
   private SelectionLayer selectionLayer;
   
-  /** a rezoom runnable we can invokeLater() */
-  private Runnable rezoom = new Runnable() {
-    public void run() {
-      if (layerPanel!=null) try {
-            layerPanel.getViewport().zoomToFullExtent();
-          } catch (Throwable t) {
-            Debug.log(Debug.WARNING, this, t.getMessage());
-          }
-      }
-    };
-  
   /**
    * Constructor
    */
@@ -137,7 +127,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // listen
     addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
-        rezoom.run();
+        new ZoomExtent().trigger();
       }
     });
     
@@ -299,13 +289,15 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
 
     // add a popup for them
     PopupWidget chooseMap = new PopupWidget(null, IMG_MAP, actions);
+    chooseMap.setToolTipText(RESOURCES.getString("toolbar.map"));
     chooseMap.setEnabled(!actions.isEmpty());
     bar.add(chooseMap);
     
-    // add zoom/pan
+    // add zoom
     ButtonHelper bh = new ButtonHelper();
-    bh.setContainer(bar).setButtonType(JToggleButton.class);
-    bh.create(new ZoomOnOff());
+    bh.setContainer(bar).setResources(RESOURCES);
+    bh.create(new ZoomExtent());
+    bh.setButtonType(JToggleButton.class).create(new ZoomOnOff());
     
     // done
   }
@@ -345,7 +337,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     revalidate();
     repaint();
     
-    SwingUtilities.invokeLater(rezoom);
+    SwingUtilities.invokeLater(new ZoomExtent());
     
     // enable tooltips
     ToolTipManager.sharedInstance().registerComponent(layerPanel);
@@ -384,14 +376,35 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       Debug.log(Debug.INFO, GeoView.this, message);
     }
   }
+  
+  /**
+   * Action - Zoom to Map Extent
+   */
+  private class ZoomExtent extends ActionDelegate {
+
+    /** constructor */
+    private ZoomExtent() {
+      setImage(IMG_ZOOM_EXTENT);
+      setTip("toolbar.extent");
+    }
+    /** zoom to all */
+    public void execute() {
+      if (layerPanel!=null) try {
+          layerPanel.getViewport().zoomToFullExtent();
+        } catch (Throwable t) {
+        }
+      }
+    
+  } //ZoomAll
 
   /**
-   * Action - Tool
+   * Action - Zoom On Off
    */
   private class ZoomOnOff extends ActionDelegate {
     /** constructor */
     private ZoomOnOff() {
       setImage(IMG_ZOOM);
+      setTip("toolbar.zoom");
     }
     /** choose current map */
     protected void execute() {
