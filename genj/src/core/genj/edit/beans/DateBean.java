@@ -92,12 +92,12 @@ public class DateBean extends PropertyBean {
     
     // check if valid
     PointInTime start = date1.getValue();
-    if (!start.isValid())
+    if (start==null)
       return;
     PointInTime end = null;
     if (format.isRange()) {
       end = date2.getValue();
-      if (!start.isValid())
+      if (end==null)
         return;
     }
     
