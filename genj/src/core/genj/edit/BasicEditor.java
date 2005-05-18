@@ -78,8 +78,8 @@ import javax.swing.event.ChangeListener;
  */
 /* package */class BasicEditor extends Editor implements GedcomListener {
 
-  /** entity tag to layout */
-  private static Map FILE2LAYOUT = new HashMap();
+  /** keep a cache of descriptors */
+  private static Map FILE2DESCRIPTOR = new HashMap();
   
   /** our gedcom */
   private Gedcom gedcom = null;
@@ -93,15 +93,12 @@ import javax.swing.event.ChangeListener;
   /** edit */
   private EditView view;
 
-  /** beans */
-  private List beans = new ArrayList(32);
-
   /** actions */
   private ActionDelegate ok = new OK(), cancel = new Cancel();
   
   /** current panels */
-  private JPanel beanPanel;
-  private JTabbedPane tabPanel;
+  private BeanPanel beanPanel;
+  private JPanel buttonPanel;
 
   /** change callback */
   ChangeListener changeCallback = new ChangeListener() {
@@ -126,15 +123,11 @@ import javax.swing.event.ChangeListener;
     setFocusCycleRoot(true);
 
     // create panel for actions
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons).setFocusable(false);
+    buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttonPanel).setFocusable(false);
     bh.create(ok);
     bh.create(cancel);
     
-    // layout
-    setLayout(new BorderLayout());
-    add(BorderLayout.SOUTH, buttons);
-
     // done
   }
 
@@ -200,112 +193,53 @@ import javax.swing.event.ChangeListener;
       setEntity(set);
 
     // select 1st/appropriate bean for property from context
-    Property p = context.getProperty();
-    select(p!=null?p:set);
+    if (beanPanel!=null) {
+      Property p = context.getProperty();
+      beanPanel.select(p!=null?p:set);
+    }
     
     // done
   }
   
   /**
-   * Select a property's bean
-   */
-  private void select(Property prop) {
-    if (prop==null)
-      return;
-    // look for appropriate bean
-    for (Iterator it=beans.iterator(); it.hasNext(); ) {
-      PropertyBean bean = (PropertyBean)it.next();
-      if (bean.getProperty()==prop) {
-        bean.requestFocusInWindow();
-        break;
-      }
-    }
-    // done
-  }
-
-  /**
    * Set current entity
    */
-  private void setEntity(Entity set) {
+  public void setEntity(Entity set) {
 
     // remember
     entity = set;
     
-    // remove all current beans
-    if (getComponentCount()>1l)
-      remove(1);
-
-    // recycle beans
-    BeanFactory factory = view.getBeanFactory();
-    for (Iterator it=beans.iterator(); it.hasNext(); ) {
-      PropertyBean bean = (PropertyBean)it.next();
-      bean.removeChangeListener(changeCallback);
-      factory.recycle(bean);
-    }
-    beans.clear();
-
-    // setup components
-    if (entity!=null) try {
-
-      // 'create' standard panel (and collect topLevelTags)
-      Set topLevelTags = new HashSet();
-      beanPanel = createPanel(entity, getSharedDescriptor(entity.getMetaProperty()).copy(), topLevelTags);
-      
-      // 'create' tab panel
-      try {
-        tabPanel = new JTabbedPane();
-        beanPanel.add("tabs", tabPanel);
-        //tabPanel.addMouseListener(new RemoveTab());
-        
-        // .. and add all tabs
-        Set skippedTags = new HashSet();
-        props: for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
-          Property prop = entity.getProperty(i);
-          // check tag - skipped or covered already?
-          String tag = prop.getTag();
-          if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
-            continue;
-          topLevelTags.add(tag);
-          // create a tab for it
-          createTab(tabPanel, prop);
-          // next
-        }
-        
-        // 'create' a tab for creating new properties
-        JPanel newTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        newTab.setPreferredSize(new Dimension(64,64));
-        tabPanel.addTab("", Images.imgNew, newTab);
-        
-        // add buttons for creating sub-properties 
-        MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
-        Arrays.sort(nested);
-        for (int i=0;i<nested.length;i++) {
-          MetaProperty meta = nested[i];
-          // if there's a descriptor for it
-          NestedBlockLayout descriptor = getSharedDescriptor(meta);
-          if (descriptor==null)
-            continue;
-          // .. and if there's no other already with isSingleton
-          if (topLevelTags.contains(meta.getTag())&&meta.isSingleton())
-            continue;
-          // create a button for it
-          newTab.add(new LinkWidget(new NewTab(meta)));
-        }
-        
+    // remove all we've setup to this point
+    if (beanPanel!=null) {
+      removeAll();
+      try { 
+        beanPanel.destructor(); 
       } catch (Throwable t) {
+        Debug.log(Debug.ERROR, this, t);
       }
-      
-      // show it
-      add(BorderLayout.CENTER, new JScrollPane(beanPanel));
-      
-    } catch (Throwable t) {
-      Debug.log(Debug.ERROR, this, t);
+      beanPanel=null;
     }
 
-    // start without ok and cancel
-    ok.setEnabled(false);
-    cancel.setEnabled(false);
+    // set it up anew
+    if (entity!=null) {
+      
+      try {
+        beanPanel = new BeanPanel();
+        
+        setLayout(new BorderLayout());
+        add(BorderLayout.CENTER, new JScrollPane(beanPanel));
+        add(BorderLayout.SOUTH, buttonPanel);
 
+      } catch (Throwable t) {
+        Debug.log(Debug.ERROR, this, t);
+      }
+
+      // start without ok and cancel
+      ok.setEnabled(false);
+      cancel.setEnabled(false);
+
+    }
+    
     // show
     revalidate();
     repaint();
@@ -317,206 +251,37 @@ import javax.swing.event.ChangeListener;
    * Find a descriptor for given property
    * @return private copy descriptor or null if n/a
    */
-  private NestedBlockLayout getSharedDescriptor(MetaProperty meta) {
+  private static NestedBlockLayout getSharedDescriptor(MetaProperty meta) {
     
     // compute appropiate file name for entity or property
     String file  = "descriptors/" + (meta.isEntity() ? "entities" : "properties") + "/" + meta.getTag()+".xml";
     
     // got a cached one already?
-    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2LAYOUT.get(file);
+    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2DESCRIPTOR.get(file);
     if (descriptor==null) {
       
       // hmm, already determined we don't have one?
-      if (FILE2LAYOUT.containsKey(file))
+      if (FILE2DESCRIPTOR.containsKey(file))
         return null;
 
       // try to read a descriptor - TAG.xml or Type.xml
-      InputStream in = getClass().getResourceAsStream(file);
+      InputStream in = BasicEditor.class.getResourceAsStream(file);
       if (in==null) 
-        in = getClass().getResourceAsStream("descriptors/properties/"+meta.getType().getName().substring("genj.gedcom.".length())+".xml");
+        in = BasicEditor.class.getResourceAsStream("descriptors/properties/"+meta.getType().getName().substring("genj.gedcom.".length())+".xml");
       if (in!=null) try {
         descriptor = new NestedBlockLayout(in);
       } catch (IOException e) {
-        Debug.log(Debug.WARNING, this, "IO exception while reading descriptor "+file);
+        Debug.log(Debug.WARNING, BasicEditor.class, "IO exception while reading descriptor "+file);
       }
 
       // cache it
-      FILE2LAYOUT.put(file, descriptor);
+      FILE2DESCRIPTOR.put(file, descriptor);
     }
 
     // return private copy
     return descriptor;
   }
   
-  /**
-   * Create a tab
-   */
-  private void createTab(JTabbedPane tabPanel, Property prop) {
-    
-    // got a descriptor for it?
-    MetaProperty meta = prop.getMetaProperty();
-    NestedBlockLayout descriptor = getSharedDescriptor(meta);
-    if (descriptor==null) 
-      return;
-    
-    // create the panel
-    JPanel panel = createPanel(prop, descriptor.copy(), null);
-      
-    // keep it around
-    tabPanel.insertTab(meta.getName(), meta.getImage(), new JScrollPane(panel), meta.getInfo(), 0);
-
-    // done
-  }
-  
-  /**
-   * Create the panel content 
-   */
-  private JPanel createPanel(Property root, NestedBlockLayout descriptor, Set topLevelTags)  {
-
-    JPanel result = new JPanel(descriptor);
-    
-    // fill cells with beans
-    Iterator cells = descriptor.getCells().iterator();
-    while (cells.hasNext()) {
-      NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
-      JComponent comp = createComponent(root, cell, topLevelTags);
-      if (comp!=null) 
-        result.add(comp, cell);
-    }
-    
-    // done
-    return result;
-  }
-
-  /**
-   * create a component for given cell
-   */
-  private JComponent createComponent(Property root, NestedBlockLayout.Cell cell, Set topLevelTags) {
-    
-    // need path
-    if (cell.getAttribute("path")==null)
-      return null;
-    
-    // prepare some info and state
-    TagPath path = new TagPath(cell.getAttribute("path"));
-    if (topLevelTags!=null&&path.length()>1) topLevelTags.add(path.get(1));
-    MetaProperty meta = root.getMetaProperty().getNestedRecursively(path, false);
-    
-    // a label?
-    if ("label".equals(cell.getElement())) {
-
-      JLabel label;
-      if (path.length()==1&&path.getLast().equals(entity.getTag()))
-        label = new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
-      else
-        label = new JLabel(meta.getName(cell.isAttribute("plural")), meta.getImage(), SwingConstants.LEFT);
-
-      return label;
-    }
-    
-    // a bean?
-    if ("bean".equals(cell.getElement())) {
-      // conditional?
-      if (cell.getAttribute("ifexists")!=null) {
-        if (root.getProperty(path)==null)
-          return null;
-      }
-      // create bean
-      PropertyBean bean = createBean(root, path, meta, cell.getAttribute("type"));
-      if (bean==null)
-        return null;
-      // finally wrap in popup if requested?
-      return cell.getAttribute("popup")==null ? bean : (JComponent)new PopupBean(bean);
-    }
-
-    // bug in the descriptor
-    throw new IllegalArgumentException("Template element "+cell.getElement()+" is unkown");
-  }
-  
-  /**
-   * create a bean
-   * @param root we need the bean for
-   * @param path path to property we need bean for
-   * @param explicit bean type
-   */
-  private PropertyBean createBean(Property root, TagPath path, MetaProperty meta, String beanOverride) {
-
-    // try to resolve existing prop - this has to be a property along
-    // the first possible path to avoid that in this case:
-    //  INDI
-    //   BIRT
-    //    DATE sometime
-    //   BIRT
-    //    PLAC somewhere
-    // the result of INDI:BIRT:DATE/INDI:BIRT:PLAC is
-    //   somtime/somewhere
-    Property prop = root.getProperty(path);
-    
-    // .. for an existing reference we try to use a suitable
-    // target property that we can edit inline
-    if (prop instanceof PropertyXRef) {
-      prop = ((PropertyXRef)prop).getTargetValueProperty();
-      if (prop==null) 
-        return null;
-    }
-    
-    // addressed property doesn't exist yet? create a proxy that mirrors
-    // the root and add create a temporary holder (enjoys the necessary
-    // context - namely gedcom)
-    if (prop==null) 
-      prop = new Proxy(root, null).setValue(path, "");
-
-    // create bean for property
-    BeanFactory factory = view.getBeanFactory();
-    PropertyBean bean = beanOverride!=null ? factory.get(beanOverride) : factory.get(prop);
-    bean.setContext(prop, registry);
-    bean.addChangeListener(changeCallback);
-    beans.add(bean);
-    
-    // done
-    return bean;
-  }
-  
-  /**
-   * A remove tab action
-   */
-  private class RemoveTab extends ActionDelegate implements MouseListener  {
-    int tabIndex = -1;
-    private RemoveTab() {
-      setText("Remove");
-      setImage(Images.imgCut);
-    }
-    public void mouseEntered(MouseEvent e) {
-    }
-    public void mouseExited(MouseEvent e) {
-    }
-    public void mouseClicked(MouseEvent e) {
-    }
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    public void mouseReleased(MouseEvent e) {
-      // popup?
-      if (!e.isPopupTrigger())
-        return;
-      // calculate tab 
-      tabIndex = tabPanel.indexAtLocation(e.getX(), e.getY());
-      if (tabIndex<0)
-        return;
-      // show popup
-      MenuHelper mh = new MenuHelper();
-      JPopupMenu menu = mh.createPopup(tabPanel);
-      mh.createItem(this);
-      menu.show(tabPanel, e.getX(), e.getY());
-      // done
-    }
-    protected void execute() {
-      if (tabIndex<0)
-        return;
-      tabPanel.removeTabAt(tabIndex);
-    }
-  }
-
   /**
    * A proxy proparty - hooks up temporary properties to their context and propagates
    * changes to an original
@@ -558,39 +323,6 @@ import javax.swing.event.ChangeListener;
     public MetaProperty getMetaProperty() { return root.getMetaProperty(); }
   }
     
-  /**
-   * An action for adding 'new tabs'
-   */
-  private class NewTab extends ActionDelegate {
-    
-    private MetaProperty meta;
-    
-    /** constructor */
-    private NewTab(MetaProperty meta) {
-      // remember
-      this.meta = meta;
-      // looks
-      setText(meta.getName());
-      setImage(meta.getImage());
-    }
-
-    /** callback initiate create */
-    protected void execute() {
-      
-      // create a temporary root that we'll add later to entity on change
-      Property root = new Proxy(meta.create(""), entity);
-      
-      // create a tab for it
-      createTab(tabPanel, root);
-      
-      // and select it
-      tabPanel.setSelectedIndex(0);
-      
-      // done
-    }
-    
-  } //AddTab
-  
   /**
    * A 'bean' we use for groups
    */
@@ -656,16 +388,17 @@ import javax.swing.event.ChangeListener;
 
     /** cancel current proxy */
     protected void execute() {
+      
+      // bean panel?
+      if (beanPanel==null)
+        return;
 
       // commit changes
       Transaction tx = gedcom.startTransaction();
 
       // commit bean changes
       try {
-        for (Iterator it = beans.iterator(); it.hasNext();) {
-          // let bean commit its changes 
-          ( (PropertyBean)it.next()).commit();
-        }
+        beanPanel.commit();
       } catch (Throwable t) {
         Debug.log(Debug.ERROR, this, t);
       }
@@ -724,4 +457,339 @@ import javax.swing.event.ChangeListener;
     }
   } //FocusPolicy
   
-}
+  /**
+   * A panel containing all the beans for editing
+   */
+  private class BeanPanel extends JPanel {
+
+    /** top level tags */
+    private Set topLevelTags = new HashSet();
+    
+    /** beans */
+    private List beans = new ArrayList(32);
+    
+    /** tabs */
+    private JTabbedPane tabs;
+    
+    /** constructor */
+    public BeanPanel() {
+      
+      // grab a descriptor
+      NestedBlockLayout descriptor = getSharedDescriptor(entity.getMetaProperty()).copy();
+      
+      // parse entity descriptor
+      parse(this, entity, getSharedDescriptor(entity.getMetaProperty()).copy() );
+      
+      // done
+    }
+    
+    /**
+     * commit beans - transaction has to be running already
+     */
+    public void commit() {
+      
+      for (Iterator it = beans.iterator(); it.hasNext();) {
+        ( (PropertyBean)it.next()).commit();
+      }
+      
+    }
+    
+    /**
+     * destructor - call when panel isn't needed anymore 
+     */
+    public void destructor() {
+      
+      // remove all components
+      super.removeAll();
+      
+      // recycle beans
+      BeanFactory factory = view.getBeanFactory();
+      for (Iterator it=beans.iterator(); it.hasNext(); ) {
+        PropertyBean bean = (PropertyBean)it.next();
+        bean.removeChangeListener(changeCallback);
+        factory.recycle(bean);
+      }
+      beans.clear();
+      
+      // done
+    }
+    
+    /**
+     * Select a property's bean
+     */
+    public void select(Property prop) {
+      if (prop==null)
+        return;
+      // look for appropriate bean
+      for (Iterator it=beans.iterator(); it.hasNext(); ) {
+        PropertyBean bean = (PropertyBean)it.next();
+        if (bean.getProperty()==prop) {
+          bean.requestFocusInWindow();
+          break;
+        }
+      }
+      // done
+    }
+
+    
+    /**
+     * Parse descriptor
+     */
+    private void parse(JPanel panel, Property root, NestedBlockLayout descriptor)  {
+
+      panel.setLayout(descriptor);
+      
+      // look for all top level tags first
+      for (Iterator cells = descriptor.getCells().iterator(); cells.hasNext(); ) {
+        NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
+        String path = cell.getAttribute("path");
+        if (path!=null && path.indexOf(TagPath.SEPARATOR)>=0)
+          topLevelTags.add(new TagPath(path).get(1));
+      }
+      
+      // fill cells with beans
+      for (Iterator cells = descriptor.getCells().iterator(); cells.hasNext(); ) {
+        NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
+        JComponent comp = createComponent(root, cell);
+        if (comp!=null) 
+          panel.add(comp, cell);
+      }
+      
+      // done
+    }
+    
+    /**
+     * Create a component for given cell
+     */
+    private JComponent createComponent(Property root, NestedBlockLayout.Cell cell) {
+      
+      String element = cell.getElement();
+      
+      // tabs?
+      if ("tabs".equals(element))
+        return createTabs();
+      
+      // prepare some info and state
+      TagPath path = new TagPath(cell.getAttribute("path"));
+      MetaProperty meta = root.getMetaProperty().getNestedRecursively(path, false);
+      
+      // a label?
+      if ("label".equals(element)) {
+
+        JLabel label;
+        if (path.length()==1&&path.getLast().equals(entity.getTag()))
+          label = new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
+        else
+          label = new JLabel(meta.getName(cell.isAttribute("plural")), meta.getImage(), SwingConstants.LEFT);
+
+        return label;
+      }
+      
+      // a bean?
+      if ("bean".equals(element)) {
+        // conditional?
+        if (cell.getAttribute("ifexists")!=null) {
+          if (root.getProperty(path)==null)
+            return null;
+        }
+        // create bean
+        PropertyBean bean = createBean(root, path, meta, cell.getAttribute("type"));
+        if (bean==null)
+          return null;
+        // finally wrap in popup if requested?
+        return cell.getAttribute("popup")==null ? bean : (JComponent)new PopupBean(bean);
+      }
+
+      // bug in the descriptor
+      throw new IllegalArgumentException("Template element "+cell.getElement()+" is unkown");
+    }
+    
+    /**
+     * create a bean
+     * @param root we need the bean for
+     * @param path path to property we need bean for
+     * @param explicit bean type
+     */
+    private PropertyBean createBean(Property root, TagPath path, MetaProperty meta, String beanOverride) {
+
+      // try to resolve existing prop - this has to be a property along
+      // the first possible path to avoid that in this case:
+      //  INDI
+      //   BIRT
+      //    DATE sometime
+      //   BIRT
+      //    PLAC somewhere
+      // the result of INDI:BIRT:DATE/INDI:BIRT:PLAC is
+      //   somtime/somewhere
+      Property prop = root.getProperty(path);
+      
+      // .. for an existing reference we try to use a suitable
+      // target property that we can edit inline
+      if (prop instanceof PropertyXRef) {
+        prop = ((PropertyXRef)prop).getTargetValueProperty();
+        if (prop==null) 
+          return null;
+      }
+      
+      // addressed property doesn't exist yet? create a proxy that mirrors
+      // the root and add create a temporary holder (enjoys the necessary
+      // context - namely gedcom)
+      if (prop==null) 
+        prop = new Proxy(root, null).setValue(path, "");
+
+      // create bean for property
+      BeanFactory factory = view.getBeanFactory();
+      PropertyBean bean = beanOverride!=null ? factory.get(beanOverride) : factory.get(prop);
+      bean.setContext(prop, registry);
+      bean.addChangeListener(changeCallback);
+      beans.add(bean);
+      
+      // done
+      return bean;
+    }
+    
+    /**
+     * Create tabs for top-level properties of root (can only happen once)
+     */
+    private JTabbedPane createTabs() {
+      
+      // already done?
+      if (tabs!=null)
+        throw new IllegalArgumentException("tabs can't be generated twice");
+      
+      // 'create' tab panel
+      tabs = new JTabbedPane();
+      //tabPanel.addMouseListener(new RemoveTab());
+      
+      // create all tabs
+      Set skippedTags = new HashSet();
+      props: for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
+        Property prop = entity.getProperty(i);
+        // check tag - skipped or covered already?
+        String tag = prop.getTag();
+        if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
+          continue;
+        topLevelTags.add(tag);
+        // create a tab for it
+        createTab(prop);
+        // next
+      }
+      
+      // 'create' a tab for creating new properties
+      JPanel newTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
+      newTab.setPreferredSize(new Dimension(64,64));
+      tabs.addTab("", Images.imgNew, newTab);
+      
+      // add buttons for creating sub-properties 
+      MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+      Arrays.sort(nested);
+      for (int i=0;i<nested.length;i++) {
+        MetaProperty meta = nested[i];
+        // if there's a descriptor for it
+        NestedBlockLayout descriptor = getSharedDescriptor(meta);
+        if (descriptor==null)
+          continue;
+        // .. and if there's no other already with isSingleton
+        if (topLevelTags.contains(meta.getTag())&&meta.isSingleton())
+          continue;
+        // create a button for it
+        newTab.add(new LinkWidget(new ActionAdd(meta)));
+      }
+    
+      // done
+      return tabs;
+    }
+    
+    /**
+    * Create a tab
+    */
+   private void createTab(Property prop) {
+     
+     // got a descriptor for it?
+     MetaProperty meta = prop.getMetaProperty();
+     NestedBlockLayout descriptor = getSharedDescriptor(meta);
+     if (descriptor==null) 
+       return;
+     
+     // create the panel
+     JPanel panel = new JPanel();
+     parse(panel, prop, descriptor.copy());
+     tabs.insertTab(meta.getName(), meta.getImage(), new JScrollPane(panel), meta.getInfo(), 0);
+
+     // done
+   }
+    
+    /** An action for adding 'new tabs' */
+    private class ActionAdd extends ActionDelegate {
+      
+      private MetaProperty meta;
+      
+      /** constructor */
+      private ActionAdd(MetaProperty meta) {
+        // remember
+        this.meta = meta;
+        // looks
+        setText(meta.getName());
+        setImage(meta.getImage());
+      }
+    
+      /** callback initiate create */
+      protected void execute() {
+        
+        // create a temporary root that we'll add later to entity on change
+        Property root = new Proxy(meta.create(""), entity);
+        
+        // create a tab for it
+        createTab(root);
+        
+        // and select it
+        tabs.setSelectedIndex(0);
+        
+        // done
+      }
+      
+    } //ActionNewTab
+
+    /**
+     * A remove tab action
+     */
+    private class ActionDelete extends ActionDelegate implements MouseListener  {
+      int tabIndex = -1;
+      private ActionDelete() {
+        setText("Remove");
+        setImage(Images.imgCut);
+      }
+      public void mouseEntered(MouseEvent e) {
+      }
+      public void mouseExited(MouseEvent e) {
+      }
+      public void mouseClicked(MouseEvent e) {
+      }
+      public void mousePressed(MouseEvent e) {
+        mouseReleased(e);
+      }
+      public void mouseReleased(MouseEvent e) {
+        // popup?
+        if (!e.isPopupTrigger())
+          return;
+        // calculate tab 
+        tabIndex = tabs.indexAtLocation(e.getX(), e.getY());
+        if (tabIndex<0)
+          return;
+        // show popup
+        MenuHelper mh = new MenuHelper();
+        JPopupMenu menu = mh.createPopup(tabs);
+        mh.createItem(this);
+        menu.show(tabs, e.getX(), e.getY());
+        // done
+     }
+     protected void execute() {
+       if (tabIndex<0)
+         return;
+       tabs.removeTabAt(tabIndex);
+     }
+   }
+
+  } //BeanPanel
+  
+} //BasicEditor
