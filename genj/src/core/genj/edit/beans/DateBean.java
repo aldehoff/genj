@@ -89,22 +89,21 @@ public class DateBean extends PropertyBean {
   public void commit() {
 
     PropertyDate p = (PropertyDate)property;
-
-    // Remember format
-    p.setFormat(format);
-
-    // Remember One
+    
+    // check if valid
     PointInTime start = date1.getValue();
-    if (start!=null)
-      p.getStart().set(start);
-  
-    // Remember Two
-    if ( p.isRange() ) {
-      PointInTime end = date2.getValue();
-      if (end!=null)
-        p.getEnd().set(date2.getValue());
+    if (!start.isValid())
+      return;
+    PointInTime end = null;
+    if (format.isRange()) {
+      end = date2.getValue();
+      if (!start.isValid())
+        return;
     }
     
+    // Remember
+    p.setValue(format, start, end);
+
     // Done
   }
 
