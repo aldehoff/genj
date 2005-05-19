@@ -114,7 +114,7 @@ public class GedcomReader implements Trackable {
     try {
       instance.readProperties(parent, pos, -1, result);
     } catch (GedcomFormatException e) {
-      // ignoring any problem
+      Debug.log(Debug.WARNING, instance, "trying to read from reader", e);
     }
     
     // link what needs linkage
@@ -377,8 +377,8 @@ public class GedcomReader implements Trackable {
       try {
         Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, tempSubmitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
-      } catch (Throwable t) {
-        addWarning(line, "Submitter "+tempSubmitter+" couldn't be resolved");
+      } catch (IllegalArgumentException t) {
+        addWarning(line, "Submitter "+tempSubmitter+" couldn't be set");
       }
     }
 
@@ -537,7 +537,9 @@ public class GedcomReader implements Trackable {
         } else {
           level = Integer.parseInt(tokens.nextToken(),10);
         }
-      } catch (Throwable t) {
+      } catch (StringIndexOutOfBoundsException sioobe) {
+        throw new GedcomFormatException("Encountered empty line",line);
+      } catch (NumberFormatException nfe) {
         throw new GedcomFormatException("Expected X [@XREF@] TAG [VALUE] - x integer",line);
       }
 
