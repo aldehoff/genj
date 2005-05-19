@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 
-export CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar:./contrib/ant/ant.jar
+cd $PWD
 
-$JAVA_HOME/bin/java org.apache.tools.ant.Main $1 $2 $3
+$JAVA_HOME/bin/java -cp $JAVA_HOME/lib/tools.jar:./contrib/ant/ant.jar org.apache.tools.ant.Main $1 $2 $3
 
