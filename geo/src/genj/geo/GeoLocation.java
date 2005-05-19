@@ -22,6 +22,7 @@ package genj.geo;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
+import genj.util.WordBuffer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +39,7 @@ import com.vividsolutions.jump.feature.FeatureSchema;
 /**
  *  Information about a geographic location
  */
-public class GeoLocation extends Point implements Feature {
+public class GeoLocation extends Point implements Feature, Comparable {
 
   /** 
    * our schema - could be more complicated like
@@ -77,7 +78,14 @@ public class GeoLocation extends Point implements Feature {
     // init
     init(prop);
 
-    }
+  }
+  
+  /** 
+   * Our coordinate
+   */
+  public Coordinate getCoordinate() {
+    return coordinate;
+  }
 
   /**
    * Init
@@ -106,15 +114,15 @@ public class GeoLocation extends Point implements Feature {
   private boolean initFromAddress(Property addr) {
     
     // got a city?
-    Property city = addr.getProperty("CITY");
-    if (city==null)
+    Property pcity = addr.getProperty("CITY");
+    if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
 
     // trim it
-    this.city = trim(city.getDisplayValue());
+    this.city = trim(pcity.getDisplayValue());
     
     // empty?
-    if (city==null)
+    if (this.city==null)
       throw new IllegalArgumentException("address without city value");
     
     // got a city?
@@ -157,7 +165,7 @@ public class GeoLocation extends Point implements Feature {
     // done
     return value.length() == 0 ? null : value;
   }
-  
+
   /**
    * Add poperties from another instance
    */
@@ -180,11 +188,27 @@ public class GeoLocation extends Point implements Feature {
    * Check for containment
    */
   public boolean contains(Property[] properties) {
+    if (matches==0)
+      return false;
     for (int i=0; i<properties.length; i++) {
       if (this.properties.contains(properties[i]))
         return true;
     }
     return false;
+  }
+  
+  /**
+   * How many matches this location had
+   */
+  public int getMatches() {
+    return matches;
+  }
+  
+  /**
+   * Validity test
+   */
+  public boolean isValid() {
+    return matches>0 && !Double.isNaN(coordinate.x) && !Double.isNaN(coordinate.y);
   }
   
   /**
@@ -262,7 +286,11 @@ public class GeoLocation extends Point implements Feature {
    * String representation
    */
   public String toString() {
-     return city + "[" + coordinate.y + "," +  coordinate.x+ "]";
+    WordBuffer result = new WordBuffer(", ");
+    result.append(city);
+    result.append(state);
+    result.append(country);
+    return result.toString();
   }
   
   /**
@@ -388,7 +416,8 @@ public class GeoLocation extends Point implements Feature {
    * Feature - comparison
    */
   public int compareTo(Object o) {
-    throw new IllegalArgumentException();
+    GeoLocation that = (GeoLocation)o;
+    return this.city.compareTo(that.city);
   }
   
 }

@@ -48,8 +48,7 @@ import java.util.Map;
   /** state */
   private List listeners = new ArrayList();
   private Gedcom gedcom;
-  private Map knownLocations = new HashMap();
-  private Map unknownLocations = new HashMap();
+  private Map locations = new HashMap();
 
   /**
    * Constructor
@@ -88,7 +87,7 @@ import java.util.Map;
   
   private synchronized List getLocations(Property[] props) {
     ArrayList result = new ArrayList();
-    for (Iterator it=knownLocations.keySet().iterator(); it.hasNext(); ) {
+    for (Iterator it=locations.keySet().iterator(); it.hasNext(); ) {
       GeoLocation location = (GeoLocation)it.next();
       if (location.contains(props))
         result.add(location);
@@ -99,8 +98,15 @@ import java.util.Map;
   /**
    * Accessor - locations
    */
-  public synchronized List getKnownLocations() {
-    return new ArrayList(knownLocations.keySet());
+  public synchronized int getNumLocations() {
+    return locations.size();
+  }
+  
+  /**
+   * Accessor - locations
+   */
+  public synchronized List getLocations() {
+    return new ArrayList(locations.keySet());
   }
   
   /**
@@ -125,6 +131,16 @@ import java.util.Map;
   
   /**
    * Tell listeners about a found location
+   */
+  private void fireLocationAdded(GeoLocation location) {
+    GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
+    for (int i = 0; i < ls.length; i++) {
+      ls[i].locationAdded(location);
+    }
+  }
+  
+  /**
+   * Tell listeners about an updated location
    */
   private void fireLocationUpdated(GeoLocation location) {
     GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
@@ -156,11 +172,7 @@ import java.util.Map;
     }
 
     // check locations
-    for (Iterator it = knownLocations.keySet().iterator(); it.hasNext(); ) { 
-      GeoLocation location = (GeoLocation)it.next();
-      if (location.removeAll(affected)) return;
-    }
-    for (Iterator it = unknownLocations.keySet().iterator(); it.hasNext(); ) { 
+    for (Iterator it = locations.keySet().iterator(); it.hasNext(); ) { 
       GeoLocation location = (GeoLocation)it.next();
       if (location.removeAll(affected)) return;
     }
@@ -181,8 +193,8 @@ import java.util.Map;
         protected void set(double lat, double lon, int matches) {
           super.set(lat, lon, matches);
           synchronized (GeoModel.this) {
-            if (unknownLocations.remove(this)==this && matches>0)
-              knownLocations.put(this, this);
+            if (!locations.containsKey(this)) 
+              return;
           }
           fireLocationUpdated(this);
         }
@@ -194,7 +206,7 @@ import java.util.Map;
           // check if still necessary
           if (properties.isEmpty()) {
             synchronized (GeoModel.this) {
-              knownLocations.remove(this);
+              locations.remove(this);
             }
             fireLocationRemoved(this);
           }
@@ -209,8 +221,7 @@ import java.util.Map;
     // check if we have a location like that
     GeoLocation other;
     synchronized (this) {
-      other = (GeoLocation)unknownLocations.get(location);
-      if (other==null) other = (GeoLocation)knownLocations.get(location);
+      other = (GeoLocation)locations.get(location);
     }
     
     if (other!=null) {
@@ -219,11 +230,14 @@ import java.util.Map;
       return;
     }
       
-    // add this location as unknown and to-do
+    // add this location and add to to-do list
     synchronized (this) {
-      unknownLocations.put(location, location);
+      locations.put(location, location);
       LOCATOR.add(location);
     }
+    
+    // tell about it
+    fireLocationAdded(location);
     
     // done
   }
@@ -247,8 +261,7 @@ import java.util.Map;
    * reset all data and start over
    */
   private void reset() {
-    knownLocations.clear();
-    unknownLocations.clear();
+    locations.clear();
     // collect events from indis and fams
     parseEntities(gedcom.getEntities(Gedcom.INDI));
     parseEntities(gedcom.getEntities(Gedcom.FAM));
