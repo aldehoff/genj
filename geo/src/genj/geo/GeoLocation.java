@@ -24,6 +24,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 import genj.util.WordBuffer;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -78,6 +79,23 @@ public class GeoLocation extends Point implements Feature, Comparable {
     // init
     init(prop);
 
+  }
+  
+  /**
+   * Convert coord to lat/lon String
+   */
+  public static String getString(Coordinate coord) {
+    double lat = coord.y, lon = coord.x;
+    if (Double.isNaN(lat)||Double.isNaN(lon))
+      return "n/a";
+    char we = 'E', ns = 'N';
+    if (lat<0) { lat = -lat; ns='S'; }
+    if (lon<0) { lon = -lon; we='W'; }
+    NumberFormat format = NumberFormat.getNumberInstance();
+    //format.setMinimumIntegerDigits(3);
+    format.setMaximumFractionDigits(1);
+    format.setMinimumFractionDigits(1);
+    return ns + format.format(lat) + " " + we + format.format(lon);
   }
   
   /** 

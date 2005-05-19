@@ -32,10 +32,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Geographic model wrapper for gedcom
@@ -63,7 +65,7 @@ import java.util.Map;
   /**
    * Accessor - locations
    */
-  public  List getLocations(Context context) {
+  public  Set getLocations(Context context) {
     
     // got a specific property?
     Property prop = context.getProperty();
@@ -82,11 +84,11 @@ import java.util.Map;
       return getLocations(entity.getProperties());
 
     // n/a
-    return Collections.EMPTY_LIST;
+    return Collections.EMPTY_SET;
   }
   
-  private synchronized List getLocations(Property[] props) {
-    ArrayList result = new ArrayList();
+  private synchronized Set getLocations(Property[] props) {
+    Set result = new HashSet();
     for (Iterator it=locations.keySet().iterator(); it.hasNext(); ) {
       GeoLocation location = (GeoLocation)it.next();
       if (location.contains(props))
@@ -105,8 +107,8 @@ import java.util.Map;
   /**
    * Accessor - locations
    */
-  public synchronized List getLocations() {
-    return new ArrayList(locations.keySet());
+  public synchronized Collection getLocations() {
+    return Collections.unmodifiableCollection(locations.keySet());
   }
   
   /**

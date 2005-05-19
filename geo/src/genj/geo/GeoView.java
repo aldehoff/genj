@@ -41,14 +41,12 @@ import genj.window.WindowManager;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,15 +56,11 @@ import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -115,7 +109,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
   /** our model & layer */
   private GeoModel model;
-  private JTable locationTable;
+  private GeoList locationList;
   private LocationsLayer locationLayer;  
   private SelectionLayer selectionLayer;
   private CursorTool currentTool;
@@ -134,16 +128,22 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     model = new GeoModel(gedcom);
     
     // create a location grid
-    locationTable = new JTable(new TableModel(model));
-    locationTable.setPreferredScrollableViewportSize(new Dimension(160,64));
+    locationList = new GeoList(model);
     
     // create layers
     locationLayer = new LocationsLayer();  
-    selectionLayer = new SelectionLayer(locationTable);
+    selectionLayer = new SelectionLayer();
+    
+    // hook em up
+    locationList.addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+        selectionLayer.setLocations(locationList.getSelectedLocations());
+      }
+    });
 
     // set layout
     setLayout(new BorderLayout());
-    add(BorderLayout.EAST, new JScrollPane(locationTable));
+    add(BorderLayout.EAST, new JScrollPane(locationList));
     
     // done
   }
@@ -156,7 +156,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // collect text
     StringBuffer text = new StringBuffer();
     text.append("<html><body>");
-    text.append( getString(coord));
+    text.append( GeoLocation.getString(coord));
     int rows = 1;
     
     // loop over locations
@@ -215,23 +215,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   }
   
   /**
-   * Convert coord to lat/lon String
-   */
-  private static String getString(Coordinate coord) {
-    double lat = coord.y, lon = coord.x;
-    if (Double.isNaN(lat)||Double.isNaN(lon))
-      return "n/a";
-    char we = 'E', ns = 'N';
-    if (lat<0) { lat = -lat; ns='S'; }
-    if (lon<0) { lon = -lon; we='W'; }
-    NumberFormat format = NumberFormat.getNumberInstance();
-    //format.setMinimumIntegerDigits(3);
-    format.setMaximumFractionDigits(1);
-    format.setMinimumFractionDigits(1);
-    return ns + format.format(lat) + " " + we + format.format(lon);
-  }
-  
-  /**
    * component lifecycle - we're needed
    */
   public void addNotify() {
@@ -269,8 +252,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    * Callback for context changes
    */
   public void setContext(Context context) {
-    // change selection to model's locations for that context
-    selectionLayer.setLocations(model.getLocations(context));
+    // change selection in list - that'll trigger a selection layer update as well
+    locationList.setSelectedLocations(model.getLocations(context));
     // done
   }
   
@@ -434,29 +417,14 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * A layer for our selection
    */
-  private class SelectionLayer extends LocationsLayer implements ListSelectionListener {
+  private class SelectionLayer extends LocationsLayer{
     
     private List selection = Collections.EMPTY_LIST;
     
-    private JTable table;
-    
     /** constructor */
-    private SelectionLayer(JTable table) {
-      this.table = table;
-      table.getSelectionModel().addListSelectionListener(this);
-      table.getColumnModel().getSelectionModel().addListSelectionListener(this);
+    private SelectionLayer() {
     }
 
-    /** selection callback */
-    public void valueChanged(ListSelectionEvent e) {
-
-      List list = new ArrayList();
-      int[] rows = table.getSelectedRows();
-      for (int i=0;i<rows.length;i++)
-        list.add(table.getValueAt(rows[i], 0));
-      setLocations(list);
-    }
-    
     /** initializer */
     protected void initStyles() {
       
@@ -476,7 +444,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     
     /** set selection */
-    private void setLocations(List set) {
+    public void setLocations(List set) {
       synchronized (this) {
         selection = set;
       }
@@ -636,98 +604,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
   } //LocationsLayer
   
-  /**
-   * A table grid wrapper for locations shown in a JTable
-   */
-  private static class TableModel extends AbstractTableModel implements GeoModelListener {
-
-    private GeoModel model;
-    private List locations = new ArrayList();
-    
-    /** constructor */
-    public TableModel(GeoModel model) {
-      this.model = model;
-    }
-
-    /** column header info */
-    public String getColumnName(int col) {
-      switch (col) {
-        default: case 0:
-          return "Location";
-        case 1:
-          return "Lat/Lon";
-      }
-    }
-    
-    /** lifecycle - listeners */
-    public void addTableModelListener(TableModelListener l) {
-      super.addTableModelListener(l);
-      // start working?
-      if (getTableModelListeners().length==1) {
-        model.addGeoModelListener(this);
-        locations = model.getLocations();
-        Collections.sort(locations);
-      }
-    }
-    
-    /** lifecycle - listeners */
-    public void removeTableModelListener(TableModelListener l) {
-      super.removeTableModelListener(l);
-      // stop working?
-      if (getTableModelListeners().length==0) {
-        model.removeGeoModelListener(this);
-        locations.clear();
-      }
-    }
-    
-    /** colums */
-    public int getColumnCount() {
-      return 2;
-    }
-
-    /** number of rows = locations */
-    public int getRowCount() {
-      return locations.size();
-    }
-
-    public Object getValueAt(int row, int col) {
-      // location for row
-      GeoLocation location = (GeoLocation)locations.get(row);
-      // check column
-      switch (col) {
-        default: case 0:
-          return location;
-        case 1:
-          if (!location.isValid())
-            return "unknown";
-          String coord = getString(location.getCoordinate());
-          if (location.getMatches()>1) coord += "?";
-          return coord;
-      }
-      // done
-    }
-
-    /** callback - geo model event */
-    public void locationAdded(GeoLocation location) {
-      fireTableDataChanged();
-      
-      locations.add(location);
-      Collections.sort(locations);
-    }
-
-    /** callback - geo model event */
-    public void locationUpdated(GeoLocation location) {
-      fireTableRowsUpdated(0, getRowCount()-1);
-    }
-
-    /** callback - geo model event */
-    public void locationRemoved(GeoLocation location) {
-      locations.remove(location);
-      fireTableDataChanged();
-    }
-
-  } //TableModel
-
   /**
    * The layer panel
    */
