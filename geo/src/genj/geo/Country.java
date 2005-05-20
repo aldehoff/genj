@@ -212,7 +212,6 @@ public class Country implements Comparable {
       if (Character.isLetter(c))
         result.append(Character.toLowerCase(c));
     }
-    System.out.println(state+">"+result);
     return result.toString();
   }
 
