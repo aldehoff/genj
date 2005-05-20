@@ -21,10 +21,8 @@ package genj.geo;
 
 import genj.util.Debug;
 import genj.util.EnvironmentChecker;
-import genj.util.Resources;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,11 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 
 /**
@@ -64,8 +58,7 @@ public class GeoService {
     DELETE_COUNTRY = "DELETE FROM countries WHERE country = ?",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
     SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS_WITH_CITY = "SELECT country, lat, lon FROM locations WHERE city = ?",
-    SELECT_LOCATIONS_WITH_CITYSTATE  = "SELECT country, lat, lon FROM locations WHERE city = ? AND state = ?";
+    SELECT_LOCATIONS = "SELECT state, country, lat, lon FROM locations WHERE city = ?";
 
   /*package*/ static final int
     DELETE_LOCATIONS_COUNTRY = 1,
@@ -82,14 +75,11 @@ public class GeoService {
     SELECT_COUNTRIES_OUT_COUNTRY = 1,
     
     SELECT_LOCATIONS_IN_CITY = 1,
-    SELECT_LOCATIONS_IN_STATE = 2,
-    SELECT_LOCATIONS_OUT_COUNTRY = 1,
-    SELECT_LOCATIONS_OUT_LAT = 2,
-    SELECT_LOCATIONS_OUT_LON = 3;
+    SELECT_LOCATIONS_OUT_STATE = 1,
+    SELECT_LOCATIONS_OUT_COUNTRY = 2,
+    SELECT_LOCATIONS_OUT_LAT = 3,
+    SELECT_LOCATIONS_OUT_LON = 4;
 
-  /** states to state-codes */
-  private Map state2code = new HashMap();
-  
   /** directories */
   private File localDir, globalDir;
 
@@ -113,9 +103,6 @@ public class GeoService {
     // prepare database shutdown
     Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown()));
 
-    // init gns information
-    initStateCodes();
-    
     // done
   }
   
@@ -167,42 +154,6 @@ public class GeoService {
           }
       } }
   } //Shutdown
-  
-  /**
-   * Initialize our state codes
-   */
-  private void initStateCodes() {
-
-    // try to find states.properties
-    File[] files = getGeoFiles();
-    for (int i = 0; i < files.length; i++) {
-      // the right file either local or global?
-      if (!files[i].getName().equals("states.properties"))
-        continue;
-      // read it
-      try {
-        Resources meta = new Resources(new FileInputStream(files[i]));
-        // look for all 'xx.yy = aaa,bbb,ccc'
-        // where 
-        //  xx = country
-        //  yy = state code
-        //  aaa,bbb,ccc = state names or abbreviations
-        for (Iterator keys = meta.getKeys(); keys.hasNext(); ) {
-          String key = keys.next().toString();
-          if (key.length()!=5) continue;
-          String code = key.substring(3,5);
-          for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
-            state2code.put(names.nextToken().trim(), code);
-        }
-      } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, t);
-      }
-      
-      // next
-    }
-    
-    // done
-  }
   
   /**
    * Test
@@ -261,7 +212,7 @@ public class GeoService {
   /**
    * Lookup Files in Geo directories
    */
-  private File[] getGeoFiles() {
+  /*package*/ File[] getGeoFiles() {
     
     List result = new ArrayList();
     
@@ -351,8 +302,8 @@ public class GeoService {
   public boolean match(GeoLocation location) {
 
     String city = location.getCity();
-    String state = (String)state2code.get(location.getState());
-    String country = location.getCountry().getCode();
+    String state = Country.getState(location);
+    Country country = Country.get(location);
    
     // try to find 
     double lat = Double.NaN, lon = Double.NaN;
@@ -360,14 +311,8 @@ public class GeoService {
     synchronized (this) {
       try {
         
-        // prepare appropriate select
-        PreparedStatement select;
-        if (state!=null)  {
-          select = connection.prepareStatement(SELECT_LOCATIONS_WITH_CITYSTATE);
-          select.setString(SELECT_LOCATIONS_IN_STATE, state);
-        } else {
-          select = connection.prepareStatement(SELECT_LOCATIONS_WITH_CITY);
-        }
+        // prepare select
+        PreparedStatement select = connection.prepareStatement(SELECT_LOCATIONS);
         select.setString(SELECT_LOCATIONS_IN_CITY, city);
 
         // loop over rows
@@ -376,8 +321,10 @@ public class GeoService {
         while (rows.next()) {
           // compute a score
           int score = 0;
-          if (country.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
-            score ++;
+          if (country.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+            score += 1;
+          if (state!=null&&state.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
+            score += 2;
           // grab lat/lon
           if (score>highscore) {
             highscore = score;
@@ -404,9 +351,6 @@ public class GeoService {
    */
   public synchronized GeoMap[] getMaps() {
     
-    
-instance.initStateCodes();    
-
     // know all maps already?
     if (maps==null) {
       

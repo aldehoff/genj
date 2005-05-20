@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -56,8 +55,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
   private Coordinate coordinate;
 
   /** city state and country */
-  private String city, state;
-  private Country country;
+  private String city, state, country;
   
   /** properties at that location */
   protected List properties = new ArrayList();
@@ -112,10 +110,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   private boolean init(Property prop) {
     
-    //  FIXME add support for jurisdications
-    
-    // assume the country is that of the local machine
-    country = Country.getDefaultCountry();
+    //  FIXME add support for jurisdictions
     
     // got a place?
     Property plac = prop.getProperty("PLAC");
@@ -155,18 +150,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     // how about a country?
     Property pcountry = addr.getProperty("CTRY");
-    if (pcountry!=null) {
-      String ctry = pcountry.getValue();
-      String lang = Locale.getDefault().getLanguage();
-      
-      String[] countries = Locale.getISOCountries();
-      for (int c=0; c<countries.length; c++) {
-        if (new Locale(lang, countries[c]).getDisplayCountry().equalsIgnoreCase(ctry))
-          country = Country.get(countries[c]);
-      }
-      
-      // good luck ;)
-    }
+    if (pcountry!=null) 
+      this.country = pcountry.getValue();
     
     // good
     return true;
@@ -177,8 +162,11 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   private boolean initFromPlace(PropertyPlace place) {
     
-    // simple - first jurisdiction
-    city = trim(place.getJurisdiction(0));
+    // city is simply the first jurisdiction
+    city = place.getJurisdiction(0);
+    
+    // trying 2nd jurisdication as state
+    state = place.getJurisdiction(1);
     
     // empty?
     if (city==null)
@@ -272,7 +260,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   public boolean equals(Object obj) {
     GeoLocation that = (GeoLocation)obj;
-    return equals(this.city, that.city) && equals(this.state, that.state) && this.country.equals(that.country);
+    return equals(this.city, that.city) && equals(this.state, that.state) && equals(this.country, that.country);
   }
   
   private static boolean equals(String a, String b) {
@@ -300,7 +288,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Country or null
    */
-  public Country getCountry() {
+  public String getCountry() {
     return country;
   }
   

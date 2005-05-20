@@ -19,13 +19,18 @@
  */
 package genj.geo;
 
+import genj.util.Debug;
 import genj.util.Resources;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * A country - why isn't that in java.util
@@ -37,6 +42,9 @@ public class Country implements Comparable {
   private static Country DEFAULT_COUNTRY = null;
   
   private final static Map iso2country = new HashMap();
+  
+  /** states to state-codes */
+  private static Map state2code;
   
   /** state */
   private String iso;
@@ -52,6 +60,27 @@ public class Country implements Comparable {
       iso2country.put(iso, result);
     }
     return result;
+  }
+  
+  /** lookup best match for location */
+  public static Country get(GeoLocation loc) {
+
+    // information there at all?
+    String country = loc.getCountry();
+    if (country==null||country.length()==0)
+      return getDefaultCountry();
+
+    // look for country
+    String lang = Locale.getDefault().getLanguage();
+    
+    String[] countries = Locale.getISOCountries();
+    for (int c=0; c<countries.length; c++) {
+      if (new Locale(lang, countries[c]).getDisplayCountry().equalsIgnoreCase(country))
+        return get(countries[c]);
+    }
+    
+    // use default then
+    return getDefaultCountry();
   }
   
   /** constructor */
@@ -122,6 +151,60 @@ public class Country implements Comparable {
     
     // try again
     return getAllCountries();
+  }
+  
+  /**
+   * Lookup a state code 
+   */
+  public static String getState(GeoLocation loc) {
+    
+    // information there?
+    String state = loc.getState();
+    if (state==null||state.length()==0)
+      return null;
+    
+    // initialized?
+    if (state2code==null) { synchronized (Country.class) { if (state2code==null) {
+      
+      state2code =  new HashMap();
+      
+      // try to find states.properties
+      File[] files = GeoService.getInstance().getGeoFiles();
+      for (int i = 0; i < files.length; i++) {
+        // the right file either local or global?
+        if (!files[i].getName().equals("states.properties"))
+          continue;
+        // read it
+        try {
+          Resources meta = new Resources(new FileInputStream(files[i]));
+          // look for all 'xx.yy = aaa,bbb,ccc'
+          // where 
+          //  xx = country
+          //  yy = state code
+          //  aaa,bbb,ccc = state names or abbreviations
+          for (Iterator keys = meta.getKeys(); keys.hasNext(); ) {
+            String key = keys.next().toString();
+            if (key.length()!=5) continue;
+            String code = key.substring(3,5);
+            for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
+              state2code.put(mangleState(names.nextToken()), code);
+          }
+        } catch (Throwable t) {
+          Debug.log(Debug.WARNING, Country.class, t);
+        }
+        
+        // next
+      }
+      
+      // initialized
+    }}}
+
+    // look it up
+    return (String)state2code.get(mangleState(state));
+  }
+  
+  private static String mangleState(String state) {
+    return state.trim().toLowerCase().replaceAll(" ", "").replaceAll("-", "");
   }
 
 } //Country
