@@ -74,7 +74,7 @@ public abstract class Import implements Trackable {
     }
     
     // use NGA for everything but US
-    return "us".equals(country) ? (Import)new USGSImport(state) : new NGAImport(country);
+    return country.getCode().equals("us") ? (Import)new USGSImport(state) : new NGAImport(country);
     
   }
   
