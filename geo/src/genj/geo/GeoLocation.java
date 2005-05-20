@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -55,7 +56,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
   private Coordinate coordinate;
 
   /** city state and country */
-  private String city, state, country;
+  private String city, state;
+  private Country country;
   
   /** properties at that location */
   protected List properties = new ArrayList();
@@ -112,6 +114,9 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     //  FIXME add support for jurisdications
     
+    // assume the country is that of the local machine
+    country = Country.getDefaultCountry();
+    
     // got a place?
     Property plac = prop.getProperty("PLAC");
     if (plac instanceof PropertyPlace)
@@ -143,10 +148,25 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (this.city==null)
       throw new IllegalArgumentException("address without city value");
     
-    // got a city?
+    // got a state?
     Property state = addr.getProperty("STAE");
     if (state!=null) 
       this.state = trim(state.getDisplayValue());
+    
+    // how about a country?
+    Property pcountry = addr.getProperty("CTRY");
+    if (pcountry!=null) {
+      String ctry = pcountry.getValue();
+      String lang = Locale.getDefault().getLanguage();
+      
+      String[] countries = Locale.getISOCountries();
+      for (int c=0; c<countries.length; c++) {
+        if (new Locale(lang, countries[c]).getDisplayCountry().equalsIgnoreCase(ctry))
+          country = Country.get(countries[c]);
+      }
+      
+      // good luck ;)
+    }
     
     // good
     return true;
@@ -252,7 +272,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   public boolean equals(Object obj) {
     GeoLocation that = (GeoLocation)obj;
-    return equals(this.city, that.city) && equals(this.state, that.state) && equals(this.country, that.country);
+    return equals(this.city, that.city) && equals(this.state, that.state) && this.country.equals(that.country);
   }
   
   private static boolean equals(String a, String b) {
@@ -281,7 +301,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * Country or null
    */
   public Country getCountry() {
-    return null;
+    return country;
   }
   
   /**
