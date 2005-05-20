@@ -326,13 +326,14 @@ public class GeoService {
           if (state!=null&&state.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
             score += 2;
           // grab lat/lon
-          if (score>highscore) {
+          if (score==highscore) matches ++;
+          else if (score>highscore) {
+            matches = 1;
             highscore = score;
             lat = rows.getDouble(SELECT_LOCATIONS_OUT_LAT);
             lon = rows.getDouble(SELECT_LOCATIONS_OUT_LON);
           }
           // next match
-          matches ++;
         }
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, this, "throwable while trying to match "+location, t);
