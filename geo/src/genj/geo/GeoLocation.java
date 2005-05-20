@@ -136,17 +136,28 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
 
-    // trim it
-    this.city = trim(pcity.getDisplayValue());
-    
-    // empty?
-    if (this.city==null)
+    // Francois keeps department in brackets in city - so trim city at '(' and look for 'state'
+    city = pcity.getDisplayValue();
+    int open = city.indexOf('(');
+    if (open>=0) {
+      int close = city.indexOf(')', open);
+      if (close>=0) {
+        state = city.substring(open+1, close).trim();
+        state = state.length()==0 ? null : state;
+      }
+      city = city.substring(0, open).trim();
+    }
+    if (city.length()==0)
       throw new IllegalArgumentException("address without city value");
     
-    // got a state?
-    Property state = addr.getProperty("STAE");
-    if (state!=null) 
-      this.state = trim(state.getDisplayValue());
+    // still need a a state?
+    if (state==null) {
+      Property pstate = addr.getProperty("STAE");
+      if (pstate!=null) {
+        state = pstate.getDisplayValue().trim();
+        state = state.length()==0 ? null : state;
+      }
+    }
     
     // how about a country?
     Property pcountry = addr.getProperty("CTRY");
@@ -166,9 +177,29 @@ public class GeoLocation extends Point implements Feature, Comparable {
     city = place.getJurisdiction(0);
     if (city==null||city.length()==0)
       throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
+
+    // Francois keeps his Departement in brackets - so trim city at '('
+    int open = city.indexOf('(');
+    if (open>=0)  {
+      city = city.substring(0, open).trim();
+      if (city.length()==0)
+        throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
+    }
     
-    // trying 2nd jurisdication as state
-    state = place.getJurisdiction(1);
+    // and look for (department) in value
+    String value = place.getValue();
+    open = value.indexOf('(');
+    if (open>=0) {
+      int close = value.indexOf(')', open);
+      if (close>=0) {
+        state = value.substring(open+1, close).trim();
+        state = state.length()==0 ? null : state;
+      }
+    }
+    
+    // trying 2nd jurisdication as state if necessary
+    if (state==null)
+      state = place.getJurisdiction(1);
     
     // done
     return true;
