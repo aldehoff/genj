@@ -64,8 +64,8 @@ public class GeoService {
     DELETE_COUNTRY = "DELETE FROM countries WHERE country = ?",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
     SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS_WITH_CITY = "SELECT  lat, lon FROM locations WHERE city = ?",
-    SELECT_LOCATIONS_WITH_CITYSTATE  = "SELECT lat, lon FROM locations WHERE city = ? AND state = ?";
+    SELECT_LOCATIONS_WITH_CITY = "SELECT country, lat, lon FROM locations WHERE city = ?",
+    SELECT_LOCATIONS_WITH_CITYSTATE  = "SELECT country, lat, lon FROM locations WHERE city = ? AND state = ?";
 
   /*package*/ static final int
     DELETE_LOCATIONS_COUNTRY = 1,
@@ -83,8 +83,9 @@ public class GeoService {
     
     SELECT_LOCATIONS_IN_CITY = 1,
     SELECT_LOCATIONS_IN_STATE = 2,
-    SELECT_LOCATIONS_OUT_LAT = 1,
-    SELECT_LOCATIONS_OUT_LON = 2;
+    SELECT_LOCATIONS_OUT_COUNTRY = 1,
+    SELECT_LOCATIONS_OUT_LAT = 2,
+    SELECT_LOCATIONS_OUT_LON = 3;
 
   /** states to state-codes */
   private Map state2code = new HashMap();
@@ -351,10 +352,11 @@ public class GeoService {
 
     String city = location.getCity();
     String state = (String)state2code.get(location.getState());
+    String country = location.getCountry().getCode();
    
     // try to find 
+    double lat = Double.NaN, lon = Double.NaN;
     int matches = 0;
-    float lat = Float.NaN, lon = Float.NaN;
     synchronized (this) {
       try {
         
@@ -369,13 +371,20 @@ public class GeoService {
         select.setString(SELECT_LOCATIONS_IN_CITY, city);
 
         // loop over rows
+        int highscore = -Integer.MAX_VALUE;
         ResultSet rows = select.executeQuery();
         while (rows.next()) {
+          // compute a score
+          int score = 0;
+          if (country.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+            score ++;
           // grab lat/lon
-          if (Float.isNaN(lat)) {
-            lat = rows.getFloat(SELECT_LOCATIONS_OUT_LAT);
-            lon = rows.getFloat(SELECT_LOCATIONS_OUT_LON);
+          if (score>highscore) {
+            highscore = score;
+            lat = rows.getDouble(SELECT_LOCATIONS_OUT_LAT);
+            lon = rows.getDouble(SELECT_LOCATIONS_OUT_LON);
           }
+          // next match
           matches ++;
         }
       } catch (Throwable t) {
