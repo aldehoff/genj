@@ -29,6 +29,8 @@ import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -175,7 +177,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       }
       // .. show progress dialog
       progress = viewManager.getWindowManager().openNonModalDialog(
-        null, "Importing ...",
+        null, GeoView.RESOURCES.getString("action.import"),
         WindowManager.IMG_INFORMATION, new ProgressWidget(gztImport, getThread()), null, GeoViewSettings.this
       );
       // continue
@@ -235,11 +237,12 @@ public class GeoViewSettings extends JPanel implements Settings {
   /**
    * A widget that allows to choose geo data to import
    */
-  private class SelectImportWidget extends JPanel {
+  private class SelectImportWidget extends JPanel implements ActionListener {
     
     private JComboBox countries;
     private ChoiceWidget state;
-
+    private Country USA = Country.get("us");
+    
     /**
      * Constructor
      */
@@ -247,14 +250,28 @@ public class GeoViewSettings extends JPanel implements Settings {
 
       setLayout(new NestedBlockLayout("<col><row><label/></row><row><country wx=\"1\"/></row><row><label/><state/></row></col>"));
 
-      countries = new JComboBox(Country.getAllCountries());
-      countries.setSelectedItem(Country.getDefaultCountry());
       state = new ChoiceWidget(USSTATES, null);
       
-      add(new JLabel("Please select a country"));
+      countries = new JComboBox(Country.getAllCountries());
+      countries.addActionListener(this);
+      countries.setSelectedItem(Country.get("ca"));//Country.getDefaultCountry());
+      
+      add(new JLabel(GeoView.RESOURCES.getString("import.country")));
       add(countries);
-      add(new JLabel("State (necessary for USA)"));
+      add(new JLabel(GeoView.RESOURCES.getString("import.state")));
       add(state);
+    }
+    
+    /**
+     * Callback - Country selected
+     */
+    public void actionPerformed(ActionEvent e) {
+      if (USA.equals(countries.getSelectedItem())) {
+        state.setEnabled(true);
+      } else {
+        state.setText("");
+        state.setEnabled(false);
+      }
     }
     
     /**

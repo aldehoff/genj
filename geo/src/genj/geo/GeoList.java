@@ -43,6 +43,12 @@ import javax.swing.table.AbstractTableModel;
  */
 /*package*/ class GeoList extends JPanel {
   
+  private static final String
+    TXT_LOCATION = GeoView.RESOURCES.getString("location"),
+    TXT_CHANGE = GeoView.RESOURCES.getString("location.change"),
+    TXT_LATLON = GeoView.RESOURCES.getString("location.latlon"),
+    TXT_UNKNOWN = GeoView.RESOURCES.getString("location.unknown");
+  
   /** model */
   private GeoModel model;
 
@@ -147,7 +153,7 @@ import javax.swing.table.AbstractTableModel;
    */
   private class Update extends ActionDelegate implements ListSelectionListener {
     private Update() {
-      setText("Change");
+      setText(TXT_CHANGE);
       setEnabled(false);
     }
     public void valueChanged(ListSelectionEvent e) {
@@ -178,9 +184,9 @@ import javax.swing.table.AbstractTableModel;
     public String getColumnName(int col) {
       switch (col) {
         default: case 0:
-          return "Location";
+          return TXT_LOCATION;
         case 1:
-          return "Lat/Lon";
+          return TXT_LATLON;
       }
     }
     
@@ -229,7 +235,7 @@ import javax.swing.table.AbstractTableModel;
           return location;
         case 1:
           if (!location.isValid())
-            return "unknown";
+            return TXT_UNKNOWN;
           String coord = GeoLocation.getString(location.getCoordinate());
           if (location.getMatches()>1) coord += "?";
           return coord;
