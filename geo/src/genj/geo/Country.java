@@ -186,8 +186,10 @@ public class Country implements Comparable {
             String key = keys.next().toString();
             if (key.length()!=5) continue;
             String code = key.substring(3,5);
-            for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
-              state2code.put(mangleState(names.nextToken()), code);
+            for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); ) {
+              String token = mangleState(names.nextToken());
+              if (token.length()>0) state2code.put(token, code);
+            }
           }
         } catch (Throwable t) {
           Debug.log(Debug.WARNING, Country.class, t);
@@ -204,7 +206,14 @@ public class Country implements Comparable {
   }
   
   private static String mangleState(String state) {
-    return state.trim().toLowerCase().replaceAll(" ", "").replaceAll("-", "");
+    StringBuffer result = new StringBuffer(state.length());
+    for (int i=0;i<state.length();i++) {
+      char c = state.charAt(i);
+      if (Character.isLetter(c))
+        result.append(Character.toLowerCase(c));
+    }
+    System.out.println(state+">"+result);
+    return result.toString();
   }
 
 } //Country
