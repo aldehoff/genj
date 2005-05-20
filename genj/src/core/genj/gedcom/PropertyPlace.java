@@ -278,7 +278,7 @@ public class PropertyPlace extends Property {
    * @return jurisdiction of zero+ length or null if n/a
    */
   public String getJurisdiction(int hierarchyLevel) {
-    return new DirectAccessTokenizer(place, JURISDICTION_SEPARATOR).get(hierarchyLevel);
+    return new DirectAccessTokenizer(place, JURISDICTION_SEPARATOR, true).get(hierarchyLevel);
   }
   
 } //PropertyPlace
