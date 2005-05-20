@@ -197,9 +197,15 @@ public class GeoLocation extends Point implements Feature, Comparable {
       }
     }
     
-    // trying 2nd jurisdication as state if necessary
-    if (state==null)
-      state = place.getJurisdiction(1);
+    // trying last jurisdication as state if still needed
+    if (state==null) {
+      for (int i=1;;i++) {
+        String jurisdiction = place.getJurisdiction(i);
+        if (jurisdiction==null)
+          break;
+        state = jurisdiction;
+      }
+    }
     
     // done
     return true;
