@@ -254,7 +254,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       
       countries = new JComboBox(Country.getAllCountries());
       countries.addActionListener(this);
-      countries.setSelectedItem(Country.get("ca"));//Country.getDefaultCountry());
+      countries.setSelectedItem(Country.getDefaultCountry());
       
       add(new JLabel(GeoView.RESOURCES.getString("import.country")));
       add(countries);
