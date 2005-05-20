@@ -334,7 +334,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       
       if (missing.length()>0) {
         String note = RESOURCES.getString("missing", missing);
-        viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), GeoView.this);
+        viewManager.getWindowManager().openDialog("missingcountries", null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), GeoView.this);
       }
     }
     // done
