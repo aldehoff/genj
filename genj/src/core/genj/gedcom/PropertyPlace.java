@@ -281,4 +281,11 @@ public class PropertyPlace extends Property {
     return new DirectAccessTokenizer(place, JURISDICTION_SEPARATOR, true).get(hierarchyLevel);
   }
   
+  /**
+   * Accessor - jurisdiction iterator
+   */
+  public DirectAccessTokenizer getJurisdictions() {
+    return new DirectAccessTokenizer(place, JURISDICTION_SEPARATOR);
+  }
+  
 } //PropertyPlace
