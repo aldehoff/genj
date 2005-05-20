@@ -162,16 +162,14 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   private boolean initFromPlace(PropertyPlace place) {
     
-    // city is simply the first jurisdiction
+    // city is simply the first jurisdiction and required
     city = place.getJurisdiction(0);
+    if (city==null||city.length()==0)
+      throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
     
     // trying 2nd jurisdication as state
     state = place.getJurisdiction(1);
     
-    // empty?
-    if (city==null)
-      throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
-
     // done
     return true;
   }
