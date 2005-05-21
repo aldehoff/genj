@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
@@ -64,7 +65,13 @@ import javax.swing.table.AbstractTableModel;
     this.model = model;
 
     // create some components
-    table = new JTable(new TableModel());
+    table = new JTable(new TableModel()) {
+      public String getToolTipText(java.awt.event.MouseEvent event) {
+         int row = rowAtPoint(event.getPoint());
+         TableModel model = (TableModel)getModel();
+         return row<0||row>=model.getRowCount() ? null : model.getLocationAt(row).toString();
+      }
+    };
 
     Update update = new Update();
     table.getSelectionModel().addListSelectionListener(update);
@@ -75,6 +82,9 @@ import javax.swing.table.AbstractTableModel;
     add(BorderLayout.SOUTH, new ButtonHelper().create(update));
     
     setPreferredSize(new Dimension(160,64));
+    
+    // tooltip
+    ToolTipManager.sharedInstance().registerComponent(table);
     
     // done
   }

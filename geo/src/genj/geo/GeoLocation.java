@@ -22,13 +22,22 @@ package genj.geo;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
+import genj.util.Debug;
+import genj.util.DirectAccessTokenizer;
+import genj.util.Resources;
 import genj.util.WordBuffer;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -42,6 +51,9 @@ import com.vividsolutions.jump.feature.FeatureSchema;
  */
 public class GeoLocation extends Point implements Feature, Comparable {
 
+  /** states to state-codes */
+  private static Map state2code, country2code;
+  
   /** 
    * our schema - could be more complicated like
    * schema.addAttribute("GEOMETRY", AttributeType.GEOMETRY);
@@ -56,6 +68,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
 
   /** city state and country */
   private String city, state, country;
+  private String fipsState, isoCountry;
+  private int hash;
   
   /** properties at that location */
   protected List properties = new ArrayList();
@@ -108,22 +122,27 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Init
    */
-  private boolean init(Property prop) {
+  private void init(Property prop) {
     
     //  FIXME add support for jurisdictions
     
-    // got a place?
     Property plac = prop.getProperty("PLAC");
-    if (plac instanceof PropertyPlace)
-       return initFromPlace((PropertyPlace)plac);
-    
-    // an address?
     Property addr = prop.getProperty("ADDR");
-    if (addr!=null)
-      return initFromAddress(addr);
     
-    // hmm
-    throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
+    // got a place?
+    if (plac instanceof PropertyPlace) {
+       initFromPlace((PropertyPlace)plac);
+    } else if (addr!=null) {
+        initFromAddress(addr);
+    } else {
+      throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
+    }
+    
+    // calculate hash code now
+    if (city!=null) hash += city.toLowerCase().hashCode();
+    if (state!=null) hash += state.toLowerCase().hashCode();
+    if (country!=null) hash += country.toLowerCase().hashCode();
+    
   }
   
   /**
@@ -136,14 +155,18 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
 
-    // Francois keeps department in brackets in city - so trim city at '(' and look for 'state'
+    // Francois keeps department in brackets in city - so trim city at '(' and look for (state)
     city = pcity.getDisplayValue();
     int open = city.indexOf('(');
     if (open>=0) {
       int close = city.indexOf(')', open);
       if (close>=0) {
-        state = city.substring(open+1, close).trim();
-        state = state.length()==0 ? null : state;
+        String jurisdiction = city.substring(open+1, close).trim();
+        String code = getFipsState(jurisdiction);
+        if (code!=null) {
+          fipsState = code;
+          state = jurisdiction;
+        }
       }
       city = city.substring(0, open).trim();
     }
@@ -154,15 +177,25 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (state==null) {
       Property pstate = addr.getProperty("STAE");
       if (pstate!=null) {
-        state = pstate.getDisplayValue().trim();
-        state = state.length()==0 ? null : state;
+        String jurisdiction = pstate.getDisplayValue();
+        String code = getFipsState(jurisdiction);
+        if (code!=null) {
+          state = jurisdiction;
+          fipsState = code;
+        }
       }
     }
     
     // how about a country?
     Property pcountry = addr.getProperty("CTRY");
-    if (pcountry!=null) 
-      this.country = pcountry.getValue();
+    if (pcountry!=null)  {
+      String value = pcountry.getDisplayValue();
+      String iso = getIsoCountry(value);
+      if (iso!=null) {
+        country = value;
+        isoCountry = iso;
+      }
+    }
     
     // good
     return true;
@@ -186,24 +219,41 @@ public class GeoLocation extends Point implements Feature, Comparable {
         throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
     }
     
-    // and look for (department) in value
-    String value = place.getValue();
-    open = value.indexOf('(');
-    if (open>=0) {
-      int close = value.indexOf(')', open);
-      if (close>=0) {
-        state = value.substring(open+1, close).trim();
-        state = state.length()==0 ? null : state;
+    // loop over jurisdictions to find state
+    DirectAccessTokenizer jurisdictions = place.getJurisdictions();
+    int skip = 0;
+    for (int i=0; ; i++) {
+      String jurisdiction = jurisdictions.get(i);
+      if (jurisdiction==null) break;
+      
+      // anything in brackets?
+      open = jurisdiction.indexOf('(');
+      if (open>=0) {
+        int close = jurisdiction.indexOf(')', open);
+        if (close>=0) {
+          jurisdiction = jurisdiction.substring(open+1, close);
+        }
+      }
+      
+      // try to find matching state
+      String code = getFipsState(jurisdiction);
+      if (code!=null) {
+        state = jurisdiction;
+        fipsState = code;
+        skip = i;
+        break;
       }
     }
-    
-    // trying last jurisdication as state if still needed
-    if (state==null) {
-      for (int i=1;;i++) {
-        String jurisdiction = place.getJurisdiction(i);
-        if (jurisdiction==null)
-          break;
-        state = jurisdiction;
+
+    // continue looking for country if available
+    for (int i=skip; ; i++) {
+      String jurisdiction = jurisdictions.get(i);
+      if (jurisdiction==null) break;
+      String iso = getIsoCountry(jurisdiction);
+      if (iso!=null) {
+        country = jurisdiction;
+        isoCountry = iso;
+        break;
       }
     }
     
@@ -211,22 +261,6 @@ public class GeoLocation extends Point implements Feature, Comparable {
     return true;
   }
   
-  /**
-   * trim a value - some folks add stuff to (e.g.) a city that we don't want to use in locations 
-   */
-  private String trim(String value) {
-    // null?
-    if (value==null)
-      return null;
-    // check for '(' and trim
-    int i = value.indexOf('(');
-    if (i>=0)
-      value = value.substring(0,i);
-    value = value.trim();
-    // done
-    return value.length() == 0 ? null : value;
-  }
-
   /**
    * Add poperties from another instance
    */
@@ -283,10 +317,6 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * identify is defined as city, state and country
    */
   public int hashCode() {
-    int hash = 0;
-    if (city!=null) hash += city.hashCode();
-    if (state!=null) hash += state.hashCode();
-    if (country!=null) hash += country.hashCode();
     return hash;
   }
 
@@ -303,7 +333,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
       return true;
     if (a==null||b==null)
       return false;
-    return a.equals(b);
+    return a.equalsIgnoreCase(b);
   }
 
   /**
@@ -314,17 +344,17 @@ public class GeoLocation extends Point implements Feature, Comparable {
   }
 
   /**
-   * State or null
+   * State Code
    */
-  public String getState() {
-    return state;
+  public String getFipsState() {
+    return fipsState;
   }
 
   /**
    * Country or null
    */
-  public String getCountry() {
-    return country;
+  public String  getISOCountry() {
+    return isoCountry;
   }
   
   /**
@@ -478,7 +508,90 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   public int compareTo(Object o) {
     GeoLocation that = (GeoLocation)o;
-    return this.city.compareTo(that.city);
+    return this.city.compareToIgnoreCase(that.city);
+  }
+  
+  /**
+   * Lookup a country code
+   */
+  private static String getIsoCountry(String name) {
+
+    // information there at all?
+    if (name==null||name.length()==0)
+      return Country.getDefaultCountry().getCode();
+    
+    // initialized?
+    if (country2code==null) { synchronized (GeoLocation.class) { if (country2code==null) {
+      
+      country2code = new HashMap();
+
+      // init all well known countries
+      String lang = Locale.getDefault().getLanguage();
+      String[] countries = Locale.getISOCountries();
+      for (int c=0; c<countries.length; c++) 
+        country2code.put( new Locale(lang, countries[c]).getDisplayCountry(), countries[c]);
+      
+    }}}
+    
+    // look it up
+    return (String)country2code.get(name);
+  }
+    
+  /**
+   * Lookup a state code 
+   */
+  private String getFipsState(String state) {
+    
+    // initialized?
+    if (state2code==null) { synchronized (GeoLocation.class) { if (state2code==null) {
+      
+      state2code =  new HashMap();
+      
+      // try to find states.properties
+      File[] files = GeoService.getInstance().getGeoFiles();
+      for (int i = 0; i < files.length; i++) {
+        // the right file either local or global?
+        if (!files[i].getName().equals("states.properties"))
+          continue;
+        // read it
+        try {
+          Resources meta = new Resources(new FileInputStream(files[i]));
+          // look for all 'xx.yy = aaa,bbb,ccc'
+          // where 
+          //  xx = country
+          //  yy = state code
+          //  aaa,bbb,ccc = state names or abbreviations
+          for (Iterator keys = meta.getKeys(); keys.hasNext(); ) {
+            String key = keys.next().toString();
+            if (key.length()!=5) continue;
+            String code = key.substring(3,5);
+            for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); ) {
+              String token = mangleState(names.nextToken());
+              if (token.length()>0) state2code.put(token, code);
+            }
+          }
+        } catch (Throwable t) {
+          Debug.log(Debug.WARNING, Country.class, t);
+        }
+        
+        // next
+      }
+      
+      // initialized
+    }}}
+
+    // look it up
+    return (String)state2code.get(mangleState(state));
+  }
+  
+  private String mangleState(String state) {
+    StringBuffer result = new StringBuffer(state.length());
+    for (int i=0;i<state.length();i++) {
+      char c = state.charAt(i);
+      if (Character.isLetter(c))
+        result.append(Character.toLowerCase(c));
+    }
+    return result.toString();
   }
   
 }

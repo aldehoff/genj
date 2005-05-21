@@ -56,6 +56,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.Timer;
@@ -101,6 +102,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /** the current map */
   private GeoMap currentMap;
   
+  /** split panel */
+  private JSplitPane split;
+  
   /** the current layer view panel */
   private LayerViewPanel layerPanel;
   
@@ -142,8 +146,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     });
 
     // set layout
+    split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, new JScrollPane(locationList));
     setLayout(new BorderLayout());
-    add(BorderLayout.EAST, new JScrollPane(locationList));
+    add(BorderLayout.CENTER, split);
     
     // done
   }
@@ -241,6 +246,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // remember map
     if (currentMap!=null)
       registry.put("map", currentMap.getKey());
+    // remember split
+    registry.put("split", split.getDividerLocation());
     // tell to layers
     selectionLayer.setLayerManager(null);
     locationLayer.setLayerManager(null);
@@ -288,10 +295,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    */
   public void setMap(GeoMap map, boolean warn) throws IOException {
     
-    // remove old
-    if (layerPanel!=null)
-      remove(layerPanel);
-    
     // keep
     currentMap = map;
     
@@ -313,9 +316,14 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       layerPanel.setCurrentCursorTool(currentTool);
 
     // show
-    add(BorderLayout.CENTER, layerPanel);
+    split.setLeftComponent(layerPanel);
     revalidate();
     repaint();
+    
+    // set split position
+    int pos = registry.get("split", 400);
+    split.setLastDividerLocation(pos);
+    split.setDividerLocation(pos);
     
     // enable tooltips
     ToolTipManager.sharedInstance().registerComponent(layerPanel);
@@ -405,6 +413,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     /** choose current map */
     protected void execute() {
+      // remember split
+      registry.put("split", split.getDividerLocation());
       // set it
       try {
         setMap(map, true);

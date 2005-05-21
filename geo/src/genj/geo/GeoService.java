@@ -302,8 +302,8 @@ public class GeoService {
   public boolean match(GeoLocation location) {
 
     String city = location.getCity();
-    String state = Country.getState(location);
-    Country country = Country.get(location);
+    String fipsState = location.getFipsState();
+    String isoCountry = location.getISOCountry();
    
     // try to find 
     double lat = Double.NaN, lon = Double.NaN;
@@ -321,9 +321,9 @@ public class GeoService {
         while (rows.next()) {
           // compute a score
           int score = 0;
-          if (country.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+          if (isoCountry!=null&&isoCountry.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
             score += 1;
-          if (state!=null&&state.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
+          if (fipsState!=null&&fipsState.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
             score += 2;
           // grab lat/lon
           if (score==highscore) matches ++;
