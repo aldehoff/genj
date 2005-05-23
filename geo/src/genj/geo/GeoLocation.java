@@ -51,8 +51,9 @@ import com.vividsolutions.jump.feature.FeatureSchema;
  */
 public class GeoLocation extends Point implements Feature, Comparable {
 
-  /** states to state-codes */
-  private static Map state2code, country2code;
+  /** "displayStates to state-codes" and "locale to displayCountries to country-codes"*/
+  private static Map state2code;
+  private static Map locale2displayCountry2iso = new HashMap();
   
   /** 
    * our schema - could be more complicated like
@@ -155,42 +156,27 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
 
-    // Francois keeps department in brackets in city - so trim city at '(' and look for (state)
-    city = pcity.getDisplayValue();
-    int open = city.indexOf('(');
-    if (open>=0) {
-      int close = city.indexOf(')', open);
-      if (close>=0) {
-        String jurisdiction = city.substring(open+1, close).trim();
-        String code = getFipsState(jurisdiction);
-        if (code!=null) {
-          fipsState = code;
-          state = jurisdiction;
-        }
-      }
-      city = city.substring(0, open).trim();
-    }
+    city = pcity.getDisplayValue().trim();
     if (city.length()==0)
       throw new IllegalArgumentException("address without city value");
     
     // still need a a state?
-    if (state==null) {
-      Property pstate = addr.getProperty("STAE");
-      if (pstate!=null) {
-        String jurisdiction = pstate.getDisplayValue();
-        String code = getFipsState(jurisdiction);
-        if (code!=null) {
-          state = jurisdiction;
-          fipsState = code;
-        }
+    Property pstate = addr.getProperty("STAE");
+    if (pstate!=null) {
+      String jurisdiction = pstate.getDisplayValue();
+      String code = getFipsState(jurisdiction);
+      if (code!=null) {
+        state = jurisdiction;
+        fipsState = code;
       }
     }
     
     // how about a country?
+    Locale locale = addr.getGedcom().getLocale();
     Property pcountry = addr.getProperty("CTRY");
     if (pcountry!=null)  {
       String value = pcountry.getDisplayValue();
-      String iso = getIsoCountry(value);
+      String iso = getIsoCountry(value, locale);
       if (iso!=null) {
         country = value;
         isoCountry = iso;
@@ -211,30 +197,12 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (city==null||city.length()==0)
       throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
 
-    // Francois keeps his Departement in brackets - so trim city at '('
-    int open = city.indexOf('(');
-    if (open>=0)  {
-      city = city.substring(0, open).trim();
-      if (city.length()==0)
-        throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
-    }
-    
     // loop over jurisdictions to find state
     DirectAccessTokenizer jurisdictions = place.getJurisdictions();
-    int skip = 0;
-    for (int i=0; ; i++) {
+    int skip =1;
+    for (int i= skip; ; i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
-      
-      // anything in brackets?
-      open = jurisdiction.indexOf('(');
-      if (open>=0) {
-        int close = jurisdiction.indexOf(')', open);
-        if (close>=0) {
-          jurisdiction = jurisdiction.substring(open+1, close);
-        }
-      }
-      
       // try to find matching state
       String code = getFipsState(jurisdiction);
       if (code!=null) {
@@ -246,10 +214,11 @@ public class GeoLocation extends Point implements Feature, Comparable {
     }
 
     // continue looking for country if available
+    Locale locale = place.getGedcom().getLocale();
     for (int i=skip; ; i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
-      String iso = getIsoCountry(jurisdiction);
+      String iso = getIsoCountry(jurisdiction, locale);
       if (iso!=null) {
         country = jurisdiction;
         isoCountry = iso;
@@ -514,27 +483,30 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Lookup a country code
    */
-  private static String getIsoCountry(String name) {
+  private static String getIsoCountry(String displayCountry, Locale locale) {
 
     // information there at all?
-    if (name==null||name.length()==0)
+    if (displayCountry==null||displayCountry.length()==0)
       return Country.getDefaultCountry().getCode();
     
-    // initialized?
-    if (country2code==null) { synchronized (GeoLocation.class) { if (country2code==null) {
+    // check display countries for given locale
+    Map displayCountry2iso = (Map)locale2displayCountry2iso.get(locale);
+    if (displayCountry2iso==null) {
+      displayCountry2iso = new HashMap();
       
-      country2code = new HashMap();
-
       // init all well known countries
-      String lang = Locale.getDefault().getLanguage();
-      String[] countries = Locale.getISOCountries();
-      for (int c=0; c<countries.length; c++) 
-        country2code.put( new Locale(lang, countries[c]).getDisplayCountry(), countries[c]);
+      String[] isoCountries = Locale.getISOCountries();
+      for (int c=0; c<isoCountries.length; c++)  {
+        String isoCountry = isoCountries[c];
+        displayCountry2iso.put( new Locale(isoCountry, isoCountry).getDisplayCountry(locale), isoCountry);
+      }
       
-    }}}
+      // remember
+      locale2displayCountry2iso.put(locale, displayCountry2iso);
+    }
     
     // look it up
-    return (String)country2code.get(name);
+    return (String)displayCountry2iso.get(displayCountry);
   }
     
   /**
@@ -543,7 +515,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
   private String getFipsState(String state) {
     
     // initialized?
-    if (state2code==null) { synchronized (GeoLocation.class) { if (state2code==null) {
+    if (state2code==null) { 
       
       state2code =  new HashMap();
       
@@ -578,7 +550,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
       }
       
       // initialized
-    }}}
+    }
 
     // look it up
     return (String)state2code.get(mangleState(state));
