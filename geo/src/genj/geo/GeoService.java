@@ -151,7 +151,7 @@ public class GeoService {
       public void run() { synchronized(GeoService.this) {
           Debug.log(Debug.INFO, GeoService.this, "GeoService Shutdown");
           try {
-            connection.createStatement().execute("SHUTDOWN COMPACT");
+            connection.createStatement().execute("SHUTDOWN");
           } catch (SQLException e) {
             // ignored
           }

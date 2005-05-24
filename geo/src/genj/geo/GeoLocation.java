@@ -176,29 +176,33 @@ public class GeoLocation extends Point implements Feature, Comparable {
   private boolean initFromPlace(PropertyPlace place) {
     
     Gedcom ged = place.getGedcom();
-    
-    // city is simply the first jurisdiction and required
-    city = place.getJurisdiction(0);
-    if (city==null||city.length()==0)
-      throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
-
-    // loop over jurisdictions to find state
     DirectAccessTokenizer js = place.getJurisdictions();
-    int skip =1;
-    for (int i= skip; ; i++) {
+    int first = 0;
+    
+    // city is simply the first non-empty jurisdiction and required
+    while (true) {
+      city = js.get(first++);
+      if (city==null)
+        throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
+      if (city.length()>0) 
+        break;
+    }
+    
+    // we look at remaining jurisdictions for a well-known top-level jurisdiction
+    for (int i=first; ; i++) {
       String j = js.get(i);
       if (j==null) break;
       // try to find matching jurisdiction
       jurisdiction = Jurisdiction.get(ged.getCollator(), j);
       if (jurisdiction!=null)  {
-        skip = i;
+        first = i+1;
         break;
       }
     }
 
-    // continue looking for country if available
+    // and then as well for a country displayed in gedcom's locale
     Locale locale = place.getGedcom().getLocale();
-    for (int i=skip; ; i++) {
+    for (int i=first; ; i++) {
       String j = js.get(i);
       if (j==null) break;
       country = Country.get(ged.getLocale(), j);
