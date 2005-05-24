@@ -169,7 +169,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       GeoLocation location = (GeoLocation)it.next();
       
       text.append("<br><b>");
-      text.append(location.getCity());
+      text.append(location);
       text.append("</b>");
       rows++;
 
