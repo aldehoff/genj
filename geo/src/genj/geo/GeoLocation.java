@@ -52,8 +52,8 @@ import com.vividsolutions.jump.feature.FeatureSchema;
 public class GeoLocation extends Point implements Feature, Comparable {
 
   /** "displayStates to state-codes" and "locale to displayCountries to country-codes"*/
-  private static Map state2code;
-  private static Map locale2displayCountry2iso = new HashMap();
+  private static Map jurisdiction2code;
+  private static Map locale2displayCountry2code = new HashMap();
   
   /** 
    * our schema - could be more complicated like
@@ -125,8 +125,6 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   private void init(Property prop) {
     
-    //  FIXME add support for jurisdictions
-    
     Property plac = prop.getProperty("PLAC");
     Property addr = prop.getProperty("ADDR");
     
@@ -164,7 +162,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     Property pstate = addr.getProperty("STAE");
     if (pstate!=null) {
       String jurisdiction = pstate.getDisplayValue();
-      String code = getFipsState(jurisdiction);
+      String code = getJurisdictionCode(jurisdiction);
       if (code!=null) {
         state = jurisdiction;
         fipsState = code;
@@ -176,7 +174,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     Property pcountry = addr.getProperty("CTRY");
     if (pcountry!=null)  {
       String value = pcountry.getDisplayValue();
-      String iso = getIsoCountry(value, locale);
+      String iso = getCountryCode(value, locale);
       if (iso!=null) {
         country = value;
         isoCountry = iso;
@@ -204,7 +202,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
       // try to find matching state
-      String code = getFipsState(jurisdiction);
+      String code = getJurisdictionCode(jurisdiction);
       if (code!=null) {
         state = jurisdiction;
         fipsState = code;
@@ -218,7 +216,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     for (int i=skip; ; i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
-      String iso = getIsoCountry(jurisdiction, locale);
+      String iso = getCountryCode(jurisdiction, locale);
       if (iso!=null) {
         country = jurisdiction;
         isoCountry = iso;
@@ -483,14 +481,14 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Lookup a country code
    */
-  private static String getIsoCountry(String displayCountry, Locale locale) {
+  private static String getCountryCode(String displayCountry, Locale locale) {
 
     // information there at all?
     if (displayCountry==null||displayCountry.length()==0)
       return Country.getDefaultCountry().getCode();
     
     // check display countries for given locale
-    Map displayCountry2iso = (Map)locale2displayCountry2iso.get(locale);
+    Map displayCountry2iso = (Map)locale2displayCountry2code.get(locale);
     if (displayCountry2iso==null) {
       displayCountry2iso = new HashMap();
       
@@ -502,7 +500,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
       }
       
       // remember
-      locale2displayCountry2iso.put(locale, displayCountry2iso);
+      locale2displayCountry2code.put(locale, displayCountry2iso);
     }
     
     // look it up
@@ -510,20 +508,20 @@ public class GeoLocation extends Point implements Feature, Comparable {
   }
     
   /**
-   * Lookup a state code 
+   * Lookup code for top-level jurisdictions 
    */
-  private String getFipsState(String state) {
+  private String getJurisdictionCode(String jurisdiction) {
     
     // initialized?
-    if (state2code==null) { 
+    if (jurisdiction2code==null) { 
       
-      state2code =  new HashMap();
+      jurisdiction2code =  new HashMap();
       
-      // try to find states.properties
+      // fill lookup of top level jurisdictions
       File[] files = GeoService.getInstance().getGeoFiles();
       for (int i = 0; i < files.length; i++) {
         // the right file either local or global?
-        if (!files[i].getName().equals("states.properties"))
+        if (!files[i].getName().equals("jurisdictions.properties"))
           continue;
         // read it
         try {
@@ -538,8 +536,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
             if (key.length()!=5) continue;
             String code = key.substring(3,5);
             for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); ) {
-              String token = mangleState(names.nextToken());
-              if (token.length()>0) state2code.put(token, code);
+              String token = encodeJurisdiction(names.nextToken());
+              if (token.length()>0) jurisdiction2code.put(token, code);
             }
           }
         } catch (Throwable t) {
@@ -553,10 +551,10 @@ public class GeoLocation extends Point implements Feature, Comparable {
     }
 
     // look it up
-    return (String)state2code.get(mangleState(state));
+    return (String)jurisdiction2code.get(encodeJurisdiction(jurisdiction));
   }
   
-  private String mangleState(String state) {
+  private String encodeJurisdiction(String state) {
     StringBuffer result = new StringBuffer(state.length());
     for (int i=0;i<state.length();i++) {
       char c = state.charAt(i);
