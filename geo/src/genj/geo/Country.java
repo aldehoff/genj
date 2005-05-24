@@ -21,9 +21,10 @@ package genj.geo;
 
 import genj.util.Resources;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.text.Collator;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -36,38 +37,33 @@ public class Country implements Comparable {
   
   private static Country DEFAULT_COUNTRY = null;
   
-  private final static Map iso2country = new HashMap();
+  private final static Map locale2countries = new HashMap();
   
   /** state */
   private String iso;
   private String fips;
-  private String name;
-  
-  /** lookup */
-  public static Country get(String iso) {
-    iso = iso.toLowerCase();
-    Country result = (Country) iso2country.get(iso);
-    if (result==null) {
-      result = new Country(iso);
-      iso2country.put(iso, result);
-    }
-    return result;
-  }
+  private String displayName;
   
   /** constructor */
   private Country(String code) {
     iso = code;
-    name =  new Locale("en", code).getDisplayCountry();
+    displayName =  new Locale(Locale.getDefault().getLanguage(), code).getDisplayCountry();
+  }
+  
+  /** constructor */
+  private Country(String code, String displayName) {
+    iso = code;
+    this.displayName = displayName;
   }
   
   /** name */
-  public String getName() {
-    return name;
+  public String getDisplayName() {
+    return displayName;
   }
   
   /** string representation - it's name */
   public String toString() {
-    return name;
+    return displayName;
   }
   
   /** iso code */
@@ -87,9 +83,10 @@ public class Country implements Comparable {
     return toString().compareTo(o.toString());
   }
   
-  /** equals - same country */
+  /** equals - same country name */
   public boolean equals(Object obj) {
-    return this==obj;
+    Country that = (Country)obj;
+    return displayName.equals(that.displayName);
   }
   
   /**
@@ -105,24 +102,54 @@ public class Country implements Comparable {
    */
   public static Country[] getAllCountries() {
     
-    // checked that once already?
-    if (DEFAULT_COUNTRY!=null) {
-      Collection countries = iso2country.values();
-      Country[] result = (Country[])countries.toArray(new Country[countries.size()]);
-      Arrays.sort(result);
-      return result;
-    }
-
     DEFAULT_COUNTRY = get(Locale.getDefault().getCountry());
     
     // grab all country codes
     String[] codes = Locale.getISOCountries(); 
+    Country[] result = new Country[codes.length];
     for (int i=0;i<codes.length;i++) 
-      get(codes[i]);
+      result[i] = new Country(codes[i]);
     
     // try again
-    return getAllCountries();
+    return result;
   }
   
+  /**
+   * Lookup a country by code
+   */
+  public static Country get(String code) {
+    return new Country(code);
+  }
+  
+  /**
+   * Lookup a country by name
+   */
+  public static Country get(Locale locale, String displayName) {
+    
+    // do we have countries in given locale already?
+    List countries = (List)locale2countries.get(locale);
+    if (countries==null) {
+      // build country list for that locale
+      String[] codes = Locale.getISOCountries(); 
+      countries = new ArrayList(codes.length);
+      for (int i = 0; i < codes.length; i++) 
+        countries.add(new Country(codes[i], new Locale(locale.getLanguage(), codes[i]).getDisplayCountry(locale)));
+      // remember
+      locale2countries.put(locale, countries);
+    }
+    
+    // loop over names now
+    Collator collator = Collator.getInstance(locale);
+    collator.setStrength(Collator.PRIMARY);
+    for (int i = 0; i < countries.size(); i++) {
+      Country country = (Country)countries.get(i);
+      if (collator.compare(country.getDisplayName(), displayName)==0)
+        return new Country(country.iso, displayName);
+    }
+
+    // not found
+    return null;
+  }
+      
 
 } //Country

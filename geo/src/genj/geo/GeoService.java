@@ -29,10 +29,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -122,15 +122,16 @@ public class GeoService {
       Class.forName("org.hsqldb.jdbcDriver");
   
       // connect to the database.   
-      connection = DriverManager.getConnection("jdbc:hsqldb:file:"+geo.getAbsolutePath(), "sa",""); 
+      Properties props = new Properties();
+      props.setProperty("user", "sa");
+      props.setProperty("password", "");
+      props.setProperty("hsqldb.cache_scale", "8");  // less rows 3*2^x
+      props.setProperty("hsqldb.cache_size_scale", "7"); // less size per row 2^x
+      props.setProperty("sql.compare_in_locale", "0"); // Collator strength PRIMARY
+      
+      connection = DriverManager.getConnection("jdbc:hsqldb:file:"+geo.getAbsolutePath(), props); 
       connection.setAutoCommit(true);
   
-      Statement statement = connection.createStatement();
-      statement.execute("SET PROPERTY \"hsqldb.cache_scale\" 8");  // less rows 3*2^x
-      statement.execute("SET PROPERTY \"hsqldb.cache_size_scale\" 7"); // less size per row 2^x
-      statement.execute("SET PROPERTY \"sql.compare_in_locale\" 0"); // Collator strength PRIMARY
-      
-      
       // create tables
       try {
         connection.createStatement().executeUpdate(CREATE_TABLES);
@@ -174,11 +175,11 @@ public class GeoService {
 //    getInstance().match(loc);
 //    System.out.println(loc);
     
-    String city = "Celle";
+    String city = "Lohmar";
     GeoService gs = getInstance();
     try {
       
-      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, state, country, lat, lon FROM locations WHERE city LIKE  ?");
+      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, state, country, lat, lon FROM locations WHERE city = ?");
       ps.setString(1, city);
       ResultSet result = ps.executeQuery();
       while (result.next()) {
@@ -304,8 +305,8 @@ public class GeoService {
   public boolean match(GeoLocation location) {
 
     String city = location.getCity();
-    String fipsState = location.getFipsState();
-    String isoCountry = location.getISOCountry();
+    Jurisdiction jurisdiction = location.getJurisdiction();
+    Country country = location.getCountry();
    
     // try to find 
     double lat = Double.NaN, lon = Double.NaN;
@@ -323,9 +324,9 @@ public class GeoService {
         while (rows.next()) {
           // compute a score
           int score = 0;
-          if (isoCountry!=null&&isoCountry.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+          if (country!=null&&country.getFips().equals(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
             score += 1;
-          if (fipsState!=null&&fipsState.equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
+          if (jurisdiction!=null&&jurisdiction.getCode().equals(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
             score += 2;
           // grab lat/lon
           if (score==highscore) matches ++;
