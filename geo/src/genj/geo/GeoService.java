@@ -113,7 +113,7 @@ public class GeoService {
     // startup database
     File geo =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo/database", "", "looking for user's geo directory"));
     geo.getParentFile().mkdir();
-
+  
     try {
       
       Debug.log(Debug.INFO, GeoService.this, "GeoService Startup");
@@ -124,11 +124,13 @@ public class GeoService {
       // connect to the database.   
       connection = DriverManager.getConnection("jdbc:hsqldb:file:"+geo.getAbsolutePath(), "sa",""); 
       connection.setAutoCommit(true);
-
+  
       Statement statement = connection.createStatement();
       statement.execute("SET PROPERTY \"hsqldb.cache_scale\" 8");  // less rows 3*2^x
       statement.execute("SET PROPERTY \"hsqldb.cache_size_scale\" 7"); // less size per row 2^x
-            
+      statement.execute("SET PROPERTY \"sql.compare_in_locale\" 0"); // Collator strength PRIMARY
+      
+      
       // create tables
       try {
         connection.createStatement().executeUpdate(CREATE_TABLES);
@@ -148,7 +150,7 @@ public class GeoService {
       public void run() { synchronized(GeoService.this) {
           Debug.log(Debug.INFO, GeoService.this, "GeoService Shutdown");
           try {
-            connection.createStatement().execute("SHUTDOWN");
+            connection.createStatement().execute("SHUTDOWN COMPACT");
           } catch (SQLException e) {
             // ignored
           }
