@@ -28,12 +28,17 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
 
 /**
  * We support the concept of a top-level jurisdiction
  */
 public class Jurisdiction {
+  
+  /** a weak cache of displayNames to reusable instances */
+  private static Map displayName2jurisdiction = new WeakHashMap(); 
 
   /** all known jurisdictions */
   private static List jurisdictions;
@@ -79,6 +84,11 @@ public class Jurisdiction {
    */
   public static Jurisdiction get(Collator collator, String displayName) {
     
+    // do a quick lookup for cached info
+    Jurisdiction jurisdiction  = (Jurisdiction)displayName2jurisdiction.get(displayName);
+    if (jurisdiction!=null)
+      return jurisdiction;
+      
     // initialized?
     if (jurisdictions==null) { 
       
@@ -103,7 +113,7 @@ public class Jurisdiction {
             if (key.length()!=5) continue;
             String code = key.substring(3,5);
             for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
-              jurisdictions.add(new Jurisdiction(code, names.nextToken()));
+              jurisdictions.add(new Jurisdiction(code, names.nextToken().trim()));
           }
         } catch (Throwable t) {
           Debug.log(Debug.WARNING, Country.class, t);
@@ -117,9 +127,19 @@ public class Jurisdiction {
 
     // look it up
     for (int i = 0; i < jurisdictions.size(); i++) {
-      Jurisdiction jurisdiction = (Jurisdiction)jurisdictions.get(i);
-      if (collator.compare(jurisdiction.displayName, displayName)==0) 
-        return new Jurisdiction(jurisdiction.code, displayName);
+      jurisdiction = (Jurisdiction)jurisdictions.get(i);
+      if (collator.compare(jurisdiction.displayName, displayName)==0) {
+        // create a new instance just for this displayName
+        jurisdiction = new Jurisdiction(jurisdiction.code, displayName);
+
+        // and cache it for next time
+        displayName2jurisdiction.put(displayName, jurisdiction);
+
+        // done
+        return jurisdiction;
+      }
+      
+      // try next
     }
     
     // not found

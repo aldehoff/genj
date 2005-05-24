@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * A country - why isn't that in java.util
@@ -38,6 +39,8 @@ public class Country implements Comparable {
   private static Country DEFAULT_COUNTRY = null;
   
   private final static Map locale2countries = new HashMap();
+  
+  private final static Map displayName2Country = new WeakHashMap();
   
   /** state */
   private String iso;
@@ -126,6 +129,11 @@ public class Country implements Comparable {
    */
   public static Country get(Locale locale, String displayName) {
     
+    // first a quick check for cached display names
+    Country country = (Country)displayName2Country.get(displayName);
+    if (country!=null)
+      return country;
+    
     // do we have countries in given locale already?
     List countries = (List)locale2countries.get(locale);
     if (countries==null) {
@@ -142,14 +150,22 @@ public class Country implements Comparable {
     Collator collator = Collator.getInstance(locale);
     collator.setStrength(Collator.PRIMARY);
     for (int i = 0; i < countries.size(); i++) {
-      Country country = (Country)countries.get(i);
-      if (collator.compare(country.getDisplayName(), displayName)==0)
-        return new Country(country.iso, displayName);
+      country = (Country)countries.get(i);
+      if (collator.compare(country.getDisplayName(), displayName)==0) {
+        
+        // create a private instance for this display name
+        country = new Country(country.iso, displayName);
+        
+        // cache it under displayName for next time
+        displayName2Country.put(displayName, country);
+        
+        // done
+        return country;
+      }
     }
 
     // not found
     return null;
   }
-      
 
 } //Country
