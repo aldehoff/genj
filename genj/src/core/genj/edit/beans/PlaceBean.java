@@ -52,14 +52,16 @@ public class PlaceBean extends PropertyBean {
   public void commit() {
     
     StringBuffer result = new StringBuffer();
-    
+
+    boolean first = true;
     for (int i=0, j=getComponentCount(); i<j; i++) {
       // check each text field
       Component comp = getComponent(i);
       if (comp instanceof ChoiceWidget) {
         String jurisdiction = ((ChoiceWidget)comp).getText().trim();
-        if (result.length()>0) result.append(",");
+        if (!first) result.append(","); // make sure to add a comma even if result.length()==0 since an empty jurisdiction was entered
         result.append(jurisdiction);
+        first = false;
       }
       // next
     }
