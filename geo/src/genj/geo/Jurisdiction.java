@@ -51,8 +51,8 @@ public class Jurisdiction {
    */
   private Jurisdiction(String code, String displayName) {
     
-    // remember
-    this.code = code.toLowerCase();
+    // remember 20050525 don't lowercase code since we're comparing case sensitive with database values
+    this.code = code;
     this.displayName = displayName;
     
   }
