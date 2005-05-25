@@ -151,23 +151,35 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
 
-    city = pcity.getDisplayValue().trim();
+    city = trim(pcity.getDisplayValue());
     if (city.length()==0)
       throw new IllegalArgumentException("address without city value");
     
     // still need a a state?
     Property pstate = addr.getProperty("STAE");
     if (pstate!=null) 
-      jurisdiction = Jurisdiction.get(ged.getCollator(), pstate.getDisplayValue());
+      jurisdiction = Jurisdiction.get(ged.getCollator(), trim(pstate.getDisplayValue()));
     
     // how about a country?
     Locale locale = addr.getGedcom().getLocale();
     Property pcountry = addr.getProperty("CTRY");
     if (pcountry!=null)  
-      country = Country.get(ged.getLocale(), pcountry.getDisplayValue());
+      country = Country.get(ged.getLocale(), trim(pcountry.getDisplayValue()));
     
     // good
     return true;
+  }
+  
+  /**
+   * trim a jurisdiction
+   */
+  private String trim(String jurisdiction) {
+    if (jurisdiction==null)
+      return null;
+    int bracket = jurisdiction.indexOf('(');
+    if (bracket>=0)
+      jurisdiction = jurisdiction.substring(0, bracket);
+    return jurisdiction.trim();
   }
   
   /**
@@ -181,7 +193,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     // city is simply the first non-empty jurisdiction and required
     while (true) {
-      city = js.get(first++);
+      city = trim(js.get(first++));
       if (city==null)
         throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
       if (city.length()>0) 
@@ -190,7 +202,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     // we look at remaining jurisdictions for a well-known top-level jurisdiction
     for (int i=first; ; i++) {
-      String j = js.get(i);
+      String j = trim(js.get(i));
       if (j==null) break;
       // try to find matching jurisdiction
       jurisdiction = Jurisdiction.get(ged.getCollator(), j);
@@ -203,7 +215,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     // and then as well for a country displayed in gedcom's locale
     Locale locale = place.getGedcom().getLocale();
     for (int i=first; ; i++) {
-      String j = js.get(i);
+      String j = trim(js.get(i));
       if (j==null) break;
       country = Country.get(ged.getLocale(), j);
       if (country!=null) 
