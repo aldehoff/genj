@@ -176,9 +176,11 @@ public class GeoLocation extends Point implements Feature, Comparable {
   private String trim(String jurisdiction) {
     if (jurisdiction==null)
       return null;
-    int bracket = jurisdiction.indexOf('(');
-    if (bracket>=0)
-      jurisdiction = jurisdiction.substring(0, bracket);
+    for (int i=0, j=jurisdiction.length(); i<j ;i++) {
+      char c = jurisdiction.charAt(i); 
+      if (c=='(' || c=='/' || c=='\\' )
+         return jurisdiction.substring(0, i).trim();
+    }
     return jurisdiction.trim();
   }
   
