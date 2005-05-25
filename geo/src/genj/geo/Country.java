@@ -55,7 +55,7 @@ public class Country implements Comparable {
   
   /** constructor */
   private Country(String code, String displayName) {
-    iso = code;
+    iso = code.toLowerCase();
     this.displayName = displayName;
   }
   
