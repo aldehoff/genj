@@ -324,9 +324,9 @@ public class GeoService {
         while (rows.next()) {
           // compute a score
           int score = 0;
-          if (country!=null&&country.getFips().equals(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+          if (country!=null&&country.getFips().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
             score += 1;
-          if (jurisdiction!=null&&jurisdiction.getCode().equals(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
+          if (jurisdiction!=null&&jurisdiction.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
             score += 2;
           // grab lat/lon
           if (score==highscore) matches ++;
