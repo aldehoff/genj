@@ -21,13 +21,17 @@ package genj.geo;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyComparator;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
 import genj.util.DirectAccessTokenizer;
 import genj.util.WordBuffer;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -250,8 +254,6 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * Check for containment
    */
   public boolean contains(Property[] properties) {
-    if (matches==0)
-      return false;
     for (int i=0; i<properties.length; i++) {
       if (this.properties.contains(properties[i]))
         return true;
@@ -280,6 +282,75 @@ public class GeoLocation extends Point implements Feature, Comparable {
     return ((Property)properties.get(0)).getGedcom();
   }
 
+  /**
+   * Generate a textual representation of a bunch of locations
+   */
+  public String getSummary() {
+    return getSummary(coordinate, Collections.singleton(this));
+  }
+  public static String getSummary(Coordinate coord, Collection locations) {
+
+    // collect text
+    StringBuffer text = new StringBuffer();
+    text.append("<html><body>");
+    text.append( GeoLocation.getString(coord));
+    int rows = 1;
+    
+    // loop over locations
+    outer: for (Iterator it = locations.iterator(); it.hasNext(); )  {
+      GeoLocation location = (GeoLocation)it.next();
+      
+      text.append("<br><b>");
+      text.append(location);
+      text.append("</b>");
+      rows++;
+
+      Property[] properties = location.getProperties();
+      Arrays.sort(properties, new PropertyComparator(".:DATE"));
+      
+      List residents = new ArrayList();
+      
+      // loop over properties at location
+      for (int i=0; i<properties.length; i++) {
+        Property prop = properties[i];
+        if (prop.getTag()=="RESI") {
+          residents.add(prop.getEntity());
+          continue;
+        }
+        text.append("<br>");
+        if (rows>16) {
+          text.append("...");
+          break outer;
+        }
+        PropertyDate date = (PropertyDate)prop.getProperty(PropertyDate.TAG);
+        if (date!=null) {
+          text.append(date);
+          text.append(" ");
+        }
+        text.append(Gedcom.getName(prop.getTag()));
+        text.append(" ");
+        text.append(prop.getEntity());
+        rows++;
+        // next property at current location
+      }
+      
+      // add residents
+      if (!residents.isEmpty()) {
+        text.append("<br>");
+        text.append(Gedcom.getName("RESI", true)+": ");
+        for (int i=0;i<residents.size();i++) {
+          if (i>0) text.append( i%3==0 ? "<br>&nbsp;" : "  ");
+          text.append(residents.get(i));
+        }
+      }
+      
+      // next location
+    }
+
+    // done
+    return text.toString();
+  }
+  
   /**
    * identify is defined as city, state and country
    */

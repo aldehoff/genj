@@ -69,7 +69,9 @@ import javax.swing.table.AbstractTableModel;
       public String getToolTipText(java.awt.event.MouseEvent event) {
          int row = rowAtPoint(event.getPoint());
          TableModel model = (TableModel)getModel();
-         return row<0||row>=model.getRowCount() ? null : model.getLocationAt(row).toString();
+         if (row<0||row>=model.getRowCount())
+           return null;
+         return model.getLocationAt(row).getSummary();
       }
     };
 

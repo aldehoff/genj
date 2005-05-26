@@ -58,7 +58,7 @@ public class GeoService {
     DELETE_COUNTRY = "DELETE FROM countries WHERE country = ?",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
     SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS = "SELECT state, country, lat, lon FROM locations WHERE city = ?";
+    SELECT_LOCATIONS = "SELECT city, state, country, lat, lon FROM locations WHERE city = ?";
 
   /*package*/ static final int
     DELETE_LOCATIONS_COUNTRY = 1,
@@ -75,10 +75,11 @@ public class GeoService {
     SELECT_COUNTRIES_OUT_COUNTRY = 1,
     
     SELECT_LOCATIONS_IN_CITY = 1,
-    SELECT_LOCATIONS_OUT_STATE = 1,
-    SELECT_LOCATIONS_OUT_COUNTRY = 2,
-    SELECT_LOCATIONS_OUT_LAT = 3,
-    SELECT_LOCATIONS_OUT_LON = 4;
+    SELECT_LOCATIONS_OUT_CITY = 1,
+    SELECT_LOCATIONS_OUT_STATE = 2,
+    SELECT_LOCATIONS_OUT_COUNTRY = 3,
+    SELECT_LOCATIONS_OUT_LAT = 4,
+    SELECT_LOCATIONS_OUT_LON = 5;
 
   /** directories */
   private File localDir, globalDir;
@@ -175,11 +176,11 @@ public class GeoService {
 //    getInstance().match(loc);
 //    System.out.println(loc);
     
-    String city = "Lohmar";
+    String city = "%eloi";
     GeoService gs = getInstance();
     try {
       
-      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, state, country, lat, lon FROM locations WHERE city = ?");
+      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, state, country, lat, lon FROM locations WHERE city LIKE ?");
       ps.setString(1, city);
       ResultSet result = ps.executeQuery();
       while (result.next()) {
