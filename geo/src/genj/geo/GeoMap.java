@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.geotools.shapefile.Shapefile;
@@ -121,9 +122,14 @@ public class GeoMap {
   
   /** resource access */
   private String i18n(String key, String fallback) {
+    // no resource?
     if (resources==null)
       return fallback;
-    String result = resources.getString(key, false);
+    
+    // try current language
+    String result = resources.getString(key+"."+Locale.getDefault().getLanguage().toLowerCase(), false);
+    if (result==null) 
+      result = resources.getString(key, false);
     return result!=null ? result : fallback;
   }
   
