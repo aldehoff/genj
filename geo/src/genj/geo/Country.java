@@ -49,7 +49,7 @@ public class Country implements Comparable {
   
   /** constructor */
   private Country(String code) {
-    iso = code;
+    iso = code.toLowerCase();
     displayName =  new Locale(Locale.getDefault().getLanguage(), code).getDisplayCountry();
   }
   
