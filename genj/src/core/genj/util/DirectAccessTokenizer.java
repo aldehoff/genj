@@ -45,6 +45,21 @@ public class DirectAccessTokenizer {
   }
   
   /**
+   * Count tokens
+   */
+  public int count() {
+    int result = 1;
+    int from = 0;
+    while (true) {
+      int i = string.indexOf(separator, from);
+      if (i<0) break;
+      from = i + separator.length();
+      result ++;
+    }
+    return result;
+  }
+  
+  /**
    * Access token by position
    * @return token at position or null if no such exists
    */
