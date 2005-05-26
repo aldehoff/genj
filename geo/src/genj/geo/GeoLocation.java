@@ -159,16 +159,16 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (city.length()==0)
       throw new IllegalArgumentException("address without city value");
     
-    // still need a a state?
-    Property pstate = addr.getProperty("STAE");
-    if (pstate!=null) 
-      jurisdiction = Jurisdiction.get(ged.getCollator(), trim(pstate.getDisplayValue()));
-    
     // how about a country?
     Locale locale = addr.getGedcom().getLocale();
     Property pcountry = addr.getProperty("CTRY");
     if (pcountry!=null)  
       country = Country.get(ged.getLocale(), trim(pcountry.getDisplayValue()));
+    
+    // still need a a state?
+    Property pstate = addr.getProperty("STAE");
+    if (pstate!=null) 
+      jurisdiction = Jurisdiction.get(ged.getCollator(), trim(pstate.getDisplayValue()), country);
     
     // good
     return true;
@@ -195,7 +195,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     Gedcom ged = place.getGedcom();
     DirectAccessTokenizer js = place.getJurisdictions();
-    int first = 0;
+    int first = 0, last = js.count()-1;
+    
     
     // city is simply the first non-empty jurisdiction and required
     while (true) {
@@ -206,25 +207,23 @@ public class GeoLocation extends Point implements Feature, Comparable {
         break;
     }
     
-    // we look at remaining jurisdictions for a well-known top-level jurisdiction
-    for (int i=first; ; i++) {
+    // look for country starting on rightmost jurisdiction
+    Locale locale = place.getGedcom().getLocale();
+    for (int i=last; i>=first; i--) {
       String j = trim(js.get(i));
-      if (j==null) break;
-      // try to find matching jurisdiction
-      jurisdiction = Jurisdiction.get(ged.getCollator(), j);
-      if (jurisdiction!=null)  {
-        first = i+1;
+      country = Country.get(ged.getLocale(), j);
+      if (country!=null) {
+        last = i - 1;
         break;
       }
     }
-
-    // and then as well for a country displayed in gedcom's locale
-    Locale locale = place.getGedcom().getLocale();
-    for (int i=first; ; i++) {
+    
+    // we look at remaining jurisdictions for a well-known top-level jurisdiction
+    for (int i=first; i<=last; i++) {
+      // try to find matching jurisdiction
       String j = trim(js.get(i));
-      if (j==null) break;
-      country = Country.get(ged.getLocale(), j);
-      if (country!=null) 
+      jurisdiction = Jurisdiction.get(ged.getCollator(), j, country);
+      if (jurisdiction!=null)  
         break;
     }
     

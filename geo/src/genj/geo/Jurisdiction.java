@@ -41,17 +41,19 @@ public class Jurisdiction {
   private static Map displayName2jurisdiction = new WeakHashMap(); 
 
   /** all known jurisdictions */
-  private static List jurisdictions;
+  private static List JURISDICTIONS;
   
   /** state */
+  private Country country;
   private String code, displayName;
   
   /**
    * Constructor
    */
-  private Jurisdiction(String code, String displayName) {
+  private Jurisdiction(Country country, String code, String displayName) {
     
     // remember 20050525 don't lowercase code since we're comparing case sensitive with database values
+    this.country = country;
     this.code = code;
     this.displayName = displayName;
     
@@ -80,71 +82,93 @@ public class Jurisdiction {
   }
   
   /**
+   * String representation
+   */
+  public String toString() {
+    return displayName;
+  }
+  
+  /**
    * Access
    */
-  public static Jurisdiction get(Collator collator, String displayName) {
+  public static Jurisdiction get(Collator collator, String displayName, Country country) {
     
     // do a quick lookup for cached info
-    Jurisdiction jurisdiction  = (Jurisdiction)displayName2jurisdiction.get(displayName);
-    if (jurisdiction!=null)
-      return jurisdiction;
+    if (displayName2jurisdiction.containsKey(displayName))
+      return (Jurisdiction)displayName2jurisdiction.get(displayName);
       
-    // initialized?
-    if (jurisdictions==null) { 
-      
-      jurisdictions =  new ArrayList();
-      
-      // fill lookup of top level jurisdictions
-      File[] files = GeoService.getInstance().getGeoFiles();
-      for (int i = 0; i < files.length; i++) {
-        // the right file either local or global?
-        if (!files[i].getName().equals("jurisdictions.properties"))
-          continue;
-        // read it
-        try {
-          Resources meta = new Resources(new FileInputStream(files[i]));
-          // look for all 'xx.yy = aaa,bbb,ccc'
-          // where 
-          //  xx = country
-          //  yy = state code
-          //  aaa,bbb,ccc = state names or abbreviations
-          for (Iterator keys = meta.getKeys(); keys.hasNext(); ) {
-            String key = keys.next().toString();
-            if (key.length()!=5) continue;
-            String code = key.substring(3,5);
-            for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
-              jurisdictions.add(new Jurisdiction(code, names.nextToken().trim()));
-          }
-        } catch (Throwable t) {
-          Debug.log(Debug.WARNING, Country.class, t);
-        }
-
-        // next
-      }
-      
-      // initialized
-    }
-
     // look it up
+    Jurisdiction result = null;
+    
+    List jurisdictions = getJurisdictions();
     for (int i = 0; i < jurisdictions.size(); i++) {
-      jurisdiction = (Jurisdiction)jurisdictions.get(i);
-      if (collator.compare(jurisdiction.displayName, displayName)==0) {
-        // create a new instance just for this displayName
-        jurisdiction = new Jurisdiction(jurisdiction.code, displayName);
-
-        // and cache it for next time
-        displayName2jurisdiction.put(displayName, jurisdiction);
-
-        // done
-        return jurisdiction;
+      Jurisdiction jurisdiction = (Jurisdiction)jurisdictions.get(i);
+      // null or good country?
+      if (country!=null&&!country.equals(jurisdiction.country))
+        continue;
+      // good display name?
+      if (collator.compare(jurisdiction.displayName, displayName)==0)  {
+        // stop if not deterministic (2nd match)
+        if (result!=null) {
+          result = null;
+          break;
+        }
+        // keep it
+        result = jurisdiction;
       }
-      
       // try next
     }
+
+    // something found? create a new instance just for this displayName!
+    if (result!=null) 
+      result = new Jurisdiction(result.country, result.code, displayName);
     
-    // not found
-    return null;
+    // cache it for next time
+    displayName2jurisdiction.put(displayName, result);
+
+    // done
+    return result;
   }
 
+  private static List getJurisdictions() {
+    
+    // already known?
+    if (JURISDICTIONS!=null) 
+      return JURISDICTIONS;
+    
+    // initialize!
+    JURISDICTIONS =  new ArrayList();
+      
+    File[] files = GeoService.getInstance().getGeoFiles();
+    for (int i = 0; i < files.length; i++) {
+      // the right file either local or global?
+      if (!files[i].getName().equals("jurisdictions.properties"))
+        continue;
+      // read it
+      try {
+        Resources meta = new Resources(new FileInputStream(files[i]));
+        // look for all 'xx.yy = aaa,bbb,ccc'
+        // where 
+        //  xx = country
+        //  yy = state code
+        //  aaa,bbb,ccc = state names or abbreviations
+        for (Iterator keys = meta.getKeys(); keys.hasNext(); ) {
+          String key = keys.next().toString();
+          if (key.length()!=5) continue;
+          String country = key.substring(0,2);
+          String code = key.substring(3,5);
+          for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
+            JURISDICTIONS.add(new Jurisdiction(Country.get(country), code, names.nextToken().trim()));
+        }
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, Country.class, t);
+      }
+
+      // next file
+    }
+
+    // done
+    return JURISDICTIONS;
+  }
   
 }
