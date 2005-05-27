@@ -20,6 +20,7 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.Debug;
 import genj.util.Registry;
@@ -50,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -58,7 +60,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
-import javax.swing.event.ListSelectionListener;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -136,9 +137,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     selectionLayer = new SelectionLayer();
     
     // hook em up
-    locationList.addListSelectionListener(new ListSelectionListener() {
-      public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-        selectionLayer.setLocations(locationList.getSelectedLocations());
+    locationList.addSelectionListener(new GeoList.SelectionListener() {
+      public void listSelectionChanged(Set locations, Set properties) {
+        selectionLayer.setLocations(locations);
+        if (properties.size()==1)
+          GeoView.this.viewManager.setContext(new Context((Property)properties.iterator().next()));
       }
     });
 
@@ -188,9 +191,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    * Callback for context changes
    */
   public void setContext(Context context) {
-    // change selection in list - that'll trigger a selection layer update as well
-    locationList.setSelectedLocations(model.getLocations(context));
-    // done
+    locationList.setSelection(context);
   }
   
   /**
@@ -386,9 +387,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     
     /** set selection */
-    public void setLocations(List set) {
+    public void setLocations(Set set) {
       synchronized (this) {
-        selection = set;
+        selection = new ArrayList(set);
       }
       LayerManager mgr = getLayerManager();
       if (mgr!=null)
@@ -397,19 +398,19 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     /** geo model - a location has been updated */
     public void locationAdded(GeoLocation location) {
-      setLocations(Collections.EMPTY_LIST);
+      setLocations(Collections.EMPTY_SET);
       super.locationAdded(location);
     }
 
     /** geo model - a location has been updated */
     public void locationUpdated(GeoLocation location) {
-      setLocations(Collections.EMPTY_LIST);
+      setLocations(Collections.EMPTY_SET);
       super.locationUpdated(location);
     }
 
     /** geo model - a location has been removed */
     public void locationRemoved(GeoLocation location) {
-      setLocations(Collections.EMPTY_LIST);
+      setLocations(Collections.EMPTY_SET);
       super.locationRemoved(location);
     }
 

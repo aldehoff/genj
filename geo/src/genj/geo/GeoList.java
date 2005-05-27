@@ -19,23 +19,28 @@
  */
 package genj.geo;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.swing.ButtonHelper;
+import genj.view.Context;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EventListener;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -61,6 +66,9 @@ import swingx.tree.AbstractTreeModel;
   /** wrapped tree */
   private JTree tree; 
   
+  /** propagate selection changes */
+  private boolean isPropagateSelectionChanges = true;
+  
   /**
    * Constructor
    */
@@ -73,6 +81,28 @@ import swingx.tree.AbstractTreeModel;
     tree = new JTree(new Model());
     tree.setRootVisible(false);
     tree.setShowsRootHandles(true);
+    tree.addTreeSelectionListener(new TreeSelectionListener() {
+      public void valueChanged(TreeSelectionEvent e) {
+        // collect selection
+        Set props = new HashSet();
+        Set locs = new HashSet();
+          
+        TreePath[] paths = tree.getSelectionModel().getSelectionPaths();
+        if (paths!=null) for (int i=0; i<paths.length; i++) {
+          if (paths[i].getPathCount()==3)
+            props.add(paths[i].getPathComponent(2));
+          if (paths[i].getPathCount()>1)
+            locs.add(paths[i].getPathComponent(1));
+        }
+
+        // notify
+        EventListener[] ls = listenerList.getListeners(SelectionListener.class);
+        for (int i=0; i<ls.length; i++)
+          ((SelectionListener)ls[i]).listSelectionChanged(locs, props);
+        
+        // done
+      }
+    });
 
     Update update = new Update();
     tree.getSelectionModel().addTreeSelectionListener(update);
@@ -109,56 +139,44 @@ import swingx.tree.AbstractTreeModel;
   /**
    * Selection access
    */
-  public List getSelectedLocations() {
+  public void setSelection(Context context) {
+    // need a property to start with
+    Property prop = context.getProperty();
+    if (prop==null)
+      prop = context.getEntity();
+    if (prop==null)
+      return;
+    // try to find a path
+    TreePath path = ((Model)tree.getModel()).getPathToProperty(prop);
+    if (path==null)
+      return;
+    // set selection
+    isPropagateSelectionChanges = false;
     
-    List list = new ArrayList();
-// FIXME    
-//    int[] rows = table.getSelectedRows();
-//    for (int i=0;i<rows.length;i++)
-//      list.add(table.getValueAt(rows[i], 0));
+    tree.makeVisible(path);
+    Rectangle bounds = tree.getPathBounds(path);
+    if(bounds != null) {
+      bounds.x = 0;
+      tree.scrollRectToVisible(bounds);
+    }
+    tree.setSelectionPath(path);
+    isPropagateSelectionChanges = true;
 
-    return list;
-  }
-  
-  /**
-   * Selection access
-   */
-  public void setSelectedLocations(Set set) {
-
-// FIXME    
-//    ListSelectionModel selection = table.getSelectionModel();
-//    
-//    // collect selected rows
-//    selection.setValueIsAdjusting(true);
-//    selection.clearSelection();
-//    try {
-//      TableModel tmodel = (TableModel)table.getModel();
-//      for (int i=0, j=tmodel.getRowCount(); i<j; i++) {
-//        GeoLocation l = tmodel.getLocationAt(i);
-//        if (set.contains(l)) 
-//          selection.addSelectionInterval(i, i);
-//      }
-//    } finally {
-//      selection.setValueIsAdjusting(false);
-//    }
-    
     // done
   }
   
   /**
    * Add a listener
    */
-  public void addListSelectionListener(ListSelectionListener l) {
-// FIXME    
-//    table.getSelectionModel().addListSelectionListener(l);
+  public void addSelectionListener(SelectionListener l) {
+    listenerList.add(SelectionListener.class, l);
   }
 
   /**
    * Remove a listener
    */
-  public void removeListSelectionListener(ListSelectionListener l) {
-//  FIXME    
-///    table.getSelectionModel().removeListSelectionListener(l);
+  public void removeTreeSelectionListener(TreeSelectionListener l) {
+    listenerList.remove(SelectionListener.class, l);
   }
   
   /**
@@ -220,7 +238,7 @@ import swingx.tree.AbstractTreeModel;
   /**
    * our model shown in tree
    */
-  private class Model extends AbstractTreeModel  implements GeoModelListener {
+  private static class Model extends AbstractTreeModel  implements GeoModelListener {
     
     private GeoModel geo;
     private List locations = new ArrayList();
@@ -231,17 +249,31 @@ import swingx.tree.AbstractTreeModel;
       this.geo = geo;
     }
     
+    public TreePath getPathToProperty(Property prop) {
+      
+      while (!(prop.getParent() instanceof Entity))
+        prop = prop.getParent();
+      
+      for (int i=0;i<locations.size();i++) {
+        GeoLocation loc = (GeoLocation)locations.get(i);
+        if (loc.properties.contains(prop))
+          return new TreePath(new Object[] { this, loc, prop} );
+      }
+      
+      return null;
+    }
+    
     /** model lifecycle */
     public void addTreeModelListener(TreeModelListener l) {
-      // continue
-      super.addTreeModelListener(l);
       // start working?
-      if (model!=null&&getListeners(TreeModelListener.class).length==1) {
-        model.addGeoModelListener(this);
+      if (geo!=null&&getListeners(TreeModelListener.class).length==0) {
+        geo.addGeoModelListener(this);
         locations.clear();
-        locations.addAll(model.getLocations());
+        locations.addAll(geo.getLocations());
         Collections.sort(locations);
       }
+      // continue
+      super.addTreeModelListener(l);
       // done
     }
     
@@ -249,26 +281,39 @@ import swingx.tree.AbstractTreeModel;
       // continue
       super.removeTreeModelListener(l);
       // stop working?
-      if (model!=null&&getListeners(TreeModelListener.class).length==0) {
-        model.removeGeoModelListener(this);
+      if (geo!=null&&getListeners(TreeModelListener.class).length==0) {
+        geo.removeGeoModelListener(this);
         locations.clear();
       }
     }
     
     /** geo model event */
     public void locationAdded(GeoLocation location) {
-      fireTreeNodesInserted(this, new TreePath(this), null, new Object[] { location });
-      locations.add(location);
-      Collections.sort(locations);
+      int pos = 0;
+      for (ListIterator it = locations.listIterator(); it.hasNext(); pos++) {
+        Comparable other = (Comparable)it.next();
+        if (other.compareTo(location)>0) {
+          it.previous();
+          it.add(location);
+          break;
+        }
+      }
+      // add as last
+      if (pos==locations.size())
+        locations.add(location);
+      // tell about it
+      fireTreeNodesInserted(this, new TreePath(this), new int[] { pos }, new Object[] { location });
     }
 
     public void locationUpdated(GeoLocation location) {
-      fireTreeStructureChanged(this, new TreePath(this), new int[]{ locations.indexOf(location)} , new Object[] { location });
+      fireTreeStructureChanged(this, new TreePath(this).pathByAddingChild(location), null , null);
+      //fireTreeNodesChanged(this, new TreePath(this), new int[]{ locations.indexOf(location)} , new Object[] { location });
     }
 
     public void locationRemoved(GeoLocation location) {
-      locations.remove(location);
-      fireTreeNodesRemoved(this, new TreePath(this), null, new Object[] { location });
+      int i = locations.indexOf(location);
+      locations.remove(i);
+      fireTreeNodesRemoved(this, new TreePath(this), new int[] { i }, new Object[] { location });
     }
 
     /** tree model */
@@ -297,4 +342,11 @@ import swingx.tree.AbstractTreeModel;
     
   } //Model
 
+  /**
+   * Listeners Callback interface
+   */
+  public interface SelectionListener extends EventListener {
+    public void listSelectionChanged(Set locations, Set properties);
+  }
+  
 }

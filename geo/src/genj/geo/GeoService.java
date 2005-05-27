@@ -294,18 +294,9 @@ public class GeoService {
   }
   
   /**
-   * Find all suitable locations for given location 
-   * @param location
-   * @return array of suitable locations
+   * Match given location
    */
-  public GeoLocation[] findAll(GeoLocation location) {
-    return new GeoLocation[0];
-  }
-  
-  /**
-   * Locate given location
-   */
-  public boolean match(GeoLocation location) {
+  public Match match(GeoLocation location) {
 
     String city = location.getCity();
     Jurisdiction jurisdiction = location.getJurisdiction();
@@ -346,11 +337,9 @@ public class GeoService {
       }
     }
     
-    // set it
-    location.set(lat, lon, matches);
-
-    // not found
-    return false;
+    // done
+    return new Match(location, lat, lon, matches);
+    
   }
   
   /**
@@ -386,6 +375,21 @@ public class GeoService {
     
     // done
     return (GeoMap[])maps.toArray(new GeoMap[maps.size()]);
+  }
+  
+  /**
+   * A match
+   */
+  public class Match implements Runnable {
+    public GeoLocation location;
+    public double lat,lon;
+    public int matches;
+    private Match(GeoLocation location, double lat, double lon, int matches) { 
+      this.location = location; this.lat=lat; this.lon=lon; this.matches=matches; 
+    }
+    public void run() {
+      location.set(lat, lon, matches);
+    }
   }
     
 } //GeoService

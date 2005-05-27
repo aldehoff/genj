@@ -20,24 +20,22 @@
 package genj.geo;
 
 import genj.gedcom.Change;
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.Transaction;
 import genj.util.Debug;
-import genj.view.Context;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import javax.swing.SwingUtilities;
 
 /**
  * Geographic model wrapper for gedcom
@@ -60,41 +58,6 @@ import java.util.Set;
   public GeoModel(Gedcom gedcom) {
     // keep 
     this.gedcom = gedcom;
-  }
-  
-  /**
-   * Accessor - locations
-   */
-  public  Set getLocations(Context context) {
-    
-    // got a specific property?
-    Property prop = context.getProperty();
-    if (prop!=null && !(prop instanceof Entity)) {
-      
-      // recurse up to root-property
-      while (!(prop.getParent() instanceof Entity))
-        prop = prop.getParent();
-      
-      return getLocations(new Property[]{ prop });
-    }
-    
-    // try the entity itself
-    Entity entity = context.getEntity();
-    if (entity!=null) 
-      return getLocations(entity.getProperties());
-
-    // n/a
-    return Collections.EMPTY_SET;
-  }
-  
-  private synchronized Set getLocations(Property[] props) {
-    Set result = new HashSet();
-    for (Iterator it=locations.keySet().iterator(); it.hasNext(); ) {
-      GeoLocation location = (GeoLocation)it.next();
-      if (location.contains(props))
-        result.add(location);
-    }
-    return result;
   }
   
   /**
@@ -211,6 +174,8 @@ import java.util.Set;
               locations.remove(this);
             }
             fireLocationRemoved(this);
+          } else {
+            fireLocationUpdated(this);
           }
           // done
           return true;
@@ -353,13 +318,11 @@ import java.util.Set;
             return;
           location = (GeoLocation)locations.removeFirst();
         }
-//        long t = System.currentTimeMillis();
-        service.match(location);
-//        System.out.println(System.currentTimeMillis()-t);
+        SwingUtilities.invokeLater(service.match(location));
       }
       
-      // done
+      // no more locations to match
     }
   } // Locator
   
-} //GeoModel
+}
