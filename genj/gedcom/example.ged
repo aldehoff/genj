@@ -85,12 +85,10 @@
 2 FILE meiern.jpg
 1 NOTE @N3@
 1 RESI
-2 DATE FROM 1 OCT 2001
-2 ADDR 788 Harrison Street
-3 CONT Apt 829
-3 CITY San Francisco
-3 POST 94107
-3 STAE California
+2 DATE FROM DEC 1996 TO JUL 2000
+2 ADDR Am Hackenbruch 26
+3 CITY Dèusseldorf (Eller)
+3 POST 40231
 1 RESI
 2 DATE FROM JUL 1999 TO DEC 2000
 2 ADDR 1241 Kilborn Place
@@ -98,12 +96,22 @@
 3 CITY Ottawa
 3 POST K1H1A5
 3 STAE Ontario
-1 EMIG
-2 DATE FROM 31 JUL 1999 TO 31 AUG 2001
-2 PLAC Ottawa, Ontario, Canada
-1 EMIG
-2 DATE FROM 1 SEP 2001 TO 4 APR 2004
-2 PLAC San Francisco, California, USA
+1 RESI
+2 DATE FROM 1 OCT 2001 TO 1 APR 2004
+2 ADDR 788 Harrison Street
+3 CONT Apt 829
+3 CITY San Francisco
+3 POST 94107
+3 STAE California
+1 IMMI
+2 DATE 4 AUG 2004
+2 PLAC Vancouver, British Columbia, Canada
+1 RESI
+2 DATE FROM 1 OCT 2004
+2 ADDR 2-143 Rusholme Road
+3 CITY Toronto
+3 POST M6H2Y6
+3 STAE Ontario
 1 OCCU Software Engineer
 0 @I9@ INDI
 1 NAME Alisa /Meier/
@@ -140,7 +148,7 @@
 1 NAME Luka /Meier/
 1 SEX M
 1 BIRT
-2 DATE DEC 2004
-2 PLAC
+2 DATE 28 AUG 2004
+2 PLAC Bergisch Gladbach
 1 FAMC @F3@
 0 TRLR
