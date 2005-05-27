@@ -19,10 +19,13 @@
  */
 package genj.geo;
 
+import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,13 +34,15 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.ToolTipManager;
-import javax.swing.event.ListSelectionEvent;
+import javax.swing.JTree;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreePath;
+
+import swingx.tree.AbstractTreeModel;
 
 /**
  * A list of locations and opertions on them
@@ -53,8 +58,8 @@ import javax.swing.table.AbstractTableModel;
   /** model */
   private GeoModel model;
 
-  /** wrapped table */
-  private JTable table; 
+  /** wrapped tree */
+  private JTree tree; 
   
   /**
    * Constructor
@@ -65,28 +70,20 @@ import javax.swing.table.AbstractTableModel;
     this.model = model;
 
     // create some components
-    table = new JTable(new TableModel()) {
-      public String getToolTipText(java.awt.event.MouseEvent event) {
-         int row = rowAtPoint(event.getPoint());
-         TableModel model = (TableModel)getModel();
-         if (row<0||row>=model.getRowCount())
-           return null;
-         return model.getLocationAt(row).getSummary();
-      }
-    };
+    tree = new JTree(new Model());
+    tree.setRootVisible(false);
+    tree.setShowsRootHandles(true);
 
     Update update = new Update();
-    table.getSelectionModel().addListSelectionListener(update);
+    tree.getSelectionModel().addTreeSelectionListener(update);
+    tree.setCellRenderer(new Renderer());
     
     // layout
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, new JScrollPane(table));
+    add(BorderLayout.CENTER, new JScrollPane(tree));
     add(BorderLayout.SOUTH, new ButtonHelper().create(update));
     
     setPreferredSize(new Dimension(160,64));
-    
-    // tooltip
-    ToolTipManager.sharedInstance().registerComponent(table);
     
     // done
   }
@@ -97,7 +94,7 @@ import javax.swing.table.AbstractTableModel;
   public void addNotify() {
     super.addNotify();
     // setup hooked-up model now
-    table.setModel(new TableModel(model));
+    tree.setModel(new Model(model));
   }
   
   /**
@@ -106,7 +103,7 @@ import javax.swing.table.AbstractTableModel;
   public void removeNotify() {
     super.removeNotify();
     // setup empty model 
-    table.setModel(new TableModel());
+    tree.setModel(new Model());
   }
   
   /**
@@ -115,9 +112,10 @@ import javax.swing.table.AbstractTableModel;
   public List getSelectedLocations() {
     
     List list = new ArrayList();
-    int[] rows = table.getSelectedRows();
-    for (int i=0;i<rows.length;i++)
-      list.add(table.getValueAt(rows[i], 0));
+// FIXME    
+//    int[] rows = table.getSelectedRows();
+//    for (int i=0;i<rows.length;i++)
+//      list.add(table.getValueAt(rows[i], 0));
 
     return list;
   }
@@ -126,22 +124,23 @@ import javax.swing.table.AbstractTableModel;
    * Selection access
    */
   public void setSelectedLocations(Set set) {
-    
-    ListSelectionModel selection = table.getSelectionModel();
-    
-    // collect selected rows
-    selection.setValueIsAdjusting(true);
-    selection.clearSelection();
-    try {
-      TableModel tmodel = (TableModel)table.getModel();
-      for (int i=0, j=tmodel.getRowCount(); i<j; i++) {
-        GeoLocation l = tmodel.getLocationAt(i);
-        if (set.contains(l)) 
-          selection.addSelectionInterval(i, i);
-      }
-    } finally {
-      selection.setValueIsAdjusting(false);
-    }
+
+// FIXME    
+//    ListSelectionModel selection = table.getSelectionModel();
+//    
+//    // collect selected rows
+//    selection.setValueIsAdjusting(true);
+//    selection.clearSelection();
+//    try {
+//      TableModel tmodel = (TableModel)table.getModel();
+//      for (int i=0, j=tmodel.getRowCount(); i<j; i++) {
+//        GeoLocation l = tmodel.getLocationAt(i);
+//        if (set.contains(l)) 
+//          selection.addSelectionInterval(i, i);
+//      }
+//    } finally {
+//      selection.setValueIsAdjusting(false);
+//    }
     
     // done
   }
@@ -150,130 +149,152 @@ import javax.swing.table.AbstractTableModel;
    * Add a listener
    */
   public void addListSelectionListener(ListSelectionListener l) {
-    table.getSelectionModel().addListSelectionListener(l);
+// FIXME    
+//    table.getSelectionModel().addListSelectionListener(l);
   }
 
   /**
    * Remove a listener
    */
   public void removeListSelectionListener(ListSelectionListener l) {
-    table.getSelectionModel().removeListSelectionListener(l);
+//  FIXME    
+///    table.getSelectionModel().removeListSelectionListener(l);
   }
   
   /**
    * An action for updating a location
    */
-  private class Update extends ActionDelegate implements ListSelectionListener {
+  private class Update extends ActionDelegate implements TreeSelectionListener {
     private Update() {
       setText(TXT_CHANGE);
       setEnabled(false);
     }
-    public void valueChanged(ListSelectionEvent e) {
-      setEnabled(table.getSelectedRowCount()==1);
+    public void valueChanged(TreeSelectionEvent e) {
+      //setEnabled(table.getSelectedRowCount()==1);
     }
     protected void execute() {
     }
   }
-
+  
   /**
-   * A table grid wrapper for locations shown in a JTable
+   * our smart renderer
    */
-  private static class TableModel extends AbstractTableModel implements GeoModelListener {
-
-    private GeoModel model;
+  private class Renderer extends DefaultTreeCellRenderer {
+    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+      super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+      StringBuffer sb  = new StringBuffer();
+      if (value instanceof GeoLocation) {
+        GeoLocation loc = (GeoLocation)value;
+        sb.append(loc.getJurisdictionsAsString());
+        sb.append(" (");
+        if (loc.getMatches()==0) {
+          sb.append(TXT_UNKNOWN);
+        } else {
+          sb.append(loc.getCoordinateAsString());
+          if (loc.getMatches()>1)
+            sb.append("?");
+        }
+        sb.append(")");
+        setText(sb.toString());
+        setIcon(null);
+        return this;
+      } 
+      if (value instanceof Property) {
+        Property prop = (Property)value;
+        Property date = prop.getProperty("DATE", true);
+        if (date!=null) {
+          sb.append(date.toString());
+          sb.append(" ");
+        }
+        sb.append(Gedcom.getName(prop.getTag()));
+        sb.append(" ");
+        sb.append(prop.getEntity().toString());
+        setText(sb.toString());
+        setIcon(prop.getImage(false));
+      }
+      // done
+      return this;
+    }
+  }
+  
+  /**
+   * our model shown in tree
+   */
+  private class Model extends AbstractTreeModel  implements GeoModelListener {
+    
+    private GeoModel geo;
     private List locations = new ArrayList();
     
-    /** constructor */
-    public TableModel() {
+    private Model() {
     }
-
-    /** constructor */
-    public TableModel(GeoModel model) {
-      this.model = model;
-    }
-
-    /** column header info */
-    public String getColumnName(int col) {
-      switch (col) {
-        default: case 0:
-          return TXT_LOCATION;
-        case 1:
-          return TXT_LATLON;
-      }
+    private Model(GeoModel geo) {
+      this.geo = geo;
     }
     
-    /** lifecycle - listeners */
-    public void addTableModelListener(TableModelListener l) {
-      super.addTableModelListener(l);
+    /** model lifecycle */
+    public void addTreeModelListener(TreeModelListener l) {
+      // continue
+      super.addTreeModelListener(l);
       // start working?
-      if (model!=null&&getTableModelListeners().length==1) {
+      if (model!=null&&getListeners(TreeModelListener.class).length==1) {
         model.addGeoModelListener(this);
         locations.clear();
         locations.addAll(model.getLocations());
         Collections.sort(locations);
       }
+      // done
     }
     
-    /** lifecycle - listeners */
-    public void removeTableModelListener(TableModelListener l) {
-      super.removeTableModelListener(l);
+    public void removeTreeModelListener(TreeModelListener l) {
+      // continue
+      super.removeTreeModelListener(l);
       // stop working?
-      if (model!=null&&getTableModelListeners().length==0) {
+      if (model!=null&&getListeners(TreeModelListener.class).length==0) {
         model.removeGeoModelListener(this);
         locations.clear();
       }
     }
     
-    /** colums */
-    public int getColumnCount() {
-      return 2;
-    }
-
-    /** number of rows = locations */
-    public int getRowCount() {
-      return locations.size();
-    }
-    
-    public GeoLocation getLocationAt(int row) {
-      return (GeoLocation)locations.get(row);
-    }
-
-    public Object getValueAt(int row, int col) {
-      // location for row
-      GeoLocation location = getLocationAt(row);
-      // check column
-      switch (col) {
-        default: case 0:
-          return location;
-        case 1:
-          if (!location.isValid())
-            return TXT_UNKNOWN;
-          String coord = GeoLocation.getString(location.getCoordinate());
-          if (location.getMatches()>1) coord += "?";
-          return coord;
-      }
-      // done
-    }
-
-    /** callback - geo model event */
+    /** geo model event */
     public void locationAdded(GeoLocation location) {
-      fireTableDataChanged();
-      
+      fireTreeNodesInserted(this, new TreePath(this), null, new Object[] { location });
       locations.add(location);
       Collections.sort(locations);
     }
 
-    /** callback - geo model event */
     public void locationUpdated(GeoLocation location) {
-      fireTableRowsUpdated(0, getRowCount()-1);
+      fireTreeStructureChanged(this, new TreePath(this), new int[]{ locations.indexOf(location)} , new Object[] { location });
     }
 
-    /** callback - geo model event */
     public void locationRemoved(GeoLocation location) {
       locations.remove(location);
-      fireTableDataChanged();
+      fireTreeNodesRemoved(this, new TreePath(this), null, new Object[] { location });
     }
 
-  } //TableModel
+    /** tree model */
+    protected Object getParent(Object node) {
+      throw new IllegalArgumentException();
+    }
+    public Object getRoot() {
+      return this;
+    }
+    public int getChildCount(Object parent) {
+      if (geo==null)
+        return 0;
+      return parent==this ? locations.size() : ((GeoLocation)parent).getNumProperties();
+    }
+    public boolean isLeaf(Object node) {
+      return node instanceof Property;
+    }
+    public Object getChild(Object parent, int index) {
+      return parent==this ? locations.get(index) :  ((GeoLocation)parent).getProperty(index);
+    }
+    public int getIndexOfChild(Object parent, Object child) {
+      if (parent==this)
+        return locations.indexOf(child);
+      return ((GeoLocation)parent).getPropertyIndex((Property)child);
+    }
+    
+  } //Model
 
 }

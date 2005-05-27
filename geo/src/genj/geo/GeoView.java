@@ -562,7 +562,18 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
         // find features
         Collection locations = layerPanel.featuresWithVertex(event.getPoint(), 3,  model.getLocations());
         // generate text
-        return GeoLocation.getSummary(coord, locations);
+        StringBuffer text = new StringBuffer();
+        text.append("<html><body>");
+        text.append( GeoLocation.getCoordinateAsString(coord));
+        // loop over locations
+        for (Iterator it = locations.iterator(); it.hasNext(); )  {
+          GeoLocation location = (GeoLocation)it.next();
+          text.append("<br><b>");
+          text.append(location);
+          text.append("</b>");
+        }
+        // done
+        return text.toString();
       } catch (Throwable t) {
         return null;
       }
