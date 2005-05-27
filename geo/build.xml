@@ -12,6 +12,7 @@
     <pathelement path="contrib/jump/jump.jar"/>
     <pathelement path="${dir.build}/classes"/>
     <pathelement path="${dir.genj}/build/classes/core"/>
+    <pathelement path="${dir.genj}/build/classes/contrib"/>
   </path>
 
   <!--
