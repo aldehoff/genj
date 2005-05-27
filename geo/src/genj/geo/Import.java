@@ -53,8 +53,9 @@ public abstract class Import implements Trackable {
   /** a prepared statement for inserts */
   private PreparedStatement insert;
   
-  /** operated country */
+  /** operated country/state */
   private Country country;
+  protected String state;
   
   /** constructor */
   protected Import(Country country, String state) throws SQLException {
@@ -110,7 +111,13 @@ public abstract class Import implements Trackable {
 
       // remove old locations for country
       Connection connection = GeoService.getInstance().getConnection();
-      PreparedStatement delete = connection.prepareStatement(GeoService.DELETE_LOCATIONS);
+      PreparedStatement delete;
+      if (state!=null) {
+        delete = connection.prepareStatement(GeoService.DELETE_LOCATIONS2);
+        delete.setString(GeoService.DELETE_LOCATIONS_STATE, state);
+      } else {
+        delete = connection.prepareStatement(GeoService.DELETE_LOCATIONS);
+      }
       delete.setString(GeoService.DELETE_LOCATIONS_COUNTRY, country.getCode());
       delete.executeUpdate();
       delete.close();
@@ -193,9 +200,6 @@ public abstract class Import implements Trackable {
     private final static String 
       URL = "http://geonames.usgs.gov/geonames/stategaz/XX_DECI.zip";
       
-    /** state */
-    private String state;
-    
     /** constructor */
     private USGSImport(String state) throws SQLException {
       super(Country.get("us"), state);
@@ -235,17 +239,15 @@ public abstract class Import implements Trackable {
         
         // grab lat lon
         try {
-          String s = values.get(9); 
-          if (s.length()==0||"UNKNOWN".equals(s)) {
+          String 
+            sLat = values.get(9),
+            sLon = values.get(10); 
+          if (sLat.length()==0||"UNKNOWN".equals(sLat)||sLon.length()==0||"UNKNOWN".equals(sLon)) {
             skip();
             continue;
           }
-          lat = Float.parseFloat(s); // LAT
-          if (s.length()==0||"UNKNOWN".equals(s)) {
-            skip();
-            continue;
-          }
-          lon = Float.parseFloat(s); // LON
+          lat = Float.parseFloat(sLat); // LAT
+          lon = Float.parseFloat(sLon); // LON
         } catch (NumberFormatException e) {
           throw new IOException("Format problem - expected to find lat/lon");
         }

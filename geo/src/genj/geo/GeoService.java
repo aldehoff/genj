@@ -54,6 +54,7 @@ public class GeoService {
       "CREATE CACHED TABLE locations (city VARCHAR(32), state CHAR(2), country CHAR(2) NOT NULL, lat FLOAT, lon FLOAT); "+
       "CREATE INDEX cities ON locations (city)",
     DELETE_LOCATIONS = "DELETE FROM locations WHERE country = ?",
+    DELETE_LOCATIONS2 = "DELETE FROM locations WHERE country = ? AND state = ?",
     INSERT_COUNTRY = "INSERT INTO countries (country) VALUES (?)",
     DELETE_COUNTRY = "DELETE FROM countries WHERE country = ?",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
@@ -62,6 +63,7 @@ public class GeoService {
 
   /*package*/ static final int
     DELETE_LOCATIONS_COUNTRY = 1,
+    DELETE_LOCATIONS_STATE = 2,
     
     INSERT_COUNTRY_COUNTRY = 1,
     DELETE_COUNTRY_COUNTRY = 1,
