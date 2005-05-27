@@ -158,13 +158,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     super.addNotify();
     // show map 
     String map = registry.get("map", (String)null);
-    if (map!=null) {
-      GeoMap[] maps = GeoService.getInstance().getMaps();
-      for (int i=0;i<maps.length;i++) {
-        if (maps[i].getKey().equals(map)) {
-          try { setMap(maps[i], false); } catch (Throwable t) {}
-          break;
-        }
+    GeoMap[] maps = GeoService.getInstance().getMaps();
+    for (int i=0;i<maps.length;i++) {
+      if (map==null||maps[i].getKey().equals(map)) {
+        try { setMap(maps[i]); } catch (Throwable t) {}
+        break;
       }
     }
     // done
@@ -224,7 +222,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Choose current map
    */
-  public void setMap(GeoMap map, boolean warn) throws IOException {
+  public void setMap(GeoMap map) throws IOException {
     
     // keep
     currentMap = map;
@@ -236,7 +234,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     selectionLayer.setLayerManager(layerManager);
     locationLayer.setLayerManager(layerManager);
-
+  
     // load map
     map.load(layerManager);
     
@@ -245,7 +243,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     layerPanel.setBackground(map.getBackground());
     if (currentTool!=null)
       layerPanel.setCurrentCursorTool(currentTool);
-
+    
     // show
     split.setLeftComponent(layerPanel);
     revalidate();
@@ -261,7 +259,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     
     // test for available countries
-    if (warn) {
+    if (registry.get("warn."+map.getKey(), true)) {
+      
+      registry.put("warn."+map.getKey(), false);
+      
       WordBuffer missing = new WordBuffer("\n ");
       GeoService service = GeoService.getInstance();
       List available = Arrays.asList(service.getCountries());
@@ -278,7 +279,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     // done
   }
-  
+
   /**
    * View context for layer view panel
    */
@@ -348,7 +349,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       registry.put("split", split.getDividerLocation());
       // set it
       try {
-        setMap(map, true);
+        setMap(map);
       } catch (IOException e) {
         e.printStackTrace();
       }
