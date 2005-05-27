@@ -26,7 +26,7 @@ import genj.gedcom.PropertyPlace;
 import genj.util.DirectAccessTokenizer;
 import genj.util.WordBuffer;
 
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,10 +117,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     char we = 'E', ns = 'N';
     if (lat<0) { lat = -lat; ns='S'; }
     if (lon<0) { lon = -lon; we='W'; }
-    NumberFormat format = NumberFormat.getNumberInstance();
-    //format.setMinimumIntegerDigits(3);
-    format.setMaximumFractionDigits(1);
-    format.setMinimumFractionDigits(1);
+    DecimalFormat format = new DecimalFormat("0.0");
     return ns + format.format(lat) + " " + we + format.format(lon);
   }
   

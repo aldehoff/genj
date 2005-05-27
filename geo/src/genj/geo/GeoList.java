@@ -31,13 +31,17 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -108,10 +112,16 @@ import swingx.tree.AbstractTreeModel;
     tree.getSelectionModel().addTreeSelectionListener(update);
     tree.setCellRenderer(new Renderer());
     
+    Box buttonPanel = new Box(BoxLayout.X_AXIS);
+    ButtonHelper bh = new ButtonHelper().setContainer(buttonPanel);
+    bh.create(new UnFold(true));
+    bh.create(new UnFold(false));
+    bh.create(update);
+    
     // layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(tree));
-    add(BorderLayout.SOUTH, new ButtonHelper().create(update));
+    add(BorderLayout.SOUTH, buttonPanel);
     
     setPreferredSize(new Dimension(160,64));
     
@@ -139,7 +149,26 @@ import swingx.tree.AbstractTreeModel;
   /**
    * Selection access
    */
-  public void setSelection(Context context) {
+  public void setSelectedLocations(Collection locations) {
+    TreePath[] paths = ((Model)tree.getModel()).getPathsToLocations(locations);
+    if (paths.length==0)
+      return;
+    
+    // scroll to visible patching height to show as much as possible 'beneath' first path
+    Rectangle bounds = tree.getPathBounds(paths[0]);
+    bounds.height = tree.getParent().getHeight();
+    tree.scrollRectToVisible(bounds);
+
+    // select now
+    isPropagateSelectionChanges = false;
+    tree.setSelectionPaths(paths);
+    isPropagateSelectionChanges = true;
+  }
+  
+  /**
+   * Selection access
+   */
+  public void setSelectedContext(Context context) {
     // need a property to start with
     Property prop = context.getProperty();
     if (prop==null)
@@ -152,13 +181,7 @@ import swingx.tree.AbstractTreeModel;
       return;
     // set selection
     isPropagateSelectionChanges = false;
-    
-    tree.makeVisible(path);
-    Rectangle bounds = tree.getPathBounds(path);
-    if(bounds != null) {
-      bounds.x = 0;
-      tree.scrollRectToVisible(bounds);
-    }
+    tree.scrollPathToVisible(path);
     tree.setSelectionPath(path);
     isPropagateSelectionChanges = true;
 
@@ -177,6 +200,23 @@ import swingx.tree.AbstractTreeModel;
    */
   public void removeTreeSelectionListener(TreeSelectionListener l) {
     listenerList.remove(SelectionListener.class, l);
+  }
+  
+  /**
+   * An action for (unf)folding
+   */
+  private class UnFold extends ActionDelegate {
+    private boolean fold;
+    private UnFold(boolean fold) {
+      setText( fold ? "+" : "-");
+      this.fold = fold;
+    }
+    protected void execute() {
+      TreePath[] paths = ((Model)tree.getModel()).getPathsToLocations();
+      for (int i=0;i<paths.length;i++) {
+        if (!fold) tree.collapsePath(paths[i]); else tree.expandPath(paths[i]); 
+      }
+    }
   }
   
   /**
@@ -249,7 +289,18 @@ import swingx.tree.AbstractTreeModel;
       this.geo = geo;
     }
     
-    public TreePath getPathToProperty(Property prop) {
+    private TreePath[] getPathsToLocations() {
+      return getPathsToLocations(locations);
+    }
+    private TreePath[] getPathsToLocations(Collection locations) {
+      TreePath[] result = new TreePath[locations.size()];
+      Iterator it = locations.iterator();
+      for (int i=0;i<result.length;i++) 
+        result[i] = new TreePath(new Object[] { this, it.next() });
+      return result;
+    }
+    
+    private TreePath getPathToProperty(Property prop) {
       
       while (!(prop.getParent() instanceof Entity))
         prop = prop.getParent();

@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -191,7 +192,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    * Callback for context changes
    */
   public void setContext(Context context) {
-    locationList.setSelection(context);
+    locationList.setSelectedContext(context);
   }
   
   /**
@@ -257,7 +258,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // enable tooltips
     ToolTipManager.sharedInstance().registerComponent(layerPanel);
-    ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     
     // test for available countries
     if (registry.get("warn."+map.getKey(), true)) {
@@ -550,35 +550,53 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * The layer panel
    */
-  private class LayerPanel extends LayerViewPanel implements ComponentListener {
+  private class LayerPanel extends LayerViewPanel implements ComponentListener, MouseListener {
 
     public LayerPanel(LayerManager mgr) {
       super(mgr, new ViewContext());
       addComponentListener(this);
+      addMouseListener(this);
     }
     
-    public String getToolTipText(MouseEvent event) {
+    private List getLocations(MouseEvent event) {
       try {
-        // convert to coordinate
-        Coordinate coord  = getViewport().toModelCoordinate(event.getPoint());
-        // find features
-        Collection locations = layerPanel.featuresWithVertex(event.getPoint(), 3,  model.getLocations());
-        // generate text
-        StringBuffer text = new StringBuffer();
-        text.append("<html><body>");
-        text.append( GeoLocation.getCoordinateAsString(coord));
-        // loop over locations
-        for (Iterator it = locations.iterator(); it.hasNext(); )  {
-          GeoLocation location = (GeoLocation)it.next();
-          text.append("<br><b>");
-          text.append(location);
-          text.append("</b>");
-        }
-        // done
-        return text.toString();
+        List result = new ArrayList(layerPanel.featuresWithVertex(event.getPoint(), 3,  model.getLocations()));
+        Collections.sort(result);
+        return result;
+      } catch (Throwable t) {
+        return Collections.EMPTY_LIST;
+      }
+    }
+    
+    private Coordinate getCoordinate(MouseEvent event) {
+      try {
+        return getViewport().toModelCoordinate(event.getPoint());
       } catch (Throwable t) {
         return null;
       }
+    }
+    
+    public String getToolTipText(MouseEvent event) {
+      
+      // convert to coordinate
+      Coordinate coord  = getCoordinate(event);
+      if (coord==null)
+        return null;
+      // find features
+      Collection locations = getLocations(event);
+      // generate text
+      StringBuffer text = new StringBuffer();
+      text.append("<html><body>");
+      text.append( GeoLocation.getCoordinateAsString(coord));
+      // loop over locations
+      for (Iterator it = locations.iterator(); it.hasNext(); )  {
+        GeoLocation location = (GeoLocation)it.next();
+        text.append("<br><b>");
+        text.append(location);
+        text.append("</b>");
+      }
+      // done
+      return text.toString();
     }
 
     /** component listener callback */
@@ -593,6 +611,20 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     /** component listener callback */
     public void componentShown(ComponentEvent e) {
+    }
+
+    /** mouse callbacks */
+    public void mouseClicked(MouseEvent e) {
+      Collection locations = getLocations(e);
+      if (!locations.isEmpty()) locationList.setSelectedLocations(locations);
+    }
+    public void mouseEntered(MouseEvent e) {
+    }
+    public void mouseExited(MouseEvent e) {
+    }
+    public void mousePressed(MouseEvent e) {
+    }
+    public void mouseReleased(MouseEvent e) {
     }
     
   }
