@@ -313,15 +313,23 @@ public class GeoService {
         select.setString(SELECT_LOCATIONS_IN_CITY, city);
 
         // loop over rows
-        int highscore = -Integer.MAX_VALUE;
+        int highscore = 0;
         ResultSet rows = select.executeQuery();
         while (rows.next()) {
           // compute a score
-          int score = 0;
-          if (country!=null&&country.getFips().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+          int score = 1;
+          // .. country known and no match -> don't consider
+          if (country!=null) {
+            if (!country.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
+              continue;
             score += 1;
-          if (jurisdiction!=null&&jurisdiction.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
-            score += 2;
+          }
+          // .. jurisdiction known and no match -> don't consider
+          if (jurisdiction!=null) {
+            if (!jurisdiction.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
+              continue;
+            score += 1;
+          }
           // grab lat/lon
           if (score==highscore) matches ++;
           else if (score>highscore) {
