@@ -573,6 +573,10 @@ import javax.swing.event.ChangeListener;
       TagPath path = new TagPath(cell.getAttribute("path"));
       MetaProperty meta = root.getMetaProperty().getNestedRecursively(path, false);
       
+      // conditional?
+      if (cell.getAttribute("ifexists")!=null&&root.getProperty(path)==null)
+          return null;
+      
       // a label?
       if ("label".equals(element)) {
 
@@ -587,11 +591,6 @@ import javax.swing.event.ChangeListener;
       
       // a bean?
       if ("bean".equals(element)) {
-        // conditional?
-        if (cell.getAttribute("ifexists")!=null) {
-          if (root.getProperty(path)==null)
-            return null;
-        }
         // create bean
         PropertyBean bean = createBean(root, path, meta, cell.getAttribute("type"));
         if (bean==null)
