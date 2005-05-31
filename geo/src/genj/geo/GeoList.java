@@ -87,6 +87,9 @@ import swingx.tree.AbstractTreeModel;
     tree.setShowsRootHandles(true);
     tree.addTreeSelectionListener(new TreeSelectionListener() {
       public void valueChanged(TreeSelectionEvent e) {
+        // notify about selection changes?
+        if (!isPropagateSelectionChanges)
+          return;
         // collect selection
         Set props = new HashSet();
         Set locs = new HashSet();
@@ -181,7 +184,9 @@ import swingx.tree.AbstractTreeModel;
       return;
     // set selection
     isPropagateSelectionChanges = false;
-    tree.scrollPathToVisible(path);
+    Rectangle bounds = tree.getPathBounds(path);
+    bounds.width = 1;
+    tree.scrollRectToVisible(bounds);
     tree.setSelectionPath(path);
     isPropagateSelectionChanges = true;
 
