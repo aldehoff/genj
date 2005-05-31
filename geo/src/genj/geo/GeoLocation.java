@@ -227,7 +227,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
       return null;
     for (int i=0, j=jurisdiction.length(); i<j ;i++) {
       char c = jurisdiction.charAt(i); 
-      if (c=='(' || c=='/' || c=='\\' )
+      if (c=='(' || c=='[' || c=='/' || c=='\\')
          return jurisdiction.substring(0, i).trim();
     }
     return jurisdiction.trim();
