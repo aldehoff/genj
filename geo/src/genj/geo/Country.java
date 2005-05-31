@@ -130,9 +130,8 @@ public class Country implements Comparable {
   public static Country get(Locale locale, String displayName) {
     
     // first a quick check for cached display names
-    Country country = (Country)displayName2Country.get(displayName);
-    if (country!=null)
-      return country;
+    if (displayName2Country.containsKey(displayName))
+      return (Country)displayName2Country.get(displayName);
     
     // do we have countries in given locale already?
     List countries = (List)locale2countries.get(locale);
@@ -147,23 +146,22 @@ public class Country implements Comparable {
     }
     
     // loop over names now
+    Country result  = null;
+    
     Collator collator = Collator.getInstance(locale);
     collator.setStrength(Collator.PRIMARY);
     for (int i = 0; i < countries.size(); i++) {
-      country = (Country)countries.get(i);
+      Country country = (Country)countries.get(i);
       if (collator.compare(country.getDisplayName(), displayName)==0) {
-        
         // create a private instance for this display name
-        country = new Country(country.iso, displayName);
-        
-        // cache it under displayName for next time
-        displayName2Country.put(displayName, country);
-        
-        // done
-        return country;
+        result = new Country(country.iso, displayName);
+        break;
       }
     }
 
+    // cache it under displayName for next time
+    displayName2Country.put(displayName, result);
+    
     // not found
     return null;
   }
