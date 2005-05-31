@@ -113,8 +113,9 @@ public class GeoService {
    * our startup routine
    */
   private synchronized void startup() { 
+    
     // startup database
-    File geo =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo/database", "", "looking for user's geo directory"));
+    File geo =  new File(EnvironmentChecker.getProperty(this, new String[]{ "all.home/.genj/geo/database", "user.home/.genj/geo/database"} , "", "looking for user's geo directory"));
     geo.getParentFile().mkdir();
   
     try {
