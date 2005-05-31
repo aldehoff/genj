@@ -89,8 +89,24 @@ public class GeoLocation extends Point implements Feature, Comparable {
     properties.add(prop);
     
     // init
-    init(prop);
-
+    Property plac = prop.getProperty("PLAC");
+    Property addr = prop.getProperty("ADDR");
+    
+    // got a place?
+    if (plac instanceof PropertyPlace) {
+       parsePlace( (PropertyPlace)plac );
+    } else if (addr!=null) {
+        parseAddress(addr);
+    } else {
+      throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
+    }
+    
+    // calculate hash code now
+    if (city!=null) hash += city.toLowerCase().hashCode();
+    if (jurisdiction!=null) hash += jurisdiction.getDisplayName().toLowerCase().hashCode();
+    if (country!=null) hash += country.getDisplayName().toLowerCase().hashCode();
+    
+    // done
   }
   
   /**
@@ -129,44 +145,18 @@ public class GeoLocation extends Point implements Feature, Comparable {
   }
 
   /**
-   * Init
-   */
-  private void init(Property prop) {
-    
-    Property plac = prop.getProperty("PLAC");
-    Property addr = prop.getProperty("ADDR");
-    
-    // got a place?
-    if (plac instanceof PropertyPlace) {
-       initFromPlace((PropertyPlace)plac);
-    } else if (addr!=null) {
-        initFromAddress(addr);
-    } else {
-      throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
-    }
-    
-    // calculate hash code now
-    if (city!=null) hash += city.toLowerCase().hashCode();
-    if (jurisdiction!=null) hash += jurisdiction.getDisplayName().toLowerCase().hashCode();
-    if (country!=null) hash += country.getDisplayName().toLowerCase().hashCode();
-    
-  }
-  
-  /**
    * Init for Address
    */
-  private boolean initFromAddress(Property addr) {
+  private void parseAddress(Property addr) {
     
     Gedcom ged =addr.getGedcom();
     
-    // got a city?
+    // got a city? treat same as we do PLAC
     Property pcity = addr.getProperty("CITY");
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
-
-    city = trim(pcity.getDisplayValue());
-    if (city.length()==0)
-      throw new IllegalArgumentException("address without city value");
+    
+    parseJurisdictions( new DirectAccessTokenizer(pcity.getDisplayValue(), PropertyPlace.JURISDICTION_SEPARATOR, true), ged);
     
     // how about a country?
     Locale locale = addr.getGedcom().getLocale();
@@ -180,7 +170,53 @@ public class GeoLocation extends Point implements Feature, Comparable {
       jurisdiction = Jurisdiction.get(ged.getCollator(), trim(pstate.getDisplayValue()), country);
     
     // good
-    return true;
+    return;
+  }
+  
+  /**
+   * Init for Place
+   */
+  private void parsePlace(PropertyPlace place) {
+    parseJurisdictions( place.getJurisdictions(), place.getGedcom());
+  }
+  
+  /**
+   * Parse jurisdictions
+   */
+  private void parseJurisdictions(DirectAccessTokenizer jurisdictions, Gedcom gedcom) {
+    
+    int first = 0, last = jurisdictions.count()-1;
+    
+    // city is simply the first non-empty jurisdiction and required
+    while (true) {
+      city = trim(jurisdictions.get(first++));
+      if (city==null)
+        throw new IllegalArgumentException("can't determine jurisdiction's city");
+      if (city.length()>0) 
+        break;
+    }
+    
+    // look for country starting on rightmost jurisdiction
+    Locale locale = gedcom.getLocale();
+    for (int i=last; i>=first; i--) {
+      String j = trim(jurisdictions.get(i));
+      country = Country.get(gedcom.getLocale(), j);
+      if (country!=null) {
+        last = i - 1;
+        break;
+      }
+    }
+    
+    // we look at remaining jurisdictions for a well-known top-level jurisdiction
+    for (int i=first; i<=last; i++) {
+      // try to find matching jurisdiction
+      String j = trim(jurisdictions.get(i));
+      jurisdiction = Jurisdiction.get(gedcom.getCollator(), j, country);
+      if (jurisdiction!=null)  
+        break;
+    }
+    
+    // done
   }
   
   /**
@@ -195,49 +231,6 @@ public class GeoLocation extends Point implements Feature, Comparable {
          return jurisdiction.substring(0, i).trim();
     }
     return jurisdiction.trim();
-  }
-  
-  /**
-   * Init for Place
-   */
-  private boolean initFromPlace(PropertyPlace place) {
-    
-    Gedcom ged = place.getGedcom();
-    DirectAccessTokenizer js = place.getJurisdictions();
-    int first = 0, last = js.count()-1;
-    
-    
-    // city is simply the first non-empty jurisdiction and required
-    while (true) {
-      city = trim(js.get(first++));
-      if (city==null)
-        throw new IllegalArgumentException("can't determine jurisdiction city from place value "+place);
-      if (city.length()>0) 
-        break;
-    }
-    
-    // look for country starting on rightmost jurisdiction
-    Locale locale = place.getGedcom().getLocale();
-    for (int i=last; i>=first; i--) {
-      String j = trim(js.get(i));
-      country = Country.get(ged.getLocale(), j);
-      if (country!=null) {
-        last = i - 1;
-        break;
-      }
-    }
-    
-    // we look at remaining jurisdictions for a well-known top-level jurisdiction
-    for (int i=first; i<=last; i++) {
-      // try to find matching jurisdiction
-      String j = trim(js.get(i));
-      jurisdiction = Jurisdiction.get(ged.getCollator(), j, country);
-      if (jurisdiction!=null)  
-        break;
-    }
-    
-    // done
-    return true;
   }
   
   /**
