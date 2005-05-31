@@ -387,7 +387,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     
     /** set selection */
-    public void setLocations(Set set) {
+    public void setLocations(Collection set) {
       synchronized (this) {
         selection = new ArrayList(set);
       }
@@ -616,7 +616,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     /** mouse callbacks */
     public void mouseClicked(MouseEvent e) {
       Collection locations = getLocations(e);
-      if (!locations.isEmpty()) locationList.setSelectedLocations(locations);
+      if (!locations.isEmpty()) {
+        locationList.setSelectedLocations(locations);
+        selectionLayer.setLocations(locations);
+      }
     }
     public void mouseEntered(MouseEvent e) {
     }

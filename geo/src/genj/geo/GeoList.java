@@ -184,6 +184,7 @@ import swingx.tree.AbstractTreeModel;
       return;
     // set selection
     isPropagateSelectionChanges = false;
+    tree.makeVisible(path);
     Rectangle bounds = tree.getPathBounds(path);
     bounds.width = 1;
     tree.scrollRectToVisible(bounds);
