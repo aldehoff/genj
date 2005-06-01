@@ -63,7 +63,7 @@ public class App {
       OptionProvider.restoreAll(registry);
 
       // Setup Log
-      String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home/.genj/genj.log"}, "", "choose log-file");
+      String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home.genj/genj.log"}, "", "choose log-file");
       if (log.length()>0) {
         File file = new File(log);
         if (file.exists()&&file.length()>Options.getInstance().getMaxLogSizeKB()*1024)

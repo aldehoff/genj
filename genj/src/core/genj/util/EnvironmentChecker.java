@@ -16,7 +16,7 @@ public class EnvironmentChecker {
         "java.version", "java.class.version",
         "os.name", "os.arch", "os.version",
         "browser", "browser.vendor", "browser.version",
-        "user.name", "user.home", "user.dir", "all.home"
+        "user.name", "user.dir", "user.home", "all.home", "user.home.genj", "all.home.genj"
   };
   
   /**
@@ -118,31 +118,61 @@ public class EnvironmentChecker {
   }
 
   /**
-   * Initialize some of our own system properties
+   * all.home - the shared home directory of all users (windows only)
    */
   static {
     
-    // prepare query and pattern
+    // check the registry - this is windows only 
     String QUERY = "reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\"";
     Pattern PATTERN  = Pattern.compile(".*AllUsersProfile\tREG_SZ\t(.*)");
     String value = null;
-    
-    // run process and parse output
     try {
       Process process = Runtime.getRuntime().exec(QUERY);
-  
       BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
       while (true) {
         String line = in.readLine();
         if (line==null) break;
         Matcher match = PATTERN.matcher(line);
         if (match.matches()) {
-          System.setProperty("all.home", new File(new File(System.getProperty("user.home")).getParent(), match.group(1)).toString());
+          File home = new File(new File(System.getProperty("user.home")).getParent(), match.group(1));
+          if (home.isDirectory())
+            System.setProperty("all.home", home.getAbsolutePath());
           break;
         }
       }
+      in.close();
     } catch (Throwable t) {
     }
+
+    // no idea
+  }
+  
+  /**
+   * "user.home.genj" the genj application data directory ("C:/Documents and Settings/$USER/Application Data/genj" on windows, "~/.genj" otherwise)
+   */
+  static {
+
+    File user_home_genj;
+    File home = new File(System.getProperty("user.home"));
+    File dotgenj = new File(home, ".genj");
+    File appdata = new File(home, "Application Data");
+    if (dotgenj.isDirectory() || !appdata.isDirectory())
+      user_home_genj = dotgenj;
+    else
+      user_home_genj = new File(appdata, "GenJ");
+    
+    System.setProperty("user.home.genj", user_home_genj.getAbsolutePath());
+    
+  }
+  
+  /**
+   * "all.home.genj" the genj application data directory ("C:/Documents and Settings/All Users/Application Data/genj" windows only)
+   */
+  static {
+    
+    File app_data = new File(System.getProperty("all.home"), "Application Data");
+    if (app_data.isDirectory())
+      System.setProperty("all.home.genj", new File(app_data, "GenJ").getAbsolutePath());
     
   }
   

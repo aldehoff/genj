@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.21 $ $Author: nmeier $ $Date: 2004-11-07 01:14:05 $
+ * $Revision: 1.22 $ $Author: nmeier $ $Date: 2005-06-01 21:49:17 $
  */
 package genj.util;
 
@@ -113,21 +113,9 @@ public class Registry {
       }
     }
     
-    // read all from local registry (old style)
+    // read all from local registry
     try {
-      File old = getFile(name, false);
-      if (old.exists()) {
-        FileInputStream in = new FileInputStream(old);
-        properties.load(in);
-        in.close();
-        old.delete();
-      }
-    } catch (Throwable t) {
-    }
-    
-    // read all from local registry (new style)
-    try {
-      FileInputStream in = new FileInputStream(getFile(name, true));
+      FileInputStream in = new FileInputStream(getFile(name));
       properties.load(in);
       in.close();
     } catch (Throwable t) {
@@ -753,20 +741,17 @@ public class Registry {
   /**
    * Calculates a filename for given registry name
    */
-  private static File getFile(String name, boolean newStyle) {
+  private static File getFile(String name) {
     
     name = name+".properties";
     
     String dir = EnvironmentChecker.getProperty(
       Registry.class,
-      new String[]{ "user.home" },
+      new String[]{ "user.home.genj" },
       ".",
       "calculate dir for registry file "+name
     );
     
-    if (newStyle)
-      dir = dir + "/.genj";
-      
     return new File(dir,name);
   }
 
@@ -785,7 +770,7 @@ public class Registry {
 
       // Open known file
       try {
-        File file = getFile(key, true);
+        File file = getFile(key);
         file.getParentFile().mkdirs();
         FileOutputStream out = new FileOutputStream(file);
         registry.properties.store(out,key);

@@ -65,6 +65,7 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
@@ -299,16 +300,25 @@ public class ControlCenter extends JPanel {
   }
   
   /**
-   * Create a file chooser
+   * Let the user choose a file
    */
-  private FileChooser createFileChooser(String title, String action) {
-    
-    return new FileChooser(
+  private File chooseFile(String title, String action, JComponent accessory) {
+    FileChooser chooser = new FileChooser(
       ControlCenter.this, title, action, "ged",
-      EnvironmentChecker.getProperty(ControlCenter.this,
-        new String[] { "genj.gedcom.dir", "user.home" } , ".", "choose gedcom file")
-     );
-
+      EnvironmentChecker.getProperty(ControlCenter.this, new String[] { "genj.gedcom.dir", "user.home" } , ".", "choose gedcom file")
+    );
+    chooser.setCurrentDirectory(new File(registry.get("last.dir", "user.home")));
+    if (accessory!=null) chooser.setAccessory(accessory);
+    if (JFileChooser.APPROVE_OPTION!=chooser.showDialog())
+      return null;
+    // check the selection
+    File file = chooser.getSelectedFile();
+    if (file == null)
+      return null;
+    // remember last directory
+    registry.put("last.dir", file.getParentFile().getAbsolutePath());
+    // done
+    return file;
   }
 
   /**
@@ -601,7 +611,7 @@ public class ControlCenter extends JPanel {
           createNew();
           return null;
         case 1 :
-          return chooseFile();
+          return chooseExisting();
         case 2 :
           return chooseURL();
         default :
@@ -616,14 +626,8 @@ public class ControlCenter extends JPanel {
      */
     private void createNew() {
 
-      // pop a chooser
-      FileChooser chooser = createFileChooser(
-        resources.getString("cc.create.title"),
-        resources.getString("cc.create.action")
-      );
-      chooser.showDialog();
-      // check the selection
-      File file = chooser.getSelectedFile();
+      // let user choose a file
+      File file = chooseFile(resources.getString("cc.create.title"), resources.getString("cc.create.action"), null);
       if (file == null)
         return;
       if (!file.getName().endsWith(".ged"))
@@ -654,18 +658,13 @@ public class ControlCenter extends JPanel {
     /**
      * choose a file
      */
-    private Origin chooseFile() {
-
-      // pop a chooser      
-      FileChooser chooser = createFileChooser(
-          resources.getString("cc.open.title"),
-          resources.getString("cc.open.action")
-      );
-      chooser.showDialog();
-      // check the selection
-      File file = chooser.getSelectedFile();
+    private Origin chooseExisting() {
+      // ask user
+      File file = chooseFile(resources.getString("cc.open.title"), resources.getString("cc.open.action"), null);
       if (file == null)
         return null;
+      // remember last directory
+      registry.put("last.dir", file.getParentFile().getAbsolutePath());
       // form origin
       try {
         return Origin.create(new URL("file", "", file.getAbsolutePath()));
@@ -855,22 +854,12 @@ public class ControlCenter extends JPanel {
       if (ask || origin==null || !origin.isFile()) {
 
         // .. choose file
-        FileChooser chooser = createFileChooser(
-          resources.getString("cc.save.title"),
-          resources.getString("cc.save.action")
-        );
-
-        // .. with options        
         SaveOptionsWidget options = new SaveOptionsWidget(gedcom, viewManager);
-        chooser.setAccessory(options);
-
-        // .. ask user
-        if (FileChooser.APPROVE_OPTION != chooser.showDialog()) {
+        result = chooseFile(resources.getString("cc.save.title"), resources.getString("cc.save.action"), options);
+        if (result==null)
           return false;
-        }
 
         // .. take choosen one & filters
-        result = chooser.getSelectedFile();
         if (!result.getName().endsWith(".ged"))
           result = new File(result.getAbsolutePath()+".ged");
         filters = options.getFilters();
