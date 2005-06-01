@@ -114,9 +114,9 @@ public class GeoService {
    */
   private synchronized void startup() { 
     
-    // startup database
-    File geo =  new File(EnvironmentChecker.getProperty(this, new String[]{ "all.home/.genj/geo/database", "user.home/.genj/geo/database"} , "", "looking for user's geo directory"));
-    geo.getParentFile().mkdir();
+    // startup database - try to place into all.home.genj if possible, user.home.genj otherwise
+    File geo =  new File(EnvironmentChecker.getProperty(this, new String[]{ "all.home.genj/geo", "user.home.genj/geo"} , "", "looking for user's geo directory"));
+    geo.mkdir();
   
     try {
       
@@ -133,7 +133,7 @@ public class GeoService {
       props.setProperty("hsqldb.cache_size_scale", "7"); // less size per row 2^x
       props.setProperty("sql.compare_in_locale", "0"); // Collator strength PRIMARY
       
-      connection = DriverManager.getConnection("jdbc:hsqldb:file:"+geo.getAbsolutePath(), props); 
+      connection = DriverManager.getConnection("jdbc:hsqldb:file:"+geo.getAbsolutePath() + "/database" , props); 
       connection.setAutoCommit(true);
   
       // create tables
@@ -223,19 +223,19 @@ public class GeoService {
     
     List result = new ArrayList();
     
-    // find directories
-    if (localDir==null) {
-      localDir =  new File(EnvironmentChecker.getProperty(this,"user.home/.genj/geo", "", "looking for locale geo files"));
-      globalDir = new File(EnvironmentChecker.getProperty(this, "genj.geo.dir", GEO_DIR, "Looking for map directory"));
+    String[] dirs  = {
+        EnvironmentChecker.getProperty(this, "user.home.genj/geo", "", "looking for user's geo files"),
+        EnvironmentChecker.getProperty(this, "all.home.genj/geo", "", "looking for shared geo files"),
+        EnvironmentChecker.getProperty(this, "genj.geo.dir", GEO_DIR, "looking for installed geo files")
+    };
+    
+    // loop directories
+    for (int i=0;i<dirs.length;i++) {
+      File dir = new File(dirs[i]);
+      if (dir.isDirectory()) {
+        result.addAll(Arrays.asList(dir.listFiles()));
+      }
     }
-
-    // global files
-    if (globalDir.exists()) 
-      result.addAll(Arrays.asList(globalDir.listFiles()));
-
-    // local files
-    if (localDir.exists())
-      result.addAll(Arrays.asList(localDir.listFiles()));
 
     // done
     return (File[])result.toArray(new File[result.size()]);
