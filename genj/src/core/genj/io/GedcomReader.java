@@ -316,7 +316,8 @@ public class GedcomReader implements Trackable {
     } catch (GedcomIOException gex) {
       throw gex;
     } catch (Throwable t) {
-      // 20030530 what abbout OutOfMemoryError
+      // catch anything bubbling up here
+      Debug.log(Debug.ERROR, this, t);
       throw new GedcomIOException(t.toString(), line);
     } finally  {
       // close in
