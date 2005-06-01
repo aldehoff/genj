@@ -29,6 +29,13 @@ public class EnvironmentChecker {
   }
 
   /**
+   * Check for Windows
+   */
+  public static boolean isWindows() {
+    return System.getProperty("os.name").indexOf("Windows")>-1;
+  }
+
+  /**
    * Check the environment
    */
   public static void log() {
@@ -123,28 +130,30 @@ public class EnvironmentChecker {
   static {
     
     // check the registry - this is windows only 
-    String QUERY = "reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\"";
-    Pattern PATTERN  = Pattern.compile(".*AllUsersProfile\tREG_SZ\t(.*)");
-    String value = null;
-    try {
-      Process process = Runtime.getRuntime().exec(QUERY);
-      BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      while (true) {
-        String line = in.readLine();
-        if (line==null) break;
-        Matcher match = PATTERN.matcher(line);
-        if (match.matches()) {
-          File home = new File(new File(System.getProperty("user.home")).getParent(), match.group(1));
-          if (home.isDirectory())
-            System.setProperty("all.home", home.getAbsolutePath());
-          break;
+    if (isWindows()) {
+      
+      String QUERY = "reg query \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\"";
+      Pattern PATTERN  = Pattern.compile(".*AllUsersProfile\tREG_SZ\t(.*)");
+      String value = null;
+      try {
+        Process process = Runtime.getRuntime().exec(QUERY);
+        BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        while (true) {
+          String line = in.readLine();
+          if (line==null) break;
+          Matcher match = PATTERN.matcher(line);
+          if (match.matches()) {
+            File home = new File(new File(System.getProperty("user.home")).getParent(), match.group(1));
+            if (home.isDirectory())
+              System.setProperty("all.home", home.getAbsolutePath());
+            break;
+          }
         }
+        in.close();
+      } catch (Throwable t) {
       }
-      in.close();
-    } catch (Throwable t) {
     }
-
-    // no idea
+    // done
   }
   
   /**
@@ -156,7 +165,7 @@ public class EnvironmentChecker {
     File home = new File(System.getProperty("user.home"));
     File dotgenj = new File(home, ".genj");
     File appdata = new File(home, "Application Data");
-    if (dotgenj.isDirectory() || !appdata.isDirectory())
+    if (!isWindows() || dotgenj.isDirectory() || !appdata.isDirectory())
       user_home_genj = dotgenj;
     else
       user_home_genj = new File(appdata, "GenJ");
@@ -170,9 +179,11 @@ public class EnvironmentChecker {
    */
   static {
     
-    File app_data = new File(System.getProperty("all.home"), "Application Data");
-    if (app_data.isDirectory())
-      System.setProperty("all.home.genj", new File(app_data, "GenJ").getAbsolutePath());
+    if (isWindows()) {
+      File app_data = new File(System.getProperty("all.home"), "Application Data");
+      if (app_data.isDirectory())
+        System.setProperty("all.home.genj", new File(app_data, "GenJ").getAbsolutePath());
+    }
     
   }
   
