@@ -77,8 +77,7 @@ public class ChoiceBean extends PropertyBean {
         String confirm = getGlobalConfirmMessage();
         if (confirm!=null&&global.isSelected()) {
           int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.IMG_QUESTION, confirm, CloseWindow.YESandNO(), ChoiceBean.this);
-          if (rc!=0)
-            global.setSelected(false);
+          global.setSelected(rc==0);
         }        
       }
     });
@@ -100,17 +99,9 @@ public class ChoiceBean extends PropertyBean {
     
     PropertyChoiceValue prop = (PropertyChoiceValue)property;
 
-// 20050428 don't know what this was for
-//    // check if property has been touched already 
-//    // in current transaction
-//    if (!tx.get(Transaction.PROPERTIES_MODIFIED).contains(prop)) {
-    
 	    // change value
 	    prop.setValue(choice.getText(), global.isSelected());
       
-      // reset state
-      setContextImpl(property);
-    
     // Done
   }
 

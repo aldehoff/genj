@@ -537,7 +537,8 @@ public class PropertyTreeWidget extends DnDTree {
         // go on checking
       }
       
-      // restore selection
+      // set selection
+      clearSelection();
       setSelection(selection);
       
       // Done

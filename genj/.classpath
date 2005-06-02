@@ -48,10 +48,6 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="language/cs">
-		<attributes>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="language/de">
 		<attributes>
 		</attributes>

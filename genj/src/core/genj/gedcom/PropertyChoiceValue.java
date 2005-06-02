@@ -31,7 +31,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   /**
    * Remember a value
    */
-  private void remember(String oldValue, String newValue) {
+  protected void remember(String oldValue, String newValue) {
     // got access to a reference set?
     Gedcom gedcom = getGedcom();
     if (gedcom==null)
@@ -85,23 +85,15 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * @see genj.gedcom.PropertySimpleValue#setValue(java.lang.String)
    */
   public void setValue(String value) {
-    
-    // TUNING: for choices we expect a lot of repeating values so
-    // we build the intern representation of value here - this makes
-    // us share string instances for an upfront cost
-    value = value.intern();
-    
-    // remember
-    remember(super.getValue(), value);
-    
-    // delegate
-    super.setValue(value);
+    setValueInternal(trim(value));
   }
   
   /**
    * A special value that allows global substitution
    */
   public void setValue(String value, boolean global) {
+    
+    value = trim(value);
     
     // more?
     if (global) {
@@ -110,14 +102,28 @@ public class PropertyChoiceValue extends PropertySimpleValue {
       for (int i=0;i<others.length;i++) {
         Property other = others[i];
         if (other instanceof PropertyChoiceValue&&other!=this) 
-          other.setValue(value);
+          ((PropertyChoiceValue)other).setValueInternal(value);
       }
     }    
       
     // change me
-    setValue(value);
+    setValueInternal(value);
     
     // done
+  }
+
+  protected String trim(String value) {
+    // TUNING: for choices we expect a lot of repeating values so
+    // we build the intern representation of value here - this makes
+    // us share string instances for an upfront cost
+    return value.intern();
+  }
+  
+  private void setValueInternal(String value) {
+    // remember
+    remember(super.getValue(), value);
+    // delegate
+    super.setValue(value);
   }
 
   /**

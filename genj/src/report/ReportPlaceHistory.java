@@ -134,7 +134,7 @@ public class ReportPlaceHistory extends Report {
   private Map getSeriesForPlaces(Gedcom gedcom) {
     
     // find what values are in gedcom for PLAC (sorted by ranking)
-    String[] jurisdictions = PropertyPlace.getJurisdictions(gedcom, 0, false);
+    String[] jurisdictions = PropertyPlace.getAllJurisdictions(gedcom, 0, false);
     
     // create series for the top n
     Map result = new HashMap();

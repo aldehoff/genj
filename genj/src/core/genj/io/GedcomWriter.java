@@ -334,9 +334,9 @@ public class GedcomWriter implements Trackable {
     line( 2, "FORM", "Lineage-Linked");
     line( 1, "CHAR", encoding);
     line( 1, "LANG", gedcom.getLanguage());
-    if (gedcom.getPlaceHierarchy().length()>0) {
+    if (gedcom.getPlaceFormat().length()>0) {
       line( 1, "PLAC", "");
-      line( 2, "FORM", gedcom.getPlaceHierarchy());
+      line( 2, "FORM", gedcom.getPlaceFormat());
     }
     // done
   }

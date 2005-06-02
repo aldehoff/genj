@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.89 $ $Author: nmeier $ $Date: 2005-05-20 03:30:41 $
+ * $Revision: 1.90 $ $Author: nmeier $ $Date: 2005-06-02 20:16:16 $
  */
 package genj.gedcom;
 
@@ -791,14 +791,14 @@ public class Gedcom {
   /**
    * Accessor - place format
    */
-  public String getPlaceHierarchy() {
+  public String getPlaceFormat() {
     return placeFormat;
   }
   
   /**
    * Accessor - place format
    */
-  public void setPlaceHierarchy(String set) {
+  public void setPlaceFormat(String set) {
     placeFormat = set;
   }
   

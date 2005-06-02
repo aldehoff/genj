@@ -459,7 +459,7 @@ public class GedcomReader implements Trackable {
       
       // check for place hierarchy description
       if (level==2&&"PLAC".equals(lastTag)&&"FORM".equals(tag)) {
-        gedcom.setPlaceHierarchy(value);
+        gedcom.setPlaceFormat(value);
         Debug.log(Debug.INFO, this, "Found Place.Format "+value);
       }
         

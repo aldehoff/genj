@@ -24,11 +24,18 @@ import genj.gedcom.PropertyPlace;
 import genj.util.DirectAccessTokenizer;
 import genj.util.GridBagHelper;
 import genj.util.swing.ChoiceWidget;
+import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -37,13 +44,63 @@ import javax.swing.SwingConstants;
 public class PlaceBean extends PropertyBean {
 
   private GridBagHelper gh = new GridBagHelper(this);
-  int rows = 0;
+  private int rows = 0;
+  private JCheckBox global = new JCheckBox();
+
 
   /**
    * Initialization
    */
   protected void initializeImpl() {
-    // too dynamic to setup now
+    // nothing much we can do - hook up to change events and show changeAll on change 
+    changeSupport.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        String confirm = getGlobalConfirmMessage();
+        global.setVisible(confirm!=null);
+        global.setToolTipText(confirm);
+      }
+    });
+    // listen to selection of global and ask for confirmation
+    global.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        if (global.isSelected()) {
+          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.IMG_QUESTION, getGlobalConfirmMessage(), CloseWindow.YESandNO(), PlaceBean.this);
+          global.setSelected(rc==0);
+        }        
+      }
+    });
+    
+  }
+  
+  /**
+   * Compute commit value
+   */
+  private String getCommitValue() {
+    
+    boolean hierarchy = ((PropertyPlace)property).getFormat().length()>0;
+    
+    // collect the result by looking at all of the choices
+    StringBuffer result = new StringBuffer();
+    for (int c=0, n=getComponentCount(), j=0; c<n; c++) {
+      
+      // check each text field
+      Component comp = getComponent(c);
+      if (comp instanceof ChoiceWidget) {
+        
+        String jurisdiction = ((ChoiceWidget)comp).getText().trim();
+        
+        // make sure the user doesn't enter a comma ',' if there is a field per jurisdiction
+        if (hierarchy) jurisdiction = jurisdiction.replaceAll(",",";"); 
+          
+        // always add separator for jurisdictions j>0 regardless of jurisdiction.length()
+        if (j++>0) result.append(","); 
+        result.append(jurisdiction);
+        
+      }
+      // next
+    }
+
+    return result.toString();
   }
   
   /**
@@ -51,21 +108,10 @@ public class PlaceBean extends PropertyBean {
    */
   public void commit() {
     
-    StringBuffer result = new StringBuffer();
-
-    boolean first = true;
-    for (int i=0, j=getComponentCount(); i<j; i++) {
-      // check each text field
-      Component comp = getComponent(i);
-      if (comp instanceof ChoiceWidget) {
-        String jurisdiction = ((ChoiceWidget)comp).getText().trim();
-        if (!first) result.append(","); // make sure to add a comma even if result.length()==0 since an empty jurisdiction was entered
-        result.append(jurisdiction);
-        first = false;
-      }
-      // next
-    }
-    property.setValue(result.toString());
+    // propagate change
+    ((PropertyPlace)property).setValue(getCommitValue(), global.isSelected());
+    
+  
   }
 
   /**
@@ -76,49 +122,63 @@ public class PlaceBean extends PropertyBean {
     // check property's format
     PropertyPlace place = (PropertyPlace)prop;
     
-    // remove all current fields - this is dynamic
+    // remove all current fields and clear current default focus - this is all dynamic for each context
     removeAll();
-    
-    // clear current default focus - will be decided on again
+    rows = 0;
     defaultFocus = null;
    
     // either a simple value or broken down into comma separated jurisdictions
-    if (place.getDisplayHierarchy().length()==0) {
-      createField(null, place.getValue(), -1);
+    if (place.getDisplayFormat().length()==0) {
+      createChoice(null, place.getValue(), place.getAllJurisdictions(-1,true));
     } else {
-      DirectAccessTokenizer hierarchyTokens = new DirectAccessTokenizer(place.getDisplayHierarchy(), ",", true);
+      DirectAccessTokenizer format = new DirectAccessTokenizer(place.getDisplayFormat(), ",", true);
       DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",", true);
       for (int i=0;;i++) {
-        String hierarchyToken = hierarchyTokens.get(i);
-        String jurisdiction = jurisdictions.get(i);
-        if (hierarchyToken==null&&jurisdiction==null) break;
-        createField(hierarchyToken!=null ? hierarchyToken : null, jurisdiction!=null ? jurisdiction : "", i);
+        if (format.get(i)==null&&jurisdictions.get(i)==null) break;
+        createChoice(format.get(i), jurisdictions.get(i), place.getAllJurisdictions(i, true));
       }
     }
+
+    // add 'change all'
+    global.setVisible(false);
+    global.setSelected(false);
+    gh.add(global, 2, rows);
     
     // add filler
-    gh.addFiller(1,rows);
+    gh.addFiller(1,++rows);
     
     // Done
   }
   
-  private ChoiceWidget createField(String name, String jurisdiction, int hierarchyLevel) {
-    // add a label for the jurisdiction name?
-    if (name!=null) 
-      gh.add(new JLabel(name, SwingConstants.RIGHT), 0, rows, 1, 1, GridBagHelper.FILL_HORIZONTAL);
-    // and a textfield
-    ChoiceWidget result = new ChoiceWidget();
-    result.setEditable(true);
-    result.setValues(((PropertyPlace)property).getJurisdictions(hierarchyLevel, true));
-    result.setText(jurisdiction);
-    result.addChangeListener(changeSupport);
-    gh.add(result, 1, rows, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
-    // set default focus if not done yet
-    if (defaultFocus==null) defaultFocus = result;
-    // increase rows
+  private void createChoice(String label, String value, String[] values) {
+    // next row
     rows++;
+    // add a label for the jurisdiction name?
+    if (label!=null) 
+      gh.add(new JLabel(label, SwingConstants.RIGHT), 0, rows, 1, 1, GridBagHelper.FILL_HORIZONTAL);
+    // and a textfield
+    ChoiceWidget choice = new ChoiceWidget();
+    choice.setEditable(true);
+    choice.setValues(values);
+    choice.setText(value);
+    choice.addChangeListener(changeSupport);
+    gh.add(choice, 1, rows, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
+    // set default focus if not done yet
+    if (defaultFocus==null) defaultFocus = choice;
     // done
-    return result;
   }
 
-} //ProxyUnknown
+  /**
+   * Create confirm message for global
+   */
+  private String getGlobalConfirmMessage() {
+    int others = ((PropertyPlace)property).getSameChoices().length;
+    if (others<2)
+      return null;
+    // we're using getDisplayValue() here
+    // because like in PropertyRelationship's case there might be more
+    // in the gedcom value than what we want to display (witness@INDI:BIRT)
+    return resources.getString("choice.global.confirm", new String[]{ ""+others, property.getDisplayValue(), getCommitValue() });
+  }
+  
+} //PlaceBean
