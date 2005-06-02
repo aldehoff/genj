@@ -23,6 +23,7 @@ import genj.util.Resources;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,8 @@ import java.util.WeakHashMap;
 public class Country implements Comparable {
   
   private final static Resources ISO2FIPS = new Resources(Country.class.getResourceAsStream("iso2fips.properties"));
+  
+  private static Country[] ALL_COUNTRIES = null;
   
   private static Country DEFAULT_COUNTRY = null;
   
@@ -105,16 +108,24 @@ public class Country implements Comparable {
    */
   public static Country[] getAllCountries() {
     
-    DEFAULT_COUNTRY = get(Locale.getDefault().getCountry());
+    // known?
+    if (ALL_COUNTRIES==null) {
     
-    // grab all country codes
-    String[] codes = Locale.getISOCountries(); 
-    Country[] result = new Country[codes.length];
-    for (int i=0;i<codes.length;i++) 
-      result[i] = new Country(codes[i]);
+      // grab all country codes
+      String[] codes = Locale.getISOCountries(); 
+      ALL_COUNTRIES = new Country[codes.length];
+      for (int i=0;i<codes.length;i++) 
+        ALL_COUNTRIES[i] = new Country(codes[i]);
     
-    // try again
-    return result;
+      Arrays.sort(ALL_COUNTRIES);
+      
+      // grab default country
+      DEFAULT_COUNTRY = get(Locale.getDefault().getCountry());
+      
+    }    
+    
+    // done
+    return ALL_COUNTRIES;
   }
   
   /**
