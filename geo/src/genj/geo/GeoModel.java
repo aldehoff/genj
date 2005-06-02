@@ -40,7 +40,7 @@ import javax.swing.SwingUtilities;
 /**
  * Geographic model wrapper for gedcom
  */
-/*package*/ class GeoModel implements GedcomListener {
+/*package*/ class GeoModel implements GedcomListener, GeoService.Listener {
   
   /** one locator for all */
   private final static Locator LOCATOR = new Locator();
@@ -74,6 +74,17 @@ import javax.swing.SwingUtilities;
     return Collections.unmodifiableCollection(locations.keySet());
   }
   
+  /**
+   *callback - GeoService changes
+   */
+  public void handleGeoDataChange() {
+    // update all locations
+    synchronized (locations) {
+      for (Iterator it = locations.keySet().iterator(); it.hasNext(); ) 
+        LOCATOR.add((GeoLocation)it.next());
+    }
+  }
+    
   /**
    * callback - gedcom change 
    */
@@ -239,12 +250,13 @@ import javax.swing.SwingUtilities;
    * add a listener
    */
   public void addGeoModelListener(GeoModelListener l) {
-    listeners.add(l);
     // start listening?
-    if (listeners.size()==1) {
+    if (listeners.isEmpty()) {
       reset();
       gedcom.addGedcomListener(this);
+      GeoService.getInstance().addListener(this);
     }
+    listeners.add(l);
   }
   
   /**
@@ -253,8 +265,10 @@ import javax.swing.SwingUtilities;
   public void removeGeoModelListener(GeoModelListener l) {
     listeners.remove(l);
     // stoplistening?
-    if (listeners.isEmpty())
-    gedcom.removeGedcomListener(this);
+    if (listeners.isEmpty()) {
+      gedcom.removeGedcomListener(this);
+      GeoService.getInstance().removeListener(this);
+    }
   }
   
   /**

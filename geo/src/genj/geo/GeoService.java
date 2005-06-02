@@ -95,6 +95,9 @@ public class GeoService {
   /** database ready */
   private Connection connection;
   
+  /** listeners */
+  private List listeners = new ArrayList();
+  
   /**
    * Constructor
    */
@@ -239,6 +242,27 @@ public class GeoService {
 
     // done
     return (File[])result.toArray(new File[result.size()]);
+  }
+
+  /**
+   * Let listeners know about change in data
+   */
+  /*package*/ synchronized void fireGeoDataChanged() {
+    Listener[] ls = (Listener[])listeners.toArray(new Listener[listeners.size()]);
+    for (int i = 0; i < ls.length; i++) {
+      ls[i].handleGeoDataChange();
+    }
+  }
+  
+  /**
+   * Listener registration
+   */
+  public void addListener(Listener l) {
+    listeners.add(l);
+  }
+  
+  public void removeListener(Listener l) {
+    listeners.remove(l);
   }
   
   /**
@@ -399,6 +423,13 @@ public class GeoService {
     public void run() {
       location.set(lat, lon, matches);
     }
+  }
+  
+  /**
+   * A (crude) Listener
+   */
+  public interface Listener {
+    public void handleGeoDataChange();
   }
     
 } //GeoService

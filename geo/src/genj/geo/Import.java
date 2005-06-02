@@ -155,6 +155,8 @@ public abstract class Import implements Trackable {
       throw new IOException("error committing imported data ["+e.getMessage()+"]");
     } finally {
       if (in!=null) in.close();
+      
+      GeoService.getInstance().fireGeoDataChanged();
     }
     
     // done
