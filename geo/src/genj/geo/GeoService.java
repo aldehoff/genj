@@ -319,6 +319,54 @@ public class GeoService {
   }
   
   /**
+   * Find all matching locations for given location
+   */
+  public GeoLocation[] query(GeoLocation location) {
+    
+    String city = location.getCity();
+    Jurisdiction jurisdiction = location.getJurisdiction();
+    Country country = location.getCountry();
+   
+    // try to find 
+    List result = new ArrayList();
+    synchronized (this) {
+      
+      try {
+        
+        // prepare select
+        PreparedStatement select = connection.prepareStatement(SELECT_LOCATIONS);
+        select.setString(SELECT_LOCATIONS_IN_CITY, city);
+
+        // loop over rows
+        ResultSet rows = select.executeQuery();
+        while (rows.next()) {
+          // grab city as in database
+          String foundCity = rows.getString(SELECT_LOCATIONS_OUT_CITY);
+          // .. country known and no match -> don't consider
+          Country foundCountry = Country.get(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY));
+          if (country!=null&&!country.equals(foundCountry))
+            continue;
+          // .. jurisdiction known and no match -> don't consider
+          Jurisdiction foundJurisdiction = Jurisdiction.get(foundCountry, rows.getString(SELECT_LOCATIONS_OUT_STATE));
+          if (jurisdiction!=null&&!jurisdiction.equals(foundJurisdiction)) 
+            continue;
+          // grab it
+          GeoLocation loc = new GeoLocation(foundCity, foundJurisdiction, foundCountry);
+          loc.set(rows.getDouble(SELECT_LOCATIONS_OUT_LAT), rows.getDouble(SELECT_LOCATIONS_OUT_LON), 1);
+          result.add(loc);
+          // next 
+        }
+      } catch (Throwable t) {
+        Debug.log(Debug.WARNING, this, "throwable while trying to match "+location, t);
+      }
+    }
+    
+    // done
+    return (GeoLocation[])result.toArray(new GeoLocation[result.size()]);
+    
+  }
+  
+  /**
    * Match given location
    */
   public Match match(GeoLocation location) {
@@ -414,11 +462,17 @@ public class GeoService {
    * A match
    */
   public class Match implements Runnable {
-    public GeoLocation location;
-    public double lat,lon;
-    public int matches;
+    private GeoLocation location;
+    private double lat,lon;
+    private int matches;
     private Match(GeoLocation location, double lat, double lon, int matches) { 
       this.location = location; this.lat=lat; this.lon=lon; this.matches=matches; 
+    }
+    public double getLatitude() {
+      return lat;
+    }
+    public double getLongitude() {
+      return lon;
     }
     public void run() {
       location.set(lat, lon, matches);

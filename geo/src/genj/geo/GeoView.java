@@ -131,7 +131,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     model = new GeoModel(gedcom);
     
     // create a location grid
-    locationList = new GeoList(model);
+    locationList = new GeoList(model, viewManager);
     
     // create layers
     locationLayer = new LocationsLayer();  
@@ -187,7 +187,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // override
     super.removeNotify();
   }
-    
+  
   /**
    * Callback for context changes
    */

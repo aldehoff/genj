@@ -79,6 +79,20 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * Constructor
    * @param prop property that nees location
    */
+  /*package*/ GeoLocation(String city, Jurisdiction jurisdiction, Country country) {
+    
+    super(GEOMETRY_FACTORY.getCoordinateSequenceFactory().create(new Coordinate[]{ new Coordinate() } ), GEOMETRY_FACTORY);
+    coordinate = super.getCoordinate();
+    
+    this.city = city;
+    this.jurisdiction = jurisdiction;
+    this.country = country;
+  }
+  
+  /**
+   * Constructor
+   * @param prop property that needs location
+   */
   public GeoLocation(Property prop) {
     super(GEOMETRY_FACTORY.getCoordinateSequenceFactory().create(new Coordinate[]{ new Coordinate() } ), GEOMETRY_FACTORY);
     
@@ -127,7 +141,9 @@ public class GeoLocation extends Point implements Feature, Comparable {
     return getCoordinateAsString(coordinate);
   }
   public static String getCoordinateAsString(Coordinate coord) {
-    double lat = coord.y, lon = coord.x;
+    return getCoordinateAsString(coord.y, coord.x);
+  }
+  public static String getCoordinateAsString(double lat, double lon) {
     if (Double.isNaN(lat)||Double.isNaN(lon))
       return "n/a";
     char we = 'E', ns = 'N';

@@ -25,6 +25,9 @@ import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
+import genj.view.ViewManager;
+import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -64,6 +67,9 @@ import swingx.tree.AbstractTreeModel;
     TXT_LATLON = GeoView.RESOURCES.getString("location.latlon"),
     TXT_UNKNOWN = GeoView.RESOURCES.getString("location.unknown");
   
+  /** view mgr */
+  private ViewManager viewManager;
+  
   /** model */
   private GeoModel model;
 
@@ -76,11 +82,12 @@ import swingx.tree.AbstractTreeModel;
   /**
    * Constructor
    */
-  public GeoList(GeoModel model) {
+  public GeoList(GeoModel model, ViewManager viewManager) {
     
     // remember 
     this.model = model;
-
+    this.viewManager = viewManager;
+    
     // create some components
     tree = new JTree(new Model());
     tree.setRootVisible(false);
@@ -234,9 +241,13 @@ import swingx.tree.AbstractTreeModel;
       setEnabled(false);
     }
     public void valueChanged(TreeSelectionEvent e) {
-      //setEnabled(table.getSelectedRowCount()==1);
+      // one location selected?
+      setEnabled(tree.getSelectionCount()==1 && tree.getSelectionPath().getPathCount()==2);
     }
     protected void execute() {
+      GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
+      QueryWidget query = new QueryWidget(location);
+      viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.IMG_QUESTION, query, new CloseWindow[]{new CloseWindow("Does nothing yet!")}, GeoList.this);
     }
   }
   

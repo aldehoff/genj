@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,9 @@ public class Jurisdiction {
   
   /** a weak cache of displayNames to reusable instances */
   private static Map displayName2jurisdiction = new WeakHashMap(); 
+  
+  /** a cache of key to jurisdiction    (xx.yy where xx=iso country yy=fips jurisdiction code) */
+  private static Map key2jurisdiction = new HashMap();
 
   /** all known jurisdictions */
   private static List JURISDICTIONS;
@@ -74,11 +78,12 @@ public class Jurisdiction {
   }
   
   /**
-   * Equal if display name is same 
+   * Equal if country and code are the same 
    */
   public boolean equals(Object obj) {
+    if (obj==null) return false;
     Jurisdiction that = (Jurisdiction)obj;
-    return this.displayName.equalsIgnoreCase(that.displayName);
+    return this.country.equals(that.country) && this.code.equals(that.code);
   }
   
   /**
@@ -86,6 +91,22 @@ public class Jurisdiction {
    */
   public String toString() {
     return displayName;
+  }
+  
+  /**
+   * Access
+   */
+  public static Jurisdiction get(Country country, String code) {
+    
+    // make sure the jurisdictions are initialized
+    getJurisdictions();
+    
+    // lookup & create if necessary but don't cache unknown jurisdictions
+    Jurisdiction result = (Jurisdiction)key2jurisdiction.get(country.getCode()+"."+code);
+    if (result==null) 
+      result = new Jurisdiction(country, code, code);
+      
+    return result;
   }
   
   /**
@@ -157,8 +178,12 @@ public class Jurisdiction {
           if (key.length()!=5) continue;
           String country = key.substring(0,2);
           String code = key.substring(3,5);
-          for (StringTokenizer names = new StringTokenizer(meta.getString(key), ","); names.hasMoreTokens(); )
-            JURISDICTIONS.add(new Jurisdiction(Country.get(country), code, names.nextToken().trim()));
+          StringTokenizer names = new StringTokenizer(meta.getString(key), ",");
+          for (int n=0; names.hasMoreTokens(); n++) {
+            Jurisdiction jurisdiction = new Jurisdiction(Country.get(country), code, names.nextToken().trim());
+            if (n==0) key2jurisdiction.put(key, jurisdiction);
+            JURISDICTIONS.add(jurisdiction);
+          }
         }
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, Country.class, t);

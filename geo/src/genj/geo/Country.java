@@ -91,8 +91,9 @@ public class Country implements Comparable {
   
   /** equals - same country name */
   public boolean equals(Object obj) {
+    if (obj==null) return false;
     Country that = (Country)obj;
-    return displayName.equals(that.displayName);
+    return iso.equals(that.iso);
   }
   
   /**
