@@ -23,12 +23,15 @@ The people behind GenJ (sorted by last name) :
       . Osamu Ajiki <osam-a@astroarts.co.jp> (Japanese translation)
       . Nicola Fragale <nicolafragale@libero.it> (Italian translation)
       . Nestor Garcia <hipernes@inicia.es> (Spanish translation)
+      . Pere Jover <pjover@jazzfree.com> (Spanish translation)
       . Mauricio Girardi <girardi@fisica.ufsc.br> (Brazilian portuguese)
       . Theo Guelcher <gulcher@users.sourceforge.net> (Dutch translation) 
-      . Pere Jover <pjover@jazzfree.com> (Spanish translation)
       . Francois Massonneau <francois@arvernes.com> (French translation)
       . Carsten Muessig <carsten.muessig@gmx.net> (German translation) 
       . Marcus Sandberg <marcus.sandberg@gmx.net> (German translation)
+      . Alex Evdokimenko (Russian translation)
+      . Frantisek Grebenicek (Czech translation)
+
 
     User Feedback and Food for Thought :
       . Paul Clarke <pjclarke@bigpond.com>
@@ -38,7 +41,7 @@ The people behind GenJ (sorted by last name) :
       . Daniel Moyne
       . Shmuel Metz <shmuel@acm.org>
       . Ernst Neubauer and Sohn <e.neubauer@t-online.de>
-      . David Roxburgh<david.roxburgh@bt.com>
+      . David Roxburgh <david.roxburgh@bt.com>
       . John Varela
       . Roy O. Wellington III <roy.wellington@worldnet.att.net>
       . and many others!!!
