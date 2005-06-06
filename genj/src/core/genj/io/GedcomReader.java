@@ -243,7 +243,7 @@ public class GedcomReader implements Trackable {
     
     // "0 [@xref@] value" expected - xref can be missing for custom records
     if (level!=0) {
-      String msg = "Expected 0 @XREF@ INDI|FAM|OBJE|NOTE|REPO|SOUR|SUBM";
+      String msg = resources.getString("read.warn.expected0");
       // at least still level identifyable?
       if (level==0) {
         // skip record
@@ -257,7 +257,7 @@ public class GedcomReader implements Trackable {
     // warn about missing xref if it's a well known type
     for (int i=0;i<Gedcom.ENTITIES.length;i++) {
       if (tag.equals(Gedcom.ENTITIES[i])&&xref.length()==0) {
-        addWarning(line, Gedcom.getName(tag)+" without valid @xref@");
+        addWarning(line, resources.getString("read.warn.recordnoid", Gedcom.getName(tag)));
       }
     }
 
@@ -292,7 +292,7 @@ public class GedcomReader implements Trackable {
       } while (level!=0);
       redoLine();
     } finally {
-      addWarning(start, "Skipped "+(line-start)+" lines - "+msg);
+      addWarning(start, resources.getString("read.warn.skipped", new String[]{ ""+(line-start), msg } ));
     }
   }
 
@@ -353,7 +353,7 @@ public class GedcomReader implements Trackable {
       // .. still there ?
       peekLine();
       if (level!=0) 
-        throw new GedcomFormatException("Expected 0 TAG or 0 TRLR",line);
+        throw new GedcomFormatException(resources.getString("read.error.norecord"),line);
 
       // .. end ?
       if (tag.equals("TRLR")) break;
@@ -368,7 +368,7 @@ public class GedcomReader implements Trackable {
     // Read Tail
     readLine();
     if (level!=0) 
-      throw new GedcomFormatException("Expected 0 TRLR",line);
+      throw new GedcomFormatException(resources.getString("read.error.notrailer"), line);
 
     // Next state
     state++;
@@ -379,7 +379,7 @@ public class GedcomReader implements Trackable {
         Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, tempSubmitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (IllegalArgumentException t) {
-        addWarning(line, "Submitter "+tempSubmitter+" couldn't be set");
+        addWarning(line, resources.getString("read.warn.setsubmitter", tempSubmitter));
       }
     }
 
@@ -402,7 +402,7 @@ public class GedcomReader implements Trackable {
           xref.prop.link();
         progress = Math.min(100,(int)(i*(100*2)/j));  // 100*2 because Links are probably backref'd
       } catch (GedcomException ex) {
-        addWarning(xref.line, "Property "+xref.prop.getTag()+" - "+ ex.getMessage());
+        addWarning(xref.line, resources.getString("read.warn.reference", new String[]{ xref.prop.getTag(), ex.getMessage() }));
       }
     }
 
@@ -437,7 +437,7 @@ public class GedcomReader implements Trackable {
     //  1 FILE file
     readLine();
     if (level!=0||!tag.equals("HEAD"))
-      throw new GedcomFormatException("Expected 0 HEAD",line);
+      throw new GedcomFormatException(resources.getString("read.error.noheader"),line);
 
     String lastTag = "";
     do {
@@ -484,7 +484,8 @@ public class GedcomReader implements Trackable {
 
     // Still running ?
     if (cancel)
-      throw new GedcomIOException("Operation cancelled",line);
+      throw new GedcomIOException(resources.getString("read.error.cancelled"), line);
+      
 
     // Still undo ?
     if (redoLine) {
@@ -518,10 +519,13 @@ public class GedcomReader implements Trackable {
 
       // .. cancel
       if (cancel) 
-        throw new GedcomIOException("Operation cancelled",line);
+        throw new GedcomIOException(resources.getString("read.error.cancelled"), line);
 
       // .. file erro
-      throw new GedcomIOException("Error reading file "+ex.getMessage(),line);
+      if (ex instanceof GedcomIOException)
+        throw (GedcomIOException)ex;
+      
+      throw new GedcomIOException(ex.getMessage(), line);
     }
 
     // Parse gedcom-line 
@@ -539,9 +543,9 @@ public class GedcomReader implements Trackable {
           level = Integer.parseInt(tokens.nextToken(),10);
         }
       } catch (StringIndexOutOfBoundsException sioobe) {
-        throw new GedcomFormatException("Encountered empty line",line);
+        throw new GedcomFormatException(resources.getString("read.error.emptyline"),line);
       } catch (NumberFormatException nfe) {
-        throw new GedcomFormatException("Expected X [@XREF@] TAG [VALUE] - x integer",line);
+        throw new GedcomFormatException(resources.getString("read.error.nonumber"),line);
       }
 
       // .. tag (?)
@@ -552,7 +556,7 @@ public class GedcomReader implements Trackable {
 
         // .. valid ?
         if (!tag.endsWith("@")||tag.length()<=2)
-          throw new GedcomFormatException("Expected X @XREF@ TAG [VALUE]",line);
+          throw new GedcomFormatException(resources.getString("read.error.invalidid"),line);
  
         // .. indeed, xref !
         xref = tag.substring(1,tag.length()-1);
@@ -581,7 +585,7 @@ public class GedcomReader implements Trackable {
 
     } catch (NoSuchElementException ex) {
       // .. not enough tokens
-      throw new GedcomFormatException("Expected X [@XREF@] TAG [VALUE]",line);
+      throw new GedcomFormatException(resources.getString("read.error.cantparse"),line);
     }
     
     // TUNING: for tags we expect a lot of repeating strings (limited numbe of tags) so
@@ -648,7 +652,7 @@ public class GedcomReader implements Trackable {
       // 1 BIRT
       // 3 DATE
       if (level>currentlevel+1) 
-        addWarning(line, "Correcting indentation level of '"+gedcomLine+"' and following");
+        addWarning(line, resources.getString("read.warn.badlevel", ""+level));
   
       // add sub property
       if (pos<0)
