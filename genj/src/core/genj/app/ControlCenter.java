@@ -564,7 +564,7 @@ public class ControlCenter extends JPanel {
           if (!warnings.isEmpty()) {
             windowManager.openNonModalDialog(
               null,
-              origin.getName(),
+              resources.getString("cc.open.warnings", gedcom.getName()),
               WindowManager.IMG_WARNING,
               new JScrollPane(new JList(warnings.toArray())),
               CloseWindow.OK(),
