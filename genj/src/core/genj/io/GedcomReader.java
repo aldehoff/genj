@@ -241,18 +241,9 @@ public class GedcomReader implements Trackable {
 
     readLine();
     
-    // "0 [@xref@] value" expected - xref can be missing for custom records
-    if (level!=0) {
-      String msg = resources.getString("read.warn.expected0");
-      // at least still level identifyable?
-      if (level==0) {
-        // skip record
-        skipEntity(msg);
-        // continue
-        return;
-      }
-      throw new GedcomFormatException(msg,line);
-    }
+    // records should start with level 0
+    if (level!=0) 
+      throw new GedcomFormatException(resources.getString("read.error.nonumber"), line);
     
     // warn about missing xref if it's a well known type
     for (int i=0;i<Gedcom.ENTITIES.length;i++) {
