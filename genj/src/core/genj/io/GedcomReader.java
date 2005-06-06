@@ -718,8 +718,7 @@ public class GedcomReader implements Trackable {
    * Add a warning
    */
   private void addWarning(int wline, String txt) {
-    String warning = "Line "+wline+": "+txt;
-    warnings.add(warning);
+    warnings.add(resources.getString("read.warn", new String[]{  ""+wline, txt} ));
   }
   
   /**

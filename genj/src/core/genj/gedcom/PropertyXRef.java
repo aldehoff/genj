@@ -103,8 +103,10 @@ public abstract class PropertyXRef extends Property {
     
     Entity entity = getGedcom().getEntity(getTargetType(), value);
     if (entity==null)
-      // error.notfound          = Couldn't find {0} with id {1} referenced by {2}
-      throw new GedcomException(resources.getString("error.notfound", new String[]{Gedcom.getName(getTargetType()), value, Gedcom.getName(getTag()) }));
+      // Can't find {0} {1} ({2} in {3})
+      throw new GedcomException(resources.getString("error.notfound", new String[]{
+          Gedcom.getName(getTargetType()), value
+        }));
     return entity;
   }
 
