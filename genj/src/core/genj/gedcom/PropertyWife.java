@@ -88,7 +88,7 @@ public class PropertyWife extends PropertyXRef {
     } catch (ClassCastException ex) {
     }
     if (fam==null)
-      throw new GedcomException("WIFE can't be linked to individual when not in family");
+      throw new GedcomException(resources.getString("error.noenclosingfam"));
 
     // Prepare some VARs
     Property p;
@@ -96,17 +96,17 @@ public class PropertyWife extends PropertyXRef {
 
     // Enclosing family has a wife already ?
     if (fam.getWife()!=null)
-      throw new GedcomException("Family @"+fam.getId()+"@ can't have two wifes");
+      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ fam.getWife().toString(), fam.toString()}));
 
     // Look for wife (not-existing -> Gedcom throws Exception)
     Indi wife = (Indi)getCandidate();
 
     // Enclosing family has indi as descendant or husband ?
     if (fam.getHusband()==wife)
-      throw new GedcomException("Individual "+wife+"  is already husband in family @"+fam.getId()+"@");
+      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ wife.toString(), fam.toString()}));
 
     if (fam.getDescendants().contains(wife))
-      throw new GedcomException("Individual "+wife+" is already descendant of family @"+fam.getId()+"@");
+      throw new GedcomException(resources.getString("error.already.descendant", new String[]{ wife.toString(), fam.toString()}));
 
     // Connect back from husband (maybe using invalid back reference)
     

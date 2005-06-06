@@ -297,7 +297,7 @@ public class Fam extends Entity {
     
     // won't do if husband and wife already known
     if (husband!=null&&wife!=null)
-      throw new GedcomException("Family already has two spouses");
+      throw new GedcomException(resources.getString("error.already.spouses"));
 
     // check gender of spouse 
     switch (spouse.getSex()) {

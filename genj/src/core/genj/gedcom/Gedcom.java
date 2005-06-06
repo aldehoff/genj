@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.90 $ $Author: nmeier $ $Date: 2005-06-02 20:16:16 $
+ * $Revision: 1.91 $ $Author: nmeier $ $Date: 2005-06-06 17:35:16 $
  */
 package genj.gedcom;
 
@@ -286,7 +286,7 @@ public class Gedcom {
     if (id.length()>0) {
       Map id2entity = getEntityMap(entity.getTag());
       if (id2entity.containsKey(id))
-        throw new GedcomException("Entity with duplicated id");
+        throw new GedcomException(resources.getString("error.entity.dupe", id));
       
       // remember id2entity
       id2entity.put(id, entity);
@@ -323,7 +323,7 @@ public class Gedcom {
     Class clazz = (Class)E2TYPE.get(tag);
     if (clazz!=null) {
       if (id.length()==0)
-        throw new GedcomException("Entity "+tag+" requires id");
+        throw new GedcomException(resources.getString("entity.error.noid", tag));
     } else {
       clazz = Entity.class;
     }
@@ -333,7 +333,7 @@ public class Gedcom {
     try {
       result = (Entity)clazz.newInstance();
     } catch (Throwable t) {
-      throw new GedcomException("Unexpected problem creating instance of "+tag);
+      throw new RuntimeException("Can't instantiate "+clazz);
     }
 
     // initialize

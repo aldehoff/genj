@@ -96,7 +96,7 @@ public class PropertyChild extends PropertyXRef {
     try {
       fam = (Fam)getEntity();
     } catch (ClassCastException ex) {
-      throw new GedcomException("CHIL can't be linked to individual when not in family");
+      throw new GedcomException(resources.getString("error.noenclosingfam"));
     }
 
     // Prepare some VARs
@@ -114,20 +114,19 @@ public class PropertyChild extends PropertyXRef {
 
     // Enclosing family has indi as child, husband or wife ?
     if (fam.getWife()==child) 
-      throw new GedcomException("Individual "+child+" is already wife in family @"+fam.getId()+"@");
+      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ child.toString(), fam.toString()}));
     if (fam.getHusband()==child) 
-      throw new GedcomException("Individual "+child+" is already husband in family @"+fam.getId()+"@");
+      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ child.toString(), fam.toString()}));
 
     Indi children[] = fam.getChildren();
     for (int i=0;i<children.length;i++) {
       if ( children[i] == child ) 
-        throw new GedcomException("Individual "+child+" is already child in family @"+fam.getId()+"@");
+        throw new GedcomException(resources.getString("error.already.child", new String[]{ child.toString(), fam.toString()}));
     }
 
     // Child is ancestor of husband or wife ?
-    if (fam.getAncestors().contains(child)) {
-      throw new GedcomException("Individual "+child+" is ancestor of family @"+fam.getId()+"@");
-    }
+    if (fam.getAncestors().contains(child)) 
+      throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ child.toString(), fam.toString()}));
 
     // Connect back from child (maybe using back reference)
     ps = child.getProperties(PATH_INDIFAMC);

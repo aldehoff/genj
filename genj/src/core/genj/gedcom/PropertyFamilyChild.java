@@ -87,7 +87,7 @@ public class PropertyFamilyChild extends PropertyXRef {
     try {
       indi = (Indi)getEntity();
     } catch (ClassCastException ex) {
-      throw new GedcomException("FAMS can't be linked to family when not in individual");
+      throw new GedcomException(resources.getString("error.noenclosingindi"));
     }
     
     // check if this is an adoption
@@ -95,27 +95,18 @@ public class PropertyFamilyChild extends PropertyXRef {
     
     // Enclosing individual has a childhood already (in case of non-adoption)?
     if (!adoption&&indi.getFamc()!=null)
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already child of a family and adoptions are not supported");
+      throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), indi.getFamc().toString() }));
 
     // Look for family
     Fam fam = (Fam)getCandidate();
 
-    // Enclosing individual is child in family  (in case of non-adoption)?
-    if (!adoption) {
-	    Indi cindi[] = fam.getChildren();
-	    for (int inx=0; inx < cindi.length; inx++) {
-        if (cindi[inx]==indi)
-          throw new GedcomException("Family "+fam+" already contains Individual @"+indi.getId()+"@ as a child");
-	    }
-    }
-
     // Enclosing individual is Husband/Wife in family ?
     if ((fam.getHusband()==indi)||(fam.getWife()==indi))
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already spouse in family "+fam);
+      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ indi.toString(), fam.toString() }));
 
     // Family is descendant of indi ?
     if (fam.getAncestors().contains(indi))
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already ancestor of family "+fam);
+      throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ indi.toString(), fam.toString() }));
 
     // Connect back from family (maybe using invalid back reference) if !adoption
     if (!adoption) {

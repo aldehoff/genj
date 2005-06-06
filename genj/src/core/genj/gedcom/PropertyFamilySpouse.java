@@ -85,7 +85,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     try {
       indi = (Indi)getEntity();
     } catch (ClassCastException ex) {
-      throw new GedcomException("FAMS can't be linked to family when not in individual");
+      throw new GedcomException(resources.getString("error.noenclosingindi"));
     }
 
     // Prepare some VARs
@@ -100,17 +100,17 @@ public class PropertyFamilySpouse extends PropertyXRef {
     Indi wife    = fam.getWife();
 
     if ((husband!=null)&&(wife!=null))
-      throw new GedcomException("Family @"+fam.getId()+"@ already has husband and wife");
+      throw new GedcomException(resources.getString("error.already.spouses", fam));
 
     if ((husband==indi)||(wife==indi))
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already spouse in family "+fam);
+      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ indi.toString(), fam.toString()}));
 
     if (indi.getFamc()==fam)
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already child in family "+fam);
+      throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), fam.toString()}));
       
     // Enclosing individual is descendant of family
     if (fam.getDescendants().contains(indi)) 
-      throw new GedcomException("Individual @"+indi.getId()+"@ is already descendant of family "+fam);
+      throw new GedcomException(resources.getString("error.already.descendant", new String[]{ indi.toString(), fam.toString()}));
 
     // place as husband or wife according to gender
     if (indi.getSex()==PropertySex.UNKNOWN) 

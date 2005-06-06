@@ -99,11 +99,12 @@ public abstract class PropertyXRef extends Property {
   protected Entity getCandidate() throws GedcomException {
     // no good if already linked
     if (target!=null)
-      throw new GedcomException(Gedcom.getName(getTag())+"/"+Gedcom.getName(getTargetType())+" is already linked");
+      throw new IllegalArgumentException("Already linked");
     
     Entity entity = getGedcom().getEntity(getTargetType(), value);
     if (entity==null)
-      throw new GedcomException("Couldn't find "+Gedcom.getName(getTag())+"/"+Gedcom.getName(getTargetType())+" with id="+value);
+      // error.notfound          = Couldn't find {0} with id {1} referenced by {2}
+      throw new GedcomException(resources.getString("error.notfound", new String[]{Gedcom.getName(getTargetType()), value, Gedcom.getName(getTag()) }));
     return entity;
   }
 
