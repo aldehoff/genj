@@ -182,7 +182,7 @@ public abstract class Calendar {
     try {
       return Integer.parseInt(year);
     } catch (NumberFormatException e) {
-      throw new GedcomException(year+" is not a valid year");
+      throw new GedcomException(resources.getString("year.invalid"));
     }
   }
 

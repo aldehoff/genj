@@ -92,7 +92,7 @@ public class PointInTime implements Comparable {
   public PointInTime(String yyyymmdd) throws GedcomException {
     
     if (yyyymmdd==null||yyyymmdd.length()!=8)
-      throw new GedcomException("no valid yyyymmdd: "+yyyymmdd);
+      throw new GedcomException(resources.getString("pit.noyyyymmdd", yyyymmdd));
     
     // check date
     try {
@@ -100,7 +100,7 @@ public class PointInTime implements Comparable {
       month = Integer.parseInt(yyyymmdd.substring(4, 6))-1;
       day   = Integer.parseInt(yyyymmdd.substring(6, 8))-1;
     } catch (NumberFormatException e) {
-      throw new GedcomException("no valid yyyymmdd: "+yyyymmdd);
+      throw new GedcomException(resources.getString("pit.noyyyymmdd", yyyymmdd));
     }
 
     // done
