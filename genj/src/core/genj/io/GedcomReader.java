@@ -502,10 +502,9 @@ public class GedcomReader implements Trackable {
         line++;
         gedcomLine = in.readLine();
         
-        if (gedcomLine==null) {
-          gedcomLine="";
-          break;
-        }
+        // no more data - where has the trailer gone?
+        if (gedcomLine==null) 
+          throw new GedcomIOException(resources.getString("read.error.notrailer"), line);
         
         // .. update statistics
         read+=gedcomLine.length()+2;
