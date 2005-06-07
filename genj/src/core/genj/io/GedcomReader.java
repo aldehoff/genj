@@ -431,6 +431,8 @@ public class GedcomReader implements Trackable {
       throw new GedcomFormatException(resources.getString("read.error.noheader"),line);
 
     String lastTag = "";
+    String sourceID = null;
+    int gedc = 0;
     do {
 
       // read until end of header
@@ -438,9 +440,18 @@ public class GedcomReader implements Trackable {
       if (level==0)
         break;
 
-      // check for submitter
+      // check for SUBMitter
       if (level==1&&"SUBM".equals(tag)) 
         tempSubmitter = value; 
+        
+      // check for SOUR
+      if (level==1&&"SOUR".equals(tag)) 
+        sourceID = value; 
+        
+      // check for GEDC VERSion and FORMat
+      if (level==1&&"GEDC".equals(tag)) gedc |= 1;
+      if (level==2&&"VERS".equals(tag)) gedc |= 2;
+      if (level==2&&"FORM".equals(tag)) gedc |= 4;
         
       // check for language
       if (level==1&&"LANG".equals(tag)&&value.length()>0) {
@@ -449,16 +460,28 @@ public class GedcomReader implements Trackable {
       }
       
       // check for place hierarchy description
-      if (level==2&&"PLAC".equals(lastTag)&&"FORM".equals(tag)) {
-        gedcom.setPlaceFormat(value);
-        Debug.log(Debug.INFO, this, "Found Place.Format "+value);
+      if (level==2&&"PLAC".equals(lastTag)) {
+        if ("FORM".equals(tag)) {
+          gedcom.setPlaceFormat(value);
+          Debug.log(Debug.INFO, this, "Found Place.Format "+value);
+        } else {
+          addWarning(line, resources.getString("read.warn.placform"));
+        }
       }
         
       lastTag = tag;
       
       // done
     } while (true);
-
+    
+    // check for warnings from header
+    if (tempSubmitter==null)
+      addWarning(line, resources.getString("read.warn.nosubmitter"));
+    if (sourceID==null)
+      addWarning(line, resources.getString("read.warn.nosourceid"));
+    if (gedc!=7)
+      addWarning(line, resources.getString("read.warn.badgedc"));
+    
     // Last still to be used
     redoLine();
 
