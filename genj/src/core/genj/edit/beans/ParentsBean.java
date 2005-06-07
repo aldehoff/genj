@@ -132,7 +132,7 @@ public class ParentsBean extends PropertyBean {
       return PATHS.length;
     }
     public int getNumRows() {
-      return child.getFamiliesWhereChild()!=null ? 1 : 0; //FIXME max one atm
+      return familiesWhereChild.length;
     }
     public TagPath getPath(int col) {
       return PATHS[col];
