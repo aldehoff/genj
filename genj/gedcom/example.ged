@@ -1,24 +1,27 @@
 0 HEAD
 1 SOUR GENJ
-2 VERS 2.3.2
+2 VERS 2.3.x
 2 NAME GenealogyJ
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 20 MAY 2005
-2 TIME 11:34:32
+1 DATE 7 JUN 2005
+2 TIME 16:51:00
+1 SUBM @B1@
 1 FILE example.ged
 1 GEDC
 2 VERS 5.5
 2 FORM Lineage-Linked
 1 CHAR ANSEL
 1 LANG German
+0 @B1@ SUBM
+1 NAME Nils Meier
 0 @I1@ INDI
 1 NAME Lars H. /Meier/
 1 SEX M
 1 BIRT
 2 DATE 8 SEP 1937
-2 PLAC Hamburg, HH
+2 PLAC Hamburg,HH
 1 OCCU Pilot
 1 FAMS @F1@
 0 @I2@ INDI
@@ -26,7 +29,7 @@
 1 SEX F
 1 BIRT
 2 DATE 12 JAN 1936
-2 PLAC Quarnstedt, Schleswig Holstein
+2 PLAC Quarnstedt,Schleswig Holstein
 1 OCCU Hausfrau
 1 FAMS @F1@
 0 @I3@ INDI
@@ -40,7 +43,7 @@
 1 SEX M
 1 BIRT
 2 DATE 23 JUN 1967
-2 PLAC Celle, Niedersachsen
+2 PLAC Celle,Niedersachsen
 1 FAMC @F1@
 0 @I5@ INDI
 1 NAME Sven /Meier/
@@ -105,7 +108,7 @@
 3 STAE California
 1 IMMI
 2 DATE 4 AUG 2004
-2 PLAC Vancouver, British Columbia, Canada
+2 PLAC Vancouver,British Columbia,Canada
 1 RESI
 2 DATE FROM 1 OCT 2004
 2 ADDR 2-143 Rusholme Road
@@ -125,7 +128,7 @@
 1 HUSB @I1@
 1 MARR
 2 DATE 9 OCT 1964
-2 PLAC Flagstaff, , USA
+2 PLAC Flagstaff,,USA
 1 CHIL @I4@
 1 CHIL @I5@
 1 CHIL @I8@
@@ -135,7 +138,7 @@
 0 @F3@ FAM
 1 MARR
 2 DATE 10 AUG 1994
-2 PLAC Lohmar, Nordrhein Westfalen
+2 PLAC Lohmar,Nordrhein Westfalen
 1 WIFE @I6@
 1 HUSB @I5@
 1 CHIL @I7@
