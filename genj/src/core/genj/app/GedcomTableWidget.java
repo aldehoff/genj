@@ -29,6 +29,8 @@ import genj.view.ViewManager;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JTable;
@@ -219,6 +221,11 @@ import javax.swing.table.TableColumnModel;
      */
     public void addGedcom(Gedcom gedcom) {
       gedcoms.add(gedcom);
+      Collections.sort(gedcoms, new Comparator() {
+        public int compare(Object o1, Object o2) {
+          return ((Gedcom)o1).getName().compareTo(((Gedcom)o1).getName());
+        }
+      });
       gedcom.addGedcomListener(this);
       fireTableDataChanged();
     }
