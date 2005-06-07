@@ -46,16 +46,15 @@ public class PropertyFamilyChild extends PropertyXRef {
   }
   
   /**
-   * Check if this a biological link
-   * @return true if yes, false otherwise
+   * Check if this is not a biological link
    */
-  protected boolean isBiological() {
-    // not if contained in ADOPtion
+  protected boolean isNotBiological() {
+    // if contained in ADOPtion
     if ("ADOP".equals(getParent().getTag()))
-      return false;
-    // check for PEDI
+      return true;
+    // check for PEDI - gotta be 'birth'
     Property pedi = getProperty("PEDI");
-    return pedi==null ? false : "birth".equals(pedi.getValue());
+    return pedi==null ? false : !"birth".equals(pedi.getValue());
   }
 
   /**

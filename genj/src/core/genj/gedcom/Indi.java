@@ -70,6 +70,8 @@ public class Indi extends Entity {
     
     // collect siblings
     Fam fam = getFamilyWhereBiologicalChild();
+    if (fam==null)
+      return new Indi[0];
     List result  = new ArrayList(fam.getNoOfChildren());
     Indi[] siblings = fam.getChildren();
     for (int s=0;s<siblings.length;s++)
@@ -92,7 +94,7 @@ public class Indi extends Entity {
     Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE"));
     
     // grab everything up to me
-    List result = new ArrayList(siblings.length-1);
+    List result = new ArrayList(siblings.length);
     for (int i=siblings.length-1;i>=0;i--) {
       if (siblings[i]==this)
         break;
@@ -115,7 +117,7 @@ public class Indi extends Entity {
     Arrays.sort(siblings, new PropertyComparator("INDI:BIRT:DATE"));
     
     // grab everything up older than me
-    List result = new ArrayList(siblings.length-1);
+    List result = new ArrayList(siblings.length);
     for (int i=0,j=siblings.length;i<j;i++) {
       if (siblings[i]==this)
         break;
@@ -231,7 +233,7 @@ public class Indi extends Entity {
     List famcs = getProperties(PropertyFamilyChild.class);
     for (int i=0; i<famcs.size(); i++) {
       PropertyFamilyChild famc = (PropertyFamilyChild)famcs.get(i);
-      if (famc.isValid() && ( result==null || famc.isBiological() ) )
+      if (famc.isValid() && !famc.isNotBiological() && result==null)
         result = (Fam)famc.getTargetEntity();
     }
     
