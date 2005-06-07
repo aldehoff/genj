@@ -212,15 +212,12 @@ public class GeoLocation extends Point implements Feature, Comparable {
         break;
     }
     
-    // look for country starting on rightmost jurisdiction
+    // look for country in rightmost jurisdiction
     Locale locale = gedcom.getLocale();
-    for (int i=last; i>=first; i--) {
-      String j = trim(jurisdictions.get(i));
-      country = Country.get(gedcom.getLocale(), j);
-      if (country!=null) {
-        last = i - 1;
-        break;
-      }
+    if (last>=first) {
+      country = Country.get(gedcom.getLocale(), trim(jurisdictions.get(last)));
+      if (country!=null) 
+        last--;
     }
     
     // we look at remaining jurisdictions for a well-known top-level jurisdiction
