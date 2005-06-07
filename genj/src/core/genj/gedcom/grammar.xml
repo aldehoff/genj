@@ -120,7 +120,7 @@
   </EVEN>
   +++++++++++++ Relationships +++++++++++++
   <FAMC hide="1" type="PropertyFamilyChild" img="Fam.gif">
-   <PEDI type="PropertySimpleValue" img="Type.gif"/>
+   <PEDI type="PropertyChoiceValue" img="Type.gif"/>
    <NOTE super="INDI:NAME:NOTE"/>
   </FAMC>
   <FAMS hide="1" type="PropertyFamilySpouse" img="Fam.gif">

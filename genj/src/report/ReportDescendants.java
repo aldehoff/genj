@@ -92,11 +92,11 @@ public class ReportDescendants extends Report {
         println(getIndent(level, OPTIONS.getIndentPerLevel(), null)+level+" "+format(indi));
         
         // And we loop through its families
-        int fcount = indi.getNoOfFams();
-        for (int f=0;f<fcount;f++) {
+        Fam[] fams = indi.getFamiliesWhereSpouse();
+        for (int f=0;f<fams.length;f++) {
             
             // .. here's the fam and spouse
-            Fam fam = indi.getFam(f);
+            Fam fam = fams[f];
             Indi spouse= fam.getOtherSpouse(indi);
             
             // .. a line for the spouse

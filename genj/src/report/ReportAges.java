@@ -156,7 +156,7 @@ public class ReportAges extends Report {
         
         if (reportMarriageAge) {
             println(getIndent(2) + i18n("marriage"));
-            Fam[] fams = indi.getFamilies();
+            Fam[] fams = indi.getFamiliesWhereSpouse();
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
@@ -177,7 +177,7 @@ public class ReportAges extends Report {
         
         if (reportAgeAtDivorce) {
             println(getIndent(2) + i18n("divorce"));
-            Fam[] fams = indi.getFamilies();
+            Fam[] fams = indi.getFamiliesWhereSpouse();
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];

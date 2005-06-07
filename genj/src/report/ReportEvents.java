@@ -197,7 +197,7 @@ public class ReportEvents extends Report {
         
         // look for marriages?
         if (reportMarriage) {
-            Fam[] fams = indi.getFamilies();
+            Fam[] fams = indi.getFamiliesWhereSpouse();
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
                 if (checkDate(fam.getMarriageDate())) {
@@ -209,7 +209,7 @@ public class ReportEvents extends Report {
         
         // look for divorces?
         if (reportDivorce) {
-            Fam[] fams = indi.getFamilies();
+            Fam[] fams = indi.getFamiliesWhereSpouse();
             for (int j = 0; j < fams.length; j++) {
                 Fam fam = fams[j];
                 if (checkDate(fam.getDivorceDate())) {

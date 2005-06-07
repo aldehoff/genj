@@ -118,9 +118,11 @@ public class ParentsBean extends PropertyBean {
     };
     
     private Indi child;
+    private Fam[] familiesWhereChild;
     
     private ParentsOfChild(Indi child) {
       this.child = child;
+      familiesWhereChild = child.getFamiliesWhereChild();
     }
       
     public Gedcom getGedcom() {
@@ -130,13 +132,13 @@ public class ParentsBean extends PropertyBean {
       return PATHS.length;
     }
     public int getNumRows() {
-      return child.getFamc()!=null ? 1 : 0; //FIXME max one atm
+      return child.getFamiliesWhereChild()!=null ? 1 : 0; //FIXME max one atm
     }
     public TagPath getPath(int col) {
       return PATHS[col];
     }
     public Property getProperty(int row) {
-      return child.getFamc();
+      return familiesWhereChild[row];
     }
   }
 

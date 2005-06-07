@@ -105,9 +105,12 @@ public class PropertyFamilySpouse extends PropertyXRef {
     if ((husband==indi)||(wife==indi))
       throw new GedcomException(resources.getString("error.already.spouse", new String[]{ indi.toString(), fam.toString()}));
 
-    if (indi.getFamc()==fam)
-      throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), fam.toString()}));
-      
+    Fam[] familiesWhereChild = indi.getFamiliesWhereChild();
+    for (int i=0; i<familiesWhereChild.length; i++) {
+      if (familiesWhereChild[i]==fam)
+        throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), fam.toString()}));
+    }
+    
     // Enclosing individual is descendant of family
     if (fam.getDescendants().contains(indi)) 
       throw new GedcomException(resources.getString("error.already.descendant", new String[]{ indi.toString(), fam.toString()}));

@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import java.util.List;
+
 import genj.util.swing.ImageIcon;
 
 /**
@@ -28,10 +30,8 @@ import genj.util.swing.ImageIcon;
 public class PropertyChild extends PropertyXRef {
 
   private final static TagPath
-    PATH_FAMCHIL = new TagPath("FAM:CHIL"),
-    PATH_INDIFAMC = new TagPath("INDI:FAMC"),
-    PATH_INDIADOPFAMC = new TagPath("INDI:ADOP:FAMC");
-    
+    PATH_FAMCHIL = new TagPath("FAM:CHIL");
+  
   public final static ImageIcon
     IMG_MALE    = Grammar.getMeta(PATH_FAMCHIL).getImage("male"),
     IMG_FEMALE  = Grammar.getMeta(PATH_FAMCHIL).getImage("female"),
@@ -107,11 +107,6 @@ public class PropertyChild extends PropertyXRef {
     // Look for child (not-existing -> Gedcom throws Exception)
     Indi child = (Indi)getCandidate();
 
-    // Child already has parents ?
-//    if (child.getFamc()!=null) {
-//      throw new GedcomException("Individual @"+child.getId()+"@ is already child of a family");
-//    }
-
     // Enclosing family has indi as child, husband or wife ?
     if (fam.getWife()==child) 
       throw new GedcomException(resources.getString("error.already.spouse", new String[]{ child.toString(), fam.toString()}));
@@ -129,32 +124,20 @@ public class PropertyChild extends PropertyXRef {
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ child.toString(), fam.toString()}));
 
     // Connect back from child (maybe using back reference)
-    ps = child.getProperties(PATH_INDIFAMC);
-
-    PropertyFamilyChild pfc;
-    for (int i=0;i<ps.length;i++) {
-      pfc = (PropertyFamilyChild)ps[i];
-      // 20030616 compare against fam.getId()!!!
+    List famcs = child.getProperties(PropertyFamilyChild.class);
+    for (int i=0, j=famcs.size(); i<j; i++) {
+      
+      PropertyFamilyChild pfc = (PropertyFamilyChild)famcs.get(i);
       if (pfc.isCandidate(fam)) {
         pfc.setTarget(this);
         setTarget(pfc);
-        return;
-      } else {
-          ps = child.getProperties(PATH_INDIADOPFAMC);
-          for (int j=0;j<ps.length;j++) {
-            pfc = (PropertyFamilyChild)ps[j];
-            // 20030616 compare against fam.getId()!!!
-            if (pfc.isCandidate(fam)) {
-              pfc.setTarget(this);
-              setTarget(pfc);
-              return;
-            }
-          }
-      }
+        break;
+      }        
+      
     }
 
     // .. new back referencing property
-    pfc = new PropertyFamilyChild(this);
+    PropertyFamilyChild pfc = new PropertyFamilyChild(this);
     child.addProperty(pfc);
     setTarget(pfc);
 

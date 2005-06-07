@@ -237,7 +237,7 @@ public class Report4Generations extends Report {
         if (path == null || indi == null)
             return null;
         
-        Fam famc = indi.getFamc();
+        Fam famc = indi.getFamilyWhereBiologicalChild();
         
         if (famc==null) {
             //  println("no Famc "+ format(indi));

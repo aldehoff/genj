@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.66 2005-03-29 17:39:45 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.67 2005-06-07 20:19:48 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -627,7 +627,7 @@ public class ReportGedcomStatistics extends Report {
             while(entities.hasNext()) {
                 Indi indi = (Indi)entities.next();
                 if(indi.getNoOfFams() > 0) {
-                    Fam[] fams = indi.getFamilies();
+                    Fam[] fams = indi.getFamiliesWhereSpouse();
                     for(int j=0;j<fams.length;j++)
                         familiesToLastName.add(fams[j]);
                 }

@@ -49,9 +49,11 @@ public abstract class Relationship {
   
   /**
    * A warning
+   * @param entity TODO
+   * @param entity existing entity that this relationship is applied to (if applicable)
    * @return a warning text for this relationship or null
    */
-  public String getWarning() {
+  public String getWarning(Entity entity) {
     return null;
   }
   
@@ -213,6 +215,23 @@ public abstract class Relationship {
     }
     
     /**
+     * Warn if existing entity already has parents
+     */
+    public String getWarning(Entity entity) {
+      // new entity is fine
+      if (entity==null) 
+        return null;
+      
+      // check biological parents
+      Fam fam = ((Indi)entity).getFamilyWhereBiologicalChild();
+      if (fam!=null)
+        return Gedcom.resources.getString("error.already.child", new Object[]{ entity, fam } );
+      
+      // no prob
+      return null;
+    }
+    
+    /**
      * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
@@ -267,6 +286,23 @@ public abstract class Relationship {
     }
     
     /**
+     * Warn if existing entity already has parents
+     */
+    public String getWarning(Entity entity) {
+      // new entity is fine
+      if (entity==null) 
+        return null;
+      
+      // check biological parents
+      Fam fam = ((Indi)entity).getFamilyWhereBiologicalChild();
+      if (fam!=null)
+        return Gedcom.resources.getString("error.already.child", new Object[]{ entity, fam } );
+      
+      // no prob
+      return null;
+    }
+    
+    /**
      * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
@@ -274,9 +310,10 @@ public abstract class Relationship {
       Indi child = (Indi)entity;
   
       // lookup family for child    
+      Fam[] fams = parent.getFamiliesWhereSpouse();
       Fam fam;
-      if (parent.getNoOfFams()>0) {
-        fam = parent.getFam(0);
+      if (fams.length>0) {
+        fam = fams[0];
       } else {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
         fam.setSpouse(parent);
@@ -363,6 +400,16 @@ public abstract class Relationship {
     }
     
     /**
+     * Warn if individual already has parents
+     */
+    public String getWarning(Entity entity) {
+      Fam fam =child.getFamilyWhereBiologicalChild();
+      if (fam!=null)
+        return Gedcom.resources.getString("error.already.child", new Object[]{ child, fam } );
+      return null;
+    }
+    
+    /**
      * @see genj.gedcom.Relationship#getDescription()
      */
     public String getDescription() {
@@ -378,8 +425,9 @@ public abstract class Relationship {
       Indi parent = (Indi)entity;
       
       // get Family
-      Fam fam = child.getFamc();
-      if (fam==null) {
+      Fam fam;
+      Fam[] fams = child.getFamiliesWhereChild();
+      if (fams.length==0) {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
         // make sure the new entity is first in family
         fam.setSpouse(parent);
@@ -388,6 +436,7 @@ public abstract class Relationship {
         // add defaults
         fam.addDefaultProperties();
       } else {
+        fam = fams[0];
         // new entity becomes husb/wife
         fam.setSpouse(parent);
       }
@@ -417,11 +466,11 @@ public abstract class Relationship {
       spouse = spose;
     }
     
-    public String getWarning() {
+    public String getWarning(Entity entity) {
       int n = spouse.getNoOfFams();
       if (n>0)
         return Gedcom.resources.getString("rel.spouse.warning", new String[]{ spouse.toString(), ""+n });
-      return super.getWarning();
+      return null;
     }
     
     /**
@@ -447,9 +496,10 @@ public abstract class Relationship {
       assume(entity, Indi.class);
       
       // lookup family for spouse
+      Fam[] fams = spouse.getFamiliesWhereSpouse();
       Fam fam = null;
       if (spouse.getNoOfFams()>0)
-        fam = spouse.getFam(0);
+        fam = fams[0];
       if (fam==null||fam.getNoOfSpouses()>=2) {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM).addDefaultProperties();
         fam.setSpouse(spouse);
@@ -502,8 +552,11 @@ public abstract class Relationship {
       assume(entity, Indi.class);
 
       // get Family where sibling is child
-      Fam fam = sibling.getFamc();
-      if (fam==null) {
+      Fam fam;
+      Fam[] fams = sibling.getFamiliesWhereChild();
+      if (fams.length>0) {
+        fam = fams[0];
+      } else {
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
         // 20040619 adding missing spouse automatically now
         fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());

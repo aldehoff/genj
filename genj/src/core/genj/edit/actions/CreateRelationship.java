@@ -90,8 +90,8 @@ public class CreateRelationship extends AbstractChange {
     // Entity comment?
     result.append( resources.getString("confirm."+getTargetType()) );
     
-    // A warning?
-    String warning = relationship.getWarning();
+    // A warning already?
+    String warning = relationship.getWarning(existing);
     if (warning!=null) 
       result.append( "**Note**: " + warning );
 

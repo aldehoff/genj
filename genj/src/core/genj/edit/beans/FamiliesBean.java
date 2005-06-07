@@ -73,6 +73,9 @@ public class FamiliesBean extends PropertyBean {
   }
   
   private class Families extends AbstractPropertyTableModel {
+    
+    private Fam[] fams = ((Indi)property).getFamiliesWhereSpouse();
+    
     public Gedcom getGedcom() {
       return property.getGedcom();
     }
@@ -80,7 +83,7 @@ public class FamiliesBean extends PropertyBean {
       return 5;
     }
     public int getNumRows() {
-      return ((Indi)property).getNoOfFams();
+      return fams.length;
     }
     public TagPath getPath(int col) {
       Indi indi = (Indi)property;
@@ -99,7 +102,7 @@ public class FamiliesBean extends PropertyBean {
       }
     }
     public Property getProperty(int row) {
-      return ((Indi)property).getFam(row);
+      return fams[row];
     }
   };
   

@@ -61,7 +61,7 @@ public class ReportAncestors extends Report {
         // Here comes the individual
         println(getIndent(level, OPTIONS.getIndentPerLevel(), null)+level+" "+format(indi));
         
-        Fam famc = indi.getFamc();
+        Fam famc = indi.getFamilyWhereBiologicalChild();
         
         if (famc==null)
             return;

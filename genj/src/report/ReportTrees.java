@@ -175,7 +175,7 @@ public class ReportTrees extends Report {
         int count = 0;
         
         // Get family that we are a child of
-        Fam famc = indi.getFamc();
+        Fam famc = indi.getFamilyWhereBiologicalChild();
         if (famc==null) {
             return 0;
         }
@@ -198,14 +198,13 @@ public class ReportTrees extends Report {
         int count = 0;
         
         // loop through all families
-        int fcount = indi.getNoOfFams();
-        for (int f=0;f<fcount;f++) {
+        Fam[] fams = indi.getFamiliesWhereSpouse();
+        for (int f=0;f<fams.length;f++) {
             
             // Get the family & process the spouse
-            Fam fam = indi.getFam(f);
-            if (fam.getOtherSpouse(indi)!=null) {
+            Fam fam = fams[f];
+            if (fam.getOtherSpouse(indi)!=null) 
                 count += analyzeIndividual(fam.getOtherSpouse(indi), stats);
-            }
             
             // .. and all the kids
             Indi[] children = fam.getChildren();

@@ -233,8 +233,8 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
       labelCurrent.setIcon(null);
     } else {
       // jumps
-      setJump (FATHER  , current.getFather());
-      setJump (MOTHER  , current.getMother());
+      setJump (FATHER  , current.getBiologicalFather());
+      setJump (MOTHER  , current.getBiologicalMother());
       setJumps(OSIBLING, current.getOlderSiblings());
       setJumps(PARTNER , current.getPartners());
       setJumps(YSIBLING, current.getYoungerSiblings());

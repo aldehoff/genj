@@ -237,8 +237,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
    */
   private void createActions(List result, Indi indi, ViewManager manager) {
     result.add(new CreateRelationship(new Relationship.ChildOf(indi), manager));
-    if (indi.getNoOfParents()<2)
-      result.add(new CreateRelationship(new Relationship.ParentOf(indi), manager));
+    result.add(new CreateRelationship(new Relationship.ParentOf(indi), manager));
     result.add(new CreateRelationship(new Relationship.SpouseOf(indi), manager));
     result.add(new CreateRelationship(new Relationship.SiblingOf(indi), manager));
   }

@@ -257,7 +257,7 @@ import java.util.List;
       // node for indi      
       TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis));
       // do we have a family we're child in?
-      Fam famc = indi.getFamc();
+      Fam famc = indi.getFamilyWhereBiologicalChild();
       if (famc!=null) {
         // stop when hiding ancestors
         if (model.isHideAncestors(indi)) {
@@ -366,7 +366,7 @@ import java.util.List;
       // might be a placeholder call
       if (indi==null) return nIndi;
       // do we have a family we're child in? 
-      Fam famc = indi.getFamc();
+      Fam famc = indi.getFamilyWhereBiologicalChild();
       if (famc!=null) {
         // no more ancestors?
         if (model.isHideAncestors(indi)) {
@@ -391,7 +391,7 @@ import java.util.List;
     private boolean hasParents(Indi indi) {
       if (indi==null) return false;
       if (model.isHideAncestors(indi)) return false;
-      return indi.getFamc()!=null;
+      return indi.getFamiliesWhereChild()!=null;
     }
     
   } //AncestorsWithFams
@@ -413,7 +413,7 @@ import java.util.List;
       // create node for indi
       TreeNode node = model.add(new TreeNode(indi, shapeIndis, padIndis)); 
       // grab fams
-      Fam[] fams = indi.getFamilies();
+      Fam[] fams = indi.getFamiliesWhereSpouse();
       TreeNode pivot = node;
       // loop through fams
 
@@ -567,7 +567,7 @@ import java.util.List;
     private TreeNode parse(Indi indi, TreeNode pivot) {
 
       // lookup its families      
-      Fam[] fams = indi.getFamilies();
+      Fam[] fams = indi.getFamiliesWhereSpouse();
       
       // no families is simply
       if (fams.length==0) {

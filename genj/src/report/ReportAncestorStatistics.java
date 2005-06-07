@@ -319,7 +319,7 @@ public class ReportAncestorStatistics extends Report {
         setCommonAncestor.add(strId);
         
         // Add parents to the list
-        Fam famc = indi.getFamc();
+        Fam famc = indi.getFamilyWhereBiologicalChild();
         if (famc != null) {
             addCommonAncestor(famc.getWife());
             addCommonAncestor(famc.getHusband());
@@ -364,7 +364,7 @@ public class ReportAncestorStatistics extends Report {
             info.iKnownCount++;
             
             // Get parents
-            Fam famc = indi.getFamc();
+            Fam famc = indi.getFamilyWhereBiologicalChild();
             if (famc != null) {
                 // Get mother
                 Indi indiWife = famc.getWife();
@@ -388,7 +388,7 @@ public class ReportAncestorStatistics extends Report {
         dConsanguinityFactor = 0;
         
         // If no family, nothing to do
-        Fam famc = indi.getFamc();
+        Fam famc = indi.getFamilyWhereBiologicalChild();
         if (famc == null)
             return;
         
@@ -421,7 +421,7 @@ public class ReportAncestorStatistics extends Report {
         stackRight.push(strIdRight);
         
         // If no family, nothing to do
-        Fam famc = indiRight.getFamc();
+        Fam famc = indiRight.getFamilyWhereBiologicalChild();
         if (famc != null) {
             // Continue to check the tree
             // Recursive call to mother and father
@@ -497,7 +497,7 @@ public class ReportAncestorStatistics extends Report {
         stackLeft.push(strIdLeft);
         
         // If no family, nothing to do
-        Fam famc = indiLeft.getFamc();
+        Fam famc = indiLeft.getFamilyWhereBiologicalChild();
         if (famc != null) {
             // Recursive call to mother and father
             searchInLeftTree(indiRight, iLevelRight, stackRight,

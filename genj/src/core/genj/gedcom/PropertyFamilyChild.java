@@ -44,6 +44,19 @@ public class PropertyFamilyChild extends PropertyXRef {
   public PropertyFamilyChild(PropertyXRef target) {
     super(target);
   }
+  
+  /**
+   * Check if this a biological link
+   * @return true if yes, false otherwise
+   */
+  protected boolean isBiological() {
+    // not if contained in ADOPtion
+    if ("ADOP".equals(getParent().getTag()))
+      return false;
+    // check for PEDI
+    Property pedi = getProperty("PEDI");
+    return pedi==null ? false : "birth".equals(pedi.getValue());
+  }
 
   /**
    * @see genj.gedcom.PropertyXRef#getForeignDisplayValue()
@@ -90,13 +103,6 @@ public class PropertyFamilyChild extends PropertyXRef {
       throw new GedcomException(resources.getString("error.noenclosingindi"));
     }
     
-    // check if this is an adoption
-    boolean adoption = getParent().getClass()==PropertyEvent.class && getParent().getTag().equals("ADOP");
-    
-    // Enclosing individual has a childhood already (in case of non-adoption)?
-    if (!adoption&&indi.getFamc()!=null)
-      throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), indi.getFamc().toString() }));
-
     // Look for family
     Fam fam = (Fam)getCandidate();
 
@@ -108,27 +114,21 @@ public class PropertyFamilyChild extends PropertyXRef {
     if (fam.getAncestors().contains(indi))
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ indi.toString(), fam.toString() }));
 
-    // Connect back from family (maybe using invalid back reference) if !adoption
-    if (!adoption) {
-	    for (int i=0,j=fam.getNoOfProperties();i<j;i++) {
-	      Property prop = fam.getProperty(i);
-	      if (!"CHIL".equals(prop.getTag()))
-	        continue;
-	      PropertyChild pc = (PropertyChild)prop;
-	      if (pc.isCandidate(indi)) {
-	        pc.setTarget(this);
-	        setTarget(pc);
-	        return;
-	      }
-	    }
+    // Connect back from family (maybe using invalid back reference) 
+    for (int i=0,j=fam.getNoOfProperties();i<j;i++) {
+      Property prop = fam.getProperty(i);
+      if (!"CHIL".equals(prop.getTag()))
+        continue;
+      PropertyChild pc = (PropertyChild)prop;
+      if (pc.isCandidate(indi)) {
+        pc.setTarget(this);
+        setTarget(pc);
+        return;
+      }
     }
 
     // .. new back referencing property
-    PropertyXRef xref;
-    if (adoption)
-      xref = new PropertyForeignXRef(this);
-    else
-      xref = new PropertyChild(this);
+    PropertyXRef xref = new PropertyChild(this);
     fam.addProperty(xref);
     setTarget(xref);
 
