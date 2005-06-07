@@ -131,7 +131,7 @@ public class PropertyChild extends PropertyXRef {
       if (pfc.isCandidate(fam)) {
         pfc.setTarget(this);
         setTarget(pfc);
-        break;
+        return;
       }        
       
     }
