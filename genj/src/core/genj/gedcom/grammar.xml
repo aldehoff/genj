@@ -56,6 +56,8 @@
     <NOTE super="INDI:NAME:NOTE"/>
    </PLAC>
    <ADDR type="PropertyMultilineValue" img="Addr.gif">
+    <ADR1 hide="1" type="PropertySimpleValue" img="Addr.gif"/>
+    <ADR2 hide="1" type="PropertySimpleValue" img="Addr.gif"/>
     <CITY default="1" singleton="1" type="PropertyChoiceValue" img="Place.gif"/>
     <POST default="1" singleton="1" type="PropertyChoiceValue" img="Code.gif"/>
     <STAE default="1" singleton="1" type="PropertyChoiceValue" img="Place.gif"/>
