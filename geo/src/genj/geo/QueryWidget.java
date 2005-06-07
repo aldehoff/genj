@@ -24,14 +24,17 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
 
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
@@ -74,8 +77,18 @@ public class QueryWidget extends JPanel {
     
     // prepare our components
     city = new TextFieldWidget(location.getCity());
+    
     tlj  = new ChoiceWidget();
+    tlj.setEditable(false);
+    tlj.setEnabled(false);
+    
     country = new ChoiceWidget();
+    List countries = new ArrayList();
+    countries.add(null);
+    countries.addAll(Arrays.asList(Country.getAllCountries()));
+    country.setEditable(false);
+    country.setValues(countries);
+    country.setSelectedItem(location.getCountry());
     hits = new JTable(model);
     
     add(new JLabel("City")); add(city);
@@ -88,7 +101,22 @@ public class QueryWidget extends JPanel {
     city.addChangeListener(cs);
     tlj.addChangeListener(cs);
     country.addChangeListener(cs);
-    cs.addChangeListener(model);
+
+    final Timer timer = new Timer(500, new ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent e) {
+        String sCity = city.getText().trim();
+        if (sCity.length()==0) return;
+        model.setLocation(new GeoLocation(sCity, null, (Country)country.getSelectedItem()));
+      }
+    });
+    timer.setRepeats(false);
+    timer.start();
+    
+    cs.addChangeListener( new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        timer.restart();
+      }
+    });
     
     // done
   }
@@ -109,7 +137,7 @@ public class QueryWidget extends JPanel {
   /**
    * Our asynchronous model
    */
-  private class Model extends AbstractTableModel implements Runnable, ChangeListener {
+  private class Model extends AbstractTableModel implements Runnable {
     
     private Thread thread = null;
     private boolean running = false;
@@ -142,14 +170,15 @@ public class QueryWidget extends JPanel {
         case 1: return loc.getCoordinateAsString();
       }
     }
-
-    /** a user initiated ui change - grab new location to look for */
-    public synchronized void stateChanged(ChangeEvent e) {
-      String sCity = city.getText().trim();
-      if (sCity.length()==0) return;
-      query = new GeoLocation(sCity, null, null);
-    }
     
+    /** set current location to query */
+    public void setLocation(GeoLocation set) {
+      synchronized (this) {
+        query = set;
+        notify();
+      }
+    }
+
     /** our async thread */
     public void run() {
       // loop while running
@@ -163,6 +192,10 @@ public class QueryWidget extends JPanel {
         }
         // a task?
         if (running&&todo!=null) {
+          synchronized (this) {
+            locations = Collections.EMPTY_LIST;
+            fireTableDataChanged();
+          }
           GeoLocation[] found  = GeoService.getInstance().query(todo);
           synchronized (this) {
             locations = Arrays.asList(found);
@@ -179,8 +212,6 @@ public class QueryWidget extends JPanel {
       running = true;
       thread = new Thread(this);
       thread.start();
-      // trigger some lookup
-      stateChanged(null);
     }
     
     /** stop our thread */
@@ -188,8 +219,9 @@ public class QueryWidget extends JPanel {
       running = false;
       synchronized (this) {
         notify();
+        if (thread!=null) thread.interrupt();
       }
-      while (thread!=null) try {  thread.join(); thread = null; } catch (InterruptedException ie) {} 
+      //while (thread!=null) try {  thread.join(); thread = null; } catch (InterruptedException ie) {} 
       
     }
     

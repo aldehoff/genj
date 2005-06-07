@@ -59,7 +59,8 @@ public class GeoService {
     DELETE_COUNTRY = "DELETE FROM countries WHERE country = ?",
     INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
     SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS = "SELECT city, state, country, lat, lon FROM locations WHERE city = ?";
+    SELECT_LOCATIONS = "SELECT city, state, country, lat, lon FROM locations WHERE city = ?",
+    QUERY_LOCATIONS = "SELECT city, state, country, lat, lon FROM locations WHERE city LIKE ?";
 
   /*package*/ static final int
     DELETE_LOCATIONS_COUNTRY = 1,
@@ -323,7 +324,7 @@ public class GeoService {
    */
   public GeoLocation[] query(GeoLocation location) {
     
-    String city = location.getCity();
+    String city = location.getCity() + "%";
     Jurisdiction jurisdiction = location.getJurisdiction();
     Country country = location.getCountry();
    
@@ -334,7 +335,7 @@ public class GeoService {
       try {
         
         // prepare select
-        PreparedStatement select = connection.prepareStatement(SELECT_LOCATIONS);
+        PreparedStatement select = connection.prepareStatement(QUERY_LOCATIONS);
         select.setString(SELECT_LOCATIONS_IN_CITY, city);
 
         // loop over rows
