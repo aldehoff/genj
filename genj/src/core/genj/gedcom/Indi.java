@@ -308,8 +308,15 @@ public class Indi extends Entity {
    * @param sex one of PropertySex.MALE or PropertySex.FEMALE
    */
   public void setSex(int sex) {
-    PropertySex p = (PropertySex)getProperty("SEX",true);
-    if (p==null) p = (PropertySex)addProperty(new PropertySex());
+    // check whatever sex is there
+    PropertySex p = (PropertySex)getProperty("SEX",false);
+    // don't change what's wrong
+    if (p!=null&&!p.isValid())
+      return;
+    // add it if necessary
+    if (p==null) 
+      p = (PropertySex)addProperty(new PropertySex());
+    // change
     p.setSex(sex);
   }
 
