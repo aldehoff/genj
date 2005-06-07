@@ -150,9 +150,16 @@ public class PropertyDate extends Property {
    */
   public boolean isValid() {
 
-    // Still invalid string information ?
-    if (dateAsString!=null)
+    // date kept as string?
+    if (dateAsString!=null) {
+      // these are still ok
+      // (DATE_PHRASE)
+      // INT DATE (DATE_PHRASE)
+      if ( (dateAsString.startsWith("INT ")||dateAsString.startsWith("(")) &&dateAsString.endsWith(")"))
+        return true;
+      // not ok
       return false;
+    }
 
     // end valid?
     if (isRange()&&!end.isValid())
@@ -219,6 +226,7 @@ public class PropertyDate extends Property {
     dateAsString=null;
 
     // parse and keep string if no good
+    newValue = newValue.trim();
     if (!parseDate(newValue))
       dateAsString=newValue;
 
