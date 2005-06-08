@@ -174,6 +174,27 @@ public class PropertyDate extends Property {
   }
   
   /**
+   * Check whether this date can be compared successfully to another
+   */
+  public boolean isComparable() {
+
+    // date kept as string?
+    if (dateAsString!=null) 
+      return false;
+    
+    // end valid?
+    if (isRange()&&!end.isValid())
+      return false;
+
+    // start valid?
+    if (!start.isValid())
+      return false;
+
+    // O.K.
+    return true;
+  }
+  
+  /**
    * Accessir value
    */
   public void setValue(Format newFormat, PointInTime newStart, PointInTime newEnd) {
