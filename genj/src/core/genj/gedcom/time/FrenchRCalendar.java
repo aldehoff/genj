@@ -151,7 +151,7 @@ public class FrenchRCalendar extends Calendar {
    */
   public int getYear(String year) throws GedcomException {
     // strip any 'An '
-    if (year.startsWith(YEARS_PREFIX))
+    if (year.length()>YEARS_PREFIX.length() && year.substring(0, YEARS_PREFIX.length()).equalsIgnoreCase(YEARS_PREFIX))
       year = year.substring(YEARS_PREFIX.length());
     // look for years
     for (int y=0;y<YEARS.length;y++)

@@ -292,12 +292,12 @@ public class PointInTime implements Comparable {
       first = tokens.nextToken();
 
     }
-    
-    // first is YYYY
+        
+    // only one token? gotta be YYYY
     if (!tokens.hasMoreTokens()) {
         try {
-          set(UNKNOWN,UNKNOWN,Integer.parseInt(first));
-        } catch (NumberFormatException e) {
+          set(UNKNOWN, UNKNOWN, calendar.getYear(first));
+        } catch (Throwable t) {
           return false;
         }
         return getYear()!=UNKNOWN;
@@ -306,24 +306,37 @@ public class PointInTime implements Comparable {
     // have second
     String second = tokens.nextToken();
     
-    // first and second are MMM YYYY
+    // first and second might be a year in french R calendar - try to convert
+    try {
+      int y = calendar.getYear(first + ' ' + second);
+      if (y!=UNKNOWN) {
+         set(UNKNOWN, UNKNOWN, y);
+         return true;
+      }
+    } catch (Throwable t) {
+    }
+    
+    // first and second token gotta be MMM YYYY now
     if (!tokens.hasMoreTokens()) {
       try {
-        set(UNKNOWN, calendar.parseMonth(first), Integer.parseInt(second));
-      } catch (NumberFormatException e) {
+        set(UNKNOWN, calendar.parseMonth(first),  calendar.getYear(second));
+      } catch (Throwable t) {
         return false;
       }
       return getYear()!=UNKNOWN&&getMonth()!=UNKNOWN;
     }
 
-    // have third
+    // in a french calendar the year might actually be something like 'An I' instead of '1'
+    // so we grab all the rest of tokens and them all as year
     String third = tokens.nextToken();
+    while (tokens.hasMoreTokens())
+      third = third + ' ' + tokens.nextToken();
     
     // first, second and third are DD MMM YYYY
     if (!tokens.hasMoreTokens()) {
       try {
-        set( Integer.parseInt(first) - 1, calendar.parseMonth(second), Integer.parseInt(third));
-      } catch (NumberFormatException e) {
+        set( Integer.parseInt(first) - 1, calendar.parseMonth(second), calendar.getYear(third));
+      } catch (Throwable t) {
         return false;
       }
       return getYear()!=UNKNOWN&&getMonth()!=UNKNOWN&&getDay()!=UNKNOWN;
