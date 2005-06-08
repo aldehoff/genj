@@ -116,7 +116,7 @@ import java.util.List;
   private boolean isError(PropertyDate date1, PropertyDate date2) {
     
     // check valid first
-    if (!(date1.isValid()&&date2.isValid()))
+    if (!(date1.isComparable()&&date2.isComparable()))
       return false;
 
     // depending on comparison mode      
