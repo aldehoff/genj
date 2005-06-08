@@ -233,7 +233,14 @@ public class Indi extends Entity {
     List famcs = getProperties(PropertyFamilyChild.class);
     for (int i=0; i<famcs.size(); i++) {
       PropertyFamilyChild famc = (PropertyFamilyChild)famcs.get(i);
-      if (famc.isValid() && !famc.isNotBiological() && result==null)
+      // not valid - not interesting
+      if (!famc.isValid()) continue;
+      int biological = famc.isBiological();
+      // stop if confirmed (first) biological
+      if (biological==PropertyFamilyChild.CONFIRMED_BIOLOGICAL) 
+        return (Fam)famc.getTargetEntity();
+      // keep if maybe biological and first
+      if (biological==PropertyFamilyChild.MAYBE_BIOLOGICAL&&result==null)
         result = (Fam)famc.getTargetEntity();
     }
     

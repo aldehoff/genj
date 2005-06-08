@@ -45,16 +45,29 @@ public class PropertyFamilyChild extends PropertyXRef {
     super(target);
   }
   
+  static int 
+    NOT_BIOLOGICAL = 0,
+    MAYBE_BIOLOGICAL = 1,
+    CONFIRMED_BIOLOGICAL = 2;
+  
   /**
-   * Check if this is not a biological link
+   * Check if this is a biological link (not necessarily deterministic)
    */
-  protected boolean isNotBiological() {
-    // if contained in ADOPtion
+  protected int isBiological() {
+    // certainly not if contained in ADOPtion
     if ("ADOP".equals(getParent().getTag()))
-      return true;
-    // check for PEDI - gotta be 'birth'
+      return NOT_BIOLOGICAL;
+    // check for PEDI? could be if not present
     Property pedi = getProperty("PEDI");
-    return pedi==null ? false : !"birth".equals(pedi.getValue());
+    if (pedi==null)
+      return MAYBE_BIOLOGICAL;
+    // check well known keywords
+    String value = pedi.getValue();
+    if ("birth".equals(value)) return CONFIRMED_BIOLOGICAL;
+    if ("adopted".equals(value)) return NOT_BIOLOGICAL;
+    if ("foster".equals(value)) return NOT_BIOLOGICAL; 
+    if ("sealing".equals(value)) return NOT_BIOLOGICAL;
+    return MAYBE_BIOLOGICAL;
   }
 
   /**
