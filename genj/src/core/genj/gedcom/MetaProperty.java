@@ -25,6 +25,7 @@ import genj.util.swing.ImageIcon;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -90,10 +91,14 @@ public class MetaProperty implements Comparable {
     String path = (String)attributes.get("super");
     if (path!=null) {
       MetaProperty supr = Grammar.getMeta(new TagPath(path));
-      // subs
-      tag2nested.putAll(supr.tag2nested);
-      nested.addAll(supr.nested);
-      // type & image
+      // subs from super
+      for (Iterator nested=supr.nested.iterator(); nested.hasNext(); ) {
+        MetaProperty sub = (MetaProperty)nested.next();
+        if (!"0".equals(sub.attrs.get("inherit"))) {
+          addNested(sub);
+        }
+      }
+      // type & image from super
       if (getAttribute("type")==null)
         attributes.put("type", supr.getAttribute("type"));
       if (getAttribute("img")==null)

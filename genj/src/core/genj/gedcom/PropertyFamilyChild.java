@@ -54,9 +54,13 @@ public class PropertyFamilyChild extends PropertyXRef {
    * Check if this is a biological link (not necessarily deterministic)
    */
   protected int isBiological() {
-    // certainly not if contained in ADOPtion
-    if ("ADOP".equals(getParent().getTag()))
+    // certainly not if contained in ADOPtion event
+    String parent = getParent().getTag();
+    if ("ADOP".equals(parent))
       return NOT_BIOLOGICAL;
+    // certainly yes if contained in BIRTh event
+    if ("BIRT".equals(parent))
+      return CONFIRMED_BIOLOGICAL;
     // check for PEDI? could be if not present
     Property pedi = getProperty("PEDI");
     if (pedi==null)

@@ -70,9 +70,10 @@
    <NOTE super="INDI:NAME:NOTE"/>
    <SOUR super="INDI:NAME:SOUR"/>
    <OBJE super="INDI:NAME:SOUR:OBJE"/>
+   <FAMC inherit="0" hide="1" type="PropertyFamilyChild" img="Fam.gif"/>
   </BIRT>
   <ADOP super="INDI:BIRT" img="Adoption.gif">
-   <FAMC type="PropertyFamilyChild" img="Fam.gif">
+   <FAMC inherit="0" hide="1" type="PropertyFamilyChild" img="Fam.gif">
     <ADOP type="PropertyChoiceValue" img="Fam.gif"/>
    </FAMC>
   </ADOP>
@@ -96,7 +97,9 @@
   <NMR  img="Marriage.gif" super="INDI:CAST"/>
   +++++++++++++ More Events +++++++++++++
   <GRAD img="Graduation.gif" super="INDI:BIRT"/>
-  <CHR  hide="1" singleton="1" img="Baptism.gif" super="INDI:GRAD"/>
+  <CHR  hide="1" singleton="1" img="Baptism.gif" super="INDI:GRAD">
+   <FAMC inherit="0" hide="1" type="PropertyFamilyChild" img="Fam.gif"/>
+  </CHR>
   <BURI singleton="1" img="Burial.gif" super="INDI:GRAD"/>
   <CREM singleton="1" img="Cremation.gif" super="INDI:GRAD"/>
   <BAPM singleton="1" img="Baptism.gif" super="INDI:GRAD"/>
