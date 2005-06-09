@@ -131,8 +131,8 @@ public class PlaceBean extends PropertyBean {
     if (place.getDisplayFormat().length()==0) {
       createChoice(null, place.getValue(), place.getAllJurisdictions(-1,true));
     } else {
-      DirectAccessTokenizer format = new DirectAccessTokenizer(place.getDisplayFormat(), ",", true);
-      DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",", true);
+      DirectAccessTokenizer format = new DirectAccessTokenizer(place.getDisplayFormat(), ",");
+      DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",");
       for (int i=0;;i++) {
         if (format.get(i)==null&&jurisdictions.get(i)==null) break;
         createChoice(format.get(i), jurisdictions.get(i), place.getAllJurisdictions(i, true));

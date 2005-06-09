@@ -50,7 +50,7 @@ public class PropertyPlace extends PropertyChoiceValue {
   protected String trim(String value) {
     // trim each jurisdiction separately
     StringBuffer buf = new StringBuffer(value.length());
-    DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(value, JURISDICTION_SEPARATOR, true);
+    DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(value, JURISDICTION_SEPARATOR);
     for (int i=0; ; i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
@@ -74,7 +74,7 @@ public class PropertyPlace extends PropertyChoiceValue {
       return;
     
     // forget old jurisdictions
-    DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(theOld, JURISDICTION_SEPARATOR, true);
+    DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(theOld, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
@@ -85,7 +85,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     }
     
     // remember new jurisdictions
-    jurisdictions = new DirectAccessTokenizer(theNew, JURISDICTION_SEPARATOR, true);
+    jurisdictions = new DirectAccessTokenizer(theNew, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
       String jurisdiction = jurisdictions.get(i);
       if (jurisdiction==null) break;
@@ -144,7 +144,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     
     // loop over (assumed) english names
     StringBuffer buf = new StringBuffer();
-    DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR, true);
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
       String token = tokens.get(i);
       if (token==null) break;
@@ -175,7 +175,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     
     // loop over (assumed) local names
     StringBuffer buf = new StringBuffer();
-    DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR, true);
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
       String token = tokens.get(i);
       if (token==null) break;
@@ -192,7 +192,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     while (keys.hasNext()) {
       String key = (String)keys.next();
       if (key.startsWith(JURISDICTION_RESOURCE_PREFIX)) {
-        DirectAccessTokenizer locals = new DirectAccessTokenizer(resources.getString(key), "|", true);
+        DirectAccessTokenizer locals = new DirectAccessTokenizer(resources.getString(key), "|");
         for (int i=0;;i++) {
           // check each local translation as a possibility
           String local = locals.get(i);
@@ -249,7 +249,7 @@ public class PropertyPlace extends PropertyChoiceValue {
    * Accessor - jurisdiction iterator
    */
   public DirectAccessTokenizer getJurisdictions() {
-    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR, true);
+    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR);
   }
   
 } //PropertyPlace

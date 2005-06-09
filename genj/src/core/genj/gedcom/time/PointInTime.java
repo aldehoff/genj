@@ -20,10 +20,9 @@
 package genj.gedcom.time;
 
 import genj.gedcom.GedcomException;
+import genj.util.DirectAccessTokenizer;
 import genj.util.Resources;
 import genj.util.WordBuffer;
-
-import java.util.StringTokenizer;
 
 /**
  * A point in time - either hebrew, roman, frenchr, gregorian or julian
@@ -152,7 +151,7 @@ public class PointInTime implements Comparable {
    */
   public static PointInTime getPointInTime(String string) {
     PointInTime result = new PointInTime(UNKNOWN,UNKNOWN,UNKNOWN,GREGORIAN);
-    result.set(new StringTokenizer(string));
+    result.set(string);
     return result;
   }
   
@@ -256,19 +255,22 @@ public class PointInTime implements Comparable {
   }
   
   /**
-   * Parse tokens into this PIT
+   * Parse text into this PIT
    */
-  public boolean set(StringTokenizer tokens) {
+  public boolean set(String txt) {
 
+    txt = txt.trim();
+    
     // no tokens - fine - no info
-    if (!tokens.hasMoreTokens()) {
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(txt, " ", true);
+    String first = tokens.get(0);
+    if (first==null) {
       reset();
       return true;
     }
+    int cont = 1;
 
     // first token might be calendar indicator @#....@
-    String first = tokens.nextToken();
-    
     if (first.startsWith("@#")) {
       
       // .. has to be one of our calendar escapes
@@ -283,18 +285,27 @@ public class PointInTime implements Comparable {
       // since one of the calendar escape contains a space we
       // might have to skip another token (until we find the
       // token ending in "@"       
-      while (!first.endsWith("@")&&tokens.hasMoreTokens()) 
-        first = tokens.nextToken();
+      while (true) {
+        if (first.endsWith("@")) break; 
+         first = tokens.get(cont++);
+         if (first==null) return false;
+      }
       
-      // switch to next 'first'
-      if (!tokens.hasMoreTokens())
-        return true;  // calendar only is fine - empty pit
-      first = tokens.nextToken();
-
+      // check next - calendar only is fine - empty pit
+      first = tokens.get(cont++);
+      if (first==null) 
+        return true; 
+      
+    } else {
+      // assume gregorian
+      calendar = GREGORIAN;
     }
+    
+    // grab second
+    String second = tokens.get(cont++);
         
     // only one token? gotta be YYYY
-    if (!tokens.hasMoreTokens()) {
+    if (second==null) {
         try {
           set(UNKNOWN, UNKNOWN, calendar.getYear(first));
         } catch (Throwable t) {
@@ -303,21 +314,15 @@ public class PointInTime implements Comparable {
         return getYear()!=UNKNOWN;
     }
     
-    // have second
-    String second = tokens.nextToken();
+    // grab third
+    String third = tokens.get(cont++);
     
-    // first and second might be a year in french R calendar - try to convert
-    try {
-      int y = calendar.getYear(first + ' ' + second);
-      if (y!=UNKNOWN) {
-         set(UNKNOWN, UNKNOWN, y);
-         return true;
+    // only two tokens? either MMM YYYY or french R calendar 'An Y'
+    if (third==null) {
+      try {
+        if (calendar==FRENCHR) set(UNKNOWN, UNKNOWN, calendar.getYear(first + ' ' + second));
+      } catch (Throwable t) {
       }
-    } catch (Throwable t) {
-    }
-    
-    // first and second token gotta be MMM YYYY now
-    if (!tokens.hasMoreTokens()) {
       try {
         set(UNKNOWN, calendar.parseMonth(first),  calendar.getYear(second));
       } catch (Throwable t) {
@@ -326,24 +331,16 @@ public class PointInTime implements Comparable {
       return getYear()!=UNKNOWN&&getMonth()!=UNKNOWN;
     }
 
-    // in a french calendar the year might actually be something like 'An I' instead of '1'
-    // so we grab all the rest of tokens and them all as year
-    String third = tokens.nextToken();
-    while (tokens.hasMoreTokens())
-      third = third + ' ' + tokens.nextToken();
+    // everything after third is now combined to YYYY
+    third = txt.substring(tokens.getStart());
     
-    // first, second and third are DD MMM YYYY
-    if (!tokens.hasMoreTokens()) {
-      try {
-        set( Integer.parseInt(first) - 1, calendar.parseMonth(second), calendar.getYear(third));
-      } catch (Throwable t) {
-        return false;
-      }
-      return getYear()!=UNKNOWN&&getMonth()!=UNKNOWN&&getDay()!=UNKNOWN;
+    try {
+      set( Integer.parseInt(first) - 1, calendar.parseMonth(second), calendar.getYear(third));
+    } catch (Throwable t) {
+      return false;
     }
-
-    // wrong number of tokens
-    return false;
+    return getYear()!=UNKNOWN&&getMonth()!=UNKNOWN&&getDay()!=UNKNOWN;
+    
   }
   
   /**

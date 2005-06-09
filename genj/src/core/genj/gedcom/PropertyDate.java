@@ -19,10 +19,10 @@
  */
 package genj.gedcom;
 
-import genj.gedcom.time.*;
+import genj.gedcom.time.Calendar;
+import genj.gedcom.time.PointInTime;
+import genj.util.DirectAccessTokenizer;
 import genj.util.WordBuffer;
-
-import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : DATE
@@ -263,48 +263,42 @@ public class PropertyDate extends Property {
   private boolean parseDate(String text) {
 
     // empty string is fine
-    StringTokenizer tokens = new StringTokenizer(text);
-    if (tokens.countTokens()==0)
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(text, " ", true);
+    String first = tokens.get(0);
+    if (first==null)
       return true;
 
     // Look for format token 'FROM', 'AFT', ...
-    String token = tokens.nextToken();
+    int skip = tokens.getEnd();
     for (int f=0;f<FORMATS.length;f++) {
 
       // .. found modifier (prefix is enough: e.g. ABT or ABT.)
       format = FORMATS[f];
-      if ( (format.start.length()>0) && token.startsWith(format.start) ) {
+      if ( (format.start.length()>0) && first.equalsIgnoreCase(format.start) ) {
 
         // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
         if ( !format.isRange ) 
-          return start.set(tokens);
+          return start.set(text.substring(skip));
 
         // ... is range (FROM-TO,BET-AND)
-        String grab = "";
-        while (tokens.hasMoreTokens()) {
+        for (int pos=1; ;pos++) {
+          String token = tokens.get(pos);
+          if (token==null) break;
           // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
-          token = tokens.nextToken();
-          if ( token.startsWith(format.end) ) {
-            return start.set(new StringTokenizer(grab)) && end.set(tokens);
-          }
-          // .. grab more
-          grab += " " + token + " ";
+          if ( token.startsWith(format.end) ) 
+            return start.set(text.substring(skip, tokens.getStart())) && end.set(text.substring(tokens.getEnd()));
         }
         
         // ... wasn't so good after all
-        // NM 20021009 reset data - FROM 1 OCT 2001 will then
-        // fallback to FROM even after FROMTO was checked
-        tokens = new StringTokenizer(text);
-        token = tokens.nextToken();
       }
       // .. try next one
     }
-
+    
     // ... format is a simple date
     format = DATE;
     
     // .. look for date from first to last word
-    return start.set(new StringTokenizer(text));
+    return start.set(text);
   }
 
   /**
@@ -427,6 +421,10 @@ public class PropertyDate extends Property {
       end    = e;
       //astart = as;
       //aend   = ae;
+    }
+    
+    public String toString() {
+      return start + " " +end;
     }
     
     public boolean isRange() {
