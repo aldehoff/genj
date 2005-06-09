@@ -172,7 +172,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
     
-    parseJurisdictions( new DirectAccessTokenizer(pcity.getDisplayValue(), PropertyPlace.JURISDICTION_SEPARATOR, true), ged);
+    parseJurisdictions( new DirectAccessTokenizer(pcity.getDisplayValue(), PropertyPlace.JURISDICTION_SEPARATOR), ged);
     
     // how about a country?
     Locale locale = addr.getGedcom().getLocale();

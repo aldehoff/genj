@@ -27,7 +27,7 @@ public class DirectAccessTokenizer {
   private String string, separator;
   private int from, to;
   private int index;
-  private boolean trim;
+  private boolean skipEmpty;
   
   /**
    * Constructor
@@ -35,8 +35,8 @@ public class DirectAccessTokenizer {
   public DirectAccessTokenizer(String string, String separator) {
     this(string, separator, false);
   }
-  public DirectAccessTokenizer(String string, String separator, boolean trim) {
-    this.trim = trim;
+  public DirectAccessTokenizer(String string, String separator, boolean skipEmpty) {
+    this.skipEmpty = skipEmpty;
     this.string = string;
     this.separator = separator;
     from = 0;
@@ -48,15 +48,26 @@ public class DirectAccessTokenizer {
    * Count tokens
    */
   public int count() {
-    int result = 1;
-    int from = 0;
-    while (true) {
-      int i = string.indexOf(separator, from);
-      if (i<0) break;
-      from = i + separator.length();
-      result ++;
+    int result = 0;
+    for (int i=0;;i++) {
+      if (get(i)==null) break;
+      result++;
     }
     return result;
+  }
+  
+  /**
+   * Current start position
+   */
+  public int getStart() {
+    return from;
+  }
+  
+  /**
+   * Current end position
+   */
+  public int getEnd() {
+    return to;
   }
   
   /**
@@ -93,13 +104,13 @@ public class DirectAccessTokenizer {
       if (to<0) 
         to = string.length();
       
-      // we're moving the index now
-      index++;
+      // we're moving the index now unless empty
+      if (!skipEmpty||to>from)
+        index++;
     }
     
     // done
-    String result = string.substring(from, to);
-    return trim ? result.trim() : result;
+    return string.substring(from, to);
   }
   
   /**
