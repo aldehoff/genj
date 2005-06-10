@@ -27,6 +27,7 @@ import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
+import genj.util.swing.TextFieldWidget;
 
 import java.util.ArrayList;
 
@@ -37,7 +38,7 @@ import javax.swing.JLabel;
  */
 public class DateBean extends PropertyBean {
 
-  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><a/><b/></row><row><c/><d/></row></col>");
+  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><a/><b/></row><row><c/><d/></row><row><e wx=\"0.1\"/></row></col>");
 
   private final static ImageIcon PIT = new ImageIcon(PropertyBean.class, "/genj/gedcom/images/Time.gif");
   
@@ -46,6 +47,7 @@ public class DateBean extends PropertyBean {
   private DateWidget date1, date2;
   private PopupWidget choose;
   private JLabel label2;
+  private TextFieldWidget phrase;
 
   /**
    * Initializer
@@ -77,6 +79,11 @@ public class DateBean extends PropertyBean {
     date2.addChangeListener(changeSupport);
     add(date2);
     
+    // phrase
+    phrase = new TextFieldWidget();
+    phrase.addChangeListener(changeSupport);
+    add(phrase);
+    
     // setup default focus
     defaultFocus = date1;
 
@@ -102,7 +109,7 @@ public class DateBean extends PropertyBean {
     }
     
     // Remember
-    p.setValue(format, start, end);
+    p.setValue(format, start, end, phrase.getText());
 
     // Done
   }
@@ -135,6 +142,9 @@ public class DateBean extends PropertyBean {
       date2.setVisible(false);
       label2.setVisible(false);
     }
+    
+    // check phrase visibility
+    phrase.setVisible(format.usesPhrase());
 
     // set image and tooltip of chooser
     choose.setIcon(format==PropertyDate.DATE ? PIT : null);
@@ -157,6 +167,7 @@ public class DateBean extends PropertyBean {
     // connect
     date1.setValue(p.getStart());
     date2.setValue(p.getEnd());
+    phrase.setText(p.getPhrase());
     setFormat(p.getFormat());
     
     // done

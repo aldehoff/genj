@@ -40,23 +40,24 @@ public class PropertyDate extends Property {
   private Format format = DATE;
 
   /** as string */
-  private String dateAsString;
+  private String phrase = "";
 
   /** format definitions */
   public final static Format
-    DATE        = new Format(false, ""    , ""   , "" , "" ), // DATE
-    FROM_TO     = new Format(true , "FROM", "TO" , "" , "-"), // FROM TO
-    FROM        = new Format(false, "FROM", ""   , "[", "" ), // FROM
-    TO          = new Format(false, "TO"  , ""   , "]", "" ), // TO
-    BETWEEN_AND = new Format(true , "BET" , "AND", ">", "<"), // BETAND
-    BEFORE      = new Format(false, "BEF" , ""   , "<", "" ), // BEF
-    AFTER       = new Format(false, "AFT" , ""   , ">", "" ), // AFT
-    ABOUT       = new Format(false, "ABT" , ""   , "~", "" ), // ABT
-    CALCULATED  = new Format(false, "CAL" , ""   , "~", "" ), // CAL
-    ESTIMATED   = new Format(false, "EST" , ""   , "~", "" ); // EST
+    DATE        = new Format("", ""),
+    FROM_TO     = new Format("FROM", "TO"),
+    FROM        = new Format("FROM", ""),
+    TO          = new Format("TO"  , ""),
+    BETWEEN_AND = new Format("BET" , "AND"),
+    BEFORE      = new Format("BEF" , ""),
+    AFTER       = new Format("AFT" , ""),
+    ABOUT       = new Format("ABT" , ""),
+    CALCULATED  = new Format("CAL" , ""),
+    ESTIMATED   = new Format("EST" , ""),
+    INTERPRETED = new Interpreted();
   
   public final static Format[] FORMATS = {
-    DATE, FROM_TO, FROM, TO, BETWEEN_AND, BEFORE, AFTER, ABOUT, CALCULATED, ESTIMATED
+    DATE, FROM_TO, FROM, TO, BETWEEN_AND, BEFORE, AFTER, ABOUT, CALCULATED, ESTIMATED, INTERPRETED
   };
   
   /**
@@ -78,6 +79,13 @@ public class PropertyDate extends Property {
   public int compareTo(Object o) {
     if (!(o instanceof PropertyDate)) return super.compareTo(o);
     return start.compareTo(((PropertyDate)o).start);
+  }
+  
+  /**
+   * Returns an optional date phrase
+   */
+  public String getPhrase() {
+    return phrase;
   }
 
   /**
@@ -105,7 +113,6 @@ public class PropertyDate extends Property {
    * Returns generic proxy's logical name
    */
   public String getProxy() {
-    if (dateAsString!=null) return super.getProxy();
     return "Date";
   }
 
@@ -120,21 +127,7 @@ public class PropertyDate extends Property {
    * Accessor Value
    */
   public String getValue() {
-    
-    // as string?
-    if (dateAsString!=null) 
-      return dateAsString;
-      
-    // collect information
-    WordBuffer result = new WordBuffer();
-    result.append(format.start);  
-    start.getValue(result);
-    result.append(format.end);
-    if (isRange()) 
-      end.getValue(result);
-
-    // done    
-    return result.toString();
+    return format.getValue(this);
   }
 
   /**
@@ -149,55 +142,21 @@ public class PropertyDate extends Property {
    * @return <code>boolean</code> indicating validity
    */
   public boolean isValid() {
-
-    // date kept as string?
-    if (dateAsString!=null) {
-      // these are still ok
-      // (DATE_PHRASE)
-      // INT DATE (DATE_PHRASE)
-      if ( (dateAsString.startsWith("INT ")||dateAsString.startsWith("(")) &&dateAsString.endsWith(")"))
-        return true;
-      // not ok
-      return false;
-    }
-
-    // end valid?
-    if (isRange()&&!end.isValid())
-      return false;
-
-    // start valid?
-    if (!start.isValid())
-      return false;
-
-    // O.K.
-    return true;
+    return format.isValid(this);
   }
   
   /**
    * Check whether this date can be compared successfully to another
    */
   public boolean isComparable() {
-
-    // date kept as string?
-    if (dateAsString!=null) 
-      return false;
-    
-    // end valid?
-    if (isRange()&&!end.isValid())
-      return false;
-
-    // start valid?
-    if (!start.isValid())
-      return false;
-
-    // O.K.
-    return true;
+    // gotta have a start
+    return start.isValid();
   }
   
   /**
    * Accessir value
    */
-  public void setValue(Format newFormat, PointInTime newStart, PointInTime newEnd) {
+  public void setValue(Format newFormat, PointInTime newStart, PointInTime newEnd, String newPhrase) {
     
     String old = getValue();
     
@@ -206,6 +165,7 @@ public class PropertyDate extends Property {
     start.set(newStart);
     if (newEnd!=null)
       end.set(newEnd);
+    phrase = newPhrase;
     
     // remember as modified      
     propagateChange(old);
@@ -244,61 +204,24 @@ public class PropertyDate extends Property {
     start.reset();
     end.reset();
     format = DATE;
-    dateAsString=null;
+    phrase= "";
 
-    // parse and keep string if no good
+    // empty string is fine
     newValue = newValue.trim();
-    if (!parseDate(newValue))
-      dateAsString=newValue;
+    if (newValue.length()>0) {
+      // try to apply one of the formats
+      for (int f=0; f<FORMATS.length;f++) {
+        if (FORMATS[f].setValue(newValue, this)) {
+          format  = FORMATS[f];
+          break;
+        }
+      } 
+    }
 
     // remember as modified      
     propagateChange(old);
 
     // done
-  }
-
-  /**
-   * Helper that parses date as string for validity
-   */
-  private boolean parseDate(String text) {
-
-    // empty string is fine
-    DirectAccessTokenizer tokens = new DirectAccessTokenizer(text, " ", true);
-    String first = tokens.get(0);
-    if (first==null)
-      return true;
-
-    // Look for format token 'FROM', 'AFT', ...
-    int skip = tokens.getEnd();
-    for (int f=0;f<FORMATS.length;f++) {
-
-      // .. found modifier (prefix is enough: e.g. ABT or ABT.)
-      format = FORMATS[f];
-      if ( (format.start.length()>0) && first.equalsIgnoreCase(format.start) ) {
-
-        // ... no range (TO,ABT,CAL,...) -> parse PointInTime from remaining tokens
-        if ( !format.isRange ) 
-          return start.set(text.substring(skip));
-
-        // ... is range (FROM-TO,BET-AND)
-        for (int pos=1; ;pos++) {
-          String token = tokens.get(pos);
-          if (token==null) break;
-          // .. TO or AND ? -> parse 2 PointInTimes from grabbed and remaining tokens
-          if ( token.startsWith(format.end) ) 
-            return start.set(text.substring(skip, tokens.getStart())) && end.set(text.substring(tokens.getEnd()));
-        }
-        
-        // ... wasn't so good after all
-      }
-      // .. try next one
-    }
-    
-    // ... format is a simple date
-    format = DATE;
-    
-    // .. look for date from first to last word
-    return start.set(text);
   }
 
   /**
@@ -320,48 +243,7 @@ public class PropertyDate extends Property {
    * Returns this date as a localized string for display
    */
   public String getDisplayValue(Calendar calendar) {
-    
-    // as string?
-    if (dateAsString!=null) 
-      return dateAsString;
-      
-    // prepare modifiers
-    String
-      smod = format.start,
-      emod = format.end  ;
-      
-    if (smod.length()>0)
-      smod = Gedcom.getResources().getString("prop.date.mod."+smod);  
-    if (emod.length()>0)
-      emod = Gedcom.getResources().getString("prop.date.mod."+emod);  
-
-    // collect information
-    try {
-      WordBuffer result = new WordBuffer();
-      
-      // start modifier & point in time
-      result.append(smod);
-      if (calendar==null||start.getCalendar()==calendar) 
-        start.toString(result, true);
-      else 
-        start.getPointInTime(calendar).toString(result, true);
-  
-      // end modifier & point in time
-      if (isRange()) {
-        result.append(emod);
-        if (calendar==null||end.getCalendar()==calendar) 
-          end.toString(result,true);
-        else 
-          end.getPointInTime(calendar).toString(result, true);
-      }
-  
-      // done    
-      return result.toString();
-      
-    } catch (GedcomException e) {
-      // done in case of error
-      return "";
-    }
+    return format.getDisplayValue(this, calendar);
   }
   
   /**
@@ -392,9 +274,6 @@ public class PropertyDate extends Property {
 
       String old = getValue();
       
-      // assume string is not needed anymore
-      dateAsString=null;
-      
       // set it
       super.set(d,m,y);
 
@@ -411,24 +290,23 @@ public class PropertyDate extends Property {
    */
   public static class Format {
     
-    protected boolean isRange;
-    
     protected String start, end;
     
-    private Format(boolean r, String s, String e, String as, String ae) {
-      isRange= r; 
+    private Format(String s, String e) {
       start  = s; 
       end    = e;
-      //astart = as;
-      //aend   = ae;
     }
     
     public String toString() {
       return start + " " +end;
     }
     
+    public boolean usesPhrase() {
+      return false;
+    }
+    
     public boolean isRange() {
-      return isRange;
+      return end.length()>0;
     }
 
     public String getLabel() {
@@ -450,6 +328,177 @@ public class PropertyDate extends Property {
       return resources.getString("prop.date.mod."+end);
     }
     
+    protected boolean isValid(PropertyDate date) {
+      // valid point in times?
+      return date.start.isValid() && (!isRange()||date.end.isValid());
+    }
+    
+    protected String getValue(PropertyDate date) {
+
+      // collect information
+      WordBuffer result = new WordBuffer();
+      result.append(start);  
+      date.start.getValue(result);
+      if (isRange())  {
+        result.append(end);
+        date.end.getValue(result);
+      }
+
+      // done    
+      return result.toString();
+    }
+    
+    protected String getDisplayValue(PropertyDate date, Calendar calendar) {
+      
+      // collect information
+      try {
+        WordBuffer result = new WordBuffer();
+        
+        // start modifier & point in time
+        if (start.length()>0)
+          result.append(Gedcom.getResources().getString("prop.date.mod."+start));
+        if (calendar==null||date.start.getCalendar()==calendar) 
+          date.start.toString(result, true);
+        else 
+          date.start.getPointInTime(calendar).toString(result, true);
+    
+        // end modifier & point in time
+        if (isRange()) {
+          result.append(Gedcom.getResources().getString("prop.date.mod."+end));
+          if (calendar==null||date.end.getCalendar()==calendar) 
+            date.end.toString(result,true);
+          else 
+            date.end.getPointInTime(calendar).toString(result, true);
+        }
+    
+        // done    
+        return result.toString();
+        
+      } catch (GedcomException e) {
+        // done in case of error
+        return "";
+      }      
+    }
+    
+    protected boolean setValue(String text, PropertyDate date) {
+      
+      DirectAccessTokenizer tokens = new DirectAccessTokenizer(text, " ", true);
+      int afterFirst = 0;
+      
+      // check start
+      if (start.length()>0) {
+        String first = tokens.get(0);
+        afterFirst = tokens.getEnd();
+        if (!first.equalsIgnoreCase(start))
+          return false;
+      }
+
+      // no range?
+      if ( !isRange()) 
+        return date.start.set(text.substring(afterFirst));
+
+      // find end
+      for (int pos=1; ;pos++) {
+        String token = tokens.get(pos);
+        if (token==null) break;
+        if ( token.equalsIgnoreCase(end) ) 
+          return date.start.set(text.substring(afterFirst, tokens.getStart())) && date.end.set(text.substring(tokens.getEnd()));
+      }
+
+      // didn't work
+      return false;
+    }
+    
   } //Format
+  
+  /**
+   * A special format definition
+   */
+  private static class Interpreted extends Format {
+    
+    private Interpreted() {
+      super("INT" , "");
+    }
+    
+    public boolean usesPhrase() {
+      return true;
+    }
+    
+    public boolean isRange() {
+      return false;
+    }
+    
+    protected boolean isValid(PropertyDate date) {
+      // always true
+      return true;
+    }
+
+    protected boolean setValue(String text, PropertyDate date) {
+      
+      // looks like 'INT ... )'?
+      if (text.length()>start.length() && text.substring(0,start.length()).equalsIgnoreCase(start) && text.endsWith(")")) {
+        int bracket = text.indexOf('(');
+        if (bracket>0 && date.start.set(text.substring(start.length(), bracket))) {
+          date.phrase = text.substring(bracket+1, text.length()-1);
+          return true;
+        }
+      }
+      
+      // phrase '(...)'?
+      int from = 0, to = text.length();
+      if (text.startsWith("(")) from++;
+      if (text.endsWith(")")) to--;
+      
+      date.phrase = text.substring(from, to).trim();
+      
+      // always work
+      return true;
+    }
+    
+    protected String getDisplayValue(PropertyDate date, Calendar calendar) {
+      
+      try {
+        WordBuffer result = new WordBuffer();
+        
+        // start modifier & point in time
+        if (date.start.isValid()) {
+          result.append(Gedcom.getResources().getString("prop.date.mod."+start));
+          if (calendar==null||date.start.getCalendar()==calendar) 
+            date.start.toString(result, true);
+          else 
+            date.start.getPointInTime(calendar).toString(result, true);
+        }
+        
+        // phrase
+        if (date.phrase.length()>0)
+          result.append("("+date.phrase+")");
+    
+        // done    
+        return result.toString();
+        
+      } catch (GedcomException e) {
+        // done in case of error
+        return "";
+      }      
+    }
+    
+    protected String getValue(PropertyDate date) {
+      
+      // collect information
+      WordBuffer result = new WordBuffer();
+      
+      if (date.start.isValid()) {
+        result.append(start);  
+        date.start.getValue(result);
+      }
+      
+      if (date.phrase.length()>0)
+        result.append("("+date.phrase+")");
+      
+      // done    
+      return result.toString();
+    }
+    
+  }
   
 } //PropertyDate
