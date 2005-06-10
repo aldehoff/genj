@@ -113,8 +113,7 @@ public class GedcomReader implements Trackable {
     List result = new ArrayList(16);
     try {
       instance.readProperties(parent, pos, -1, result);
-    } catch (GedcomFormatException e) {
-      Debug.log(Debug.WARNING, instance, "trying to read from reader", e);
+    } catch (GedcomIOException e) {
     }
     
     // link what needs linkage
