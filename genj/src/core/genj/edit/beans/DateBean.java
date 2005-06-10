@@ -130,14 +130,17 @@ public class DateBean extends PropertyBean {
     // remember
     format = set;
 
-    // set text of chooser 
-    choose.setText(format.getLabel1());
+    // prepare chooser with 1st prefix
+    choose.setToolTipText(format.getName());
+    String prefix1= format.getPrefix1Name();
+    choose.setIcon(prefix1==null ? PIT : null);
+    choose.setText(prefix1==null ? "" : prefix1);
     
     // check label2/date2 visibility
     if (format.isRange()) {
       date2.setVisible(true);
       label2.setVisible(true);
-      label2.setText(format.getLabel2());
+      label2.setText(format.getPrefix2Name());
     } else {
       date2.setVisible(false);
       label2.setVisible(false);
@@ -146,10 +149,6 @@ public class DateBean extends PropertyBean {
     // check phrase visibility
     phrase.setVisible(format.usesPhrase());
 
-    // set image and tooltip of chooser
-    choose.setIcon(format==PropertyDate.DATE ? PIT : null);
-    choose.setToolTipText(format.getLabel());
-    
     // show
     revalidate();
     repaint();
@@ -182,7 +181,7 @@ public class DateBean extends PropertyBean {
     
     private ChangeFormat(PropertyDate.Format set) {
       format = set;
-      super.setText(set.getLabel());
+      super.setText(set.getName());
     }
     
     protected void execute() {

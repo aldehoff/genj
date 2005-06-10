@@ -297,10 +297,6 @@ public class PropertyDate extends Property {
       end    = e;
     }
     
-    public String toString() {
-      return start + " " +end;
-    }
-    
     public boolean usesPhrase() {
       return false;
     }
@@ -309,23 +305,19 @@ public class PropertyDate extends Property {
       return end.length()>0;
     }
 
-    public String getLabel() {
+    public String getName() {
       String key = (start+end).toLowerCase();
       if (key.length()==0)
         key = "date";
       return resources.getString("prop.date."+key);
     }
     
-    public String getLabel1() {
-      if (start.length()==0)
-        return "";
-      return resources.getString("prop.date.mod."+start);
+    public String getPrefix1Name() {
+      return resources.getString("prop.date.mod."+start, false);
     }
     
-    public String getLabel2() {
-      if (end.length()==0)
-        return "";
-      return resources.getString("prop.date.mod."+end);
+    public String getPrefix2Name() {
+      return resources.getString("prop.date.mod."+end, false);
     }
     
     protected boolean isValid(PropertyDate date) {
@@ -435,23 +427,30 @@ public class PropertyDate extends Property {
 
     protected boolean setValue(String text, PropertyDate date) {
       
-      // looks like 'INT ... )'?
-      if (text.length()>start.length() && text.substring(0,start.length()).equalsIgnoreCase(start) && text.endsWith(")")) {
+      // looks like 'INT ...'?
+      if (text.length()>start.length() && text.substring(0,start.length()).equalsIgnoreCase(start)) {
+        
+        // further 'INT ... ( ...' ?
         int bracket = text.indexOf('(');
         if (bracket>0 && date.start.set(text.substring(start.length(), bracket))) {
-          date.phrase = text.substring(bracket+1, text.length()-1);
+          date.phrase = text.substring(bracket+1, text.endsWith(")") ? text.length()-1 : text.length());
+          return true;
+        }
+        // maybe 'INT ...'
+        if (date.start.set(text.substring(start.length()))) {
+          date.phrase = "";
           return true;
         }
       }
       
-      // phrase '(...)'?
+      // trim possible brackets in case of ''(...)'?
       int from = 0, to = text.length();
       if (text.startsWith("(")) from++;
       if (text.endsWith(")")) to--;
       
       date.phrase = text.substring(from, to).trim();
       
-      // always work
+      // basically it's the fallback that always works
       return true;
     }
     
@@ -462,7 +461,6 @@ public class PropertyDate extends Property {
         
         // start modifier & point in time
         if (date.start.isValid()) {
-          result.append(Gedcom.getResources().getString("prop.date.mod."+start));
           if (calendar==null||date.start.getCalendar()==calendar) 
             date.start.toString(result, true);
           else 
@@ -470,8 +468,7 @@ public class PropertyDate extends Property {
         }
         
         // phrase
-        if (date.phrase.length()>0)
-          result.append("("+date.phrase+")");
+        result.append("("+date.phrase+")");
     
         // done    
         return result.toString();
@@ -492,8 +489,7 @@ public class PropertyDate extends Property {
         date.start.getValue(result);
       }
       
-      if (date.phrase.length()>0)
-        result.append("("+date.phrase+")");
+      result.append("("+date.phrase+")");
       
       // done    
       return result.toString();
