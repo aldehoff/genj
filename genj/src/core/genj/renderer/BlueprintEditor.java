@@ -273,6 +273,8 @@ public class BlueprintEditor extends JSplitPane {
       tag2value.put("ADDR", "Long Address");
       tag2value.put("CITY", "Big City");
       tag2value.put("POST", "12345");
+      tag2value.put("HUSB", "@I00X@");
+      tag2value.put("WIFE", "@I00X@");
     }
     /**
      * @see genj.gedcom.Indi#getId()
