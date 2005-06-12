@@ -148,7 +148,7 @@ public abstract class PropertyXRef extends Property {
    */
   public String getDisplayValue() {
     if (target==null)
-      return "";
+      return getValue();
     return target.getEntity().toString();
   }
   
