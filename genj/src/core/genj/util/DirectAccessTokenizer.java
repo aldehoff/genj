@@ -19,6 +19,8 @@
  */
 package genj.util;
 
+import java.util.ArrayList;
+
 /**
  * A helper to access values in a string separated through separator by index
  */
@@ -42,6 +44,19 @@ public class DirectAccessTokenizer {
     from = 0;
     to = from-separator.length();
     index = 0;
+  }
+  
+  /**
+   * Tokens
+   */
+  public String[] getTokens() {
+    ArrayList result = new ArrayList();
+    for (int i=0;;i++) {
+      String token = get(i);
+      if (token==null) break;
+      result.add(token);
+    }
+    return (String[])result.toArray(new String[result.size()]);
   }
   
   /**
