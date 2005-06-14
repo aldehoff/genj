@@ -31,6 +31,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -88,7 +89,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   /** current editor */
   private Editor editor;
   
-  private static boolean flip;
+  /** whether all context selection should be ignored */
+  private static boolean ignoreContextSelection = false;
   
   /**
    * Constructor
@@ -161,14 +163,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     instances.add(this);
     
     // Check if we can preset something to edit
-    Context context = manager.getContext(gedcom);
+    Context context = manager.getLastSelectedContext(gedcom);
     try { 
       context = new Context(gedcom.getEntity(registry.get("sticky",(String)null))); 
       isSticky = true;
     } catch (Throwable t) {
     }
-    context.setSource(this);
-    setContext(context);
+    setContext(context, false);
 
     // listen for available undos/removes
     gedcom.addGedcomListener(undo);
@@ -271,19 +272,20 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
   /**
    * Context listener callback
    */
-  public void setContext(Context context) {
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
     
-    // check if we're following the context
-    JComponent view = context.getView();
-    if (view instanceof EditView) {
-      // not if another editor was the view responsible for context change
-      if (view!=this)
-        return;
-    } else {
-      // not if we're sticky
-      if (isSticky) 
-        return;
-    }
+    // ignore it?
+    if (ignoreContextSelection)
+      return;
+    
+    // only if we're not sticky
+    if (!isSticky) setContext(event.getContext(), false);
+  }
+  
+  public void setContext(Context context, boolean tellOthers) {
+    
+    // tell to others view (non EditViews)
+    if (tellOthers)  fireContextSelected(context);
     
     // check current editor's context
     Context current = editor.getContext();
@@ -297,6 +299,21 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
     contextMenu.update();
     
     // done
+    ignoreContextSelection = false;
+  }
+  
+  /**package*/ void fireContextSelected(Context context) {
+    
+    // already in process?
+    if (ignoreContextSelection)
+      return;
+    ignoreContextSelection = true;
+    
+    manager.fireContextSelected(context);
+    
+    ignoreContextSelection = false;
+    
+    
   }
 
   /**
@@ -414,8 +431,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
         Context context = (Context)stack.pop();
         if (context.isValid()&&context.getEntity()!=null) {
           ignorePush = true;
-          context.setSource(EditView.this);
-          setContext(context);
+          setContext(context, true);
           ignorePush = false;
           return;
         }

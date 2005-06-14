@@ -634,7 +634,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       if (id==null)
         return;
       // propagate to other views through manager
-      manager.setContext(new Context(gedcom.getEntity(id)));
+      manager.fireContextSelected(new Context(gedcom.getEntity(id)));
       
       // done
     }

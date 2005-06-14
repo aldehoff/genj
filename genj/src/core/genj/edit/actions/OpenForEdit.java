@@ -58,8 +58,7 @@ public class OpenForEdit extends ActionDelegate {
     }
     
     // make sure the context change follows through
-    context.setSource(edit);
-    edit.setContext(context);
+    edit.setContext(context, false);
   }
   
 } //OpenForEdit

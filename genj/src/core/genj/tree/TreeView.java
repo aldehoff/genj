@@ -42,6 +42,7 @@ import genj.util.swing.ViewPortOverview;
 import genj.view.ActionProvider;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -198,7 +199,7 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
     } catch (Exception e) {
     }
     if (root==null) {
-      Context context = manager.getContext(gedcm);
+      Context context = manager.getLastSelectedContext(gedcm);
       if (context.getEntity()!=null) 
         root = context.getEntity();  
     } 
@@ -408,13 +409,17 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
   /**
    * view callback
    */
-  public void setContext(Context context) {
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
     // anything new?
+    Context context = event.getContext();
     Entity entity = context.getEntity();
-    if (entity==null||entity==currentEntity) 
+    if (entity==null)
       return;
     // do it
-    setCurrent(entity);
+    if (event.isActionPerformed())
+      setRoot(entity);
+    else if (entity!=currentEntity)
+      setCurrent(entity);
   }
   
   /**
@@ -816,7 +821,7 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
         repaint();
         overview.repaint();
         // propagate it
-        manager.setContext(new Context(currentEntity));
+        manager.fireContextSelected(new Context(currentEntity));
       }
       // runnable?
       if (content instanceof Runnable) {

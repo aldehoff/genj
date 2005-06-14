@@ -41,6 +41,8 @@ import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
+import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
@@ -99,14 +101,6 @@ import javax.swing.event.ChangeListener;
   /** current panels */
   private BeanPanel beanPanel;
   private JPanel buttonPanel;
-
-  /** change callback */
-  ChangeListener changeCallback = new ChangeListener() {
-    public void stateChanged(ChangeEvent e) {
-      ok.setEnabled(true);
-      cancel.setEnabled(true);
-    }
-  };
 
   /**
    * Callback - init for edit
@@ -460,7 +454,7 @@ import javax.swing.event.ChangeListener;
   /**
    * A panel containing all the beans for editing
    */
-  private class BeanPanel extends JPanel {
+  private class BeanPanel extends JPanel implements ContextListener, ChangeListener {
 
     /** top level tags */
     private Set topLevelTags = new HashSet();
@@ -506,7 +500,8 @@ import javax.swing.event.ChangeListener;
       BeanFactory factory = view.getBeanFactory();
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        bean.removeChangeListener(changeCallback);
+        bean.removeChangeListener(this);
+        bean.removeContextListener(this);
         factory.recycle(bean);
       }
       beans.clear();
@@ -531,6 +526,23 @@ import javax.swing.event.ChangeListener;
       // done
     }
 
+    /**
+     * ChangeListener callback - a bean tells us about a change made by the user
+     */
+    public void stateChanged(ChangeEvent e) {
+      ok.setEnabled(true);
+      cancel.setEnabled(true);
+    }
+    
+    /**
+     * ContextListener callback - a bean tells us about a possible context change
+     */
+    public void handleContextSelectionEvent(ContextSelectionEvent event) {
+      if (event.isActionPerformed())
+        view.setContext(event.getContext(), true);
+      else
+        view.fireContextSelected(event.getContext());
+    }
     
     /**
      * Parse descriptor
@@ -640,7 +652,8 @@ import javax.swing.event.ChangeListener;
       BeanFactory factory = view.getBeanFactory();
       PropertyBean bean = beanOverride!=null ? factory.get(beanOverride) : factory.get(prop);
       bean.setContext(prop, registry);
-      bean.addChangeListener(changeCallback);
+      bean.addChangeListener(this);
+      bean.addContextListener(this);
       beans.add(bean);
       
       // done

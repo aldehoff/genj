@@ -25,6 +25,7 @@ import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.view.ContextListener;
 import genj.view.ViewManager;
 
 import java.awt.Color;
@@ -112,6 +113,22 @@ public abstract class PropertyBean extends JPanel {
   public Property getProperty() {
     return property;
   }
+  
+  /**
+   * Listener
+   */
+  public void addContextListener(ContextListener l) {
+  }
+  
+  /**
+   * Listener
+   */
+  public void removeContextListener(ContextListener l) {
+  }
+  
+  /**
+   * Listener
+   */
   
   /**
    * Listener 

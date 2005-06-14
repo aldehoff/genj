@@ -32,6 +32,7 @@ import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -352,8 +353,9 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   /**
    * callback - context event
    */
-  public void setContext(Context context) {
+  public void handleContextSelectionEvent(ContextSelectionEvent e) {
     // try to scroll to first event
+    Context context = e.getContext();
     Model.Event event = model.getEvent(context.getProperty());
     if (event==null) event = model.getEvent(context.getEntity());
     if (event!=null) makeVisible(event);
@@ -535,7 +537,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     protected void paintComponent(Graphics g) {
       
       // find selection
-      Context ctx = manager.getContext(model.gedcom);
+      Context ctx = manager.getLastSelectedContext(model.gedcom);
       Property selection = ctx.getProperty();
       if (selection==null)
         selection = ctx.getEntity();
@@ -584,7 +586,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       Context context = null;
       if (event!=null) {
         context = new Context(event.pd);
-        manager.setContext(context);
+        manager.fireContextSelected(context);
       }
 
       // popup trigger ? show context

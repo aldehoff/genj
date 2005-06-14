@@ -76,6 +76,9 @@ public class ViewManager {
   /** context listeners */
   private List contextListeners = new LinkedList();
   
+  /** ignore flag */
+  private boolean ignoreSetContext = false;
+  
   /**
    * Constructor
    */
@@ -143,7 +146,7 @@ public class ViewManager {
    * Returns the last set context for given gedcom
    * @return the context
    */
-  public Context getContext(Gedcom gedcom) {
+  public Context getLastSelectedContext(Gedcom gedcom) {
     
     // grab one from map
     Context result = (Context)gedcom2context.get(gedcom);
@@ -180,11 +183,20 @@ public class ViewManager {
   /**
    * Sets the current context
    */
-  public void setContext(Context context) {
+  public void fireContextSelected(Context context) {
+    fireContextSelected(new ContextSelectionEvent(context));
+  }
+  public void fireContextSelected(ContextSelectionEvent e) {
     
     // valid?
+    Context context = e.getContext();
     if (!context.isValid())
       return;
+    
+    // ignoring context?
+    if (ignoreSetContext)
+      return;
+    ignoreSetContext = true;
 
     // remember context
     Gedcom gedcom = context.getGedcom();
@@ -193,21 +205,11 @@ public class ViewManager {
       getRegistry(gedcom).put("lastEntity", context.getEntity().getId());
     
     // clear any menu selections if different from last context
-    if (!context.equals(getContext(gedcom)))
+    if (!context.equals(getLastSelectedContext(gedcom)))
       MenuSelectionManager.defaultManager().clearSelectedPath();
 
     // connect to us
     context.setManager(ViewManager.this);
-    
-    // see if source is a view which will get context message first
-    JComponent view = context.getView();
-    if (view!=null&&view instanceof ContextListener) {
-      try {
-        ((ContextListener)view).setContext(context);
-      } catch (Throwable t) {
-        Debug.log(Debug.WARNING, view, "threw "+t+" on setContext()");
-      }
-    }
     
     // loop and tell to views
     Iterator it = key2viewwidget.values().iterator();
@@ -217,7 +219,7 @@ public class ViewManager {
       if (vw.getGedcom()!= gedcom) continue;
       // and context supported
       if (vw.getView() instanceof ContextListener) try {
-        ((ContextListener)vw.getView()).setContext(context);
+        ((ContextListener)vw.getView()).handleContextSelectionEvent(e);
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, vw.getView(), "ContextListener threw throwable", t);
       }
@@ -228,12 +230,13 @@ public class ViewManager {
     ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
     for (int l=0;l<ls.length;l++)
       try {      
-        ls[l].setContext(context);
+        ls[l].handleContextSelectionEvent(e);
       } catch (Throwable t) {
         Debug.log(Debug.WARNING, ls[l], "ContextListener threw throwable", t);
       }
     
     // done
+    ignoreSetContext = false;
   }
 
   /** 
@@ -503,9 +506,6 @@ public class ViewManager {
     // make sure any existing popup is cleared
     MenuSelectionManager.defaultManager().clearSelectedPath();
 
-    // hook up context's source
-    context.setSource(target);
-    
     // create a popup
     MenuHelper mh = new MenuHelper().setTarget(target);
     JPopupMenu popup = mh.createPopup();

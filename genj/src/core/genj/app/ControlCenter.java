@@ -40,6 +40,7 @@ import genj.util.swing.MenuHelper;
 import genj.util.swing.ProgressWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -148,8 +149,8 @@ public class ControlCenter extends JPanel {
     });
 
     viewManager.addContextListener(new ContextListener() {
-      public void setContext(Context context) {
-        tGedcoms.setSelection(context.getGedcom());
+      public void handleContextSelectionEvent(ContextSelectionEvent event) {
+        tGedcoms.setSelection(event.getContext().getGedcom());
       }
     });
     

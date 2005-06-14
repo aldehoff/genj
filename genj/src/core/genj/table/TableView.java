@@ -33,6 +33,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -104,6 +105,11 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     // create our table
     propertyTable = new PropertyTableWidget(null, manager);
     propertyTable.setAutoResize(false);
+    propertyTable.addContextListener(new ContextListener() {
+      public void handleContextSelectionEvent(ContextSelectionEvent event) {
+        manager.fireContextSelected(event);
+      }
+    });
 
     // lay it out
     setLayout(new BorderLayout());
@@ -183,13 +189,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   /**
    * callback - context changed
    */
-  public void setContext(Context context) {
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
     
-    // msg from self?
-    if (context.getView()==this)
-      return;
-
     // a type that we're interested in?
+    Context context  = event.getContext();
     Entity entity = context.getEntity();
     if (entity==null||!entity.getTag().equals(currentMode.getTag())) 
       return;

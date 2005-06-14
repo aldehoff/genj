@@ -30,6 +30,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 
@@ -102,7 +103,7 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
     isAntialiasing  = registry.get("antial"  , false);
     
     // set first entity
-    Context context = manager.getContext(gedcom); 
+    Context context = manager.getLastSelectedContext(gedcom); 
     if (context!=null) 
       setEntity(context.getEntity());
     
@@ -211,8 +212,8 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   /**
    * view callback
    */
-  public void setContext(Context context) {
-    Entity e = context.getEntity();
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
+    Entity e = event.getContext().getEntity();
     if (e!=null)
       setEntity(e);
   }

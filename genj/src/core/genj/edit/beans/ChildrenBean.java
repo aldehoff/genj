@@ -25,6 +25,7 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.view.ContextListener;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -50,12 +51,22 @@ public class ChildrenBean extends PropertyBean {
     
     // a table for the families
     table = new PropertyTableWidget(viewManager);
-    table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
     table.setPreferredSize(new Dimension(64,64));
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
     
+  }
+
+  /**
+   * Context listener support
+   */
+  public void addContextListener(ContextListener l) {
+    table.addContextListener(l);
+  }
+  
+  public void removeContextListener(ContextListener l) {
+    table.removeContextListener(l);
   }
 
   /**

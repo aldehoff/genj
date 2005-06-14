@@ -39,6 +39,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -214,7 +215,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
   /**
    * callback - context changed
    */  
-  public void setContext(Context context) {
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
+    selectContext(event.getContext());
+  }
+  
+  private void selectContext(Context context) {
     int row = results.getRow(context.getEntity(), context.getProperty());
     listResults.setSelectedIndex(row);
     listResults.ensureIndexIsVisible(row);
@@ -724,7 +729,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     public void valueChanged(ListSelectionEvent e) {
       int row = listResults.getSelectedIndex();
       if (row>=0)
-        manager.setContext(new Context(results.getHit(row).getProperty()));
+        manager.fireContextSelected(new Context(results.getHit(row).getProperty()));
     }
 
     /**
@@ -769,7 +774,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       Hit hit = (Hit)getModel().getElementAt(row);
       Context context = new Context(hit.getProperty());
       // select it
-      setContext(context);
+      selectContext(context);
       // propagate it
       manager.showContextMenu(context, null, this, pos);
     }

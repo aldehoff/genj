@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.63 $ $Author: nmeier $ $Date: 2005-04-12 17:25:21 $
+ * $Revision: 1.64 $ $Author: nmeier $ $Date: 2005-06-14 04:07:03 $
  */
 package genj.report;
 
@@ -768,7 +768,7 @@ public abstract class Report implements Cloneable {
       if (item==null)
         return;
       // propagate
-      manager.setContext(new Context(gedcom, null, item.getTarget()));
+      manager.fireContextSelected(new Context(gedcom, null, item.getTarget()));
     }
 
     /**

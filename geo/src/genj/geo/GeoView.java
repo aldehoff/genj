@@ -31,6 +31,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
@@ -142,7 +143,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       public void listSelectionChanged(Set locations, Set properties) {
         selectionLayer.setLocations(locations);
         if (properties.size()==1)
-          GeoView.this.viewManager.setContext(new Context((Property)properties.iterator().next()));
+          GeoView.this.viewManager.fireContextSelected(new Context((Property)properties.iterator().next()));
       }
     });
 
@@ -191,8 +192,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Callback for context changes
    */
-  public void setContext(Context context) {
-    locationList.setSelectedContext(context);
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
+    locationList.setSelectedContext(event.getContext());
   }
   
   /**

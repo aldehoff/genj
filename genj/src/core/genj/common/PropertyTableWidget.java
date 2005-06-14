@@ -34,6 +34,8 @@ import genj.util.swing.LinkWidget;
 import genj.util.swing.SortableTableHeader;
 import genj.util.swing.SortableTableHeader.SortableTableModel;
 import genj.view.Context;
+import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -47,8 +49,10 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -95,7 +99,7 @@ public class PropertyTableWidget extends JPanel {
   private JTable table;
   
   /** context propagation */
-  private boolean contextPropagationOnDoubleClick = false;
+  private List contextListeners = new ArrayList();
   
   /** shortcuts panel */
   private Box panelShortcuts = new Box(BoxLayout.Y_AXIS);
@@ -180,10 +184,17 @@ public class PropertyTableWidget extends JPanel {
   }
   
   /**
-   * Context Propagation on double click?
+   * Context Listeners
    */
-  public void setContextPropagation(int mode) {
-    contextPropagationOnDoubleClick = mode==CONTEXT_PROPAGATION_ON_DOUBLE_CLICK;
+  public void addContextListener(ContextListener listener) {
+    contextListeners.add(listener);
+  }
+  
+  /**
+   * Context Listeners
+   */
+  public void removeContextListener(ContextListener listener) {
+    contextListeners.remove(listener);
   }
   
   /**
@@ -712,7 +723,6 @@ public class PropertyTableWidget extends JPanel {
       
       // context is either entity or property
       Context context = ((Model)table.getModel()).getContextAt(row, col);
-      context.setSource(PropertyTableWidget.this);
       
       // context menu?
       if (e.isPopupTrigger()) {
@@ -720,9 +730,8 @@ public class PropertyTableWidget extends JPanel {
         return;
       }
       
-      // context propagation for double clicks?
-      if (contextPropagationOnDoubleClick&&e.getClickCount()>1)
-        viewManager.setContext(context);
+      //  context propagation 
+      fireContextSelectionChanged(context, e.getClickCount()>1);
       
       // done
     }
@@ -740,12 +749,17 @@ public class PropertyTableWidget extends JPanel {
       
       // context is either entity or property
       Context context = ((Model)table.getModel()).getContextAt(row, col);
-      context.setSource(PropertyTableWidget.this);
       
-      //  context propagation for non-double clicks?
-      if (!contextPropagationOnDoubleClick)
-        viewManager.setContext(context);
+      //  context propagation 
+      fireContextSelectionChanged(context, false);
       
+    }
+    
+    private void fireContextSelectionChanged(Context context, boolean actionPerformed) {
+      ContextSelectionEvent e = new ContextSelectionEvent(context, actionPerformed);
+      ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
+      for (int i = 0; i < ls.length; i++) 
+        ls[i].handleContextSelectionEvent(e);
     }
 
   } //InteractionHandler

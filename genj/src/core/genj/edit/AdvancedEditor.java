@@ -187,9 +187,7 @@ import javax.swing.event.TreeSelectionListener;
    * @return Gedcom tree's root and selection 
    */
   public Context getContext() {
-    Context result = new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
-    result.setSource(this);
-    return result;
+    return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
   }
   
   /**
@@ -214,14 +212,8 @@ import javax.swing.event.TreeSelectionListener;
 
     // set selection
     Property property = context.getProperty();
-    if (property!=null) {
-      // 20040424 want to let callback know what's going on but it shouldn't
-      // propagate a selection - so I'm not disconnecting callback instead using 
-      // flag to disable propagate
-      callback.propagateSelection = false;
+    if (property!=null) 
       tree.setSelection(property);  
-      callback.propagateSelection = true;
-    }
   
     // Done
   }
@@ -294,7 +286,7 @@ import javax.swing.event.TreeSelectionListener;
 
       // change focus
       if (selection!=null)
-        editView.getViewManager().setContext(new Context(selection));
+        editView.setContext(new Context(selection), true);
     }
     
     /** apply the template to an entity */
@@ -584,8 +576,6 @@ import javax.swing.event.TreeSelectionListener;
    */
   private class InteractionListener extends MouseAdapter implements TreeSelectionListener, ChangeListener {
     
-    private boolean propagateSelection = true;
-    
     /**
      * callback - mouse doubleclick
      */
@@ -603,10 +593,8 @@ import javax.swing.event.TreeSelectionListener;
         if (target!=null) {
           // create new context
           Context ctx = new Context(target);
-          // we're the source
-          ctx.setSource(AdvancedEditor.this);
-          // tell others
-          editView.getViewManager().setContext(ctx);
+          // tell view
+          editView.setContext(ctx, true);
         }
       }
     }
@@ -730,10 +718,9 @@ import javax.swing.event.TreeSelectionListener;
         ok.setEnabled(false);
         cancel.setEnabled(false);
         
-        // tell selection to everyone else
-        if (propagateSelection)
-          editView.getViewManager().setContext(getContext());
-    
+        // tell to view
+        editView.setContext(getContext(), true);
+  
       }
   
       // Done

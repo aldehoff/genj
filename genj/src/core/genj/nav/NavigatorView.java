@@ -33,6 +33,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -117,7 +118,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     gedcom.addGedcomListener(this);
 
     // init
-    Context context = manager.getContext(gedcom);
+    Context context = manager.getLastSelectedContext(gedcom);
     if (context!=null&&(context.getEntity() instanceof Indi))
       setCurrentEntity(context.getEntity());
     else {
@@ -195,8 +196,8 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
   /**
    * Context listener callback
    */  
-  public void setContext(Context context) {
-    setCurrentEntity(context.getEntity());
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
+    setCurrentEntity(event.getContext().getEntity());
   }
 
   
@@ -414,7 +415,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
       // follow immediately
       setCurrentEntity(target);
       // propagate to others
-      manager.setContext(new Context(target));
+      manager.fireContextSelected(new Context(target));
     }
   } //Jump
 

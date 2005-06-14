@@ -24,10 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.swing.ImageIcon;
 
-import java.awt.Component;
-
-import javax.swing.JComponent;
-
 /**
  * A context represents a 'current context in Gedcom terms', a gedcom
  * an entity and a property
@@ -38,8 +34,6 @@ public class Context {
   private Gedcom gedcom;
   private Entity entity;
   private Property property;
-  private Component source;
-  private boolean isPropagated = false;
 
   /**
    * Constructor
@@ -87,21 +81,6 @@ public class Context {
   }
   
   /**
-   * Whether the context has been propagated
-   */
-  /*package*/ boolean isPropagated() {
-    return isPropagated;
-  }
-  
-  /**
-   * Whether the context has been propagated
-   */
-  /*package*/ void setPropagated() {
-    isPropagated = true;
-    source = null;
-  }
-  
-  /**
    * Connect to manager
    */
   /*package*/ void setManager(ViewManager set) {
@@ -113,33 +92,6 @@ public class Context {
    */
   public boolean isValid() {
     return gedcom!=null && (entity!=null||property==null) && (entity==null||gedcom.contains(entity));
-  }
-  
-  /**
-   * Accessor
-   */
-  public void setSource(Component set) {
-    source = set;
-  }
-  
-  /**
-   * Accessor - try to identify a view this context came from
-   */
-  public JComponent getView() {
-    // no source no view
-    if (source==null)
-      return null;
-    // run up the chain
-    while (true) {
-      Component parent = source.getParent();
-      if (parent==null)
-        break;
-      if (parent instanceof ViewContainer)
-        return (JComponent)source;
-      source = parent;
-    }
-    // none found
-    return null;
   }
   
   /**

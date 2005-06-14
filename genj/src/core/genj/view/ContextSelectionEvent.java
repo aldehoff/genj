@@ -20,13 +20,40 @@
 package genj.view;
 
 /**
- * Support for a popup menu on entities
+ * A class wrapping the event of a context selection 
  */
-public interface ContextListener {
+public class ContextSelectionEvent {
+  
+  private Context context;
+  private boolean isActionPerformed = false;
   
   /**
-   * Callback - a context has been selected
+   * Constructor
    */
-  public void handleContextSelectionEvent(ContextSelectionEvent event);
+  public ContextSelectionEvent(Context context) {
+    this.context = context;
+  }
+  
+  /**
+   * Constructor
+   */
+  public ContextSelectionEvent(Context context, boolean isActionPerformed) {
+    this(context);
+    this.isActionPerformed = isActionPerformed;
+  }
+  
+  /**
+   * Read-Only Accessor
+   */
+  public Context getContext() {
+    return context;
+  }
+
+  /**
+   * Read-Only Accessor
+   */
+  public boolean isActionPerformed() {
+    return isActionPerformed;
+  }
 
 }

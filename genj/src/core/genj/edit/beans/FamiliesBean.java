@@ -27,6 +27,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
+import genj.view.ContextListener;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -54,13 +55,24 @@ public class FamiliesBean extends PropertyBean {
     
     // prepare a simple table
     table = new PropertyTableWidget(viewManager);
-    table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
+    // FIXME table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
     table.setPreferredSize(new Dimension(64,64));
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
   }
   
+  /**
+   * Context listener support
+   */
+  public void addContextListener(ContextListener l) {
+    table.addContextListener(l);
+  }
+  
+  public void removeContextListener(ContextListener l) {
+    table.removeContextListener(l);
+  }
+
   /**
    * Set context to edit
    */
