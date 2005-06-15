@@ -193,7 +193,7 @@ public class LnF {
       cl = getClass().getClassLoader();
     } else {
       URL urlArchive = new URL("file", "", new File(getLnFDir(), archive).getAbsolutePath());
-      cl = new URLClassLoader(new URL[]{urlArchive});
+      cl = new URLClassLoader(new URL[]{urlArchive}, getClass().getClassLoader());
     }
     return cl;
   }
