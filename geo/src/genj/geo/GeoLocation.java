@@ -167,12 +167,13 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     Gedcom ged =addr.getGedcom();
     
-    // got a city? treat same as we do PLAC
+    // 20050615 we don't look for a country in PLAC since that's really CTRY there for - since
+    // STAtE doesn't fit addresses outside the US we're using the PLAC parsing mechanism
+    // for topmost jurisdiction as well though
     Property pcity = addr.getProperty("CITY");
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
-    
-    parseJurisdictions( new DirectAccessTokenizer(pcity.getDisplayValue(), PropertyPlace.JURISDICTION_SEPARATOR), ged);
+    parseJurisdictions( new DirectAccessTokenizer(pcity.getDisplayValue(), PropertyPlace.JURISDICTION_SEPARATOR), ged, false);
     
     // how about a country?
     Locale locale = addr.getGedcom().getLocale();
@@ -193,13 +194,13 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * Init for Place
    */
   private void parsePlace(PropertyPlace place) {
-    parseJurisdictions( place.getJurisdictions(), place.getGedcom());
+    parseJurisdictions( place.getJurisdictions(), place.getGedcom(), true);
   }
   
   /**
    * Parse jurisdictions
    */
-  private void parseJurisdictions(DirectAccessTokenizer jurisdictions, Gedcom gedcom) {
+  private void parseJurisdictions(DirectAccessTokenizer jurisdictions, Gedcom gedcom, boolean lookForCountry) {
     
     int first = 0, last = jurisdictions.count()-1;
     
@@ -213,11 +214,13 @@ public class GeoLocation extends Point implements Feature, Comparable {
     }
     
     // look for country in rightmost jurisdiction
-    Locale locale = gedcom.getLocale();
-    if (last>=first) {
-      country = Country.get(gedcom.getLocale(), trim(jurisdictions.get(last)));
-      if (country!=null) 
-        last--;
+    if (lookForCountry) {
+      Locale locale = gedcom.getLocale();
+      if (last>=first) {
+        country = Country.get(gedcom.getLocale(), trim(jurisdictions.get(last)));
+        if (country!=null) 
+          last--;
+      }
     }
     
     // we look at remaining jurisdictions for a well-known top-level jurisdiction
