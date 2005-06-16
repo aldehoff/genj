@@ -309,8 +309,10 @@ public class App {
      * 
      */
     public void flush() throws IOException {
-      if (size>0)
+      if (size>0) {
         LOG.logp(level, sourceClass, sourceMethod, String.valueOf(buffer, 0, size).trim());
+        size = 0;
+      }
     }
   }
   
