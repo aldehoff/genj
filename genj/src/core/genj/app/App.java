@@ -29,6 +29,9 @@ import genj.window.CloseWindow;
 import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.FileHandler;
@@ -63,7 +66,9 @@ public class App {
       // prepare some basic logging for now
       Formatter formatter = new LogFormatter();
       LOG.setUseParentHandlers(false);
-      LOG.addHandler(new StreamHandler(System.err, formatter));
+      LOG.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
+      System.setOut(new PrintStream(new LogOutputStream(Level.INFO, "System", "out")));
+      System.setErr(new PrintStream(new LogOutputStream(Level.WARNING, "System", "err")));
       
       // init our data
       Registry registry = new Registry("genj");
@@ -210,6 +215,26 @@ public class App {
   } //Shutdown
 
   /**
+   * a log handler that flushes on publish
+   */
+  private static class FlushingHandler extends Handler {
+    private Handler wrapped;
+    private FlushingHandler(Handler wrapped) {
+      this.wrapped = wrapped;
+    }
+    public void publish(LogRecord record) {
+      wrapped.publish(record);
+      flush();
+    }
+    public void flush() {
+      wrapped.flush();
+    }
+    public void close() throws SecurityException {
+      wrapped.close();
+    }
+  }
+  
+  /**
    * Our own log format
    */
   private static class LogFormatter extends Formatter {
@@ -228,6 +253,46 @@ public class App {
       result.append(":");
       result.append(System.getProperty("line.separator"));
       return result.toString();
+    }
+  }
+  
+  /**
+   * Our STDOUT/ STDERR log outputstream
+   */
+  private static class LogOutputStream extends OutputStream {
+    
+    private char[] buffer = new char[80];
+    private int size = 0;
+    private Level level;
+    private String sourceClass, sourceMethod;
+    
+    /**
+     * Constructor
+     */
+    public LogOutputStream(Level level, String sourceClass, String sourceMethod) {
+      this.level = level;
+      this.sourceClass = sourceClass;
+      this.sourceMethod = sourceMethod;
+    }
+    
+    /**
+     * collect up to 80 characters 
+     */
+    public void write(int b) throws IOException {
+      if (b!='\n') {
+       buffer[size++] = (char)b;
+       if (size<buffer.length) 
+         return;
+      }
+      flush();
+    }
+
+    /**
+     * 
+     */
+    public void flush() throws IOException {
+      if (size>0)
+        LOG.logp(level, sourceClass, sourceMethod, String.valueOf(buffer, 0, size).trim());
     }
   }
   
