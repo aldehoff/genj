@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.64 $ $Author: nmeier $ $Date: 2005-06-14 04:07:03 $
+ * $Revision: 1.65 $ $Author: nmeier $ $Date: 2005-06-16 01:05:28 $
  */
 package genj.report;
 
@@ -28,7 +28,6 @@ import genj.gedcom.Property;
 import genj.option.Option;
 import genj.option.PropertyOption;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -55,6 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -165,7 +165,7 @@ public abstract class Report implements Cloneable {
       return result;
 
     } catch (CloneNotSupportedException e) {
-      Debug.log(Debug.ERROR, this, e);
+      ReportView.LOG.log(Level.SEVERE, "couldn't clone report", e);
       throw new RuntimeException("getInstance() failed");
     }
   }
@@ -544,7 +544,7 @@ public abstract class Report implements Cloneable {
     // check result and apply format
     if (result==null) {
       // 20030529 - don't do a recursive getName() here
-      Debug.log(Debug.WARNING, this, "Unknown i18 key : "+key);
+      ReportView.LOG.warning("Unknown i18 key : "+key);
       result = key;
     } else {
       if (values!=null&&values.length>0) {
@@ -577,7 +577,7 @@ public abstract class Report implements Cloneable {
       try {
         properties.load(getClass().getResourceAsStream(getTypeName()+".properties"));
       } catch (Throwable t) {
-        Debug.log(Debug.INFO, this, "Couldn't read properties for "+this);
+        ReportView.LOG.info("Couldn't read properties for "+this);
       }
     }
     return properties;

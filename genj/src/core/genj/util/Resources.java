@@ -134,7 +134,6 @@ public class Resources {
     try {
       load(getClass().getResourceAsStream(calcFile(pkg, null, null)));
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this,"Couldn't read default resources for package '"+pkg+"'");
     }
     
     // trying to load language specific next

@@ -22,7 +22,6 @@ package genj.app;
 import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.option.OptionProvider;
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -30,9 +29,15 @@ import genj.window.CloseWindow;
 import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
-import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -41,6 +46,8 @@ import javax.swing.UIManager;
  * Main Class for GenJ Application
  */
 public class App {
+  
+  /*package*/ static Logger LOG = Logger.getLogger("genj");
   
   /** constants */
   private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
@@ -53,29 +60,34 @@ public class App {
     // Catch anything that might happen
     try {
       
-      // Startup Information
-      Debug.log(Debug.INFO, App.class, "GenJ App - Build "+Version.getInstance().getBuildString()+" started at "+new Date());
+      // prepare some basic logging for now
+      Formatter formatter = new LogFormatter();
+      LOG.setUseParentHandlers(false);
+      LOG.addHandler(new StreamHandler(System.err, formatter));
       
       // init our data
       Registry registry = new Registry("genj");
       
-      // initialize options
+      // initialize options first
       OptionProvider.restoreAll(registry);
 
-      // Setup Log
-      String log = EnvironmentChecker.getProperty(App.class, new String[]{"genj.debug.file", "user.home.genj/genj.log"}, "", "choose log-file");
-      if (log.length()>0) {
-        File file = new File(log);
-        if (file.exists()&&file.length()>Options.getInstance().getMaxLogSizeKB()*1024)
-          file.delete();
-        Debug.setFile(file);
+      // Setup File Logging and check environment
+      String file = EnvironmentChecker.getProperty(App.class, "user.home.genj/genj.log", null, "determining log-file pattern");
+      if (file!=null) {
+        Handler handler = new FileHandler(file, Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
+        handler.setFormatter(formatter);
+        LOG.addHandler(handler);
       }
+      
+      // Startup Information
+      LOG.info("version = "+Version.getInstance().getBuildString());
+      LOG.info("date = "+new Date());
       EnvironmentChecker.log();
       
       // check VM version
       if (!EnvironmentChecker.isJava14(App.class)) {
         if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
-          Debug.log(Debug.ERROR, App.class, "Need Java 1.4 to run GenJ");
+          LOG.severe("Need Java 1.4 to run GenJ");
           System.exit(1);
           return;
         }
@@ -90,8 +102,7 @@ public class App {
       // Done
       
     } catch (Throwable t) {
-      Debug.log(Debug.ERROR, App.class, "Cannot instantiate App", t);
-      Debug.flush();
+      LOG.log(Level.SEVERE, "Cannot instantiate App", t);
       System.exit(1);
     }
   }
@@ -115,7 +126,7 @@ public class App {
      */
     public void run() {
       
-      Debug.log(Debug.INFO, this, "Startup");
+      LOG.info("Startup");
       
       // get app resources now
       Resources resources = Resources.get(App.class);
@@ -142,7 +153,7 @@ public class App {
       winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
 
       // done
-      Debug.log(Debug.INFO, this, "/Startup");
+      LOG.info("/Startup");
     }
     
     /**
@@ -188,16 +199,36 @@ public class App {
      * do the shutdown
      */
     public void run() {
-      Debug.log(Debug.INFO, this, "Shutdown");
+      LOG.info("Shutdown");
 	    // persist options
 	    OptionProvider.persistAll(registry);
 	    // Store registry 
 	    Registry.persist();      
 	    // done
-      Debug.log(Debug.INFO, this, "/Shutdown");
-	    // Flush Debug
-	    Debug.flush();
+      LOG.info("/Shutdown");
     }
   } //Shutdown
+
+  /**
+   * Our own log format
+   */
+  private static class LogFormatter extends Formatter {
+    public String format(LogRecord record) {
+      StringBuffer result = new StringBuffer(80);
+      result.append(record.getLevel());
+      result.append(":");
+      result.append(record.getSourceClassName());
+      result.append(".");
+      result.append(record.getSourceMethodName());
+      result.append(":");
+      result.append(record.getMessage());
+      result.append(":");
+      Throwable t =record.getThrown();
+      if (t!=null) result.append(t);
+      result.append(":");
+      result.append(System.getProperty("line.separator"));
+      return result.toString();
+    }
+  }
   
 } //App

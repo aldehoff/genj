@@ -19,7 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.Debug;
 import genj.util.swing.ImageIcon;
 
 import java.util.ArrayList;
@@ -28,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Wrapper for a Property
@@ -228,7 +228,7 @@ public class MetaProperty implements Comparable {
     } catch (Exception e) {
       // 20030530 catch exceptions only - during load
       // an outofmemoryerrror could happen here
-      Debug.log(Debug.WARNING, this, "Couldn't instantiate "+getType()+" with value "+value, e);
+      Gedcom.LOG.log(Level.WARNING, "Couldn't instantiate property "+getType()+" with value "+value, e);
       result = new PropertySimpleValue(); 
       ((PropertySimpleValue)result).init(this, value);
     }
@@ -290,7 +290,7 @@ public class MetaProperty implements Comparable {
       else try {
         type = Class.forName("genj.gedcom."+attrType);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, "Property type genj.gedcom."+attrType+" couldn't be instantiated", t);    
+        Gedcom.LOG.log(Level.WARNING, "Property type genj.gedcom."+attrType+" couldn't be instantiated", t);    
         type = PropertySimpleValue.class;
       }
       // resolved

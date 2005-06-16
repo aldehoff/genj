@@ -19,7 +19,6 @@
  */
 package genj.lnf;
 
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 
@@ -33,6 +32,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
@@ -43,6 +43,8 @@ import javax.swing.UnsupportedLookAndFeelException;
  * A Look&Feel
  */
 public class LnF {
+  
+  private static Logger LOG = Logger.getLogger("genj.lnf");
   
   /** constants */
   static private final String 
@@ -144,7 +146,7 @@ public class LnF {
     this.theme = theme;      
     
     // debug
-    Debug.log(Debug.INFO, this, "Found Look&Feel "+name+" version="+version+" url="+url+" archive="+archive+" theme="+theme);
+    LOG.info("Found Look&Feel "+name+" version="+version+" url="+url+" archive="+archive+" theme="+theme);
     
     // done
   }
@@ -258,19 +260,19 @@ public class LnF {
       UIManager.setLookAndFeel(getInstance());
       
     } catch (ClassNotFoundException cnfe) {
-      Debug.log(Debug.WARNING, this,prefix+" is not accessible (ClassNotFoundException)");
+      LOG.warning(prefix+" is not accessible (ClassNotFoundException)");
       return false;
     } catch (ClassCastException cce) {
-      Debug.log(Debug.WARNING, this,prefix+" is not a valid LookAndFeel (ClassCastException)");
+      LOG.warning(prefix+" is not a valid LookAndFeel (ClassCastException)");
       return false;
     } catch (MalformedURLException mue) {
-      Debug.log(Debug.WARNING, this,prefix+" doesn't point to a valid archive (MalformedURLException)");
+      LOG.warning(prefix+" doesn't point to a valid archive (MalformedURLException)");
       return false;
     } catch (UnsupportedLookAndFeelException e) {
-      Debug.log(Debug.WARNING, this,prefix+" is not supported on this platform (UnsupportedLookAndFeelException)");
+      LOG.warning(prefix+" is not supported on this platform (UnsupportedLookAndFeelException)");
       return false;
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this,prefix+" couldn't be set ("+t.getClass()+")");
+      LOG.warning(prefix+" couldn't be set ("+t.getClass()+")");
       return false;
     }
     

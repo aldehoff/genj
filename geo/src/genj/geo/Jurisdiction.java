@@ -19,7 +19,6 @@
  */
 package genj.geo;
 
-import genj.util.Debug;
 import genj.util.Resources;
 
 import java.io.File;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 
 /**
  * We support the concept of a top-level jurisdiction
@@ -186,7 +186,7 @@ public class Jurisdiction {
           }
         }
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, Country.class, t);
+        GeoView.LOG.log(Level.WARNING, "unexpected throwable parsing jurisdictions ", t);
       }
 
       // next file

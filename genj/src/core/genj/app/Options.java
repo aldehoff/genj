@@ -28,7 +28,6 @@ import genj.option.OptionUI;
 import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -66,7 +65,7 @@ public class Options extends OptionProvider {
   private Resources resources;
  
   /** maximum log file size */
-  private long maxLogSizeKB = 16;
+  private int maxLogSizeKB = 128;
   
   /** the current looknfeel */
   private int lookAndFeel = -1;
@@ -172,7 +171,7 @@ public class Options extends OptionProvider {
     if (language>=0&&language<codes.length) {
       String lang = codes[language];
       if (lang.length()>0) {
-        Debug.log(Debug.INFO, this, "Switching language to "+lang);
+        App.LOG.info("Switching language to "+lang);
         String country = Locale.getDefault().getCountry();
         int i = lang.indexOf('_');
         if (i>0) {
@@ -221,15 +220,15 @@ public class Options extends OptionProvider {
   /** 
    * Getter - maximum log size
    */
-  public long getMaxLogSizeKB() {
+  public int getMaxLogSizeKB() {
     return maxLogSizeKB;
   }
   
   /** 
    * Setter - maximum log size
    */
-  public void setMaxLogSizeKB(long set) {
-    maxLogSizeKB = Math.max(4, set);
+  public void setMaxLogSizeKB(int set) {
+    maxLogSizeKB = Math.max(128, set);
   }
   
   /**

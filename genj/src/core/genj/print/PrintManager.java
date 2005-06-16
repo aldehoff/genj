@@ -19,6 +19,8 @@
  */
 package genj.print;
 
+import java.util.logging.Logger;
+
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.window.CloseWindow;
@@ -31,6 +33,8 @@ import javax.swing.JComponent;
  * A manager for printing */
 public class PrintManager {
   
+  /*package*/ static Logger LOG = Logger.getLogger("genj.print");
+ 
   /** singleton */
   private static PrintManager instance = null;
   

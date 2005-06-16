@@ -19,8 +19,6 @@
  */
 package genj.io;
 
-import genj.util.Debug;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,11 +27,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A file association
  */
 public class FileAssociation {
+  
+  private static Logger LOG = Logger.getLogger("genj.io");
   
   /** instances */
   private static List associations = new LinkedList();
@@ -146,11 +148,12 @@ public class FileAssociation {
         cmd = cmd.substring(0, i) + parm + cmd.substring(i+1);
       }
       // exec' it 
-      if (null!=Runtime.getRuntime().exec(cmd)) return true;
-      Debug.log(Debug.WARNING, this, "Couldn't start external application "+getExecutable());
+      if (null!=Runtime.getRuntime().exec(cmd)) 
+        return true;
+      LOG.warning("Couldn't start external application "+getExecutable());
       return false;
     } catch (IOException e) {
-      Debug.log(Debug.WARNING, this, "Couldn't start external application "+getExecutable(), e);
+      LOG.log(Level.WARNING, "Couldn't start external application "+getExecutable(), e);
       return false;
     }
   }

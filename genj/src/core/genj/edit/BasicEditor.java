@@ -32,7 +32,6 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
@@ -62,6 +61,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -209,7 +209,7 @@ import javax.swing.event.ChangeListener;
       try { 
         beanPanel.destructor(); 
       } catch (Throwable t) {
-        Debug.log(Debug.ERROR, this, t);
+        EditView.LOG.log(Level.SEVERE, "problem cleaning up bean panel", t);
       }
       beanPanel=null;
     }
@@ -225,7 +225,7 @@ import javax.swing.event.ChangeListener;
         add(BorderLayout.SOUTH, buttonPanel);
 
       } catch (Throwable t) {
-        Debug.log(Debug.ERROR, this, t);
+        EditView.LOG.log(Level.SEVERE, "problem changing entity", t);
       }
 
       // start without ok and cancel
@@ -265,7 +265,7 @@ import javax.swing.event.ChangeListener;
       if (in!=null) try {
         descriptor = new NestedBlockLayout(in);
       } catch (IOException e) {
-        Debug.log(Debug.WARNING, BasicEditor.class, "IO exception while reading descriptor "+file);
+        EditView.LOG.log(Level.SEVERE, "problem reading descriptor "+file, e);
       }
 
       // cache it
@@ -394,7 +394,7 @@ import javax.swing.event.ChangeListener;
       try {
         beanPanel.commit();
       } catch (Throwable t) {
-        Debug.log(Debug.ERROR, this, t);
+        EditView.LOG.log(Level.SEVERE, "problem comitting bean panel", t);
       }
 
       // end transaction - this will refresh our view as well

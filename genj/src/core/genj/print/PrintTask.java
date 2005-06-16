@@ -20,7 +20,6 @@
 package genj.print;
 
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.Trackable;
@@ -40,6 +39,7 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.File;
+import java.util.logging.Level;
 
 import javax.print.DocFlavor;
 import javax.print.PrintException;
@@ -347,7 +347,7 @@ import javax.swing.JComponent;
 	      result = ((Object[])result)[0];
 	    } else {
 	      result = null;
-	      Debug.log(Debug.WARNING, this, "No default "+category+" with "+toString(attributes));
+        PrintManager.LOG.warning( "No default "+category+" with "+toString(attributes));
 	    }
     }
     // remember
@@ -409,7 +409,7 @@ import javax.swing.JComponent;
     manager.getWindowManager().close(progress);
     // something we should know about?
     if (throwable != null) 
-      Debug.log(Debug.WARNING, this, "print() threw error", throwable);
+      PrintManager.LOG.log(Level.WARNING, "print() threw error", throwable);
     // finished
   }
 

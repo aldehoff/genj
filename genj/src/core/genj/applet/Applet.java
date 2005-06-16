@@ -24,7 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.io.GedcomReader;
 import genj.option.OptionProvider;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -37,6 +36,8 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.UIManager;
@@ -46,6 +47,8 @@ import javax.swing.UIManager;
  */
 public class Applet extends java.applet.Applet {
 
+  private final static Logger LOG = Logger.getLogger("genj");
+  
   /** views we offer */
   static final private String[] FACTORIES = new String[]{
     "genj.table.TableViewFactory",
@@ -83,7 +86,7 @@ public class Applet extends java.applet.Applet {
     isInitialized = true;
 
     // disclaimer
-    Debug.log(Debug.INFO, this, getAppletInfo());
+    LOG.info(getAppletInfo());
 
     EnvironmentChecker.log();
 
@@ -102,8 +105,7 @@ public class Applet extends java.applet.Applet {
 
     showStatus(msg);
     
-    Debug.log(Debug.INFO, this, msg);
-    Debug.flush();
+    LOG.info(msg);
 
     // try load gedcom
     new Init(url).trigger();
@@ -204,7 +206,7 @@ public class Applet extends java.applet.Applet {
         
       } catch (Throwable t) {
         throwable = t;
-        Debug.log(Debug.ERROR, Applet.this, "Encountered throwable", throwable);
+        LOG.log(Level.SEVERE, "Encountered throwable", throwable);
       }
 
       // back to sync   

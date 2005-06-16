@@ -28,7 +28,6 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -323,10 +322,8 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       // no more?
       if (txt==null) break;
       // pattern?
-      if (pat==null) {
-        Debug.log(Debug.WARNING, this, "Encountered regexp entry "+txt+" without pattern");
+      if (pat==null) 
         continue;
-      }
       // create action
       result.add(new ActionPattern(txt,pat));
     }

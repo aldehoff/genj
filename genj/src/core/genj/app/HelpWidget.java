@@ -19,7 +19,6 @@
  */
 package genj.app;
 
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 import genj.window.WindowManager;
@@ -29,6 +28,7 @@ import java.awt.Dimension;
 import java.io.File;
 import java.net.URL;
 import java.util.Locale;
+import java.util.logging.Level;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
@@ -82,10 +82,10 @@ class HelpWidget extends JPanel {
     
     // Open the Help Set        
     String file = calcHelpBase() + "/helpset.xml";
-    Debug.log(Debug.INFO, this,"Trying to use help in " + file );
+    App.LOG.info("Trying to use help in " + file );
     // safety check
     if (!new File(file).exists()) {
-      Debug.log(Debug.WARNING, this,"No help found");
+      App.LOG.log(Level.WARNING, "No help found in "+file);
       return null;
     }
 
@@ -97,7 +97,7 @@ class HelpWidget extends JPanel {
         .newInstance(new Object[]{null,new URL("file","", file)});
       return (JComponent)JHelp.class.getConstructor(new Class[]{set.getClass()}).newInstance(new Object[]{set});
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this,"Problem reading help", t);
+      App.LOG.log(Level.WARNING, "Problem reading help", t);
     }
     
     // default - none

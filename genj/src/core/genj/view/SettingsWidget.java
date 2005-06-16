@@ -20,7 +20,6 @@
 package genj.view;
 
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 
@@ -28,6 +27,7 @@ import java.awt.BorderLayout;
 import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -173,7 +173,7 @@ import javax.swing.border.TitledBorder;
       result.init(viewManager);
       cache.put(viewType, result);
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, "couldn't initialize settings widget "+type, t);
+      ViewManager.LOG.log(Level.WARNING, "couldn't instantiate settings for "+view, t);
     }
     
     // done

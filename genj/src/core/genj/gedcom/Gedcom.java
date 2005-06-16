@@ -17,11 +17,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.91 $ $Author: nmeier $ $Date: 2005-06-06 17:35:16 $
+ * $Revision: 1.92 $ $Author: nmeier $ $Date: 2005-06-16 01:05:12 $
  */
 package genj.gedcom;
 
-import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.ReferenceSet;
 import genj.util.Resources;
@@ -41,11 +40,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The object-representation of a Gedom file
  */
 public class Gedcom {
+  
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.gedcom");
   
   /** static resourcs */
   static private Random seed = new Random();
@@ -268,7 +271,7 @@ public class Gedcom {
       try {
         gls[l].handleChange(transaction);
       } catch (Throwable t) {
-        Debug.log(Debug.ERROR, this, t);
+        LOG.log(Level.WARNING, "exception in gedcom listener", t);
       }
     }
     // done

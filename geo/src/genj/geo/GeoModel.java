@@ -24,7 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.Transaction;
-import genj.util.Debug;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +33,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
 
@@ -300,7 +300,7 @@ import javax.swing.SwingUtilities;
           // locate places
           locate();
         } catch (Throwable t) {
-          Debug.log(Debug.ERROR, this, t);
+          GeoView.LOG.log(Level.SEVERE, "unexpected throwable", t);
         }
       }
     }

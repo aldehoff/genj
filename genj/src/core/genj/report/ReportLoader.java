@@ -19,7 +19,6 @@
  */
 package genj.report;
 
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 
 import java.io.File;
@@ -31,6 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * ClassLoad for Reports
@@ -92,7 +92,7 @@ import java.util.List;
     );
     File base = new File(dir);
     
-    Debug.log(Debug.INFO, ReportLoader.class,"Reading reports from "+base);
+    ReportView.LOG.info("Reading reports from "+base);
       
     // parse report directory
     try {
@@ -112,12 +112,12 @@ import java.util.List;
       try {
         Report r = (Report)cl.loadClass(rname).newInstance();
         if (!isReportsInClasspath&&r.getClass().getClassLoader()!=cl) {
-          Debug.log(Debug.WARNING, this, "Reports are in classpath and can't be reloaded");
+          ReportView.LOG.warning("Reports are in classpath and can't be reloaded");
           isReportsInClasspath = true;
         }
         instances.add(r);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, "Failed to instantiate "+rname, t);
+        ReportView.LOG.log(Level.WARNING, "Failed to instantiate "+rname, t);
       }
     }
     
@@ -161,7 +161,7 @@ import java.util.List;
       // library?
       if (isLibrary(file)) {
         try {
-          Debug.log(Debug.INFO, this, "report library "+file.toURL());
+          ReportView.LOG.info("report library "+file.toURL());
           classpath.add(file.toURL());
         } catch (MalformedURLException e) {
           // n/a

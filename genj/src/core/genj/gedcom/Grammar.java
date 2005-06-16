@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.util.Debug;
-
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.logging.Level;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -73,7 +72,7 @@ public class Grammar {
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
             parser.parse(new InputSource(new InputStreamReader(Grammar.class.getResourceAsStream("grammar.xml"))), instance.new Parser());
           } catch (Throwable t) {
-            Debug.log(Debug.ERROR, Grammar.class, "Couldn't parse grammar", t);
+            Gedcom.LOG.log(Level.SEVERE, "couldn't parse grammar", t);
             throw new Error(t);
           }
 

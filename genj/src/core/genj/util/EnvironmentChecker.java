@@ -6,10 +6,14 @@ import java.io.InputStreamReader;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EnvironmentChecker {
+  
+  private static Logger LOG = Logger.getLogger("genj.util");
 
   private final static String[] SYSTEM_PROPERTIES = {
         "java.vendor", "java.vendor.url",
@@ -43,7 +47,7 @@ public class EnvironmentChecker {
     // Go through system properties
     try {
       for (int i=0; i<SYSTEM_PROPERTIES.length; i++) {
-        Debug.log(Debug.INFO, EnvironmentChecker.class, SYSTEM_PROPERTIES[i] + " = "+System.getProperty(SYSTEM_PROPERTIES[i]));
+        LOG.info(SYSTEM_PROPERTIES[i] + " = "+System.getProperty(SYSTEM_PROPERTIES[i]));
       }
 
       // check classpath
@@ -52,23 +56,23 @@ public class EnvironmentChecker {
       while (tokens.hasMoreTokens()) {
         String entry = tokens.nextToken();
         String stat = checkClasspathEntry(entry) ? " (does exist)" : "";
-        Debug.log(Debug.INFO, EnvironmentChecker.class, "Classpath = "+entry+stat);
+        LOG.info("Classpath = "+entry+stat);
       }
       
       // check classloaders
       ClassLoader cl = EnvironmentChecker.class.getClassLoader();
       while (cl!=null) {
         if (cl instanceof URLClassLoader) {
-          Debug.log(Debug.INFO, EnvironmentChecker.class, "URLClassloader "+cl + Arrays.asList(((URLClassLoader)cl).getURLs()));
+          LOG.info("URLClassloader "+cl + Arrays.asList(((URLClassLoader)cl).getURLs()));
         } else {
-          Debug.log(Debug.INFO, EnvironmentChecker.class, "Classloader "+cl);
+          LOG.info("Classloader "+cl);
         }
         cl = cl.getParent();
       }
 
       // DONE
     } catch (Throwable t) {
-      Debug.log(Debug.INFO, EnvironmentChecker.class, "Couldn't test for system properties");
+      LOG.log(Level.WARNING, "Couldn't test for system properties", t);
     }
   }
 
@@ -109,18 +113,18 @@ public class EnvironmentChecker {
         val = System.getProperty(key);
         // found it ?
         if (val!=null) {
-          Debug.log(Debug.INFO, receipient, "Using system-property "+key+'='+val+" ("+msg+')');
+          LOG.info("Using system-property "+key+'='+val+" ("+msg+')');
           return val+postfix;
         }
         // next one
-        Debug.log(Debug.INFO, receipient, "Tried system-property "+key+" ("+msg+')');
+        LOG.info("Tried system-property "+key+" ("+msg+')');
       }
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, receipient, "Couldn't access system-properties", t);
+      LOG.log(Level.WARNING, "Couldn't access system properties", t);
     }
     // fallback
     if (fallback!=null)
-      Debug.log(Debug.INFO, receipient, "Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
+      LOG.info("Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
     return fallback;
   }
 

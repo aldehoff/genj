@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListCellRenderer;
@@ -77,6 +78,8 @@ import javax.swing.text.Segment;
  * Component for running reports on genealogic data
  */
 public class ReportView extends JPanel implements ToolBarSupport {
+
+  /*package*/ static Logger LOG = Logger.getLogger("genj.report");
 
   /** time between flush of output writer to output text area */
   private final static long FLUSH_WAIT = 200;

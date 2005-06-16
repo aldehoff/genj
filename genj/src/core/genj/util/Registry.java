@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.22 $ $Author: nmeier $ $Date: 2005-06-01 21:49:17 $
+ * $Revision: 1.23 $ $Author: nmeier $ $Date: 2005-06-16 01:05:26 $
  */
 package genj.util;
 
@@ -459,7 +459,6 @@ public class Registry {
     try {
       result = (Collection)def.getClass().newInstance();
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this, "Couldn't instantiate new collection of type "+def.getClass().getName());
       return def;
     }
     
@@ -777,7 +776,6 @@ public class Registry {
         out.flush();
         out.close();
       } catch (IOException ex) {
-        Debug.log(Debug.ERROR, Registry.class,"Couldn't save registry "+key,ex);
       }
 
     }

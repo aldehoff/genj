@@ -21,7 +21,6 @@ package genj.almanac;
 
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
-import genj.util.Debug;
 import genj.util.Resources;
 
 import java.io.BufferedReader;
@@ -39,6 +38,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -51,6 +52,8 @@ import javax.swing.event.ChangeListener;
  * A global Almanac for all kinds of historic events
  */
 public class Almanac {
+  
+  private final static Logger LOG = Logger.getLogger("genj.almanac");
   
   private final static Resources RESOURCES = Resources.get(Almanac.class);
   
@@ -93,7 +96,7 @@ public class Almanac {
           new AlmanacLoader().load();
         } catch (Throwable t) {
         }
-  	    Debug.log(Debug.INFO, Almanac.this, "Loaded "+events.size()+" events");
+  	    LOG.info("Loaded "+events.size()+" events");
   	    synchronized (events) {
   	      isLoaded = true;
   	      events.notifyAll();
@@ -206,7 +209,7 @@ public class Almanac {
 		    files = dir.listFiles();
 		  
 		  if (files.length==0) {
-		    Debug.log(Debug.INFO, Almanac.this, "Found no file(s) in "+dir.getAbsoluteFile());
+		    LOG.info("Found no file(s) in "+dir.getAbsoluteFile());
 		    return;
 		  }
 		  
@@ -214,11 +217,11 @@ public class Almanac {
 		  for (int f = 0; f < files.length; f++) {
 		    File file = files[f];
 		    if (accept(dir, file.getName())) {
-    	    Debug.log(Debug.INFO, Almanac.this, "Loading "+file.getAbsoluteFile());
+    	    LOG.info("Loading "+file.getAbsoluteFile());
     	    try {
 	          load(file);
 	        } catch (IOException e) {
-	    	    Debug.log(Debug.WARNING, Almanac.this, "IO Problem reading "+file.getAbsoluteFile(), e);
+	    	    LOG.log(Level.WARNING, "IO Problem reading "+file.getAbsoluteFile(), e);
 	        }
 		    }
       }

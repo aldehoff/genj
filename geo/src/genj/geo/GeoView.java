@@ -22,7 +22,6 @@ package genj.geo;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.WordBuffer;
@@ -54,6 +53,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -85,6 +86,8 @@ import com.vividsolutions.jump.workbench.ui.zoom.ZoomTool;
  * The view showing gedcom data in geographic context
  */
 public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
+  
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.geo");
   
   private final static ImageIcon 
     IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png"),
@@ -287,14 +290,14 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    */
   private class ViewContext implements LayerViewPanelContext {
     public void warnUser(String warning) {
-      Debug.log(Debug.WARNING, GeoView.this, warning);
+      LOG.warning("[JUMP]"+warning);
     }
     public void handleThrowable(Throwable t) {
-      Debug.log(Debug.WARNING, GeoView.this, t);
+      LOG.log(Level.WARNING, "[JUMP]", t);
     }
     public void setStatusMessage(String message) {
       if (message!=null&&message.length()>0)
-        Debug.log(Debug.INFO, GeoView.this, message);
+        LOG.warning("[JUMP]"+message);
     }
   }
   

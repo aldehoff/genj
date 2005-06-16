@@ -27,7 +27,6 @@ import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
-import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.Trackable;
@@ -44,6 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * GedcomReader is a custom reader for Gedcom compatible information. Normally
@@ -54,6 +55,8 @@ import java.util.StringTokenizer;
 public class GedcomReader implements Trackable {
 
   private final static Resources resources = Resources.get("genj.io");
+  
+  private static Logger LOG = Logger.getLogger("genj.io");
 
   /** estimated average byte size of one entity */
   private final static int ENTITY_AVG_SIZE = 150;
@@ -135,7 +138,7 @@ public class GedcomReader implements Trackable {
    */
   public GedcomReader(Origin org) throws IOException {
     
-    Debug.log(Debug.INFO, this, "Initializing reader for "+org);
+    LOG.info("Initializing reader for "+org);
     
     // open origin
     InputStream oin = org.open();
@@ -307,7 +310,7 @@ public class GedcomReader implements Trackable {
       throw gex;
     } catch (Throwable t) {
       // catch anything bubbling up here
-      Debug.log(Debug.ERROR, this, t);
+      LOG.log(Level.SEVERE, "unexpected throwable", t);
       throw new GedcomIOException(t.toString(), line);
     } finally  {
       // close in
@@ -455,14 +458,14 @@ public class GedcomReader implements Trackable {
       // check for language
       if (level==1&&"LANG".equals(tag)&&value.length()>0) {
         gedcom.setLanguage(value);
-        Debug.log(Debug.INFO, this, "Found LANG "+value+" - Locale is "+gedcom.getLocale());
+        LOG.info("Found LANG "+value+" - Locale is "+gedcom.getLocale());
       }
       
       // check for place hierarchy description
       if (level==2&&"PLAC".equals(lastTag)) {
         if ("FORM".equals(tag)) {
           gedcom.setPlaceFormat(value);
-          Debug.log(Debug.INFO, this, "Found Place.Format "+value);
+          LOG.info("Found Place.Format "+value);
         } else {
           addWarning(line, resources.getString("read.warn.placform"));
         }
@@ -784,19 +787,19 @@ public class GedcomReader implements Trackable {
       
       // BOM present?
       if (matchPrefix(BOM_UTF8)) {
-        Debug.log(Debug.INFO, this, "Found BOM_UTF8 - trying encoding UTF-8");
+        LOG.info("Found BOM_UTF8 - trying encoding UTF-8");
         charset = Charset.forName("UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       }
       if (matchPrefix(BOM_UTF16BE)) {
-        Debug.log(Debug.INFO, this, "Found BOM_UTF16BE - trying encoding UTF-16BE");
+        LOG.info("Found BOM_UTF16BE - trying encoding UTF-16BE");
         charset = Charset.forName("UTF-16BE");
         encoding = Gedcom.UNICODE;
         return;
       }
       if (matchPrefix(BOM_UTF16LE)) {
-        Debug.log(Debug.INFO, this, "Found BOM_UTF16LE - trying encoding UTF-16LE");
+        LOG.info("Found BOM_UTF16LE - trying encoding UTF-16LE");
         charset = Charset.forName("UTF-16LE");
         encoding = Gedcom.UNICODE;
         return;
@@ -807,38 +810,38 @@ public class GedcomReader implements Trackable {
       
       // tests
       if (matchHeader(header,Gedcom.UNICODE)) {
-        Debug.log(Debug.INFO, this, "Found "+Gedcom.UNICODE+" - trying encoding UTF-8");
+        LOG.info("Found "+Gedcom.UNICODE+" - trying encoding UTF-8");
         charset = Charset.forName("UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       } 
       if (matchHeader(header,Gedcom.ASCII)) {
-        Debug.log(Debug.INFO, this, "Found "+Gedcom.ASCII+" - trying encoding ASCII");
+        LOG.info("Found "+Gedcom.ASCII+" - trying encoding ASCII");
         charset = Charset.forName("ASCII");
         encoding = Gedcom.ASCII;
         return;
       } 
       if (matchHeader(header,Gedcom.ANSEL)) {
-        Debug.log(Debug.INFO, this, "Found "+Gedcom.ANSEL+" - trying encoding ANSEL");
+        LOG.info("Found "+Gedcom.ANSEL+" - trying encoding ANSEL");
         charset = new AnselCharset();
         encoding = Gedcom.ANSEL;
         return;
       } 
       if (matchHeader(header,Gedcom.ANSI)) {
-        Debug.log(Debug.INFO, this, "Found "+Gedcom.ANSI+" - trying encoding Windows-1252");
+        LOG.info("Found "+Gedcom.ANSI+" - trying encoding Windows-1252");
         charset = Charset.forName("Windows-1252");
         encoding = Gedcom.ANSI;
         return;
       } 
       if (matchHeader(header,Gedcom.LATIN1)||matchHeader(header,"IBMPC")) { // legacy - old style ISO-8859-1/latin1
-        Debug.log(Debug.INFO, this, "Found "+Gedcom.LATIN1+" or IBMPC - trying encoding ISO-8859-1");
+        LOG.info("Found "+Gedcom.LATIN1+" or IBMPC - trying encoding ISO-8859-1");
         charset = Charset.forName("ISO-8859-1");
         encoding = Gedcom.LATIN1;
         return;
       } 
 
       // no clue - will default to Ansel
-      Debug.log(Debug.INFO, this, "Could not sniff encoding - trying ANSEL");
+      LOG.info("Could not sniff encoding - trying ANSEL");
       charset = new AnselCharset();
       encoding = Gedcom.ANSEL;
     }

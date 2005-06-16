@@ -19,7 +19,6 @@
  */
 package genj.geo;
 
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 
 import java.io.File;
@@ -33,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -43,6 +44,8 @@ import java.util.Properties;
  * </pre>
  */
 public class GeoService {
+  
+  private final static Logger LOG = Logger.getLogger("genj.geo");
   
   /** our work directory */
   private static final String GEO_DIR = "./geo";
@@ -124,7 +127,7 @@ public class GeoService {
   
     try {
       
-      Debug.log(Debug.INFO, GeoService.this, "GeoService Startup");
+      LOG.info("GeoService Startup");
       
       // initialize database
       Class.forName("org.hsqldb.jdbcDriver");
@@ -148,7 +151,7 @@ public class GeoService {
       }
       
     } catch (Throwable t) {
-      Debug.log(Debug.ERROR, this, "Couldn't initialize database", t);
+      LOG.log(Level.SEVERE, "Couldn't initialize database", t);
     }
   } 
   
@@ -157,7 +160,7 @@ public class GeoService {
    */
   private class Shutdown implements Runnable {
       public void run() { synchronized(GeoService.this) {
-          Debug.log(Debug.INFO, GeoService.this, "GeoService Shutdown");
+          LOG.info("GeoService Shutdown");
           try {
             connection.createStatement().execute("SHUTDOWN");
           } catch (SQLException e) {
@@ -195,7 +198,7 @@ public class GeoService {
       }
       
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, gs, t);
+      t.printStackTrace();
     }
     
   }
@@ -312,7 +315,7 @@ public class GeoService {
         countries.add(Country.get(rows.getString(SELECT_COUNTRIES_OUT_COUNTRY)));
       
     } catch (Throwable t) {
-      Debug.log(Debug.ERROR, this, t);
+      LOG.log(Level.SEVERE, "unexpected throwable", t);
     }
     
     // done
@@ -358,7 +361,7 @@ public class GeoService {
           // next 
         }
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, "throwable while trying to match "+location, t);
+        LOG.log(Level.SEVERE, "throwable while trying to match "+location, t);
       }
     }
     
@@ -415,7 +418,7 @@ public class GeoService {
           // next match
         }
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, "throwable while trying to match "+location, t);
+        LOG.log(Level.SEVERE, "throwable while trying to match "+location, t);
       }
     }
     
@@ -447,7 +450,7 @@ public class GeoService {
         try {
           maps.add(new GeoMap(files[i]));
         } catch (Throwable t) {
-          Debug.log(Debug.WARNING, this, "problem reading map from "+files[i], t);
+          LOG.log(Level.SEVERE, "problem reading map from "+files[i], t);
         }
         // next
       }

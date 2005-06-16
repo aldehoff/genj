@@ -27,7 +27,6 @@ import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.time.PointInTime;
-import genj.util.Debug;
 import genj.util.Trackable;
 
 import java.io.BufferedWriter;
@@ -42,6 +41,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * GedcomWriter is a custom write for Gedcom compatible information. Normally
@@ -51,6 +51,8 @@ import java.util.List;
  */
 public class GedcomWriter implements Trackable {
 
+  private static Logger LOG = Logger.getLogger("genj.io");
+  
   /** lots of state */
   private boolean isIndentForLevels = false;
   private Gedcom gedcom;
@@ -147,7 +149,7 @@ public class GedcomWriter implements Trackable {
     // ANSEL (in any case)
     if (!Gedcom.ANSEL.equals(encoding)) {
       encoding = null;
-      Debug.log(Debug.WARNING, this, "Couldn't resolve charset for encoding " + encoding);
+      LOG.warning("Couldn't resolve charset for encoding " + encoding);
     }
     return new AnselCharset();
   }

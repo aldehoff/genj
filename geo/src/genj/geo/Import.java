@@ -19,7 +19,6 @@
  */
 package genj.geo;
 
-import genj.util.Debug;
 import genj.util.DirectAccessTokenizer;
 import genj.util.Trackable;
 
@@ -136,7 +135,7 @@ public abstract class Import implements Trackable {
       
       // open input
       URL url = getURL();
-      Debug.log(Debug.INFO, getClass(), "Importing "+key+" from "+url);
+      GeoView.LOG.info( "Importing "+key+" from "+url);
       URLConnection con = url.openConnection();
       in = con.getInputStream();
       

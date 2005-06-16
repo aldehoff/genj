@@ -25,7 +25,6 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
 import genj.renderer.BlueprintManager;
-import genj.util.Debug;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -40,6 +39,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
@@ -51,6 +52,8 @@ import sun.misc.Service;
  * A bridge to open/manage Views
  */
 public class ViewManager {
+  
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.view");
 
   /** resources */
   public static Resources resources = Resources.get(ViewManager.class);
@@ -105,7 +108,7 @@ public class ViewManager {
       try {
         factories.add( (ViewFactory)Class.forName(factoryTypes[f]).newInstance() );
       } catch (Throwable t) {
-        Debug.log(Debug.ERROR, this, "Factory of type "+factoryTypes[f]+" cannot be instantiated ("+t.getMessage()+")");
+        LOG.log(Level.SEVERE, "Factory of type "+factoryTypes[f]+" cannot be instantiated", t);
       }
     }
     
@@ -221,7 +224,7 @@ public class ViewManager {
       if (vw.getView() instanceof ContextListener) try {
         ((ContextListener)vw.getView()).handleContextSelectionEvent(e);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, vw.getView(), "ContextListener threw throwable", t);
+        LOG.log(Level.WARNING, "ContextListener threw throwable", t);
       }
       // next
     }
@@ -232,7 +235,7 @@ public class ViewManager {
       try {      
         ls[l].handleContextSelectionEvent(e);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, ls[l], "ContextListener threw throwable", t);
+        LOG.log(Level.WARNING, "ContextListener threw throwable", t);
       }
     
     // done

@@ -44,6 +44,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Logger;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -56,6 +57,8 @@ import javax.swing.JToolBar;
  * Component for editing genealogic entity properties
  */
 public class EditView extends JPanel implements ToolBarSupport, ContextListener {
+  
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.edit");
   
   /** instances */
   private static List instances = new LinkedList();

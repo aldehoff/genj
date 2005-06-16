@@ -19,7 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.util.Debug;
 import genj.util.EnvironmentChecker;
 
 import java.awt.BorderLayout;
@@ -148,13 +147,11 @@ public class FontChooser extends JPanel {
    */
   public static void main(String[] args) {
     
-    Debug.log(Debug.INFO, FontChooser.class, "Running font test");
-    Debug.flush();
+    System.out.println("Running font test");
     
     Font[] fonts = getAllFonts();
 
-    Debug.log(Debug.INFO, FontChooser.class, "Found "+fonts.length+" fonts");
-    Debug.flush();
+    System.out.println("Found "+fonts.length+" fonts");
     
     String txt = "GenealogyJ";
     FontRenderContext ctx = new FontRenderContext(null, false, false);
@@ -162,8 +159,7 @@ public class FontChooser extends JPanel {
     for (int f = 0; f < fonts.length; f++) {
       Font font = fonts[f];
       
-      Debug.log(Debug.INFO, FontChooser.class, "Testing font "+font+"...");
-      Debug.flush();
+      System.out.println("Testing font "+font+"...");
       
       LineMetrics lm = font.getLineMetrics(txt, ctx);
       lm.getAscent();
@@ -175,8 +171,7 @@ public class FontChooser extends JPanel {
       lm.getUnderlineOffset();
       lm.getUnderlineThickness();
       
-      Debug.log(Debug.INFO, FontChooser.class, "OK");
-      Debug.flush();
+      System.out.println("OK");
       
     }
     

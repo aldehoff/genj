@@ -30,7 +30,6 @@ import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
 import genj.util.ActionDelegate;
-import genj.util.Debug;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
@@ -63,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -399,7 +399,7 @@ import javax.swing.event.TreeSelectionListener;
         }
         clipboard.setContents(new StringSelection(out.toString()), null);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't ask system clipboard for flavor", t);
+        EditView.LOG.log(Level.WARNING, "Couldn't ask system clipboard for flavor", t);
       }
     }
 
@@ -428,7 +428,7 @@ import javax.swing.event.TreeSelectionListener;
       try {
         return Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this).isDataFlavorSupported(DataFlavor.stringFlavor);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, AdvancedEditor.this, "Couldn't ask system clipboard for flavor", t);
+        EditView.LOG.log(Level.WARNING, "Couldn't ask system clipboard for flavor", t);
       }
       return false;
     }
@@ -445,7 +445,7 @@ import javax.swing.event.TreeSelectionListener;
         String s = clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
         GedcomReader.read(new StringReader(s), parent, -1);
       } catch (Throwable t) {
-        Debug.log(Debug.WARNING, this, t);
+        EditView.LOG.log(Level.WARNING, "Couldn't paste clipboard content", t);
       }
       gedcom.endTransaction();
   
@@ -711,7 +711,7 @@ import javax.swing.event.TreeSelectionListener;
           });
           
         } catch (Throwable t) {
-          Debug.log(Debug.WARNING, this, "Property bean "+bean+" failed with "+t.getMessage(), t);
+          EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
         }
         
         // start without ok and cancel

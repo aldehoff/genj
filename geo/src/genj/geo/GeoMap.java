@@ -19,7 +19,6 @@
  */
 package genj.geo;
 
-import genj.util.Debug;
 import genj.util.Resources;
 
 import java.awt.Color;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 
 import org.geotools.shapefile.Shapefile;
 
@@ -176,7 +176,7 @@ public class GeoMap {
         style.setAlpha(255);
         style.setLineColor(Layer.defaultLineColor(c));
       } catch (NumberFormatException nfe) {
-        Debug.log(Debug.WARNING, this, "Found undecodeable color "+color);
+        GeoView.LOG.warning( "Found undecodeable color "+color+" for map "+name);
       }
 
       // next
@@ -195,7 +195,7 @@ public class GeoMap {
       in = new FileInputStream(shapefile);
       gc = new Shapefile(in).read(new GeometryFactory());
     } catch (Throwable t) {
-      Debug.log(Debug.WARNING, this, "Caught throwable reading "+shapefile, t);
+      GeoView.LOG.log(Level.WARNING, "Caught throwable reading "+shapefile, t);
       if (t instanceof IOException)
         throw (IOException)t;
       throw new IOException(t.getMessage());

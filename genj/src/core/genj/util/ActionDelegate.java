@@ -21,6 +21,8 @@ package genj.util;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -31,6 +33,8 @@ import javax.swing.event.ChangeListener;
  * An Action
  */
 public abstract class ActionDelegate implements Runnable, ActionListener, Cloneable {
+  
+  private final static Logger LOG = Logger.getLogger("genj.actions");
   
   /** a noop ActionDelegate */
   public static final ActionDelegate NOOP = new ActionNOOP();
@@ -218,7 +222,7 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
    * Handle an uncaught throwable (always sync to EDT)
    */
   protected void handleThrowable(String phase, Throwable t) {
-    Debug.log(Debug.ERROR, this, "Action failed in "+phase, t); 
+    LOG.log(Level.WARNING, "Action failed in "+phase, t); 
   }
   
   /**
