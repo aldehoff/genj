@@ -123,11 +123,12 @@ public class GeoService {
     
     // startup database - try to place into all.home.genj if possible, user.home.genj otherwise
     File geo =  new File(EnvironmentChecker.getProperty(this, new String[]{ "all.home.genj/geo", "user.home.genj/geo"} , "", "looking for user's geo directory"));
+    
+    LOG.info("GeoService Startup - database directory is "+geo);
+    
     geo.mkdir();
-  
+    
     try {
-      
-      LOG.info("GeoService Startup");
       
       // initialize database
       Class.forName("org.hsqldb.jdbcDriver");
