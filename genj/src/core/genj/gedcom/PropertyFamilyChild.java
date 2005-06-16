@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import java.util.List;
+
 /**
  * Gedcom Property : FAMC
  * A property wrapping the condition of being a child in a family
@@ -131,14 +133,12 @@ public class PropertyFamilyChild extends PropertyXRef {
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ indi.toString(), fam.toString() }));
 
     // Connect back from family (maybe using invalid back reference) 
-    for (int i=0,j=fam.getNoOfProperties();i<j;i++) {
-      Property prop = fam.getProperty(i);
-      if (!"CHIL".equals(prop.getTag()))
-        continue;
-      PropertyChild pc = (PropertyChild)prop;
-      if (pc.isCandidate(indi)) {
-        pc.setTarget(this);
-        setTarget(pc);
+    List childs = fam.getProperties(PropertyChild.class);
+    for (int i=0,j=childs.size();i<j;i++) {
+      PropertyChild prop = (PropertyChild)childs.get(i);
+      if (prop.isCandidate(indi)) {
+        prop.setTarget(this);
+        setTarget(prop);
         return;
       }
     }

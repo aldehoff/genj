@@ -22,6 +22,7 @@ package genj.gedcom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -79,10 +80,11 @@ public class Fam extends Entity {
     
     ArrayList result = new ArrayList(getNoOfProperties());
     
-    for (int i=0,j=getNoOfProperties();i<j;i++) {
-      Property prop = getProperty(i);
-      if ("CHIL".equals(prop.getTag())&&prop.isValid()) 
-        result.add(((PropertyChild)prop).getChild());
+    List childs = getProperties(PropertyChild.class);
+    for (int i=0,j=childs.size();i<j;i++) {
+      PropertyChild prop = (PropertyChild)childs.get(i);
+      if (prop.isValid()) 
+        result.add(prop.getChild());
     }
 
     return Indi.toIndiArray(result);
@@ -105,7 +107,7 @@ public class Fam extends Entity {
     int result = 0;
     for (int i=0,j=getNoOfProperties();i<j;i++) {
       Property prop = getProperty(i);
-      if ("CHIL".equals(prop.getTag())&&prop.isValid())
+      if (prop.getClass()==PropertyChild.class&&prop.isValid())
         result++;
     }
     return result;
