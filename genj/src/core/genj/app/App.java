@@ -249,7 +249,25 @@ public class App {
       result.append(record.getMessage());
       result.append(":");
       Throwable t =record.getThrown();
-      if (t!=null) result.append(t);
+      if (t!=null)  {
+        result.append(t);
+        result.append(" in ");
+        
+        StackTraceElement trace[] = t.getStackTrace();
+        if (trace.length>0) {
+          result.append(trace[0].getClassName());
+          result.append(".");
+          result.append(trace[0].getMethodName());
+          if (t.getMessage()!=null) {
+            result.append(", message=");
+            result.append(t.getMessage());
+          }
+          if (trace[0].getLineNumber()>0) {
+            result.append(", line=");
+            result.append(trace[0].getLineNumber());
+          }
+        }
+      }
       result.append(":");
       result.append(System.getProperty("line.separator"));
       return result.toString();
