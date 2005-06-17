@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -54,9 +55,7 @@ public class Document {
   public final static String SUFFIX = ".xml";
 
   private org.w3c.dom.Document doc;
-  private Element root;
-  private Element section;
-  private Element paragraph;
+  private Stack elementStack = new Stack();
   
   /**
    * Constructor
@@ -76,21 +75,53 @@ public class Document {
     }
     
     // article boilerplate
-    root = elementNode(doc, "article", null);
-    elementNode(root, "title", title);
+    Element root = elementNode("article", null);
+    root.appendChild(elementNode("title", title));
     
-    // start with a paragraph
-    paragraph = paragraphNode(root);
+    doc.appendChild(root);
+    elementStack.push(root);
 
     // done
   }
+  
+  private Node push(Node elem) {
+    peek().appendChild(elem);
+    elementStack.push(elem);
+    return elem;
+  }
+  
+  private Element peek() {
+    return (Element)elementStack.peek();
+  }
+  
+  private Element pop() {
+    return (Element)elementStack.pop();
+  }
+  
+  private Element pop(String element) {
+    while (true) {
+      Element stacked = peek();
+      if (element.equals(stacked.getNodeName()))
+        return pop();
+      if (elementStack.size()==1)
+        return null;
+      elementStack.pop();
+    }
+  }
+
   
   /**
    * Add section
    */
   public Document addSection(String title, String id) {
-    section = sectionNode(section!=null  ? section : root, title, id);
-    paragraph = paragraphNode(section);
+    
+    // pop to containing section
+    Element parent = pop("section");
+    if (parent!=null&&"section".equals(parent.getNodeName()))
+      push(parent);
+    push(sectionNode(title, id));
+    
+    // done
     return this;
   }
     
@@ -105,6 +136,8 @@ public class Document {
    * Ends  a section
    */
   public Document endSection() {
+    // pop to containing section
+    Element section = pop("section");
     if (section==null)
       throw new IllegalArgumentException("end section outside section");
     Node parent = section.getParentNode();
@@ -112,7 +145,6 @@ public class Document {
         section = (Element)parent;
     else 
       section = null;
-    paragraph = null;
     return this;
   }
     
@@ -120,8 +152,11 @@ public class Document {
    * Add text
    */
   public Document addText(String text) {
-    if (paragraph==null) throw new IllegalArgumentException( "text not allowed here");
-    textNode(paragraph, text);
+    // make sure there's a paragraph
+    Node para = peek();
+    if (!"para".equals(para.getNodeName())) 
+      addParagraph();
+    peek().appendChild(textNode(text));
     return this;
   }
     
@@ -129,9 +164,22 @@ public class Document {
    * Add a paragraph
    */
   public Document addParagraph() {
-    if (paragraph==null) throw new IllegalArgumentException( "paragraph not allowed here");
-    if (paragraph.hasChildNodes())
-      paragraph = paragraphNode( paragraph.getParentNode() );
+    // look for current paragraph
+    Node para = peek();
+    if ("para".equals(para.getNodeName())) { 
+      // one already there
+      if (para.hasChildNodes()) {
+        pop();
+        push(elementNode("para", null));
+      }
+    } else {
+      // can't do a paragraph if following a section
+      Node prev = para.getLastChild();
+      if (prev!=null && prev.getNodeName().equals("section"))
+        throw new IllegalArgumentException("paragraph after /section n/a");
+      // create a new paragraph
+      para = push(elementNode("para", null));
+    }
     return this;
   }
     
@@ -139,10 +187,9 @@ public class Document {
    * Add a list
    */
   public Document addList() {
-    if (paragraph==null) throw new IllegalArgumentException( "list not allowed here");
-    Element list = elementNode(paragraph.getParentNode(), "itemizedlist", null );
-    Element item = elementNode(list, "listitem", null);
-    paragraph = paragraphNode(item);
+    push(elementNode("itemizedlist", null));
+    push(elementNode("listitem", null));
+    push(elementNode("para", null));
     return this;
   }
     
@@ -150,11 +197,9 @@ public class Document {
    * End a list
    */
   public Document endList() {
-    Node listitem = paragraph.getParentNode();
-    if (!"listitem".equals(listitem.getNodeName()))
+    Element list = pop("itemizedlist");
+    if (list==null)
       throw new IllegalArgumentException("endList outside list");
-    Node list = listitem.getParentNode();
-    paragraph = paragraphNode(list.getParentNode());
     return this;
   }
     
@@ -162,13 +207,20 @@ public class Document {
    * Add a list item
    */
   public Document addListItem() {
-    Node listitem = paragraph.getParentNode();
-    if (!"listitem".equals(listitem.getNodeName()))
+
+    // grab last
+    Node item = pop("listitem");
+    if (item==null)
       throw new IllegalArgumentException("listitem without enclosing list");
-    if (!paragraph.hasChildNodes())
-      return this;
-    listitem = elementNode(listitem.getParentNode(), "listitem", null);
-    paragraph = paragraphNode(listitem);
+    
+    // still contains an empty paragraph?
+    if (!item.getFirstChild().hasChildNodes()) {
+      push(item);
+      push(item.getFirstChild());
+    } else {
+      push(elementNode("listitem", null));
+      push(elementNode("para", null));
+    }
     return this;
   }
     
@@ -176,9 +228,7 @@ public class Document {
    * Add an anchor
    */
   public Document addAnchor(String id) {
-    if (paragraph==null) throw new IllegalArgumentException( "anchor not allowed here");
-    anchorNode(paragraph, id);
-    // check for 
+    push(anchorNode(id));
     return this;
   }
     
@@ -193,14 +243,12 @@ public class Document {
    * Add a link
    */
   public Document addLink(String text, String id) {
-    if (paragraph==null) throw new IllegalArgumentException( "link not allowed here");
     // known anchor? create link
     if (id.indexOf(':')>0||anchors.contains(id)) 
-      linkNode(paragraph, text, id);
+      peek().appendChild(linkNode(text, id));
     else {
-      // create a text node for now 
-      Text node = textNode(paragraph, text);
-      // but remember it
+      // remember a new text node for now
+      Node node = peek().appendChild(textNode(text));
       List unverified = (List)id2unverifiedLink.get(id);
       if (unverified==null) {
         unverified = new ArrayList();
@@ -230,62 +278,51 @@ public class Document {
     return addLink(indi.toString(), indi);
   }
   
-  private Element paragraphNode(Node parent) {
-    return elementNode( parent, "para", null);
-  }
-    
-  private Element linkNode(Node parent, String text, String id) {
-    assert parent!=null;
-    assert text!=null;
-    assert id!=null;
+  private Element linkNode(String text, String id) {
     
     Element link;
     if (id.startsWith("http:")) {
-      link = elementNode(parent, "ulink", text);
+      link = elementNode("ulink", text);
       link.setAttribute("url", id);
     } else {
-      link = elementNode(parent, "link", text);
+      link = elementNode("link", text);
       link.setAttribute("linkend", id);
     }
     return link;
   }
   
-  private Element sectionNode(Node parent, String title, String id) {
+  private Element sectionNode(String title, String id) {
     if (title==null) throw new IllegalArgumentException("section without title n/a");
-    Element section = elementNode(parent, "section", null);
-    elementNode(section, "title", title);
-    if (id!=null&&id.length()>0) anchorNode(section, id);
-    
+    Element section = elementNode("section", null);
+    section.appendChild(elementNode("title", title));
+    if (id!=null&&id.length()>0) section.appendChild(anchorNode(id));
     return section;
   }
   
-  private Element anchorNode(Node parent, String id) {
+  private Element anchorNode(String id) {
     // already a known anchor?
     if (anchors.contains(id)) throw new IllegalArgumentException( "duplicate anchor id "+id);
     anchors.add(id);
     // add anchor node
-    Element anchor = elementNode(parent, "anchor", null);
+    Element anchor = elementNode("anchor", null);
     anchor.setAttribute("id", id);
     // check for unverified links
     List unverified = (List)id2unverifiedLink.remove(id);
     if (unverified!=null) for (Iterator it=unverified.iterator();it.hasNext();) {
       Text text = (Text)it.next();
-      text.getParentNode().replaceChild(linkNode(null, text.getData(), id), text);
+      text.getParentNode().replaceChild(linkNode(text.getData(), id), text);
     }
     return anchor;
   }
   
-  private Element elementNode(Node parent, String qname, String text) {
+  private Element elementNode(String qname, String text) {
     Element elem = doc.createElement(qname);
-    if (text!=null) textNode(elem, text);
-    if (parent!=null) parent.appendChild(elem);
+    if (text!=null) elem.appendChild(textNode(text));
     return elem;
   }
   
-  private Text textNode(Node parent, String text) {
-    Text node = doc.createTextNode(text);
-    parent.appendChild(node);
-    return node;
+  private Text textNode(String text) {
+    return doc.createTextNode(text);
   }
   
   public static void main(String[] args) {
