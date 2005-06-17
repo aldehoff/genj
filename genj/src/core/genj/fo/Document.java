@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -55,7 +54,7 @@ public class Document {
   public final static String SUFFIX = ".xml";
 
   private org.w3c.dom.Document doc;
-  private Stack elementStack = new Stack();
+  private Node cursor;
   
   /**
    * Constructor
@@ -75,37 +74,33 @@ public class Document {
     }
     
     // article boilerplate
-    Element root = elementNode("article", null);
-    root.appendChild(elementNode("title", title));
+    cursor = elementNode("article", null);
+    cursor.appendChild(elementNode("title", title));
     
-    doc.appendChild(root);
-    elementStack.push(root);
+    doc.appendChild(cursor);
 
     // done
   }
   
   private Node push(Node elem) {
-    peek().appendChild(elem);
-    elementStack.push(elem);
+    cursor.appendChild(elem);
+    cursor = elem;
     return elem;
   }
   
-  private Element peek() {
-    return (Element)elementStack.peek();
+  private Node pop() {
+    Node popd = cursor;
+    cursor = popd.getParentNode();
+    return popd;
   }
   
-  private Element pop() {
-    return (Element)elementStack.pop();
-  }
-  
-  private Element pop(String element) {
+  private Node pop(String element) {
     while (true) {
-      Element stacked = peek();
-      if (element.equals(stacked.getNodeName()))
+      if (element.equals(cursor.getNodeName()))
         return pop();
-      if (elementStack.size()==1)
+      if (cursor.getParentNode()==doc)
         return null;
-      elementStack.pop();
+      pop();
     }
   }
 
@@ -116,7 +111,7 @@ public class Document {
   public Document addSection(String title, String id) {
     
     // pop to containing section
-    Element parent = pop("section");
+    Node parent = pop("section");
     if (parent!=null&&"section".equals(parent.getNodeName()))
       push(parent);
     push(sectionNode(title, id));
@@ -137,14 +132,42 @@ public class Document {
    */
   public Document endSection() {
     // pop to containing section
-    Element section = pop("section");
-    if (section==null)
+    if (pop("section")==null)
       throw new IllegalArgumentException("end section outside section");
-    Node parent = section.getParentNode();
-    if ("section".equals(parent.getNodeName()))
-        section = (Element)parent;
-    else 
-      section = null;
+    return this;
+  }
+  
+  /**
+   * Add an index entry
+   */
+  public Document addIndexEntry(String index, String primary, String secondary) {
+    // check primary
+    if (primary==null) 
+      throw new IllegalArgumentException("index term without primary");
+    if (primary.length()==0)
+      return this;
+    // add indexterm element
+    Element entry = elementNode("indexterm", null);
+    entry.setAttribute("type", index);
+    entry.appendChild(elementNode("primary", primary));
+    if (secondary!=null&&secondary.length()>0)
+      entry.appendChild(elementNode("secondary", secondary));
+    cursor.appendChild(entry);
+    return this;
+  }
+    
+  /**
+   * Add an index
+   * (need to set index.on.type for XSL)
+   */
+  public Document addIndex(String index, String title) {
+    // go back to root element
+    pop("");
+    // add index element
+    Element elem = elementNode("index", null);
+    elem.setAttribute("type", index);
+    elem.appendChild(elementNode("title", title));
+    cursor.appendChild(elem);
     return this;
   }
     
@@ -153,10 +176,9 @@ public class Document {
    */
   public Document addText(String text) {
     // make sure there's a paragraph
-    Node para = peek();
-    if (!"para".equals(para.getNodeName())) 
+    if (!"para".equals(cursor.getNodeName())) 
       addParagraph();
-    peek().appendChild(textNode(text));
+    cursor.appendChild(textNode(text));
     return this;
   }
     
@@ -165,20 +187,19 @@ public class Document {
    */
   public Document addParagraph() {
     // look for current paragraph
-    Node para = peek();
-    if ("para".equals(para.getNodeName())) { 
+    if ("para".equals(cursor.getNodeName())) { 
       // one already there
-      if (para.hasChildNodes()) {
+      if (cursor.hasChildNodes()) {
         pop();
         push(elementNode("para", null));
       }
     } else {
       // can't do a paragraph if following a section
-      Node prev = para.getLastChild();
+      Node prev = cursor.getLastChild();
       if (prev!=null && prev.getNodeName().equals("section"))
         throw new IllegalArgumentException("paragraph after /section n/a");
       // create a new paragraph
-      para = push(elementNode("para", null));
+      push(elementNode("para", null));
     }
     return this;
   }
@@ -197,8 +218,7 @@ public class Document {
    * End a list
    */
   public Document endList() {
-    Element list = pop("itemizedlist");
-    if (list==null)
+    if (pop("itemizedlist")==null)
       throw new IllegalArgumentException("endList outside list");
     return this;
   }
@@ -243,12 +263,15 @@ public class Document {
    * Add a link
    */
   public Document addLink(String text, String id) {
+    // make sure there's a paragraph
+    if (!"para".equals(cursor.getNodeName())) 
+      addParagraph();
     // known anchor? create link
     if (id.indexOf(':')>0||anchors.contains(id)) 
-      peek().appendChild(linkNode(text, id));
+      cursor.appendChild(linkNode(text, id));
     else {
       // remember a new text node for now
-      Node node = peek().appendChild(textNode(text));
+      Node node = cursor.appendChild(textNode(text));
       List unverified = (List)id2unverifiedLink.get(id);
       if (unverified==null) {
         unverified = new ArrayList();
@@ -336,6 +359,7 @@ public class Document {
        .addSection("Generation 1", "foo")
 
        .addSection("Clair Milford Daniel", "I571")
+       .addIndexEntry("names", "Daniel", "Clair Milford")
        .addText("Clair Milford Daniel, b. 10 Mar 1906 (child of ")
        .addLink("Elmer Snyder Daniel", "foo")
        .addText(" and ")
@@ -355,6 +379,8 @@ public class Document {
       .addText("more")
       
       .endSection()
+      
+      .addIndex("names", "Name Index")
       
       .addSection("Generation 2", "bar")
       .addText("outside now")
