@@ -19,6 +19,9 @@
  */
 package genj.io;
 
+import genj.util.Resources;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,6 +32,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 
 /**
  * A file association
@@ -189,16 +195,28 @@ public class FileAssociation {
   }
   
   /**
-   * Gets first available associations
+   * Gets first available association or asks the user for appropriate one
    */
-  public static FileAssociation get(String suffix) {
+  public static FileAssociation get(String suffix, String suffixes, String name, JComponent owner) {
+    // look for it
     Iterator it = associations.iterator();
     while (it.hasNext()) {
       FileAssociation fa = (FileAssociation)it.next();
       if (fa.suffixes.contains(suffix))
         return fa;
     }
-    return null;
+    // not found - ask for it
+    JFileChooser chooser = new JFileChooser();
+    chooser.setDialogTitle(Resources.get(FileAssociation.class).getString("assocation.choose", suffixes));
+    int rc = chooser.showOpenDialog(owner);
+    File file = chooser.getSelectedFile(); 
+    if (rc!=JFileChooser.APPROVE_OPTION||file==null)
+      return null;
+    // keep it
+    FileAssociation association = new FileAssociation(suffixes, name, file.getAbsolutePath());
+    add(association);
+    // done
+    return association;
   }
   
   /**

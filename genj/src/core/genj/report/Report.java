@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.66 $ $Author: nmeier $ $Date: 2005-06-18 04:18:35 $
+ * $Revision: 1.67 $ $Author: nmeier $ $Date: 2005-06-18 04:40:20 $
  */
 package genj.report;
 
@@ -369,23 +369,10 @@ public abstract class Report implements Cloneable {
    */
   public final void showBrowserToUser(URL url) {
 
-    // get browser command
-    FileAssociation association = FileAssociation.get("html");
-    if (association==null) {
-      // show file chooser
-      JFileChooser chooser = new JFileChooser();
-      chooser.setDialogTitle(Resources.get(ReportView.class).getString("option.browser"));
-      int rc = chooser.showOpenDialog(owner);
-      File browser = chooser.getSelectedFile(); 
-      if (rc!=JFileChooser.APPROVE_OPTION||browser==null)
-        return;
-      // keep it
-      association = new FileAssociation("html, htm, xml", "Browse", browser.getAbsolutePath());
-      FileAssociation.add(association);
-    }
-    
-    // run it
-    association.execute(url.toString());
+    // run browser
+    FileAssociation association = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
+    if (association!=null)  
+      association.execute(url.toString());
 
     // done
   }
