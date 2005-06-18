@@ -55,11 +55,15 @@ public class Document {
 
   private org.w3c.dom.Document doc;
   private Node cursor;
+  private String title;
   
   /**
    * Constructor
    */
   public Document(String title) {
+    
+    // remember title
+    this.title = title;
     
     // create a dom document
     try {
@@ -103,7 +107,13 @@ public class Document {
       pop();
     }
   }
-
+  
+  /**
+   * Title access
+   */
+  public String getTitle() {
+    return title;
+  }
   
   /**
    * Add section
