@@ -72,6 +72,16 @@ public class FileAssociation {
   }
   
   /**
+   * Constructor
+   */
+  public FileAssociation(String suffixes, String name, String executable) throws IllegalArgumentException {
+    setSuffixes(suffixes);
+    this.name = name;
+    this.executable = executable;
+    // done
+  }
+  
+  /**
    * String representation - usable for constructor
    */
   public String toString() {
@@ -176,6 +186,19 @@ public class FileAssociation {
         result.add(fa);
     }
     return result;
+  }
+  
+  /**
+   * Gets first available associations
+   */
+  public static FileAssociation get(String suffix) {
+    Iterator it = associations.iterator();
+    while (it.hasNext()) {
+      FileAssociation fa = (FileAssociation)it.next();
+      if (fa.suffixes.contains(suffix))
+        return fa;
+    }
+    return null;
   }
   
   /**
