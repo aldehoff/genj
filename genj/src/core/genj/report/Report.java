@@ -17,14 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.65 $ $Author: nmeier $ $Date: 2005-06-16 01:05:28 $
+ * $Revision: 1.66 $ $Author: nmeier $ $Date: 2005-06-18 04:18:35 $
  */
 package genj.report;
 
 import genj.chart.Chart;
+import genj.fo.Document;
+import genj.fo.Formatter;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.io.FileAssociation;
 import genj.option.Option;
 import genj.option.PropertyOption;
 import genj.util.ActionDelegate;
@@ -302,6 +305,23 @@ public abstract class Report implements Cloneable {
   }
 
   /**
+   * A sub-class can show a document to the user with this method allowing
+   * to save, transform and view it
+   */
+  public final void showDocumentToUser(Document doc) {
+    
+    JLabel label = new JLabel("Choose formatted output for document");
+    
+    ChoiceWidget formatters = new ChoiceWidget(Formatter.FORMATTERS, Formatter.FORMATTERS[0]);
+    formatters.setEditable(false);
+
+    CloseWindow[] actions = { new CloseWindow("Save"), new CloseWindow("View"), new CloseWindow(CloseWindow.TXT_CANCEL)};
+    
+    viewManager.getWindowManager().openDialog(
+        "reportdoc", "Document '"+doc.getTitle()+"'", WindowManager.IMG_QUESTION, new JComponent[] {label, formatters}, actions, owner);
+  }
+  
+  /**
    * A sub-class can show a chart to the user with this method
    */
   public final void showChartToUser(Chart chart) {
@@ -350,28 +370,22 @@ public abstract class Report implements Cloneable {
   public final void showBrowserToUser(URL url) {
 
     // get browser command
-    Options options = Options.getInstance();
-    File browser = options.browser;
-    while (!browser.isFile()) {
-      
+    FileAssociation association = FileAssociation.get("html");
+    if (association==null) {
       // show file chooser
       JFileChooser chooser = new JFileChooser();
       chooser.setDialogTitle(Resources.get(ReportView.class).getString("option.browser"));
       int rc = chooser.showOpenDialog(owner);
-      browser = chooser.getSelectedFile(); 
+      File browser = chooser.getSelectedFile(); 
       if (rc!=JFileChooser.APPROVE_OPTION||browser==null)
         return;
-    
       // keep it
-      options.browser = browser;    
+      association = new FileAssociation("html, htm, xml", "Browse", browser.getAbsolutePath());
+      FileAssociation.add(association);
     }
     
     // run it
-    try {
-      Runtime.getRuntime().exec(new String[]{browser.getAbsolutePath(), url.toString()});
-    } catch (Throwable t) {
-      println("***Couldn't run "+browser+" on url "+url+"*** ("+t.getMessage()+")");
-    }
+    association.execute(url.toString());
 
     // done
   }
