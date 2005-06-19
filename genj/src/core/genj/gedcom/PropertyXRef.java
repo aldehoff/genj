@@ -212,7 +212,7 @@ public abstract class PropertyXRef extends Property {
     String old = getValue();
 
     // remember value
-    value = Gedcom.trimID(set.replace('@',' '));
+    value = set.replace('@',' ').trim();
 
     // remember change
     propagateChange(old);

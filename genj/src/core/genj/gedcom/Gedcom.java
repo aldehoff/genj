@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.92 $ $Author: nmeier $ $Date: 2005-06-16 01:05:12 $
+ * $Revision: 1.93 $ $Author: nmeier $ $Date: 2005-06-19 17:07:01 $
  */
 package genj.gedcom;
 
@@ -144,6 +144,9 @@ public class Gedcom {
   /** origin of this Gedcom */
   private Origin origin;
   
+  /** maximum ID length in file */
+  private int maxIDLength = 0;
+  
   /** entities */
   private LinkedList allEntities = new LinkedList();
   private Map tag2id2entity = new HashMap();
@@ -187,6 +190,13 @@ public class Gedcom {
   /**
    * Gedcom's Constructor
    */
+  public Gedcom() {
+    this(null);
+  }
+
+  /**
+   * Gedcom's Constructor
+   */
   public Gedcom(Origin origin) {
     this(origin, false);
   }
@@ -195,9 +205,6 @@ public class Gedcom {
    * Gedcom's Constructor
    */
   public Gedcom(Origin origin, boolean createAdam) {
-    // safety check
-    if (origin==null)
-      throw new IllegalArgumentException("Origin has to specified");
     // remember
     this.origin = origin;
     // create Adam
@@ -319,8 +326,9 @@ public class Gedcom {
     // generate new id if necessary - otherwise trim it
     if (id==null)
       id = getNextAvailableID(tag);
-    else 
-      id = trimID(id);
+    
+    // remember maximum ID length
+    maxIDLength = Math.max(id.length(), maxIDLength);
 
     // lookup a type - all well known types need id
     Class clazz = (Class)E2TYPE.get(tag);
@@ -437,8 +445,6 @@ public class Gedcom {
    * Returns the entity with given id (or null)
    */
   public Entity getEntity(String id) {
-    // trim the id
-    id = trimID(id);
     // loop all types
     for (Iterator tags=tag2id2entity.keySet().iterator();tags.hasNext();) {
       Entity result = (Entity)getEntityMap((String)tags.next()).get(id);
@@ -454,36 +460,8 @@ public class Gedcom {
    * Returns the entity with given id of given type or null if not exists
    */
   public Entity getEntity(String tag, String id) {
-    // trim the id
-    id = trimID(id);
     // check back in appropriate type map
     return (Entity)getEntityMap(tag).get(id);
-  }
-  
-  /**
-   * Trim an ID getting rid of leading zeros
-   */
-  /*package*/ static String trimID(String id) {
-    id = id.trim();
-    // has to be our format
-    int len = id.length();
-    if (len<2)
-      return id;
-    // .. leading type character prefix
-    StringBuffer result = new StringBuffer(id.length());
-    char prefix = id.charAt(0);
-    if (!Character.isLetter(prefix))
-      return id;
-    result.append(prefix);
-    // .. digits (strip leading zeros)
-    for (int i=1; i<len; i++) {
-      char digit = id.charAt(i);
-      if (!Character.isDigit(digit))
-        return id;
-      if (result.length()>1||digit!='0') result.append(digit);
-    }
-    // done
-    return result.toString();
   }
   
   /**
@@ -503,23 +481,35 @@ public class Gedcom {
     Map id2entity = getEntityMap(entity);
     
     // Look for an available ID
-    String prefix = getEntityPrefix(entity);
     int id = Options.getInstance().isFillGapsInIDs ? 1 : id2entity.size();
+    
+    StringBuffer buf = new StringBuffer(maxIDLength);
+    
     search: while (true) {
-      // next one
-      id ++;
-      // not used yet?
-      if (!id2entity.containsKey(prefix + Integer.toString(id)))
-        break;
+      
+      // 20050619 back to checking all IDs with max id length padding
+      // since we don't want to assign I1 if there's a I01 already - got
+      // a file from Anton written by Gramps that has these kinds of
+      // 'duplicates' all over
+      buf.setLength(0);
+      buf.append(getEntityPrefix(entity));
+      buf.append(id);
+      
+      while (true) {
+        if (id2entity.containsKey(buf.toString())) break;
+        if (buf.length()>=maxIDLength) break search;
+        buf.insert(1, '0');
+      } 
+      
       // try next
+      id++;
     }
-// 20050509 not patching IDs with zeros anymore - since we now have alignment
-// in tableview there's not really a need to add leading zeros for readability. ID
-// uniqueness is now guaranteed by trimming leading zeros when handling IDs
-    // done
-    return prefix + Integer.toString(id);
+    
+    // 20050509 not patching IDs with zeros anymore - since we now have alignment
+    // in tableview there's not really a need to add leading zeros for readability.
+    return getEntityPrefix(entity) + id;
   }
-
+  
   /**
    * Has the gedcom unsaved changes ?
    */
@@ -711,10 +701,10 @@ public class Gedcom {
   }
 
   /**
-   * Returns the name of this gedcom
+   * Returns the name of this gedcom or null if unnamed
    */
   public String getName() {
-    return origin.getName();
+    return origin==null ? null : origin.getName();
   }
 
   /**
