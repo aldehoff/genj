@@ -39,12 +39,19 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.io.FilePermission;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -81,6 +88,7 @@ public class FileBean extends PropertyBean {
     chooser.addChangeListener(changeSupport);
     chooser.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
+        registry.put("bean.file.dir", chooser.getDirectory());
         load(chooser.getFile().toString(), true);
       }
     });
@@ -93,6 +101,9 @@ public class FileBean extends PropertyBean {
     
     // setup a reasonable preferred size
     setPreferredSize(new Dimension(128,128));
+    
+    // setup drag'n'drop
+    new DropTarget(this, new DropHandler());
     
     // done
   }
@@ -113,6 +124,7 @@ public class FileBean extends PropertyBean {
       if (sm!=null) 
         sm.checkPermission( new FilePermission(dir, "read"));      
 
+      chooser.setDirectory(registry.get("bean.file.dir", dir));
       chooser.setVisible(true);
       defaultFocus = chooser;
 
@@ -461,5 +473,38 @@ public class FileBean extends PropertyBean {
     }
 
   } //Loader
+
+  /**
+   * Our DnD support
+   */
+  private class DropHandler extends DropTargetAdapter {
+    
+    /** callback - dragged  */
+    public void dragEnter(DropTargetDragEvent dtde) {
+      if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
+        dtde.acceptDrag(dtde.getDropAction());
+      else
+        dtde.rejectDrag();
+    }
+     
+    /** callback - dropped */
+    public void drop(DropTargetDropEvent dtde) {
+      try {
+        dtde.acceptDrop(dtde.getDropAction());
+        
+        List files = (List)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+        File file = (File)files.get(0);
+        chooser.setFile(file);
+        
+        load(file.getAbsolutePath(), true);
+        
+        dtde.dropComplete(true);
+        
+      } catch (Throwable t) {
+        dtde.dropComplete(false);
+      }
+    }
+    
+  }
 
 } //ProxyFile
