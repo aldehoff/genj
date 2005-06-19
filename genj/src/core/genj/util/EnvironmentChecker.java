@@ -113,11 +113,9 @@ public class EnvironmentChecker {
         val = System.getProperty(key);
         // found it ?
         if (val!=null) {
-          LOG.info("Using system-property "+key+'='+val+" ("+msg+')');
+          LOG.fine("Using system-property "+key+'='+val+" ("+msg+')');
           return val+postfix;
         }
-        // next one
-        LOG.info("Tried system-property "+key+" ("+msg+')');
       }
     } catch (Throwable t) {
       LOG.log(Level.WARNING, "Couldn't access system properties", t);
