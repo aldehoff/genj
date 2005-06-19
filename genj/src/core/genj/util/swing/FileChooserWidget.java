@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
+import genj.util.EnvironmentChecker;
 import genj.window.CloseWindow;
 
 import java.awt.BorderLayout;
@@ -52,7 +53,7 @@ public class FileChooserWidget extends JPanel {
   public final static String EXECUTABLES = "exe, bin, sh, cmd, bat";
   
   /** start directory */
-  private String directory = "/";
+  private String directory = EnvironmentChecker.getProperty(this, "user.home", ".", "file chooser directory");
   
   /** an accessory if any */
   private JComponent accessory;
@@ -132,6 +133,13 @@ public class FileChooserWidget extends JPanel {
   }
   
   /**
+   * Getter - 'current' directory
+   */
+  public String getDirectory() {
+    return directory;
+  }
+  
+  /**
    * Whether there is an actual selection
    */
   public boolean isEmpty() {
@@ -208,8 +216,10 @@ public class FileChooserWidget extends JPanel {
       
       // check result
       File file = fc.getSelectedFile();
-      if (file!=null) 
+      if (file!=null)  {
         setFile(file);
+        directory = file.getParent();
+      }
       
       // notify
       fireActionEvent();
