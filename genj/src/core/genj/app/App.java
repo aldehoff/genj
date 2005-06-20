@@ -29,6 +29,7 @@ import genj.window.CloseWindow;
 import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -70,6 +71,12 @@ public class App {
       System.setOut(new PrintStream(new LogOutputStream(Level.INFO, "System", "out")));
       System.setErr(new PrintStream(new LogOutputStream(Level.WARNING, "System", "err")));
       
+      // create our home directory
+      File home = new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", null, "determining home directory"));
+      home.mkdirs();
+      if (!home.exists()||!home.isDirectory()) 
+        throw new IOException("Can't initialize home directoy "+home);
+      
       // init our data
       Registry registry = new Registry("genj");
       
@@ -77,12 +84,9 @@ public class App {
       OptionProvider.restoreAll(registry);
 
       // Setup File Logging and check environment
-      String file = EnvironmentChecker.getProperty(App.class, "user.home.genj/genj.log", null, "determining log-file pattern");
-      if (file!=null) {
-        Handler handler = new FileHandler(file, Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
-        handler.setFormatter(formatter);
-        LOG.addHandler(handler);
-      }
+      Handler handler = new FileHandler(new File(home, "genj.log").getAbsolutePath(), Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
+      handler.setFormatter(formatter);
+      LOG.addHandler(handler);
       
       // Startup Information
       LOG.info("version = "+Version.getInstance().getBuildString());
