@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -64,6 +65,8 @@ import swingx.tree.AbstractTreeModel;
  * A Property Tree
  */
 public class PropertyTreeWidget extends DnDTree {
+  
+  private final static String UNIX_DND_FILE_PREFIX = "file://";
   
   /** a default renderer we keep around for colors */
   private DefaultTreeCellRenderer defaultRenderer;
@@ -393,11 +396,16 @@ public class PropertyTreeWidget extends DnDTree {
         
         // a file drop? apparently a file drop is a simple text starting with file:// on linux
         String string = null;
-        if (transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) 
+        if (transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) {
           string = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
-        if (string.startsWith("file://")) {
-          newParent.addFile(new File(string.substring("file://".length())));
-          return;
+          if (string.startsWith(UNIX_DND_FILE_PREFIX)) {
+            for (StringTokenizer files = new StringTokenizer(string, "\n"); files.hasMoreTokens(); ) {
+              String file = files.nextToken().trim();
+              if (file.startsWith(UNIX_DND_FILE_PREFIX)) 
+                newParent.addFile(new File(file.substring(UNIX_DND_FILE_PREFIX.length())));
+            }
+            return;
+          }
         }
         if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
           for (Iterator files=((List)transferable.getTransferData(DataFlavor.javaFileListFlavor)).iterator(); files.hasNext(); ) 
@@ -406,8 +414,10 @@ public class PropertyTreeWidget extends DnDTree {
         }
       
         // still some text we can paste into new parent?
-        if (string!=null) 
+        if (string!=null) {
+          EditView.LOG.info("reading dropped text '"+string+"'");
           GedcomReader.read(new StringReader(string), newParent, index);
+        }
         
         // done
         
