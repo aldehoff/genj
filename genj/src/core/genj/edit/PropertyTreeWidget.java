@@ -66,7 +66,7 @@ import swingx.tree.AbstractTreeModel;
  */
 public class PropertyTreeWidget extends DnDTree {
   
-  private final static String UNIX_DND_FILE_PREFIX = "file://";
+  private final static String UNIX_DND_FILE_PREFIX = "file:";
   
   /** a default renderer we keep around for colors */
   private DefaultTreeCellRenderer defaultRenderer;
@@ -394,7 +394,7 @@ public class PropertyTreeWidget extends DnDTree {
           }
         }
         
-        // a file drop? apparently a file drop is a simple text starting with file:// on linux
+        // a file drop? apparently a file drop is a simple text starting with file: on linux (kde/gnome)
         String string = null;
         if (transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) {
           string = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
