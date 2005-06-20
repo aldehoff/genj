@@ -391,19 +391,23 @@ public class PropertyTreeWidget extends DnDTree {
           }
         }
         
-        // a file drop?
+        // a file drop? apparently a file drop is a simple text starting with file:// on linux
+        String string = null;
+        if (transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) 
+          string = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
+        if (string.startsWith("file://")) {
+          newParent.addFile(new File(string.substring("file://".length())));
+          return;
+        }
         if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-          for (Iterator files=((List)transferable.getTransferData(DataFlavor.javaFileListFlavor)).iterator(); files.hasNext(); ) {
+          for (Iterator files=((List)transferable.getTransferData(DataFlavor.javaFileListFlavor)).iterator(); files.hasNext(); ) 
             newParent.addFile((File)files.next());
-          }
           return;
         }
       
-        // text we can paste into new parent?
-        if (transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) {
-          String s = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
-          GedcomReader.read(new StringReader(s), newParent, index);
-        }
+        // still some text we can paste into new parent?
+        if (string!=null) 
+          GedcomReader.read(new StringReader(string), newParent, index);
         
         // done
         
