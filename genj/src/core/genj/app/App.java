@@ -279,7 +279,7 @@ public class App {
    */
   private static class LogOutputStream extends OutputStream {
     
-    private char[] buffer = new char[80];
+    private char[] buffer = new char[256];
     private int size = 0;
     private Level level;
     private String sourceClass, sourceMethod;
@@ -294,7 +294,7 @@ public class App {
     }
     
     /**
-     * collect up to 80 characters 
+     * collect up to limit characters 
      */
     public void write(int b) throws IOException {
       if (b!='\n') {
