@@ -36,13 +36,16 @@ import genj.util.swing.ImageIcon;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JTree;
@@ -53,9 +56,9 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import swingx.tree.AbstractTreeModel;
 import swingx.dnd.tree.DnDTree;
 import swingx.dnd.tree.DnDTreeModel;
+import swingx.tree.AbstractTreeModel;
 
 /**
  * A Property Tree
@@ -330,24 +333,23 @@ public class PropertyTreeWidget extends DnDTree {
     }
 
     public int getDropActions(Transferable transferable, Object parent, int index) {
-      
+
       try {
 	      if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
 	        List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
 	        if (dragged.contains(parent))
 	          return 0;
+          return COPY | MOVE;
 	      }
-      } catch (Exception e) {
-        return 0;
-      }
-        
-        if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR) 
-            || transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) {
+        if (transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) 
+          return COPY | MOVE;
+        if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) 
+          return COPY | MOVE;
 
-            return COPY | MOVE;
-        } else {
-            return 0;
-        }
+      } catch (Exception e) {
+      }
+      
+      return 0;
     }
 
     /**
@@ -365,31 +367,46 @@ public class PropertyTreeWidget extends DnDTree {
         // revisit this in case we allow multiple nodes to be dragged
         // at some point. We'll want to allow an in-parent shuffle where
         // applicable (do as much as we can here).
-        if (action == MOVE && dragModel != null && dragModel.gedcom == gedcom) {
-          List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
-          if (newParent.isProperties(dragged)) {
-            // re-shuffle children
-            for (int i=0,j=dragged.size();i<j;i++) {
-              if (newParent.getPropertyPosition((Property)dragged.get(i))<index)
-                index--;
+        if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
+          if (action == MOVE && dragModel != null && dragModel.gedcom == gedcom) {
+            List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+            if (newParent.isProperties(dragged)) {
+              // re-shuffle children
+              for (int i=0,j=dragged.size();i<j;i++) {
+                if (newParent.getPropertyPosition((Property)dragged.get(i))<index)
+                  index--;
+              }
+              List shuffle = new ArrayList(Arrays.asList(newParent.getProperties()));
+              shuffle.removeAll(dragged);
+              shuffle.addAll(index, dragged);
+            
+              // commit
+              newParent.setProperties(shuffle);
+  
+              dragModel.shuffle = true;
+            
+              // done
+              return;
             }
-            List shuffle = new ArrayList(Arrays.asList(newParent.getProperties()));
-            shuffle.removeAll(dragged);
-            shuffle.addAll(index, dragged);
-          
-            // commit
-            newParent.setProperties(shuffle);
-
-            dragModel.shuffle = true;
-          
-            // done
-            return;
           }
         }
+        
+        // a file drop?
+        if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+          for (Iterator files=((List)transferable.getTransferData(DataFlavor.javaFileListFlavor)).iterator(); files.hasNext(); ) {
+            newParent.addFile((File)files.next());
+          }
+          return;
+        }
       
-        // paste text into new parent
-        String s = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
-        GedcomReader.read(new StringReader(s), newParent, index);
+        // text we can paste into new parent?
+        if (transferable.isDataFlavorSupported(PropertyTransferable.STRING_FLAVOR)) {
+          String s = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
+          GedcomReader.read(new StringReader(s), newParent, index);
+        }
+        
+        // done
+        
       } finally {
         if (dragModel == null || dragModel.gedcom != gedcom) {
           gedcom.endTransaction();

@@ -22,6 +22,7 @@ package genj.gedcom;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -145,6 +146,13 @@ public abstract class Property implements Comparable {
    */
   protected Transaction getTransaction() {
     return parent==null ? null : parent.getTransaction();
+  }
+  
+  /**
+   * Adds a file to this property
+   */
+  public void addFile(File file) {
+    System.out.println(file+" for "+getEntity());
   }
   
   /**
