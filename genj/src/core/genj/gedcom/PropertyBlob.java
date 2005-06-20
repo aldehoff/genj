@@ -184,9 +184,16 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   }
   
   /**
+   * Overridden - special file association handling
+   */
+  public boolean addFile(File file) {
+    return load(file.getAbsolutePath(), true);
+  }
+  
+  /**
    * Sets this property's value
    */
-  public void load(String file, boolean updateSubs) {
+  public boolean load(String file, boolean updateSubs) {
     
     String old = getValue();
 
@@ -202,7 +209,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
         in.close();
         content = newContent;
       } catch (IOException ex) {
-        return;
+        return false;
       }
     }
     
@@ -212,7 +219,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     // check
     Property media = getParent();
     if (!updateSubs||!(media instanceof PropertyMedia||media instanceof Media)) 
-      return;
+      return true;
       
     // title?
     Property title = media.getProperty("TITL");
@@ -227,6 +234,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     format.setValue(PropertyFile.getSuffix(file));
     
     // done  
+    return true;
   }
 
   /**

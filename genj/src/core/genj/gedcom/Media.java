@@ -19,6 +19,9 @@
  */
 package genj.gedcom;
 
+import java.io.File;
+import java.util.List;
+
 
 /**
  * Class for encapsulating multimedia entry in a gedcom file
@@ -30,6 +33,21 @@ public class Media extends Entity {
    */
   public String toString() {
     return super.toString(getTitle());
+  }
+  
+  /**
+   * Overriden - special case for file association
+   */
+  public boolean addFile(File file) {
+    List pfiles = getProperties(PropertyBlob.class);
+    PropertyBlob pfile;
+    if (pfiles.isEmpty()) {
+      pfile = (PropertyBlob)addProperty("BLOB", "");
+    } else {
+      pfile = (PropertyBlob)pfiles.get(0);
+    }
+    // keep it
+    return pfile.addFile(file);
   }
 
   /**

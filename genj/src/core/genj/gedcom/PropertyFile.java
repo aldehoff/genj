@@ -71,6 +71,14 @@ public class PropertyFile extends Property implements IconValueAvailable {
     assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
     return super.init(meta, value);
   }
+  
+  /**
+   * Overriden - file association is easy for a PropertyFile
+   */
+  public boolean addFile(File file) {
+    setValue(file.getAbsolutePath(), true);
+    return true;
+  }
 
   /**
    * Returns this property's value

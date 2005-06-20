@@ -149,10 +149,28 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Adds a file to this property
+   * Associates a file with this property
+   * @return success or not
    */
-  public void addFile(File file) {
-    System.out.println(file+" for "+getEntity());
+  public boolean addFile(File file) {
+    // FILE not allowed here? 
+    if (!getMetaProperty().allows("FILE")) {
+      // OBJE neither? 
+      if (!getMetaProperty().allows("OBJE")) 
+        return false;
+      // let new OBJE handle this
+      return addProperty("OBJE", "").addFile(file);
+    }
+    // need to add it?
+    List pfiles = getProperties(PropertyFile.class);
+    PropertyFile pfile;
+    if (pfiles.isEmpty()) {
+      pfile = (PropertyFile)addProperty("FILE", "");
+    } else {
+      pfile = (PropertyFile)pfiles.get(0);
+    }
+    // keep it
+    return pfile.addFile(file);
   }
   
   /**
