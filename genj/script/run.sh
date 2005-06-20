@@ -36,4 +36,4 @@ CMD="$JAVA -jar run.jar"
 
 echo "*** INFO: Executing '$CMD'"
 
-`$CMD`
+$CMD
