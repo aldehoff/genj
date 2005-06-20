@@ -173,7 +173,18 @@ public class App {
       // make some adjustment for MacOS
       //  switch menubar to be mac compatible - one on the top
       // don't know how to set dock programmatically -Xdock:name="JUnit on Mac OS X"
-      System.setProperty("com.apple.macos.useScreenMenuBar", "true");
+      
+      // 20050620 Usage of com.apple.macos.useScreenMenuBar  seems to be deprecated
+      // with Java 1.4 on MacOS AND maybe this is the reason for a reported exception
+      // java.lang.ArrayIndexOutOfBoundsException: 6 > 5
+      //    at java.util.Vector.insertElementAt(Vector.java:557)
+      //    at apple.laf.ScreenMenuBar.add(ScreenMenuBar.java:242)
+      //    at apple.laf.ScreenMenuBar.addSubmenu(ScreenMenuBar.java:200)
+      //    at apple.laf.ScreenMenuBar.addNotify(ScreenMenuBar.java:51)
+      // see also http://supportforum.sun.com/sjes/index.php?t=msg&goto=1151&rid=0
+      //System.setProperty("com.apple.macos.useScreenMenuBar", "true");
+      
+      // So let's not put in Mac adjustments if we can't test them anymore :(
       
       // set swing resource strings (ok, cancel, etc.)
       Iterator keys = resources.getKeys();
