@@ -35,6 +35,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -124,9 +125,25 @@ public abstract class AbstractWindowManager implements WindowManager {
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)
    */
   public int openDialog(String key, String title, Icon img, String txt, ActionDelegate[] options, Component owner) {
+    
+    // analyze the text
+    int maxLine = 40;
+    int cols = 40, rows = 1;
+    StringTokenizer lines = new StringTokenizer(txt, "\n\r");
+    while (lines.hasMoreTokens()) {
+      String line = lines.nextToken();
+      if (line.length()>maxLine) {
+        cols = maxLine;
+        rows += line.length()/maxLine;
+      } else {
+        cols = Math.max(cols, line.length());
+        rows++;
+      }
+    }
+    rows = Math.min(10, rows);
 
     // create a textpane for the txt
-    TextAreaWidget text = new TextAreaWidget("", 4, 40);
+    TextAreaWidget text = new TextAreaWidget("", rows, cols);
     text.setLineWrap(true);
     text.setWrapStyleWord(true);
     text.setText(txt);
