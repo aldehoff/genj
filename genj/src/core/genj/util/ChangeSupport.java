@@ -74,6 +74,9 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
    * fire change event
    */
   public void fireChangeEvent() {
+    fireChangeEvent(source);
+  }
+  private void fireChangeEvent(Object source) {
     ChangeEvent e = new ChangeEvent(source);
     Iterator it = new ArrayList(listeners).iterator();
     while (it.hasNext())
@@ -84,7 +87,7 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
    * callback - change event = fire change event
    */
   public void stateChanged(ChangeEvent e) {
-    fireChangeEvent();
+    fireChangeEvent(e.getSource());
   }
 
   /**
@@ -104,7 +107,7 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
    * callback - action events = fire change event
    */
   public void actionPerformed(ActionEvent e) {
-    fireChangeEvent();
+    fireChangeEvent(e.getSource());
   }
   
 } //ChangeSupport
