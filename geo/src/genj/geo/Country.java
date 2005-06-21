@@ -84,6 +84,13 @@ public class Country implements Comparable {
     return fips;
   }
   
+  /**
+   * hash code - iso 
+   */
+  public int hashCode() {
+    return iso.hashCode();
+  }
+  
   /** comparison - by name */
   public int compareTo(Object o) {
     return toString().compareTo(o.toString());
