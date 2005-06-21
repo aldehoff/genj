@@ -127,7 +127,7 @@ public class GeoService {
     LOG.info("GeoService Startup - database directory is "+geo);
     
     geo.mkdir();
-    
+  
     try {
       
       // initialize database
@@ -328,7 +328,16 @@ public class GeoService {
    */
   public GeoLocation[] query(GeoLocation location) {
     
-    String city = location.getCity() + "%";
+    // check query arguments and choose sql
+    String sql;
+    String city = location.getCity();
+    if (city.endsWith("*")) {
+      city = city.substring(0, city.length()-1) + "%";
+      sql = QUERY_LOCATIONS;
+    } else {
+      sql = SELECT_LOCATIONS;
+    }
+      
     Jurisdiction jurisdiction = location.getJurisdiction();
     Country country = location.getCountry();
    
@@ -339,7 +348,7 @@ public class GeoService {
       try {
         
         // prepare select
-        PreparedStatement select = connection.prepareStatement(QUERY_LOCATIONS);
+        PreparedStatement select = connection.prepareStatement(sql);
         select.setString(SELECT_LOCATIONS_IN_CITY, city);
 
         // loop over rows
