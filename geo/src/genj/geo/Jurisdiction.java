@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,13 +37,16 @@ import java.util.logging.Level;
 /**
  * We support the concept of a top-level jurisdiction
  */
-public class Jurisdiction {
+public class Jurisdiction implements Comparable {
   
   /** a weak cache of displayNames to reusable instances */
   private static Map displayName2jurisdiction = new WeakHashMap(); 
   
   /** a cache of key to jurisdiction    (xx.yy where xx=iso country yy=fips jurisdiction code) */
   private static Map key2jurisdiction = new HashMap();
+
+  /** a cache of country to jurisdictions */
+  private static Map country2topLevelJurisdiction = new HashMap();
 
   /** all known jurisdictions */
   private static List JURISDICTIONS;
@@ -73,8 +77,23 @@ public class Jurisdiction {
   /**
    * Accessor
    */
+  public Country getCountry() {
+    return country;
+  }
+  
+  /**
+   * Accessor
+   */
   public String getCode() {
     return code;
+  }
+  
+  /**
+   * Name type comparison 
+   */
+  public int compareTo(Object o) {
+    Jurisdiction that = (Jurisdiction)o;
+    return this.displayName.compareTo(that.displayName);
   }
   
   /**
@@ -150,6 +169,15 @@ public class Jurisdiction {
     // done
     return result;
   }
+  
+  public static List getAll(Country country) {
+    List list = (List)country2topLevelJurisdiction.get(country);
+    if (list==null)
+      return Collections.EMPTY_LIST;
+    ArrayList result = new ArrayList(list);
+    Collections.sort(result);
+    return result;
+  }
 
   private static List getJurisdictions() {
     
@@ -174,14 +202,27 @@ public class Jurisdiction {
         //  yy = state code
         //  aaa,bbb,ccc = state names or abbreviations
         for (Iterator keys = meta.getKeys(); keys.hasNext(); ) {
+          // grab key
           String key = keys.next().toString();
           if (key.length()!=5) continue;
-          String country = key.substring(0,2);
+          // analyze country and jurisdiction code
+          Country country = Country.get(key.substring(0,2));
           String code = key.substring(3,5);
+          // parse all of its names
           StringTokenizer names = new StringTokenizer(meta.getString(key), ",");
           for (int n=0; names.hasMoreTokens(); n++) {
-            Jurisdiction jurisdiction = new Jurisdiction(Country.get(country), code, names.nextToken().trim());
-            if (n==0) key2jurisdiction.put(key, jurisdiction);
+            Jurisdiction jurisdiction = new Jurisdiction(country, code, names.nextToken().trim());
+            if (n==0) {
+              // remember first for jurisdiction key
+              key2jurisdiction.put(key, jurisdiction);
+              // remember first for country
+              List list = (List)country2topLevelJurisdiction.get(country);
+              if (list==null) {
+                list = new ArrayList(20);
+                country2topLevelJurisdiction.put(country, list);
+              }
+              list.add(jurisdiction);
+            }
             JURISDICTIONS.add(jurisdiction);
           }
         }

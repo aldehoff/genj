@@ -20,6 +20,7 @@
 package genj.geo;
 
 import genj.util.ChangeSupport;
+import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
@@ -43,16 +44,21 @@ import javax.swing.table.AbstractTableModel;
  * A widget for dynamically searching for database information about locations
  */
 public class QueryWidget extends JPanel {
+  
+  private final static Resources RESOURCES = Resources.get(QueryWidget.class);
 
   private static final String
-    TXT_LOCATION = GeoView.RESOURCES.getString("location"),
-    TXT_LATLON = GeoView.RESOURCES.getString("location.latlon");
+    TXT_LOCATION = RESOURCES.getString("location"),
+    TXT_LATLON = RESOURCES.getString("location.latlon"),
+    TXT_QUERYING = RESOURCES.getString("query.querying");
   
   private final static NestedBlockLayout LAYOUT = new NestedBlockLayout(
       "<col>" +
+      "<row><label/></row>" +
       "<row><label/><city wx=\"1\"/></row>" +
       "<row><label/><tlj wx=\"1\"/></row>" +
       "<row><label/><country wx=\"1\"/></row>" +
+      "<row><label/></row>" +
       "<row><hits wx=\"1\" wy=\"1\"/></row>" +
       "</col>"
       );
@@ -65,6 +71,7 @@ public class QueryWidget extends JPanel {
   private ChoiceWidget tlj;
   private ChoiceWidget country;
   private JTable hits;
+  private JLabel status;
   
   /**
    * Constructor
@@ -90,10 +97,13 @@ public class QueryWidget extends JPanel {
     country.setValues(countries);
     country.setSelectedItem(location.getCountry());
     hits = new JTable(model);
+    status = new JLabel();
     
-    add(new JLabel("City")); add(city);
-    add(new JLabel("Top-Level Jurisdiction")); add(tlj);
-    add(new JLabel("Country")); add(country);
+    add(new JLabel(RESOURCES.getString("query.instruction"))); 
+    add(new JLabel(RESOURCES.getString("query.city"))); add(city);
+    add(new JLabel(RESOURCES.getString("query.tlj"))); add(tlj);
+    add(new JLabel(RESOURCES.getString("query.country"))); add(country);
+    add(status);
     add(new JScrollPane(hits));
     
     // listen to changes
@@ -101,12 +111,12 @@ public class QueryWidget extends JPanel {
     city.addChangeListener(cs);
     tlj.addChangeListener(cs);
     country.addChangeListener(cs);
-
+    
     final Timer timer = new Timer(500, new ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent e) {
         String sCity = city.getText().trim();
-        if (sCity.length()==0) return;
-        model.setLocation(new GeoLocation(sCity, null, (Country)country.getSelectedItem()));
+        if (sCity.length()<2) return;
+        model.setLocation(new GeoLocation(sCity, (Jurisdiction)tlj.getSelectedItem(), (Country)country.getSelectedItem()));
       }
     });
     timer.setRepeats(false);
@@ -114,6 +124,19 @@ public class QueryWidget extends JPanel {
     
     cs.addChangeListener( new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
+        // country choice?
+        if (e.getSource()==country) {
+          Country c = (Country)country.getSelectedItem();
+          List jurisdictions = new ArrayList();
+          if (c!=null) {
+            jurisdictions.add(null);
+            jurisdictions.addAll(Jurisdiction.getAll(c));
+          }
+          tlj.setSelectedItem(null);
+          tlj.setValues(jurisdictions);
+          tlj.setEnabled(!jurisdictions.isEmpty());
+        }
+        // restart query time
         timer.restart();
       }
     });
@@ -195,11 +218,13 @@ public class QueryWidget extends JPanel {
           synchronized (this) {
             locations = Collections.EMPTY_LIST;
             fireTableDataChanged();
+            status.setText(TXT_QUERYING);
           }
           GeoLocation[] found  = GeoService.getInstance().query(todo);
           synchronized (this) {
             locations = Arrays.asList(found);
             fireTableDataChanged();
+            status.setText(RESOURCES.getString("query.matches", String.valueOf(found.length)));
           }
         }
       }
