@@ -61,14 +61,14 @@ public class ChoiceWidget extends JComboBox {
    * Constructor
    */
   public ChoiceWidget() {
-    this(new Object[0], "");
+    this(new Object[0], null);
   }
   
   /**
    * Constructor
    */
   public ChoiceWidget(List values) {
-    this(values.toArray(), "");
+    this(values.toArray(), null);
   }
   
   /**
