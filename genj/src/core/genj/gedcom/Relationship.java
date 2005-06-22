@@ -549,8 +549,8 @@ public abstract class Relationship {
      */
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
       
-      assume(entity, Indi.class);
-
+      Indi newSibling = (Indi)entity;
+      
       // get Family where sibling is child
       Fam fam;
       Fam[] fams = sibling.getFamiliesWhereChild();
@@ -565,7 +565,11 @@ public abstract class Relationship {
       }
 
       // add new sibling      
-      fam.addChild((Indi)entity);
+      fam.addChild(newSibling);
+      
+      // set it's name if new
+      if (isNew) 
+        newSibling.setName("", sibling.getLastName());        
       
       // focus stays with sibling
       return sibling;
