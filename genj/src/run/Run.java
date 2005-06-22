@@ -166,24 +166,34 @@ public class Run {
     StringTokenizer tokens = new StringTokenizer(classpath, ",", false);
     List result = new ArrayList();
     while (tokens.hasMoreTokens()) {
-      String token = tokens.nextToken();
+      String token = tokens.nextToken().trim();
       File file = new File(token).getAbsoluteFile();
       if (!file.exists()) {
         logger.log(Level.WARNING, CLASSPATH+" contains "+token+" but file/directory "+file.getAbsolutePath()+" doesn't exist");
         continue;
       }
-      if (file.isDirectory()) {
-        File[] files = file.listFiles();
-        for (int i=0;i<files.length;i++) 
-          result.add(files[i].toURL());
-      } else {
-        result.add(file.toURL());
-      }
+      buildClasspath(file, result);
       // next token
     }
 
     // done
     return (URL[])result.toArray(new URL[result.size()]);
+  }
+  
+  private static void buildClasspath(File file, List result) throws MalformedURLException {
+    
+    // a simple file?
+    if (!file.isDirectory() && file.getName().endsWith(".jar")) {
+      result.add(file.toURL());
+      return;
+    }
+    
+    // recurse into directory
+    File[] files = file.listFiles();
+    if (files!=null) for (int i=0;i<files.length;i++) 
+      buildClasspath(files[i], result);
+
+    // done
   }
   
   /**
