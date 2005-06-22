@@ -515,10 +515,10 @@ import javax.swing.event.ChangeListener;
     public void select(Property prop) {
       if (prop==null)
         return;
-      // look for appropriate bean
+      // look for appropriate bean - showing prop or first one in case of Entity
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.getProperty()==prop) {
+        if (prop instanceof Entity || bean.getProperty()==prop) {
           bean.requestFocusInWindow();
           break;
         }
