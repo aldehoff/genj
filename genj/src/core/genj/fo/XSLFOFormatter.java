@@ -30,12 +30,21 @@ import javax.xml.transform.stream.StreamResult;
 public class XSLFOFormatter extends Formatter {
   
   private final static File XSL = new File("./contrib/docbook-xsl/fo/docbook.xsl");
+
+  private final static String[] PAPER_TYPES = {
+    "USletter", "A0",  "A1",  "A2",  "A3",  "A4",  "A5",  "A6",  "A7",  "A8",  "A9",  "A10",  "B0",  "B1",  "B2",  "B3",  "B4",  "B5",  "B6",  "B7",  "B8",  "B9",  "B10",  "C0",  "C1",  "C2",  "C3",  "C4",  "C5",  "C6",  "C7",  "C8",  "C9",  "C10"
+  };
+  
+  private final static String[] PAGE_ORIENTATION = {
+    "portrait",
+    "landscape"
+  };
   
   /**
    * Constructor
    */
   public XSLFOFormatter() {
-    super("XSL-FO", "fo");
+    super("XSL-FO", "fo", true);
   }
   
   /**
@@ -45,8 +54,20 @@ public class XSLFOFormatter extends Formatter {
     
     // grab xsl transformer
     Transformer transformer = getTemplates(XSL).newTransformer();
+    
+    // set : select indexterms based on type attribute value
     transformer.setParameter("index.on.type", "1");
 
+    // set: page parameters
+    transformer.setParameter("paper.type", "A4");
+    transformer.setParameter("page.orientation", "portrait");
+    
+    // what about margins?
+    //page.margin.bottom
+    //page.margin.inner
+    //page.margin.outer
+    //page.margin.top
+    
     // do the transformation
     transformer.transform(doc.getDOMSource(), new StreamResult(out));
 

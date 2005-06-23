@@ -36,9 +36,9 @@ public class HTMLFormatter extends Formatter {
    * Constructor
    */
   public HTMLFormatter() {
-    super("HTML", "html");
+    super("HTML", "html", true);
   }
-  
+
   /**
    * Formatting logic 
    */
@@ -46,6 +46,8 @@ public class HTMLFormatter extends Formatter {
     
     // grab xsl transformer
     Transformer transformer = getTemplates(XSL).newTransformer();
+    
+    // set : select indexterms based on type attribute value
     transformer.setParameter("index.on.type", "1");
 
     // do the transformation

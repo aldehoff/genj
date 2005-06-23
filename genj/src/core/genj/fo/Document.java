@@ -21,6 +21,7 @@ package genj.fo;
 
 import genj.gedcom.Entity;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -51,11 +52,21 @@ import org.w3c.dom.Text;
  */
 public class Document {
   
-  public final static String SUFFIX = ".xml";
+  public final static int
+    TEXT_PLAIN = 0,
+    TEXT_EMPHASIZED = 1;
+
+  public final static int
+    HALIGN_CENTER = 0,
+    HALIGN_LEFT      = 1,
+    HALIGN_RIGHT   = 2;
 
   private org.w3c.dom.Document doc;
   private Node cursor;
   private String title;
+  private Set anchorNodes = new HashSet();
+  private Map unresolvedID2textNodes = new HashMap();
+  private Map file2imageNodes = new HashMap();
   
   /**
    * Constructor
@@ -123,10 +134,29 @@ public class Document {
   }
   
   /**
-   * DOM Access
+   * Access to DOM source
    */
-  public DOMSource getDOMSource() {
+  /*package*/ DOMSource getDOMSource() {
     return new DOMSource(doc);
+  }
+  
+  /**
+   * Access to referenced image files
+   */
+  /*package*/ File[] getImageFiles() {
+    Set files = file2imageNodes.keySet();
+    return (File[])files.toArray(new File[files.size()]);
+  }
+  
+  /**
+   * Replace referenced image file with a calculated value
+   */
+  /*package*/ void setImageFileRef(File file, String value) {
+    List nodes = (List)file2imageNodes.remove(file);
+    for (int i = 0; i < nodes.size(); i++) {
+      Element imageNode = (Element)nodes.get(i);
+      imageNode.setAttribute("fileref", value);
+    }
   }
   
   /**
@@ -201,18 +231,56 @@ public class Document {
     cursor.appendChild(elem);
     return this;
   }
+  
+  /**
+   * Add text
+   */
+  public Document addText(String text, int format) {
+    // make sure there's a paragraph
+    if (!"para".equals(cursor.getNodeName())) 
+      addParagraph();
+    cursor.appendChild(textNode(text, format));
+    return this;
+  }
     
   /**
    * Add text
    */
   public Document addText(String text) {
-    // make sure there's a paragraph
-    if (!"para".equals(cursor.getNodeName())) 
-      addParagraph();
-    cursor.appendChild(textNode(text));
+    return addText(text, TEXT_PLAIN);
+  }
+  
+  /**
+   * Add image
+   */
+  public Document addImage(File file, int align) {
+    // anything we care about?
+    if (file==null||!file.exists())
+      return this;
+    // create imagedata node
+    Element node = elementNode("imagedata", null);
+    node.setAttribute("fileref", file.getAbsolutePath());
+    switch (align) {
+      case HALIGN_LEFT: 
+        node.setAttribute("align", "left");
+        break;
+      case HALIGN_RIGHT: 
+        node.setAttribute("align", "right");
+        break;
+    }
+    //node.setAttribute("valign", "middle");
+    cursor.appendChild(node);
+    // remember
+    List nodes = (List)file2imageNodes.get(file);
+    if (nodes==null) {
+      nodes = new ArrayList();
+      file2imageNodes.put(file, nodes);
+    }
+    nodes.add(node);
+    // done
     return this;
   }
-    
+  
   /**
    * Add a paragraph
    */
@@ -279,7 +347,7 @@ public class Document {
    * Add an anchor
    */
   public Document addAnchor(String id) {
-    push(anchorNode(id));
+    cursor.appendChild(anchorNode(id));
     return this;
   }
     
@@ -287,7 +355,7 @@ public class Document {
    * Add an anchor
    */
   public Document addAnchor(Entity entity) {
-    return addAnchor(entity.getId());
+    return addAnchor(entity.getTag()+"_"+entity.getId());
   }
   
   /**
@@ -298,15 +366,15 @@ public class Document {
     if (!"para".equals(cursor.getNodeName())) 
       addParagraph();
     // known anchor? create link
-    if (id.indexOf(':')>0||anchors.contains(id)) 
+    if (id.indexOf(':')>0||anchorNodes.contains(id)) 
       cursor.appendChild(linkNode(text, id));
     else {
       // remember a new text node for now
-      Node node = cursor.appendChild(textNode(text));
-      List unverified = (List)id2unverifiedLink.get(id);
+      Node node = cursor.appendChild(textNode(text, TEXT_PLAIN));
+      List unverified = (List)unresolvedID2textNodes.get(id);
       if (unverified==null) {
         unverified = new ArrayList();
-        id2unverifiedLink.put(id, unverified);
+        unresolvedID2textNodes.put(id, unverified);
       }
       unverified.add(node);
     }
@@ -314,14 +382,11 @@ public class Document {
     return this;
   }
   
-  private Set anchors = new HashSet();
-  private Map id2unverifiedLink = new HashMap();
-  
   /**
    * Add a link
    */
   public Document addLink(String text, Entity entity) {
-    addLink(text, entity.getId());
+    addLink(text, entity.getTag()+"_"+entity.getId());
     return this;
   }
   
@@ -355,13 +420,13 @@ public class Document {
   
   private Element anchorNode(String id) {
     // already a known anchor?
-    if (anchors.contains(id)) throw new IllegalArgumentException( "duplicate anchor id "+id);
-    anchors.add(id);
+    if (anchorNodes.contains(id)) throw new IllegalArgumentException( "duplicate anchor id "+id);
+    anchorNodes.add(id);
     // add anchor node
     Element anchor = elementNode("anchor", null);
     anchor.setAttribute("id", id);
     // check for unverified links
-    List unverified = (List)id2unverifiedLink.remove(id);
+    List unverified = (List)unresolvedID2textNodes.remove(id);
     if (unverified!=null) for (Iterator it=unverified.iterator();it.hasNext();) {
       Text text = (Text)it.next();
       text.getParentNode().replaceChild(linkNode(text.getData(), id), text);
@@ -371,12 +436,17 @@ public class Document {
   
   private Element elementNode(String qname, String text) {
     Element elem = doc.createElement(qname);
-    if (text!=null) elem.appendChild(textNode(text));
+    if (text!=null) elem.appendChild(textNode(text, TEXT_PLAIN));
     return elem;
   }
   
-  private Text textNode(String text) {
-    return doc.createTextNode(text);
+  private Node textNode(String text, int format) {
+    switch (format) {
+    case TEXT_PLAIN: default:
+      return doc.createTextNode(text);
+    case TEXT_EMPHASIZED:
+      return elementNode("emphasis", text);
+    }
   }
   
   /**

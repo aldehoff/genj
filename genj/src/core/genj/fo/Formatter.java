@@ -20,9 +20,11 @@
 package genj.fo;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,15 +55,19 @@ public abstract class Formatter {
   /** file extension */
   private String extension;
   
+  /** whether this format requires externalization of referenced files (imagedata) */
+  private boolean isExternalizedFiles;
+  
   /** caching for xsl 2 templates */
   private Map xsl2templates = new HashMap();
 
   /** 
    * Constructor 
    */
-  protected Formatter(String format, String extension) {
+  protected Formatter(String format, String extension, boolean isExternalizedFiles) {
     this.format = format;
     this.extension = extension;
+    this.isExternalizedFiles = isExternalizedFiles;
 
     // setup saxon xslt
     System.setProperty("javax.xml.transform.TransformerFactory", "com.icl.saxon.TransformerFactoryImpl");
@@ -97,9 +103,43 @@ public abstract class Formatter {
   }
   
   /**
+   * Externalize files resolving imagedata references
+   */
+  private void externalizeFiles(Document doc, File file) throws IOException {
+    
+    // grab image directory
+    File imageDir = new File(file.getParentFile(), file.getName()+".images");
+    imageDir.mkdirs();
+    
+    // copy all images so their local to the generated document
+    if (imageDir.exists()) {
+      File[] images = doc.getImageFiles();
+      for (int i = 0; i < images.length; i++) {
+        File oldFile = images[i];
+        File newFile = new File(imageDir, oldFile.getName());
+        FileChannel from = new FileInputStream(oldFile).getChannel();
+        FileChannel to = new FileOutputStream(newFile).getChannel();
+        from.transferTo(0, from.size(), to);
+        from.close();
+        to.close();      
+        doc.setImageFileRef(oldFile, imageDir.getName() + "/" + newFile.getName());
+      }
+    }
+    
+    // done
+    
+  }
+  
+  /**
    * Format a document
    */
   public void format(Document doc, File file) throws IOException {
+    
+    // chance to externalize files if applicable
+    if (isExternalizedFiles)
+      externalizeFiles(doc, file);
+    
+    // continue
     format(doc, new FileOutputStream(file));
   }
   

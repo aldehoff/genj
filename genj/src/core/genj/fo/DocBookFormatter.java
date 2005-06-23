@@ -20,10 +20,6 @@
 
 import java.io.OutputStream;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-
 /** 
  * Formatter for DocBook 
  */
@@ -33,7 +29,7 @@ public class DocBookFormatter extends Formatter {
    * Constructor
    */
   public DocBookFormatter() {
-    super("DocBook", "xml");
+    super("DocBook", "xml", false);
   }
   
   /**
@@ -41,12 +37,9 @@ public class DocBookFormatter extends Formatter {
    */
   protected void formatImpl(Document doc, OutputStream out) throws Throwable {
     
-    // create identity transformation
-    Transformer transformer = TransformerFactory.newInstance().newTransformer();
-
-    // do the transformation
-    transformer.transform(doc.getDOMSource(), new StreamResult(out));
-
+    // simply write it
+    doc.write(out);
+    
     // done
   }
   
