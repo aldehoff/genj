@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.67 $ $Author: nmeier $ $Date: 2005-06-18 04:40:20 $
+ * $Revision: 1.68 $ $Author: nmeier $ $Date: 2005-06-23 04:20:48 $
  */
 package genj.report;
 
@@ -35,6 +35,7 @@ import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
+import genj.util.swing.FileChooser;
 import genj.util.swing.HeadlessLabel;
 import genj.view.Context;
 import genj.view.ViewManager;
@@ -49,6 +50,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.CharArrayWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -58,6 +60,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -77,9 +80,12 @@ import javax.swing.event.ListSelectionListener;
  * and can be reloaded during runtime.
  */
 public abstract class Report implements Cloneable {
+
+  protected final static Logger LOG = Logger.getLogger("genj.report"); 
   
-  private final static ImageIcon     
+  protected final static ImageIcon     
     IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell.gif"), 
+    IMG_FO  = new genj.util.swing.ImageIcon(ReportView.class,"ReportFO.gif"  ),
     IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui.gif"  );
 
   /** global report options */
@@ -226,7 +232,7 @@ public abstract class Report implements Cloneable {
   /**
    * An image
    */
-  /*package*/ ImageIcon getImage() {
+  protected ImageIcon getImage() {
     return image; 
   }
 
@@ -312,13 +318,41 @@ public abstract class Report implements Cloneable {
     
     JLabel label = new JLabel("Choose formatted output for document");
     
-    ChoiceWidget formatters = new ChoiceWidget(Formatter.FORMATTERS, Formatter.FORMATTERS[0]);
+    ChoiceWidget formatters = new ChoiceWidget(Formatter.getFormatters(), Formatter.DEFAULT);
     formatters.setEditable(false);
 
     CloseWindow[] actions = { new CloseWindow("Save"), new CloseWindow("View"), new CloseWindow(CloseWindow.TXT_CANCEL)};
-    
-    viewManager.getWindowManager().openDialog(
+    actions[1].setEnabled(false);
+    int rc = viewManager.getWindowManager().openDialog(
         "reportdoc", "Document '"+doc.getTitle()+"'", WindowManager.IMG_QUESTION, new JComponent[] {label, formatters}, actions, owner);
+    
+    // save?
+    if (rc==0) {
+      
+      // ask user for output file
+      Formatter formatter = (Formatter)formatters.getSelectedItem();
+      String dir = registry.get("doc.dir", EnvironmentChecker.getProperty(this, "user.home", ".", "document output directory"));
+      FileChooser chooser = new FileChooser(owner, "Choose file", "Save", formatter.getFileExtension(), dir);
+      chooser.showDialog();
+      File file = chooser.getSelectedFile();
+      if (file==null)
+        return;
+      registry.put("doc.dir", chooser.getCurrentDirectory().getAbsolutePath());
+      if (!file.getName().endsWith("."+formatter.getFileExtension()))
+        file = new File(file.getAbsolutePath()+"."+formatter.getFileExtension());
+      
+      // format and write
+      try {
+        file.getParentFile().mkdirs();
+        formatter.format(doc, file);
+      } catch (IOException e) {
+        LOG.log(Level.WARNING, "formatting "+doc+" failed", e);
+      }
+      
+      // done
+    }
+      
+    // done
   }
   
   /**

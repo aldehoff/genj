@@ -84,5 +84,9 @@
 		<attributes>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="contrib/saxon/saxon.jar">
+		<attributes>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>

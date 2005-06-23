@@ -252,7 +252,7 @@
        <fileset dir="${dir.build}/classes/run" includes="**"/>
        <manifest>
          <attribute name="Main-Class" value="Run"/>
-      	 <attribute name="Run-Classpath" value="./lib"/>
+      	 <attribute name="Run-Classpath" value="./lib, ./contrib"/>
        	 <attribute name="Run-Class" value="genj.app.App"/>
        </manifest>
      </jar>
@@ -264,14 +264,28 @@
      
      <!-- create genj_app-xyz.zip -->
      <zip zipfile="${dir.dist}/genj_app-${app.version}.zip" update="True">
+       
+       <!-- some libraries -->
        <zipfileset dir="${dir.build}/lib" includes="run.jar"/>
        <zipfileset dir="${dir.build}" includes="lib/genj.jar"/>
        <zipfileset dir="." includes="lib/jfreechart.jar"/>
        <zipfileset dir="." includes="lib/graphj.jar"/>
+       
+       <!-- compiled classes for reports -->
        <zipfileset dir="${dir.build}/classes" includes="report/**"/>
         <zipfileset dir="./src" includes="report/**"/>
+       
+       <!-- sample gedcom file -->
        <zipfileset dir="." includes="gedcom/**"/>
+       
+       <!-- contrib files -->
+       <zipfileset dir="." includes="contrib/docbook-xsl/**"/>
+       <zipfileset dir="." includes="contrib/saxon/**"/>
+       
+       <!-- readme files  -->
        <zipfileset dir="." includes="doc/*"/>
+       
+       <!-- start scripts -->
        <zipfileset dir="./script" includes="run.*" filemode="755"/>
      </zip>
 

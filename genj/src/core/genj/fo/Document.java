@@ -19,7 +19,7 @@
  */
 package genj.fo;
 
-import genj.gedcom.Indi;
+import genj.gedcom.Entity;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -86,6 +86,13 @@ public class Document {
     // done
   }
   
+  /**
+   * String representation - the title 
+   */
+  public String toString() {
+    return getTitle();
+  }
+  
   private Node push(Node elem) {
     cursor.appendChild(elem);
     cursor = elem;
@@ -116,6 +123,13 @@ public class Document {
   }
   
   /**
+   * DOM Access
+   */
+  public DOMSource getDOMSource() {
+    return new DOMSource(doc);
+  }
+  
+  /**
    * Add section
    */
   public Document addSection(String title, String id) {
@@ -133,8 +147,15 @@ public class Document {
   /**
    * Add section
    */
-  public Document addSection(String title, Indi indi) {
-    return addSection(title, indi.getId());
+  public Document addSection(String title, Entity ent) {
+    return addSection(title, ent.getId());
+  }
+    
+  /**
+   * Add section
+   */
+  public Document addSection(String title) {
+    return addSection(title, (String)null);
   }
     
   /**
@@ -150,7 +171,7 @@ public class Document {
   /**
    * Add an index entry
    */
-  public Document addIndexEntry(String index, String primary, String secondary) {
+  public Document addIndexTerm(String index, String primary, String secondary) {
     // check primary
     if (primary==null) 
       throw new IllegalArgumentException("index term without primary");
@@ -265,8 +286,8 @@ public class Document {
   /**
    * Add an anchor
    */
-  public Document addAnchor(Indi indi) {
-    return addAnchor(indi.getId());
+  public Document addAnchor(Entity entity) {
+    return addAnchor(entity.getId());
   }
   
   /**
@@ -299,16 +320,16 @@ public class Document {
   /**
    * Add a link
    */
-  public Document addLink(String text, Indi indi) {
-    addLink(text, indi.getId());
+  public Document addLink(String text, Entity entity) {
+    addLink(text, entity.getId());
     return this;
   }
   
   /**
    * Add a link
    */
-  public Document addLink(Indi indi) {
-    return addLink(indi.toString(), indi);
+  public Document addLink(Entity entity) {
+    return addLink(entity.toString(), entity);
   }
   
   private Element linkNode(String text, String id) {
@@ -356,49 +377,6 @@ public class Document {
   
   private Text textNode(String text) {
     return doc.createTextNode(text);
-  }
-  
-  public static void main(String[] args) {
-    try {
-      Document db = new Document("Ancestors of Clair Milford Daniel");
-      
-      db.addText("This report was generated on Sun Jun 12 14:07:18 CEST 2005 with GenealogyJ - see ")
-       .addLink("http://genj.sourceforge.net", "http://genj.sourceforge.net")
-       .addText("!")
-      
-       .addSection("Generation 1", "foo")
-
-       .addSection("Clair Milford Daniel", "I571")
-       .addIndexEntry("names", "Daniel", "Clair Milford")
-       .addText("Clair Milford Daniel, b. 10 Mar 1906 (child of ")
-       .addLink("Elmer Snyder Daniel", "foo")
-       .addText(" and ")
-       .addLink("Alice Catherine Miller", "foo")
-       .addText("), m. 13 Jun 1931 to Mary Regina Smith, d. Nov 1988. He graduated from Lebanon Valley College in Annville, Lebanon Co., PA. He was a high school teacher. He resided in Florence, Burlington Co., NJ. [Note: Graduated from Lebanon Valley College. Taught mathematics in the high school of Florence, New Jersey.]")
-       
-       .addParagraph()
-       .addText("Parents:")
-       .addList()
-       .addListItem()
-       .addText("Father")
-       .addListItem()
-       .addText("Mother")
-      
-       .endList()
-      .addParagraph()
-      .addText("more")
-      
-      .endSection()
-      
-      .addIndex("names", "Name Index")
-      
-      .addSection("Generation 2", "bar")
-      .addText("outside now")
-      
-      .write(System.out);
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
   }
   
   /**
