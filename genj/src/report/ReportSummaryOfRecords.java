@@ -12,13 +12,11 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
 import genj.report.Report;
-
-import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 
@@ -69,8 +67,8 @@ public class ReportSummaryOfRecords extends Report {
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
 
     // Loop through individuals & families
-    exportEntities(gedcom.getEntities(Gedcom.INDI), doc);
-    exportEntities(gedcom.getEntities(Gedcom.FAM ),doc);
+    exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc);
+    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM"),doc);
     
     // add index
     doc.addIndex("names", "Name Index");
@@ -83,9 +81,10 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given entities 
    */
-  private void exportEntities(Collection ents, Document doc)  {
-    for (Iterator it=ents.iterator();it.hasNext();)
-      exportEntity((Entity)it.next(), doc);
+  private void exportEntities(Entity[] ents, Document doc)  {
+    for (int e = 0; e < ents.length; e++) {
+      exportEntity(ents[e], doc);
+    }
   }
   
   /**
@@ -104,25 +103,17 @@ public class ReportSummaryOfRecords extends Report {
       Indi indi = (Indi)ent;
       doc.addIndexTerm("names", indi.getLastName(), indi.getFirstName());
     }
+    
+    // start a paragraph
+    doc.addParagraph();
 
-//    // TABLE
-//    out.println("<table border=\"1\" cellspacing=\"1\" width=\"100%\">");
-//    out.println("<tr class=header>");
-//    out.println("<td colspan=\"2\">"+ent.toString()+"</td>");
-//    out.println("</tr>");
-//    out.println("<tr>");
-//
-//    // Image Column
-//    out.println("<td width=\"50%\" valign=\"center\" align=\"center\">");
-//    exportImage(ent,dir,out);
-//    out.println("</td>");
-//
-//    // Property Column
-//    out.println("<td width=\"50%\" valign=\"top\" align=\"left\">");
-//    out.println("<table border=0>");
-//    exportProperty(ent,out,0);
-//    out.println("</table>");
-//    out.println("</td>");
+    // add image
+    PropertyFile file = (PropertyFile)ent.getProperty(new TagPath("INDI:OBJE:FILE"));
+    if (file!=null)
+      doc.addImage(file.getFile(), Document.HALIGN_RIGHT);
+    
+    // export its properties
+    exportProperties(ent, doc);
     
     // end section
     doc.endSection();
@@ -131,77 +122,53 @@ public class ReportSummaryOfRecords extends Report {
   }    
   
   /**
-   * Exports the given entity's properties
+   * Exports the given property's properties
    */
-  private void exportProperty(Property prop, PrintWriter out, int level) {
+  private void exportProperties(Property of, Document doc) {
 
-    // export the value?
-    exportPropertyLine(prop, out, level);
-
-    // check subs
-    for (int i=0;i<prop.getNoOfProperties();i++) {
-      exportProperty(prop.getProperty(i), out, level+1);
-    }
-
-    // done
-  }
-
-  /**
-   * Exports the given property in a line in the table
-   */
-  private void exportPropertyLine(Property prop, PrintWriter out, int level) {
-
-    // we don't do anything for xrefs to non-indi/fam
-    if (prop instanceof PropertyXRef) {
-      PropertyXRef xref = (PropertyXRef)prop;
-      if (!(xref.getTargetEntity() instanceof Indi||xref.getTargetEntity() instanceof Fam))
-        return;
-    }
-
-    // start row
-    out.println("<tr>");
-
-    // first column
-    boolean showValue = level>0 && !prop.isReadOnly(); 
-
-    out.print("<td valign=TOP ");
-    if (!showValue) 
-      out.print("colspan=2");
-    out.print(">");
+    // anything to do?
+    if (of.getNoOfProperties()==0)
+      return;
     
-    out.print("<property"+level+">");
-    out.print(Gedcom.getName(prop.getTag()));
-    out.print("</property"+level+">");
-    
-    out.println("</td>");
+    // create a list
+    doc.addList();
 
-    // second column
-    if (showValue) {
-      out.print("<td>");
-      out.print("<value>");
-      exportPropertyValue(prop, out);
-      out.print("</value>");
-      out.println("</td>");
+    // an item per property
+    for (int i=0;i<of.getNoOfProperties();i++) {
+      
+      Property prop = of.getProperty(i);
+
+      // we don't do anything for xrefs to non-indi/fam
+      if (prop instanceof PropertyXRef) {
+        PropertyXRef xref = (PropertyXRef)prop;
+        if (!(xref.getTargetEntity() instanceof Indi||xref.getTargetEntity() instanceof Fam))
+          continue;
+      }
+
+      // here comes the item
+      doc.addListItem();
+      doc.addText(Gedcom.getName(prop.getTag()), Document.TEXT_EMPHASIZED);
+      doc.addText(" ");
+      
+      // with its value
+      exportPropertyValue(prop, doc);
+
+      // recurse into it
+      exportProperties(prop, doc);
     }
-        
-    // end row
-    out.println("</tr>");
-    
-    // Done
+    doc.endList();
   }
 
   /**
    * Exports the given property's value
    */
-  private void exportPropertyValue(Property prop, PrintWriter out) {
+  private void exportPropertyValue(Property prop, Document doc) {
 
     // check for links to other indi/fams
     if (prop instanceof PropertyXRef) {
       
       PropertyXRef xref = (PropertyXRef)prop;
-      Entity ent = xref.getTargetEntity();
-      
-      out.println("<A HREF=\"" + ent.getId() + ".html\">" + ent.toString() + "</a>");
+      doc.addLink(xref.getTargetEntity());
       
       // done
       return;
@@ -212,8 +179,8 @@ public class ReportSummaryOfRecords extends Report {
       
       MultiLineProperty.Iterator lines = ((MultiLineProperty)prop).getLineIterator();
       do {
-        out.print(lines.getValue());
-        out.print("<br>");
+        doc.addText(lines.getValue());
+        // FIXME out.print("<br>");
       } while (lines.next());
       
       // done
@@ -227,7 +194,7 @@ public class ReportSummaryOfRecords extends Report {
     else
       value = prop.toString();
 
-    out.print(value);
+    doc.addText(value);
       
     // done
   }
