@@ -39,6 +39,7 @@ import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
@@ -71,28 +72,16 @@ public class PropertyTreeWidget extends DnDTree {
   /** a default renderer we keep around for colors */
   private DefaultTreeCellRenderer defaultRenderer;
   
-  /** the model */
-  private Model model = new Model();
-
   /** stored gedcom */
   private Gedcom gedcom;
 
-//  /**
-//   * Constructor
-//   */
-//  public PropertyTreeWidget(Property setRoot) {
-//    this(setRoot.getGedcom());
-//    setRoot(setRoot);
-//    setExpandsSelectedPaths(true);
-//    ToolTipManager.sharedInstance().registerComponent(this);
-//  }
-    
   /**
    * Constructor
    */
   public PropertyTreeWidget(Gedcom gedcom) {
 
-    setModel(model);
+    // initialize an empty model
+    super.setModel(new Model());
 
     // remember
     this.gedcom = gedcom;
@@ -105,14 +94,36 @@ public class PropertyTreeWidget extends DnDTree {
     setExpandsSelectedPaths(true);
     ToolTipManager.sharedInstance().registerComponent(this);
     
+//    Action f10 = new AbstractAction() {
+//      public void actionPerformed(java.awt.event.ActionEvent e) {
+//        System.out.println("Hello");
+//      }
+//    };
+//    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F10"), f10);
+//    getActionMap().put(f10, f10);
+    
     // done
+  }
+  
+  /**
+   * Dont' allow to change the underlying model
+   */
+  public void setModel() {
+    throw new IllegalArgumentException();
+  }
+
+  /**
+   * Access to our specialized model
+   */
+  private Model getPropertyModel() {
+    return (Model)getModel();
   }
   
   /**
    * return a path for a property
    */
   public TreePath getPathFor(Property property) {
-    return model.getPathToRoot(property);
+    return getPropertyModel().getPathToRoot(property);
   }
 
   /**
@@ -120,9 +131,16 @@ public class PropertyTreeWidget extends DnDTree {
    */
   public void addNotify() {
     // connect model to gedcom
-    model.setGedcom(gedcom);
+    getPropertyModel().setGedcom(gedcom);
     // continue
     super.addNotify();
+    
+    getRootPane().getGlassPane().addMouseListener(new MouseAdapter() {
+      public void mouseEntered(MouseEvent e) {
+        System.out.print("!");
+      }
+    });
+    
   }
 
   
@@ -131,7 +149,7 @@ public class PropertyTreeWidget extends DnDTree {
    */
   public void removeNotify() {
     // disconnect model from gedcom
-    model.setGedcom(null);
+    getPropertyModel().setGedcom(null);
     // continue
     super.removeNotify();
   }
@@ -148,10 +166,10 @@ public class PropertyTreeWidget extends DnDTree {
    */
   public void setRoot(Property property) {
     // change?
-    if (model.getRoot()==property)
+    if (getPropertyModel().getRoot()==property)
       return;
     // propagate to model
-    model.setRoot(property);
+    getPropertyModel().setRoot(property);
     // show all rows
     expandAllRows();
     // done
@@ -173,6 +191,7 @@ public class PropertyTreeWidget extends DnDTree {
     //collapsePath(root);
     expandPath(root);
     
+    Model model = getPropertyModel();
     Object node = root.getLastPathComponent();
     for (int i=0;i<model.getChildCount(node);i++)
       expandAll(root.pathByAddingChild(model.getChild(node, i)));
@@ -182,7 +201,7 @@ public class PropertyTreeWidget extends DnDTree {
    * The current root
    */
   public Property getRoot() {
-    return model.root;
+    return getPropertyModel().getPropertyRoot();
   }
 
   /**
@@ -198,12 +217,12 @@ public class PropertyTreeWidget extends DnDTree {
    */
   public void setSelection(Property select) {
     // safety check
-    if (model.root==null||select==null||select.getEntity()==null) {
+    if (getPropertyModel().getRoot()==null||select==null||select.getEntity()==null) {
       clearSelection();
       return;
     }
     // show and select
-    TreePath tpath = model.getPathToRoot(select);
+    TreePath tpath = getPropertyModel().getPathToRoot(select);
     scrollPathToVisible(tpath);
     setSelectionPath(tpath);
     // done
@@ -319,6 +338,10 @@ public class PropertyTreeWidget extends DnDTree {
       setRootVisible(root!=null);
       // expand all
       expandAllRows();
+    }
+    
+    public Property getPropertyRoot() {
+      return root;
     }
 
     /**
