@@ -669,7 +669,7 @@ import javax.swing.event.TreeSelectionListener;
       editPane.removeAll();
       editPane.revalidate();
       editPane.repaint();
-  
+      
       // setup beans
       Property prop = tree.getSelection(); 
       if (prop!=null&&!prop.isSecret()) {
@@ -705,8 +705,12 @@ import javax.swing.event.TreeSelectionListener;
           // if invoked later (especially when tabbing)
           SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+              // 20050624 - seeing a problem with value change happening after switching
+              // away from editor - check still visible and with parent
+              if (!isVisible()||getParent()==null)
+                return;
               requestFocusInWindow();
-              if (bean!=null) bean.requestFocusInWindow();
+              if  (bean!=null) bean.requestFocusInWindow();
             }
           });
           
