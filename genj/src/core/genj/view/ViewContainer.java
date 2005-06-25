@@ -91,10 +91,13 @@ import javax.swing.SwingConstants;
     add(view, BorderLayout.CENTER);
     
     // hook-up keyboard shortcuts
+    // TODO configurable keyboard shortcurts
     Object key = "genj.view.contextmenu";
     InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     inputs.put(KeyStroke.getKeyStroke("shift F10"), key);
     inputs.put(KeyStroke.getKeyStroke("ctrl SPACE"), key);
+    inputs.put(KeyStroke.getKeyStroke("CONTEXT_MENU"), key); // this only works in Tiger 1.5 on Windows
+    
     getActionMap().put(key, new ActionKey());
 
     // done
