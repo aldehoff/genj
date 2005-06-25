@@ -19,6 +19,7 @@
  */
 package genj.common;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
@@ -35,6 +36,7 @@ import genj.util.swing.SortableTableHeader;
 import genj.util.swing.SortableTableHeader.SortableTableModel;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewManager;
 
@@ -77,7 +79,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * A widget that shows entities in rows and columns
  */
-public class PropertyTableWidget extends JPanel {
+public class PropertyTableWidget extends JPanel implements ContextProvider {
   
   private Map type2generator = new HashMap();
   
@@ -87,10 +89,6 @@ public class PropertyTableWidget extends JPanel {
     type2generator.put(PropertyPlace.class, new ValueSG()); 
     type2generator.put(PropertySimpleValue.class, new ValueSG()); 
   }
-  
-  public final static int
-    CONTEXT_PROPAGATION_ON_SINGLE_CLICK = 0,
-    CONTEXT_PROPAGATION_ON_DOUBLE_CLICK = 1;
   
   /** a reference to the view manager */
   private ViewManager viewManager;
@@ -143,6 +141,27 @@ public class PropertyTableWidget extends JPanel {
     add(BorderLayout.EAST, panelShortcuts);
     
     // done
+  }
+  
+  /**
+   * ContextProvider - callback 
+   */
+  public Context getContext() {
+    
+    Model model = (Model)table.getModel();
+    
+    // none or more than one row selected?
+    if (table.getSelectedRowCount()!=1)
+      return null;
+    int row = table.getSelectedRow();
+    
+    // more than one column selected?
+    if (table.getSelectedColumnCount()!=1)
+      return null;
+    int col = table.getSelectedColumn();
+    
+    // grab it
+    return model.getContextAt(row, col);
   }
   
   /**
@@ -347,6 +366,10 @@ public class PropertyTableWidget extends JPanel {
       // done
     }
     
+    private Gedcom getGedcom() {
+      return model!=null ? model.getGedcom() : null;
+    }
+    
     public void handleContentChange(PropertyTableModel model) {
       
       // setup cell state
@@ -421,7 +444,9 @@ public class PropertyTableWidget extends JPanel {
     
     /** context */
     private Context getContextAt(int row, int col) {
-      
+      // nothing to do?
+      if (model==null)
+        return null;
       // try to find property already cached
       Property root = model.getProperty(row2row[row]);
       Property prop = getPropertyAt(row, col);
