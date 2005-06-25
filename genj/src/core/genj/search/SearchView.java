@@ -709,11 +709,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       int c = isSelected ? 0 : 1 + (hit.getEntity()&1);  
       text.setBackground(bgColors[c]);
       
-      // show image
-      // FIXME image?
-      //label.setIcon(hit.getImage());
-
-      // show text view
+      // show hit document (includes image and text)
       text.setDocument(hit.getDocument());
       
       // done

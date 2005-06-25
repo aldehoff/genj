@@ -120,8 +120,6 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
    */
   public List createActions(Property property, ViewManager manager) {
     
-    // TODO would be great if this wasn't hardcoded
-    
     // create the actions
     List result = new ArrayList();
     
@@ -136,19 +134,14 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     // Check what xrefs can be added
     MetaProperty[] subs = property.getNestedMetaProperties(0);
     for (int s=0;s<subs.length;s++) {
-      // NOTE||REPO||SOUR||SUBM
+      // NOTE REPO SOUR SUBM (BIRT|ADOP)FAMC
       Class type = subs[s].getType();
       if (type==PropertyNote.class||
           type==PropertyRepository.class||
           type==PropertySource.class||
-          type==PropertySubmitter.class) {
+          type==PropertySubmitter.class||
+          type==PropertyFamilyChild.class) {
         // .. make sure @@ forces a non-substitute!
-        result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
-        // continue
-        continue;
-      }
-      // TODO works with ADOP|FAMC only
-      if (type==PropertyFamilyChild.class) {
         result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
         // continue
         continue;

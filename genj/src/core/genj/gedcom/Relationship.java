@@ -48,8 +48,7 @@ public abstract class Relationship {
   }
   
   /**
-   * A warning
-   * @param entity TODO
+   * A warning that explains the dire consequences of applying this relationship
    * @param entity existing entity that this relationship is applied to (if applicable)
    * @return a warning text for this relationship or null
    */

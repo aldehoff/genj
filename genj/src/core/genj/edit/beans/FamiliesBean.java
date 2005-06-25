@@ -55,7 +55,6 @@ public class FamiliesBean extends PropertyBean {
     
     // prepare a simple table
     table = new PropertyTableWidget(viewManager);
-    // FIXME table.setContextPropagation(PropertyTableWidget.CONTEXT_PROPAGATION_ON_DOUBLE_CLICK);
     table.setPreferredSize(new Dimension(64,64));
     
     setLayout(new BorderLayout());

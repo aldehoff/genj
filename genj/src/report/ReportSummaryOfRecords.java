@@ -176,13 +176,10 @@ public class ReportSummaryOfRecords extends Report {
 
     // multiline needs loop
     if (prop instanceof MultiLineProperty) {
-      
       MultiLineProperty.Iterator lines = ((MultiLineProperty)prop).getLineIterator();
       do {
         doc.addText(lines.getValue());
-        // FIXME out.print("<br>");
       } while (lines.next());
-      
       // done
       return;
     }
@@ -192,7 +189,7 @@ public class ReportSummaryOfRecords extends Report {
     if (prop instanceof PropertyName)
       value = ((PropertyName)prop).getName();
     else
-      value = prop.toString();
+      value = prop.getDisplayValue();
 
     doc.addText(value);
       
