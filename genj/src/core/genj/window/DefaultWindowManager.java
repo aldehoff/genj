@@ -29,17 +29,21 @@ import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.KeyStroke;
 
 /**
  * The default 'heavyweight' window manager
@@ -122,7 +126,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
 
     // Create a dialog 
     Window parent = getWindowForComponent(owner);
-    JDialog dlg = parent instanceof Dialog ? 
+    final JDialog dlg = parent instanceof Dialog ? 
       (JDialog)new JDialog((Dialog)parent) {
         /** dispose is our onClose (WindowListener.windowClosed is too late after dispose() */
         public void dispose() {
@@ -150,6 +154,15 @@ public class DefaultWindowManager extends AbstractWindowManager {
 //        System.out.println("resized");
 //      }
 //    });
+    
+    // hook up to ESC (=cancel)
+    Action escape = new AbstractAction() {
+      public void actionPerformed(java.awt.event.ActionEvent e) {
+        dlg.dispose();
+      }
+    };
+    dlg.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), escape);
+    dlg.getRootPane().getActionMap().put(escape, escape);
     
     // setup looks
     dlg.setTitle(title);
