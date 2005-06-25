@@ -27,11 +27,17 @@ import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.Box;
+import javax.swing.FocusManager;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 /**
@@ -83,6 +89,13 @@ import javax.swing.SwingConstants;
     // setup layout
     setLayout(new BorderLayout());
     add(view, BorderLayout.CENTER);
+    
+    // hook-up keyboard shortcuts
+    Object key = "genj.view.contextmenu";
+    InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    inputs.put(KeyStroke.getKeyStroke("shift F10"), key);
+    inputs.put(KeyStroke.getKeyStroke("ctrl SPACE"), key);
+    getActionMap().put(key, new ActionKey());
 
     // done
   }
@@ -199,6 +212,28 @@ import javax.swing.SwingConstants;
     // done
   }
 
+  /**
+   * Action - Keyboard 
+   */
+  protected class ActionKey extends AbstractAction {
+    public void actionPerformed(ActionEvent e) {
+      // look for ContextProvider starting with component having focus
+      Component provider = FocusManager.getCurrentManager().getFocusOwner();
+      while (provider!=null) {
+        if (provider instanceof ContextProvider) {
+          Context context = ((ContextProvider)provider).getContext();
+          if (context!=null) {
+            if (!(provider instanceof JComponent)) provider = ViewContainer.this;
+            manager.showContextMenu(context, null, (JComponent)provider, new Point());
+            return;
+          }
+        }
+        provider = provider.getParent();
+      }
+      // no ContextProvider found
+    }
+  } //ActionKey
+  
   /**
    * Action - close view
    */

@@ -62,9 +62,9 @@ public class Context {
   public Context(Gedcom ged, Entity ent, Property prop) {
     
     // property?
-    if (prop!=null && (prop instanceof Entity||prop.getParent()!=null) ) {
+    if (prop!=null) {
       property = prop;
-      entity = property.getEntity();
+      entity = ent!=null ? ent : property.getEntity();
       gedcom = entity.getGedcom();
     } else {
       // entity?

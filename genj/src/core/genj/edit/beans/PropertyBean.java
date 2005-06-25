@@ -25,7 +25,9 @@ import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ViewManager;
 
 import java.awt.Color;
@@ -44,7 +46,7 @@ import javax.swing.event.ChangeListener;
  * <pre>
  * </pre>
  */
-public abstract class PropertyBean extends JPanel {
+public abstract class PropertyBean extends JPanel implements ContextProvider {
   
   /** the resources */
   protected final static Resources resources = Resources.get(PropertyBean.class); 
@@ -105,6 +107,18 @@ public abstract class PropertyBean extends JPanel {
    */
   protected void setContextImpl(Property prop) {
     
+  }
+  
+  /**
+   * ContextProvider callback 
+   */
+  public Context getContext() {
+    // ok, this is tricky since the property we're looking at might
+    // actually not be part of an entity yet - we check for
+    // that - no context in that case
+    // (otherwise other code that relies on properties being
+    // part of an entity might break)
+    return property.getEntity()==null ? null : new Context(property);
   }
   
   /**

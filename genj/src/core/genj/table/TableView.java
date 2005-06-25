@@ -33,6 +33,7 @@ import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -50,7 +51,7 @@ import javax.swing.JToolBar;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, ContextListener {
+public class TableView extends JPanel implements ToolBarSupport, ContextListener, ContextProvider {
 
   /** a static set of resources */
   private Resources resources = Resources.get(this);
@@ -116,6 +117,13 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     add(propertyTable, BorderLayout.CENTER);
     
     // done
+  }
+  
+  /**
+   * ContextProvider callback 
+   */
+  public Context getContext() {
+    return new Context(gedcom);
   }
   
   /**

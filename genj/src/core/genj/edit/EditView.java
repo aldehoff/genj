@@ -31,6 +31,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -56,7 +57,7 @@ import javax.swing.JToolBar;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JPanel implements ToolBarSupport, ContextListener {
+public class EditView extends JPanel implements ToolBarSupport, ContextListener, ContextProvider  {
   
   /*package*/ final static Logger LOG = Logger.getLogger("genj.edit");
   
@@ -270,6 +271,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener 
         result.add(edit);
     }
     return (EditView[])result.toArray(new EditView[result.size()]);
+  }
+  
+  /**
+   * ContextProvider callback
+   */
+  public Context getContext() {
+    return editor.getContext();
   }
 
   /**
