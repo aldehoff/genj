@@ -325,8 +325,13 @@ public abstract class Relationship {
       fam.addChild(child);
       
       // set it's name if new
-      if (isNew) 
-        child.setName("", parent.getLastName());        
+      if (isNew) {
+        Indi parent  = fam.getHusband();
+        if (parent==null) parent = fam.getWife();
+        if (parent!=null)
+          child.setName("", parent.getLastName());
+      }
+      
       
       // focus stays with parent
       return parent;
