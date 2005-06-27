@@ -332,10 +332,13 @@ public class MetaProperty implements Comparable {
     // check cached info
     if (info==null) {
       info = Gedcom.getResources().getString(tag+".info", false);
-      if (info==null)
-        info = "";
-      else
-        info = getName() + ":\n" + info;
+      if (info==null) {
+        char c = tag.charAt(0);
+        if (c!='_') c = '?'; // make it "_.info" or "?.info"
+        info = Gedcom.getResources().getString(  c + ".info");
+      }
+      // prepend tag name
+      info = getName() + ":\n" + info;
     }
     // done
     return info;
