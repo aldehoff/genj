@@ -367,6 +367,9 @@ public class MetaProperty implements Comparable {
    * Resolve sub by tag
    */
   public MetaProperty getNested(String tag, boolean persist) {
+    // check tag argument
+    if (tag==null||tag.length()==0)
+      throw new IllegalArgumentException("tag can't be empty");
     // current tag in map?
     MetaProperty result = (MetaProperty)tag2nested.get(tag);
     if (result==null) {
