@@ -503,7 +503,7 @@ public class GedcomReader implements Trackable {
       throw new GedcomIOException(resources.getString("read.error.cancelled"), line);
       
 
-    // Still undo ?
+    // Still undo we can use?
     if (redoLine) {
       redoLine = false;
       return;
@@ -527,7 +527,13 @@ public class GedcomReader implements Trackable {
         if (length>0) {
           progress = Math.min(100,(int)(read*100/length));
         }
-
+        
+        // trim it now
+        gedcomLine = gedcomLine.trim();
+        if (gedcomLine.length()==0) 
+          addWarning(line, resources.getString("read.error.emptyline"));
+        
+        
       } while ( gedcomLine.length()==0 );
 
     } catch (Exception ex) {
@@ -564,8 +570,13 @@ public class GedcomReader implements Trackable {
       }
 
       // .. tag (?)
-      tag = tokens.nextToken();
-
+      if (tokens.hasMoreTokens()) 
+        tag = tokens.nextToken();
+      else {
+        tag = "_MISSING";
+        addWarning(line, resources.getString("read.error.emptyline"));
+      }
+        
       // .. xref ?
       if (tag.startsWith("@")&&level==0) {
 
@@ -663,9 +674,10 @@ public class GedcomReader implements Trackable {
         break;
         
       // level>currentLevel would be wrong e.g.
-      // 0 INDI
-      // 1 BIRT
-      // 3 DATE
+      //  0 INDI
+      //  1 BIRT
+      //  3 DATE
+      // we simply spit out a warning and continue as if nothing happened
       if (level>currentlevel+1) 
         addWarning(line, resources.getString("read.warn.badlevel", ""+level));
   
