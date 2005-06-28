@@ -403,7 +403,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       // force editor to commit
       editor.setContext(editor.getContext());
       // create popup
-      return manager.getContextMenu(editor.getContext(), null, this);
+      return manager.getContextMenu(editor.getContext(), this);
     }
      
   } //ContextMenu

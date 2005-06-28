@@ -22,7 +22,12 @@ package genj.view;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.util.ActionDelegate;
 import genj.util.swing.ImageIcon;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A context represents a 'current context in Gedcom terms', a gedcom
@@ -34,6 +39,7 @@ public class Context {
   private Gedcom gedcom;
   private Entity entity;
   private Property property;
+  private List actions = new ArrayList();
 
   /**
    * Constructor
@@ -78,6 +84,21 @@ public class Context {
     }
     
     // done
+  }
+  
+  /**
+   * Add an action
+   */
+  public Context addAction(ActionDelegate action) {
+    actions.add(action);
+    return this;
+  }
+  
+  /**
+   * Access to actions
+   */
+  public List getActions() {
+    return Collections.unmodifiableList(actions);
   }
   
   /**

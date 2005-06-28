@@ -38,6 +38,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -48,11 +49,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +77,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * View for searching
  */
-public class SearchView extends JPanel implements ToolBarSupport, ContextListener{
+public class SearchView extends JPanel implements ToolBarSupport, ContextListener {
   
   /** formatting */
   private final static String
@@ -210,7 +208,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
 
     // done
   }
-
+  
   /**
    * callback - context changed
    */  
@@ -670,7 +668,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
   /**
    * our specialized list
    */  
-  private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer, MouseListener  {
+  private class ResultWidget extends JList implements ListSelectionListener, ListCellRenderer, ContextProvider  {
     
     /** our text component for rendering */
     private JTextPane text = new JTextPane();
@@ -695,10 +693,20 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       // rendering
       setCellRenderer(this);
       addListSelectionListener(this);
-      addMouseListener(this);
       text.setOpaque(true);
     }
     
+    /**
+     * ContextProvider - callback
+     */
+    public Context getContext() {
+      
+      Hit hit = (Hit)getSelectedValue();
+      if (hit!=null) 
+        return new Context(hit.getProperty());
+      return new Context(gedcom);
+    }
+
     /**
      * we know about action delegates and will use that here if applicable
      */
@@ -725,52 +733,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
         manager.fireContextSelected(new Context(results.getHit(row).getProperty()));
     }
 
-    /**
-     * mouse event callback
-     */
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    /**
-     * mouse event callback
-     */
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    /**
-     * mouse event callback
-     */
-    public void mouseExited(MouseEvent e) {
-    }
-    
-    /**
-     * mouse event callback
-     */
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    
-    /**
-     * mouse event callback
-     */
-    public void mouseReleased(MouseEvent e) {
-
-      // no popup trigger no action
-      if (!e.isPopupTrigger()) 
-        return;
-
-      // try to find a context
-      Point pos = e.getPoint();
-      int row = locationToIndex(pos);
-      if (row<0) 
-        return;      
-      Hit hit = (Hit)getModel().getElementAt(row);
-      Context context = new Context(hit.getProperty());
-      // select it
-      selectContext(context);
-      // propagate it
-      manager.showContextMenu(context, null, this, pos);
-    }
     
   } //ResultWidget
  

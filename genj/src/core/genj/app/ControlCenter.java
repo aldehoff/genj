@@ -38,7 +38,6 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.ProgressWidget;
-import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewFactory;
@@ -48,15 +47,12 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -105,7 +101,7 @@ public class ControlCenter extends JPanel {
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager);
     
     // Table of Gedcoms
-    tGedcoms = new GedcomTableWidget(viewManager, registry);
+    tGedcoms = new GedcomTableWidget(viewManager, registry, new ActionSave(false), new ActionClose());
     
     // ... Listening
     tGedcoms.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -114,40 +110,6 @@ public class ControlCenter extends JPanel {
       }
     });
     
-    // providing context
-    tGedcoms.addMouseListener(new MouseAdapter() {
-      /** callback - mouse press */
-      public void mousePressed(MouseEvent e) {
-        mouseReleased(e);
-      }
-      /** callback - mouse release */
-      public void mouseReleased(MouseEvent e) {
-        
-        // no popup trigger no action
-        if (!e.isPopupTrigger()) 
-          return;
-  
-        // find context if applicable
-        Gedcom gedcom = tGedcoms.getGedcomAt(e.getPoint());
-        if (gedcom==null)
-          return;
-        
-        // select it
-        tGedcoms.setSelection(gedcom);
-
-        Context context = new Context(gedcom);
-        List actions = Arrays.asList(new Object[]{
-          new ActionClose(),
-          new ActionSave(false)
-        });
-        
-        // show context menu
-        viewManager.showContextMenu(context, actions, tGedcoms, e.getPoint());
-  
-        // done
-      }
-    });
-
     viewManager.addContextListener(new ContextListener() {
       public void handleContextSelectionEvent(ContextSelectionEvent event) {
         tGedcoms.setSelection(event.getContext().getGedcom());

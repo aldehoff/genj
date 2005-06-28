@@ -32,6 +32,7 @@ import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -512,13 +513,20 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   /**
    * The content for displaying the timeline model
    */
-  private class Content extends JComponent implements MouseListener {
+  private class Content extends JComponent implements MouseListener, ContextProvider {
     
     /**
      * constructor
      */
     private Content() {
       addMouseListener(this);
+    }
+
+    /**
+     * ContextProvider - callback
+     */
+    public Context getContext() {
+      return manager.getLastSelectedContext(model.gedcom); 
     }
     
     /**
@@ -574,27 +582,17 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     }
     public void mouseExited(MouseEvent e) {
     }
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
     public void mouseReleased(MouseEvent e) {
+    }
+    public void mousePressed(MouseEvent e) {
       
       // find context click
       Model.Event event = getEventAt(e.getPoint());
 
       // tell about it
       Context context = null;
-      if (event!=null) {
-        context = new Context(event.pd);
-        manager.fireContextSelected(context);
-      }
-
-      // popup trigger ? show context
-      if (e.isPopupTrigger())  {
-        if (context==null)
-          context = new Context(model.gedcom);
-        manager.showContextMenu(context, null, this, e.getPoint());
-      }
+      if (event!=null) 
+        manager.fireContextSelected(new Context(event.pd));
     }
   } //Content
   

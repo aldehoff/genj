@@ -31,7 +31,14 @@ import genj.util.Resources;
 import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
 
+import java.awt.AWTEvent;
+import java.awt.Component;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,9 +49,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 
 import sun.misc.Service;
 
@@ -53,6 +63,8 @@ import sun.misc.Service;
  */
 public class ViewManager {
   
+  /*package*/ ContextMenuHook HOOK = new ContextMenuHook();
+
   /*package*/ final static Logger LOG = Logger.getLogger("genj.view");
 
   /** resources */
@@ -496,7 +508,7 @@ public class ViewManager {
   /**
    * Get a context menu
    */
-  public JPopupMenu getContextMenu(Context context, List actions, JComponent target) {
+  public JPopupMenu getContextMenu(Context context, JComponent target) {
     
     // make sure context is valid
     if (!context.isValid())
@@ -514,15 +526,14 @@ public class ViewManager {
     JPopupMenu popup = mh.createPopup();
 
     // popup local actions?
-    if (actions!=null&&!actions.isEmpty())
-      mh.createItems(actions, false);
+    mh.createItems(context.getActions(), false);
   
     // find ActionSupport implementors
     ActionProvider[] as = (ActionProvider[])getInstances(ActionProvider.class, context.getGedcom());
 
     // items for property
     if (property!=null&&property!=entity) {
-      String title = Property.LABEL+" '"+TagPath.get(property)+'\'';
+      String title = Property.LABEL+" '"+TagPath.get(property).getName() +'\'';
       mh.createMenu(title, property.getImage(false));
       for (int i = 0; i < as.length; i++) {
         mh.createItems(as[i].createActions(property, this), true);
@@ -555,10 +566,113 @@ public class ViewManager {
   /**
    * Show a context menu
    */
-  public void showContextMenu(Context context, List actions, JComponent component, Point pos) {
-    JPopupMenu popup = getContextMenu(context, actions, component);
+  public void showContextMenu(Context context, JComponent component, Point pos) {
+    JPopupMenu popup = getContextMenu(context, component);
     if (popup!=null)
       popup.show(component, pos.x, pos.y);
   }
     
+  /**
+   * Our Context menu provider for keyboard shortcut and right mouse-click 
+   */
+  /*package*/ class ContextMenuHook extends AbstractAction implements AWTEventListener {
+    
+    /** constructor */
+    private ContextMenuHook() {
+      Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
+    }
+    
+    /**
+     * Resolve context provider for given 'source'
+     */
+    private ContextProvider getProvider(Object source) {
+      // a component?
+      if (!(source instanceof Component))
+        return null;
+      // find context provider in component hierarchy
+      Component c = (Component)source;
+      while (c!=null) {
+        // found?
+        if (c instanceof ContextProvider) 
+          return (ContextProvider)c;
+        // try parent
+        c = c.getParent();
+      }
+      // not found
+      return null;
+    }
+    
+    /**
+     * A Key press initiation of the context menu
+     */
+    public void actionPerformed(ActionEvent e) {
+      // only for jcomponents with focus
+      Component focus = FocusManager.getCurrentManager().getFocusOwner();
+      if (!(focus instanceof JComponent))
+        return;
+      // look for ContextProvider and show menu if appropriate
+      ContextProvider provider = getProvider(focus);
+      if (provider!=null) {
+        Context context = provider.getContext();
+        if (context!=null) 
+          showContextMenu(context, (JComponent)focus, new Point());
+      }
+    }
+    
+    /**
+     * A mouse click initiation of the context menu
+     */
+    public void eventDispatched(AWTEvent event) {
+      
+      // a mouse event?
+      if ((event.getID() & AWTEvent.MOUSE_EVENT_MASK) == 0) 
+        return;
+      MouseEvent me = (MouseEvent) event;
+      
+      // find deepest component (since components without attached listeners
+      // won't be the source for this event)
+      final Component component  = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
+      final Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), component );
+      
+      // gotta be a jcomponent
+      if (!(component instanceof JComponent))
+        return;
+      
+      // fake a normal click event so that popup trigger does a selection as well as non-popup trigger
+      if (me.getButton()!=MouseEvent.BUTTON1) {
+        MouseListener[] ms = ((JComponent)component).getMouseListeners();
+        MouseEvent fake = new MouseEvent(component, me.getID(), me.getWhen(), 0, point.x, point.y, me.getClickCount(), false, MouseEvent.BUTTON1);
+        for (int m = 0; m < ms.length; m++)  {
+          switch (me.getID()) {
+            case MouseEvent.MOUSE_PRESSED:
+              ms[m].mousePressed(fake); break;
+            case MouseEvent.MOUSE_RELEASED:
+              ms[m].mouseReleased(fake); break;
+          }
+        }
+      }
+
+      // popup menu trigger?
+      if(!me.isPopupTrigger()) 
+        return;
+      
+      // look for ContextProvider
+      final ContextProvider provider = getProvider(component);
+      if (provider==null)
+        return;
+      Context context = provider.getContext();
+      if (context==null) 
+        return;
+      
+      // cancel any menu
+      MenuSelectionManager.defaultManager().clearSelectedPath();
+      
+      // show context menu
+      showContextMenu(context, (JComponent)component, point);
+      
+      // done
+    }
+    
+  } //ContextMenuHook
+  
 } //ViewManager

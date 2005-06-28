@@ -36,6 +36,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
 import genj.view.Context;
+import genj.view.ContextProvider;
 import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
@@ -45,7 +46,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -57,11 +57,9 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.JCheckBox;
@@ -82,7 +80,7 @@ import javax.swing.event.TreeSelectionListener;
  * Our advanced version of the editor allowing low-level
  * access at the Gedcom record-structure
  */
-/*package*/ class AdvancedEditor extends Editor {
+/*package*/ class AdvancedEditor extends Editor implements ContextProvider {
   
   private final static Clipboard clipboard = initClipboard();
 
@@ -187,7 +185,26 @@ import javax.swing.event.TreeSelectionListener;
    * @return Gedcom tree's root and selection 
    */
   public Context getContext() {
-    return new Context(gedcom, (Entity)tree.getRoot(), tree.getSelection());
+    
+    Property selection = tree.getSelection();
+    Context context = new Context(gedcom, (Entity)tree.getRoot(), selection);
+
+    // 20040719 got to check transient - dont want to let the user control those
+    if (selection!=null&&!selection.isTransient()) {
+      context.addAction(new Cut(selection));
+      context.addAction(new Copy(selection));
+      context.addAction(new Paste(selection));
+      context.addAction(ActionDelegate.NOOP);
+      context.addAction(new Add(selection));
+      try {
+        context.addAction(new Propagate(selection));
+      } catch (IllegalArgumentException i) {
+      }
+      context.addAction(ActionDelegate.NOOP);
+    }
+    
+    // done
+    return context;
   }
   
   /**
@@ -599,54 +616,6 @@ import javax.swing.event.TreeSelectionListener;
       }
     }
   
-    /** callback - mouse press */
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    /** callback - mouse release */
-    public void mouseReleased(MouseEvent e) {
-      
-      // no popup trigger no action
-      if (!e.isPopupTrigger()) 
-        return;
-      Point pos = e.getPoint();
-      
-      // property at that point?
-      Property prop = tree.getPropertyAt(pos);
-      Property root = tree.getRoot();
-      
-      // make sure it's selected
-      if (tree.getSelection()!=prop)
-        tree.setSelection(prop);
-
-      // 20040719 got to check transient - dont want to let the user control those
-      if (prop!=null&&prop.isTransient())
-        prop = null;
-      
-      // create Context
-      Context context = new Context(gedcom, (Entity)root, prop);
-
-      // cut/copy/paste
-      List actions = new ArrayList(16);
-      if (prop!=null) {
-	      actions.add(new Cut(prop));
-	      actions.add(new Copy(prop));
-	      actions.add(new Paste(prop));
-	      actions.add(ActionDelegate.NOOP);
-	      actions.add(new Add(prop));
-	      try {
-	        actions.add(new Propagate(prop));
-	      } catch (IllegalArgumentException i) {
-	      }
-	      actions.add(ActionDelegate.NOOP);
-      }
-      
-      // show context menu
-      editView.getViewManager().showContextMenu(context, actions, tree, e.getPoint());
-
-      // done
-    }
-    
     /**
      * callback - selection in tree has changed
      */

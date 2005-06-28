@@ -46,10 +46,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,7 +121,6 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
     InteractionHandler i = new InteractionHandler();
     
     table = new JTable();
-    table.addMouseListener(i);
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
     table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setTableHeader(new SortableTableHeader());
@@ -234,8 +230,9 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
    * Select a cell
    */
   public void select(Property row, Property col) {
+    
     int r = getRow(row);
-    int c = getCol(r, col);
+    int c = col!=null ? getCol(r, col) : -1;
 
     // scroll to visible
     table.scrollRectToVisible(table.getCellRect(r,c,true));
@@ -448,9 +445,15 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
       if (model==null)
         return null;
       // try to find property already cached
-      Property root = model.getProperty(row2row[row]);
       Property prop = getPropertyAt(row, col);
-      return new Context(root.getGedcom(), root.getEntity(), prop);
+      if (prop!=null)
+        return new Context(prop);
+      Property root = model.getProperty(row2row[row]);
+      
+      // we're very specific here - we don't want to get a context back thrown
+      // at us that has property!=null if the user has selected an empty
+      // cell in our view - property==null!!!
+      return new Context(root.getGedcom(), root.getEntity(), null);
     }
     
     /** property */
@@ -722,44 +725,7 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
   /**
    * Callback for list selections
    */
-  private class InteractionHandler extends MouseAdapter implements ListSelectionListener {
-    
-    /** callback - mouse press */
-    public void mousePressed(MouseEvent e) {
-      // some platforms send popup trigger on pressed
-      if (e.isPopupTrigger())
-        mouseReleased(e);
-    }
-    
-    /** callback - mouse release */
-    public void mouseReleased(MouseEvent e) {
-      
-      Point pos = e.getPoint();
-
-      // get context
-      int row = table.rowAtPoint(pos);
-      int col = table.columnAtPoint(pos);
-      if (row<0||col<0) 
-        return;
-      
-      // make sure selection is accurate for non 1st button clicks
-      if (e.getButton()!=1&&!table.isCellSelected(row, col))
-        table.changeSelection(row, col, false, false);
-      
-      // context is either entity or property
-      Context context = ((Model)table.getModel()).getContextAt(row, col);
-      
-      // context menu?
-      if (e.isPopupTrigger()) {
-        viewManager.showContextMenu(context, null, table, pos);
-        return;
-      }
-      
-      //  context propagation 
-      fireContextSelectionChanged(context, e.getClickCount()>1);
-      
-      // done
-    }
+  private class InteractionHandler implements ListSelectionListener {
     
     /** callback - selection changed e.g. by keyboard */
     public void valueChanged(ListSelectionEvent e) {

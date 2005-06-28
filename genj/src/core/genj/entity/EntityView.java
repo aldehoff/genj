@@ -30,6 +30,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -38,11 +39,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +51,7 @@ import javax.swing.JToolBar;
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JPanel implements ContextListener, ToolBarSupport, GedcomListener {
+public class EntityView extends JPanel implements ContextListener, ToolBarSupport, GedcomListener, ContextProvider {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = Resources.get(EntityView.class);
@@ -107,27 +105,14 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
     if (context!=null) 
       setEntity(context.getEntity());
     
-    // enable context popup
-    addMouseListener(new MouseAdapter() {
-      
-      /** callback - mouse press */
-      public void mousePressed(MouseEvent e) {
-        mouseReleased(e);
-      }
-  
-      /** callback - mouse release */
-      public void mouseReleased(MouseEvent e) {
-        // no popup trigger no action
-        if (!e.isPopupTrigger()) 
-          return;
-        Point pos = e.getPoint();
-        // context
-        Context context = entity==null ? new Context(gedcom) : new Context(entity);
-        viewManager.showContextMenu(context, null, EntityView.this, pos);
-      }
-    });
-    
     // done    
+  }
+  
+  /**
+   * ContextProvider - callback
+   */
+  public Context getContext() {
+    return entity==null ? new Context(gedcom) : new Context(entity);
   }
 
   /**

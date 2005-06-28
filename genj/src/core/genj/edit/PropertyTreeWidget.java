@@ -94,14 +94,6 @@ public class PropertyTreeWidget extends DnDTree {
     setExpandsSelectedPaths(true);
     ToolTipManager.sharedInstance().registerComponent(this);
     
-//    Action f10 = new AbstractAction() {
-//      public void actionPerformed(java.awt.event.ActionEvent e) {
-//        System.out.println("Hello");
-//      }
-//    };
-//    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F10"), f10);
-//    getActionMap().put(f10, f10);
-    
     // done
   }
   
@@ -438,7 +430,7 @@ public class PropertyTreeWidget extends DnDTree {
       
         // still some text we can paste into new parent?
         if (string!=null) {
-          EditView.LOG.info("reading dropped text '"+string+"'");
+          EditView.LOG.fine("reading dropped text '"+string+"'");
           GedcomReader.read(new StringReader(string), newParent, index);
         }
         

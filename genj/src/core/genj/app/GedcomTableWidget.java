@@ -22,9 +22,12 @@ package genj.app;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
+import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SortableTableHeader;
+import genj.view.Context;
+import genj.view.ContextProvider;
 import genj.view.ViewManager;
 
 import java.awt.Point;
@@ -43,7 +46,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * A component displaying a list of Gedcoms
  */
-/*package*/ class GedcomTableWidget extends JTable {
+/*package*/ class GedcomTableWidget extends JTable implements ContextProvider {
   
   /** default column widths */
   private static final int defaultWidths[] = {
@@ -56,11 +59,17 @@ import javax.swing.table.TableColumnModel;
   /** a model */
   private Model model;
   
+  /** actions */
+  private ActionDelegate save, close;
+  
   /**
    * Constructor
    */
-  public GedcomTableWidget(ViewManager mgr, Registry reGistry) {
- 
+  public GedcomTableWidget(ViewManager mgr, Registry reGistry, ActionDelegate save, ActionDelegate close) {
+
+    this.save = save;
+    this.close = close;
+    
     // change the header to ours    
     setTableHeader(new SortableTableHeader());
     
@@ -95,6 +104,19 @@ import javax.swing.table.TableColumnModel;
     }    
 
     // done
+  }
+  
+  /**
+   * ContextProvider - callback
+   */
+  public Context getContext() {
+    int row = getSelectedRow();
+    if (row<0) 
+      return null;
+    Context context = new Context(model.getGedcom(row));
+    context.addAction(save);
+    context.addAction(close);
+    return context;
   }
   
   /**

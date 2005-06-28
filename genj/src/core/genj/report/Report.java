@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.68 $ $Author: nmeier $ $Date: 2005-06-23 04:20:48 $
+ * $Revision: 1.69 $ $Author: nmeier $ $Date: 2005-06-28 01:33:26 $
  */
 package genj.report;
 
@@ -38,6 +38,7 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.util.swing.HeadlessLabel;
 import genj.view.Context;
+import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
@@ -766,7 +767,7 @@ public abstract class Report implements Cloneable {
    * manager (a.k.a. not deleted)
    * Listening for updates as a GedcomListener was just too much work  ;)
    */
-  private static class ItemList extends JList implements ListCellRenderer, ListSelectionListener, MouseListener {
+  private static class ItemList extends JList implements ListCellRenderer, ListSelectionListener, MouseListener, ContextProvider {
 
     /** the view manager */
     private ViewManager manager;
@@ -791,6 +792,16 @@ public abstract class Report implements Cloneable {
       addListSelectionListener(this);
       addMouseListener(this);
       // done
+    }
+    
+    /**
+     * ContextProvider - callback
+     */
+    public Context getContext() {
+      Object item = getSelectedValue();
+      if (item instanceof Item)
+        return new Context( ((Item)item).getTarget() );
+      return new Context(gedcom);
     }
 
     /**
@@ -832,26 +843,14 @@ public abstract class Report implements Cloneable {
     public void mouseExited(MouseEvent e) {
     }
     public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    public void mouseReleased(MouseEvent e) {
-      // no popup trigger no action
-      if (!e.isPopupTrigger()) 
-        return;
       Point pos = e.getPoint();
       // find row
       int row = locationToIndex(pos);
-      if (row>=0) {
-        // select
+      if (row>=0) 
+        // make sure it's selected
         setSelectedIndex(row);
-        // check item
-        Item item = (Item)getModel().getElementAt(row);
-        Property target = item.getTarget();
-        // create context
-        Context context = target==null ? new Context(gedcom) : new Context(target);
-        // propagate
-        manager.showContextMenu(context, null, this, pos);
-      }
+    }
+    public void mouseReleased(MouseEvent e) {
     }
   } //PropertyList
 
