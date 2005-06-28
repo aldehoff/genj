@@ -30,6 +30,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.Icon;
@@ -49,7 +50,7 @@ public class MenuHelper  {
   private String text             = null;
   private String action           = null;
   private ImageIcon image         = null;
-  private Vector menus            = new Vector();  // JMenu or JPopupMenu or JMenuBar
+  private Stack menus            = new Stack();  // JMenu or JPopupMenu or JMenuBar
   private ActionListener listener = null;
   private Vector collection       = null;
   private Resources resources     = null;
@@ -57,8 +58,16 @@ public class MenuHelper  {
   private JComponent target       = null;
 
   /** Setters */    
-  public MenuHelper popMenu() { menus.removeElement(menus.lastElement()); return this; }
-  public MenuHelper pushMenu(Object set) { menus.addElement(set); return this; }
+  public MenuHelper popMenu() { 
+    // pop it of the stack
+    JMenu menu = (JMenu)menus.pop(); 
+    // remove it if empty
+    if (menu.getMenuComponentCount()==0)
+      menu.getParent().remove(menu);
+    // done
+    return this; 
+  }
+  public MenuHelper pushMenu(JPopupMenu popup) { menus.push(popup); return this; }
   public MenuHelper setCollection(Vector set) { collection=set; return this; }
   public MenuHelper setResources(Resources set) { resources=set; return this; }
   public MenuHelper setEnabled(boolean set) { enabled=set; return this; }
@@ -69,7 +78,7 @@ public class MenuHelper  {
    */
   public JMenuBar createBar() {
     JMenuBar result = new JMenuBar();
-    pushMenu(result);
+    menus.push(result);
     return result;
   }
   
@@ -96,7 +105,7 @@ public class MenuHelper  {
     if (menu instanceof JMenuBar)
       ((JMenuBar)menu).add(result);
 
-    pushMenu(result);
+    menus.push(result);
     return result;
   }
   
@@ -273,7 +282,7 @@ public class MenuHelper  {
    */  
   private Object peekMenu() {
     if (menus.size()==0) return null;
-    return menus.lastElement();
+    return menus.peek();
   }
   
   /**
