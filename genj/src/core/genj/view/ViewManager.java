@@ -511,7 +511,7 @@ public class ViewManager {
   public JPopupMenu getContextMenu(Context context, JComponent target) {
     
     // make sure context is valid
-    if (!context.isValid())
+    if (context==null||!context.isValid())
       return null;
     
     Property property = context.getProperty();
@@ -532,13 +532,16 @@ public class ViewManager {
     ActionProvider[] as = (ActionProvider[])getInstances(ActionProvider.class, context.getGedcom());
 
     // items for property
-    if (property!=null&&property!=entity) {
-      String title = Property.LABEL+" '"+TagPath.get(property).getName() +'\'';
-      mh.createMenu(title, property.getImage(false));
-      for (int i = 0; i < as.length; i++) {
+    while (property!=null&&property!=entity) {
+
+      // a sub-menu with appropriate actions
+      mh.createMenu(Property.LABEL+" '"+TagPath.get(property).getName() + '\'' , property.getImage(false));
+      for (int i = 0; i < as.length; i++) 
         mh.createItems(as[i].createActions(property, this), true);
-      }
       mh.popMenu();
+      
+      // recursively for parents
+      property = property.getParent();
     }
         
     // items for entity
@@ -563,15 +566,6 @@ public class ViewManager {
     return popup;
   }
   
-  /**
-   * Show a context menu
-   */
-  public void showContextMenu(Context context, JComponent component, Point pos) {
-    JPopupMenu popup = getContextMenu(context, component);
-    if (popup!=null)
-      popup.show(component, pos.x, pos.y);
-  }
-    
   /**
    * Our Context menu provider for keyboard shortcut and right mouse-click 
    */
@@ -607,16 +601,20 @@ public class ViewManager {
      */
     public void actionPerformed(ActionEvent e) {
       // only for jcomponents with focus
-      Component focus = FocusManager.getCurrentManager().getFocusOwner();
-      if (!(focus instanceof JComponent))
+      if (!(FocusManager.getCurrentManager().getFocusOwner() instanceof JComponent))
         return;
+      JComponent focus = (JComponent)FocusManager.getCurrentManager().getFocusOwner();
       // look for ContextProvider and show menu if appropriate
       ContextProvider provider = getProvider(focus);
       if (provider!=null) {
         Context context = provider.getContext();
-        if (context!=null) 
-          showContextMenu(context, (JComponent)focus, new Point());
+        if (context!=null) {
+          JPopupMenu popup = getContextMenu(context, focus);
+          if (popup!=null)
+            popup.show(focus, 0, 0);
+        }
       }
+      // done
     }
     
     /**
@@ -637,6 +635,7 @@ public class ViewManager {
       // gotta be a jcomponent
       if (!(component instanceof JComponent))
         return;
+      JComponent jcomponent = (JComponent)component;
       
       // fake a normal click event so that popup trigger does a selection as well as non-popup trigger
       if (me.getButton()!=MouseEvent.BUTTON1) {
@@ -668,7 +667,9 @@ public class ViewManager {
       MenuSelectionManager.defaultManager().clearSelectedPath();
       
       // show context menu
-      showContextMenu(context, (JComponent)component, point);
+      JPopupMenu popup = getContextMenu(context, jcomponent);
+      if (popup!=null)
+        popup.show(jcomponent, point.x, point.y);
       
       // done
     }
