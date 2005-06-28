@@ -102,7 +102,7 @@ public class Jurisdiction implements Comparable {
   public boolean equals(Object obj) {
     if (obj==null) return false;
     Jurisdiction that = (Jurisdiction)obj;
-    return this.country.equals(that.country) && this.code.equals(that.code);
+    return this.country.equals(that.country) && this.code.equalsIgnoreCase(that.code);
   }
   
   /**
