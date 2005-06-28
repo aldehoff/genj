@@ -47,8 +47,8 @@ public class PropertySource extends PropertyXRef {
    * a multilinevalue if no reference applicable
    */
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    // expecting NOTE
-    assume("SOUR".equals(meta.getTag()), UNSUPPORTED_TAG);
+    // expecting SOUR
+    meta.assertTag("SOUR");
     // ONLY for @..@!!!
     if (value.startsWith("@")&&value.endsWith("@"))
       return super.init(meta,value);

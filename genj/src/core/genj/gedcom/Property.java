@@ -672,13 +672,6 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Assertion (this was assert once but that's deprecated with 1.4)
-   */
-  protected void assume(boolean condition, String explanation) throws GedcomException {
-    if (!condition) throw new GedcomException(explanation);
-  }
-
-  /**
    * Returns the value of this property as string (this is a Gedcom compliant value)
    */
   abstract public String getValue();

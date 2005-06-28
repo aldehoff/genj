@@ -21,9 +21,7 @@ package genj.gedcom;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class for encapsulating a family with parents and children
@@ -35,26 +33,6 @@ public class Fam extends Entity {
     PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC"),
     PATH_FAMDIVDATE  = new TagPath("FAM:DIV:DATE"),
     PATH_FAMDIVPLAC  = new TagPath("FAM:MARR:PLAC");
-
-  /**
-   * Adds another child to the family
-   */
-  Fam addChild(Indi newChild) throws GedcomException {
-
-    // Remember Indi who is child
-    PropertyChild pc = new PropertyChild(newChild.getId());
-    addProperty(pc);
-
-    // Link !
-    try {
-      pc.link();
-    } catch (GedcomException ex) {
-      delProperty(pc);
-      throw ex;
-    }
-
-    return this;
-  }
 
   /**
    * Returns child #i
@@ -163,57 +141,6 @@ public class Fam extends Entity {
   }
 
   /**
-   * Calculate a set of ancestors of this family
-   * (husband + wife and their ancestors) 
-   */
-  public Set getAncestors() {
-    return getAncestors(new HashSet());
-  }
-  
-  /*package*/ Set getAncestors(Set collect) {
-    
-    // Husband ?
-    Indi husband = getHusband();
-    if (husband!=null&&!collect.contains(husband)) {
-      collect.add(husband); 
-      husband.getAncestors(collect);
-    }
-  
-    // Wife ?
-    Indi wife = getWife();
-    if (wife!=null&&!collect.contains(wife)) {
-      collect.add(wife); 
-      wife.getAncestors(collect);
-    }
-      
-    // done
-    return collect;
-  }
-  
-  /**
-   * Calculate a set of descendants of this family
-   * (children and their descendants) 
-   */
-  public Set getDescendants() {
-    return getDescendants(new HashSet());
-  }
-  
-  /*package*/ Set getDescendants(Set collect) {
-    
-    // children?
-    Indi[] children = getChildren();
-    for (int c=0; c<children.length; c++) {
-      Indi child = children[c];
-      if (collect.contains(child)) continue;
-      collect.add(child);
-      child.getDescendants(collect);    	
-    }
-    
-    // done
-    return collect;
-  }
-
-  /**
    * Sets the husband of this family
    */
   private Indi setHusband(Indi husband) throws GedcomException {
@@ -299,7 +226,7 @@ public class Fam extends Entity {
     
     // won't do if husband and wife already known
     if (husband!=null&&wife!=null)
-      throw new GedcomException(resources.getString("error.already.spouses"));
+      throw new GedcomException(resources.getString("error.already.spouses", this));
 
     // check gender of spouse 
     switch (spouse.getSex()) {
@@ -331,6 +258,26 @@ public class Fam extends Entity {
     // done
   }
   
+  /**
+   * Adds another child to the family
+   */
+  Fam addChild(Indi newChild) throws GedcomException {
+
+    // Remember Indi who is child
+    PropertyChild pc = new PropertyChild(newChild.getId());
+    addProperty(pc);
+
+    // Link !
+    try {
+      pc.link();
+    } catch (GedcomException ex) {
+      delProperty(pc);
+      throw ex;
+    }
+
+    return this;
+  }
+
   /**
    * list of famas to array
    */

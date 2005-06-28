@@ -129,7 +129,7 @@ public class PropertyFamilyChild extends PropertyXRef {
       throw new GedcomException(resources.getString("error.already.spouse", new String[]{ indi.toString(), fam.toString() }));
 
     // Family is descendant of indi ?
-    if (fam.getAncestors().contains(indi))
+    if (indi.isAncestorOf(fam))
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ indi.toString(), fam.toString() }));
 
     // Connect back from family (maybe using invalid back reference) 

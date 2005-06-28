@@ -51,7 +51,7 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
    */
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     // expecting NOTE
-    assume("OBJE".equals(meta.getTag()), UNSUPPORTED_TAG);
+    meta.assertTag("OBJE");
     // ONLY for @..@!!!
     if (value.startsWith("@")&&value.endsWith("@"))
       return super.init(meta,value);

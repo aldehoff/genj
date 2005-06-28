@@ -142,7 +142,7 @@ public class PropertySex extends Property {
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    assume(TAG.equals(meta.getTag()), UNSUPPORTED_TAG);
+    meta.assertTag(TAG);
     return super.init(meta, value);
   }
 

@@ -74,14 +74,6 @@ public abstract class Relationship {
   }
   
   /**
-   * Checks type
-   */
-  protected void assume(Object object, Class clazz) throws GedcomException {
-    if (!clazz.isAssignableFrom(object.getClass()))
-      throw new GedcomException(object+" !instanceof "+clazz);
-  }
-  
-  /**
    * Relationship : Association
    */
   public static class Association extends Relationship {
@@ -102,7 +94,7 @@ public abstract class Relationship {
      */
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
         
-      assume(entity, Indi.class);
+      Indi indi = (Indi)entity;
 
       // create ASSO in entity
       MetaProperty meta = entity.getMetaProperty().getNested("ASSO", true);
@@ -312,17 +304,27 @@ public abstract class Relationship {
       Fam[] fams = parent.getFamiliesWhereSpouse();
       Fam fam;
       if (fams.length>0) {
+        // add child to first fam
         fam = fams[0];
+        fam.addChild(child);
       } else {
+        
+        // create a new fam
         fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
+
+        try {
+          fam.addChild(child);
+        } catch (GedcomException e) {
+          getGedcom().deleteEntity(fam);
+          throw e;
+        }
+        
+        // set spouse
         fam.setSpouse(parent);
         
         // 20040619 adding missing spouse automatically now
         fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
       }
-      
-      // add child
-      fam.addChild(child);
       
       // set it's name if new
       if (isNew) {
@@ -372,7 +374,6 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
-      assume(entity, Indi.class);
       Indi indi = (Indi)entity;
       family.setSpouse(indi);
       // focus stays with family
@@ -389,10 +390,25 @@ public abstract class Relationship {
     /** parent of ... */
     private Indi child;
     
+    /** predetermined family that needs a spouse */
+    private Fam familyWithMissingSpouse;
+    
     /** Constructor */
     public ParentOf(Indi chil) {
       super(chil.getGedcom(), Gedcom.INDI);
+      
+      // remember child
       child = chil;
+      
+      // check if there's a family without spouse
+      Fam[] fams = child.getFamiliesWhereChild();
+      for (int f = 0; f < fams.length; f++) {
+        if (fams[f].getNoOfSpouses()<2) {
+          familyWithMissingSpouse = fams[f];
+          break;
+        }
+      }
+      
     }
     
     /**
@@ -407,9 +423,14 @@ public abstract class Relationship {
      * Warn if individual already has parents
      */
     public String getWarning(Entity entity) {
+      // a family with missing spouse already identified?
+      if (familyWithMissingSpouse!=null)
+        return null;
+      // check if we got biological parents already
       Fam fam =child.getFamilyWhereBiologicalChild();
       if (fam!=null)
         return Gedcom.resources.getString("error.already.child", new Object[]{ child, fam } );
+      // no problem
       return null;
     }
     
@@ -425,30 +446,24 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
-      assume(entity, Indi.class);
       Indi parent = (Indi)entity;
       
-      // get Family
-      Fam fam;
-      Fam[] fams = child.getFamiliesWhereChild();
-      if (fams.length==0) {
-        fam = (Fam)getGedcom().createEntity(Gedcom.FAM);
-        // make sure the new entity is first in family
-        fam.setSpouse(parent);
+      // create new if necessary
+      if (familyWithMissingSpouse==null) {
+        familyWithMissingSpouse = (Fam)getGedcom().createEntity(Gedcom.FAM);
         // add 'new' child
-	      fam.addChild(child);
+        familyWithMissingSpouse.addChild(child);
         // add defaults
-        fam.addDefaultProperties();
-      } else {
-        fam = fams[0];
-        // new entity becomes husb/wife
-        fam.setSpouse(parent);
-      }
+        familyWithMissingSpouse.addDefaultProperties();
+      } 
+      
+      // set spouse
+      familyWithMissingSpouse.setSpouse(parent);
 
       // 20040619 adding missing spouse automatically now
       // 20050405 whether we created a new family or the family didn't have all parents
-      if (fam.getNoOfSpouses()<2) 
-	      fam.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
+      if (familyWithMissingSpouse.getNoOfSpouses()<2) 
+        familyWithMissingSpouse.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
 
       // focus goes to new parent
       return parent;
@@ -497,7 +512,8 @@ public abstract class Relationship {
      * @see genj.gedcom.Relationship#apply(Entity, boolean)
      */
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
-      assume(entity, Indi.class);
+      
+      Indi indi = (Indi)entity;
       
       // lookup family for spouse
       Fam[] fams = spouse.getFamiliesWhereSpouse();
@@ -510,7 +526,7 @@ public abstract class Relationship {
       }
 
       // set its spouse
-      fam.setSpouse((Indi)entity);
+      fam.setSpouse(indi);
       
       // focus stays with spouse
       return spouse;

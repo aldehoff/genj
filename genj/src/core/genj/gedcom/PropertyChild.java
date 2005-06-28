@@ -120,7 +120,7 @@ public class PropertyChild extends PropertyXRef {
     }
 
     // Child is ancestor of husband or wife ?
-    if (fam.getAncestors().contains(child)) 
+    if (child.isAncestorOf(fam)) 
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ child.toString(), fam.toString()}));
 
     // Connect back from child (maybe using back reference)

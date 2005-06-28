@@ -50,7 +50,7 @@ public class PropertyNote extends PropertyXRef {
    */
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     // expecting NOTE
-    assume("NOTE".equals(meta.getTag()), UNSUPPORTED_TAG);
+    meta.assertTag("NOTE");
     // ONLY for @..@!!!
     if (value.startsWith("@")&&value.endsWith("@"))
       return super.init(meta, value);

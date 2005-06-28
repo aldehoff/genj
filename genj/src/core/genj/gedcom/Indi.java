@@ -26,9 +26,7 @@ import genj.util.swing.ImageIcon;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class for encapsulating a person
@@ -328,41 +326,86 @@ public class Indi extends Entity {
   }
 
   /**
-   * Return all ancestors of this individual
+   * Check wether this person is descendant of given person
    */
-  public Set getAncestors() {
-    return getAncestors(new HashSet());
+  public boolean isDescendantOf(Indi indi) {
+    return indi.isAncestorOf(this);
   }
   
-  /*package*/ Set getAncestors(Set collect) {
+  /**
+   * Check wether this person is ancestor of given person
+   */
+  public boolean isAncestorOf(Indi indi) {
     
-    // would be in parental family
-    Fam fam = getFamilyWhereBiologicalChild();
-    if (fam!=null)
-      fam.getAncestors(collect);
-
-    // done      
-    return collect;
+    // check indi's parents
+    Fam fam = indi.getFamilyWhereBiologicalChild();
+    if (fam==null)
+      return false;
+    
+    // check his mom/dad
+    Indi father = fam.getHusband();
+    if (father!=null) {
+      if (father==this)
+        return true;
+      if (isAncestorOf(father))
+        return true;
+    }
+    Indi mother = fam.getWife();
+    if (mother!=null) {
+      if (mother==this)
+        return true;
+      if (isAncestorOf(mother))
+        return true;
+    }
+    
+    // nope
+    return false;
+    
   }
 
   /**
-   * Returns all descendants for this individual
+   * Check wether this person is descendant of given family
    */
-  public Set getDescendants() {
-    return getDescendants(new HashSet());
-  }
-  
-  /*package*/ Set getDescendants(Set collect) {
+  public boolean isDescendantOf(Fam fam) {
     
-    // fams?
-    Fam[] fams = getFamiliesWhereSpouse();
-    for (int f=0; f<fams.length; f++) {
-      fams[f].getDescendants(collect);      
+    // check the family's children
+    Indi[] children = fam.getChildren();
+    for (int i = 0; i < children.length; i++) {
+      if (children[i].isAncestorOf(this))
+        return true;
     }
     
-    // done
-    return collect;
+    // nope
+    return false;
   }
+  
+  /**
+   * Check wether this person is ancestor of given family
+   */
+  public boolean isAncestorOf(Fam fam) {
+    
+    // Husband ?
+    Indi husband = fam.getHusband();
+    if (husband!=null) {
+      if (husband==this) 
+        return true;
+      if (isAncestorOf(husband))
+        return true;
+    }
+    
+    // Wife ?
+    Indi wife = fam.getWife();
+    if (wife!=null) {
+      if (wife==this) 
+        return true;
+      if (isAncestorOf(wife))
+        return true;
+    }
+    
+    // nope
+    return false;
+  }
+  
 
   /**
    * Returns this entity as String description

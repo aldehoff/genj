@@ -95,7 +95,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * @see genj.gedcom.PropertySimpleValue#setTag(java.lang.String)
    */
   Property init(MetaProperty meta, String value) throws GedcomException {
-    assume(CHAN.equals(meta.getTag()), UNSUPPORTED_TAG);
+    meta.assertTag(CHAN);
     return super.init(meta,value);
   }
 

@@ -112,7 +112,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     }
     
     // Enclosing individual is descendant of family
-    if (fam.getDescendants().contains(indi)) 
+    if (indi.isDescendantOf(fam)) 
       throw new GedcomException(resources.getString("error.already.descendant", new String[]{ indi.toString(), fam.toString()}));
 
     // place as husband or wife according to gender

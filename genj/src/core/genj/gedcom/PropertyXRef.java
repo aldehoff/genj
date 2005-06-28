@@ -224,8 +224,9 @@ public abstract class PropertyXRef extends Property {
    * @see genj.gedcom.Property#setTag(java.lang.String)
    */
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    assume(getTag().equals(meta.getTag()), UNSUPPORTED_TAG);
-    assume(value.startsWith("@")&&value.endsWith("@"), "xref value needs to be @..@");
+    meta.assertTag(getTag());
+    if (!(value.startsWith("@")&&value.endsWith("@")))
+      throw new GedcomException("xref value should be @..@ but is "+value);
     return super.init(meta, value);
   }
 

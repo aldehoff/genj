@@ -100,7 +100,7 @@ public class PropertyHusband extends PropertyXRef {
     if (fam.getWife()==husband)
       throw new GedcomException(resources.getString("error.already.spouse", new String[]{ husband.toString(), fam.toString()}));
 
-    if (fam.getDescendants().contains(husband))
+    if (husband.isDescendantOf(fam))
       throw new GedcomException(resources.getString("error.already.descendant", new String[]{ husband.toString(), fam.toString()}));
 
     // Connect back from husband (maybe using invalid back reference)
