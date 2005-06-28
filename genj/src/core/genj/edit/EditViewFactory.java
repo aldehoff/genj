@@ -37,6 +37,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyNote;
@@ -148,8 +149,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
       }
     }
     
-    // Add Association to this one ...
-    if (!property.isTransient())
+    // Add Association to this one (*only* for events)
+    if (property instanceof PropertyEvent)
       result.add(new CreateRelationship(new Relationship.Association(property), manager));
     
     // Toggle "Private"
