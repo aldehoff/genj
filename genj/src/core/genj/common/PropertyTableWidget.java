@@ -47,6 +47,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,7 +120,7 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
     this.propertyModel = propertyModel;
     
     // create table comp
-    InteractionHandler i = new InteractionHandler();
+    InteractionHandler ihandler = new InteractionHandler();
     
     table = new JTable();
     table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
@@ -126,8 +128,9 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
     table.setTableHeader(new SortableTableHeader());
     table.getColumnModel().setColumnSelectionAllowed(true);
     table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.getColumnModel().getSelectionModel().addListSelectionListener(i);
-    table.getSelectionModel().addListSelectionListener(i);
+    table.getColumnModel().getSelectionModel().addListSelectionListener(ihandler);
+    table.getSelectionModel().addListSelectionListener(ihandler);
+    table.addMouseListener(ihandler);
     
     table.setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+table.getRowMargin());
 
@@ -725,7 +728,20 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
   /**
    * Callback for list selections
    */
-  private class InteractionHandler implements ListSelectionListener {
+  private class InteractionHandler extends MouseAdapter implements ListSelectionListener {
+    
+    /** callback - mouse click */
+    public void mouseClicked(MouseEvent e) {
+      // double click?
+      if (e.getClickCount()<2)
+        return;
+      Context context = getContext();
+      if (context==null)
+        return;
+      // tell about it
+      fireContextSelectionChanged(context, true);
+        
+    }
     
     /** callback - selection changed e.g. by keyboard */
     public void valueChanged(ListSelectionEvent e) {
