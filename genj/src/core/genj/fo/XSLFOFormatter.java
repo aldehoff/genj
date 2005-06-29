@@ -21,6 +21,7 @@
 import java.io.File;
 import java.io.OutputStream;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
 
@@ -48,9 +49,22 @@ public class XSLFOFormatter extends Formatter {
   }
   
   /**
+   * Constructor for subclasses
+   */
+  public XSLFOFormatter(String format, String suffix, boolean isExternalizeFiles) {
+    super(format, suffix, isExternalizeFiles);
+  }
+  
+  /**
    * Formatting logic 
    */
   protected void formatImpl(Document doc, OutputStream out) throws Throwable {
+    
+    formatImpl(doc, new StreamResult(out));
+    
+  }
+  
+  protected void formatImpl(Document doc, Result result) throws Throwable {
     
     // grab xsl transformer
     Transformer transformer = getTemplates(XSL).newTransformer();
@@ -69,7 +83,7 @@ public class XSLFOFormatter extends Formatter {
     //page.margin.top
     
     // do the transformation
-    transformer.transform(doc.getDOMSource(), new StreamResult(out));
+    transformer.transform(doc.getDOMSource(), result);
 
     // done
   }
