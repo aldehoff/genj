@@ -5,13 +5,12 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import java.util.Arrays;
-
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyName;
+import genj.report.PropertyList;
 import genj.report.Report;
 
 /**
@@ -112,8 +111,8 @@ public class ReportSameValues extends Report {
     String name = ((Property)context).getPropertyName();
     
     // collect parents of sameProps
-    Item[] items = new Item[sameProps.length];
-    for (int i=0; i<items.length; i++) {
+    PropertyList items = new PropertyList(gedcom);
+    for (int i=0; i<sameProps.length; i++) {
 
       // "Birth, Meier, Nils (I001)"
       Property prop = sameProps[i];      
@@ -126,14 +125,14 @@ public class ReportSameValues extends Report {
         txt = parent.getPropertyName() + " | " +prop.getEntity();
 
       // one item for each
-    	items[i] = new Item(txt, prop.getImage(false), prop);
+    	items.add(txt, prop);
     }
     
     // sort 'em
-    Arrays.sort(items);
+    items.sort();
     
     // show 'em
-    showItemsToUser( i18n("xname",new String[]{ name, val}), gedcom, items);
+    showPropertiesToUser( i18n("xname",new String[]{ name, val}), items);
     
     // done
   }

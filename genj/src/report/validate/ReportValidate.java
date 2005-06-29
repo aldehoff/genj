@@ -13,6 +13,7 @@ import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.report.PropertyList;
 import genj.report.Report;
 
 import java.util.ArrayList;
@@ -100,25 +101,25 @@ public class ReportValidate extends Report {
 
     // prepare tests
     List tests = createTests();
-    
-    // intit list of issues
-    List issues = new ArrayList();
+    PropertyList issues;
     
     // Entity to check?
     Gedcom gedcom;
     if (context instanceof Entity) {
       Entity e = (Entity)context;
       gedcom = e.getGedcom();
+      issues = new PropertyList(gedcom);
       TagPath path = new TagPath(e.getTag());
       test(e, path, Grammar.getMeta(path), tests, issues);
     } else {
       
       // assuming Gedcom
       gedcom = (Gedcom)context;
+      issues = new PropertyList(gedcom);
       
       // test if there's a submitter
       if (gedcom.getSubmitter()==null)
-        issues.add(new Issue(i18n("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null));
+        issues.add(i18n("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null);
   
       // Loop through entities and test 'em
       for (int t=0;t<Gedcom.ENTITIES.length;t++) {
@@ -131,13 +132,13 @@ public class ReportValidate extends Report {
     }
     
     // any fixes proposed at all?
-    if (issues.isEmpty()) {
+    if (issues.size()==0) {
       getOptionFromUser(i18n("noissues"), Report.OPTION_OK);
       return;
     }
     
     // show fixes
-    showItemsToUser(i18n("issues"), gedcom, (Issue[])issues.toArray(new Issue[issues.size()]));
+    showPropertiesToUser(i18n("issues"), issues);
     
     // done
   }
@@ -145,7 +146,7 @@ public class ReportValidate extends Report {
   /**
    * Test a property (recursively)
    */
-  private void test(Property prop, TagPath path, MetaProperty meta, List tests, List issues) {
+  private void test(Property prop, TagPath path, MetaProperty meta, List tests, PropertyList issues) {
     // test tests
     for (int i=0, j=tests.size(); i<j; i++) {
       Test tst = (Test)tests.get(i);
@@ -173,7 +174,7 @@ public class ReportValidate extends Report {
       // check if Gedcom grammar allows it
       if (!meta.allows(ctag)) {
         String msg = i18n("err.notgedcom", new String[]{ctag,path.toString()});
-        issues.add(new Issue(msg, MetaProperty.IMG_ERROR, child));
+        issues.add(msg, MetaProperty.IMG_ERROR, child);
         continue;
       }
       // dive into

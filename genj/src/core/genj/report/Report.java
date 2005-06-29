@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.69 $ $Author: nmeier $ $Date: 2005-06-28 01:33:26 $
+ * $Revision: 1.70 $ $Author: nmeier $ $Date: 2005-06-29 00:05:24 $
  */
 package genj.report;
 
@@ -26,7 +26,6 @@ import genj.fo.Document;
 import genj.fo.Formatter;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.io.FileAssociation;
 import genj.option.Option;
 import genj.option.PropertyOption;
@@ -36,19 +35,12 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
-import genj.util.swing.HeadlessLabel;
-import genj.view.Context;
-import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
@@ -67,12 +59,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 
 /**
@@ -378,20 +366,12 @@ public abstract class Report implements Cloneable {
    * A sub-class can show items containing text and references to Gedcom
    * objects to the user with this method
    */
-  public final void showItemsToUser(String msg, Gedcom gedcom, List items) {
-    showItemsToUser(msg, gedcom, (Item[])items.toArray(new Item[items.size()]));
-  }
-  
-  /**
-   * A sub-class can show items containing text and references to Gedcom
-   * objects to the user with this method
-   */
-  public final void showItemsToUser(String msg, Gedcom gedcom, Item[] items) {
+  public final void showPropertiesToUser(String msg, PropertyList bookmarks) {
 
     // prepare content
     JPanel content = new JPanel(new BorderLayout());
     content.add(BorderLayout.NORTH, new JLabel(msg));
-    content.add(BorderLayout.CENTER, new JScrollPane(new ItemList(gedcom, items, viewManager)));
+    content.add(BorderLayout.CENTER, new JScrollPane(bookmarks.new UI(viewManager)));
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#items",getName(),ReportViewFactory.IMG,content,CloseWindow.OK(),owner);
@@ -760,154 +740,5 @@ public abstract class Report implements Cloneable {
   public String accepts(Object context) {
     return context instanceof Gedcom ? getName() :  null;
   }
-
-  /**
-   * A list of items - I'm currently simply checking if target.getGedcom()!=null
-   * to figure out whether the item is still o.k. to propagate to the view
-   * manager (a.k.a. not deleted)
-   * Listening for updates as a GedcomListener was just too much work  ;)
-   */
-  private static class ItemList extends JList implements ListCellRenderer, ListSelectionListener, MouseListener, ContextProvider {
-
-    /** the view manager */
-    private ViewManager manager;
-
-    /** a headless label for rendering */
-    private HeadlessLabel label = new HeadlessLabel();
-
-    /** gedcom */
-    private Gedcom gedcom;
-
-    /**
-     * Constructor
-     */
-    private ItemList(Gedcom geDcom, Item[] props, ViewManager maNager) {
-      super(props);
-      // remember
-      manager = maNager;
-      gedcom = geDcom;
-      // setup looks
-      setCellRenderer(this);
-      label.setOpaque(true);
-      addListSelectionListener(this);
-      addMouseListener(this);
-      // done
-    }
-    
-    /**
-     * ContextProvider - callback
-     */
-    public Context getContext() {
-      Object item = getSelectedValue();
-      if (item instanceof Item)
-        return new Context( ((Item)item).getTarget() );
-      return new Context(gedcom);
-    }
-
-    /**
-     * Selection changed
-     * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-     */
-    public void valueChanged(ListSelectionEvent e) {
-      // check selected item
-      Item item = (Item)getSelectedValue();
-      if (item==null)
-        return;
-      // propagate
-      manager.fireContextSelected(new Context(gedcom, null, item.getTarget()));
-    }
-
-    /**
-     * Our own rendering
-     * @see javax.swing.ListCellRenderer#getListCellRendererComponent(javax.swing.JList, java.lang.Object, int, boolean, boolean)
-     */
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-      // colors
-      label.setBackground(isSelected ? getSelectionBackground() : getBackground());
-      label.setForeground(isSelected ? getSelectionForeground() : getForeground());
-      // display item
-      Item item = (Item)value;
-      label.setText(item.getName());
-      label.setIcon(item.getImage());
-      // done
-      return label;
-    }
-
-    /**
-     * mouse callbacks
-     */
-    public void mouseClicked(MouseEvent e) {
-    }
-    public void mouseEntered(MouseEvent e) {
-    }
-    public void mouseExited(MouseEvent e) {
-    }
-    public void mousePressed(MouseEvent e) {
-      Point pos = e.getPoint();
-      // find row
-      int row = locationToIndex(pos);
-      if (row>=0) 
-        // make sure it's selected
-        setSelectedIndex(row);
-    }
-    public void mouseReleased(MouseEvent e) {
-    }
-  } //PropertyList
-
-  /**
-   * A report item wraps some text, an image and a reference to 
-   * a Gedcom property instance. A report can create instances of
-   * this type to keep track of findings or pointers that later
-   * can be shown to the user in a dialog box.
-   */
-  public static class Item implements Comparable {
-
-    /** attrs */
-    private String name;
-    private ImageIcon img;
-    private Property target;
-    
-    /**
-     * Constructor
-     * @param description text description of item
-     * @param image an image to show with item
-     * @param target reference to a gedcom property instance
-     */
-    public Item(String description, ImageIcon image, Property target) {
-      this.name = description;
-      this.img = image;
-      this.target = target;
-    }
-    
-    /**
-     * name
-     */
-    private String getName() {
-      return name;
-    }
-    
-    /**
-     * img
-     */
-    private ImageIcon getImage() {
-      return img;
-    }
-    
-    /**
-     * The target of this item
-     */
-    private Property getTarget() {
-      return target==null ? null : target.getGedcom()==null ? null : target;
-    }
-    
-    /**
-     * Text comparison provided by super-class
-     */
-    public int compareTo(Object o) {
-      Item that = (Item)o;
-      return this.name.compareTo(that.name);
-    }
-    
-  } //Item
-
+  
 } //Report

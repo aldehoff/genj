@@ -14,9 +14,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
+import genj.report.PropertyList;
 import genj.util.WordBuffer;
-
-import java.util.List;
 
 /**
  * Test two dates
@@ -83,7 +82,7 @@ import java.util.List;
   /**
    * test a prop (PropertyDate.class) at given path 
    */
-  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, PropertyList issues, ReportValidate report) {
     
     Entity entity = prop.getEntity();
     PropertyDate date1;
@@ -104,8 +103,23 @@ import java.util.List;
       return;
       
     // test it 
-    if (isError(date1, (PropertyDate)date2)) 
-      issues.add(getError(date2.getEntity(), prop, trigger, report));
+    if (isError(date1, (PropertyDate)date2)) {
+      
+      WordBuffer buf = new WordBuffer();
+      
+      buf.append(Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1))));
+      if (comparison==BEFORE)
+        buf.append(report.i18n("err.date.before"));
+      else
+        buf.append(report.i18n("err.date.after"));
+      buf.append(Gedcom.getName(path2.get(path2.length()-2)));
+      if (entity instanceof Indi) {
+        buf.append(report.i18n("err.date.of"));    
+        buf.append(entity.toString());
+      }
+       
+      issues.add(buf.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop);
+    }
     
     // done
   }
@@ -138,29 +152,4 @@ import java.util.List;
     return pit1.compareTo(pit2)*sign>0;
   }
 
-  /**
-   * Calculate an issue
-   */
-  private Issue getError(Entity entity, Property prop, TagPath trigger, ReportValidate report) {
-    
-    WordBuffer buf = new WordBuffer();
-    
-    buf.append(Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1))));
-    if (comparison==BEFORE)
-      buf.append(report.i18n("err.date.before"));
-    else
-      buf.append(report.i18n("err.date.after"));
-    buf.append(Gedcom.getName(path2.get(path2.length()-2)));
-    if (entity instanceof Indi) {
-      buf.append(report.i18n("err.date.of"));    
-      buf.append(entity.toString());
-    }
-     
-    return new Issue(
-      buf.toString(), 
-      prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), 
-      prop
-    );
-  }
-  
 } //TestEventTime

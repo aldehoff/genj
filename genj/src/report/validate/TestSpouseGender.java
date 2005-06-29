@@ -14,8 +14,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-
-import java.util.List;
+import genj.report.PropertyList;
 
 /**
  * @author nmeier
@@ -32,7 +31,7 @@ import java.util.List;
   /**
    * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
    */
-  /*package*/ void test(Property prop, TagPath path, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath path, PropertyList issues, ReportValidate report) {
     
     // assuming family
     Fam fam = (Fam)prop;
@@ -40,11 +39,11 @@ import java.util.List;
     // check husband/wife
     Indi husband = fam.getHusband();
     if (!testSex(husband, PropertySex.MALE))
-      issues.add(getError(fam, "HUSB", report)); 
+      addIssue(issues, fam, "HUSB", report); 
       
     Indi wife = fam.getWife();
     if (!testSex(wife, PropertySex.FEMALE)) 
-      issues.add(getError(fam, "WIFE", report)); 
+      addIssue(issues, fam, "WIFE", report); 
 
     // done
   }    
@@ -60,7 +59,7 @@ import java.util.List;
    * Calculate an issue for indi in fam 
    * @param role HUSB or WIFE
    */
-  private Issue getError(Fam fam, String role, ReportValidate report) {
+  private void addIssue(PropertyList issues, Fam fam, String role, ReportValidate report) {
     
     PropertyXRef xref = (PropertyXRef)fam.getProperty(role);
     Indi indi = (Indi)xref.getTargetEntity();
@@ -70,11 +69,7 @@ import java.util.List;
       indi.toString()
     };
     
-    return new Issue(
-      report.i18n("err.spouse."+role, format),
-      xref.getImage(false),
-      xref
-    );
+    issues.add(report.i18n("err.spouse."+role, format), xref.getImage(false), xref);
   }
 
 } //TestHusbandGender

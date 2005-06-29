@@ -13,9 +13,8 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
+import genj.report.PropertyList;
 import genj.util.WordBuffer;
-
-import java.util.List;
 
 /**
  * Test age of individuals at specific dates
@@ -75,7 +74,7 @@ public class TestAge extends Test {
   /**
    * Test individual(s)'s age at given date property 
    */
-  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, PropertyList issues, ReportValidate report) {
     
     // get to the date
     PropertyDate date ;
@@ -113,8 +112,20 @@ public class TestAge extends Test {
       return;
       
     // test it 
-    if (isError(delta.getYears())) 
-      issues.add(getError(indi, prop, report));
+    if (isError(delta.getYears()))  {
+      
+      WordBuffer words = new WordBuffer();
+      String[] format = new String[]{ indi.toString(), String.valueOf(years)}; 
+      if (comparison==UNDER) {
+        words.append(report.i18n("err.age.under", format));
+      } else {
+        words.append(report.i18n("err.age.over", format));
+      }
+      words.append("-");
+      words.append(report.i18n(explanation));
+
+      issues.add(words.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop);
+    }
     
     // done
   }
@@ -132,26 +143,4 @@ public class TestAge extends Test {
     return false;
   }
 
-  /**
-   * Calculate issue
-   */
-  private Issue getError(Indi indi, Property prop, ReportValidate report) {
-    
-    WordBuffer words = new WordBuffer();
-    String[] format = new String[]{ indi.toString(), String.valueOf(years)}; 
-    if (comparison==UNDER) {
-      words.append(report.i18n("err.age.under", format));
-    } else {
-      words.append(report.i18n("err.age.over", format));
-    }
-    words.append("-");
-    words.append(report.i18n(explanation));
-    
-    return new Issue(
-      words.toString(),
-      prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false),
-      prop
-    );
-  }
-  
 } //TestAge

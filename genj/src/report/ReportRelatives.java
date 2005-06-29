@@ -10,6 +10,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
+import genj.report.PropertyList;
 import genj.report.Report;
 
 import java.util.ArrayList;
@@ -117,19 +118,19 @@ public class ReportRelatives extends Report {
     }
     
     // Loop over relative descriptions
-    List items = new ArrayList();
+    PropertyList items = new PropertyList(gedcom);
     for (int i=0; i<RELATIVES.length; i++) {
       Relative relative = RELATIVES[i];
       List result = find(indi, relative.expression, relative.sex, key2relative);
       for (int j=0;j<result.size();j++) {
         Indi found = (Indi)result.get(j);
         String name = i18n(relative.key) + ": " + found;
-        items.add(new Item(name, found.getImage(false), found));
+        items.add(name, found);
       }
     }
     
     // show it
-    showItemsToUser(title, gedcom, items);
+    showPropertiesToUser(title, items);
 
     // done
   }
