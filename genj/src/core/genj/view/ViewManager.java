@@ -63,7 +63,7 @@ import sun.misc.Service;
  */
 public class ViewManager {
   
-  /*package*/ ContextMenuHook HOOK = new ContextMenuHook();
+  /*package*/ ContextHook HOOK = new ContextHook();
 
   /*package*/ final static Logger LOG = Logger.getLogger("genj.view");
 
@@ -199,12 +199,13 @@ public class ViewManager {
    * Sets the current context
    */
   public void fireContextSelected(Context context) {
-    fireContextSelected(new ContextSelectionEvent(context));
+    fireContextSelected(context, null);
   }
-  public void fireContextSelected(ContextSelectionEvent e) {
-    
+  public void fireContextSelected(Context context, ContextProvider provider) {
+    fireContextSelected(context, false, provider);
+  }
+  public void fireContextSelected(Context context, boolean actionPerformed, ContextProvider provider) {
     // valid?
-    Context context = e.getContext();
     if (!context.isValid())
       return;
     
@@ -212,6 +213,9 @@ public class ViewManager {
     if (ignoreSetContext)
       return;
     ignoreSetContext = true;
+    
+    // create event
+    ContextSelectionEvent e = new ContextSelectionEvent(context, provider, actionPerformed);
 
     // remember context
     Gedcom gedcom = context.getGedcom();
@@ -567,12 +571,12 @@ public class ViewManager {
   }
   
   /**
-   * Our Context menu provider for keyboard shortcut and right mouse-click 
+   * Our hook into keyboard and mouse operated context changes / menues
    */
-  /*package*/ class ContextMenuHook extends AbstractAction implements AWTEventListener {
+  private class ContextHook extends AbstractAction implements AWTEventListener {
     
     /** constructor */
-    private ContextMenuHook() {
+    private ContextHook() {
       Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
     }
     
@@ -639,8 +643,8 @@ public class ViewManager {
       
       // fake a normal click event so that popup trigger does a selection as well as non-popup trigger
       if (me.getButton()!=MouseEvent.BUTTON1) {
-        MouseListener[] ms = ((JComponent)component).getMouseListeners();
-        MouseEvent fake = new MouseEvent(component, me.getID(), me.getWhen(), 0, point.x, point.y, me.getClickCount(), false, MouseEvent.BUTTON1);
+        MouseListener[] ms = me.getComponent().getMouseListeners();
+        MouseEvent fake = new MouseEvent(me.getComponent(), me.getID(), me.getWhen(), 0, me.getX(), me.getY(), me.getClickCount(), false, MouseEvent.BUTTON1);
         for (int m = 0; m < ms.length; m++)  {
           switch (me.getID()) {
             case MouseEvent.MOUSE_PRESSED:
@@ -650,18 +654,24 @@ public class ViewManager {
           }
         }
       }
-
-      // popup menu trigger?
-      if(!me.isPopupTrigger()) 
-        return;
       
-      // look for ContextProvider
+      // try to identify context
       final ContextProvider provider = getProvider(component);
       if (provider==null)
         return;
       Context context = provider.getContext();
       if (context==null) 
         return;
+      
+      // not a popup menu?
+      if(!me.isPopupTrigger())  {
+        
+        // double click on entity?
+        if (me.getClickCount()>1) 
+          fireContextSelected(context, true, provider);
+
+        return;
+      }
       
       // cancel any menu
       MenuSelectionManager.defaultManager().clearSelectedPath();

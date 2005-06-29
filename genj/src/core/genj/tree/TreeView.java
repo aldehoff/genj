@@ -846,14 +846,6 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
      * @see java.awt.event.MouseAdapter#mouseClicked(MouseEvent)
      */
     public void mouseClicked(MouseEvent e) {
-      // double click
-      if (e.getClickCount()>1) {
-        Point p = view2model(e.getPoint());
-        Object content = model.getContentAt(p.x, p.y);
-        if (content instanceof Entity)
-          setRoot((Entity)content);
-      } 
-      // done
     }
     /**
      * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)

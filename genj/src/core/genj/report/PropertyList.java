@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.1 $ $Author: nmeier $ $Date: 2005-06-29 00:05:24 $
+ * $Revision: 1.2 $ $Author: nmeier $ $Date: 2005-06-29 16:06:00 $
  */
 package genj.report;
 
@@ -29,9 +29,6 @@ import genj.view.ContextProvider;
 import genj.view.ViewManager;
 
 import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -72,14 +69,14 @@ public class PropertyList {
   }
   
   /**
-   * Add a bookmark
+   * Add a reference
    */
   public void add(String name, Property property) {
     entries.add(new Entry(name, property.getImage(false), property));
   }
 
   /**
-   * Add a bookmark
+   * Add a reference
    */
   public void add(String name, ImageIcon img, Property property) {
     entries.add(new Entry(name, img, property));
@@ -142,7 +139,7 @@ public class PropertyList {
   /**
    * A UI representation of the list
    */
-  /*package*/ class UI extends JList implements ListCellRenderer, ListSelectionListener, MouseListener, ContextProvider {
+  /*package*/ class UI extends JList implements ListCellRenderer, ListSelectionListener, ContextProvider {
 
     /** the view manager */
     private ViewManager manager;
@@ -166,7 +163,6 @@ public class PropertyList {
       setCellRenderer(this);
       label.setOpaque(true);
       addListSelectionListener(this);
-      addMouseListener(this);
       // done
     }
     
@@ -205,27 +201,6 @@ public class PropertyList {
       return label;
     }
 
-    /**
-     * mouse callbacks
-     */
-    public void mouseClicked(MouseEvent e) {
-    }
-    public void mouseEntered(MouseEvent e) {
-    }
-    public void mouseExited(MouseEvent e) {
-    }
-    public void mousePressed(MouseEvent e) {
-      Point pos = e.getPoint();
-      // find row
-      int row = locationToIndex(pos);
-      if (row>=0) 
-        // make sure it's selected
-        setSelectedIndex(row);
-    }
-    public void mouseReleased(MouseEvent e) {
-    }
   } //PropertyList
-
-  
   
 } //Bookmarks

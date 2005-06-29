@@ -39,6 +39,7 @@ import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 
 /**
  * Component for editing genealogic entity properties
@@ -289,8 +291,24 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     if (ignoreContextSelection)
       return;
     
-    // only if we're not sticky
-    if (!isSticky) setContext(event.getContext(), false);
+    // coming from some other view or from us?
+    ContextProvider provider = event.getProvider();
+    if (!SwingUtilities.isDescendingFrom( (Component)provider, this)) {
+      
+      // sticky?
+      if (isSticky)
+        return;
+      
+    } else {
+      
+      // .. actionPerformed???
+      if (!event.isActionPerformed())
+        return;
+      
+    }
+      
+    // go for it
+     setContext(event.getContext(), false);
   }
   
   public void setContext(Context context, boolean tellOthers) {

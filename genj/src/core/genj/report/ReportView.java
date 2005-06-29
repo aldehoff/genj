@@ -539,7 +539,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         owOptions.setOptions(Collections.EMPTY_LIST);
       } else {
         Report report = (Report)listOfReports.getSelectedValue();
-        lFile    .setText(report.getClass().getName().replace('.','/')+".java");
+        lFile    .setText(report.getFilename());
         lAuthor  .setText(report.getAuthor());
         lVersion .setText(report.getVersion());
         tpInfo   .setText(report.getInfo());

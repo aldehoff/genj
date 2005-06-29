@@ -501,7 +501,6 @@ import javax.swing.event.ChangeListener;
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
         bean.removeChangeListener(this);
-        bean.removeContextListener(this);
         factory.recycle(bean);
       }
       beans.clear();
@@ -653,7 +652,6 @@ import javax.swing.event.ChangeListener;
       PropertyBean bean = beanOverride!=null ? factory.get(beanOverride) : factory.get(prop);
       bean.setContext(prop, registry);
       bean.addChangeListener(this);
-      bean.addContextListener(this);
       beans.add(bean);
       
       // done

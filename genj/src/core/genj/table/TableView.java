@@ -106,11 +106,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     // create our table
     propertyTable = new PropertyTableWidget(null, manager);
     propertyTable.setAutoResize(false);
-    propertyTable.addContextListener(new ContextListener() {
-      public void handleContextSelectionEvent(ContextSelectionEvent event) {
-        manager.fireContextSelected(event);
-      }
-    });
 
     // lay it out
     setLayout(new BorderLayout());

@@ -26,7 +26,6 @@ import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.view.Context;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ViewManager;
 
@@ -127,22 +126,6 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   public Property getProperty() {
     return property;
   }
-  
-  /**
-   * Listener
-   */
-  public void addContextListener(ContextListener l) {
-  }
-  
-  /**
-   * Listener
-   */
-  public void removeContextListener(ContextListener l) {
-  }
-  
-  /**
-   * Listener
-   */
   
   /**
    * Listener 

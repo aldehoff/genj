@@ -52,8 +52,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -141,7 +139,6 @@ import javax.swing.event.TreeSelectionListener;
 
     callback = new InteractionListener();
     tree.addTreeSelectionListener(callback);
-    tree.addMouseListener(callback);
     
     JScrollPane treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
@@ -591,31 +588,8 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * Handling selection of properties
    */
-  private class InteractionListener extends MouseAdapter implements TreeSelectionListener, ChangeListener {
+  private class InteractionListener implements TreeSelectionListener, ChangeListener {
     
-    /**
-     * callback - mouse doubleclick
-     */
-    public void mouseClicked(MouseEvent e) {
-      // double-click?
-      if (e.getClickCount()<2)
-        return;
-      // check against selected property
-      Property prop = tree.getPropertyAt(e.getPoint());
-      if (prop==null||prop!=tree.getSelection())
-        return;
-      // propagate any reference
-      if (prop instanceof PropertyXRef) {
-        Property target = ((PropertyXRef)prop).getTarget();
-        if (target!=null) {
-          // create new context
-          Context ctx = new Context(target);
-          // tell view
-          editView.setContext(ctx, true);
-        }
-      }
-    }
-  
     /**
      * callback - selection in tree has changed
      */

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.70 $ $Author: nmeier $ $Date: 2005-06-29 00:05:24 $
+ * $Revision: 1.71 $ $Author: nmeier $ $Date: 2005-06-29 16:06:00 $
  */
 package genj.report;
 
@@ -559,9 +559,7 @@ public abstract class Report implements Cloneable {
 
     // check result and apply format
     if (result==null) {
-      // 20030529 - don't do a recursive getName() here
-      ReportView.LOG.warning("Unknown i18 key : "+key);
-      result = key;
+      result = "";
     } else {
       if (values!=null&&values.length>0) {
         for (int i=0;i<values.length;i++) 
@@ -572,6 +570,13 @@ public abstract class Report implements Cloneable {
 
     // done
     return result;
+  }
+  
+  /**
+   * Filename
+   */
+  public String getFilename() {
+    return getClass().getName().replace('.','/')+".java";
   }
   
   /**
@@ -675,7 +680,9 @@ public abstract class Report implements Cloneable {
    * @return name of the report
    */
   public String getName() {
-    return i18n("name");
+    String name =  i18n("name");
+    if (name.length()==0) name = getTypeName();
+    return name;
   }
 
   /**

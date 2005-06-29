@@ -28,7 +28,6 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.Relationship;
 import genj.gedcom.TagPath;
-import genj.view.ContextListener;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -55,17 +54,6 @@ public class ParentsBean extends PropertyBean {
     // done
   }
   
-  /**
-   * Context listener support
-   */
-  public void addContextListener(ContextListener l) {
-    table.addContextListener(l);
-  }
-  
-  public void removeContextListener(ContextListener l) {
-    table.removeContextListener(l);
-  }
-
   /**
    * Set context to edit
    */

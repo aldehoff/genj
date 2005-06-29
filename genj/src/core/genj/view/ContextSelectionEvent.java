@@ -24,22 +24,31 @@ package genj.view;
  */
 public class ContextSelectionEvent {
   
+  private ContextProvider provider;
   private Context context;
   private boolean isActionPerformed = false;
   
   /**
    * Constructor
    */
-  public ContextSelectionEvent(Context context) {
+  public ContextSelectionEvent(Context context, ContextProvider provider) {
     this.context = context;
+    this.provider = provider;
   }
   
   /**
    * Constructor
    */
-  public ContextSelectionEvent(Context context, boolean isActionPerformed) {
-    this(context);
+  public ContextSelectionEvent(Context context, ContextProvider provider, boolean isActionPerformed) {
+    this(context, provider);
     this.isActionPerformed = isActionPerformed;
+  }
+  
+  /**
+   * Read-Only Accessor
+   */
+  public ContextProvider getProvider() {
+    return provider;
   }
   
   /**

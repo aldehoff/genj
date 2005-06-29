@@ -35,9 +35,7 @@ import genj.util.swing.LinkWidget;
 import genj.util.swing.SortableTableHeader;
 import genj.util.swing.SortableTableHeader.SortableTableModel;
 import genj.view.Context;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
-import genj.view.ContextSelectionEvent;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -47,13 +45,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -95,9 +89,6 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
   /** table component */
   private JTable table;
   
-  /** context propagation */
-  private List contextListeners = new ArrayList();
-  
   /** shortcuts panel */
   private Box panelShortcuts = new Box(BoxLayout.Y_AXIS);
   
@@ -130,7 +121,6 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
     table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.getColumnModel().getSelectionModel().addListSelectionListener(ihandler);
     table.getSelectionModel().addListSelectionListener(ihandler);
-    table.addMouseListener(ihandler);
     
     table.setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+table.getRowMargin());
 
@@ -199,20 +189,6 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
    */
   public void setAutoResize(boolean on) {
     table.setAutoResizeMode(on ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
-  }
-  
-  /**
-   * Context Listeners
-   */
-  public void addContextListener(ContextListener listener) {
-    contextListeners.add(listener);
-  }
-  
-  /**
-   * Context Listeners
-   */
-  public void removeContextListener(ContextListener listener) {
-    contextListeners.remove(listener);
   }
   
   /**
@@ -728,20 +704,7 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
   /**
    * Callback for list selections
    */
-  private class InteractionHandler extends MouseAdapter implements ListSelectionListener {
-    
-    /** callback - mouse click */
-    public void mouseClicked(MouseEvent e) {
-      // double click?
-      if (e.getClickCount()<2)
-        return;
-      Context context = getContext();
-      if (context==null)
-        return;
-      // tell about it
-      fireContextSelectionChanged(context, true);
-        
-    }
+  private class InteractionHandler implements ListSelectionListener {
     
     /** callback - selection changed e.g. by keyboard */
     public void valueChanged(ListSelectionEvent e) {
@@ -758,15 +721,7 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
       Context context = ((Model)table.getModel()).getContextAt(row, col);
       
       //  context propagation 
-      fireContextSelectionChanged(context, false);
-      
-    }
-    
-    private void fireContextSelectionChanged(Context context, boolean actionPerformed) {
-      ContextSelectionEvent e = new ContextSelectionEvent(context, actionPerformed);
-      ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
-      for (int i = 0; i < ls.length; i++) 
-        ls[i].handleContextSelectionEvent(e);
+      viewManager.fireContextSelected(context, PropertyTableWidget.this);
     }
 
   } //InteractionHandler
