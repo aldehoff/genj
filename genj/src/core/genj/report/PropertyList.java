@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.2 $ $Author: nmeier $ $Date: 2005-06-29 16:06:00 $
+ * $Revision: 1.3 $ $Author: nmeier $ $Date: 2005-06-30 13:52:52 $
  */
 package genj.report;
 
@@ -85,7 +85,7 @@ public class PropertyList {
   /**
    * one entry
    */
-  /*package*/ class Entry {
+  /*package*/ class Entry implements Comparable {
 
     /** attrs */
     private String name;
