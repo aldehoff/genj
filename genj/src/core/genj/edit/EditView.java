@@ -24,6 +24,8 @@ import genj.edit.actions.Undo;
 import genj.edit.beans.BeanFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -292,6 +294,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       return;
     
     // coming from some other view or from us?
+    Context context = event.getContext();
     ContextProvider provider = event.getProvider();
     if (!SwingUtilities.isDescendingFrom( (Component)provider, this)) {
       
@@ -305,10 +308,17 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       if (!event.isActionPerformed())
         return;
       
+      // gotta check if it's action on reference
+      Property xref = context.getProperty();
+      if (xref instanceof PropertyXRef) {
+        xref  = ((PropertyXRef)xref).getTarget();
+        if (xref!=null)
+          context = new Context(xref);
+      }
     }
       
     // go for it
-     setContext(event.getContext(), false);
+     setContext(context, false);
   }
   
   public void setContext(Context context, boolean tellOthers) {
