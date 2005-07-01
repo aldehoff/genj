@@ -296,7 +296,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     // coming from some other view or from us?
     Context context = event.getContext();
     ContextProvider provider = event.getProvider();
-    if (!SwingUtilities.isDescendingFrom( (Component)provider, this)) {
+    if (provider==null || !SwingUtilities.isDescendingFrom( (Component)provider, this)) {
       
       // sticky?
       if (isSticky)
