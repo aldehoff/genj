@@ -72,7 +72,7 @@ import javax.swing.table.TableColumnModel;
 /**
  * A widget that shows entities in rows and columns
  */
-public class PropertyTableWidget extends JPanel implements ContextProvider {
+public class PropertyTableWidget extends JPanel {
   
   private Map type2generator = new HashMap();
   
@@ -111,18 +111,7 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
     this.propertyModel = propertyModel;
     
     // create table comp
-    InteractionHandler ihandler = new InteractionHandler();
-    
-    table = new JTable();
-    table.setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
-    table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setTableHeader(new SortableTableHeader());
-    table.getColumnModel().setColumnSelectionAllowed(true);
-    table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.getColumnModel().getSelectionModel().addListSelectionListener(ihandler);
-    table.getSelectionModel().addListSelectionListener(ihandler);
-    
-    table.setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+table.getRowMargin());
+    table = new Content();
 
     // setup layout
     setLayout(new BorderLayout());
@@ -130,27 +119,6 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
     add(BorderLayout.EAST, panelShortcuts);
     
     // done
-  }
-  
-  /**
-   * ContextProvider - callback 
-   */
-  public Context getContext() {
-    
-    Model model = (Model)table.getModel();
-    
-    // none or more than one row selected?
-    if (table.getSelectedRowCount()!=1)
-      return null;
-    int row = table.getSelectedRow();
-    
-    // more than one column selected?
-    if (table.getSelectedColumnCount()!=1)
-      return null;
-    int col = table.getSelectedColumn();
-    
-    // grab it
-    return model.getContextAt(row, col);
   }
   
   /**
@@ -214,7 +182,10 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
     int c = col!=null ? getCol(r, col) : -1;
 
     // scroll to visible
-    table.scrollRectToVisible(table.getCellRect(r,c,true));
+    Rectangle visible = table.getVisibleRect();
+    Rectangle scrollto = table.getCellRect(r,c,true);
+    if (c<0) scrollto.x = visible.x;
+    table.scrollRectToVisible(scrollto);
 
     // change selection
     if (c>=0)
@@ -316,7 +287,71 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
   }
 
   /**
-   * Wrapper for swing table
+   * Table Content
+   */
+  private class Content extends JTable implements ContextProvider, ListSelectionListener  {
+    
+    /**
+     * Constructor
+     */
+    private Content() {
+      
+      setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
+      getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      setTableHeader(new SortableTableHeader());
+      getColumnModel().setColumnSelectionAllowed(true);
+      getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      
+      setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+getRowMargin());
+      
+      getColumnModel().getSelectionModel().addListSelectionListener(this);
+      getSelectionModel().addListSelectionListener(this);
+    }
+    
+    /** 
+     * ListSelectionListener - callback
+     */
+    public void valueChanged(ListSelectionEvent e) {
+      
+      // let super handle it (strange that JTable implements this as well)
+      super.valueChanged(e);
+      
+      
+      // propagate selection change?
+      if (!e.getValueIsAdjusting()) {
+        int row = getSelectedRow();
+        int col = getSelectedColumn();
+        if (row>=0&&col>=0) 
+          viewManager.fireContextSelected(((Model)getModel()).getContextAt(row, col), this);
+      }
+      
+      // done
+    }
+    
+    /**
+     * ContextProvider - callback 
+     */
+    public Context getContext() {
+      
+      Model model = (Model)getModel();
+      
+      // none or more than one row selected?
+      if (getSelectedRowCount()!=1)
+        return null;
+      int row = getSelectedRow();
+      
+      // more than one column selected?
+      if (getSelectedColumnCount()!=1)
+        return null;
+      int col = getSelectedColumn();
+      
+      // grab it
+      return model.getContextAt(row, col);
+    }
+  } //Content
+
+  /**
+   * The logical model
    */
   private class Model extends AbstractTableModel implements SortableTableModel, PropertyTableModelListener {
     
@@ -701,31 +736,6 @@ public class PropertyTableWidget extends JPanel implements ContextProvider {
   } //PropertyTableCellRenderer
   
   
-  /**
-   * Callback for list selections
-   */
-  private class InteractionHandler implements ListSelectionListener {
-    
-    /** callback - selection changed e.g. by keyboard */
-    public void valueChanged(ListSelectionEvent e) {
-      
-      if (e.getValueIsAdjusting())
-        return;
-      
-      int row = table.getSelectedRow();
-      int col = table.getSelectedColumn();
-      if (row<0||col<0)
-        return;
-      
-      // context is either entity or property
-      Context context = ((Model)table.getModel()).getContextAt(row, col);
-      
-      //  context propagation 
-      viewManager.fireContextSelected(context, PropertyTableWidget.this);
-    }
-
-  } //InteractionHandler
-
   /**
    * A shortcut to jump to
    */
