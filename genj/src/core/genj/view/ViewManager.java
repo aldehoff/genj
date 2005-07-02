@@ -634,6 +634,8 @@ public class ViewManager {
       // find deepest component (since components without attached listeners
       // won't be the source for this event)
       final Component component  = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
+      if (component==null)
+        return;
       final Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), component );
       
       // gotta be a jcomponent
