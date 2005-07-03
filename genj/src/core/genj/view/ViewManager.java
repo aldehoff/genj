@@ -668,8 +668,8 @@ public class ViewManager {
       // not a popup menu?
       if(!me.isPopupTrigger())  {
         
-        // double click on entity?
-        if (me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1) 
+        // double click on provider itself?
+        if (provider==me.getComponent()&&me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1) 
           fireContextSelected(context, true, provider);
 
         return;
