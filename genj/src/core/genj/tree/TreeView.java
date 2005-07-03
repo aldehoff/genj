@@ -826,6 +826,13 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
       // check node
       Point p = view2model(e.getPoint());
       Object content = model.getContentAt(p.x, p.y);
+      // nothing?
+      if (content==null) {
+        currentEntity = null;
+        repaint();
+        overview.repaint();
+        return;
+      }
       // entity?
       if (content instanceof Entity) {
         // change current!
@@ -834,10 +841,12 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
         overview.repaint();
         // propagate it
         manager.fireContextSelected(new Context(currentEntity));
+        return;
       }
       // runnable?
       if (content instanceof Runnable) {
         ((Runnable)content).run();
+        return;
       }
       // done
     }
