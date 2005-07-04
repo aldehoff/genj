@@ -20,7 +20,6 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -28,7 +27,6 @@ import genj.util.WordBuffer;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
@@ -52,7 +50,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -135,21 +132,12 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     model = new GeoModel(gedcom);
     
     // create a location grid
-    locationList = new GeoList(model, viewManager);
+    locationList = new GeoList(model, this, viewManager);
     
     // create layers
     locationLayer = new LocationsLayer();  
     selectionLayer = new SelectionLayer();
     
-    // hook em up
-    locationList.addSelectionListener(new GeoList.SelectionListener() {
-      public void listSelectionChanged(Set locations, Set properties) {
-        selectionLayer.setLocations(locations);
-        if (properties.size()==1)
-          GeoView.this.viewManager.fireContextSelected(new Context((Property)properties.iterator().next()));
-      }
-    });
-
     // set layout
     split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, new JScrollPane(locationList));
     setLayout(new BorderLayout());
@@ -223,6 +211,20 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     bh.setButtonType(JToggleButton.class).create(new ZoomOnOff());
     
     // done
+  }
+  
+  /**
+   * Select a location
+   */
+  public void setSelection(GeoLocation location) {
+    setSelection(location!=null ? Collections.singletonList(location) : Collections.EMPTY_LIST);
+  }
+  
+  /**
+   * Select a location
+   */
+  public void setSelection(Collection locations) {
+    selectionLayer.setLocations(locations);
   }
   
   /**

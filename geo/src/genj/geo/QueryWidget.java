@@ -38,6 +38,8 @@ import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -66,6 +68,9 @@ public class QueryWidget extends JPanel {
   /** our match model */
   private Model model;
   
+  /** view */
+  private GeoView view;
+  
   /** components */
   private TextFieldWidget city;
   private ChoiceWidget tlj;
@@ -76,10 +81,11 @@ public class QueryWidget extends JPanel {
   /**
    * Constructor
    */
-  public QueryWidget(GeoLocation location) {
+  public QueryWidget(GeoLocation location, GeoView view) {
     super(LAYOUT.copy());
     
-    // prepare our Match Model
+    // init state
+    this.view = view;
     model = new Model();
     
     // prepare our components
@@ -141,6 +147,14 @@ public class QueryWidget extends JPanel {
       }
     });
     
+    hits.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent e) {
+        int row = hits.getSelectedRow();
+        if (row>=0)
+          QueryWidget.this.view.setSelection(model.getLocation(row));
+      }
+    });
+    
     // done
   }
   
@@ -153,6 +167,8 @@ public class QueryWidget extends JPanel {
   
   public void removeNotify() {
     model.stop();
+    // clear current view selection
+    view.setSelection(Collections.EMPTY_LIST);
     // continue
     super.removeNotify();
   }
@@ -192,6 +208,11 @@ public class QueryWidget extends JPanel {
         default: case 0: return loc.toString();
         case 1: return loc.getCoordinateAsString();
       }
+    }
+    
+    /** returns location by row */
+    public GeoLocation getLocation(int row) {
+      return (GeoLocation)locations.get(row);
     }
     
     /** set current location to query */

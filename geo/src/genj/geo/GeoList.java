@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.util.ActionDelegate;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
+import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
@@ -36,7 +37,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -67,6 +67,9 @@ import swingx.tree.AbstractTreeModel;
     TXT_LATLON = GeoView.RESOURCES.getString("location.latlon"),
     TXT_UNKNOWN = GeoView.RESOURCES.getString("location.unknown");
   
+  /** view  */
+  private GeoView view;
+  
   /** view mgr */
   private ViewManager viewManager;
   
@@ -74,7 +77,7 @@ import swingx.tree.AbstractTreeModel;
   private GeoModel model;
 
   /** wrapped tree */
-  private JTree tree; 
+  private Content tree; 
   
   /** propagate selection changes */
   private boolean isPropagateSelectionChanges = true;
@@ -82,42 +85,15 @@ import swingx.tree.AbstractTreeModel;
   /**
    * Constructor
    */
-  public GeoList(GeoModel model, ViewManager viewManager) {
+  public GeoList(GeoModel model, GeoView view, ViewManager viewManager) {
     
     // remember 
     this.model = model;
+    this.view = view;
     this.viewManager = viewManager;
     
     // create some components
-    tree = new JTree(new Model());
-    tree.setRootVisible(false);
-    tree.setShowsRootHandles(true);
-    tree.addTreeSelectionListener(new TreeSelectionListener() {
-      public void valueChanged(TreeSelectionEvent e) {
-        // notify about selection changes?
-        if (!isPropagateSelectionChanges)
-          return;
-        // collect selection
-        Set props = new HashSet();
-        Set locs = new HashSet();
-          
-        TreePath[] paths = tree.getSelectionModel().getSelectionPaths();
-        if (paths!=null) for (int i=0; i<paths.length; i++) {
-          if (paths[i].getPathCount()==3)
-            props.add(paths[i].getPathComponent(2));
-          if (paths[i].getPathCount()>1)
-            locs.add(paths[i].getPathComponent(1));
-        }
-
-        // notify
-        EventListener[] ls = listenerList.getListeners(SelectionListener.class);
-        for (int i=0; i<ls.length; i++)
-          ((SelectionListener)ls[i]).listSelectionChanged(locs, props);
-        
-        // done
-      }
-    });
-
+    tree = new Content();
     Update update = new Update();
     tree.getSelectionModel().addTreeSelectionListener(update);
     tree.setCellRenderer(new Renderer());
@@ -202,20 +178,6 @@ import swingx.tree.AbstractTreeModel;
   }
   
   /**
-   * Add a listener
-   */
-  public void addSelectionListener(SelectionListener l) {
-    listenerList.add(SelectionListener.class, l);
-  }
-
-  /**
-   * Remove a listener
-   */
-  public void removeTreeSelectionListener(TreeSelectionListener l) {
-    listenerList.remove(SelectionListener.class, l);
-  }
-  
-  /**
    * An action for (unf)folding
    */
   private class UnFold extends ActionDelegate {
@@ -246,7 +208,7 @@ import swingx.tree.AbstractTreeModel;
     }
     protected void execute() {
       GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
-      QueryWidget query = new QueryWidget(location);
+      QueryWidget query = new QueryWidget(location, view);
       viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.IMG_QUESTION, query, new CloseWindow[]{new CloseWindow("Does nothing yet!")}, GeoList.this);
     }
   }
@@ -291,6 +253,65 @@ import swingx.tree.AbstractTreeModel;
       return this;
     }
   }
+  
+  /**
+   * our content - a tree
+   */
+  private class Content extends JTree implements TreeSelectionListener, ContextProvider {
+    
+    /**
+     * Constructor
+     */
+    private Content() {
+      super(new Model());
+      
+      setRootVisible(false);
+      setShowsRootHandles(true);
+      addTreeSelectionListener(this);
+    }
+    
+    /**
+     * callback - context needed
+     */
+    public Context getContext() {
+      if (getSelectionCount()==1) {
+        Object selection = getLastSelectedPathComponent();
+        if (selection instanceof Property) 
+          return new Context((Property)selection);
+      }
+      return new Context(model.getGedcom());
+    }
+    
+    /**
+     * callback - selection changed
+     */
+    public void valueChanged(TreeSelectionEvent e) {
+      // notify about selection changes?
+      if (!isPropagateSelectionChanges)
+        return;
+      // collect selection
+      Set props = new HashSet();
+      Set locs = new HashSet();
+        
+      TreePath[] paths = tree.getSelectionModel().getSelectionPaths();
+      if (paths!=null) for (int i=0; i<paths.length; i++) {
+        if (paths[i].getPathCount()==3)
+          props.add(paths[i].getPathComponent(2));
+        if (paths[i].getPathCount()>1)
+          locs.add(paths[i].getPathComponent(1));
+      }
+
+      // propagate selection
+      view.setSelection(locs);
+      
+      // propagate context
+      if (props.size()==1)
+        viewManager.fireContextSelected(new Context((Property)props.iterator().next()));
+      
+      // done
+    }
+    
+  } //Content
   
   /**
    * our model shown in tree
@@ -410,11 +431,4 @@ import swingx.tree.AbstractTreeModel;
     
   } //Model
 
-  /**
-   * Listeners Callback interface
-   */
-  public interface SelectionListener extends EventListener {
-    public void listSelectionChanged(Set locations, Set properties);
-  }
-  
 }
