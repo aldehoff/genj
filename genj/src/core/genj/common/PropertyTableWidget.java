@@ -335,18 +335,15 @@ public class PropertyTableWidget extends JPanel {
       
       Model model = (Model)getModel();
       
-      // none or more than one row selected?
-      if (getSelectedRowCount()!=1)
-        return null;
+      // one row one col?
       int row = getSelectedRow();
-      
-      // more than one column selected?
-      if (getSelectedColumnCount()!=1)
-        return null;
       int col = getSelectedColumn();
+      if (getSelectedRowCount()==1&&getSelectedColumnCount()==1)
+        return model.getContextAt(row, col);
       
-      // grab it
-      return model.getContextAt(row, col);
+      // fallback
+      Gedcom ged = model.getGedcom();
+      return ged!=null ? new Context(ged) : null;
     }
   } //Content
 
