@@ -35,6 +35,9 @@ public class Options extends OptionProvider {
   /** option - whether changes are auto commit */
   public boolean isAutoCommit = false;
   
+  /** option - whether to split jurisdictions into their components when editing places */
+  public boolean isSplitJurisdictions = true;
+  
   /** 'singleton' */
   private static Options instance = new Options();
 

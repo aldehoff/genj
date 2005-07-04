@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.edit.Options;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 import genj.util.DirectAccessTokenizer;
@@ -77,8 +78,6 @@ public class PlaceBean extends PropertyBean {
    */
   private String getCommitValue() {
     
-    boolean hierarchy = ((PropertyPlace)property).getFormat().length()>0;
-    
     // collect the result by looking at all of the choices
     StringBuffer result = new StringBuffer();
     for (int c=0, n=getComponentCount(), j=0; c<n; c++) {
@@ -90,7 +89,7 @@ public class PlaceBean extends PropertyBean {
         String jurisdiction = ((ChoiceWidget)comp).getText().trim();
         
         // make sure the user doesn't enter a comma ',' if there is a field per jurisdiction
-        if (hierarchy) jurisdiction = jurisdiction.replaceAll(",",";"); 
+        jurisdiction = jurisdiction.replaceAll(",",";"); 
           
         // always add separator for jurisdictions j>0 regardless of jurisdiction.length()
         if (j++>0) result.append(","); 
@@ -128,7 +127,7 @@ public class PlaceBean extends PropertyBean {
     defaultFocus = null;
    
     // either a simple value or broken down into comma separated jurisdictions
-    if (place.getDisplayFormat().length()==0) {
+    if (!Options.getInstance().isSplitJurisdictions || place.getDisplayFormat().length()==0) {
       createChoice(null, place.getValue(), place.getAllJurisdictions(-1,true));
     } else {
       DirectAccessTokenizer format = new DirectAccessTokenizer(place.getDisplayFormat(), ",");
