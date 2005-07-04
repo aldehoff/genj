@@ -60,23 +60,26 @@ public class Grammar {
   public static Grammar getInstance() {
     // already instantiated?
     if (instance==null) {
+      
       synchronized (Grammar.class) {
         // check again
         if (instance==null) {
           
-          // create lazyly
-          instance = new Grammar();
+          // instantiate now (a thread-local variable for now)
+          Grammar grammar = new Grammar();
           
           // parse descriptor (happening once only)
           try {
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-            parser.parse(new InputSource(new InputStreamReader(Grammar.class.getResourceAsStream("grammar.xml"))), instance.new Parser());
+            parser.parse(new InputSource(new InputStreamReader(Grammar.class.getResourceAsStream("grammar.xml"))), grammar.new Parser());
           } catch (Throwable t) {
             Gedcom.LOG.log(Level.SEVERE, "couldn't parse grammar", t);
             throw new Error(t);
           }
+          
+          // now we got it
+          instance = grammar;
 
-          // instantiated now
         }
       }
     }
@@ -147,7 +150,7 @@ public class Grammar {
   /**
    * Get a MetaProperty by path
    */
-  private MetaProperty getMetaRecursively(TagPath path, boolean persist) {
+  /*package*/ MetaProperty getMetaRecursively(TagPath path, boolean persist) {
     
     String tag = path.get(0);
     
@@ -155,7 +158,7 @@ public class Grammar {
     
     // something we didn't know about yet?
     if (root==null) {
-      root = new MetaProperty(tag, Collections.EMPTY_MAP, false);
+      root = new MetaProperty(this, tag, Collections.EMPTY_MAP, false);
       tag2root.put(tag, root);
     }
     
@@ -187,7 +190,7 @@ public class Grammar {
         properties.put(attributes.getQName(i), attributes.getValue(i));
       
       // create a meta property for element
-      MetaProperty meta = new MetaProperty(qName, properties, true);
+      MetaProperty meta = new MetaProperty(Grammar.this, qName, properties, true);
 
       // a property root (a.k.a entity) or a nested one?
       if (stack.isEmpty())  {

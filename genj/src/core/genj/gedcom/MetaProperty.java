@@ -50,6 +50,9 @@ public class MetaProperty implements Comparable {
     IMG_UNKNOWN = loadImage("Question.gif"),
     IMG_ERROR   = loadImage("Error.gif"),
     IMG_PRIVATE = loadImage("Private.gif");
+  
+  /** grammar */
+  private Grammar grammar;
     
   /** tag */
   private String tag;
@@ -82,15 +85,16 @@ public class MetaProperty implements Comparable {
   /**
    * Constructor
    */
-  /*package*/ MetaProperty(String tag, Map attributes, boolean grammar) {
+  /*package*/ MetaProperty(Grammar grammar, String tag, Map attributes, boolean isGrammar) {
     // remember tags&props
+    this.grammar = grammar;
     this.tag = tag;
     this.attrs = attributes;
-    this.isGrammar = grammar;
+    this.isGrammar = isGrammar;
     // inherit from super if applicable
     String path = (String)attributes.get("super");
     if (path!=null) {
-      MetaProperty supr = Grammar.getMeta(new TagPath(path));
+      MetaProperty supr = grammar.getMetaRecursively(new TagPath(path), true);
       // subs from super
       for (Iterator nested=supr.nested.iterator(); nested.hasNext(); ) {
         MetaProperty sub = (MetaProperty)nested.next();
@@ -383,7 +387,7 @@ public class MetaProperty implements Comparable {
     // current tag in map?
     MetaProperty result = (MetaProperty)tag2nested.get(tag);
     if (result==null) {
-      result = new MetaProperty(tag, Collections.EMPTY_MAP, false);
+      result = new MetaProperty(grammar, tag, Collections.EMPTY_MAP, false);
       if (persist) addNested(result);
     }
     // done
