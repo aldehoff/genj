@@ -52,9 +52,9 @@ public class PropertyPlace extends PropertyChoiceValue {
     StringBuffer buf = new StringBuffer(value.length());
     DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(value, JURISDICTION_SEPARATOR);
     for (int i=0; ; i++) {
-      String jurisdiction = jurisdictions.get(i);
+      String jurisdiction = jurisdictions.get(i, true);
       if (jurisdiction==null) break;
-      if (i>0) buf.append(",");
+      if (i>0) buf.append(", ");
       buf.append(jurisdiction);
     }
     return buf.toString().intern();
@@ -76,7 +76,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     // forget old jurisdictions
     DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(theOld, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
-      String jurisdiction = jurisdictions.get(i);
+      String jurisdiction = jurisdictions.get(i, true);
       if (jurisdiction==null) break;
       // forget PLAC.n
       if (jurisdiction.length()>0)
@@ -87,7 +87,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     // remember new jurisdictions
     jurisdictions = new DirectAccessTokenizer(theNew, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
-      String jurisdiction = jurisdictions.get(i);
+      String jurisdiction = jurisdictions.get(i, true);
       if (jurisdiction==null) break;
       // remember PLAC.n
       if (jurisdiction.length()>0) 
@@ -146,10 +146,10 @@ public class PropertyPlace extends PropertyChoiceValue {
     StringBuffer buf = new StringBuffer();
     DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
-      String token = tokens.get(i);
+      String token = tokens.get(i, true);
       if (token==null) break;
       if (buf.length()>0) buf.append(", ");
-      buf.append(_gedcom2local(token.trim()));
+      buf.append(_gedcom2local(token));
     }
     
     // done
@@ -177,10 +177,10 @@ public class PropertyPlace extends PropertyChoiceValue {
     StringBuffer buf = new StringBuffer();
     DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
-      String token = tokens.get(i);
+      String token = tokens.get(i, true);
       if (token==null) break;
       if (buf.length()>0) buf.append(", ");
-      buf.append(_local2gedcom(token.trim()));
+      buf.append(_local2gedcom(token));
     }
     
     // done
