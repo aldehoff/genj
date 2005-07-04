@@ -32,6 +32,8 @@ import genj.io.PropertyTransferable;
 import genj.util.WordBuffer;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
+import genj.view.Context;
+import genj.view.ContextProvider;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -65,7 +67,7 @@ import swingx.tree.AbstractTreeModel;
 /**
  * A Property Tree
  */
-public class PropertyTreeWidget extends DnDTree {
+public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   
   private final static String UNIX_DND_FILE_PREFIX = "file:";
   
@@ -95,6 +97,14 @@ public class PropertyTreeWidget extends DnDTree {
     ToolTipManager.sharedInstance().registerComponent(this);
     
     // done
+  }
+  
+  /**
+   * Accessor - current context 
+   * @return Gedcom tree's root and selection 
+   */
+  public Context getContext() {
+    return new Context(gedcom, (Entity)getRoot(), getSelection());
   }
   
   /**

@@ -411,16 +411,34 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
    * view callback
    */
   public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    // anything new?
+    // need to get entity and no property
     Context context = event.getContext();
     Entity entity = context.getEntity();
-    if (entity==null)
+    Property prop = context.getProperty();
+    if (entity==null )
       return;
-    // do it
-    if (event.isActionPerformed())
+    
+    // context property an entity?
+    if (prop instanceof Entity)
+      prop = null;
+    
+    // change root? need 'action' and context pointing to root or xref
+    if (event.isActionPerformed()&&prop==null) {
       setRoot(entity);
-    else if (entity!=currentEntity)
+      return;
+    }
+    
+    // context a link?
+    if (prop instanceof PropertyXRef && ((PropertyXRef)prop).isValid()) {
+      entity = ((PropertyXRef)prop).getTargetEntity();
+      prop = null;
+    }
+    
+    // try to change selection
+    if (entity!=currentEntity)
       setCurrent(entity);
+    
+    // done
   }
   
   /**

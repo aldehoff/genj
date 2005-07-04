@@ -36,7 +36,6 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
 import genj.view.Context;
-import genj.view.ContextProvider;
 import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
@@ -78,7 +77,7 @@ import javax.swing.event.TreeSelectionListener;
  * Our advanced version of the editor allowing low-level
  * access at the Gedcom record-structure
  */
-/*package*/ class AdvancedEditor extends Editor implements ContextProvider {
+/*package*/ class AdvancedEditor extends Editor {
   
   private final static Clipboard clipboard = initClipboard();
 
@@ -135,7 +134,26 @@ import javax.swing.event.TreeSelectionListener;
     registry = regty;
     
     // TREE Component's 
-    tree = new PropertyTreeWidget(gedcom);
+    tree = new PropertyTreeWidget(gedcom) {
+      public Context getContext() {
+        Context context = super.getContext();
+        Property selection = context.getProperty();
+        if (selection!=null&&!selection.isTransient()) {
+          context.addAction(new Cut(selection));
+          context.addAction(new Copy(selection));
+          context.addAction(new Paste(selection));
+          context.addAction(ActionDelegate.NOOP);
+          context.addAction(new Add(selection));
+          try {
+            context.addAction(new Propagate(selection));
+          } catch (IllegalArgumentException i) {
+          }
+          context.addAction(ActionDelegate.NOOP);
+        }
+        // done
+        return context;
+      }
+    };
 
     callback = new InteractionListener();
     tree.addTreeSelectionListener(callback);
@@ -167,6 +185,13 @@ import javax.swing.event.TreeSelectionListener;
   }
   
   /**
+   * Provider current context 
+   */
+  public Context getContext() {
+    return tree.getContext();
+  }
+  
+  /**
    * Component callback event in case removed from parent. Used
    * for storing current state.
    */
@@ -177,33 +202,6 @@ import javax.swing.event.TreeSelectionListener;
     super.removeNotify();
   }
 
-  /**
-   * Accessor - current context 
-   * @return Gedcom tree's root and selection 
-   */
-  public Context getContext() {
-    
-    Property selection = tree.getSelection();
-    Context context = new Context(gedcom, (Entity)tree.getRoot(), selection);
-
-    // 20040719 got to check transient - dont want to let the user control those
-    if (selection!=null&&!selection.isTransient()) {
-      context.addAction(new Cut(selection));
-      context.addAction(new Copy(selection));
-      context.addAction(new Paste(selection));
-      context.addAction(ActionDelegate.NOOP);
-      context.addAction(new Add(selection));
-      try {
-        context.addAction(new Propagate(selection));
-      } catch (IllegalArgumentException i) {
-      }
-      context.addAction(ActionDelegate.NOOP);
-    }
-    
-    // done
-    return context;
-  }
-  
   /**
    * Accessor - current context 
    * @param context context to switch to
