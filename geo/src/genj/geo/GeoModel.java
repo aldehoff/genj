@@ -61,6 +61,13 @@ import javax.swing.SwingUtilities;
   }
   
   /**
+   * Accessor - gedcom
+   */
+  public Gedcom getGedcom() {
+    return gedcom;
+  }
+  
+  /**
    * Accessor - locations
    */
   public synchronized int getNumLocations() {
