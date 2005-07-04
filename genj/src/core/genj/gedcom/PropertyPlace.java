@@ -149,7 +149,7 @@ public class PropertyPlace extends PropertyChoiceValue {
       String token = tokens.get(i);
       if (token==null) break;
       if (buf.length()>0) buf.append(", ");
-      buf.append(_gedcom2local(token));
+      buf.append(_gedcom2local(token.trim()));
     }
     
     // done
@@ -180,7 +180,7 @@ public class PropertyPlace extends PropertyChoiceValue {
       String token = tokens.get(i);
       if (token==null) break;
       if (buf.length()>0) buf.append(", ");
-      buf.append(_local2gedcom(token));
+      buf.append(_local2gedcom(token.trim()));
     }
     
     // done
