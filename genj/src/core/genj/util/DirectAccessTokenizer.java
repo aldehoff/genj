@@ -90,6 +90,14 @@ public class DirectAccessTokenizer {
    * @return token at position or null if no such exists
    */
   public String get(int pos) {
+    return get(pos, false);
+  }
+  
+  /**
+   * Access token by position
+   * @return token at position or null if no such exists
+   */
+  public String get(int pos, boolean trim) {
     
     // legal argument?
     if (pos<0)
@@ -125,7 +133,8 @@ public class DirectAccessTokenizer {
     }
     
     // done
-    return string.substring(from, to);
+    String result = string.substring(from, to);
+    return trim ? result.trim() : result;
   }
   
   /**
