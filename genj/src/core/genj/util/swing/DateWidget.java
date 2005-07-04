@@ -182,6 +182,9 @@ public class DateWidget extends JPanel {
     } catch (ArrayIndexOutOfBoundsException e) {
     }
     
+    // update our visible status
+    updateStatus();
+    
     // focus
     getComponent(1).requestFocusInWindow();
     
