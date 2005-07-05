@@ -156,20 +156,61 @@
 	</zip>
 
   </target>
+
+  <!--
+   Distribution - a language's help
+   -->
+  <target name="dist.language.help" if="dir">
+  	
+  	<property name="dir.help" value="${dir}/help"/>
+  	
+    <!-- create ./help -->
+    <mkdir dir="${dir.help}"/>
+    <copy todir="${dir.help}/images">
+      <fileset dir="./help/images"/>
+    </copy>
+    <copy todir="${dir.help}">
+      <fileset dir="./help" includes="${language}/**/*.html"/>
+      <filterset>
+        <filtersfile file="./help/${language}/resources.properties"/>
+      </filterset>
+    </copy>
+    <copy todir="${dir.help}">
+      <fileset dir="./help" includes="${language}/**/*.png"/>
+    </copy>
+    <copy todir="${dir.help}/${language}">
+      <fileset dir="./help" includes="*.xml, *.html"/>
+      <filterset>
+        <filtersfile file="./help/${language}/resources.properties"/>
+      </filterset>
+    </copy>
+  
+    <!-- prepare ./lib/jhbasic.jar -->
+    <mkdir dir="${dir}/lib"/>
+  	<copy todir="${dir}/lib" file="./lib/jhbasic.jar"/>
+
+  </target>
 	
   <!--
    Distribution - a language
    -->
   <target name="dist.language">
-
-    <!-- create genj_ll.jar -->
+  	
+    <!-- zip all resources_xx.properties files into genj_ll.jar -->
     <jar jarfile="${dir.build}/lib/genj_${language}.jar" update="True">
       <fileset dir="./language/${language}"/>
     </jar>
 
+  	<!-- create help for that language (won't be filled if n/a) -->
+    <delete dir="${dir.build}/help"/>
+    <mkdir dir="${dir.build}/help"/>
+  	<available file="./help/${language}" property="dir" value="${dir.build}/help"/>
+    <antcall target="dist.language.help"/>
+
     <!-- create genj_ll-xyz.zip -->
     <zip zipfile="${dir.dist}/genj_${language}-${app.version}.zip" update="True">
       <fileset dir="${dir.build}" includes="lib/genj_${language}.jar"/>
+      <fileset dir="${dir.build}/help" includes="**"/>
       <fileset dir="." includes="contrib/wikipedia/${language}.wikipedia.zip"/>
       <fileset dir="." includes="contrib/wikipedia/license.txt"/>
       <fileset dir="." includes="contrib/almanac/${language}.almanac"/>
@@ -179,7 +220,7 @@
   <!--
    Distribution - All languages
    -->
-  <target name="dist.languages">
+  <target name="dist.languages" depends="init">
     <antcall target="dist.language"><param name="language" value="de"/></antcall>
     <antcall target="dist.language"><param name="language" value="en"/></antcall>
     <antcall target="dist.language"><param name="language" value="fr"/></antcall>
@@ -292,70 +333,9 @@
   </target>
 
   <!--
-   Distribution - Help File
-   -->
-  <target name="dist.help.language.files">
-  
-     <mkdir dir="${dir.help}"/>
-     
-     <copy todir="${dir.help}/images">
-       <fileset dir="./help/images"/>
-     </copy>
-     <copy todir="${dir.help}">
-       <fileset dir="./help" includes="${language}/**/*.html"/>
-       <filterset>
-         <filtersfile file="./help/${language}/resources.properties"/>
-       </filterset>
-     </copy>
-     <copy todir="${dir.help}">
-       <fileset dir="./help" includes="${language}/**/*.png"/>
-     </copy>
-     <copy todir="${dir.help}/${language}">
-       <fileset dir="./help" includes="*.xml, *.html"/>
-       <filterset>
-         <filtersfile file="./help/${language}/resources.properties"/>
-       </filterset>
-     </copy>
-  
-  </target>
-
-  <!--
-   Distribution - A Help Archive
-   -->
-  <target name="dist.help.language">
-
-     <!-- clean -->
-     <delete dir="${dir.build}/help"/>
-
-     <!-- create ./help -->
-     <antcall target="dist.help.language.files"><param name="dir.help" value="${dir.build}/help"/></antcall>
-  
-     <!-- create ./genj_help_xx-yy.zip -->
-     <zip zipfile="${dir.dist}/genj_help_${language}-${app.version}.zip" update="True">
-       <fileset dir="${dir.build}" includes="help/**"/>
-       <fileset dir="." includes="lib/jhbasic.jar"/>
-     </zip>
-  	
-  	 <!-- clean up -->
-     <delete dir="${dir.build}/help"/>
-     
-  </target>
-
-
-  <!--
-   Distribution - All Helps
-   -->
-  <target name="dist.help" depends="init">
-    <antcall target="dist.help.language"><param name="language" value="es"/></antcall>
-    <antcall target="dist.help.language"><param name="language" value="en"/></antcall>
-    <antcall target="dist.help.language"><param name="language" value="fr"/></antcall>
-    <antcall target="dist.help.language"><param name="language" value="de"/></antcall>
-  </target>
-
-  <!--
    Distribution
    -->
-  <target name="dist" depends="init,compile,version,dist.languages,dist.applet,dist.app,dist.help,dist.javadoc">
+  <target name="dist" depends="init,compile,version,dist.languages,dist.applet,dist.app,dist.javadoc">
 
      <echo level="info">You can find the distribution bits in ${dir.dist}</echo>
 
