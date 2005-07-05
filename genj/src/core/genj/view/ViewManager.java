@@ -591,8 +591,11 @@ public class ViewManager {
       Component c = (Component)source;
       while (c!=null) {
         // found?
-        if (c instanceof ContextProvider) 
-          return (ContextProvider)c;
+        if (c instanceof ContextProvider) {
+          ContextProvider provider = (ContextProvider)c;
+          if (provider.getContext()!=null)
+            return provider;
+        }
         // try parent
         c = c.getParent();
       }

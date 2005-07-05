@@ -41,6 +41,7 @@ import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
 import genj.view.ContextListener;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.window.CloseWindow;
 
@@ -78,7 +79,7 @@ import javax.swing.event.ChangeListener;
 /**
  * The basic version of an editor for a entity. Tries to hide Gedcom complexity from the user while being flexible in what it offers to edit information pertaining to an entity.
  */
-/* package */class BasicEditor extends Editor implements GedcomListener {
+/* package */class BasicEditor extends Editor implements GedcomListener, ContextProvider {
 
   /** keep a cache of descriptors */
   private static Map FILE2DESCRIPTOR = new HashMap();
@@ -124,7 +125,7 @@ import javax.swing.event.ChangeListener;
     
     // done
   }
-
+  
   /**
    * Intercepted add notification
    */
