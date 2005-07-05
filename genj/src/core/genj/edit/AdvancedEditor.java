@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.common.SelectEntityWidget;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -36,7 +37,6 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
 import genj.view.Context;
-import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 

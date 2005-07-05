@@ -19,6 +19,7 @@
  */
 package genj.table;
 
+import genj.common.PathTreeWidget;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
 import genj.gedcom.Property;
@@ -31,7 +32,6 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.ListSelectionWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
-import genj.view.widgets.PathTreeWidget;
 
 import java.util.List;
 

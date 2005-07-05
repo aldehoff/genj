@@ -19,6 +19,7 @@
  */
 package genj.edit.actions;
 
+import genj.common.SelectEntityWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -26,7 +27,6 @@ import genj.gedcom.Relationship;
 import genj.util.WordBuffer;
 import genj.util.swing.NestedBlockLayout;
 import genj.view.ViewManager;
-import genj.view.widgets.SelectEntityWidget;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

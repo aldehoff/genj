@@ -17,11 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.71 $ $Author: nmeier $ $Date: 2005-06-29 16:06:00 $
+ * $Revision: 1.72 $ $Author: nmeier $ $Date: 2005-07-05 13:52:44 $
  */
 package genj.report;
 
 import genj.chart.Chart;
+import genj.common.SelectEntityWidget;
 import genj.fo.Document;
 import genj.fo.Formatter;
 import genj.gedcom.Entity;
@@ -36,7 +37,6 @@ import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.view.ViewManager;
-import genj.view.widgets.SelectEntityWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 

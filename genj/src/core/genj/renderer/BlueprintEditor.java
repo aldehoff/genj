@@ -19,6 +19,7 @@
  */
 package genj.renderer;
 
+import genj.common.PathTreeWidget;
 import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -28,7 +29,6 @@ import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.view.widgets.PathTreeWidget;
 import genj.window.CloseWindow;
 import genj.window.WindowManager;
 

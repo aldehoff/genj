@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.view.widgets;
+package genj.common;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -27,6 +27,7 @@ import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
+import genj.util.Resources;
 import genj.util.swing.PopupWidget;
 
 import java.awt.BorderLayout;
@@ -49,6 +50,8 @@ import javax.swing.JPanel;
  * A widget for choosing an entity amongst many
  */
 public class SelectEntityWidget extends JPanel {
+  
+  private final static Resources RESOURCES = Resources.get(SelectEntityWidget.class);
 
   /** type of entities to choose from */
   private String type = Gedcom.INDI;
@@ -218,8 +221,8 @@ public class SelectEntityWidget extends JPanel {
       setImage(meta.getImage());
       
       // text
-      String txt = tagPath.length()==1?"ID":meta.getName();
-      setText("Sort by "+txt);
+      setText(RESOURCES.getString("select.sort", tagPath.length()==1?"ID":meta.getName()));
+      
       // done
     }      
     
@@ -234,6 +237,7 @@ public class SelectEntityWidget extends JPanel {
       Arrays.sort(list, 1, list.length, comparator);
       listWidget.setModel(new DefaultComboBoxModel(list));
       sortWidget.setIcon(getImage());
+      sortWidget.setToolTipText(getText());
     }
         
   } //Sort
