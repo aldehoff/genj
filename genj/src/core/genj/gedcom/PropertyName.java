@@ -217,6 +217,10 @@ public class PropertyName extends Property {
 
     String old = getValue();
     
+    // check for uppercase lastname
+    if (Options.getInstance().isUpperCaseNames)
+      last = last.toUpperCase(getGedcom().getLocale());
+    
     // TUNING We expect that a lot of first and last names are the same
     // so we pay the upfront cost of reusing an intern cached String to
     // save overall memorey

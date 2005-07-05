@@ -34,6 +34,9 @@ public class Options extends OptionProvider {
   
   /** option - whether id-gaps should be filled */
   public boolean isFillGapsInIDs = false;
+  
+  /** option - whether to convert last names to uppercase */
+  public boolean isUpperCaseNames = false;
 
   /** option - maximum image files size to be loaded */  
   private int maxImageFileSizeKB = 128;
