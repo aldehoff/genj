@@ -134,9 +134,9 @@ public class GedcomWriter implements Trackable {
       // Unicode
       if (Gedcom.UNICODE.equals(encoding))
         return Charset.forName("UTF-8");
-      // ASCII
+      // ASCII - 20050705 using Latin1 (ISO-8859-1) from now on to preserve extended ASCII characters
       if (Gedcom.ASCII.equals(encoding))
-        return Charset.forName("ASCII");
+        return Charset.forName("ISO-8859-1"); // was ASCII
       // Latin1 (ISO-8859-1)
       if (Gedcom.LATIN1.equals(encoding))
         return Charset.forName("ISO-8859-1");

@@ -461,6 +461,10 @@ public class GedcomReader implements Trackable {
         LOG.info("Found LANG "+value+" - Locale is "+gedcom.getLocale());
       }
       
+      // check for encoding
+      if (level==1&&"CHAR".equals(tag)&&"ASCII".equals(value))
+        addWarning(line, resources.getString("read.warn.ascii"));
+      
       // check for place hierarchy description
       if (level==2&&"PLAC".equals(lastTag)) {
         if ("FORM".equals(tag)) {
@@ -828,9 +832,10 @@ public class GedcomReader implements Trackable {
         return;
       } 
       if (matchHeader(header,Gedcom.ASCII)) {
-        LOG.info("Found "+Gedcom.ASCII+" - trying encoding ASCII");
-        charset = Charset.forName("ASCII");
-        encoding = Gedcom.ASCII;
+        // ASCII - 20050705 using Latin1 (ISO-8859-1) from now on to preserve extended ASCII characters
+        LOG.info("Found "+Gedcom.ASCII+" - trying encoding ISO-8859-1");
+        charset = Charset.forName("ISO-8859-1"); // was ASCII
+        encoding = Gedcom.ASCII; 
         return;
       } 
       if (matchHeader(header,Gedcom.ANSEL)) {

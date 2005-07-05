@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.93 $ $Author: nmeier $ $Date: 2005-06-19 17:07:01 $
+ * $Revision: 1.94 $ $Author: nmeier $ $Date: 2005-07-05 17:31:05 $
  */
 package genj.gedcom;
 
@@ -57,7 +57,7 @@ public class Gedcom {
   public static final String
    // standard Gedcom encodings 
     UNICODE  = "UNICODE", 
-    ASCII    = "ASCII",      // a.k.a US-ASCII
+    ASCII    = "ASCII",      // we're using ISO-8859-1 actually to make extended characters possible - the spec is grayish on that one
     ANSEL    = "ANSEL",
    // non-standard encodings
     LATIN1   = "LATIN1",     // a.k.a ISO-8859-1
