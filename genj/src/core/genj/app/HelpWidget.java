@@ -42,6 +42,8 @@ import javax.swing.border.EmptyBorder;
  * A bridge to javax Help System
  */
 class HelpWidget extends JPanel {
+  
+  private final static Resources RESOURCES = Resources.get(HelpWidget.class);
 
   /**
    * Constructor
@@ -55,9 +57,8 @@ class HelpWidget extends JPanel {
     JComponent pCenter = getContent();
     if (pCenter==null) {
       pCenter = new JLabel(
-        Resources.get(this).getString("cc.help.help_file_missing"),
-        WindowManager.IMG_ERROR,
-        SwingConstants.CENTER
+        RESOURCES.getString("cc.help.help_file_missing", Locale.getDefault().getCountry().toLowerCase()),
+        WindowManager.IMG_ERROR, SwingConstants.CENTER
       );
       pCenter.setBorder(new EmptyBorder(16,16,16,16));
     }
