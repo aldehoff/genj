@@ -79,22 +79,22 @@
   </ADOP>
   <DEAT img="Death.gif" singleton="1" super="INDI:BIRT"/>
   +++++++++++++ Attributes are not events but have event_details +++++++++++++
-  <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT"/>
   <RESI singleton="0" type="PropertySimpleReadOnly" img="Residency.gif" super="INDI:BIRT">
    <PLAC default="0" super="INDI:BIRT:PLAC"/>
    <ADDR default="1" super="INDI:BIRT:ADDR"/>
   </RESI>
-  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:BIRT"/>
-  <DSCR img="Description.gif" super="INDI:CAST"/>
-  <EDUC img="Education.gif" super="INDI:CAST"/>
-  <IDNO img="IDNumber.gif" super="INDI:CAST"/>
-  <NATI img="Nationality.gif" super="INDI:CAST"/>
-  <NCHI img="NumChildren.gif" super="INDI:CAST"/>
-  <PROP img="Property.gif" super="INDI:CAST"/>
-  <RELI img="Religion.gif" super="INDI:CAST"/>
-  <SSN  img="SSN.gif" super="INDI:CAST"/>
-  <TITL img="Title.gif" super="INDI:CAST"/>
-  <NMR  img="Marriage.gif" super="INDI:CAST"/>
+  <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT"/>
+  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:OCCU"/>
+  <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:OCCU"/>
+  <EDUC type="PropertyChoiceValue" img="Education.gif" super="INDI:OCCU"/>
+  <IDNO type="PropertySimpleValue" img="IDNumber.gif" super="INDI:OCCU"/>
+  <NATI type="PropertyChoiceValue" img="Nationality.gif" super="INDI:OCCU"/>
+  <NCHI type="PropertySimpleValue" img="NumChildren.gif" super="INDI:OCCU"/>
+  <PROP type="PropertyChoiceValue" img="Property.gif" super="INDI:OCCU"/>
+  <RELI type="PropertyChoiceValue" img="Religion.gif" super="INDI:OCCU"/>
+  <SSN  type="PropertySimpleValue" img="SSN.gif" super="INDI:OCCU"/>
+  <TITL type="PropertyChoiceValue" img="Title.gif" super="INDI:OCCU"/>
+  <NMR  type="PropertySimpleValue" img="Marriage.gif" super="INDI:OCCU"/>
   +++++++++++++ More Events +++++++++++++
   <GRAD img="Graduation.gif" super="INDI:BIRT"/>
   <CHR  hide="1" singleton="1" img="Baptism.gif" super="INDI:GRAD">
