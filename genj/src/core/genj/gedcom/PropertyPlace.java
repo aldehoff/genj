@@ -54,7 +54,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     for (int i=0; ; i++) {
       String jurisdiction = jurisdictions.get(i, true);
       if (jurisdiction==null) break;
-      if (i>0) buf.append(", ");
+      if (i>0) buf.append(JURISDICTION_SEPARATOR);
       buf.append(jurisdiction);
     }
     return buf.toString().intern();
@@ -148,7 +148,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     for (int i=0;;i++) {
       String token = tokens.get(i, true);
       if (token==null) break;
-      if (buf.length()>0) buf.append(", ");
+      if (buf.length()>0) buf.append(JURISDICTION_SEPARATOR);
       buf.append(_gedcom2local(token));
     }
     
@@ -179,7 +179,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     for (int i=0;;i++) {
       String token = tokens.get(i, true);
       if (token==null) break;
-      if (buf.length()>0) buf.append(", ");
+      if (buf.length()>0) buf.append(JURISDICTION_SEPARATOR);
       buf.append(_local2gedcom(token));
     }
     
