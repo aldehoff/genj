@@ -532,9 +532,10 @@ public class GedcomReader implements Trackable {
           progress = Math.min(100,(int)(read*100/length));
         }
         
-        // trim it now
-        gedcomLine = gedcomLine.trim();
-        if (gedcomLine.length()==0) 
+        // check for empty line now - don't trim though because
+        // that's need for indentation level computation and we
+        // don't want to take stuff away if we don't have to (trailing spaces)
+        if (gedcomLine.trim().length()==0) 
           addWarning(line, resources.getString("read.error.emptyline"));
         
         
