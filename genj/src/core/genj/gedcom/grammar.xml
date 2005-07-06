@@ -122,6 +122,7 @@
    <TYPE default="1" super="INDI:BIRT:TYPE"/>
   </EVEN>
   +++++++++++++ Relationships +++++++++++++
+  <NOTE super="INDI:NAME:NOTE"/>
   <FAMC hide="1" type="PropertyFamilyChild" img="Fam.gif">
    <PEDI type="PropertyChoiceValue" img="Type.gif"/>
    <NOTE super="INDI:NAME:NOTE"/>
@@ -130,7 +131,6 @@
    <NOTE super="INDI:NAME:NOTE"/>
   </FAMS>
   <OBJE super="INDI:BIRT:OBJE"/>
-  <NOTE super="INDI:NAME:NOTE"/>
   <SUBM hide="1" type="PropertySubmitter" img="Submitter.gif"/>
   <SOUR super="INDI:NAME:SOUR"/>
   <ASSO hide="1" type="PropertyAssociation" img="Association.gif">
