@@ -422,6 +422,18 @@ public abstract class Property implements Comparable {
     return new TagPath(stack);
     
   }
+  
+  /**
+   * Test for (recursive) containment
+   */
+  public boolean contains(Property prop) {
+    for (int c = 0; c < children.size(); c++) {
+      Property child = (Property)children.get(c);
+      if (child==prop||child.contains(prop))
+        return true;
+    }
+    return false;
+  }
 
   /**
    * Test properties
