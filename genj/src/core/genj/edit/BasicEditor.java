@@ -89,7 +89,7 @@ import javax.swing.event.ChangeListener;
   private Gedcom gedcom = null;
 
   /** current entity */
-  private Entity entity = null;
+  private Entity currentEntity = null;
 
   /** registry */
   private Registry registry;
@@ -155,13 +155,13 @@ import javax.swing.event.ChangeListener;
    */
   public void handleChange(Transaction tx) {
     // are we looking at something?
-    if (entity == null)
+    if (currentEntity == null)
       return;
     // entity affected?
-    if (tx.get(Transaction.ENTITIES_DELETED).contains(entity)) {
-      setEntity(gedcom.getAnyEntity(entity.getTag()), entity);
-    } else if (tx.get(Transaction.ENTITIES_MODIFIED).contains(entity)) {
-      setEntity(entity, null);
+    if (tx.get(Transaction.ENTITIES_DELETED).contains(currentEntity)) {
+      setEntity(gedcom.getAnyEntity(currentEntity.getTag()), currentEntity);
+    } else if (tx.get(Transaction.ENTITIES_MODIFIED).contains(currentEntity)) {
+      setEntity(currentEntity, null);
     }
     // done
   }
@@ -173,22 +173,31 @@ import javax.swing.event.ChangeListener;
     Context result = null;
     PropertyBean bean = getFocus();
     if (bean!=null) result = bean.getContext();
-    return result!=null ? result : new Context(gedcom, entity, null);
+    return result!=null ? result : new Context(gedcom, currentEntity, null);
   }
 
   /**
    * Callback - set current context
    */
   public void setContext(Context context) {
+    
+    // a different entity to look at?
+    if (currentEntity != context.getEntity()) {
+      
+      // commit what needs to be committed
+      if (!gedcom.isTransaction()&&currentEntity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
+        ok.trigger();
 
-    // something to be committed?
-    if (!gedcom.isTransaction()&&entity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
-      ok.trigger();
+      // change entity being edited
+      setEntity(context.getEntity(), context.getProperty());
+      
+    } else {
 
-    // set if new
-    Entity set = context.getEntity();
-    if (entity != set) 
-      setEntity(set, context.getProperty());
+      // simply change focus if possible
+      if (beanPanel!=null)
+        beanPanel.select(context.getProperty());
+      
+    }
 
     // done
   }
@@ -199,15 +208,15 @@ import javax.swing.event.ChangeListener;
   public void setEntity(Entity set, Property focus) {
 
     // remember
-    entity = set;
+    currentEntity = set;
     
     // try to find focus receiver if need be
     if (focus==null) {
       // last bean's property would be most appropriate
       PropertyBean bean = getFocus();
-      if (bean!=null&&bean.getProperty().getEntity()==entity) focus  = bean.getProperty();
+      if (bean!=null&&bean.getProperty().getEntity()==currentEntity) focus  = bean.getProperty();
       // fallback to entity itself
-      if (focus==null) focus = entity;
+      if (focus==null) focus = currentEntity;
     }
     
     // remove all we've setup to this point
@@ -222,7 +231,7 @@ import javax.swing.event.ChangeListener;
     }
 
     // set it up anew
-    if (entity!=null) {
+    if (currentEntity!=null) {
       
       try {
         beanPanel = new BeanPanel();
@@ -453,7 +462,7 @@ import javax.swing.event.ChangeListener;
       cancel.setEnabled(false);
 
       // re-set for cancel
-      setEntity(entity, null);
+      setEntity(currentEntity, null);
     }
 
   } //Cancel
@@ -500,10 +509,10 @@ import javax.swing.event.ChangeListener;
     public BeanPanel() {
       
       // grab a descriptor
-      NestedBlockLayout descriptor = getSharedDescriptor(entity.getMetaProperty()).copy();
+      NestedBlockLayout descriptor = getSharedDescriptor(currentEntity.getMetaProperty()).copy();
       
       // parse entity descriptor
-      parse(this, entity, getSharedDescriptor(entity.getMetaProperty()).copy() );
+      parse(this, currentEntity, getSharedDescriptor(currentEntity.getMetaProperty()).copy() );
       
       // done
     }
@@ -624,8 +633,8 @@ import javax.swing.event.ChangeListener;
       if ("label".equals(element)) {
 
         JLabel label;
-        if (path.length()==1&&path.getLast().equals(entity.getTag()))
-          label = new JLabel(meta.getName() + ' ' + entity.getId(), entity.getImage(false), SwingConstants.LEFT);
+        if (path.length()==1&&path.getLast().equals(currentEntity.getTag()))
+          label = new JLabel(meta.getName() + ' ' + currentEntity.getId(), currentEntity.getImage(false), SwingConstants.LEFT);
         else
           label = new JLabel(meta.getName(cell.isAttribute("plural")), meta.getImage(), SwingConstants.LEFT);
 
@@ -705,8 +714,8 @@ import javax.swing.event.ChangeListener;
       
       // create all tabs
       Set skippedTags = new HashSet();
-      props: for (int i=0, j=entity.getNoOfProperties(); i<j; i++) {
-        Property prop = entity.getProperty(i);
+      props: for (int i=0, j=currentEntity.getNoOfProperties(); i<j; i++) {
+        Property prop = currentEntity.getProperty(i);
         // check tag - skipped or covered already?
         String tag = prop.getTag();
         if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
@@ -723,7 +732,7 @@ import javax.swing.event.ChangeListener;
       tabs.addTab("", Images.imgNew, newTab);
       
       // add buttons for creating sub-properties 
-      MetaProperty[] nested = entity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+      MetaProperty[] nested = currentEntity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
       Arrays.sort(nested);
       for (int i=0;i<nested.length;i++) {
         MetaProperty meta = nested[i];
@@ -779,7 +788,7 @@ import javax.swing.event.ChangeListener;
       protected void execute() {
         
         // create a temporary root that we'll add later to entity on change
-        Property root = new Proxy(meta.create(""), entity);
+        Property root = new Proxy(meta.create(""), currentEntity);
         
         // create a tab for it
         createTab(root);
