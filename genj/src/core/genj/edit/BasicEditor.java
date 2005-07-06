@@ -64,6 +64,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -142,7 +143,7 @@ import javax.swing.event.ChangeListener;
    */
   public void removeNotify() {
     // clean up state
-    setEntity(null);
+    setEntity(null, null);
     // let super continue
     super.removeNotify();
     // stop listening to gedcom events
@@ -158,19 +159,21 @@ import javax.swing.event.ChangeListener;
       return;
     // entity affected?
     if (tx.get(Transaction.ENTITIES_DELETED).contains(entity)) {
-      setEntity(null);
-      return;
+      setEntity(gedcom.getAnyEntity(entity.getTag()), entity);
+    } else if (tx.get(Transaction.ENTITIES_MODIFIED).contains(entity)) {
+      setEntity(entity, null);
     }
-    if (tx.get(Transaction.ENTITIES_MODIFIED).contains(entity)) {
-      setEntity(entity);
-    }
+    // done
   }
 
   /**
    * Callback - our current context
    */
   public Context getContext() {
-    return new Context(gedcom, entity, null);
+    Context result = null;
+    PropertyBean bean = getFocus();
+    if (bean!=null) result = bean.getContext();
+    return result!=null ? result : new Context(gedcom, entity, null);
   }
 
   /**
@@ -185,24 +188,27 @@ import javax.swing.event.ChangeListener;
     // set if new
     Entity set = context.getEntity();
     if (entity != set) 
-      setEntity(set);
+      setEntity(set, context.getProperty());
 
-    // select 1st/appropriate bean for property from context
-    if (beanPanel!=null) {
-      Property p = context.getProperty();
-      beanPanel.select(p!=null?p:set);
-    }
-    
     // done
   }
   
   /**
    * Set current entity
    */
-  public void setEntity(Entity set) {
+  public void setEntity(Entity set, Property focus) {
 
     // remember
     entity = set;
+    
+    // try to find focus receiver if need be
+    if (focus==null) {
+      // last bean's property would be most appropriate
+      PropertyBean bean = getFocus();
+      if (bean!=null&&bean.getProperty().getEntity()==entity) focus  = bean.getProperty();
+      // fallback to entity itself
+      if (focus==null) focus = entity;
+    }
     
     // remove all we've setup to this point
     if (beanPanel!=null) {
@@ -238,8 +244,28 @@ import javax.swing.event.ChangeListener;
     // show
     revalidate();
     repaint();
+    
+    // set focus
+    if (beanPanel!=null)
+      beanPanel.select(focus);
 
     // done
+  }
+  
+  /**
+   * Find currently focussed PropertyBean
+   */
+  private PropertyBean getFocus() {
+    
+    Component focus = FocusManager.getCurrentManager().getFocusOwner();
+    while (focus!=null&&!(focus instanceof PropertyBean))
+      focus = focus.getParent();
+    
+    if (!(focus instanceof PropertyBean))
+      return null;
+    
+    return SwingUtilities.isDescendingFrom(focus, this) ? (PropertyBean)focus : null;
+
   }
 
   /**
@@ -306,8 +332,12 @@ import javax.swing.event.ChangeListener;
         if (value.length()==0)
           return;
         root.setValue(getPathToNested(changed), value);
+        // clear anything set on proxied property - this makes sure
+        // that any reference-set properties are not lingering around
+        changed.setValue("");
         // done
       }
+      // intercepted, consumed and won't propagate more
     }
     /** offer context - gedcom and  transaction */
     public Gedcom getGedcom() { return gedcom; }
@@ -423,7 +453,7 @@ import javax.swing.event.ChangeListener;
       cancel.setEnabled(false);
 
       // re-set for cancel
-      setEntity(entity);
+      setEntity(entity, null);
     }
 
   } //Cancel
@@ -518,11 +548,12 @@ import javax.swing.event.ChangeListener;
       // look for appropriate bean - showing prop or first one in case of Entity
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (prop instanceof Entity || bean.getProperty()==prop) {
+        if (prop instanceof Entity || bean.getProperty()==prop || prop.contains(bean.getProperty())) {
           bean.requestFocusInWindow();
           break;
         }
       }
+      // hmm, nothing found
       // done
     }
 

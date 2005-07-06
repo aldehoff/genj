@@ -224,8 +224,7 @@ import javax.swing.event.TreeSelectionListener;
 
     // set selection
     Property property = context.getProperty();
-    if (property!=null) 
-      tree.setSelection(property);  
+    tree.setSelection(property!=null ? property : entity);  
   
     // Done
   }
