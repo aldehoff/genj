@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.94 $ $Author: nmeier $ $Date: 2005-07-05 17:31:05 $
+ * $Revision: 1.95 $ $Author: nmeier $ $Date: 2005-07-06 15:07:35 $
  */
 package genj.gedcom;
 
@@ -481,7 +481,7 @@ public class Gedcom {
     Map id2entity = getEntityMap(entity);
     
     // Look for an available ID
-    int id = Options.getInstance().isFillGapsInIDs ? 1 : id2entity.size();
+    int id = Options.getInstance().isFillGapsInIDs ? 1 : id2entity.size()+1;
     
     StringBuffer buf = new StringBuffer(maxIDLength);
     
