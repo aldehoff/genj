@@ -30,12 +30,14 @@ import genj.view.ContextProvider;
 import genj.view.ViewManager;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 
@@ -155,10 +157,32 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     return true;
   }
   
+  /**
+   * helper that makes this bean visible if possible
+   */
+  private void makeVisible() {
+    // let's test if we're in a tabbed pane first
+    Component c = getParent();
+    while (c!=null) {
+      // is it a tabbed pane?
+      if (c.getParent() instanceof JTabbedPane) {
+        ((JTabbedPane)c.getParent()).setSelectedComponent(c);
+        return;
+      }
+      // continue lookin
+      c = c.getParent();
+    }
+    // not contained in tabbed pane
+  }
+  
   /** 
    * overridden requestFocusInWindow()
    */
   public boolean requestFocusInWindow() {
+    // make sure we're visible
+    makeVisible();
+    
+    // delegate to default focus
     if (defaultFocus!=null)
       return defaultFocus.requestFocusInWindow();
     return super.requestFocusInWindow();
@@ -168,6 +192,9 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
    * overridden requestFocus()
    */
   public void requestFocus() {
+    //  make sure we're visible
+    makeVisible();
+    // delegate to default focus
     if (defaultFocus!=null)
       defaultFocus.requestFocus();
     else 
