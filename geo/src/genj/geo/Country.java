@@ -181,8 +181,8 @@ public class Country implements Comparable {
     // cache it under displayName for next time
     displayName2Country.put(displayName, result);
     
-    // not found
-    return null;
+    // done
+    return result;
   }
 
 } //Country
