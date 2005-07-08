@@ -59,11 +59,11 @@ public class DateWidget extends JPanel {
   
   /** change support */
   private ChangeSupport changeSupport = new ChangeSupport(this) {
-    public void fireChangeEvent() {
+    protected void fireChangeEvent(Object source) {
       // update our status
       updateStatus();
       // continue
-      super.fireChangeEvent();
+      super.fireChangeEvent(source);
     }
   };
     
@@ -316,18 +316,18 @@ public class DateWidget extends JPanel {
      */
     protected void execute() {
       PointInTime pit = getValue();
-      if (pit==null)
-        return;
-      try {
-        pit.set(newCalendar);
-      } catch (GedcomException e) {
-        int rc = manager.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, WindowManager.IMG_ERROR, e.getMessage(), CloseWindow.OKand(Calendar.TXT_CALENDAR_RESET), DateWidget.this);
-        if (rc==0) 
-          return;
-        pit = new PointInTime(newCalendar);
+      if (pit!=null) {
+        try {
+          pit.set(newCalendar);
+        } catch (GedcomException e) {
+          int rc = manager.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, WindowManager.IMG_ERROR, e.getMessage(), CloseWindow.OKand(Calendar.TXT_CALENDAR_RESET), DateWidget.this);
+          if (rc==0) 
+            return;
+          pit = new PointInTime(newCalendar);
+        }
+        // change
+        setValue(pit);
       }
-      // change
-      setValue(pit);
       // update current status
       updateStatus();
     }

@@ -35,6 +35,7 @@ public class PropertyDate extends Property {
   private PIT 
     start = new PIT(),
     end = new PIT();
+  private boolean isAdjusting = false;
 
   /** the format of the contained date */
   private Format format = DATE;
@@ -157,15 +158,27 @@ public class PropertyDate extends Property {
    * Accessir value
    */
   public void setValue(Format newFormat, PointInTime newStart, PointInTime newEnd, String newPhrase) {
-    
+
     String old = getValue();
     
-    // keep it
-    format = newFormat;
-    start.set(newStart);
-    if (newEnd!=null)
-      end.set(newEnd);
-    phrase = newPhrase;
+    // do an atomic change
+    isAdjusting = true;
+    try {
+      // keep it
+      if (newStart==null)
+        start.reset();
+      else
+        start.set(newStart);
+      if (newEnd==null)
+        end.reset();
+      else
+        end.set(newEnd);
+      phrase = newPhrase;
+      
+      format = start.isValid() && (!newFormat.isRange()||end.isValid()) ? newFormat : DATE;
+    } finally {
+      isAdjusting = false;
+    }
     
     // remember as modified      
     propagateChange(old);
@@ -180,12 +193,17 @@ public class PropertyDate extends Property {
 
     String old = getValue();
     
-    // set end == start?
-    if (!isRange()&&set.isRange()) 
-      end.set(start);
-    
-    // remember
-    format = set;
+    // do an atomic change
+    isAdjusting = true;
+    try {
+      // set end == start?
+      if (!isRange()&&set.isRange()) 
+        end.set(start);
+      // remember
+      format = set;
+    } finally {
+      isAdjusting = false;
+    }
     
     // remember as modified      
     propagateChange(old);
@@ -200,22 +218,28 @@ public class PropertyDate extends Property {
 
     String old = getValue();
 
-    // Reset value
-    start.reset();
-    end.reset();
-    format = DATE;
-    phrase= "";
-
-    // empty string is fine
-    newValue = newValue.trim();
-    if (newValue.length()>0) {
-      // try to apply one of the formats
-      for (int f=0; f<FORMATS.length;f++) {
-        if (FORMATS[f].setValue(newValue, this)) {
-          format  = FORMATS[f];
-          break;
-        }
-      } 
+    // do an atomic change
+    isAdjusting = true;
+    try {
+      // Reset value
+      start.reset();
+      end.reset();
+      format = DATE;
+      phrase= "";
+  
+      // empty string is fine
+      newValue = newValue.trim();
+      if (newValue.length()>0) {
+        // try to apply one of the formats
+        for (int f=0; f<FORMATS.length;f++) {
+          if (FORMATS[f].setValue(newValue, this)) {
+            format  = FORMATS[f];
+            break;
+          }
+        } 
+      }
+    } finally {
+      isAdjusting = false;
     }
 
     // remember as modified      
@@ -271,15 +295,19 @@ public class PropertyDate extends Property {
      * Setter
      */
     public void set(int d, int m, int y) {
-
-      String old = getValue();
       
-      // set it
-      super.set(d,m,y);
-
-      // note change
-      propagateChange(old);
-
+      // adjusting? simply set
+      if (isAdjusting) {
+        super.set(d,m,y);
+      } else {
+        // grab old
+        String old = getValue();
+        // set it
+        super.set(d,m,y);
+        // notify about change 
+        propagateChange(old);
+      }
+      
       // done
     }
     
