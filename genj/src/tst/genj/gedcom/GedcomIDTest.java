@@ -26,7 +26,8 @@ public class GedcomIDTest extends TestCase {
     // jump over next
     assertID("I4", gedcom.createEntity(Gedcom.INDI, "I4"));
     
-    // catching up again (default behavior)?
+    // catching up again (not the default behavior)?
+    Options.getInstance().isFillGapsInIDs = true;
     assertID("I3", gedcom.createEntity(Gedcom.INDI));
     
     // do a padded one
