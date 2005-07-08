@@ -63,15 +63,12 @@ public class PropertyPlace extends PropertyChoiceValue {
   /**
    * Remember a jurisdiction's vlaue
    */
-  protected void remember( String theOld, String theNew) {
+  protected boolean remember( String theOld, String theNew) {
     
     // let super do its stuff
-    super.remember(theOld, theNew);
-    
-    // got access to a reference set?
+    if (!super.remember(theOld, theNew))
+      return false;
     Gedcom gedcom = getGedcom();
-    if (gedcom==null)
-      return;
     
     // forget old jurisdictions
     DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(theOld, JURISDICTION_SEPARATOR);
@@ -96,6 +93,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     }
     
     // done
+    return true;
   }
 
   /**

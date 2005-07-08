@@ -31,17 +31,18 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   /**
    * Remember a value
    */
-  protected void remember(String oldValue, String newValue) {
-    // got access to a reference set?
+  protected boolean remember(String oldValue, String newValue) {
+    // transient or no access to containing gedcom? 
     Gedcom gedcom = getGedcom();
-    if (gedcom==null)
-      return;
+    if (isTransient||gedcom==null)
+      return false;
     ReferenceSet refSet = gedcom.getReferenceSet(getTag());
     // forget old
     if (oldValue.length()>0) refSet.remove(oldValue, this);
     // remember new
     if (newValue.length()>0) refSet.add(newValue, this);
     // done
+    return true;
   }
   
   /**
@@ -146,16 +147,6 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     remember(super.getValue(), "");
     // continue
     super.delNotify(old);
-  }
-  
-  /**
-   * Used choices (this will not work unless parent not null)
-   * 20041210 I'm passing gedcom here so properties that haven't
-   * been added to a parent yet (EditView) can already be edited
-   * nicely
-   */
-  public List getChoices(Gedcom gedcom) {
-    return gedcom.getReferenceSet(getTag()).getKeys(gedcom.getCollator());
   }
   
   /**
