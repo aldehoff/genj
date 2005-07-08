@@ -325,6 +325,7 @@ import javax.swing.event.ChangeListener;
     private Proxy(Property root , Property lateBindingParent) {
       this.root = root;
       this.lateBindingParent = lateBindingParent;
+      this.isTransient = true;
     }
     /** hook into change notifications */
     protected void propagateChange(Change change) {
@@ -341,9 +342,6 @@ import javax.swing.event.ChangeListener;
         if (value.length()==0)
           return;
         root.setValue(getPathToNested(changed), value);
-        // clear anything set on proxied property - this makes sure
-        // that any reference-set properties are not lingering around
-        changed.setValue("");
         // done
       }
       // intercepted, consumed and won't propagate more
