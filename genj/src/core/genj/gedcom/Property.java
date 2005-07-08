@@ -244,7 +244,7 @@ public abstract class Property implements Comparable {
 
 	  // tell to added
 	  child.addNotify(this);
-    child.isTransient = isTransient;
+    if (isTransient) child.isTransient = true;
 	
 	  // remember change
 	  Transaction tx = getTransaction();
