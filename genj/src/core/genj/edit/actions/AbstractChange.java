@@ -29,7 +29,6 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.view.Context;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import javax.swing.JComponent;
@@ -57,6 +56,8 @@ import javax.swing.JTextArea;
   /** image *new* */
   protected final static ImageIcon imgNew = Images.imgNewEntity;
   
+  private JTextArea confirm;
+
   /**
    * Constructor
    */
@@ -71,7 +72,7 @@ import javax.swing.JTextArea;
    * Show a dialog for errors
    */  
   protected void handleThrowable(String phase, Throwable t) {
-    manager.getWindowManager().openDialog("err", "Error", WindowManager.IMG_ERROR, t.getMessage(), CloseWindow.OK(), getTarget());
+    manager.getWindowManager().openDialog("err", "Error", WindowManager.ERROR_MESSAGE, t.getMessage(), WindowManager.ACTIONS_OK, getTarget());
   }
   
   /** 
@@ -80,9 +81,21 @@ import javax.swing.JTextArea;
   protected abstract String getConfirmMessage();
   
   /**
-   * Returns options   */
-  protected JComponent getOptions() {
-    return null;
+   * Return the dialog content to show to the user   */
+  protected JPanel getDialogContent() {
+    JPanel result = new JPanel(new NestedBlockLayout("<col><text wx=\"1\" wy=\"1\"/></col>"));
+    result.add(getConfirmComponent());
+    return result;
+  }
+  
+  protected JComponent getConfirmComponent() {
+    if (confirm==null) {
+      confirm = new JTextArea(getConfirmMessage(), 6, 40);
+      confirm.setWrapStyleWord(true);
+      confirm.setLineWrap(true);
+      confirm.setEditable(false);
+    }
+    return new JScrollPane(confirm);
   }
   
   /** 
@@ -91,11 +104,9 @@ import javax.swing.JTextArea;
   protected void refresh() {
     // might be no confirmation showing
     if (confirm!=null)
-      confirm.setText(getConfirmMessage());
+      confirm.setText("<html>"+getConfirmMessage());
   }
   
-  private JTextArea confirm;
-
   /**
    * @see genj.util.ActionDelegate#execute()
    */
@@ -104,27 +115,12 @@ import javax.swing.JTextArea;
     // prepare confirmation message for user
     String msg = getConfirmMessage();
     if (msg!=null) {
-      confirm = new JTextArea(msg, 6, 40);
-      confirm.setWrapStyleWord(true);
-      confirm.setLineWrap(true);
-      confirm.setEditable(false);
   
-      // prepare options
-      JComponent options = getOptions();
-      
       // prepare actions
-      ActionDelegate[] actions = {
-        new CloseWindow(resources.getString("confirm.proceed", getText() )), 
-        new CloseWindow(CloseWindow.TXT_CANCEL)
-      };
+      String[] actions = { resources.getString("confirm.proceed", getText()),  WindowManager.TXT_CANCEL };
       
-      // prepare option/confirm panel
-      JPanel panel  = new JPanel(new NestedBlockLayout("<col><options wx=\"1\"/><confirm wx=\"1\" wy=\"1\"/></col>"));
-      if (options!=null) panel.add(options);
-      panel.add(new JScrollPane(confirm));
-  
       // Recheck with the user
-      int rc = manager.getWindowManager().openDialog(getClass().getName(), getText(), WindowManager.IMG_QUESTION, panel, actions, getTarget() );
+      int rc = manager.getWindowManager().openDialog(getClass().getName(), getText(), WindowManager.QUESTION_MESSAGE, getDialogContent(), actions, getTarget() );
       if (rc!=0)
         return;
     }
@@ -135,7 +131,7 @@ import javax.swing.JTextArea;
     try {
       change();
     } catch (Throwable t) {
-      manager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, t.getMessage(), CloseWindow.OK(), getTarget());
+      manager.getWindowManager().openDialog(null, null, WindowManager.ERROR_MESSAGE, t.getMessage(), WindowManager.ACTIONS_OK, getTarget());
     }
     // unlock gedcom
     gedcom.endTransaction();

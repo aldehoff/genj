@@ -37,7 +37,6 @@ import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -245,12 +244,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     auto.setFocusable(false);
     
     int rc = manager.getWindowManager().openDialog(null, 
-        resources.getString("confirm.keep.changes"), WindowManager.IMG_QUESTION, 
+        resources.getString("confirm.keep.changes"), WindowManager.QUESTION_MESSAGE, 
         new JComponent[] {
           new JLabel(resources.getString("confirm.keep.changes")),
           auto
         },
-        CloseWindow.YESandNO(), 
+        WindowManager.ACTIONS_YES_NO, 
         this
     );
     

@@ -26,7 +26,6 @@ import genj.util.Trackable;
 import genj.util.WordBuffer;
 import genj.util.swing.ProgressWidget;
 import genj.util.swing.UnitGraphics;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Dimension;
@@ -366,10 +365,10 @@ import javax.swing.JComponent;
     PrintWidget widget = new PrintWidget(this, manager.resources);
 
     // prepare actions
-    ActionDelegate[] actions = CloseWindow.andCANCEL(manager.resources.getString("print"));
+    String[] actions = { manager.resources.getString("print"), WindowManager.TXT_CANCEL };
 
     // show it in dialog
-    int choice = manager.getWindowManager().openDialog("print", title, WindowManager.IMG_QUESTION, widget, actions, owner);
+    int choice = manager.getWindowManager().openDialog("print", title, WindowManager.QUESTION_MESSAGE, widget, actions, owner);
 
     // keep settings
     registry.put(attributes);
@@ -384,7 +383,7 @@ import javax.swing.JComponent;
       attributes.add(new Destination(new File(file).toURI()));
     
     // setup progress dlg
-    progress = manager.getWindowManager().openNonModalDialog(null, title, WindowManager.IMG_INFORMATION, new ProgressWidget(this, getThread()), null, owner);
+    progress = manager.getWindowManager().openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), WindowManager.ACTIONS_CANCEL, owner);
 
     // continue
     return true;

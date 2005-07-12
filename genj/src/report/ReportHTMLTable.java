@@ -13,7 +13,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 import genj.util.ReferenceSet;
-import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -219,7 +219,7 @@ public class ReportHTMLTable extends Report {
         Entity[] fams = gedcom.getEntities(Gedcom.FAM,"");
 
 	    // Get a directory to write to
-	    File dir = getDirectoryFromUser(i18n("target.dir"), CloseWindow.TXT_OK);
+	    File dir = getDirectoryFromUser(i18n("target.dir"), WindowManager.TXT_OK);
 	    if (dir==null)
 	      return;
 

@@ -31,7 +31,6 @@ import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -281,7 +280,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       
       if (missing.length()>0) {
         String note = RESOURCES.getString("missing", missing);
-        viewManager.getWindowManager().openDialog("missingcountries", null, WindowManager.IMG_INFORMATION, note, CloseWindow.OK(), GeoView.this);
+        viewManager.getWindowManager().openDialog("missingcountries", null, WindowManager.INFORMATION_MESSAGE, note, WindowManager.ACTIONS_OK, GeoView.this);
       }
     }
     // done

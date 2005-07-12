@@ -21,7 +21,6 @@ package genj.app;
 
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
-import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -56,10 +55,7 @@ class HelpWidget extends JPanel {
     // create center component
     JComponent pCenter = getContent();
     if (pCenter==null) {
-      pCenter = new JLabel(
-        RESOURCES.getString("cc.help.help_file_missing", Locale.getDefault().getCountry().toLowerCase()),
-        WindowManager.IMG_ERROR, SwingConstants.CENTER
-      );
+      pCenter = new JLabel(RESOURCES.getString("cc.help.help_file_missing", Locale.getDefault().getCountry().toLowerCase()), SwingConstants.CENTER);
       pCenter.setBorder(new EmptyBorder(16,16,16,16));
     }
     

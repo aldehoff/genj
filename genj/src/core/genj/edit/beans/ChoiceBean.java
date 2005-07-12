@@ -23,7 +23,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.util.GridBagHelper;
 import genj.util.swing.ChoiceWidget;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.event.ActionEvent;
@@ -76,7 +75,7 @@ public class ChoiceBean extends PropertyBean {
       public void actionPerformed(ActionEvent e) {
         String confirm = getGlobalConfirmMessage();
         if (confirm!=null&&global.isSelected()) {
-          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.IMG_QUESTION, confirm, CloseWindow.YESandNO(), ChoiceBean.this);
+          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, confirm, WindowManager.ACTIONS_YES_NO, ChoiceBean.this);
           global.setSelected(rc==0);
         }        
       }

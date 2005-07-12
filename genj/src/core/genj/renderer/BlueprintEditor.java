@@ -29,7 +29,6 @@ import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ButtonHelper;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -237,7 +236,7 @@ public class BlueprintEditor extends JSplitPane {
       TagPath[] paths = Grammar.getAllPaths(blueprint.getTag(), Property.class);
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
-      int option =  windowManager.openDialog(null,resources.getString("prop.insert.tip"),WindowManager.IMG_QUESTION,tree,CloseWindow.OKandCANCEL(),BlueprintEditor.this);        
+      int option =  windowManager.openDialog(null,resources.getString("prop.insert.tip"),WindowManager.QUESTION_MESSAGE,tree,WindowManager.ACTIONS_OK_CANCEL,BlueprintEditor.this);        
       // .. OK?
       if (option!=0) return;
       // add those properties

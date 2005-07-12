@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.72 $ $Author: nmeier $ $Date: 2005-07-05 13:52:44 $
+ * $Revision: 1.73 $ $Author: nmeier $ $Date: 2005-07-12 22:11:41 $
  */
 package genj.report;
 
@@ -30,14 +30,12 @@ import genj.gedcom.Gedcom;
 import genj.io.FileAssociation;
 import genj.option.Option;
 import genj.option.PropertyOption;
-import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -87,9 +85,9 @@ public abstract class Report implements Cloneable {
     OPTION_OK       = 2;
 
   private final static String[][] OPTION_TEXTS = {
-    new String[]{CloseWindow.TXT_YES, CloseWindow.TXT_NO     }, 
-    new String[]{CloseWindow.TXT_OK , CloseWindow.TXT_CANCEL }, 
-    new String[]{CloseWindow.TXT_OK                          }
+    new String[]{WindowManager.TXT_YES, WindowManager.TXT_NO     }, 
+    new String[]{WindowManager.TXT_OK , WindowManager.TXT_CANCEL }, 
+    new String[]{WindowManager.TXT_OK                          }
   };
     
   /** alignment options */
@@ -310,10 +308,9 @@ public abstract class Report implements Cloneable {
     ChoiceWidget formatters = new ChoiceWidget(Formatter.getFormatters(), Formatter.DEFAULT);
     formatters.setEditable(false);
 
-    CloseWindow[] actions = { new CloseWindow("Save"), new CloseWindow("View"), new CloseWindow(CloseWindow.TXT_CANCEL)};
-    actions[1].setEnabled(false);
+    String[] actions = { "Save", "View", WindowManager.TXT_CANCEL };
     int rc = viewManager.getWindowManager().openDialog(
-        "reportdoc", "Document '"+doc.getTitle()+"'", WindowManager.IMG_QUESTION, new JComponent[] {label, formatters}, actions, owner);
+        "reportdoc", "Document '"+doc.getTitle()+"'", WindowManager.QUESTION_MESSAGE, new JComponent[] {label, formatters}, actions, owner);
     
     // save?
     if (rc==0) {
@@ -357,7 +354,7 @@ public abstract class Report implements Cloneable {
   public final void showComponentToUser(JComponent component) {
     
     // open a non-modal dialog
-    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#component",getName(),ReportViewFactory.IMG,component,CloseWindow.OK(),owner);
+    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#component",getName(), WindowManager.INFORMATION_MESSAGE,component,WindowManager.ACTIONS_OK,owner);
     
     // done
   }
@@ -374,7 +371,7 @@ public abstract class Report implements Cloneable {
     content.add(BorderLayout.CENTER, new JScrollPane(bookmarks.new UI(viewManager)));
 
     // open a non-modal dialog
-    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#items",getName(),ReportViewFactory.IMG,content,CloseWindow.OK(),owner);
+    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#items",getName(),WindowManager.INFORMATION_MESSAGE,content,WindowManager.ACTIONS_OK,owner);
 
     // done
   }
@@ -402,7 +399,7 @@ public abstract class Report implements Cloneable {
     
     SelectEntityWidget select = new SelectEntityWidget(tag, gedcom.getEntities(tag), "");
 
-    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.IMG_QUESTION,new JComponent[]{new JLabel(msg),select},CloseWindow.OKandCANCEL(),owner);
+    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),select},WindowManager.ACTIONS_OK_CANCEL,owner);
 
     return rc==0 ? select.getEntity() : null;
   }
@@ -415,7 +412,7 @@ public abstract class Report implements Cloneable {
     ChoiceWidget choice = new ChoiceWidget(choices, selected);
     choice.setEditable(false);
 
-    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.IMG_QUESTION,new JComponent[]{new JLabel(msg),choice},CloseWindow.OKandCANCEL(),owner);
+    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),choice},WindowManager.ACTIONS_OK_CANCEL,owner);
 
     return rc==0 ? choice.getSelectedItem() : null;
   }
@@ -443,7 +440,7 @@ public abstract class Report implements Cloneable {
     // show 'em
     ChoiceWidget choice = new ChoiceWidget(choices, "");
 
-    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.IMG_QUESTION,new JComponent[]{new JLabel(msg),choice},CloseWindow.OKandCANCEL(),owner);
+    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),choice},WindowManager.ACTIONS_OK_CANCEL,owner);
 
     String result = rc==0 ? choice.getText() : null;
 
@@ -474,27 +471,14 @@ public abstract class Report implements Cloneable {
   }
   
   /**
-   * A sub-class can query the user for a multiple choice selection with
-   * this method.
-   * @param msg the message explaining to the user what he's choosing
-   * @param options text options to choose from
-   */
-  public final int getOptionFromUser(String msg, String[] options) {
-    ActionDelegate[] actions = new ActionDelegate[options.length];
-    for (int i = 0; i < actions.length; i++)
-      actions[i] = new CloseWindow(options[i]);
-    return getOptionFromUser(msg, actions);
-  }
-    
-  /**
    * Helper method that queries the user for yes/no input
    */
-  private int getOptionFromUser(String msg, ActionDelegate[] actions) {
+  private int getOptionFromUser(String msg, String[] actions) {
     
     return viewManager.getWindowManager().openDialog(
       null,
       getName(),
-      WindowManager.IMG_QUESTION,
+      WindowManager.QUESTION_MESSAGE,
       msg,
       actions,
       owner

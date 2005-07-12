@@ -20,7 +20,6 @@
 package genj.window;
 
 import genj.util.ActionDelegate;
-import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextAreaWidget;
@@ -28,27 +27,20 @@ import genj.util.swing.TextFieldWidget;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
 
 /**
  * Abstract base type for WindowManagers
@@ -122,9 +114,9 @@ public abstract class AbstractWindowManager implements WindowManager {
   protected abstract Object openFrameImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Runnable close);
   
   /**
-   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String[], javax.swing.JComponent)
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon img, String txt, ActionDelegate[] options, Component owner) {
+  public int openDialog(String key, String title,  int messageType, String txt, String[] options, Component owner) {
     
     // analyze the text
     int maxLine = 40;
@@ -155,13 +147,13 @@ public abstract class AbstractWindowManager implements WindowManager {
     JScrollPane content = new JScrollPane(text);
       
     // delegate
-    return openDialog(key, title, img, content, options, owner);
+    return openDialog(key, title, messageType, content, options, owner);
   }
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title, Icon image, JComponent[] content, ActionDelegate[] options, Component owner) {
+  public int openDialog(String key, String title,  int messageType, JComponent[] content, String[] options, Component owner) {
     // assemble content into Box (don't use Box here because
     // Box extends Container in pre JDK 1.4)
     JPanel box = new JPanel();
@@ -172,20 +164,20 @@ public abstract class AbstractWindowManager implements WindowManager {
       content[i].setAlignmentX(0F);
     }
     // delegate
-    return openDialog(key, title, image, box, options, owner);
+    return openDialog(key, title, messageType, box, options, owner);
   }
 
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
    */
-  public String openDialog(String key, String title, Icon img, String txt, String value, Component owner) {
+  public String openDialog(String key, String title,  int messageType, String txt, String value, Component owner) {
 
     // prepare text field and label
     TextFieldWidget tf = new TextFieldWidget(value, 24);
     JLabel lb = new JLabel(txt);
     
     // delegate
-    int rc = openDialog(key, title, img, new JComponent[]{ lb, tf}, CloseWindow.OKandCANCEL(), owner);
+    int rc = openDialog(key, title, messageType, new JComponent[]{ lb, tf}, ACTIONS_OK_CANCEL, owner);
     
     // analyze
     return rc==0?tf.getText().trim():null;
@@ -194,10 +186,10 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * dialog core routine
    */
-  public final int openDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
+  public final int openDialog(String key, String title,  int messageType, JComponent content, String[] actions, Component owner) {
     // check options - default to OK
     if (actions==null) 
-      actions = CloseWindow.OK();
+      actions = ACTIONS_OK;
     // key is necessary
     if (key==null) 
       key = getTemporaryKey();
@@ -206,23 +198,19 @@ public abstract class AbstractWindowManager implements WindowManager {
     // grab parameters
     Rectangle bounds = registry.get(key, (Rectangle)null);
     // do it
-    openDialogImpl(key, title, image, content, actions, owner, bounds, true);
+    Object result = openDialogImpl(key, title, messageType, content, actions, owner, bounds, true);
     // analyze - check which action was responsible for close
-    for (int i=0; i<actions.length; i++) {
-      if (actions[i] instanceof CloseWindow && ((CloseWindow)actions[i]).isPerformed()) 
-        return i;
-    }
-    // done
+    for (int a=0; a<actions.length; a++) 
+      if (result==actions[a]) return a;
     return -1;
   }
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
    */
-  public final String openNonModalDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner) {
+  public final String openNonModalDialog(String key, String title,  int messageType, JComponent content, String[] actions, Component owner) {
     // check options - none ok
-    if (actions==null)
-      actions = new ActionDelegate[0];
+    if (actions==null) actions = new String[0];
     // key is necessary
     if (key==null) 
       key = getTemporaryKey();
@@ -231,7 +219,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     // grab parameters
     Rectangle bounds = registry.get(key, (Rectangle)null);
     // do it
-    Object dialog = openDialogImpl(key, title, image, content, actions, owner, bounds, false);
+    Object dialog = openDialogImpl(key, title, messageType, content, actions, owner, bounds, false);
     // remember it
     key2framedlg.put(key, dialog);
     // done
@@ -241,42 +229,17 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * Implementation for core frame handling
    */
-  protected abstract Object openDialogImpl(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner, Rectangle bounds, boolean modal);
-  
+  protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, String[] actions, Component owner, Rectangle bounds, boolean modal);
+
   /**
    * Helper for assembling dialog content
    */
-  protected void assembleDialogContent(JRootPane root, Container container, Icon image, JComponent content, ActionDelegate[] actions) {
+  protected JOptionPane assembleDialogContent(int messageType, JComponent content, Object[] actions) {
 
-    // assemble buttons for actions
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    ButtonHelper bh = new ButtonHelper().setContainer(buttons);
-    for (int a=0; a<actions.length; a++) {
-      AbstractButton b = bh.create(actions[a]);
-      // set default - sadly JRootpane only accepts a JButton
-      if (a==0&&b instanceof JButton) root.setDefaultButton((JButton)b);	
-    }
+    JOptionPane pane  = new JOptionPane(content, messageType, JOptionPane.DEFAULT_OPTION, null, actions);
+    if (actions!=null&&actions.length>0) pane.setInitialValue(actions[0]);
+    return pane;
     
-    // prepare an icon
-    JLabel icon = new JLabel(image);
-    icon.setVerticalAlignment(SwingConstants.TOP);
-    
-    // prepare panel
-    //
-    // +-----+---------+
-    // |     |         |
-    // |     | content |
-    // | img |         |
-    // |     +---------+
-    // |     | buttons |
-    // +-----+---------+
-    //
-    Insets insets = new Insets(8,8,8,8);
-    GridBagHelper gh = new GridBagHelper(container);
-    gh.add(icon   , 0, 0, 1, 2, 0, insets);
-    gh.add(content, 1, 0, 1, 1, GridBagHelper.GROWFILL_BOTH, insets);
-    gh.add(buttons, 1, 1, 1, 1, 0);
-
     // done
   }
   

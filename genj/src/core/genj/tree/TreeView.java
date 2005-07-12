@@ -1043,7 +1043,7 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
       
       // Ask for name of bookmark
       name = manager.getWindowManager().openDialog(
-        null, title, WindowManager.IMG_QUESTION, resources.getString("bookmark.name"), name, TreeView.this
+        null, title, WindowManager.QUESTION_MESSAGE, resources.getString("bookmark.name"), name, TreeView.this
       );
       
       if (name==null) return;

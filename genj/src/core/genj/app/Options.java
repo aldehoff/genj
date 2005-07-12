@@ -34,7 +34,6 @@ import genj.util.Resources;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.io.File;
@@ -47,8 +46,6 @@ import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Application options
@@ -361,47 +358,31 @@ public class Options extends OptionProvider {
         }
         
         // create actions for dialog
-        final ActionDelegate[] actions = {
-          new CloseWindow(CloseWindow.TXT_OK), 
-          new CloseWindow(localize("delete")).setEnabled(association!=null), 
-          new CloseWindow(CloseWindow.TXT_CANCEL)
-        };
-        
-        // track changes
-        ChangeListener l = new ChangeListener() {
-          public void stateChanged(ChangeEvent e) {
-            boolean ok = !suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty();
-            actions[0].setEnabled(ok);
-          }
-        };
-        suffixes.addChangeListener(l);
-        name.addChangeListener(l);
-        executable.addChangeListener(l);
-        l.stateChanged(null);
+        final String[] actions = association!=null ? 
+            new String[] { WindowManager.TXT_OK, localize("delete"), WindowManager.TXT_CANCEL }
+        :   new String[] { WindowManager.TXT_OK, WindowManager.TXT_CANCEL };
         
         // show a dialog with file association fields
         WindowManager mgr = widget.getWindowManager();
-        int rc = mgr.openDialog(null, getName(), WindowManager.IMG_QUESTION, panel, actions, widget);
+        int rc = mgr.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, panel, actions, widget);
 
-        // analyze option
-        switch (rc) {
-          // cancel?
-          case 2:
-            return;
-          // ok?
-          case 0:
-            // create new?
-            if (association==null)
-              association = FileAssociation.add(new FileAssociation());
-            // keep input
-            association.setSuffixes(suffixes.getText());
-            association.setName(name.getText());
-            association.setExecutable(executable.getFile().toString());
-            break;
-          // delete?
-          case 1:
-            FileAssociation.del(association);
-            break;
+        // cancelled?
+        if (rc==-1||rc==actions.length-1)
+          return;
+        
+        // ok'd?
+        if (rc==0) {
+            if (!suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty()) {
+              // create new?
+              if (association==null)
+                association = FileAssociation.add(new FileAssociation());
+              // keep input
+              association.setSuffixes(suffixes.getText());
+              association.setName(name.getText());
+              association.setExecutable(executable.getFile().toString());
+            }
+        } else { // delete
+          FileAssociation.del(association);
         }
         
         // update actions

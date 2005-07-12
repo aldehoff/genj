@@ -31,7 +31,6 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -460,7 +459,7 @@ public class FileBean extends PropertyBean {
         }); 
         
         // open dlg
-        viewManager.getWindowManager().openDialog(null,null,WindowManager.IMG_INFORMATION,txt,CloseWindow.OK(), FileBean.this);
+        viewManager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,WindowManager.ACTIONS_OK, FileBean.this);
       }
       
       // show

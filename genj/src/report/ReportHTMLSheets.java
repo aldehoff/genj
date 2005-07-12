@@ -17,7 +17,7 @@ import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.report.Report;
-import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,7 +87,7 @@ public class ReportHTMLSheets extends Report {
 
   /** options - open file after generation */
   public int openBrowser = 1;
-  public String openBrowsers[] = { CloseWindow.TXT_NO , INDEX, NAMES };
+  public String openBrowsers[] = { WindowManager.TXT_NO , INDEX, NAMES };
 
   /** A <pre>&nbsp</pre> looks better than an empty String in a HTML cell */
   private final static String SPACE = "&nbsp;";
@@ -505,7 +505,7 @@ public class ReportHTMLSheets extends Report {
     Gedcom gedcom = (Gedcom)context;
 
     // Get a directory to write to
-    File dir = getDirectoryFromUser(i18n("target.dir"), CloseWindow.TXT_OK);
+    File dir = getDirectoryFromUser(i18n("target.dir"), WindowManager.TXT_OK);
     if (dir==null)
       return;
 

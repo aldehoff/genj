@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import javax.print.PrintException;
@@ -57,7 +56,7 @@ public class PrintManager {
     try {
       new PrintTask(this, printer, title, owner, new PrintRegistry(registry, "print")).trigger();
     } catch (PrintException e) {
-      winMgr.openDialog(null, resources.getString("printer"), WindowManager.IMG_ERROR, resources.getString("unavailable"), CloseWindow.OK(), owner);
+      winMgr.openDialog(null, resources.getString("printer"), WindowManager.ERROR_MESSAGE, resources.getString("unavailable"), WindowManager.ACTIONS_OK, owner);
     }
   }
   

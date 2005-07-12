@@ -43,7 +43,7 @@ import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
-import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -415,7 +415,7 @@ import javax.swing.event.ChangeListener;
 
     /** constructor */
     private OK() {
-      setText(CloseWindow.TXT_OK);
+      setText(WindowManager.TXT_OK);
     }
 
     /** cancel current proxy */
@@ -450,7 +450,7 @@ import javax.swing.event.ChangeListener;
 
     /** constructor */
     private Cancel() {
-      setText(CloseWindow.TXT_CANCEL);
+      setText(WindowManager.TXT_CANCEL);
     }
 
     /** cancel current proxy */

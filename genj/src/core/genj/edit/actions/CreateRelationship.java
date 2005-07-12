@@ -34,7 +34,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -100,14 +99,13 @@ public class CreateRelationship extends AbstractChange {
   }
 
   /**
-   * @see genj.edit.actions.AbstractChange#getOptions()
+   * Override content components to show to user 
    */
-  protected JComponent getOptions() {
+  protected JPanel getDialogContent() {
+    
+    JPanel result = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><text wx=\"1\" wy=\"1\"/></row><row><check/><text/></row></col>"));
 
-    // prepare panel
-    JPanel panel = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><check/><id/></row></col>"));
-
-    // add selector
+    // create selector
     final SelectEntityWidget select = new SelectEntityWidget(getTargetType(), gedcom.getEntities(getTargetType()), resources.getString("select.new"));
     select.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -119,7 +117,6 @@ public class CreateRelationship extends AbstractChange {
         refresh();
       }
     });
-    panel.add(select);
  
     // prepare id checkbox and textfield
     requestID = new JTextField(gedcom.getNextAvailableID(getTargetType()), 8);
@@ -132,12 +129,15 @@ public class CreateRelationship extends AbstractChange {
         if (checkID.isSelected())  requestID.requestFocusInWindow();
       }
     });
-    panel.add(checkID);
-    panel.add(requestID);
     
-    
+    // wrap it up
+    result.add(select);
+    result.add(getConfirmComponent());
+    result.add(checkID);
+    result.add(requestID);
+   
     // done
-    return panel;
+    return result;
   }
 
   /**

@@ -37,7 +37,6 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
 import genj.view.Context;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -274,7 +273,7 @@ import javax.swing.event.TreeSelectionListener;
       panel.add(check);
       
       // show it
-      boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.IMG_WARNING, panel, CloseWindow.OKandCANCEL(), AdvancedEditor.this);
+      boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, WindowManager.ACTIONS_OK_CANCEL, AdvancedEditor.this);
       if (cancel)
         return;
 
@@ -355,12 +354,9 @@ import javax.swing.event.TreeSelectionListener;
           selection.getTag(), selection.getEntity().toString(), veto 
         });
         // prepare actions
-        ActionDelegate[] actions = {
-          new CloseWindow(resources.getString("action.cut")), 
-          new CloseWindow(CloseWindow.TXT_CANCEL)
-        };
+        String[] actions = { resources.getString("action.cut"), WindowManager.TXT_CANCEL };
         // ask the user
-        int rc = editView.getWindowManager().openDialog("cut.warning", resources.getString("action.cut"), WindowManager.IMG_WARNING, msg, actions, AdvancedEditor.this );
+        int rc = editView.getWindowManager().openDialog("cut.warning", resources.getString("action.cut"), WindowManager.WARNING_MESSAGE, msg, actions, AdvancedEditor.this );
         if (rc!=0)
           return;
         // continue
@@ -488,7 +484,7 @@ import javax.swing.event.TreeSelectionListener;
       ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
-      int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.IMG_QUESTION,new JComponent[]{ label, choose, check },CloseWindow.OKandCANCEL(), AdvancedEditor.this); 
+      int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },WindowManager.ACTIONS_OK_CANCEL, AdvancedEditor.this); 
       
       // .. not OK?
       if (option!=0)
@@ -500,7 +496,7 @@ import javax.swing.event.TreeSelectionListener;
       // .. calculate chosen tags
       String[] tags = choose.getSelectedTags();
       if (tags.length==0)  {
-        editView.getWindowManager().openDialog(null,null,WindowManager.IMG_ERROR,resources.getString("add.must_enter"),CloseWindow.OK(), AdvancedEditor.this);
+        editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),WindowManager.ACTIONS_OK, AdvancedEditor.this);
         return;
       }
   
@@ -535,7 +531,7 @@ import javax.swing.event.TreeSelectionListener;
   
     /** constructor */
     private OK() {
-      setText(CloseWindow.TXT_OK);
+      setText(WindowManager.TXT_OK);
     }
   
     /** cancel current proxy */
@@ -566,7 +562,7 @@ import javax.swing.event.TreeSelectionListener;
   
     /** constructor */
     private Cancel() {
-      setText(CloseWindow.TXT_CANCEL);
+      setText(WindowManager.TXT_CANCEL);
     }
   
     /** cancel current proxy */

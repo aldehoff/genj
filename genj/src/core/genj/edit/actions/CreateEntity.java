@@ -28,7 +28,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -52,9 +51,11 @@ public class CreateEntity extends AbstractChange {
   }
   
   /**
-   * 
+   * Override content components to show to user 
    */
-  protected JComponent getOptions() {
+  protected JPanel getDialogContent() {
+    
+    JPanel result = new JPanel(new NestedBlockLayout("<col><row><text wx=\"1\" wy=\"1\"/></row><row><check/><text/></row></col>"));
 
     // prepare id checkbox and textfield
     requestID = new JTextField(gedcom.getNextAvailableID(etag), 8);
@@ -68,13 +69,12 @@ public class CreateEntity extends AbstractChange {
       }
     });
     
-    // wrap up
-    JPanel panel = new JPanel(new NestedBlockLayout("<row><check/><id/></row>"));
-    panel.add(check);
-    panel.add(requestID);
+    result.add(getConfirmComponent());
+    result.add(check);
+    result.add(requestID);
     
     // done
-    return panel;
+    return result;
   }
   
   /**

@@ -21,7 +21,7 @@ package genj.util.swing;
 
 import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
-import genj.window.CloseWindow;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -210,7 +210,7 @@ public class FileChooserWidget extends JPanel {
     protected void execute() {
 
       // create and show chooser      
-      FileChooser fc = new FileChooser(FileChooserWidget.this, getName(), CloseWindow.TXT_OK, extensions, directory);
+      FileChooser fc = new FileChooser(FileChooserWidget.this, getName(), WindowManager.TXT_OK, extensions, directory);
       fc.setAccessory(accessory);
       fc.showDialog();
       

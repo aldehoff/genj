@@ -26,7 +26,6 @@ import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ProgressWidget;
 import genj.view.Settings;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.event.ActionEvent;
@@ -166,7 +165,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       setEnabled(false);
       // let user choose country, state
       SelectImportWidget select = new SelectImportWidget();
-      int choice = viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_QUESTION, select, CloseWindow.OKandCANCEL(), GeoViewSettings.this);
+      int choice = viewManager.getWindowManager().openDialog(null, null, WindowManager.QUESTION_MESSAGE, select, WindowManager.ACTIONS_OK_CANCEL, GeoViewSettings.this);
       // prepare import
       try {
         gztImport = GeoService.getInstance().getImport(select.getCountry(), select.getState());
@@ -178,7 +177,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       // .. show progress dialog
       progress = viewManager.getWindowManager().openNonModalDialog(
         null, GeoView.RESOURCES.getString("action.import"),
-        WindowManager.IMG_INFORMATION, new ProgressWidget(gztImport, getThread()), null, GeoViewSettings.this
+        WindowManager.INFORMATION_MESSAGE, new ProgressWidget(gztImport, getThread()), null, GeoViewSettings.this
       );
       // continue
       return true;
@@ -193,7 +192,7 @@ public class GeoViewSettings extends JPanel implements Settings {
     }
     /** callback -  a problem */
     protected void handleThrowable(String phase, Throwable t) {
-      viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_QUESTION, t.getMessage(), CloseWindow.OK(), GeoViewSettings.this);
+      viewManager.getWindowManager().openDialog(null, null, WindowManager.QUESTION_MESSAGE, t.getMessage(), WindowManager.ACTIONS_OK, GeoViewSettings.this);
     }
     /** callback -EDT again */
     protected void postExecute() {
@@ -222,7 +221,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       if (country!=null) try {
         GeoService.getInstance().drop(country);
       } catch (IOException e) {
-        viewManager.getWindowManager().openDialog(null, null, WindowManager.IMG_ERROR, e.getMessage(), CloseWindow.OK(), GeoViewSettings.this);
+        viewManager.getWindowManager().openDialog(null, null, WindowManager.ERROR_MESSAGE, e.getMessage(), WindowManager.ACTIONS_OK, GeoViewSettings.this);
       }
       // reset our settings
       reset();

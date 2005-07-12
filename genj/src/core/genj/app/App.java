@@ -25,7 +25,6 @@ import genj.option.OptionProvider;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.window.CloseWindow;
 import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
@@ -152,7 +151,7 @@ public class App {
         // keep it      
         registry.put("disclaimer", version);
         // show disclaimer
-        winMgr.openDialog("disclaimer", "Disclaimer", WindowManager.IMG_INFORMATION, resources.getString("app.disclaimer"), CloseWindow.OK(), null);    
+        winMgr.openDialog("disclaimer", "Disclaimer", WindowManager.INFORMATION_MESSAGE, resources.getString("app.disclaimer"), WindowManager.ACTIONS_OK, null);    
       }
       
       // setup control center

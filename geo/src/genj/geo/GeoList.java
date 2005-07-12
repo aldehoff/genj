@@ -27,7 +27,6 @@ import genj.util.swing.ButtonHelper;
 import genj.view.Context;
 import genj.view.ContextProvider;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -209,7 +208,7 @@ import swingx.tree.AbstractTreeModel;
     protected void execute() {
       GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
       QueryWidget query = new QueryWidget(location, view);
-      viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.IMG_QUESTION, query, new CloseWindow[]{new CloseWindow("Does nothing yet!")}, GeoList.this);
+      viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, new String[]{"Does nothing yet!"}, GeoList.this);
     }
   }
   

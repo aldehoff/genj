@@ -19,7 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Trackable;
 
@@ -78,10 +77,6 @@ public class ProgressWidget extends JPanel {
     progress = new JProgressBar();
     gh.add(progress, 0, 1);
 
-    // .. cancel
-    gh.setParameter(0)
-       .add(new ButtonHelper().create(new Cancel()), 0, 2);
-
     // prepare timer
     timer = new Timer(100, new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -118,26 +113,11 @@ public class ProgressWidget extends JPanel {
     // make sure timer is stopped
     timer.stop();
     
+    // cancel trackable if still running
+    trackable.cancel();
+    
     // continue
     super.removeNotify();
   }
 
-  /**
-   * Cancel
-   */
-  private class Cancel extends ActionDelegate {
-    /**
-     * Constructor
-     */
-    private Cancel() {
-      setText(OPTION_CANCEL);
-    }
-    /**
-     * on triggered action
-     */
-    protected void execute() {
-      trackable.cancel();
-    }
-  } //Cancel
-  
 } //ProgressWidget

@@ -30,7 +30,6 @@ import genj.util.Registry;
 import genj.util.Trackable;
 import genj.util.swing.ProgressWidget;
 import genj.view.ViewManager;
-import genj.window.CloseWindow;
 import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
@@ -223,11 +222,8 @@ public class Applet extends java.applet.Applet {
       // check load status      
       if (throwable!=null) {
         
-        ActionDelegate[] actions = {
-          new CloseWindow("Retry"), 
-          new CloseWindow(CloseWindow.TXT_CANCEL)
-        };
-        int rc = winMgr.openDialog(null, "Error", WindowManager.IMG_ERROR, url+"\n"+throwable.getMessage(), actions, Applet.this);        
+        String[] actions = { "Retry",  WindowManager.TXT_CANCEL };
+        int rc = winMgr.openDialog(null, "Error", WindowManager.ERROR_MESSAGE, url+"\n"+throwable.getMessage(), actions, Applet.this);        
         
         if (rc==0) trigger();
         

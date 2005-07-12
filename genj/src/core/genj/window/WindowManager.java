@@ -19,15 +19,13 @@
  */
 package genj.window;
 
-import genj.util.ActionDelegate;
-
 import java.awt.Component;
 import java.util.List;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 /**
@@ -35,12 +33,28 @@ import javax.swing.UIManager;
  */
 public interface WindowManager {
   
-  /** predefined images */
-  public final static Icon
-    IMG_ERROR       = UIManager.getIcon("OptionPane.errorIcon"),
-    IMG_INFORMATION = UIManager.getIcon("OptionPane.informationIcon"),
-    IMG_WARNING     = UIManager.getIcon("OptionPane.warningIcon"),
-    IMG_QUESTION    = UIManager.getIcon("OptionPane.questionIcon");
+  /** message types*/
+  public static final int  
+    ERROR_MESSAGE = JOptionPane.ERROR_MESSAGE,
+    INFORMATION_MESSAGE = JOptionPane.INFORMATION_MESSAGE,
+    WARNING_MESSAGE = JOptionPane.WARNING_MESSAGE,
+    QUESTION_MESSAGE = JOptionPane.QUESTION_MESSAGE,
+    PLAIN_MESSAGE = JOptionPane.PLAIN_MESSAGE;
+  
+  /** predefined strings */
+  public final static String
+    TXT_YES         = UIManager.getString("OptionPane.yesButtonText"),
+    TXT_NO          = UIManager.getString("OptionPane.noButtonText"),
+    TXT_OK          = UIManager.getString("OptionPane.okButtonText"),
+    TXT_CANCEL  = UIManager.getString("OptionPane.cancelButtonText");
+
+  /** predefined action groups */
+  public final static String[]
+    ACTIONS_YES_NO = { TXT_YES, TXT_NO },
+    ACTIONS_YES_NO_CANCEL = { TXT_YES, TXT_NO, TXT_CANCEL },
+    ACTIONS_OK = { TXT_OK },
+    ACTIONS_CANCEL = { TXT_CANCEL },
+    ACTIONS_OK_CANCEL = { TXT_OK, TXT_CANCEL };
 
   /**
    * Opens a frame
@@ -70,13 +84,13 @@ public interface WindowManager {
    * Opens a dialog containing a custom component
    * @param key a unique key 
    * @param title text for titlebar
-   * @param image image for titlebar
+   * @param messageType
    * @param content component to be shown in dialog
    * @param actions text labels for buttons that will close dialog
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner);
+  public int openDialog(String key, String title, int messageType, JComponent content, String[] actions, Component owner);
 
   /**
    * Opens a dialog containing several stacked custom components
@@ -88,7 +102,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, JComponent[] content, ActionDelegate[] actions, Component owner);
+  public int openDialog(String key, String title, int messageType, JComponent[] content, String[] actions, Component owner);
 
   /**
    * Opens a dialog with a simple text message
@@ -100,7 +114,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, Icon image, String txt, ActionDelegate[] actions, Component owner);
+  public int openDialog(String key, String title,  int messageType, String txt, String[] actions, Component owner);
   
   /**
    * Opens a dialog prompting the user for a simple text value
@@ -112,7 +126,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return entered text or null
    */
-  public String openDialog(String key, String title, Icon image, String txt, String value, Component owner);
+  public String openDialog(String key, String title,  int messageType, String txt, String value, Component owner);
   
   /**
    * Opens a non-modal dialog 
@@ -123,7 +137,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return key 
    */
-  public String openNonModalDialog(String key, String title, Icon image, JComponent content, ActionDelegate[] actions, Component owner);
+  public String openNonModalDialog(String key, String title,  int messageType, JComponent content, String[] actions, Component owner);
   
   /**
    * Close dialog/frame 

@@ -25,7 +25,6 @@ import genj.gedcom.PropertyPlace;
 import genj.util.DirectAccessTokenizer;
 import genj.util.GridBagHelper;
 import genj.util.swing.ChoiceWidget;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Component;
@@ -65,7 +64,7 @@ public class PlaceBean extends PropertyBean {
     global.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (global.isSelected()) {
-          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.IMG_QUESTION, getGlobalConfirmMessage(), CloseWindow.YESandNO(), PlaceBean.this);
+          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, getGlobalConfirmMessage(),WindowManager.ACTIONS_YES_NO, PlaceBean.this);
           global.setSelected(rc==0);
         }        
       }

@@ -25,7 +25,6 @@ import genj.option.PropertyOption;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ScreenResolutionScale;
-import genj.window.CloseWindow;
 import genj.window.WindowManager;
 
 import java.awt.Point;
@@ -106,7 +105,7 @@ public class Options extends OptionProvider {
     /** callback - edit option */
     protected void edit() {
       ScreenResolutionScale scale = new ScreenResolutionScale(dpi);
-      int rc = widget.getWindowManager().openDialog(null, getName(), WindowManager.IMG_QUESTION, scale, CloseWindow.OKandCANCEL(), widget);
+      int rc = widget.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, scale, WindowManager.ACTIONS_OK_CANCEL, widget);
       if (rc==0)
         dpi = scale.getDPI();
     }
