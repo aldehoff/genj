@@ -157,6 +157,8 @@ import javax.swing.event.ChangeListener;
     // are we looking at something?
     if (currentEntity == null)
       return;
+    // dont' commit anything anymore
+    ok.setEnabled(false);
     // entity affected?
     if (tx.get(Transaction.ENTITIES_DELETED).contains(currentEntity)) {
       setEntity(gedcom.getAnyEntity(currentEntity.getTag()), currentEntity);
@@ -184,10 +186,6 @@ import javax.swing.event.ChangeListener;
     // a different entity to look at?
     if (currentEntity != context.getEntity()) {
       
-      // commit what needs to be committed
-      if (!gedcom.isTransaction()&&currentEntity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
-        ok.trigger();
-
       // change entity being edited
       setEntity(context.getEntity(), context.getProperty());
       
@@ -206,6 +204,10 @@ import javax.swing.event.ChangeListener;
    * Set current entity
    */
   public void setEntity(Entity set, Property focus) {
+    
+    // commit what needs to be committed
+    if (!gedcom.isTransaction()&&currentEntity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
+      ok.trigger();
 
     // remember
     currentEntity = set;
