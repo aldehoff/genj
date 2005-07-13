@@ -20,9 +20,11 @@
 package genj.window;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
@@ -75,10 +77,10 @@ public interface WindowManager {
    * @param image image for titlebar
    * @param content component to be shown in frame
    * @param menu menubar to be shown in frame
-   * @param option a single option to close the frame
+   * @param action a single action to close the frame
    * @return key 
    */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, String option);
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, Object action);
 
   /**
    * Opens a dialog containing a custom component
@@ -90,7 +92,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, int messageType, JComponent content, String[] actions, Component owner);
+  public int openDialog(String key, String title, int messageType, JComponent content, Object[] actions, Component owner);
 
   /**
    * Opens a dialog containing several stacked custom components
@@ -102,7 +104,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, int messageType, JComponent[] content, String[] actions, Component owner);
+  public int openDialog(String key, String title, int messageType, JComponent[] content, Object[] actions, Component owner);
 
   /**
    * Opens a dialog with a simple text message
@@ -114,7 +116,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title,  int messageType, String txt, String[] actions, Component owner);
+  public int openDialog(String key, String title,  int messageType, String txt, Object[] actions, Component owner);
   
   /**
    * Opens a dialog prompting the user for a simple text value
@@ -137,7 +139,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return key 
    */
-  public String openNonModalDialog(String key, String title,  int messageType, JComponent content, String[] actions, Component owner);
+  public String openNonModalDialog(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner);
   
   /**
    * Close dialog/frame 
@@ -168,4 +170,73 @@ public interface WindowManager {
    */
   public boolean show(String key);
 
+  /**
+   * An action for a dialog
+   */
+  public static class Action {
+    
+    /** some text */
+    private String text;
+    
+    /** a linked button */
+    private JButton button;
+    
+    /** whether we're a valid action right now */
+    private boolean isValid = true;
+    
+    /** constructor */
+    public Action(String text) {
+      this.text = text;
+    }
+    
+    /** constructor */
+    public Action(String text, boolean valid) {
+      this(text);
+      this.isValid = valid;
+    }
+    
+    /** check whether this action is a valid choice atm */
+    /*package*/ boolean isValid() {
+      return isValid;
+    }
+    
+    /** text representation */
+    public String toString() {
+      return getText();
+    }
+    
+    /*package*/ String getText() {
+      return text;
+    }
+
+    /** context hook-up */
+    /*package*/ boolean findMeIn(Container container) {
+      
+      // find a button that corresponds to this action
+      for (int i=0, j=container.getComponentCount(); i<j ; i++) {
+        Component c = container.getComponent(i);
+        if (c instanceof JButton) {
+          JButton b = (JButton)c;
+          if (text.equals(b.getText())) {
+            button = b;
+            button.setEnabled(isValid);
+            return true;
+          }
+        }
+        // recursive step
+        if (c instanceof Container&& findMeIn((Container)c))
+          return true;
+        // try next
+      }
+      // didn't work out
+      return false;
+    }
+    
+    /** accessor - validity */
+    public void setValid(boolean set) {
+      isValid = set;
+      if (button!=null) button.setEnabled(isValid);
+    }
+  }
+  
 } //WindowManager

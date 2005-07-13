@@ -46,6 +46,8 @@ import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Application options
@@ -305,8 +307,8 @@ public class Options extends OptionProvider {
       List result = new ArrayList(10);
       Iterator it = FileAssociation.getAll().iterator();
       for (int i=1;it.hasNext();i++)
-        result.add(new Action(i, (FileAssociation)it.next()));
-      result.add(new Action(0, null));
+        result.add(new Edit(i, (FileAssociation)it.next()));
+      result.add(new Edit(0, null));
       // done
       return result;
     }
@@ -319,11 +321,11 @@ public class Options extends OptionProvider {
     /**
      * Action for UI
      */
-    private class Action extends ActionDelegate { 
+    private class Edit extends ActionDelegate { 
       /** file association */
       private FileAssociation association;
       /** constructor */
-      private Action(int i, FileAssociation fa) {
+      private Edit(int i, FileAssociation fa) {
         association = fa;
         setImage(PropertyFile.DEFAULT_IMAGE);
         setText(fa!=null ? i+" "+fa.getName()+" ("+fa.getSuffixes()+')' : localize("new"));
@@ -357,30 +359,38 @@ public class Options extends OptionProvider {
           executable.setFile(association.getExecutable());
         }
         
-        // create actions for dialog
-        final String[] actions = association!=null ? 
-            new String[] { WindowManager.TXT_OK, localize("delete"), WindowManager.TXT_CANCEL }
-        :   new String[] { WindowManager.TXT_OK, WindowManager.TXT_CANCEL };
+        // prepare some actions
+        final WindowManager.Action 
+          ok = new WindowManager.Action(WindowManager.TXT_OK),
+          delete = new WindowManager.Action(localize("delete"), association!=null),
+          cancel = new WindowManager.Action(WindowManager.TXT_CANCEL);
+        
+        // track changes
+        ChangeListener l = new ChangeListener() {
+          public void stateChanged(ChangeEvent e) {
+            ok.setValid( !suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty() );
+          }
+        };
+        suffixes.addChangeListener(l);
+        name.addChangeListener(l);
+        executable.addChangeListener(l);
+        l.stateChanged(null);
         
         // show a dialog with file association fields
         WindowManager mgr = widget.getWindowManager();
-        int rc = mgr.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, panel, actions, widget);
-
-        // cancelled?
-        if (rc==-1||rc==actions.length-1)
+        int rc = mgr.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, panel, new Object[]{ ok, delete, cancel }, widget);
+        if (rc==-1||rc==2)
           return;
         
         // ok'd?
         if (rc==0) {
-            if (!suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty()) {
-              // create new?
-              if (association==null)
-                association = FileAssociation.add(new FileAssociation());
-              // keep input
-              association.setSuffixes(suffixes.getText());
-              association.setName(name.getText());
-              association.setExecutable(executable.getFile().toString());
-            }
+            // create new?
+            if (association==null)
+              association = FileAssociation.add(new FileAssociation());
+            // keep input
+            association.setSuffixes(suffixes.getText());
+            association.setName(name.getText());
+            association.setExecutable(executable.getFile().toString());
         } else { // delete
           FileAssociation.del(association);
         }

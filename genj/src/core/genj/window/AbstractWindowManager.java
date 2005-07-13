@@ -66,7 +66,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, javax.swing.JComponent, java.lang.String)
    */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, String option) {
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, Object action) {
     // key is necessary
     if (key==null) 
       key = getTemporaryKey();
@@ -78,7 +78,7 @@ public abstract class AbstractWindowManager implements WindowManager {
         protected void execute() {
           close(close);
         }
-      }.setText(option)
+      }.setText(action.toString())
     );
     // create new content with one option
     JPanel panel = new JPanel(new BorderLayout());
@@ -116,7 +116,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title,  int messageType, String txt, String[] options, Component owner) {
+  public int openDialog(String key, String title,  int messageType, String txt, Object[] actions, Component owner) {
     
     // analyze the text
     int maxLine = 40;
@@ -147,13 +147,13 @@ public abstract class AbstractWindowManager implements WindowManager {
     JScrollPane content = new JScrollPane(text);
       
     // delegate
-    return openDialog(key, title, messageType, content, options, owner);
+    return openDialog(key, title, messageType, content, actions, owner);
   }
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title,  int messageType, JComponent[] content, String[] options, Component owner) {
+  public int openDialog(String key, String title,  int messageType, JComponent[] content, Object[] actions, Component owner) {
     // assemble content into Box (don't use Box here because
     // Box extends Container in pre JDK 1.4)
     JPanel box = new JPanel();
@@ -164,7 +164,7 @@ public abstract class AbstractWindowManager implements WindowManager {
       content[i].setAlignmentX(0F);
     }
     // delegate
-    return openDialog(key, title, messageType, box, options, owner);
+    return openDialog(key, title, messageType, box, actions, owner);
   }
 
   /**
@@ -186,7 +186,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * dialog core routine
    */
-  public final int openDialog(String key, String title,  int messageType, JComponent content, String[] actions, Component owner) {
+  public final int openDialog(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner) {
     // check options - default to OK
     if (actions==null) 
       actions = ACTIONS_OK;
@@ -208,7 +208,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
    */
-  public final String openNonModalDialog(String key, String title,  int messageType, JComponent content, String[] actions, Component owner) {
+  public final String openNonModalDialog(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner) {
     // check options - none ok
     if (actions==null) actions = new String[0];
     // key is necessary
@@ -229,18 +229,24 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * Implementation for core frame handling
    */
-  protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, String[] actions, Component owner, Rectangle bounds, boolean modal);
+  protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner, Rectangle bounds, boolean modal);
 
   /**
    * Helper for assembling dialog content
    */
   protected JOptionPane assembleDialogContent(int messageType, JComponent content, Object[] actions) {
 
+    // create the glorious option pane
     JOptionPane pane  = new JOptionPane(content, messageType, JOptionPane.DEFAULT_OPTION, null, actions);
-    if (actions!=null&&actions.length>0) pane.setInitialValue(actions[0]);
-    return pane;
+    if (actions!=null&&actions.length>0) 
+      pane.setInitialValue(actions[0]);
     
+    // find and associate actions with their respective buttons (kinda like a hack)
+    for (int i = 0; i < actions.length; i++) 
+      if (actions[i] instanceof Action) ((Action)actions[i]).findMeIn(pane);
+
     // done
+    return pane;
   }
   
   /**

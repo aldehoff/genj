@@ -120,7 +120,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * Dialog implementation
    */
-  protected Object openDialogImpl(final String key, String title,  int messageType, JComponent content, String[] actions, Component owner, Rectangle bounds, final boolean isModal) {
+  protected Object openDialogImpl(final String key, String title,  int messageType, JComponent content, Object[] actions, Component owner, Rectangle bounds, final boolean isModal) {
 
     // create an option pane
     JOptionPane optionPane = assembleDialogContent(messageType, content, actions);
@@ -150,7 +150,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     // return result
     return isModal  ? optionPane.getValue() : dlg;
   }
-
+  
   /**
    * @see genj.window.WindowManager#show(java.lang.String)
    */
