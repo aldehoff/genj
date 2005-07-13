@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="GenJ" default="dist" basedir=".">
 
+  <taskdef name="jwspackage" classname="jwsdeploy.build.PackageTask" classpath="./contrib/webstart/jwsdeploy.jar"/>  
+  
   <property file="./build.properties"/>
   	
   <property name="dir.dist" value="${dir.build}/dist"/>
@@ -41,6 +43,13 @@
     <mkdir dir="${dir.build}/lib"/>
   	
   	<echo file="${dir.build}/.cvsignore">*</echo>
+    
+    <tstamp>
+      <format property="now" pattern="yyyy/MM/dd HH:mm:ss"/>
+    </tstamp>
+    
+    <property name="app.build" value="${app.version} ${now} ${user.name}"/>
+    
   </target>
 
 	<!--
@@ -105,16 +114,12 @@
   <!--
    Version
    -->
-  <target name="version">
+  <target name="version" depends="init">
     <echo level="info">Generating version number</echo>
     <mkdir dir="${dir.build}/version/genj"/>
-  	<tstamp>
-      <format property="now" pattern="yyyy/MM/dd HH:mm:ss"/>
-  	</tstamp>
-  	
     <echo file="${dir.build}/version/genj/resources.properties">
       version=${app.version}
-      build=${app.version} ${now} ${user.name}
+      build=${app.build}
     </echo>
   </target>
 
@@ -332,6 +337,40 @@
 
   </target>
 
+  <!--
+   Distribution - WebStart
+   -->
+  <target name="dist.webstart" depends="init, dist.app">
+
+    <mkdir dir="${dir.build}/webstart"/>
+    <mkdir dir="${dir.dist}/webstart"/>
+    
+    <!-- unpack genj_app-xyz.zip -->
+    <unzip dest="${dir.build}/webstart" src="${dir.dist}/genj_app-${app.version}.zip"/>
+
+    <!-- generate a key -->
+    <delete file="${dir.build}/keyfile"/>    
+    <genkey alias="genj" storepass="password" dname="CN=Nils Meier, OU=Unknown, O=genj.sourceforge.net, C=CA" keystore="${dir.build}/keyfile"/>    
+
+    <!-- package necessary resources -->
+    <jwspackage
+      directory="${dir.dist}/webstart"
+      codebase="http://genj.sourceforge.net/download"
+      title="GenealogyJ"
+      image="./contrib/webstart/webstart.gif"
+      keystore="${dir.build}/keyfile"
+      keyalias="genj"
+      keypass="password"
+      startup="-jar run.jar"
+      version="${app.build}"
+      vendor="http://genj.sourceforge.net"
+      homepage="http://genj.sourceforge.net">
+      <fileset dir="${dir.build}/webstart" includes="**"/>
+    </jwspackage>
+      
+    <!-- done -->
+  </target>
+    
   <!--
    Distribution
    -->
