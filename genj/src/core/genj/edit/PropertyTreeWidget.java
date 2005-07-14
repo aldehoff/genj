@@ -663,7 +663,9 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       if (prop.isSecret()) {
         result.append("*****");
       } else {
-        result.append(prop.getDisplayValue());
+        String val = prop.getDisplayValue();
+        if (val.length()>40) val = val.substring(0, 40) + "...";
+        result.append(val);
       }
       
       // done
