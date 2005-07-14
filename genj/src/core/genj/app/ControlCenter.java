@@ -52,12 +52,14 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.Box;
 import javax.swing.JComponent;
@@ -91,7 +93,7 @@ public class ControlCenter extends JPanel {
   /**
    * Constructor
    */
-  public ControlCenter(Registry setRegistry, WindowManager winManager) {
+  public ControlCenter(Registry setRegistry, WindowManager winManager, String[] args) {
 
     // Initialize data
     registry = new Registry(setRegistry, "cc");
@@ -123,17 +125,10 @@ public class ControlCenter extends JPanel {
     // Init menu bar at this point (so it's ready when the first file is loaded)
     menuBar = createMenuBar();
 
-    // Done
-  }
-  
-  /**
-   * @see javax.swing.JComponent#addNotify()
-   */
-  public void addNotify() {
-    // continue
-    super.addNotify();
     // Load known gedcoms
-    SwingUtilities.invokeLater(new ActionLoadLastOpen());
+    SwingUtilities.invokeLater(new ActionAutoOpen(args));
+    
+    // Done
   }
   
   /**
@@ -722,32 +717,55 @@ public class ControlCenter extends JPanel {
   /**
    * Action - LoadLastOpen
    */
-  private class ActionLoadLastOpen extends ActionDelegate {
+  private class ActionAutoOpen extends ActionDelegate {
+    /** files to load */
+    private Set files;
+    /** constructor */
+    private ActionAutoOpen(String[] files) {
+      
+      // by default we offer the user to load example.ged
+      HashSet deflt = new HashSet();
+      if (files.length==0)
+        deflt.add("./gedcom/example.ged");
+
+      // check registry for the previously opened now
+      this.files = (Set)registry.get("open", deflt);
+      
+      // and add the argument as well
+      this.files.addAll(Arrays.asList(files));
+    }
     /** run */
     public void execute() {
-      
-      String example = "./gedcom/example.ged";
-      String[] defaults =
-        new File(example).exists() ? new String[] { "file:" + example }
-      : new String[0];
-      
-      String[] lasts = registry.get("open", defaults);
-      for (int i=0; i<lasts.length; i++) {
+
+      // Loop over files to load
+      for (Iterator it = files.iterator(); it.hasNext(); ) {
+        
+        // grab "file[, password]"
+        String last = it.next().toString();
+        String pwd = null;
+        int comma = last.indexOf(',');
+        if (comma>0) {
+          pwd = last.substring(comma+1);
+          last = last.substring(0, comma);
+        }
+        
+        // is it a local file?
+        File file = new File(last);
+        if (file.exists()) last = "file:" + last;        
+        
+        // open it 
         try {
-          String last = lasts[i];
-          String pwd = null;
-          int comma = last.indexOf(',');
-          if (comma>0) {
-            pwd = last.substring(comma+1);
-            last = last.substring(0, comma);
-          }
           ActionOpen open = new ActionOpen(Origin.create(last));
           if (pwd!=null) open.password = pwd;
           open.trigger();
         } catch (MalformedURLException x) {
+          App.LOG.log(Level.WARNING, "Couldn't re-open "+last);
         }
+        
+        // next
       }
-      
+
+      // done
     }
   } //LastOpenLoader
 

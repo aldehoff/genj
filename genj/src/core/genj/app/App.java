@@ -102,7 +102,7 @@ public class App {
       }
       
       // Startup the UI
-      SwingUtilities.invokeLater(new Startup(registry));
+      SwingUtilities.invokeLater(new Startup(registry, args));
       
       // Hook into Shutdown
       Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(registry)));
@@ -121,12 +121,14 @@ public class App {
   private static class Startup implements Runnable {
     
     private Registry registry;
+    private String[] args;
     
     /**
      * Constructor
      */
-    private Startup(Registry registry) {
+    private Startup(Registry registry, String[] args) {
       this.registry = registry;
+      this.args = args;
     }
     
     /**
@@ -155,7 +157,7 @@ public class App {
       }
       
       // setup control center
-      ControlCenter center = new ControlCenter(registry, winMgr);
+      ControlCenter center = new ControlCenter(registry, winMgr, args);
 
       // show it
       winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
