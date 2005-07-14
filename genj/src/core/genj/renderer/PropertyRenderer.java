@@ -22,6 +22,7 @@ package genj.renderer;
 import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertyXRef;
 import genj.util.Dimension2d;
 import genj.util.swing.ImageIcon;
@@ -55,7 +56,8 @@ public class PropertyRenderer {
     PREFER_IMAGE = 1,
     PREFER_TXT = 2,
     PREFER_RIGHTALIGN = 4,
-    PREFER_DEFAULT = PREFER_TXT;
+    PREFER_SHORT = 8,
+    PREFER_DEFAULT = PREFER_TXT|PREFER_SHORT;
   
   /** an empty dimension */
   private final static Dimension EMPTY_DIM = new Dimension(0,0);
@@ -137,13 +139,13 @@ public class PropertyRenderer {
       w = 0,
       h = 0;
     // calculate text size (the default size we use)
-    if (isText(preference)) {
+    if (isPreference(preference, PREFER_TXT)) {
       Rectangle2D bounds = font.getStringBounds(txt, context);
       w += bounds.getWidth();
       h = Math.max(h, bounds.getHeight());
     }
     // add image size
-    if (isImage(preference)) {
+    if (isPreference(preference, PREFER_IMAGE)) {
       ImageIcon img = prop.getImage(false);
       LineMetrics lm = font.getLineMetrics("", context);
       float max = lm.getHeight();
@@ -179,9 +181,9 @@ public class PropertyRenderer {
    */
   protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, String txt, int preference, Point dpi) {
     // image?
-    if (isImage(preference)) renderImpl(g, bounds, prop.getImage(false), dpi);
+    if (isPreference(preference, PREFER_IMAGE)) renderImpl(g, bounds, prop.getImage(false), dpi);
     // text?
-    if (isText(preference)) renderImpl(g, bounds, txt, preference);
+    if (isPreference(preference, PREFER_TXT)) renderImpl(g, bounds, txt, preference);
     // done
   }
   
@@ -222,7 +224,7 @@ public class PropertyRenderer {
     
     // alignment?
     double x = bounds.getX();
-    if (isRightAlign(preference)) {
+    if (isPreference(preference, PREFER_RIGHTALIGN)) {
       Rectangle2D r = font.getStringBounds(txt, g.getFontRenderContext());
       if (r.getWidth()< bounds.getWidth())
         x = bounds.getMaxX() - r.getWidth();
@@ -233,33 +235,45 @@ public class PropertyRenderer {
   }
   
   /** 
-   * Check preference for right align
+   * Check preference 
    */
-  protected boolean isRightAlign(int preference) {
-    return (preference&PREFER_RIGHTALIGN)!=0;
+  protected boolean isPreference(int preference, int flag) {
+    return (preference&flag)!=0;
   }
 
-  /**
-   * Check preference for option to draw image
-   */
-  protected boolean isImage(int preference) {
-    return (preference&PREFER_IMAGE)!=0;
-  }
-  
-  /**
-   * Check preference for option to draw text
-   */
-  protected boolean isText(int preference) {
-    return (preference&PREFER_TXT)!=0;
-  }
-  
   /**
    * Whether this renderer wants to paint NULL
    */
   protected boolean isNullRenderer() {
     return false;
   }
+  
+  /**
+   * Place
+   */
+  /*package*/ static class Place extends PropertyRenderer {
 
+    /** 
+     * size override
+     */
+    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
+      if (isPreference(preference, PREFER_SHORT) && prop instanceof PropertyPlace) 
+        return super.getSizeImpl(font, context, prop, ((PropertyPlace)prop).getJurisdiction(0), preference, dpi);
+      return super.getSizeImpl(font, context, prop, preference, dpi);
+    }
+
+    /**
+     * render override
+     */
+    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
+      if (isPreference(preference, PREFER_SHORT) && prop instanceof PropertyPlace) 
+        super.renderImpl(g, bounds, prop, ((PropertyPlace)prop).getJurisdiction(0), preference, dpi);
+      else
+        super.renderImpl(g, bounds, prop, preference, dpi);
+    }
+    
+  } //Place
+  
   /**
    * Sex
    */
@@ -437,7 +451,7 @@ public class PropertyRenderer {
       if (prop instanceof IconValueAvailable) 
         result = ((IconValueAvailable)prop).getValueAsIcon();
       // fallback
-      if (result==null&&isImage(preference)) return broken;
+      if (result==null&&isPreference(preference, PREFER_IMAGE)) return broken;
       // done
       return result;
     }  
