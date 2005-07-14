@@ -17,7 +17,7 @@ public class PropertyMultilineValueTest extends TestCase {
     CONC = "CONC";
 
   /** one used mle */
-  private MultiLineProperty mle;
+  private PropertyMultilineValue mle;
   
   /** one iterator used */
   private MultiLineProperty.Iterator it;
@@ -39,8 +39,13 @@ public class PropertyMultilineValueTest extends TestCase {
    */
   public void testDisplayValue() {
     
+    // 20050714 changed my mind once again - the display value of a multiline property
+    // should actually be the whole string and not something trimmed and modified (...)
+    // If the UI needs to trim (e.g. PropertyTreeWidget) then it should do so by itself
+    // This is particulary necessary since searching goes through getDisplayValue (can't
+    // use getValue()) which made it miss information after ...
     mle.setValue("one\ntwo\nthree");
-    assertEquals("wrong display value", ((Property)mle).getDisplayValue(), "one...");
+    assertEquals("wrong display value", ((Property)mle).getDisplayValue(), mle.getValue());
   }
   
   /**
