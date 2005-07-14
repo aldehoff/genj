@@ -362,7 +362,6 @@
       keyalias="genj"
       keypass="password"
       startup="-jar run.jar"
-      version="${app.build}"
       vendor="http://genj.sourceforge.net"
       homepage="http://genj.sourceforge.net">
       <fileset dir="${dir.build}/webstart" includes="**"/>
