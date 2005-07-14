@@ -661,6 +661,8 @@ public class PropertyTableWidget extends JPanel {
    */
   private class PropertyTableCellRenderer extends HeadlessLabel implements TableCellRenderer {
     
+    private int RENDERER_PREFERENCE = PropertyRenderer.PREFER_DEFAULT & ~PropertyRenderer.PREFER_SHORT;
+    
     /** current property */
     private Property curProp;
     
@@ -696,7 +698,7 @@ public class PropertyTableWidget extends JPanel {
     public Dimension getPreferredSize() {
       if (curProp==null)
         return new Dimension(0,0);
-      return Dimension2d.getDimension(PropertyRenderer.get(curProp).getSize(getFont(), new FontRenderContext(null, false, false), curProp, PropertyRenderer.PREFER_DEFAULT, viewManager.getDPI()));
+      return Dimension2d.getDimension(PropertyRenderer.get(curProp).getSize(getFont(), new FontRenderContext(null, false, false), curProp, RENDERER_PREFERENCE, viewManager.getDPI()));
     }
     
     /**
@@ -726,7 +728,7 @@ public class PropertyTableWidget extends JPanel {
       bounds.x += 1;
       bounds.width -= 2;
       // let it render
-      proxy.render(graphics, bounds, curProp, PropertyRenderer.PREFER_DEFAULT, viewManager.getDPI());
+      proxy.render(graphics, bounds, curProp, RENDERER_PREFERENCE, viewManager.getDPI());
       // done
     }
     
