@@ -66,8 +66,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    * A display value containing no newlines
    */
   public String getDisplayValue() {
-    int dots = lines.indexOf('\n');
-    return dots<0 ? lines : lines.substring(0, dots)+"...";
+    return getValue();
   }
 
   /**
