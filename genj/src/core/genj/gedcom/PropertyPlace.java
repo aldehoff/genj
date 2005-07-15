@@ -236,6 +236,18 @@ public class PropertyPlace extends PropertyChoiceValue {
   }
   
   /**
+   * Accessor - first non-empty jurisdiction
+   * @return jurisdiction of zero+ length
+   */
+  public String getFirstAvailableJurisdiction() {
+    DirectAccessTokenizer jurisdictions = getJurisdictions();
+    String result = jurisdictions.get(0);
+    for (int i=1; result.length()==0 && jurisdictions.get(i)!=null ;i++) 
+      result = jurisdictions.get(i);
+    return result;
+  }
+  
+  /**
    * Accessor - jurisdiction of given level
    * @return jurisdiction of zero+ length or null if n/a
    */
