@@ -44,6 +44,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.util.HashMap;
@@ -52,8 +53,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -90,7 +89,7 @@ public class PropertyTableWidget extends JPanel {
   private JTable table;
   
   /** shortcuts panel */
-  private Box panelShortcuts = new Box(BoxLayout.Y_AXIS);
+  private JPanel panelShortcuts;
   
   /** property tabl model */
   private PropertyTableModel propertyModel;
@@ -112,6 +111,9 @@ public class PropertyTableWidget extends JPanel {
     
     // create table comp
     table = new Content();
+    
+    // create panel for shortcuts
+    panelShortcuts = new JPanel(new GridLayout(0,1));
 
     // setup layout
     setLayout(new BorderLayout());
@@ -743,9 +745,8 @@ public class PropertyTableWidget extends JPanel {
     private Shortcut(Property prop) {
       super(prop.getDisplayValue(), null);
       this.prop = prop;
-      setAlignmentX(0.5F);
       setHorizontalAlignment(SwingConstants.CENTER);
-      setBorder(new EmptyBorder(0,2,0,2));
+      setBorder(new EmptyBorder(0,1,0,1));
     }
     protected void fireActionPerformed() {
       // ask model
@@ -754,14 +755,7 @@ public class PropertyTableWidget extends JPanel {
       if (row<0)
         return;
       int col = Math.abs(model.sortColumn)-1;
-      // set selection row/col
-      // 20050518 removed the selection change for now - if the user
-      // wants to change the selection he should do that by clicking in
-      // a row/col-cell. Using the shortcut just brings rows into view (like
-      // scrolling does) - so the user can utilize them without having
-      // to fear that context-changes are propagated right away
-//      table.getSelectionModel().setSelectionInterval(row,row);
-//      table.getColumnModel().getSelectionModel().setSelectionInterval(col,col);
+      // 20050518 removed the selection change 
       // scroll to visible
       Rectangle rect = table.getCellRect(row,col,true);
       rect.height = table.getParent().getHeight();
