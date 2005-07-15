@@ -5,7 +5,9 @@ package genj.util.swing;
 
 import genj.util.ActionDelegate;
 
+import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,11 +24,11 @@ public class LinkWidget extends JLabel {
   /** status hover */
   private boolean hover = false;
 
-  /** text */
-  private String plain, underlined;
-  
   /** action */
   private ActionDelegate action;
+  
+  /** normal color */
+  private Color normal;
   
   /**
    * Constructor
@@ -42,6 +44,7 @@ public class LinkWidget extends JLabel {
   public LinkWidget(String text, Icon img) {
     super(text, img, SwingConstants.LEFT);
     addMouseListener(new Callback());
+    setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
   }
   
   /**
@@ -58,30 +61,25 @@ public class LinkWidget extends JLabel {
     this(null,null);
   }
    
-  /**
-   * @see javax.swing.AbstractButton#setText(java.lang.String)
-   */
-  public void setText(String text) {
-    // remember
-    plain = ("<html>"+text);
-    underlined = ("<html><u>"+text);
-    // continue
-    super.setText(text);
-  }
-
-  /**
-   * setText
-   */
-  private void setTextInternal(String text) {
-    super.setText(text);
-  }
-  
   /** 
    * action performed
    */
   protected void fireActionPerformed() {
     if (action!=null)
       action.actionPerformed(new ActionEvent(this, 0, ""));
+  }
+
+  /**
+   * overridden paint
+   */
+  protected void paintComponent(Graphics g) {
+    // let the UI do its thing
+    super.paintComponent(g);
+    // add a line
+    if (!hover) return;
+    g.setColor(getForeground());
+    g.drawLine(1,getHeight()-1,getWidth()-1-1,getHeight()-1);
+    // done
   }
   
   /**
@@ -95,12 +93,13 @@ public class LinkWidget extends JLabel {
     }
     /** exit -> plain */
     public void mouseExited(MouseEvent e) {
-      setTextInternal(plain);
+      hover = false;
+      repaint();
     }
     /** exit -> underlined */
     public void mouseEntered(MouseEvent e) {
-      setTextInternal(underlined);
-      setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+      hover = true;
+      repaint();
     }
     
   } //Callback
