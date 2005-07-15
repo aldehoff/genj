@@ -257,19 +257,20 @@ public class PropertyRenderer {
      * size override
      */
     public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
-      if (isPreference(preference, PREFER_SHORT) && prop instanceof PropertyPlace) 
-        return super.getSizeImpl(font, context, prop, ((PropertyPlace)prop).getJurisdiction(0), preference, dpi);
-      return super.getSizeImpl(font, context, prop, preference, dpi);
+      return super.getSizeImpl(font, context, prop, getText(prop, preference), preference, dpi);
     }
 
     /**
      * render override
      */
     public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      if (isPreference(preference, PREFER_SHORT) && prop instanceof PropertyPlace) 
-        super.renderImpl(g, bounds, prop, ((PropertyPlace)prop).getJurisdiction(0), preference, dpi);
-      else
-        super.renderImpl(g, bounds, prop, preference, dpi);
+      super.renderImpl(g, bounds, prop, getText(prop, preference), preference, dpi);
+    }
+    
+    private String getText(Property prop, int preference) {
+      if (!isPreference(preference, PREFER_SHORT) | ! (prop instanceof PropertyPlace)) 
+        return prop.getDisplayValue();
+      return ((PropertyPlace)prop).getFirstAvailableJurisdiction();
     }
     
   } //Place
