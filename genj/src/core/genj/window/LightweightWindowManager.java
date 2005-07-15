@@ -49,8 +49,8 @@ public class LightweightWindowManager extends DefaultWindowManager {
   /** 
    * Constructor
    */
-  public LightweightWindowManager(Registry registry) {
-    super(registry);
+  public LightweightWindowManager(Registry registry, ImageIcon defaultDialogImage) {
+    super(registry, defaultDialogImage);
   }
   
   /**

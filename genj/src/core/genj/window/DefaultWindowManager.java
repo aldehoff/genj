@@ -51,11 +51,15 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /** screen we're dealing with */
   private Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
   
+  /** a hidden default frame */
+  private JFrame defaultFrame = new JFrame();
+  
   /** 
    * Constructor
    */
-  public DefaultWindowManager(Registry registry) {
+  public DefaultWindowManager(Registry registry, ImageIcon defaultDialogImage) {
     super(registry);
+    defaultFrame.setIconImage(defaultDialogImage.getImage());
   }
   
   /**
@@ -126,7 +130,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
     JOptionPane optionPane = assembleDialogContent(messageType, content, actions);
     
     // let it create the dialog
-    final JDialog dlg = optionPane.createDialog(owner, title);
+    final JDialog dlg = optionPane.createDialog(owner != null ? owner : defaultFrame, title);
     dlg.setResizable(true);
     dlg.setModal(isModal);
     if (bounds==null) {

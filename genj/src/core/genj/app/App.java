@@ -145,7 +145,7 @@ public class App {
       initSwing(resources);
 
       // create window manager
-      WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"));
+      WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"), Gedcom.getImage());
       
       // Disclaimer - check version and registry value
       String version = Version.getInstance().getVersionString();

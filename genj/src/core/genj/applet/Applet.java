@@ -217,7 +217,7 @@ public class Applet extends java.applet.Applet {
     protected void postExecute() {
 
       // prepare window manager
-      WindowManager winMgr = new DefaultWindowManager(registry);
+      WindowManager winMgr = new DefaultWindowManager(registry, Gedcom.getImage());
       
       // check load status      
       if (throwable!=null) {
