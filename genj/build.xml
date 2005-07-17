@@ -397,9 +397,9 @@
     <copy todir="${dir.run}/doc">
       <fileset dir="./doc"/>
     </copy>
-    <antcall target="dist.help.language.files">
+    <antcall target="dist.language.help">
       <param name="language" value="en"/>
-      <param name="dir.help" value="${dir.run}/help"/>
+      <param name="dir" value="${dir.run}"/>
     </antcall>
 
     <java classname="genj.app.App" fork="true" dir="${dir.run}">
