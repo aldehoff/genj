@@ -35,7 +35,7 @@ public abstract class MultipleChoiceOption extends PropertyOption {
   
   /** constructor */
   protected MultipleChoiceOption(PropertyOption option) {
-    super(option.getProperty());
+    super(option.instance, option.getProperty());
     this.option = option;
   }
   

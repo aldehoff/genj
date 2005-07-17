@@ -53,6 +53,9 @@ public abstract class PropertyOption extends Option {
   /** property */
   protected String property;
 
+  /** option is for instance */
+  protected Object instance;
+
   /**
    * Get options for given instance 
    */
@@ -137,7 +140,8 @@ public abstract class PropertyOption extends Option {
   /**
    * Constructor
    */
-  protected PropertyOption(String property) {
+  protected PropertyOption(Object instance, String property) {
+    this.instance = instance;
     this.property = property;
   }
 
@@ -161,6 +165,21 @@ public abstract class PropertyOption extends Option {
    */ 
   public String getProperty() {
     return property;
+  }
+  
+  /**
+   * Accessor - category of this option
+   */
+  public String getCategory() {
+    String result = super.getCategory();
+    if (result==null) {
+      // try to localize?
+      Resources resources = Resources.get(instance);
+      result = resources.getString("options", false);
+      if (result!=null)
+        super.setCategory(result);
+    }
+    return result;
   }
   
   /**
@@ -276,9 +295,6 @@ public abstract class PropertyOption extends Option {
    */
   private static abstract class Impl extends PropertyOption {
 
-    /** option is for instance */
-    protected Object instance;
-  
     /** type */
     protected Class type;
   
@@ -292,29 +308,13 @@ public abstract class PropertyOption extends Option {
      * Constructor
      */
     protected Impl(Object instance, String property, Class type) {
-      super(property);
-      this.instance = instance;
+      super(instance, property);
       this.type     = type;
       
       // FIXME derive mapper automatically
       this.mapper   = type==Font.class ? new FontMapper() : new Mapper();
     }
 
-    /**
-     * Accessor - category of this option
-     */
-    public String getCategory() {
-      String result = super.getCategory();
-      if (result==null) {
-        // try to localize?
-        Resources resources = Resources.get(instance);
-        result = resources.getString("options", false);
-        if (result!=null)
-          super.setCategory(result);
-      }
-      return result;
-    }
-    
     /**
      * Accessor - name of this option
      */
