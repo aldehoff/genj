@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.95 $ $Author: nmeier $ $Date: 2005-07-06 15:07:35 $
+ * $Revision: 1.96 $ $Author: nmeier $ $Date: 2005-07-17 19:31:39 $
  */
 package genj.gedcom;
 
@@ -166,7 +166,7 @@ public class Gedcom {
   private Map tags2refsets = new HashMap();
 
   /** encoding */
-  private String encoding = ANSEL;
+  private String encoding = ENCODINGS[Options.getInstance().defaultEncoding];
   
   /** language */
   private String language = null;

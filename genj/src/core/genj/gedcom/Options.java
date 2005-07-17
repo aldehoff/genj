@@ -49,6 +49,11 @@ public class Options extends OptionProvider {
 
   /** option - number of undos */
   protected int numberOfUndos = 10;
+  
+  /** option - default encoding */
+  public int defaultEncoding = 0;
+  
+  public final static String[] defaultEncodings = Gedcom.ENCODINGS;
 
   /**
    * Singleton access
