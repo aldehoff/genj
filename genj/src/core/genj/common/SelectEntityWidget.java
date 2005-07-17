@@ -77,6 +77,9 @@ public class SelectEntityWidget extends JPanel {
     "NOTE", 
     "NOTE:NOTE", 
     "SOUR", 
+    "SOUR:TITL", 
+    "SOUR:AUTH", 
+    "SOUR:REPO", 
     "SUBM", 
     "REPO"
   };
