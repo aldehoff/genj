@@ -104,7 +104,7 @@ import javax.swing.JTextArea;
   protected void refresh() {
     // might be no confirmation showing
     if (confirm!=null)
-      confirm.setText("<html>"+getConfirmMessage());
+      confirm.setText(getConfirmMessage());
   }
   
   /**
