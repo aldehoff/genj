@@ -448,7 +448,7 @@ public abstract class Relationship {
     public Property apply(Entity entity, boolean isNew) throws GedcomException {
       Indi parent = (Indi)entity;
       
-      // create new if necessary
+      // create new family for parent if necessary
       if (familyWithMissingSpouse==null) {
         familyWithMissingSpouse = (Fam)getGedcom().createEntity(Gedcom.FAM);
         // add 'new' child
@@ -459,12 +459,21 @@ public abstract class Relationship {
       
       // set spouse
       familyWithMissingSpouse.setSpouse(parent);
+      
+      // set its name if new
+      if (isNew&&parent.getSex()==PropertySex.MALE) 
+        parent.setName("", child.getLastName());
 
       // 20040619 adding missing spouse automatically now
       // 20050405 whether we created a new family or the family didn't have all parents
-      if (familyWithMissingSpouse.getNoOfSpouses()<2) 
-        familyWithMissingSpouse.setSpouse((Indi)getGedcom().createEntity(Gedcom.INDI).addDefaultProperties());
-
+      if (familyWithMissingSpouse.getNoOfSpouses()<2) {
+        Indi spouse = (Indi)getGedcom().createEntity(Gedcom.INDI);
+        spouse.addDefaultProperties();
+        if (spouse.getSex()==PropertySex.MALE)
+          spouse.setName("", child.getLastName());
+        familyWithMissingSpouse.setSpouse(spouse);
+      }
+      
       // focus goes to new parent
       return parent;
     }
