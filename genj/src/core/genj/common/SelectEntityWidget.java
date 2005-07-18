@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
@@ -187,14 +188,13 @@ public class SelectEntityWidget extends JPanel {
      */
     private String getString(Entity e, TagPath path) {
       
-      // DATE?
-      if (path.getLast().equals("DATE")) {
-        PropertyDate pd = (PropertyDate)e.getProperty(path);
-        return  pd!=null ? pd.getDisplayValue() + " - " + e.toString() : e.toString();
-      }
-
-      // default
-      return e.toString();
+      Property p = e.getProperty(path);
+      String value;
+      if (p==e)
+        value = e.getId();
+      else
+        value = p!=null&&p.isValid() ? p.getDisplayValue() : "?";
+      return value + " / " + e.toString();
     }
 
   } //Renderer
