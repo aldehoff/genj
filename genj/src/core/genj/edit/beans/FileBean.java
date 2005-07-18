@@ -279,7 +279,8 @@ public class FileBean extends PropertyBean {
       // remember
       img = set;
       // show
-      setZoom(zoom);
+      revalidate();
+      repaint();
     }
     /**
      * Access current image
