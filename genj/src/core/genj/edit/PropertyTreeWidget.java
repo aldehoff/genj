@@ -664,7 +664,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         result.append("*****");
       } else {
         String val = prop.getDisplayValue();
-        if (val.length()>40) val = val.substring(0, 40) + "...";
+        int nl = val.indexOf('\n');
+        if (nl>=0) val = val.substring(0, nl) + "...";
         result.append(val);
       }
       
