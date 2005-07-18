@@ -102,11 +102,13 @@ public class MetaProperty implements Comparable {
           addNested(sub);
         }
       }
-      // type & image from super
+      // type & image & singleton from super
       if (getAttribute("type")==null)
         attributes.put("type", supr.getAttribute("type"));
       if (getAttribute("img")==null)
         attributes.put("img", supr.getAttribute("img"));
+      if (getAttribute("singleton")==null)
+        attributes.put("singleton", supr.getAttribute("singleton"));
     }
     // done
   }
