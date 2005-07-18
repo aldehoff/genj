@@ -65,8 +65,8 @@ public class PropertyComparator implements Comparator {
     
     // null?
     if (p1==p2  ) return  0;
-    if (p1==null) return  1 * reversed;
-    if (p2==null) return -1 * reversed;
+    if (p1==null) return -1 * reversed;
+    if (p2==null) return  1 * reversed;
     
     // let p's compare themselves
     return p1.compareTo(p2) * reversed;
