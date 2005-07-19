@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.73 $ $Author: nmeier $ $Date: 2005-07-12 22:11:41 $
+ * $Revision: 1.74 $ $Author: nmeier $ $Date: 2005-07-19 02:50:13 $
  */
 package genj.report;
 
@@ -303,40 +303,49 @@ public abstract class Report implements Cloneable {
    */
   public final void showDocumentToUser(Document doc) {
     
+    String title = "Document '"+doc.getTitle();
     JLabel label = new JLabel("Choose formatted output for document");
     
     ChoiceWidget formatters = new ChoiceWidget(Formatter.getFormatters(), Formatter.DEFAULT);
     formatters.setEditable(false);
-
-    String[] actions = { "Save", "View", WindowManager.TXT_CANCEL };
     int rc = viewManager.getWindowManager().openDialog(
-        "reportdoc", "Document '"+doc.getTitle()+"'", WindowManager.QUESTION_MESSAGE, new JComponent[] {label, formatters}, actions, owner);
+        "reportdoc", title, WindowManager.QUESTION_MESSAGE, new JComponent[] {label, formatters}, WindowManager.ACTIONS_OK_CANCEL, owner);
     
-    // save?
-    if (rc==0) {
-      
-      // ask user for output file
-      Formatter formatter = (Formatter)formatters.getSelectedItem();
-      String dir = registry.get("doc.dir", EnvironmentChecker.getProperty(this, "user.home", ".", "document output directory"));
-      FileChooser chooser = new FileChooser(owner, "Choose file", "Save", formatter.getFileExtension(), dir);
-      chooser.showDialog();
-      File file = chooser.getSelectedFile();
-      if (file==null)
-        return;
-      registry.put("doc.dir", chooser.getCurrentDirectory().getAbsolutePath());
-      if (!file.getName().endsWith("."+formatter.getFileExtension()))
-        file = new File(file.getAbsolutePath()+"."+formatter.getFileExtension());
-      
-      // format and write
-      try {
-        file.getParentFile().mkdirs();
-        formatter.format(doc, file);
-      } catch (IOException e) {
-        LOG.log(Level.WARNING, "formatting "+doc+" failed", e);
-      }
-      
-      // done
+    // cancel?
+    if (rc!=0)
+      return;
+    
+    // ask user for output file
+    Formatter formatter = (Formatter)formatters.getSelectedItem();
+    String dir = registry.get("doc.dir", EnvironmentChecker.getProperty(this, "user.home", ".", "document output directory"));
+    FileChooser chooser = new FileChooser(owner, "Choose file", "Save", formatter.getFileExtension(), dir);
+    chooser.showDialog();
+    File file = chooser.getSelectedFile();
+    if (file==null)
+      return;
+    registry.put("doc.dir", chooser.getCurrentDirectory().getAbsolutePath());
+    if (!file.getName().endsWith("."+formatter.getFileExtension()))
+      file = new File(file.getAbsolutePath()+"."+formatter.getFileExtension());
+    
+    // show a progress dialog
+    String progress = viewManager.getWindowManager().openNonModalDialog(
+        null, title, WindowManager.INFORMATION_MESSAGE, new JLabel("Writing Document to File "+file+" ..."), WindowManager.ACTIONS_OK, owner);
+    
+    // format and write
+    try {
+      file.getParentFile().mkdirs();
+      formatter.format(doc, file);
+    } catch (IOException e) {
+      LOG.log(Level.WARNING, "formatting "+doc+" failed", e);
     }
+    
+    // close progress dialog
+    viewManager.getWindowManager().close(progress);
+    
+    // open document
+    FileAssociation association = FileAssociation.get(formatter.getFileExtension(), formatter.getFileExtension(), "Open", owner);
+    if (association!=null)
+      association.execute(file.getAbsolutePath());
       
     // done
   }
