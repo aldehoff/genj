@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.74 $ $Author: nmeier $ $Date: 2005-07-19 02:50:13 $
+ * $Revision: 1.75 $ $Author: nmeier $ $Date: 2005-07-19 19:42:24 $
  */
 package genj.report;
 
@@ -306,7 +306,7 @@ public abstract class Report implements Cloneable {
     String title = "Document '"+doc.getTitle();
     JLabel label = new JLabel("Choose formatted output for document");
     
-    ChoiceWidget formatters = new ChoiceWidget(Formatter.getFormatters(), Formatter.DEFAULT);
+    ChoiceWidget formatters = new ChoiceWidget(Formatter.getFormatters(), Formatter.getFormatter(registry.get("formatter", (String)null)));
     formatters.setEditable(false);
     int rc = viewManager.getWindowManager().openDialog(
         "reportdoc", title, WindowManager.QUESTION_MESSAGE, new JComponent[] {label, formatters}, WindowManager.ACTIONS_OK_CANCEL, owner);
@@ -315,8 +315,11 @@ public abstract class Report implements Cloneable {
     if (rc!=0)
       return;
     
-    // ask user for output file
+    // remember formatter
     Formatter formatter = (Formatter)formatters.getSelectedItem();
+    registry.put("formatter", formatter.getKey());
+    
+    // ask user for output file
     String dir = registry.get("doc.dir", EnvironmentChecker.getProperty(this, "user.home", ".", "document output directory"));
     FileChooser chooser = new FileChooser(owner, "Choose file", "Save", formatter.getFileExtension(), dir);
     chooser.showDialog();

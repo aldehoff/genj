@@ -135,12 +135,15 @@ public abstract class Formatter {
    */
   public void format(Document doc, File file) throws IOException {
     
+    // try to create output stream
+    FileOutputStream out = new FileOutputStream(file);
+    
     // chance to externalize files if applicable
     if (isExternalizedFiles)
       externalizeFiles(doc, file);
     
     // continue
-    format(doc, new FileOutputStream(file));
+    format(doc, out);
   }
   
   /**
@@ -181,6 +184,25 @@ public abstract class Formatter {
       throw new IOException(e.getMessage());
     }
     
+  }
+  
+  /**
+   * Return formatter by key
+   */
+  public static Formatter getFormatter(String key) {
+    Formatter[] fs = getFormatters();
+    for (int i = 0; i < fs.length; i++) {
+      if (fs[i].getClass().getName().equals(key))
+        return fs[i];
+    }
+    return DEFAULT;
+  }
+  
+  /**
+   * Return a lookup key
+   */
+  public String getKey() {
+    return getClass().getName();
   }
   
   /**
