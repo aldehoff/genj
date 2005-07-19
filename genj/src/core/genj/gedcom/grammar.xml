@@ -160,18 +160,18 @@
   <HUSB hide="1" type="PropertyHusband" img="IndiMale.gif"/>
   <WIFE hide="1" type="PropertyWife" img="IndiFemale.gif"/>
   <NCHI img="NumChildren.gif" type="PropertySimpleValue"/>
-  <ENGA img="Engagement.gif" singleton="1" super="INDI:BIRT"/>
-  <MARB img="MarriageBann.gif" super="FAM:ENGA"/>
-  <MARC img="MarriageContract.gif" super="FAM:ENGA"/>
-  <MARL img="MarriageLicence.gif" super="FAM:ENGA"/>
-  <MARR img="Marriage.gif" super="FAM:ENGA">
+  <ENGA img="Engagement.gif" singleton="1" super="INDI:BIRT">
    <HUSB type="PropertySimpleReadOnly" img="IndiMale.gif">
     <AGE default="1" type="PropertyAge" img="Time.gif"/>
    </HUSB>
    <WIFE super="FAM:MARR:HUSB" img="IndiFemale.gif">
     <AGE default="1" type="PropertyAge" img="Time.gif"/>
    </WIFE>
-  </MARR>
+  </ENGA>
+  <MARB img="MarriageBann.gif" super="FAM:ENGA"/>
+  <MARC img="MarriageContract.gif" super="FAM:ENGA"/>
+  <MARL img="MarriageLicence.gif" super="FAM:ENGA"/>
+  <MARR img="Marriage.gif" super="FAM:ENGA"/>
   <ANUL img="Annulment.gif" super="FAM:ENGA"/>
   <MARS img="MarriageSettlement.gif" super="FAM:ENGA"/>
   <CHIL hide="1" type="PropertyChild" img="Child.gif" img.male="MaleChild.gif" img.female="FemaleChild.gif"/>
