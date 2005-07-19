@@ -284,16 +284,14 @@ public class PropertyRenderer {
      * size override
      */
     public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
-      if (preference==PREFER_DEFAULT) preference = PREFER_IMAGE;
-      return super.getSizeImpl(font, context, prop, preference, dpi);
+      return super.getSizeImpl(font, context, prop, PREFER_IMAGE, dpi);
     }
 
     /**
      * render override
      */
     public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      if (preference==PREFER_DEFAULT) preference = PREFER_IMAGE;
-      super.renderImpl(g, bounds, prop, preference, dpi);
+      super.renderImpl(g, bounds, prop, PREFER_IMAGE, dpi);
     }
   
   } //Sex
