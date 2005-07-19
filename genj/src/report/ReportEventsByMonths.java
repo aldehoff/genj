@@ -16,9 +16,11 @@ import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
+import java.awt.BorderLayout;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 /**
@@ -76,15 +78,17 @@ public class ReportEventsByMonths extends Report {
     
     // show it in a chart per series
     String[] categories = CALENDARS[calendar].getMonths(true);
-    
+
     JTabbedPane charts = new JTabbedPane();
     for (int i=0;i<series.length;i++) {
       String label = Gedcom.getName(series[i].getName());
       Chart chart = new Chart(null, series[i], categories, false);
       charts.addTab(label, chart);
     }
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.add(BorderLayout.CENTER, charts);
 
-    showComponentToUser(charts);
+    showComponentToUser(panel);
     
     // done
   }
