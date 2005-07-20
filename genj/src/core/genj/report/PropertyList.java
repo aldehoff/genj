@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.3 $ $Author: nmeier $ $Date: 2005-06-30 13:52:52 $
+ * $Revision: 1.4 $ $Author: nmeier $ $Date: 2005-07-20 22:04:29 $
  */
 package genj.report;
 
@@ -85,7 +85,7 @@ public class PropertyList {
   /**
    * one entry
    */
-  /*package*/ class Entry implements Comparable {
+  /*package*/ static class Entry implements Comparable {
 
     /** attrs */
     private String name;
@@ -124,7 +124,7 @@ public class PropertyList {
     private Property getTarget() {
       return target==null ? null : target.getGedcom()==null ? null : target;
     }
-    
+
     /**
      * Text comparison provided by super-class
      */
@@ -171,7 +171,7 @@ public class PropertyList {
      */
     public Context getContext() {
       Entry entry = (Entry)getSelectedValue();
-      return entry==null ? new Context(gedcom) : new Context( entry.getTarget() );
+      return entry.getTarget()!=null ? new Context(entry.getTarget()) : new Context(gedcom);
     }
 
     /**
@@ -181,8 +181,7 @@ public class PropertyList {
     public void valueChanged(ListSelectionEvent e) {
       // check selected item
       Entry entry = (Entry)getSelectedValue();
-      if (entry!=null)
-        manager.fireContextSelected(new Context(gedcom, null, entry.getTarget()));
+      manager.fireContextSelected( entry.getTarget()!=null ? new Context(entry.getTarget()) : new Context(gedcom) );
     }
 
     /**

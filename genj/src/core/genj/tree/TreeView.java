@@ -552,6 +552,14 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
   }
 
   /**
+   * @see genj.view.ActionProvider#createActions(Entity[], ViewManager)
+   */
+  public List createActions(Entity[] entities, ViewManager manager) {
+    // not supported
+    return null;
+  }
+
+  /**
    * @see genj.view.ContextSupport#createActions(genj.gedcom.Entity)
    */
   public List createActions(Entity entity, ViewManager manager) {

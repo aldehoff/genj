@@ -115,6 +115,14 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     // open
     new OpenForEdit(context, manager).trigger();
   }
+  
+  /**
+   * @see genj.view.ActionProvider#createActions(Entity[], ViewManager)
+   */
+  public List createActions(Entity[] entities, ViewManager manager) {
+    // not supported
+    return null;
+  }
 
   /**
    * @see genj.view.ContextSupport#createActions(Property)

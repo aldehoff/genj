@@ -23,11 +23,13 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.ActionDelegate;
-import genj.util.swing.ImageIcon;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A context represents a 'current context in Gedcom terms', a gedcom
@@ -37,14 +39,17 @@ public class Context {
   
   private ViewManager manager;
   private Gedcom gedcom;
-  private Entity entity;
-  private Property property;
+  private Set entities = new HashSet();
+  private Set properties = new HashSet();
   private List actions = new ArrayList();
-
+  private Class entityType = null;
+  
   /**
    * Constructor
    */
   public Context(Gedcom ged) {
+    if (ged==null)
+      throw new IllegalArgumentException("gedcom for context can't be null");
     gedcom = ged;
   }
   
@@ -52,38 +57,38 @@ public class Context {
    * Constructor
    */
   public Context(Property prop) {
-    this(prop.getGedcom(), prop.getEntity(), prop);
+    this(prop.getGedcom());
+    addProperty(prop);
   }
   
   /**
    * Constructor
    */
   public Context(Entity entity) {
-    this(entity.getGedcom(), entity, entity);
+    this(entity.getGedcom());
+    addEntity(entity);
   }
   
   /**
-   * Constructor
+   * Add an entity
    */
-  public Context(Gedcom ged, Entity ent, Property prop) {
-    
-    // property?
-    if (prop!=null) {
-      property = prop;
-      entity = ent!=null ? ent : property.getEntity();
-      gedcom = entity.getGedcom();
-    } else {
-      // entity?
-      if (ent!=null) {
-        entity = ent;
-        gedcom = entity.getGedcom();
-      } else {
-        // gedcom
-        gedcom = ged;
-      }
-    }
-    
-    // done
+  public void addEntity(Entity e) {
+    if (e.getGedcom()!=gedcom)
+      throw new IllegalArgumentException("entity's gedcom can't be different");
+    if (entityType!=null&&entityType!=e.getClass())
+      throw new IllegalArgumentException("can't mix and match entity types");
+    entityType = e.getClass();
+    entities.add(e);
+  }
+  
+  /**
+   * Add an property
+   */
+  public void addProperty(Property p) {
+    if (p.getGedcom()!=gedcom)
+      throw new IllegalArgumentException("entity's gedcom can't be different");
+    properties.add(p);
+    entities.add(p.getEntity());
   }
   
   /**
@@ -109,13 +114,6 @@ public class Context {
   }
   
   /**
-   * valid context?
-   */
-  public boolean isValid() {
-    return gedcom!=null && (entity!=null||property==null) && (entity==null||gedcom.contains(entity));
-  }
-  
-  /**
    * Accessor
    */
   public Gedcom getGedcom() {
@@ -123,17 +121,50 @@ public class Context {
   }
   
   /**
-   * Accessor
+   * Accessor - all entities if available
+   */
+  public Entity[] getEntities() {
+    if (entities.isEmpty())
+      return new Entity[0];
+    Entity[] result = (Entity[])Array.newInstance(entityType, entities.size());
+    entities.toArray(result);
+    return result;
+  }
+
+  /**
+   * Accessor - the SINGLE entity if available
    */
   public Entity getEntity() {
-    return entity;
+    // only for a singleton context
+    if (entities.size()!=1)
+      return null;
+    // check entity valid
+    Entity e = (Entity)entities.iterator().next();
+    if (!gedcom.contains(e)) {
+      e = null;
+      entities.clear();
+    }
+    // done
+    return e;
   }
   
   /**
-   * Accessor
+   * Accessor - the SINGLE property if available
    */
   public Property getProperty() {
-    return property;
+    // only for a singleton context
+    if (properties.size()!=1)
+      return null;
+    // check prop valid
+    Property p = (Property)properties.iterator().next();
+    Entity e = p.getEntity();
+    if (e==null||!gedcom.contains(e)) {
+      p = null;
+      properties.clear();
+      entities.remove(e);
+    }
+    // done
+    return p;
   }
 
   /**
@@ -143,30 +174,4 @@ public class Context {
     return manager;
   }
   
-  /**
-   * Comparison
-   */
-  public boolean equals(Object o) {
-    Context that = (Context)o;
-    return that!=null && this.gedcom == that.gedcom && this.entity == that.entity && this.property == that.property;
-  }
-  
-  /**
-   * String representation
-   */
-  public String toString() {
-    return gedcom+"/"+entity+"/"+property;
-  }
-
-  /**
-   * An image representation
-   */
-  public ImageIcon getImage() {
-    if (property!=null)
-      return property.getImage(false);
-    if (entity!=null)
-      return entity.getImage(false);
-    return Gedcom.getImage();
-  }
-
 } //Context

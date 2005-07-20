@@ -175,7 +175,11 @@ import javax.swing.event.ChangeListener;
     Context result = null;
     PropertyBean bean = getFocus();
     if (bean!=null) result = bean.getContext();
-    return result!=null ? result : new Context(gedcom, currentEntity, null);
+    if (result!=null)
+      return result;
+    if (currentEntity!=null)
+      return new Context(currentEntity);
+    return new Context(gedcom);
   }
 
   /**

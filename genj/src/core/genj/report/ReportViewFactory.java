@@ -62,6 +62,13 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
   public String getTitle(boolean abbreviate) {
     return Resources.get(this).getString("title" + (abbreviate?".short":""));
   }
+  
+  /**
+   * Plugin actions for entities
+   */
+  public List createActions(Entity[] entities, ViewManager manager) {
+    return getActions(entities, entities[0].getGedcom(), manager);
+  }
 
   /**
    * Plugin actions for entity

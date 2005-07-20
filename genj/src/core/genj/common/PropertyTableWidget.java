@@ -19,6 +19,7 @@
  */
 package genj.common;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
@@ -37,6 +38,7 @@ import genj.util.swing.SortableTableHeader;
 import genj.util.swing.SortableTableHeader.SortableTableModel;
 import genj.view.Context;
 import genj.view.ContextProvider;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -184,10 +186,22 @@ public class PropertyTableWidget extends JPanel {
   /**
    * Select a cell
    */
-  public void select(Property row, Property col) {
+  public void handleContextSelectionEvent(ContextSelectionEvent event) {
     
-    int r = getRow(row);
-    int c = col!=null ? getCol(r, col) : -1;
+    // a message from ourselves?
+    if (event.getProvider()==table)
+      return;
+
+    // check context
+    Context context = event.getContext();
+    Entity entity = context.getEntity();
+    Property prop = context.getProperty();
+    if (entity==null)
+      return;
+    
+    // check row
+    int r = getRow(entity);
+    int c = prop!=null ? getCol(r, prop) : -1;
 
     // scroll to visible
     Rectangle visible = table.getVisibleRect();
@@ -276,10 +290,10 @@ public class PropertyTableWidget extends JPanel {
     private Content() {
       
       setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
-      getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
       setTableHeader(new SortableTableHeader());
       getColumnModel().setColumnSelectionAllowed(true);
-      getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
       
       setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+getRowMargin());
       
@@ -294,7 +308,6 @@ public class PropertyTableWidget extends JPanel {
       
       // let super handle it (strange that JTable implements this as well)
       super.valueChanged(e);
-      
       
       // propagate selection change?
       if (!e.getValueIsAdjusting()) {
@@ -312,17 +325,40 @@ public class PropertyTableWidget extends JPanel {
      */
     public Context getContext() {
       
+      // check gedcom first
       Model model = (Model)getModel();
+      Gedcom ged = model.getGedcom();
+      if (ged==null)
+        return null;
+      
+      // prepare result
+      Context result = new Context(ged);
       
       // one row one col?
-      int row = getSelectedRow();
-      int col = getSelectedColumn();
-      if (getSelectedRowCount()==1&&getSelectedColumnCount()==1)
-        return model.getContextAt(row, col);
+      int[] rows = getSelectedRows();
+      if (rows.length>0) {
+        int[] cols = getSelectedColumns();
+
+        // loop over rows
+        for (int r=0;r<rows.length;r++) {
+          
+          // add entity for each row
+          result.addEntity(model.getProperty(rows[r]).getEntity());
+          
+          // loop over cols
+          for (int c=0;c<cols.length;c++) {
+            // add property for each cell
+            Property p = model.getPropertyAt(rows[r], cols[c]);
+            if (p!=null) result.addProperty(p);
+            // next selected col
+          }
+          
+          // next selected row
+        }
+      }
       
-      // fallback
-      Gedcom ged = model.getGedcom();
-      return ged!=null ? new Context(ged) : null;
+      // done
+      return result;
     }
   } //Content
 
@@ -434,16 +470,18 @@ public class PropertyTableWidget extends JPanel {
       // nothing to do?
       if (model==null)
         return null;
-      // try to find property already cached
+      // selected property?
       Property prop = getPropertyAt(row, col);
       if (prop!=null)
         return new Context(prop);
-      Property root = model.getProperty(row2row[row]);
       
-      // we're very specific here - we don't want to get a context back thrown
-      // at us that has property!=null if the user has selected an empty
-      // cell in our view - property==null!!!
-      return new Context(root.getGedcom(), root.getEntity(), null);
+      // selected row at least?
+      Property root = model.getProperty(row2row[row]);
+      if (root!=null)
+        return new Context(root.getEntity());
+
+      // fallback
+      return new Context(model.getGedcom());
     }
     
     /** property */
@@ -598,6 +636,13 @@ public class PropertyTableWidget extends JPanel {
       int swap = row2row[row1];
       row2row[row1] = row2row[row2];
       row2row[row2] = swap;
+    }
+    
+    /**
+     * get property by row
+     */
+    private Property getProperty(int row) {
+      return model.getProperty(row2row[row]);
     }
     
     /** 

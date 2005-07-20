@@ -185,8 +185,10 @@ public class ViewManager {
     }
     
     // fallback to first indi 
-    if (result==null)
-      result = new Context(gedcom, gedcom.getAnyEntity(Gedcom.INDI), null);
+    if (result==null) {
+      Entity e = gedcom.getAnyEntity(Gedcom.INDI);
+      result = e!=null ? new Context(e) : new Context(gedcom);
+    }
 
     // remember
     gedcom2context.put(gedcom, result);
@@ -205,9 +207,6 @@ public class ViewManager {
     fireContextSelected(context, false, provider);
   }
   public void fireContextSelected(Context context, boolean actionPerformed, ContextProvider provider) {
-    // valid?
-    if (!context.isValid())
-      return;
     
     // ignoring context?
     if (ignoreSetContext)
@@ -515,7 +514,7 @@ public class ViewManager {
   public JPopupMenu getContextMenu(Context context, JComponent target) {
     
     // make sure context is valid
-    if (context==null||!context.isValid())
+    if (context==null)
       return null;
     
     Property property = context.getProperty();
@@ -534,8 +533,19 @@ public class ViewManager {
   
     // find ActionSupport implementors
     ActionProvider[] as = (ActionProvider[])getInstances(ActionProvider.class, context.getGedcom());
+    
+    // items for set of entities?
+    Entity[] entities = context.getEntities();
+    if (entities.length>1) {
+      // a sub-menu with appropriate actions
+      mh.createMenu(entities.length+" "+Gedcom.getName(entities[0].getTag(), true), entities[0].getImage(false));
+      for (int i = 0; i < as.length; i++) 
+        mh.createItems(as[i].createActions(entities, this), true);
+      mh.popMenu();
+      
+    }
 
-    // items for property
+    // items for single property
     while (property!=null&&property!=entity) {
 
       // a sub-menu with appropriate actions
@@ -548,7 +558,7 @@ public class ViewManager {
       property = property.getParent();
     }
         
-    // items for entity
+    // items for single entity
     if (entity!=null) {
       String title = Gedcom.getName(entity.getTag(),false)+" '"+entity.getId()+'\'';
       mh.createMenu(title, entity.getImage(false));
@@ -647,7 +657,7 @@ public class ViewManager {
       JComponent jcomponent = (JComponent)component;
       
       // fake a normal click event so that popup trigger does a selection as well as non-popup trigger
-      if (me.getButton()!=MouseEvent.BUTTON1) {
+      if (!me.isControlDown() && me.getButton()!=MouseEvent.BUTTON1) {
         MouseListener[] ms = me.getComponent().getMouseListeners();
         MouseEvent fake = new MouseEvent(me.getComponent(), me.getID(), me.getWhen(), 0, me.getX(), me.getY(), me.getClickCount(), false, MouseEvent.BUTTON1);
         for (int m = 0; m < ms.length; m++)  {
@@ -660,6 +670,11 @@ public class ViewManager {
         }
       }
       
+      // we're interested in popup trigger and double-click 
+      boolean isDoubleClick = me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1;
+      if(!me.isPopupTrigger()&&!isDoubleClick)  
+        return;
+      
       // try to identify context
       final ContextProvider provider = getProvider(component);
       if (provider==null)
@@ -667,14 +682,15 @@ public class ViewManager {
       Context context = provider.getContext();
       if (context==null) 
         return;
-      
-      // not a popup menu?
+
+      // proceed with popup?
       if(!me.isPopupTrigger())  {
         
-        // double click on provider itself?
-        if (provider==me.getComponent()&&me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1) 
+        // at least double click on provider itself?
+        if (isDoubleClick&&provider==me.getComponent()) {
           fireContextSelected(context, true, provider);
-
+        }
+        
         return;
       }
       

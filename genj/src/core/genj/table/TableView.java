@@ -201,7 +201,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       return;
       
     // change selection
-    propertyTable.select(entity, context.getProperty());
+    propertyTable.handleContextSelectionEvent(event);
 
     // done
   }

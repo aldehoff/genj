@@ -153,7 +153,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       editor.setContext(old);
       
     // show
-    contextMenu.update();
     revalidate();
     repaint();
   }
@@ -333,9 +332,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     // tell to editors - they're lazy and won't change if not needed
     editor.setContext(context);
     
-    // update context menu button
-    contextMenu.update();
-    
     // done
     ignoreContextSelection = false;
   }
@@ -420,11 +416,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       setIcon(Gedcom.getImage());
     }
     
-    /** update */
-    private void update() {
-      setIcon(editor.getContext().getImage());
-    }
-    
     /** override - popup creation */
     protected JPopupMenu createPopup() {
       // force editor to commit
@@ -467,7 +458,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       // pop first valid on stack
       while (!stack.isEmpty()) {
         Context context = (Context)stack.pop();
-        if (context.isValid()&&context.getEntity()!=null) {
+        if (context.getEntity()!=null) {
           ignorePush = true;
           setContext(context, true);
           ignorePush = false;
