@@ -25,8 +25,10 @@ import genj.report.Report;
 public class ReportSameValues extends Report {
 
   /**
-   * We only accept instances of PropertyChoice and PropertyName
-   * 
+   * We only accept instances of PropertyChoice and PropertyName - since
+   * we're returning something more fancy than the report name this is overridden.
+   * Normally implementing a start method with a compatible one arg parameter
+   * is sufficient
    * @see genj.report.Report#accepts(java.lang.Object)
    */
   public String accepts(Object context) {
@@ -47,34 +49,6 @@ public class ReportSameValues extends Report {
   }
 
   /**
-   * @see genj.report.Report#getAuthor()
-   */
-  public String getAuthor() {
-    return "Nils Meier";
-  }
-
-  /**
-   * @see genj.report.Report#getInfo()
-   */
-  public String getInfo() {
-    return i18n("info");
-  }
-
-  /**
-   * @see genj.report.Report#getName()
-   */
-  public String getName() {
-    return i18n("name");
-  }
-
-  /**
-   * @see genj.report.Report#getVersion()
-   */
-  public String getVersion() {
-    return "0.1";
-  }
-  
-  /**
    * We don't use STDOUT
    * @see genj.report.Report#usesStandardOut()
    */
@@ -83,32 +57,26 @@ public class ReportSameValues extends Report {
   }
 
   /**
-   * @see genj.report.Report#start(java.lang.Object)
+   * Our entry point for choices
    */
-  public void start(Object context) {
-    
-    // get properties that have the same choice
-    Gedcom gedcom = null;
-    Property[] sameProps = null;
-    String val = null;
-    
-    if (context instanceof PropertyChoiceValue) {
-      PropertyChoiceValue prop = (PropertyChoiceValue)context;
-      val = prop.getValue();
-      sameProps = prop.getSameChoices();
-      gedcom = prop.getGedcom();
-    }
-    if (context instanceof PropertyName) {
-      PropertyName name = (PropertyName)context;
-      val = name.getLastName();
-      sameProps = name.getSameLastNames();
-      gedcom = name.getGedcom();
-    }
+  public void start(PropertyChoiceValue choice) {
+    start(choice.getGedcom(), choice.getPropertyName(), choice.getSameChoices(), choice.getDisplayValue());
+  }
+  
+  /**
+   * Our entry point for names
+   */
+  public void start(PropertyName name) {
+    start(name.getGedcom(), name.getPropertyName(), name.getSameLastNames(), name.getLastName());
+  }
+  
+  /**
+   * our main logic
+   */
+  public void start(Gedcom gedcom, String propName, Property[] sameProps, String val) {
 
     if (val==null||val.length()==0)
       return;
-    
-    String name = ((Property)context).getPropertyName();
     
     // collect parents of sameProps
     PropertyList items = new PropertyList(gedcom);
@@ -132,7 +100,7 @@ public class ReportSameValues extends Report {
     items.sort();
     
     // show 'em
-    showPropertiesToUser( i18n("xname",new String[]{ name, val}), items);
+    showPropertiesToUser( i18n("xname",new String[]{ propName, val}), items);
     
     // done
   }

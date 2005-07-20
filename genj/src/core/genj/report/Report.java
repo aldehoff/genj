@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.75 $ $Author: nmeier $ $Date: 2005-07-19 19:42:24 $
+ * $Revision: 1.76 $ $Author: nmeier $ $Date: 2005-07-20 22:06:15 $
  */
 package genj.report;
 
@@ -44,10 +44,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -119,6 +122,9 @@ public abstract class Report implements Cloneable {
   
   /** image */
   private ImageIcon image;
+  
+  /** our accepted types */
+  private Map inputType2startMethod = new HashMap();
 
   /**
    * Constructor
@@ -127,6 +133,7 @@ public abstract class Report implements Cloneable {
     
     // prepare default image
     image = usesStandardOut() ? IMG_SHELL : IMG_GUI;
+    
     // try to load a custom one too
     try {
       String file = getTypeName()+".gif";
@@ -134,6 +141,19 @@ public abstract class Report implements Cloneable {
       if (in!=null)
         image = new genj.util.swing.ImageIcon(file, in);
     } catch (Throwable t) {
+    }
+    
+    // check for what this report accepts
+    Method[] methods = getClass().getDeclaredMethods();
+    for (int m = 0; m < methods.length; m++) {
+      // needs to be named start
+      if (!methods[m].getName().equals("start")) continue;
+      // make sure its a one-arg
+      Class[] params = methods[m].getParameterTypes();
+      if (params.length!=1) continue;
+      // keep it
+      inputType2startMethod.put(params[0], methods[m]);
+      // next
     }
     
     // done
@@ -712,12 +732,25 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Called by GenJ to start this report's execution - has to be
-   * overriden by a user defined report.
+   * Called by GenJ to start this report's execution - can be overriden by a user defined report.
    * @param context normally an instance of type Gedcom but depending on 
    *    accepts() could also be of type Entity or Property
    */
-  public abstract void start(Object context);
+  public void start(Object context) {
+    try {
+      Class contextType = context.getClass();
+      Method method = null;
+      while (contextType!=null) {
+         method = (Method)inputType2startMethod.get(contextType);
+         if (method!=null) break;
+         contextType = contextType.getSuperclass();
+      }
+      method.invoke(this, new Object[]{ context });
+    } catch (Throwable t) {
+      if (t instanceof RuntimeException) throw (RuntimeException)t;
+      throw new RuntimeException("can't run report on input", t);
+    }
+  }
 
   /**
    * Tells wether this report doesn't change information in the Gedcom-file
@@ -735,13 +768,18 @@ public abstract class Report implements Cloneable {
 
   /**
    * Whether the report allows to be run on a given context - default
-   * only accepts Gedcom but sub-class can override to provide custom
-   * criteria.
-   * @param context will an instance of either Gedcom, Entity or Property
-   * @return null for no - string specific to context for yes
+   * checks for methods called 
+   * <il>
+   *  <li>start(Gedcom|Object)
+   *  <li>start(Property)
+   *  <li>start(Entity)
+   *  <li>start(Indi[])
+   *  <li>...
+   * </il>
+   * @return title of action for given context or null for n/a
    */
   public String accepts(Object context) {
-    return context instanceof Gedcom ? getName() :  null;
+    return inputType2startMethod.containsKey(context.getClass()) ? getName() : null;
   }
   
 } //Report
