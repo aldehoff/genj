@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -300,6 +301,12 @@ public class PropertyTableWidget extends JPanel {
       
       getColumnModel().getSelectionModel().addListSelectionListener(this);
       getSelectionModel().addListSelectionListener(this);
+      
+      // 20050721 we want the same focus forward/backwards keys as everyone else
+      setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+      setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+
+      // done
     }
     
     /** 
