@@ -236,8 +236,13 @@ public abstract class AbstractWindowManager implements WindowManager {
    */
   protected JOptionPane assembleDialogContent(int messageType, JComponent content, Object[] actions) {
 
+    // wrap content in a JPanel - the OptionPaneUI has some code that
+    // depends on this to stretch it :(
+    JPanel wrapper = new JPanel(new BorderLayout());
+    wrapper.add(BorderLayout.CENTER, content);
+    
     // create the glorious option pane
-    JOptionPane pane  = new JOptionPane(content, messageType, JOptionPane.DEFAULT_OPTION, null, actions);
+    JOptionPane pane  = new JOptionPane(wrapper, messageType, JOptionPane.DEFAULT_OPTION, null, actions);
     if (actions!=null&&actions.length>0) 
       pane.setInitialValue(actions[0]);
     
