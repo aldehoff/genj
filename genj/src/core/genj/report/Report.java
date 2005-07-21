@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.76 $ $Author: nmeier $ $Date: 2005-07-20 22:06:15 $
+ * $Revision: 1.77 $ $Author: nmeier $ $Date: 2005-07-21 17:30:04 $
  */
 package genj.report;
 
@@ -779,7 +779,13 @@ public abstract class Report implements Cloneable {
    * @return title of action for given context or null for n/a
    */
   public String accepts(Object context) {
-    return inputType2startMethod.containsKey(context.getClass()) ? getName() : null;
+    Class contextType = context.getClass();
+    while (contextType!=null) {
+      if (inputType2startMethod.containsKey(contextType)) return getName();
+      contextType = contextType.getSuperclass();
+    }
+    // not applicable
+    return null;
   }
   
 } //Report
