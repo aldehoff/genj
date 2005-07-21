@@ -28,16 +28,6 @@ import javax.swing.ImageIcon;
 public class ReportSummaryOfRecords extends Report {
   
   /**
-   * We accept a gedcom file as argument 
-   */
-  public String accepts(Object context) {
-    if (!(context instanceof Gedcom))
-      return null;
-    Gedcom ged = (Gedcom)context;
-    return i18n("title", ged.getName());
-  }
-  
-  /**
    * Overriden image - we're using the provided FO image 
    */
   protected ImageIcon getImage() {
@@ -56,10 +46,7 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * The report's entry point
    */
-  public void start(Object context) {
-    
-    // assuming Gedcom
-    Gedcom gedcom = (Gedcom)context;
+  public void start(Gedcom gedcom) {
     
     // create a document
     Document doc = new Document(i18n("title", gedcom.getName()));

@@ -63,10 +63,7 @@ public class ReportPlaceHistory extends Report {
   /**
    * Report's main
    */
-  public void start(Object context) {
-    
-    // assuming Gedcom
-    Gedcom gedcom = (Gedcom)context;
+  public void start(Gedcom gedcom) {
     
     // check for place format / jurisdiction to look at
     int jurisdiction = 0;

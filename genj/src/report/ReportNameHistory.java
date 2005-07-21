@@ -66,11 +66,8 @@ public class ReportNameHistory extends Report {
   /**
    * Main
    */
-  public void start(Object context) {
+  public void start(Gedcom gedcom) {
     
-    
-    // assuming gedcom
-    Gedcom gedcom = (Gedcom)context;
     Collection indis = gedcom.getEntities(Gedcom.INDI);
     
     // determine range

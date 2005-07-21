@@ -6,7 +6,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 
@@ -16,37 +15,10 @@ import genj.report.Report;
 public class ReportAncestors extends Report {
     
     /**
-     * @see genj.report.Report#accepts(java.lang.Object)
+     * Main for argument individual
      */
-    public String accepts(Object context) {
-        // we accepts Gedom AND Individuals
-        return context instanceof Indi || context instanceof Gedcom ? getName() : null;
-    }
-    
-    /**
-     * Entry point into this report - by default reports are only run on a
-     * context of type Gedcom but since we've overriden accepts we're
-     * ready for Gedcom AND Indi
-     */
-    public void start(Object context) {
-        
-        // need Indi from context
-        Indi indi;
-        if (context instanceof Indi) {
-            
-            // either already there
-            indi = (Indi)context;
-            
-        } else {
-            
-            // otherwise assume gedcom and let user choose one
-            Gedcom gedcom = (Gedcom)context;
-            indi = (Indi)getEntityFromUser(i18n("ancestors.of"), gedcom, Gedcom.INDI);
-            if (indi==null)
-                return;
-            
-        }
-        
+    public void start(Indi indi) {
+      
         // Display the descendants
         parent(indi,1);
         

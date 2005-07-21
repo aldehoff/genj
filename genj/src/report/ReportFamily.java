@@ -25,66 +25,24 @@ public class ReportFamily extends Report {
     public boolean reportOtherSpouses = true;
     public boolean reportDetailedChildrenData = true;
     
-    /** this report's version */
-    public static final String VERSION = "1.02";
-    
-    public String getVersion() {
-        return VERSION;
+    /**
+     * Main for argument Gedcom
+     */
+    public void start(Gedcom gedcom) {
+      Entity[] fams = gedcom.getEntities(Gedcom.FAM,"");
+      for(int i=0; i<fams.length; i++) {
+          analyzeFam((Fam)fams[i]);
+          println();
+          println("=====");
+          println();
+      }
     }
     
     /**
-     * Author
+     * Main for argument Family
      */
-    public String getAuthor() {
-        return "Carsten M\u00FCssig <carsten.muessig@gmx.net>";
-    }
-    
-    /** Returns the name of this report - should be localized.
-     */
-    public String getName() {
-        return i18n("name");
-    }
-    
-    /**
-     * Some information about this report
-     * @return Information as String
-     */
-    public String getInfo() {
-        return i18n("info");
-    }
-    
-    /**
-     * @see genj.report.Report#accepts(java.lang.Object)
-     */
-    public String accepts(Object context) {
-        // we accept GEDCOM or families
-        return context instanceof Fam || context instanceof Gedcom ? getName() : null;
-    }
-    
-    /**
-     * This method actually starts this report
-     */
-    public void start(Object context) {
-        
-        Entity[] fams;
-        Fam fam;
-        
-        // If we were passed a family to start at, use that
-        if (context instanceof Fam) {
-            fam = (Fam) context;
-            analyzeFam(fam);
-        } else {
-            // Otherwise, ask the user select the root of the tree for analysis
-            Gedcom gedcom = (Gedcom) context;
-            fams = gedcom.getEntities(Gedcom.FAM,"");
-            for(int i=0; i<fams.length; i++) {
-                analyzeFam((Fam)fams[i]);
-                println();
-                println("=====");
-                println();
-            }
-        }
-        // Done
+    public void start(Fam fam) {
+      analyzeFam(fam);
     }
     
     private String trim(Object o) {

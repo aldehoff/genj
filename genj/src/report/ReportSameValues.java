@@ -60,20 +60,20 @@ public class ReportSameValues extends Report {
    * Our entry point for choices
    */
   public void start(PropertyChoiceValue choice) {
-    start(choice.getGedcom(), choice.getPropertyName(), choice.getSameChoices(), choice.getDisplayValue());
+    find(choice.getGedcom(), choice.getPropertyName(), choice.getSameChoices(), choice.getDisplayValue());
   }
   
   /**
    * Our entry point for names
    */
   public void start(PropertyName name) {
-    start(name.getGedcom(), name.getPropertyName(), name.getSameLastNames(), name.getLastName());
+    find(name.getGedcom(), name.getPropertyName(), name.getSameLastNames(), name.getLastName());
   }
   
   /**
    * our main logic
    */
-  public void start(Gedcom gedcom, String propName, Property[] sameProps, String val) {
+  private void find(Gedcom gedcom, String propName, Property[] sameProps, String val) {
 
     if (val==null||val.length()==0)
       return;

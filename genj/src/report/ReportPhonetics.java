@@ -86,29 +86,30 @@ public class ReportPhonetics extends Report {
     }
     
     /**
-     * This method actually starts this report
+     * Main for argument Gedcom
      */
-    public void start(Object context) {
+    public void start(Gedcom gedcom) {
+      Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
+      printPhonetic(gedcom, indis);
+    }
+    
+    /**
+     * Main for argument Individual
+     */
+    public void start(Indi indi) {
         
-        if (context instanceof Indi) {
-            Indi indi = (Indi) context;
-            String selection = (String) getValueFromUser(i18n("select"), outputFormats, null);
-            if (selection == null)
-                return;
-            else {
-                for (int i = 0; i < outputFormats.length; i++) {
-                    if (selection.equals(outputFormats[i])) {
-                        outputFormat = i;
-                        break;
-                    }
-                }
-            }
-            printPhonetic(indi);
-        } else {
-            Gedcom gedcom = (Gedcom) context;
-            Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
-            printPhonetic(gedcom, indis);
-        }
+          String selection = (String) getValueFromUser(i18n("select"), outputFormats, null);
+          if (selection == null)
+              return;
+          else {
+              for (int i = 0; i < outputFormats.length; i++) {
+                  if (selection.equals(outputFormats[i])) {
+                      outputFormat = i;
+                      break;
+                  }
+              }
+          }
+          printPhonetic(indi);
     }
     
     private void printPhonetic(Gedcom gedcom, Entity[] indis) {

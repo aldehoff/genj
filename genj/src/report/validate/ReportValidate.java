@@ -86,50 +86,52 @@ public class ReportValidate extends Report {
   }
   
   /**
-   * @see genj.report.Report#accepts(java.lang.Object)
+   * Start for argument entity
    */
-  public String accepts(Object context) {
-    if (context instanceof Gedcom || context instanceof Entity)
-      return getName();
-    return null;
+  public void start(Entity entity) {
+    
+    List tests = createTests();
+    Gedcom gedcom = entity.getGedcom();
+    PropertyList issues = new PropertyList(gedcom);    
+    TagPath path = new TagPath(entity.getTag());
+    test(entity, path, Grammar.getMeta(path), tests, issues);
+      
+    // show results
+    results(issues);
   }
-
+  
   /**
-   * @see genj.report.Report#start(java.lang.Object)
+   * Start for argument gedcom
    */
-  public void start(Object context) {
+  public void start(Gedcom gedcom) {
 
     // prepare tests
     List tests = createTests();
     PropertyList issues;
     
-    // Entity to check?
-    Gedcom gedcom;
-    if (context instanceof Entity) {
-      Entity e = (Entity)context;
-      gedcom = e.getGedcom();
-      issues = new PropertyList(gedcom);
-      TagPath path = new TagPath(e.getTag());
-      test(e, path, Grammar.getMeta(path), tests, issues);
-    } else {
-      
-      // assuming Gedcom
-      gedcom = (Gedcom)context;
-      issues = new PropertyList(gedcom);
-      
-      // test if there's a submitter
-      if (gedcom.getSubmitter()==null)
-        issues.add(i18n("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null);
-  
-      // Loop through entities and test 'em
-      for (int t=0;t<Gedcom.ENTITIES.length;t++) {
-        for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
-          Entity e = (Entity)es.next();
-          TagPath path = new TagPath(e.getTag());
-          test(e, path, Grammar.getMeta(path), tests, issues);
-        }
+    issues = new PropertyList(gedcom);
+    
+    // test if there's a submitter
+    if (gedcom.getSubmitter()==null)
+      issues.add(i18n("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null);
+
+    // Loop through entities and test 'em
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
+        Entity e = (Entity)es.next();
+        TagPath path = new TagPath(e.getTag());
+        test(e, path, Grammar.getMeta(path), tests, issues);
       }
     }
+    
+    // show results
+    results(issues);
+  }
+  
+  /**
+   * show validation results
+   */
+  private void results(PropertyList issues) {
     
     // any fixes proposed at all?
     if (issues.size()==0) {

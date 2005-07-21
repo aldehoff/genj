@@ -94,19 +94,10 @@ public class ReportRelatives extends Report {
   }
 
   /**
-   * Run this on an individual only
-   */
-  public String accepts(Object context) {
-    return context instanceof Indi ? getName(): null;
-  }
-
-  /**
    * Reports main
    */
-  public void start(Object context) {
+  public void start(Indi indi) {
 
-    // Assume Individual
-    Indi indi = (Indi)context;
     Gedcom gedcom = indi.getGedcom();
     String title = i18n("title", indi);
     

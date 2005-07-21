@@ -81,26 +81,13 @@ public class ReportEvents extends Report {
     private final static String TXT_MARR_SYMBOL = genj.gedcom.Options.getInstance().getTxtMarriageSymbol();
 
     /**
-     * @see genj.report.Report#accepts(java.lang.Object)
+     * Main for argument Gedcom
      */
-    public String accepts(Object context) {
-        // we accept only GEDCOM
-        return context instanceof Gedcom ? getName() : null;
-    }
-    
-    /**
-     * Entry point into this report - by default reports are only run on a
-     * context of type Gedcom. Depending on the logic in accepts either
-     * an instance of Gedcom, Entity or Property can be passed in though.
-     */
-    public void start(Object context) {
+    public void start(Gedcom gedcom) {
         
         // check that something is selected
         if ((!reportBirth) && (!reportBaptism) && (!reportDeath) && (!reportMarriage) && (!reportDivorce) && (!reportEmigration) && (!reportImmigration) && (!reportNaturalization))
             return;
-        
-        // assuming Gedcom
-        Gedcom gedcom = (Gedcom) context;
         
         // collect all individuals/families per event
         ArrayList

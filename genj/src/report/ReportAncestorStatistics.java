@@ -19,7 +19,6 @@
  */
 
 import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 
@@ -79,33 +78,10 @@ public class ReportAncestorStatistics extends Report {
     }
     
     /**
-     * @see genj.report.Report#accepts(java.lang.Object)
+     * Main for individual
      */
-    public String accepts(Object context) {
-        // we accept GEDCOM or Individuals
-        return context instanceof Indi || context instanceof Gedcom ? getName() : null;
-    }
-    
-    /**
-     * This method actually starts this report.
-     * @param context   Gedcom or Indi object.
-     */
-    public void start(Object context) {
-        Indi indi;
-        
-        // The script is started with a right click on an individual with the contextual submenu
-        if (context instanceof Indi) {
-            indi = (Indi) context;
-        }
-        else {
-            // No one has been given, we ask the user to select someone in the tree for analysis
-            Gedcom gedcom = (Gedcom) context;
-            indi = (Indi) getEntityFromUser(i18n("select_individual"), gedcom, Gedcom.INDI);
-        }
-        
-        if (indi == null)
-            return;
-        
+    public void start(Indi indi) {
+      
         // Initialize statistics if the report is executed several times
         clearStats();
         

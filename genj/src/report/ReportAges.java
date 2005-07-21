@@ -43,21 +43,6 @@ public class ReportAges extends Report {
         return VERSION;
     }
     
-    /**
-     * Author
-     */
-    public String getAuthor() {
-        return "Daniel P. Kionka, Carsten M\u00FCssig <carsten.muessig@gmx.net>";
-    }
-    
-    /**
-     * @see genj.report.Report#accepts(java.lang.Object)
-     */
-    public String accepts(Object context) {
-        // we accept GEDCOM or Individuals
-        return context instanceof Indi || context instanceof Gedcom ? getName() : null;
-    }
-    
     private String familyToString(Fam f) {
         Indi husband = f.getHusband(), wife = f.getWife();
         String str = "@"+f.getId()+"@ ";
@@ -71,23 +56,10 @@ public class ReportAges extends Report {
     }
     
     /**
-     * This method actually starts this report
+     * Main for argument Indi
      */
-    public void start(Object context) {
-        Indi indi;
-        
-        // If we were passed a person to start at, use that
-        if (context instanceof Indi) {
-            indi = (Indi) context;
-        } else {
-            // Otherwise, ask the user select the root of the tree for analysis
-            Gedcom gedcom = (Gedcom) context;
-            indi = (Indi) getEntityFromUser(i18n("select"), gedcom, Gedcom.INDI);
-        }
-        
-        if (indi == null)
-            return;
-        
+    public void start(Indi indi) {
+      
         // Display the ages
         analyzeIndi(indi);
         

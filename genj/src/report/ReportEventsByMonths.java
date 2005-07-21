@@ -64,10 +64,7 @@ public class ReportEventsByMonths extends Report {
   /**
    * Report's main
    */
-  public void start(Object context) {
-    
-    // cast to what we expect
-    Gedcom gedcom = (Gedcom)context;
+  public void start(Gedcom gedcom) {
     
     // look for events we consider
     IndexedSeries[] series = {

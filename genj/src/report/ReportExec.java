@@ -5,6 +5,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Gedcom;
 import genj.report.Report;
 
 import java.io.BufferedReader;
@@ -47,9 +48,9 @@ public class ReportExec extends Report {
   }
 
   /**
-   * @see genj.report.Report#start(java.lang.Object)
+   * Main method
    */
-  public void start(Object context) {
+  public void start(Gedcom gedcom) {
     
     // get the name of the executable
     String cmd = getValueFromUser( "executables", i18n("WhichExecutable"), new String[0]);

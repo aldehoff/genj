@@ -84,8 +84,7 @@ public class ReportTrees extends Report {
     /**
      * This method actually starts this report
      */
-    public void start(Object context) {
-        Gedcom gedcom = (Gedcom)context;
+    public void start(Gedcom gedcom) {
         
         // Get a list of the individuals and create a stati
         Entity[] indis = gedcom.getEntities(Gedcom.INDI, "INDI:NAME");

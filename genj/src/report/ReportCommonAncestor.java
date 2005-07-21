@@ -24,21 +24,10 @@ public class ReportCommonAncestor extends Report {
   }
   
   /**
-   * we operate on individuals
-   */
-  public String accepts(Object context) {
-    return context instanceof Indi ? getName() : null;
-  }
-
-  /**
    * our main method
    */
-  public void start(Object context) {
+  public void start(Indi indi) {
     
-    // assuming it's an individual
-    Indi indi  = (Indi)context;
-    
-    // ask for the other
     Indi other = (Indi)getEntityFromUser(i18n("select"), indi.getGedcom(), Gedcom.INDI);
     if (other==null)
       return;

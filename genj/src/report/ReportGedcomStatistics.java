@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.67 2005-06-07 20:19:48 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.68 2005-07-21 17:31:45 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -214,46 +214,11 @@ public class ReportGedcomStatistics extends Report {
     private static final int NATURALIZATION = 12;
     private static final int DEATH = 13;
     
-    /** this report's version */
-    public static final String VERSION = "2.31";
-    
-    /** Returns the version of the report
-     */
-    public String getVersion() {
-        return VERSION;
-    }
-    
-    /** Returns the name of this report - should be localized.
-     */
-    public String getName() {
-        return i18n("name");
-    }
-    
-    /**
-     * Some information about this report
-     * @return Information as String
-     */
-    public String getInfo() {
-        return i18n("info");
-    }
-    
-    /**
-     * Author
-     */
-    public String getAuthor() {
-        return "Francois Massonneau <fmas@celtes.com>, Carsten M\u00FCssig <carsten.muessig@gmx.net>";
-    }
-    
-    public String accepts(Object context) {
-        if (context instanceof Gedcom)
-            return getName();
-        return null;
-    }
-    
     /**
      * This method actually starts this report
      */
-    public void start(Object context) {
+    public void start(Gedcom gedcom) {
+      
         // stop report when no output categories choosen
         if((analyzeIndividuals==false)&&(analyzeLastNames==false)&&
         (analyzeOccupations==false)&&(analyzeFamilies==false)&&
@@ -262,8 +227,6 @@ public class ReportGedcomStatistics extends Report {
         (analyzeImmigrationPlaces==false)&&(analyzeNaturalizationPlaces==false)&&
         (analyzeDeathPlaces==false))
             return;
-        
-        Gedcom gedcom = (Gedcom)context;
         
         // what to analyze
         Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");

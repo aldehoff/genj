@@ -50,10 +50,7 @@ public class ReportDemography extends Report {
   /**
    * main
    */
-  public void start(Object context) {
-    
-    // assume gedcom
-    Gedcom gedcom = (Gedcom)context;
+  public void start(Gedcom gedcom) {
     
     // gather data - we're using two series, one for males the other
     // for females. 

@@ -31,7 +31,6 @@
  * 1234567890123456789012345678901
  */
 import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
@@ -44,20 +43,6 @@ import genj.report.Report;
 public class Report4Generations extends Report {
     
     public static final int BLOCK_WIDTH = 34;
-    
-    /**
-     * Starting point - on Gedcom file
-     */
-    public void start(Gedcom gedcom) {
-      
-      // Ask the user select the root of the tree for analysis
-      Indi indi = (Indi)getEntityFromUser(i18n("select"), gedcom, Gedcom.INDI);
-      if (indi==null) 
-        return;
-      
-      // continue
-      start(indi);
-    }
     
     /**
      * Starting point - on Individual

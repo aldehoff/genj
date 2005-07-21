@@ -499,11 +499,8 @@ public class ReportHTMLSheets extends Report {
   /**
    * The report's entry point
    */
-  public void start(Object context) {
+  public void start(Gedcom gedcom) {
     
-    // assuming Gedcom
-    Gedcom gedcom = (Gedcom)context;
-
     // Get a directory to write to
     File dir = getDirectoryFromUser(i18n("target.dir"), WindowManager.TXT_OK);
     if (dir==null)

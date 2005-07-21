@@ -140,40 +140,11 @@ public class ReportHTMLTable extends Report {
 	  /** the mapping between unicode and html */
 	  private static Hashtable unicode2html = initializeUnicodeSupport();
 	  
-	  /** this report's version */
-	  public static final String VERSION = "1.1";
-	  
 	  /* possible parameters for printEmiImmiNatu() in order
 	     to implement this methode generic */
 	  private static final int EMIG = 0;
 	  private static final int IMMI = 1;
 	  private static final int NATU = 2;
-	    
-	    /** Returns the version of the report
-	     */
-	    public String getVersion() {
-	        return VERSION;
-	    }
-	    
-	    // this report only works on the whole Gedcom file
-	    public String accepts(Object context) {
-	        if (context instanceof Gedcom)
-	            return getName();
-	        return null;
-	    }	    
-	    
-	    /**
-	     * Author
-	     */
-	    public String getAuthor() {
-	        return "Carsten M\u00FCssig <carsten.muessig@gmx.net>";
-	    }
-	    
-	    /** Returns the name of this report - should be localized.
-	     */
-	    public String getName() {
-	        return i18n("name");
-	    }
 	    
 	    /**
 	     * The result is stored in files
@@ -209,10 +180,7 @@ public class ReportHTMLTable extends Report {
 	  /**
 	   * The report's entry point
 	   */
-	  public void start(Object context) {
-	    
-	    // assuming Gedcom
-	    Gedcom gedcom = (Gedcom)context;
+	  public void start(Gedcom gedcom) {
 	    
 	    // the data to examine
         Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
