@@ -36,6 +36,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Rectangle2D;
@@ -48,6 +49,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 
 /**
  * A PrintDialog */
@@ -115,6 +118,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     
     // the actual preview
     preview = new Preview();
+    
     page.add("preview", new JScrollPane(preview));
     
     // done
@@ -138,7 +142,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
   /**
    * The preview
    */
-  private class Preview extends JComponent {
+  private class Preview extends JComponent implements Scrollable {
     
     private float 
       padd = 0.1F, // inch
@@ -200,6 +204,26 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
         }
       }
       // done
+    }
+
+    public boolean getScrollableTracksViewportHeight() {
+      return false;
+    }
+
+    public boolean getScrollableTracksViewportWidth() {
+      return false;
+    }
+
+    public Dimension getPreferredScrollableViewportSize() {
+      return new Dimension(0,0);
+    }
+
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+      return orientation==SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
+    }
+
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+      return 1;
     }
 
   } //Preview
