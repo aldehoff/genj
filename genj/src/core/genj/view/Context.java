@@ -76,8 +76,9 @@ public class Context {
     if (e.getGedcom()!=gedcom)
       throw new IllegalArgumentException("entity's gedcom can't be different");
     if (entityType!=null&&entityType!=e.getClass())
-      throw new IllegalArgumentException("can't mix and match entity types");
-    entityType = e.getClass();
+      entityType = Entity.class;
+    else 
+      entityType = e.getClass();
     entities.add(e);
   }
   
@@ -85,8 +86,10 @@ public class Context {
    * Add an property
    */
   public void addProperty(Property p) {
-    if (p.getGedcom()!=gedcom)
-      throw new IllegalArgumentException("entity's gedcom can't be different");
+    if (p instanceof Entity) {
+      addEntity((Entity)p);
+      return;
+    }
     properties.add(p);
     addEntity(p.getEntity());
   }
@@ -153,7 +156,7 @@ public class Context {
    */
   public Property getProperty() {
     // only for a singleton context
-    if (properties.size()!=1)
+    if (properties.size()!=1||entities.size()!=1)
       return null;
     // check prop valid
     Property p = (Property)properties.iterator().next();

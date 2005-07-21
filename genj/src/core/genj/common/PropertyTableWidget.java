@@ -72,6 +72,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 /**
  * A widget that shows entities in rows and columns
@@ -313,7 +314,10 @@ public class PropertyTableWidget extends JPanel {
       if (!e.getValueIsAdjusting()) {
         int row = getSelectedRow();
         int col = getSelectedColumn();
-        if (row>=0&&col>=0) 
+        // 20050721 check arguments - Swing might not always send something
+        // smart here
+        TableModel model = getModel();
+        if (row>=0&&row<model.getRowCount()&&col>=0&&col<model.getColumnCount()) 
           viewManager.fireContextSelected(((Model)getModel()).getContextAt(row, col), this);
       }
       
@@ -342,16 +346,21 @@ public class PropertyTableWidget extends JPanel {
         // loop over rows
         for (int r=0;r<rows.length;r++) {
           
-          // add entity for each row
-          result.addEntity(model.getProperty(rows[r]).getEntity());
-          
           // loop over cols
+          boolean rowRepresented = false;
           for (int c=0;c<cols.length;c++) {
             // add property for each cell
             Property p = model.getPropertyAt(rows[r], cols[c]);
-            if (p!=null) result.addProperty(p);
+            if (p!=null) {
+              result.addProperty(p);
+              rowRepresented = true;
+            }
             // next selected col
           }
+          
+          // add representation for each row that wasn't represented by a property
+          if (!rowRepresented)
+            result.addProperty(model.getProperty(rows[r]));
           
           // next selected row
         }

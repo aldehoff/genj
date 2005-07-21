@@ -534,9 +534,9 @@ public class ViewManager {
     // find ActionSupport implementors
     ActionProvider[] as = (ActionProvider[])getInstances(ActionProvider.class, context.getGedcom());
     
-    // items for set of entities?
+    // items for set of entities? more specific than Entity.class for the moment!
     Entity[] entities = context.getEntities();
-    if (entities.length>1) {
+    if (entities.length>1 && entities.getClass().getComponentType()!=Entity.class) {
       // a sub-menu with appropriate actions
       mh.createMenu(entities.length+" "+Gedcom.getName(entities[0].getTag(), true), entities[0].getImage(false));
       for (int i = 0; i < as.length; i++) 
@@ -546,7 +546,7 @@ public class ViewManager {
     }
 
     // items for single property
-    while (property!=null&&property!=entity) {
+    while (property!=null&&!(property instanceof Entity)) {
 
       // a sub-menu with appropriate actions
       mh.createMenu(Property.LABEL+" '"+TagPath.get(property).getName() + '\'' , property.getImage(false));
