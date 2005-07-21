@@ -88,7 +88,7 @@ public class Context {
     if (p.getGedcom()!=gedcom)
       throw new IllegalArgumentException("entity's gedcom can't be different");
     properties.add(p);
-    entities.add(p.getEntity());
+    addEntity(p.getEntity());
   }
   
   /**
