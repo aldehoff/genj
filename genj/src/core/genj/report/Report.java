@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.77 $ $Author: nmeier $ $Date: 2005-07-21 17:30:04 $
+ * $Revision: 1.78 $ $Author: nmeier $ $Date: 2005-07-22 04:19:06 $
  */
 package genj.report;
 
@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
@@ -747,6 +748,8 @@ public abstract class Report implements Cloneable {
       }
       method.invoke(this, new Object[]{ context });
     } catch (Throwable t) {
+      if (t instanceof InvocationTargetException)
+        t = ((InvocationTargetException)t).getTargetException();
       if (t instanceof RuntimeException) throw (RuntimeException)t;
       throw new RuntimeException("can't run report on input", t);
     }
