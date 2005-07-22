@@ -5,6 +5,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.fo.Document;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -46,7 +47,7 @@ public class ReportFlashList extends Report {
    * that is handled by the UI anyways
    */
   public boolean usesStandardOut() {
-    return true;
+    return false;
   }
 
   /**
@@ -69,32 +70,41 @@ public class ReportFlashList extends Report {
   private void start(Gedcom gedcom, Collection indis) {
 
     // prepare our index
-    Index primary = new Index();
+    Map primary = new TreeMap();
 
     for (Iterator it = indis.iterator(); it.hasNext();) 
       analyze(  (Indi) it.next(), primary);
     
     // write it out
-    for (Iterator ps = primary.keys(); ps.hasNext(); ) {
+    Document doc = new Document(getName());
+    doc.setTOC(false);
+    
+    for (Iterator ps = primary.keySet().iterator(); ps.hasNext(); ) {
       String p = (String)ps.next();
-      Index secondary = (Index)primary.get(p, null);
-      for (Iterator ss = secondary.keys(); ss.hasNext(); ) {
-        String s = (String)ss.next();
-        Range range = (Range)secondary.get(s, null);
+
+      doc.addSection(p);
+      
+      Map secondary = (Map)lookup(primary, p, null);
+      for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {
         
-        println( p + " " + s + " " + range);
+        String s = (String)ss.next();
+        Range range = (Range)lookup(secondary, s, null);
+        
+        doc.addParagraph();
+        doc.addText(s + " " + range);
       }
+      
+      doc.endSection();
     }
     
-    println("*** Under Construction - this isn't done yet ***");
-      
     // done
+    showDocumentToUser(doc);
   }
   
   /**
    * Analyze an individual
    */
-  private void analyze(Indi indi, Index primary) {
+  private void analyze(Indi indi, Map primary) {
     
     // consider non-empty last names only
     String name = indi.getLastName();
@@ -124,7 +134,7 @@ public class ReportFlashList extends Report {
   /**
    * Analyze all cities for given indi, start, end & property
    */
-  private void analyzeCities(String name, int start, int end, Property prop, Index primary) {
+  private void analyzeCities(String name, int start, int end, Property prop, Map primary) {
     Property[] cities = prop.getProperties(CITY);
     for (int c = 0; c < cities.length; c++) {
       // consider non-empty cities only
@@ -140,7 +150,7 @@ public class ReportFlashList extends Report {
   /**
    * Analyze all places for given indi, start, end & property
    */
-  private void analyzePlaces(String name, int start, int end, Property prop, Index primary) {
+  private void analyzePlaces(String name, int start, int end, Property prop, Map primary) {
     // loop over places
     for (Iterator places = prop.getProperties(PropertyPlace.class).iterator(); places.hasNext(); ) {
       // consider non-empty places only
@@ -154,7 +164,7 @@ public class ReportFlashList extends Report {
     // done
   }
   
-  private void keep(String name, int start, int end, String place, Index primary) {
+  private void keep(String name, int start, int end, String place, Map primary) {
     
     // calculate primary and secondary key
     String pk, ss;
@@ -166,40 +176,35 @@ public class ReportFlashList extends Report {
       ss = name;
     }
     // remember
-    Index secondary = (Index)primary.get(pk, Index.class);
-    Range range = (Range)secondary.get(ss, Range.class);
+    Map secondary = (Map)lookup(primary, pk, TreeMap.class);
+    Range range = (Range)lookup(secondary, ss, Range.class);
     range.add(start, end);
     // done
   }
   
   /**
-   * our index
+   * Lookup an object in a map with a default class
    */
-  private static class Index {
-    Map key2value = new TreeMap();
-    
-    Object get(String key, Class fallback) {
-      Object result = key2value.get(key);
-      if (result==null) {
-        try {
-          result = fallback.newInstance();
-        } catch (Throwable t) {
-          // can't happen
-        }
-        key2value.put(key, result);
+  private Object lookup(Map index, String key, Class fallback) {
+    // look up and create lazily if necessary
+    Object result = index.get(key);
+    if (result==null) {
+      try {
+        result = fallback.newInstance();
+      } catch (Throwable t) {
+        t.printStackTrace();
+        throw new IllegalArgumentException("can't instantiate fallback "+fallback);
       }
-      return result;
+      index.put(key, result);
     }
-    
-    Iterator keys() {
-      return key2value.keySet().iterator();
-    }
+    // done
+    return result;
   }
-
+  
   /**
    * our ranges
    */
-  private static class Range {
+  static class Range {
     int firstYear = Integer.MAX_VALUE, lastYear = -Integer.MAX_VALUE;
     
     void add(int start, int end) {
