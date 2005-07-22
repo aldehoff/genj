@@ -210,7 +210,7 @@ import javax.swing.event.TreeSelectionListener;
     // already there?
     if (context.getGedcom()==gedcom 
       && context.getEntity()==tree.getRoot()
-		  && context.getProperty()==tree.getSelection())
+		  && (context.getProperty()==null||context.getProperty()==tree.getSelection()))
       return;
 
     // clear current selection
