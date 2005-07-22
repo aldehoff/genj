@@ -49,6 +49,10 @@ public class HTMLFormatter extends Formatter {
     
     // set : select indexterms based on type attribute value
     transformer.setParameter("index.on.type", "1");
+    
+    // set: generate.toc
+    if (!doc.isTOC())
+      transformer.setParameter("generate.toc", "'article nop'");
 
     // do the transformation
     transformer.transform(doc.getDOMSource(), new StreamResult(out));

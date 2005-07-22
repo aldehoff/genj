@@ -67,6 +67,7 @@ public class Document {
   private Set anchorNodes = new HashSet();
   private Map unresolvedID2textNodes = new HashMap();
   private Map file2imageNodes = new HashMap();
+  private boolean isTOC = true;
   
   /**
    * Constructor
@@ -469,6 +470,19 @@ public class Document {
       throw new IOException(e.getMessage());
     }
   }
-
+  
+  /**
+   * Accessor - whether a TOC is included
+   */
+  public boolean isTOC() {
+    return isTOC;
+  }
+  
+  /**
+   * Accessor - whether a TOC is included
+   */
+  public void setTOC(boolean set) {
+    isTOC = set;
+  }
   
 }

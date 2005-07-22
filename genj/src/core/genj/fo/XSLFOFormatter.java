@@ -76,6 +76,10 @@ public class XSLFOFormatter extends Formatter {
     transformer.setParameter("paper.type", "A4");
     transformer.setParameter("page.orientation", "portrait");
     
+    // set: generate.toc
+    if (!doc.isTOC())
+      transformer.setParameter("generate.toc", "'/article nop'");
+
     // what about margins?
     //page.margin.bottom
     //page.margin.inner
