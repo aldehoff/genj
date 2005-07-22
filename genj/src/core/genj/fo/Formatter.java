@@ -107,27 +107,32 @@ public abstract class Formatter {
    */
   private void externalizeFiles(Document doc, File file) throws IOException {
     
-    // grab image directory
-    File imageDir = new File(file.getParentFile(), file.getName()+".images");
-    imageDir.mkdirs();
+    // got any image references in document?
+    File[] images = doc.getImageFiles();
+    if (images.length>0) {
+      
+      // grab image directory
+      File imageDir = new File(file.getParentFile(), file.getName()+".images");
+      imageDir.mkdirs();
     
-    // copy all images so their local to the generated document
-    if (imageDir.exists()) {
-      File[] images = doc.getImageFiles();
-      for (int i = 0; i < images.length; i++) {
-        File oldFile = images[i];
-        File newFile = new File(imageDir, oldFile.getName());
-        FileChannel from = new FileInputStream(oldFile).getChannel();
-        FileChannel to = new FileOutputStream(newFile).getChannel();
-        from.transferTo(0, from.size(), to);
-        from.close();
-        to.close();      
-        doc.setImageFileRef(oldFile, imageDir.getName() + "/" + newFile.getName());
+      // copy all images so their local to the generated document
+      if (imageDir.exists()) {
+        for (int i = 0; i < images.length; i++) {
+          File oldFile = images[i];
+          File newFile = new File(imageDir, oldFile.getName());
+          FileChannel from = new FileInputStream(oldFile).getChannel();
+          FileChannel to = new FileOutputStream(newFile).getChannel();
+          from.transferTo(0, from.size(), to);
+          from.close();
+          to.close();      
+          doc.setImageFileRef(oldFile, imageDir.getName() + "/" + newFile.getName());
+        }
       }
+
+      // done
     }
     
     // done
-    
   }
   
   /**
