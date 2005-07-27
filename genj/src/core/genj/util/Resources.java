@@ -50,7 +50,7 @@ public class Resources {
   private static Map instances = new HashMap();
 
   /** the mapping key, resource  */
-  private HashMap key2resource = new HashMap();
+  private Map key2string;
 
   /** the package name this resource is for */
   private String pkg;
@@ -62,8 +62,11 @@ public class Resources {
    * Constructor for resources from explicit input stream
    */
   public Resources(InputStream in) {
+    
+    key2string = new HashMap();
+    
     try {
-      load(in);
+      load(in, key2string);
     } catch (IOException e) {
       // swallow
     }
@@ -123,56 +126,14 @@ public class Resources {
    * Constructor
    */
   private Resources(String pkg) {
-    
-    // init simple members
+    // remember
     this.pkg=pkg;
-
-    // try to find language
-    Locale locale = Locale.getDefault();
-
-    // loading english first (primary language)
-    try {
-      load(getClass().getResourceAsStream(calcFile(pkg, null, null)));
-    } catch (Throwable t) {
-    }
-    
-    // trying to load language specific next
-    try {
-      load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), null)));
-    } catch (Throwable t) {
-    }
-
-    // trying to load language and country specific next
-    try {
-      load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), locale.getCountry())));
-    } catch (Throwable t) {
-    }
-
-    // Done
   }
-  
-//  /**
-//   * Constructor
-//   */
-//  public Resources(Properties properties) {
-//    
-//    // no package
-//    pkg = "";
-//    
-//    // grab from properties
-//    Iterator it = properties.keySet().iterator();
-//    while (it.hasNext()) {
-//      Object key = it.next();
-//      key2resource.put(key, properties.get(key));
-//    }
-//    
-//    // done
-//  }
   
   /**
    * Loads key/value pairs from inputstream with unicode content
    */
-  private void load(InputStream in) throws IOException {
+  private static void load(InputStream in, Map out) throws IOException {
     try {
       BufferedReader lines = new BufferedReader(new InputStreamReader(in, "UTF-8"));
       // loop over all lines
@@ -194,7 +155,7 @@ public class Resources {
         // .. continuation or key=value
         if (last!=null&&(c=='+'||c=='&')) {
           key = last;
-          val = getString(key);
+          val = (String)out.get(key);
           if (c=='+') val += '\n';
           val += line.substring(1);
         } else {
@@ -204,13 +165,58 @@ public class Resources {
           val = line.substring(i+1).trim();
         }
         // remember
-        key2resource.put(key, val);
+        out.put(key, val);
         // next
         last = key;
       }
     } catch (UnsupportedEncodingException e) {
       throw new IOException(e.getMessage());
     }
+  }
+  
+  /**
+   * Lazy getter for resource map
+   */
+  private Map getKey2String() {
+    
+    // easy if already initialized
+    if (key2string!=null)
+      return key2string;
+    
+    synchronized (this) {
+      
+      // check again
+      if (key2string!=null)
+        return key2string;
+      
+      // load resources for current locale now
+      Locale locale = Locale.getDefault();
+      Map result = new HashMap();    
+
+      // loading english first (primary language)
+      try {
+        load(getClass().getResourceAsStream(calcFile(pkg, null, null)), result);
+      } catch (Throwable t) {
+      }
+      
+      // trying to load language specific next
+      try {
+        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), null)), result);
+      } catch (Throwable t) {
+      }
+  
+      // trying to load language and country specific next
+      try {
+        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), locale.getCountry())), result);
+      } catch (Throwable t) {
+      }
+
+      // remember
+      key2string = result;
+    }
+    
+    // done
+    return key2string;
   }
   
   /**
@@ -226,7 +232,7 @@ public class Resources {
    * @param notNull will return key if resource is not defined
    */
   public String getString(String key, boolean notNull) {
-    String result = (String)key2resource.get(key);
+    String result = (String)getKey2String().get(key);
     if (result==null&&notNull) result = key;
     return result;
   }
@@ -289,7 +295,7 @@ public class Resources {
    * Returns the available Keys
    */
   public Iterator getKeys() {
-    return key2resource.keySet().iterator();
+    return getKey2String().keySet().iterator();
   }
   
 } //Resources
