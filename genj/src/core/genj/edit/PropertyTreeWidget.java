@@ -29,7 +29,6 @@ import genj.gedcom.PropertyChange;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.PropertyTransferable;
-import genj.util.WordBuffer;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.view.Context;
@@ -658,10 +657,12 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       
     private String calcText(Property prop) {
 
-      WordBuffer result = new WordBuffer();
+      StringBuffer result = new StringBuffer();
       
-      if (!prop.isTransient())
+      if (!prop.isTransient()) {
         result.append(prop.getTag());
+        result.append(' ');
+      }
 
       // private?
       if (prop.isSecret()) {
