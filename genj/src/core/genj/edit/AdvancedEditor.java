@@ -137,6 +137,7 @@ import javax.swing.event.TreeSelectionListener;
       public Context getContext() {
         Context context = super.getContext();
         Property selection = context.getProperty();
+        if (selection==null) selection = context.getEntity();
         if (selection!=null&&!selection.isTransient()) {
           context.addAction(new Cut(selection));
           context.addAction(new Copy(selection));
