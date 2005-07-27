@@ -41,22 +41,6 @@ public abstract class OptionProvider {
   public abstract List getOptions();
 
   /**
-   * Restore all options from all OptionProviders from registry
-   */
-  public static void restoreAll(Registry registry) {
-  
-    registry = new Registry(registry, "options");
-  
-    // loop over all options
-    Iterator it = getAllOptions().iterator();
-    while (it.hasNext()) try {
-      ((Option)it.next()).restore(registry);
-    } catch (Throwable t) {}
-    
-    // done
-  }
-
-  /**
    * Persist all options from all OptionProviders to registry
    */
   public static void persistAll(Registry registry) {
@@ -64,7 +48,7 @@ public abstract class OptionProvider {
     registry = new Registry(registry, "options");
   
     // loop over all options
-    Iterator it = getAllOptions().iterator();
+    Iterator it = getAllOptions(null).iterator();
     while (it.hasNext()) try {
       ((Option)it.next()).persist(registry);
     } catch (Throwable t) {
@@ -100,6 +84,9 @@ public abstract class OptionProvider {
    * Static Accessor - all options available from OptionProviders
    */
   public static List getAllOptions() {  
+    return getAllOptions(null);
+  }
+  public static List getAllOptions(Registry restoreFrom) {  
     
     // known?
     if (options!=null)
@@ -107,18 +94,28 @@ public abstract class OptionProvider {
   
     // collect    
     options = new ArrayList(32);
+    if (restoreFrom!=null) 
+      restoreFrom = new Registry(restoreFrom, "options");
   
     // prepare options
-    Iterator it = Service.providers(OptionProvider.class);
-    while (it.hasNext()) {
+    Iterator providers = Service.providers(OptionProvider.class);
+    while (providers.hasNext()) {
       // one provider at a time
-      OptionProvider provider = (OptionProvider)it.next();
+      OptionProvider provider = (OptionProvider)providers.next();
       // grab its options
       List os = provider.getOptions();
-      // keep em
       options.addAll(os);
+      // restore their value
+      if (restoreFrom!=null) {
+        for (Iterator it=os.iterator(); it.hasNext(); ) {
+          try {
+            ((Option)it.next()).restore(restoreFrom);
+          } catch (Throwable t) {}
+        }
+      }
+      // next provider
     }
-  
+    
     // done
     return options;
   }

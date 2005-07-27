@@ -184,7 +184,7 @@ public class Applet extends java.applet.Applet {
           // we can't use our OptionProvider service lookup method in an applet
           // because of security restrictions (no sun.misc access)
           OptionProvider.setOptionProviders(OPTIONPROVIDERS);
-          OptionProvider.restoreAll(registry);
+          OptionProvider.getAllOptions(registry);
           
         } catch (Throwable t) {
           registry = new Registry();

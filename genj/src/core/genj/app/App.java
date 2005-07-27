@@ -80,7 +80,7 @@ public class App {
       Registry registry = new Registry("genj");
       
       // initialize options first
-      OptionProvider.restoreAll(registry);
+      OptionProvider.getAllOptions(registry);
 
       // Setup File Logging and check environment
       Handler handler = new FileHandler(new File(home, "genj.log").getAbsolutePath(), Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
