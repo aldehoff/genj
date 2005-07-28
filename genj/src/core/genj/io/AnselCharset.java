@@ -60,6 +60,13 @@ import java.nio.charset.CoderResult;
   public CharsetEncoder newEncoder() {
     return new Encoder(this);
   }
+ 
+  /**
+   * Overridden
+   */
+  public int compareTo(Object other) {
+    return super.compareTo((Charset)other);
+  }
 
   /**
    * Encoder
