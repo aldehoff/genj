@@ -25,7 +25,6 @@ import genj.util.Resources;
 
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
@@ -47,11 +46,7 @@ import javax.swing.JPopupMenu;
  */
 public class MenuHelper  {
   
-  private String text             = null;
-  private String action           = null;
-  private ImageIcon image         = null;
   private Stack menus            = new Stack();  // JMenu or JPopupMenu or JMenuBar
-  private ActionListener listener = null;
   private Vector collection       = null;
   private Resources resources     = null;
   private boolean enabled         = true;

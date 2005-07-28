@@ -120,7 +120,6 @@ public class ColorsWidget extends JPanel {
     void clear() {
       int size = items.size();
       for (int i=size-1;i>=0;i--) {
-        Item item = (Item)items.get(i);
         items.remove(i);
       }
       fireIntervalRemoved(this, 0, size);
