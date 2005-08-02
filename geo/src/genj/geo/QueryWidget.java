@@ -158,6 +158,9 @@ public class QueryWidget extends JPanel {
     // done
   }
   
+  /**
+   * Lifecycle callback
+   */
   public void addNotify() {
     // continue
     super.addNotify();
@@ -165,12 +168,26 @@ public class QueryWidget extends JPanel {
     model.start();
   }
   
+  /**
+   * Lifecycle callback
+   */
   public void removeNotify() {
     model.stop();
     // clear current view selection
     view.setSelection(Collections.EMPTY_LIST);
     // continue
     super.removeNotify();
+  }
+  
+  /**
+   * Selected Location
+   */
+  public GeoLocation getSelectedLocation() {
+    try {
+      return model.getLocation(hits.getSelectedRow());
+    } catch (Throwable t) {
+      return null;
+    }
   }
   
   /**

@@ -24,7 +24,10 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.Transaction;
+import genj.util.Registry;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,15 +52,30 @@ import javax.swing.SwingUtilities;
   private List listeners = new ArrayList();
   private Gedcom gedcom;
   private Map locations = new HashMap();
-
+  private Registry registry;
+  
   /**
    * Constructor
    * @param gedcom the reference to gedcom object this model is for
    * @param map map this model is providing data for
    */
   public GeoModel(Gedcom gedcom) {
-    // keep 
+    // remember the critical part
     this.gedcom = gedcom;
+    // load gedcom specific .geo file
+    String name = gedcom.getName();
+    if (name.endsWith(".ged")) name = name.substring(0, name.length()-".ged".length());
+    name = name + ".geo";
+    registry = new Registry(name, gedcom.getOrigin());
+    
+    // try to load properties local for debugging
+    try {
+      File debug = new File("gedcom", name);
+      if (debug.exists())
+        registry = new Registry(new FileInputStream(debug));
+    } catch (Throwable t) {
+    }
+    // done
   }
   
   /**
@@ -214,11 +232,23 @@ import javax.swing.SwingUtilities;
       fireLocationUpdated(other);
       return;
     }
-      
-    // add this location and add to to-do list
+    
+    // keep new location 
     synchronized (this) {
+      
       locations.put(location, location);
-      LOCATOR.add(location);
+      
+      // something we can map through the registry?
+      String latlon  = registry.get(location.getJurisdictionsAsString(), (String)null);
+      if (latlon!=null) {
+        int comma = latlon.indexOf(',');
+        if (comma>0) 
+          location.set( Double.parseDouble(latlon.substring(0, comma)), Double.parseDouble(latlon.substring(comma+1)), 1);
+      }
+
+      // add to to-do list
+      if (!location.isValid())
+        LOCATOR.add(location);
     }
     
     // tell about it

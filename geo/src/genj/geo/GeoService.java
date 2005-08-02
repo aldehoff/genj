@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  */
 public class GeoService {
   
-  private final static Logger LOG = Logger.getLogger("genj.geo");
+  final static Logger LOG = Logger.getLogger("genj.geo");
   
   /** our work directory */
   private static final String GEO_DIR = "./geo";
