@@ -49,6 +49,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FilePermission;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -73,7 +74,10 @@ public class FileBean extends PropertyBean {
   private FileChooserWidget chooser = new FileChooserWidget();
   
   /** current loader*/
-  private Loader loader = null;
+  private Loader loader = null, lazyLoader = null;
+  
+  /** loader sync */
+  private static Object LOADER_SYNC  = new Object();
   
   /**
    * Initialization
@@ -88,7 +92,7 @@ public class FileBean extends PropertyBean {
     chooser.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         registry.put("bean.file.dir", chooser.getDirectory());
-        load(chooser.getFile().toString(), true);
+        new Loader(chooser.getFile().toString(), true).trigger();
       }
     });
 
@@ -141,7 +145,7 @@ public class FileBean extends PropertyBean {
       chooser.setTemplate(false);
       chooser.setFile(file.getValue());
 
-      load(file.getValue(), false);
+      lazyLoader = new Loader(file.getValue(), false);
 
       // done
     }
@@ -169,6 +173,20 @@ public class FileBean extends PropertyBean {
   }
 
   /**
+   * lifecycle override - load image lazily
+   */
+  public void paint(Graphics g) {
+    // continue
+    super.paint(g);
+    // lazy load image now if needbe
+    if (lazyLoader!=null) {
+      loader = lazyLoader;
+      lazyLoader = null;
+      loader.trigger();
+    }
+  }
+
+  /**
    * Finish editing a property through proxy
    */
   public void commit() {
@@ -188,7 +206,7 @@ public class FileBean extends PropertyBean {
     // and preview if necessary
     ImageIcon img = preview.getImage();
     if (img==null||!img.getDescription().equals(file))
-      load(file, false);
+      new Loader(file, false).trigger();
 
     // done
   }
@@ -202,23 +220,6 @@ public class FileBean extends PropertyBean {
     if (l!=null) l.cancel(true);
     // continue
     super.removeNotify();
-  }
-  
-  /**
-   * trigger a load - we currently only allow one concurrent loader
-   * per RootPane
-   */
-  private void load(String file, boolean warnAboutSize) {
-    
-    // cancel current
-    Loader l = loader;
-    if (l!=null) l.cancel(true);
-
-    // create new loader
-    loader = new Loader(file, warnAboutSize);
-
-    // start loading      
-    loader.trigger();
   }
   
   /**
@@ -409,10 +410,20 @@ public class FileBean extends PropertyBean {
      * constructor
      */
     private Loader(String setFile, boolean setWarn) {
+      
+      // cancel current
+      Loader old = loader;
+      if (old!=null) old.cancel(true);
+
+      // remember
+      loader = this;
       warn = setWarn;
       file = setFile;
       setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
+      
+      // done
     }
+    
     /**
      * @see genj.util.ActionDelegate#preExecute()
      */
@@ -429,12 +440,20 @@ public class FileBean extends PropertyBean {
      * async load
      */
     protected void execute() {
-      
-      // load it
-      try {
-        Thread.sleep(200);
-          result = new ImageIcon(file, property.getGedcom().getOrigin().open(file));
-      } catch (Throwable t) {
+      // load it one at a time only
+      synchronized (LOADER_SYNC) {
+        
+        // open and read catching any problems
+        InputStream in = null;
+        try {
+          in = property.getGedcom().getOrigin().open(file);
+          result = new ImageIcon(file, in);
+        } catch (Throwable t) {
+        }
+
+        // close file if possible
+        try { in.close(); } catch (Throwable t) {}
+
       }
       // continue
     }
@@ -496,7 +515,7 @@ public class FileBean extends PropertyBean {
         File file = (File)files.get(0);
         chooser.setFile(file);
         
-        load(file.getAbsolutePath(), true);
+        new Loader(file.getAbsolutePath(), true).trigger();
         
         dtde.dropComplete(true);
         
