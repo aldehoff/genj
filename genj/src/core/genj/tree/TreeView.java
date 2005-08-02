@@ -78,7 +78,7 @@ import javax.swing.event.ChangeListener;
 /**
  * TreeView
  */
-public class TreeView extends JPanel implements ContextListener, ToolBarSupport, ActionProvider, FilterSupport {
+public class TreeView extends JPanel implements ContextProvider, ContextListener, ToolBarSupport, ActionProvider, FilterSupport {
   
   /** an icon for bookmarking */
   private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark.gif");      
@@ -293,6 +293,13 @@ public class TreeView extends JPanel implements ContextListener, ToolBarSupport,
     
     // done
     super.removeNotify();
+  }
+  
+  /**
+   * ContextProvider callback
+   */
+  public Context getContext() {
+    return new Context(model.getGedcom());
   }
   
   /**
