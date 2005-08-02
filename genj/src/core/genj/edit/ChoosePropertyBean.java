@@ -28,6 +28,7 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -61,7 +62,12 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     // keep parent and calculate possible properties
     parent = pArent;
     MetaProperty[] defs = parent.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
-    Arrays.sort(defs);
+    Arrays.sort(defs, new Comparator() {
+      public int compare(Object o1, Object o2) {
+        MetaProperty m1 = (MetaProperty)o1, m2 = (MetaProperty)o2;
+        return m1.getTag().compareTo(m2.getTag());
+      }
+    });
         
     // Layout
     GridBagHelper gh = new GridBagHelper(this);
@@ -188,7 +194,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
       super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
         MetaProperty def = (MetaProperty)value;
-        setText(def.getName()+" ("+def.getTag()+")");
+        setText(def.getTag()+" ("+def.getName()+")");
         setIcon(def.getImage());
       return this;
     }
