@@ -79,6 +79,7 @@
      <zipfileset dir="${dir.build}" includes="lib/jump.jar"/>
      <zipfileset dir="${dir.build}" includes="lib/hsqldb.jar"/>
      <zipfileset dir="./contrib" includes="geo/**"/>
+     <zipfileset dir="." includes="gedcom/*"/>
    </zip>
   	
    <!-- copy it to genj's dist directory -->
