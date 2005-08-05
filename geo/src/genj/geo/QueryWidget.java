@@ -21,7 +21,6 @@ package genj.geo;
 
 import genj.util.ChangeSupport;
 import genj.util.Resources;
-import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
 
@@ -58,8 +57,7 @@ public class QueryWidget extends JPanel {
       "<col>" +
       "<row><label/></row>" +
       "<row><label/><city wx=\"1\"/></row>" +
-      "<row><label/><tlj wx=\"1\"/></row>" +
-      "<row><label/><country wx=\"1\"/></row>" +
+      "<row><label/><lat wx=\"1\"/><lon wx=\"1\"/></row>" +
       "<row><label/></row>" +
       "<row><hits wx=\"1\" wy=\"1\"/></row>" +
       "</col>"
@@ -72,9 +70,7 @@ public class QueryWidget extends JPanel {
   private GeoView view;
   
   /** components */
-  private TextFieldWidget city;
-  private ChoiceWidget tlj;
-  private ChoiceWidget country;
+  private TextFieldWidget city, lat, lon;
   private JTable hits;
   private JLabel status;
   
@@ -90,39 +86,27 @@ public class QueryWidget extends JPanel {
     
     // prepare our components
     city = new TextFieldWidget(location.getCity());
+    lat = new TextFieldWidget(location.isValid() ? ""+location.getCoordinate().y : "");
+    lon = new TextFieldWidget(location.isValid() ? ""+location.getCoordinate().x : "");
     
-    tlj  = new ChoiceWidget();
-    tlj.setEditable(false);
-    tlj.setEnabled(false);
-    
-    country = new ChoiceWidget();
-    List countries = new ArrayList();
-    countries.add(null);
-    countries.addAll(Arrays.asList(Country.getAllCountries()));
-    country.setEditable(false);
-    country.setValues(countries);
-    country.setSelectedItem(location.getCountry());
     hits = new JTable(model);
     status = new JLabel();
     
     add(new JLabel(RESOURCES.getString("query.instruction"))); 
     add(new JLabel(RESOURCES.getString("query.city"))); add(city);
-    add(new JLabel(RESOURCES.getString("query.tlj"))); add(tlj);
-    add(new JLabel(RESOURCES.getString("query.country"))); add(country);
+    add(new JLabel(RESOURCES.getString("query.latlon"))); add(lat); add(lon);
     add(status);
     add(new JScrollPane(hits));
     
     // listen to changes
     ChangeSupport cs = new ChangeSupport(this);
     city.addChangeListener(cs);
-    tlj.addChangeListener(cs);
-    country.addChangeListener(cs);
     
     final Timer timer = new Timer(500, new ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent e) {
         String sCity = city.getText().trim();
         if (sCity.length()<2) return;
-        model.setLocation(new GeoLocation(sCity, (Jurisdiction)tlj.getSelectedItem(), (Country)country.getSelectedItem()));
+        model.setLocation(new GeoLocation(sCity, null, null));
       }
     });
     timer.setRepeats(false);
@@ -130,18 +114,6 @@ public class QueryWidget extends JPanel {
     
     cs.addChangeListener( new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
-        // country choice?
-        if (e.getSource()==country) {
-          Country c = (Country)country.getSelectedItem();
-          List jurisdictions = new ArrayList();
-          if (c!=null) {
-            jurisdictions.add(null);
-            jurisdictions.addAll(Jurisdiction.getAll(c));
-          }
-          tlj.setSelectedItem(null);
-          tlj.setValues(jurisdictions);
-          tlj.setEnabled(!jurisdictions.isEmpty());
-        }
         // restart query time
         timer.restart();
       }
@@ -183,11 +155,27 @@ public class QueryWidget extends JPanel {
    * Selected Location
    */
   public GeoLocation getSelectedLocation() {
+    if (hits.getSelectedRowCount()!=1)
+      return null;
     try {
       return model.getLocation(hits.getSelectedRow());
     } catch (Throwable t) {
       return null;
     }
+  }
+  
+  /**
+   * Add a selection listener
+   */
+  public void addListSelectionListener(ListSelectionListener listener) {
+    hits.getSelectionModel().addListSelectionListener(listener);
+  }
+  
+  /**
+   * Removes a selection listener
+   */
+  public void removeListSelectionListener(ListSelectionListener listener) {
+    hits.getSelectionModel().removeListSelectionListener(listener);
   }
   
   /**
