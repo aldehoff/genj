@@ -47,6 +47,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -197,6 +198,7 @@ import swingx.tree.AbstractTreeModel;
    * An action for updating a location
    */
   private class Update extends ActionDelegate implements TreeSelectionListener {
+    
     private Update() {
       setText(TXT_CHANGE);
       setEnabled(false);
@@ -206,9 +208,27 @@ import swingx.tree.AbstractTreeModel;
       setEnabled(tree.getSelectionCount()==1 && tree.getSelectionPath().getPathCount()==2);
     }
     protected void execute() {
+      // show query widget to user
+      final WindowManager.Action change = new WindowManager.Action("Change Value", false);
+      final WindowManager.Action choose = new WindowManager.Action("Remember Lat/Lon", false);
+      Object[] actions = new Object[]{ choose, change, WindowManager.TXT_CANCEL };
       GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
-      QueryWidget query = new QueryWidget(location, view);
-      viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, new String[]{"Does nothing yet!"}, GeoList.this);
+      final QueryWidget query = new QueryWidget(location, view);
+      query.addListSelectionListener(new ListSelectionListener() {
+        public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+          if (e.getValueIsAdjusting()) return;
+          GeoLocation selection = query.getSelectedLocation();
+          change.setValid(selection!=null);
+          choose.setValid(selection!=null);
+        }
+      });
+      int rc = viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
+      // check if he wants to change the place values
+      if (rc!=0) 
+        return;
+      // change it
+      
+      // done
     }
   }
   
@@ -339,15 +359,20 @@ import swingx.tree.AbstractTreeModel;
     
     private TreePath getPathToProperty(Property prop) {
       
-      while (!(prop.getParent() instanceof Entity))
+      // look for topmost property that contains prop
+      while (!(prop.getParent() instanceof Entity)) {
         prop = prop.getParent();
+        if (prop==null) return null;
+      }
       
+      // loop over locations and find one that contains prop
       for (int i=0;i<locations.size();i++) {
         GeoLocation loc = (GeoLocation)locations.get(i);
         if (loc.properties.contains(prop))
           return new TreePath(new Object[] { this, loc, prop} );
       }
       
+      // nothing here
       return null;
     }
     

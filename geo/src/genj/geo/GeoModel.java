@@ -19,7 +19,7 @@
  */
 package genj.geo;
 
-import genj.gedcom.Change;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
@@ -114,19 +114,19 @@ import javax.swing.SwingUtilities;
    * callback - gedcom change 
    */
   public void handleChange(Transaction tx) {
-    // clear location for modified props and add them again
-    for (Iterator it = tx.get(Transaction.PROPERTIES_MODIFIED).iterator(); it.hasNext(); ) {
-      removeLocation((Property)it.next());
+    // clear location for all modified entityes
+    for (Iterator it = tx.get(Transaction.ENTITIES_MODIFIED).iterator(); it.hasNext(); ) {
+      removeLocations((Entity)it.next());
     }
     // reparse entities changed
     parseEntities(tx.get(Transaction.ENTITIES_MODIFIED));
-    // remove deleted props
-    Change[] changes = tx.getChanges();
-    for (int i=0;i<changes.length;i++) {
-      Change change = changes[i];
-      if (change instanceof Change.PropertyDel) 
-        removeLocation(((Change.PropertyDel)change).getRoot());
-    }
+//    // remove deleted props
+//    Change[] changes = tx.getChanges();
+//    for (int i=0;i<changes.length;i++) {
+//      Change change = changes[i];
+//      if (change instanceof Change.PropertyDel) 
+//        removeLocation(((Change.PropertyDel)change).getRoot());
+//    }
     // done
   }
   
@@ -163,20 +163,13 @@ import javax.swing.SwingUtilities;
   /**
    * Remove location
    */
-  private synchronized void removeLocation(Property prop) {
+  private synchronized void removeLocations(Entity entity) {
 
-    // collect property hierarchy
-    List affected = new ArrayList();
-    while (prop!=null) {
-      affected.add(prop);
-      prop = prop.getParent();
-    }
-
-    // check locations
-    for (Iterator it = locations.keySet().iterator(); it.hasNext(); ) { 
-      GeoLocation location = (GeoLocation)it.next();
-      if (location.removeAll(affected)) return;
-    }
+    // check locations - since removeAll might end up in locations
+    // being removed we have to copy the key-set first
+    Object[] locs = locations.keySet().toArray();
+    for (int i=0;i<locs.length;i++) 
+      ((GeoLocation)locs[i]).removeAll(entity);
     
     // done
   }
@@ -200,10 +193,9 @@ import javax.swing.SwingUtilities;
           fireLocationUpdated(this);
         }
         // override : remove empty locations
-        public boolean removeAll(Collection props) {
-          // no problem if not our property
-          if (!super.removeAll(props))
-            return false;
+        public void removeAll(Entity entity) {
+          // let super do its thing
+          super.removeAll(entity);
           // check if still necessary
           if (properties.isEmpty()) {
             synchronized (GeoModel.this) {
@@ -214,7 +206,6 @@ import javax.swing.SwingUtilities;
             fireLocationUpdated(this);
           }
           // done
-          return true;
         }
       };
     } catch (IllegalArgumentException e) {
