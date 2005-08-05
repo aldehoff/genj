@@ -66,7 +66,7 @@
    <PHON type="PropertySimpleValue" img="Phone.gif"/>
    <AGE type="PropertyAge" img="Time.gif"/>
    <AGNC type="PropertySimpleValue" img="Phone.gif"/>
-   <CAUS type="PropertySimpleValue" img="Cause.gif"/>
+   <CAUS type="PropertyChoiceValue" img="Cause.gif"/>
    <NOTE super="INDI:NAME:NOTE"/>
    <SOUR super="INDI:NAME:SOUR"/>
    <OBJE super="INDI:NAME:SOUR:OBJE"/>
