@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.78 $ $Author: nmeier $ $Date: 2005-07-22 04:19:06 $
+ * $Revision: 1.79 $ $Author: nmeier $ $Date: 2005-08-08 16:01:27 $
  */
 package genj.report;
 
@@ -430,11 +430,24 @@ public abstract class Report implements Cloneable {
    */
   public final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag) {
     
-    SelectEntityWidget select = new SelectEntityWidget(tag, gedcom.getEntities(tag), "");
+    SelectEntityWidget select = new SelectEntityWidget(gedcom, tag, "");
+    
+    // preselect something?
+    select.setSelection(gedcom.getEntity(registry.get("select."+tag, (String)null)));
 
+    // show it
     int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),select},WindowManager.ACTIONS_OK_CANCEL,owner);
+    if (rc!=0)
+      return null;
 
-    return rc==0 ? select.getEntity() : null;
+    // remember selection
+    Entity result = select.getSelection();
+    if (result==null)
+      return null;
+    registry.put("select."+result.getTag(), result.getId());
+    
+    // done
+    return result;
   }
 
   /**

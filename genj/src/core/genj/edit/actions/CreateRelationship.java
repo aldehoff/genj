@@ -106,17 +106,7 @@ public class CreateRelationship extends AbstractChange {
     JPanel result = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><text wx=\"1\" wy=\"1\"/></row><row><check/><text/></row></col>"));
 
     // create selector
-    final SelectEntityWidget select = new SelectEntityWidget(getTargetType(), gedcom.getEntities(getTargetType()), resources.getString("select.new"));
-    select.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        // grab current selection (might be null)
-        existing = select.getEntity();
-        // can the user force an id now?
-        if (existing!=null) checkID.setSelected(false);
-        checkID.setEnabled(existing==null);
-        refresh();
-      }
-    });
+    final SelectEntityWidget select = new SelectEntityWidget(gedcom, getTargetType(), resources.getString("select.new"));
  
     // prepare id checkbox and textfield
     requestID = new JTextField(gedcom.getNextAvailableID(getTargetType()), 8);
@@ -135,7 +125,22 @@ public class CreateRelationship extends AbstractChange {
     result.add(getConfirmComponent());
     result.add(checkID);
     result.add(requestID);
-   
+
+    // add listening
+    select.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        // grab current selection (might be null)
+        existing = select.getSelection();
+        // can the user force an id now?
+        if (existing!=null) checkID.setSelected(false);
+        checkID.setEnabled(existing==null);
+        refresh();
+      }
+    });
+    
+    // preselect something?
+    select.setSelection(gedcom.getEntity(manager.getRegistry(gedcom).get("select."+getTargetType(), (String)null)));
+    
     // done
     return result;
   }
@@ -163,6 +168,8 @@ public class CreateRelationship extends AbstractChange {
       // perform the relationship to existing
       focus = relationship.apply(existing, false);
     }
+    // remember selection
+    manager.getRegistry(gedcom).put("select."+getTargetType(), existing.getId());
     // done
   }
 

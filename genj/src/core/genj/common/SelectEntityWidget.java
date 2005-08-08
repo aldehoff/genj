@@ -88,10 +88,12 @@ public class SelectEntityWidget extends JPanel {
   /**
    * Constructor
    */
-  public SelectEntityWidget(String type, Collection entities, String none) {
+  public SelectEntityWidget(Gedcom gedcom, String type, String none) {
 
-    // remember
+    // remember and lookup
     this.type = type;
+    
+    Collection entities = gedcom.getEntities(type);
 
     // init list
     list = new Object[entities.size()+1];
@@ -121,7 +123,7 @@ public class SelectEntityWidget extends JPanel {
     listWidget = new JComboBox();
     listWidget.setEditable(false);
     listWidget.setRenderer(new Renderer());
-
+    
     // layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, listWidget);
@@ -130,7 +132,7 @@ public class SelectEntityWidget extends JPanel {
     // init state
     sort.trigger();
     listWidget.setSelectedIndex(0);
-
+    
     // done
   }
   
@@ -142,11 +144,33 @@ public class SelectEntityWidget extends JPanel {
   }
   
   /**
+   * Number of entities
+   */
+  public int getEntityCount() {
+    return listWidget.getItemCount()-1;
+  }
+  
+  /**
    * The selected entity
    */
-  public Entity getEntity() {
+  public Entity getSelection() {
+    // check selection
     Object item = listWidget.getSelectedItem();
-    return item instanceof Entity ? (Entity)item : null;
+    if (!(item instanceof Entity))
+      return null;
+    // done
+    return (Entity)item;
+  }
+  
+  /**
+   * The selected entity
+   */
+  public void setSelection(Entity set) {
+    // ignore n/a
+    if (set==null||!set.getTag().equals(type))
+      return;
+    // set it
+    listWidget.setSelectedItem(set);
   }
   
   /**

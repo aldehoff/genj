@@ -53,7 +53,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -250,21 +249,17 @@ import javax.swing.event.TreeSelectionListener;
     protected void execute() {
       // prepare options
       final Entity entity = property.getEntity();
-      final Collection ents = gedcom.getEntities(entity.getTag());
       final TextAreaWidget text = new TextAreaWidget("", 4, 10, false, true);
-      final SelectEntityWidget select = new SelectEntityWidget(entity.getTag(), ents, resources.getString("action.propagate.toall"));
-      
-      ActionListener selectionChanged = new ActionListener() {
+      final SelectEntityWidget select = new SelectEntityWidget(gedcom, entity.getTag(), resources.getString("action.propagate.toall"));
+      select.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           String what = property.getTag() + " " + property.toString();
-          Entity selection = select.getEntity();
-          String string = selection==null ? resources.getString("action.propagate.all", new Object[] { what, Integer.toString(ents.size()-1), Gedcom.getName(entity.getTag()) } )
+          Entity selection = select.getSelection();
+          String string = selection==null ? resources.getString("action.propagate.all", new Object[] { what, ""+select.getEntityCount(), Gedcom.getName(entity.getTag()) } )
               : resources.getString("action.propagate.one", new Object[]{ what, selection.getId(), Gedcom.getName(selection.getTag()) });
           text.setText(string);
         }
-      };
-      select.addActionListener(selectionChanged);
-      selectionChanged.actionPerformed(null);
+      });
       
       JCheckBox check = new JCheckBox(resources.getString("action.propagate.value"));
       
@@ -273,11 +268,19 @@ import javax.swing.event.TreeSelectionListener;
       panel.add(new JScrollPane(text));
       panel.add(check);
       
+      // preselect something?
+      select.setSelection(gedcom.getEntity(registry.get("select."+entity.getTag(), (String)null)));
+
       // show it
       boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, WindowManager.ACTIONS_OK_CANCEL, AdvancedEditor.this);
       if (cancel)
         return;
 
+      Entity selection = select.getSelection();
+      
+      // remember selection
+      registry.put("select."+entity.getTag(), selection!=null ? selection.getId() : null);
+      
       // change it
       try {
         gedcom.startTransaction();
@@ -285,11 +288,10 @@ import javax.swing.event.TreeSelectionListener;
         return;
       }
         
-      Entity selection = select.getEntity();
       try {
         if (selection!=null)
           execute(selection, check.isSelected());
-        else for (Iterator it = ents.iterator(); it.hasNext(); ) 
+        else for (Iterator it = gedcom.getEntities(entity.getTag()).iterator(); it.hasNext(); ) 
           execute((Entity)it.next(), check.isSelected());
       } finally {
         gedcom.endTransaction();

@@ -72,7 +72,10 @@ import javax.swing.JTextArea;
    * Show a dialog for errors
    */  
   protected void handleThrowable(String phase, Throwable t) {
-    manager.getWindowManager().openDialog("err", "Error", WindowManager.ERROR_MESSAGE, t.getMessage(), WindowManager.ACTIONS_OK, getTarget());
+    // for a NPE I've seen a null message - better convert that to string here
+    String message = ""+t.getMessage();
+    // show it
+    manager.getWindowManager().openDialog("err", "Error", WindowManager.ERROR_MESSAGE, message, WindowManager.ACTIONS_OK, getTarget());
   }
   
   /** 
