@@ -31,8 +31,8 @@ if [ ! -x "$JAVA" ]; then
  fi
 fi
 
-# run it
-CMD="$JAVA -jar run.jar"
+# run it (we start the virtual machine with initially 32 MB and allocate a max of 512 MB)
+CMD="$JAVA -Xmx512m -Xms32m -jar run.jar"
 
 echo "*** INFO: Executing '$CMD'"
 
