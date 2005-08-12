@@ -200,6 +200,20 @@ public abstract class Origin {
   }
   
   /**
+   * Object Comparison
+   */
+  public boolean equals(Object other) {
+    return other instanceof Origin && ((Origin)other).url.equals(url);
+  }
+  
+  /**
+   * Object hash
+   */
+  public int hashCode() {
+    return url.hashCode();
+  }
+  
+  /**
    * Returns a cleaned up string with forward instead
    * of backwards slash(e)s
    */
