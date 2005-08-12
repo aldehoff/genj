@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.FileHandler;
@@ -262,7 +263,12 @@ public class App {
       result.append(".");
       result.append(record.getSourceMethodName());
       result.append(":");
-      result.append(record.getMessage());
+      String msg = record.getMessage();
+      Object[] parms = record.getParameters();
+      if (parms==null||parms.length==0)
+        result.append(record.getMessage());
+      else 
+        result.append(MessageFormat.format(msg, parms));
       result.append(":");
       Throwable t =record.getThrown();
       if (t!=null)  {
