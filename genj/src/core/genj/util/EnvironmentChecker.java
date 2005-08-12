@@ -69,6 +69,10 @@ public class EnvironmentChecker {
         }
         cl = cl.getParent();
       }
+      
+      // check memory
+      Runtime r = Runtime.getRuntime();
+      LOG.log(Level.INFO, "Memory Max={0}/Total={1}/Free={2}", new Long[]{ new Long(r.maxMemory()), new Long(r.totalMemory()), new Long(r.freeMemory()) });
 
       // DONE
     } catch (Throwable t) {
