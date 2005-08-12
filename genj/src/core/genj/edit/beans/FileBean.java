@@ -19,25 +19,18 @@
  */
 package genj.edit.beans;
 
-import genj.edit.actions.RunExternal;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
-import genj.io.FileAssociation;
 import genj.util.ActionDelegate;
 import genj.util.Origin;
 import genj.util.swing.FileChooserWidget;
-import genj.util.swing.ImageIcon;
-import genj.util.swing.MenuHelper;
-import genj.util.swing.UnitGraphics;
-import genj.util.swing.ViewPortAdapter;
+import genj.util.swing.ImageWidget;
+import genj.view.Context;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
@@ -45,18 +38,11 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FilePermission;
-import java.io.InputStream;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 
 /**
  * A Proxy knows how to generate interaction components that the user
@@ -65,19 +51,13 @@ import javax.swing.JScrollPane;
 public class FileBean extends PropertyBean {
   
   /** preview */
-  private Preview preview;
+  private ImageWidget preview = new ImageWidget();
   
   /** a checkbox as accessory */
   private JCheckBox updateFormatAndTitle = new JCheckBox(resources.getString("file.update"), false);
   
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
-  
-  /** current loader*/
-  private Loader loader = null, lazyLoader = null;
-  
-  /** loader sync */
-  private static Object LOADER_SYNC  = new Object();
   
   /**
    * Initialization
@@ -92,15 +72,29 @@ public class FileBean extends PropertyBean {
     chooser.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         registry.put("bean.file.dir", chooser.getDirectory());
-        new Loader(chooser.getFile().toString(), true).trigger();
+        File file = property.getGedcom().getOrigin().getFile(chooser.getFile().toString());
+        preview.setSource(new ImageWidget.FileSource(file));
+
+        // warn about size
+        if (file.exists()&&file.length()>PropertyFile.getMaxValueAsIconSize(false)) {
+        
+          String txt = resources.getString("file.max", new String[]{
+            file.getName(),
+            String.valueOf(file.length()/1024+1),
+            String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
+          }); 
+        
+          viewManager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,WindowManager.ACTIONS_OK, FileBean.this);
+        }
+
+        // done
       }
     });
 
     add(chooser, BorderLayout.NORTH);      
     
     // setup review
-    preview = new Preview();
-    add(new JScrollPane(new ViewPortAdapter(preview)), BorderLayout.CENTER);
+    add(preview, BorderLayout.CENTER);
     
     // setup a reasonable preferred size
     setPreferredSize(new Dimension(128,128));
@@ -145,8 +139,9 @@ public class FileBean extends PropertyBean {
       chooser.setTemplate(false);
       chooser.setFile(file.getValue());
 
-      lazyLoader = new Loader(file.getValue(), false);
-
+      if (property.getValue().length()>0)
+        preview.setSource(new ImageWidget.RelativeSource(property.getGedcom().getOrigin(), property.getValue()));
+      
       // done
     }
 
@@ -160,30 +155,13 @@ public class FileBean extends PropertyBean {
       chooser.setTemplate(true);
 
       // .. preview
-      try {
-        preview.setImage(new ImageIcon(blob.getTitle(), blob.getBlobData()));
-      } catch (Throwable t) {
-      }
+      preview.setSource(new ImageWidget.ByteArraySource( ((PropertyBlob)property).getBlobData() ));
 
     }
       
-    preview.setZoom(registry.get("file.zoom", 100));
+    new ActionZoom(registry.get("file.zoom", 100)).trigger();
     
     // Done
-  }
-
-  /**
-   * lifecycle override - load image lazily
-   */
-  public void paint(Graphics g) {
-    // continue
-    super.paint(g);
-    // lazy load image now if needbe
-    if (lazyLoader!=null) {
-      loader = lazyLoader;
-      lazyLoader = null;
-      loader.trigger();
-    }
   }
 
   /**
@@ -203,23 +181,28 @@ public class FileBean extends PropertyBean {
     // update chooser
     chooser.setFile(property.getValue());
 
-    // and preview if necessary
-    ImageIcon img = preview.getImage();
-    if (img==null||!img.getDescription().equals(file))
-      new Loader(file, false).trigger();
-
     // done
   }
 
   /**
-   * intercept remove 
+   * ContextProvider callback 
    */
-  public void removeNotify() {
-    // stop loading
-    Loader l = loader;
-    if (l!=null) l.cancel(true);
-    // continue
-    super.removeNotify();
+  public Context getContext() {
+    if (property.getEntity()==null)
+      return null;
+    
+    Context result = new Context(property);
+    
+    result.addAction(new ActionZoom( 10));
+    result.addAction(new ActionZoom( 25));
+    result.addAction(new ActionZoom( 50));
+    result.addAction(new ActionZoom(100));
+    result.addAction(new ActionZoom(150));
+    result.addAction(new ActionZoom(200));
+    result.addAction(new ActionZoom(  0));
+
+    // all done
+    return result;
   }
   
   /**
@@ -239,259 +222,11 @@ public class FileBean extends PropertyBean {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      preview.setZoom(zoom);
+      preview.setZoom(zoom/100F);
+      preview.setToolTipText(zoom==0 ? "1:1" : zoom+"%");
+      registry.put("file.zoom", zoom);
     }
   } //ActionZoom
-  
-  /**
-   * Preview
-   */
-  private class Preview extends JComponent implements MouseListener {
-    /** our image */
-    private ImageIcon img;
-    /** our zoom */
-    private int zoom;
-    /**
-     * Constructor
-     */
-    protected Preview() {
-      addMouseListener(this);
-    }
-    /**
-     * Sets the zoom level
-     */
-    protected void setZoom(int zOOm) {
-      
-      // remember
-      zoom = zOOm;
-      registry.put("file.zoom", zoom);
-      
-      // calc tooltip
-      setToolTipText(zoom==0 ? "1:1" : zoom+"%");
-      
-      // show
-      revalidate();
-      repaint();
-    }
-    /**
-     * Sets the image to preview
-     */
-    protected void setImage(ImageIcon set) {
-      // remember
-      img = set;
-      // show
-      revalidate();
-      repaint();
-    }
-    /**
-     * Access current image
-     */
-    protected ImageIcon getImage() {
-      return img;
-    }
-    /**
-     * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
-     */
-    protected void paintComponent(Graphics g) {
-      // no image?
-      if (img==null) return;
-      // Maybe we'll paint in physical size
-      UnitGraphics ug = new UnitGraphics(g, 1, 1);
-      // not 1:1?
-      if (zoom!=0) {
-        // calculate factor - the image's dpi might be
-        // different than that of the rendered surface
-        float factor = (float)zoom/100;
-        double 
-          scalex = factor,
-          scaley = factor;
-          
-        Point idpi = img.getResolution();
-        if (idpi!=null) {
-          Point dpi = viewManager.getDPI();
-          
-          scalex *= (double)dpi.x/idpi.x;
-          scaley *= (double)dpi.y/idpi.y;
-        }
-        
-        ug.scale(scalex,scaley);
-      }
-      // paint
-      ug.draw(img, 0, 0, 0, 0);
-      // done
-    }
-    /**
-     * @see javax.swing.JComponent#getPreferredSize()
-     */
-    public Dimension getPreferredSize() {
-      // no image?
-      if (img==null) return new Dimension(32,32);
-      // 1:1?
-      if (zoom==0)
-        return new Dimension(img.getIconWidth(), img.getIconHeight());
-      // check physical size
-      Dimension dim = img.getSizeInPoints(viewManager.getDPI());
-      float factor = (float)zoom/100;
-      dim.width *= factor;
-      dim.height *= factor;
-      return dim;
-    }
-    /**
-     * callback - mouse pressed
-     */
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    /**
-     * callback - mouse released
-     */
-    public void mouseReleased(MouseEvent e) {
-      // no popup trigger no action
-      if (!e.isPopupTrigger()) 
-        return;
-      // show a context menu for file
-      String file = chooser.getFile().toString();
-      MenuHelper mh = new MenuHelper().setTarget(this);
-      JPopupMenu popup = mh.createPopup();
-      // zoom levels for images
-      if (img!=null) {
-        mh.createItem(new ActionZoom( 10));
-        mh.createItem(new ActionZoom( 25));
-        mh.createItem(new ActionZoom( 50));
-        mh.createItem(new ActionZoom(100));
-        mh.createItem(new ActionZoom(150));
-        mh.createItem(new ActionZoom(200));
-        mh.createItem(new ActionZoom(  0));
-      }
-      // lookup associations
-      String suffix = PropertyFile.getSuffix(file);
-      Iterator it = FileAssociation.getAll(suffix).iterator();
-      while (it.hasNext()) {
-        FileAssociation fa = (FileAssociation)it.next(); 
-        mh.createItem(new RunExternal(property.getGedcom(),file,fa));
-      }
-      // show
-      if (popup.getComponentCount()>0)
-        popup.show(this, e.getPoint().x, e.getPoint().y);
-      // done
-    }
-    /**
-     * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
-     */
-    public void mouseExited(MouseEvent e) {
-      // ignored
-    }
-    /**
-     * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
-     */
-    public void mouseEntered(MouseEvent e) {
-      // ignored
-    }
-    /**
-     * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-     */
-    public void mouseClicked(MouseEvent e) {
-      // ignored
-    }
-
-  } //Preview
-
-  /**
-   * Async Image Loader
-   */
-  private class Loader extends ActionDelegate {
-    /** warn about filesize */
-    private boolean warn;
-    /** file to load */
-    private String file;
-    /** the result */
-    private ImageIcon result;
-    /**
-     * constructor
-     */
-    private Loader(String setFile, boolean setWarn) {
-      
-      // cancel current
-      Loader old = loader;
-      if (old!=null) old.cancel(true);
-
-      // remember
-      loader = this;
-      warn = setWarn;
-      file = setFile;
-      setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
-      
-      // done
-    }
-    
-    /**
-     * @see genj.util.ActionDelegate#preExecute()
-     */
-    protected boolean preExecute() {
-      // kill current
-      preview.setImage(null);
-      // show wait
-      preview.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-      // continue
-      return file.length()>0;
-    }
-
-    /** 
-     * async load
-     */
-    protected void execute() {
-      // load it one at a time only
-      synchronized (LOADER_SYNC) {
-        
-        // open and read catching any problems
-        InputStream in = null;
-        try {
-          in = property.getGedcom().getOrigin().open(file);
-          result = new ImageIcon(file, in);
-        } catch (Throwable t) {
-        }
-
-        // close file if possible
-        try { in.close(); } catch (Throwable t) {}
-
-      }
-      // continue
-    }
-    /**
-     * sync show result
-     */
-    protected void postExecute() {
-      
-      loader = null;
-
-      // check 
-      preview.setCursor(null);
-      if (result==null)
-        return;
-        
-      // warn about size
-      if (warn&&result.getByteSize()>PropertyFile.getMaxValueAsIconSize(false)) {
-        
-        String txt = resources.getString("file.max", new String[]{
-          result.getDescription(),
-          String.valueOf(result.getByteSize()/1024+1),
-          String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
-        }); 
-        
-        // open dlg
-        viewManager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,WindowManager.ACTIONS_OK, FileBean.this);
-      }
-      
-      // show
-      preview.setImage(result);
-      revalidate();
-      
-      result = null;
-      
-      // done
-    }
-
-  } //Loader
 
   /**
    * Our DnD support
@@ -515,7 +250,7 @@ public class FileBean extends PropertyBean {
         File file = (File)files.get(0);
         chooser.setFile(file);
         
-        new Loader(file.getAbsolutePath(), true).trigger();
+        preview.setSource(new ImageWidget.FileSource(file));
         
         dtde.dropComplete(true);
         
@@ -526,4 +261,4 @@ public class FileBean extends PropertyBean {
     
   }
 
-} //ProxyFile
+} //FileBean
