@@ -138,8 +138,9 @@ public class CreateRelationship extends AbstractChange {
       }
     });
     
-    // preselect something?
-    select.setSelection(gedcom.getEntity(manager.getRegistry(gedcom).get("select."+getTargetType(), (String)null)));
+    // preselect something (for anything but indi and fam)?
+    if (!(getTargetType().equals(Gedcom.INDI)||getTargetType().equals(Gedcom.FAM)))
+      select.setSelection(gedcom.getEntity(manager.getRegistry(gedcom).get("select."+getTargetType(), (String)null)));
     
     // done
     return result;
