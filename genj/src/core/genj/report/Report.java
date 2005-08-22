@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.79 $ $Author: nmeier $ $Date: 2005-08-08 16:01:27 $
+ * $Revision: 1.80 $ $Author: nmeier $ $Date: 2005-08-22 20:07:31 $
  */
 package genj.report;
 
@@ -654,6 +654,14 @@ public abstract class Report implements Cloneable {
           buffer.append(prefix);
         return buffer.toString();
     }  
+    
+    /**
+     * Creates an empty String for text output. Spaces per Level are taken from
+     * OPTIONS.getIndentPerLevel()
+     */
+    public final String getIndent(int level) {
+      return getIndent(level, OPTIONS.getIndentPerLevel(), null);
+    }
   
   
   /**

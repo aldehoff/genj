@@ -238,11 +238,4 @@ public class ReportAges extends Report {
             println(getIndent(indent) + AGE + ": " + age);
     }
     
-    /**
-     * Return an indented string for given level
-     */
-    private String getIndent(int level) {
-        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
-    }
-    
 } //ReportAges

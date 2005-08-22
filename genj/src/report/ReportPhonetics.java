@@ -177,14 +177,6 @@ public class ReportPhonetics extends Report {
     }
     
     /**
-     * Return an indented string for given level
-     */
-    private String getIndent(int level) {
-        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
-    }
-    
-    
-    /**
      * Our phonetics interface
      */
     interface Phonetics {

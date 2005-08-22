@@ -351,13 +351,6 @@ public class ReportEvents extends Report {
         return d&m&y;
     }
     
-        /**
-     * Return an indented string for given level
-     */
-    private String getIndent(int level) {
-        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
-    }
-    
     /**
      * Wrapping an Event hit
      */

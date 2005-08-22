@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.68 2005-07-21 17:31:45 nmeier Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.69 2005-08-22 20:07:31 nmeier Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -1036,13 +1036,6 @@ public class ReportGedcomStatistics extends Report {
             }
         }
         println();
-    }
-    
-    /**
-     * Return an indented string for given level
-     */
-    private String getIndent(int level) {
-        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
     }
     
 } //ReportGedcomStatistics

@@ -141,10 +141,4 @@ public class ReportFamily extends Report {
             println(getIndent(4)+OPTIONS.getBaptismSymbol()+" ("+tag+"): "+trim(indi.getProperty(new TagPath("INDI:"+tag+":DATE")))+" "+trim(indi.getProperty(new TagPath("INDI:"+tag+":PLAC"))));
     }
     
-    /**
-     * Return an indented string for given level
-     */
-    private String getIndent(int level) {
-        return super.getIndent(level, OPTIONS.getIndentPerLevel(), null);
-    }
 } //ReportFamily
