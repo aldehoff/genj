@@ -8,6 +8,7 @@
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.report.Report;
+import genj.gedcom.TagPath;
 
 /**
  * GenJ - ReportDescendants
@@ -22,6 +23,12 @@ public class ReportDescendants extends Report {
         iterate(indi, 1);
         
         // Done
+    }
+    
+    private String trim(Object o) {
+        if(o == null)
+            return "";
+        return o.toString();
     }
     
     /**
@@ -71,8 +78,8 @@ public class ReportDescendants extends Report {
         
         String[] msgargs = {indi.getId(),
         indi.getName(),
-        indi.getBirthAsString(),
-        indi.getDeathAsString()};
+        indi.getBirthAsString()+" "+trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))),
+        indi.getDeathAsString()+" "+trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")))};
         
         // Format the message with localization and return it
         return i18n("format",msgargs);
