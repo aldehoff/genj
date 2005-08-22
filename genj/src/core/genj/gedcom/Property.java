@@ -548,6 +548,17 @@ public abstract class Property implements Comparable {
   /**
    * Returns one of this property's properties by path
    */
+  public Property getPropertyByPath(String path) {
+    // 20050822 I've added this convenient getter to make it
+    // easier for beginners to use the API - no need to bother
+    // them with creating a TagPath first. This is not as performant
+    // as doing so and reusing the same path.
+    return getProperty(new TagPath(path));
+  }
+  
+  /**
+   * Returns one of this property's properties by path
+   */
   public Property getProperty(TagPath path) {
 
     PropertyVisitor visitor = new PropertyVisitor() {
