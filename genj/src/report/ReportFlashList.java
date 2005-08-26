@@ -33,6 +33,9 @@ public class ReportFlashList extends Report {
   
   /** option - whether to use last name as primary index */
   public boolean isIndexByLastName = true;
+
+  /** option - whether to use a TOC or not */
+  public boolean weAddaTOC = true;
   
   /**
    * Overriden image - we're using the provided FO image 
@@ -77,8 +80,13 @@ public class ReportFlashList extends Report {
     
     // write it out
     Document doc = new Document(getName());
+    if (weAddaTOC) {
+    doc.setTOC(true);
+    } else { 
     doc.setTOC(false);
+    }
     
+        
     for (Iterator ps = primary.keySet().iterator(); ps.hasNext(); ) {
       String p = (String)ps.next();
 
