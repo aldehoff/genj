@@ -24,7 +24,9 @@ import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.util.ActionDelegate;
 import genj.util.Resources;
@@ -272,8 +274,6 @@ public class BlueprintEditor extends JSplitPane {
       tag2value.put("ADDR", "Long Address");
       tag2value.put("CITY", "Big City");
       tag2value.put("POST", "12345");
-      tag2value.put("HUSB", "@I00X@");
-      tag2value.put("WIFE", "@I00X@");
     }
     /**
      * @see genj.gedcom.Indi#getId()
@@ -302,8 +302,12 @@ public class BlueprintEditor extends JSplitPane {
         return this;
       // fake it
       Object value = tag2value.get(path.getLast());
-      if (value==null) value = "Something";
-      return Grammar.getMeta(path, false).create(value.toString());
+      if (value==null) 
+        value = "Something";
+      MetaProperty meta = Grammar.getMeta(path, false);
+      if (PropertyXRef.class.isAssignableFrom(meta.getType()))
+        value = "@...@";
+      return meta.create(value.toString());
     }
     
     /**
