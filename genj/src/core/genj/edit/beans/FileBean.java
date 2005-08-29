@@ -141,6 +141,8 @@ public class FileBean extends PropertyBean {
 
       if (property.getValue().length()>0)
         preview.setSource(new ImageWidget.RelativeSource(property.getGedcom().getOrigin(), property.getValue()));
+      else
+        preview.setSource(null);
       
       // done
     }
