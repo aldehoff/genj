@@ -175,7 +175,7 @@ public class PropertyDate extends Property {
         end.set(newEnd);
       phrase = newPhrase;
       
-      format = start.isValid() && (!newFormat.isRange()||end.isValid()) ? newFormat : DATE;
+      format = (newFormat.needsValidStart() && !start.isValid()) || (newFormat.needsValidEnd() && !end.isValid()) ? DATE : newFormat ;
     } finally {
       isAdjusting = false;
     }
@@ -332,6 +332,14 @@ public class PropertyDate extends Property {
     public boolean isRange() {
       return end.length()>0;
     }
+    
+    protected boolean needsValidStart() {
+      return true;
+    }
+
+    protected boolean needsValidEnd() {
+      return isRange();
+    }
 
     public String getName() {
       String key = (start+end).toLowerCase();
@@ -448,6 +456,14 @@ public class PropertyDate extends Property {
       return false;
     }
     
+    protected boolean needsValidStart() {
+      return false;
+    }
+
+    protected boolean needsValidEnd() {
+      return false;
+    }
+
     protected boolean isValid(PropertyDate date) {
       // always true
       return true;
