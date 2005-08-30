@@ -12,6 +12,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 import java.util.Arrays;
@@ -124,7 +125,7 @@ public class ReportFlashList extends Report {
       // consider valid dates only
       PropertyDate date = (PropertyDate)dates.next();
       if (!date.isValid()) continue;
-      // compute first and last year (gotta be right)
+      // compute first and last year
       int start = date.getStart().getYear();
       int end = date.isRange() ? date.getEnd().getYear() : start;
       if (start>end) continue;
@@ -216,11 +217,17 @@ public class ReportFlashList extends Report {
     int firstYear = Integer.MAX_VALUE, lastYear = -Integer.MAX_VALUE;
     
     void add(int start, int end) {
-      firstYear = Math.min(firstYear, start);
-      lastYear = Math.max(lastYear, end);
+      // check for valid year - this might still be UNKNOWN even though a date was valid
+      if (start!=PointInTime.UNKNOWN)
+        firstYear = Math.min(firstYear, start);
+      if (end!=PointInTime.UNKNOWN)
+        lastYear = Math.max(lastYear, end);
     }
     
     public String toString() {
+      // check for valid year - this might still be UNKNOWN even though a date was valid
+      if (firstYear==Integer.MAX_VALUE|| lastYear==Integer.MAX_VALUE)
+        return "";
       return firstYear + " " + lastYear;
     }
   }
