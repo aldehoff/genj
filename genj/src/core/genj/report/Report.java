@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.80 $ $Author: nmeier $ $Date: 2005-08-22 20:07:31 $
+ * $Revision: 1.81 $ $Author: nmeier $ $Date: 2005-08-31 20:50:56 $
  */
 package genj.report;
 
@@ -769,10 +769,13 @@ public abstract class Report implements Cloneable {
       }
       method.invoke(this, new Object[]{ context });
     } catch (Throwable t) {
-      if (t instanceof InvocationTargetException)
+      String msg = "can't run report on input";
+      if (t instanceof InvocationTargetException) {
         t = ((InvocationTargetException)t).getTargetException();
+        msg = "report failed";
+      }
       if (t instanceof RuntimeException) throw (RuntimeException)t;
-      throw new RuntimeException("can't run report on input", t);
+      throw new RuntimeException(msg, t);
     }
   }
 
