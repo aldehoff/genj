@@ -914,7 +914,10 @@ public class PropertyTableWidget extends JPanel {
           PropertyDate date = (PropertyDate)model.getPropertyAt(row, col);
           if (date==null || !date.getStart().isValid())
             continue;
-          years.add(new Integer(date.getStart().getPointInTime(PointInTime.GREGORIAN).getYear()));
+          try {
+            years.add(new Integer(date.getStart().getPointInTime(PointInTime.GREGORIAN).getYear()));
+          } catch (Throwable t) {
+          }
         }
         
         // generate shortcuts for all years
