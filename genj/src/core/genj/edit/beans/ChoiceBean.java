@@ -52,6 +52,7 @@ public class ChoiceBean extends PropertyBean {
     // prepare a choice for the user
     choice = new ChoiceWidget();
     choice.addChangeListener(changeSupport);
+    choice.setIgnoreCase(true);
 
     // add a checkbox for global
     global = new JCheckBox();

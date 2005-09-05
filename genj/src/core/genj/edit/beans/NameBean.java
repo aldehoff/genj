@@ -48,6 +48,7 @@ public class NameBean extends PropertyBean {
 
     cLast  = new ChoiceWidget();
     cLast.addChangeListener(changeSupport);
+    cLast.setIgnoreCase(true);
     tFirst = new TextFieldWidget("", 10); 
     tFirst.addChangeListener(changeSupport);
     tSuff  = new TextFieldWidget("", 10); 

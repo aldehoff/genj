@@ -158,6 +158,7 @@ public class PlaceBean extends PropertyBean {
       gh.add(new JLabel(label, SwingConstants.RIGHT), 0, rows, 1, 1, GridBagHelper.FILL_HORIZONTAL);
     // and a textfield
     ChoiceWidget choice = new ChoiceWidget();
+    choice.setIgnoreCase(true);
     choice.setEditable(true);
     choice.setValues(values);
     choice.setText(value);
