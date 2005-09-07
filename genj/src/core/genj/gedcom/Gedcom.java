@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.96 $ $Author: nmeier $ $Date: 2005-07-17 19:31:39 $
+ * $Revision: 1.97 $ $Author: nmeier $ $Date: 2005-09-07 19:24:08 $
  */
 package genj.gedcom;
 
@@ -462,6 +462,16 @@ public class Gedcom {
   public Entity getEntity(String tag, String id) {
     // check back in appropriate type map
     return (Entity)getEntityMap(tag).get(id);
+  }
+  
+  /**
+   * Returns a type for given tag
+   */
+  public static Class getEntityType(String tag) {
+    Class result =(Class)E2TYPE.get(tag);
+    if (result==null)
+      throw new IllegalArgumentException("no such type");
+    return result;
   }
   
   /**
