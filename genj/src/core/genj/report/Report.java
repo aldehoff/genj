@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.81 $ $Author: nmeier $ $Date: 2005-08-31 20:50:56 $
+ * $Revision: 1.82 $ $Author: nmeier $ $Date: 2005-09-07 19:24:57 $
  */
 package genj.report;
 
@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -793,26 +794,33 @@ public abstract class Report implements Cloneable {
     return true;
   }
 
-  /**
-   * Whether the report allows to be run on a given context - default
-   * checks for methods called 
-   * <il>
-   *  <li>start(Gedcom|Object)
-   *  <li>start(Property)
-   *  <li>start(Entity)
-   *  <li>start(Indi[])
-   *  <li>...
-   * </il>
-   * @return title of action for given context or null for n/a
-   */
-  public String accepts(Object context) {
-    Class contextType = context.getClass();
-    while (contextType!=null) {
-      if (inputType2startMethod.containsKey(contextType)) return getName();
-      contextType = contextType.getSuperclass();
+    /**
+     * Whether the report allows to be run on a given context - default
+     * checks for methods called 
+     * <il>
+     *  <li>start(Gedcom|Object)
+     *  <li>start(Property)
+     *  <li>start(Entity)
+     *  <li>start(Indi[])
+     *  <li>...
+     * </il>
+     * @return title of action for given context or null for n/a
+     */
+    public String accepts(Object context) {
+      Class contextType = context.getClass();
+      while (contextType!=null) {
+        if (inputType2startMethod.containsKey(contextType)) return getName();
+        contextType = contextType.getSuperclass();
+      }
+      // not applicable
+      return null;
     }
-    // not applicable
-    return null;
+  
+  /**
+   * Resolve acceptable types
+   */
+  /*package*/ final Set getInputTypes() {
+    return inputType2startMethod.keySet();
   }
   
 } //Report

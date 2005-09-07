@@ -309,7 +309,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       .setContainer(bar)
       .setFocusable(false);
 
-    ActionStart astart = new ActionStart(gedcom);
+    ActionStart astart = new ActionStart();
     bStart = bh.create(astart);
     bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
     bSave  = bh.setEnabled(true).create(new ActionSave());
@@ -359,8 +359,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Action: START
    */
   private class ActionStart extends ActionDelegate {
+    
     /** context to run on */
-    private Object context;
+    private Object context, preset;
     
     /** the running report */
     private Report instance;
@@ -369,9 +370,14 @@ public class ReportView extends JPanel implements ToolBarSupport {
     private PrintWriter out = new PrintWriter(new OutputWriter());
     
     /** constructor */
-    protected ActionStart(Object coNtext) {
-      // remember
-      context = coNtext;
+    protected ActionStart() {
+      this(null);
+    }
+    
+    /** constructor */
+    protected ActionStart(Object preset) {
+      // remember preset context
+      this.preset = preset;
       // setup async
       setAsync(ASYNC_SAME_INSTANCE);
       // show
@@ -394,9 +400,27 @@ public class ReportView extends JPanel implements ToolBarSupport {
       Report report = (Report)listOfReports.getSelectedValue();
       if (report==null) 
         return false;
+      
+      // create our own private instance  
+      instance = report.getInstance(manager, ReportView.this, out);
+      
+      // either use preset context, gedcom file or ask for entity
+      context = preset;
+      if (context==null) {
+        if (instance.getInputTypes().contains(Gedcom.class))
+          context = gedcom;
+        else  for (int i=0;i<Gedcom.ENTITIES.length;i++) { 
+          String tag = Gedcom.ENTITIES[i];
+          if (instance.getInputTypes().contains(Gedcom.getEntityType(tag))) {
+            context = instance.getEntityFromUser(Gedcom.getName(tag), gedcom, tag);
+            if (context==null) return false;
+            break;
+          }
+        }        
+      }
 
       // check if appropriate
-      if (report.accepts(context)==null) {
+      if (context==null||report.accepts(context)==null) {
         manager.getWindowManager().openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,resources.getString("report.noaccept"),WindowManager.ACTIONS_OK,ReportView.this);
         return false;
       }
@@ -404,9 +428,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // commit options
       owOptions.stopEditing();
 
-      // create our own private instance  
-      instance = report.getInstance(manager, ReportView.this, out);
-      
       // clear the current output
       taOutput.setText("");
       
