@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.23 $ $Author: nmeier $ $Date: 2005-06-16 01:05:26 $
+ * $Revision: 1.24 $ $Author: nmeier $ $Date: 2005-09-15 18:06:09 $
  */
 package genj.util;
 
@@ -536,9 +536,11 @@ public class Registry {
 
     // store
     if (parent==null) {
-
       // 20040523 removed check for old value - don't need it imho
-      properties.put(key,value);
+      if (value==null)
+        properties.remove(key);
+      else
+        properties.put(key,value);
     } else {
       parent.put(view+"."+key,value);
     }
