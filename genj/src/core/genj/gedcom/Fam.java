@@ -20,7 +20,9 @@
 package genj.gedcom;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -33,6 +35,8 @@ public class Fam extends Entity {
     PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC"),
     PATH_FAMDIVDATE  = new TagPath("FAM:DIV:DATE"),
     PATH_FAMDIVPLAC  = new TagPath("FAM:MARR:PLAC");
+  
+  private final static Comparator SORT_SIBLINGS =  new PropertyComparator("INDI:BIRT:DATE");
 
   /**
    * Returns child #i
@@ -56,16 +60,21 @@ public class Fam extends Entity {
    */
   public Indi[] getChildren() {
     
-    ArrayList result = new ArrayList(getNoOfProperties());
+    ArrayList children = new ArrayList(getNoOfProperties());
     
     List childs = getProperties(PropertyChild.class);
     for (int i=0,j=childs.size();i<j;i++) {
       PropertyChild prop = (PropertyChild)childs.get(i);
       if (prop.isValid()) 
-        result.add(prop.getChild());
+        children.add(prop.getChild());
     }
-
-    return Indi.toIndiArray(result);
+    
+    // convert to array & sort
+    Indi[] result = Indi.toIndiArray(children);
+    Arrays.sort(result, SORT_SIBLINGS);
+    
+    // done
+    return result;
   }
 
   /**
