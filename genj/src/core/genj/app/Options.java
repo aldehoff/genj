@@ -28,6 +28,7 @@ import genj.option.OptionUI;
 import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
 import genj.util.ActionDelegate;
+import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -85,8 +86,8 @@ public class Options extends OptionProvider {
     TreeSet result = new TreeSet();
     result.add("en");
 
-    // look for development mode ./language/xy (except 'CVS')
-    File[] dirs = new File("./language").listFiles();
+    // look for development mode -Dgenj.language.dir or in  ./language/xy (except 'CVS')
+    File[] dirs = new File(EnvironmentChecker.getProperty(Options.class, "genj.language.dir", "./language", "Dev-time language directory switch")).listFiles();
     if (dirs!=null) {
       for (int i = 0; i < dirs.length; i++) {
         String dir = dirs[i].getName();
