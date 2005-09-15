@@ -10,23 +10,12 @@
 
   <path id="project.class.path">
     <pathelement path ="${dir.build}/version"/>
-    <pathelement path ="${dir.build}/classes/contrib"/>
-    <pathelement path ="${dir.build}/classes/core"/>
+    <dirset dir="${dir.build}/classes" includes="*"/>
     <fileset dir=".">
         <include name="**/*.jar"/>
     </fileset>
-    <pathelement path ="./language/de"/>
-    <pathelement path ="./language/en"/>
-    <pathelement path ="./language/es"/>
-    <pathelement path ="./language/fr"/>
-    <pathelement path ="./language/it"/>
-    <pathelement path ="./language/ja"/>
-    <pathelement path ="./language/hu"/>
-    <pathelement path ="./language/ru"/>
-    <pathelement path ="./language/nl"/>
-    <pathelement path ="./src/contrib"/>
-    <pathelement path ="./src/core"/>
-    <pathelement path ="./src/report"/>
+ 	  <dirset dir="./language" includes="*"/>
+ 	  <dirset dir="./src" includes="*"/>
     <pathelement path ="./images"/>
   </path>
 
@@ -49,6 +38,8 @@
     </tstamp>
     
     <property name="app.build" value="${app.version} ${now} ${user.name}"/>
+  	
+  	<echo>Classpath is ${project.class.path}</echo>
     
   </target>
 
@@ -235,6 +226,7 @@
     <antcall target="dist.language"><param name="language" value="nl"/></antcall>
     <antcall target="dist.language"><param name="language" value="ru"/></antcall>
     <antcall target="dist.language"><param name="language" value="cs"/></antcall>
+    <antcall target="dist.language"><param name="language" value="pl"/></antcall>
   </target>
 
   <!--
@@ -391,9 +383,6 @@
       <fileset dir="${dir.build}/classes/report"/>
       <fileset dir="./src/report" includes="**/*.properties"/>
     </copy>
-    <copy todir="${dir.run}/gedcom">
-      <fileset dir="./gedcom"/>
-    </copy>
     <copy todir="${dir.run}/doc">
       <fileset dir="./doc"/>
     </copy>
@@ -406,7 +395,8 @@
        <classpath refid="project.class.path"/>
        <jvmarg line="${java.jvmargs}"/>
        <sysproperty key="genj.lnf.dir" value="${dir.lnf}"/>
-       <sysproperty key="genj.gedcom.dir" value="./gedcom"/>
+       <sysproperty key="genj.gedcom.dir" value="${basedir}/gedcom"/>
+       <sysproperty key="genj.language.dir" value="${basedir}/language"/>
     </java>
   </target>
   
