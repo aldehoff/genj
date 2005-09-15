@@ -68,8 +68,8 @@ public class SelectEntityWidget extends JPanel {
   private Sort sort;
   
   private final static String[] SORTS = {
-    "INDI",
     "INDI:NAME",
+    "INDI",
     "INDI:BIRT:DATE",
     "INDI:DEAT:DATE",
     "FAM",
