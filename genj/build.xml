@@ -10,7 +10,8 @@
 
   <path id="project.class.path">
     <pathelement path ="${dir.build}/version"/>
-    <dirset dir="${dir.build}/classes" includes="*"/>
+    <pathelement path ="${dir.build}/classes/contrib"/>
+    <pathelement path ="${dir.build}/classes/core"/>
     <fileset dir=".">
         <include name="**/*.jar"/>
     </fileset>
@@ -39,8 +40,6 @@
     
     <property name="app.build" value="${app.version} ${now} ${user.name}"/>
   	
-  	<echo>Classpath is ${project.class.path}</echo>
-    
   </target>
 
 	<!--
