@@ -88,7 +88,7 @@ public class SexBean extends PropertyBean {
     // show it
     PropertySex p = (PropertySex) property;
     buttons[p.getSex()].setSelected(true);
-    defaultFocus = buttons[p.getSex()];
+    defaultFocus = buttons[0];
 
     // Done
   }
