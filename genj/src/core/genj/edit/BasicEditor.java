@@ -802,16 +802,32 @@ import javax.swing.event.ChangeListener;
         Property root = new Proxy(meta.create(""), currentEntity);
         
         // create a tab for it
+        final int i = beans.size();
         createTab(root);
         
-        // and select it
-        tabs.setSelectedIndex(0);
+        // add focus to first new bean (this will also make it visible switching tabs if necessary)
+        // sadly we have to do that 'later' - otherwise the focus doesn't seem to go over reliably
+        if (beans.size()>i) 
+          requestFocus((PropertyBean)beans.get(i));
         
         // done
       }
       
-    } //ActionNewTab
+      /** 
+       * Focus Helper (hack)
+       */
+      private void requestFocus(final Component c) {
+        
+        SwingUtilities.invokeLater(new Runnable() { 
+          public void run() {
+            c.requestFocusInWindow();
+          }
+        });
+        
+      }
 
+    } //ActionNewTab
+    
     /**
      * A remove tab action
      */
