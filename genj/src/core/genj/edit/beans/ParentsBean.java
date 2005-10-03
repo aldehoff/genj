@@ -55,6 +55,13 @@ public class ParentsBean extends PropertyBean {
   }
   
   /**
+   * we can't focus anything
+   */
+  public boolean canFocus(Property prop) {
+    return false;
+  }
+  
+  /**
    * Set context to edit
    */
   protected void setContextImpl(Property prop) {

@@ -561,7 +561,7 @@ import javax.swing.event.ChangeListener;
       // look for appropriate bean - showing prop or first one in case of Entity
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.isDisplayable() && (bean.getProperty()==prop || prop.contains(bean.getProperty()))) {
+        if (bean.canFocus(prop)) {
           bean.requestFocusInWindow();
           return;
         }

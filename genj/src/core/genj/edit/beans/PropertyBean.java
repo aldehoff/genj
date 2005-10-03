@@ -200,6 +200,13 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     else 
       super.requestFocus();
   }
+  
+  /** 
+   * Check whether this bean displays given property
+   */
+  public boolean canFocus(Property prop) {
+    return isDisplayable() && (property==prop || prop.contains(property));
+  }
 
   /**
    * A preview component using EntityRenderer for an entity
