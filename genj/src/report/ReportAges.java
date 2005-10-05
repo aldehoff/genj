@@ -45,7 +45,7 @@ public class ReportAges extends Report {
     
     private String familyToString(Fam f) {
         Indi husband = f.getHusband(), wife = f.getWife();
-        String str = "@"+f.getId()+"@ ";
+        String str = f.getId()+" ";
         if(husband!=null)
             str = str + i18n("entity", new String[] {f.getHusband().getId(), f.getHusband().getName()} );
             if(husband!=null && wife!=null)

@@ -112,7 +112,7 @@ public class ReportDescendants extends Report {
           return "?";
       
       WordBuffer result = new WordBuffer();
-      result.append("@"+indi.getId()+"@ "+indi.getName());
+      result.append(indi.getId()+" "+indi.getName());
       result.append(formatDateAndPlace(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth));
       result.append(formatDateAndPlace(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath));
         

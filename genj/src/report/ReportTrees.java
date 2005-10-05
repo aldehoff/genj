@@ -206,7 +206,7 @@ public class ReportTrees extends Report {
       }
       
       public String toString() {
-        return "@"+oldestIndividual.getId()+"@ "+oldestIndividual.getName()+" "+oldestIndividual.getBirthAsString();
+        return oldestIndividual.getId()+" "+oldestIndividual.getName()+" "+oldestIndividual.getBirthAsString();
       }
       
       public boolean add(Object o) {

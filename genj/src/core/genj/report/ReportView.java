@@ -19,6 +19,7 @@
  */
 package genj.report;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.option.OptionsWidget;
 import genj.util.ActionDelegate;
@@ -71,7 +72,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Segment;
 
 /**
  * Component for running reports on genealogic data
@@ -595,43 +595,49 @@ public class ReportView extends JPanel implements ToolBarSupport {
           
         // scan doc
         Document doc = taOutput.getDocument();
-        Segment seg = new Segment();
         
-        // not on 'space' ?
-        doc.getText(pos, 1, seg);
-        if (!Character.isLetterOrDigit(seg.first())) 
+        // find ' ' to the left
+        for (int i=0;;i++) {
+          // stop looking after 10
+          if (i==10)
+            return null;
+          // check for starting line or non digit/character
+          if (pos==0 || !Character.isLetterOrDigit(doc.getText(pos-1, 1).charAt(0)) ) 
+            break;
+          // continue
+          pos--;
+        }
+        
+        // find ' ' to the right
+        int len = 0;
+        while (true) {
+          // stop looking after 10
+          if (len==10)
+            return null;
+          // stop at end of doc
+          if (pos+len==doc.getLength())
+            break;
+          // or non digit/character          
+          if (!Character.isLetterOrDigit(doc.getText(pos+len, 1).charAt(0)))
+            break;
+          // continue
+          len++;
+        }
+        
+        // check if it's an ID
+        if (len<2)
           return null;
-          
-        // find '@' to the left
-        for (int i=0;;i++) {
-          // stop looking after 10 or bot
-          if (pos==0||i==10)
-            return null;
-          // check for starting '@'
-          doc.getText(--pos, 1, seg);
-          if (seg.first()=='@') 
-            break;
-          // continue
-        }
-        
-        // find '@' to the right
-        for (int i=0;;i++) {
-          // stop looking after 10 or eot
-          if (seg.count==doc.getLength()-pos||i==10)
-            return null;
-          // get more text and check for ending '@'            
-          doc.getText(pos, seg.count+1, seg);
-          if (seg.last()=='@') 
-            break;
-          // continue
-        }
+        String id = doc.getText(pos, len);
+        if (gedcom.getEntity(id)==null)
+          return null;
         
         // mark it
+        taOutput.requestFocusInWindow();
         taOutput.setCaretPosition(pos);
-        taOutput.moveCaretPosition(pos+seg.count);
+        taOutput.moveCaretPosition(pos+len);
   
         // return in betwee
-        return new String(seg.array, seg.offset+1, seg.count-2);
+        return id;
           
         // done
       } catch (BadLocationException ble) {
@@ -640,7 +646,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // not found
       return null;
     }
-
+    
     /**
      * have to implement MouseMotionListener.mouseDragger()
      * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
@@ -657,7 +663,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
       if (id==null)
         return;
       // propagate to other views through manager
-      manager.fireContextSelected(new Context(gedcom.getEntity(id)), e.getClickCount()>1, null);
+      Entity entity = gedcom.getEntity(id);
+      if (entity!=null)
+        manager.fireContextSelected(new Context(entity), e.getClickCount()>1, null);
       
       // done
     }

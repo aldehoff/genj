@@ -263,11 +263,11 @@ public class ReportEvents extends Report {
             String tag = "";
             if(hit.tag.length() > 0)
                 tag = hit.tag+": ";
-            println(getIndent(3) + tag + hit.when + " "+i18n("entity", new String[] {indi.getId(), indi.getName()} ));
+            println(getIndent(3) + tag + hit.when + " " + indi.toString());
         }
         if (hit.who instanceof Fam) {
             Fam fam = (Fam) hit.who;
-            println(getIndent(3) + hit.when + " "+i18n("entity", new String[] {fam.getId(), fam.toString()})+" (@" + fam.getHusband().getId() + "@" + TXT_MARR_SYMBOL + "@" + fam.getWife().getId() + "@)");
+            println(getIndent(3) + hit.when + " " + fam.toString());
         }
     }
     
