@@ -131,11 +131,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
    */
   private void setEditor(Editor set) {
 
-    // get old context and set it on editor to force commit changes
+    // preserve old context and reset current editor to force commit changes
     Context old = null;
     if (editor!=null) {
       old = editor.getContext();
-      editor.setContext(old);
+      editor.setContext(new Context(gedcom));
     }
     
     // remove old editor 
