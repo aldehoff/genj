@@ -135,13 +135,14 @@ public class ReportCGW extends Report {
     
 	// loop over all dates in indi
 	for (Iterator places = indi.getProperties(PropertyPlace.class).iterator(); places.hasNext(); ) {
-	    // consider valid dates only
+
 	    PropertyPlace place = (PropertyPlace)places.next();
 
 	    String dept = place.getJurisdiction(depPos);
 	    if (dept == null)  continue;
 	    if (dept.length()==0) continue;
-	    if (depLen > 0) dept = dept.substring(0,depLen);
+	    int l = Math.min(dept.length(),depLen);
+	    if (l > 0) dept = dept.substring(0,l);
 	    String jurisdiction = place.getJurisdiction(cityPos);
 	    if (jurisdiction.length()==0) jurisdiction = "???";
 	    // keep it
