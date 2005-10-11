@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.82 $ $Author: nmeier $ $Date: 2005-09-07 19:24:57 $
+ * $Revision: 1.83 $ $Author: nmeier $ $Date: 2005-10-11 19:54:45 $
  */
 package genj.report;
 
@@ -342,13 +342,14 @@ public abstract class Report implements Cloneable {
     registry.put("formatter", formatter.getKey());
     
     // ask user for output file
-    String dir = registry.get("doc.dir", EnvironmentChecker.getProperty(this, "user.home", ".", "document output directory"));
+    String key = getClass().getName()+".dir";
+    String dir = registry.get(key, EnvironmentChecker.getProperty(this, "user.home", ".", "document output directory"));
     FileChooser chooser = new FileChooser(owner, "Choose file", "Save", formatter.getFileExtension(), dir);
     chooser.showDialog();
     File file = chooser.getSelectedFile();
     if (file==null)
       return;
-    registry.put("doc.dir", chooser.getCurrentDirectory().getAbsolutePath());
+    registry.put(key, chooser.getCurrentDirectory().getAbsolutePath());
     if (!file.getName().endsWith("."+formatter.getFileExtension()))
       file = new File(file.getAbsolutePath()+"."+formatter.getFileExtension());
     
