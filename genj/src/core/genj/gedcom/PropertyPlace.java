@@ -236,15 +236,24 @@ public class PropertyPlace extends PropertyChoiceValue {
   }
   
   /**
+   * Accessor - first non-empty jurisdiction from skip starting point 
+   * @return jurisdiction of zero+ length
+   */
+  public String getFirstAvailableJurisdiction(int skip) {
+      if (skip<0) throw new IllegalArgumentException("negative skip value");
+    DirectAccessTokenizer jurisdictions = getJurisdictions();
+    String result = jurisdictions.get(skip);
+    for (int i=skip+1; result.length()==0 && jurisdictions.get(i)!=null ;i++) 
+      result = jurisdictions.get(i);
+    return result;
+  }
+
+  /**
    * Accessor - first non-empty jurisdiction
    * @return jurisdiction of zero+ length
    */
   public String getFirstAvailableJurisdiction() {
-    DirectAccessTokenizer jurisdictions = getJurisdictions();
-    String result = jurisdictions.get(0);
-    for (int i=1; result.length()==0 && jurisdictions.get(i)!=null ;i++) 
-      result = jurisdictions.get(i);
-    return result;
+    return getFirstAvailableJurisdiction(0);
   }
   
   /**
