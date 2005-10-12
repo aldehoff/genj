@@ -167,8 +167,8 @@ public class ReportSosa extends Report {
       result = formatBuffer(result,formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth),-43);
      
       result = formatBuffer(result,formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath),73);
-      result = formatBuffer(result,formatEvent("Métiers:", indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu),103);
-      result = formatBuffer(result,formatEvent("Résidences:", indi, "RESI", reportDateOfResi, reportPlaceOfResi),133);
+      result = formatBuffer(result,formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu),103);
+      result = formatBuffer(result,formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi),133);
       result = formatBuffer(result,formatEvent(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage),163);
       return result;
     }
