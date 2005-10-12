@@ -38,11 +38,11 @@ public class ReportSosa extends Report {
     return result;
   }
 
-  private final static String SOSA_ORDER = "par numéro sosa croissant";
-  private final static String LINEAGE_ORDER = "en suivant la lignée";
+  private final static String SOSA_ORDER = i18n("SosaOrder");
+  private final static String LINEAGE_ORDER = i18n("LineageOrder");
   /** options - open file after generation */
     public int outputOrder = 0;
-    public String outputOrders[] = { SOSA_ORDER, LINEAGE_ORDER, "lignée agnatique" };
+    public String outputOrders[] = { SOSA_ORDER, LINEAGE_ORDER, i18n("AgnaticLineage") };
 
   
     private final static int
@@ -50,8 +50,9 @@ public class ReportSosa extends Report {
 	ONE_EVT_PER_LINE = 1;
 
     public int outputFormat=ONE_LINE;
-    public String outputFormats[] = {"Un individu par ligne", "Un événement par ligne"};
+    public String outputFormats[] = { i18n("IndiPerLine"), i18n("EventPerLine") };
 
+    public int reportMaxGenerations = 999;
     public boolean reportPlaceOfBirth = true;
     public boolean reportDateOfBirth = true;
     public boolean reportPlaceOfDeath = true;
@@ -62,7 +63,6 @@ public class ReportSosa extends Report {
     public boolean reportDateOfOccu = true;
     public boolean reportPlaceOfResi = true;
     public boolean reportDateOfResi = true;
-    public int reportMaxGenerations = 999;
 
     /**
      * Main for argument individual
@@ -83,7 +83,7 @@ public class ReportSosa extends Report {
 		gen = Integer.numberOfTrailingZeros(Integer.highestOneBit(p))+1;
 		if (gen != curGen){
 		    curGen = gen;
-		    println("\n--- Génération " + curGen + " ---");
+		    println(i18n("Generation") + " " + curGen + " ---");
 		}
 		println(primary.get(p));
 	    }
