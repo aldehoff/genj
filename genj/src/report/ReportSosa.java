@@ -9,18 +9,14 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyPlace;
 import genj.report.Report;
 import genj.util.WordBuffer;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-
-
-// a enlecer
-import genj.util.DirectAccessTokenizer;
 
 
 /**
@@ -28,18 +24,9 @@ import genj.util.DirectAccessTokenizer;
  */
 public class ReportSosa extends Report {
     
-    private String getFirstAvailableJurisdiction(int skip, PropertyPlace plac) {
-      if (skip<0) throw new IllegalArgumentException("negative skip value");
-    DirectAccessTokenizer jurisdictions = plac.getJurisdictions();
-    String result = jurisdictions.get(skip);
-    if (result == null) return ("");
-    for (int i=skip+1; result.length()==0 && jurisdictions.get(i)!=null ;i++) 
-      result = jurisdictions.get(i);
-    return result;
-  }
-
-  private final static String SOSA_ORDER = i18n("SosaOrder");
-  private final static String LINEAGE_ORDER = i18n("LineageOrder");
+  private String SOSA_ORDER = i18n("SosaOrder");
+  private String LINEAGE_ORDER = i18n("LineageOrder");
+  
   /** options - open file after generation */
     public int outputOrder = 0;
     public String outputOrders[] = { SOSA_ORDER, LINEAGE_ORDER, i18n("AgnaticLineage") };
@@ -76,14 +63,11 @@ public class ReportSosa extends Report {
         
 	// Output order is sosa
 	if (outputOrder == 0) {
-	    int curGen=0;
 	    int gen=0;
 	    for (Iterator ps = primary.keySet().iterator(); ps.hasNext(); ) {
 		Integer p = (Integer)ps.next();
-		gen = Integer.numberOfTrailingZeros(Integer.highestOneBit(p))+1;
-		if (gen != curGen){
-		    curGen = gen;
-		    println(i18n("Generation") + " " + curGen + " ---");
+		if (1<<gen==p.intValue()){
+		    println(i18n("Generation") + " " + gen++ + " ---");
 		}
 		println(primary.get(p));
 	    }
@@ -99,7 +83,7 @@ public class ReportSosa extends Report {
         
         // Here comes the individual
 	String s = format(indi,fam,sosa);
-	primary.put( sosa, format(indi,fam,sosa));
+	primary.put( new Integer(sosa), format(indi,fam,sosa));
 
 	// Output order is lineage
 	if (outputOrder == 1) 
@@ -140,7 +124,7 @@ public class ReportSosa extends Report {
       if (date != null || plac != null) {
         result.append(symbol);
         result.append(date.getDisplayValue());
-        result.append(getFirstAvailableJurisdiction(1,plac));
+        result.append(plac.getFirstAvailableJurisdiction(1));
       }
       return result.toString();
     }
@@ -159,7 +143,7 @@ public class ReportSosa extends Report {
       PropertyPlace plac = isPlace ? (PropertyPlace) prop.getProperty("PLAC") : null;
       result.append(prop.getValue());
       if (date != null ) result.append(date.getDisplayValue());
-      if (plac != null ) result.append(getFirstAvailableJurisdiction(1,plac));
+      if (plac != null ) result.append(plac.getFirstAvailableJurisdiction(1));
       
       if (result.length() >0) 
 	  return symbol+" " + result.toString();
@@ -178,8 +162,8 @@ public class ReportSosa extends Report {
           return "?";
       
       String result = new String("");
-      result += String.format("% 6d ",(Integer)sosa);
-      result += String.format("%s",indi.getName()+"("+indi.getId()+") ");
+      
+      result += sosa + " " + indi.getName()+" ("+indi.getId()+") ";
       result = formatBuffer(result,formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth),-43);
      
       result = formatBuffer(result,formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath),73);
@@ -193,20 +177,24 @@ public class ReportSosa extends Report {
   * tabPos = <0 means firstpass
   */
     private String formatBuffer(String outBuffer,String event,int tabPos) {
-	if (outputOrder == 1)
+      
+      if (outputOrder == 1)
 	    if (event != null && event.length() != 0)
-		return (outBuffer+"; "+event);
+	      return (outBuffer+"; "+event);
 	    else
-		return outBuffer;
-	if (outputFormat == ONE_LINE || tabPos < 0){
+	      return outBuffer;
+      if (outputFormat == ONE_LINE || tabPos < 0){
 	    tabPos = Math.abs(tabPos);
-	    return(String.format("%-"+tabPos+"s%s",outBuffer,event));
-	}
-	if (outputFormat == ONE_EVT_PER_LINE)
-	    if (event != null && event.length() != 0)
-		return(outBuffer+String.format("%n%-43s%s"," ",event));
+        // was return(String.format("%-"+tabPos+"s%s",outBuffer,event));
+        return outBuffer + " " + event;
+      }
+      if (outputFormat == ONE_EVT_PER_LINE)
+        if (event != null && event.length() != 0)
+          // was return(outBuffer+String.format("%n%-43s%s"," ",event));
+          return outBuffer + "\n" + event;
 	    else
-		return outBuffer;
-	return (outBuffer + event);
-    }
+	      return outBuffer;
+	    return (outBuffer + event);
+    }  
+    
 } //ReportDescendants
