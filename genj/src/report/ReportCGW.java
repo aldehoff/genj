@@ -6,17 +6,19 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.fo.Document;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
-import genj.gedcom.TagPath;
-import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 import genj.window.WindowManager;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -24,8 +26,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.swing.ImageIcon;
-import java.io.*;
-import java.nio.charset.Charset;
 
 /**
  * GenJ - Report
