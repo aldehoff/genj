@@ -243,6 +243,8 @@ public class PropertyPlace extends PropertyChoiceValue {
       if (skip<0) throw new IllegalArgumentException("negative skip value");
     DirectAccessTokenizer jurisdictions = getJurisdictions();
     String result = jurisdictions.get(skip);
+    if (result==null)
+      return "";
     for (int i=skip+1; result.length()==0 && jurisdictions.get(i)!=null ;i++) 
       result = jurisdictions.get(i);
     return result;
