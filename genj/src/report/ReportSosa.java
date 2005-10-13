@@ -99,7 +99,7 @@ public class ReportSosa extends Report {
 
 	// Output order is lineage
 	if (outputOrder == LINEAGE_REPORT) 
-	    println("Gen:"+level+getIndent(level)+s);
+	    println(i18n("GenerationShort")+level+getIndent(level)+s);
 	if (outputOrder == AGNATIC_REPORT)
 	    println(s);
 
