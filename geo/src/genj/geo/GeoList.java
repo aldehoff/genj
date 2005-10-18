@@ -47,7 +47,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -209,25 +208,15 @@ import swingx.tree.AbstractTreeModel;
     }
     protected void execute() {
       // show query widget to user
-      final WindowManager.Action change = new WindowManager.Action("Change Value", false);
-      final WindowManager.Action choose = new WindowManager.Action("Remember Lat/Lon", false);
-      Object[] actions = new Object[]{ choose, change, WindowManager.TXT_CANCEL };
+      Object[] actions = new Object[]{ "Change", WindowManager.TXT_CANCEL };
       GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
       final QueryWidget query = new QueryWidget(location, view);
-      query.addListSelectionListener(new ListSelectionListener() {
-        public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-          if (e.getValueIsAdjusting()) return;
-          GeoLocation selection = query.getSelectedLocation();
-          change.setValid(selection!=null);
-          choose.setValid(selection!=null);
-        }
-      });
+      //GeoLocation selection = query.getSelectedLocation();
       int rc = viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
-      // check if he wants to change the place values
-      if (rc!=0) 
-        return;
-      // change it
-      
+      // check if he wants to change the location
+      if (rc==0) {
+        System.out.println(query.getGeoLocation());
+      }
       // done
     }
   }

@@ -19,7 +19,6 @@
  */
 package genj.geo;
 
-import genj.util.ChangeSupport;
 import genj.util.Resources;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
@@ -74,20 +73,23 @@ public class QueryWidget extends JPanel {
   private JTable hits;
   private JLabel status;
   
+  /** isChanging flag for our own changes that trigger events to ignore */
+  private boolean isChanging = false;
+  
   /**
    * Constructor
    */
-  public QueryWidget(GeoLocation location, GeoView view) {
+  public QueryWidget(GeoLocation setLocation, GeoView setView) {
     super(LAYOUT.copy());
     
     // init state
-    this.view = view;
+    view = setView;
     model = new Model();
     
     // prepare our components
-    city = new TextFieldWidget(location.getCity());
-    lat = new TextFieldWidget(location.isValid() ? ""+location.getCoordinate().y : "");
-    lon = new TextFieldWidget(location.isValid() ? ""+location.getCoordinate().x : "");
+    city = new TextFieldWidget(setLocation.getCity());
+    lat = new TextFieldWidget(setLocation.isValid() ? ""+setLocation.getCoordinate().y : "");
+    lon = new TextFieldWidget(setLocation.isValid() ? ""+setLocation.getCoordinate().x : "");
     
     hits = new JTable(model);
     status = new JLabel();
@@ -99,9 +101,6 @@ public class QueryWidget extends JPanel {
     add(new JScrollPane(hits));
     
     // listen to changes
-    ChangeSupport cs = new ChangeSupport(this);
-    city.addChangeListener(cs);
-    
     final Timer timer = new Timer(500, new ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent e) {
         String sCity = city.getText().trim();
@@ -112,18 +111,38 @@ public class QueryWidget extends JPanel {
     timer.setRepeats(false);
     timer.start();
     
-    cs.addChangeListener( new ChangeListener() {
+    city.addChangeListener( new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
         // restart query time
-        timer.restart();
+        if (!isChanging) timer.restart();
       }
     });
+
+    ChangeListener cl = new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        if (!isChanging) 
+          view.setSelection(getGeoLocation());
+      }
+    };
+    lat.addChangeListener(cl);
+    lon.addChangeListener(cl);
     
     hits.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
+        // anything selected?
         int row = hits.getSelectedRow();
-        if (row>=0)
-          QueryWidget.this.view.setSelection(model.getLocation(row));
+        if (row<0)
+          return;
+        GeoLocation loc = model.getLocation(row);
+        // show it on the map
+        view.setSelection(loc);
+        // update the values we're showing
+        isChanging = true;
+        city.setText(loc.getCity());
+        lat.setText(""+loc.getCoordinate().y);
+        lon.setText(""+loc.getCoordinate().x);
+        isChanging = false;
+        // done for now
       }
     });
     
@@ -154,28 +173,14 @@ public class QueryWidget extends JPanel {
   /**
    * Selected Location
    */
-  public GeoLocation getSelectedLocation() {
-    if (hits.getSelectedRowCount()!=1)
-      return null;
+  public GeoLocation getGeoLocation() {
     try {
-      return model.getLocation(hits.getSelectedRow());
+      GeoLocation loc = new GeoLocation(city.getText(), null, null);
+      loc.set(Double.parseDouble(lat.getText()), Double.parseDouble(lon.getText()), 1);
+      return loc;
     } catch (Throwable t) {
       return null;
     }
-  }
-  
-  /**
-   * Add a selection listener
-   */
-  public void addListSelectionListener(ListSelectionListener listener) {
-    hits.getSelectionModel().addListSelectionListener(listener);
-  }
-  
-  /**
-   * Removes a selection listener
-   */
-  public void removeListSelectionListener(ListSelectionListener listener) {
-    hits.getSelectionModel().removeListSelectionListener(listener);
   }
   
   /**
