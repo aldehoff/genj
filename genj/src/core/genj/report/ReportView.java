@@ -564,7 +564,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         lFile    .setText(report.getFilename());
         lAuthor  .setText(report.getAuthor());
         lVersion .setText(report.getVersion());
-        tpInfo   .setText(report.getInfo());
+        tpInfo   .setText(report.getInfo().replaceAll("\n", "<br>"));
         tpInfo   .setCaretPosition(0);
         owOptions.setOptions(report.getOptions());
       }
