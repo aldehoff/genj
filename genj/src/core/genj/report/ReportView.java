@@ -72,6 +72,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * Component for running reports on genealogic data
@@ -120,7 +121,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
    */
   public ReportView(String theTitle, Gedcom theGedcom, Registry theRegistry, ViewManager theManager) {
 
-    // Data
+    // data
     gedcom   = theGedcom;
     registry = theRegistry;
     manager  = theManager;
@@ -204,6 +205,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // ... Report's infos
     tpInfo = new JTextPane();
     tpInfo.setEnabled(false);
+    tpInfo.setEditorKit(new HTMLEditorKit());
     JScrollPane spInfo = new JScrollPane(tpInfo);
     gh.add(new JLabel(resources.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,GridBagHelper.FILL_BOTH);
