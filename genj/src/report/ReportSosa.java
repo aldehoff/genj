@@ -174,8 +174,10 @@ public class ReportSosa extends Report {
 	    else
 		result.append(plac.getJurisdiction(placeJurisdictionIndex-1));
 	}
-	
-	return symbol+" " + result.toString();
+	if (result.toString().length() == 0)
+	    return "";
+	else
+	    return symbol+" " + result.toString();
     }
         
     /**
