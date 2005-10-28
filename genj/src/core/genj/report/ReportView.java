@@ -63,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.JEditorPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
@@ -83,6 +84,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
   /** time between flush of output writer to output text area */
   private final static long FLUSH_WAIT = 200;
+    private final static String EOL= System.getProperty("line.separator");
+
+    private String theText = new String("");
 
   /** statics */
   private final static ImageIcon 
@@ -98,7 +102,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /** components to show report info */
   private JLabel      lFile,lAuthor,lVersion;
   private JTextPane   tpInfo;
-  private JTextArea   taOutput;
+  private JEditorPane   taOutput;
   private JList       listOfReports;
   private JTabbedPane tabbedPane;
   private AbstractButton bStart,bStop,bClose,bSave,bReload;
@@ -217,11 +221,22 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
   /**
    * Create the tab content for report output
+   * Output tab is a JEditorPane that displays either plain text or html text:
+   * - If the output starts with <HTML> then the report is considered as 
+   *   html document
+   * - If the output starts with <html> then the report is considered as 
+   *   html document and all newlins charaters (\n) are replaced with <br>. 
+   *   This should be used to create near plaint text report but with some
+   *   text decoration capability (bold, ...)
+   * - otherwise (default) the report is considered as plain text to keep
+   *   backward compatibility with all other reports.
    */  
   private JComponent createReportOutput(Callback callback) {
     
     // Panel for Report Output
-    taOutput = new JTextArea();
+    taOutput = new JEditorPane();
+    taOutput.setEditorKit(new HTMLEditorKit());
+    taOutput.setContentType("text/plain");
     taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
     taOutput.setEditable(false);
     taOutput.addMouseMotionListener(callback);
@@ -250,7 +265,14 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Adds a line of ouput
    */
   /*package*/ void addOutput(String line) {
-    taOutput.append(line);
+      if (theText.startsWith("<html>",0)){
+    	  taOutput.setContentType("text/html");
+	  theText += line.replaceAll(EOL, "<br>");
+      }  else
+	  theText += line;
+      if (theText.startsWith("<HTML>",0))
+    	  taOutput.setContentType("text/html");
+      taOutput.setText(theText);
 
     if (taOutput.getText().length()>0) {
 // 20030530 - why did I check for valueisadjusting here?      
@@ -431,7 +453,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
       owOptions.stopEditing();
 
       // clear the current output
-      taOutput.setText("");
+      theText = "";
+      taOutput.setContentType("text/plain");
+      taOutput.setText(theText);
       
       // start transaction
       if (!report.isReadOnly()) try {
@@ -705,7 +729,15 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // make sure we see output pane
       tabbedPane.getModel().setSelectedIndex(2);
       // output
-      taOutput.append(buffer.toString());
+      if (theText.startsWith("<html>",0)){
+    	  taOutput.setContentType("text/html");
+	  theText += buffer.toString().replaceAll(EOL, "<br>"+EOL);
+      } else 
+	  theText += buffer.toString();
+      if (theText.startsWith("<HTML>",0))
+    	  taOutput.setContentType("text/html");
+      taOutput.setText(theText);
+
       // clear buffer
       buffer.setLength(0);
       // done
