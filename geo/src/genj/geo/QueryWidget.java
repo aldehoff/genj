@@ -23,6 +23,7 @@ import genj.util.Resources;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
 
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,6 +93,8 @@ public class QueryWidget extends JPanel {
     lon = new TextFieldWidget(setLocation.isValid() ? ""+setLocation.getCoordinate().x : "");
     
     hits = new JTable(model);
+    hits.setPreferredScrollableViewportSize(new Dimension());
+    
     status = new JLabel();
     
     add(new JLabel(RESOURCES.getString("query.instruction"))); 
