@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.24 $ $Author: nmeier $ $Date: 2005-09-15 18:06:09 $
+ * $Revision: 1.25 $ $Author: nmeier $ $Date: 2005-10-31 19:16:27 $
  */
 package genj.util;
 
@@ -174,10 +174,13 @@ public class Registry {
   }
 
   /**
-   * Returns a registry for given logical name (might be null)
+   * Returns a registry for given logical name (lazy once instantiation)
    */
-  public static Registry lookup(String name) {
-    return (Registry)registries.get(name);
+  public static Registry lookup(String name, Origin origin) {
+    Registry result = (Registry)registries.get(name);
+    if (result!=null)
+      return result;
+    return new Registry(name, origin);
   }
   
   /**
