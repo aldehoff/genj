@@ -208,15 +208,14 @@ import swingx.tree.AbstractTreeModel;
     }
     protected void execute() {
       // show query widget to user
-      Object[] actions = new Object[]{ "Change", WindowManager.TXT_CANCEL };
+      Object[] actions = new Object[]{ GeoView.RESOURCES.getString("query.remember"), WindowManager.TXT_CANCEL };
       GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
       final QueryWidget query = new QueryWidget(location, view);
       //GeoLocation selection = query.getSelectedLocation();
       int rc = viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
       // check if he wants to change the location
-      if (rc==0) {
-        System.out.println(query.getGeoLocation());
-      }
+      if (rc==0) 
+        model.remember(location, query.getGeoLocation().getCoordinate());
       // done
     }
   }

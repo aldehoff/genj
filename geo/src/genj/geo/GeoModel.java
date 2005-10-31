@@ -26,8 +26,6 @@ import genj.gedcom.Property;
 import genj.gedcom.Transaction;
 import genj.util.Registry;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +37,8 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * Geographic model wrapper for gedcom
@@ -66,15 +66,16 @@ import javax.swing.SwingUtilities;
     String name = gedcom.getName();
     if (name.endsWith(".ged")) name = name.substring(0, name.length()-".ged".length());
     name = name + ".geo";
-    registry = new Registry(name, gedcom.getOrigin());
+    registry = Registry.lookup(name, gedcom.getOrigin());
     
-    // try to load properties local for debugging
-    try {
-      File debug = new File("gedcom", name);
-      if (debug.exists())
-        registry = new Registry(new FileInputStream(debug));
-    } catch (Throwable t) {
-    }
+// 20051031 don't think this is necessary anymore    
+//    // try to load properties local for debugging
+//    try {
+//      File debug = new File("gedcom", name);
+//      if (debug.exists())
+//        registry = new Registry(new FileInputStream(debug));
+//    } catch (Throwable t) {
+//    }
     // done
   }
   
@@ -128,6 +129,17 @@ import javax.swing.SwingUtilities;
 //        removeLocation(((Change.PropertyDel)change).getRoot());
 //    }
     // done
+  }
+  
+  /**
+   * Fix a location permanently
+   */
+  protected void remember(GeoLocation loc, Coordinate coord) {
+    // remember
+    registry.put(loc.getJurisdictionsAsString(), coord.y + "," + coord.x);
+    
+    // tell it to location
+    loc.set(coord.y, coord.x, 1);
   }
   
   /**
