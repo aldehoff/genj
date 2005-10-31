@@ -92,6 +92,9 @@ public class QueryWidget extends JPanel {
     lat = new TextFieldWidget(setLocation.isValid() ? ""+setLocation.getCoordinate().y : "");
     lon = new TextFieldWidget(setLocation.isValid() ? ""+setLocation.getCoordinate().x : "");
     
+    lat.setToolTipText(RESOURCES.getString("query.lat.tip"));
+    lon.setToolTipText(RESOURCES.getString("query.lon.tip"));
+    
     hits = new JTable(model);
     hits.setPreferredScrollableViewportSize(new Dimension());
     
