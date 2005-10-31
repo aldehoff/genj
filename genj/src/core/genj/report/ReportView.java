@@ -55,15 +55,14 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.JEditorPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
@@ -230,6 +229,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
    *   text decoration capability (bold, ...)
    * - otherwise (default) the report is considered as plain text to keep
    *   backward compatibility with all other reports.
+   *   
+   *   NM 20051031 as discussed I didn't really want another way for
+   *   reports to generate formatted output - I fear that report writers
+   *   will spread html throughout their code for a quick visual fix even
+   *   though the real answer for formatted output is fo.Document
+   *   Leaving this in for now and keeping an eye on this :) Fixed an
+   *   import warning though.
    */  
   private JComponent createReportOutput(Callback callback) {
     
