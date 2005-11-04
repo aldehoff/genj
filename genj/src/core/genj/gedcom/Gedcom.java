@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.97 $ $Author: nmeier $ $Date: 2005-09-07 19:24:08 $
+ * $Revision: 1.98 $ $Author: nmeier $ $Date: 2005-11-04 20:44:41 $
  */
 package genj.gedcom;
 
@@ -478,8 +478,14 @@ public class Gedcom {
    * Returns any instance of entity with given type if exists
    */
   public Entity getAnyEntity(String tag) {
-    Map ents = getEntityMap(tag);
-    return ents.isEmpty() ? null : (Entity)ents.values().iterator().next();
+    // loop over entities and return first of given type
+    for (Iterator it = allEntities.iterator(); it.hasNext(); ) {
+      Entity e = (Entity)it.next();
+      if (e.getTag().equals(tag))
+        return e;
+    }
+    // can't help 
+    return null;
   }
 
   /**
