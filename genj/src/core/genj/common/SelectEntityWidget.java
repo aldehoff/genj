@@ -59,6 +59,7 @@ public class SelectEntityWidget extends JPanel {
   
   /** entities to choose from */
   private Object[] list;
+  private Object none;
   
   /** widgets */
   private PopupWidget sortWidget;
@@ -92,14 +93,19 @@ public class SelectEntityWidget extends JPanel {
 
     // remember and lookup
     this.type = type;
+    this.none = none;
     
     Collection entities = gedcom.getEntities(type);
 
     // init list
-    list = new Object[entities.size()+1];
-    list[0] = none;
+    if (none!=null) {
+      list = new Object[entities.size()+1];
+      list[0] = none;
+    } else {
+      list = new Object[entities.size()];
+    }
     Iterator es=entities.iterator();
-    for (int e=1;e<list.length;e++) {
+    for (int e= none!=null ? 1 : 0;e<list.length;e++) {
       Entity ent = (Entity)es.next();
       if (!ent.getTag().equals(type))
         throw new IllegalArgumentException("Type of all entities has to be "+type);
@@ -168,7 +174,7 @@ public class SelectEntityWidget extends JPanel {
   public void setSelection(Entity set) {
     // fallback to none?
     if (set==null)
-      listWidget.setSelectedItem(list[0]);
+      listWidget.setSelectedItem(none!=null ? none : null);
     // applicable?
     if (!(set instanceof Entity)||!set.getTag().equals(type))
       return;
@@ -264,7 +270,7 @@ public class SelectEntityWidget extends JPanel {
       sort = this;
       // Sort
       Comparator comparator = new PropertyComparator(tagPath);
-      Arrays.sort(list, 1, list.length, comparator);
+      Arrays.sort(list, none!=null ? 1 : 0, list.length, comparator);
       listWidget.setModel(new DefaultComboBoxModel(list));
       sortWidget.setIcon(getImage());
       sortWidget.setToolTipText(getText());
