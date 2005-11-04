@@ -19,6 +19,7 @@
  */
 package genj.tree;
 
+import genj.common.SelectEntityWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -786,11 +787,15 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      * ContextProvider - callback
      */
     public Context getContext() {
-      if (currentEntity==null)
-        return new Context(model.getGedcom());
-      Context context = new Context(currentEntity);
-      context.addAction(new ActionBookmark(currentEntity, true));
-      return context;
+      Context result;
+      if (currentEntity==null) {
+        result = new Context(model.getGedcom());
+        result.addAction(new ActionChooseRoot());
+      } else {
+        result = new Context(currentEntity);
+        result.addAction(new ActionBookmark(currentEntity, true));
+      }
+      return result;
     }
     
     /**
@@ -1020,6 +1025,30 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       scrollToCurrent();
     }
   } //ActionFolding
+  
+  /**
+   * Action - choose a root through dialog
+   */
+  private class ActionChooseRoot extends ActionDelegate {
+
+    /** constructor */
+    private ActionChooseRoot() {
+      setText(resources.getString("select.root"));
+    }
+
+    /** do the choosin' */
+    protected void execute() {
+      
+      // let the user choose an individual
+      SelectEntityWidget select = new SelectEntityWidget(model.getGedcom(), Gedcom.INDI, null);
+      int rc = manager.getWindowManager().openDialog("select.root", getText(), WindowManager.QUESTION_MESSAGE, select, WindowManager.ACTIONS_OK_CANCEL, TreeView.this);
+      if (rc==0) 
+        setRoot(select.getSelection());
+      
+      // done
+    }
+    
+  } //ActionChooseRoot
 
   /**
    * Action - bookmark something
