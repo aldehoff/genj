@@ -40,6 +40,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.lang.reflect.Array;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -584,7 +586,12 @@ public class ViewManager {
     
     /** constructor */
     private ContextHook() {
-      Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
+      AccessController.doPrivileged(new PrivilegedAction() {
+        public Object run() {
+          Toolkit.getDefaultToolkit().addAWTEventListener(ContextHook.this, AWTEvent.MOUSE_EVENT_MASK);
+          return null;
+        }
+      });
     }
     
     /**
