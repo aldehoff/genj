@@ -40,6 +40,10 @@
     
     <property name="app.build" value="${app.version} ${now} ${user.name}"/>
   	
+    <!-- generate a key -->
+    <delete file="${dir.build}/keyfile"/>    
+    <genkey alias="genj" storepass="password" dname="CN=Nils Meier, OU=Unknown, O=genj.sourceforge.net, C=CA" keystore="${dir.build}/keyfile"/>    
+
   </target>
 
 	<!--
@@ -253,9 +257,14 @@
            includes="**/*.properties"/>
        <fileset dir="${dir.build}/version"/>
      </jar>
-     
+  	
      <!-- copy graphj.jar -->
      <copy todir="${dir.build}/applet" file="./lib/graphj.jar"/>
+  	
+  	 <!-- sign em -->
+     <signjar keystore="${dir.build}/keyfile" alias="genj" storepass="password">
+      <fileset dir="${dir.build}/applet" includes="*.jar"/>
+     </signjar>	
 
      <!-- create genj_applet_xyz.jar -->
      <zip zipfile="${dir.dist}/genj_applet-${app.version}.zip" update="True">
@@ -338,10 +347,6 @@
     
     <!-- unpack genj_app-xyz.zip -->
     <unzip dest="${dir.build}/webstart" src="${dir.dist}/genj_app-${app.version}.zip"/>
-
-    <!-- generate a key -->
-    <delete file="${dir.build}/keyfile"/>    
-    <genkey alias="genj" storepass="password" dname="CN=Nils Meier, OU=Unknown, O=genj.sourceforge.net, C=CA" keystore="${dir.build}/keyfile"/>    
 
     <!-- package necessary resources -->
     <jwspackage
