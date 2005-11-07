@@ -544,8 +544,10 @@ public class ReportView extends JPanel implements ToolBarSupport {
       try {
   
         BufferedWriter out = new BufferedWriter(writer);
-        String data = taOutput.getText();
+/*        String data = taOutput.getText();
         out.write(data,0,data.length());
+*/
+        out.write(theText,0,theText.length());
         out.close();
   
       } catch (IOException ex) {
