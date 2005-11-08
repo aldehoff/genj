@@ -24,6 +24,7 @@ import genj.util.ChangeSupport;
 import java.awt.KeyboardFocusManager;
 
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -51,6 +52,7 @@ public class TextAreaWidget extends JTextArea {
     setEditable(editable);
     setLineWrap(wrap);
     setWrapStyleWord(true);
+    setFont(new JTextField().getFont()); //don't use standard clunky text area font
 
     // restore default focus traversal keys (overriding
     // JTextArea's ctrl (shift) tab
