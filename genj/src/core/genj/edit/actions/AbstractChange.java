@@ -27,6 +27,7 @@ import genj.util.ActionDelegate;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.TextAreaWidget;
 import genj.view.Context;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
@@ -93,7 +94,7 @@ import javax.swing.JTextArea;
   
   protected JComponent getConfirmComponent() {
     if (confirm==null) {
-      confirm = new JTextArea(getConfirmMessage(), 6, 40);
+      confirm = new TextAreaWidget(getConfirmMessage(), 6, 40);
       confirm.setWrapStyleWord(true);
       confirm.setLineWrap(true);
       confirm.setEditable(false);
