@@ -27,11 +27,11 @@ import genj.util.swing.TextFieldWidget;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -118,24 +118,8 @@ public abstract class AbstractWindowManager implements WindowManager {
    */
   public int openDialog(String key, String title,  int messageType, String txt, Object[] actions, Component owner) {
     
-    // analyze the text
-    int maxLine = 40;
-    int cols = 40, rows = 1;
-    StringTokenizer lines = new StringTokenizer(txt, "\n\r");
-    while (lines.hasMoreTokens()) {
-      String line = lines.nextToken();
-      if (line.length()>maxLine) {
-        cols = maxLine;
-        rows += line.length()/maxLine;
-      } else {
-        cols = Math.max(cols, line.length());
-        rows++;
-      }
-    }
-    rows = Math.min(10, rows);
-
     // create a textpane for the txt
-    TextAreaWidget text = new TextAreaWidget("", rows, cols);
+    TextAreaWidget text = new TextAreaWidget("", 2, 10);
     text.setLineWrap(true);
     text.setWrapStyleWord(true);
     text.setText(txt);
@@ -242,7 +226,22 @@ public abstract class AbstractWindowManager implements WindowManager {
     wrapper.add(BorderLayout.CENTER, content);
     
     // create the glorious option pane
-    JOptionPane pane  = new JOptionPane(wrapper, messageType, JOptionPane.DEFAULT_OPTION, null, actions);
+    JOptionPane pane  = new JOptionPane(wrapper, messageType, JOptionPane.DEFAULT_OPTION, null, actions) {
+      public void doLayout() {
+        // let super do its thing
+        super.doLayout();
+        // check minimum size
+        Container container = getTopLevelAncestor();
+        Dimension minimumSize = container.getMinimumSize();
+        Dimension size        = container.getSize();
+        if (size.width < minimumSize.width || size.height < minimumSize.height) {
+          Dimension newSize = new Dimension(Math.max(minimumSize.width,  size.width),
+                                            Math.max(minimumSize.height, size.height));
+          container.setSize(newSize);
+        }
+        // checked
+      }
+    };
     if (actions!=null&&actions.length>0) 
       pane.setInitialValue(actions[0]);
     
