@@ -22,6 +22,7 @@ package genj.util.swing;
 import genj.util.ActionDelegate;
 
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -166,6 +167,9 @@ public class PopupWidget extends JButton {
 
     // .. create an populate        
     JPopupMenu popup = new JPopupMenu();
+    // NM 20051108 don't let this get too big
+    if (as.size()>16)
+      popup.setLayout(new GridLayout(16,0));
     MenuHelper mh = new MenuHelper();
     mh.pushMenu(popup);
     mh.createItems(as, false);
