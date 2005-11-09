@@ -40,6 +40,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyMedia;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertyRepository;
@@ -149,7 +150,9 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
           type==PropertyRepository.class||
           type==PropertySource.class||
           type==PropertySubmitter.class||
-          type==PropertyFamilyChild.class) {
+          type==PropertyFamilyChild.class||
+          (type==PropertyMedia.class&&Options.getInstance().isAllowNewOBJEctEntities) 
+        ) {
         // .. make sure @@ forces a non-substitute!
         result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
         // continue
@@ -194,7 +197,9 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
       if (type==PropertyNote.class||
           type==PropertyRepository.class||
           type==PropertySource.class||
-          type==PropertySubmitter.class) {
+          type==PropertySubmitter.class||
+          (type==PropertyMedia.class&&Options.getInstance().isAllowNewOBJEctEntities) 
+          ) {
         // .. make sure @@ forces a non-substitute!
         result.add(new CreateRelationship(new Relationship.XRefBy(entity, (PropertyXRef)subs[s].create("@@")), manager));
       }
@@ -223,7 +228,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateEntity(gedcom, Gedcom.INDI, manager));
     result.add(new CreateEntity(gedcom, Gedcom.FAM , manager));
     result.add(new CreateEntity(gedcom, Gedcom.NOTE, manager));
-    result.add(new CreateEntity(gedcom, Gedcom.OBJE, manager));
+    if (Options.getInstance().isAllowNewOBJEctEntities)
+      result.add(new CreateEntity(gedcom, Gedcom.OBJE, manager));
     result.add(new CreateEntity(gedcom, Gedcom.REPO, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
