@@ -21,15 +21,15 @@ import java.util.TreeMap;
  * GenJ - ReportSosa
  * Types de rapports:
  *   - Tableau d'ascendance avec num sosa: une colonne par type d'evenement
- *   - Tableau d'ascendance Agnatique (uniquement les pères. Si pas de père, la mère)
- *   - Liste d'ascendance suivant les lignées
+ *   - Tableau d'ascendance Agnatique (uniquement les peres. Si pas de pere, la mere)
+ *   - Liste d'ascendance suivant les lignees
  *
  * Format des rapports:
  *   - Une ligne par individu
  *   - Un evt par ligne
  * Type de sortie
  *   - Texte
- *   - Texte, colonnes tronquées
+ *   - Texte, colonnes tronquees
  *   - HTML
  * TODO: 
  * - read gedcom header place format to set placeJurisdictionIndex
@@ -38,11 +38,11 @@ import java.util.TreeMap;
  * - Add one event per line for lineage report
  ***** 1. modifier le core pour pouvoir sauvegarde le rapport correctement
  ***** 2. mettre une option pour sortir le rapport en mode texte uniquement (comme avant)
- ***** 3. supprimer la ligne vide dans le rapport en suivant la lignée
- ***** 4. séparer les événements par des virgules dans l'ascendance lignée
- * 5. faire un alignement en cas de débordement dans le rap lignée
+ ***** 3. supprimer la ligne vide dans le rapport en suivant la lignee
+ ***** 4. separer les evenements par des virgules dans l'ascendance lignee
+ * 5. faire un alignement en cas de debordement dans le rap lignee
  * 6. voir utilisation de la couleur
- ***** 7. modify generation xx formatting (cadre, souligné, ...)
+ ***** 7. modify generation xx formatting (cadre, souligne, ...)
  */
 public class ReportSosa extends Report {
     private ReportOut output;
