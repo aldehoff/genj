@@ -76,6 +76,7 @@ public class SelectEntityWidget extends JPanel {
     "FAM",
     "FAM:MARR:DATE",
     "OBJE", 
+    "OBJE:TITL", 
     "NOTE", 
     "NOTE:NOTE", 
     "SOUR", 
