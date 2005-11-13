@@ -1,92 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry output="build/classes/core" kind="src" path="src/core">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry output="build/classes/run" kind="src" path="src/run">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry output="build/classes/report" kind="src" path="src/report">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry output="build/classes/contrib" kind="src" path="src/contrib">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry output="build/classes/tst" kind="src" path="src/tst">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="images">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/jhbasic.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/graphj.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/en">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/junit.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/jfreechart.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/de">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/es">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/fr">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/hu">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/it">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/ja">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/nl">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/pt_BR">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/ru">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="contrib/saxon/saxon.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
+	<classpathentry output="build/classes/core" kind="src" path="src/core"/>
+	<classpathentry output="build/classes/run" kind="src" path="src/run"/>
+	<classpathentry output="build/classes/report" kind="src" path="src/report"/>
+	<classpathentry output="build/classes/contrib" kind="src" path="src/contrib"/>
+	<classpathentry output="build/classes/tst" kind="src" path="src/tst"/>
+	<classpathentry kind="lib" path="images"/>
+	<classpathentry kind="lib" path="lib/jhbasic.jar"/>
+	<classpathentry kind="lib" path="lib/graphj.jar"/>
+	<classpathentry kind="lib" path="language/en"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
+	<classpathentry kind="lib" path="language/de"/>
+	<classpathentry kind="lib" path="language/es"/>
+	<classpathentry kind="lib" path="language/fr"/>
+	<classpathentry kind="lib" path="language/hu"/>
+	<classpathentry kind="lib" path="language/it"/>
+	<classpathentry kind="lib" path="language/ja"/>
+	<classpathentry kind="lib" path="language/nl"/>
+	<classpathentry kind="lib" path="language/pt_BR"/>
+	<classpathentry kind="lib" path="language/ru"/>
+	<classpathentry kind="lib" path="contrib/saxon/saxon.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/commons-io-1.0.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/commons-logging-1.0.3.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/fop.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-awt-util.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-bridge.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-gvt.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-util.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-xml.jar"/>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>
