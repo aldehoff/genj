@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.84 $ $Author: nmeier $ $Date: 2005-11-04 20:45:17 $
+ * $Revision: 1.85 $ $Author: nmeier $ $Date: 2005-11-13 22:28:46 $
  */
 package genj.report;
 
@@ -362,17 +362,20 @@ public abstract class Report implements Cloneable {
       file.getParentFile().mkdirs();
       formatter.format(doc, file);
     } catch (IOException e) {
-      LOG.log(Level.WARNING, "formatting "+doc+" failed", e);
+      viewManager.getWindowManager().openDialog(null, "Formatting "+doc+" failed", WindowManager.ERROR_MESSAGE,e.getMessage(), WindowManager.ACTIONS_OK, owner);
+      file = null;
     }
     
     // close progress dialog
     viewManager.getWindowManager().close(progress);
     
     // open document
-    FileAssociation association = FileAssociation.get(formatter.getFileExtension(), formatter.getFileExtension(), "Open", owner);
-    if (association!=null)
-      association.execute(file.getAbsolutePath());
-      
+    if (file!=null) {
+      FileAssociation association = FileAssociation.get(formatter.getFileExtension(), formatter.getFileExtension(), "Open", owner);
+      if (association!=null)
+        association.execute(file.getAbsolutePath());
+    }
+    
     // done
   }
   
