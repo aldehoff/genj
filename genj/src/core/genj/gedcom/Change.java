@@ -209,7 +209,7 @@ public abstract class Change {
     public String toString() {
       return "Added "+entity.getTag();
     }
-  } //PropertyAdded
+  } //EntityAdded
   
   /**
    * Removed Entity
@@ -234,7 +234,32 @@ public abstract class Change {
     public String toString() {
       return "Removed "+entity.getTag();
     }
-  } //PropertyAdded
+  } //EntityRemoved
+  
+  /**
+   * ID Changed 
+   */  
+  public static class EntityID extends Change {
+    
+    private String old;
+
+    EntityID(Entity entity, String oldId) {
+      super(entity);
+      old = oldId;
+    }
+    
+    void undo() {
+      try {
+        entity.setId(old);
+      } catch (GedcomException e) {
+        // shouldn't happen
+      }
+    }
+
+    public String toString() {
+      return "ID Change "+old+" to "+entity.getId();
+    }
+  } //IDChanged
   
   
 } //Change

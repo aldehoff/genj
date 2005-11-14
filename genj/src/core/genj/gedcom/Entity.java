@@ -130,6 +130,29 @@ public class Entity extends Property {
   public String getId() {
     return id;
   }
+  
+  /**
+   * Changes an entity's ID
+   */
+  public void setId(String set) throws GedcomException {
+    
+    // tell Gedcom about it
+    Gedcom ged = getGedcom();
+    if (ged!=null) ged.handleChangeOfID(this, set);
+    
+    // remember now
+    String old = id;
+    id = set;
+    
+    // setup undo
+    Transaction tx = getTransaction();
+    if (tx!=null) {
+      Change change = new Change.EntityID(this, old);
+      tx.addChange(change);
+      propagateChange(change);
+    }
+    
+  }
 
   /**
    * Initialize entity

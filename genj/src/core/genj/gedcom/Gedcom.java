@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.98 $ $Author: nmeier $ $Date: 2005-11-04 20:44:41 $
+ * $Revision: 1.99 $ $Author: nmeier $ $Date: 2005-11-14 20:25:34 $
  */
 package genj.gedcom;
 
@@ -285,6 +285,36 @@ public class Gedcom {
   }
   
   /**
+   * An ID change is in progress
+   */
+  /*package*/ void handleChangeOfID(Entity entity, String id) throws GedcomException {
+    
+    // known?
+    if (getEntity(entity.getId())!=entity)
+      throw new GedcomException("Can't change ID of entity not part of this Gedcom instance");
+    
+    // valid prefix/id?
+    if (id==null||id.length()<2)
+      throw new GedcomException("Need valid ID length");
+    if (!id.startsWith(getEntityPrefix(entity.getTag())))
+      throw new GedcomException("Need applicable ID prefix");
+    
+    // dup?
+    if (getEntity(id)!=null)
+      throw new GedcomException("Duplicate ID is not acceptable");
+
+    // do the housekeeping
+    Map id2entity = getEntityMap(entity.getTag());
+    id2entity.remove(entity.getId());
+    id2entity.put(id, entity);
+    
+    // remember maximum ID length
+    maxIDLength = Math.max(id.length(), maxIDLength);
+    
+    // done
+  }
+
+  /**
    * Add entity 
    */
   /*package*/ void addEntity(Entity entity) throws GedcomException {
@@ -355,7 +385,7 @@ public class Gedcom {
 
     // Done
     return result;
-  }
+  }  
 
   /**
    * Deletes entity
