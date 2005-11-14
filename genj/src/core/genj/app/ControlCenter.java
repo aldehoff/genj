@@ -373,9 +373,9 @@ public class ControlCenter extends JPanel {
             removeGedcom(gedcom);
             new ActionSave(gedcom) {
               // after the save
-              protected void postExecute() {
+              protected void postExecute(boolean preExecuteResult) {
                 // super first
-                super.postExecute();
+                super.postExecute(preExecuteResult);
                 // add gedcom again we removed temporarily
                 addGedcom(gedcom);
                 // stop still unsaved changes that didn't make it through saving
@@ -473,7 +473,7 @@ public class ControlCenter extends JPanel {
     /**
      * (sync) post execute
      */
-    protected void postExecute() {
+    protected void postExecute(boolean preExecuteResult) {
       
       // close progress
       windowManager.close(progress);
@@ -533,9 +533,8 @@ public class ControlCenter extends JPanel {
       }
       
       // got a successfull gedcom
-      if (gedcom != null) {
+      if (gedcom != null) 
         addGedcom(gedcom);
-      }
       
       // done
     }
@@ -944,9 +943,9 @@ public class ControlCenter extends JPanel {
 
     /**
      * (sync) post write
-     * @see genj.util.ActionDelegate#postExecute()
+     * @see genj.util.ActionDelegate#postExecute(boolean)
      */
-    protected void postExecute() {
+    protected void postExecute(boolean preExecuteResult) {
 
       // close progress
       windowManager.close(progress);
@@ -1003,9 +1002,9 @@ public class ControlCenter extends JPanel {
           removeGedcom(gedcom);
           // and save
           new ActionSave(gedcom) {
-            protected void postExecute() {
+            protected void postExecute(boolean preExecuteResult) {
               // super first
-              super.postExecute();
+              super.postExecute(preExecuteResult);
               // add back if still changed
               if (gedcom.hasUnsavedChanges())
                 addGedcom(gedcom);

@@ -146,16 +146,17 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
           view = (ReportView)views[0];
         // run it in view
         view.run(report, context);
-        // we're done ourselves
+        // we're done ourselves - don't go into execute()
         return false;
       }
       // start transaction
       if (!report.isReadOnly()) try {
         gedcom.startTransaction();
       } catch (IllegalStateException e) {
+        // tx didn't start - don't go into execute()
         return false; 
       }
-      // we're doing this ourselves now
+      // go ahead into async execute
       return true;
     }
     /** callback */
@@ -165,9 +166,9 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
       // done
     }
     /** callback (edt sync) **/
-    protected void postExecute() {
-      // tx to end?
-      if (!report.isReadOnly())
+    protected void postExecute(boolean preExecuteResult) {
+      // tx to end? IF the preExecute was ok
+      if (preExecuteResult==true&&!report.isReadOnly())
         gedcom.endTransaction();
     }
   } //ActionRun

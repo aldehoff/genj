@@ -423,9 +423,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // .. change buttons
       setRunning(true);
       
-      // clear instance
-      instance = null;
-  
       // Calc Report
       Report report = (Report)listOfReports.getSelectedValue();
       if (report==null) 
@@ -489,11 +486,10 @@ public class ReportView extends JPanel implements ToolBarSupport {
     /**
      * post execute
      */
-    protected void postExecute() {
+    protected void postExecute(boolean preExecuteResult) {
       // tx to end?
-      if (instance!=null&&!instance.isReadOnly()) {
+      if (preExecuteResult&&!instance.isReadOnly()) 
         gedcom.endTransaction();
-      }
       // flush
       out.flush();
       // stop run

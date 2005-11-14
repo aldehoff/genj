@@ -401,9 +401,9 @@ import javax.swing.JComponent;
   }
 
   /**
-   * @see genj.util.ActionDelegate#postExecute()
+   * @see genj.util.ActionDelegate#postExecute(boolean)
    */
-  protected void postExecute() {
+  protected void postExecute(boolean preExecuteResult) {
     // close progress
     manager.getWindowManager().close(progress);
     // something we should know about?

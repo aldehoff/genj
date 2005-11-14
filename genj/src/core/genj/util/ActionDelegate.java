@@ -99,16 +99,16 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
     }
     
     // pre
-    boolean preExecuteOk;
+    boolean preExecuteResult;
     try {
-      preExecuteOk = preExecute();
+      preExecuteResult = preExecute();
     } catch (Throwable t) {
       handleThrowable("preExecute",t);
-      preExecuteOk = false;
+      preExecuteResult = false;
     }
     
     // execute
-    if (preExecuteOk) try {
+    if (preExecuteResult) try {
       
       if (async!=ASYNC_NOT_APPLICABLE) {
         
@@ -126,18 +126,18 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
       // guide into sync'd postExecute because
       // getThread().start() might fail in 
       // certain security contexts (e.g. applet)
-      preExecuteOk = false;
+      preExecuteResult = false;
     }
     
     // post
-    if (async==ASYNC_NOT_APPLICABLE||!preExecuteOk) try {
-      postExecute();
+    if (async==ASYNC_NOT_APPLICABLE||!preExecuteResult) try {
+      postExecute(preExecuteResult);
     } catch (Throwable t) {
       handleThrowable("postExecute", t);
     }
     
     // done
-    return preExecuteOk;
+    return preExecuteResult;
   }
   
   /**
@@ -213,8 +213,9 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   
   /**
    * Implementor's functionality (always sync to EDT)
+   * @param preExecuteResult TODO
    */
-  protected void postExecute() {
+  protected void postExecute(boolean preExecuteResult) {
     // Default NOOP
   }
   
@@ -366,7 +367,7 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   private class CallSyncPostExecute implements Runnable {
     public void run() {
       try {
-        postExecute();
+        postExecute(true);
       } catch (Throwable t) {
         handleThrowable("postExecute", t);
       }

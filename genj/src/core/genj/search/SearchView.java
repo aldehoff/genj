@@ -479,7 +479,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     /**
      * after execute (on EDT)
      */
-    protected void postExecute() {
+    protected void postExecute(boolean preExecuteResult) {
       // update count
       labelCount.setText(""+hitCount);
       // reset our state

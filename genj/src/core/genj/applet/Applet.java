@@ -212,9 +212,9 @@ public class Applet extends java.applet.Applet {
     }
     
     /**
-     * @see genj.util.ActionDelegate#postExecute()
+     * @see genj.util.ActionDelegate#postExecute(boolean)
      */
-    protected void postExecute() {
+    protected void postExecute(boolean preExecuteResult) {
 
       // prepare window manager
       WindowManager winMgr = new DefaultWindowManager(registry, Gedcom.getImage());
