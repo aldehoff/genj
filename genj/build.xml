@@ -327,6 +327,7 @@
        <!-- contrib files -->
        <zipfileset dir="." includes="contrib/docbook-xsl/**"/>
        <zipfileset dir="." includes="contrib/saxon/**"/>
+       <zipfileset dir="." includes="contrib/fop/**"/>
        
        <!-- readme files  -->
        <zipfileset dir="." includes="doc/*"/>
