@@ -478,6 +478,26 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Returns this property's properties by tag (only valid properties are considered)
+   */
+  public Property[] getProperties(String tag) {
+    return getProperties(tag, true);
+  }
+  
+  /**
+   * Returns this property's properties by tag 
+   */
+  public Property[] getProperties(String tag, boolean validOnly) {
+    ArrayList result = new ArrayList(getNoOfProperties());
+    for (int i=0;i<result.size();i++) {
+      Property prop = getProperty(i);
+      if (prop.getTag().equals(tag)&&(!validOnly||prop.isValid()))
+        result.add(prop);
+    }
+    return toArray(result);
+  }
+  
+  /**
    * Returns this property's properties which are of given type
    */
   public List getProperties(Class type) {
