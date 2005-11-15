@@ -114,51 +114,56 @@ public class Delta implements Comparable {
 
     // grab earlier values  
     int 
-      yearlier =           earlier.getYear (),
-      mearlier = Delta.fix(earlier.getMonth()),
-      dearlier = Delta.fix(earlier.getDay  ());
+      yearlier =  earlier.getYear (),
+      mearlier = earlier.getMonth(),
+      dearlier = earlier.getDay();
   
     // age at what point in time?
     int 
-      ylater =           later.getYear (),
-      mlater = Delta.fix(later.getMonth()),
-      dlater = Delta.fix(later.getDay  ());
+      ylater =  later.getYear (),
+      mlater = later.getMonth(),
+      dlater = later.getDay();
     
     // make sure years are not empty (could be on all UNKNOWN PIT)
     if (yearlier==PointInTime.UNKNOWN||ylater==PointInTime.UNKNOWN)
       return null;
-    
-    // calculate deltas
     int years  = ylater - yearlier;
-    int months = mlater - mearlier;
-    int days = dlater - dearlier;
     
-    // check day
-    if (days<0) {
-      // decrease months
-      months --;
-      // increase days with days in previous month
-      days = dlater + (calendar.getDays(mearlier, yearlier)-dearlier); 
-    }
-  
-    // check month now<then
-    if (months<0) {
-      // decrease years
-      years -=1;
-      // increase months
-      months += calendar.getMonths();
-    } 
+    // check months
+    int months = 0;
+    int days = 0;
+    if (mearlier!=PointInTime.UNKNOWN&&mlater!=PointInTime.UNKNOWN) {
+      
+      // got the month
+      months = mlater - mearlier;
     
-    // sanity check - 20040316 allowing years==months==days==0 now
-    if (years<0||months<0||days<0)  
-      return null;      
+      // check days
+      if (dearlier!=PointInTime.UNKNOWN&&dlater!=PointInTime.UNKNOWN) {
+        
+        // got the days
+        days = dlater - dearlier;
+      
+        // check day
+        if (days<0) {
+          // decrease months
+          months --;
+          // increase days with days in previous month
+          days = dlater + (calendar.getDays(mearlier, yearlier)-dearlier); 
+        }
 
+      }
+      
+      // check month now<then
+      if (months<0) {
+        // decrease years
+        years -=1;
+        // increase months
+        months += calendar.getMonths();
+      } 
+    
+    }
     // done
     return new Delta(days, months, years, calendar);
-  }
-  
-  private static int fix(int i) {
-    return i!=PointInTime.UNKNOWN ? i : 0;
   }
   
   /**
