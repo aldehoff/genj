@@ -5,6 +5,7 @@ package genj.gedcom;
 
 import genj.gedcom.PropertyDate.Format;
 import genj.gedcom.time.Calendar;
+import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import junit.framework.TestCase;
 
@@ -87,6 +88,36 @@ public class PropertyDateTest extends TestCase {
       assertEquals("day of "+pit, day-1, pit.getDay());
     else
       assertTrue("day of "+pit+" should be unknown", pit.getDay()==PointInTime.UNKNOWN);
+    
+    
+  }
+  
+  private final static int X = PointInTime.UNKNOWN;
+
+  public void testAnniversaries() {
+    
+    PointInTime now = new PointInTime(25-1, 5-1, 1970);
+    
+    testAnniversary(X, X, 1970, now, 0, 0, 0);
+    testAnniversary(X, 5, 1970, now, 0, 0, 0);
+    testAnniversary(X, 4, 1970, now, 0, 1, 0);
+    testAnniversary(24, 5, 1970, now, 1, 0, 0);
+    testAnniversary(24, 4, 1970, now, 1, 1, 0);
+    testAnniversary(24, 4, 1969, now, 1, 1, 1);
+    
+    testAnniversary(1, 1, 1900, now, 24, 4, 70);
+  }
+  
+  private void testAnniversary(int day, int month, int year, PointInTime now, int days, int months, int years) {
+    
+    PropertyDate pd = new PropertyDate();
+    pd.setValue(PropertyDate.DATE, new PointInTime( day==X?X:day-1, month==X?X:month-1, year), null, null);
+    
+    Delta anniversary = pd.getAnniversary(now);
+    
+    assertEquals("anniversary of "+pd+" (days)", days, anniversary.getDays());
+    assertEquals("anniversary of "+pd+" (months)", months, anniversary.getMonths());
+    assertEquals("anniversary of "+pd+" (years)", years, anniversary.getYears());
     
     
   }

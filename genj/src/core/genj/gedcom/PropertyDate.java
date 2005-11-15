@@ -20,6 +20,7 @@
 package genj.gedcom;
 
 import genj.gedcom.time.Calendar;
+import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.DirectAccessTokenizer;
 import genj.util.WordBuffer;
@@ -284,6 +285,35 @@ public class PropertyDate extends Property {
       result.append("("+PointInTime.GREGORIAN.getName()+")");
     }
     return result.toString();
+  }
+  
+  /**
+   * Calculate how far this date lies in the past
+   * @return the delta or null if n/a
+   */
+  public Delta getAnniversary() {
+    return getAnniversary(PointInTime.getNow());
+  }
+  
+  /**
+   * Calculate how far this date lies in the past from given 'now'
+   * @return the delta or null if n/a
+   */
+  public Delta getAnniversary(PointInTime now) {
+    
+    // simply validity check
+    if (!isValid())
+      return null;
+    
+    // calculate comparables
+    PointInTime pit = isRange() ? getEnd() : getStart();
+
+    // date is in the future?
+    if (now.compareTo(pit)<0)
+      return null;
+    
+    // compute the delta
+    return Delta.get(pit, now);
   }
 
   /** 
