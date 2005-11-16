@@ -195,7 +195,7 @@ public class GeoViewSettings extends JPanel implements Settings {
       viewManager.getWindowManager().openDialog(null, null, WindowManager.QUESTION_MESSAGE, t.getMessage(), WindowManager.ACTIONS_OK, GeoViewSettings.this);
     }
     /** callback -EDT again */
-    protected void postExecute() {
+    protected void postExecute(boolean preExecuteResult) {
       // close progress
       viewManager.getWindowManager().close(progress);
       // enable actions againe
