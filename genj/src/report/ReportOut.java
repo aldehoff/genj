@@ -11,6 +11,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
+import genj.gedcom.time.Delta;
 import genj.report.Report;
 import genj.util.WordBuffer;
 import java.util.Iterator;
@@ -24,12 +25,21 @@ import java.util.TreeMap;
 abstract class ReportOut  {
     protected Report parentReport;
 
+    /**
+     * Privacy
+     */
+    boolean managePrivacy = true;
+    int privateYears = 100;
+    boolean deadIsPublic=false;
+    String privateTag="_PRIV";
+
     abstract void startTable();
     abstract void endTable();
     abstract String b(String s);
     abstract String em(String s);
     abstract String strong(String s);
     abstract String i(String s);
+    abstract String underline(String s);
     abstract String row(String s);
     abstract String cell(String s);
     abstract String cell(String s, int rs, int cs);
@@ -42,13 +52,65 @@ abstract class ReportOut  {
     abstract void endIndent();
     abstract void start();
     abstract void end();
+    abstract String hlink(String name, String text);
+    abstract String anchor(String name, String text);
     
-  /**
-   * Constructor
-   */
+    /**
+     * Constructor
+     */
     protected ReportOut(Report parent) {
 	parentReport = parent;
     }
+
+    
+    void setPrivacy(boolean managed,
+	       int nbYears,
+	       boolean dead,
+	       String tag){
+
+	managePrivacy = managed;
+	privateYears = nbYears;
+	deadIsPublic=dead;
+	privateTag=tag;
+    }
+    void setPrivacy(boolean managed){
+	setPrivacy(managed,100,false,"_PRIV");
+    }
+    
+    boolean isPrivate(Entity indi,Entity fam, boolean genIsPrivate){
+	if (!managePrivacy)
+	    return false;
+	if (deadIsPublic && indi.getProperty("DEAT") != null)
+	    return false;
+	if (genIsPrivate)
+	    return true;
+
+	PropertyDate date = null;
+	Property prop = indi.getProperty("BIRT");
+	if (prop!=null){
+	    date = (PropertyDate) prop.getProperty("DATE");
+	}
+	if (date == null && fam != null){
+	    prop = fam.getProperty("MARR");
+	    if (prop!=null){
+		date = (PropertyDate) prop.getProperty("DATE");
+	    }
+	}
+	if (date == null){
+	    prop = indi.getProperty("DEAT");
+	    if (prop!=null){
+		date = (PropertyDate) prop.getProperty("DATE");
+	    }
+	}
+	if (date != null) {
+	    Delta delta = date.getAnniversary();
+	    if (delta != null){
+		return (privateYears > delta.getYears());
+	    }
+	}
+	return false;
+    }	
+
 
     /**
      * isDate : affichage de la date
@@ -60,7 +122,7 @@ abstract class ReportOut  {
     String formatEvent(Entity entity, String tag, boolean isDate, boolean isPlace, int placeIndex ) {
 	// Prop hidden?
 	if (!isDate && !isPlace) 
-	    return null;
+	    return "";
       
 	// prop exists?
 	if (entity==null)
@@ -82,7 +144,7 @@ abstract class ReportOut  {
 	    else
 		result.append(plac.getDisplayValue());
 	}
-	return result.toString();
+	return result.toString()+" ";
     }
 
     /**
@@ -114,7 +176,8 @@ class ReportOutHtml extends ReportOut {
 	return tag(tag,"",s);
     }
     private String tag (String tag, String param, String s) {
-	return ("<"+tag+" "+param+">"+s+"</"+tag+">");
+	param = (param.length() != 0)? " "+param:param;
+	return ((s.length() != 0)?"<"+tag+param+">"+s+"</"+tag+">":"");
     }
 
     /**
@@ -138,6 +201,8 @@ class ReportOutHtml extends ReportOut {
 	return tag("B",s);}
     String i(String s){
 	return tag("I",s);}
+    String underline(String s){
+	return tag("U",s);}
     String em(String s){
 	return tag("EM",s);}
     String strong(String s){
@@ -164,6 +229,13 @@ class ReportOutHtml extends ReportOut {
 	parentReport.println("</div>");}
     String indent(String s){
 	return("<div class=\"indent\">"+s+"</div>");}
+    String anchor(String name, String text){
+	return(tag("A","name="+name,text));
+    }
+    String hlink(String name, String text){
+	return(tag("A","href=#"+name,text));
+    }
+
 }
 
 class ReportOutText extends ReportOut{
@@ -177,8 +249,7 @@ class ReportOutText extends ReportOut{
     private int cellIndex = 0;
     private boolean niceColumn = false;
     private int rowLength = 0;
-    private boolean isInTable = false;
-    private int indentLevel=1;
+    private boolean isInTable = false;    private int indentLevel=1;
     private String eol= System.getProperty("line.separator");
 
   /**
@@ -199,6 +270,8 @@ class ReportOutText extends ReportOut{
     String strong(String s){
 	return s;}
     String i(String s){
+	return s;}
+    String underline(String s){
 	return s;}
     String h(int level,String s) {
 	return(s.toUpperCase());}
@@ -270,6 +343,12 @@ class ReportOutText extends ReportOut{
 	isInTable = false;
     }
     void end(){}
+    String anchor(String name, String text){
+	return(text);
+    }
+    String hlink(String name, String text){
+	return(text);
+    }
 
     private String formatString(String s, int size){
 	if (!niceColumn && (Math.abs(size)-s.length())<0)
