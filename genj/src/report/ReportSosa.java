@@ -36,6 +36,8 @@ import java.util.TreeMap;
  *   in a more comprehensive way.
  * - Tune .property file
  * - Add one event per line for lineage report
+ * - Add different colour for male, female and undef
+ * - Add header or footer with issuer informations
  ***** 1. modifier le core pour pouvoir sauvegarde le rapport correctement
  ***** 2. mettre une option pour sortir le rapport en mode texte uniquement (comme avant)
  ***** 3. supprimer la ligne vide dans le rapport en suivant la lignee
@@ -102,6 +104,16 @@ public class ReportSosa extends Report {
     public boolean reportPlaceOfResi = true;
     public boolean reportDateOfResi = true;
 
+    // Privacy
+    public boolean managePrivacy = true;
+    public int privateYears = 100;
+    public int privateGen = 0;
+    public boolean deadIsPublic=false;
+    public String privateEvent=i18n("PrivateEventString");
+    public String privateName=i18n("PrivateNameString");
+    public String privateTag="_PRIV";
+    
+
     /**
      * Main for argument individual
      */
@@ -150,6 +162,10 @@ public class ReportSosa extends Report {
 	    ((ReportOutText) output).setNiceColumns(((outputFormat == TEXT_EXACT) &&
 						     (reportFormat != ONE_LINE)));
 	}
+	output.setPrivacy(managePrivacy,
+			  privateYears,
+			  deadIsPublic,
+			  privateTag);
 
 	nbColumns = 2;
 	if (reportPlaceOfBirth ||  reportDateOfBirth) nbColumns++;
@@ -248,37 +264,40 @@ public class ReportSosa extends Report {
      */
     private String format(Indi indi, Fam fam, int sosa, int level) {
 
-	String number;
-	String name;
-	String birth;
-	String death;
-	String marriage;
-	String occupation;
-	String residence;
+	String number = "";
+	String name = "";
+	String birth = "";
+	String death = "";
+	String marriage = "";
+	String occupation = "";
+	String residence = "";
 
 	String result = new String();
 
 	// Might be null
 	if (indi==null) 
 	    return "?";
+	boolean isPrivate = output.isPrivate(indi,fam,level<=privateGen);
 
 	if (reportType == CSV_REPORT) {
-	    result = ""+sosa;
-	    result += ";"+indi.getName();
-	    result += ";"+output.formatEvent(indi, "BIRT",true, true, placeIndex);
+	    number = ""+sosa;
+	    name = indi.getName();
+	    birth = output.formatEvent(indi, "BIRT",true, true, placeIndex);
 	    if (fam != null){
-		result += ";"+output.formatEvent(fam, "MARR",true, true, placeIndex);
+		marriage = output.formatEvent(fam, "MARR",true, true, placeIndex);
 	    } else {
-		result += ";";
+		marriage = "";
 	    }
-	    result += ";"+output.formatEvent(indi, "DEAT",true, true, placeIndex);
-	    result += ";"+output.formatEvent(indi, "OCCU",true, true, placeIndex);
-	    result += ";"+output.formatEvent(indi, "RESI",true, true, placeIndex);
-	    return result;
-	}
+	    death = output.formatEvent(indi, "DEAT",true, true, placeIndex);
+	    occupation = output.formatEvent(indi, "OCCU",true, true, placeIndex);
+	    residence= output.formatEvent(indi, "RESI",true, true, placeIndex);
+	} else {
 
 	number = ""+sosa;
 	name = output.strong(indi.getName())+" ("+indi.getId()+")";
+	if (privateName.length() != 0){
+	    name = isPrivate? privateName : name;
+	}
 	birth = output.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
 	if (fam != null){
 	    if (reportType == AGNATIC_REPORT){
@@ -292,7 +311,15 @@ public class ReportSosa extends Report {
 	death = output.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
 	occupation = output.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
 	residence = output.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
-
+	}
+	if (isPrivate){
+	    name = (privateName.length() != 0)? privateName : name;
+	    birth = (birth.length() != 0)? privateEvent:"";
+	    marriage = (marriage.length() != 0)? privateEvent:"";
+	    death = (death.length() != 0)? privateEvent:"";
+	    occupation = (occupation.length() != 0)? privateEvent:"";
+	    residence = (residence.length() != 0)? privateEvent:"";
+	}
 	if (reportType == AGNATIC_REPORT || reportType == SOSA_REPORT) {
 	    if (reportFormat == ONE_LINE) {
 		result = output.cell(number);
@@ -318,29 +345,29 @@ public class ReportSosa extends Report {
 	    } 
 	} else if (reportType == LINEAGE_REPORT) {
 	    if (reportFormat == ONE_LINE) {
-	    String separator=" ";
-	    result = number;
-	    result += " " + name;
-	    if (birth != null && birth.length() != 0){ 
-		result += separator + birth;
-		separator = "; ";
-	    }
-	    if (marriage != null && marriage.length() != 0){
-		result += separator + marriage;
-		separator = "; ";
-	    }
-	    if (death != null && death.length() != 0){
-		result += separator + death;
-		separator = "; ";
-	    }
-	    if (occupation != null && occupation.length() != 0){
-		result += separator + occupation;
-		separator = "; ";
-	    }
-	    if (residence != null && residence.length() != 0){
-		result += separator + residence;
-		separator = "; ";
-	    }
+		String separator=" ";
+		result = number;
+		result += " " + name;
+		if (birth != null && birth.length() != 0){ 
+		    result += separator + birth;
+		    separator = "; ";
+		}
+		if (marriage != null && marriage.length() != 0){
+		    result += separator + marriage;
+		    separator = "; ";
+		}
+		if (death != null && death.length() != 0){
+		    result += separator + death;
+		    separator = "; ";
+		}
+		if (occupation != null && occupation.length() != 0){
+		    result += separator + occupation;
+		    separator = "; ";
+		}
+		if (residence != null && residence.length() != 0){
+		    result += separator + residence;
+		    separator = "; ";
+		}
 	    } else {
 		result = "";
 		if (birth != null) result += output.li(birth);
@@ -351,6 +378,8 @@ public class ReportSosa extends Report {
 
 		result = number+" "+name+output.ul(result);
 	    }
+	}else if (reportType == CSV_REPORT) {
+	    result = number+";"+name+";"+birth+";"+marriage+";"+death+";"+occupation+";"+residence;
 	}
 
 	return result;
