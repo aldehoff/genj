@@ -30,6 +30,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -233,6 +234,9 @@ public abstract class AbstractWindowManager implements WindowManager {
         // check minimum size
         Container container = getTopLevelAncestor();
         Dimension minimumSize = container.getMinimumSize();
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        minimumSize.width = Math.min(screen.width/2, minimumSize.width);
+        minimumSize.height = Math.min(screen.height/2, minimumSize.height);
         Dimension size        = container.getSize();
         if (size.width < minimumSize.width || size.height < minimumSize.height) {
           Dimension newSize = new Dimension(Math.max(minimumSize.width,  size.width),
