@@ -177,7 +177,7 @@ class ReportOutHtml extends ReportOut {
     }
     private String tag (String tag, String param, String s) {
 	param = (param.length() != 0)? " "+param:param;
-	return ((s.length() != 0)?"<"+tag+param+">"+s+"</"+tag+">":"");
+	return ("<"+tag+param+">"+s+"</"+tag+">");
     }
 
     /**
@@ -198,15 +198,15 @@ class ReportOutHtml extends ReportOut {
     void endTable(){
 	parentReport.println( "</TABLE>");}
     String b(String s){
-	return tag("B",s);}
+	return (s.length() == 0)? "" : tag("B",s);}
     String i(String s){
-	return tag("I",s);}
+	return (s.length() == 0)? "" : tag("I",s);}
     String underline(String s){
-	return tag("U",s);}
+	return (s.length() == 0)? "" : tag("U",s);}
     String em(String s){
-	return tag("EM",s);}
+	return (s.length() == 0)? "" : tag("EM",s);}
     String strong(String s){
-	return tag("STRONG",s);}
+	return (s.length() == 0)? "" : tag("STRONG",s);}
     String row(String s){
 	return( tag("TR", "class=\"report\"", s));}
     String cell(String s){
