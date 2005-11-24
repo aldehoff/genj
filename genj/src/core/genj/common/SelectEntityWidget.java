@@ -138,7 +138,7 @@ public class SelectEntityWidget extends JPanel {
 
     // init state
     sort.trigger();
-    listWidget.setSelectedIndex(0);
+    if (list.length>0) listWidget.setSelectedIndex(0);
     
     // done
   }
@@ -211,7 +211,7 @@ public class SelectEntityWidget extends JPanel {
       if (value instanceof Entity) {
         txt = getString((Entity)value, sort.tagPath);
       } else {
-        txt = value.toString();
+        txt = value!=null ? value.toString() : "";
       }
 
       return super.getListCellRendererComponent(list, txt, index, isSelected, cellHasFocus);
