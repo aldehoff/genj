@@ -19,7 +19,7 @@ crit&egrave;re de la colonne - en cliquant une nouvelle fois, l'ordre de
 tri sera invers&eacute;. Un petit marqueur vous indiquera quelle 
 colonne est tri&eacute;e, et la direction de l'ordre de tri.
   <blockquote>
-    <img src="../../images/screenshots/table1.png">
+    <img src="../images/screenshots/table1.png">
   </blockquote>
 </p>
 
@@ -29,14 +29,37 @@ montre une entit&eacute; &agrave; la fois, exemple, l'entit&eacute;
 Individu, l'entit&eacute; Famille ... Les cellules dans chaque colonne 
 donnent les valeurs des propri&eacute;t&eacute;s d'une entit&eacute; 
 identifi&eacute;es par les <a href="../concepts/paths.html">Chemins 
-d'Etiquettes</a>.<Br>
-Chaque colonne repr&eacute;sente les chemins complets vers une 
-propri&eacute;t&eacute; sp&eacute;cifique de l'arbre 
+d'Etiquettes</a>. Si l'on veut comprendre le format gedcom, on 
+peut donner une petite explication ici, ainsi si c'est la date 
+de naissance d'une personne que je veux afficher, en r&eacute;alit&eacute;, 
+le programme va rechercher le chemin d'&eacute;tiquette 
+<em>INDI:BIRT:DATE</em> pour toutes les personnes de mon arbre, mais 
+bien s&ucirc;r il ne vous affichera que les dates de naissance pour 
+plus de facilit&eacute;.<Br>
+Chaque colonne repr&eacute;sente une caract&eacute;ristique d'une 
+propri&eacute;t&eacute; sp&eacute;cifique de l'arbre
 g&eacute;n&eacute;alogique pour cette entit&eacute;. Les ent&ecirc;tes
-de colonnes visualisent ce chemin - par exemple&nbsp; 
-<b>INDI:BIRT:DATE</b> indique la date de naissance d'un individu 
-(INDI(individu)-->BIRT(naissance)-->DATE(date) - le chemin est donc 
-"individu", "naissance" et "date"). 
+de colonnes peuvent &ecirc;tre par exemple le num&eacute;ro d'identification 
+de la personne (ce qu'on appelle l'<b>ID</b>), son <b>nom</b>, 
+ses <b>pr&eacute;noms</b>, sa <b>date de naissance</b>, son <b>lieu 
+de naissance</b>, etc...<br>
+<br>
+De plus, suivant le tri que vous aurez choisi, exemple, vous avez 
+d&eacute;cid&eacute; de trier les gens par leur nom, vous verrez 
+appara&icirc;tre sur la droite de la table des lettres qui vous 
+permettront de sauter rapidement aux personnes dont le nom commence 
+par la lettre que vous aurez cliqu&eacute;. (ex: vous cliquez sur M, 
+automatiquement, la table va se positionner sur la premi&egrave;re 
+personne dont le nom commence par M). Sur l'onglet repr&eacute;sentant 
+les Familles, vous pouvez d&eacute;cider de trier suivant les dates de 
+mariage par exemple, et bien vous verrez appara&icirc;tre sur la 
+droite, le m&ecirc;me type de raccourci, mais cette fois, ce ne 
+sera plus des lettres, mais des dates, ainsi vous pourrez sauter 
+imm&eacute;diatement aux mariages dont la date a eu lieu au moins 
+&agrave; la date que vous aurez choisie. (ex: vous cliquez sur 1685 
+dans la colonne de droite, automatiquement la table va se positionner 
+sur les mariages dont la date est &eacute;gale ou post&eacute;rieure 
+&agrave; 1685).
 </p>
 
 <Br>
