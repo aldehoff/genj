@@ -235,7 +235,14 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
    * Ask the user whether he wants to commit changes 
    */
   /*package*/ boolean isCommitChanges() {
+    
+    // we only consider committing IF we're still in a visible top level ancestor (window) - otherwise we assume 
+    // that the containing window was closed and we're not going to throw a dialog out there or do a change
+    // behind the covers - we really would need a about-to-close hook for contained components here :(
+    if (!getTopLevelAncestor().isVisible())
+      return false;
       
+    // check for auto commit
     if (Options.getInstance().isAutoCommit)
       return true;
     
