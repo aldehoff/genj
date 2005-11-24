@@ -62,6 +62,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
@@ -207,8 +208,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
     // ... Report's infos
     tpInfo = new JTextPane();
-    tpInfo.setEnabled(false);
+    tpInfo.setEditable(false);
     tpInfo.setEditorKit(new HTMLEditorKit());
+    tpInfo.setFont(new JTextField().getFont()); //don't use standard clunky text area font
     JScrollPane spInfo = new JScrollPane(tpInfo);
     gh.add(new JLabel(resources.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,GridBagHelper.FILL_BOTH);
