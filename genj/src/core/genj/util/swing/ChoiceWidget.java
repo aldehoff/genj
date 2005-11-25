@@ -24,6 +24,8 @@ import genj.util.ChangeSupport;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
 
@@ -262,7 +264,7 @@ public class ChoiceWidget extends JComboBox {
   /**
    * Auto complete support
    */
-  private class AutoCompleteSupport implements DocumentListener, ActionListener {
+  private class AutoCompleteSupport implements DocumentListener, ActionListener, FocusListener {
 
     private Timer timer = new Timer(250, this);
     
@@ -271,6 +273,8 @@ public class ChoiceWidget extends JComboBox {
      */
     private AutoCompleteSupport() {
       getTextEditor().getDocument().addDocumentListener(this);
+      getTextEditor().addFocusListener(this);
+      
       timer.setRepeats(false);
     }
     
@@ -335,6 +339,17 @@ public class ChoiceWidget extends JComboBox {
       c.moveDot(txt.length());
   
       // done      
+    }
+    /** selectAll on focus gained */
+    public void focusGained(FocusEvent e) {
+      JTextField tf = getTextEditor();
+      if (tf.getDocument() != null) {
+        tf.setCaretPosition(tf.getDocument().getLength());
+        tf.moveCaretPosition(0);
+      }
+    }
+    
+    public void focusLost(FocusEvent e) {
     }
   } //AutoCompleteSupport
   
