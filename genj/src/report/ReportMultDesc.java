@@ -24,7 +24,7 @@ import java.util.TreeMap;
  *   statistics (nb pers distinctes, nb pers vivantes, nb fam, ...)
  */
 public class ReportMultDesc extends Report {
-    private ReportOut output;
+    private Formatter output;
     //    private String eol= System.getProperty("line.separator");
     private int nbColumns;
     // Statistics
@@ -103,8 +103,8 @@ public class ReportMultDesc extends Report {
 	    placeIndex = -placeJurisdictionIndex;
 
 	if (outputFormat == HTML) {
-	    output = new ReportOutHtml(this);
-	    ((ReportOutHtml) output).
+	    output = new FormatterHtml(this);
+	    ((FormatterHtml) output).
 		setStyle("td.report{vertical-align:top;}"+
 			 "div.indent {margin-left:30px;"+
 			 "}"+
@@ -114,15 +114,15 @@ public class ReportMultDesc extends Report {
 			 "}"+
 			 "h2.report{border-color:black;background-color:#f0f0f0;border-style:solid;border-width:0 0 2 0;text-transform:uppercase;}");
 	}else {
-	    output = new ReportOutText(this);
-	    ((ReportOutText) output).setTabStop(new int[] {-7,
+	    output = new FormatterText(this);
+	    ((FormatterText) output).setTabStop(new int[] {-7,
 							   7+columnWidth,
 							   7+columnWidth*2,
 							   7+columnWidth*3,
 							   7+columnWidth*4,
 							   7+columnWidth*5,
 							   7+columnWidth*6});
-	    ((ReportOutText) output).setNiceColumns(((outputFormat == TEXT_EXACT) &&
+	    ((FormatterText) output).setNiceColumns(((outputFormat == TEXT_EXACT) &&
 						     (reportFormat != ONE_LINE)));
 	}
 
