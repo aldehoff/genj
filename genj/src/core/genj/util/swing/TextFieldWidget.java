@@ -117,19 +117,25 @@ public class TextFieldWidget extends JTextField {
     
     // catch focus gained
     if (e.getID()==FocusEvent.FOCUS_GAINED) {
-      if (isTemplate||isSelectAllOnFocus) {
-        // 20040307 wrote my own selectAll() so that the
-        // caret is at position 0 after selection - this
-        // makes sure the beginning of the text is visible
-        if (getDocument() != null) {
-          setCaretPosition(getDocument().getLength());
-          moveCaretPosition(0);
-        }
-      }
+      if (isTemplate||isSelectAllOnFocus) 
+        selectAll();
     }
     
     // continue
     super.processFocusEvent(e);
+  }
+  
+  /**
+   * Our own selection that places the cursor at the beginning instead of the end
+   */
+  public void selectAll() {
+    // 20040307 wrote my own selectAll() so that the
+    // caret is at position 0 after selection - this
+    // makes sure the beginning of the text is visible
+    if (getDocument() != null) {
+      setCaretPosition(getDocument().getLength());
+      moveCaretPosition(0);
+    }
   }
     
   /**
