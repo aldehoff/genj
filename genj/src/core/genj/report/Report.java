@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.86 $ $Author: nmeier $ $Date: 2005-11-24 18:54:00 $
+ * $Revision: 1.87 $ $Author: nmeier $ $Date: 2005-11-30 15:24:25 $
  */
 package genj.report;
 
@@ -294,9 +294,33 @@ public abstract class Report implements Cloneable {
     t.printStackTrace(new PrintWriter(awriter));
     log(awriter.toString());
   }
+  
+  /**
+   * An implementation of Report can ask the user for a file with this method.
+   */
+  public File getFileFromUser(String title, String button) {
+    
+    String key = getClass().getName()+".file";
+
+    // show filechooser
+    String dir = registry.get(key, EnvironmentChecker.getProperty(this, "user.home", ".", "looking for report dir to let the user choose from"));
+    JFileChooser chooser = new JFileChooser(dir);
+    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    chooser.setDialogTitle(title);
+    int rc = chooser.showDialog(owner,button);
+    
+    // check result
+    File result = chooser.getSelectedFile(); 
+    if (rc!=JFileChooser.APPROVE_OPTION||result==null)
+      return null;
+    
+    // keep it
+    registry.put(key, result.getParent().toString());    
+    return result;
+  }
 
   /**
-   * A sub-class can ask the user for a directory with this method.
+   * An implementation of Report can ask the user for a directory with this method.
    */
   public final File getDirectoryFromUser(String title, String button) {
 
