@@ -112,7 +112,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private Registry registry;
   
   /** resources */
-  private Resources resources = Resources.get(this);
+  /*package*/ static final Resources RESOURCES = Resources.get(ReportView.class);
   
   /** manager */
   private ViewManager manager ;
@@ -140,9 +140,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
     // three tabs
     Callback callback = new Callback();
-    tabbedPane.add(resources.getString("report.reports"),createReportList(callback));
-    tabbedPane.add(resources.getString("report.options"), createReportOptions());
-    tabbedPane.add(resources.getString("report.output"),createReportOutput(callback));
+    tabbedPane.add(RESOURCES.getString("report.reports"),createReportList(callback));
+    tabbedPane.add(RESOURCES.getString("report.options"), createReportOptions());
+    tabbedPane.add(RESOURCES.getString("report.output"),createReportOutput(callback));
     
     // done
   }
@@ -188,7 +188,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     lFile = new JLabel("");
     lFile.setForeground(Color.black);
     
-    gh.add(new JLabel(resources.getString("report.file")),2,0);
+    gh.add(new JLabel(RESOURCES.getString("report.file")),2,0);
     gh.add(lFile,3,0,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
 
     // ... Report's author
@@ -196,14 +196,14 @@ public class ReportView extends JPanel implements ToolBarSupport {
     lAuthor = new JLabel("");
     lAuthor.setForeground(Color.black);
 
-    gh.add(new JLabel(resources.getString("report.author")),2,1);
+    gh.add(new JLabel(RESOURCES.getString("report.author")),2,1);
     gh.add(lAuthor,3,1,1,1,GridBagHelper.GROWFILL_HORIZONTAL);
 
     // ... Report's version
     lVersion = new JLabel();
     lVersion.setForeground(Color.black);
 
-    gh.add(new JLabel(resources.getString("report.version")),2,2);
+    gh.add(new JLabel(RESOURCES.getString("report.version")),2,2);
     gh.add(lVersion,3,2);
 
     // ... Report's infos
@@ -212,7 +212,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tpInfo.setEditorKit(new HTMLEditorKit());
     tpInfo.setFont(new JTextField().getFont()); //don't use standard clunky text area font
     JScrollPane spInfo = new JScrollPane(tpInfo);
-    gh.add(new JLabel(resources.getString("report.info")),2,3);
+    gh.add(new JLabel(RESOURCES.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,GridBagHelper.FILL_BOTH);
 
     // done
@@ -337,7 +337,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     
     // Buttons at bottom
     ButtonHelper bh = new ButtonHelper()
-      .setResources(resources)
+      .setResources(RESOURCES)
       .setContainer(bar)
       .setFocusable(false);
 
@@ -450,7 +450,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // check if appropriate
       if (context==null||report.accepts(context)==null) {
-        manager.getWindowManager().openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,resources.getString("report.noaccept"),WindowManager.ACTIONS_OK,ReportView.this);
+        manager.getWindowManager().openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,RESOURCES.getString("report.noaccept"),WindowManager.ACTIONS_OK,ReportView.this);
         return false;
       }
       
