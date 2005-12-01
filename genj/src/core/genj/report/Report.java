@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.87 $ $Author: nmeier $ $Date: 2005-11-30 15:24:25 $
+ * $Revision: 1.88 $ $Author: nmeier $ $Date: 2005-12-01 16:17:32 $
  */
 package genj.report;
 
@@ -299,6 +299,13 @@ public abstract class Report implements Cloneable {
    * An implementation of Report can ask the user for a file with this method.
    */
   public File getFileFromUser(String title, String button) {
+    return getFileFromUser(title, button, false);
+  }
+  
+  /**
+   * An implementation of Report can ask the user for a file with this method.
+   */
+  public File getFileFromUser(String title, String button, boolean askForOverwrite) {
     
     String key = getClass().getName()+".file";
 
@@ -313,6 +320,13 @@ public abstract class Report implements Cloneable {
     File result = chooser.getSelectedFile(); 
     if (rc!=JFileChooser.APPROVE_OPTION||result==null)
       return null;
+    
+    // choose an existing file?
+    if (result.exists()&&askForOverwrite) {
+      rc = viewManager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, ReportView.RESOURCES.getString("report.file.overwrite"), WindowManager.ACTIONS_YES_NO, owner);
+      if (rc!=0) 
+        return null;
+    }
     
     // keep it
     registry.put(key, result.getParent().toString());    
