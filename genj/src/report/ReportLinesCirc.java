@@ -97,7 +97,7 @@ import java.nio.charset.Charset;
 todo:
 - majuscules
 - issuer
-- rapport à partir de la famille
+- rapport a partir de la famille
  */
 public class ReportLinesCirc extends Report {
     private final static Charset CHARSET = Charset.forName("ISO-8859-1");
@@ -688,7 +688,7 @@ private String put_given_name(Indi person,int length){
 		out.println("		.7 radfactor div");
 	    }
 	    out.println(" setlinewidth                %if level is beyond 7 make lines thinnest possible\n");
-	    out.println("		90.0 delta_ang 449.99 { %step through all angles from 90› to 90›+360› (450›)");
+	    out.println("		90.0 delta_ang 449.99 { %step through all angles from 90deg to 90deg+360deg (450deg)");
 	    out.println("			/ang1 exch def		/ang2 ang1 delta_ang add def     %find the beginning and ending angle for each box");
 	    out.println("			newpath");
 	    out.println("				i 0 gt{%draw the box");
