@@ -17,6 +17,7 @@ import genj.util.WordBuffer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.ArrayList;
 
 /**
  * GenJ - Formatter
@@ -373,4 +374,23 @@ class FormatterText extends Formatter{
 	}
     }
 }
+
+class Fifo extends ArrayList {
+    Fifo(int initSize) {
+	super(initSize);
+    }
+
+    void push(Object o){
+	add(o);
+    }
+    Object pop(){
+	Object result = null;
+	if (!isEmpty()){
+	    result  = this.get(0);
+	    remove(0);
+	}
+	return result;
+    }
+}
+
 
