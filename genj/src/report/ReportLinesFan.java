@@ -15,8 +15,7 @@ import genj.report.Report;
 import genj.util.WordBuffer;
 import genj.window.WindowManager;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
 import java.io.*;
 import java.nio.charset.Charset;
 import javax.swing.JFileChooser;
@@ -33,7 +32,11 @@ public class ReportLinesFan extends Report {
 
     private PrintWriter out;
     private final static Charset CHARSET = Charset.forName("ISO-8859-1");
-    public int genPerPage = 8;
+    public int genPerPage = 6;
+    public int reportMaxGenerations = 999;
+
+
+    private Fifo indiList = new Fifo(50);
     
     /**
      * Helper - Create a PrintWriter wrapper for output stream
@@ -49,7 +52,7 @@ public class ReportLinesFan extends Report {
 	
 	try{
 
-    	    File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK);
+    	    File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
 	    if (file == null){
 		return ;
 	    }
@@ -66,8 +69,9 @@ public class ReportLinesFan extends Report {
 	    Reader in = new InputStreamReader(getClass().getResourceAsStream("ps-fan.ps"));
 
 	    int c;
-	    out.println("%!PS-Adobe-2.0 EPSF-1.2");
+	    /*	    out.println("%!PS-Adobe-2.0 EPSF-1.2");
 	    out.println("%%BoundingBox:0 0 1100 790");
+	    */
 	    out.println("/maxlevel "+genPerPage+" def");
 
 	    while ((c = in.read()) != -1)
@@ -78,16 +82,32 @@ public class ReportLinesFan extends Report {
 	    ioe.printStackTrace();
 	}
 
-	pedigree(0,1,1,indi);
-	out.println("showpage");
+	//	indiList.add(indi);
+	//indiList.add(new Integer(1));
+	indiList.push(indi);
+	indiList.push(new Integer(1));
+
+	while (!indiList.isEmpty()){
+	    Indi indiIterator = (Indi)(indiList.pop());
+	    //	    indiList.remove(0);
+	    Integer genIndex = (Integer) (indiList.pop());
+	    //indiList.remove(0);
+	    if (genIndex != null){
+		out.println("gsave");
+		pedigree(1,genIndex.intValue(),1,1,indiIterator);
+		out.println("showpage");
+		out.println("grestore");
+	    }
+	}
 	out.flush();
         out.close();
     }
 
-    private void  pedigree (int in, int lev, int ah, Indi indi){
+    private void  pedigree (int in, int gen, int lev, int ah, Indi indi){
 	if (indi == null){
 	    return;
 	}
+	if (gen > reportMaxGenerations){ return;}
 	out.println("("+fullname(indi,1,1,50)+")");
 	if (in < 7) {
 	    out.println(" ("+formatEvent(OPTIONS.getBirthSymbol(),indi,"BIRT",Formatter.DATE_FORMAT_LONG,false,0)+")"+
@@ -98,11 +118,11 @@ public class ReportLinesFan extends Report {
 	} else {
 	    out.println(" () () ");
 	}
-	out.println(" "+in+
+	out.println(" "+(in-1)+
 		    " "+(ah-lev)+
 		    " i");
 
-        if (in <= genPerPage) {
+        if (in < genPerPage) {
 	    // And we loop through its ascendants
 	    Fam famc = indi.getFamilyWhereBiologicalChild();
 	    if (famc==null) {
@@ -110,9 +130,15 @@ public class ReportLinesFan extends Report {
 	    }
 	    Indi father = famc.getHusband();
 	    Indi mother = famc.getWife();
-	    pedigree(in+1, lev*2, ah*2, father);
-	    pedigree(in+1, lev*2, ah*2+1, mother);
+	    pedigree(in+1, gen+1, lev*2, ah*2, father);
+	    pedigree(in+1, gen+1, lev*2, ah*2+1, mother);
+	} else {
+	    if (indi.getFamilyWhereBiologicalChild()!= null){
+		indiList.push(indi);
+		indiList.push(new Integer(gen));
+	    }
 	}
+
     }
     /*
       Fullname returns the name of a person in a variety of formats. 

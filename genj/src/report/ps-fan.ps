@@ -214,6 +214,7 @@ linwid setlinewidth
 
 % starting y for root children
 /siby fntsize -2 mul def
+/siby0 fntsize -2 mul def
 
 % called once for each individual on chart
 /i {
@@ -226,7 +227,7 @@ linwid setlinewidth
             level 0 eq {
                 % print name, birth date, death date
                 gsave
-                len0 -2 div siby translate
+                len0 -2 div siby0 translate
                 /x 0 def
                 x namey moveto
                 len0 name wshow
