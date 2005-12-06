@@ -18,6 +18,10 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import javax.swing.ImageIcon;
 
 /**
@@ -26,6 +30,12 @@ import javax.swing.ImageIcon;
  * @version 1.0
  */
 public class ReportSummaryOfRecords extends Report {
+  
+  /** whether we're genering indexes for places */
+  public  int generatePlaceIndex = 0;
+  public String[] generatePlaceIndexs = {
+    i18n("place.index.none"), i18n("place.index.one"), i18n("place.index.each")
+  };
   
   /**
    * Overriden image - we're using the provided FO image 
@@ -52,13 +62,25 @@ public class ReportSummaryOfRecords extends Report {
     Document doc = new Document(i18n("title", gedcom.getName()));
     
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
+    
+    // prepare some space to collect places
+    Set placeTags = new HashSet();
 
     // Loop through individuals & families
-    exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc);
-    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM"),doc);
+    exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), placeTags, doc);
+    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM"), placeTags, doc);
     
-    // add index
+    // add index for names and each place category
     doc.addIndex("names", "Name Index");
+    
+    if (generatePlaceIndex==1)
+      doc.addIndex("places.*", "Place Index");
+    if (generatePlaceIndex==2) {
+      for (Iterator it=placeTags.iterator(); it.hasNext(); ) {
+        String tag = (String)it.next();
+        doc.addIndex("places."+tag, Gedcom.getName(tag)+ " - Place Index");
+      }
+    }
     
     // Done
     showDocumentToUser(doc);
@@ -68,16 +90,16 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given entities 
    */
-  private void exportEntities(Entity[] ents, Document doc)  {
+  private void exportEntities(Entity[] ents, Set placeTags, Document doc)  {
     for (int e = 0; e < ents.length; e++) {
-      exportEntity(ents[e], doc);
+      exportEntity(ents[e], placeTags, doc);
     }
   }
   
   /**
    * Exports the given entity 
    */
-  private void exportEntity(Entity ent, Document doc) {
+  private void exportEntity(Entity ent, Set placeTags, Document doc) {
 
     println(i18n("exporting", ent.toString() ));
       
@@ -86,10 +108,6 @@ public class ReportSummaryOfRecords extends Report {
     
     // mark it
     doc.addAnchor(ent);
-    if (ent instanceof Indi) {
-      Indi indi = (Indi)ent;
-      doc.addIndexTerm("names", indi.getLastName(), indi.getFirstName());
-    }
     
     // start a paragraph
     doc.addParagraph();
@@ -100,7 +118,7 @@ public class ReportSummaryOfRecords extends Report {
       doc.addImage(file.getFile(), Document.HALIGN_RIGHT);
     
     // export its properties
-    exportProperties(ent, doc);
+    exportProperties(ent, placeTags, doc);
     
     // end section
     doc.endSection();
@@ -111,7 +129,7 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given property's properties
    */
-  private void exportProperties(Property of, Document doc) {
+  private void exportProperties(Property of, Set placeTags, Document doc) {
 
     // anything to do?
     if (of.getNoOfProperties()==0)
@@ -124,6 +142,17 @@ public class ReportSummaryOfRecords extends Report {
     for (int i=0;i<of.getNoOfProperties();i++) {
       
       Property prop = of.getProperty(i);
+
+      // fill index while we're at it
+      if (prop instanceof PropertyName) {
+        PropertyName name = (PropertyName)prop;
+        doc.addIndexTerm("names", name.getLastName(), name.getFirstName());
+      }
+      if (generatePlaceIndex>0&&prop.getTag().equals("PLAC")) {
+        String tag = generatePlaceIndex==2  ? prop.getParent().getTag() : "*";
+        doc.addIndexTerm("places."+tag, prop.getDisplayValue(), null);
+        placeTags.add(tag);
+      }
 
       // we don't do anything for xrefs to non-indi/fam
       if (prop instanceof PropertyXRef) {
@@ -141,7 +170,7 @@ public class ReportSummaryOfRecords extends Report {
       exportPropertyValue(prop, doc);
 
       // recurse into it
-      exportProperties(prop, doc);
+      exportProperties(prop, placeTags, doc);
     }
     doc.endList();
   }
