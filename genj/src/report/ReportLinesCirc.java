@@ -73,23 +73,24 @@ Future:  - color coding based on country of origin.  (Robert Simms)
          - proper zooming in Ghostview
          - eliminate blank pages with small radius
 */
-import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.PointInTime;
-
 import genj.report.Report;
 import genj.window.WindowManager;
-import genj.util.WordBuffer;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import java.io.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * GenJ - ReportPSCirc

@@ -5,14 +5,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyPlace;
 import genj.report.Report;
-import genj.util.WordBuffer;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -282,15 +278,15 @@ public class ReportSosa extends Report {
 	if (reportType == CSV_REPORT) {
 	    number = ""+sosa;
 	    name = indi.getName();
-	    birth = output.formatEvent(indi, "BIRT",true, true, placeIndex);
+	    birth = Formatter.formatEvent(indi, "BIRT",true, true, placeIndex);
 	    if (fam != null){
-		marriage = output.formatEvent(fam, "MARR",true, true, placeIndex);
+		marriage = Formatter.formatEvent(fam, "MARR",true, true, placeIndex);
 	    } else {
 		marriage = "";
 	    }
-	    death = output.formatEvent(indi, "DEAT",true, true, placeIndex);
-	    occupation = output.formatEvent(indi, "OCCU",true, true, placeIndex);
-	    residence= output.formatEvent(indi, "RESI",true, true, placeIndex);
+	    death = Formatter.formatEvent(indi, "DEAT",true, true, placeIndex);
+	    occupation = Formatter.formatEvent(indi, "OCCU",true, true, placeIndex);
+	    residence= Formatter.formatEvent(indi, "RESI",true, true, placeIndex);
 	} else {
 
 	number = ""+sosa;
@@ -298,19 +294,19 @@ public class ReportSosa extends Report {
 	if (privateName.length() != 0){
 	    name = isPrivate? privateName : name;
 	}
-	birth = output.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
+	birth = Formatter.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
 	if (fam != null){
 	    if (reportType == AGNATIC_REPORT){
-		marriage = output.formatEvent(OPTIONS.getMarriageSymbol()+" "+fam.getWife().getName(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
+		marriage = Formatter.formatEvent(OPTIONS.getMarriageSymbol()+" "+fam.getWife().getName(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
 	    } else {
-		marriage = output.formatEvent(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
+		marriage = Formatter.formatEvent(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
 	    }
 	} else {
 	    marriage = "";
 	}
-	death = output.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
-	occupation = output.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
-	residence = output.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
+	death = Formatter.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
+	occupation = Formatter.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
+	residence = Formatter.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
 	}
 	if (isPrivate){
 	    name = (privateName.length() != 0)? privateName : name;

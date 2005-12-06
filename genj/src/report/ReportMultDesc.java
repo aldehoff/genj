@@ -5,15 +5,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyPlace;
 import genj.report.Report;
-import genj.util.WordBuffer;
-import java.util.Iterator;
+
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -242,15 +237,15 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	number = ""+num;
 	number = output.anchor(number, number);
 	name = output.strong(indi.getName())+" ("+indi.getId()+")";
-	birth = output.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
+	birth = Formatter.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
 	if (fam != null){
-	    marriage = output.formatEvent(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
+	    marriage = Formatter.formatEvent(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
 	} else {
 	    marriage = "";
 	}
-	death = output.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
-	occupation = output.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
-	residence = output.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
+	death = Formatter.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
+	occupation = Formatter.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
+	residence = Formatter.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
 
 	if (output.isPrivate(indi,fam,level>privateGen)){
 	    name = (privateName.length() != 0)? privateName : name;

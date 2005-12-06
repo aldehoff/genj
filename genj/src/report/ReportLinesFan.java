@@ -8,17 +8,18 @@
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyPlace;
 import genj.report.Report;
-import genj.util.WordBuffer;
 import genj.window.WindowManager;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.io.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
 import java.nio.charset.Charset;
-import javax.swing.JFileChooser;
 
 /**
  * GenJ - ReportPSCirc

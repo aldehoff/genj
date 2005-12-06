@@ -6,17 +6,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.gedcom.Entity;
-import genj.gedcom.Fam;
-import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.time.Delta;
 import genj.report.Report;
 import genj.util.WordBuffer;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+
 import java.util.ArrayList;
 
 /**
