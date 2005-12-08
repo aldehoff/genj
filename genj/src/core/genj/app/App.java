@@ -66,8 +66,10 @@ public class App {
       
       // prepare some basic logging for now
       Formatter formatter = new LogFormatter();
-      LOG.setUseParentHandlers(false);
-      LOG.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
+      Logger root = Logger.getLogger("");
+      Handler[] handlers = root.getHandlers();
+      for (int i=0;i<handlers.length;i++) root.removeHandler(handlers[i]);
+      root.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
       System.setOut(new PrintStream(new LogOutputStream(Level.INFO, "System", "out")));
       System.setErr(new PrintStream(new LogOutputStream(Level.WARNING, "System", "err")));
       
