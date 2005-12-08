@@ -1,8 +1,11 @@
-/color false def
-/lr 0 def /lg 1 def /lb 1 def
+%mothers
+/lr 1 def /lg 0 def /lb 0 def
+/tr 1 def /tg 0 def /tb 0 def
+%fathers
 /Lr 0 def /Lg 0 def /Lb 1 def
-/tr 0 def /tg 1 def /tb 1 def
 /Tr 0 def /Tg 0 def /Tb 1 def
+% green
+
 /fontname /Helvetica def
 /encvec [
 	16#90 /dotlessi   16#91 /grave        16#92 /acute      16#93 /circumflex
@@ -63,6 +66,42 @@ color {
 } {
         /textcolr0 {} bind def
         /lincolr0 {} bind def
+} ifelse
+
+color {
+        /setcmykcolor where { pop
+                tr tg tb add add 0 eq {
+                        /tk 1 def
+                } {
+                        /tk 0 def
+                        /tr 1 tr sub def /tg 1 tg sub def /tb 1 tb sub def
+                } ifelse
+
+                lr lg lb add add 0 eq {
+                        /lk 1 def
+                } {
+                        /lk 0 def
+                        /lr 1 lr sub def /lg 1 lg sub def /lb 1 lb sub def
+                } ifelse
+
+                /textcolr1 {tr tg tb tk setcmykcolor} bind def % direct ancestor name
+                /lincolr1 {lr lg lb lk setcmykcolor} bind def  % direct ancestor lines
+        } {
+                /textcolr1 {tr tg tb setrgbcolor} bind def % direct ancestor name
+                /lincolr1 {lr lg lb setrgbcolor} bind def  % direct ancestor lines
+        } ifelse
+} {
+        /textcolr1 {} bind def
+        /lincolr1 {} bind def
+} ifelse
+        /lincolr0 {} bind def
+        /lincolr1 {} bind def
+color {
+/blk {0 0 0 setrgbcolor } bind def
+/green { 0 1 0 setrgbcolor } bind def
+} {
+/blk { } bind def
+/green { } bind def
 } ifelse
 
 % get printable area
@@ -197,7 +236,7 @@ linwid setlinewidth
 
 % show string given as argument
 % select font size so that string fits in available length
-/wshow {
+/wshow0 {
         /s exch def
         /len exch def
         fontname findfont fntsize scalefont setfont
@@ -211,18 +250,75 @@ linwid setlinewidth
         textcolr0
         s show
 } bind def
+% show string given as argument
+% select font size so that string fits in available length
+/wshow1 {
+        /s exch def
+        /len exch def
+        fontname findfont fntsize scalefont setfont
+        s stringwidth pop dup len lt {
+                pop
+        } {
+                % compute new font size for exact fit
+                len exch div fntsize mul /fsize exch def
+                fontname findfont fsize scalefont setfont
+        } ifelse
+        textcolr1
+        s show
+} bind def
+% show string given as argument
+% select font size so that string fits in available length
+/wshowb {
+        /s exch def
+        /len exch def
+        fontname findfont fntsize scalefont setfont
+        s stringwidth pop dup len lt {
+                pop
+        } {
+                % compute new font size for exact fit
+                len exch div fntsize mul /fsize exch def
+                fontname findfont fsize scalefont setfont
+        } ifelse
+        blk
+        s show
+} bind def
+% show string given as argument
+% select font size so that string fits in available length
+/wshowg {
+        /s exch def
+        /len exch def
+        fontname findfont fntsize scalefont setfont
+        s stringwidth pop dup len lt {
+                pop
+        } {
+                % compute new font size for exact fit
+                len exch div fntsize mul /fsize exch def
+                fontname findfont fsize scalefont setfont
+        } ifelse
+        green
+        s show
+} bind def
 
 % starting y for root children
 /siby fntsize -2 mul def
 /siby0 fntsize -2 mul def
 
 % called once for each individual on chart
-/i {
+/j {
+  /link exch def
         /leaf exch def
         /level exch def
         /death exch def
         /birth exch def
         /name exch def
+
+/wshow { 
+link 0 ne { wshowg} {
+  level 0 eq { wshowb
+  } { leaf  1 and 0 eq { wshow1 } { wshow0 } ifelse 
+  } ifelse
+} ifelse
+} def
         level maxlevel lt {
             level 0 eq {
                 % print name, birth date, death date
@@ -265,11 +361,17 @@ linwid setlinewidth
                         lincolr0
                         x1 0 moveto x2 0 lineto stroke
                         /x x1 space add def
+		  /xlink x2 def
+/dy a cos a sin sub fntsize mul def
+/dx a cos a sin add fntsize mul def
                 } {
                         a 180 sub rotate
-                        lincolr0
+                        lincolr1
                         x2 neg 0 moveto x1 neg 0 lineto stroke
                         /x x2 neg space add def
+		  /xlink x2 neg def
+/dy a cos a sin sub fntsize mul def
+/dx a cos a sin add fntsize mul def
                 } ifelse
 
                 % print name, birth date, death date
@@ -285,6 +387,11 @@ linwid setlinewidth
                         x fntsize neg 2 mul moveto
                         len1 death wshow
                 } if
+                link  0 gt {
+                blk xlink 0  moveto xlink 0  fntsize 3 div 0 360 arc stroke
+[/Rect [xlink dx sub dy neg xlink dx add  dy ]
+ /Page link /Subtype /Link /Border [0 0 0] /ANN pdfmark
+                } if
                 grestore
 
                 % draw arc connecting this individual to his/her child
@@ -295,10 +402,11 @@ linwid setlinewidth
                                 0 0 x1 a aw sub a arc stroke
                         } {
                                 % mother
-                                lincolr0
+                                lincolr1
                                 0 0 x1 a a aw add arc stroke
                         } ifelse
                 } if
             } ifelse
         } if
 } bind def
+/i{ 0 j } def

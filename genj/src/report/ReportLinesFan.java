@@ -35,6 +35,8 @@ public class ReportLinesFan extends Report {
     private final static Charset CHARSET = Charset.forName("ISO-8859-1");
     public int genPerPage = 6;
     public int reportMaxGenerations = 999;
+    public boolean useColors=true;
+    private int pageNo;
 
 
     private Fifo indiList = new Fifo(50);
@@ -70,10 +72,14 @@ public class ReportLinesFan extends Report {
 	    Reader in = new InputStreamReader(getClass().getResourceAsStream("ps-fan.ps"));
 
 	    int c;
-	    /*	    out.println("%!PS-Adobe-2.0 EPSF-1.2");
-	    out.println("%%BoundingBox:0 0 1100 790");
-	    */
+	    out.println("%!PS-Adobe-3.0");
+	    out.println("%%Creator: genj 1.0");
+	    out.println("%%CreationDate: ");
+	    out.println("%%PageOrder: Ascend");
+	    out.println("%%Orientation: Landscape");
+	    out.println("%%EndComments");
 	    out.println("/maxlevel "+genPerPage+" def");
+	    out.println("/color "+(useColors?"true":"false")+" def");
 
 	    while ((c = in.read()) != -1)
 		out.write(c);
@@ -87,6 +93,7 @@ public class ReportLinesFan extends Report {
 	//indiList.add(new Integer(1));
 	indiList.push(indi);
 	indiList.push(new Integer(1));
+	pageNo = 1;
 
 	while (!indiList.isEmpty()){
 	    Indi indiIterator = (Indi)(indiList.pop());
@@ -97,6 +104,7 @@ public class ReportLinesFan extends Report {
 		out.println("gsave");
 		pedigree(1,genIndex.intValue(),1,1,indiIterator);
 		out.println("showpage");
+		pageNo++;
 		out.println("grestore");
 	    }
 	}
@@ -119,13 +127,25 @@ public class ReportLinesFan extends Report {
 	} else {
 	    out.println(" () () ");
 	}
-	out.println(" "+(in-1)+
-		    " "+(ah-lev)+
-		    " i");
+
+	Fam famc = indi.getFamilyWhereBiologicalChild();
+	// test if link
+	if (in < genPerPage ||
+	    famc == null) {
+	    out.println(" "+(in-1)+
+			" "+(ah-lev)+
+			" i");
+	} else {
+	    indiList.push(indi);
+	    indiList.push(new Integer(gen));
+	    out.println(" "+(in-1)+
+			" "+(ah-lev)+
+			" "+(indiList.size()/2+pageNo)+
+			" j");
+	}	    
 
         if (in < genPerPage) {
 	    // And we loop through its ascendants
-	    Fam famc = indi.getFamilyWhereBiologicalChild();
 	    if (famc==null) {
 		return;
 	    }
@@ -133,11 +153,6 @@ public class ReportLinesFan extends Report {
 	    Indi mother = famc.getWife();
 	    pedigree(in+1, gen+1, lev*2, ah*2, father);
 	    pedigree(in+1, gen+1, lev*2, ah*2+1, mother);
-	} else {
-	    if (indi.getFamilyWhereBiologicalChild()!= null){
-		indiList.push(indi);
-		indiList.push(new Integer(gen));
-	    }
 	}
 
     }
