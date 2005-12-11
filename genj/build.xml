@@ -249,12 +249,16 @@
      <!-- create genj.jar -->
      <delete file="${dir.build}/applet/genj.jar"/>
      <jar jarfile="${dir.build}/applet/genj.jar" update="True">
-       <fileset dir="${dir.build}/classes/contrib" excludes="${exclude}"/>
-       <fileset dir="${dir.build}/classes/core" excludes="${exclude}"/>
+       <fileset dir="${dir.build}/classes/contrib" 
+       	 excludes="${exclude}"
+         includes="**/*.class"/>
+       <fileset dir="${dir.build}/classes/core" 
+       	 excludes="${exclude}"
+         includes="**/*.class"/>
        <fileset dir="./images" excludes="${exclude}"/>
        <fileset dir="./language/en" excludes="${exclude}"/>
        <fileset dir="./src/core" excludes="${exclude}"
-           includes="**/*.properties"/>
+         includes="**/*.properties,**/*.xml"/>
        <fileset dir="${dir.build}/version"/>
      </jar>
   	
@@ -282,14 +286,12 @@
      <!-- create genj.jar -->
      <delete file="${dir.build}/lib/genj.jar"/>
      <jar jarfile="${dir.build}/lib/genj.jar" update="True">
-       <fileset dir="${dir.build}/classes/contrib"/>
-       <fileset dir="${dir.build}/classes/core"/>
+       <fileset dir="${dir.build}/classes/contrib" includes="**/*.class"/>
+       <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
        <fileset dir="${dir.build}/version"/>
        <fileset dir="./images"/>
        <fileset dir="./language/en"/>
-       <fileset dir="./src/core" includes="**/*.properties"/>
-       <fileset dir="./src/core" includes="**/*.xml"/>
-       <fileset dir="./src/core" includes="META-INF/**"/>
+       <fileset dir="./src/core" includes="**/*.properties,**/*.xml,META-INF/**"/>
      </jar>
      
      <!-- create run.jar -->
