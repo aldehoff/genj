@@ -25,12 +25,13 @@ import genj.util.swing.ImageIcon;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.regex.Pattern;
 
 /**
  * PLAC a choice value with brains for understanding sub-property FORM
  */
 public class PropertyPlace extends PropertyChoiceValue {
+  
+  private final static boolean USE_SPACES = Options.getInstance().isUseSpacedPlaces;
 
   public final static ImageIcon
     IMAGE = Grammar.getMeta(new TagPath("INDI:BIRT:PLAC")).getImage();
@@ -64,10 +65,15 @@ public class PropertyPlace extends PropertyChoiceValue {
        2 PLAC ,Allanche,,Cantal,Auvergne,
      adding spaces doesn't look good
        2 PLAC , Allanche, , Cantal, Auvergne, 
-       
-     So I decided to revert back to the old way of trimming down
-     any spaces in the value while at the same time formatting
-     the value for readability with spaces @see getDisplayValue();  
+
+     We played with the idea of using space-comma in getDisplayValue()
+     and comma-only in getValue()/trim() - problem is that it takes mem
+     to cache or runtime performance to calculate that. It's also problematic
+     that the display value would be different from the choices remembered
+     (one with space the other without)
+     
+     So finally we decided to put in a global option that lets the user
+     make the choice - internally getValue()-wize we handle this uniformly then
     */
     
     // trim each jurisdiction separately
@@ -77,23 +83,12 @@ public class PropertyPlace extends PropertyChoiceValue {
       String jurisdiction = jurisdictions.get(i, true);
       if (jurisdiction==null) break;
       if (i>0) buf.append(JURISDICTION_SEPARATOR);
+      if (USE_SPACES) buf.append(' ');
       buf.append(jurisdiction);
     }
     return buf.toString().intern();
   }
 
-  /**
-   * Format place for display
-   */
-  public String getDisplayValue() {
-    
-    // formatting for readability @see comment for trim()
-    return COMMA.matcher( super.getDisplayValue() ).replaceAll(COMMASPACE) ;
-  }
-  
-  private final static Pattern COMMA = Pattern.compile(",");
-  private final static String COMMASPACE = JURISDICTION_SEPARATOR+" ";
-    
   /**
    * Remember a jurisdiction's vlaue
    */

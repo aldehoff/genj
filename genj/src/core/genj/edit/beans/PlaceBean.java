@@ -93,10 +93,7 @@ public class PlaceBean extends PropertyBean {
         if (hierarchy) jurisdiction = jurisdiction.replaceAll(PropertyPlace.JURISDICTION_SEPARATOR, ";"); 
           
         // always add separator for jurisdictions j>0 regardless of jurisdiction.length()
-        if (j++>0) {
-          result.append(PropertyPlace.JURISDICTION_SEPARATOR); 
-          result.append(' ');
-        }
+        if (j++>0)  result.append(PropertyPlace.JURISDICTION_SEPARATOR); 
         result.append(jurisdiction);
         
       }
@@ -129,10 +126,15 @@ public class PlaceBean extends PropertyBean {
     removeAll();
     rows = 0;
     defaultFocus = null;
+    
+    /*
+      thought about using getDisplayValue() here but the problem is that getAllJurisdictions()
+      works on values (PropertyChoiceValue stuff) - se we have to use getValue() here
+     */
    
     // either a simple value or broken down into comma separated jurisdictions
     if (!Options.getInstance().isSplitJurisdictions || place.getDisplayFormat().length()==0) {
-      createChoice(null, place.getDisplayValue(), place.getAllJurisdictions(-1,true));
+      createChoice(null, place.getValue(), place.getAllJurisdictions(-1,true));
     } else {
       DirectAccessTokenizer format = new DirectAccessTokenizer(place.getDisplayFormat(), ",");
       DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",");
