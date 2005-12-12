@@ -90,10 +90,13 @@ public class PlaceBean extends PropertyBean {
         String jurisdiction = ((ChoiceWidget)comp).getText().trim();
         
         // make sure the user doesn't enter a comma ',' if there is a field per jurisdiction
-        if (hierarchy) jurisdiction = jurisdiction.replaceAll(",",";"); 
+        if (hierarchy) jurisdiction = jurisdiction.replaceAll(PropertyPlace.JURISDICTION_SEPARATOR, ";"); 
           
         // always add separator for jurisdictions j>0 regardless of jurisdiction.length()
-        if (j++>0) result.append(", "); 
+        if (j++>0) {
+          result.append(PropertyPlace.JURISDICTION_SEPARATOR); 
+          result.append(' ');
+        }
         result.append(jurisdiction);
         
       }
