@@ -19,12 +19,13 @@
    */
 package genj.edit.actions;
 
-import javax.swing.JComponent;
-
 import genj.gedcom.GedcomException;
 import genj.gedcom.PropertyPlace;
+import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
 import genj.view.ViewManager;
+
+import javax.swing.JPanel;
 
 /**
  * Set the place hierarchy used in a gedcom file
@@ -53,11 +54,23 @@ public class SetPlaceHierarchy extends AbstractChange {
       return resources.getString("place.hierarchy.msg", place.getGedcom().getName());
    }
     
-    protected JComponent getOptions() {
-      hierarchy = new TextFieldWidget(place.getDisplayFormat());
-      return hierarchy;
-    }
+    /**
+     * Override content components to show to user 
+     */
+    protected JPanel getDialogContent() {
+      
+      JPanel result = new JPanel(new NestedBlockLayout("<col><confirm wx=\"1\" wy=\"1\"/><enter wx=\"1\"/></col>"));
 
+      // prepare textfield for formar
+      hierarchy = new TextFieldWidget(place.getDisplayFormat());
+      
+      result.add(getConfirmComponent());
+      result.add(hierarchy);
+      
+      // done
+      return result;
+    }
+    
     /**
      * set the submitter
      */
