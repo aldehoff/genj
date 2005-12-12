@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.99 $ $Author: nmeier $ $Date: 2005-11-14 20:25:34 $
+ * $Revision: 1.100 $ $Author: nmeier $ $Date: 2005-12-12 14:58:50 $
  */
 package genj.gedcom;
 
@@ -838,7 +838,7 @@ public class Gedcom {
    * Accessor - place format
    */
   public void setPlaceFormat(String set) {
-    placeFormat = set;
+    placeFormat = set.trim();
   }
   
   /**
