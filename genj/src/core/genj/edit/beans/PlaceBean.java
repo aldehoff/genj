@@ -132,7 +132,7 @@ public class PlaceBean extends PropertyBean {
    
     // either a simple value or broken down into comma separated jurisdictions
     if (!Options.getInstance().isSplitJurisdictions || place.getDisplayFormat().length()==0) {
-      createChoice(null, place.getValue(), place.getAllJurisdictions(-1,true));
+      createChoice(null, place.getDisplayValue(), place.getAllJurisdictions(-1,true));
     } else {
       DirectAccessTokenizer format = new DirectAccessTokenizer(place.getDisplayFormat(), ",");
       DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",");
