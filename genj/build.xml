@@ -175,7 +175,7 @@
       </filterset>
     </copy>
     <copy todir="${dir.help}">
-      <fileset dir="./help" includes="${language}/**/*.png"/>
+      <fileset dir="./help" includes="${language}/**/*.png, ${language}/**/*.jpg"/>
     </copy>
     <copy todir="${dir.help}/${language}">
       <fileset dir="./help" includes="*.xml, *.html"/>
