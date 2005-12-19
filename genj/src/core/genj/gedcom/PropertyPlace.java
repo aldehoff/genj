@@ -82,8 +82,10 @@ public class PropertyPlace extends PropertyChoiceValue {
     for (int i=0; ; i++) {
       String jurisdiction = jurisdictions.get(i, true);
       if (jurisdiction==null) break;
-      if (i>0) buf.append(JURISDICTION_SEPARATOR);
-      if (USE_SPACES) buf.append(' ');
+      if (i>0) {
+        buf.append(JURISDICTION_SEPARATOR);
+        if (USE_SPACES) buf.append(' ');
+      }
       buf.append(jurisdiction);
     }
     return buf.toString().intern();
