@@ -296,11 +296,13 @@ public class ReportSosa extends Report {
 	}
 	birth = Formatter.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
 	if (fam != null){
-	    if (reportType == AGNATIC_REPORT){
-		marriage = Formatter.formatEvent(OPTIONS.getMarriageSymbol()+" "+fam.getWife().getName(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
-	    } else {
-		marriage = Formatter.formatEvent(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
+	    String prefix = OPTIONS.getMarriageSymbol();
+	    if (reportType == AGNATIC_REPORT || reportType == LINEAGE_REPORT ){
+		if (fam.getOtherSpouse(indi) != null){
+		    prefix += " "+fam.getOtherSpouse(indi).getName();
+		}
 	    }
+	    marriage = output.formatEvent(prefix, fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
 	} else {
 	    marriage = "";
 	}
