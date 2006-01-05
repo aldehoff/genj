@@ -5,6 +5,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+/*
+ * todo:
+ * - formatevent dans le cas ou le lieu commence par , l'espace est supprime
+ */
 import genj.gedcom.Entity;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
@@ -43,9 +47,12 @@ abstract class Formatter  {
     abstract String underline(String s);
     abstract String row(String s);
     abstract String cell(String s);
+    abstract String cell(String s, String attr);
     abstract String cell(String s, int rs, int cs);
+    abstract String cell(String s, String attr, int rs, int cs);
     abstract void println(String s);
     abstract void println();
+    abstract void print(String s);
     abstract String h(int level,String s);
     abstract String li(String s);
     abstract String ul(String s);
@@ -55,7 +62,10 @@ abstract class Formatter  {
     abstract void end();
     abstract String hlink(String name, String text);
     abstract String anchor(String name, String text);
-    
+    abstract String br();
+    abstract String page();
+    abstract String tablePageBreak();    
+
     /**
      * Constructor
      */
@@ -120,15 +130,11 @@ abstract class Formatter  {
      * placeIndex <0 : First non null jurisdiction from this position
      * placeIndex =0 : All jurisdictions
      */
-    static String formatEvent(Entity entity, String tag, int dateFormat, boolean isPlace, int placeIndex ) {
+    static String formatEvent(Property prop, int dateFormat, boolean isPlace, int placeIndex ) {
 	// Prop hidden?
 	if ((dateFormat == DATE_FORMAT_NONE) && !isPlace) 
 	    return "";
       
-	// prop exists?
-	if (entity==null)
-	    return "";
-	Property prop = entity.getProperty(tag);
 	if (prop==null)
 	    return "";
 	
@@ -153,10 +159,17 @@ abstract class Formatter  {
 	}
 	return result.toString()+" ";
     }
+    static String formatEvent(Entity entity, String tag, int dateFormat, boolean isPlace, int placeIndex ) {
+	// prop exists?
+	if (entity==null)
+	    return "";
+	return formatEvent(entity.getProperty(tag), dateFormat, isPlace, placeIndex );
+    }
 
     static String formatEvent(Entity entity, String tag, boolean isDate, boolean isPlace, int placeIndex ) {
 	return(formatEvent(entity, tag, isDate?DATE_FORMAT_LONG:DATE_FORMAT_NONE, isPlace, placeIndex ));
     }
+
     /**
      * return symbol+' '+eventstring if event is not null
      */
@@ -166,6 +179,73 @@ abstract class Formatter  {
 	    result = symbol + " " + result;
 	}
 	return result;
+    }
+
+    /*    static String[] formatEvents(Entity entity, String tag, int dateFormat, boolean isPlace, int placeIndex ) {
+	// prop exists?
+	if (entity==null)
+	    return null;
+	Property[] props = getProperties(entity,tag);
+	if (props.length == 0) return (new String[] {});
+	String[] result = new String[props.length];
+	for (int i=0; i<props.length;i++)
+	    result[i] = formatEvent(props[i], dateFormat, isPlace, placeIndex );
+	return result;
+    }
+    */
+
+    static String getPropertyDate(Property prop, int dateFormat){
+	if (dateFormat == DATE_FORMAT_NONE)
+	    return "";
+      
+	if (prop==null)
+	    return "";
+	
+	PropertyDate date = (PropertyDate) prop.getProperty("DATE");
+	if (date == null )
+	    return "";
+
+	if (dateFormat == DATE_FORMAT_LONG){
+	    return date.getDisplayValue();
+	} else {
+	    return ""+date.getStart().getYear();
+	}
+    }
+    
+    static String getPropertyPlace(Property prop, int placeIndex ) {
+     
+	if (prop==null)
+	    return "";
+	
+	PropertyPlace plac = (PropertyPlace) prop.getProperty("PLAC");
+	if (plac == null ) return "";
+	if (placeIndex > 0)
+	    return(plac.getJurisdiction(placeIndex-1));
+	else if (placeIndex < 0)
+	    return (plac.getFirstAvailableJurisdiction(-placeIndex-1));
+	else
+	    return (plac.getDisplayValue());
+    }
+
+
+    static Property[] getProperties(Property property, String tag) {
+	ArrayList result = new ArrayList(property.getNoOfProperties());
+	//    Property [] props = property.getProperties();
+    for (int i=0;i<property.getNoOfProperties();i++) {
+      Property prop = property.getProperty(i);
+      if (prop.getTag().equals(tag))
+        result.add(prop);
+    }
+    return Property.toArray(result);
+  }
+
+    /*********** Sentences formatting stuff ***********/
+    /**
+     */
+    static String getPluralSuffix(int nb){
+	if (nb == 1) return "s";
+	if (nb == 0) return null;
+	return "p";
     }
 }
 
@@ -204,7 +284,7 @@ class FormatterHtml extends Formatter {
     void end(){
 	parentReport.println("</body></html>");}
     void startTable(){
-	parentReport.println( "<TABLE class=\"report\">");}
+	parentReport.println( "<TABLE>");}
     void endTable(){
 	parentReport.println( "</TABLE>");}
     String b(String s){
@@ -218,13 +298,30 @@ class FormatterHtml extends Formatter {
     String strong(String s){
 	return (s.length() == 0)? "" : tag("STRONG",s);}
     String row(String s){
-	return( tag("TR", "class=\"report\"", s));}
+	return( tag("TR", s));}
+    /*    String row(String s){
+	  return( tag("TR", "class=\"report\"", s));}*/
     String cell(String s){
-	return tag("TD","valign=top", s);}
+	return cell(s,"",0,0);}
+    String cell(String s, String attr){
+	return cell(s,attr,0,0);}
     String cell(String s, int rs, int cs){
-	return tag("TD","COLSPAN="+cs,s);}
+	return cell(s,"",rs,cs);}
+    String cell(String s, String attr, int rs, int cs){
+	String param = "valign=top";
+	param += (rs!=0)?" ROWSPAN="+rs+"":"";
+	param += (cs!=0)?" COLSPAN="+cs:"";
+	param += (attr.length() !=0)?" CLASS=\""+attr+"\"":"";
+	s = s.trim();
+	if (s.length() == 0) s = "&nbsp;";
+	return tag("TD",param,s);}
+    String br(){return ("<BR>");}
+    String page(){return ("<span style=\"page-break-before:always\"></span>");}
+    String tablePageBreak(){return ("<tr style=\"page-break-before:always\"></tr>");}
     void println(String s){
 	parentReport.println(tag("P",s));}
+    void print(String s){
+	parentReport.println(s);}
     void println(){
 	println("");}
     String h(int level,String s){
@@ -329,13 +426,22 @@ class FormatterText extends Formatter{
 	return result;
 
     }
+    String cell(String s, String attr) {
+	return cell(s);}
+    String cell(String s, String attr, int rs, int cs){
+	return cell(s,rs,cs);}
     String cell(String s, int rs, int cs){
 	isInTable = true;
 	cellIndex++;
 	return s;
     }
+    String br(){ return System.getProperty("line.separator");}
+    String page(){ return "";}
+    String tablePageBreak(){ return "";}
     void println(String s){
 	parentReport.println(parentReport.getIndent(indentLevel)+s);}
+    void print(String s){
+	println(s);}
     void println(){
 	println("");}
     String li(String s){
