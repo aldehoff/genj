@@ -50,6 +50,11 @@ public class PropertyDateTest extends TestCase {
     testParsing("(sometime in may)", PropertyDate.INTERPRETED, GREGORIAN, 0, 0, 0, true);
     testParsing("foo bar", PropertyDate.INTERPRETED, GREGORIAN, 0, 0, 0, false);
     
+    // nmeier 20050109 
+    // + make calendar escapes case insensitive
+    // + remove need for calendar escape space separator 
+    testParsing("@#DJulian@25 May 1970", PropertyDate.DATE, JULIAN, 1970, 5, 25, false);
+    
     // done
   }
   

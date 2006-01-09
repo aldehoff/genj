@@ -261,6 +261,27 @@ public class PointInTime implements Comparable {
 
     txt = txt.trim();
     
+    // assume gregorian
+    calendar = GREGORIAN;
+    
+    // check for leading calendar indicator  @#....@
+    if (txt.startsWith("@#")) {
+      int i = txt.indexOf("@", 1);
+      if (i<0)  return false;
+      String esc = txt.substring(0,i+1);
+      txt = txt.substring(i+1);
+      
+      // .. has to be one of our calendar escapes
+      for (int c=0;c<CALENDARS.length;c++) {
+        Calendar cal = CALENDARS[c]; 
+        if (cal.escape.equalsIgnoreCase(esc)) {
+        // 20060109 made this ignore case - before was: if (cal.escape.startsWith(first)) {
+          calendar = cal;
+          break;
+        }
+      }
+    }
+    
     // no tokens - fine - no info
     DirectAccessTokenizer tokens = new DirectAccessTokenizer(txt, " ", true);
     String first = tokens.get(0);
@@ -270,37 +291,6 @@ public class PointInTime implements Comparable {
     }
     int cont = 1;
 
-    // first token might be calendar indicator @#....@
-    if (first.startsWith("@#")) {
-      
-      // .. has to be one of our calendar escapes
-      for (int c=0;c<CALENDARS.length;c++) {
-        Calendar cal = CALENDARS[c]; 
-        if (cal.escape.startsWith(first)) {
-          calendar = cal;
-          break;
-        }
-      }
-
-      // since one of the calendar escape contains a space we
-      // might have to skip another token (until we find the
-      // token ending in "@"       
-      while (true) {
-        if (first.endsWith("@")) break; 
-         first = tokens.get(cont++);
-         if (first==null) return false;
-      }
-      
-      // check next - calendar only is fine - empty pit
-      first = tokens.get(cont++);
-      if (first==null) 
-        return true; 
-      
-    } else {
-      // assume gregorian
-      calendar = GREGORIAN;
-    }
-    
     // grab second
     String second = tokens.get(cont++);
         
