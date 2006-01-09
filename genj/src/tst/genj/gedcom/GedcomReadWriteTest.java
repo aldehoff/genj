@@ -13,6 +13,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +30,10 @@ public class GedcomReadWriteTest extends TestCase {
    */
   public void testReadWrite() throws IOException, GedcomException {
     
+    // we don't need log output for this
+    Logger.getLogger("").setLevel(Level.OFF);
+
+    // read/write file
     File original = new File("./gedcom/example.ged");
     File temp = File.createTempFile("test", ".ged");
     
@@ -44,6 +50,8 @@ public class GedcomReadWriteTest extends TestCase {
     BufferedReader right = new BufferedReader(new InputStreamReader(new FileInputStream(temp)));
     
     Pattern ignore = Pattern.compile("2 VERS|1 DATE|2 TIME|1 FILE");
+    Pattern commaspace = Pattern.compile(", ");
+    String comma = ",";
     
     while (true) {
       
@@ -58,6 +66,10 @@ public class GedcomReadWriteTest extends TestCase {
       // not critical?
       Matcher match = ignore.matcher(lineLeft);
       if (match.find()&&match.start()==0) continue;
+      
+      // assume "," equals ", "
+      lineLeft = commaspace.matcher(lineLeft).replaceAll(comma);
+      lineRight = commaspace.matcher(lineRight).replaceAll(comma);
       
       // assert equal
       assertEquals(lineLeft, lineRight);
