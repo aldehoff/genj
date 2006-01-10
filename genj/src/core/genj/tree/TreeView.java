@@ -202,8 +202,10 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     }
     if (root==null) {
       Context context = manager.getLastSelectedContext(gedcm);
-      if (context.getEntity()!=null) 
-        root = context.getEntity();  
+      root = context.getEntity();
+      // make sure the root we're trying is an Indi or Fam (if available)
+      if (!(root instanceof Indi || root instanceof Fam))
+        root = gedcm.getAnyEntity(Gedcom.INDI);
     } 
     model.setRoot(root);
     
