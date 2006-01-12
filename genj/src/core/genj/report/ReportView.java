@@ -86,8 +86,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private final static long FLUSH_WAIT = 200;
     private final static String EOL= System.getProperty("line.separator");
 
-    private String theText = new String("");
-
   /** statics */
   private final static ImageIcon 
     imgStart = new ImageIcon(ReportView.class,"Start.gif"      ), 
@@ -270,26 +268,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
   }
 
   /**
-   * Adds a line of ouput
-   */
-  /*package*/ void addOutput(String line) {
-      if (theText.startsWith("<html>",0)){
-    	  taOutput.setContentType("text/html");
-	  theText += line.replaceAll(EOL, "<br>");
-      }  else
-	  theText += line;
-      if (theText.startsWith("<HTML>",0))
-    	  taOutput.setContentType("text/html");
-      taOutput.setText(theText);
-
-    if (taOutput.getText().length()>0) {
-// 20030530 - why did I check for valueisadjusting here?      
-//    if (!spOutput.getVerticalScrollBar().getValueIsAdjusting()&&taOutput.getText().length()>0) {
-      taOutput.setCaretPosition(taOutput.getText().length()-1);
-    }
-  }
-  
-  /**
    * Returns the view manager
    */
   /*package*/ ViewManager getViewManager() {
@@ -399,7 +377,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     private Report instance;
     
     /** an output writer */
-    private PrintWriter out = new PrintWriter(new OutputWriter());
+    private PrintWriter out;
     
     /** constructor */
     protected ActionStart() {
@@ -430,6 +408,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
       if (report==null) 
         return false;
       
+      out = new PrintWriter(new OutputWriter());
+      
       // create our own private instance  
       instance = report.getInstance(manager, ReportView.this, out);
       
@@ -458,9 +438,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
       owOptions.stopEditing();
 
       // clear the current output
-      theText = "";
       taOutput.setContentType("text/plain");
-      taOutput.setText(theText);
+      taOutput.setText("");
       
       // start transaction
       if (!report.isReadOnly()) try {
@@ -494,6 +473,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         gedcom.endTransaction();
       // flush
       out.flush();
+      out.close();
       // stop run
       setRunning(false);
     }
@@ -545,7 +525,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
 /*        String data = taOutput.getText();
         out.write(data,0,data.length());
 */
-        out.write(theText,0,theText.length());
+        String txt = taOutput.getText();
+        out.write(txt,0,txt.length());
         out.close();
   
       } catch (IOException ex) {
@@ -719,6 +700,15 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * @see java.io.Writer#close()
      */
     public void close() {
+      
+      // did we buffer html?
+      if (taOutput.getContentType().equals("text/html")) {
+        // replace end-line-designators and dump it
+        String txt = buffer.toString();
+        txt  =txt.replaceAll(EOL, "<br>"+EOL);
+        taOutput.setText(txt);
+      }
+      
       // clear buffer
       buffer.setLength(0);
     }
@@ -727,25 +717,42 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * @see java.io.Writer#flush()
      */
     public void flush() {
-      // mark
-      lastFlush = System.currentTimeMillis();
+      
       // something to flush?
       if (buffer.length()==0)
         return;
+      
       // make sure we see output pane
       tabbedPane.getModel().setSelectedIndex(2);
-      // output
-      if (theText.startsWith("<html>",0)){
-    	  taOutput.setContentType("text/html");
-	  theText += buffer.toString().replaceAll(EOL, "<br>"+EOL);
-      } else 
-	  theText += buffer.toString();
-      if (theText.startsWith("<HTML>",0))
-    	  taOutput.setContentType("text/html");
-      taOutput.setText(theText);
+      
+      // first flush we check for a html marker
+      if (lastFlush==-1) {
+        
+        // html?
+        if (buffer.length()>=6&&buffer.substring(0,6).equalsIgnoreCase("<html>"))
+          taOutput.setContentType("text/html");
+        else
+          taOutput.setContentType("text/plain");
 
-      // clear buffer
-      buffer.setLength(0);
+      }
+      
+      // mark
+      lastFlush = System.currentTimeMillis();
+      
+      // dump partial plain text?
+      if (taOutput.getContentType().equals("text/plain")) {
+      
+        // grab text, reset buffer and dump it 
+        String txt = buffer.toString();
+        buffer.setLength(0);
+        Document doc = taOutput.getDocument();
+        try {
+          doc.insertString(doc.getLength(), txt, null);
+        } catch (Throwable t) {
+        }
+        
+      }
+      
       // done
     }
     
