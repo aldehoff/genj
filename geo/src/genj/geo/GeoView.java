@@ -139,6 +139,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // set layout
     split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, new JScrollPane(locationList));
+    split.setResizeWeight(1.0D);
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, split);
     
@@ -257,9 +258,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     repaint();
     
     // set split position
-    int pos = registry.get("split", 400);
-    split.setLastDividerLocation(pos);
-    split.setDividerLocation(pos);
+    int pos = registry.get("split", -1);
+    if (pos<0)
+      split.setDividerLocation(0.7D);
+    else {
+      split.setLastDividerLocation(pos);
+      split.setDividerLocation(pos);
+    }
     
     // enable tooltips
     ToolTipManager.sharedInstance().registerComponent(layerPanel);
