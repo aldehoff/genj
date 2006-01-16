@@ -122,7 +122,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     if (context!=null&&(context.getEntity() instanceof Indi))
       setCurrentEntity(context.getEntity());
     else {
-      Indi first = (Indi)gedcom.getAnyEntity(Gedcom.INDI);
+      Indi first = (Indi)gedcom.getFirstEntity(Gedcom.INDI);
       if (first!=null) setCurrentEntity(first);
     }
     
@@ -208,7 +208,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     
     // try to get one if entity==null
     if (e == null) 
-      e = gedcom.getAnyEntity(Gedcom.INDI);
+      e = gedcom.getFirstEntity(Gedcom.INDI);
 
     // only individuals - and not already current
     if (e==current || (e!=null&&!(e instanceof Indi)) ) 

@@ -188,7 +188,7 @@ public class ViewManager {
     
     // fallback to first indi 
     if (result==null) {
-      Entity e = gedcom.getAnyEntity(Gedcom.INDI);
+      Entity e = gedcom.getFirstEntity(Gedcom.INDI);
       result = e!=null ? new Context(e) : new Context(gedcom);
     }
 

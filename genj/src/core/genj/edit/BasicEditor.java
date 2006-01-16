@@ -161,7 +161,7 @@ import javax.swing.event.ChangeListener;
     ok.setEnabled(false);
     // entity affected?
     if (tx.get(Transaction.ENTITIES_DELETED).contains(currentEntity)) {
-      setEntity(gedcom.getAnyEntity(currentEntity.getTag()), currentEntity);
+      setEntity(gedcom.getFirstEntity(currentEntity.getTag()), currentEntity);
     } else if (tx.get(Transaction.ENTITIES_MODIFIED).contains(currentEntity)) {
       setEntity(currentEntity, null);
     }

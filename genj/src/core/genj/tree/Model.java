@@ -417,7 +417,7 @@ import java.util.Set;
     if (deleted.size()>0) {
       // root has to change?
       if (deleted.contains(root)) 
-        root = gedcom.getAnyEntity(Gedcom.INDI);
+        root = gedcom.getFirstEntity(Gedcom.INDI);
       // bookmarks?
       ListIterator it = bookmarks.listIterator();
       while (it.hasNext()) {

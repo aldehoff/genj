@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.100 $ $Author: nmeier $ $Date: 2005-12-12 14:58:50 $
+ * $Revision: 1.101 $ $Author: nmeier $ $Date: 2006-01-16 16:00:37 $
  */
 package genj.gedcom;
 
@@ -231,6 +231,8 @@ public class Gedcom {
    * Returns the submitter of this gedcom (might be null)
    */
   public Submitter getSubmitter() {
+    if (submitter==null)
+      return (Submitter)getFirstEntity(Gedcom.SUBM);
     return submitter;
   }
   
@@ -507,7 +509,7 @@ public class Gedcom {
   /**
    * Returns any instance of entity with given type if exists
    */
-  public Entity getAnyEntity(String tag) {
+  public Entity getFirstEntity(String tag) {
     // loop over entities and return first of given type
     for (Iterator it = allEntities.iterator(); it.hasNext(); ) {
       Entity e = (Entity)it.next();
