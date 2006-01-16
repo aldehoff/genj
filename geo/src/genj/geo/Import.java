@@ -121,15 +121,6 @@ public abstract class Import implements Trackable {
       delete.executeUpdate();
       delete.close();
       
-      // add the country (ignore error)
-      try {
-        PreparedStatement newcountry = connection.prepareStatement(GeoService.INSERT_COUNTRY);
-        newcountry.setString(GeoService.INSERT_COUNTRY_COUNTRY, country.getCode());
-        newcountry.executeUpdate();
-        newcountry.close();
-      } catch (SQLException s) {
-      }
-      
       // prepare insert
       insert = connection.prepareStatement(GeoService.INSERT_LOCATION);
       
@@ -149,6 +140,15 @@ public abstract class Import implements Trackable {
       
       // cleanup
       insert.close();
+      
+      // add the country (ignore error)
+      try {
+        PreparedStatement newcountry = connection.prepareStatement(GeoService.INSERT_COUNTRY);
+        newcountry.setString(GeoService.INSERT_COUNTRY_COUNTRY, country.getCode());
+        newcountry.executeUpdate();
+        newcountry.close();
+      } catch (SQLException s) {
+      }
       
     } catch (SQLException e) {
       throw new IOException("error committing imported data ["+e.getMessage()+"]");
