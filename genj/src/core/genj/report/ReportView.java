@@ -85,7 +85,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /** time between flush of output writer to output text area */
   private final static long FLUSH_WAIT = 200;
     private final static String EOL= System.getProperty("line.separator");
-
+    private String theText="";
+    private final static int MAX_HTML_SIZE=300000;
   /** statics */
   private final static ImageIcon 
     imgStart = new ImageIcon(ReportView.class,"Start.gif"      ), 
@@ -409,6 +410,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         return false;
       
       out = new PrintWriter(new OutputWriter());
+      theText = "";
       
       // create our own private instance  
       instance = report.getInstance(manager, ReportView.this, out);
@@ -525,8 +527,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 /*        String data = taOutput.getText();
         out.write(data,0,data.length());
 */
-        String txt = taOutput.getText();
-        out.write(txt,0,txt.length());
+        out.write(theText,0,theText.length());
         out.close();
   
       } catch (IOException ex) {
@@ -705,7 +706,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
       if (taOutput.getContentType().equals("text/html")) {
         // replace end-line-designators and dump it
         String txt = buffer.toString();
-        txt  =txt.replaceAll(EOL, "<br>"+EOL);
+	theText = txt;
+	//        txt  =txt.replaceAll(EOL, "<br>"+EOL);
+	if (txt.length() > MAX_HTML_SIZE){
+	    txt = txt.substring(0,MAX_HTML_SIZE);
+	}
         taOutput.setText(txt);
       }
       
@@ -750,6 +755,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
           doc.insertString(doc.getLength(), txt, null);
         } catch (Throwable t) {
         }
+	theText += txt;
         
       }
       
