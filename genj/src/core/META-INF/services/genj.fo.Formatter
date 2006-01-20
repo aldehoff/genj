@@ -1,4 +1,3 @@
-genj.fo.DocBookFormatter
 genj.fo.HTMLFormatter
 genj.fo.XSLFOFormatter
 genj.fo.PDFFormatter

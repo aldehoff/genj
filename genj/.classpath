@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="lib/jhbasic.jar"/>
 	<classpathentry kind="lib" path="lib/graphj.jar"/>
 	<classpathentry kind="lib" path="language/en"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
 	<classpathentry kind="lib" path="language/de"/>
@@ -21,7 +20,6 @@
 	<classpathentry kind="lib" path="language/nl"/>
 	<classpathentry kind="lib" path="language/pt_BR"/>
 	<classpathentry kind="lib" path="language/ru"/>
-	<classpathentry kind="lib" path="contrib/saxon/saxon.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/commons-io-1.0.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/commons-logging-1.0.3.jar"/>
@@ -31,5 +29,6 @@
 	<classpathentry kind="lib" path="contrib/fop/batik-gvt.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/batik-util.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/batik-xml.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/j2sdk1.4.2_10"/>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>

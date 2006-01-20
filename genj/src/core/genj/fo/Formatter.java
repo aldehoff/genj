@@ -47,7 +47,7 @@ public abstract class Formatter {
   private static Formatter[] formatters;
   
   /** default formatter */
-  public static Formatter DEFAULT = new DocBookFormatter();
+  public static Formatter DEFAULT = new XSLFOFormatter();
 
   /** this format */
   private String format;
@@ -68,9 +68,6 @@ public abstract class Formatter {
     this.format = format;
     this.extension = extension;
     this.isExternalizedFiles = isExternalizedFiles;
-
-    // setup saxon xslt
-    System.setProperty("javax.xml.transform.TransformerFactory", "com.icl.saxon.TransformerFactoryImpl");
   }
   
   /**

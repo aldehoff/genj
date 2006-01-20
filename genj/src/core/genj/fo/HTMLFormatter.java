@@ -30,7 +30,7 @@ import javax.xml.transform.stream.StreamResult;
  */
 public class HTMLFormatter extends Formatter {
   
-  private final static File XSL = new File("./contrib/docbook-xsl/html/docbook.xsl");
+  private final static File XSL = new File("./contrib/renderx/fo2html.xsl");
 
   /**
    * Constructor
@@ -47,13 +47,6 @@ public class HTMLFormatter extends Formatter {
     // grab xsl transformer
     Transformer transformer = getTemplates(XSL).newTransformer();
     
-    // set : select indexterms based on type attribute value
-    transformer.setParameter("index.on.type", "1");
-    
-    // set: generate.toc
-    if (!doc.isTOC())
-      transformer.setParameter("generate.toc", "'article nop'");
-
     // do the transformation
     transformer.transform(doc.getDOMSource(), new StreamResult(out));
 

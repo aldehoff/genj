@@ -60,7 +60,7 @@ public class ReportSummaryOfRecords extends Report {
     
     // create a document
     Document doc = new Document(i18n("title", gedcom.getName()));
-    
+
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
     
     // prepare some space to collect places

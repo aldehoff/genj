@@ -21,12 +21,14 @@ package genj.fo;
 
 import java.io.OutputStream;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 
 /**
  * Formatter for PDF - using FOP
  */
-public class PDFFormatter extends XSLFOFormatter {
+public class PDFFormatter extends Formatter {
 
   /**
    * Constructor
@@ -40,19 +42,16 @@ public class PDFFormatter extends XSLFOFormatter {
    */
   protected void formatImpl(Document doc, OutputStream out) throws Throwable {
 
-// TRUNK - the new FOP 
-    // create FOP tree builder that does the trick
+    // create FOP tree builder that handles the document content and generates out
     org.xml.sax.ContentHandler handler = new org.apache.fop.fo.FOTreeBuilder("application/pdf", new org.apache.fop.apps.FOUserAgent(), out);
-    super.formatImpl(doc, new SAXResult(handler));
 
-// MAINTENANCE - the 0.20.3 branch way of doing things
-//    org.apache.fop.apps.Driver driver = new org.apache.fop.apps.Driver();
-//    driver.setRenderer(new org.apache.fop.render.pdf.PDFRenderer());
-//    //driver.setRenderer(new org.apache.fop.render.txt.TXTRenderer());
-//    driver.setOutputStream(out);
-//      super.formatImpl(doc, new SAXResult(driver.getContentHandler()));
+    // grab xsl transformer
+    Transformer transformer = TransformerFactory.newInstance().newTransformer();
+    
+    // do the transformation
+    transformer.transform(doc.getDOMSource(), new SAXResult(handler));
 
-      // done
+    // done
   }
   
 }
