@@ -265,6 +265,11 @@
      <!-- copy graphj.jar -->
      <copy todir="${dir.build}/applet" file="./lib/graphj.jar"/>
   	
+    <!-- copy example.ged -->
+    <copy todir="${dir.build}/applet">
+      <fileset dir="./gedcom"/>
+	  </copy> 	
+  	
   	 <!-- sign em -->
      <signjar keystore="${dir.build}/keyfile" alias="genj" storepass="password">
       <fileset dir="${dir.build}/applet" includes="*.jar"/>

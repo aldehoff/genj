@@ -1,37 +1,61 @@
-GenJ - Applet HOWTO
+<html>
+<body>
 
-INTRODUCTION
+<h1>GenJ - Applet HOWTO</h1>
 
+<h2>INTRODUCTION</h2>
+
+<p>
  There are two basic modes of how to package your data
  for the GenJ applet. You can provide all your Gedcom 
  information and external files (e.g. pictures, .properties) 
  in a directory relative to the applet's HTML page.
  Alternatively you can also create an archive of all this 
  information (use zip and preserve directory structure).
+</p>
  
+<p>
  You can either use ./lib/genj.jar and ./lib/graph.jar 
  coming with the default distribution genj_app-x.y.zip 
  or download genj_applet-x.y.zip and use it's contained 
  smaller libraries (reduced to necessary minimum).
+</p>
 
-PREPARING APPLET FILES (unzipped)
+<p>
+ The end-result should look something like this:<br>
+ <center>
+  <applet 
+     code="genj.applet.Applet.class" 
+     width="200" 
+     height="160" 
+     archive="../applet/genj.jar, ../applet/graphj.jar"
+     alt="GenealogyJ">
+    <param name="gedcom" value="../applet/example.ged">
+   </applet>
+ </center>
+</p>
 
+<h2>PREPARING APPLET FILES (unzipped)</h2>
+
+<p>
  Follow these steps to provide all necessary files for running GenJ
  as an applet:
+</p>
 
+<pre>
   + place genj.jar + graphj.jar in [directory]
 
   + place [file].ged + [file].ged.properties + genj.properties and any images into [directory]
 
   + add a HTML page that includes the following tag
 
-   <applet 
+   &lt;applet 
      code="genj.applet.Applet.class" 
      width="200" height="160" 
      archive="./genj.jar, ./graphj.jar"
-     alt="GenealogyJ">
-    <param name="gedcom" value="./[file.ged]">
-   </applet>
+     alt="GenealogyJ"&gt;
+    &lt;param name="gedcom" value="./[file.ged]"&gt;
+   &lt;/applet&gt;
 
   + make sure that the result looks like this
 
@@ -43,23 +67,25 @@ PREPARING APPLET FILES (unzipped)
     ./file.ged.properties
     ./image1.jpg
     ./...
+</pre>
 
-PREPARING APPLET FILES (zipped)
+<h2>PREPARING APPLET FILES (zipped)</h2>
 
+<pre>
   + zip [file].ged + [file].get.properties + genj.properties and any images into [file].zip
 
   + place [file].zip into [directory]
 
   + add a HTML page that includes the following tag
 
-   <applet 
+   &lt;applet 
      code="genj.applet.Applet.class" 
      width="200" 
      height="160" 
      archive="./genj.jar, ./graphj.jar"
-     alt="GenealogyJ">
-    <param name="gedcom" value="./[file.zip]#[file.ged]">
-   </applet>
+     alt="GenealogyJ"&gt;
+    &lt;param name="gedcom" value="./[file.zip]#[file.ged]"&gt;
+   &lt;/applet&gt;
 
   + make sure that the result looks like this
 
@@ -67,14 +93,28 @@ PREPARING APPLET FILES (zipped)
     ./graph.jar
     ./genj.jar
     ./file.zip
+</pre>
 
-MAKING THE APPLET SPEAK YOUR LANGUAGE
+<h2>MAKING THE APPLET SPEAK YOUR LANGUAGE</h2>
 
+<pre>
   + place the language file of choice genj_xx.jar into [directory]
 
   + add that jar to the Applet's HTML tag - archive attribute
 
-   <applet 
+   &lt;applet 
      ...
      archive="./genj.jar, ./graphj.jar, ./genj_xx.jar"
      ... 
+
+  &lt;applet 
+     code="genj.applet.Applet.class" 
+     width="200" 
+     height="160" 
+     archive="./genj.jar, ./graphj.jar"
+     alt="GenealogyJ"&gt;
+    &lt;param name="gedcom" value="./genj_install_exemple.zip#genj_install_exemple.ged"&gt;
+   &lt;/applet&gt;
+</pre>
+
+</html>
