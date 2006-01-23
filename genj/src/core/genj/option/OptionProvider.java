@@ -34,6 +34,9 @@ public abstract class OptionProvider {
 
   /** all known options */
   private static List options;
+  
+  /** specifically set option providers */
+  private static String[] PROVIDERS;
 
   /**
    * Accessor - options
@@ -59,25 +62,11 @@ public abstract class OptionProvider {
   }
   
   /**
-   * Static Accessor - explicitly set options to consider
+   * Static Accessor - explicitly set OptionProviders to consider. Needs to be called before
+   * first option interaction via getAllOptions()
    */
   public static void setOptionProviders(String[] providers) {
-    
-    // collect    
-    options = new ArrayList(32);
-    for (int i=0;i<providers.length;i++) { 
-      try {
-        // one provider at a time
-        OptionProvider provider = (OptionProvider)Class.forName(providers[i]).newInstance();
-        // grab its options
-        List os = provider.getOptions();
-        // keep em
-        options.addAll(os);
-      } catch (Throwable t) {
-      }
-    }
-    
-    // done
+    PROVIDERS = providers;
   }
   
   /**
@@ -87,7 +76,7 @@ public abstract class OptionProvider {
     return getAllOptions(null);
   }
   public static List getAllOptions(Registry restoreFrom) {  
-    
+
     // known?
     if (options!=null)
       return options;    
@@ -98,19 +87,25 @@ public abstract class OptionProvider {
       restoreFrom = new Registry(restoreFrom, "options");
   
     // prepare options
-    Iterator providers = Service.providers(OptionProvider.class);
+    Iterator providers = lookupProviders();
     while (providers.hasNext()) {
+      
       // one provider at a time
       OptionProvider provider = (OptionProvider)providers.next();
+      
       // grab its options
       List os = provider.getOptions();
       options.addAll(os);
+      
       // restore their value
       if (restoreFrom!=null) {
         for (Iterator it=os.iterator(); it.hasNext(); ) {
           try {
-            ((Option)it.next()).restore(restoreFrom);
-          } catch (Throwable t) {}
+            Option option = (Option)it.next();
+            option.restore(restoreFrom);
+          } catch (Throwable t) {
+            t.printStackTrace();
+          }
         }
       }
       // next provider
@@ -118,6 +113,28 @@ public abstract class OptionProvider {
     
     // done
     return options;
+  }
+  
+  /**
+   * Lookup providers where considering
+   */
+  private static Iterator lookupProviders() {
+    
+    // fixed ones?
+    if (PROVIDERS!=null) {
+        List result = new ArrayList(32);
+        for (int i=0;i<PROVIDERS.length;i++) { 
+          try {
+            result.add((OptionProvider)Class.forName(PROVIDERS[i]).newInstance());
+          } catch (Throwable t) {
+            t.printStackTrace(System.err);
+          }
+        }
+        return result.iterator();
+    }
+    
+    // use sun's service stuff
+    return Service.providers(OptionProvider.class);
   }
 
 } //OptionProvider
