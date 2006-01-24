@@ -53,7 +53,14 @@ public class EnvironmentChecker {
     // o.k. this should be more flexible 8)
     return version.startsWith("1.4") || version.startsWith("1.5");
   }
-
+  
+  /**
+   * Check for Mac
+   */
+  public static boolean isMac() {
+    return System.getProperty("mrj.version")!=null;
+  }
+  
   /**
    * Check for Windows
    */

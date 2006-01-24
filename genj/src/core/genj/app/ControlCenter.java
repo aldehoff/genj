@@ -233,7 +233,8 @@ public class ControlCenter extends JPanel {
     mh.createItem(new ActionSave(true));
     mh.createItem(new ActionClose());
     mh.createSeparator().setEnabled(true).setCollection(null);
-    mh.createItem(new ActionExit());
+    if (!EnvironmentChecker.isMac()) // Mac's don't need exit actions in application menus apparently
+      mh.createItem(new ActionExit());
 
     mh.popMenu().createMenu("cc.menu.view");
 

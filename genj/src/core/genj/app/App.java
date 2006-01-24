@@ -95,6 +95,13 @@ public class App {
       LOG.info("date = "+new Date());
       EnvironmentChecker.log();
       
+      // patch up GenJ for Mac if applicable
+      if (EnvironmentChecker.isMac()) {
+        LOG.info("Setting up MacOs adjustments");
+        System.setProperty("apple.laf.useScreenMenuBar","true");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name","GenealogyJ");
+      }
+      
       // check VM version
       if (!EnvironmentChecker.isJava14(App.class)) {
         if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
