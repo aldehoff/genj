@@ -165,14 +165,18 @@ public class FileChooserWidget extends JPanel {
    * Set current file selection
    */
   public void setFile(String file) {
-    text.setText(file!=null ? file : "");
+    setFile(new File(file!=null ? file : ""));
   }
   
   /**
    * Set current file selection
    */
   public void setFile(File file) {
-    text.setText(file!=null ? file.toString() : "");
+    if (file==null) text.setText("");
+    else {
+      text.setText(file.getAbsolutePath());
+      setDirectory(file.getParent());
+    }
   }
   
   /**
