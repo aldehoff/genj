@@ -20,11 +20,13 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
+import genj.util.EnvironmentChecker;
 import genj.util.MnemonicAndText;
 import genj.util.Resources;
 
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
@@ -40,6 +42,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 
 /**
  * Class which provides some static helpers for menu-handling
@@ -298,7 +301,12 @@ public class MenuHelper  {
     // calc mnemonic 
     MnemonicAndText mat = new MnemonicAndText(txt);
     item.setText(mat.getText());
-    item.setMnemonic(mat.getMnemonic());
+    
+    // use accelerator keys on mac and mnemonic otherwise
+    if (EnvironmentChecker.isMac())
+      item.setAccelerator(KeyStroke.getKeyStroke(mat.getMnemonic(), Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+    else 
+      item.setMnemonic(mat.getMnemonic());
   }
 
 } //MenuHelper
