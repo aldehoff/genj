@@ -13,18 +13,18 @@ import junit.framework.TestCase;
 /**
  * Test Case for testing our formatted output feature
  */
-public class FormatterTest extends TestCase {
+public class FormatTest extends TestCase {
 
-  public void testFormatters() throws IOException, TransformerException {
+  public void testFormats() throws IOException, TransformerException {
     
     // create a document
     Document doc = new Document("Some Title");
     
     // transform it
-    Formatter[] fs = Formatter.getFormatters();
+    Format[] fs = Format.getFormats();
     
     for (int i=0;i<fs.length;i++) {
-      Formatter f = fs[i];
+      Format f = fs[i];
       try {
         f.format(doc, new ByteArrayOutputStream(1024));
       } catch (Throwable t) {

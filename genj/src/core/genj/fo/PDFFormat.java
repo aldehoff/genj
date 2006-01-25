@@ -26,14 +26,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 
 /**
- * Formatter for PDF - using FOP
+ * Format  for PDF - using FOP
  */
-public class PDFFormatter extends Formatter {
+public class PDFFormat extends Format {
 
   /**
    * Constructor
    */
-  public PDFFormatter() {
+  public PDFFormat() {
     super("PDF", "pdf", false);
   }
   

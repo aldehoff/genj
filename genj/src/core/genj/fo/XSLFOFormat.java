@@ -27,14 +27,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 
 /** 
- * Formatter for XLSFO - a simple identity transformation 
+ * Format for XLSFO - a simple identity transformation 
  */
-public class XSLFOFormatter extends Formatter {
+public class XSLFOFormat extends Format {
   
   /**
    * Constructor
    */
-  public XSLFOFormatter() {
+  public XSLFOFormat() {
     super("XSL-FO", "xml", false);
   }
   

@@ -166,7 +166,21 @@ public class Document {
    * Add section
    */
   public Document addSection(String title, String id) {
-    System.err.println("addSection("+title+","+id+")");
+    
+    // start a new block
+    addParagraph();
+    
+    // set font-size
+    block.setAttribute("font-size", "larger");
+    block.setAttribute("font-weight", "bolder");
+    
+    // add the title
+    addText(title);
+    
+    // create the following block
+    addParagraph();
+    
+    System.err.println("addSection("+title+","+id+") - id is not supported");
 //    // pop to containing section
 //    Element parent = pop("section");
 //    if (parent!=null&&"section".equals(parent.getNodeName()))
@@ -291,23 +305,11 @@ public class Document {
    * Add a paragraph
    */
   public Document addParagraph() {
-    System.err.println("addParagraph()");
     
-//    // look for current paragraph
-//    if ("para".equals(cursor.getNodeName())) { 
-//      // one already there
-//      if (cursor.hasChildNodes()) {
-//        pop();
-//        push(createElement("para", null));
-//      }
-//    } else {
-//      // can't do a paragraph if following a section
-//      Node prev = cursor.getLastChild();
-//      if (prev!=null && prev.getNodeName().equals("section"))
-//        throw new IllegalArgumentException("paragraph after /section n/a");
-//      // create a new paragraph
-//      push(createElement("para", null));
-//    }
+    // start a new block if the current is not-empty
+    if (block.getFirstChild()!=null)
+      block = addElement(block.getParentNode(), "block");
+    
     return this;
   }
     

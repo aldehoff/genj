@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -39,15 +41,17 @@ import javax.xml.transform.stream.StreamSource;
 import sun.misc.Service;
 
 /**
- * A document formatter
+ * A document format
  */
-public abstract class Formatter {
+public abstract class Format {
   
-  /** available formatters */
-  private static Formatter[] formatters;
+  protected final static Logger LOG = Logger.getLogger("genj.fo");
   
-  /** default formatter */
-  public static Formatter DEFAULT = new XSLFOFormatter();
+  /** available formats */
+  private static Format[] formats;
+  
+  /** default formats */
+  public static Format DEFAULT = new XSLFOFormat();
 
   /** this format */
   private String format;
@@ -64,7 +68,7 @@ public abstract class Formatter {
   /** 
    * Constructor 
    */
-  protected Formatter(String format, String extension, boolean isExternalizedFiles) {
+  protected Format(String format, String extension, boolean isExternalizedFiles) {
     this.format = format;
     this.extension = extension;
     this.isExternalizedFiles = isExternalizedFiles;
@@ -95,7 +99,7 @@ public abstract class Formatter {
    * equals
    */
   public boolean equals(Object other) {
-    Formatter that = (Formatter)other;
+    Format that = (Format)other;
     return this.format.equals(that.format);
   }
   
@@ -155,6 +159,7 @@ public abstract class Formatter {
     try {
       formatImpl(doc, out);
     } catch (Throwable t) {
+      LOG.log(Level.WARNING, "unexpected expection formatting "+doc.getTitle(), t);
       if (t instanceof IOException) throw (IOException)t;
       throw new IOException(t.getMessage());
     } finally {
@@ -189,10 +194,10 @@ public abstract class Formatter {
   }
   
   /**
-   * Return formatter by key
+   * Return format by key
    */
-  public static Formatter getFormatter(String key) {
-    Formatter[] fs = getFormatters();
+  public static Format getFormat(String key) {
+    Format[] fs = getFormats();
     for (int i = 0; i < fs.length; i++) {
       if (fs[i].getClass().getName().equals(key))
         return fs[i];
@@ -208,29 +213,29 @@ public abstract class Formatter {
   }
   
   /**
-   * Resolve available formatters
+   * Resolve available formats
    */
-  public static Formatter[] getFormatters() {
+  public static Format[] getFormats() {
     
     // known?
-    if (formatters!=null)
-      return formatters;
+    if (formats!=null)
+      return formats;
     
     // look 'em up
     List list = new ArrayList(10);
     list.add(DEFAULT);
     
-    Iterator it = Service.providers(Formatter.class);
+    Iterator it = Service.providers(Format.class);
     while (it.hasNext()) {
-      Formatter f = (Formatter)it.next();
+      Format f = (Format)it.next();
       if (!list.contains(f)) list.add(f);
     }
 
     // keep 'em
-    formatters = (Formatter[])list.toArray(new Formatter[list.size()]);
+    formats = (Format[])list.toArray(new Format[list.size()]);
     
     // done
-    return formatters;
+    return formats;
   }
   
 }

@@ -26,16 +26,16 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
 
 /** 
- * Formatter for HTML 
+ * Format for HTML 
  */
-public class HTMLFormatter extends Formatter {
+public class HTMLFormat extends Format {
   
   private final static File XSL = new File("./contrib/renderx/fo2html.xsl");
 
   /**
    * Constructor
    */
-  public HTMLFormatter() {
+  public HTMLFormat() {
     super("HTML", "html", true);
   }
 
