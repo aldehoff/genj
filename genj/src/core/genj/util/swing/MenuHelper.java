@@ -303,7 +303,7 @@ public class MenuHelper  {
     item.setText(mat.getText());
     
     // use accelerator keys on mac and mnemonic otherwise
-    if (EnvironmentChecker.isMac())
+    if (!(item instanceof JMenu) && EnvironmentChecker.isMac())
       item.setAccelerator(KeyStroke.getKeyStroke(mat.getMnemonic(), Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
     else 
       item.setMnemonic(mat.getMnemonic());
