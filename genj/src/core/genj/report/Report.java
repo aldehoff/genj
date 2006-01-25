@@ -17,14 +17,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.88 $ $Author: nmeier $ $Date: 2005-12-01 16:17:32 $
+ * $Revision: 1.89 $ $Author: nmeier $ $Date: 2006-01-25 03:16:25 $
  */
 package genj.report;
 
 import genj.chart.Chart;
 import genj.common.SelectEntityWidget;
 import genj.fo.Document;
-import genj.fo.Formatter;
+import genj.fo.Format;
+import genj.fo.FormatOptionsWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.io.FileAssociation;
@@ -34,7 +35,6 @@ import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
-import genj.util.swing.FileChooser;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -364,32 +364,25 @@ public abstract class Report implements Cloneable {
   public final void showDocumentToUser(Document doc) {
     
     String title = "Document '"+doc.getTitle();
-    JLabel label = new JLabel("Choose formatted output for document");
+
+    FormatOptionsWidget output = new FormatOptionsWidget(new Registry(registry, "fo"));
     
-    ChoiceWidget formatters = new ChoiceWidget(Formatter.getFormatters(), Formatter.getFormatter(registry.get("formatter", (String)null)));
-    formatters.setEditable(false);
-    int rc = viewManager.getWindowManager().openDialog(
-        "reportdoc", title, WindowManager.QUESTION_MESSAGE, new JComponent[] {label, formatters}, WindowManager.ACTIONS_OK_CANCEL, owner);
+    int rc = viewManager.getWindowManager().openDialog("reportdoc", title, WindowManager.QUESTION_MESSAGE, output, WindowManager.ACTIONS_OK_CANCEL, owner);
     
     // cancel?
     if (rc!=0)
       return;
     
-    // remember formatter
-    Formatter formatter = (Formatter)formatters.getSelectedItem();
-    registry.put("formatter", formatter.getKey());
+    // grab formatter and output file
+    Format formatter = output.getFormat();
     
-    // ask user for output file
-    String key = getClass().getName()+".dir";
-    String dir = registry.get(key, EnvironmentChecker.getProperty(this, "user.home", ".", "document output directory"));
-    FileChooser chooser = new FileChooser(owner, "Choose file", "Save", formatter.getFileExtension(), dir);
-    chooser.showDialog();
-    File file = chooser.getSelectedFile();
+    // grab file
+    File file = output.getFile();
     if (file==null)
       return;
-    registry.put(key, chooser.getCurrentDirectory().getAbsolutePath());
-    if (!file.getName().endsWith("."+formatter.getFileExtension()))
-      file = new File(file.getAbsolutePath()+"."+formatter.getFileExtension());
+    
+    // store options
+    output.remember(new Registry(registry, "fo"));
     
     // show a progress dialog
     String progress = viewManager.getWindowManager().openNonModalDialog(
