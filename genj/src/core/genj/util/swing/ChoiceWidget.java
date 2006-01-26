@@ -36,7 +36,6 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -60,7 +59,7 @@ public class ChoiceWidget extends JComboBox {
   private ChangeSupport changeSupport = new ChangeSupport(this);
   
   /** auto complete support */
-  private AutoCompleteSupport autoComplete = new AutoCompleteSupport();
+  private AutoCompleteSupport autoComplete;
   
   /**
    * Constructor
@@ -249,13 +248,10 @@ public class ChoiceWidget extends JComboBox {
     // keep it
     super.setEditor(set);
     
-    // schedule our auto-complete to be attached - this needs to happen
-    // later since setEditor() might be called in the super's constructor
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        autoComplete.attach(getTextEditor());
-      }
-    });
+    // add our auto-complete hook
+    if (autoComplete==null) 
+      autoComplete = new AutoCompleteSupport();
+    autoComplete.attach(getTextEditor());
     
     // done
   }
