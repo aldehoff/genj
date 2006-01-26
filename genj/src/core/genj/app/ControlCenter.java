@@ -195,6 +195,7 @@ public class ControlCenter extends JPanel {
         .setFontSize(10)
         .addCollection(tniButtons);
 
+    bh.setEnabled(true).create(new ActionNew());
     bh.setEnabled(true).create(new ActionOpen());
 
     bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
@@ -226,7 +227,7 @@ public class ControlCenter extends JPanel {
 
     // Create Menues
     mh.createMenu("cc.menu.file");
-
+    mh.createItem(new ActionNew());
     mh.createItem(new ActionOpen());
     mh.createSeparator().setEnabled(false).setCollection(gedcomButtons);
     mh.createItem(new ActionSave(false));
@@ -411,6 +412,49 @@ public class ControlCenter extends JPanel {
   } //ActionExit
 
   /**
+   * Action - new
+   */
+  private class ActionNew extends ActionDelegate {
+    
+    /** constructor */
+    ActionNew() {
+      setText("cc.menu.new" );
+      setTip("cc.create.title");
+      setImage(Images.imgNew);
+    }
+
+    /** execute callback */
+    protected void execute() {
+      
+        // let user choose a file
+        File file = chooseFile(resources.getString("cc.create.title"), resources.getString("cc.create.action"), null);
+        if (file == null)
+          return;
+        if (!file.getName().endsWith(".ged"))
+          file = new File(file.getAbsolutePath()+".ged");
+        if (file.exists()) {
+          int rc = windowManager.openDialog(
+            null,
+            resources.getString("cc.create.title"),
+            WindowManager.WARNING_MESSAGE,
+            resources.getString("cc.open.file_exists", file.getName()),
+            WindowManager.ACTIONS_YES_NO,
+            ControlCenter.this
+          );
+          if (rc!=0)
+            return;
+        }
+        // form the origin
+        try {
+          addGedcom(new Gedcom(Origin.create(new URL("file", "", file.getAbsolutePath())), true));
+        } catch (MalformedURLException e) {
+        }
+
+    }
+    
+  } //ActionNew
+  
+  /**
    * Action - open
    */
   private class ActionOpen extends ActionDelegate {
@@ -451,16 +495,33 @@ public class ControlCenter extends JPanel {
      * (sync) pre execute
      */
     protected boolean preExecute() {
-
-      // try to get an origin we're interested in
+      
+      // need to ask for origin?
       if (origin==null) {
-        origin = getOrigin();
-        if (origin == null)
-          return false; // don't continue into (async) execute without
-      }
-
-      // open it
-      return open(origin);
+        String actions[] = {
+          resources.getString("cc.open.choice.local"),
+          resources.getString("cc.open.choice.inet" ),
+          WindowManager.TXT_CANCEL,
+        };
+        int rc = windowManager.openDialog(
+          null,
+          resources.getString("cc.open.title"),
+          WindowManager.QUESTION_MESSAGE,
+          resources.getString("cc.open.choice"),
+          actions,
+          ControlCenter.this
+        );
+        switch (rc) {
+          case 0 :
+            origin = chooseExisting();
+            break;
+          case 1 :
+            origin = chooseURL();
+            break;
+        }
+      }      
+      // try to open it
+      return origin==null ? false : open(origin);
     }
 
     /**
@@ -540,78 +601,6 @@ public class ControlCenter extends JPanel {
       if (gedcom != null) 
         addGedcom(gedcom);
       
-      // done
-    }
-
-    /** 
-     * Ask for an origin 
-     */
-    private Origin getOrigin() {
-
-      // pop choice of opening
-      String actions[] = {
-        resources.getString("cc.open.choice.local"),
-        resources.getString("cc.open.choice.new" ),
-        resources.getString("cc.open.choice.inet" ),
-        WindowManager.TXT_CANCEL,
-      };
-
-      int rc = windowManager.openDialog(
-        null,
-        resources.getString("cc.open.title"),
-        WindowManager.QUESTION_MESSAGE,
-        resources.getString("cc.open.choice"),
-        actions,
-        ControlCenter.this
-      );
-
-      // check choices
-      switch (rc) {
-        case 0 :
-          return chooseExisting();
-        case 1 :
-          createNew();
-          return null;
-        case 2 :
-          return chooseURL();
-        default :
-          return null;
-      }
-
-      // done      
-    }
-
-    /** 
-     * create a new Gedcom
-     */
-    private void createNew() {
-
-      // let user choose a file
-      File file = chooseFile(resources.getString("cc.create.title"), resources.getString("cc.create.action"), null);
-      if (file == null)
-        return;
-      if (!file.getName().endsWith(".ged"))
-        file = new File(file.getAbsolutePath()+".ged");
-      if (file.exists()) {
-        int rc = windowManager.openDialog(
-          null,
-          resources.getString("cc.create.title"),
-          WindowManager.WARNING_MESSAGE,
-          resources.getString("cc.open.file_exists", file.getName()),
-          WindowManager.ACTIONS_YES_NO,
-          ControlCenter.this
-        );
-        if (rc!=0)
-          return;
-      }
-      // form the origin
-      try {
-        gedcom = new Gedcom(
-          Origin.create(new URL("file", "", file.getAbsolutePath())),
-          true
-        );
-      } catch (MalformedURLException e) {
-      }
       // done
     }
 

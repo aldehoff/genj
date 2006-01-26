@@ -29,7 +29,7 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImageIcon
-    imgHelp, imgClose, imgOpen, imgExit, imgSave, imgAbout, imgChoiceEditor;
+    imgHelp, imgClose, imgNew, imgOpen, imgExit, imgSave, imgAbout, imgChoiceEditor;
 
   /**
    * Constructor which pre-loads all images
@@ -37,6 +37,7 @@ final public class Images {
   private Images() {
     imgHelp         = new ImageIcon(this,"images/Help.gif");
     imgClose        = new ImageIcon(this,"images/Close.gif");
+    imgNew         = new ImageIcon(this,"images/New.gif");
     imgOpen         = new ImageIcon(this,"images/Open.gif");
     imgExit         = new ImageIcon(this,"images/Exit.gif");
     imgSave         = new ImageIcon(this,"images/Save.gif");
