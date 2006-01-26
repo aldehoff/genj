@@ -27,6 +27,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -34,6 +36,7 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -57,7 +60,7 @@ public class ChoiceWidget extends JComboBox {
   private ChangeSupport changeSupport = new ChangeSupport(this);
   
   /** auto complete support */
-  private AutoCompleteSupport autoComplete;
+  private AutoCompleteSupport autoComplete = new AutoCompleteSupport();
   
   /**
    * Constructor
@@ -95,9 +98,6 @@ public class ChoiceWidget extends JComboBox {
     
     // try to set selection - not in values is ignored
     setSelectedItem(selection);
-    
-    // enable autocomplete support
-    autoComplete = new AutoCompleteSupport();
     
     // done
   }
@@ -223,7 +223,7 @@ public class ChoiceWidget extends JComboBox {
    */
   public void requestFocus() {
     if (isEditable())
-      getTextEditor().requestFocus();
+      getEditor().getEditorComponent().requestFocus();
     else
       super.requestFocus();
   }
@@ -233,7 +233,7 @@ public class ChoiceWidget extends JComboBox {
    */
   public boolean requestFocusInWindow() {
     if (isEditable())
-      return getTextEditor().requestFocusInWindow();
+      return getEditor().getEditorComponent().requestFocusInWindow();
     return super.requestFocusInWindow();
   }
   
@@ -241,10 +241,23 @@ public class ChoiceWidget extends JComboBox {
    * @see javax.swing.JComboBox#setEditor(javax.swing.ComboBoxEditor)
    */
   public void setEditor(ComboBoxEditor set) {
+
+    // we're only allowing text fields
+    if (!(set.getEditorComponent() instanceof JTextField))
+      throw new IllegalArgumentException("Only JTextEditor editor components are allowed");
     
-    // continue
+    // keep it
     super.setEditor(set);
     
+    // schedule our auto-complete to be attached - this needs to happen
+    // later since setEditor() might be called in the super's constructor
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        autoComplete.attach(getTextEditor());
+      }
+    });
+    
+    // done
   }
   
   /**
@@ -260,22 +273,43 @@ public class ChoiceWidget extends JComboBox {
   public void removeActionListener(ActionListener l) {
     getEditor().removeActionListener(l);
   }
+
+  /**
+   * Our special tab handling interception code
+   */
+  public void processKeyEvent(KeyEvent e) {
+    super.processKeyEvent(e);
+  }
   
   /**
    * Auto complete support
    */
-  private class AutoCompleteSupport implements DocumentListener, ActionListener, FocusListener {
+  private class AutoCompleteSupport extends KeyAdapter implements DocumentListener, ActionListener, FocusListener {
 
+    private JTextField text;
     private Timer timer = new Timer(250, this);
     
     /**
      * Constructor
      */
     private AutoCompleteSupport() {
-      getTextEditor().getDocument().addDocumentListener(this);
-      getTextEditor().addFocusListener(this);
-      
       timer.setRepeats(false);
+    }
+    
+    private void attach(JTextField text) {
+      
+      // old?
+      if (text!=null) {
+        text.getDocument().removeDocumentListener(this);
+        text.removeFocusListener(this);
+        text.removeKeyListener(this);
+      }
+      
+      // new!
+      this.text = text;
+      text.getDocument().addDocumentListener(this);
+      text.addFocusListener(this);
+      text.addKeyListener(this);
     }
     
     /**
@@ -310,46 +344,50 @@ public class ChoiceWidget extends JComboBox {
     public void actionPerformed(ActionEvent e) {
 
       // grab current 'prefix'
-      String txt = getTextEditor().getText();
-      if (txt.length()==0)
+      String prefix = text.getText();
+      if (prefix.length()==0)
         return;
 
       // don't auto-complete unless cursor at end of text
-      Caret c = getTextEditor().getCaret();
-      if (c.getDot()!=txt.length())
+      Caret c = text.getCaret();
+      if (c.getDot()!=prefix.length())
         return;
 
       // try to select an item by prefix
-      blockAutoComplete = true;
-      String match = model.setSelectedPrefix(txt);
-      blockAutoComplete = false;
-        
+      String match = model.setSelectedPrefix(prefix);
+      
       // no match
       if (match.length()==0)
         return;
       
-      // found a complete match==text - place cursor after all text
-      if (match.length()==txt.length()) {
-        c.setDot(txt.length());
-        return;
-      }
-  
-      // found partial match - restore cursor to current position and select rest 
-      c.setDot(match.length());
-      c.moveDot(txt.length());
-  
+      // restore the original text
+      blockAutoComplete = true;
+      text.setText(prefix);
+      blockAutoComplete = false;
+      
+      // show where we're at in case of a partial match
+      if (match.length()>prefix.length())
+        showPopup();
+        
       // done      
     }
     /** selectAll on focus gained */
     public void focusGained(FocusEvent e) {
-      JTextField tf = getTextEditor();
-      if (tf.getDocument() != null) {
-        tf.setCaretPosition(tf.getDocument().getLength());
-        tf.moveCaretPosition(0);
+      if (text.getDocument() != null) {
+        text.setCaretPosition(text.getDocument().getLength());
+        text.moveCaretPosition(0);
       }
     }
     
     public void focusLost(FocusEvent e) {
+    }
+
+    /** check for cursor-right and open popup */
+    public void keyPressed(KeyEvent e) {
+      // re-switch to current selection - I'd rather use tab for that but couldn't figure
+      // out how to do that (no tab events showing up here)
+      if (isPopupVisible()&&e.getKeyCode()==KeyEvent.VK_RIGHT&&text.getCaretPosition()==text.getText().length()) 
+        model.setSelectedItem(model.getSelectedItem());
     }
   } //AutoCompleteSupport
   
