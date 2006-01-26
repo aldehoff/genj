@@ -51,7 +51,12 @@ public class FormatOptionsWidget extends JPanel {
 
     // let user choose an output file
     chooseFile  = new FileChooserWidget();
-    chooseFile.setFile(registry.get("file", ""));
+    String file = registry.get("file", (String)null);
+    if (file!=null) {
+      File f = new File(file);
+      chooseFile.setFile(f);
+      chooseFile.setDirectory(f.getParent());
+    }
     add(new JLabel("File"));
     add(chooseFile);
     

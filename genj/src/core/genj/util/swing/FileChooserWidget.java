@@ -165,18 +165,17 @@ public class FileChooserWidget extends JPanel {
    * Set current file selection
    */
   public void setFile(String file) {
-    setFile(new File(file!=null ? file : ""));
+    text.setText(file!=null ? file : "");
   }
   
   /**
    * Set current file selection
    */
   public void setFile(File file) {
-    if (file==null) text.setText("");
-    else {
-      text.setText(file.getAbsolutePath());
-      setDirectory(file.getParent());
-    }
+    // 20060126 in version 1.7 I thought about using file's absolute path
+    // from here on but sometimes that undersirable since file might
+    // not contain a valid full path in the first place
+    text.setText(file!=null ? file.toString() : "");
   }
   
   /**
