@@ -22,6 +22,7 @@ package genj.util;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
@@ -223,7 +224,11 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
    * Handle an uncaught throwable (always sync to EDT)
    */
   protected void handleThrowable(String phase, Throwable t) {
-    LOG.log(Level.WARNING, "Action failed in "+phase, t); 
+    LogRecord record = new  LogRecord(Level.WARNING, "Action failed in "+phase);
+    record.setThrown(t);
+    record.setSourceClassName(getClass().getName());
+    record.setSourceMethodName(phase);
+    LOG.log(record); 
   }
   
   /**
