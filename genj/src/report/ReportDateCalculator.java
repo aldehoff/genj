@@ -72,7 +72,12 @@ public class ReportDateCalculator extends Report {
 	      ageStr = parent.getProperty("AGE").getValue();
 	  } else {
 	      ageStr = getValueFromUser( i18n("date.title"), i18n("age.title"), new String[0]);
+        // check if the user cancelled this
+        if (ageStr==null)
+          return;
+        
 	  }
+    
 	  Delta age = new Delta(0,0,0);
 	  if (age.setValue(ageStr) || age.setValue(ageStr+"y")){
 	      if (date.getParent().getTag().equals("BIRT")){
