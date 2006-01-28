@@ -11,16 +11,14 @@
 </P>
 
 <P>
- <font color=red><b>Important Note</b></font>: This type of entity
- is modelled in GenJ only to be compatible with the Gedcom standard.
- It's discouraged to created instances because binary information
- stored within is actually stored <b>within</b> the Gedcom file (.ged).
- This can lead to an <b>exorbitantly large</b> file (containing the 
- uuencoded data). Please <b>consider to use</b> the Multimedia Property
- instead which you can add through 
-   <a href="../view/edit.html#toolbar">Edit View</a>'s toolbar.
- A Multimedia Property is defined with a sub-property (FILE) that can 
- store a filename only instead of the file's content.
+ <font color=red><b>Important Note</b></font>: This type of entity, 
+ storing the binary uuencoded information within the Gedcom structure,
+ creates exorbitantly large .ged files and is therefore modelled in 
+ GenJ for compatibility with the Gedcom standard only.  
+ To associate images and other files with your Gedcom information it 
+ is recommended to use the Multimedia Property (which can be added to 
+ an existing property through its context-menu). This property contains
+ a sub-property FILE that stores a filename instead of the file contents.
 </P>
 
 <table>
