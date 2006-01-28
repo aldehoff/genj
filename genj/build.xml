@@ -325,7 +325,7 @@
        <zipfileset dir="." includes="lib/graphj.jar"/>
        
        <!-- compiled classes for reports -->
-       <zipfileset dir="${dir.build}/classes" includes="report/**"/>
+       <zipfileset dir="${dir.build}/classes" includes="report/**/*.class"/>
         <zipfileset dir="./src" includes="report/**"/>
        
        <!-- sample gedcom file -->
