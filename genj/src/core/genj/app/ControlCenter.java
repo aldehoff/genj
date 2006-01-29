@@ -419,7 +419,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     ActionNew() {
       setText("cc.menu.new" );
-      setTip("cc.create.title");
+      setTip("cc.tip.create_file");
       setImage(Images.imgNew);
     }
 
