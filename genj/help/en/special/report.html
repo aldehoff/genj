@@ -15,7 +15,7 @@ This page covers topics of interest to people writing custom reports for GenJ:
 </ol>
 </p>
 
-<h2>The basisc</h2>
+<h3>The basics</h3>
 
 <p>
 A GenJ-report is a Java-type that extends the abstract type <I>genj.report.Report</I>.
@@ -23,7 +23,7 @@ Writing your own functionality starts by defining your own class in a source-fil
 and placing that file into the reports-subdirectory (its name has to start with Report*).
 </p>
 <p>
-Let's assume we want to write a test-report named "Test". First create a text-file
+Let's assume we want to write a test-report named "Test". First create a text file
 named ReportTest.java in ./reports. Then compile it by running the compile-script 
 in the same directory. This script runs javac - the java compiler. The end-result is
 a file named ReportTest.class which GenJ can load and execute after it's selected
@@ -101,7 +101,7 @@ accessing and presenting the information contained (see the GenJ Javadocs for
 more).
 </P>
 
-<h2>Properties and Internationalization</h2>
+<h3>Properties and Internationalization</h3>
 
 <p>
 In order to support internationalization, your report should NOT print out string constants directly.
@@ -117,7 +117,7 @@ and put a line like this in your properties file:
     BirthDateIs = Birth Date is
 </pre>
 
-<h2>Options</h2>
+<h3>Options</h3>
 
 <p>
 Every report has an options pane, which you can easily use, by creating public
@@ -136,7 +136,7 @@ load your report, and take a look at the options pane to see the results.
 </p>
 
 <p>
-To create a pull down menu with some choises in it, use these public variables:
+To create a pull down menu with some choices in it, use these public variables:
 <pre>
     public int outputFormat = 0;
     public static String[] outputFormats = { "Soundex", "Metahphone", "Double Metaphone", "NYSIIS", "Phonex" };
@@ -148,7 +148,7 @@ and this to your properties file:
 </pre>
 There are some more complex options available.  Take a look at ReportEvent.java for more examples.
 </p>
-<h2>Loading more Java code</h2>
+<h3>Loading more Java code</h3>
 
 <p>
 All the java code in the report directory is compiled by the rcompile script,
@@ -162,7 +162,7 @@ For example, if you want to use a DMSoundex class, just put the DMSoundex.java f
 in the report directory, and run rcompile.  It is now available for you, but does
 not show up as a report, because it is not a subclass of genj.report.Report.
 
-<h2>Getting Data (Part 1): Using methods on objects</h2>
+<h3>Getting Data (Part 1): Using methods on objects</h3>
 
 The java objects which store information from the GEDCOM file have some methods
 which access their names, dates, children and parents (but not as many as you would expect).
@@ -189,7 +189,7 @@ Below are some examples:
 You may also want to look at the PropertyDate class, and the methods which return
 these objects from other classes.
 
-<h2>Getting Data (Part 2): Using tags and properties</h2>
+<h3>Getting Data (Part 2): Using tags and properties</h3>
 
 <p>
 Most data in the GEDCOM file is available via tags, rather than from methods on objects.
