@@ -197,6 +197,8 @@ public class ControlCenter extends JPanel {
 
     bh.setEnabled(true).create(new ActionNew());
     bh.setEnabled(true).create(new ActionOpen());
+    
+    result.addSeparator();
 
     bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
     ViewFactory[] factories = viewManager.getFactories();
