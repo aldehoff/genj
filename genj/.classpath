@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry output="build/classes/core" kind="src" path="src/core"/>
-	<classpathentry output="build/classes/run" kind="src" path="src/run"/>
-	<classpathentry output="build/classes/report" kind="src" path="src/report"/>
-	<classpathentry output="build/classes/contrib" kind="src" path="src/contrib"/>
-	<classpathentry output="build/classes/tst" kind="src" path="src/tst"/>
+	<classpathentry including="**/*.java" output="build/classes/core" kind="src" path="src/core"/>
+	<classpathentry including="**/*.java" output="build/classes/run" kind="src" path="src/run"/>
+	<classpathentry including="**/*.java" output="build/classes/report" kind="src" path="src/report"/>
+	<classpathentry including="**/*.java" output="build/classes/contrib" kind="src" path="src/contrib"/>
+	<classpathentry including="**/*.java" output="build/classes/tst" kind="src" path="src/tst"/>
 	<classpathentry kind="lib" path="images"/>
 	<classpathentry kind="lib" path="lib/jhbasic.jar"/>
 	<classpathentry kind="lib" path="lib/graphj.jar"/>
