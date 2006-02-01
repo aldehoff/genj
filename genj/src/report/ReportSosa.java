@@ -302,7 +302,7 @@ public class ReportSosa extends Report {
 		    prefix += " "+fam.getOtherSpouse(indi).getName();
 		}
 	    }
-	    marriage = output.formatEvent(prefix, fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
+	    marriage = Formatter.formatEvent(prefix, fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
 	} else {
 	    marriage = "";
 	}
