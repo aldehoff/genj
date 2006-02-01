@@ -19,7 +19,11 @@
  */
 package genj.geo;
 
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
 import genj.util.EnvironmentChecker;
+import genj.util.Registry;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +34,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -383,7 +391,7 @@ public class GeoService {
   /**
    * Match given location
    */
-  public Match match(GeoLocation location) {
+  public boolean match(GeoLocation location) {
 
     String city = location.getCity();
     Jurisdiction jurisdiction = location.getJurisdiction();
@@ -431,10 +439,94 @@ public class GeoService {
         LOG.log(Level.SEVERE, "throwable while trying to match "+location, t);
       }
     }
+
+    // keep matched data
+    location.set(lat, lon, matches);
     
     // done
-    return new Match(location, lat, lon, matches);
+    return matches>0;
+  }
+  
+  /**
+   * Create locations for all properties contained in given entities
+   * @param entitie entities to consider
+   * @param matchedOnly whether to create locations only for matched properties
+   * @return collection of GeoLocations
+   */
+  public Collection matchEntities(Gedcom gedcom, Collection entities, boolean matchedOnly) {
     
+    // loop over entities
+    List props = new ArrayList(100);
+    for (Iterator it=entities.iterator(); it.hasNext(); ) {
+      Entity entity = (Entity)it.next();
+      for (int p=0; p<entity.getNoOfProperties(); p++) {
+        Property prop = entity.getProperty(p);
+        if (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) 
+          props.add(prop);
+      }
+    }
+    
+    // check properties now
+    return matchProperties(gedcom, props, matchedOnly);
+  }
+  
+  /**
+   * Create locations for given collection of properties
+   * @param properties the properties to match
+   * @param matchedOnly whether to create locations only for matched properties
+   * @return collection of GeoLocations
+   */
+  public Collection matchProperties(Gedcom gedcom, Collection properties, boolean matchedOnly) {
+    
+    // prepare result
+    Map result = new HashMap(properties.size());
+    
+    // lookup properties file associated with that gedcom
+    String name = gedcom.getName();
+    if (name.endsWith(".ged")) name = name.substring(0, name.length()-".ged".length());
+    name = name + ".geo";
+    Registry registry = Registry.lookup(name, gedcom.getOrigin());
+    
+    // loop over properties
+    for (Iterator it = properties.iterator(); it.hasNext(); ) {
+      
+      Property prop = (Property)it.next();
+
+      // create a new location
+      GeoLocation location;
+      try {
+        location = new GeoLocation(prop);
+      } catch (IllegalArgumentException e) {
+        continue;
+      }
+    
+      // check if we have a location like that
+      GeoLocation other = (GeoLocation)result.get(location);
+      if (other!=null) {
+        other.add(location);
+        continue;
+      }
+    
+      // something we can map through the registry?
+      String latlon  = registry.get(location.getJurisdictionsAsString(), (String)null);
+      if (latlon!=null) {
+        int comma = latlon.indexOf(',');
+        if (comma>0) 
+          location.set( Double.parseDouble(latlon.substring(0, comma)), Double.parseDouble(latlon.substring(comma+1)), 1);
+      }
+
+      // match if still necessary
+      if (!location.isValid()) match(location);
+      
+      // keep it?
+      if (location.isValid()||!matchedOnly)
+        result.put(location, location);
+
+      // next property
+    }
+    
+    // done
+    return result.keySet();
   }
   
   /**
@@ -470,27 +562,6 @@ public class GeoService {
     
     // done
     return (GeoMap[])maps.toArray(new GeoMap[maps.size()]);
-  }
-  
-  /**
-   * A match
-   */
-  public class Match implements Runnable {
-    private GeoLocation location;
-    private double lat,lon;
-    private int matches;
-    private Match(GeoLocation location, double lat, double lon, int matches) { 
-      this.location = location; this.lat=lat; this.lon=lon; this.matches=matches; 
-    }
-    public double getLatitude() {
-      return lat;
-    }
-    public double getLongitude() {
-      return lon;
-    }
-    public void run() {
-      location.set(lat, lon, matches);
-    }
   }
   
   /**

@@ -389,6 +389,11 @@ import swingx.tree.AbstractTreeModel;
     }
     
     /** geo model event */
+    public void locationsAdded(Collection added) {
+      for (Iterator it=added.iterator(); it.hasNext(); )
+        locationAdded((GeoLocation)it.next());
+    }
+    
     public void locationAdded(GeoLocation location) {
       int pos = 0;
       for (ListIterator it = locations.listIterator(); it.hasNext(); pos++) {
@@ -406,11 +411,21 @@ import swingx.tree.AbstractTreeModel;
       fireTreeNodesInserted(this, new TreePath(this), new int[] { pos }, new Object[] { location });
     }
 
+    public void locationsUpdated(Collection updated) {
+      for (Iterator it=updated.iterator(); it.hasNext(); )
+        locationUpdated((GeoLocation)it.next());
+    }
+    
     public void locationUpdated(GeoLocation location) {
       fireTreeStructureChanged(this, new TreePath(this).pathByAddingChild(location), null , null);
       //fireTreeNodesChanged(this, new TreePath(this), new int[]{ locations.indexOf(location)} , new Object[] { location });
     }
 
+    public void locationsRemoved(Collection removed) {
+      for (Iterator it=removed.iterator(); it.hasNext(); )
+        locationRemoved((GeoLocation)it.next());
+    }
+    
     public void locationRemoved(GeoLocation location) {
       int i = locations.indexOf(location);
       locations.remove(i);

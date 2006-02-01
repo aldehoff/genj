@@ -10,7 +10,7 @@
 
   <path id="project.class.path">
     <pathelement path="contrib/jump/jump.jar"/>
-    <pathelement path="${dir.build}/classes"/>
+    <pathelement path="${dir.build}/classes/core"/>
     <pathelement path="${dir.genj}/build/classes/core"/>
     <pathelement path="${dir.genj}/build/classes/contrib"/>
   </path>
@@ -37,8 +37,13 @@
    Compilation
    -->
   <target name="compile" depends="init">
-    <mkdir dir="${dir.build}/classes"/>
-    <javac srcdir="src" destdir="${dir.build}/classes"
+    <mkdir dir="${dir.build}/classes/core"/>
+    <javac srcdir="src/core" destdir="${dir.build}/classes/core"
+           debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
+      <classpath refid="project.class.path"/>
+    </javac>
+    <mkdir dir="${dir.build}/classes/report"/>
+    <javac srcdir="src/report" destdir="${dir.build}/classes/report"
            debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
@@ -61,7 +66,7 @@
    <!-- create geo.jar -->
    <delete file="${dir.lib}/geo.jar"/>
    <jar jarfile="${dir.lib}/geo.jar" update="True">
-     <fileset dir="${dir.build}/classes" includes="**/*.class"/>
+     <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
      <fileset dir="./images"/>
      <fileset dir="./language/en"/>
      <fileset dir="./language/fr"/>
@@ -80,6 +85,8 @@
      <zipfileset dir="${dir.build}" includes="lib/hsqldb.jar"/>
      <zipfileset dir="./contrib" includes="geo/**"/>
      <zipfileset dir="." includes="gedcom/*"/>
+     <zipfileset dir="${dir.build}/classes" includes="report/**/*.class"/>
+     <zipfileset dir="./src" includes="report/**"/>
    </zip>
   	
    <!-- copy it to genj's dist directory -->

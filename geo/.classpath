@@ -1,36 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/GenJ">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="images">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/en">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="contrib/jump/jump.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="language/de">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="contrib/hsqldb/hsqldb.jar">
-		<attributes>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="output" path="build/classes"/>
+	<classpathentry output="build/classes/core" kind="src" path="src/core"/>
+	<classpathentry output="build/classes/report" kind="src" path="src/report"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GenJ"/>
+	<classpathentry kind="lib" path="images"/>
+	<classpathentry kind="lib" path="language/en"/>
+	<classpathentry kind="lib" path="contrib/jump/jump.jar"/>
+	<classpathentry kind="lib" path="language/de"/>
+	<classpathentry kind="lib" path="contrib/hsqldb/hsqldb.jar"/>
+	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>

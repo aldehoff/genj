@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import javax.swing.SwingUtilities;
-
 import com.vividsolutions.jts.geom.Coordinate;
 
 /**
@@ -68,14 +66,6 @@ import com.vividsolutions.jts.geom.Coordinate;
     name = name + ".geo";
     registry = Registry.lookup(name, gedcom.getOrigin());
     
-// 20051031 don't think this is necessary anymore    
-//    // try to load properties local for debugging
-//    try {
-//      File debug = new File("gedcom", name);
-//      if (debug.exists())
-//        registry = new Registry(new FileInputStream(debug));
-//    } catch (Throwable t) {
-//    }
     // done
   }
   
@@ -372,8 +362,8 @@ import com.vividsolutions.jts.geom.Coordinate;
             return;
           location = (GeoLocation)locations.removeFirst();
         }
-        SwingUtilities.invokeLater(service.match(location));
-      }
+        service.match(location);
+     }
       
       // no more locations to match
     }

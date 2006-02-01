@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<script type="text/javascript">
+		var mapLat = MAPLAT;
+		var mapLon = MAPLON;
+		var mapZoom = 12;
+		var mapXml = "MAPXML";
+	</script>
+ 	<head>
+		<script src="http://maps.google.com/maps?file=api&v=1&key=MAPKEY" type="text/javascript"></script>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+		<title>Locations in MAPGED</title>
+	</head>
+	<body>
+	<div id="map" style="width: 500px; height: 400px"></div>
+	<script type="text/javascript">
+		//<![CDATA[
+		var map = new GMap(document.getElementById("map"));
+		map.setMapType(G_HYBRID_TYPE);
+		map.addControl(new GSmallMapControl());
+		map.addControl(new GMapTypeControl());
+		map.centerAndZoom(new GPoint(mapLon, mapLat), mapZoom);
+
+		// Download location data in xml file - format:
+		// <ls>
+		//   <l x="37.441" y="-122.141">foo</l>
+		//   <l x="37.322" y="-121.213"/>
+		// </ls>
+		function createMarker(lon, lat, text) {
+			var point = new GPoint(parseFloat(lon), parseFloat(lat));
+			var marker = new GMarker(point);
+			GEvent.addListener(marker, 'click', function() {
+				var lines = text;
+				var html = "<div style=white-space:nowrap;>";
+				while (lines.indexOf(';')>=0) {
+					html += lines.substring(0, lines.indexOf(';'));
+					html += "<br>";
+					lines = lines.substring(lines.indexOf(';')+1);
+				}
+				html += lines;
+				html += "</div>";
+				marker.openInfoWindowHtml(html);
+			});
+			return marker;
+		}
+
+		var request = GXmlHttp.create();
+		request.open('GET', mapXml, true);
+		request.onreadystatechange = function() {
+			if (request.readyState == 4) {
+				var ls = request.responseXML.documentElement.getElementsByTagName("l");
+				for (var l = 0; l < ls.length; l++) {
+					map.addOverlay(createMarker(ls[l].getAttribute("x"), ls[l].getAttribute("y"), ls[l].firstChild.nodeValue));
+				}
+			}
+		}
+		request.send(null);    
+	//]]>
+	</script>
+	</body>
+</html>
