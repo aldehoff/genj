@@ -32,6 +32,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -192,6 +194,21 @@ public class FileAssociation {
         result.add(fa);
     }
     return result;
+  }
+  
+  /**
+   * Gets first available association or asks the user for appropriate one
+   */
+  public static FileAssociation get(File file, String name, JComponent owner) {
+    
+    // grab extension
+    Matcher m = Pattern.compile(".*\\.(.*)$").matcher(file.getName());
+    if (!m.matches())
+      return null;
+
+    // look it up
+    String suffix = m.group(1);
+    return get(suffix, suffix, name, owner);
   }
   
   /**

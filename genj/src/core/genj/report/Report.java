@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.89 $ $Author: nmeier $ $Date: 2006-01-25 03:16:25 $
+ * $Revision: 1.90 $ $Author: nmeier $ $Date: 2006-02-01 16:57:18 $
  */
 package genj.report;
 
@@ -229,7 +229,8 @@ public abstract class Report implements Cloneable {
       // restore old value
       option.restore(registry);
       // we use i18n() to resolve names for options
-      option.setName(i18n(option.getProperty()));    
+      String oname = i18n(option.getProperty());
+      if (oname.length()>0) option.setName(oname);    
       // set category
       option.setCategory(getName());
     }
@@ -408,6 +409,15 @@ public abstract class Report implements Cloneable {
     }
     
     // done
+  }
+  
+  /**
+   * Show a file if there's a file association for it
+   */
+  public final void showFileToUser(File file) {
+    FileAssociation association = FileAssociation.get(file, "Open", owner);
+    if (association!=null)
+      association.execute(file.getAbsolutePath());
   }
   
   /**
