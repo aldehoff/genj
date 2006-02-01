@@ -43,13 +43,13 @@ public class ReportValidate extends Report {
 
   /** options of reports are picked up via field-introspection */
   public int
-    maxLife      = 90,
+    maxLife      = 95,
     minAgeMARR   = 15,
     maxAgeBAPM   =  6,
     minAgeRETI   = 45,
     minAgeFather = 14,
     minAgeMother = 16,
-    maxAgeMother = 40;
+    maxAgeMother = 44;
     
   /** Jerome's checks that haven't made it yet
 

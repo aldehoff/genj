@@ -31,43 +31,12 @@ public class ReportPhonetics extends Report {
         new Phonex()
     };
     
-    /** this report's version */
-    public static final String VERSION = "0.12";
-    
-    /**
-     * Returns the version of this script
-     */
-    public String getVersion() {
-        return VERSION;
-    }
-    
-    /**
-     * @see genj.report.Report#getInfo()
-     */
-    public String getInfo() {
-        return i18n("info");
-    }
-    
-    /**
-     * @see genj.report.Report#getName()
-     */
-    public String getName() {
-        return i18n("name");
-    }
-    
     /**
      * Indication of how this reports shows information
      * to the user. Standard Out here only.
      */
     public boolean usesStandardOut() {
         return true;
-    }
-    
-    /**
-     * Author
-     */
-    public String getAuthor() {
-        return "Jerome Hettich <jerome@hettich.org.uk>, Carsten M\u00FCssig <carsten.muessig@gmx.net>";
     }
     
     /**

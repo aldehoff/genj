@@ -37,38 +37,6 @@ public class ReportTrees extends Report {
      */
     public int minGroupSize = 2;  // Don't print groups with size less than this
     
-    /** this report's version */
-    static final String VERSION = "1.01";
-    
-    /**
-     * Returns the version of this script
-     */
-    public String getVersion() {
-        return VERSION;
-    }
-    
-    /**
-     * Returns the name of this report - should be localized.
-     */
-    public String getName() {
-        return i18n("reportname");
-    }
-    
-    /**
-     * Author
-     */
-    public String getAuthor() {
-        return "Tom Morris";
-    }
-    
-    /**
-     * Some information about this report
-     * @return Information as String
-     */
-    public String getInfo() {
-        return i18n("description");
-    }
-    
     /**
      * This method actually starts this report
      */

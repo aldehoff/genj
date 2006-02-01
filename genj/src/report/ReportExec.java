@@ -20,34 +20,6 @@ import java.io.InputStreamReader;
 public class ReportExec extends Report {
 
   /**
-   * @see genj.report.Report#getAuthor()
-   */
-  public String getAuthor() {
-    return "Nils Meier <nils@meiers.net>";
-  }
-
-  /**
-   * @see genj.report.Report#getInfo()
-   */
-  public String getInfo() {
-    return i18n("info");
-  }
-
-  /**
-   * @see genj.report.Report#getName()
-   */
-  public String getName() {
-    return i18n("script_name");
-  }
-
-  /**
-   * @see genj.report.Report#getVersion()
-   */
-  public String getVersion() {
-    return "0.1";
-  }
-
-  /**
    * Main method
    */
   public void start(Gedcom gedcom) {
