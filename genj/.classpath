@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry including="**/*.java" output="build/classes/core" kind="src" path="src/core"/>
-	<classpathentry including="**/*.java" output="build/classes/run" kind="src" path="src/run"/>
-	<classpathentry including="**/*.java" output="build/classes/report" kind="src" path="src/report"/>
-	<classpathentry including="**/*.java" output="build/classes/contrib" kind="src" path="src/contrib"/>
-	<classpathentry including="**/*.java" output="build/classes/tst" kind="src" path="src/tst"/>
-	<classpathentry kind="lib" path="images"/>
-	<classpathentry kind="lib" path="lib/jhbasic.jar"/>
-	<classpathentry kind="lib" path="lib/graphj.jar"/>
-	<classpathentry kind="lib" path="language/en"/>
+	<classpathentry output="build/classes/core" kind="src" path="src/core"/>
+	<classpathentry output="build/classes/run" kind="src" path="src/run"/>
+	<classpathentry output="build/classes/report" kind="src" path="src/report"/>
+	<classpathentry output="build/classes/contrib" kind="src" path="src/contrib"/>
+	<classpathentry output="build/classes/tst" kind="src" path="src/tst"/>
+	<classpathentry exported="true" kind="lib" path="images"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhbasic.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/graphj.jar"/>
+	<classpathentry exported="true" kind="lib" path="language/en"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
-	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jfreechart.jar"/>
 	<classpathentry kind="lib" path="language/de"/>
 	<classpathentry kind="lib" path="language/es"/>
 	<classpathentry kind="lib" path="language/fr"/>
@@ -20,11 +20,11 @@
 	<classpathentry kind="lib" path="language/nl"/>
 	<classpathentry kind="lib" path="language/pt_BR"/>
 	<classpathentry kind="lib" path="language/ru"/>
-	<classpathentry kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
-	<classpathentry kind="lib" path="contrib/fop/commons-io-1.0.jar"/>
-	<classpathentry kind="lib" path="contrib/fop/fop.jar"/>
+	<classpathentry exported="true" kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="contrib/fop/commons-io-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="contrib/fop/fop.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="contrib/fop/commons-logging-api-1.0.4.jar"/>
-	<classpathentry kind="lib" path="contrib/fop/batik-all-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="contrib/fop/commons-logging-api-1.0.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="contrib/fop/batik-all-1.6.jar"/>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>
