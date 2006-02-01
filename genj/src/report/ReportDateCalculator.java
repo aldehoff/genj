@@ -5,16 +5,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.time.PointInTime;
-import genj.gedcom.time.Delta;
 import genj.gedcom.time.Calendar;
-import genj.gedcom.time.GregorianCalendar;
+import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
+
 import javax.swing.JLabel;
 /*
  * todo:

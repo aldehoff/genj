@@ -16,15 +16,14 @@ import genj.gedcom.Indi;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.PropertySex;
-import genj.gedcom.TagPath;
+import genj.gedcom.PropertyXRef;
 import genj.report.Report;
-
-import javax.swing.ImageIcon;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import javax.swing.ImageIcon;
 
 /**
  * GenJ - Report
