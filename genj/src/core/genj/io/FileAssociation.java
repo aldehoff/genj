@@ -197,17 +197,24 @@ public class FileAssociation {
   }
   
   /**
-   * Gets first available association or asks the user for appropriate one
+   * Get the file suffix for given file
    */
-  public static FileAssociation get(File file, String name, JComponent owner) {
+  public static String getSuffix(File file) {
     
     // grab extension
     Matcher m = Pattern.compile(".*\\.(.*)$").matcher(file.getName());
-    if (!m.matches())
+    
+    // done
+    return m.matches() ? m.group(1) : "";
+  }
+  
+  /**
+   * Gets first available association or asks the user for appropriate one
+   */
+  public static FileAssociation get(File file, String name, JComponent owner) {
+    String suffix = getSuffix(file);
+    if (suffix.length()==0)
       return null;
-
-    // look it up
-    String suffix = m.group(1);
     return get(suffix, suffix, name, owner);
   }
   
