@@ -477,22 +477,3 @@ class FormatterText extends Formatter{
     }
 }
 
-class Fifo extends ArrayList {
-    Fifo(int initSize) {
-	super(initSize);
-    }
-
-    void push(Object o){
-	add(o);
-    }
-    Object pop(){
-	Object result = null;
-	if (!isEmpty()){
-	    result  = this.get(0);
-	    remove(0);
-	}
-	return result;
-    }
-}
-
-

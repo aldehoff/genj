@@ -20,6 +20,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 
 /**
  * GenJ - ReportPSCirc
@@ -39,7 +40,7 @@ public class ReportLinesFan extends Report {
     private int pageNo;
 
 
-    private Fifo indiList = new Fifo(50);
+    private LinkedList indiList = new LinkedList();
     
     /**
      * Helper - Create a PrintWriter wrapper for output stream
@@ -53,12 +54,12 @@ public class ReportLinesFan extends Report {
      */
     public void start(Indi indi) {
 	
+        File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
+        if (file == null)
+        return ;
+        
 	try{
 
-    	    File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
-	    if (file == null){
-		return ;
-	    }
 /*
       // .. exits ?
       if (file.exists()) {
@@ -91,14 +92,14 @@ public class ReportLinesFan extends Report {
 
 	//	indiList.add(indi);
 	//indiList.add(new Integer(1));
-	indiList.push(indi);
-	indiList.push(new Integer(1));
+	indiList.add(indi);
+	indiList.add(new Integer(1));
 	pageNo = 1;
 
 	while (!indiList.isEmpty()){
-	    Indi indiIterator = (Indi)(indiList.pop());
+	    Indi indiIterator = (Indi)(indiList.removeFirst());
 	    //	    indiList.remove(0);
-	    Integer genIndex = (Integer) (indiList.pop());
+	    Integer genIndex = (Integer) (indiList.removeFirst());
 	    //indiList.remove(0);
 	    if (genIndex != null){
 		out.println("gsave");
@@ -110,6 +111,10 @@ public class ReportLinesFan extends Report {
 	}
 	out.flush();
         out.close();
+        
+        // show file the result to the user
+        showFileToUser(file);
+        
     }
 
     private void  pedigree (int in, int gen, int lev, int ah, Indi indi){
@@ -136,8 +141,8 @@ public class ReportLinesFan extends Report {
 			" "+(ah-lev)+
 			" i");
 	} else {
-	    indiList.push(indi);
-	    indiList.push(new Integer(gen));
+	    indiList.add(indi);
+	    indiList.add(new Integer(gen));
 	    out.println(" "+(in-1)+
 			" "+(ah-lev)+
 			" "+(indiList.size()/2+pageNo)+
