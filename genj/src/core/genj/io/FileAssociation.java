@@ -156,23 +156,45 @@ public class FileAssociation {
   public boolean execute(String parm) {
     // run the executable
     try {
-      String cmd = getExecutable(); 
-      // does executable contain '%'?
-      int i = cmd.indexOf('%');
-      if (i<0) {
+      // replace file placeholders '%'?
+      String cmd = getExecutable();
+      if (cmd.indexOf('%')>0)
+        cmd = cmd.replaceAll("%","!");
+      else
         cmd += ' ' + parm;
+      // run command(s)
+      int colon = cmd.indexOf(";");
+      if (colon<0) {
+        if (Runtime.getRuntime().exec(cmd)==null)
+          throw new IOException();
       } else {
-        // 20050522 removed extra spaces around parm since user might have enclosed % in quotes already
-        cmd = cmd.substring(0, i) + parm + cmd.substring(i+1);
+        new Thread(new Sequence(cmd)).start();
       }
-      // exec' it 
-      if (null!=Runtime.getRuntime().exec(cmd)) 
-        return true;
-      LOG.warning("Couldn't start external application "+getExecutable());
+    } catch (Throwable t) {
+      LOG.log(Level.WARNING, "Couldn't start external application "+getExecutable(), t);
       return false;
-    } catch (IOException e) {
-      LOG.log(Level.WARNING, "Couldn't start external application "+getExecutable(), e);
-      return false;
+    }
+
+    // done
+    return true;
+  }
+  
+  private class Sequence implements Runnable {
+    private StringTokenizer cmds;
+    Sequence(String cmd) {
+      cmds =  new StringTokenizer(cmd, ";");
+    }
+    public void run() {
+      try {
+        while (cmds.hasMoreTokens()) {
+          String cmd = cmds.nextToken();
+          int rc = Runtime.getRuntime().exec(cmd).waitFor(); 
+          if (rc!=0) 
+            LOG.log(Level.INFO, "External application "+cmd+" returned"+rc);
+        }
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Couldn't start all external applications in "+cmds, t);
+      }
     }
   }
 
