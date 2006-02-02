@@ -92,21 +92,23 @@ public class ReportGoogleMap extends Report {
     File xml = new File(html.getAbsolutePath().replaceAll(".html", ".xml"));
     
     // write the html file
-    writeHTML(ged, (GeoLocation)locations.iterator().next(), html, xml, key);
+    if (!writeHTML(ged, (GeoLocation)locations.iterator().next(), html, xml, key))
+      return;
     
     // write the xml file
-    writeXML(locations, xml);
+    if (!writeXML(locations, xml))
+      return;
     
     // let the user know
-    getOptionFromUser("Files '"+html.getName()+"' and '"+xml.getName()+"' have been generated in folder '"+html.getParent()+"'! You can now copy those to your website's directory matching the Google Maps API key.", OPTION_OK);
-    
+    getOptionFromUser(i18n("done", new String[] { html.getName(), xml.getName(), html.getParent() }), OPTION_OK );
+
     // done
   }
   
   /**
    * write the html file
    */
-  private void writeHTML(Gedcom ged, GeoLocation center, File html, File xml, String key) {
+  private boolean writeHTML(Gedcom ged, GeoLocation center, File html, File xml, String key) {
     
     String[] match = { "MAPGED", "MAPLAT", "MAPLON", "MAPXML", "MAPKEY" };
     String[] replace = { ged.getName(), FORMAT.format(center.getY()), FORMAT.format(center.getX()), xml.getName(), key };
@@ -134,16 +136,17 @@ public class ReportGoogleMap extends Report {
       in.close();
       out.close();
     } catch (IOException e) {
-      
+      getOptionFromUser(i18n("ioerror", html), OPTION_OK);
+      return false;
     }
-    
     // done
+    return true;
   }
   
   /**
    * write the xml file
    */
-  private void writeXML(Collection locations, File xml) {
+  private boolean writeXML(Collection locations, File xml) {
     
     // <ls>
     //   <l x="37.441" y="-122.141">foo</l>
@@ -177,11 +180,12 @@ public class ReportGoogleMap extends Report {
       out.write("</ls>");
       out.close();
     } catch (IOException e) {
-      getOptionFromUser("Couldn't write to "+xml+"! Map generation aborted.", OPTION_OK);
-      return;
+      getOptionFromUser(i18n("ioerror", xml), OPTION_OK);
+      return false;
     }
     
     // done
+    return true;
   }
   
 } //ReportGoogleMap
