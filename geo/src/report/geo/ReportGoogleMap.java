@@ -79,7 +79,7 @@ public class ReportGoogleMap extends Report {
     }
     
     // ask for google key
-    String key = getValueFromUser("google-key", "Enter Google Maps API key", new String[0]);
+    String key = getValueFromUser("google-key", "Enter Google Maps API key for your website (e.g. http://www.mysite.net)");
     if (key==null)
       return;
       
@@ -89,13 +89,16 @@ public class ReportGoogleMap extends Report {
       return;
     if (!"html".equals(FileAssociation.getSuffix(html)))
       html = new File(html.getAbsolutePath()+".html");
-    File xml = new File(html.getAbsolutePath().replace(".html", ".xml"));
+    File xml = new File(html.getAbsolutePath().replaceAll(".html", ".xml"));
     
     // write the html file
     writeHTML(ged, (GeoLocation)locations.iterator().next(), html, xml, key);
     
     // write the xml file
     writeXML(locations, xml);
+    
+    // let the user know
+    getOptionFromUser("Files '"+html.getName()+"' and '"+xml.getName()+"' have been generated in folder '"+html.getParent()+"'! You can now copy those to your website's directory matching the Google Maps API key.", OPTION_OK);
     
     // done
   }
