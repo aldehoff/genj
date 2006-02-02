@@ -87,9 +87,10 @@ public class ReportGoogleMap extends Report {
     File html = getFileFromUser(i18n("which_html_file"), i18n("generate"));
     if (html==null)
       return;
-    if (!"html".equals(FileAssociation.getSuffix(html)))
+    String suffix = FileAssociation.getSuffix(html);
+    if (!suffix.toLowerCase().startsWith("htm"));
       html = new File(html.getAbsolutePath()+".html");
-    File xml = new File(html.getAbsolutePath().replaceAll(".html", ".xml"));
+    File xml = new File(html.getAbsolutePath().replaceAll("."+suffix, ".xml"));
     
     // write the html file
     if (!writeHTML(ged, (GeoLocation)locations.iterator().next(), html, xml, key))
