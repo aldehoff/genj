@@ -69,15 +69,13 @@ public class GeoViewSettings extends JPanel implements Settings {
     this.viewManager = manager;
     
     // setup components
-    setLayout(new NestedBlockLayout("<col><row><label/></row><row><col><up gx=\"1\"/><down gx=\"1\"/><import gx=\"1\"/><delete gx=\"1\"/></col><col><list wx=\"1\"/></col></row></col>"));
+    setLayout(new NestedBlockLayout("<col><row><label/></row><row><col><import gx=\"1\"/><delete gx=\"1\"/></col><col><list wx=\"1\"/></col></row></col>"));
     
     // .. a list of gazetteers, buttons for up and down, delete, import
     listCountries = new JList();
     
     ButtonHelper bh = new ButtonHelper().setResources(GeoView.RESOURCES);
     add("label", new JLabel(GeoView.RESOURCES.getString("label.gazetteer")));
-    add("up", bh.create(new UpDown(true)));
-    add("down", bh.create(new UpDown(false)));
     add("import", bh.create(new DoImport()));
     add("delete", bh.create(new Delete()));
     add("list", new JScrollPane(listCountries));
@@ -116,35 +114,6 @@ public class GeoViewSettings extends JPanel implements Settings {
       public Object getElementAt(int i) { return countries[i]; }
     });
   }
-
-  /**
-   * Action - Up and Down
-   */
-  private class UpDown extends ActionDelegate implements ListSelectionListener {
-    /** up or down */
-    private boolean up;
-    /** constructor */
-    protected UpDown(boolean up) {
-      this.up = up;
-      setEnabled(false);
-      setText( up ? "action.up" : "action.down");
-      listCountries.addListSelectionListener(this);
-    }
-    /** callback - run */
-    public void execute() {
-    }
-    /** callback - selection changed */
-    public void valueChanged(ListSelectionEvent e) {
-      boolean enabled;
-      if (up)
-        enabled = listCountries.getSelectionModel().getMinSelectionIndex()>0;
-      else {
-        int max = listCountries.getSelectionModel().getMaxSelectionIndex();
-        enabled = max>=0 && max < listCountries.getModel().getSize()-1;
-      }
-      // FIXME setEnabled(enabled);
-    }
-  } //ActionUpDown
 
   /**
    * Action - Import
