@@ -74,17 +74,17 @@ public class ReportGoogleMap extends Report {
     // match locations
     Collection locations = GeoService.getInstance().matchEntities(ged, indis, true);
     if (locations.isEmpty()) {
-      getOptionFromUser("None of the Locations is mapable! No Google Map generated.", OPTION_OK);
+      getOptionFromUser(i18n("none_mapable"), OPTION_OK);
       return;
     }
     
     // ask for google key
-    String key = getValueFromUser("google-key", "Enter Google Maps API key for your website (e.g. http://www.mysite.net)");
+    String key = getValueFromUser("google-key", i18n("enter_key"));
     if (key==null)
       return;
       
     // ask the user for file(s)
-    File html = getFileFromUser("Choose Googe Map HTML File", "Generate");
+    File html = getFileFromUser(i18n("which_html_file"), i18n("generate"));
     if (html==null)
       return;
     if (!"html".equals(FileAssociation.getSuffix(html)))
