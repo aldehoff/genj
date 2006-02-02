@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.91 $ $Author: nmeier $ $Date: 2006-02-02 01:26:12 $
+ * $Revision: 1.92 $ $Author: nmeier $ $Date: 2006-02-02 18:51:37 $
  */
 package genj.report;
 
@@ -48,7 +48,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -543,8 +542,9 @@ public abstract class Report implements Cloneable {
     if (key!=null&&result!=null&&result.length()>0) {
       List values = new ArrayList(defaultChoices.length+1);
       values.add(result);
-      values.addAll(Arrays.asList(defaultChoices));
-      if (values.size()>20) values = values.subList(0, 20);
+      for (int d=0;d<defaultChoices.length&&d<20;d++) 
+        if (!result.equalsIgnoreCase(defaultChoices[d]))
+          values.add(defaultChoices[d]);
       registry.put(key, values);
     }
 
