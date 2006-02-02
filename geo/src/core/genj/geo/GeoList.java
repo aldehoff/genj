@@ -53,6 +53,8 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 import swingx.tree.AbstractTreeModel;
 
 /**
@@ -214,8 +216,13 @@ import swingx.tree.AbstractTreeModel;
       //GeoLocation selection = query.getSelectedLocation();
       int rc = viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
       // check if he wants to change the location
-      if (rc==0) 
-        model.remember(location, query.getGeoLocation().getCoordinate());
+      if (rc==0) {
+        Coordinate coord = query.getGeoLocation().getCoordinate();
+        // tell it to location
+        location.set(coord.y, coord.x, 1);
+        // remember
+        GeoService.getInstance().remember(model.getGedcom(), location, coord);
+      }
       // done
     }
   }
@@ -389,11 +396,6 @@ import swingx.tree.AbstractTreeModel;
     }
     
     /** geo model event */
-    public void locationsAdded(Collection added) {
-      for (Iterator it=added.iterator(); it.hasNext(); )
-        locationAdded((GeoLocation)it.next());
-    }
-    
     public void locationAdded(GeoLocation location) {
       int pos = 0;
       for (ListIterator it = locations.listIterator(); it.hasNext(); pos++) {
@@ -411,21 +413,11 @@ import swingx.tree.AbstractTreeModel;
       fireTreeNodesInserted(this, new TreePath(this), new int[] { pos }, new Object[] { location });
     }
 
-    public void locationsUpdated(Collection updated) {
-      for (Iterator it=updated.iterator(); it.hasNext(); )
-        locationUpdated((GeoLocation)it.next());
-    }
-    
     public void locationUpdated(GeoLocation location) {
       fireTreeStructureChanged(this, new TreePath(this).pathByAddingChild(location), null , null);
       //fireTreeNodesChanged(this, new TreePath(this), new int[]{ locations.indexOf(location)} , new Object[] { location });
     }
 
-    public void locationsRemoved(Collection removed) {
-      for (Iterator it=removed.iterator(); it.hasNext(); )
-        locationRemoved((GeoLocation)it.next());
-    }
-    
     public void locationRemoved(GeoLocation location) {
       int i = locations.indexOf(location);
       locations.remove(i);

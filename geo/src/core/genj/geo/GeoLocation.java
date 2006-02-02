@@ -19,7 +19,6 @@
  */
 package genj.geo;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -263,25 +263,14 @@ public class GeoLocation extends Point implements Feature, Comparable {
   }
   
   /**
-   * Remove properties from this location
+   * Remove properties for given entities from this location
    */
-  public void removeAll(Entity entity) {
+  public void removeEntities(Set entities) {
     for (ListIterator it = properties.listIterator(); it.hasNext(); ) {
       Property prop = (Property)it.next();
-      if (prop.getEntity()==entity)
+      if (entities.contains(prop.getEntity()))
         it.remove();
     }
-  }
-  
-  /**
-   * Check for containment
-   */
-  public boolean contains(Property[] properties) {
-    for (int i=0; i<properties.length; i++) {
-      if (this.properties.contains(properties[i]))
-        return true;
-    }
-    return false;
   }
   
   /**

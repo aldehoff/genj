@@ -40,8 +40,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 
 /**
@@ -296,6 +299,8 @@ public class GeoService {
       throw new IOException(e.getMessage());
     }
     
+    fireGeoDataChanged();
+    
     // done
   }
   
@@ -453,7 +458,7 @@ public class GeoService {
    * @param matchedOnly whether to create locations only for matched properties
    * @return collection of GeoLocations
    */
-  public Collection matchEntities(Gedcom gedcom, Collection entities, boolean matchedOnly) {
+  public Set matchEntities(Gedcom gedcom, Collection entities, boolean matchedOnly) {
     
     // loop over entities
     List props = new ArrayList(100);
@@ -469,6 +474,16 @@ public class GeoService {
     // check properties now
     return matchProperties(gedcom, props, matchedOnly);
   }
+
+  /**
+   * Find a registry for gedcom file (geo.properties) 
+   */
+  private Registry getRegistry(Gedcom gedcom) {
+    String name = gedcom.getName();
+    if (name.endsWith(".ged")) name = name.substring(0, name.length()-".ged".length());
+    name = name + ".geo";
+    return Registry.lookup(name, gedcom.getOrigin());
+  }
   
   /**
    * Create locations for given collection of properties
@@ -476,16 +491,13 @@ public class GeoService {
    * @param matchedOnly whether to create locations only for matched properties
    * @return collection of GeoLocations
    */
-  public Collection matchProperties(Gedcom gedcom, Collection properties, boolean matchedOnly) {
+  public Set matchProperties(Gedcom gedcom, Collection properties, boolean matchedOnly) {
     
     // prepare result
     Map result = new HashMap(properties.size());
     
-    // lookup properties file associated with that gedcom
-    String name = gedcom.getName();
-    if (name.endsWith(".ged")) name = name.substring(0, name.length()-".ged".length());
-    name = name + ".geo";
-    Registry registry = Registry.lookup(name, gedcom.getOrigin());
+    // grab registry
+    Registry registry = getRegistry(gedcom);
     
     // loop over properties
     for (Iterator it = properties.iterator(); it.hasNext(); ) {
@@ -527,6 +539,13 @@ public class GeoService {
     
     // done
     return result.keySet();
+  }
+
+  /**
+   * Remember a specific location's lat and lon
+   */
+  public void remember(Gedcom gedcom, GeoLocation location, Coordinate coord) {
+    getRegistry(gedcom).put(location.getJurisdictionsAsString(), coord.y + "," + coord.x);
   }
   
   /**
