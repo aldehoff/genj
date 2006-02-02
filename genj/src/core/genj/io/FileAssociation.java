@@ -22,7 +22,7 @@ package genj.io;
 import genj.util.Resources;
 
 import java.io.File;
-import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -153,36 +153,49 @@ public class FileAssociation {
   /**
    * Execute
    */
-  public boolean execute(String parm) {
-    // run the executable
-    try {
-      // replace file placeholders '%'?
-      String cmd = getExecutable();
-      if (cmd.indexOf('%')>0)
-        cmd = cmd.replaceAll("%","!");
-      else
-        cmd += ' ' + parm;
-      // run command(s)
-      int colon = cmd.indexOf(";");
-      if (colon<0) {
-        if (Runtime.getRuntime().exec(cmd)==null)
-          throw new IOException();
-      } else {
-        new Thread(new Sequence(cmd)).start();
-      }
-    } catch (Throwable t) {
-      LOG.log(Level.WARNING, "Couldn't start external application "+getExecutable(), t);
-      return false;
+  public void execute(URL url) {
+    // check simple % placeholders in cmd
+    String cmd = getExecutable();
+    if (cmd.indexOf('%')<0) 
+      cmd += " " + url;
+    else
+      cmd.replaceAll("%", url.toString());
+    // go
+    new Thread(new Sequence(cmd)).start();
+  }
+  
+  /**
+   * Execute
+   */
+  public void execute(File file) {
+    // no placeholders at all in cmd?
+    String cmd = getExecutable();
+    if (cmd.indexOf('%')<0) {
+      cmd += " \"" + file.getAbsolutePath() + "\"";
+    } else {
+      // example - the forward slash is meant to be a backward slash here
+      // file = c:/documents and settings/user/foo.ps
+      // path = c://documents and settings//user//foo.ps
+      // suffix = ps
+      // nosuffix = c://documents and settings//user//foo
+      String path = file.getAbsolutePath().replaceAll("\\\\","\\\\\\\\");
+      String suffix = getSuffix(file);
+      String nosuffix = path.substring(0, path.length()-suffix.length()-1);
+      
+      // replace file placeholders %.suffix first
+      cmd = Pattern.compile("%(\\.[a-zA-Z]*)").matcher(cmd).replaceAll(nosuffix+"$1");
+      // replace file placholders % next
+      cmd = Pattern.compile("%").matcher(cmd).replaceAll(path);
     }
-
-    // done
-    return true;
+    
+    // go
+    new Thread(new Sequence(cmd)).start();
   }
   
   private class Sequence implements Runnable {
     private StringTokenizer cmds;
     Sequence(String cmd) {
-      cmds =  new StringTokenizer(cmd, ";");
+      cmds =  new StringTokenizer(cmd, "&");
     }
     public void run() {
       try {

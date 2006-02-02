@@ -60,7 +60,7 @@ public class RunExternal extends ActionDelegate {
    * @see genj.util.ActionDelegate#execute()
    */
   protected void execute() {
-    if (file!=null) association.execute(file.toString());
+    if (file!=null) association.execute(file);
   }
   
 } //RunExternal

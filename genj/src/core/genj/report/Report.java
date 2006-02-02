@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.92 $ $Author: nmeier $ $Date: 2006-02-02 18:51:37 $
+ * $Revision: 1.93 $ $Author: nmeier $ $Date: 2006-02-02 20:12:39 $
  */
 package genj.report;
 
@@ -405,7 +405,7 @@ public abstract class Report implements Cloneable {
     if (file!=null) {
       FileAssociation association = FileAssociation.get(formatter.getFileExtension(), formatter.getFileExtension(), "Open", owner);
       if (association!=null)
-        association.execute(file.getAbsolutePath());
+        association.execute(file);
     }
     
     // done
@@ -417,7 +417,7 @@ public abstract class Report implements Cloneable {
   public final void showFileToUser(File file) {
     FileAssociation association = FileAssociation.get(file, "Open", owner);
     if (association!=null)
-      association.execute(file.getAbsolutePath());
+      association.execute(file);
   }
   
   /**
@@ -463,7 +463,7 @@ public abstract class Report implements Cloneable {
     // run browser
     FileAssociation association = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
     if (association!=null)  
-      association.execute(url.toString());
+      association.execute(url);
 
     // done
   }
