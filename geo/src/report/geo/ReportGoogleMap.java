@@ -88,8 +88,10 @@ public class ReportGoogleMap extends Report {
     if (html==null)
       return;
     String suffix = FileAssociation.getSuffix(html);
-    if (!suffix.toLowerCase().startsWith("htm"));
-      html = new File(html.getAbsolutePath()+".html");
+    if (!suffix.toLowerCase().startsWith("htm")) {
+      suffix = "html";
+      html = new File(html.getAbsolutePath()+"."+suffix);
+    }
     File xml = new File(html.getAbsolutePath().replaceAll("."+suffix, ".xml"));
     
     // write the html file
