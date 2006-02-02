@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.90 $ $Author: nmeier $ $Date: 2006-02-01 16:57:18 $
+ * $Revision: 1.91 $ $Author: nmeier $ $Date: 2006-02-02 01:26:12 $
  */
 package genj.report;
 
@@ -47,6 +47,8 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +56,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -515,39 +516,36 @@ public abstract class Report implements Cloneable {
    * A sub-class can query the user for a text value with this method. The value
    * that was selected the last time is automatically suggested.
    */
-  public final String getValueFromUser(String key, String msg, String[] choices) {
+  public final String getValueFromUser(String key, String msg) {
+    return getValueFromUser(key, msg, new String[0]);
+  }
+  
+  /**
+   * A sub-class can query the user for a text value with this method. The value
+   * that was selected the last time is automatically suggested.
+   */
+  public final String getValueFromUser(String key, String msg, String[] defaultChoices) {
 
-    // Choice to include already entered stuff?
+    // try to find previously entered choices
     if (key!=null) {
-
       key = getClass().getName()+"."+key;
-
-      // Do we know values for this already?
       String[] presets = registry.get(key, (String[])null);
-      if (presets != null) {
-        choices = presets;
-      }
+      if (presets != null) 
+        defaultChoices = presets;
     }
 
-    // prepare txt
-
     // show 'em
-    ChoiceWidget choice = new ChoiceWidget(choices, "");
-
+    ChoiceWidget choice = new ChoiceWidget(defaultChoices, defaultChoices.length>0 ? defaultChoices[0] : "");
     int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),choice},WindowManager.ACTIONS_OK_CANCEL,owner);
-
     String result = rc==0 ? choice.getText() : null;
 
     // Remember?
     if (key!=null&&result!=null&&result.length()>0) {
-
-      Vector v = new Vector(choices.length+1);
-      v.addElement(result);
-      for (int i=0;i<choices.length;i++) {
-        if (!choices[i].equals(result))
-          v.addElement(choices[i]);
-      }
-      registry.put(key,v);
+      List values = new ArrayList(defaultChoices.length+1);
+      values.add(result);
+      values.addAll(Arrays.asList(defaultChoices));
+      if (values.size()>20) values = values.subList(0, 20);
+      registry.put(key, values);
     }
 
     // Done
