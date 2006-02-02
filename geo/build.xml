@@ -70,8 +70,8 @@
      <fileset dir="./images"/>
      <fileset dir="./language/en"/>
      <fileset dir="./language/fr"/>
-     <fileset dir="./src" includes="META-INF/**"/>
-    <fileset dir="./src" includes="**/*.properties"/>
+     <fileset dir="./src/core" includes="META-INF/**"/>
+    <fileset dir="./src/core" includes="**/*.properties"/>
    </jar>
     
    <!-- copy contrib libraries -->
