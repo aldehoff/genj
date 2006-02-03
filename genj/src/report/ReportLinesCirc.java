@@ -209,6 +209,10 @@ public class ReportLinesCirc extends Report {
       }
 */
 	    out = getWriter(new FileOutputStream(file));
+
+      // show file the result to the user
+      showFileToUser(file);
+
 	}catch(IOException ioe){
 	    System.err.println("IO Exception!");
 	    ioe.printStackTrace();
