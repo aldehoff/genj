@@ -193,13 +193,14 @@ public class ReportLinesCirc extends Report {
      */
     public void start(Indi indi) {
 	
-	initUserOptions();
-	try{
-    	    File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
-	    if (file == null){
-		return ;
-	    }
-/*
+      // init options
+      initUserOptions();
+
+      // ask for file
+      File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
+      if (file == null)
+        return ;
+      /*
       // .. exits ?
       if (file.exists()) {
         int rc = manager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, "File exists. Overwrite?", WindowManager.ACTIONS_YES_NO, ReportView.this);
@@ -208,19 +209,25 @@ public class ReportLinesCirc extends Report {
         }
       }
 */
-	    out = getWriter(new FileOutputStream(file));
+      
+      // open output stream
+      try{
+        out = getWriter(new FileOutputStream(file));
+      }catch(IOException ioe){
+        System.err.println("IO Exception!");
+        ioe.printStackTrace();
+        return; //abort
+      }
+
+      // generate output
+      main(indi,null);
+      //	out.println("showpage");
+      out.flush();
+      out.close();
 
       // show file the result to the user
       showFileToUser(file);
 
-	}catch(IOException ioe){
-	    System.err.println("IO Exception!");
-	    ioe.printStackTrace();
-	}
-	main(indi,null);
-	//	out.println("showpage");
-	out.flush();
-        out.close();
     }
 
     private void initUserOptions(){
