@@ -271,13 +271,6 @@ public class ChoiceWidget extends JComboBox {
   }
 
   /**
-   * Our special tab handling interception code
-   */
-  public void processKeyEvent(KeyEvent e) {
-    super.processKeyEvent(e);
-  }
-  
-  /**
    * Auto complete support
    */
   private class AutoCompleteSupport extends KeyAdapter implements DocumentListener, ActionListener, FocusListener {
@@ -362,8 +355,10 @@ public class ChoiceWidget extends JComboBox {
       blockAutoComplete = false;
       
       // show where we're at in case of a partial match
-      if (match.length()>prefix.length())
+      if (match.length()>prefix.length()) {
         showPopup();
+        text.setFocusTraversalKeysEnabled(false);
+      }
         
       // done      
     }
@@ -380,10 +375,13 @@ public class ChoiceWidget extends JComboBox {
 
     /** check for cursor-right and open popup */
     public void keyPressed(KeyEvent e) {
-      // re-switch to current selection - I'd rather use tab for that but couldn't figure
-      // out how to do that (no tab events showing up here)
-      if (isPopupVisible()&&e.getKeyCode()==KeyEvent.VK_RIGHT&&text.getCaretPosition()==text.getText().length()) 
-        model.setSelectedItem(model.getSelectedItem());
+      // make a popup selection?
+      if (e.getKeyCode()==KeyEvent.VK_TAB&&isPopupVisible()) {
+          model.setSelectedItem(model.getSelectedItem());
+          setPopupVisible(false);
+          text.setFocusTraversalKeysEnabled(true);
+        }
+      // done
     }
   } //AutoCompleteSupport
   
