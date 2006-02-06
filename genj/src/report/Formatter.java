@@ -7,12 +7,12 @@
  */
 /*
  * todo:
- * - formatevent dans le cas ou le lieu commence par , l'espace est supprime
  */
 import genj.gedcom.Entity;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.time.Delta;
 import genj.report.Report;
 import genj.util.WordBuffer;
@@ -64,7 +64,7 @@ abstract class Formatter  {
     abstract String anchor(String name, String text);
     abstract String br();
     abstract String page();
-    abstract String tablePageBreak();    
+    abstract String tablePageBreak();
 
     /**
      * Constructor
@@ -73,7 +73,9 @@ abstract class Formatter  {
 	parentReport = parent;
     }
 
-    
+    /**
+     * Privacy management
+     */
     void setPrivacy(boolean managed,
 	       int nbYears,
 	       boolean dead,
@@ -123,7 +125,16 @@ abstract class Formatter  {
     }	
 
 
+    /*****************************
+     * Some helper fonctions that are not direcly related to output formatting
+     * but are used to extend some parts of the core API thru some conventionel
+     * procedure calls
+     */
+
     /**
+     * formatEvent : Get a string describing an event with 
+     * differents formatting options
+     *
      * isDate : affichage de la date
      * isPlace : affichage du lieu
      * placeIndex >0 : jurisdiction at this position
@@ -155,9 +166,9 @@ abstract class Formatter  {
 	    else if (placeIndex < 0)
 		result.append(plac.getFirstAvailableJurisdiction(-placeIndex-1));
 	    else
-		result.append(plac.getDisplayValue());
+		result.append(" "+plac.getDisplayValue());
 	}
-	return result.toString()+" ";
+	return result.toString();
     }
     static String formatEvent(Entity entity, String tag, int dateFormat, boolean isPlace, int placeIndex ) {
 	// prop exists?
@@ -193,6 +204,67 @@ abstract class Formatter  {
 	return result;
     }
     */
+
+    /**
+     * getPropertiesWithTag:
+     * return an array of property's property matching tag tag 
+     * that starts with start String. If start is null, or of length 0,
+     *  the start string is ignored
+     * the passed property is tested against alle these criteria
+     */
+    static ArrayList getPropertiesWithTag(Property prop, String tag, String start){
+	ArrayList result = new ArrayList();
+	if (prop.getTag().compareTo(tag) == 0) {
+	    if (start.length() == 0){
+		result.add(prop);
+	    } else {
+		String value = prop.getValue();
+		if (value != null) 
+		    if (value.startsWith(start))
+			result.add(prop); 
+	    }
+	}
+	for (int i = 0; i<prop.getNoOfProperties(); i++){
+	    result.addAll(getPropertiesWithTag(prop.getProperty(i),tag,start));
+
+	}
+	return result;
+    }
+
+    /*
+     * get living address of en entity. It is the address attached to
+     * a RESI tag that match these conditions:
+     * - must not have an ending date
+     * - if a noteMarquer is available, a note starting with this string
+     */
+    static String[] getAddr(Entity entity,String noteStartsWith){
+	Property resi[] = getProperties(entity,"RESI");
+	ArrayList result = new ArrayList(5);
+	for (int i = 0; i<resi.length; i++){
+	    // there must be an address tag
+	    Property address = resi[i].getProperty("ADDR");
+	    if (address == null) continue;
+
+	    // if end date is available, next
+	    PropertyDate date = (PropertyDate)resi[i].getProperty("DATE");
+	    if (date != null && date.getEnd() != null) continue;
+	    
+	    if (noteStartsWith != null && noteStartsWith.length() != 0) {
+		Property note = resi[i].getProperty("NOTE");
+		if (note != null && note.getValue().startsWith(noteStartsWith)) continue;
+	    }
+	    // multiline needs loop
+	    if (address instanceof MultiLineProperty) {
+		MultiLineProperty.Iterator lines = ((MultiLineProperty)address).getLineIterator();
+		do {
+		    result.add(lines.getValue());
+		} while (lines.next());
+	    } else {
+		result.add(address.getValue());
+	    }
+	}
+	return (String[])result.toArray(new String[result.size()]);
+    }
 
     static String getPropertyDate(Property prop, int dateFormat){
 	if (dateFormat == DATE_FORMAT_NONE)
@@ -278,8 +350,12 @@ class FormatterHtml extends Formatter {
     }
 
     void start(){
-	parentReport.println("<HTML><head><style>"+style+"</style></head><body>");
-    }
+	parentReport.println("<HTML>");
+	parentReport.println("<head><style>"+style+"</style></head>");
+	parentReport.println("<body>");
+
+//	parentReport.println("<HTML><head><style>"+style+"</style></head><body>");
+  }
 
     void end(){
 	parentReport.println("</body></html>");}
@@ -353,11 +429,12 @@ class FormatterText extends Formatter{
 	ALIGN_RIGHT  = 2;
 
     private int tabStops[];
-    private int cellIndex = 0;
+    protected int cellIndex = 0;
     private boolean niceColumn = false;
     private int rowLength = 0;
-    private boolean isInTable = false;    private int indentLevel=1;
-    private String eol= System.getProperty("line.separator");
+    protected boolean isInTable = false;    
+    private int indentLevel=1;
+    protected String eol= System.getProperty("line.separator");
 
   /**
    * Constructor
@@ -476,4 +553,78 @@ class FormatterText extends Formatter{
 	}
     }
 }
+
+
+class FormatterCsv extends FormatterText{
+    private String delimiter="|";
+
+  /**
+   * Constructor
+   */
+    protected FormatterCsv(Report parent) {
+	super(parent);
+	delimiter="|";
+    }
+    /* must be modify to handle multilines cells with column exact */
+    String cell(String s) {
+	isInTable = true;
+
+	s = s.replaceAll(eol," ");
+	cellIndex++;
+	if (cellIndex == 1){
+	    return s;
+	} else {
+	    return delimiter+s;
+	}
+    }
+    String cell(String s, String attr) {
+	return cell(s);}
+    String cell(String s, String attr, int rs, int cs){
+	return cell(s,rs,cs);}
+    String cell(String s, int rs, int cs){
+	return cell(s);
+    }
+    String br(){ return System.getProperty("line.separator");}
+    void println(String s){
+	parentReport.println(s);}
+    void print(String s){
+	println(s);}
+    void println(){
+	println("");}
+    String li(String s){
+	return(s);}
+    String ul(String s){
+	return s;
+    }
+    void start(){
+	isInTable = false;
+    }
+    void end(){}
+    String anchor(String name, String text){
+	return(text);
+    }
+    String hlink(String name, String text){
+	return(text);
+    }
+}
+
+
+class Fifo extends ArrayList {
+    Fifo(int initSize) {
+	super(initSize);
+    }
+
+    void push(Object o){
+	add(o);
+    }
+    Object pop(){
+	Object result = null;
+	if (!isEmpty()){
+	    result  = this.get(0);
+	    remove(0);
+	}
+	return result;
+    }
+}
+
 
