@@ -200,15 +200,6 @@ public class ReportLinesCirc extends Report {
       File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
       if (file == null)
         return ;
-      /*
-      // .. exits ?
-      if (file.exists()) {
-        int rc = manager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, "File exists. Overwrite?", WindowManager.ACTIONS_YES_NO, ReportView.this);
-        if (rc!=0) {
-          return;
-        }
-      }
-*/
       
       // open output stream
       try{
