@@ -29,7 +29,7 @@
 1 SEX F
 1 BIRT
 2 DATE 12 JAN 1936
-2 PLAC Quarnstedt,Schleswig Holstein
+2 PLAC Quarnstedt,Schleswig-Holstein
 1 OCCU Hausfrau
 1 FAMS @F1@
 0 @I3@ INDI
@@ -79,7 +79,7 @@
 1 GRAD
 2 AGNC Friedrich Wilhelm University Bonn
 2 DATE 10 DEC 1996
-2 PLAC Bonn
+2 PLAC Bonn, NRW
 2 TYPE Diplom Informatiker
 1 FAMC @F1@
 1 OBJE
