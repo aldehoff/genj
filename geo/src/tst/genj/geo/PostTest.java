@@ -49,7 +49,10 @@ public class PostTest {
    * posting
    */
   private static void post() throws Throwable {
-    
+
+    System.setProperty("http.proxyHost","torisaw01.prod.quest.corp");
+    System.setProperty("http.proxyPort","8080");
+
     URL url = new URL("http://genj.sourceforge.net/geoq.php");
     HttpURLConnection con = (HttpURLConnection)url.openConnection();
     con.setRequestMethod("POST");
@@ -64,6 +67,7 @@ public class PostTest {
     out.write("Rendsburg\n");
     out.write("Celle\n");
     out.write("Celle;Niedersachsen;de\n");
+    out.write("Ham*\n");
     out.close();
 
     BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), UTF8));
