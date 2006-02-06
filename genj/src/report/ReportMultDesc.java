@@ -37,10 +37,12 @@ public class ReportMultDesc extends Report {
     private final static int
 	HTML = 0,
 	TEXT = 1,
-	TEXT_EXACT = 2;
+	TEXT_CSV = 2;
     public int outputFormat=HTML;
-    public String outputFormats[] = { i18n("Html"),
-				      i18n("Text")};
+    public String outputFormats[] = { i18n("Html")
+				      ,i18n("Text")
+				      ,"Csv"
+    };
 
     private int columnWidth = 30;
     public int reportMaxGenerations = 999;
@@ -64,6 +66,7 @@ public class ReportMultDesc extends Report {
     public boolean reportDateOfOccu = true;
     public boolean reportPlaceOfResi = true;
     public boolean reportDateOfResi = true;
+    public boolean reportMailingAddress = true;
 
     // Privacy
     public boolean managePrivacy = true;
@@ -108,7 +111,7 @@ public class ReportMultDesc extends Report {
 			 //"padding-left:20px;"+
 			 "}"+
 			 "h2.report{border-color:black;background-color:#f0f0f0;border-style:solid;border-width:0 0 2 0;text-transform:uppercase;}");
-	}else {
+	}else if (outputFormat == TEXT){
 	    output = new FormatterText(this);
 	    ((FormatterText) output).setTabStop(new int[] {-7,
 							   7+columnWidth,
@@ -117,8 +120,9 @@ public class ReportMultDesc extends Report {
 							   7+columnWidth*4,
 							   7+columnWidth*5,
 							   7+columnWidth*6});
-	    ((FormatterText) output).setNiceColumns(((outputFormat == TEXT_EXACT) &&
-						     (reportFormat != ONE_LINE)));
+	    ((FormatterText) output).setNiceColumns(false);
+	} else if (outputFormat == TEXT_CSV){
+	    output = new FormatterCsv(this);
 	}
 
 	output.setPrivacy(managePrivacy,
@@ -227,6 +231,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	String marriage;
 	String occupation;
 	String residence;
+	String address[];
 
 	String result = new String();
 
@@ -246,6 +251,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	death = Formatter.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
 	occupation = Formatter.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
 	residence = Formatter.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
+	address = reportMailingAddress?Formatter.getAddr(indi,null):null;
 
 	if (output.isPrivate(indi,fam,level>privateGen)){
 	    name = (privateName.length() != 0)? privateName : name;
@@ -254,12 +260,12 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	    death = (death.length() != 0)? privateEvent:"";
 	    occupation = (occupation.length() != 0)? privateEvent:"";
 	    residence = (residence.length() != 0)? privateEvent:"";
+	    address = null;
 	}
 
-	if (reportFormat == ONE_LINE) {
+	if (outputFormat == TEXT_CSV) {
 	    String separator=" ";
-	    result = output.underline(number);
-	    result += " " + name;
+	    result = "";
 	    if (birth != null && birth.length() != 0){ 
 		result += separator + birth;
 		separator = "; ";
@@ -280,17 +286,51 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 		result += separator + residence;
 		separator = "; ";
 	    }
+	    result = output.cell(number)
+		+output.cell(name)
+		+output.cell(result);
+	    if (address != null)
+		for (int i = 0; i<address.length; i++){
+		    result += output.cell(address[i]);
+		}
+	    result = output.row(result);
 	} else {
-	    result = "";
-	    if (birth != null) result += output.li(birth);
-	    if (marriage != null) result += output.li(marriage);
-	    if (death != null) result += output.li(death);
-	    if (occupation != null) result += output.li(occupation);
-	    if (residence != null) result += output.li(residence);
-	    
-	    result = number+" "+name+output.ul(result);
+	    if (reportFormat == ONE_LINE) {
+		String separator=" ";
+		result = output.underline(number);
+		result += " " + name;
+		if (birth != null && birth.length() != 0){ 
+		    result += separator + birth;
+		    separator = "; ";
+		}
+		if (marriage != null && marriage.length() != 0){
+		    result += separator + marriage;
+		    separator = "; ";
+		}
+		if (death != null && death.length() != 0){
+		    result += separator + death;
+		    separator = "; ";
+		}
+		if (occupation != null && occupation.length() != 0){
+		    result += separator + occupation;
+		    separator = "; ";
+		}
+		if (residence != null && residence.length() != 0){
+		    result += separator + residence;
+		    separator = "; ";
+		}
+	    } else {
+		result = "";
+		if (birth != null) result += output.li(birth);
+		if (marriage != null) result += output.li(marriage);
+		if (death != null) result += output.li(death);
+		if (occupation != null) result += output.li(occupation);
+		if (residence != null) result += output.li(residence);
+		
+		result = number+" "+name+output.ul(result);
+	    }
 	}
     	return result;
     }
 
-} //ReportSosa
+} //ReportMulDesv
