@@ -9,5 +9,7 @@
 	<classpathentry kind="lib" path="contrib/jump/jump.jar"/>
 	<classpathentry kind="lib" path="language/de"/>
 	<classpathentry kind="lib" path="contrib/hsqldb/hsqldb.jar"/>
+	<classpathentry kind="src" path="src/import"/>
+	<classpathentry kind="src" path="src/tst"/>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>
