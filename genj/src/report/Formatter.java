@@ -12,7 +12,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
-import genj.gedcom.MultiLineProperty;
 import genj.gedcom.time.Delta;
 import genj.report.Report;
 import genj.util.WordBuffer;
@@ -204,67 +203,6 @@ abstract class Formatter  {
 	return result;
     }
     */
-
-    /**
-     * getPropertiesWithTag:
-     * return an array of property's property matching tag tag 
-     * that starts with start String. If start is null, or of length 0,
-     *  the start string is ignored
-     * the passed property is tested against alle these criteria
-     */
-    static ArrayList getPropertiesWithTag(Property prop, String tag, String start){
-	ArrayList result = new ArrayList();
-	if (prop.getTag().compareTo(tag) == 0) {
-	    if (start.length() == 0){
-		result.add(prop);
-	    } else {
-		String value = prop.getValue();
-		if (value != null) 
-		    if (value.startsWith(start))
-			result.add(prop); 
-	    }
-	}
-	for (int i = 0; i<prop.getNoOfProperties(); i++){
-	    result.addAll(getPropertiesWithTag(prop.getProperty(i),tag,start));
-
-	}
-	return result;
-    }
-
-    /*
-     * get living address of en entity. It is the address attached to
-     * a RESI tag that match these conditions:
-     * - must not have an ending date
-     * - if a noteMarquer is available, a note starting with this string
-     */
-    static String[] getAddr(Entity entity,String noteStartsWith){
-	Property resi[] = getProperties(entity,"RESI");
-	ArrayList result = new ArrayList(5);
-	for (int i = 0; i<resi.length; i++){
-	    // there must be an address tag
-	    Property address = resi[i].getProperty("ADDR");
-	    if (address == null) continue;
-
-	    // if end date is available, next
-	    PropertyDate date = (PropertyDate)resi[i].getProperty("DATE");
-	    if (date != null && date.getEnd() != null) continue;
-	    
-	    if (noteStartsWith != null && noteStartsWith.length() != 0) {
-		Property note = resi[i].getProperty("NOTE");
-		if (note != null && note.getValue().startsWith(noteStartsWith)) continue;
-	    }
-	    // multiline needs loop
-	    if (address instanceof MultiLineProperty) {
-		MultiLineProperty.Iterator lines = ((MultiLineProperty)address).getLineIterator();
-		do {
-		    result.add(lines.getValue());
-		} while (lines.next());
-	    } else {
-		result.add(address.getValue());
-	    }
-	}
-	return (String[])result.toArray(new String[result.size()]);
-    }
 
     static String getPropertyDate(Property prop, int dateFormat){
 	if (dateFormat == DATE_FORMAT_NONE)
@@ -608,23 +546,5 @@ class FormatterCsv extends FormatterText{
     }
 }
 
-
-class Fifo extends ArrayList {
-    Fifo(int initSize) {
-	super(initSize);
-    }
-
-    void push(Object o){
-	add(o);
-    }
-    Object pop(){
-	Object result = null;
-	if (!isEmpty()){
-	    result  = this.get(0);
-	    remove(0);
-	}
-	return result;
-    }
-}
 
 

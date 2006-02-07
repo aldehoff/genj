@@ -7,6 +7,7 @@
  */
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.gedcom.PropertyMultilineValue;
 import genj.report.Report;
 
 import java.util.Map;
@@ -231,7 +232,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	String marriage;
 	String occupation;
 	String residence;
-	String address[];
+	PropertyMultilineValue address;
 
 	String result = new String();
 
@@ -251,7 +252,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	death = Formatter.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
 	occupation = Formatter.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
 	residence = Formatter.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
-	address = reportMailingAddress?Formatter.getAddr(indi,null):null;
+	address = reportMailingAddress ? indi.getAddress() : null;
 
 	if (output.isPrivate(indi,fam,level>privateGen)){
 	    name = (privateName.length() != 0)? privateName : name;
@@ -289,10 +290,12 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	    result = output.cell(number)
 		+output.cell(name)
 		+output.cell(result);
-	    if (address != null)
-		for (int i = 0; i<address.length; i++){
-		    result += output.cell(address[i]);
-		}
+	    if (address != null) {
+	        String[] lines = address.getLines();
+    		for (int i = 0; i<lines.length; i++){
+    		    result += output.cell(lines[i]);
+    		}
+        }
 	    result = output.row(result);
 	} else {
 	    if (reportFormat == ONE_LINE) {

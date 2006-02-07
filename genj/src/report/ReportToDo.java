@@ -22,6 +22,7 @@ import genj.report.Report;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 
@@ -152,11 +153,11 @@ public class ReportToDo extends Report {
    * Exports the given entities 
    */
     private void exportEntities(Entity[] ents)  {
-	ArrayList props;
+	List props;
 
 	if (!outputWorkingSheet) return;
 	for (int e = 0; e < ents.length; e++) {
-	    props = getPropertiesWithTag(ents[e],todoTag,todoStart);
+	    props = ents[e].findProperties(todoTag, todoStart+".*");
 	    if (props.size() == 0){
 		continue;
 	    }
@@ -176,13 +177,13 @@ public class ReportToDo extends Report {
     private void exportEntity(Fam fam){
 	Property prop;
 	Property[] propArray;
-	ArrayList todos;
+	List todos;
 	ArrayList props;
 	String tempString = "";
 	Indi tempIndi;
 	Fam tempFam;
 
-	todos = getPropertiesWithTag(fam,todoTag,todoStart);
+	todos = fam.findProperties(todoTag, todoStart+".*");
 	if (todos.size() == 0){
 	    return;
 	}
@@ -269,11 +270,11 @@ public class ReportToDo extends Report {
     private void exportEntity(Indi indi){
 	Property prop;
 	Property[] propArray;
-	ArrayList todos;
+	List todos;
 	ArrayList props;
 	String tempString = "";
 
-	todos = getPropertiesWithTag(indi,todoTag,todoStart);
+	todos = indi.findProperties(todoTag,todoStart+".*");
 	if (todos.size() == 0){
 	    return;
 	}
@@ -374,7 +375,7 @@ public class ReportToDo extends Report {
     }
 
 
-    private void outputEventRow(Entity indi, String tag, ArrayList todos){
+    private void outputEventRow(Entity indi, String tag, List todos){
 	Property props[] = Formatter.getProperties(indi,tag);
 	
 	if (props == null) return;
@@ -392,13 +393,13 @@ public class ReportToDo extends Report {
     }
 
     private void exportTodos(Entity[] ents)  {
-	ArrayList todos;
+	List todos;
 	boolean isFirstPage=true;
 
 	if (!outputSummary) return;
 
 	for (int e = 0; e < ents.length; e++) {
-	    todos = getPropertiesWithTag(ents[e],todoTag,todoStart);
+	    todos = ents[e].findProperties(todoTag,todoStart+".*");
 	    if (todos.size() == 0){
 		continue;
 	    }
@@ -427,11 +428,11 @@ public class ReportToDo extends Report {
     }
 
     private void exportTodosCsv(Entity[] ents)  {
-	ArrayList todos;
+	List todos;
 	boolean isFirstPage=true;
 
 	for (int e = 0; e < ents.length; e++) {
-	    todos = getPropertiesWithTag(ents[e],todoTag,todoStart);
+	    todos = ents[e].findProperties(todoTag,todoStart+".*");
 	    if (todos.size() == 0){
 		continue;
 	    }
@@ -456,7 +457,7 @@ public class ReportToDo extends Report {
     }
 
 
-    private String getNotesString(String prefix, Property prop, ArrayList exclude){
+    private String getNotesString(String prefix, Property prop, List exclude){
 	String result = "";
 	// prop exists?
 	if (prop==null)
@@ -547,25 +548,6 @@ public class ReportToDo extends Report {
 	return result;
     }
 
-    private ArrayList getPropertiesWithTag(Property prop, String tag, String start){
-	ArrayList result = new ArrayList();
-	if (prop.getTag().compareTo(tag) == 0) {
-	    if (start.length() == 0){
-		result.add(prop);
-	    } else {
-		String value = outputPropertyValue(prop);
-		if (value != null) 
-		    if (value.startsWith(start))
-			result.add(prop); 
-	    }
-	}
-	//	if ((prop.getTag() == tag) && (start.length() == 0 || prop.getValue().startsWith(start))) result.add(prop);
-	for (int i = 0; i<prop.getNoOfProperties(); i++){
-	    result.addAll(getPropertiesWithTag(prop.getProperty(i),tag,start));
-
-	}
-	return result;
-    }
     /*
     private void outputToDo(Indi indi){
 	ArrayList todoList = getPropertiesWithTag(indi,"_TODO");
