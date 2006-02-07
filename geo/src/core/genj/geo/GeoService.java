@@ -20,6 +20,7 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
+import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 
@@ -161,12 +162,12 @@ public class GeoService {
   private GeoLocation decode(String location) {
     
     // city, jurisdiction, iso country, lat, lon
-    StringTokenizer tokens = new StringTokenizer(location, ",");
-    if (tokens.countTokens()!=5)
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(location, ",", false);
+    if (tokens.count()!=5)
       return null;
     
-    GeoLocation result = new GeoLocation(tokens.nextToken(), tokens.nextToken(), Country.get(tokens.nextToken())); 
-    result.setCoordinate(Float.parseFloat(tokens.nextToken()), Float.parseFloat(tokens.nextToken()));
+    GeoLocation result = new GeoLocation(tokens.get(0), tokens.get(1), Country.get(tokens.get(2))); 
+    result.setCoordinate(Float.parseFloat(tokens.get(3)), Float.parseFloat(tokens.get(4)));
     
     return result;
   }
@@ -206,9 +207,11 @@ public class GeoService {
         List row = new ArrayList();
         StringTokenizer hits = new StringTokenizer(line, ";");
         while (hits.hasMoreTokens()) {
-          hitCount++;
           GeoLocation hit = decode(hits.nextToken());
-          if (hit!=null) row.add(hit);
+          if (hit!=null) {
+            row.add(hit);
+            hitCount++;
+          }
         }
         rows.add(row);
       }
