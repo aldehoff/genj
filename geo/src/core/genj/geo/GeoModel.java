@@ -168,12 +168,14 @@ import com.vividsolutions.jts.geom.Coordinate;
    */
   private class Resolver extends ActionDelegate {
     
-    private Collection todo;
+    private ArrayList todo;
 
     /** constructor */
     private Resolver(Collection todo) {
       setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
-      this.todo = todo;
+      
+      // make a private copy of todo
+      this.todo = new ArrayList(todo);
     }
 
     /** async exec */
