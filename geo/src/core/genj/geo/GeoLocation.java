@@ -284,9 +284,11 @@ public class GeoLocation extends Point implements Feature, Comparable {
       }
     }
     
-    // grab all the rest as jurisdictions
-    for (int i=first; i<=last; i++) 
-      this.jurisdictions.add(trim(jurisdictions.get(i)));
+    // grab all the rest as jurisdictions 
+    for (int i=first; i<=last; i++) {
+      String jurisdiction = trim(jurisdictions.get(i));
+      if (jurisdiction.length()>0) this.jurisdictions.add(jurisdiction);
+    }
     
     // done
   }
