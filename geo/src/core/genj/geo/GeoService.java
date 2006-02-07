@@ -67,7 +67,7 @@ public class GeoService {
   /** our query url */
   private static URL createQueryURL() {
     try {
-      return new URL("http://genj.sourceforge.net/geoq.php");    
+      return new URL("http://genj.sourceforge.net/php/geoq.php");    
     } catch (MalformedURLException e) {
       throw new Error("init");
     }
