@@ -19,28 +19,27 @@
  */
 package genj.geo;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,58 +47,16 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 
 /**
- * A service for geographical computations / data services. It keeps well known
- * locations in files in ./geo with format
- * <pre>
- *   PLACE \t STATE \t COUNTRY \t LAT \t LON
- * </pre>
+ * A service for geographical computations / data services. 
  */
 public class GeoService {
   
+  final static Charset UTF8 = Charset.forName("UTF8");
   final static Logger LOG = Logger.getLogger("genj.geo");
+  final static URL GEOQ = createQueryURL();
   
   /** our work directory */
   private static final String GEO_DIR = "./geo";
-
-  /** our sqls */
-  /*package*/ static final String 
-    CREATE_TABLES =
-      "CREATE CACHED TABLE countries (country CHAR(2) PRIMARY KEY); " +
-      "CREATE CACHED TABLE locations (city VARCHAR(32), state CHAR(2), country CHAR(2) NOT NULL, lat FLOAT, lon FLOAT); "+
-      "CREATE INDEX cities ON locations (city)",
-    DELETE_LOCATIONS = "DELETE FROM locations WHERE country = ?",
-    DELETE_LOCATIONS2 = "DELETE FROM locations WHERE country = ? AND state = ?",
-    INSERT_COUNTRY = "INSERT INTO countries (country) VALUES (?)",
-    DELETE_COUNTRY = "DELETE FROM countries WHERE country = ?",
-    INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
-    SELECT_COUNTRIES = "SELECT country FROM countries",
-    SELECT_LOCATIONS = "SELECT city, state, country, lat, lon FROM locations WHERE city = ?",
-    QUERY_LOCATIONS = "SELECT city, state, country, lat, lon FROM locations WHERE city LIKE ?";
-
-  /*package*/ static final int
-    DELETE_LOCATIONS_COUNTRY = 1,
-    DELETE_LOCATIONS_STATE = 2,
-    
-    INSERT_COUNTRY_COUNTRY = 1,
-    DELETE_COUNTRY_COUNTRY = 1,
-    
-    INSERT_LOCATION_CITY = 1,
-    INSERT_LOCATION_STATE = 2,
-    INSERT_LOCATION_COUNTRY = 3,
-    INSERT_LOCATION_LAT = 4,
-    INSERT_LOCATION_LON = 5,
-    
-    SELECT_COUNTRIES_OUT_COUNTRY = 1,
-    
-    SELECT_LOCATIONS_IN_CITY = 1,
-    SELECT_LOCATIONS_OUT_CITY = 1,
-    SELECT_LOCATIONS_OUT_STATE = 2,
-    SELECT_LOCATIONS_OUT_COUNTRY = 3,
-    SELECT_LOCATIONS_OUT_LAT = 4,
-    SELECT_LOCATIONS_OUT_LON = 5;
-
-  /** directories */
-  private File localDir, globalDir;
 
   /** singleton */
   private static GeoService instance;
@@ -107,113 +64,20 @@ public class GeoService {
   /** maps */
   private List maps;
   
-  /** database ready */
-  private Connection connection;
-  
-  /** listeners */
-  private List listeners = new ArrayList();
+  /** our query url */
+  private static URL createQueryURL() {
+    try {
+      return new URL("http://genj.sourceforge.net/geoq.php");    
+    } catch (MalformedURLException e) {
+      throw new Error("init");
+    }
+  }
   
   /**
    * Constructor
    */
   private GeoService() {
-    
-    // startup now
-    startup();
-    
-    // prepare database shutdown
-    Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown()));
-
-    // done
-  }
-  
-  /**
-   * our startup routine
-   */
-  private synchronized void startup() { 
-    
-    // startup database - try to place into all.home.genj if possible, user.home.genj otherwise
-    File geo =  new File(EnvironmentChecker.getProperty(this, new String[]{ "all.home.genj/geo", "user.home.genj/geo"} , "", "looking for user's geo directory"));
-    
-    LOG.info("GeoService Startup - database directory is "+geo);
-    
-    geo.mkdir();
-  
-    try {
-      
-      // initialize database
-      Class.forName("org.hsqldb.jdbcDriver");
-  
-      // connect to the database.   
-      Properties props = new Properties();
-      props.setProperty("user", "sa");
-      props.setProperty("password", "");
-      props.setProperty("hsqldb.cache_scale", "8");  // less rows 3*2^x
-      props.setProperty("hsqldb.cache_size_scale", "7"); // less size per row 2^x
-      props.setProperty("sql.compare_in_locale", "0"); // Collator strength PRIMARY
-      
-      connection = DriverManager.getConnection("jdbc:hsqldb:file:"+geo.getAbsolutePath() + "/database" , props); 
-      connection.setAutoCommit(true);
-  
-      // create tables
-      try {
-        connection.createStatement().executeUpdate(CREATE_TABLES);
-      } catch (SQLException e) {
-        // ignored
-      }
-      
-    } catch (Throwable t) {
-      LOG.log(Level.SEVERE, "Couldn't initialize database", t);
-    }
-  } 
-  
-  /**
-   * our shutdown
-   */
-  private class Shutdown implements Runnable {
-      public void run() { synchronized(GeoService.this) {
-          LOG.info("GeoService Shutdown");
-          try {
-            connection.createStatement().execute("SHUTDOWN");
-          } catch (SQLException e) {
-            // ignored
-          }
-      } }
-  } //Shutdown
-  
-  /**
-   * Test
-   */
-  public static void main(String[] args) {
-    
-//    Country[] countries = getInstance().getCountries();
-//    for (int i=0;i<countries.length;i++)
-//      System.out.println(countries[i]);
-    
-//    Indi indi = new Indi();
-//    Property birt = indi.addProperty("BIRT", "");
-//    birt.addProperty("PLAC", "Nantes");
-//    
-//    GeoLocation loc  = new GeoLocation(birt);
-//    getInstance().match(loc);
-//    System.out.println(loc);
-    
-    String city = "%eloi";
-    GeoService gs = getInstance();
-    try {
-      
-      PreparedStatement ps = gs.connection.prepareStatement("SELECT city, state, country, lat, lon FROM locations WHERE city LIKE ?");
-      ps.setString(1, city);
-      ResultSet result = ps.executeQuery();
-      while (result.next()) {
-        System.out.println( result.getString(1)  +","+ result.getString(2)+","+ result.getString(3)+","+ result.getString(4)+","+ result.getString(5));
-      }
-      
-    } catch (Throwable t) {
-      t.printStackTrace();
-    }
-    
-  }
+   }
   
   /**
    * Singleton acces
@@ -226,13 +90,6 @@ public class GeoService {
       }
     }
     return instance;
-  }
-  
-  /**
-   * Return the database connection
-   */
-  /*package*/ Connection getConnection() {
-    return connection;
   }
   
   /**
@@ -259,222 +116,7 @@ public class GeoService {
     // done
     return (File[])result.toArray(new File[result.size()]);
   }
-
-  /**
-   * Let listeners know about change in data
-   */
-  /*package*/ synchronized void fireGeoDataChanged() {
-    Listener[] ls = (Listener[])listeners.toArray(new Listener[listeners.size()]);
-    for (int i = 0; i < ls.length; i++) {
-      ls[i].handleGeoDataChange();
-    }
-  }
   
-  /**
-   * Listener registration
-   */
-  public void addListener(Listener l) {
-    listeners.add(l);
-  }
-  
-  public void removeListener(Listener l) {
-    listeners.remove(l);
-  }
-  
-  /**
-   * Drop information for given country 
-   */
-  public synchronized void drop(Country country) throws IOException {
-    
-    try {
-      PreparedStatement delete = connection.prepareStatement(DELETE_LOCATIONS);
-      delete.setString(DELETE_LOCATIONS_COUNTRY, country.getCode());
-      delete.executeUpdate();
-      
-      delete = connection.prepareStatement(DELETE_COUNTRY);
-      delete.setString(DELETE_COUNTRY_COUNTRY, country.getCode());
-      delete.executeUpdate();
-      
-    } catch (SQLException e) {
-      throw new IOException(e.getMessage());
-    }
-    
-    fireGeoDataChanged();
-    
-    // done
-  }
-  
-  /**
-   * Prepare an import 
-   */
-  public Import getImport(Country country, String state) throws IOException {
-    // look it up
-    try {
-      return Import.get(country, state);
-    } catch (SQLException e) {
-      throw new IOException("error preparing import ["+e.getMessage()+"]");
-    }
-  }
-
-  /**
-   * Return all available countries
-   */
-  public synchronized Country[] getCountries() {
-
-    List countries = new ArrayList();
-    
-    try {
-      ResultSet rows = connection.prepareStatement(SELECT_COUNTRIES).executeQuery();
-      while (rows.next()) 
-        countries.add(Country.get(rows.getString(SELECT_COUNTRIES_OUT_COUNTRY)));
-      
-    } catch (Throwable t) {
-      LOG.log(Level.SEVERE, "unexpected throwable", t);
-    }
-    
-    // done
-    return (Country[])countries.toArray(new Country[countries.size()]);
-  }
-  
-  /**
-   * Find all matching locations for given location
-   */
-  public GeoLocation[] query(GeoLocation location) {
-    
-    // check query arguments and choose sql
-    String sql;
-    String city = location.getCity();
-    if (city.endsWith("*")) {
-      city = city.substring(0, city.length()-1) + "%";
-      sql = QUERY_LOCATIONS;
-    } else {
-      sql = SELECT_LOCATIONS;
-    }
-      
-    Jurisdiction jurisdiction = location.getJurisdiction();
-    Country country = location.getCountry();
-   
-    // try to find 
-    List result = new ArrayList();
-    synchronized (this) {
-      
-      try {
-        
-        // prepare select
-        PreparedStatement select = connection.prepareStatement(sql);
-        select.setString(SELECT_LOCATIONS_IN_CITY, city);
-
-        // loop over rows
-        ResultSet rows = select.executeQuery();
-        while (rows.next()) {
-          // grab city as in database
-          String foundCity = rows.getString(SELECT_LOCATIONS_OUT_CITY);
-          // .. country known and no match -> don't consider
-          Country foundCountry = Country.get(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY));
-          if (country!=null&&!country.equals(foundCountry))
-            continue;
-          // .. jurisdiction known and no match -> don't consider
-          Jurisdiction foundJurisdiction = Jurisdiction.get(foundCountry, rows.getString(SELECT_LOCATIONS_OUT_STATE));
-          if (jurisdiction!=null&&!jurisdiction.equals(foundJurisdiction)) 
-            continue;
-          // grab it
-          GeoLocation loc = new GeoLocation(foundCity, foundJurisdiction, foundCountry);
-          loc.set(rows.getDouble(SELECT_LOCATIONS_OUT_LAT), rows.getDouble(SELECT_LOCATIONS_OUT_LON), 1);
-          result.add(loc);
-          // next 
-        }
-      } catch (Throwable t) {
-        LOG.log(Level.SEVERE, "throwable while trying to match "+location, t);
-      }
-    }
-    
-    // done
-    return (GeoLocation[])result.toArray(new GeoLocation[result.size()]);
-    
-  }
-  
-  /**
-   * Match given location
-   */
-  public boolean match(GeoLocation location) {
-
-    String city = location.getCity();
-    Jurisdiction jurisdiction = location.getJurisdiction();
-    Country country = location.getCountry();
-   
-    // try to find 
-    double lat = Double.NaN, lon = Double.NaN;
-    int matches = 0;
-    synchronized (this) {
-      try {
-        
-        // prepare select
-        PreparedStatement select = connection.prepareStatement(SELECT_LOCATIONS);
-        select.setString(SELECT_LOCATIONS_IN_CITY, city);
-
-        // loop over rows
-        int highscore = 0;
-        ResultSet rows = select.executeQuery();
-        while (rows.next()) {
-          // compute a score
-          int score = 1;
-          // .. country known and no match -> don't consider
-          if (country!=null) {
-            if (!country.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_COUNTRY)))
-              continue;
-            score += 1;
-          }
-          // .. jurisdiction known and no match -> don't consider
-          if (jurisdiction!=null) {
-            if (!jurisdiction.getCode().equalsIgnoreCase(rows.getString(SELECT_LOCATIONS_OUT_STATE)))
-              continue;
-            score += 1;
-          }
-          // grab lat/lon
-          if (score==highscore) matches ++;
-          else if (score>highscore) {
-            matches = 1;
-            highscore = score;
-            lat = rows.getDouble(SELECT_LOCATIONS_OUT_LAT);
-            lon = rows.getDouble(SELECT_LOCATIONS_OUT_LON);
-          }
-          // next match
-        }
-      } catch (Throwable t) {
-        LOG.log(Level.SEVERE, "throwable while trying to match "+location, t);
-      }
-    }
-
-    // keep matched data
-    location.set(lat, lon, matches);
-    
-    // done
-    return matches>0;
-  }
-  
-  /**
-   * Create locations for all properties contained in given entities
-   * @param entitie entities to consider
-   * @param matchedOnly whether to create locations only for matched properties
-   * @return collection of GeoLocations
-   */
-  public Set matchEntities(Gedcom gedcom, Collection entities, boolean matchedOnly) {
-    
-    // loop over entities
-    List props = new ArrayList(100);
-    for (Iterator it=entities.iterator(); it.hasNext(); ) {
-      Entity entity = (Entity)it.next();
-      for (int p=0; p<entity.getNoOfProperties(); p++) {
-        Property prop = entity.getProperty(p);
-        if (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) 
-          props.add(prop);
-      }
-    }
-    
-    // check properties now
-    return matchProperties(gedcom, props, matchedOnly);
-  }
-
   /**
    * Find a registry for gedcom file (geo.properties) 
    */
@@ -486,66 +128,170 @@ public class GeoService {
   }
   
   /**
-   * Create locations for given collection of properties
-   * @param properties the properties to match
-   * @param matchedOnly whether to create locations only for matched properties
-   * @return collection of GeoLocations
+   * Encode a location into what our webservice understands. 
+   * <code>
+   *   location -> city[,jurisdiction]+,country
+   * </code>
    */
-  public Set matchProperties(Gedcom gedcom, Collection properties, boolean matchedOnly) {
+  private String encode(GeoLocation location) {
     
-    // prepare result
-    Map result = new HashMap(properties.size());
+    // city [,jurisdiction]+ , country
+    StringBuffer query = new StringBuffer();
+    query.append(location.getCity());
+    query.append(",");
+    if (location.getJurisdictions().isEmpty()) {
+      query.append(",");
+    } else for (Iterator it = location.getJurisdictions().iterator(); it.hasNext(); ) {
+      query.append(it.next().toString());
+      query.append(",");
+    }
+    Country c = location.getCountry();
+    if (c!=null) query.append(c.getCode());
+
+    // done
+    return query.toString();
+  }
+
+  /**
+   * Decode a location from what our service returned
+   * <code>
+   *   city,jurisdiction,country,lat,lon -> jurisdiction
+   * </code>
+   */
+  private GeoLocation decode(String location) {
     
+    // city, jurisdiction, iso country, lat, lon
+    StringTokenizer tokens = new StringTokenizer(location, ",");
+    if (tokens.countTokens()!=5)
+      return null;
+    
+    GeoLocation result = new GeoLocation(tokens.nextToken(), tokens.nextToken(), Country.get(tokens.nextToken())); 
+    result.setCoordinate(Float.parseFloat(tokens.nextToken()), Float.parseFloat(tokens.nextToken()));
+    
+    return result;
+  }
+  
+  /**
+   * do a service call
+   * @param list list of locations to query
+   * @return list of list of locations
+   */
+  List webservice(List locations) throws IOException {
+
+    long start = System.currentTimeMillis();
+    int rowCount = 0, hitCount = 0;
+    try {
+      // open connection
+      HttpURLConnection con = (HttpURLConnection)GEOQ.openConnection();
+      con.setRequestMethod("POST");
+      con.setDoOutput(true);
+      con.setDoInput(true);
+  
+      // write our query
+      Writer out = new OutputStreamWriter(con.getOutputStream(), UTF8);
+      out.write("GEOQ\n");
+      for (int i=0;i<locations.size();i++) {
+        if (i>0) out.write("\n");
+        out.write(encode((GeoLocation)locations.get(i)));
+      }
+      out.close();
+      
+      // read input
+      List rows  = new ArrayList();
+      BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), UTF8));
+      for (int l=0;l<locations.size();l++) {
+        String line = in.readLine();
+        if (line==null) break;
+        rowCount++;
+        List row = new ArrayList();
+        StringTokenizer hits = new StringTokenizer(line, ";");
+        while (hits.hasMoreTokens()) {
+          hitCount++;
+          GeoLocation hit = decode(hits.nextToken());
+          if (hit!=null) row.add(hit);
+        }
+        rows.add(row);
+      }
+      in.close();
+      
+      // done
+      return rows;
+      
+    } finally {
+      long secs  = (System.currentTimeMillis()-start)/1000;
+      LOG.info("query for "+locations.size()+" locations in "+secs+"s resulted in "+rowCount+" rows and "+hitCount+" total hits");
+    }
+    
+  }
+
+  /**
+   * Find all matching locations for given location
+   * @return list of matching locations
+   */
+  public List query(GeoLocation location) throws IOException {
+    // run query and grab first result list
+    List rows = webservice(Collections.singletonList(location ));
+    return rows.isEmpty() ?  new ArrayList() : (List)rows.get(0);
+  }
+  
+  /**
+   * Find best matches for given locations
+   * @param location list of locations
+   */
+  public Collection match(Gedcom gedcom, Collection locations) throws IOException {
+
     // grab registry
-    Registry registry = getRegistry(gedcom);
+    Registry registry = gedcom!=null ? getRegistry(gedcom) : new Registry();
     
-    // loop over properties
-    for (Iterator it = properties.iterator(); it.hasNext(); ) {
-      
-      Property prop = (Property)it.next();
-
-      // create a new location
-      GeoLocation location;
-      try {
-        location = new GeoLocation(prop);
-      } catch (IllegalArgumentException e) {
-        continue;
+    // loop over locations try to use registry for matching
+    List todos = new ArrayList(locations.size());
+    for (Iterator it=locations.iterator(); it.hasNext(); ) {
+      GeoLocation location = (GeoLocation)it.next();
+      // something we can map through the registry or have to add to todo-list?
+      String restored  = registry.get(location.getJurisdictionsAsString(), (String)null);
+      if (restored!=null) try {
+        StringTokenizer tokens = new StringTokenizer(restored, ",");
+        location.setCoordinate( Double.parseDouble(tokens.nextToken()), Double.parseDouble(tokens.nextToken()));
+        if (tokens.hasMoreTokens())
+          location.setMatches(Integer.parseInt(tokens.nextToken()));
+      } catch (Throwable t) {
       }
+      // still todo?
+      if (!location.isValid())
+        todos.add(location);
+    }
     
-      // check if we have a location like that
-      GeoLocation other = (GeoLocation)result.get(location);
-      if (other!=null) {
-        other.add(location);
-        continue;
+    // still a webserive query to do?
+    if (!todos.isEmpty()) {
+      List rows = webservice(todos);
+      if (rows.size()<todos.size()) {
+        LOG.warning("got "+rows.size()+" rows for "+todos.size()+" locations");
+      } else {    
+        for (int i=0;i<todos.size();i++) {
+          GeoLocation todo  = (GeoLocation)todos.get(i);
+          List hits = (List)rows.get(i);
+          if (!hits.isEmpty()) {
+            GeoLocation hit = (GeoLocation)hits.get(0);
+            todo.setCoordinate(hit.getCoordinate());
+            todo.setMatches(hits.size());
+            remember(gedcom, todo);
+          }
+        }
       }
-    
-      // something we can map through the registry?
-      String latlon  = registry.get(location.getJurisdictionsAsString(), (String)null);
-      if (latlon!=null) {
-        int comma = latlon.indexOf(',');
-        if (comma>0) 
-          location.set( Double.parseDouble(latlon.substring(0, comma)), Double.parseDouble(latlon.substring(comma+1)), 1);
-      }
-
-      // match if still necessary
-      if (!location.isValid()) match(location);
-      
-      // keep it?
-      if (location.isValid()||!matchedOnly)
-        result.put(location, location);
-
-      // next property
     }
     
     // done
-    return result.keySet();
+    return locations;
   }
 
   /**
    * Remember a specific location's lat and lon
    */
-  public void remember(Gedcom gedcom, GeoLocation location, Coordinate coord) {
-    getRegistry(gedcom).put(location.getJurisdictionsAsString(), coord.y + "," + coord.x);
+  public void remember(Gedcom gedcom, GeoLocation location) {
+    if (gedcom==null)
+      return;
+    Coordinate coord = location.getCoordinate();
+    getRegistry(gedcom).put(location.getJurisdictionsAsString(), coord.y + "," + coord.x + "," + location.getMatches());
   }
   
   /**
@@ -581,13 +327,6 @@ public class GeoService {
     
     // done
     return (GeoMap[])maps.toArray(new GeoMap[maps.size()]);
-  }
-  
-  /**
-   * A (crude) Listener
-   */
-  public interface Listener {
-    public void handleGeoDataChange();
   }
     
 } //GeoService

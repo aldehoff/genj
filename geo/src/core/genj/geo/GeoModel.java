@@ -23,6 +23,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +35,7 @@ import java.util.Set;
 /**
  * Geographic model wrapper for gedcom
  */
-/*package*/ class GeoModel implements GedcomListener, GeoService.Listener {
+/*package*/ class GeoModel implements GedcomListener {
   
   /** state */
   private List listeners = new ArrayList();
@@ -76,18 +77,6 @@ import java.util.Set;
   }
   
   /**
-   *callback - GeoService changes
-   */
-  public void handleGeoDataChange() {
-    GeoService service = GeoService.getInstance();
-    for (Iterator it = locations.iterator(); it.hasNext(); ) {
-      GeoLocation location = (GeoLocation)it.next();
-      service.match(location);
-      fireLocationUpdated(location);
-    }
-  }
-    
-  /**
    * callback - gedcom change 
    */
   public void handleChange(Transaction tx) {
@@ -104,7 +93,7 @@ import java.util.Set;
       }
       
       // reparse entities changed
-      Set added = GeoService.getInstance().matchEntities(gedcom, entities, false);
+      Set added = GeoLocation.parseEntities(entities);
       for (Iterator locs = added.iterator(); locs.hasNext(); ) {
         GeoLocation loc = (GeoLocation)locs.next();
         locations.add(loc);
@@ -149,8 +138,18 @@ import java.util.Set;
    * reload all locations
    */
   private void reload() {
-    locations.clear();
-    locations.addAll(GeoService.getInstance().matchEntities(gedcom, gedcom.getEntities(), false));
+
+    // grab everything again
+    locations = GeoLocation.parseEntities(gedcom.getEntities(Gedcom.INDI));
+
+    // FIXME needs to be asynchronous
+    try {
+      GeoService.getInstance().match(gedcom, locations);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    
+    // done
   }
   
   /**
@@ -162,7 +161,6 @@ import java.util.Set;
       reload();
       // attach
       gedcom.addGedcomListener(this);
-      GeoService.getInstance().addListener(this);
     }
     // remember
     listeners.add(l);
@@ -183,7 +181,6 @@ import java.util.Set;
       locations.clear();
       // detach
       gedcom.removeGedcomListener(this);
-      GeoService.getInstance().removeListener(this);
     }
   }
   

@@ -53,8 +53,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import swingx.tree.AbstractTreeModel;
 
 /**
@@ -217,11 +215,10 @@ import swingx.tree.AbstractTreeModel;
       int rc = viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
       // check if he wants to change the location
       if (rc==0) {
-        Coordinate coord = query.getGeoLocation().getCoordinate();
         // tell it to location
-        location.set(coord.y, coord.x, 1);
+        location.setCoordinate(query.getGeoLocation().getCoordinate());
         // remember
-        GeoService.getInstance().remember(model.getGedcom(), location, coord);
+        GeoService.getInstance().remember(model.getGedcom(), location);
       }
       // done
     }

@@ -19,27 +19,23 @@
  */
 package genj.geo;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Test posting to our server side query script
  */
 public class PostTest {
 
-  private static Charset UTF8 = Charset.forName("UTF8");
-  
   /**
    * our main
    */
   public static void main(String[] args) {
     try {
-      post();
+      new PostTest().testWebservice();
     } catch (Throwable t) {
       t.printStackTrace();
     }
@@ -48,36 +44,30 @@ public class PostTest {
   /**
    * posting
    */
-  private static void post() throws Throwable {
-
-    System.setProperty("http.proxyHost","torisaw01.prod.quest.corp");
-    System.setProperty("http.proxyPort","8080");
-
-    URL url = new URL("http://genj.sourceforge.net/geoq.php");
-    HttpURLConnection con = (HttpURLConnection)url.openConnection();
-    con.setRequestMethod("POST");
-    con.setDoOutput(true);
-    con.setDoInput(true);
+  public void testWebservice() throws Throwable {
     
-    Writer out = new OutputStreamWriter(con.getOutputStream(), UTF8);
-    out.write("GEOQ\n");
-    out.write("Lohmar\n");
-    out.write("Siegburg;Nordrhein-Westfalen\n");
-    out.write("Köln;;de\n");
-    out.write("Rendsburg\n");
-    out.write("Celle\n");
-    out.write("Celle;Niedersachsen;de\n");
-    out.write("Ham*\n");
-    out.close();
+    // we don't need log output for this
+    Logger.getLogger("").setLevel(Level.OFF);
 
-    BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), UTF8));
-    while (true) {
-      String line = in.readLine();
-      if (line==null) break;
-      System.out.println(line);
+    GeoLocation[]  locs = {
+      new GeoLocation("Lohmar", null, null),
+      new GeoLocation("Siegburg", "Nordrhein-Westfalen", null),
+      new GeoLocation("Siegburg", "Rhein-Sieg-Kreis", null).addJurisdiction("Nordrhein-Westfalen"),
+      new GeoLocation("Köln", null, Country.get("de")),
+      new GeoLocation("Rendsburg", null, null),
+      new GeoLocation("Celle", null, null),
+      new GeoLocation("Celle", "Niedersachsen", Country.get("de")),
+      new GeoLocation("Hambu*", null, null)
+    };
+    
+    int i=0;
+    for (Iterator rows = GeoService.getInstance().webservice(Arrays.asList(locs)).iterator(); rows.hasNext(); i++) {
+      System.out.println("---"+locs[i]+"---");
+      for (Iterator hits = ((Collection)rows.next()).iterator(); hits.hasNext(); )
+        System.out.println(hits.next());
     }
-    in.close();
-    
+
+    // done
   }
 
 }

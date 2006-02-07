@@ -19,6 +19,7 @@
  */
 package genj.geo;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
@@ -28,6 +29,7 @@ import genj.util.WordBuffer;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,7 +69,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /** city state and country */
   private String city;
   private Country country;
-  private Jurisdiction jurisdiction;
+  private List jurisdictions = new ArrayList(3);
   private int hash;
   
   /** properties at that location */
@@ -78,16 +80,17 @@ public class GeoLocation extends Point implements Feature, Comparable {
   
   /**
    * Constructor
-   * @param prop property that nees location
+   * @param prop property that needs location
    */
-  /*package*/ GeoLocation(String city, Jurisdiction jurisdiction, Country country) {
+  /*package*/ GeoLocation(String city, String jurisdiction, Country country) {
     
     super(GEOMETRY_FACTORY.getCoordinateSequenceFactory().create(new Coordinate[]{ new Coordinate() } ), GEOMETRY_FACTORY);
     coordinate = super.getCoordinate();
     
     this.city = city;
-    this.jurisdiction = jurisdiction;
+    if (jurisdiction!=null) this.jurisdictions.add(jurisdiction);
     this.country = country;
+    
   }
   
   /**
@@ -116,11 +119,6 @@ public class GeoLocation extends Point implements Feature, Comparable {
       throw new IllegalArgumentException("can't locate "+prop.getTag()+" "+prop);
     }
     
-    // calculate hash code now
-    if (city!=null) hash += city.toLowerCase().hashCode();
-    if (jurisdiction!=null) hash += jurisdiction.getDisplayName().toLowerCase().hashCode();
-    if (country!=null) hash += country.getDisplayName().toLowerCase().hashCode();
-    
     // done
   }
   
@@ -130,8 +128,9 @@ public class GeoLocation extends Point implements Feature, Comparable {
   public String getJurisdictionsAsString() {
     WordBuffer result = new WordBuffer(", ");
     result.append(city);
-    if (jurisdiction!=null) result.append(jurisdiction.getDisplayName());
-      result.append(country);
+    for (int i = 0; i < jurisdictions.size(); i++) 
+      result.append(jurisdictions.get(i));
+    result.append(country);
     return result.toString();
   }  
   
@@ -162,6 +161,67 @@ public class GeoLocation extends Point implements Feature, Comparable {
   }
 
   /**
+   * Create locations for all properties contained in given entities
+   * @param entitie entities to consider
+   * @return set of GeoLocations
+   */
+  public static Set parseEntities(Collection entities) {
+    
+    // loop over entities
+    List props = new ArrayList(100);
+    for (Iterator it=entities.iterator(); it.hasNext(); ) {
+      Entity entity = (Entity)it.next();
+      for (int p=0; p<entity.getNoOfProperties(); p++) {
+        Property prop = entity.getProperty(p);
+        if (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) 
+          props.add(prop);
+      }
+    }
+    
+    // check properties now
+    return parseProperties(props);
+  }
+
+  /**
+   * Create locations for given collection of properties
+   * @param properties the properties to match
+   * @return set of GeoLocations
+   */
+  public static Set parseProperties(Collection properties) {
+    
+    // prepare result
+    Map result = new HashMap(properties.size());
+    List todo = new ArrayList();
+    
+    // loop over properties
+    for (Iterator it = properties.iterator(); it.hasNext(); ) {
+      
+      Property prop = (Property)it.next();
+
+      // create a new location
+      GeoLocation location;
+      try {
+        location = new GeoLocation(prop);
+      } catch (IllegalArgumentException e) {
+        continue;
+      }
+    
+      // check if we have a location like that or keep as first
+      GeoLocation other = (GeoLocation)result.get(location);
+      if (other!=null) {
+        other.add(location);
+        continue;
+      }
+      result.put(location, location);
+    
+      // next property
+    }
+    
+    // done
+    return result.keySet();
+  }
+  
+  /**
    * Init for Address
    */
   private void parseAddress(Property addr) {
@@ -185,7 +245,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     // still need a a state?
     Property pstate = addr.getProperty("STAE");
     if (pstate!=null) 
-      jurisdiction = Jurisdiction.get(ged.getCollator(), trim(pstate.getDisplayValue()), country);
+      jurisdictions.add(pstate.getDisplayValue());
     
     // good
     return;
@@ -224,14 +284,9 @@ public class GeoLocation extends Point implements Feature, Comparable {
       }
     }
     
-    // we look at remaining jurisdictions for a well-known top-level jurisdiction
-    for (int i=first; i<=last; i++) {
-      // try to find matching jurisdiction
-      String j = trim(jurisdictions.get(i));
-      jurisdiction = Jurisdiction.get(gedcom.getCollator(), j, country);
-      if (jurisdiction!=null)  
-        break;
-    }
+    // grab all the rest as jurisdictions
+    for (int i=first; i<=last; i++) 
+      this.jurisdictions.add(trim(jurisdictions.get(i)));
     
     // done
   }
@@ -298,6 +353,13 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * identify is defined as city, state and country
    */
   public int hashCode() {
+    if (hash==0) {
+      // calculate hash code now
+      if (city!=null) hash += city.toLowerCase().hashCode();
+      for (int i=0;i<jurisdictions.size();i++)
+          hash += jurisdictions.get(i).toString().toLowerCase().hashCode();
+      if (country!=null) hash += country.getCode().toLowerCase().hashCode();
+    }
     return hash;
   }
 
@@ -306,7 +368,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
    */
   public boolean equals(Object obj) {
     GeoLocation that = (GeoLocation)obj;
-    return equals(this.city, that.city) && equals(this.jurisdiction, that.jurisdiction) && equals(this.country, that.country);
+    return equals(this.city, that.city) && this.jurisdictions.equals(that.jurisdictions) && equals(this.country, that.country);
   }
   
   private static boolean equals(Object o1, Object o2) {
@@ -325,10 +387,15 @@ public class GeoLocation extends Point implements Feature, Comparable {
   }
 
   /**
-   * Identified Top Level Jurisdiction
+   * Identified Top Level Jurisdictions
    */
-  public Jurisdiction getJurisdiction() {
-    return jurisdiction;
+  public List getJurisdictions() {
+    return jurisdictions;
+  }
+  
+  GeoLocation addJurisdiction(String j) {
+    jurisdictions.add(j);
+    return this;
   }
 
   /**
@@ -356,10 +423,24 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Set location lat,lon
    */
-  protected void set(double lat, double lon, int matches) {
+  protected void setCoordinate(Coordinate coord) {
+    setCoordinate(coord.y, coord.x);
+  }
+  
+  /**
+   * Set location lat,lon
+   */
+  protected void setCoordinate(double lat, double lon) {
     coordinate.x = lon;
     coordinate.y = lat;
-    this.matches = matches;
+    matches = 1;
+  }
+  
+  /**
+   * Set # of matches
+   */
+  protected void setMatches(int set) {
+    matches = set;
   }
   
   /**

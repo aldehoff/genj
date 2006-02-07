@@ -22,18 +22,21 @@ package genj.geo;
 import genj.util.Resources;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
+import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -111,7 +114,9 @@ public class QueryWidget extends JPanel {
     final Timer timer = new Timer(500, new ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent e) {
         String sCity = city.getText().trim();
-        if (sCity.length()<2) return;
+        int len =  sCity.length();
+        if (sCity.endsWith("*")) len--;
+        if (len<3) return;
         model.setLocation(new GeoLocation(sCity, null, null));
       }
     });
@@ -183,7 +188,7 @@ public class QueryWidget extends JPanel {
   public GeoLocation getGeoLocation() {
     try {
       GeoLocation loc = new GeoLocation(city.getText(), null, null);
-      loc.set(Double.parseDouble(lat.getText()), Double.parseDouble(lon.getText()), 1);
+      loc.setCoordinate(Double.parseDouble(lat.getText()), Double.parseDouble(lon.getText()));
       return loc;
     } catch (Throwable t) {
       return null;
@@ -258,11 +263,21 @@ public class QueryWidget extends JPanel {
             fireTableDataChanged();
             status.setText(TXT_QUERYING);
           }
-          GeoLocation[] found  = GeoService.getInstance().query(todo);
-          synchronized (this) {
-            locations = Arrays.asList(found);
-            fireTableDataChanged();
-            status.setText(RESOURCES.getString("query.matches", String.valueOf(found.length)));
+          try {
+            List found  = GeoService.getInstance().query(todo);
+            synchronized (this) {
+              locations = found;
+              fireTableDataChanged();
+              status.setText(RESOURCES.getString("query.matches", String.valueOf(found.size())));
+            }
+          } catch (IOException e) {
+            GeoView.LOG.log(Level.WARNING, "exception while querying", e);
+            SwingUtilities.invokeLater(new Runnable() {
+              public void run() {
+                if (QueryWidget.this.isVisible())
+                  view.getWindowManager().openDialog(null, "Query", WindowManager.INFORMATION_MESSAGE, "Error trying to resolve location information - are you connected to the internet?", WindowManager.ACTIONS_OK, QueryWidget.this);
+              }
+            });
           }
         }
       }

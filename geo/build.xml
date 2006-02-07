@@ -76,13 +76,11 @@
     
    <!-- copy contrib libraries -->
    <copy file="./contrib/jump/jump.jar" todir="${dir.lib}"/>
-   <copy file="./contrib/hsqldb/hsqldb.jar" todir="${dir.lib}"/>
 
    <!-- create genj_geo-xyz.zip -->
    <zip zipfile="${dir.dist}/genj_geo-${genj.app.version}.zip" update="True">
      <zipfileset dir="${dir.build}" includes="lib/geo.jar"/>
      <zipfileset dir="${dir.build}" includes="lib/jump.jar"/>
-     <zipfileset dir="${dir.build}" includes="lib/hsqldb.jar"/>
      <zipfileset dir="./contrib" includes="geo/**"/>
      <zipfileset dir="." includes="gedcom/*"/>
      <zipfileset dir="${dir.build}/classes" includes="report/**/*.class"/>

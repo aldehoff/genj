@@ -72,7 +72,12 @@ public class ReportGoogleMap extends Report {
   private void operate(Gedcom ged, Collection indis) {
     
     // match locations
-    Collection locations = GeoService.getInstance().matchEntities(ged, indis, true);
+    Collection locations = GeoLocation.parseEntities(indis);
+    try {
+      GeoService.getInstance().match(ged, locations);
+    } catch (IOException e) {
+      super.println(e);
+    }
     if (locations.isEmpty()) {
       getOptionFromUser(i18n("none_mapable"), OPTION_OK);
       return;
@@ -159,8 +164,10 @@ public class ReportGoogleMap extends Report {
       BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(xml), Charset.forName("UTF8")));
       out.write("<ls>");
       for (Iterator it=locations.iterator(); it.hasNext(); ) {
-        // start with coordinates
+        // valid location?
         GeoLocation location = (GeoLocation)it.next();
+        if (!location.isValid()) continue;
+        // start with coordinates
         out.write("<l x=\"" + FORMAT.format(location.getX()) + "\" y=\"" + FORMAT.format(location.getY()) + "\">");
         // place
         out.write(location.toString());

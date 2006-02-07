@@ -19,8 +19,6 @@
  */
 package genj.geo;
 
-import genj.util.Resources;
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +32,6 @@ import java.util.WeakHashMap;
  * A country - why isn't that in java.util
  */
 public class Country implements Comparable {
-  
-  private final static Resources ISO2FIPS = new Resources(Country.class.getResourceAsStream("iso2fips.properties"));
   
   private static Country[] ALL_COUNTRIES = null;
   
@@ -75,13 +71,6 @@ public class Country implements Comparable {
   /** iso code */
   public String getCode() {
     return iso;
-  }
-  
-  /** fips code */
-  public String getFips() {
-    if (fips==null)
-      fips = ISO2FIPS.getString(iso);
-    return fips;
   }
   
   /**

@@ -23,7 +23,6 @@ import genj.gedcom.Gedcom;
 import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.WordBuffer;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
@@ -44,7 +43,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -228,6 +226,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   }
   
   /**
+   * Access to window manager
+   */
+  public WindowManager getWindowManager() {
+    return viewManager.getWindowManager();
+  }
+  
+  /**
    * Choose current map
    */
   public void setMap(GeoMap map) throws IOException {
@@ -269,25 +274,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // enable tooltips
     ToolTipManager.sharedInstance().registerComponent(layerPanel);
     
-    // test for available countries
-    if (registry.get("warn."+map.getKey(), true)) {
-      
-      registry.put("warn."+map.getKey(), false);
-      
-      WordBuffer missing = new WordBuffer("\n ");
-      GeoService service = GeoService.getInstance();
-      List available = Arrays.asList(service.getCountries());
-      Country[] required = map.getCountries();
-      for (int i = 0; i < required.length; i++) {
-        if (!available.contains(required[i])) 
-          missing.append(required[i]);
-      }
-      
-      if (missing.length()>0) {
-        String note = RESOURCES.getString("missing", missing);
-        viewManager.getWindowManager().openDialog("missingcountries", null, WindowManager.INFORMATION_MESSAGE, note, WindowManager.ACTIONS_OK, GeoView.this);
-      }
-    }
     // done
   }
 
