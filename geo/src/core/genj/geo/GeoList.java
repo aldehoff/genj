@@ -214,12 +214,8 @@ import swingx.tree.AbstractTreeModel;
       //GeoLocation selection = query.getSelectedLocation();
       int rc = viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
       // check if he wants to change the location
-      if (rc==0) {
-        // tell it to location
-        location.setCoordinate(query.getGeoLocation().getCoordinate());
-        // remember
-        GeoService.getInstance().remember(model.getGedcom(), location);
-      }
+      if (rc==0) 
+        model.setCoordinates(location, query.getGeoLocation().getCoordinate());
       // done
     }
   }

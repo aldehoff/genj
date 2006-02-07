@@ -22,15 +22,18 @@ package genj.geo;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
+import genj.util.ActionDelegate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * Geographic model wrapper for gedcom
@@ -40,7 +43,8 @@ import java.util.Set;
   /** state */
   private List listeners = new ArrayList();
   private Gedcom gedcom;
-  private Collection locations = new HashSet();
+  private Set locations = new HashSet();
+  private LinkedList resolvers = new LinkedList();
   
   /**
    * Constructor
@@ -51,7 +55,7 @@ import java.util.Set;
     
     // remember the critical part
     this.gedcom = gedcom;
-
+    
     // done
   }
   
@@ -60,6 +64,16 @@ import java.util.Set;
    */
   public Gedcom getGedcom() {
     return gedcom;
+  }
+  
+  /**
+   * Set a location's coordinates
+   */
+  public void setCoordinates(GeoLocation loc, Coordinate coord) {
+    if (locations.contains(loc)) {
+      loc.setCoordinate(coord);
+      fireLocationUpdated(loc);
+    }
   }
   
   /**
@@ -80,7 +94,7 @@ import java.util.Set;
    * callback - gedcom change 
    */
   public void handleChange(Transaction tx) {
-      // remove all locations for all modified entityes
+      // remove all locations for all modified entities
       List current = new ArrayList(locations);
       Set entities = tx.get(Transaction.ENTITIES_MODIFIED);
       for (Iterator locs = current.iterator(); locs.hasNext(); ) {
@@ -98,8 +112,10 @@ import java.util.Set;
         GeoLocation loc = (GeoLocation)locs.next();
         locations.add(loc);
         fireLocationAdded(loc);
-        break;
       }
+      
+      // resolve
+      resolve(added);
       
     // done
   }
@@ -133,24 +149,55 @@ import java.util.Set;
       ls[i].locationRemoved(location);
     }
   }
+  
+  /**
+   * Start a resolver
+   */
+  private void resolve(Collection todo) {
+    synchronized (resolvers) {
+      Resolver resolver = new Resolver(locations);
+      if (resolvers.isEmpty())
+        resolver.trigger();
+      else
+        resolvers.add(resolver);
+    }
+  }
 
   /**
-   * reload all locations
+   * A resolver for our locations
    */
-  private void reload() {
+  private class Resolver extends ActionDelegate {
+    
+    private Collection todo;
 
-    // grab everything again
-    locations = GeoLocation.parseEntities(gedcom.getEntities(Gedcom.INDI));
+    /** constructor */
+    private Resolver(Collection todo) {
+      setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
+      this.todo = todo;
+    }
 
-    // FIXME needs to be asynchronous
-    try {
-      GeoService.getInstance().match(gedcom, locations);
-    } catch (IOException e) {
-      e.printStackTrace();
+    /** async exec */
+    protected void execute() {
+      try { 
+        GeoService.getInstance().match(gedcom, todo);
+      } catch (Throwable t) {}
+    }
+
+    /** sync post-exec */
+    protected void postExecute(boolean preExecuteResult) {
+      // tell about it
+      for (Iterator it=todo.iterator(); it.hasNext(); ) {
+        GeoLocation loc = (GeoLocation)it.next();
+        if (locations.contains(loc)) fireLocationUpdated(loc);
+      }
+      // start pending?
+      synchronized (resolvers) {
+        if (!resolvers.isEmpty())
+          ((Resolver)resolvers.removeFirst()).trigger();
+      }
     }
     
-    // done
-  }
+  } //Resolver
   
   /**
    * add a listener
@@ -158,7 +205,11 @@ import java.util.Set;
   public void addGeoModelListener(GeoModelListener l) {
     // the first one ?
     if (listeners.isEmpty()) {
-      reload();
+      // grab everything again
+      locations.clear();
+      locations.addAll(GeoLocation.parseEntities(gedcom.getEntities(Gedcom.INDI)));
+      // start a resolver
+      resolve(locations);
       // attach
       gedcom.addGedcomListener(this);
     }
