@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 /**
  * Abstract base type for all GEDCOM properties
@@ -475,6 +476,36 @@ public abstract class Property implements Comparable {
    */
   public Property[] getProperties() {
     return toArray(children);
+  }
+  
+  /**
+   * Returns property's properties by criteria
+   * @param tag  regular expression of tag to match
+   * @param value regular expression of value to match
+   * @param recursively whether to recurse into sub-properties
+   * @return matching properties
+   */
+  public List findProperties(String tag, String value) {
+    // create result
+    List result = new ArrayList();
+    // check argument
+    if (tag.length()==0) throw new IllegalArgumentException("need tag regex");
+    if (value==null||value.length()==0) value = ".*";
+    // recurse
+    findPropertiesRecursively(result, Pattern.compile(tag), Pattern.compile(value), true);
+    // done
+    return result;
+  }
+  
+  private void findPropertiesRecursively(Collection result, Pattern tag, Pattern value, boolean recursively) {
+    // check current
+    if (tag.matcher(getTag()).matches() && value.matcher(getValue()).matches() ) 
+      result.add(this);
+    // recurse into properties
+    for (int i=0, j=getNoOfProperties(); i<j ; i++) {
+      if (recursively) getProperty(i).findPropertiesRecursively(result, tag, value, recursively);
+    }
+    // done
   }
   
   /**

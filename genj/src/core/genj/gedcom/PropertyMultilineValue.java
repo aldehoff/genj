@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import java.util.ArrayList;
+
 /**
  * Gedcom Property with multiple lines
  */
@@ -74,6 +76,18 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    */
   public String getValue() {
     return lines.toString();
+  }
+  
+  /**
+   * Accessor Value as lines
+   */
+  public String[] getLines() {
+     ArrayList result = new ArrayList();
+     Iterator it = getLineIterator();
+     do {
+       result.add(it.getValue());
+     } while (it.next());
+     return (String[])result.toArray(new String[result.size()]);
   }
   
   /**

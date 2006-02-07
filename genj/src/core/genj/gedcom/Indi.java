@@ -103,6 +103,34 @@ public class Indi extends Entity {
     return toIndiArray(result);
   }
   
+  /*
+   * Get living address of en entity. It is the first address attached to
+   * a RESI event without an end date
+   */
+  public PropertyMultilineValue getAddress() {
+  
+    // lookup RESIdences
+    Property[] rs = getProperties("RESI");
+    for (int i = 0; i<rs.length; i++){
+      
+        // there must be an address tag
+        PropertyMultilineValue address = (PropertyMultilineValue)rs[i].getProperty("ADDR");
+        if (address == null) 
+          continue;
+
+        // check if there's an ending date
+        PropertyDate date = (PropertyDate)rs[i].getProperty("DATE");
+        if (date != null && date.isRange()) 
+          continue;
+        
+        // got it
+        return address;
+    }
+    
+    // not found
+    return null;
+  }
+  
   /**
    * Calculate the 'older' sibling
    */
