@@ -64,19 +64,20 @@
 			if (strlen($country)>0)
 		  		$jquery = "$jquery AND country = \"$country\"";
 	
-			// query and apply jurisdiction if found
+			// look for first matching jurisdiction and add it to lquery
 			$rows = mysql_query($jquery);
 			if (!$rows) die("error:selectj");
 	 		if (mysql_num_rows($rows)==1) {
 		  		$row = mysql_fetch_row($rows);
-		  		$lquery = "$lquery AND jurisdictions.jurisdiction = \"$row[0]\"";
+		  		// need to always allow for jurisdiction 00 (null) in table "locations"
+		  		$lquery = "$lquery AND (locations.jurisdiction='00' or locations.jurisdiction=\"$row[0]\")";
 		  		$j = count($tokens);
-	  	}
+			}
 			mysql_free_result($rows);
 			
 			// try next jurisdiction
 		}
-
+		
 		// query and return rows
 		$rows = mysql_query($lquery);
 		if (!$rows) die("error:selectl");
