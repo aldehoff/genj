@@ -75,7 +75,7 @@ public class Options extends OptionProvider {
   
   /** all available language codes */
   private static String[] languages;
-
+  
   /** all available language codes */
   private final static String[] codes = findCodes();
   
@@ -229,6 +229,29 @@ public class Options extends OptionProvider {
    */
   public void setMaxLogSizeKB(int set) {
     maxLogSizeKB = Math.max(128, set);
+  }
+  
+  /** 
+   * Getter - http proxy
+   */
+  public String getHttpProxy() {
+    String host = System.getProperty("http.proxyHost");
+    String port = System.getProperty("http.proxyPort");
+    if (host==null)
+      return "";
+    return port!=null&&port.length()>0 ? host+":"+port : host;
+  }
+  
+  /** 
+   * Setter - http proxy
+   */
+  public void setHttpProxy(String set) {
+    int colon = set.indexOf(":");
+    String port = colon>=0 ? set.substring(colon+1) : "";
+    String host = colon>=0 ? set.substring(0,colon) : set;
+    if (host.length()==0) port = "";
+    System.setProperty("http.proxyHost", host);
+    System.setProperty("http.proxyPort", port);
   }
   
   /**
