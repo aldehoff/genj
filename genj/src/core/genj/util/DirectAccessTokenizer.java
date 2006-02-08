@@ -86,6 +86,17 @@ public class DirectAccessTokenizer {
   }
   
   /**
+   * Access rest of string after position
+   */
+  public String getSubstring(int pos) {
+    // try to get that token
+    if (get(pos)==null)
+      return "";
+    // return substring
+    return string.substring(getStart());
+  }
+  
+  /**
    * Access token by position
    * @return token at position or null if no such exists
    */
