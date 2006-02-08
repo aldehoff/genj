@@ -22,7 +22,10 @@ package genj.gedcom;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Application options
@@ -53,6 +56,9 @@ public class Options extends OptionProvider {
   /** option - number of undos */
   protected int numberOfUndos = 10;
   
+  /** option - place hierarchy keys for city NOT EDITABLE ATM */
+  protected Set placeHierarchyCityKeys = new HashSet(Arrays.asList(new String[]{ "city", "commune", "ville", "stadt"}));
+    
   /** option - default encoding */
   public int defaultEncoding = 0;
   

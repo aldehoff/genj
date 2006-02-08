@@ -62,7 +62,7 @@ public class SetPlaceHierarchy extends AbstractChange {
       JPanel result = new JPanel(new NestedBlockLayout("<col><confirm wx=\"1\" wy=\"1\"/><enter wx=\"1\"/></col>"));
 
       // prepare textfield for formar
-      hierarchy = new TextFieldWidget(place.getDisplayFormat());
+      hierarchy = new TextFieldWidget(place.getHierarchy());
       
       result.add(getConfirmComponent());
       result.add(hierarchy);
@@ -75,7 +75,7 @@ public class SetPlaceHierarchy extends AbstractChange {
      * set the submitter
      */
     protected void change() throws GedcomException {
-      place.setDisplayFormat(true, hierarchy.getText().trim());
+      place.setHierarchy(true, hierarchy.getText().trim());
     }
 
 } //SetPlaceFormat

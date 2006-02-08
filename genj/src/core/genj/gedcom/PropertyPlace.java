@@ -24,7 +24,7 @@ import genj.util.ReferenceSet;
 import genj.util.swing.ImageIcon;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * PLAC a choice value with brains for understanding sub-property FORM
@@ -137,7 +137,7 @@ public class PropertyPlace extends PropertyChoiceValue {
   /**
    * Accessor - the format of this place's value (non localized)
    */
-  public String getFormat() {
+  public String getHierarchy() {
     // look it up
     String result = "";
     Property pformat = getProperty(FORM);
@@ -155,84 +155,13 @@ public class PropertyPlace extends PropertyChoiceValue {
   /**
    * Accessor - the hierarchy of this place's value (non localized)
    */
-  public void setFormat(boolean global, String format) {
+  public void setHierarchy(boolean global, String format) {
     if (!global)
       throw new IllegalArgumentException("non-global n/a");
     // propagate
     getGedcom().setPlaceFormat(format);
     // mark changed
     propagateChange(getValue());
-  }
-  
-  /**
-   * Accessor - the format  of this place's value ( localized)
-   */
-  public String getDisplayFormat() {
-    
-    String format = getFormat();
-    
-    // loop over (assumed) english names
-    StringBuffer buf = new StringBuffer();
-    DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR);
-    for (int i=0;;i++) {
-      String token = tokens.get(i, true);
-      if (token==null) break;
-      if (buf.length()>0) buf.append(JURISDICTION_SEPARATOR);
-      buf.append(_gedcom2local(token));
-    }
-    
-    // done
-    return buf.toString();
-  }
-  
-  private static String _gedcom2local(String token) {
-    String local = resources.getString(JURISDICTION_RESOURCE_PREFIX+token.toLowerCase().replaceAll(" ",""), false);
-    // no translation available - no luck - fall back to original gedcom token
-    if (local==null)
-      return token;
-    // choose one of multiple local translations
-    int or = local.indexOf('|');
-    if (or>0) local = local.substring(0,or);
-    // done
-    return local;
-  }
-  
-  /**
-   * Accessor - the format of this place's value (localized)
-   */
-  public void setDisplayFormat(boolean global, String format) {
-    
-    // loop over (assumed) local names
-    StringBuffer buf = new StringBuffer();
-    DirectAccessTokenizer tokens = new DirectAccessTokenizer(format, JURISDICTION_SEPARATOR);
-    for (int i=0;;i++) {
-      String token = tokens.get(i, true);
-      if (token==null) break;
-      if (buf.length()>0) buf.append(JURISDICTION_SEPARATOR);
-      buf.append(_local2gedcom(token));
-    }
-    
-    // done
-    setFormat(global, buf.toString());
-  }
-  
-  private static String _local2gedcom(String token) {
-    Iterator keys = resources.getKeys();
-    while (keys.hasNext()) {
-      String key = (String)keys.next();
-      if (key.startsWith(JURISDICTION_RESOURCE_PREFIX)) {
-        DirectAccessTokenizer locals = new DirectAccessTokenizer(resources.getString(key), "|");
-        for (int i=0;;i++) {
-          // check each local translation as a possibility
-          String local = locals.get(i);
-          if (local==null) break;
-          // return key without prefix as gedcom value
-          if (token.equals(local))
-            return key.substring(JURISDICTION_RESOURCE_PREFIX.length());
-        }
-      }
-    }
-    return token;
   }
   
   /**
@@ -272,7 +201,7 @@ public class PropertyPlace extends PropertyChoiceValue {
    */
   public String getFirstAvailableJurisdiction(int skip) {
       if (skip<0) throw new IllegalArgumentException("negative skip value");
-    DirectAccessTokenizer jurisdictions = getJurisdictions();
+    DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR);
     String result = jurisdictions.get(skip);
     if (result==null)
       return "";
@@ -294,14 +223,29 @@ public class PropertyPlace extends PropertyChoiceValue {
    * @return jurisdiction of zero+ length or null if n/a
    */
   public String getJurisdiction(int hierarchyLevel) {
-    return getJurisdictions().get(hierarchyLevel);
+    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(hierarchyLevel);
   }
   
   /**
-   * Accessor - jurisdiction iterator
+   * Accessor - all jurisdictions starting with city
    */
-  public DirectAccessTokenizer getJurisdictions() {
-    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR);
+  public String getValueStartingWithCity() {
+    String result = getValue();
+    // calculate the city index in place format
+    String hierarchy = getHierarchy();
+    if (hierarchy.length()>0) {
+      // look for a city key in the hierarchy
+      Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
+      DirectAccessTokenizer hs = new DirectAccessTokenizer(hierarchy, ",");
+      for (int index=0; hs.get(index)!=null ;index++) {
+        if (cityKeys.contains(hs.get(index).toLowerCase())) {
+          result = new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).getSubstring(index);
+          break;
+        }
+      }
+    }
+    // done
+    return result;
   }
   
 } //PropertyPlace

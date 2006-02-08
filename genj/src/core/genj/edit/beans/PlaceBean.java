@@ -77,7 +77,7 @@ public class PlaceBean extends PropertyBean {
    */
   private String getCommitValue() {
     
-    boolean hierarchy = Options.getInstance().isSplitJurisdictions && ((PropertyPlace)property).getFormat().length()>0;
+    boolean hierarchy = Options.getInstance().isSplitJurisdictions && ((PropertyPlace)property).getHierarchy().length()>0;
     
     // collect the result by looking at all of the choices
     StringBuffer result = new StringBuffer();
@@ -133,10 +133,10 @@ public class PlaceBean extends PropertyBean {
      */
    
     // either a simple value or broken down into comma separated jurisdictions
-    if (!Options.getInstance().isSplitJurisdictions || place.getDisplayFormat().length()==0) {
+    if (!Options.getInstance().isSplitJurisdictions || place.getHierarchy().length()==0) {
       createChoice(null, place.getValue(), place.getAllJurisdictions(-1,true));
     } else {
-      DirectAccessTokenizer format = new DirectAccessTokenizer(place.getDisplayFormat(), ",");
+      DirectAccessTokenizer format = new DirectAccessTokenizer(place.getHierarchy(), ",");
       DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",");
       for (int i=0;;i++) {
         if (format.get(i)==null&&jurisdictions.get(i)==null) break;
