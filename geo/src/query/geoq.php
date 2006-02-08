@@ -18,13 +18,13 @@
 
 	////////////////////////////////////////////////
 	// Track user request
-	function track() {
+	function track($token, $hits) {
 
 		// lookup current ip
 		$ip = $_SERVER['REMOTE_ADDR'];
 
 		// update track
-		mysql_query("INSERT INTO tracking VALUES (\"$ip\",1,NULL) ON DUPLICATE KEY UPDATE total=total+1");
+		mysql_query("INSERT INTO tracking VALUES (\"$ip\",1,NULL,$hits,\"$token\") ON DUPLICATE KEY UPDATE requests=requests+1, hits=hits+$hits, token=\"$token\"");
 
 		// done
 	}
@@ -32,6 +32,8 @@
 	///////////////////////////////////////////////
 	// Parse Input and Respond
 	function parse($in) {
+
+		$hits = 0;
 
 		// read stdinput - lines "city,jurisdiction,jurisdiction,...,country" by one
 		for ($l=0 ; ($tokens=fgetcsv($in, 100, ",")) !== FALSE ; $l++) {
@@ -101,12 +103,14 @@
 			for ($i=0 ; $row = mysql_fetch_row($rows) ; $i++) {
 				if ($i>0) echo ";";
 				echo "$row[0],$row[1],$row[2],$row[3],$row[4]";
+				$hits++;
 			}
 			mysql_free_result($rows);
 
 			// next
 		}
 		// done
+		return $hits;
 	}
 
 	///////////////////////////////////////////////
@@ -114,22 +118,22 @@
 
 	// read stdinput - check header
 	$in = fopen("php://input", "rb");
-	if (trim(fgets($in))!="GEOQ") die("PING");
+       $header = explode(":", trim(fgets($in)), 2);
+	if ($header[0]!="GEOQ") die("PING");
 
 	// open database
 	openDB();
 
-	// track it
-	track();
-
 	// parse input
-	parse($in);
+	$hits = parse($in);
 
 	// close input
 	fclose($in);
+
+	// track it
+	track($header[1],$hits);
 
 	// close database
 	mysql_close();
 
 ?>
-    

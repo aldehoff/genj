@@ -19,6 +19,7 @@
  */
 package genj.geo;
 
+import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
@@ -177,12 +178,17 @@ public class GeoService {
     return result;
   }
   
+  private final static String HEADER = "GEOQ:"
+    +System.getProperty("user.name")+","
+    +System.getProperty("os.name")+","
+    +"GenJ "+Version.getInstance().getBuildString();
+  
   /**
    * do a service call
    * @param list list of locations to query
    * @return list of list of locations
    */
-  List webservice(List locations) throws IOException {
+  protected List webservice(List locations) throws IOException {
 
     long start = System.currentTimeMillis();
     int rowCount = 0, hitCount = 0;
@@ -195,7 +201,7 @@ public class GeoService {
   
       // write our query
       Writer out = new OutputStreamWriter(con.getOutputStream(), UTF8);
-      out.write("GEOQ\n");
+      out.write(HEADER+"\n");
       for (int i=0;i<locations.size();i++) {
         if (i>0) out.write("\n");
         out.write(encode((GeoLocation)locations.get(i)));
