@@ -100,7 +100,9 @@
 			// query and return rows
 			$rows = mysql_query($lquery);
 			if (!$rows) die("error:selectl");
-			for ($i=0 ; $row = mysql_fetch_row($rows) ; $i++) {
+			if (mysql_num_rows($rows)==0) {
+				echo "?";
+			} else for ($i=0 ; $row = mysql_fetch_row($rows) ; $i++) {
 				if ($i>0) echo ";";
 				echo "$row[0],$row[1],$row[2],$row[3],$row[4]";
 				$hits++;

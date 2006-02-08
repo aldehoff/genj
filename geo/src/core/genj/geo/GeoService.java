@@ -216,12 +216,14 @@ public class GeoService {
         if (line==null) break;
         rowCount++;
         List row = new ArrayList();
-        StringTokenizer hits = new StringTokenizer(line, ";");
-        while (hits.hasMoreTokens()) {
-          GeoLocation hit = decode(hits.nextToken());
-          if (hit!=null) {
-            row.add(hit);
-            hitCount++;
+        if (!line.startsWith("?")) {
+          StringTokenizer hits = new StringTokenizer(line, ";");
+          while (hits.hasMoreTokens()) {
+            GeoLocation hit = decode(hits.nextToken());
+            if (hit!=null) {
+              row.add(hit);
+              hitCount++;
+            }
           }
         }
         rows.add(row);
