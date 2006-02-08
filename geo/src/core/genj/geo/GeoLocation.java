@@ -234,7 +234,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     Property pcity = addr.getProperty("CITY");
     if (pcity==null)
       throw new IllegalArgumentException("can't determine city from address");
-    parseJurisdictions( new DirectAccessTokenizer(pcity.getDisplayValue(), PropertyPlace.JURISDICTION_SEPARATOR), ged, false);
+    parseJurisdictions( pcity.getDisplayValue(), ged, false);
     
     // how about a country?
     Locale locale = addr.getGedcom().getLocale();
@@ -255,19 +255,21 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * Init for Place
    */
   private void parsePlace(PropertyPlace place) {
-    parseJurisdictions( place.getJurisdictions(), place.getGedcom(), true);
+    // go ahead - check jurisdictions now starting with city
+    parseJurisdictions(place.getValueStartingWithCity(), place.getGedcom(), true);
   }
   
   /**
    * Parse jurisdictions
    */
-  private void parseJurisdictions(DirectAccessTokenizer jurisdictions, Gedcom gedcom, boolean lookForCountry) {
+  private void parseJurisdictions(String jurisdictions, Gedcom gedcom, boolean lookForCountry) {
     
-    int first = 0, last = jurisdictions.count()-1;
+    DirectAccessTokenizer tokens = new DirectAccessTokenizer(jurisdictions, PropertyPlace.JURISDICTION_SEPARATOR);
+    int first = 0, last = tokens.count()-1;
     
     // city is simply the first non-empty jurisdiction and required
     while (true) {
-      city = trim(jurisdictions.get(first++));
+      city = trim(tokens.get(first++));
       if (city==null)
         throw new IllegalArgumentException("can't determine jurisdiction's city");
       if (city.length()>0) 
@@ -278,7 +280,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     if (lookForCountry) {
       Locale locale = gedcom.getLocale();
       if (last>=first) {
-        country = Country.get(gedcom.getLocale(), trim(jurisdictions.get(last)));
+        country = Country.get(gedcom.getLocale(), trim(tokens.get(last)));
         if (country!=null) 
           last--;
       }
@@ -286,7 +288,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     // grab all the rest as jurisdictions 
     for (int i=first; i<=last; i++) {
-      String jurisdiction = trim(jurisdictions.get(i));
+      String jurisdiction = trim(tokens.get(i));
       if (jurisdiction.length()>0) this.jurisdictions.add(jurisdiction);
     }
     
