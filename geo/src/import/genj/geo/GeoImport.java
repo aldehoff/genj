@@ -70,19 +70,29 @@ public class GeoImport {
   public static void main(String[] args) {
     
     // check argument
-    if (args.length!=2) {
-      log("Use : GeoImport [path to folder with geodata files from USGS or GNS] [output filename]");
+    if (args.length<2) {
+      log("Use : GeoImport [-j create jurisdictions] [path to folder with geodata files from USGS or GNS] [output filename]");
       return;
     }
     
     // run it
     try {
       
-      GeoImport gi = new GeoImport(new File(args[1]));
-      gi.parseJurisdictions();
-      gi.parseFolder(new File(args[0]));
+      int files = 0;
+      
+      // jurisdiction option?
+      boolean jurisdictions = false;
+      if (args[0].equals("-j")) {
+        jurisdictions = true;
+      }
+      
+      // do the import
+      GeoImport gi = new GeoImport(new File(args[files+1]));
+      if (jurisdictions) gi.parseJurisdictions();
+      gi.parseFolder(new File(args[files]));
       gi.close();
       
+      // done
       log("Done: "+gi.nLocations+" places and "+gi.nJurisdictions+" jurisdictions generated");
       
     } catch (IOException e) {
