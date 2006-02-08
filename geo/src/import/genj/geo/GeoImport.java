@@ -44,20 +44,6 @@ import java.util.StringTokenizer;
  */
 public class GeoImport {
 
-  /*
-    
-  --- tables we use ---   
-  CREATE TABLE locations (city VARCHAR(64) NOT NULL, jurisdiction CHAR(2), country CHAR(2) NOT NULL, lat FLOAT NOT NULL, lon FLOAT NOT NULL)
-  CREATE TABLE jurisdictions (country CHAR(2) NOT NULL, jurisdiction CHAR(2) NOT NULL, name VARCHAR(40) NOT NULL, preferred BOOL)
-  
-  ---the insert statement---
-  INSERT_LOCATION = "INSERT INTO locations (city, state, country, lat, lon) VALUES (?, ?, ?, ?, ?)",
-
-  ---how to import---
-  mysql --host=mysql4-g --user=g46817admin --password=xxxx g46817_geo < geo.sql
-
-*/
-
   private static Charset UTF8 = Charset.forName("UTF8");
   private static Parser USGS = new USGSParser(), GNS = new GNSParser(); 
   
