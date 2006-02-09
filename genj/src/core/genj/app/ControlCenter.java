@@ -252,7 +252,27 @@ public class ControlCenter extends JPanel {
     mh.createSeparator();
     mh.createItem(new ActionOptions());
 
-    result.add(Box.createHorizontalGlue());
+    // 20060209
+    //  Stephane reported a problem running GenJ on MacOS Tiger:
+    //
+    // java.lang.ArrayIndexOutOfBoundsException: 3 > 2::
+    // at java.util.Vector.insertElementAt(Vector.java:557)::
+    // at apple.laf.ScreenMenuBar.add(ScreenMenuBar.java:266)::
+    // at apple.laf.ScreenMenuBar.addSubmenu(ScreenMenuBar.java:207)::
+    // at apple.laf.ScreenMenuBar.addNotify(ScreenMenuBar.java:53)::
+    // at java.awt.Frame.addNotify(Frame.java:478)::
+    // at java.awt.Window.pack(Window.java:436)::
+    // atgenj.window.DefaultWindowManager.openFrameImpl(Unknown Source)::
+    // at genj.window.AbstractWindowManager.openFrame(Unknown Source)::
+    // at genj.app.App$Startup.run(Unknown Source)::
+    // 
+    // apparently something wrong with how the Mac parses the menu-bar
+    // According to this post
+    //   http://lists.apple.com/archives/java-dev/2005/Aug/msg00060.html
+    // the offending thing might be a non-menu-item (glue) added to the menu
+    // as we did here previously - so let's remove that for Macs for now
+    if (!EnvironmentChecker.isMac())
+      result.add(Box.createHorizontalGlue());
 
     mh.popMenu().setEnabled(true).createMenu("cc.menu.help");
 
