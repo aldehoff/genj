@@ -72,6 +72,7 @@ import com.vividsolutions.jts.geom.Coordinate;
   public void setCoordinates(GeoLocation loc, Coordinate coord) {
     if (locations.contains(loc)) {
       loc.setCoordinate(coord);
+      GeoService.getInstance().remember(gedcom, loc);
       fireLocationUpdated(loc);
     }
   }
