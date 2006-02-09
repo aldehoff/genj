@@ -103,7 +103,6 @@ public class ReportFlashList extends Report {
         doc.addText(s + " " + range);
       }
       
-      doc.endSection();
     }
     
     // done

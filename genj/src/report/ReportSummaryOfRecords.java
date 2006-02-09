@@ -120,9 +120,6 @@ public class ReportSummaryOfRecords extends Report {
     // export its properties
     exportProperties(ent, placeTags, doc);
     
-    // end section
-    doc.endSection();
-
     // Done
   }    
   
@@ -136,7 +133,7 @@ public class ReportSummaryOfRecords extends Report {
       return;
     
     // create a list
-    doc.addList();
+    doc.startList();
 
     // an item per property
     for (int i=0;i<of.getNoOfProperties();i++) {

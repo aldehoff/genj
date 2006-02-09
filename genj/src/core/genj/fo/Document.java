@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -77,23 +79,15 @@ public class Document {
     }
     
     // boilerplate
-    Element root = addElement(doc, "fo:root");
-    root.setAttribute("xmlns:fo", NSURI);
+    Element root = addElement(doc, "fo:root", "xmlns:fo="+NSURI);
     
     Element layout_master_set = addElement(root, "fo:layout-master-set");
-    Element simple_page_master = addElement(layout_master_set, "fo:simple-page-master" );
-    simple_page_master.setAttribute("master-name","master");
-    simple_page_master.setAttribute("margin-top","1cm");
-    simple_page_master.setAttribute("margin-bottom","1cm");
-    simple_page_master.setAttribute("margin-left","1cm");
-    simple_page_master.setAttribute("margin-right","1cm");
+    Element simple_page_master = addElement(layout_master_set, "fo:simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
     addElement(simple_page_master, "fo:region-body");
 
-    Element page_sequence = addElement(root, "fo:page-sequence");
-    page_sequence.setAttribute("master-reference", "master");
+    Element page_sequence = addElement(root, "fo:page-sequence","master-reference=master");
     
-    Element flow = addElement(page_sequence, "fo:flow");
-    flow.setAttribute("flow-name", "xsl-region-body");
+    Element flow = addElement(page_sequence, "fo:flow", "flow-name=xsl-region-body");
     
     block = addElement(flow, "fo:block");
     
@@ -106,28 +100,6 @@ public class Document {
   public String toString() {
     return getTitle();
   }
-  
-//  private Element push(Element elem) {
-//    cursor.appendChild(elem);
-//    cursor = elem;
-//    return elem;
-//  }
-//  
-//  private Element pop() {
-//    Element popd = cursor;
-//    cursor = (Element)popd.getParentNode();
-//    return popd;
-//  }
-//  
-//  private Element pop(String element) {
-//    while (true) {
-//      if (element.equals(cursor.getNodeName()))
-//        return pop();
-//      if (cursor.getParentNode()==doc)
-//        return null;
-//      pop();
-//    }
-//  }
   
   /**
    * Title access
@@ -168,11 +140,7 @@ public class Document {
   public Document addSection(String title, String id) {
     
     // start a new block
-    addParagraph();
-    
-    // set font-size
-    block.setAttribute("font-size", "larger");
-    block.setAttribute("font-weight", "bolder");
+    addParagraph("font-size=larger,font-weight=bolder");
     
     // add the title
     addText(title);
@@ -180,7 +148,7 @@ public class Document {
     // create the following block
     addParagraph();
     
-    System.err.println("addSection("+title+","+id+") - id is not supported");
+    if (id!=null&&id.length()>0) System.err.println("addSection("+title+","+id+") - id is not supported");
 //    // pop to containing section
 //    Element parent = pop("section");
 //    if (parent!=null&&"section".equals(parent.getNodeName()))
@@ -206,17 +174,6 @@ public class Document {
     return addSection(title, (String)null);
   }
     
-  /**
-   * Ends  a section
-   */
-  public Document endSection() {
-    System.err.println("endSection()");
-//    // pop to containing section
-//    if (pop("section")==null)
-//      throw new IllegalArgumentException("end section outside section");
-    return this;
-  }
-  
   /**
    * Add an index entry
    */
@@ -305,10 +262,15 @@ public class Document {
    * Add a paragraph
    */
   public Document addParagraph() {
+    return addParagraph("");
+  }
+  public Document addParagraph(String attributes) {
     
     // start a new block if the current is not-empty
     if (block.getFirstChild()!=null)
-      block = addElement(block.getParentNode(), "block");
+      block = addElement(block.getParentNode(), "block", attributes);
+    else
+      setAttributes(block, attributes);
     
     return this;
   }
@@ -316,11 +278,12 @@ public class Document {
   /**
    * Add a list
    */
-  public Document addList() {
-    System.err.println("addList()");
-//    push(createElement("itemizedlist", null));
-//    push(createElement("listitem", null));
-//    push(createElement("para", null));
+  public Document startList() {
+    
+    //<fo:list-block>
+    block = addElement(block, "list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt");
+    addListItem();
+    
     return this;
   }
     
@@ -328,9 +291,10 @@ public class Document {
    * End a list
    */
   public Document endList() {
-    System.err.println("endList()");
-//    if (pop("itemizedlist")==null)
-//      throw new IllegalArgumentException("endList outside list");
+
+    // *
+    //  <fo:list-block>
+    block = backtrack("list-block", true);
     return this;
   }
     
@@ -338,21 +302,26 @@ public class Document {
    * Add a list item
    */
   public Document addListItem() {
-    System.err.println("addListItem()");
-
-//    // grab last
-//    Element item = pop("listitem");
-//    if (item==null)
-//      throw new IllegalArgumentException("listitem without enclosing list");
-//    
-//    // still contains an empty paragraph?
-//    if (!item.getFirstChild().hasChildNodes()) {
-//      push(item);
-//      push((Element)item.getFirstChild());
-//    } else {
-//      push(createElement("listitem", null));
-//      push(createElement("para", null));
-//    }
+    
+    //<fo:list-block>
+    //  <fo:list-item>
+    //    <fo:list-item-label end-indent="label-end()"><fo:block>&#x2022;</fo:block></fo:list-item-label>
+    //    <fo:list-item-body start-indent="body-start()">
+    //       <fo:block/>
+    //    </fo:list-item-body>
+    //  </fo:list-item>
+    Element list_block = backtrack("list-block", false);
+    
+    // check if list-block has already a child (startList might have been called) AND the current block is still empty
+    if (list_block.getFirstChild()!=null&&block.getFirstChild()==null)
+      return this;
+    
+    Element list_item = addElement(list_block, "list-item");
+    Element list_item_label = addElement(list_item, "list-item-label", "end-indent=label-end()");
+    addTextElement(addElement(list_item_label, "block"), "-", 0);
+    Element list_item_body = addElement(list_item, "list-item-body", "start-indent=body-start()");
+    block = addElement(list_item_body, "block");
+ 
     return this;
   }
     
@@ -450,12 +419,42 @@ public class Document {
 //    return anchor;
 //  }
   
+  /** matching a=b,c-d=e,f:g=h */
+  private static Pattern REGEX_ATTR = Pattern.compile("([^, ]*)=([^, ]*)");
+  
+  /**
+   * Add element qualified by qname to parent
+   */
   private Element addElement(Node parent, String qname) {
+    return addElement(parent, qname, "");
+  }
+  
+  /**
+   * Add element qualified by qname to parent
+   */
+  private Element addElement(Node parent, String qname, String attributes) {
+    // create it, set attributes and hook it up
     Element elem = doc.createElementNS(NSURI, qname);
+    setAttributes(elem, attributes);
     parent.appendChild(elem);
+    // done
     return elem;
   }
   
+  /**
+   * Set element attributes
+   */
+  private void setAttributes(Element element, String attributes) {
+    // parse attribues
+    Matcher m = REGEX_ATTR.matcher(attributes);
+    while (m.find()) {
+      element.setAttribute(m.group(1), m.group(2));
+    }
+  }
+  
+  /**
+   * Add text element
+   */
   private Text addTextElement(Element parent, String text, int format) {
     
     if (format!=TEXT_PLAIN)
@@ -466,6 +465,37 @@ public class Document {
 
     return result;
   }
+
+  /**
+   * find element in current stack upwards
+   */
+  private Element backtrack(String qname, boolean returnParent) {
+    Element element = block;
+    while (element!=null) {
+      Element parent = (Element)element.getParentNode(); 
+      if (element.getLocalName().equals(qname))
+        return returnParent ? parent : element;
+      element = parent;
+    }
+    throw new IllegalArgumentException();
+  }
+  
+//private Element pop() {
+//Element popd = cursor;
+//cursor = (Element)popd.getParentNode();
+//return popd;
+//}
+//
+//private Element pop(String element) {
+//while (true) {
+//  if (element.equals(cursor.getNodeName()))
+//    return pop();
+//  if (cursor.getParentNode()==doc)
+//    return null;
+//  pop();
+//}
+//}
+
   
   /**
    * Accessor - whether a TOC is included
