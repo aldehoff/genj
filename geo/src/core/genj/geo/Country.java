@@ -33,6 +33,8 @@ import java.util.WeakHashMap;
  */
 public class Country implements Comparable {
   
+  public final static Country HERE = Country.get(Locale.getDefault().getCountry());
+  
   private static Country[] ALL_COUNTRIES = null;
   
   private static Country DEFAULT_COUNTRY = null;

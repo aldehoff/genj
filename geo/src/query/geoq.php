@@ -30,8 +30,98 @@
 	}
 
 	///////////////////////////////////////////////
+	// translate jurisdiction into a valid fips code 
+	function findJurisdiction($jurisdictions, $country) {
+		
+		$jurisdiction = "";
+		
+		// loop for well known jurisdictions? 
+		for ($j=0 ; $j<count($jurisdictions) ; $j++) {
+
+			// stop at first empty jurisdiction	
+			$jurisdiction = trim($jurisdictions[$j]);
+			if ($jurisdiction=="") break;
+
+			// prepare query for matching names
+			$jquery = "SELECT country, jurisdiction FROM jurisdictions WHERE name = \"$jurisdiction\"";
+	
+			// add country qualifier if available
+			if (strlen($country)>0)
+	  		$jquery = "$jquery AND country = \"$country\"";
+	
+			// look for first matching jurisdiction
+			$rows = mysql_query($jquery);
+			if (!$rows) die("error:select jurisdictions failed");
+ 			if (mysql_num_rows($rows)==1) {
+	  		$row = mysql_fetch_row($rows);
+	  		$jurisdiction = $row[1];
+  			$country = $row[0]; // always grab the correct country at this point
+	  		$j = count($jurisdictions);
+ 			} else {
+				$jurisdiction = "";	
+ 			}
+			mysql_free_result($rows);
+			
+			// try next jurisdiction
+		}
+		
+		// done
+		return $jurisdiction;
+	}
+	
+	///////////////////////////////////////////////
+	// query for a location 
+	function processQuery($city, $jurisdiction, $country, $op) {
+		
+		$hits = 0;
+		
+		// prepare location query "city, jurisdiction name, country, lat, lon"
+		$lquery = 
+			"SELECT locations.city, jurisdictions.name, locations.country, locations.lat, locations.lon " .
+			"FROM locations LEFT JOIN jurisdictions ON jurisdictions.jurisdiction=locations.jurisdiction AND jurisdictions.country=locations.country AND jurisdictions.preferred=1 " .
+			"WHERE locations.city".$op."\"$city\"";
+				
+		$retry = TRUE;
+		while ($retry) {
+			
+			$retry = FALSE;
+			$sql = $lquery;
+			if (strlen($jurisdiction)>0) {
+	  		$sql = "$sql AND locations.jurisdiction=\"$jurisdiction\"";
+	  		$retry = TRUE;
+	  		$jurisdiction = "";
+			}
+			if (strlen($country)>0) {
+	  		$sql = "$sql AND locations.country = \"$country\"";
+	  		if (!$retry) $country = "";
+	  		$retry = TRUE;
+			}
+			
+			$rows = mysql_query($sql);
+			if (!$rows) die("error:select locations failed");
+			if (mysql_num_rows($rows)>0) {
+				$retry = FALSE;
+				for ($i=0 ; $row = mysql_fetch_row($rows) ; $i++) {
+					if ($i>0) echo ";";
+					echo "$row[0],$row[1],$row[2],$row[3],$row[4]";
+					$hits++;
+				}
+			}
+			mysql_free_result($rows);
+
+			// try once more
+		}
+		
+		// nothing found?	
+		if ($hits==0) echo "?";
+		
+		// done
+		return $hits;
+	}
+	
+	///////////////////////////////////////////////
 	// Parse Input and Respond
-	function parse($in) {
+	function processInput($in) {
 
 		$hits = 0;
 
@@ -57,60 +147,18 @@
 				$op = " LIKE ";	
 			}
 
-			// prepare location query "city, jurisdiction name, country, lat, lon"
-			$lquery = 
-				"SELECT locations.city, jurisdictions.name, locations.country, locations.lat, locations.lon " .
-				"FROM locations LEFT JOIN jurisdictions ON jurisdictions.jurisdiction=locations.jurisdiction AND jurisdictions.country=locations.country AND jurisdictions.preferred=1 " .
-				"WHERE locations.city".$op."\"$city\"";
-	  
-			// try to lookup country? (last token)
+			// check what country we're looking for
 			$country = trim($tokens[count($tokens)-1]);
-			if (strstr($country, "\"")!=FALSE) continue;
-			if (strlen($country)>0)
-		  		$lquery = "$lquery AND locations.country = \"$country\"";
-	  
-			// check for well known jurisdictions? (tokens 1 to n-1)
-			for ($j=1 ; $j<count($tokens)-1 ; $j++) {
-				// stop at first empty jurisdiction	
-				$jurisdiction = trim($tokens[$j]);
-				if (strstr($country, "\"")!=FALSE) break;
-				if ($jurisdiction=="") break;
-
-				// prepare query for matching names
-				$jquery = "SELECT jurisdiction FROM jurisdictions WHERE name LIKE \"$jurisdiction\"";
-	
-				// add country qualifier if available
-				if (strlen($country)>0)
-		  			$jquery = "$jquery AND country = \"$country\"";
-	
-				// look for first matching jurisdiction and add it to lquery
-				$rows = mysql_query($jquery);
-				if (!$rows) die("error:selectj");
-	 			if (mysql_num_rows($rows)==1) {
-		  			$row = mysql_fetch_row($rows);
-		  			// need to always allow for jurisdiction 00 (null) in table "locations"
-			  		$lquery = "$lquery AND (locations.jurisdiction='00' or locations.jurisdiction=\"$row[0]\")";
-			  		$j = count($tokens);
-				}
-				mysql_free_result($rows);
 			
-				// try next jurisdiction
-			}
-		
-			// query and return rows
-			$rows = mysql_query($lquery);
-			if (!$rows) die("error:selectl");
-			if (mysql_num_rows($rows)==0) {
-				echo "?";
-			} else for ($i=0 ; $row = mysql_fetch_row($rows) ; $i++) {
-				if ($i>0) echo ";";
-				echo "$row[0],$row[1],$row[2],$row[3],$row[4]";
-				$hits++;
-			}
-			mysql_free_result($rows);
-
-			// next
+			// check what jurisdiction we're looking for
+			$jurisdiction = findJurisdiction(array_slice($tokens, 1, count($tokens)-1), &$country);
+			
+			// query it now
+			$hits += processQuery($city, $jurisdiction, $country, $op);
+			
+			// next input line
 		}
+		
 		// done
 		return $hits;
 	}
@@ -127,7 +175,7 @@
 	openDB();
 
 	// parse input
-	$hits = parse($in);
+	$hits = processInput($in);
 
 	// close input
 	fclose($in);

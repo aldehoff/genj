@@ -69,7 +69,7 @@ public class GeoService {
   /** our query url */
   private static URL createQueryURL() {
     try {
-      return new URL("http://genj.sourceforge.net/php/geoq.php");    
+      return new URL("http://genj.sourceforge.net/php/geoq.php"); 
     } catch (MalformedURLException e) {
       throw new Error("init");
     }
@@ -254,7 +254,7 @@ public class GeoService {
    * Find best matches for given locations
    * @param location list of locations
    */
-  public Collection match(Gedcom gedcom, Collection locations) throws IOException {
+  public boolean match(Gedcom gedcom, Collection locations) throws IOException {
 
     // grab registry
     Registry registry = gedcom!=null ? getRegistry(gedcom) : new Registry();
@@ -277,27 +277,31 @@ public class GeoService {
         todos.add(location);
     }
     
-    // still a webserive query to do?
-    if (!todos.isEmpty()) {
-      List rows = webservice(todos);
-      if (rows.size()<todos.size()) {
-        LOG.warning("got "+rows.size()+" rows for "+todos.size()+" locations");
-      } else {    
-        for (int i=0;i<todos.size();i++) {
-          GeoLocation todo  = (GeoLocation)todos.get(i);
-          List hits = (List)rows.get(i);
-          if (!hits.isEmpty()) {
-            GeoLocation hit = (GeoLocation)hits.get(0);
-            todo.setCoordinate(hit.getCoordinate());
-            todo.setMatches(hits.size());
-            remember(gedcom, todo);
-          }
-        }
+    // no more todos?
+    if (todos.isEmpty())
+      return true;
+    
+    // do a call for the todos
+    List rows = webservice(todos);
+    if (rows.size()<todos.size()) {
+      LOG.warning("got "+rows.size()+" rows for "+todos.size()+" locations");
+      return false;
+    }
+    
+    // grab coordinates where available
+    for (int i=0;i<todos.size();i++) {
+      GeoLocation todo  = (GeoLocation)todos.get(i);
+      List hits = (List)rows.get(i);
+      if (!hits.isEmpty()) {
+        GeoLocation hit = (GeoLocation)hits.get(0);
+        todo.setCoordinate(hit.getCoordinate());
+        todo.setMatches(hits.size());
+        remember(gedcom, todo);
       }
     }
     
     // done
-    return locations;
+    return true;
   }
 
   /**
