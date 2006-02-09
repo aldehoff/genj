@@ -79,17 +79,17 @@ public class Document {
     }
     
     // boilerplate
-    Element root = addElement(doc, "fo:root", "xmlns:fo="+NSURI);
+    Element root = addElement(doc, "root"); // "xmlns:fo="+NSURI ?
     
-    Element layout_master_set = addElement(root, "fo:layout-master-set");
-    Element simple_page_master = addElement(layout_master_set, "fo:simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
-    addElement(simple_page_master, "fo:region-body");
+    Element layout_master_set = addElement(root, "layout-master-set");
+    Element simple_page_master = addElement(layout_master_set, "simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
+    addElement(simple_page_master, "region-body");
 
-    Element page_sequence = addElement(root, "fo:page-sequence","master-reference=master");
+    Element page_sequence = addElement(root, "page-sequence","master-reference=master");
     
-    Element flow = addElement(page_sequence, "fo:flow", "flow-name=xsl-region-body");
+    Element flow = addElement(page_sequence, "flow", "flow-name=xsl-region-body");
     
-    block = addElement(flow, "fo:block");
+    block = addElement(flow, "block");
     
     // done
   }
@@ -139,8 +139,12 @@ public class Document {
    */
   public Document addSection(String title, String id) {
     
+    // return to the last block in flow
+    Element flow = backtrack("flow", false);
+    block = (Element)flow.getLastChild();
+      
     // start a new block
-    addParagraph("font-size=larger,font-weight=bolder");
+    addParagraph("font-size=larger,font-weight=bold");
     
     // add the title
     addText(title);
@@ -280,7 +284,7 @@ public class Document {
    */
   public Document startList() {
     
-    //<fo:list-block>
+    //<list-block>
     block = addElement(block, "list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt");
     addListItem();
     
@@ -293,7 +297,7 @@ public class Document {
   public Document endList() {
 
     // *
-    //  <fo:list-block>
+    //  <list-block>
     block = backtrack("list-block", true);
     return this;
   }
@@ -303,13 +307,13 @@ public class Document {
    */
   public Document addListItem() {
     
-    //<fo:list-block>
-    //  <fo:list-item>
-    //    <fo:list-item-label end-indent="label-end()"><fo:block>&#x2022;</fo:block></fo:list-item-label>
-    //    <fo:list-item-body start-indent="body-start()">
-    //       <fo:block/>
-    //    </fo:list-item-body>
-    //  </fo:list-item>
+    //<list-block>
+    //  <list-item>
+    //    <list-item-label end-indent="label-end()"><block>&#x2022;</block></list-item-label>
+    //    <list-item-body start-indent="body-start()">
+    //       <block/>
+    //    </list-item-body>
+    //  </list-item>
     Element list_block = backtrack("list-block", false);
     
     // check if list-block has already a child (startList might have been called) AND the current block is still empty
@@ -318,10 +322,10 @@ public class Document {
     
     Element list_item = addElement(list_block, "list-item");
     Element list_item_label = addElement(list_item, "list-item-label", "end-indent=label-end()");
-    addTextElement(addElement(list_item_label, "block"), "-", 0);
+    addTextElement(addElement(list_item_label, "block"), "\u2022", 0);
     Element list_item_body = addElement(list_item, "list-item-body", "start-indent=body-start()");
     block = addElement(list_item_body, "block");
- 
+
     return this;
   }
     
