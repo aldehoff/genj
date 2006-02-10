@@ -255,7 +255,7 @@ public class GeoService {
    * Find best matches for given locations
    * @param location list of locations
    */
-  public boolean match(Gedcom gedcom, Collection locations) throws IOException {
+  public void match(Gedcom gedcom, Collection locations) throws IOException {
 
     // grab registry
     Registry registry = gedcom!=null ? getRegistry(gedcom) : new Registry();
@@ -280,14 +280,12 @@ public class GeoService {
     
     // no more todos?
     if (todos.isEmpty())
-      return true;
+      return;
     
     // do a webservice call for all the todos
     List rows = webservice(todos);
-    if (rows.size()<todos.size()) {
-      LOG.warning("got "+rows.size()+" rows for "+todos.size()+" locations");
-      return false;
-    }
+    if (rows.size()<todos.size()) 
+      throw new IOException("got "+rows.size()+" rows for "+todos.size()+" locations");
     
     // recheck todos for results
     for (int i=0;i<todos.size();i++) {
@@ -318,7 +316,6 @@ public class GeoService {
     }
     
     // done
-    return true;
   }
 
   /**

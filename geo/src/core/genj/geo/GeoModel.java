@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -170,28 +171,35 @@ import com.vividsolutions.jts.geom.Coordinate;
   private class Resolver extends ActionDelegate {
     
     private ArrayList todo;
+    private Throwable err = null;
 
     /** constructor */
     private Resolver(Collection todo) {
       setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
-      
       // make a private copy of todo
       this.todo = new ArrayList(todo);
     }
 
     /** async exec */
     protected void execute() {
+      getThread().setDaemon(true);
       try { 
         GeoService.getInstance().match(gedcom, todo);
-      } catch (Throwable t) {}
+      } catch (Throwable t) {
+        err = t;
+      }
     }
 
     /** sync post-exec */
     protected void postExecute(boolean preExecuteResult) {
-      // tell about it
+      // update all locations - some might have changed even in case of err
       for (Iterator it=todo.iterator(); it.hasNext(); ) {
         GeoLocation loc = (GeoLocation)it.next();
         if (locations.contains(loc)) fireLocationUpdated(loc);
+      }
+      // any problem we should act on?
+      if (err!=null) {
+        GeoService.LOG.log(Level.WARNING, "error resolving locations", err);
       }
       // start pending?
       synchronized (resolvers) {
