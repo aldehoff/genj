@@ -176,13 +176,13 @@ import com.vividsolutions.jts.geom.Coordinate;
     /** constructor */
     private Resolver(Collection todo) {
       setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
+      getThread().setDaemon(true);
       // make a private copy of todo
       this.todo = new ArrayList(todo);
     }
 
     /** async exec */
     protected void execute() {
-      getThread().setDaemon(true);
       try { 
         GeoService.getInstance().match(gedcom, todo);
       } catch (Throwable t) {
