@@ -97,10 +97,11 @@
 	  		$jurisdiction = "";
 			}
 			if (strlen($country)>0) {
-	  		$sql = "$sql AND locations.country = \"$country\"";
-	  		if (!$retry) $country = "";
-	  		$retry = TRUE;
+				$sql = "$sql AND locations.country = \"$country\"";
+				if (!$retry) $country = "";
+				$retry = TRUE;
 			}
+			$sql = "$sql ORDER BY locations.country, jurisdictions.name, locations.city";
 			
 			$rows = mysql_query($sql);
 			if (!$rows) die("error:select locations failed");
