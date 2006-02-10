@@ -157,7 +157,7 @@
 			$country = trim($tokens[count($tokens)-1]);
 			
 			// check what jurisdiction we're looking for
-			$jurisdiction = findJurisdiction(array_slice($tokens, 1, count($tokens)-1), &$country);
+			$jurisdiction = findJurisdiction(array_slice($tokens, 1, count($tokens)-2), &$country);
 			
 			// query it now
 			$hits += processQuery($city, $jurisdiction, $country, $op);
