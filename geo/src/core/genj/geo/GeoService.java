@@ -195,6 +195,7 @@ public class GeoService {
     try {
       // open connection
       HttpURLConnection con = (HttpURLConnection)GEOQ.openConnection();
+      con.setConnectTimeout(10*1000);
       con.setRequestMethod("POST");
       con.setDoOutput(true);
       con.setDoInput(true);
@@ -281,20 +282,36 @@ public class GeoService {
     if (todos.isEmpty())
       return true;
     
-    // do a call for the todos
+    // do a webservice call for all the todos
     List rows = webservice(todos);
     if (rows.size()<todos.size()) {
       LOG.warning("got "+rows.size()+" rows for "+todos.size()+" locations");
       return false;
     }
     
-    // grab coordinates where available
+    // recheck todos for results
     for (int i=0;i<todos.size();i++) {
       GeoLocation todo  = (GeoLocation)todos.get(i);
       List hits = (List)rows.get(i);
+      // no hits no fun
       if (!hits.isEmpty()) {
-        GeoLocation hit = (GeoLocation)hits.get(0);
-        todo.setCoordinate(hit.getCoordinate());
+        // calculate match by score
+        GeoLocation match = null;
+        int matchScore = -1;
+        for (int h=0;h<hits.size();h++) {
+          GeoLocation hit = (GeoLocation)hits.get(h);
+          int hitScore = 0;
+          if (todo.getCity().equals(hit.getCity())) hitScore+=8;
+          if (todo.getJurisdictions().containsAll(hit.getJurisdictions())) hitScore+=4;
+          if (todo.getCountry()!=null&&todo.getCountry().equals(hit.getCountry())) hitScore+=2;
+          if (Country.HERE.equals(hit.getCountry())) hitScore+=1;
+          if (hitScore>matchScore) {
+            match = hit;
+            matchScore = hitScore;
+          }
+        }
+        // keep it
+        todo.setCoordinate(match.getCoordinate());
         todo.setMatches(hits.size());
         remember(gedcom, todo);
       }
