@@ -55,6 +55,7 @@ public class GeoImport {
    */
   private GeoImport(File out) throws IOException {
     this.sqlOut = new OutputStreamWriter(new FileOutputStream(out), UTF8);
+    sqlOut.write("SET NAMES utf8; SET CHARACTER SET utf8;");
   }
   
   /**
@@ -84,6 +85,7 @@ public class GeoImport {
       boolean jurisdictions = false;
       if (args[0].equals("-j")) {
         jurisdictions = true;
+        files++;
       }
       
       // do the import
@@ -176,6 +178,10 @@ public class GeoImport {
     }
     log("Info: Parsing "+file+" as "+parser.getName());
     
+    // calculate filename without suffix
+    String filename = file.getName();
+    if (filename.indexOf('.')>0) filename = filename.substring(0, filename.indexOf('.'));
+    
     // open and read 
     BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), UTF8));
 
@@ -186,7 +192,7 @@ public class GeoImport {
       String line = in.readLine();
       if (line==null) break;
       // parse it
-      if (parser.parse(line))  {
+      if (parser.parse(line, filename))  {
         nLocations++;
         parser.write(sqlOut);
       }
@@ -235,7 +241,7 @@ public class GeoImport {
     float lat, lon;
     
     abstract String getName();
-    abstract boolean parse(String line);
+    abstract boolean parse(String line, String filename);
     
     /**
      * write parsed value
@@ -283,7 +289,7 @@ public class GeoImport {
     String getName() { return "USGS"; }
     
     /** parsing logic  */
-    boolean parse(String line) {
+    boolean parse(String line, String filename) {
       
       // FID (state) (name) (type) county state# county# (lat) (lon) lat lon dmslat dmslon dmslat dmslon elev poption fedstat cell
       DirectAccessTokenizer values = new DirectAccessTokenizer(line, "|");
@@ -342,7 +348,7 @@ public class GeoImport {
     String getName() { return "GNS"; }
 
     /** parsing logic  */
-    boolean parse(String line) {
+    boolean parse(String line, String filename) {
       
       // RC UFI UNI (LAT) (LON) DMSLAT DMSLON UTM JOG (FC) DSG PC (CC1) (ADM1) ADM2 DIM CC2 NT LC SHORT_FORM GENERIC SORT_NAME (NAME) FULL MOD
       DirectAccessTokenizer values = new DirectAccessTokenizer(line, "\t");
@@ -359,8 +365,8 @@ public class GeoImport {
       if ('P'!=values.get(9).charAt(0)) 
         return false;
       
-      // country
-      country = values.get(12).toLowerCase();
+      // use filename as iso country code - the CC1 I used before can be something else
+      country = filename.toLowerCase();
       String iso = (String)fips2iso.get(country);
       if (iso!=null) country = iso;
       

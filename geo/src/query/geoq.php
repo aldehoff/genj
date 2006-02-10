@@ -6,13 +6,18 @@
 		// read password
 		$credentials = file("geoq.ini");
 		if (!$credentials) die("error:credentials");
-		$user = trim($credentials[0]);
-		$pass = trim($credentials[1]);
+		$host = trim($credentials[0]);
+		$db = trim($credentials[1]);
+		$user = trim($credentials[2]);
+		$pass = trim($credentials[3]);
 		// connect to database
-		mysql_connect("mysql4-g", $user, $pass)
+		mysql_connect($host, $user, $pass)
 			or die("error:connect " . mysql_error());
-		mysql_select_db("g46817_geo") 
+		mysql_select_db($db) 
 			or die("error:db");
+		// set utf8
+		mysql_query('SET NAMES utf8');
+		mysql_query('SET CHARACTER SET utf8');
 		// done
 	}
 
