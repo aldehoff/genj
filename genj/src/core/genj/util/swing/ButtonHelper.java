@@ -174,6 +174,8 @@ public class ButtonHelper {
     action.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
         result.setEnabled(action.isEnabled());
+        result.setIcon(action.getImage());
+        result.setToolTipText(action.getTip());
       }
     });
 

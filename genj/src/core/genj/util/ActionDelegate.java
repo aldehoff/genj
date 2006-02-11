@@ -296,6 +296,8 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
    */
   public ActionDelegate setTip(String t) {
     tip=t;
+    // notify
+    changeSupport.fireChangeEvent();
     return this;
   }
   
