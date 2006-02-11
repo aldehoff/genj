@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +36,6 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 /**
  * An abstract layer above docbook handling and transformations
@@ -53,7 +53,7 @@ public class Document {
     HALIGN_RIGHT   = 2;
 
   private org.w3c.dom.Document doc;
-  private Element block;
+  private Element cursor;
   private String title;
   private Set anchorNodes = new HashSet();
   private Map unresolvedID2textNodes = new HashMap();
@@ -79,19 +79,26 @@ public class Document {
     }
     
     // boilerplate
-    Element root = addElement(doc, "root"); // "xmlns:fo="+NSURI ?
+    //  <root>
+    //   <layout-master-set>
+    //    <simple-page-master>
+    //     <region-body/>
+    //    </simple-page-master>
+    //   </layout-master-set>
+    //   <page-sequence>
+    //    <flow>
+    //     <block/>
+    //    </flow>
+    //   </page-sequence>
+    cursor = (Element)doc.appendChild(doc.createElementNS(NSURI, "root")); // "xmlns:fo="+NSURI ?
+    push("layout-master-set");
+    push("simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
+    push("region-body");
+    pop().pop().pop().push("page-sequence","master-reference=master");
+    push("flow", "flow-name=xsl-region-body");
+    push("block");
     
-    Element layout_master_set = addElement(root, "layout-master-set");
-    Element simple_page_master = addElement(layout_master_set, "simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
-    addElement(simple_page_master, "region-body");
-
-    Element page_sequence = addElement(root, "page-sequence","master-reference=master");
-    
-    Element flow = addElement(page_sequence, "flow", "flow-name=xsl-region-body");
-    
-    block = addElement(flow, "block");
-    
-    // done
+    // done - cursor points to first block
   }
   
   /**
@@ -140,11 +147,11 @@ public class Document {
   public Document addSection(String title, String id) {
     
     // return to the last block in flow
-    Element flow = backtrack("flow", false);
-    block = (Element)flow.getLastChild();
+    pop("flow", "addSection() is not applicable outside document flow");
+    cursor = (Element)cursor.getLastChild();
       
     // start a new block
-    addParagraph("font-size=larger,font-weight=bold");
+    pop().push("block", "font-size=larger,font-weight=bold");
     
     // add the title
     addText(title);
@@ -218,14 +225,14 @@ public class Document {
    * Add text
    */
   public Document addText(String text) {
-    return addText(text, TEXT_PLAIN);
+    return addText(text, "");
   }
   
   /**
    * Add text
    */
-  public Document addText(String text, int format) {
-    addTextElement(block, text, format);
+  public Document addText(String text, String format) {
+    text(text, format);
     return this;
   }
     
@@ -266,28 +273,53 @@ public class Document {
    * Add a paragraph
    */
   public Document addParagraph() {
-    return addParagraph("");
-  }
-  public Document addParagraph(String attributes) {
     
     // start a new block if the current is not-empty
-    if (block.getFirstChild()!=null)
-      block = addElement(block.getParentNode(), "block", attributes);
-    else
-      setAttributes(block, attributes);
+    if (cursor.getFirstChild()!=null)
+      pop().push("block", "");
     
     return this;
   }
     
   /**
-   * Add a list
+   * Start a list
    */
   public Document startList() {
     
     //<list-block>
-    block = addElement(block, "list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt");
-    addListItem();
+    push("list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt");
+    nextListItem();
     
+    return this;
+  }
+    
+  /**
+   * Add a list item
+   */
+  public Document nextListItem() {
+    
+    //<list-block>
+    //  <list-item>
+    //    <list-item-label end-indent="label-end()"><block>&#x2022;</block></list-item-label>
+    //    <list-item-body start-indent="body-start()">
+    //       <block/>
+    //    </list-item-body>
+    //  </list-item>
+    
+    // are we in an empty list-item-body list already?
+    if (cursor.getFirstChild()==null && cursor.getParentNode().getLocalName().equals("list-item-body"))
+      return this;
+
+    // pop up to list-block and add new
+    Element last = cursor;
+    pop("list-block", "nextListItem() is not applicable outside list block");
+    push("list-item");
+    push("list-item-label", "end-indent=label-end()");
+    push("block");
+    text("\u2022", "");
+    pop().pop().push("list-item-body", "start-indent=body-start()");
+    push("block");
+
     return this;
   }
     
@@ -298,37 +330,99 @@ public class Document {
 
     // *
     //  <list-block>
-    block = backtrack("list-block", true);
+    pop("list-block", "endList() is not applicable outside list-block").pop();
+    
     return this;
   }
     
   /**
-   * Add a list item
+   * Start a table
    */
-  public Document addListItem() {
+  public Document startTable(String columns, boolean header) {
     
-    //<list-block>
-    //  <list-item>
-    //    <list-item-label end-indent="label-end()"><block>&#x2022;</block></list-item-label>
-    //    <list-item-body start-indent="body-start()">
-    //       <block/>
-    //    </list-item-body>
-    //  </list-item>
-    Element list_block = backtrack("list-block", false);
+    StringTokenizer cols = new StringTokenizer(columns, ",", false);
+    if (cols.countTokens()==0) cols = new StringTokenizer("25%,25%,25%,25%", ",", false);
     
-    // check if list-block has already a child (startList might have been called) AND the current block is still empty
-    if (list_block.getFirstChild()!=null&&block.getFirstChild()==null)
-      return this;
+    //<table>
+    // <table-column/>
+    // <table-header>
+    //  <table-row>
+    //   <table-cell>
+    //    <block>
+    //    ...
+    // </table-header>
+    // <table-body>
+    //  <table-row>
+    //   <table-cell>
+    //    <block>    
+    //    ...
+    push("table", "table-layout=fixed,width=100%,border=0.5pt solid black");
+    while (cols.hasMoreTokens()) {
+      String w = cols.nextToken(); 
+      push("table-column", "column-width="+w).pop();
+    }
+    if (header) {
+      push("table-header"); 
+      push("table-row", "color=#ffffff,background-color=#c0c0c0,font-weight=bold");
+    } else { 
+      push("table-body");
+      push("table-row");
+    }
     
-    Element list_item = addElement(list_block, "list-item");
-    Element list_item_label = addElement(list_item, "list-item-label", "end-indent=label-end()");
-    addTextElement(addElement(list_item_label, "block"), "\u2022", 0);
-    Element list_item_body = addElement(list_item, "list-item-body", "start-indent=body-start()");
-    block = addElement(list_item_body, "block");
+    // cell and done
+    return nextTableCell();
+  }
+  
+  /**
+   * Jump to next cell in table
+   */
+  public Document nextTableCell() {
+    
+    // pop to row
+    pop("table-row", "nextTableCell() is not applicable outside enclosing table row");
+    int cells = cursor.getElementsByTagName("table-cell").getLength();
+    
+    // peek at table - add new row if we have all columns already
+    if (cells==peek("table", "nextTableCell() is not applicable outside enclosing table").getElementsByTagName("table-column").getLength()) 
+      return nextTableRow();
 
+    // add now
+    push("table-cell", "border=0.5pt solid black");
+    push("block");
+
+    // done 
     return this;
   }
+  
+  /**
+   * Jump to next row in table
+   */
+  public Document nextTableRow() {
+    // pop to parent of row
+    pop("table-row", "nextTableRow() is not applicable outside enclosing table row").pop();
+    // leaving header now?
+    if (cursor.getNodeName().equals("table-header")) 
+      pop().push("table-body");
+    // add row
+    push("table-row");
     
+    // cell and done
+    return nextTableCell();
+  }
+  
+  /**
+   * Jump to next cell in table
+   */
+  public Document endTable() {
+    
+    // leave table
+    pop("table", "endTable() is not applicable outside enclosing table").pop();
+    push("block");
+    
+    // done
+    return this;
+  }
+  
   /**
    * Add an anchor
    */
@@ -423,83 +517,77 @@ public class Document {
 //    return anchor;
 //  }
   
-  /** matching a=b,c-d=e,f:g=h */
-  private static Pattern REGEX_ATTR = Pattern.compile("([^, ]*)=([^, ]*)");
+  /** matching a=b,c-d=e,f:g=h,x=y(m,n,o),z=1 */
+  protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]+(\\(.*?\\))?)");
   
   /**
    * Add element qualified by qname to parent
    */
-  private Element addElement(Node parent, String qname) {
-    return addElement(parent, qname, "");
+  private Document push(String path) {
+    return push(path, "");
   }
   
   /**
    * Add element qualified by qname to parent
    */
-  private Element addElement(Node parent, String qname, String attributes) {
+  private Document push(String name, String attributes) {
     // create it, set attributes and hook it up
-    Element elem = doc.createElementNS(NSURI, qname);
-    setAttributes(elem, attributes);
-    parent.appendChild(elem);
-    // done
-    return elem;
-  }
-  
-  /**
-   * Set element attributes
-   */
-  private void setAttributes(Element element, String attributes) {
-    // parse attribues
+    Element elem = doc.createElementNS(NSURI, name);
+    cursor.appendChild(elem);
+    cursor =  elem;
+    // parse attributes
     Matcher m = REGEX_ATTR.matcher(attributes);
     while (m.find()) {
-      element.setAttribute(m.group(1), m.group(2));
+      cursor.setAttribute(m.group(1).trim(), m.group(2).trim());
     }
+    // done
+    return this;
   }
   
   /**
    * Add text element
    */
-  private Text addTextElement(Element parent, String text, int format) {
+  private Document text(String text, String format) {
     
-    if (format!=TEXT_PLAIN)
-      System.err.println("only TEXT_PLAIN is supported");
-    
-    Text result  = doc.createTextNode(text);
-    parent.appendChild(result);
-
-    return result;
+    Node txt = doc.createTextNode(text);
+    if (format.length()>0) {
+      push("inline", format);
+      cursor.appendChild(txt);
+      pop();
+    } else {
+      cursor.appendChild(txt);
+    }
+    return this;
   }
 
   /**
-   * find element in current stack upwards
+   * pop element from stack
    */
-  private Element backtrack(String qname, boolean returnParent) {
-    Element element = block;
-    while (element!=null) {
-      Element parent = (Element)element.getParentNode(); 
-      if (element.getLocalName().equals(qname))
-        return returnParent ? parent : element;
-      element = parent;
-    }
-    throw new IllegalArgumentException();
+  private Document pop() {
+    cursor = (Element)cursor.getParentNode();
+    return this;
   }
   
-//private Element pop() {
-//Element popd = cursor;
-//cursor = (Element)popd.getParentNode();
-//return popd;
-//}
-//
-//private Element pop(String element) {
-//while (true) {
-//  if (element.equals(cursor.getNodeName()))
-//    return pop();
-//  if (cursor.getParentNode()==doc)
-//    return null;
-//  pop();
-//}
-//}
-
+  /**
+   * pop element from stack
+   */
+  private Document pop(String qname, String error) {
+    cursor = peek(qname, error);
+    return this;
+  }
+  
+  /**
+   * find element in current stack upwards
+   */
+  private Element peek(String qname, String error) {
+    Element loop = cursor;
+    while (loop!=null) {
+      if (loop.getLocalName().equals(qname)) 
+        return loop;
+      loop = (Element)loop.getParentNode();
+    }
+    throw new IllegalArgumentException(error);
+  }
   
   /**
    * Accessor - whether a TOC is included
@@ -514,5 +602,5 @@ public class Document {
   public void setTOC(boolean set) {
     isTOC = set;
   }
-  
+
 }

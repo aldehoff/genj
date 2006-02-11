@@ -159,8 +159,8 @@ public class ReportSummaryOfRecords extends Report {
       }
 
       // here comes the item
-      doc.addListItem();
-      doc.addText(Gedcom.getName(prop.getTag()), Document.TEXT_EMPHASIZED);
+      doc.nextListItem();
+      doc.addText(Gedcom.getName(prop.getTag()), "font-style=italic");
       doc.addText(" ");
       
       // with its value
