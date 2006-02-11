@@ -53,6 +53,7 @@ import com.vividsolutions.jts.geom.Coordinate;
  */
 public class GeoService {
   
+  final static Integer TIMEOUT = new Integer(10*1000);
   final static Charset UTF8 = Charset.forName("UTF8");
   final static Logger LOG = Logger.getLogger("genj.geo");
   final static URL GEOQ = createQueryURL();
@@ -195,7 +196,12 @@ public class GeoService {
     try {
       // open connection
       HttpURLConnection con = (HttpURLConnection)GEOQ.openConnection();
-      con.setConnectTimeout(10*1000);
+      
+      try {
+        con.getClass().getMethod("setConnectTimeout", new Class[]{ Integer.TYPE }).invoke(con, new Object[]{ TIMEOUT } );
+      } catch (Throwable t) {
+        LOG.info("can't set connection timeout");
+      }
       con.setRequestMethod("POST");
       con.setDoOutput(true);
       con.setDoInput(true);
