@@ -47,7 +47,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -92,7 +91,7 @@ import swingx.tree.AbstractTreeModel;
     this.viewManager = viewManager;
     
     // create some components
-    tree = new Content();
+    tree = new Content(model);
     Update update = new Update();
     tree.getSelectionModel().addTreeSelectionListener(update);
     tree.setCellRenderer(new Renderer());
@@ -113,24 +112,6 @@ import swingx.tree.AbstractTreeModel;
     // done
   }
 
-  /**
-   * Component lifecycle - we're needed
-   */
-  public void addNotify() {
-    super.addNotify();
-    // setup hooked-up model now
-    tree.setModel(new Model(model));
-  }
-  
-  /**
-   * Component lifecycle - we're not needed anymore
-   */
-  public void removeNotify() {
-    super.removeNotify();
-    // setup empty model 
-    tree.setModel(new Model());
-  }
-  
   /**
    * Selection access
    */
@@ -269,9 +250,8 @@ import swingx.tree.AbstractTreeModel;
     /**
      * Constructor
      */
-    private Content() {
-      super(new Model());
-      
+    private Content(GeoModel geomodel) {
+      super(new Model(geomodel));
       setRootVisible(false);
       setShowsRootHandles(true);
       addTreeSelectionListener(this);
@@ -328,10 +308,13 @@ import swingx.tree.AbstractTreeModel;
     private GeoModel geo;
     private List locations = new ArrayList();
     
-    private Model() {
-    }
     private Model(GeoModel geo) {
       this.geo = geo;
+      
+      locations.addAll(geo.getLocations());
+      Collections.sort(locations);
+      
+      geo.addGeoModelListener(this);
     }
     
     private TreePath[] getPathsToLocations() {
@@ -364,44 +347,18 @@ import swingx.tree.AbstractTreeModel;
       return null;
     }
     
-    /** model lifecycle */
-    public void addTreeModelListener(TreeModelListener l) {
-      // start working?
-      if (geo!=null&&getListeners(TreeModelListener.class).length==0) {
-        geo.addGeoModelListener(this);
-        locations.clear();
-        locations.addAll(geo.getLocations());
-        Collections.sort(locations);
-      }
-      // continue
-      super.addTreeModelListener(l);
-      // done
-    }
-    
-    public void removeTreeModelListener(TreeModelListener l) {
-      // continue
-      super.removeTreeModelListener(l);
-      // stop working?
-      if (geo!=null&&getListeners(TreeModelListener.class).length==0) {
-        geo.removeGeoModelListener(this);
-        locations.clear();
-      }
-    }
-    
     /** geo model event */
     public void locationAdded(GeoLocation location) {
-      int pos = 0;
-      for (ListIterator it = locations.listIterator(); it.hasNext(); pos++) {
-        Comparable other = (Comparable)it.next();
-        if (other.compareTo(location)>0) {
+      // add at good position
+      ListIterator it = locations.listIterator();
+      while (it.hasNext()) {
+        if (((Comparable)it.next()).compareTo(location)>0) {
           it.previous();
-          it.add(location);
           break;
         }
       }
-      // add as last
-      if (pos==locations.size())
-        locations.add(location);
+      int pos = it.nextIndex();
+      it.add(location);
       // tell about it
       fireTreeNodesInserted(this, new TreePath(this), new int[] { pos }, new Object[] { location });
     }
@@ -415,6 +372,14 @@ import swingx.tree.AbstractTreeModel;
       int i = locations.indexOf(location);
       locations.remove(i);
       fireTreeNodesRemoved(this, new TreePath(this), new int[] { i }, new Object[] { location });
+    }
+    
+    public void asyncResolveEnd(int status, String msg) {
+      // ignored
+    }
+
+    public void asyncResolveStart() {
+      // ignored
     }
 
     /** tree model */

@@ -20,33 +20,13 @@
 package genj.geo;
 
 /**
- * A listener for our geo model
+ * Exception thrown by our GEO Service
  */
-public interface GeoModelListener {
-  
-  /**
-   * We've added a location
-   */
-  public void locationAdded(GeoLocation location);
+public class GeoServiceException extends Exception {
 
-  /**
-   * We've updated a location
-   */
-  public void locationUpdated(GeoLocation location);
+  /** constructor */
+  public GeoServiceException(String message) {
+    super(message);
+  }
 
-  /**
-   * We removed a location
-   */
-  public void locationRemoved(GeoLocation location);
-  
-  /**
-   * Lifecycle - locations are being resolved asynchronously
-   */
-  public void asyncResolveStart();
-
-  /**
-   * Lifecycle - locations have been resolved asynchronously
-   */
-  public void asyncResolveEnd(int status, String msg);
-  
 }

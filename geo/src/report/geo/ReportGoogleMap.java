@@ -12,6 +12,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.geo.GeoLocation;
 import genj.geo.GeoService;
+import genj.geo.GeoServiceException;
 import genj.io.FileAssociation;
 import genj.report.Report;
 
@@ -75,8 +76,8 @@ public class ReportGoogleMap extends Report {
     Collection locations = GeoLocation.parseEntities(indis);
     try {
       GeoService.getInstance().match(ged, locations);
-    } catch (IOException e) {
-      super.println(e);
+    } catch (GeoServiceException e) {
+      super.println(e.getMessage());
     }
     if (locations.isEmpty()) {
       getOptionFromUser(i18n("none_mapable"), OPTION_OK);

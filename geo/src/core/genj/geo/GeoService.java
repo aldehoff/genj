@@ -189,53 +189,67 @@ public class GeoService {
    * @param list list of locations to query
    * @return list of list of locations
    */
-  protected List webservice(List locations) throws IOException {
+  protected List webservice(List locations) throws GeoServiceException {
 
     long start = System.currentTimeMillis();
     int rowCount = 0, hitCount = 0;
     try {
-      // open connection
-      HttpURLConnection con = (HttpURLConnection)GEOQ.openConnection();
       
+      // open connection
+      HttpURLConnection con;
       try {
-        con.getClass().getMethod("setConnectTimeout", new Class[]{ Integer.TYPE }).invoke(con, new Object[]{ TIMEOUT } );
-      } catch (Throwable t) {
-        LOG.info("can't set connection timeout");
-      }
-      con.setRequestMethod("POST");
-      con.setDoOutput(true);
-      con.setDoInput(true);
+        con = (HttpURLConnection)GEOQ.openConnection();
+        
+        try {
+          con.getClass().getMethod("setConnectTimeout", new Class[]{ Integer.TYPE }).invoke(con, new Object[]{ TIMEOUT } );
+        } catch (Throwable t) {
+          LOG.info("can't set connection timeout");
+        }
+        con.setRequestMethod("POST");
+        con.setDoOutput(true);
+        con.setDoInput(true);
   
-      // write our query
-      Writer out = new OutputStreamWriter(con.getOutputStream(), UTF8);
-      out.write(HEADER+"\n");
-      for (int i=0;i<locations.size();i++) {
-        if (i>0) out.write("\n");
-        out.write(encode((GeoLocation)locations.get(i)));
+        // write our query
+        Writer out = new OutputStreamWriter(con.getOutputStream(), UTF8);
+        out.write(HEADER+"\n");
+        for (int i=0;i<locations.size();i++) {
+          if (i>0) out.write("\n");
+          out.write(encode((GeoLocation)locations.get(i)));
+        }
+        out.close();
+      } catch (IOException e) {
+        throw new GeoServiceException("Accessing GEO Webservice failed");
       }
-      out.close();
       
       // read input
       List rows  = new ArrayList();
-      BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), UTF8));
-      for (int l=0;l<locations.size();l++) {
-        String line = in.readLine();
-        if (line==null) break;
-        rowCount++;
-        List row = new ArrayList();
-        if (!line.startsWith("?")) {
-          StringTokenizer hits = new StringTokenizer(line, ";");
-          while (hits.hasMoreTokens()) {
-            GeoLocation hit = decode(hits.nextToken());
-            if (hit!=null) {
-              row.add(hit);
-              hitCount++;
+      try {
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), UTF8));
+        for (int l=0;l<locations.size();l++) {
+          String line = in.readLine();
+          if (line==null) break;
+          rowCount++;
+          List row = new ArrayList();
+          if (!line.startsWith("?")) {
+            StringTokenizer hits = new StringTokenizer(line, ";");
+            while (hits.hasMoreTokens()) {
+              GeoLocation hit = decode(hits.nextToken());
+              if (hit!=null) {
+                row.add(hit);
+                hitCount++;
+              }
             }
           }
+          rows.add(row);
         }
-        rows.add(row);
+        in.close();
+      } catch (IOException e) {
+        throw new GeoServiceException("Reading from GEO Webservice failed");
       }
-      in.close();
+
+      // check what we've got
+      if (rows.size()<locations.size()) 
+        throw new GeoServiceException("GEO Webservice returned "+rows.size()+" rows for "+locations.size()+" locations");
       
       // done
       return rows;
@@ -251,7 +265,7 @@ public class GeoService {
    * Find all matching locations for given location
    * @return list of matching locations
    */
-  public List query(GeoLocation location) throws IOException {
+  public List query(GeoLocation location) throws GeoServiceException {
     // run query and grab first result list
     List rows = webservice(Collections.singletonList(location ));
     return rows.isEmpty() ?  new ArrayList() : (List)rows.get(0);
@@ -261,7 +275,7 @@ public class GeoService {
    * Find best matches for given locations
    * @param location list of locations
    */
-  public void match(Gedcom gedcom, Collection locations) throws IOException {
+  public void match(Gedcom gedcom, Collection locations) throws GeoServiceException {
 
     // grab registry
     Registry registry = gedcom!=null ? getRegistry(gedcom) : new Registry();
@@ -290,8 +304,6 @@ public class GeoService {
     
     // do a webservice call for all the todos
     List rows = webservice(todos);
-    if (rows.size()<todos.size()) 
-      throw new IOException("got "+rows.size()+" rows for "+todos.size()+" locations");
     
     // recheck todos for results
     for (int i=0;i<todos.size();i++) {

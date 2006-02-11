@@ -26,7 +26,6 @@ import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -270,12 +269,12 @@ public class QueryWidget extends JPanel {
               fireTableDataChanged();
               status.setText(RESOURCES.getString("query.matches", String.valueOf(found.size())));
             }
-          } catch (IOException e) {
+          } catch (final GeoServiceException e) {
             GeoView.LOG.log(Level.WARNING, "exception while querying", e);
             SwingUtilities.invokeLater(new Runnable() {
               public void run() {
                 if (QueryWidget.this.isVisible())
-                  view.getWindowManager().openDialog(null, "Query", WindowManager.INFORMATION_MESSAGE, "Error trying to resolve location information - are you connected to the internet?", WindowManager.ACTIONS_OK, QueryWidget.this);
+                  view.getWindowManager().openDialog(null, "Query", WindowManager.INFORMATION_MESSAGE, e.getMessage()+" - are you connected to the internet?", WindowManager.ACTIONS_OK, QueryWidget.this);
               }
             });
           }

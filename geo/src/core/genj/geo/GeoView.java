@@ -87,10 +87,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   private final static ImageIcon 
     IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png"),
     IMG_ZOOM = new ImageIcon(GeoView.class, "images/Zoom.png"),
-    IMG_ZOOM_EXTENT = new ImageIcon(GeoView.class, "images/ZoomExtend.png"),
-    IMG_OK = new ImageIcon(GeoView.class, "images/Ok.png"),
-    IMG_WARN = new ImageIcon(GeoView.class, "images/Warning.png"),
-    IMG_ERROR = new ImageIcon(GeoView.class, "images/Error.png");
+    IMG_ZOOM_EXTENT = new ImageIcon(GeoView.class, "images/ZoomExtend.png");
+  
+  private final static ImageIcon[] STATUS2IMG = {
+    new ImageIcon(GeoView.class, "images/Ok.png"),
+    new ImageIcon(GeoView.class, "images/Warning.png"),
+    new ImageIcon(GeoView.class, "images/Error.png")
+  };
   
   /*package*/ final static Resources RESOURCES = Resources.get(GeoView.class);
   
@@ -133,7 +136,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     this.gedcom = gedcom;
     
     // create our model 
-    model = new GeoModel(gedcom);
+    model = new GeoModel();
     
     // create a location grid
     locationList = new GeoList(model, this, viewManager);
@@ -157,6 +160,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   public void addNotify() {
     // override
     super.addNotify();
+    // hook up gedcom with model
+    model.setGedcom(gedcom);
     // show map 
     String map = registry.get("map", (String)null);
     GeoMap[] maps = GeoService.getInstance().getMaps();
@@ -173,14 +178,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    * component lifecycle - we're not needed anymore
    */
   public void removeNotify() {
+    // unhook gedcom from model
+    model.setGedcom(null);
     // remember map
     if (currentMap!=null)
       registry.put("map", currentMap.getKey());
     // remember split
     registry.put("split", split.getDividerLocation());
-    // tell to layers
-    selectionLayer.setLayerManager(null);
-    locationLayer.setLayerManager(null);
     // override
     super.removeNotify();
   }
@@ -407,19 +411,16 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     /** geo model - a location has been updated */
     public void locationAdded(GeoLocation location) {
       setLocations(Collections.EMPTY_SET);
-      super.locationAdded(location);
     }
 
     /** geo model - a location has been updated */
     public void locationUpdated(GeoLocation location) {
       setLocations(Collections.EMPTY_SET);
-      super.locationUpdated(location);
     }
 
     /** geo model - a location has been removed */
     public void locationRemoved(GeoLocation location) {
       setLocations(Collections.EMPTY_SET);
-      super.locationRemoved(location);
     }
 
     /** selection size */
@@ -453,22 +454,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       setName(getClass().toString());
       setFeatureCollection(this);
 
+      // listen to model
+      model.addGeoModelListener(this);
+
       // init styles
       initStyles();
-    }
-    
-    public void setLayerManager(LayerManager set) {
-      LayerManager old = super.getLayerManager();
-      if (set!=null) {
-        super.setLayerManager(set);
-        if (old==null) {
-          reset();
-          model.addGeoModelListener(this);
-        }
-      } else {
-        if (old!=null) 
-          model.removeGeoModelListener(this);
-      }
     }
     
     private void reset() {
@@ -508,6 +498,20 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
         mgr.fireFeaturesChanged(new ArrayList(), FeatureEventType.ADDED, this);
     }
     
+    /** geo model - done with async resolve */
+    public void asyncResolveEnd(int status, String msg) {
+      if (locate!=null) {
+        locate.setEnabled(true);
+        locate.setTip(msg + " - click to query again");
+        locate.setImage(STATUS2IMG[status]);
+      }
+    }
+
+    /** geo model - starts async resolve */
+    public void asyncResolveStart() {
+      if (locate!=null) locate.setEnabled(false);
+    }
+
     /** geo model - a location has been added */
     public void locationAdded(GeoLocation location) {
       if (location.isValid())
@@ -645,10 +649,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    */
   private class ActionLocate extends ActionDelegate {
     private ActionLocate() {
-      setImage(IMG_OK);
-      setEnabled(false);
+      setImage(STATUS2IMG[GeoModel.ALL_MATCHED]);
     }
     protected void execute() {
+      model.resolveAll();
     }
   }
 
