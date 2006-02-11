@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -86,7 +87,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   private final static ImageIcon 
     IMG_MAP = new ImageIcon(GeoView.class, "images/Map.png"),
     IMG_ZOOM = new ImageIcon(GeoView.class, "images/Zoom.png"),
-    IMG_ZOOM_EXTENT = new ImageIcon(GeoView.class, "images/ZoomExtend.png");
+    IMG_ZOOM_EXTENT = new ImageIcon(GeoView.class, "images/ZoomExtend.png"),
+    IMG_OK = new ImageIcon(GeoView.class, "images/Ok.png"),
+    IMG_WARN = new ImageIcon(GeoView.class, "images/Warning.png"),
+    IMG_ERROR = new ImageIcon(GeoView.class, "images/Error.png");
   
   /*package*/ final static Resources RESOURCES = Resources.get(GeoView.class);
   
@@ -104,6 +108,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   
   /** the current layer view panel */
   private LayerViewPanel layerPanel;
+  
+  /** action for update */
+  private ActionLocate locate;
   
   /** registry */
   private Registry registry;
@@ -207,6 +214,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     bh.setContainer(bar).setResources(RESOURCES);
     bh.create(new ZoomExtent());
     bh.setButtonType(JToggleButton.class).create(new ZoomOnOff());
+    
+    // add locate button
+    locate = new ActionLocate();
+    bh.setButtonType(JButton.class).create(locate);
+    
     
     // done
   }
@@ -627,5 +639,17 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     }
     
   }
-  
+
+  /**
+   * Action - locate GeoLocations through service
+   */
+  private class ActionLocate extends ActionDelegate {
+    private ActionLocate() {
+      setImage(IMG_OK);
+      setEnabled(false);
+    }
+    protected void execute() {
+    }
+  }
+
 } //GeoView
