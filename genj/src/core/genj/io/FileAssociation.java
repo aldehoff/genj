@@ -203,7 +203,7 @@ public class FileAssociation {
           String cmd = cmds.nextToken();
           int rc = Runtime.getRuntime().exec(cmd).waitFor(); 
           if (rc!=0) 
-            LOG.log(Level.INFO, "External application "+cmd+" returned"+rc);
+            LOG.log(Level.INFO, "External application "+cmd+" returned "+rc);
         }
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "Couldn't start all external applications in "+cmds, t);
