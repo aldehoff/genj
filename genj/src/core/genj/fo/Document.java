@@ -22,6 +22,7 @@ package genj.fo;
 import genj.gedcom.Entity;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,23 +44,13 @@ import org.w3c.dom.Node;
  */
 public class Document {
   
-  public final static int
-    TEXT_PLAIN = 0,
-    TEXT_EMPHASIZED = 1;
-
-  public final static int
-    HALIGN_CENTER = 0,
-    HALIGN_LEFT      = 1,
-    HALIGN_RIGHT   = 2;
-
   private org.w3c.dom.Document doc;
   private Element cursor;
   private String title;
   private Set anchorNodes = new HashSet();
   private Map unresolvedID2textNodes = new HashMap();
-  private Map file2imageNodes = new HashMap();
   private boolean isTOC = true;
-  
+  private Map file2elements = new HashMap();
   private final static String NSURI = "http://www.w3.org/1999/XSL/Format";
   
   /**
@@ -120,25 +111,6 @@ public class Document {
    */
   /*package*/ DOMSource getDOMSource() {
     return new DOMSource(doc);
-  }
-  
-  /**
-   * Access to referenced image files
-   */
-  /*package*/ File[] getImageFiles() {
-    Set files = file2imageNodes.keySet();
-    return (File[])files.toArray(new File[files.size()]);
-  }
-  
-  /**
-   * Replace referenced image file with a calculated value
-   */
-  /*package*/ void setImageFileRef(File file, String value) {
-    List nodes = (List)file2imageNodes.remove(file);
-    for (int i = 0; i < nodes.size(); i++) {
-      Element imageNode = (Element)nodes.get(i);
-      imageNode.setAttribute("fileref", value);
-    }
   }
   
   /**
@@ -229,7 +201,8 @@ public class Document {
   }
   
   /**
-   * Add text
+   * Add text with given CSS styling
+   * @see http://www.w3.org/TR/REC-CSS2/fonts.html#font-styling
    */
   public Document addText(String text, String format) {
     text(text, format);
@@ -237,36 +210,52 @@ public class Document {
   }
     
   /**
-   * Add image
+   * Add image file reference to the document
+   * @param file the file pointing to the image
+   * @param format 
    */
-  public Document addImage(File file, int align) {
-    System.err.println("addImage("+file+","+align+")");
+  public Document addImage(File file, String format) {
     
-//    // anything we care about?
-//    if (file==null||!file.exists())
-//      return this;
-//    // create imagedata node
-//    Element node = createElement("imagedata", null);
-//    node.setAttribute("fileref", file.getAbsolutePath());
-//    switch (align) {
-//      case HALIGN_LEFT: 
-//        node.setAttribute("align", "left");
-//        break;
-//      case HALIGN_RIGHT: 
-//        node.setAttribute("align", "right");
-//        break;
-//    }
-//    //node.setAttribute("valign", "middle");
-//    cursor.appendChild(node);
-//    // remember
-//    List nodes = (List)file2imageNodes.get(file);
-//    if (nodes==null) {
-//      nodes = new ArrayList();
-//      file2imageNodes.put(file, nodes);
-//    }
-//    nodes.add(node);
+    // anything we care about?
+    if (file==null||!file.exists())
+      return this;
+
+    //  <fo:external-graphic src="file"/> 
+    push("external-graphic", "src="+file.getAbsolutePath()+","+format);
+    
+    // remember file in case a formatter wants to resolve file location later
+    List elements = (List)file2elements.get(file);
+    if (elements==null) {
+      elements = new ArrayList(3);
+      file2elements.put(file, elements);
+    }
+    elements.add(cursor);
+    
+    // back to enclosing block
+    pop();
+    
     // done
     return this;
+  }
+  
+  
+  /**
+   * Access to external image files
+   */
+  protected File[] getImages() {
+    Set files = file2elements.keySet();
+    return (File[])files.toArray(new File[files.size()]);
+  }
+  
+  /**
+   * Replace referenced image file with a calculated value
+   */
+  protected void setImage(File file, String value) {
+    List nodes = (List)file2elements.get(file);
+    for (int i = 0; i < nodes.size(); i++) {
+      Element external = (Element)nodes.get(i);
+      external.setAttribute("src", value);
+    }
   }
   
   /**
@@ -338,7 +327,7 @@ public class Document {
   /**
    * Start a table
    */
-  public Document startTable(String columns, boolean header) {
+  public Document startTable(String columns, boolean header, boolean border) {
     
     StringTokenizer cols = new StringTokenizer(columns, ",", false);
     if (cols.countTokens()==0) cols = new StringTokenizer("25%,25%,25%,25%", ",", false);
@@ -356,7 +345,9 @@ public class Document {
     //   <table-cell>
     //    <block>    
     //    ...
-    push("table", "table-layout=fixed,width=100%,border=0.5pt solid black");
+    String atts = "table-layout=fixed,width=100%";
+    if (border) atts+=",border=0.5pt solid black";
+    push("table", atts);
     while (cols.hasMoreTokens()) {
       String w = cols.nextToken(); 
       push("table-column", "column-width="+w).pop();
@@ -383,11 +374,12 @@ public class Document {
     int cells = cursor.getElementsByTagName("table-cell").getLength();
     
     // peek at table - add new row if we have all columns already
-    if (cells==peek("table", "nextTableCell() is not applicable outside enclosing table").getElementsByTagName("table-column").getLength()) 
+    Element table = peek("table", "nextTableCell() is not applicable outside enclosing table");
+    if (cells==table.getElementsByTagName("table-column").getLength()) 
       return nextTableRow();
 
     // add now
-    push("table-cell", "border=0.5pt solid black");
+    push("table-cell", "border="+table.getAttribute("border"));
     push("block");
 
     // done 

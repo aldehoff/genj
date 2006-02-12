@@ -109,18 +109,20 @@ public class ReportSummaryOfRecords extends Report {
     // mark it
     doc.addAnchor(ent);
     
-    // start a paragraph
-    doc.addParagraph();
+    // start a table for the entity
+    doc.startTable("80%,20%", false, false);
 
-    // add image
-    PropertyFile file = (PropertyFile)ent.getProperty(new TagPath("INDI:OBJE:FILE"));
-    if (file!=null)
-      doc.addImage(file.getFile(), Document.HALIGN_RIGHT);
-    
     // export its properties
     exportProperties(ent, placeTags, doc);
+
+    // add image in next column
+    doc.nextTableCell();
+    PropertyFile file = (PropertyFile)ent.getProperty(new TagPath("INDI:OBJE:FILE"));
+    if (file!=null)
+      doc.addImage(file.getFile(),"");
     
-    // Done
+    // done
+    doc.endTable();
   }    
   
   /**

@@ -106,27 +106,27 @@ public abstract class Format {
   /**
    * Externalize files resolving imagedata references
    */
-  private void externalizeFiles(Document doc, File file) throws IOException {
+  private void externalizeFiles(Document doc, File out) throws IOException {
     
-    // got any image references in document?
-    File[] images = doc.getImageFiles();
-    if (images.length>0) {
+    // got any external image file references in document?
+    File[] files = doc.getImages();
+    if (files.length>0) {
       
       // grab image directory
-      File imageDir = new File(file.getParentFile(), file.getName()+".images");
-      imageDir.mkdirs();
+      File dir = new File(out.getParentFile(), out.getName()+".images");
+      dir.mkdirs();
     
       // copy all images so their local to the generated document
-      if (imageDir.exists()) {
-        for (int i = 0; i < images.length; i++) {
-          File oldFile = images[i];
-          File newFile = new File(imageDir, oldFile.getName());
-          FileChannel from = new FileInputStream(oldFile).getChannel();
-          FileChannel to = new FileOutputStream(newFile).getChannel();
+      if (dir.exists()) {
+        for (int i = 0; i < files.length; i++) {
+          File file = files[i];
+          File copy = new File(dir, file.getName());
+          FileChannel from = new FileInputStream(file).getChannel();
+          FileChannel to = new FileOutputStream(copy).getChannel();
           from.transferTo(0, from.size(), to);
           from.close();
           to.close();      
-          doc.setImageFileRef(oldFile, imageDir.getName() + "/" + newFile.getName());
+          doc.setImage(file, dir.getName() + "/" + copy.getName());
         }
       }
 

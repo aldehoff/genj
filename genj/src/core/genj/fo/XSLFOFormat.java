@@ -35,7 +35,7 @@ public class XSLFOFormat extends Format {
    * Constructor
    */
   public XSLFOFormat() {
-    super("XSL-FO", "xml", false);
+    super("XSL-FO", "xml", true);
   }
   
   /**
