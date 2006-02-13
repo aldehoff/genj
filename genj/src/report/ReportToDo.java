@@ -224,15 +224,15 @@ public class ReportToDo extends Report {
 
 	////// Enfants
 	Indi[] children = fam.getChildren();
-	if ((tempString=Formatter.getPluralSuffix(children.length)) != null){
-	    output.print(output.row(output.cell(i18n("childrentitle."+tempString),"head2",0,6)));
+	if (children.length>0){
+	    output.print(output.row(output.cell(Gedcom.getName("CHIL", children.length>1),"head2",0,6)));
 	    for (int c = 0; c < children.length; c++) {
 		output.print(output.row(output.cell(""+(c+1),"head3")+ output.cell(getIndiString(children[c]),0,5)));
 	    }
 	}
 
 	/**************** Notes */
-	propArray = Formatter.getProperties(fam,"NOTE");
+	propArray = fam.getProperties("NOTE", false);
 	boolean seenNote=false;
 	for (int i = 0; i<propArray.length; i++){
 	    String noteString = "";
@@ -307,8 +307,8 @@ public class ReportToDo extends Report {
 
 	// And we loop through its families
 	Fam[] fams = indi.getFamiliesWhereSpouse();
-	if ((tempString=Formatter.getPluralSuffix(fams.length)) != null){
-	    output.print(output.row(output.cell(i18n("familytitle."+tempString),"head2",0,6)));
+	if (fams.length>0){
+	    output.print(output.row(output.cell(Gedcom.getName("FAM", fams.length>1),"head2",0,6)));
 	}
 	for (int f=0;f<fams.length;f++) {
 	    // .. here's the fam and spouse
@@ -323,8 +323,8 @@ public class ReportToDo extends Report {
 						    +Formatter.formatEvent(famc, "MARR", Formatter.DATE_FORMAT_LONG, true, 0)
 						    ,0,5)));
            
-		if ((tempString=Formatter.getPluralSuffix(children.length)) != null){
-		    output.print(output.row(output.cell(i18n("childrentitle."+tempString),"head4",children.length,1)+
+		if (children.length>0){
+		    output.print(output.row(output.cell(Gedcom.getName("CHIL", children.length>1),"head4",children.length,1)+
 					    output.cell(getIndiString(children[0]),0,4)));
 		    for (int c = 1; c < children.length; c++) {
 			output.print(output.row( output.cell(getIndiString(children[c]),0,4)));
@@ -339,7 +339,7 @@ public class ReportToDo extends Report {
 	outputEventRow(indi,"RESI",todos);
 
 	/**************** Notes */
-	propArray = Formatter.getProperties(indi,"NOTE");
+	propArray = indi.getProperties("NOTE", false);
 	boolean seenNote=false;
 	for (int i = 0; i<propArray.length; i++){
 	    String noteString = "";
@@ -376,7 +376,7 @@ public class ReportToDo extends Report {
 
 
     private void outputEventRow(Entity indi, String tag, List todos){
-	Property props[] = Formatter.getProperties(indi,tag);
+	Property props[] = indi.getProperties(tag, false);
 	
 	if (props == null) return;
 	if (props.length == 1)
@@ -417,8 +417,8 @@ public class ReportToDo extends Report {
 		    row += output.cell("");
 		} else {
 		    row = output.cell(Gedcom.getName(parent.getTag())+parent.getValue());
-		    row += output.cell(Formatter.getPropertyDate(parent,Formatter.DATE_FORMAT_LONG));
-		    row += output.cell(Formatter.getPropertyPlace(parent,0));
+		    row += output.cell(parent.getPropertyDisplayValue("DATE"));
+		    row += output.cell(parent.getPropertyDisplayValue("PLAC"));
 		}
 		row += output.cell((prop.getEntity()).toString());
 		row += output.cell(outputPropertyValue(prop));
@@ -446,8 +446,8 @@ public class ReportToDo extends Report {
 		    row = ",,";
 		} else {
 		    row = "\""+Gedcom.getName(parent.getTag())+parent.getValue()+"\"";
-		    row += ",\""+Formatter.getPropertyDate(parent,Formatter.DATE_FORMAT_LONG)+"\"";
-		    row += ",\""+Formatter.getPropertyPlace(parent,0)+"\"";
+		    row += ",\""+parent.getPropertyDisplayValue("DATE")+"\"";
+		    row += ",\""+parent.getPropertyDisplayValue("PLAC")+"\"";
 		}
 		row += ",\""+(prop.getEntity()).toString()+"\"";
 		row += ",\""+outputPropertyValue(prop)+"\"";
@@ -462,7 +462,7 @@ public class ReportToDo extends Report {
 	// prop exists?
 	if (prop==null)
 	    return "";
-	Property[] props = Formatter.getProperties(prop,"NOTE");
+	Property[] props = prop.getProperties("NOTE", false);
 	if (props.length == 0) return "";
 	for (int i=0; i<props.length;i++){
 	    if (exclude.contains(props[i])) continue;

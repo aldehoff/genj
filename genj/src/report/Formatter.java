@@ -16,8 +16,6 @@ import genj.gedcom.time.Delta;
 import genj.report.Report;
 import genj.util.WordBuffer;
 
-import java.util.ArrayList;
-
 /**
  * GenJ - Formatter
  * Class set to hide presentation logic to report writers
@@ -191,72 +189,6 @@ abstract class Formatter  {
 	return result;
     }
 
-    /*    static String[] formatEvents(Entity entity, String tag, int dateFormat, boolean isPlace, int placeIndex ) {
-	// prop exists?
-	if (entity==null)
-	    return null;
-	Property[] props = getProperties(entity,tag);
-	if (props.length == 0) return (new String[] {});
-	String[] result = new String[props.length];
-	for (int i=0; i<props.length;i++)
-	    result[i] = formatEvent(props[i], dateFormat, isPlace, placeIndex );
-	return result;
-    }
-    */
-
-    static String getPropertyDate(Property prop, int dateFormat){
-	if (dateFormat == DATE_FORMAT_NONE)
-	    return "";
-      
-	if (prop==null)
-	    return "";
-	
-	PropertyDate date = (PropertyDate) prop.getProperty("DATE");
-	if (date == null )
-	    return "";
-
-	if (dateFormat == DATE_FORMAT_LONG){
-	    return date.getDisplayValue();
-	} else {
-	    return ""+date.getStart().getYear();
-	}
-    }
-    
-    static String getPropertyPlace(Property prop, int placeIndex ) {
-     
-	if (prop==null)
-	    return "";
-	
-	PropertyPlace plac = (PropertyPlace) prop.getProperty("PLAC");
-	if (plac == null ) return "";
-	if (placeIndex > 0)
-	    return(plac.getJurisdiction(placeIndex-1));
-	else if (placeIndex < 0)
-	    return (plac.getFirstAvailableJurisdiction(-placeIndex-1));
-	else
-	    return (plac.getDisplayValue());
-    }
-
-
-    static Property[] getProperties(Property property, String tag) {
-	ArrayList result = new ArrayList(property.getNoOfProperties());
-	//    Property [] props = property.getProperties();
-    for (int i=0;i<property.getNoOfProperties();i++) {
-      Property prop = property.getProperty(i);
-      if (prop.getTag().equals(tag))
-        result.add(prop);
-    }
-    return Property.toArray(result);
-  }
-
-    /*********** Sentences formatting stuff ***********/
-    /**
-     */
-    static String getPluralSuffix(int nb){
-	if (nb == 1) return "s";
-	if (nb == 0) return null;
-	return "p";
-    }
 }
 
 /**

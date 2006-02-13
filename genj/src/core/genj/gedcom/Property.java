@@ -759,6 +759,16 @@ public abstract class Property implements Comparable {
   }
 
   /**
+   * Returns a user-readable property value of a child property. This is
+   * a convenient method to access a child-property without having
+   * to check for null before calling its getDisplayValue()
+   */
+  public String getPropertyDisplayValue(String tag) {
+    Property child = getProperty(tag);
+    return child!=null ? child.getDisplayValue() : "";
+  }
+
+  /**
    * The default toString() returns the display value of this property
    */
   public String toString() {
