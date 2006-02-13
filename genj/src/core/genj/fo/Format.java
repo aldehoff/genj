@@ -51,7 +51,7 @@ public abstract class Format {
   private static Format[] formats;
   
   /** default formats */
-  public static Format DEFAULT = new XSLFOFormat();
+  public static Format DEFAULT = new HTMLFormat();
 
   /** this format */
   private String format;
@@ -156,6 +156,11 @@ public abstract class Format {
    * Format a document
    */
   public void format(Document doc, OutputStream out) throws IOException {
+    
+    // close doc
+    doc.close();
+    
+    // impl for out
     try {
       formatImpl(doc, out);
     } catch (Throwable t) {
@@ -165,6 +170,8 @@ public abstract class Format {
     } finally {
       try { out.close(); } catch (Throwable t) {}
     }
+    
+    // done
   }
   
   /**
@@ -196,20 +203,13 @@ public abstract class Format {
   /**
    * Return format by key
    */
-  public static Format getFormat(String key) {
+  public static Format getFormat(String format) {
     Format[] fs = getFormats();
     for (int i = 0; i < fs.length; i++) {
-      if (fs[i].getClass().getName().equals(key))
+      if (fs[i].getFormat().equals(format))
         return fs[i];
     }
     return DEFAULT;
-  }
-  
-  /**
-   * Return a lookup key
-   */
-  public String getKey() {
-    return getClass().getName();
   }
   
   /**

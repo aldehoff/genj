@@ -73,7 +73,7 @@ public class FormatOptionsWidget extends JPanel {
    * Remember selections
    */
   public void remember(Registry registry) {
-    registry.put("format", getFormat().getKey());
+    registry.put("format", getFormat().getFormat());
     registry.put("file", getFile().getAbsolutePath());
   }
   

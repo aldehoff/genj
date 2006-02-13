@@ -22,9 +22,9 @@ package genj.fo;
 import genj.gedcom.Entity;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +37,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * An abstract layer above docbook handling and transformations
@@ -44,14 +45,19 @@ import org.w3c.dom.Node;
  */
 public class Document {
   
+  /** matching a=b,c-d=e,f:g=h,x=y(m,n,o),z=1 */
+  protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]+(\\(.*?\\))?)");
+  
+  /** xsl fo namespace URI */
+  private final static String NSURI = "http://www.w3.org/1999/XSL/Format";
+  
   private org.w3c.dom.Document doc;
   private Element cursor;
   private String title;
-  private Set anchorNodes = new HashSet();
-  private Map unresolvedID2textNodes = new HashMap();
-  private boolean isTOC = true;
+  private boolean needsTOC = true;
   private Map file2elements = new HashMap();
-  private final static String NSURI = "http://www.w3.org/1999/XSL/Format";
+  private List sections = new ArrayList();
+  private String formatSection = "font-size=larger,font-weight=bold";
   
   /**
    * Constructor
@@ -100,6 +106,23 @@ public class Document {
   }
   
   /**
+   * Closes the document finalizing output
+   */
+  public void close() {
+    
+    // closed already?
+    if (cursor==null)
+      return;
+    
+    // generate TOC
+    if (needsTOC) 
+      toc();
+    
+    // done
+    cursor = null;
+  }
+  
+  /**
    * Title access
    */
   public String getTitle() {
@@ -114,6 +137,15 @@ public class Document {
   }
   
   /**
+   * Add Table of Content
+   */
+  public Document addTOC() {
+    needsTOC = true;
+    // done
+    return this;
+  }
+  
+  /**
    * Add section
    */
   public Document addSection(String title, String id) {
@@ -121,9 +153,16 @@ public class Document {
     // return to the last block in flow
     pop("flow", "addSection() is not applicable outside document flow");
     cursor = (Element)cursor.getLastChild();
+    
+    // generate an id if necessary
+    if (id==null||id.length()==0)
+      id = "section"+sections.size();
       
     // start a new block
-    pop().push("block", "font-size=larger,font-weight=bold");
+    pop().push("block", formatSection + ",id="+id);
+    
+    // remember
+    sections.add(cursor);
     
     // add the title
     addText(title);
@@ -131,23 +170,15 @@ public class Document {
     // create the following block
     addParagraph();
     
-    if (id!=null&&id.length()>0) System.err.println("addSection("+title+","+id+") - id is not supported");
-//    // pop to containing section
-//    Element parent = pop("section");
-//    if (parent!=null&&"section".equals(parent.getNodeName()))
-//      push(parent);
-//    push(sectionNode(title, id));
-//    
-//    
-//    // done
+    // done
     return this;
   }
     
   /**
    * Add section
    */
-  public Document addSection(String title, Entity ent) {
-    return addSection(title, ent.getId());
+  public Document addSection(String title, Entity entity) {
+    return addSection(title,entity.getTag()+"_"+entity.getId());
   }
     
   /**
@@ -419,8 +450,8 @@ public class Document {
    * Add an anchor
    */
   public Document addAnchor(String id) {
-    System.err.println("addAnchor("+id+")");
-    //cursor.appendChild(anchorNode(id));
+    push("block", "id="+id);
+    pop();
     return this;
   }
     
@@ -435,24 +466,11 @@ public class Document {
    * Add a link
    */
   public Document addLink(String text, String id) {
-    System.err.println("addLink("+text+","+id+")");
     
-//    // make sure there's a paragraph
-//    if (!"para".equals(cursor.getNodeName())) 
-//      addParagraph();
-//    // known anchor? create link
-//    if (id.indexOf(':')>0||anchorNodes.contains(id)) 
-//      cursor.appendChild(linkNode(text, id));
-//    else {
-//      // remember a new text node for now
-//      Node node = addTextElement(cursor, text, TEXT_PLAIN);
-//      List unverified = (List)unresolvedID2textNodes.get(id);
-//      if (unverified==null) {
-//        unverified = new ArrayList();
-//        unresolvedID2textNodes.put(id, unverified);
-//      }
-//      unverified.add(node);
-//    }
+    // <basic-link>text</basic-link>
+    push("basic-link", "show-destination=true,internal-destination="+id);
+    text(text, "");
+    pop();
     // done
     return this;
   }
@@ -472,60 +490,77 @@ public class Document {
     return addLink(entity.toString(), entity);
   }
   
-//  private Element linkNode(String text, String id) {
-//    
-//    Element link;
-//    if (id.startsWith("http:")) {
-//      link = createElement("ulink", text);
-//      link.setAttribute("url", id);
-//    } else {
-//      link = createElement("link", text);
-//      link.setAttribute("linkend", id);
-//    }
-//    return link;
-//  }
-//  
-//  private Element sectionNode(String title, String id) {
-//    if (title==null) throw new IllegalArgumentException("section without title n/a");
-//    Element section = createElement("section", null);
-//    section.appendChild(createElement("title", title));
-//    if (id!=null&&id.length()>0) section.appendChild(anchorNode(id));
-//    return section;
-//  }
-  
-//  private Element anchorNode(String id) {
-//    // already a known anchor?
-//    if (anchorNodes.contains(id)) throw new IllegalArgumentException( "duplicate anchor id "+id);
-//    anchorNodes.add(id);
-//    // add anchor node
-//    Element anchor = createElement("anchor", null);
-//    anchor.setAttribute("id", id);
-//    // check for unverified links
-//    List unverified = (List)unresolvedID2textNodes.remove(id);
-//    if (unverified!=null) for (Iterator it=unverified.iterator();it.hasNext();) {
-//      Text text = (Text)it.next();
-//      text.getParentNode().replaceChild(linkNode(text.getData(), id), text);
-//    }
-//    return anchor;
-//  }
-  
-  /** matching a=b,c-d=e,f:g=h,x=y(m,n,o),z=1 */
-  protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]+(\\(.*?\\))?)");
-  
   /**
-   * Add element qualified by qname to parent
+   * Add Table of content 
    */
-  private Document push(String path) {
-    return push(path, "");
+  private Document toc() {
+    
+    // anything to do?
+    if (sections.isEmpty())
+      return this;
+    Element old = cursor;
+    
+    // pop back to flow
+    pop("flow", "can't create TOC without enclosing flow");
+    
+    // add block for toc AS FIRST child
+    push("block", "", true);
+    
+    //<block>
+    //  Table of Contents
+    //  <block>
+    //    Title 1<leader/><page-number-citation/>
+    //   </block>
+    //   ...
+    //</block>
+    
+    // add toc header
+    push("block", formatSection);
+    text("Table of Content", "");
+    pop();
+
+    // add toc entries
+    for (int i=0;i<sections.size();i++) {
+      push("block", "start-indent=1cm,end-indent=1cm,text-indent=0cm,text-align-last=justify,text-align=justify");
+      Element section = (Element)sections.get(i);
+      String id = section.getAttribute("id");
+      String txt = ((Text)section.getFirstChild()).getData();
+      addLink(txt, id);
+      push("leader", "leader-pattern=dots").pop();
+      push("page-number-citation", "ref-id="+id).pop();
+
+      pop();
+    }
+    
+    // done
+    cursor = old;
+    return this;
   }
   
   /**
-   * Add element qualified by qname to parent
+   * Add qualified element to parent
+   */
+  private Document push(String name) {
+    return push(name, "");
+  }
+  
+  /**
+   * Add qualified element to parent
    */
   private Document push(String name, String attributes) {
+    return push(name, attributes, false);
+  }
+  
+  /**
+   * Add qualified element to parent
+   */
+  private Document push(String name, String attributes, boolean asFirst) {
     // create it, set attributes and hook it up
     Element elem = doc.createElementNS(NSURI, name);
-    cursor.appendChild(elem);
+    if (asFirst)
+      cursor.insertBefore(elem, cursor.getFirstChild());
+    else
+      cursor.appendChild(elem);
     cursor =  elem;
     // parse attributes
     Matcher m = REGEX_ATTR.matcher(attributes);
@@ -580,19 +615,70 @@ public class Document {
     }
     throw new IllegalArgumentException(error);
   }
+ 
+  public static void main(String[] args) {
+    
+    try {
+    
+      Document doc = new Document("test");
   
-  /**
-   * Accessor - whether a TOC is included
-   */
-  public boolean isTOC() {
-    return isTOC;
-  }
+      doc.addTOC();
+      doc.addSection("Section 1");
+      doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
+      doc.startTable("10%,10%,80%", true, true);
+      doc.addText("AA");
+      doc.nextTableCell();
+      doc.addText("AB");
+      doc.nextTableCell();
+      doc.addText("AC");
+      doc.nextTableCell();
+      doc.addText("BA"); // next row
+      doc.nextTableCell();
+      doc.addText("BB");
+      doc.nextTableCell();
+      doc.addText("BC");
+      doc.nextTableRow();
+      doc.addText("CA");
+      doc.nextTableCell();
+      doc.addText("CB");
+      doc.nextTableCell();
   
-  /**
-   * Accessor - whether a TOC is included
-   */
-  public void setTOC(boolean set) {
-    isTOC = set;
-  }
+      doc.startList();
+      doc.nextListItem();
+      doc.addText("Item 1");
+      doc.addText(" with text");
+      doc.addParagraph();
+      doc.addText("and a newline");
+      doc.nextListItem();
+      doc.addText("Item 2");
+      doc.startList();
+      doc.addText("Item 2.1");
+      doc.nextListItem();
+      doc.addText("Item 2.2");
+      doc.endList();
+      doc.endList();
+      doc.addText("Text");
+  
+      doc.addSection("Section 2");
+      doc.addText("Text");
 
+      Format format;
+      if (args.length>0)
+        format = Format.getFormat(args[0]);
+      else 
+        format = new PDFFormat();
+      
+      String ext = format.getFileExtension();
+      File file = new File("c:/temp/foo."+ext);
+      
+      format.format(doc, file);
+
+      Runtime.getRuntime().exec("c:/Program Files/Internet Explorer/iexplore.exe \""+file.getAbsolutePath()+"\"");
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
 }

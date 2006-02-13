@@ -104,10 +104,7 @@ public class ReportSummaryOfRecords extends Report {
     println(i18n("exporting", ent.toString() ));
       
     // start a new section
-    doc.addSection( ent.toString() );
-    
-    // mark it
-    doc.addAnchor(ent);
+    doc.addSection( ent.toString(), ent );
     
     // start a table for the entity
     doc.startTable("80%,20%", false, false);
