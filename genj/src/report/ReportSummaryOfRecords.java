@@ -14,6 +14,7 @@ import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
+import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.report.Report;
@@ -138,9 +139,9 @@ public class ReportSummaryOfRecords extends Report {
         PropertyName name = (PropertyName)prop;
         doc.addIndexTerm("Names", name.getLastName(), name.getFirstName());
       }
-      if (generatePlaceIndex>0&&prop.getTag().equals("PLAC")) {
+      if (generatePlaceIndex>0&&(prop instanceof PropertyPlace)) {
         String index = generatePlaceIndex==1 ? "Places" : "Places - "+prop.getParent().getPropertyName();
-        doc.addIndexTerm(index, prop.getDisplayValue());
+        doc.addIndexTerm(index, ((PropertyPlace)prop).getCity());
       }
 
       // ... and the text
