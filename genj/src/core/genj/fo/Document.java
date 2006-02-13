@@ -293,6 +293,8 @@ public class Document {
 
     // check dimension - let's not make this bigger than 1x1 inch
     Dimension2D dim = new ImageSniffer(file).getDimensionInInches();
+    if (dim==null)
+      return this;
     if (dim.getWidth()>dim.getHeight()) {
       if (dim.getWidth()>1) format = "width=1in,content-width=scale-to-fit,"+format; // can be overriden
     } else {
