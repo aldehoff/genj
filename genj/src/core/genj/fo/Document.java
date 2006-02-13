@@ -213,12 +213,12 @@ public class Document {
     if (index.length()==0)
       throw new IllegalArgumentException("addIndexTerm() name of index can't be empty");
     
-    // check primary
+    // check primary - ignore if empty
     if (primary==null) 
       throw new IllegalArgumentException("addIndexTerm() requires primary");
     primary = primary.trim();
     if (primary.length()==0)
-      throw new IllegalArgumentException("addIndexTerm() primary can't be empty");
+      return this;
     
     // check secondary
     if (secondary==null)
