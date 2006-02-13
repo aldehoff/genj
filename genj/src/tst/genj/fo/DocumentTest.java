@@ -23,20 +23,23 @@ public class DocumentTest extends TestCase {
        "c", "rgb(0,0,128)",
        "bar-tst", " foo  ",
        "x:z", " foo  ",
+       "tst", "(A,B,C)"
     };
-
+    
     // assemble into parameter string
     StringBuffer buf = new StringBuffer();
-    for (int i=0;i<testcase.length/2;i+=2) {
+    for (int i=0;i<testcase.length;i+=2) {
       buf.append(testcase[i+0]).append("=").append(testcase[i+1]).append(",");
     }
     
     // parse with Document attribute regular expression
     Matcher m = Document.REGEX_ATTR.matcher(buf.toString());
-    for (int i=0;i<testcase.length/2;i+=2) {
-      assertTrue(m.find());
-      assertEquals(testcase[i+0].trim(), m.group(1).trim());
-      assertEquals(testcase[i+1].trim(), m.group(2).trim());
+    for (int i=0;i<testcase.length;i+=2) {
+      String key = testcase[i+0].trim();
+      String value = testcase[i+1].trim();
+      assertTrue("looking for "+key+"="+value, m.find());
+      assertEquals(key, m.group(1).trim());
+      assertEquals(value, m.group(2).trim());
     }
 
     // done

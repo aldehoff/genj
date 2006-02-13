@@ -48,7 +48,7 @@ import org.w3c.dom.Text;
 public class Document {
   
   /** matching a=b,c-d=e,f:g=h,x=y(m,n,o),z=1 */
-  protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]+(\\(.*?\\))?)");
+  protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]*(\\(.*?\\))?)");
   
   /** xsl fo namespace URI */
   private final static String NSURI = "http://www.w3.org/1999/XSL/Format";
@@ -213,18 +213,13 @@ public class Document {
     if (index.length()==0)
       throw new IllegalArgumentException("addIndexTerm() name of index can't be empty");
     
-    // check primary - ignore if empty
-    if (primary==null) 
-      return this;
-    primary = primary.trim();
+    // check primary - ignore indexterm if empty
+    primary = trimIndexTerm(primary);
     if (primary.length()==0)
       return this;
     
     // check secondary
-    if (secondary==null)
-      secondary = "";
-    else
-      secondary = secondary.trim();
+    secondary = trimIndexTerm(secondary);
     
     // remember
     Map primary2secondary2elements = (Map)index2primary2secondary2elements.get(index);
@@ -249,6 +244,22 @@ public class Document {
     pop();
     
     return this;
+  }
+  
+  private String trimIndexTerm(String term) {
+    // null?
+    if (term==null) 
+      return "";
+    // remove anything after (
+    int bracket = term.indexOf('(');
+    if (bracket>=0) 
+      term = term.substring(0,bracket);
+    // remove anything after ,
+    int comma = term.indexOf('(');
+    if (comma>=0) 
+      term = term.substring(0,comma);
+    // trim
+    return term.trim();
   }
     
   /**
