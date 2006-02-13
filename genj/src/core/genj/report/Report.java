@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.93 $ $Author: nmeier $ $Date: 2006-02-02 20:12:39 $
+ * $Revision: 1.94 $ $Author: nmeier $ $Date: 2006-02-13 07:47:59 $
  */
 package genj.report;
 
@@ -820,6 +820,7 @@ public abstract class Report implements Cloneable {
         t = ((InvocationTargetException)t).getTargetException();
         msg = "report failed";
       }
+      if (t instanceof Error) throw (Error)t;
       if (t instanceof RuntimeException) throw (RuntimeException)t;
       throw new RuntimeException(msg, t);
     }
