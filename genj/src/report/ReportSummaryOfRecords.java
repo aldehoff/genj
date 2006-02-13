@@ -16,9 +16,8 @@ import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
 import genj.report.Report;
-
-import java.util.List;
 
 import javax.swing.ImageIcon;
 
@@ -29,13 +28,15 @@ import javax.swing.ImageIcon;
  */
 public class ReportSummaryOfRecords extends Report {
   
+  private final static TagPath PATH2IMAGES = new TagPath("INDI:OBJE:FILE");
+  
   /** whether we're genering indexes for places */
   public  int generatePlaceIndex = 0;
   public String[] generatePlaceIndexs = {
     i18n("place.index.none"), i18n("place.index.one"), i18n("place.index.each")
   };
   
-  /** max # of images per record (0 is all) */
+  /** max # of images per record */
   private  int maxImagesPerRecord = 4;
   
   /**
@@ -109,11 +110,11 @@ public class ReportSummaryOfRecords extends Report {
     // export its properties
     exportProperties(ent, doc);
 
-    // add image in next column
+    // add images in next column
     doc.nextTableCell();
-    List files = ent.getProperties(PropertyFile.class);
-    for (int f=0;f<files.size() && (maxImagesPerRecord==0||f<maxImagesPerRecord);f++) {
-      PropertyFile file = (PropertyFile)files.get(f);
+    Property[] files = ent.getProperties(PATH2IMAGES);
+    for (int f=0;f<files.length && f<maxImagesPerRecord; f++) {
+      PropertyFile file = (PropertyFile)files[f];
       doc.addImage(file.getFile(),"");
     }
     
