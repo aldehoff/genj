@@ -165,6 +165,7 @@ public abstract class Format {
       formatImpl(doc, out);
     } catch (Throwable t) {
       LOG.log(Level.WARNING, "unexpected expection formatting "+doc.getTitle(), t);
+      if (t instanceof OutOfMemoryError) throw new IOException("out of memory");
       if (t instanceof IOException) throw (IOException)t;
       throw new IOException(t.getMessage());
     } finally {
