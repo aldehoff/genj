@@ -117,12 +117,11 @@ public class ImageSniffer {
    */
   public Dimension2D getDimensionInInches() {
     // check whether we have a resolution
-    if (dpi==null) 
+    if (dpi==null||dimension==null) 
       return null;
-    Dimension dim = getDimension();
     return new Dimension2d(
-      (double)dim.width/dpi.x, 
-      (double)dim.height/dpi.y
+      (double)dimension.width/dpi.x, 
+      (double)dimension.height/dpi.y
     );
   }
   
