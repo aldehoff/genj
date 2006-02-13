@@ -151,7 +151,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
           type==PropertySource.class||
           type==PropertySubmitter.class||
           type==PropertyFamilyChild.class||
-          (type==PropertyMedia.class&&Options.getInstance().isAllowNewOBJEctEntities) 
+          (type==PropertyMedia.class&&genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities) 
         ) {
         // .. make sure @@ forces a non-substitute!
         result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
@@ -198,7 +198,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
           type==PropertyRepository.class||
           type==PropertySource.class||
           type==PropertySubmitter.class||
-          (type==PropertyMedia.class&&Options.getInstance().isAllowNewOBJEctEntities) 
+          (type==PropertyMedia.class&&genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities) 
           ) {
         // .. make sure @@ forces a non-substitute!
         result.add(new CreateRelationship(new Relationship.XRefBy(entity, (PropertyXRef)subs[s].create("@@")), manager));
@@ -228,7 +228,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateEntity(gedcom, Gedcom.INDI, manager));
     result.add(new CreateEntity(gedcom, Gedcom.FAM , manager));
     result.add(new CreateEntity(gedcom, Gedcom.NOTE, manager));
-    if (Options.getInstance().isAllowNewOBJEctEntities)
+    if (genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities)
       result.add(new CreateEntity(gedcom, Gedcom.OBJE, manager));
     result.add(new CreateEntity(gedcom, Gedcom.REPO, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));

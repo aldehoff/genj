@@ -29,9 +29,6 @@ import genj.option.PropertyOption;
  */
 public class Options extends OptionProvider {
   
-  /** option - whether creating OBJEct entities should be enabled */
-  public boolean isAllowNewOBJEctEntities = false;
-
   /** option - whether an editor should */
   public boolean isOpenEditor = true;
   

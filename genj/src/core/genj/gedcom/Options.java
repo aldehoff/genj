@@ -35,6 +35,9 @@ public class Options extends OptionProvider {
   /** singleton */
   private final static Options instance = new Options();
   
+  /** option - whether creating OBJEct entities should be enabled */
+  public boolean isAllowNewOBJEctEntities = false;
+
   /** option - whether to use spaces in separating places */
   public boolean isUseSpacedPlaces = true;
   
