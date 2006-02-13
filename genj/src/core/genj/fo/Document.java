@@ -25,10 +25,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +59,8 @@ public class Document {
   private boolean needsTOC = true;
   private Map file2elements = new HashMap();
   private List sections = new ArrayList();
-  private String formatSection = "font-size=larger,font-weight=bold";
+  private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm";
+  private Map index2primary2secondary2elements = new TreeMap();
   
   /**
    * Constructor
@@ -114,6 +117,9 @@ public class Document {
     if (cursor==null)
       return;
     
+    // generate indexes
+    indexes();
+    
     // generate TOC
     if (needsTOC) 
       toc();
@@ -148,7 +154,7 @@ public class Document {
   /**
    * Add section
    */
-  public Document addSection(String title, String id) {
+  public Document startSection(String title, String id) {
     
     // return to the last block in flow
     pop("flow", "addSection() is not applicable outside document flow");
@@ -159,7 +165,7 @@ public class Document {
       id = "section"+sections.size();
       
     // start a new block
-    pop().push("block", formatSection + ",id="+id);
+    pop().push("block", formatSection + ",id="+id+",keep-with-next.within-page=always");
     
     // remember
     sections.add(cursor);
@@ -177,53 +183,74 @@ public class Document {
   /**
    * Add section
    */
-  public Document addSection(String title, Entity entity) {
-    return addSection(title,entity.getTag()+"_"+entity.getId());
+  public Document startSection(String title, Entity entity) {
+    return startSection(title,entity.getTag()+"_"+entity.getId());
   }
     
   /**
    * Add section
    */
-  public Document addSection(String title) {
-    return addSection(title, (String)null);
+  public Document startSection(String title) {
+    return startSection(title, (String)null);
   }
     
   /**
    * Add an index entry
    */
+  public Document addIndexTerm(String index, String primary) {
+    return addIndexTerm(index, primary, "");
+  }
+  
+  /**
+   * Add an index entry
+   */
   public Document addIndexTerm(String index, String primary, String secondary) {
-    System.err.println("addIndexTerm("+index+","+primary+","+secondary+")");
-//    // check primary
-//    if (primary==null) 
-//      throw new IllegalArgumentException("index term without primary");
-//    if (primary.length()==0)
-//      return this;
-//    // add indexterm element
-//    Element entry = createElement("indexterm", null);
-//    entry.setAttribute("type", index);
-//    entry.appendChild(createElement("primary", primary));
-//    if (secondary!=null&&secondary.length()>0)
-//      entry.appendChild(createElement("secondary", secondary));
-//    cursor.appendChild(entry);
+    
+    // check index
+    if (index==null)
+      throw new IllegalArgumentException("addIndexTerm() requires name of index");
+    index = index.trim();
+    if (index.length()==0)
+      throw new IllegalArgumentException("addIndexTerm() name of index can't be empty");
+    
+    // check primary
+    if (primary==null) 
+      throw new IllegalArgumentException("addIndexTerm() requires primary");
+    primary = primary.trim();
+    if (primary.length()==0)
+      throw new IllegalArgumentException("addIndexTerm() primary can't be empty");
+    
+    // check secondary
+    if (secondary==null)
+      secondary = "";
+    else
+      secondary = secondary.trim();
+    
+    // remember
+    Map primary2secondary2elements = (Map)index2primary2secondary2elements.get(index);
+    if (primary2secondary2elements==null) {
+      primary2secondary2elements = new TreeMap();
+      index2primary2secondary2elements.put(index, primary2secondary2elements);
+    }
+    Map secondary2elements = (Map)primary2secondary2elements.get(primary);
+    if (secondary2elements==null) {
+      secondary2elements = new TreeMap();
+      primary2secondary2elements.put(primary, secondary2elements);
+    }
+    List elements = (List)secondary2elements.get(secondary);
+    if (elements==null) {
+      elements = new ArrayList();
+      secondary2elements.put(secondary, elements);
+    }
+    
+    // add anchor
+    push("block", "id="+index+":"+primary+":"+secondary+":"+elements.size());
+    elements.add(cursor);
+    pop();
+    
     return this;
   }
     
-  /**
-   * Add an index
-   * (need to set index.on.type for XSL)
-   */
-  public Document addIndex(String index, String title) {
-    System.err.println("addIndex("+index+","+title+")");
-//    // go back to root element
-//    pop("");
-//    // add index element
-//    Element elem = createElement("index", null);
-//    elem.setAttribute("type", index);
-//    elem.appendChild(createElement("title", title));
-//    cursor.appendChild(elem);
-    return this;
-  }
-  
   /**
    * Add text
    */
@@ -447,6 +474,15 @@ public class Document {
   }
   
   /**
+   * Force a page break
+   */
+  public Document nextPage() {
+    pop();
+    push("block", "page-break-before=always");
+    return this;
+  }
+  
+  /**
    * Add an anchor
    */
   public Document addAnchor(String id) {
@@ -468,7 +504,7 @@ public class Document {
   public Document addLink(String text, String id) {
     
     // <basic-link>text</basic-link>
-    push("basic-link", "show-destination=true,internal-destination="+id);
+    push("basic-link", "internal-destination="+id);
     text(text, "");
     pop();
     // done
@@ -488,6 +524,71 @@ public class Document {
    */
   public Document addLink(Entity entity) {
     return addLink(entity.toString(), entity);
+  }
+  
+  /**
+   * Add indexes
+   */
+  private Document indexes() {
+    
+    // loop over indexes
+    for (Iterator indexes = index2primary2secondary2elements.keySet().iterator(); indexes.hasNext(); ) {
+      
+      String index = (String)indexes.next();
+      Map primary2secondary2elements = (Map)index2primary2secondary2elements.get(index);
+      
+      // add section
+      startSection("Index - "+index);
+      push("block", "start-indent=1cm");
+      
+      // loop over primaries
+      for (Iterator primaries = primary2secondary2elements.keySet().iterator(); primaries.hasNext(); ) {
+        
+        String primary = (String)primaries.next();
+        Map secondary2elements = (Map)primary2secondary2elements.get(primary);
+        
+        // add block and primary
+        push("block", "");
+        text(primary+" ", "");
+
+        // loop over secondaries
+        for (Iterator secondaries = secondary2elements.keySet().iterator(); secondaries.hasNext(); ) {
+          
+          String secondary = (String)secondaries.next();
+          List elements = (List)secondary2elements.get(secondary);
+          
+          if (secondary.length()>0) {
+            push("block", "start-indent=2cm"); //start-indent?
+            text(secondary+" ", "");
+          }
+          
+          // loop over elements
+          for (int e=0;e<elements.size();e++) {
+            if (e>0) text(", ", "");
+            Element element = (Element)elements.get(e);
+            String id = element.getAttribute("id");
+            
+            push("basic-link", "internal-destination="+id);
+            push("page-number-citation", "ref-id="+id+",role="+(e+1)).pop();
+            pop();
+          }
+          
+          if (secondary.length()>0)
+            pop();
+          // next
+        }
+        
+        // next
+        pop();
+      }
+
+      // next
+      pop();
+    }
+
+    
+    // done
+    return this;
   }
   
   /**
@@ -623,7 +724,7 @@ public class Document {
       Document doc = new Document("test");
   
       doc.addTOC();
-      doc.addSection("Section 1");
+      doc.startSection("Section 1");
       doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
       doc.startTable("10%,10%,80%", true, true);
@@ -647,7 +748,15 @@ public class Document {
       doc.startList();
       doc.nextListItem();
       doc.addText("Item 1");
-      doc.addText(" with text");
+      doc.addText(" with text talking about");
+      doc.addIndexTerm("Animals", "Mammals");
+      doc.addText(" elephants and ");
+      doc.addIndexTerm("Animals", "Mammals", "Horse");
+      doc.addText(" horses as well as ");
+      doc.addIndexTerm("Animals", "Mammals", "Horse");
+      doc.addText(" ponys and even ");
+      doc.addIndexTerm("Animals", "Fish", "");
+      doc.addText(" fish");
       doc.addParagraph();
       doc.addText("and a newline");
       doc.nextListItem();
@@ -660,7 +769,11 @@ public class Document {
       doc.endList();
       doc.addText("Text");
   
-      doc.addSection("Section 2");
+      doc.startSection("Section 2");
+      doc.addText("Text and a page break");
+      doc.nextPage();
+      
+      doc.startSection("Section 2");
       doc.addText("Text");
 
       Format format;

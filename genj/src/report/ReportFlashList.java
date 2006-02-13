@@ -88,7 +88,7 @@ public class ReportFlashList extends Report {
     for (Iterator ps = primary.keySet().iterator(); ps.hasNext(); ) {
       String p = (String)ps.next();
 
-      doc.addSection(p);
+      doc.startSection(p);
       
       Map secondary = (Map)lookup(primary, p, null);
       for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {

@@ -18,10 +18,6 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import javax.swing.ImageIcon;
 
 /**
@@ -63,24 +59,12 @@ public class ReportSummaryOfRecords extends Report {
 
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
     
-    // prepare some space to collect places
-    Set placeTags = new HashSet();
-
     // Loop through individuals & families
-    exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), placeTags, doc);
-    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM"), placeTags, doc);
+    exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc);
+    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM"), doc);
     
-    // add index for names and each place category
-    doc.addIndex("names", "Name Index");
-    
-    if (generatePlaceIndex==1)
-      doc.addIndex("places.*", "Place Index");
-    if (generatePlaceIndex==2) {
-      for (Iterator it=placeTags.iterator(); it.hasNext(); ) {
-        String tag = (String)it.next();
-        doc.addIndex("places."+tag, Gedcom.getName(tag)+ " - Place Index");
-      }
-    }
+    // add a new page here - before the index is generated
+    doc.nextPage();
     
     // Done
     showDocumentToUser(doc);
@@ -90,27 +74,27 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given entities 
    */
-  private void exportEntities(Entity[] ents, Set placeTags, Document doc)  {
+  private void exportEntities(Entity[] ents, Document doc)  {
     for (int e = 0; e < ents.length; e++) {
-      exportEntity(ents[e], placeTags, doc);
+      exportEntity(ents[e], doc);
     }
   }
   
   /**
    * Exports the given entity 
    */
-  private void exportEntity(Entity ent, Set placeTags, Document doc) {
+  private void exportEntity(Entity ent, Document doc) {
 
     println(i18n("exporting", ent.toString() ));
       
     // start a new section
-    doc.addSection( ent.toString(), ent );
+    doc.startSection( ent.toString(), ent );
     
     // start a table for the entity
     doc.startTable("80%,20%", false, false);
 
     // export its properties
-    exportProperties(ent, placeTags, doc);
+    exportProperties(ent, doc);
 
     // add image in next column
     doc.nextTableCell();
@@ -125,7 +109,7 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given property's properties
    */
-  private void exportProperties(Property of, Set placeTags, Document doc) {
+  private void exportProperties(Property of, Document doc) {
 
     // anything to do?
     if (of.getNoOfProperties()==0)
@@ -139,17 +123,6 @@ public class ReportSummaryOfRecords extends Report {
       
       Property prop = of.getProperty(i);
 
-      // fill index while we're at it
-      if (prop instanceof PropertyName) {
-        PropertyName name = (PropertyName)prop;
-        doc.addIndexTerm("names", name.getLastName(), name.getFirstName());
-      }
-      if (generatePlaceIndex>0&&prop.getTag().equals("PLAC")) {
-        String tag = generatePlaceIndex==2  ? prop.getParent().getTag() : "*";
-        doc.addIndexTerm("places."+tag, prop.getDisplayValue(), null);
-        placeTags.add(tag);
-      }
-
       // we don't do anything for xrefs to non-indi/fam
       if (prop instanceof PropertyXRef) {
         PropertyXRef xref = (PropertyXRef)prop;
@@ -159,14 +132,26 @@ public class ReportSummaryOfRecords extends Report {
 
       // here comes the item
       doc.nextListItem();
-      doc.addText(Gedcom.getName(prop.getTag()), "font-style=italic");
+      
+      // fill index while we're at it
+      if (prop instanceof PropertyName) {
+        PropertyName name = (PropertyName)prop;
+        doc.addIndexTerm("Names", name.getLastName(), name.getFirstName());
+      }
+      if (generatePlaceIndex>0&&prop.getTag().equals("PLAC")) {
+        String index = generatePlaceIndex==1 ? "Places" : "Places - "+prop.getParent().getPropertyName();
+        doc.addIndexTerm(index, prop.getDisplayValue());
+      }
+
+      // ... and the text
+      doc.addText(Gedcom.getName(prop.getTag()), "font-style=italic,color=gray");
       doc.addText(" ");
       
       // with its value
       exportPropertyValue(prop, doc);
 
       // recurse into it
-      exportProperties(prop, placeTags, doc);
+      exportProperties(prop, doc);
     }
     doc.endList();
   }
