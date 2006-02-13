@@ -24,6 +24,7 @@ import genj.common.PropertyTableWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.Options;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -215,7 +216,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     bh.setFocusable(false);
     
     for (int i=0;i<Gedcom.ENTITIES.length;i++) {
-      bar.add(bh.create(new ActionChangeType(getMode(Gedcom.ENTITIES[i]))));
+      String tag = Gedcom.ENTITIES[i];
+      // don't offer OBJEct button unless there are some of those already or the option to create them is selected
+      if (!tag.equals("OBJE")||!gedcom.getEntities(tag).isEmpty()||Options.getInstance().isAllowNewOBJEctEntities)
+        bar.add(bh.create(new ActionChangeType(getMode(tag))));
     }
     
     // done
