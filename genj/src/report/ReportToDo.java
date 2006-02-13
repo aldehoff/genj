@@ -23,6 +23,7 @@ import genj.report.Report;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 
@@ -157,7 +158,7 @@ public class ReportToDo extends Report {
 
 	if (!outputWorkingSheet) return;
 	for (int e = 0; e < ents.length; e++) {
-	    props = ents[e].findProperties(todoTag, todoStart+".*");
+	    props = findProperties(ents[e]);
 	    if (props.size() == 0){
 		continue;
 	    }
@@ -183,7 +184,7 @@ public class ReportToDo extends Report {
 	Indi tempIndi;
 	Fam tempFam;
 
-	todos = fam.findProperties(todoTag, todoStart+".*");
+	todos = findProperties(fam);
 	if (todos.size() == 0){
 	    return;
 	}
@@ -274,7 +275,7 @@ public class ReportToDo extends Report {
 	ArrayList props;
 	String tempString = "";
 
-	todos = indi.findProperties(todoTag,todoStart+".*");
+	todos = findProperties(indi);
 	if (todos.size() == 0){
 	    return;
 	}
@@ -399,7 +400,7 @@ public class ReportToDo extends Report {
 	if (!outputSummary) return;
 
 	for (int e = 0; e < ents.length; e++) {
-	    todos = ents[e].findProperties(todoTag,todoStart+".*");
+	    todos = findProperties(ents[e]);
 	    if (todos.size() == 0){
 		continue;
 	    }
@@ -432,7 +433,7 @@ public class ReportToDo extends Report {
 	boolean isFirstPage=true;
 
 	for (int e = 0; e < ents.length; e++) {
-	    todos = ents[e].findProperties(todoTag,todoStart+".*");
+	    todos = findProperties(ents[e]);
 	    if (todos.size() == 0){
 		continue;
 	    }
@@ -593,6 +594,10 @@ public class ReportToDo extends Report {
 	if (first == null) first = "";
 	if (last == null) last = "";
 	return output.strong(last.toUpperCase())+" "+first;
+    }
+    
+    private List findProperties(Property of) {
+      return of.findProperties(Pattern.compile(todoTag), Pattern.compile(todoStart+".*", Pattern.DOTALL));
     }
 
 

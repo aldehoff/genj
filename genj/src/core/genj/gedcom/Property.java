@@ -480,19 +480,18 @@ public abstract class Property implements Comparable {
   
   /**
    * Returns property's properties by criteria
-   * @param tag  regular expression of tag to match
-   * @param value regular expression of value to match
+   * @param tag  regular expression pattern of tag to match
+   * @param value regular expression pattern of value to match
    * @param recursively whether to recurse into sub-properties
    * @return matching properties
    */
-  public List findProperties(String tag, String value) {
+  public List findProperties(Pattern tag, Pattern value) {
     // create result
     List result = new ArrayList();
     // check argument
-    if (tag.length()==0) throw new IllegalArgumentException("need tag regex");
-    if (value==null||value.length()==0) value = ".*";
+    if (value==null) value = Pattern.compile(".*");
     // recurse
-    findPropertiesRecursively(result, Pattern.compile(tag), Pattern.compile(value), true);
+    findPropertiesRecursively(result, tag, value, true);
     // done
     return result;
   }
