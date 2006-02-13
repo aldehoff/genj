@@ -215,7 +215,7 @@ public class Document {
     
     // check primary - ignore if empty
     if (primary==null) 
-      throw new IllegalArgumentException("addIndexTerm() requires primary");
+      return this;
     primary = primary.trim();
     if (primary.length()==0)
       return this;
