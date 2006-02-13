@@ -227,10 +227,25 @@ public class PropertyPlace extends PropertyChoiceValue {
   }
   
   /**
+   * Accessor - jurisdictions that is the city
+   */
+  public String getCity() {
+    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(getCityIndex());
+  }
+  
+  /**
    * Accessor - all jurisdictions starting with city
    */
   public String getValueStartingWithCity() {
     String result = getValue();
+    int city = getCityIndex();
+    if (city==0)
+      return result;
+    return new DirectAccessTokenizer(result, JURISDICTION_SEPARATOR).getSubstring(city);
+  }
+  
+  private int getCityIndex() {
+    
     // calculate the city index in place format
     String hierarchy = getHierarchy();
     if (hierarchy.length()>0) {
@@ -238,14 +253,13 @@ public class PropertyPlace extends PropertyChoiceValue {
       Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
       DirectAccessTokenizer hs = new DirectAccessTokenizer(hierarchy, ",");
       for (int index=0; hs.get(index)!=null ;index++) {
-        if (cityKeys.contains(hs.get(index).toLowerCase())) {
-          result = new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).getSubstring(index);
-          break;
-        }
+        if (cityKeys.contains(hs.get(index).toLowerCase())) 
+          return index;
       }
     }
-    // done
-    return result;
+    
+    // assuming first
+    return 0;
   }
   
 } //PropertyPlace
