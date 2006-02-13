@@ -90,16 +90,25 @@ public class ReportFlashList extends Report {
 
       doc.startSection(p);
       
+      doc.startTable("80%,10%,10%", false, true);
+      
       Map secondary = (Map)lookup(primary, p, null);
       for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {
         
         String s = (String)ss.next();
         Range range = (Range)lookup(secondary, s, null);
-        
-        doc.addParagraph();
-        doc.addText(s + " " + range);
+
+        doc.addText(s);
+        doc.nextTableCell();
+        doc.addText(range.getFirst());
+        doc.nextTableCell();
+        doc.addText(range.getLast());
+        if (ss.hasNext()) doc.nextTableCell();
       }
       
+      doc.endTable();
+
+      // done
     }
     
     // done
@@ -225,6 +234,17 @@ public class ReportFlashList extends Report {
       if (firstYear==Integer.MAX_VALUE|| lastYear==Integer.MAX_VALUE)
         return "";
       return firstYear + " " + lastYear;
+    }
+    
+    String getFirst() {
+      // check for valid year - this might still be UNKNOWN even though a date was valid
+      if (firstYear==Integer.MAX_VALUE|| lastYear==Integer.MAX_VALUE)
+        return "";
+      return Integer.toString(firstYear);
+    }
+    
+    String getLast() {
+      return Integer.toString(lastYear);
     }
   }
 
