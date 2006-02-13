@@ -294,9 +294,9 @@ public class Document {
     // check dimension - let's not make this bigger than 1x1 inch
     Dimension2D dim = new ImageSniffer(file).getDimensionInInches();
     if (dim.getWidth()>dim.getHeight()) {
-      if (dim.getWidth()>1) format = "content-width=1in,"+format; // can be overriden
+      if (dim.getWidth()>1) format = "width=1in,content-width=scale-to-fit,"+format; // can be overriden
     } else {
-      if (dim.getHeight()>1) format = "content-height=1in,"+format; // can be overriden
+      if (dim.getHeight()>1) format = "height=1in,content-height=scale-to-fit,"+format; // can be overriden
     }
     
     //  <fo:external-graphic src="file"/> 
