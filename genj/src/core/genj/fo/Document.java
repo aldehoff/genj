@@ -20,7 +20,9 @@
 package genj.fo;
 
 import genj.gedcom.Entity;
+import genj.util.ImageSniffer;
 
+import java.awt.geom.Dimension2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -289,6 +291,14 @@ public class Document {
     if (file==null||!file.exists())
       return this;
 
+    // check dimension - let's not make this bigger than 1x1 inch
+    Dimension2D dim = new ImageSniffer(file).getDimensionInInches();
+    if (dim.getWidth()>dim.getHeight()) {
+      if (dim.getWidth()>1) format = "content-width=1in,"+format; // can be overriden
+    } else {
+      if (dim.getHeight()>1) format = "content-height=1in,"+format; // can be overriden
+    }
+    
     //  <fo:external-graphic src="file"/> 
     push("external-graphic", "src="+file.getAbsolutePath()+","+format);
     
@@ -302,6 +312,9 @@ public class Document {
     
     // back to enclosing block
     pop();
+
+    // add opportunity to line break
+    addText(" ");
     
     // done
     return this;
@@ -738,6 +751,15 @@ public class Document {
       doc.startSection("Section 1");
       doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/200505/Visitors/Eltern1.jpg"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/200505/Visitors/Eltern1.jpg"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/200505/Visitors/Eltern1.jpg"), "vertical-align=middle");
+      
       doc.startTable("10%,10%,80%", true, true);
       doc.addText("AA");
       doc.nextTableCell();
