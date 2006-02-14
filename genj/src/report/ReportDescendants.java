@@ -8,7 +8,6 @@
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
 import genj.report.Report;
 import genj.util.WordBuffer;
 
@@ -74,32 +73,7 @@ public class ReportDescendants extends Report {
      * format date and place
      */
     private String formatDateAndPlace(String symbol, Entity entity, String tag, boolean isDate, boolean isPlace) {
-      
-      // prop exists?
-      if (entity==null)
-        return "";
-      Property prop = entity.getProperty(tag);
-      if (prop==null)
-        return "";
-      
-      WordBuffer result = new WordBuffer();
-      String date = isDate ? getValue(prop, "DATE") : "";
-      String plac = isPlace ? getValue(prop, "PLAC") : "";
-      if (date.length()>0||plac.length()>0) {
-        result.append(symbol);
-        result.append(date);
-        result.append(plac);
-      }
-      return result.toString();
-    }
-    
-    private String getValue(Property prop, String tag) {
-      if (prop==null)
-        return "";
-      prop = prop.getProperty(tag);
-      if (prop==null)
-        return "";
-      return prop.getDisplayValue();
+      return entity==null ? "" : entity.format(tag, symbol+(isDate?"{ $D}":"")+(isPlace?"{ $p}":""));
     }
     
     /**

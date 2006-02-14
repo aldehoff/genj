@@ -8,7 +8,6 @@
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.report.Report;
-import genj.gedcom.TagPath;
 
 /**
  * GenJ -  ReportAncestors
@@ -24,12 +23,6 @@ public class ReportAncestors extends Report {
         parent(indi,1);
         
         // Done
-    }
-    
-    private String trim(Object o) {
-        if(o == null)
-            return "";
-        return o.toString();
     }
     
     /**
@@ -63,11 +56,12 @@ public class ReportAncestors extends Report {
             return "?";
         
         // Assemble our substitution arguments
-        
-        String[] msgargs = {indi.getId(),
-        indi.getName(),
-        indi.getBirthAsString()+" "+trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))),
-        indi.getDeathAsString()+" "+trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")))};
+        String[] msgargs = {
+          indi.getId(),
+          indi.getName(),
+          indi.format("BIRT", "{$D}{ $p}"),
+          indi.format("DEAT", "{$D}{ $p}")
+        };
         
         // Format the message with localization and return it
         return translate("format",msgargs);
