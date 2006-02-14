@@ -81,8 +81,10 @@ public class ReportFlashList extends Report {
     
     // write it out
     Document doc = new Document(getName());
-    if (weAddaTOC) 
-    doc.addTOC();
+    if (weAddaTOC) {
+      doc.addTOC();
+      if (primary.size()>10) doc.nextPage();
+    }
     
         
     for (Iterator ps = primary.keySet().iterator(); ps.hasNext(); ) {
