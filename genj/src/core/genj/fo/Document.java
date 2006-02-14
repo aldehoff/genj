@@ -21,6 +21,7 @@ package genj.fo;
 
 import genj.gedcom.Entity;
 import genj.util.ImageSniffer;
+import genj.util.Resources;
 
 import java.awt.geom.Dimension2D;
 import java.io.File;
@@ -48,6 +49,8 @@ import org.w3c.dom.Text;
  *
  */
 public class Document {
+  
+  private final static Resources RESOURCES = Resources.get(Document.class);
   
   /** matching a=b,c-d=e,f:g=h,x=y(m,n,o),z=1 */
   protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]*(\\(.*?\\))?)");
@@ -571,7 +574,7 @@ public class Document {
       Map primary2secondary2elements = (Map)index2primary2secondary2elements.get(index);
       
       // add section
-      startSection("Index - "+index);
+      startSection(index);
       push("block", "start-indent=1cm");
       
       // loop over primaries
@@ -650,7 +653,7 @@ public class Document {
     
     // add toc header
     push("block", formatSection);
-    text("Table of Content", "");
+    text(RESOURCES.getString("toc"), "");
     pop();
 
     // add toc entries
