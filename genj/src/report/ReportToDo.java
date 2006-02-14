@@ -6,8 +6,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 /**
- * todo
- * mettre le nombre de taches a faire dans le resume
+ * TODO voir avec ie (page break)
+ * TODO inclure dans la liste les sources, repo, ... fictifs pour faire un tri
  */
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
@@ -18,10 +18,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
+//import genj.gedcom.TagPath;
 import genj.report.Report;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -37,10 +35,10 @@ public class ReportToDo extends Report {
   private final static String PLACE_AND_DATE_FORMAT = "{$D}{ $p}";
 
     private Formatter output;
-    private String eol= System.getProperty("line.separator");
 
     public String todoTag = "NOTE";
-    public String todoStart = "A Faire:";
+    public String todoStart = "TODO:";
+//    public boolean isRegExpr = false;
     public boolean outputWorkingSheet = false;
     public boolean outputSummary = true;
     public boolean outputSummaryCsv = false;
@@ -68,7 +66,7 @@ public class ReportToDo extends Report {
     public void start(Gedcom gedcom) {
     
 	if (outputSummaryCsv){
-	    println(translate("evt.col")
+		println(translate("evt.col")
 		    +","+translate("date.col")
 		    +","+translate("place.col")
 		    +","+translate("indi.col")
@@ -98,9 +96,10 @@ public class ReportToDo extends Report {
 				    output.cell(output.strong(translate("indi.col")))+
 				    output.cell(output.strong(translate("todo.col")))
 				    ));
-	    exportTodos(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"));
-	    exportTodos(gedcom.getEntities(Gedcom.FAM, "FAM"));
+	    int nbTodos=exportTodos(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"));
+	    nbTodos += exportTodos(gedcom.getEntities(Gedcom.FAM, "FAM"));
 	    output.endTable();
+	    output.println(translate("nbtodos",""+nbTodos));
 	}
 	// Done
 	output.end();
@@ -152,7 +151,9 @@ public class ReportToDo extends Report {
 
 );
 	isFirstPage = true;
+	
     }
+
   /**
    * Exports the given entities 
    */
@@ -182,7 +183,6 @@ public class ReportToDo extends Report {
 	Property prop;
 	Property[] propArray;
 	List todos;
-	ArrayList props;
 	String tempString = "";
 	Indi tempIndi;
 	Fam tempFam;
@@ -201,7 +201,7 @@ public class ReportToDo extends Report {
 	outputEventRow(tempIndi,"BAPM",todos);
 	outputEventRow(tempIndi,"DEAT",todos);
 	outputEventRow(tempIndi,"BURI",todos);
-	tempFam = tempIndi.getFamilyWhereBiologicalChild();
+	tempFam = (tempIndi == null)?null:tempIndi.getFamilyWhereBiologicalChild();
 	if (tempFam != null) {
 	    output.print(output.row(output.cell(translate("father")+":","head3")+
 				    output.cell(getIndiString(tempFam.getHusband()),0,5)));
@@ -217,7 +217,7 @@ public class ReportToDo extends Report {
 	outputEventRow(tempIndi,"BAPM",todos);
 	outputEventRow(tempIndi,"DEAT",todos);
 	outputEventRow(tempIndi,"BURI",todos);
-	tempFam = tempIndi.getFamilyWhereBiologicalChild();
+	tempFam = (tempIndi == null)?null:tempIndi.getFamilyWhereBiologicalChild();
 	if (tempFam != null) {
 	    output.print(output.row(output.cell(translate("father")+":","head3")+
 				    output.cell(getIndiString(tempFam.getHusband()),0,5)));
@@ -275,7 +275,6 @@ public class ReportToDo extends Report {
 	Property prop;
 	Property[] propArray;
 	List todos;
-	ArrayList props;
 	String tempString = "";
 
 	todos = findProperties(indi);
@@ -380,6 +379,7 @@ public class ReportToDo extends Report {
 
 
     private void outputEventRow(Entity indi, String tag, List todos){
+		if (indi == null) return;
 	Property props[] = indi.getProperties(tag);
 	
 	if (props == null) return;
@@ -396,11 +396,12 @@ public class ReportToDo extends Report {
 	}
     }
 
-    private void exportTodos(Entity[] ents)  {
+    private int exportTodos(Entity[] ents)  {
 	List todos;
 	boolean isFirstPage=true;
+	int nbTodos=0;
 
-	if (!outputSummary) return;
+	if (!outputSummary) return 0;
 
 	for (int e = 0; e < ents.length; e++) {
 	    todos = findProperties(ents[e]);
@@ -427,8 +428,10 @@ public class ReportToDo extends Report {
 		row += output.cell((prop.getEntity()).toString());
 		row += output.cell(outputPropertyValue(prop));
 		output.print(output.row(row));
+		nbTodos++;
 	    }
 	}
+	return nbTodos;
     }
 
     private void exportTodosCsv(Entity[] ents)  {
@@ -509,88 +512,25 @@ public class ReportToDo extends Report {
     private String outputPropertyValue(Property prop) {
 	String result = "";
 
-    // check for links to other indi/fams
-    if (prop instanceof PropertyXRef) {
-      
-      PropertyXRef xref = (PropertyXRef)prop;
-      return outputPropertyValue((Property)xref.getTargetEntity());
-    } 
+	// check for links to other indi/fams
+	if (prop instanceof PropertyXRef) {
+	    PropertyXRef xref = (PropertyXRef)prop;
+	    return outputPropertyValue((Property)xref.getTargetEntity());
+	} 
 
-    // multiline needs loop
-    if (prop instanceof MultiLineProperty) {
-      MultiLineProperty.Iterator lines = ((MultiLineProperty)prop).getLineIterator();
-      /* TODO: remove endin br */
-      String eol="";
-      do {
-        result += eol+lines.getValue();
-	if (!outputSummaryCsv) eol = output.br();
-	else eol=" ";
-      } while (lines.next());
-      // done
-      return result;
-    }
-
-    // patch for NAME
-    if (prop instanceof PropertyName)
-      result = ((PropertyName)prop).getName();
-    else
-      result = prop.getDisplayValue();
-
-      return result;
-      
-    // done
-  }
-
-    private ArrayList getPropertiesWithTag(Property prop, String tag){
-	ArrayList result = new ArrayList();
-	result.addAll(Arrays.asList(prop.getProperties(tag)));
-	if (prop.getTag() == tag) result.add(prop);
-	for (int i = 0; i<prop.getNoOfProperties(); i++){
-	    result.addAll(getPropertiesWithTag(prop.getProperty(i),tag));
-
-	}
-	return result;
-    }
-
-    /*
-    private void outputToDo(Indi indi){
-	ArrayList todoList = getPropertiesWithTag(indi,"_TODO");
-	Property prop = (Property)todoList.get(0);
-	println(Gedcom.getName(prop.getParent().getTag())+" "+outputPropertyValue(prop.getParent()));
-	outputProperties(prop.getParent());
-	//	println(prop.getParent().getDisplayValue());
-	//println(prop.getDisplayValue());
-	}*/
-  /**
-   * Exports the given property's properties
-   */
-    private void outputProperties(Property of) {
-
-    // anything to do?
-    if (of.getNoOfProperties()==0)
-      return;
-    
-    // an item per property
-    for (int i=0;i<of.getNoOfProperties();i++) {
-      
-      Property prop = of.getProperty(i);
-
-      // we don't do anything for xrefs to non-indi/fam
-      if (prop instanceof PropertyXRef) {
-        PropertyXRef xref = (PropertyXRef)prop;
-        if (!(xref.getTargetEntity() instanceof Indi||xref.getTargetEntity() instanceof Fam))
-          continue;
-      }
-
-      // here comes the item
-      println(Gedcom.getName(prop.getTag())+" "+outputPropertyValue(prop));
-
-      // recurse into it
-      outputProperties(prop);
-    }
+	// patch for NAME
+	if (prop instanceof PropertyName)
+	    result = ((PropertyName)prop).getName();
+	else
+	    result = prop.getDisplayValue();
+	
+	return result.replaceAll("\n",outputSummaryCsv?" ":output.br());
+	
+	// done
   }
 
     private String getFormattedName(Indi indi){
+	if (indi == null) return "";
 	String first = indi.getFirstName();
 	String last = indi.getLastName();
 
