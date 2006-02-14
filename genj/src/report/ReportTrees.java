@@ -74,7 +74,7 @@ public class ReportTrees extends Report {
           Collections.sort(trees);
             
           // Print sorted list of groups
-          println(align(translate("count"),7, Report.ALIGN_RIGHT)+"  "+translate("name"));
+          println(align(translate("count"),7, Report.ALIGN_RIGHT)+"  "+translate("indi_name"));
           println("-------  ----------------------------------------------");
             
             int grandtotal=0;
