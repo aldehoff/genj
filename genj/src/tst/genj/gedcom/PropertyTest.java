@@ -128,7 +128,36 @@ public class PropertyTest extends TestCase {
   }
   
   /**
-   * Test dates
+   * Test formatting 
+   */
+  public void testPrivacyPolicy() {     
+
+    Indi indi = createIndi();
+    
+    Property birt = indi.addProperty("BIRT", "");
+    Property date = birt.addProperty("DATE", "25 May 1970");
+    Property plac = birt.addProperty("PLAC", "Rendsburg");
+    
+    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
+    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 10, "_SECRET")));
+    assertEquals("born sometime, somewhere", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 100, "_SECRET")));
+    
+    date.addProperty("_SECRET", "");
+    assertEquals("born sometime, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 0, "_SECRET")));
+    
+    birt.addProperty("_SECRET", "");
+    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
+    assertEquals("born sometime, somewhere", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 0, "_SECRET")));
+
+    indi.addProperty("DEAT", "").addProperty("DATE", "(im Hohen Alter)");
+    assertEquals("born sometime, somewhere", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 100, null)));
+    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(true, 100, null)));
+
+    
+  }
+  
+  /**
+   * Test formatting 
    */
   public void testFormatting() {     
     

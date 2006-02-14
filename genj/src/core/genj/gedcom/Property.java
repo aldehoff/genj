@@ -959,6 +959,14 @@ public abstract class Property implements Comparable {
 
   /**
    * Generate a string representation based on given template.
+   * @see Property#format(String, PrivacyPolicy)
+   */
+  public String format(String format) {
+    return format(format, null);
+  }
+  
+  /**
+   * Generate a string representation based on given template.
    * <pre>
    *   {$t} property tag (doesn't count as matched)
    *   {$T} property name(doesn't count as matched)
@@ -970,16 +978,18 @@ public abstract class Property implements Comparable {
    *   {$V} display value
    * </pre>
    * @param format as described
-   * @param formatted string if at least one marker matched, "" otherwise
+   * @param policy applied privacy policy
+   * @return formatted string if at least one marker matched, "" otherwise
    */
-  public String format(String format) {
+  public String format(String format, PrivacyPolicy policy) {
+  
     Matcher matcher = FORMAT_PATTERN.matcher(format);
     StringBuffer result = new StringBuffer(format.length()+20);
     boolean matched = false;
     int cursor = 0;
     while (matcher.find()) {
       result.append(format.substring(cursor, matcher.start()));
-      if (formatAppend(matcher.group(1), format.charAt(matcher.start(2)), matcher.group(3), result))
+      if (formatAppend(matcher.group(1), format.charAt(matcher.start(2)), matcher.group(3), policy, result))
         matched = true;
       // continue
       cursor = matcher.end();
@@ -995,37 +1005,48 @@ public abstract class Property implements Comparable {
     return result.toString().trim();
   }
   
-  private boolean formatAppend(String prefix, char marker, String suffix, StringBuffer out) {
-   
+  private boolean formatAppend(String prefix, char marker, String suffix, PrivacyPolicy policy, StringBuffer out) {
+
+    Property prop = null;
     String value = null;
+    String sub = null;
     boolean countsAsMatched = true;
+    
     switch (marker) {
       case 'D' : {
-        Property date = getProperty("DATE");
-        value = (date instanceof PropertyDate)&&date.isValid() ? date.getDisplayValue() : "";
+        prop = getProperty("DATE");
+        value = (prop instanceof PropertyDate)&&prop.isValid() ? prop.getDisplayValue() : "";
+        sub = "sometime";
         break;
       }
       case 'y': {
-        Property date = getProperty("DATE");
-        value = (date instanceof PropertyDate)&&date.isValid() ? Integer.toString(((PropertyDate)date).getStart().getYear()) : "";
+        prop = getProperty("DATE");
+        value = (prop instanceof PropertyDate)&&prop.isValid() ? Integer.toString(((PropertyDate)prop).getStart().getYear()) : "";
+        sub = "sometime";
         break;
       }
       case 'p': {
-        Property place = getProperty("PLAC");
-        value = (place instanceof PropertyPlace) ? ((PropertyPlace)place).getCity() : "";
+        prop = getProperty("PLAC");
+        value = (prop instanceof PropertyPlace) ? ((PropertyPlace)prop).getCity() : "";
         if (value==null) value=""; // make sure we don't end up with a null here
+        sub = "somewhere";
         break;
       }
       case 'P': {
-        Property place = getProperty("PLAC");
-        value = (place instanceof PropertyPlace) ? place.getDisplayValue() : "";
+        prop = getProperty("PLAC");
+        value = (prop instanceof PropertyPlace) ? prop.getDisplayValue() : "";
+        sub = "somewhere";
         break;
       }
       case 'v': 
+        prop = this;
         value = getDisplayValue();
+        sub = "something";
         break;
       case 'V': 
+        prop = this;
         value = getValue();
+        sub = "something";
         break;
       case 't':
         value = getTag();
@@ -1039,11 +1060,15 @@ public abstract class Property implements Comparable {
     
     // no marker matched?
     if (value==null)
-      throw new IllegalArgumentException("unknown marker "+marker);
+      throw new IllegalArgumentException("unknown formatting marker "+marker);
     
     // no result?
     if (value.length()==0)
       return false;
+    
+    // check policy
+    if (policy!=null&&prop!=null&&sub!=null&&policy.isPrivate(prop))
+      value = sub;
     
     // append
     out.append(prefix);
