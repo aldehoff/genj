@@ -960,14 +960,17 @@ public abstract class Property implements Comparable {
   /**
    * Generate a string representation based on given template.
    * <pre>
+   *   {$t} property tag (doesn't count as matched)
+   *   {$T} property name(doesn't count as matched)
    *   {$D} date as fully localized string
    *   {$y} year 
    *   {$p} place (city)
    *   {$P} place (all jurisdictions)
-   *   {$v} display value
+   *   {$v} value
+   *   {$V} display value
    * </pre>
    * @param format as described
-   * @param formatted string or "" if no marker matched
+   * @param formatted string if at least one marker matched, "" otherwise
    */
   public String format(String format) {
     Matcher matcher = FORMAT_PATTERN.matcher(format);
@@ -976,13 +979,8 @@ public abstract class Property implements Comparable {
     int cursor = 0;
     while (matcher.find()) {
       result.append(format.substring(cursor, matcher.start()));
-      String value = format2value(format.charAt(matcher.start(2)));
-      if (value.length()>0) {
-        result.append(matcher.group(1));
-        result.append(value);
-        result.append(matcher.group(3));
+      if (formatAppend(matcher.group(1), format.charAt(matcher.start(2)), matcher.group(3), result))
         matched = true;
-      }
       // continue
       cursor = matcher.end();
     }
@@ -997,29 +995,62 @@ public abstract class Property implements Comparable {
     return result.toString().trim();
   }
   
-  private String format2value(char key) {
-    
-    switch (key) {
+  private boolean formatAppend(String prefix, char marker, String suffix, StringBuffer out) {
+   
+    String value = null;
+    boolean countsAsMatched = true;
+    switch (marker) {
       case 'D' : {
-        PropertyDate date = (PropertyDate)getProperty("DATE");
-        return date!=null&&date.isValid() ? date.getDisplayValue() : "";
+        Property date = getProperty("DATE");
+        value = (date instanceof PropertyDate)&&date.isValid() ? date.getDisplayValue() : "";
+        break;
       }
       case 'y': {
-        PropertyDate date = (PropertyDate)getProperty("DATE");
-        return date!=null&&date.isValid() ? Integer.toString(date.getStart().getYear()) : "";
+        Property date = getProperty("DATE");
+        value = (date instanceof PropertyDate)&&date.isValid() ? Integer.toString(((PropertyDate)date).getStart().getYear()) : "";
+        break;
       }
       case 'p': {
-        PropertyPlace place = (PropertyPlace)getProperty("PLAC");
-        return place!=null ? place.getCity() : "";
+        Property place = getProperty("PLAC");
+        value = (place instanceof PropertyPlace) ? ((PropertyPlace)place).getCity() : "";
+        break;
       }
       case 'P': {
-        PropertyPlace place = (PropertyPlace)getProperty("PLAC");
-        return place!=null ? place.getDisplayValue() : "";
+        Property place = getProperty("PLAC");
+        value = (place instanceof PropertyPlace) ? place.getDisplayValue() : "";
+        break;
       }
       case 'v': 
-        return getDisplayValue();
+        value = getDisplayValue();
+        break;
+      case 'V': 
+        value = getValue();
+        break;
+      case 't':
+        value = getTag();
+        countsAsMatched = false;
+        break;
+      case 'T':
+        value = Gedcom.getName(getTag());
+        countsAsMatched = false;
+        break;
     }
-    throw new IllegalArgumentException("unknown marker "+key);
+    
+    // no marker matched?
+    if (value==null)
+      throw new IllegalArgumentException("unknown marker "+marker);
+    
+    // no result?
+    if (value.length()==0)
+      return false;
+    
+    // append
+    out.append(prefix);
+    out.append(value);
+    out.append(suffix);
+    
+    // done
+    return countsAsMatched;
   }
 
 } //Property

@@ -140,10 +140,15 @@ public class PropertyTest extends TestCase {
     assertFormatted(indi, "BIRT", "", null                 , null                    , "geboren{ am $D}{ in $p}", "");
     assertFormatted(indi, "BIRT", "", "25 May 1970", ""                        , "born {$y}{ in $P}", "born 1970");
     assertFormatted(indi, "BIRT", "", ""                     , ""                        , "born {$y}{ in $P}", "");
-    assertFormatted(indi, "OCCU", "Pilot", null        , null                    , "{$v}{ in $p}", "Pilot");
-    assertFormatted(indi, "OCCU", "Pilot", null        , "Ottawa"            , "{$v}{ in $p}", "Pilot in Ottawa");
-    assertFormatted(indi, "OCCU", ""      , null        , "Ottawa"            , "{$v}{ in $p}", "in Ottawa");
-    assertFormatted(indi, "OCCU", ""      , null        , "Ottawa"            , "Occupation: {$v}", "");
+    assertFormatted(indi, "OCCU", "Pilot", null        , null                    , "{$V}{ in $p}", "Pilot");
+    assertFormatted(indi, "OCCU", "Pilot", null        , "Ottawa"            , "{$V}{ in $p}", "Pilot in Ottawa");
+    assertFormatted(indi, "OCCU", ""      , null         , "Ottawa"            , "{$V}{ in $p}", "in Ottawa");
+    assertFormatted(indi, "OCCU", ""      , null         , "Ottawa"            , "Occupation: {$V}", "");
+    assertFormatted(indi, "IMMI", ""      , null           , "Vancouver"       , "Immigration{ in $p (landed)}{ on $D}", "Immigration in Vancouver (landed)");
+    
+    assertFormatted(indi, "BIRT", "", "25 May 1970", "Rendsburg, SH", "{$T}{ $D}{ in $p}", "Birth 25 May 1970 in Rendsburg");
+    assertFormatted(indi, "BIRT", "", ""                     , "Rendsburg, SH", "{$t}{ $D}{ $P}"    , "BIRT Rendsburg, SH");
+    assertFormatted(indi, "BIRT", "", ""                     , ""                        , "{$T}{ $D}{ in $p}", "");
   }
   
   private void assertFormatted(Indi indi, String evenTag, String evenValue, String date, String place, String format, String result) {
