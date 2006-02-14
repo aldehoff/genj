@@ -160,17 +160,10 @@ public class PropertySex extends Property {
   }
   
   /**
-   * String representation
+   * A value meant for display
    */
-  public String toString() {
-    return toString(true);
-  }
-
-  /**
-   * String representation
-   */
-  public String toString(boolean localize) {
-    return localize ? getLabelForSex(sex) : getValue();
+  public String getDisplayValue() {
+    return getLabelForSex(sex);
   }
 
   /**
