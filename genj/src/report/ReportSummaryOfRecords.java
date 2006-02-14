@@ -152,10 +152,10 @@ public class ReportSummaryOfRecords extends Report {
       // fill index while we're at it
       if (prop instanceof PropertyName) {
         PropertyName name = (PropertyName)prop;
-        doc.addIndexTerm("Names", name.getLastName(), name.getFirstName());
+        doc.addIndexTerm(translate("index.names"), name.getLastName(), name.getFirstName());
       }
       if (generatePlaceIndex>0&&(prop instanceof PropertyPlace)) {
-        String index = generatePlaceIndex==1 ? "Places" : "Places - "+prop.getParent().getPropertyName();
+        String index = generatePlaceIndex==1 ? translate("index.places") : translate("index.places.of", prop.getParent().getPropertyName());
         doc.addIndexTerm(index, ((PropertyPlace)prop).getCity());
       }
 
