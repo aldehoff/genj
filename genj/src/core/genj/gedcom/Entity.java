@@ -239,4 +239,12 @@ public class Entity extends Property {
     return Integer.parseInt(id.substring(start, end+1));
   }
 
+  /**
+   * Format a sub-property of this entity
+   * @see Property#format(String)
+   */
+  public String format(String propertyTag, String format) {
+    Property p = getProperty(propertyTag);
+    return p!=null ? p.format(format) : "";
+  }
 } //Entity

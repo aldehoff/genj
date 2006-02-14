@@ -125,7 +125,38 @@ public class PropertyTest extends TestCase {
     // .. we should have the same set of properties now
     assertEquals("undo didn't restore add", Arrays.asList(after), Arrays.asList(before));
     
+  }
+  
+  /**
+   * Test dates
+   */
+  public void testFormatting() {     
+    
+    Indi indi = createIndi();
+    
+    assertFormatted(indi, "BIRT", "", "25 May 1970", "Rendsburg, SH", "geboren{ am $D}{ in $P}", "geboren am 25 May 1970 in Rendsburg, SH");
+    assertFormatted(indi, "BIRT", "", null                 , "Rendsburg, SH", "geboren{ am $D}{ in $P}", "geboren in Rendsburg, SH");
+    assertFormatted(indi, "BIRT", "", null                 , "Rendsburg, SH", "geboren{ am $D}{ in $p}", "geboren in Rendsburg");
+    assertFormatted(indi, "BIRT", "", null                 , null                    , "geboren{ am $D}{ in $p}", "");
+    assertFormatted(indi, "BIRT", "", "25 May 1970", ""                        , "born {$y}{ in $P}", "born 1970");
+    assertFormatted(indi, "BIRT", "", ""                     , ""                        , "born {$y}{ in $P}", "");
+    assertFormatted(indi, "OCCU", "Pilot", null        , null                    , "{$v}{ in $p}", "Pilot");
+    assertFormatted(indi, "OCCU", "Pilot", null        , "Ottawa"            , "{$v}{ in $p}", "Pilot in Ottawa");
     
   }
   
+  private void assertFormatted(Indi indi, String evenTag, String evenValue, String date, String place, String format, String result) {
+    
+    // prep event
+    Property p = indi.addProperty(evenTag, evenValue);
+    if (date!=null)
+      p.addProperty("DATE", date);
+    if (place!=null)
+      p.addProperty("PLAC", place);
+    
+    // format it
+    assertEquals(result, p.format(format));
+    
+  }
+    
 } //PropertyTest

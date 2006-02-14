@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -37,6 +38,8 @@ public abstract class Property implements Comparable {
   /** static strings */
   protected final static String 
     UNSUPPORTED_TAG = "Unsupported Tag";
+  
+  private static final Pattern FORMAT_PATTERN = Pattern.compile("\\{(.*?)\\$(.)(.*?)\\}");
     
   /** parent of this property */
   private Property parent=null;
@@ -952,6 +955,71 @@ public abstract class Property implements Comparable {
    */
   public String getPropertyName() {
     return Gedcom.getName(getTag());
+  }
+
+  /**
+   * Generate a string representation based on given template.
+   * <pre>
+   *   {$D} date as fully localized string
+   *   {$y} year 
+   *   {$p} place (city)
+   *   {$P} place (all jurisdictions)
+   *   {$v} display value
+   * </pre>
+   * @param format as described
+   * @param formatted string or "" if no marker matched
+   */
+  public String format(String format) {
+    Matcher matcher = FORMAT_PATTERN.matcher(format);
+    StringBuffer result = new StringBuffer(format.length()+20);
+    boolean matched = false;
+    int cursor = 0;
+    while (matcher.find()) {
+      result.append(format.substring(cursor, matcher.start()));
+      String value = format2value(format.charAt(matcher.start(2)));
+      if (value.length()>0) {
+        result.append(matcher.group(1));
+        result.append(value);
+        result.append(matcher.group(3));
+        matched = true;
+      }
+      // continue
+      cursor = matcher.end();
+    }
+    // append the rest
+    result.append(format.substring(cursor));
+    
+    // nothing matched at all?
+    if (!matched)
+      return "";
+    
+    // trim it and done
+    return result.toString().trim();
+  }
+  
+  private String format2value(char key) {
+    
+    switch (key) {
+      case 'D' : {
+        PropertyDate date = (PropertyDate)getProperty("DATE");
+        return date!=null&&date.isValid() ? date.getDisplayValue() : "";
+      }
+      case 'y': {
+        PropertyDate date = (PropertyDate)getProperty("DATE");
+        return date!=null&&date.isValid() ? Integer.toString(date.getStart().getYear()) : "";
+      }
+      case 'p': {
+        PropertyPlace place = (PropertyPlace)getProperty("PLAC");
+        return place!=null ? place.getCity() : "";
+      }
+      case 'P': {
+        PropertyPlace place = (PropertyPlace)getProperty("PLAC");
+        return place!=null ? place.getDisplayValue() : "";
+      }
+      case 'v': 
+        return getDisplayValue();
+    }
+    throw new IllegalArgumentException("unknown marker "+key);
   }
 
 } //Property
