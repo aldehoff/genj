@@ -40,21 +40,26 @@
     
     <property name="app.build" value="${app.version} ${now} ${user.name}"/>
   	
+  </target>
+    	
+  <!--
+   Run Compilation
+   -->
+  <target name="keyfile" depends="init">
     <!-- generate a key -->
     <delete file="${dir.build}/keyfile"/>    
     <genkey alias="genj" storepass="password" dname="CN=Nils Meier, OU=Unknown, O=genj.sourceforge.net, C=CA" keystore="${dir.build}/keyfile"/>    
-
   </target>
 
-	<!--
-	 Run Compilation
-	 -->
-	<target name="compile.run" depends="init">
+  <!--
+   Run Compilation
+   -->
+  <target name="compile.run" depends="init">
     <mkdir dir="${dir.build}/classes/run"/>
     <javac srcdir="src/run" destdir="${dir.build}/classes/run"
-           debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
+      debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
     </javac>
-	</target>
+  </target>
 	
   <!--
    Contrib Compilation
@@ -235,7 +240,7 @@
   <!--
    Distribution - Applet
    -->
-  <target name="dist.applet" depends="init,compile,version">
+  <target name="dist.applet" depends="init,keyfile,compile,version">
   
   	 <!-- what we exclude - would be great to derive that automatically :( -->
      <property name="exclude" value="
@@ -347,7 +352,7 @@
   <!--
    Distribution - WebStart
    -->
-  <target name="dist.webstart" depends="init, dist.app">
+  <target name="dist.webstart" depends="init, keyfile, dist.app">
 
     <mkdir dir="${dir.build}/webstart"/>
     <mkdir dir="${dir.dist}/webstart"/>
@@ -397,10 +402,11 @@
     <copy todir="${dir.run}/doc">
       <fileset dir="./doc"/>
     </copy>
-    <antcall target="dist.language.help">
+  	
+  	<!-- <antcall target="dist.language.help">
       <param name="language" value="en"/>
       <param name="dir" value="${dir.run}"/>
-    </antcall>
+    </antcall> -->
 
     <java classname="genj.app.App" fork="true" dir="${dir.run}">
        <classpath refid="project.class.path"/>
