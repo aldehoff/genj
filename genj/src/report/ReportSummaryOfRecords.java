@@ -108,7 +108,7 @@ public class ReportSummaryOfRecords extends Report {
     doc.startTable("80%,20%", false, false);
 
     // export its properties
-    exportProperties(ent, doc);
+    exportProperties(ent, doc, 0);
 
     // add images in next column
     doc.nextTableCell();
@@ -125,7 +125,7 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given property's properties
    */
-  private void exportProperties(Property of, Document doc) {
+  private void exportProperties(Property of, Document doc, int level) {
 
     // anything to do?
     if (of.getNoOfProperties()==0)
@@ -160,14 +160,17 @@ public class ReportSummaryOfRecords extends Report {
       }
 
       // ... and the text
-      doc.addText(Gedcom.getName(prop.getTag()), "font-style=italic,color=gray");
+      String format = "";
+      if (level==0) format = "text-decoration=underline";
+      if (level==1) format =  "font-style=italic";
+      doc.addText(Gedcom.getName(prop.getTag()), format);
       doc.addText(" ");
       
       // with its value
       exportPropertyValue(prop, doc);
 
       // recurse into it
-      exportProperties(prop, doc);
+      exportProperties(prop, doc, level+1);
     }
     doc.endList();
   }
