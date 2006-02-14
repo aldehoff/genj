@@ -142,7 +142,8 @@ public class PropertyTest extends TestCase {
     assertFormatted(indi, "BIRT", "", ""                     , ""                        , "born {$y}{ in $P}", "");
     assertFormatted(indi, "OCCU", "Pilot", null        , null                    , "{$v}{ in $p}", "Pilot");
     assertFormatted(indi, "OCCU", "Pilot", null        , "Ottawa"            , "{$v}{ in $p}", "Pilot in Ottawa");
-    
+    assertFormatted(indi, "OCCU", ""      , null        , "Ottawa"            , "{$v}{ in $p}", "in Ottawa");
+    assertFormatted(indi, "OCCU", ""      , null        , "Ottawa"            , "Occupation: {$v}", "");
   }
   
   private void assertFormatted(Indi indi, String evenTag, String evenValue, String date, String place, String format, String result) {
