@@ -8,10 +8,6 @@
 /*
  * todo:
  */
-import genj.gedcom.Entity;
-import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
-import genj.gedcom.time.Delta;
 import genj.report.Report;
 
 /**
@@ -25,11 +21,6 @@ abstract class Formatter  {
     /**
      * Privacy
      */
-    boolean managePrivacy = true;
-    int privateYears = 100;
-    boolean deadIsPublic=false;
-    String privateTag="_PRIV";
-
     abstract void startTable();
     abstract void endTable();
     abstract String b(String s);
@@ -63,57 +54,6 @@ abstract class Formatter  {
      */
     protected Formatter(Report parent) {
 	parentReport = parent;
-    }
-
-    /**
-     * Privacy management
-     */
-    void setPrivacy(boolean managed,
-	       int nbYears,
-	       boolean dead,
-	       String tag){
-
-	managePrivacy = managed;
-	privateYears = nbYears;
-	deadIsPublic=dead;
-	privateTag=tag;
-    }
-    void setPrivacy(boolean managed){
-	setPrivacy(managed,100,false,"_PRIV");
-    }
-    
-    boolean isPrivate(Entity indi,Entity fam, boolean genIsPrivate){
-	if (!managePrivacy)
-	    return false;
-	if (deadIsPublic && indi.getProperty("DEAT") != null)
-	    return false;
-	if (genIsPrivate)
-	    return true;
-
-	PropertyDate date = null;
-	Property prop = indi.getProperty("BIRT");
-	if (prop!=null){
-	    date = (PropertyDate) prop.getProperty("DATE");
-	}
-	if (date == null && fam != null){
-	    prop = fam.getProperty("MARR");
-	    if (prop!=null){
-		date = (PropertyDate) prop.getProperty("DATE");
-	    }
-	}
-	if (date == null){
-	    prop = indi.getProperty("DEAT");
-	    if (prop!=null){
-		date = (PropertyDate) prop.getProperty("DATE");
-	    }
-	}
-	if (date != null) {
-	    Delta delta = date.getAnniversary();
-	    if (delta != null){
-		return (privateYears > delta.getYears());
-	    }
-	}
-	return false;
     }	
 
 

@@ -8,6 +8,8 @@
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.gedcom.PrivacyPolicy;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyMultilineValue;
 import genj.report.Report;
 
@@ -65,12 +67,9 @@ public class ReportMultDesc extends Report {
     public boolean reportMailingAddress = true;
 
     // Privacy
-    public boolean managePrivacy = true;
     public int privateYears = 100;
     public int privateGen = 999;
     public boolean deadIsPublic=false;
-    public String privateEvent=translate("PrivateEventString");
-    public String privateName=translate("PrivateNameString");
     public String privateTag="_PRIV";
 
 
@@ -115,10 +114,7 @@ public class ReportMultDesc extends Report {
 	    output = new FormatterCsv(this);
 	}
 
-	output.setPrivacy(managePrivacy,
-			  privateYears,
-			  deadIsPublic,
-			  privateTag);
+    PrivacyPolicy policy = new PrivacyPolicy(deadIsPublic, privateYears, privateTag);
 
 	nbColumns = 2;
 	if (reportPlaceOfBirth ||  reportDateOfBirth) nbColumns++;
@@ -130,7 +126,7 @@ public class ReportMultDesc extends Report {
 	output.start();
 	// iterate into individuals and all its descendants
 	for (int i = 0; i < indis.length; i++)
-	    iterate(indis[i], 1, new Integer(i+1).toString(), primary);
+	    iterate(indis[i], 1, new Integer(i+1).toString(), primary, policy);
 
 	output.println(output.h(1,translate("title.stats")));
 	output.println(translate("nb.fam")+nbFam);
@@ -143,7 +139,7 @@ public class ReportMultDesc extends Report {
     }    
 
     
-private void iterate(Indi indi, int level, String num, Map primary) {
+private void iterate(Indi indi, int level, String num, Map primary, PrivacyPolicy policy) {
     boolean addIndi=true;
 
     if (level > reportMaxGenerations) return;
@@ -151,7 +147,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
     if (level == 1)
 	output.println(output.h(1,translate("title.descendant",indi.getName())));
 
-    output.println(format(indi, null, num, level));
+    output.println(format(indi, null, num, level<privateGen ? PrivacyPolicy.PRIVATE : policy));
            
     // And we loop through its families
     Fam[] fams = indi.getFamiliesWhereSpouse();
@@ -163,9 +159,9 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	// .. a line for the spouse
 	if (fams.length==1)
 	    //	    output.println(format(spouse,fam,getIndent(level)+formatString("x",num.length()), level)); 
-	    output.println(format(spouse,fam,"x", level)); 
+	    output.println(format(spouse,fam,"x", policy)); 
 	else 
-	    output.println(format(spouse,fam,"x"+(f+1), level)); 
+	    output.println(format(spouse,fam,"x"+(f+1), policy)); 
 	//	    output.println(format(spouse,fam,getIndent(level)+formatString("x"+(f+1),num.length()), level)); 
 	
 	Object seeIndi = primary.get(fam.getId());
@@ -192,9 +188,9 @@ private void iterate(Indi indi, int level, String num, Map primary) {
             for (int c = 0; c < children.length; c++) {
 		// do the recursive step
 		if (fams.length==1)
-		    iterate(children[c], level+1,num+'.'+(c+1),primary);
+		    iterate(children[c], level+1,num+'.'+(c+1),primary, policy);
                 else
-		    iterate(children[c], level+1,num+'x'+(f+1)+'.'+(c+1),primary);
+		    iterate(children[c], level+1,num+'x'+(f+1)+'.'+(c+1),primary, policy);
                 // .. next child
             }
 	    if (children.length !=0){
@@ -212,7 +208,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
     /**
      * resolves the information of one Indi
      */
-  private String format(Indi indi, Fam fam, String num,int level) {
+  private String format(Indi indi, Fam fam, String num, PrivacyPolicy policy) {
 
 	String number;
 	String name;
@@ -221,7 +217,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	String marriage;
 	String occupation;
 	String residence;
-	PropertyMultilineValue address;
+	PropertyMultilineValue address = null;
 
 	String result = new String();
 
@@ -232,26 +228,19 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	number = ""+num;
 	number = output.anchor(number, number);
 	name = output.strong(indi.getName())+" ("+indi.getId()+")";
-	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth);
+	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
 	if (fam != null){
-	    marriage = format(fam, "MARR", OPTIONS.getMarriageSymbol(),reportDateOfMarriage, reportPlaceOfMarriage);
+	    marriage = format(fam, "MARR", OPTIONS.getMarriageSymbol(),reportDateOfMarriage, reportPlaceOfMarriage, policy);
 	} else {
 	    marriage = "";
 	}
-	death = format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath);
-	occupation = format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu);
-	residence = format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi);
-	address = reportMailingAddress ? indi.getAddress() : null;
-
-	if (output.isPrivate(indi,fam,level>privateGen)){
-	    name = (privateName.length() != 0)? privateName : name;
-	    birth = (birth.length() != 0)? privateEvent:"";
-	    marriage = (marriage.length() != 0)? privateEvent:"";
-	    death = (death.length() != 0)? privateEvent:"";
-	    occupation = (occupation.length() != 0)? privateEvent:"";
-	    residence = (residence.length() != 0)? privateEvent:"";
-	    address = null;
-	}
+	death = format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, policy);
+	occupation = format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu, policy);
+	residence = format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi, policy);
+	if (reportMailingAddress) {
+	  address = indi.getAddress();
+      if (policy.isPrivate(address)) address = null;
+    }
 
 	if (outputFormat == TEXT_CSV) {
 	    String separator=" ";
@@ -328,13 +317,17 @@ private void iterate(Indi indi, int level, String num, Map primary) {
   /** 
    * convert given prefix, date and place switches into a format string
    */
-  private String format(Entity e, String tag, String prefix, boolean date, boolean place) {
-
+  private String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
+    Property prop = e.getProperty(tag);
+    if (prop==null)
+      return "";
+    
     String format = prefix + (date?"{ $D}":"")
       +(place&&showAllPlaceJurisdictions ? "{ $P}" : "")
       +(place&&!showAllPlaceJurisdictions ? "{ $p}" : "");
     
-    return e.format(tag, format);
+    return prop.format(format, policy);
+
   }
   
 

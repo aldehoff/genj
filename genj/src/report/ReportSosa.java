@@ -8,6 +8,8 @@
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
+import genj.gedcom.PrivacyPolicy;
 import genj.report.Report;
 
 import java.util.Iterator;
@@ -94,14 +96,10 @@ public class ReportSosa extends Report {
     public boolean reportDateOfResi = true;
 
     // Privacy
-    public boolean managePrivacy = true;
     public int privateYears = 100;
     public int privateGen = 0;
     public boolean deadIsPublic=false;
-    public String privateEvent=translate("PrivateEventString");
-    public String privateName=translate("PrivateNameString");
     public String privateTag="_PRIV";
-    
 
     /**
      * Main for argument individual
@@ -145,10 +143,8 @@ public class ReportSosa extends Report {
 	    ((FormatterText) output).setNiceColumns(((outputFormat == TEXT_EXACT) &&
 						     (reportFormat != ONE_LINE)));
 	}
-	output.setPrivacy(managePrivacy,
-			  privateYears,
-			  deadIsPublic,
-			  privateTag);
+    
+    PrivacyPolicy policy  = new PrivacyPolicy(deadIsPublic, privateYears, privateTag);
 
 	nbColumns = 2;
 	if (reportPlaceOfBirth ||  reportDateOfBirth) nbColumns++;
@@ -176,7 +172,7 @@ public class ReportSosa extends Report {
 	    break;
 	}
 	// iterate into individual and all its ascendants
-	iterate(indi, null, 1, 1, primary);
+	iterate(indi, null, 1, 1, primary, policy);
         
 	// Report is sosa: prints from primary Tree
 	if (reportType == SOSA_REPORT) {
@@ -209,10 +205,10 @@ public class ReportSosa extends Report {
     /**
      * Iterates over ascendants
      */
-    private void iterate(Indi indi, Fam fam, int level, int sosa, Map primary) {
+    private void iterate(Indi indi, Fam fam, int level, int sosa, Map primary, PrivacyPolicy policy) {
        	if (level>reportMaxGenerations) return;
         
-	String s = format(indi,fam,sosa,level);
+	String s = format(indi,fam,sosa,level<privateGen ? PrivacyPolicy.PRIVATE : policy);
 
 	primary.put( new Integer(sosa), s);
 	
@@ -231,10 +227,10 @@ public class ReportSosa extends Report {
 	}
         Indi father = famc.getHusband();
 	Indi mother = famc.getWife();
-	if (father != null){ iterate(father, famc, level+1, sosa*2, primary);}
+	if (father != null){ iterate(father, famc, level+1, sosa*2, primary, policy);}
 	if (!(reportType == AGNATIC_REPORT && father != null)){
 	    // With agnatic report, if no father then use mother
-	    if (mother != null){ iterate(mother, famc, level+1, sosa*2+1, primary);}
+	    if (mother != null){ iterate(mother, famc, level+1, sosa*2+1, primary, policy);}
 	}
 	if (reportType == LINEAGE_REPORT) {
 	    output.endIndent();
@@ -245,7 +241,7 @@ public class ReportSosa extends Report {
     /**
      * resolves the information of one Indi
      */
-    private String format(Indi indi, Fam fam, int sosa, int level) {
+    private String format(Indi indi, Fam fam, int sosa, PrivacyPolicy privacy) {
 
 	String number = "";
 	String name = "";
@@ -260,29 +256,26 @@ public class ReportSosa extends Report {
 	// Might be null
 	if (indi==null) 
 	    return "?";
-	boolean isPrivate = output.isPrivate(indi,fam,level<=privateGen);
-
-	if (reportType == CSV_REPORT) {
     
+	if (reportType == CSV_REPORT) {
 	    number = ""+sosa;
 	    name = indi.getName();
-	    birth = format(indi, "BIRT", "", true, true);
+	    birth = indi.format( "BIRT", "{$D}{ $p}");
 	    if (fam != null){
-		marriage = format(fam, "MARR", "", true, true);
+		  marriage = fam.format("MARR", "{$D}{ $p}");
 	    } else {
-		marriage = "";
+		  marriage = "";
 	    }
-	    death = format(indi, "DEAT","", true, true);
-	    occupation = format( indi, "OCCU", "{$V} ", true, true);
-	    residence= format(indi, "RESI", "", true, true);
+	      death = indi.format("DEAT", "{$D}{ $p}");
+	      occupation = indi.format( "OCCU", "{$V}{ $D}{ $p}");
+	      residence= indi.format("RESI", "{$D}{ $p}");
 	} else {
     
 	number = ""+sosa;
-	name = output.strong(indi.getName())+" ("+indi.getId()+")";
-	if (privateName.length() != 0){
-	    name = isPrivate? privateName : name;
-	}
-	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth);
+    
+	name = indi.getName()+" ("+indi.getId()+")";
+	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, privacy);
+    
 	if (fam != null){
 	    String prefix = OPTIONS.getMarriageSymbol();
 	    if (reportType == AGNATIC_REPORT || reportType == LINEAGE_REPORT ){
@@ -290,21 +283,13 @@ public class ReportSosa extends Report {
 		    prefix += " "+fam.getOtherSpouse(indi).getName();
 		}
 	    }
-	    marriage = format(fam, "MARR", prefix, reportDateOfMarriage, reportPlaceOfMarriage);
+	    marriage = format(fam, "MARR", prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
 	} else {
 	    marriage = "";
 	}
-	death = format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath);
-	occupation = format(indi, "OCCU", "{$T} ", reportDateOfOccu, reportPlaceOfOccu);
-	residence = format(indi, "RESI", "{$T} ", reportDateOfResi, reportPlaceOfResi);
-	}
-	if (isPrivate){
-	    name = (privateName.length() != 0)? privateName : name;
-	    birth = (birth.length() != 0)? privateEvent:"";
-	    marriage = (marriage.length() != 0)? privateEvent:"";
-	    death = (death.length() != 0)? privateEvent:"";
-	    occupation = (occupation.length() != 0)? privateEvent:"";
-	    residence = (residence.length() != 0)? privateEvent:"";
+	  death = format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, privacy);
+	  occupation = format(indi, "OCCU", "{$T} ", reportDateOfOccu, reportPlaceOfOccu, privacy);
+	  residence = format(indi, "RESI", "{$T} ", reportDateOfResi, reportPlaceOfResi, privacy);
 	}
 	if (reportType == AGNATIC_REPORT || reportType == SOSA_REPORT) {
 	    if (reportFormat == ONE_LINE) {
@@ -374,11 +359,16 @@ public class ReportSosa extends Report {
     /** 
      * format some information about an entity
      */
-    private String format(Entity entity, String tag, String prefix, boolean date, boolean place) {
+    private String format(Entity entity, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
+      Property prop = entity.getProperty(tag);
+      if (prop==null)
+        return "";
+      
       String format = prefix + (date?"{ $D}":"")
         +(place&&showAllPlaceJurisdictions ? "{ $P}" : "")
         +(place&&!showAllPlaceJurisdictions ? "{ $p}" : "");
-      return entity.format(tag, format);
+      
+      return prop.format(format, policy);
     }
 
 } //ReportSosa
