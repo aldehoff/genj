@@ -109,12 +109,12 @@ import genj.util.WordBuffer;
       
       buf.append(Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1))));
       if (comparison==BEFORE)
-        buf.append(report.i18n("err.date.before"));
+        buf.append(report.translate("err.date.before"));
       else
-        buf.append(report.i18n("err.date.after"));
+        buf.append(report.translate("err.date.after"));
       buf.append(Gedcom.getName(path2.get(path2.length()-2)));
       if (entity instanceof Indi) {
-        buf.append(report.i18n("err.date.of"));    
+        buf.append(report.translate("err.date.of"));    
         buf.append(entity.toString());
       }
        

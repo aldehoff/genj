@@ -117,12 +117,12 @@ public class TestAge extends Test {
       WordBuffer words = new WordBuffer();
       String[] format = new String[]{ indi.toString(), String.valueOf(years)}; 
       if (comparison==UNDER) {
-        words.append(report.i18n("err.age.under", format));
+        words.append(report.translate("err.age.under", format));
       } else {
-        words.append(report.i18n("err.age.over", format));
+        words.append(report.translate("err.age.over", format));
       }
       words.append("-");
-      words.append(report.i18n(explanation));
+      words.append(report.translate(explanation));
 
       issues.add(words.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop);
     }

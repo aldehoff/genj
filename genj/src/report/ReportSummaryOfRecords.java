@@ -33,7 +33,7 @@ public class ReportSummaryOfRecords extends Report {
   /** whether we're genering indexes for places */
   public  int generatePlaceIndex = 0;
   public String[] generatePlaceIndexs = {
-    i18n("place.index.none"), i18n("place.index.one"), i18n("place.index.each")
+    translate("place.index.none"), translate("place.index.one"), translate("place.index.each")
   };
   
   /** max # of images per record */
@@ -69,7 +69,7 @@ public class ReportSummaryOfRecords extends Report {
   public void start(Gedcom gedcom) {
     
     // create a document
-    Document doc = new Document(i18n("title", gedcom.getName()));
+    Document doc = new Document(translate("title", gedcom.getName()));
 
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
     
@@ -99,7 +99,7 @@ public class ReportSummaryOfRecords extends Report {
    */
   private void exportEntity(Entity ent, Document doc) {
 
-    println(i18n("exporting", ent.toString() ));
+    println(translate("exporting", ent.toString() ));
       
     // start a new section
     doc.startSection( ent.toString(), ent );

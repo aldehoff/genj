@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.94 $ $Author: nmeier $ $Date: 2006-02-13 07:47:59 $
+ * $Revision: 1.95 $ $Author: nmeier $ $Date: 2006-02-14 03:36:32 $
  */
 package genj.report;
 
@@ -229,7 +229,7 @@ public abstract class Report implements Cloneable {
       // restore old value
       option.restore(registry);
       // we use i18n() to resolve names for options
-      String oname = i18n(option.getProperty());
+      String oname = translate(option.getProperty());
       if (oname.length()>0) option.setName(oname);    
       // set category
       option.setCategory(getName());
@@ -585,8 +585,8 @@ public abstract class Report implements Cloneable {
    * text-values with this method.
    * @param key the key to lookup in [ReportName].properties
    */
-  public final String i18n(String key) {
-    return i18n(key, (Object[])null);
+  public final String translate(String key) {
+    return translate(key, (Object[])null);
   }
 
   /**
@@ -596,8 +596,8 @@ public abstract class Report implements Cloneable {
    * @param key the key to lookup in [ReportName].properties
    * @param value an integer value to replace %1 in value with
    */
-  public final String i18n(String key, int value) {
-    return i18n(key, new Integer(value));
+  public final String translate(String key, int value) {
+    return translate(key, new Integer(value));
   }
 
   /**
@@ -607,8 +607,8 @@ public abstract class Report implements Cloneable {
    * @param key the key to lookup in [ReportName].properties
    * @param value an object value to replace %1 in value with
    */
-  public final String i18n(String key, Object value) {
-    return i18n(key, new Object[]{value});
+  public final String translate(String key, Object value) {
+    return translate(key, new Object[]{value});
   }
 
   /**
@@ -618,7 +618,7 @@ public abstract class Report implements Cloneable {
    * @param key the key to lookup in [ReportName].properties
    * @param values an array of values to replace %1, %2, ... in value with
    */
-  public final String i18n(String key, Object[] values) {
+  public final String translate(String key, Object[] values) {
 
     // get i18n properties
     Properties i18n = getProperties();
@@ -764,7 +764,7 @@ public abstract class Report implements Cloneable {
    * @return name of the report
    */
   public String getName() {
-    String name =  i18n("name");
+    String name =  translate("name");
     if (name.length()==0) name = getTypeName();
     return name;
   }
@@ -776,7 +776,7 @@ public abstract class Report implements Cloneable {
    * @return name of the author
    */
   public String getAuthor() {
-    return i18n("author");
+    return translate("author");
   }
 
   /**
@@ -786,7 +786,7 @@ public abstract class Report implements Cloneable {
    * @return version of report
    */
   public String getVersion() {
-     return i18n("version");
+     return translate("version");
   }
 
   /**
@@ -796,7 +796,7 @@ public abstract class Report implements Cloneable {
    * @return information about report
    */
   public String getInfo() {
-    return i18n("info");
+    return translate("info");
   }
 
   /**

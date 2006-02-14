@@ -36,7 +36,7 @@ import genj.report.PropertyList;
     // always an issue with private
     if (!report.isPrivateValueValid&&prop.isPrivate()) {
       // got an issue with that
-      issues.add(report.i18n("err.private", path.toString()), prop.getImage(true), prop);
+      issues.add(report.translate("err.private", path.toString()), prop.getImage(true), prop);
     }
 
     // no issue if valid 
@@ -48,7 +48,7 @@ import genj.report.PropertyList;
       return;
       
     // got an issue with that
-    issues.add(report.i18n("err.notvalid", path.toString()), prop.getImage(true), prop);
+    issues.add(report.translate("err.notvalid", path.toString()), prop.getImage(true), prop);
     
     // done
   }

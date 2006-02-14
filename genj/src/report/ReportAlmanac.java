@@ -54,7 +54,7 @@ public class ReportAlmanac extends Report {
     
     Iterator events = getEvents(ged, indis);
     if (events==null) {
-      println(i18n("norange", indis.size()));
+      println(translate("norange", indis.size()));
       return;
     }
 
@@ -63,7 +63,7 @@ public class ReportAlmanac extends Report {
       println(" + "+events.next());
       num++;
     }
-    println(i18n("found", new Integer(num)));
+    println(translate("found", new Integer(num)));
     
     // done
   }
@@ -85,7 +85,7 @@ public class ReportAlmanac extends Report {
     if (!from.isValid()||!to.isValid())
       return null;
     
-    println(i18n("header", new Object[]{ gedcom, from, to}));
+    println(translate("header", new Object[]{ gedcom, from, to}));
 
     return getAlmanac().getEvents(from, to, null);
   }  

@@ -92,7 +92,7 @@ public class ReportFamily extends Report {
         if(reportOtherSpouses) {
             Fam[] families = indi.getFamiliesWhereSpouse();
             if(families.length > 1) {
-                println(getIndent(3)+i18n("otherSpouses"));
+                println(getIndent(3)+translate("otherSpouses"));
                 for(int i=0; i<families.length; i++) {
                     if(families[i]!=f) {
                         String str = "";
@@ -113,7 +113,7 @@ public class ReportFamily extends Report {
         Fam family;
         
         if(children.length>0)
-            println(getIndent(2)+i18n("children"));
+            println(getIndent(2)+translate("children"));
         for(int i=0; i<children.length; i++) {
             child = children[i];
             println(getIndent(3)+child);

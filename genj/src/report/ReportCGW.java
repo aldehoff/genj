@@ -71,7 +71,7 @@ public class ReportCGW extends Report {
     private void start(Gedcom gedcom, Collection indis) {
 
 	// Get a directory to write to
-	File dir = getDirectoryFromUser(i18n("target.dir"), WindowManager.TXT_OK);
+	File dir = getDirectoryFromUser(translate("target.dir"), WindowManager.TXT_OK);
 	if (dir==null)
 	    return;
 
@@ -108,7 +108,7 @@ public class ReportCGW extends Report {
 	File file = new File(dir, dept+".csv");
 	PrintWriter out = getWriter(new FileOutputStream(file));
 
-	println(i18n("DepartmentJur")+" : "+dept);
+	println(translate("DepartmentJur")+" : "+dept);
 	Map secondary = (Map)lookup(primary, dept, null);
 	for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {
 	    String s = (String)ss.next();

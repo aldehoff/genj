@@ -34,7 +34,7 @@ public class TestFile extends Test {
     
     // check it
     if (file.getFile()==null) 
-      issues.add(report.i18n("err.nofile"), prop.getImage(false), prop);
+      issues.add(report.translate("err.nofile"), prop.getImage(false), prop);
 
   }
 

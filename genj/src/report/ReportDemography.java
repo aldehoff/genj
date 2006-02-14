@@ -66,8 +66,8 @@ public class ReportDemography extends Report {
 
     // create category series for that
     IndexedSeries
-      males = new IndexedSeries(i18n("men"), categories.length),
-      females = new IndexedSeries(i18n("women"), categories.length);
+      males = new IndexedSeries(translate("men"), categories.length),
+      females = new IndexedSeries(translate("women"), categories.length);
 
     // Looping over each individual in gedcom
     Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator();
@@ -78,7 +78,7 @@ public class ReportDemography extends Report {
     }
 
     // the title is a simple localization
-    String title = i18n("title", gedcom.getName());
+    String title = translate("title", gedcom.getName());
     
     // show it in a chart 
     // + we're using a custom format so that the male series' negative 

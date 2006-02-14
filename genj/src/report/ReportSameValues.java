@@ -45,7 +45,7 @@ public class ReportSameValues extends Report {
       return null;
     
     // return a meaningfull text for that context
-    return i18n("xname", new String[]{ ((Property)context).getPropertyName(), val } );
+    return translate("xname", new String[]{ ((Property)context).getPropertyName(), val } );
   }
 
   /**
@@ -100,7 +100,7 @@ public class ReportSameValues extends Report {
     items.sort();
     
     // show 'em
-    showPropertiesToUser( i18n("xname",new String[]{ propName, val}), items);
+    showPropertiesToUser( translate("xname",new String[]{ propName, val}), items);
     
     // done
   }

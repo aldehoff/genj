@@ -44,10 +44,10 @@ public class ReportTrees extends Report {
         
         // Get a list of the individuals 
         Entity[] indis = gedcom.getEntities(Gedcom.INDI, "INDI:NAME");
-        println(i18n("fileheader",gedcom.getName()));
+        println(translate("fileheader",gedcom.getName()));
         
         // Step through all the Individuals we haven't seen yet
-        println(i18n("indicount",indis.length)+"\n");
+        println(translate("indicount",indis.length)+"\n");
         
         HashSet unvisited = new HashSet(Arrays.asList(indis));
         List trees = new ArrayList();
@@ -74,7 +74,7 @@ public class ReportTrees extends Report {
           Collections.sort(trees);
             
           // Print sorted list of groups
-          println(align(i18n("count"),7, Report.ALIGN_RIGHT)+"  "+i18n("name"));
+          println(align(translate("count"),7, Report.ALIGN_RIGHT)+"  "+translate("name"));
           println("-------  ----------------------------------------------");
             
             int grandtotal=0;
@@ -92,16 +92,16 @@ public class ReportTrees extends Report {
             }
             
             println("");
-            println(i18n("grandtotal",grandtotal));
+            println(translate("grandtotal",grandtotal));
             
             if (loners>0) {
                 Object[] msgargs = {new Integer(loners), new Integer(minGroupSize)};
-                println("\n"+i18n("loners",msgargs));
+                println("\n"+translate("loners",msgargs));
             }
             
         }
         println("");
-        println(i18n("endreport"));
+        println(translate("endreport"));
         
         // Done
         return;

@@ -47,11 +47,11 @@ public class ReportAges extends Report {
         Indi husband = f.getHusband(), wife = f.getWife();
         String str = f.getId()+" ";
         if(husband!=null)
-            str = str + i18n("entity", new String[] {f.getHusband().getId(), f.getHusband().getName()} );
+            str = str + translate("entity", new String[] {f.getHusband().getId(), f.getHusband().getName()} );
             if(husband!=null && wife!=null)
                 str=str+" + ";
             if(wife!=null)
-                str = str + i18n("entity", new String[] {f.getWife().getId(), f.getWife().getName()} );
+                str = str + translate("entity", new String[] {f.getWife().getId(), f.getWife().getName()} );
                 return str;
     }
     
@@ -103,38 +103,38 @@ public class ReportAges extends Report {
         
         Delta age = null;
         
-        println(i18n("entity", new String[] {indi.getId(), indi.getName()} ));
+        println(translate("entity", new String[] {indi.getId(), indi.getName()} ));
         
         // print birth date (give up if none)
         PropertyDate birth = indi.getBirthDate();
         if (birth == null) {
-            println(OPTIONS.getBirthSymbol()+" "+i18n("noData"));
+            println(OPTIONS.getBirthSymbol()+" "+translate("noData"));
             return;
         }
         println(OPTIONS.getBirthSymbol()+" " + birth);
         println();
         
         if (reportBaptismAge) {
-            println(getIndent(2) + i18n("baptism"));
+            println(getIndent(2) + translate("baptism"));
             boolean ok = false;
             ok |= analyzeEvent(!ok, indi, "BAPM", true);
             ok |= analyzeEvent(!ok, indi, "BAPL", true);
             ok |= analyzeEvent(!ok, indi, "CHR", true);
             ok |= analyzeEvent(!ok, indi, "CHRA", true);
             if(!ok)
-                println(getIndent(3) + i18n("noData"));
+                println(getIndent(3) + translate("noData"));
             println();
         }
         
         if (reportMarriageAge) {
-            println(getIndent(2) + i18n("marriage"));
+            println(getIndent(2) + translate("marriage"));
             Fam[] fams = indi.getFamiliesWhereSpouse();
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
                     String text = getIndent(2)+OPTIONS.getMarriageSymbol() + " "+familyToString(fam)+": ";
                     if (fam.getMarriageDate() == null)
-                        println(text + i18n("noData"));
+                        println(text + translate("noData"));
                     else {
                         println(text + fam.getMarriageDate());
                         age = indi.getAge(fam.getMarriageDate().getStart());
@@ -143,36 +143,36 @@ public class ReportAges extends Report {
                 }
             }
             else
-                println(getIndent(3) + i18n("noData"));
+                println(getIndent(3) + translate("noData"));
             println();
         }
         
         if (reportAgeAtDivorce) {
-            println(getIndent(2) + i18n("divorce"));
+            println(getIndent(2) + translate("divorce"));
             Fam[] fams = indi.getFamiliesWhereSpouse();
             if (fams.length > 0) {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
                     if (fam.getDivorceDate() != null) {
-                        println(getIndent(2)+OPTIONS.getDivorceSymbol() + " "+i18n("entity", new String[] {fam.getId(), fam.toString()}) + ": " + fam.getDivorceDate());
+                        println(getIndent(2)+OPTIONS.getDivorceSymbol() + " "+translate("entity", new String[] {fam.getId(), fam.toString()}) + ": " + fam.getDivorceDate());
                         age = indi.getAge(fam.getDivorceDate().getStart());
                         printAge(age,3);
                     }
                 }
             } else
-                println(getIndent(3) + i18n("noData"));
+                println(getIndent(3) + translate("noData"));
         }
         
         if (reportAgeAtChildBirth) {
-            println(getIndent(2) + i18n("childBirths"));
+            println(getIndent(2) + translate("childBirths"));
             Indi[] children = indi.getChildren();
             if (children.length > 0) {
                 for (int i = 0; i < children.length; i++) {
                     Indi child = children[i];
-                    String text = getIndent(2) + OPTIONS.getBirthSymbol()+" "+i18n("entity", new String[] {child.getId(), children[i].getName()})+": ";
+                    String text = getIndent(2) + OPTIONS.getBirthSymbol()+" "+translate("entity", new String[] {child.getId(), children[i].getName()})+": ";
                     PropertyDate cbirth = child.getBirthDate();
                     if (cbirth == null)
-                        println(text + i18n("noData"));
+                        println(text + translate("noData"));
                     else {
                         println(text + cbirth);
                         age = indi.getAge(cbirth.getStart());
@@ -180,49 +180,49 @@ public class ReportAges extends Report {
                     }
                 }
             } else
-                println(getIndent(3) + i18n("noData"));
+                println(getIndent(3) + translate("noData"));
             println();
         }
         
         if (reportAgeAtEmigration) {
-            println(getIndent(2) + i18n("emigration"));
+            println(getIndent(2) + translate("emigration"));
             boolean ok = analyzeEvent(true, indi, "EMIG", false);
             if(!ok)
-                println(getIndent(3) + i18n("noData"));            
+                println(getIndent(3) + translate("noData"));            
             println();
         }
         
         if (reportAgeAtImmigration) {
-            println(getIndent(2) + i18n("immigration"));
+            println(getIndent(2) + translate("immigration"));
             boolean ok = analyzeEvent(true, indi, "IMMI", false);
             if(!ok)
-                println(getIndent(3) + i18n("noData"));            
+                println(getIndent(3) + translate("noData"));            
             println();
         }
         
         if (reportAgeAtNaturalization) {
-            println(getIndent(2) + i18n("naturalization"));
+            println(getIndent(2) + translate("naturalization"));
             boolean ok = analyzeEvent(true, indi, "NATU", false);
             if(!ok)
-                println(getIndent(3) + i18n("noData"));
+                println(getIndent(3) + translate("noData"));
             println();
         }
         
         if (reportAgeAtDeath) {
-            println(getIndent(2) + i18n("death"));
+            println(getIndent(2) + translate("death"));
             PropertyDate death = indi.getDeathDate();
             if (death != null) {
                 println(getIndent(2) + OPTIONS.getDeathSymbol()+" " + death);
                 age = indi.getAge(indi.getDeathDate().getStart());
                 printAge(age,3);
             } else
-                println(getIndent(3) + i18n("noData"));
+                println(getIndent(3) + translate("noData"));
             println();
         }
         
         if (reportAgeSinceBirth) {
             PointInTime now = PointInTime.getNow();
-            println(getIndent(2) + i18n("sinceBirth", now));
+            println(getIndent(2) + translate("sinceBirth", now));
             age = indi.getAge(now);
             printAge(age,3);
         }
@@ -233,7 +233,7 @@ public class ReportAges extends Report {
      */
     private void printAge(Delta age, int indent) {
         if (age == null)
-            println(getIndent(indent) + i18n("error"));
+            println(getIndent(indent) + translate("error"));
         else
             println(getIndent(indent) + AGE + ": " + age);
     }

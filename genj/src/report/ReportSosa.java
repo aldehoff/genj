@@ -6,6 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 
@@ -53,41 +54,33 @@ public class ReportSosa extends Report {
 	AGNATIC_REPORT = 2,
 	CSV_REPORT = 3;
     public int reportType = SOSA_REPORT;
-    public String reportTypes[] = { i18n("SosaReport"),
-				     i18n("LineageReport"),
-				    i18n("AgnaticReport"),
-				    i18n("CsvReport")};
+    public String reportTypes[] = { translate("SosaReport"),
+				     translate("LineageReport"),
+				    translate("AgnaticReport"),
+				    translate("CsvReport")};
 
     private final static int
 	ONE_LINE = 0,
 	ONE_EVT_PER_LINE = 1;
     public int reportFormat=ONE_LINE;
-    public String reportFormats[] = { i18n("IndiPerLine"),
-				      i18n("EventPerLine") };
+    public String reportFormats[] = { translate("IndiPerLine"),
+				      translate("EventPerLine") };
 
     private final static int
 	HTML = 0,
 	TEXT = 1,
 	TEXT_EXACT = 2;
     public int outputFormat=HTML;
-    public String outputFormats[] = { i18n("Html"),
-				      i18n("Textfull"),
-				      i18n("TextTrunc")};
+    public String outputFormats[] = { translate("Html"),
+				      translate("Textfull"),
+				      translate("TextTrunc")};
 
     public int columnWidth = 30;
 
     public boolean showGenerations = true;
     public int reportMaxGenerations = 999;
 
-    private final static int
-	PLACE_LONG = 0,
-	PLACE_FIRST = 1,
-	PLACE_EXACT = 2;
-    public int placeFormat=PLACE_FIRST;
-    public String placeFormats[] = {i18n("Long") ,i18n("First"), i18n("Exact")};
-    public int placeJurisdictionIndex = 2;
-    private int placeIndex = -placeJurisdictionIndex;
-
+    public boolean showAllPlaceJurisdictions = false;
 
     public boolean reportPlaceOfBirth = true;
     public boolean reportDateOfBirth = true;
@@ -105,8 +98,8 @@ public class ReportSosa extends Report {
     public int privateYears = 100;
     public int privateGen = 0;
     public boolean deadIsPublic=false;
-    public String privateEvent=i18n("PrivateEventString");
-    public String privateName=i18n("PrivateNameString");
+    public String privateEvent=translate("PrivateEventString");
+    public String privateName=translate("PrivateNameString");
     public String privateTag="_PRIV";
     
 
@@ -118,12 +111,6 @@ public class ReportSosa extends Report {
 	Map primary = new TreeMap();
 
 	// Init some stuff
-	if (placeFormat==PLACE_LONG)
-	    placeIndex = 0;
-	else if (placeFormat==PLACE_EXACT)
-	    placeIndex = placeJurisdictionIndex;
-	else 
-	    placeIndex = -placeJurisdictionIndex;
 
 	if (outputFormat == HTML && reportType != CSV_REPORT) {
 	    output = new FormatterHtml(this);
@@ -173,19 +160,19 @@ public class ReportSosa extends Report {
 	output.start();
 	switch (reportType){
 	case AGNATIC_REPORT: 
-	    output.println(output.h(1,i18n("title.agnatic",indi.getName())));
+	    output.println(output.h(1,translate("title.agnatic",indi.getName())));
 	    break;
 	case SOSA_REPORT: 
-	    output.println(output.h(1,i18n("title.sosa",indi.getName())));
+	    output.println(output.h(1,translate("title.sosa",indi.getName())));
 	    break;
 	case LINEAGE_REPORT:
-	    output.println(output.h(1,i18n("title.lineage",indi.getName())));
+	    output.println(output.h(1,translate("title.lineage",indi.getName())));
 	    break;
 	case CSV_REPORT:
-	    output.println(i18n("CsvHeader"));
+	    output.println(translate("CsvHeader"));
 	    break;
 	default:
-	    output.println(output.h(1,i18n("title.report",indi.getName())));
+	    output.println(output.h(1,translate("title.report",indi.getName())));
 	    break;
 	}
 	// iterate into individual and all its ascendants
@@ -202,7 +189,7 @@ public class ReportSosa extends Report {
 		    if (1<<gen <= p.intValue()){
 			if (gen != 0)
 			    output.println();
-			output.println(output.row(output.cell(output.h(2,i18n("Generation")+ " " + ++gen),0,nbColumns)));
+			output.println(output.row(output.cell(output.h(2,translate("Generation")+ " " + ++gen),0,nbColumns)));
 		    }
 		}
 		println(primary.get(p));
@@ -276,25 +263,26 @@ public class ReportSosa extends Report {
 	boolean isPrivate = output.isPrivate(indi,fam,level<=privateGen);
 
 	if (reportType == CSV_REPORT) {
+    
 	    number = ""+sosa;
 	    name = indi.getName();
-	    birth = Formatter.formatEvent(indi, "BIRT",true, true, placeIndex);
+	    birth = indi.format( "BIRT",toFormat("", true, true));
 	    if (fam != null){
-		marriage = Formatter.formatEvent(fam, "MARR",true, true, placeIndex);
+		marriage = fam.format( "MARR",toFormat("", true, true));
 	    } else {
 		marriage = "";
 	    }
-	    death = Formatter.formatEvent(indi, "DEAT",true, true, placeIndex);
-	    occupation = Formatter.formatEvent(indi, "OCCU",true, true, placeIndex);
-	    residence= Formatter.formatEvent(indi, "RESI",true, true, placeIndex);
+	    death = indi.format( "DEAT",toFormat("", true, true));
+	    occupation = indi.format( "OCCU", toFormat("{$v} ", true, true));
+	    residence= indi.format("RESI",toFormat("", true, true));
 	} else {
-
+    
 	number = ""+sosa;
 	name = output.strong(indi.getName())+" ("+indi.getId()+")";
 	if (privateName.length() != 0){
 	    name = isPrivate? privateName : name;
 	}
-	birth = Formatter.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
+	birth = indi.format("BIRT", toFormat(OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth));
 	if (fam != null){
 	    String prefix = OPTIONS.getMarriageSymbol();
 	    if (reportType == AGNATIC_REPORT || reportType == LINEAGE_REPORT ){
@@ -302,13 +290,13 @@ public class ReportSosa extends Report {
 		    prefix += " "+fam.getOtherSpouse(indi).getName();
 		}
 	    }
-	    marriage = Formatter.formatEvent(prefix, fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
+	    marriage = fam.format("MARR", toFormat(prefix, reportDateOfMarriage, reportPlaceOfMarriage));
 	} else {
 	    marriage = "";
 	}
-	death = Formatter.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
-	occupation = Formatter.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
-	residence = Formatter.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
+	death = indi.format("DEAT", toFormat(OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath));
+	occupation = indi.format("OCCU", toFormat(Gedcom.getName("OCCU"), reportDateOfOccu, reportPlaceOfOccu));
+	residence = indi.format("RESI", toFormat(Gedcom.getName("RESI"), reportDateOfResi, reportPlaceOfResi));
 	}
 	if (isPrivate){
 	    name = (privateName.length() != 0)? privateName : name;
@@ -383,5 +371,13 @@ public class ReportSosa extends Report {
 	return result;
     }
     
+    /** 
+     * convert given prefix, date and place switches into a format string
+     */
+    private String toFormat(String prefix, boolean date, boolean place) {
+      return prefix + (date?"{ $D}":"")
+        +(place&&showAllPlaceJurisdictions ? "{ $P}" : "")
+        +(place&&!showAllPlaceJurisdictions ? "{ $p}" : "");
+    }
 
 } //ReportSosa

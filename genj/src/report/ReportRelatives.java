@@ -99,7 +99,7 @@ public class ReportRelatives extends Report {
   public void start(Indi indi) {
 
     Gedcom gedcom = indi.getGedcom();
-    String title = i18n("title", indi);
+    String title = translate("title", indi);
     
     // prepare map of relationships
     Map key2relative = new HashMap();
@@ -115,7 +115,7 @@ public class ReportRelatives extends Report {
       List result = find(indi, relative.expression, relative.sex, key2relative);
       for (int j=0;j<result.size();j++) {
         Indi found = (Indi)result.get(j);
-        String name = i18n(relative.key) + ": " + found;
+        String name = translate(relative.key) + ": " + found;
         items.add(name, found);
       }
     }

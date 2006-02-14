@@ -69,7 +69,7 @@ import genj.report.PropertyList;
       indi.toString()
     };
     
-    issues.add(report.i18n("err.spouse."+role, format), xref.getImage(false), xref);
+    issues.add(report.translate("err.spouse."+role, format), xref.getImage(false), xref);
   }
 
 } //TestHusbandGender

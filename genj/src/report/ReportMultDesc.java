@@ -6,6 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyMultilineValue;
 import genj.report.Report;
@@ -20,6 +21,7 @@ import java.util.TreeMap;
  *   statistics (nb pers distinctes, nb pers vivantes, nb fam, ...)
  */
 public class ReportMultDesc extends Report {
+  
     private Formatter output;
     //    private String eol= System.getProperty("line.separator");
     private int nbColumns;
@@ -32,30 +34,23 @@ public class ReportMultDesc extends Report {
 	ONE_LINE = 0,
 	ONE_EVT_PER_LINE = 1;
     public int reportFormat=ONE_LINE;
-    public String reportFormats[] = { i18n("IndiPerLine"),
-				      i18n("EventPerLine") };
+    public String reportFormats[] = { translate("IndiPerLine"),
+				      translate("EventPerLine") };
 
     private final static int
 	HTML = 0,
 	TEXT = 1,
 	TEXT_CSV = 2;
     public int outputFormat=HTML;
-    public String outputFormats[] = { i18n("Html")
-				      ,i18n("Text")
+    public String outputFormats[] = { translate("Html")
+				      ,translate("Text")
 				      ,"Csv"
     };
 
     private int columnWidth = 30;
     public int reportMaxGenerations = 999;
 
-    private final static int
-	PLACE_LONG = 0,
-	PLACE_FIRST = 1,
-	PLACE_EXACT = 2;
-    public int placeFormat=ONE_LINE;
-    public String placeFormats[] = {i18n("Long") ,i18n("First"), i18n("Exact")};
-    public int placeJurisdictionIndex = 2;
-    private int placeIndex = -placeJurisdictionIndex;
+    public boolean showAllPlaceJurisdictions = false;
 
     public boolean reportPlaceOfBirth = true;
     public boolean reportDateOfBirth = true;
@@ -74,8 +69,8 @@ public class ReportMultDesc extends Report {
     public int privateYears = 100;
     public int privateGen = 999;
     public boolean deadIsPublic=false;
-    public String privateEvent=i18n("PrivateEventString");
-    public String privateName=i18n("PrivateNameString");
+    public String privateEvent=translate("PrivateEventString");
+    public String privateName=translate("PrivateNameString");
     public String privateTag="_PRIV";
 
 
@@ -94,12 +89,6 @@ public class ReportMultDesc extends Report {
 	Map primary = new TreeMap();
 
 	// Init some stuff
-	if (placeFormat==PLACE_LONG)
-	    placeIndex = 0;
-	else if (placeFormat==PLACE_EXACT)
-	    placeIndex = placeJurisdictionIndex;
-	else 
-	    placeIndex = -placeJurisdictionIndex;
 
 	if (outputFormat == HTML) {
 	    output = new FormatterHtml(this);
@@ -143,10 +132,10 @@ public class ReportMultDesc extends Report {
 	for (int i = 0; i < indis.length; i++)
 	    iterate(indis[i], 1, new Integer(i+1).toString(), primary);
 
-	output.println(output.h(1,i18n("title.stats")));
-	output.println(i18n("nb.fam")+nbFam);
-	output.println(i18n("nb.indi")+nbIndi);
-	output.println(i18n("nb.living")+nbLiving);
+	output.println(output.h(1,translate("title.stats")));
+	output.println(translate("nb.fam")+nbFam);
+	output.println(translate("nb.indi")+nbIndi);
+	output.println(translate("nb.living")+nbLiving);
  
 	// Done
 	output.end();
@@ -160,7 +149,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
     if (level > reportMaxGenerations) return;
     // Here comes the individual
     if (level == 1)
-	output.println(output.h(1,i18n("title.descendant",indi.getName())));
+	output.println(output.h(1,translate("title.descendant",indi.getName())));
 
     output.println(format(indi, null, num, level));
            
@@ -185,7 +174,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	    addIndi = false;
 	    output.startIndent();
 	    output.startIndent();
-	    output.println("====> "+i18n("see")+output.hlink(seeIndi.toString(),seeIndi.toString()));
+	    output.println("====> "+translate("see")+output.hlink(seeIndi.toString(),seeIndi.toString()));
 	    output.endIndent();
 	    output.endIndent();
 	} else {
@@ -223,7 +212,7 @@ private void iterate(Indi indi, int level, String num, Map primary) {
     /**
      * resolves the information of one Indi
      */
-    private String format(Indi indi, Fam fam, String num,int level) {
+  private String format(Indi indi, Fam fam, String num,int level) {
 
 	String number;
 	String name;
@@ -239,19 +228,19 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	// Might be null
 	if (indi==null) 
 	    return "?";
-
+  
 	number = ""+num;
 	number = output.anchor(number, number);
 	name = output.strong(indi.getName())+" ("+indi.getId()+")";
-	birth = Formatter.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth, placeIndex);
+	birth = indi.format("BIRT", toFormat(OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth));
 	if (fam != null){
-	    marriage = Formatter.formatEvent(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage, placeIndex);
+	    marriage = fam.format("MARR", toFormat(OPTIONS.getMarriageSymbol(),reportDateOfMarriage, reportPlaceOfMarriage));
 	} else {
 	    marriage = "";
 	}
-	death = Formatter.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath, placeIndex);
-	occupation = Formatter.formatEvent(i18n("Job"), indi, "OCCU", reportDateOfOccu, reportPlaceOfOccu, placeIndex);
-	residence = Formatter.formatEvent(i18n("Resi"), indi, "RESI", reportDateOfResi, reportPlaceOfResi, placeIndex);
+	death = indi.format("DEAT", toFormat(OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath));
+	occupation = indi.format("OCCU", toFormat(Gedcom.getName("OCCU"), reportDateOfOccu, reportPlaceOfOccu));
+	residence = indi.format("RESI", toFormat(Gedcom.getName("RESI"), reportDateOfResi, reportPlaceOfResi));
 	address = reportMailingAddress ? indi.getAddress() : null;
 
 	if (output.isPrivate(indi,fam,level>privateGen)){
@@ -335,5 +324,15 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	}
     	return result;
     }
+
+  /** 
+   * convert given prefix, date and place switches into a format string
+   */
+  private String toFormat(String prefix, boolean date, boolean place) {
+    return prefix + (date?"{ $D}":"")
+      +(place&&showAllPlaceJurisdictions ? "{ $P}" : "")
+      +(place&&!showAllPlaceJurisdictions ? "{ $p}" : "");
+  }
+  
 
 } //ReportMulDesv

@@ -149,7 +149,7 @@ public class ReportHTMLSheets extends Report {
       // Here comes the IMG-tag
       out.println("<IMG src=\""+url+"\"></IMG>");
     }
-    if (url==null) out.println(i18n("no.image"));
+    if (url==null) out.println(translate("no.image"));
   }
 
   /**
@@ -339,7 +339,7 @@ public class ReportHTMLSheets extends Report {
 
     File file = getFileForEntity(dir, ent);
 
-    println(i18n("exporting", new String[]{ ent.toString(), file.getName() }));
+    println(translate("exporting", new String[]{ ent.toString(), file.getName() }));
     
     PrintWriter out = getWriter(new FileOutputStream(file));
     export(ent, dir, out);
@@ -381,7 +381,7 @@ public class ReportHTMLSheets extends Report {
   private void exportIndex(Gedcom gedcom, File dir) throws IOException {
 
     File file = getFileForIndex(dir);
-    println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
+    println(translate("exporting", new String[]{ file.getName(), dir.toString() }));
     PrintWriter out = getWriter(new FileOutputStream(file));
 
     // HEAD
@@ -429,7 +429,7 @@ public class ReportHTMLSheets extends Report {
     
     File file = getFileForNames(dir);
     
-    println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
+    println(translate("exporting", new String[]{ file.getName(), dir.toString() }));
 
     PrintWriter out = getWriter(new FileOutputStream(file));
 
@@ -473,11 +473,11 @@ public class ReportHTMLSheets extends Report {
     File file = getFileForStylesheet(dir);
     if (file==null||file.exists()) {
       if (file.exists())
-        println(i18n("kept.stylesheet", css));
+        println(translate("kept.stylesheet", css));
       return;
     }
     
-    println(i18n("exporting", new String[]{ file.getName(), dir.toString() }));
+    println(translate("exporting", new String[]{ file.getName(), dir.toString() }));
     PrintWriter out = getWriter(new FileOutputStream(file));
     
     for (int i=0;i<defaultStylesheet.length;i++) 
@@ -502,11 +502,11 @@ public class ReportHTMLSheets extends Report {
   public void start(Gedcom gedcom) {
     
     // Get a directory to write to
-    File dir = getDirectoryFromUser(i18n("target.dir"), WindowManager.TXT_OK);
+    File dir = getDirectoryFromUser(translate("target.dir"), WindowManager.TXT_OK);
     if (dir==null)
       return;
 
-    println(i18n("target.dir")+" = "+dir);
+    println(translate("target.dir")+" = "+dir);
     
     // Make sure directory is there
     if (!dir.exists()&&!dir.mkdirs()) {

@@ -70,7 +70,7 @@ public class ReportAncestors extends Report {
         indi.getDeathAsString()+" "+trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")))};
         
         // Format the message with localization and return it
-        return i18n("format",msgargs);
+        return translate("format",msgargs);
         
         
         // Could be a hyperlink, too

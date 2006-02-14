@@ -113,7 +113,7 @@ public class ReportValidate extends Report {
     
     // test if there's a submitter
     if (gedcom.getSubmitter()==null)
-      issues.add(i18n("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null);
+      issues.add(translate("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null);
 
     // Loop through entities and test 'em
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
@@ -135,12 +135,12 @@ public class ReportValidate extends Report {
     
     // any fixes proposed at all?
     if (issues.size()==0) {
-      getOptionFromUser(i18n("noissues"), Report.OPTION_OK);
+      getOptionFromUser(translate("noissues"), Report.OPTION_OK);
       return;
     }
     
     // show fixes
-    showPropertiesToUser(i18n("issues"), issues);
+    showPropertiesToUser(translate("issues"), issues);
     
     // done
   }
@@ -175,7 +175,7 @@ public class ReportValidate extends Report {
         continue;
       // check if Gedcom grammar allows it
       if (!meta.allows(ctag)) {
-        String msg = i18n("err.notgedcom", new String[]{ctag,path.toString()});
+        String msg = translate("err.notgedcom", new String[]{ctag,path.toString()});
         issues.add(msg, MetaProperty.IMG_ERROR, child);
         continue;
       }

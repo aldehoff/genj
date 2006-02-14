@@ -80,17 +80,17 @@ public class ReportGoogleMap extends Report {
       super.println(e.getMessage());
     }
     if (locations.isEmpty()) {
-      getOptionFromUser(i18n("none_mapable"), OPTION_OK);
+      getOptionFromUser(translate("none_mapable"), OPTION_OK);
       return;
     }
     
     // ask for google key
-    String key = getValueFromUser("google-key", i18n("enter_key"));
+    String key = getValueFromUser("google-key", translate("enter_key"));
     if (key==null)
       return;
       
     // ask the user for file(s)
-    File html = getFileFromUser(i18n("which_html_file"), i18n("generate"));
+    File html = getFileFromUser(translate("which_html_file"), translate("generate"));
     if (html==null)
       return;
     String suffix = FileAssociation.getSuffix(html);
@@ -109,7 +109,7 @@ public class ReportGoogleMap extends Report {
       return;
     
     // let the user know
-    getOptionFromUser(i18n("done", new String[] { html.getName(), xml.getName(), html.getParent() }), OPTION_OK );
+    getOptionFromUser(translate("done", new String[] { html.getName(), xml.getName(), html.getParent() }), OPTION_OK );
 
     // done
   }
@@ -145,7 +145,7 @@ public class ReportGoogleMap extends Report {
       in.close();
       out.close();
     } catch (IOException e) {
-      getOptionFromUser(i18n("ioerror", html), OPTION_OK);
+      getOptionFromUser(translate("ioerror", html), OPTION_OK);
       return false;
     }
     // done
@@ -191,7 +191,7 @@ public class ReportGoogleMap extends Report {
       out.write("</ls>");
       out.close();
     } catch (IOException e) {
-      getOptionFromUser(i18n("ioerror", xml), OPTION_OK);
+      getOptionFromUser(translate("ioerror", xml), OPTION_OK);
       return false;
     }
     

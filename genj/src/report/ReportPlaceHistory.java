@@ -71,7 +71,7 @@ public class ReportPlaceHistory extends Report {
     if (format.length()>0) {
       String [] jurisdictions = new DirectAccessTokenizer(format,PropertyPlace.JURISDICTION_SEPARATOR).getTokens();
       if (jurisdictions.length>0) {
-        Object choice = getValueFromUser(i18n("jurisdiction"), jurisdictions, jurisdictions[0]);
+        Object choice = getValueFromUser(translate("jurisdiction"), jurisdictions, jurisdictions[0]);
         if (choice==null) return;
         for (int i=0; i<jurisdictions.length; i++) if (jurisdictions[i]==choice) jurisdiction = i;
       }
@@ -97,9 +97,9 @@ public class ReportPlaceHistory extends Report {
     plac2series.values().toArray(series);
     
     // show it
-    String title = i18n("title", gedcom.getName());
-    String xaxis = i18n("xaxis", resolution);
-    String yaxis = i18n("yaxis");
+    String title = translate("title", gedcom.getName());
+    String xaxis = translate("xaxis", resolution);
+    String yaxis = translate("yaxis");
     Chart chart = new Chart(title, xaxis, yaxis, series, null, true);
     showChartToUser(chart);
 

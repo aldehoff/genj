@@ -5,7 +5,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.report.Report;
@@ -54,7 +53,7 @@ public class ReportLinesFan extends Report {
      */
     public void start(Indi indi) {
 	
-        File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
+        File file = getFileFromUser(translate("output.file"), WindowManager.TXT_OK,true);
         if (file == null)
         return ;
         
@@ -124,11 +123,11 @@ public class ReportLinesFan extends Report {
 	if (gen > reportMaxGenerations){ return;}
 	out.println("("+fullname(indi,1,1,50)+")");
 	if (in < 7) {
-	    out.println(" ("+formatEvent(OPTIONS.getBirthSymbol(),indi,"BIRT",Formatter.DATE_FORMAT_LONG,false,0)+")"+
-			" ("+formatEvent(OPTIONS.getDeathSymbol(),indi,"DEAT",Formatter.DATE_FORMAT_LONG,false,0)+")");
+	    out.println(" ("+esc(indi.format("BIRT", OPTIONS.getBirthSymbol()+" {$D}"))+")"+
+			" ("+esc(indi.format("DEAT",OPTIONS.getDeathSymbol()+" {$D}"))+")");
 	}else if (in == 7){
-	    out.println(" ("+formatEvent(OPTIONS.getBirthSymbol(),indi,"BIRT",Formatter.DATE_FORMAT_YEAR,false,0)+")"+
-			" ("+formatEvent(OPTIONS.getDeathSymbol(),indi,"DEAT",Formatter.DATE_FORMAT_YEAR,false,0)+")");
+	    out.println(" ("+esc(indi.format("BIRT",OPTIONS.getBirthSymbol()+" {$y}"))+")"+
+			" ("+esc(indi.format("DEAT", OPTIONS.getDeathSymbol()+" {$y}"))+")");
 	} else {
 	    out.println(" () () ");
 	}
@@ -173,22 +172,10 @@ public class ReportLinesFan extends Report {
       if it is necessary to shorten the name to fit this length.
     */
     private String fullname(Indi indi,int isUpper,int type,int length){
-	return escapePsString(indi.getName());
+	return esc(indi.getName());
     }
 
-
-    /**
-     * return symbol+' '+eventstring if event is not null
-     */
-    String formatEvent(String symbol, Entity entity, String tag, int formatDate, boolean isPlace, int placeIndex ) {
-	String result = Formatter.formatEvent(entity, tag, formatDate, isPlace, placeIndex);
-	if (result != null && result.length()!=0){
-	    result = symbol + " " + result;
-	}
-	return escapePsString(result);
-    }
-
-    private String escapePsString(String s){
+    private String esc(String s){
 	String result;
 	result = s.replaceAll("\\\\","\\\\\\\\");
 	result = result.replaceAll("\\(","\\\\(");

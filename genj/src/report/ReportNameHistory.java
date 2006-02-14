@@ -93,12 +93,12 @@ public class ReportNameHistory extends Report {
     // name the group 'other' now: "14 Other Names"
     int numOthers = (PropertyName.getLastNames(gedcom, false).size()-name2series.size());
     if (numOthers>0) {
-	    others.setName(i18n("others", numOthers));
+	    others.setName(translate("others", numOthers));
 	    name2series.put(String.valueOf('\uffff'), others);
     }
     
     // show it
-    showChartToUser(new Chart(i18n("title", gedcom.getName()), null, i18n("yaxis"), IndexedSeries.toArray(name2series.values()), new DecimalFormat("#"), true));
+    showChartToUser(new Chart(translate("title", gedcom.getName()), null, translate("yaxis"), IndexedSeries.toArray(name2series.values()), new DecimalFormat("#"), true));
 
     // done
   }

@@ -106,44 +106,44 @@ public class ReportLinesCirc extends Report {
     //==== generations
     private int maxlevel=10;
     public int umaxlevel=2;
-    public String umaxlevels[] = { i18n("umaxlevel.5"),
-				     i18n("umaxlevel.6"),
-				     i18n("umaxlevel.7"),
-				     i18n("umaxlevel.8"),
-				     i18n("umaxlevel.9"),
-				    i18n("umaxlevel.10")};
+    public String umaxlevels[] = { translate("umaxlevel.5"),
+				     translate("umaxlevel.6"),
+				     translate("umaxlevel.7"),
+				     translate("umaxlevel.8"),
+				     translate("umaxlevel.9"),
+				    translate("umaxlevel.10")};
 
     //==== report size
     private int x_pages=1;
     private int y_pages=1;
     public int unb_pages=0;
-    public String unb_pagess[] = { i18n("unb_pages.0"),
-				     i18n("unb_pages.1"),
-				     i18n("unb_pages.2"),
-				     i18n("unb_pages.3"),
-				     i18n("unb_pages.4"),
-				     i18n("unb_pages.5"),
-				    i18n("unb_pages.6")};
+    public String unb_pagess[] = { translate("unb_pages.0"),
+				     translate("unb_pages.1"),
+				     translate("unb_pages.2"),
+				     translate("unb_pages.3"),
+				     translate("unb_pages.4"),
+				     translate("unb_pages.5"),
+				    translate("unb_pages.6")};
     private int radius=0;
 
     //==== text colour
     public int colourtext =1;
-    public String colourtexts[] = { i18n("colourtext.0"),
-				     i18n("colourtext.1")};
+    public String colourtexts[] = { translate("colourtext.0"),
+				     translate("colourtext.1")};
 
     //==== Background
     public int colouroption =0;
-    public String colouroptions[] = { i18n("colouroption.0"),
-				     i18n("colouroption.1"),
-				    i18n("colouroption.2")};
+    public String colouroptions[] = { translate("colouroption.0"),
+				     translate("colouroption.1"),
+				    translate("colouroption.2")};
     private boolean alternating;
     private boolean gradient;
 
     //==== Date Fromat
     public int dateformat=1;
-    public String dateformats[] = { i18n("dateformat.0"),
-				     i18n("dateformat.1"),
-				    i18n("dateformat.2")};
+    public String dateformats[] = { translate("dateformat.0"),
+				     translate("dateformat.1"),
+				    translate("dateformat.2")};
 
     //==== Marriag Date?
     private boolean marrest;
@@ -157,18 +157,18 @@ public class ReportLinesCirc extends Report {
     //==== character Encoding 
     public int uenc_choice=0;
     private int enc_choice=1;
-    public String uenc_choices[] = { i18n("uenc_choice.0"),
-				     i18n("uenc_choice.1"),
-				    i18n("uenc_choice.2")};
+    public String uenc_choices[] = { translate("uenc_choice.0"),
+				     translate("uenc_choice.1"),
+				    translate("uenc_choice.2")};
 
     //==== Font
     public int ufont_name=0;
-    public String ufont_names[] = { i18n("ufont_name.0"),
-				     i18n("ufont_name.1"),
-				     i18n("ufont_name.2"),
-				     i18n("ufont_name.3"),
-				     i18n("ufont_name.4"),
-				    i18n("ufont_name.5")};
+    public String ufont_names[] = { translate("ufont_name.0"),
+				     translate("ufont_name.1"),
+				     translate("ufont_name.2"),
+				     translate("ufont_name.3"),
+				     translate("ufont_name.4"),
+				    translate("ufont_name.5")};
     private String font_name = "Helvetica";
 
     //==== Report Date
@@ -197,7 +197,7 @@ public class ReportLinesCirc extends Report {
       initUserOptions();
 
       // ask for file
-      File file = getFileFromUser(i18n("output.file"), WindowManager.TXT_OK,true);
+      File file = getFileFromUser(translate("output.file"), WindowManager.TXT_OK,true);
       if (file == null)
         return ;
       
@@ -230,7 +230,7 @@ public class ReportLinesCirc extends Report {
 	gradient=(colouroption == 2);
 	maxlevel=umaxlevel + 5;
 	enc_choice=1+uenc_choice;
-	font_name = i18n("ufont_name."+ufont_name);
+	font_name = translate("ufont_name."+ufont_name);
 	transparent = (colouroption != 0);
 	switch (unb_pages){
 	case 1:x_pages=2;y_pages=1;break;

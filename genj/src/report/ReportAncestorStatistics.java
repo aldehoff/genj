@@ -123,18 +123,18 @@ public class ReportAncestorStatistics extends Report {
      */
     private void printHeader(Indi indi) {
         // Print description
-        println(i18n("info"));
+        println(translate("info"));
         println();
         
         // Print root individual
-        println(i18n("root_individual"));
+        println(translate("root_individual"));
         println(LINE_SEPARATOR);
         println(getIndiDescription(indi));
         println();
         
         // Print factors
-        println(i18n("implex_factor", new Double(dImplexFactor)));
-        println(i18n("consanguinity_factor", new Double(dConsanguinityFactor)));
+        println(translate("implex_factor", new Double(dImplexFactor)));
+        println(translate("consanguinity_factor", new Double(dConsanguinityFactor)));
         println();
     }
     
@@ -143,14 +143,14 @@ public class ReportAncestorStatistics extends Report {
      */
     private void printImplexStats() {
         // Print header
-        println(align(i18n("header_implex_generation"), 10, Report.ALIGN_LEFT) +
-        align(i18n("header_implex_possible"), 10, Report.ALIGN_RIGHT) +
-        align(i18n("header_implex_known"), 10, Report.ALIGN_RIGHT) +
-        align(i18n("header_implex_known_percent"), 10, Report.ALIGN_RIGHT) +
-        align(i18n("header_implex_cumul"), 10, Report.ALIGN_RIGHT) +
-        align(i18n("header_implex_cumul_percent"), 10, Report.ALIGN_RIGHT) +
-        align(i18n("header_implex_diff"), 10, Report.ALIGN_RIGHT) +
-        align(i18n("header_implex_implex"), 10, Report.ALIGN_RIGHT));
+        println(align(translate("header_implex_generation"), 10, Report.ALIGN_LEFT) +
+        align(translate("header_implex_possible"), 10, Report.ALIGN_RIGHT) +
+        align(translate("header_implex_known"), 10, Report.ALIGN_RIGHT) +
+        align(translate("header_implex_known_percent"), 10, Report.ALIGN_RIGHT) +
+        align(translate("header_implex_cumul"), 10, Report.ALIGN_RIGHT) +
+        align(translate("header_implex_cumul_percent"), 10, Report.ALIGN_RIGHT) +
+        align(translate("header_implex_diff"), 10, Report.ALIGN_RIGHT) +
+        align(translate("header_implex_implex"), 10, Report.ALIGN_RIGHT));
         println(LINE_SEPARATOR);
         
         // Iteration on generations
@@ -171,7 +171,7 @@ public class ReportAncestorStatistics extends Report {
         println();
         
         // Print table of common individuals
-        println(i18n("header_implex_common_ancestors"));
+        println(translate("header_implex_common_ancestors"));
         println(LINE_SEPARATOR);
         
         // Scan common individuals
@@ -191,7 +191,7 @@ public class ReportAncestorStatistics extends Report {
      */
     private void printConsanguinityStats(Indi indi) {
         // Print list header
-        println(i18n("header_consanguinity_common_ancestors"));
+        println(translate("header_consanguinity_common_ancestors"));
         println(LINE_SEPARATOR);
         
         // Scan common individuals
@@ -228,7 +228,7 @@ public class ReportAncestorStatistics extends Report {
      * Returns an individual description.
      */
     private String getIndiDescription(Indi indi) {
-        return i18n("entity", new String[] {indi.getId(), indi.getName()});
+        return translate("entity", new String[] {indi.getId(), indi.getName()});
     }
     
     /**

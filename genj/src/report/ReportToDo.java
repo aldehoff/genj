@@ -33,6 +33,9 @@ import javax.swing.ImageIcon;
  * @version 1.0
  */
 public class ReportToDo extends Report {
+  
+  private final static String PLACE_AND_DATE_FORMAT = "{$D}{ $p}";
+
     private Formatter output;
     private String eol= System.getProperty("line.separator");
 
@@ -65,11 +68,11 @@ public class ReportToDo extends Report {
     public void start(Gedcom gedcom) {
     
 	if (outputSummaryCsv){
-	    println(i18n("evt.col")
-		    +","+i18n("date.col")
-		    +","+i18n("place.col")
-		    +","+i18n("indi.col")
-		    +","+i18n("todo.col")
+	    println(translate("evt.col")
+		    +","+translate("date.col")
+		    +","+translate("place.col")
+		    +","+translate("indi.col")
+		    +","+translate("todo.col")
 		    );
 	    exportTodosCsv(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"));
 	    exportTodosCsv(gedcom.getEntities(Gedcom.FAM, "FAM"));
@@ -88,12 +91,12 @@ public class ReportToDo extends Report {
 	    // Loop through individuals & families
 	    output.print(output.page());
 	    output.startTable();
-	    output.print(output.row(output.cell(i18n("titletodos"),"head1",0,5)));
-	    output.print(output.row(output.cell(output.strong(i18n("evt.col")))+
-				    output.cell(output.strong(i18n("date.col")))+
-				    output.cell(output.strong(i18n("place.col")))+
-				    output.cell(output.strong(i18n("indi.col")))+
-				    output.cell(output.strong(i18n("todo.col")))
+	    output.print(output.row(output.cell(translate("titletodos"),"head1",0,5)));
+	    output.print(output.row(output.cell(output.strong(translate("evt.col")))+
+				    output.cell(output.strong(translate("date.col")))+
+				    output.cell(output.strong(translate("place.col")))+
+				    output.cell(output.strong(translate("indi.col")))+
+				    output.cell(output.strong(translate("todo.col")))
 				    ));
 	    exportTodos(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"));
 	    exportTodos(gedcom.getEntities(Gedcom.FAM, "FAM"));
@@ -189,10 +192,10 @@ public class ReportToDo extends Report {
 	    return;
 	}
 
-	output.print(output.row(output.cell(i18n("titlefam",new String[]{fam.toString(),fam.getId()}),"head1",0,6)));
+	output.print(output.row(output.cell(translate("titlefam",new String[]{fam.toString(),fam.getId()}),"head1",0,6)));
 	////// Epoux
 	tempIndi = fam.getHusband();
-	output.print(output.row(output.cell(i18n("husband"),"head2")+
+	output.print(output.row(output.cell(Gedcom.getName("HUSB"),"head2")+
 				output.cell(getFormattedName(tempIndi),"head2",0,5)));
 	outputEventRow(tempIndi,"BIRT",todos);
 	outputEventRow(tempIndi,"BAPM",todos);
@@ -200,15 +203,15 @@ public class ReportToDo extends Report {
 	outputEventRow(tempIndi,"BURI",todos);
 	tempFam = tempIndi.getFamilyWhereBiologicalChild();
 	if (tempFam != null) {
-	    output.print(output.row(output.cell(i18n("father")+":","head3")+
+	    output.print(output.row(output.cell(translate("father")+":","head3")+
 				    output.cell(getIndiString(tempFam.getHusband()),0,5)));
-	    output.print(output.row(output.cell(i18n("mother")+":","head3")+
+	    output.print(output.row(output.cell(translate("mother")+":","head3")+
 				    output.cell(getIndiString(tempFam.getWife()),0,5)));
 	}
 
 	////// Epouse
 	tempIndi = fam.getWife();
-	output.print(output.row(output.cell(i18n("wife"),"head2")+
+	output.print(output.row(output.cell(Gedcom.getName("WIFE"),"head2")+
 				output.cell(getFormattedName(tempIndi),"head2",0,5)));
 	outputEventRow(tempIndi,"BIRT",todos);
 	outputEventRow(tempIndi,"BAPM",todos);
@@ -216,9 +219,9 @@ public class ReportToDo extends Report {
 	outputEventRow(tempIndi,"BURI",todos);
 	tempFam = tempIndi.getFamilyWhereBiologicalChild();
 	if (tempFam != null) {
-	    output.print(output.row(output.cell(i18n("father")+":","head3")+
+	    output.print(output.row(output.cell(translate("father")+":","head3")+
 				    output.cell(getIndiString(tempFam.getHusband()),0,5)));
-	    output.print(output.row(output.cell(i18n("mother")+":","head3")+
+	    output.print(output.row(output.cell(translate("mother")+":","head3")+
 				    output.cell(getIndiString(tempFam.getWife()),0,5)));
 	}
 	outputEventRow(fam,"MARR",todos);
@@ -233,14 +236,14 @@ public class ReportToDo extends Report {
 	}
 
 	/**************** Notes */
-	propArray = fam.getProperties("NOTE", false);
+	propArray = fam.getProperties("NOTE");
 	boolean seenNote=false;
 	for (int i = 0; i<propArray.length; i++){
 	    String noteString = "";
 	    prop = (Property)propArray[i];
 	    if (todos.contains(prop)) continue;
 	    if (!seenNote) {
-		output.print(output.row(output.cell(i18n("main.notes"),"head2",0,6)));
+		output.print(output.row(output.cell(translate("main.notes"),"head2",0,6)));
 		seenNote = true;
 	    }
 	    noteString = output.cell(outputPropertyValue(prop),0,6);
@@ -248,7 +251,7 @@ public class ReportToDo extends Report {
 	}
 				  
 	/**************** Todos */
-	output.print(output.row(output.cell(i18n("titletodo"),"head2",0,6)));
+	output.print(output.row(output.cell(translate("titletodo"),"head2",0,6)));
 	for (int i = 0; i < todos.size(); i++){
 	    prop = (Property) todos.get(i);
 	    Property parent = prop.getParent();
@@ -258,7 +261,7 @@ public class ReportToDo extends Report {
 		row += output.cell(outputPropertyValue(prop),0,5);
 	    } else {
 		row = output.cell(Gedcom.getName(parent.getTag()),"head3-todo");
-		row += output.cell(Formatter.formatEvent(parent,Formatter.DATE_FORMAT_LONG, true, 0)+
+		row += output.cell(parent.format(PLACE_AND_DATE_FORMAT)+
 				   formatString(output.br(),outputPropertyValue(prop),"")+
 				   formatString(output.br(),getPropertyString(prop,prop.getPath().toString()+":REPO"),"")+
 				   formatString(output.br(),getPropertyString(prop,prop.getPath().toString()+":NOTE"),"")
@@ -280,8 +283,8 @@ public class ReportToDo extends Report {
 	    return;
 	}
 
-	output.print(output.row(output.cell(i18n("titleindi",new String[]{indi.getName(),indi.getId()}),"head1",0,6)));
-	output.print(output.row(output.cell(i18n("titleinfosperso"),"head2",0,6)));
+	output.print(output.row(output.cell(translate("titleindi",new String[]{indi.getName(),indi.getId()}),"head1",0,6)));
+	output.print(output.row(output.cell(translate("titleinfosperso"),"head2",0,6)));
 	output.print(output.row(output.cell(Gedcom.getName("NAME"),"head3")+
 				  output.cell(getFormattedName(indi),0,3)+
 				  output.cell("ID: "+indi.getId())+
@@ -300,9 +303,9 @@ public class ReportToDo extends Report {
 				  ));
 	Fam fam = indi.getFamilyWhereBiologicalChild();
 	if (fam != null) {
-	    output.print(output.row(output.cell(i18n("father")+":","head3")+
+	    output.print(output.row(output.cell(translate("father")+":","head3")+
 				    output.cell(getIndiString(fam.getHusband()),0,5)));
-	    output.print(output.row(output.cell(i18n("mother")+":","head3")+
+	    output.print(output.row(output.cell(translate("mother")+":","head3")+
 				    output.cell(getIndiString(fam.getWife()),0,5)));
 	}
 
@@ -317,11 +320,11 @@ public class ReportToDo extends Report {
 	    Indi spouse= famc.getOtherSpouse(indi);
 	    if (spouse != null){
 		Indi[] children = famc.getChildren();
-		output.print(output.row(output.cell(i18n("spouse")+":","head3",children.length+1,1)+
+		output.print(output.row(output.cell(translate("spouse")+":","head3",children.length+1,1)+
 					output.cell(getIndiString(spouse)
 						    +output.br()
 						    +output.strong(Gedcom.getName("MARR")+" : ")
-						    +Formatter.formatEvent(famc, "MARR", Formatter.DATE_FORMAT_LONG, true, 0)
+						    +famc.format("MARR", PLACE_AND_DATE_FORMAT)
 						    ,0,5)));
            
 		if (children.length>0){
@@ -334,20 +337,20 @@ public class ReportToDo extends Report {
 	    }
 	}
 
-	output.print(output.row(output.cell(i18n("eventstitle"),"head2",0,6)));
+	output.print(output.row(output.cell(Gedcom.getName("EVEN", true),"head2",0,6)));
 
 	outputEventRow(indi,"OCCU",todos);
 	outputEventRow(indi,"RESI",todos);
 
 	/**************** Notes */
-	propArray = indi.getProperties("NOTE", false);
+	propArray = indi.getProperties("NOTE");
 	boolean seenNote=false;
 	for (int i = 0; i<propArray.length; i++){
 	    String noteString = "";
 	    prop = (Property)propArray[i];
 	    if (todos.contains(prop)) continue;
 	    if (!seenNote) {
-		output.print(output.row(output.cell(i18n("main.notes"),"head2",0,6)));
+		output.print(output.row(output.cell(translate("main.notes"),"head2",0,6)));
 		seenNote = true;
 	    }
 	    noteString = output.cell(outputPropertyValue(prop),0,6);
@@ -355,7 +358,7 @@ public class ReportToDo extends Report {
 	}
 				  
 	/**************** Todos */
-	output.print(output.row(output.cell(i18n("titletodo"),"head2",0,6)));
+	output.print(output.row(output.cell(translate("titletodo"),"head2",0,6)));
 	for (int i = 0; i < todos.size(); i++){
 	    prop = (Property) todos.get(i);
 	    Property parent = prop.getParent();
@@ -365,7 +368,7 @@ public class ReportToDo extends Report {
 		row += output.cell(outputPropertyValue(prop),0,5);
 	    } else {
 		row = output.cell(Gedcom.getName(parent.getTag()),"head3-todo");
-		row += output.cell(Formatter.formatEvent(parent,Formatter.DATE_FORMAT_LONG, true, 0)+
+		row += output.cell(parent.format(PLACE_AND_DATE_FORMAT)+
 				   formatString(output.br(),outputPropertyValue(prop),"")+
 				   formatString(output.br(),getPropertyString(prop,prop.getPath().toString()+":REPO"),"")+
 				   formatString(output.br(),getPropertyString(prop,prop.getPath().toString()+":NOTE"),"")
@@ -377,17 +380,17 @@ public class ReportToDo extends Report {
 
 
     private void outputEventRow(Entity indi, String tag, List todos){
-	Property props[] = indi.getProperties(tag, false);
+	Property props[] = indi.getProperties(tag);
 	
 	if (props == null) return;
 	if (props.length == 1)
 	    output.print(output.row(output.cell(Gedcom.getName(tag),"head3")+
-				    output.cell(Formatter.formatEvent(indi, tag, Formatter.DATE_FORMAT_LONG, true, 0)
+				    output.cell(indi.format(tag, PLACE_AND_DATE_FORMAT)
 						+getNotesString(output.br()+output.strong("Note : "),indi.getProperty(tag),todos),0,5)));
 	else if (props.length != 0) {
 	    for (int i = 0; i<props.length; i++){
 		output.print(output.row(output.cell(Gedcom.getName(tag),"head3")+
-					output.cell(Formatter.formatEvent(props[i], Formatter.DATE_FORMAT_LONG, true, 0)+
+					output.cell(props[i].format(PLACE_AND_DATE_FORMAT)+
 						    getNotesString(output.br()+output.strong("Note : "),props[i],todos),0,5)));
 	    }
 	}
@@ -463,7 +466,7 @@ public class ReportToDo extends Report {
 	// prop exists?
 	if (prop==null)
 	    return "";
-	Property[] props = prop.getProperties("NOTE", false);
+	Property[] props = prop.getProperties("NOTE");
 	if (props.length == 0) return "";
 	for (int i=0; i<props.length;i++){
 	    if (exclude.contains(props[i])) continue;
@@ -495,8 +498,8 @@ public class ReportToDo extends Report {
 	    return "";
 
 	name = output.strong(indi.getName())+" ("+indi.getId()+")";
-	birth = Formatter.formatEvent(OPTIONS.getBirthSymbol(), indi, "BIRT", true,true,0);
-	death = Formatter.formatEvent(OPTIONS.getDeathSymbol(), indi, "DEAT", true,true,0);
+	birth = indi.format("BIRT", OPTIONS.getBirthSymbol()+" "+PLACE_AND_DATE_FORMAT);
+	death = indi.format("DEAT", OPTIONS.getDeathSymbol()+" "+PLACE_AND_DATE_FORMAT);
 	return name+" "+birth+" "+death;
     }
 

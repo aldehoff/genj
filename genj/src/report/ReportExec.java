@@ -25,7 +25,7 @@ public class ReportExec extends Report {
   public void start(Gedcom gedcom) {
     
     // get the name of the executable
-    String cmd = getValueFromUser( "executables", i18n("WhichExecutable"), new String[0]);
+    String cmd = getValueFromUser( "executables", translate("WhichExecutable"), new String[0]);
 
     if(cmd == null) 
       return;
@@ -40,7 +40,7 @@ public class ReportExec extends Report {
         println(line);
       }
     } catch (IOException ioe) {
-      println(i18n("Error")+ioe.getMessage());
+      println(translate("Error")+ioe.getMessage());
     }
     
     // done

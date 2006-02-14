@@ -11,20 +11,15 @@
 import genj.gedcom.Entity;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyPlace;
 import genj.gedcom.time.Delta;
 import genj.report.Report;
-import genj.util.WordBuffer;
 
 /**
  * GenJ - Formatter
  * Class set to hide presentation logic to report writers
  */
 abstract class Formatter  {
-    static final int 
-	DATE_FORMAT_NONE=0,
-	DATE_FORMAT_YEAR=1,
-	DATE_FORMAT_LONG=2;
+  
     protected Report parentReport;
 
     /**
@@ -138,6 +133,7 @@ abstract class Formatter  {
      * placeIndex <0 : First non null jurisdiction from this position
      * placeIndex =0 : All jurisdictions
      */
+/*    
     static String formatEvent(Property prop, int dateFormat, boolean isPlace, int placeIndex ) {
 	// Prop hidden?
 	if ((dateFormat == DATE_FORMAT_NONE) && !isPlace) 
@@ -178,9 +174,6 @@ abstract class Formatter  {
 	return(formatEvent(entity, tag, isDate?DATE_FORMAT_LONG:DATE_FORMAT_NONE, isPlace, placeIndex ));
     }
 
-    /**
-     * return symbol+' '+eventstring if event is not null
-     */
     static String formatEvent(String symbol, Entity entity, String tag, boolean isDate, boolean isPlace, int placeIndex ) {
 	String result = formatEvent(entity, tag, isDate, isPlace, placeIndex);
 	if (result != null && result.length()!=0){
@@ -189,6 +182,7 @@ abstract class Formatter  {
 	return result;
     }
 
+*/    
 }
 
 /**

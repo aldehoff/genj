@@ -45,7 +45,7 @@ public class ReportCommonAncestor extends Report {
    */
   public void start(Indi indi) {
     // ask for other
-    Indi other = (Indi)getEntityFromUser(i18n("select"), indi.getGedcom(), Gedcom.INDI);
+    Indi other = (Indi)getEntityFromUser(translate("select"), indi.getGedcom(), Gedcom.INDI);
     if (other==null)
       return;
     // continue
@@ -66,15 +66,15 @@ public class ReportCommonAncestor extends Report {
 
     // nothing to show?
     if (ancestor==null) {
-      getOptionFromUser(i18n("nocommon"), Report.OPTION_OK);
+      getOptionFromUser(translate("nocommon"), Report.OPTION_OK);
       return;
     }
     
     // show the result
     PropertyList list = new PropertyList(indi.getGedcom());
-    list.add(i18n("result.first", indi), indi);
-    list.add(i18n("result.second", other), other);
-    list.add(i18n("result.ancestor", ancestor), ancestor);
+    list.add(translate("result.first", indi), indi);
+    list.add(translate("result.second", other), other);
+    list.add(translate("result.ancestor", ancestor), ancestor);
     
     showPropertiesToUser(getName(), list);
     

@@ -28,9 +28,9 @@ public class ReportDateCalculator extends Report {
 	String val = null;
 	if (context instanceof PropertyDate) {
 	    if (((Property)context).getParent().getTag().equals("BIRT")){
-		return i18n("xname.evt");
+		return translate("xname.evt");
 	    } else {
-		return i18n("xname.birt");
+		return translate("xname.birt");
 	    }
 	    // return a meaningfull text for that context
 	    //    return i18n("xname", new String[]{ ((Property)context).getPropertyName(), val } );
@@ -58,7 +58,7 @@ public class ReportDateCalculator extends Report {
       PointInTime pit = date.getStart();
       String result;
       if (pit == null){
-	  result = i18n("date.undef");
+	  result = translate("date.undef");
       } else {
 	  try {
 	      pit = PointInTime.getPointInTime(pit.getTimeMillis());
@@ -69,7 +69,7 @@ public class ReportDateCalculator extends Report {
 	  if (parent.getProperty("AGE") != null){
 	      ageStr = parent.getProperty("AGE").getValue();
 	  } else {
-	      ageStr = getValueFromUser( i18n("date.title"), i18n("age.title"), new String[0]);
+	      ageStr = getValueFromUser( translate("date.title"), translate("age.title"), new String[0]);
         // check if the user cancelled this
         if (ageStr==null)
           return;
@@ -80,13 +80,13 @@ public class ReportDateCalculator extends Report {
 	  if (age.setValue(ageStr) || age.setValue(ageStr+"y")){
 	      if (date.getParent().getTag().equals("BIRT")){
 		  PointInTime calcDate = getDateFromDateAndAge(pit,age,1);
-		  result = i18n("date.evt.label",calcDate.toString());
+		  result = translate("date.evt.label",calcDate.toString());
 	      } else {
 		  PointInTime calcDate = getDateFromDateAndAge(pit,age,-1);
-		  result = i18n("date.birth.label",calcDate.toString());
+		  result = translate("date.birth.label",calcDate.toString());
 	      }
 	  } else {
-	      result = i18n("age.invalid");
+	      result = translate("age.invalid");
 	  } 
       }
       showComponentToUser(new JLabel(result));

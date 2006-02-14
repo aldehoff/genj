@@ -67,7 +67,7 @@ public class ReportPhonetics extends Report {
      */
     public void start(Indi indi) {
         
-          String selection = (String) getValueFromUser(i18n("select"), outputFormats, null);
+          String selection = (String) getValueFromUser(translate("select"), outputFormats, null);
           if (selection == null)
               return;
           else {
@@ -85,7 +85,7 @@ public class ReportPhonetics extends Report {
         Indi indi = null;
         String str = "";
         
-        println(i18n("outputFormat")+": "+outputFormats[outputFormat]);
+        println(translate("outputFormat")+": "+outputFormats[outputFormat]);
         println();
         
         if(reportFirstNames) {
@@ -101,7 +101,7 @@ public class ReportPhonetics extends Report {
                 Iterator first = names.getReferences(str).iterator();
                 while(first.hasNext()) {
                     indi  = (Indi)first.next();
-                    println(getIndent(2)+i18n("entity", new String[] {indi.getId(), indi.getFirstName()} )+": "+encode(str));
+                    println(getIndent(2)+translate("entity", new String[] {indi.getId(), indi.getFirstName()} )+": "+encode(str));
                 }
             }
         }
@@ -125,7 +125,7 @@ public class ReportPhonetics extends Report {
         String firstName = indi.getFirstName();
         String lastName = indi.getLastName();
         
-        println(i18n("outputFormat")+": "+outputFormats[outputFormat]);
+        println(translate("outputFormat")+": "+outputFormats[outputFormat]);
         println();
         
         if(reportFirstNames) {
