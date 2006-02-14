@@ -1013,6 +1013,7 @@ public abstract class Property implements Comparable {
       case 'p': {
         Property place = getProperty("PLAC");
         value = (place instanceof PropertyPlace) ? ((PropertyPlace)place).getCity() : "";
+        if (value==null) value=""; // make sure we don't end up with a null here
         break;
       }
       case 'P': {
