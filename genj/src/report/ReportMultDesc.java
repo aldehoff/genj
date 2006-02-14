@@ -5,8 +5,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Entity;
 import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyMultilineValue;
 import genj.report.Report;
@@ -232,15 +232,15 @@ private void iterate(Indi indi, int level, String num, Map primary) {
 	number = ""+num;
 	number = output.anchor(number, number);
 	name = output.strong(indi.getName())+" ("+indi.getId()+")";
-	birth = indi.format("BIRT", toFormat(OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth));
+	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth);
 	if (fam != null){
-	    marriage = fam.format("MARR", toFormat(OPTIONS.getMarriageSymbol(),reportDateOfMarriage, reportPlaceOfMarriage));
+	    marriage = format(fam, "MARR", OPTIONS.getMarriageSymbol(),reportDateOfMarriage, reportPlaceOfMarriage);
 	} else {
 	    marriage = "";
 	}
-	death = indi.format("DEAT", toFormat(OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath));
-	occupation = indi.format("OCCU", toFormat(Gedcom.getName("OCCU"), reportDateOfOccu, reportPlaceOfOccu));
-	residence = indi.format("RESI", toFormat(Gedcom.getName("RESI"), reportDateOfResi, reportPlaceOfResi));
+	death = format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath);
+	occupation = format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu);
+	residence = format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi);
 	address = reportMailingAddress ? indi.getAddress() : null;
 
 	if (output.isPrivate(indi,fam,level>privateGen)){
@@ -328,10 +328,13 @@ private void iterate(Indi indi, int level, String num, Map primary) {
   /** 
    * convert given prefix, date and place switches into a format string
    */
-  private String toFormat(String prefix, boolean date, boolean place) {
-    return prefix + (date?"{ $D}":"")
+  private String format(Entity e, String tag, String prefix, boolean date, boolean place) {
+
+    String format = prefix + (date?"{ $D}":"")
       +(place&&showAllPlaceJurisdictions ? "{ $P}" : "")
       +(place&&!showAllPlaceJurisdictions ? "{ $p}" : "");
+    
+    return e.format(tag, format);
   }
   
 

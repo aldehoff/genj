@@ -13,13 +13,12 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
-//import genj.gedcom.TagPath;
 import genj.report.Report;
+
 import java.util.List;
 import java.util.regex.Pattern;
 

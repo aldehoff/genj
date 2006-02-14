@@ -5,8 +5,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Entity;
 import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 
@@ -266,15 +266,15 @@ public class ReportSosa extends Report {
     
 	    number = ""+sosa;
 	    name = indi.getName();
-	    birth = indi.format( "BIRT",toFormat("", true, true));
+	    birth = format(indi, "BIRT", "", true, true);
 	    if (fam != null){
-		marriage = fam.format( "MARR",toFormat("", true, true));
+		marriage = format(fam, "MARR", "", true, true);
 	    } else {
 		marriage = "";
 	    }
-	    death = indi.format( "DEAT",toFormat("", true, true));
-	    occupation = indi.format( "OCCU", toFormat("{$v} ", true, true));
-	    residence= indi.format("RESI",toFormat("", true, true));
+	    death = format(indi, "DEAT","", true, true);
+	    occupation = format( indi, "OCCU", "{$V} ", true, true);
+	    residence= format(indi, "RESI", "", true, true);
 	} else {
     
 	number = ""+sosa;
@@ -282,7 +282,7 @@ public class ReportSosa extends Report {
 	if (privateName.length() != 0){
 	    name = isPrivate? privateName : name;
 	}
-	birth = indi.format("BIRT", toFormat(OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth));
+	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth);
 	if (fam != null){
 	    String prefix = OPTIONS.getMarriageSymbol();
 	    if (reportType == AGNATIC_REPORT || reportType == LINEAGE_REPORT ){
@@ -290,13 +290,13 @@ public class ReportSosa extends Report {
 		    prefix += " "+fam.getOtherSpouse(indi).getName();
 		}
 	    }
-	    marriage = fam.format("MARR", toFormat(prefix, reportDateOfMarriage, reportPlaceOfMarriage));
+	    marriage = format(fam, "MARR", prefix, reportDateOfMarriage, reportPlaceOfMarriage);
 	} else {
 	    marriage = "";
 	}
-	death = indi.format("DEAT", toFormat(OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath));
-	occupation = indi.format("OCCU", toFormat(Gedcom.getName("OCCU"), reportDateOfOccu, reportPlaceOfOccu));
-	residence = indi.format("RESI", toFormat(Gedcom.getName("RESI"), reportDateOfResi, reportPlaceOfResi));
+	death = format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath);
+	occupation = format(indi, "OCCU", "{$T} ", reportDateOfOccu, reportPlaceOfOccu);
+	residence = format(indi, "RESI", "{$T} ", reportDateOfResi, reportPlaceOfResi);
 	}
 	if (isPrivate){
 	    name = (privateName.length() != 0)? privateName : name;
@@ -372,12 +372,13 @@ public class ReportSosa extends Report {
     }
     
     /** 
-     * convert given prefix, date and place switches into a format string
+     * format some information about an entity
      */
-    private String toFormat(String prefix, boolean date, boolean place) {
-      return prefix + (date?"{ $D}":"")
+    private String format(Entity entity, String tag, String prefix, boolean date, boolean place) {
+      String format = prefix + (date?"{ $D}":"")
         +(place&&showAllPlaceJurisdictions ? "{ $P}" : "")
         +(place&&!showAllPlaceJurisdictions ? "{ $p}" : "");
+      return entity.format(tag, format);
     }
 
 } //ReportSosa
