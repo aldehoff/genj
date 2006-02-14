@@ -63,6 +63,7 @@ public class Document {
   private List sections = new ArrayList();
   private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm";
   private Map index2primary2secondary2elements = new TreeMap();
+  private int numIndexTerms = 0;
   
   /**
    * Constructor
@@ -158,6 +159,10 @@ public class Document {
    */
   public Document startSection(String title, String id) {
     
+    // check if
+    if (id.startsWith("_"))
+      throw new IllegalArgumentException("underscore is reserved for internal IDs");
+    
     // return to the last block in flow
     pop("flow", "addSection() is not applicable outside document flow");
     cursor = (Element)cursor.getLastChild();
@@ -193,7 +198,7 @@ public class Document {
    * Add section
    */
   public Document startSection(String title) {
-    return startSection(title, (String)null);
+    return startSection(title, "");
   }
     
   /**
@@ -241,7 +246,7 @@ public class Document {
     }
     
     // add anchor
-    push("block", "id="+index+":"+primary+":"+secondary+":"+elements.size());
+    push("block", "id=_"+(++numIndexTerms));
     elements.add(cursor);
     pop();
     
@@ -512,6 +517,8 @@ public class Document {
    * Add an anchor
    */
   public Document addAnchor(String id) {
+    if (id.startsWith("_"))
+      throw new IllegalArgumentException("underscore is reserved for internal IDs");
     push("block", "id="+id);
     pop();
     return this;
