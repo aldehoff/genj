@@ -1016,37 +1016,37 @@ public abstract class Property implements Comparable {
       case 'D' : {
         prop = getProperty("DATE");
         value = (prop instanceof PropertyDate)&&prop.isValid() ? prop.getDisplayValue() : "";
-        sub = "sometime";
+        sub = PrivacyPolicy.MASK_DATE;
         break;
       }
       case 'y': {
         prop = getProperty("DATE");
         value = (prop instanceof PropertyDate)&&prop.isValid() ? Integer.toString(((PropertyDate)prop).getStart().getYear()) : "";
-        sub = "sometime";
+        sub = PrivacyPolicy.MASK_DATE;
         break;
       }
       case 'p': {
         prop = getProperty("PLAC");
         value = (prop instanceof PropertyPlace) ? ((PropertyPlace)prop).getCity() : "";
         if (value==null) value=""; // make sure we don't end up with a null here
-        sub = "somewhere";
+        sub = PrivacyPolicy.MASK_PLACE;
         break;
       }
       case 'P': {
         prop = getProperty("PLAC");
         value = (prop instanceof PropertyPlace) ? prop.getDisplayValue() : "";
-        sub = "somewhere";
+        sub = PrivacyPolicy.MASK_PLACE;
         break;
       }
       case 'v': 
         prop = this;
         value = getDisplayValue();
-        sub = "something";
+        sub = PrivacyPolicy.MASK_VALUE;
         break;
       case 'V': 
         prop = this;
         value = getValue();
-        sub = "something";
+        sub = PrivacyPolicy.MASK_VALUE;
         break;
       case 't':
         value = getTag();

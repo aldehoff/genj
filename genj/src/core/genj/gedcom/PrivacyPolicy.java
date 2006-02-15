@@ -29,15 +29,23 @@ import genj.gedcom.time.Delta;
 public class PrivacyPolicy {
   
   public static PrivacyPolicy 
-    PUBLIC = new PrivacyPolicy(true, 0, ""),
-    PRIVATE = new PrivacyPolicy(false, Integer.MAX_VALUE, ".*");
+    PUBLIC = new PrivacyPolicy() { public boolean isPrivate(Property prop) { return false; } },
+    PRIVATE = new PrivacyPolicy() { public boolean isPrivate(Property prop) { return true; } };
   
-  private final static String substitute = "private";
+  public final static String 
+    MASK_DATE = Gedcom.resources.getString("private.mask.date"),
+    MASK_PLACE = Gedcom.resources.getString("private.mask.place"),
+    MASK_VALUE = Gedcom.resources.getString("private.mask.value");
   
   private boolean infoOfDeceasedIsPublic;
   private int yearsInfoIsPrivate;
   private String tagMarkingPrivate;
   
+  /**
+   * private constructor
+   */
+  private PrivacyPolicy() {
+  }
   
   /** 
    * constructor
@@ -53,19 +61,31 @@ public class PrivacyPolicy {
 
   /** filter a value */
   public String getDisplayValue(Property prop) {
-    return isPrivate(prop) ? substitute : prop.getDisplayValue();
+    return isPrivate(prop) ? MASK_VALUE : prop.getDisplayValue();
   }
   
   /** check for privacy */
   public boolean isPrivate(Property prop) {
-    return (isStillPrivate(prop) || hasTagMarkingPrivate(prop)) && !isInfoOfDeceased(prop); 
+    
+    // not if property belongs to deceased
+    if (infoOfDeceasedIsPublic&&isInfoOfDeceased(prop))
+      return false;
+    
+    // maybe prop is tagged?
+    if (tagMarkingPrivate!=null&&hasTagMarkingPrivate(prop))
+      return true;
+    
+    // maybe because it's recent?
+    if (yearsInfoIsPrivate>0&&isWithinPrivateYears(prop))
+      return true;
+    
+    // maybe parent is private?
+    prop =  prop.getParent();
+    return prop!=null ? isPrivate(prop) : false;
   }
   
   /** check whether a property belongs to deceased individuals only */
   private boolean isInfoOfDeceased(Property prop) {
-    // applicable?
-    if (!infoOfDeceasedIsPublic)
-      return false;
     // contained in indi? check death-date
     Entity e = prop.getEntity();
     if (e instanceof Indi) {
@@ -91,14 +111,11 @@ public class PrivacyPolicy {
   
   /** check for marked with tag */
   private boolean hasTagMarkingPrivate(Property prop) {
-    return tagMarkingPrivate!=null && getPropertyFor(prop, tagMarkingPrivate, Property.class)!=null;
+    return getPropertyFor(prop, tagMarkingPrivate, Property.class)!=null;
   }
   
-  /** check for something occuring in recent years */
-  private boolean isStillPrivate(Property prop) {
-    // only if recent years are defined
-    if (yearsInfoIsPrivate==0)
-      return false;
+  /** whether a prop is still within the privat years' - only if it has a date sub-property */
+  private boolean isWithinPrivateYears(Property prop) {
     // check date
     PropertyDate date = (PropertyDate)getPropertyFor(prop, "DATE", PropertyDate.class);
     if (date==null)
@@ -108,20 +125,13 @@ public class PrivacyPolicy {
     return anniversary!=null&&anniversary.getYears()<yearsInfoIsPrivate;
   }
     
-  /** find applicable property for property */
+  /** find a sub-property by tag and type */
   private Property getPropertyFor(Property prop, String tag, Class type) {
-    while (prop!=null) {
-      // itself?
-      if (is(prop, tag, type)) 
-        return prop;
-      // check children
-      for (int i=0, j=prop.getNoOfProperties(); i<j; i++) {
-        Property child = prop.getProperty(i);
-        if (is(child,tag,type))
-          return child;
-      }
-      // go up one level
-      prop = prop.getParent();
+    // check children
+    for (int i=0, j=prop.getNoOfProperties(); i<j; i++) {
+      Property child = prop.getProperty(i);
+      if (is(child,tag,type))
+        return child;
     }
     return null;
   }
