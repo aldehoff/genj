@@ -61,6 +61,9 @@ public class Options extends OptionProvider {
   
   /** option - place hierarchy keys for city NOT EDITABLE ATM */
   protected Set placeHierarchyCityKeys = new HashSet(Arrays.asList(new String[]{ "city", "commune", "ville", "stadt"}));
+  
+  /** option - private information mask */
+  public String maskPrivate = "...";
     
   /** option - default encoding */
   public int defaultEncoding = 0;

@@ -32,15 +32,10 @@ public class PrivacyPolicy {
     PUBLIC = new PrivacyPolicy() { public boolean isPrivate(Property prop) { return false; } },
     PRIVATE = new PrivacyPolicy() { public boolean isPrivate(Property prop) { return true; } };
   
-  public final static String 
-    MASK_DATE = Gedcom.resources.getString("private.mask.date"),
-    MASK_PLACE = Gedcom.resources.getString("private.mask.place"),
-    MASK_VALUE = Gedcom.resources.getString("private.mask.value");
-  
   private boolean infoOfDeceasedIsPublic;
   private int yearsInfoIsPrivate;
   private String tagMarkingPrivate;
-  
+
   /**
    * private constructor
    */
@@ -61,7 +56,7 @@ public class PrivacyPolicy {
 
   /** filter a value */
   public String getDisplayValue(Property prop) {
-    return isPrivate(prop) ? MASK_VALUE : prop.getDisplayValue();
+    return isPrivate(prop) ? Options.getInstance().maskPrivate : prop.getDisplayValue();
   }
   
   /** check for privacy */

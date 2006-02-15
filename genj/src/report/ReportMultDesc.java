@@ -144,7 +144,7 @@ private void iterate(Indi indi, int level, String num, Map primary, PrivacyPolic
 
     if (level > reportMaxGenerations) return;
     
-    PrivacyPolicy localPolicy = level < privateGen ? PrivacyPolicy.PRIVATE : policy;
+    PrivacyPolicy localPolicy = level <= privateGen ? PrivacyPolicy.PRIVATE : policy;
     
     // Here comes the individual
     if (level == 1)

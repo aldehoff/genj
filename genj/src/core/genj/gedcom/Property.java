@@ -1009,44 +1009,37 @@ public abstract class Property implements Comparable {
 
     Property prop = null;
     String value = null;
-    String sub = null;
     boolean countsAsMatched = true;
     
     switch (marker) {
       case 'D' : {
         prop = getProperty("DATE");
         value = (prop instanceof PropertyDate)&&prop.isValid() ? prop.getDisplayValue() : "";
-        sub = PrivacyPolicy.MASK_DATE;
         break;
       }
       case 'y': {
         prop = getProperty("DATE");
         value = (prop instanceof PropertyDate)&&prop.isValid() ? Integer.toString(((PropertyDate)prop).getStart().getYear()) : "";
-        sub = PrivacyPolicy.MASK_DATE;
         break;
       }
       case 'p': {
         prop = getProperty("PLAC");
         value = (prop instanceof PropertyPlace) ? ((PropertyPlace)prop).getCity() : "";
         if (value==null) value=""; // make sure we don't end up with a null here
-        sub = PrivacyPolicy.MASK_PLACE;
         break;
       }
       case 'P': {
         prop = getProperty("PLAC");
         value = (prop instanceof PropertyPlace) ? prop.getDisplayValue() : "";
-        sub = PrivacyPolicy.MASK_PLACE;
         break;
       }
       case 'v': 
         prop = this;
         value = getDisplayValue();
-        sub = PrivacyPolicy.MASK_VALUE;
         break;
       case 'V': 
         prop = this;
         value = getValue();
-        sub = PrivacyPolicy.MASK_VALUE;
         break;
       case 't':
         value = getTag();
@@ -1062,13 +1055,13 @@ public abstract class Property implements Comparable {
     if (value==null)
       throw new IllegalArgumentException("unknown formatting marker "+marker);
     
+    // check policy
+    if (policy!=null&&prop!=null&&policy.isPrivate(prop))
+      value = Options.getInstance().maskPrivate;
+    
     // no result?
     if (value.length()==0)
       return false;
-    
-    // check policy
-    if (policy!=null&&prop!=null&&sub!=null&&policy.isPrivate(prop))
-      value = sub;
     
     // append
     out.append(prefix);

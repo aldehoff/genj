@@ -132,10 +132,7 @@ public class PropertyTest extends TestCase {
    */
   public void testPrivacyPolicy() {     
     
-    String 
-      something = PrivacyPolicy.MASK_VALUE,
-      sometime =  PrivacyPolicy.MASK_DATE,
-      somewhere =  PrivacyPolicy.MASK_PLACE;
+    String mask = Options.getInstance().maskPrivate;
 
     Indi indi = createIndi();
     
@@ -145,17 +142,17 @@ public class PropertyTest extends TestCase {
     
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 10, "_SECRET")));
-    assertEquals(sometime+somewhere, birt.format("{$D}{$P}", new PrivacyPolicy(false, Integer.MAX_VALUE, "_SECRET")));
+    assertEquals(mask+mask, birt.format("{$D}{$P}", new PrivacyPolicy(false, Integer.MAX_VALUE, "_SECRET")));
     
     date.addProperty("_SECRET", "");
-    assertEquals(sometime+" Rendsburg", birt.format("{$D}{ $P}", new PrivacyPolicy(false, 0, "_SECRET")));
+    assertEquals(mask+" Rendsburg", birt.format("{$D}{ $P}", new PrivacyPolicy(false, 0, "_SECRET")));
     
     birt.addProperty("_SECRET", "");
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
-    assertEquals(sometime+somewhere, birt.format("{$D}{$P}", new PrivacyPolicy(false, 0, "_SECRET")));
+    assertEquals(mask+mask, birt.format("{$D}{$P}", new PrivacyPolicy(false, 0, "_SECRET")));
 
     indi.addProperty("DEAT", "").addProperty("DATE", "(im Hohen Alter)");
-    assertEquals(sometime+somewhere, birt.format("{$D}{$P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
+    assertEquals(mask+mask, birt.format("{$D}{$P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(true, Integer.MAX_VALUE, null)));
 
     
