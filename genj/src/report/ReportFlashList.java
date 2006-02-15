@@ -92,7 +92,7 @@ public class ReportFlashList extends Report {
 
       doc.startSection(p);
       
-      doc.startTable("80%,10%,10%", false);
+      doc.startTable("80%,10%,10%", Document.TABLE_CSV);
       
       Map secondary = (Map)lookup(primary, p, null);
       for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {

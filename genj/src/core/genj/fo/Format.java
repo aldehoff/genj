@@ -181,22 +181,14 @@ public abstract class Format {
   protected abstract void formatImpl(Document doc, OutputStream out) throws Throwable;
   
   /**
-   * Get a cached transformation template
+   * Get transformation templates for given file
    */
-  protected Templates getTemplates(File xsl) throws IOException {
-
+  protected static Templates getTemplates(String filename) {
     try {
-      // known?
-      Templates templates = (Templates)xsl2templates.get(xsl);
-      if (templates==null) {
         TransformerFactory factory = TransformerFactory.newInstance();
-        templates = factory.newTemplates(new StreamSource(xsl));
-        xsl2templates.put(xsl, templates);
-      }
-      // done
-      return templates;
+        return factory.newTemplates(new StreamSource(new File(filename)));
     } catch (TransformerConfigurationException e) {
-      throw new IOException(e.getMessage());
+      throw new RuntimeException("Exception reading templates from "+filename+": "+e.getMessage());
     }
     
   }
@@ -228,8 +220,13 @@ public abstract class Format {
     
     Iterator it = Service.providers(Format.class);
     while (it.hasNext()) {
-      Format f = (Format)it.next();
-      if (!list.contains(f)) list.add(f);
+      try {
+        Format f = (Format)it.next();
+        if (!list.contains(f)) list.add(f);
+      } catch (Throwable t) {
+        if (t.getCause()!=t) t = t.getCause();
+        LOG.log(Level.WARNING, "Encountered exception loading Format: "+t.getMessage());
+      }
     }
 
     // keep 'em

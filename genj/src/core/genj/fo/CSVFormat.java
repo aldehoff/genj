@@ -26,17 +26,17 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
 
 /** 
- * Format for HTML 
+ * Format for CSV 
  */
-public class HTMLFormat extends Format {
+public class CSVFormat extends Format {
   
-  private final static Templates TEMPLATES = getTemplates("./contrib/xslt/fo2html.xsl");
-
+  private final static Templates TEMPLATES = getTemplates("./contrib/xslt/fo2csv.xsl");
+  
   /**
    * Constructor
    */
-  public HTMLFormat() {
-    super("HTML", "html", true);
+  public CSVFormat() {
+    super("CSV", "txt", true);
   }
 
   /**

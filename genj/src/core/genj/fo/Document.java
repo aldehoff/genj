@@ -50,6 +50,11 @@ import org.w3c.dom.Text;
  */
 public class Document {
   
+  public static int
+    TABLE_SIMPLE = 0,
+    TABLE_HEADER = 1,
+    TABLE_CSV = 2;
+  
   private final static Resources RESOURCES = Resources.get(Document.class);
   
   /** matching a=b,c-d=e,f:g=h,x=y(m,n,o),z=1 */
@@ -67,6 +72,7 @@ public class Document {
   private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm,space-after=0.2cm,keep-with-next.within-page=always";
   private Map index2primary2secondary2elements = new TreeMap();
   private int numIndexTerms = 0;
+  private boolean containsCSV = false;
   
   /**
    * Constructor
@@ -105,6 +111,13 @@ public class Document {
     push("block");
     
     // done - cursor points to first block
+  }
+  
+  /**
+   * Check if there's any CSV in this document
+   */
+  protected boolean containsCSV() {
+    return containsCSV;
   }
   
   /**
@@ -415,18 +428,26 @@ public class Document {
     
     return this;
   }
-    
+  
   /**
    * Start a table
    */
-  public Document startTable(String columns, boolean header) {
-    return startTable(columns, header, "width=100%,border=0.5pt solid black", "");
+  public Document startTable(String columns, int type) {
+    return startTable(columns, type, "width=100%,border=0.5pt solid black", "");
   }
   
-  public Document startTable(String columns, boolean header, String format, String cellFormat) {
-    
+  public Document startTable(String columns, int type, String format, String cellFormat) {
+
+    // check columns first
     StringTokenizer cols = new StringTokenizer(columns, ",", false);
     if (cols.countTokens()==0) cols = new StringTokenizer("25%,25%,25%,25%", ",", false);
+
+    // patch format
+    format  = "table-layout=fixed,"+format; // FOP only supports table-layout=fixed
+    if ((type&TABLE_CSV)!=0) {
+      containsCSV = true;
+      format = "role=csv,"+format;
+    }
     
     //<table>
     // <table-column/>
@@ -441,13 +462,12 @@ public class Document {
     //   <table-cell>
     //    <block>    
     //    ...
-    String atts = "table-layout=fixed,"+format;
-    push("table", atts);
+    push("table", format);
     while (cols.hasMoreTokens()) {
       String w = cols.nextToken(); 
       push("table-column", "column-width="+w).pop();
     }
-    if (header) {
+    if ((type&TABLE_HEADER)!=0) {
       push("table-header"); 
       push("table-row", "color=#ffffff,background-color=#c0c0c0,font-weight=bold");
     } else { 
@@ -772,7 +792,7 @@ public class Document {
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
       
-      doc.startTable("10%,10%,80%", true);
+      doc.startTable("10%,10%,80%", Document.TABLE_HEADER|Document.TABLE_CSV);
       doc.addText("AA");
       doc.nextTableCell();
       doc.addText("AB");
@@ -787,6 +807,8 @@ public class Document {
       doc.nextTableCell();
       doc.addText("CB");
       doc.nextTableCell();
+      doc.addText("CC");
+      doc.endTable();
   
       doc.startList();
       doc.nextListItem();
