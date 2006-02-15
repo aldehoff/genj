@@ -67,9 +67,9 @@ public class ReportMultDesc extends Report {
     public boolean reportMailingAddress = true;
 
     // Privacy
-    public int privateYears = 100;
-    public int privateGen = 999;
-    public boolean deadIsPublic=false;
+    public int privateYears = 0;
+    public int publicGen = 0;
+    public boolean deadIsPublic=true;
     public String privateTag="_PRIV";
 
 
@@ -129,9 +129,9 @@ public class ReportMultDesc extends Report {
 	    iterate(indis[i], 1, new Integer(i+1).toString(), primary, policy);
 
 	output.println(output.h(1,translate("title.stats")));
-	output.println(translate("nb.fam")+nbFam);
-	output.println(translate("nb.indi")+nbIndi);
-	output.println(translate("nb.living")+nbLiving);
+	output.println(translate("nb.fam", nbFam));
+	output.println(translate("nb.indi", nbIndi));
+	output.println(translate("nb.living", nbLiving));
  
 	// Done
 	output.end();
@@ -144,7 +144,8 @@ private void iterate(Indi indi, int level, String num, Map primary, PrivacyPolic
 
     if (level > reportMaxGenerations) return;
     
-    PrivacyPolicy localPolicy = level <= privateGen ? PrivacyPolicy.PRIVATE : policy;
+    // still in a public generation?
+    PrivacyPolicy localPolicy = level<publicGen+1 ? PrivacyPolicy.PUBLIC : policy;
     
     // Here comes the individual
     if (level == 1)
@@ -230,7 +231,7 @@ private void iterate(Indi indi, int level, String num, Map primary, PrivacyPolic
   
 	number = ""+num;
 	number = output.anchor(number, number);
-	name = output.strong(indi.getName())+" ("+indi.getId()+")";
+	name = output.strong( policy.getDisplayValue(indi, "NAME") )+" ("+indi.getId()+")";
 	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
 	if (fam != null){
 	    marriage = format(fam, "MARR", OPTIONS.getMarriageSymbol(),reportDateOfMarriage, reportPlaceOfMarriage, policy);

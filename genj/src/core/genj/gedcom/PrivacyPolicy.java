@@ -59,6 +59,12 @@ public class PrivacyPolicy {
     return isPrivate(prop) ? Options.getInstance().maskPrivate : prop.getDisplayValue();
   }
   
+  /** filter a value */
+  public String getDisplayValue(Property prop, String tag) {
+    prop = prop.getProperty(tag);
+    return prop==null ? "" : getDisplayValue(prop); 
+  }
+  
   /** check for privacy */
   public boolean isPrivate(Property prop) {
     
