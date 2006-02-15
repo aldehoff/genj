@@ -64,7 +64,7 @@ public class Document {
   private boolean needsTOC = true;
   private Map file2elements = new HashMap();
   private List sections = new ArrayList();
-  private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm";
+  private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm,space-after=0.2cm,keep-with-next.within-page=always";
   private Map index2primary2secondary2elements = new TreeMap();
   private int numIndexTerms = 0;
   
@@ -117,7 +117,7 @@ public class Document {
   /**
    * Closes the document finalizing output
    */
-  public void close() {
+  protected void close() {
     
     // closed already?
     if (cursor==null)
@@ -175,7 +175,7 @@ public class Document {
       id = "section"+sections.size();
       
     // start a new block
-    pop().push("block", formatSection + ",id="+id+",keep-with-next.within-page=always");
+    pop().push("block", formatSection + ",id="+id);
     
     // remember
     sections.add(cursor);
@@ -419,7 +419,11 @@ public class Document {
   /**
    * Start a table
    */
-  public Document startTable(String columns, boolean header, boolean border) {
+  public Document startTable(String columns, boolean header) {
+    return startTable(columns, header, "width=100%,border=0.5pt solid black", "");
+  }
+  
+  public Document startTable(String columns, boolean header, String format, String cellFormat) {
     
     StringTokenizer cols = new StringTokenizer(columns, ",", false);
     if (cols.countTokens()==0) cols = new StringTokenizer("25%,25%,25%,25%", ",", false);
@@ -437,8 +441,7 @@ public class Document {
     //   <table-cell>
     //    <block>    
     //    ...
-    String atts = "table-layout=fixed,width=100%";
-    if (border) atts+=",border=0.5pt solid black";
+    String atts = "table-layout=fixed,"+format;
     push("table", atts);
     while (cols.hasMoreTokens()) {
       String w = cols.nextToken(); 
@@ -453,13 +456,16 @@ public class Document {
     }
     
     // cell and done
-    return nextTableCell();
+    return nextTableCell(cellFormat);
   }
   
   /**
    * Jump to next cell in table
    */
   public Document nextTableCell() {
+    return nextTableCell("");
+  }
+  public Document nextTableCell(String format) {
     
     // pop to row
     pop("table-row", "nextTableCell() is not applicable outside enclosing table row");
@@ -467,11 +473,12 @@ public class Document {
     
     // peek at table - add new row if we have all columns already
     Element table = peek("table", "nextTableCell() is not applicable outside enclosing table");
-    if (cells==table.getElementsByTagName("table-column").getLength()) 
+    int columns = table.getElementsByTagName("table-column").getLength();
+    if (cells==columns) 
       return nextTableRow();
 
     // add now
-    push("table-cell", "border="+table.getAttribute("border"));
+    push("table-cell", "border="+table.getAttribute("border")+","+format);  // shouldn't border=inherit do the same automatically?
     push("block");
 
     // done 
@@ -764,15 +771,8 @@ public class Document {
       doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/200505/Visitors/Eltern1.jpg"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/200505/Visitors/Eltern1.jpg"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/200505/Visitors/Eltern1.jpg"), "vertical-align=middle");
       
-      doc.startTable("10%,10%,80%", true, true);
+      doc.startTable("10%,10%,80%", true);
       doc.addText("AA");
       doc.nextTableCell();
       doc.addText("AB");
@@ -780,10 +780,8 @@ public class Document {
       doc.addText("AC");
       doc.nextTableCell();
       doc.addText("BA"); // next row
-      doc.nextTableCell();
-      doc.addText("BB");
-      doc.nextTableCell();
-      doc.addText("BC");
+      doc.nextTableCell("number-columns-spanned=2");
+      doc.addText("BB+BC");
       doc.nextTableRow();
       doc.addText("CA");
       doc.nextTableCell();
