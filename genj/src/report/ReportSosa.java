@@ -273,7 +273,7 @@ public class ReportSosa extends Report {
     
 	number = ""+sosa;
     
-	name = indi.getName()+" ("+indi.getId()+")";
+	name = privacy.getDisplayValue(indi, "NAME")+" ("+indi.getId()+")";
 	birth = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, privacy);
     
 	if (fam != null){
