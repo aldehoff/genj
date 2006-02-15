@@ -5,7 +5,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.report.Report;
@@ -28,8 +27,12 @@ public class ReportDescendants extends Report {
      */
     public void start(Indi indi) {
       
+      String formatBirt = OPTIONS.getBirthSymbol()+(reportDateOfBirth?"{ $D}":"")+(reportPlaceOfBirth?"{ $p}":"");
+      String formatDeat = OPTIONS.getDeathSymbol()+(reportDateOfDeath?"{ $D}":"")+(reportPlaceOfDeath?"{ $p}":"");
+      String formatMarr = OPTIONS.getMarriageSymbol()+(reportDateOfMarriage?"{ $D}":"")+(reportPlaceOfMarriage?"{ $p}":"");
+      
       // iterate into individual and all its descendants
-      iterate(indi, 1);
+      iterate(indi, 1, formatBirt, formatDeat, formatMarr);
         
       // Done
     }
@@ -37,10 +40,10 @@ public class ReportDescendants extends Report {
     /**
      * Iterates over descendants
      */
-    private void iterate(Indi indi, int level) {
+    private void iterate(Indi indi, int level, String formatBirt, String formatDeat, String formatMarr) {
         
         // Here comes the individual
-        println(getIndent(level) + level + " "+format(indi));
+        println(getIndent(level) + level + " "+format(indi, formatBirt, formatDeat));
         
         // And we loop through its families
         Fam[] fams = indi.getFamiliesWhereSpouse();
@@ -53,14 +56,14 @@ public class ReportDescendants extends Report {
             // .. a line for the spouse
             
             // j'ajoute                 
-            println(getIndent(level) + "  "+ format(spouse) + " " + formatDateAndPlace(OPTIONS.getMarriageSymbol(), fam, "MARR", reportDateOfMarriage, reportPlaceOfMarriage)); 
+            println(getIndent(level) + "  "+ format(spouse, formatBirt, formatDeat) + " " + fam.format("MARR", formatMarr)); 
             
             // .. and all the kids
             Indi[] children = fam.getChildren();
             for (int c = 0; c < children.length; c++) {
                 
                 // do the recursive step
-                iterate(children[c], level+1);
+                iterate(children[c], level+1, formatBirt, formatDeat, formatMarr);
                 
                 // .. next child
             }
@@ -70,16 +73,9 @@ public class ReportDescendants extends Report {
     }
     
     /**
-     * format date and place
-     */
-    private String formatDateAndPlace(String symbol, Entity entity, String tag, boolean isDate, boolean isPlace) {
-      return entity==null ? "" : entity.format(tag, symbol+(isDate?"{ $D}":"")+(isPlace?"{ $p}":""));
-    }
-    
-    /**
      * resolves the information of one Indi
      */
-    private String format(Indi indi) {
+    private String format(Indi indi, String formatBirt, String formatDeat) {
 
       // Might be null
       if (indi==null) 
@@ -87,8 +83,8 @@ public class ReportDescendants extends Report {
       
       WordBuffer result = new WordBuffer();
       result.append(indi.getId()+" "+indi.getName());
-      result.append(formatDateAndPlace(OPTIONS.getBirthSymbol(), indi, "BIRT", reportDateOfBirth, reportPlaceOfBirth));
-      result.append(formatDateAndPlace(OPTIONS.getDeathSymbol(), indi, "DEAT", reportDateOfDeath, reportPlaceOfDeath));
+      result.append(indi.format("BIRT", formatBirt));
+      result.append(indi.format("DEAT", formatDeat));
         
       return result.toString();
     }
