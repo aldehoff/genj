@@ -337,9 +337,8 @@
        <zipfileset dir="." includes="gedcom/**"/>
        
        <!-- contrib files -->
-       <zipfileset dir="." includes="contrib/renderx/**"/>
+       <zipfileset dir="." includes="contrib/xslt/**"/>
        <zipfileset dir="." includes="contrib/fop/**"/>
-       <zipfileset dir="." includes="contrib/csv/**"/>
        
        <!-- readme files  -->
        <zipfileset dir="." includes="doc/*"/>
