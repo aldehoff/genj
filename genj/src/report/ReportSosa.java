@@ -208,7 +208,7 @@ public class ReportSosa extends Report {
     private void iterate(Indi indi, Fam fam, int level, int sosa, Map primary, PrivacyPolicy policy) {
        	if (level>reportMaxGenerations) return;
         
-	String s = format(indi,fam,sosa,level<privateGen ? PrivacyPolicy.PRIVATE : policy);
+	String s = format(indi,fam,sosa,level<privateGen+1 ? PrivacyPolicy.PRIVATE : policy);
 
 	primary.put( new Integer(sosa), s);
 	
