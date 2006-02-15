@@ -143,11 +143,14 @@ private void iterate(Indi indi, int level, String num, Map primary, PrivacyPolic
     boolean addIndi=true;
 
     if (level > reportMaxGenerations) return;
+    
+    PrivacyPolicy localPolicy = level < privateGen ? PrivacyPolicy.PRIVATE : policy;
+    
     // Here comes the individual
     if (level == 1)
 	output.println(output.h(1,translate("title.descendant",indi.getName())));
 
-    output.println(format(indi, null, num, level<privateGen ? PrivacyPolicy.PRIVATE : policy));
+    output.println(format(indi, null, num, localPolicy));
            
     // And we loop through its families
     Fam[] fams = indi.getFamiliesWhereSpouse();
@@ -159,9 +162,9 @@ private void iterate(Indi indi, int level, String num, Map primary, PrivacyPolic
 	// .. a line for the spouse
 	if (fams.length==1)
 	    //	    output.println(format(spouse,fam,getIndent(level)+formatString("x",num.length()), level)); 
-	    output.println(format(spouse,fam,"x", policy)); 
+	    output.println(format(spouse,fam,"x", localPolicy)); 
 	else 
-	    output.println(format(spouse,fam,"x"+(f+1), policy)); 
+	    output.println(format(spouse,fam,"x"+(f+1), localPolicy)); 
 	//	    output.println(format(spouse,fam,getIndent(level)+formatString("x"+(f+1),num.length()), level)); 
 	
 	Object seeIndi = primary.get(fam.getId());
@@ -239,7 +242,7 @@ private void iterate(Indi indi, int level, String num, Map primary, PrivacyPolic
 	residence = format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi, policy);
 	if (reportMailingAddress) {
 	  address = indi.getAddress();
-      if (policy.isPrivate(address)) address = null;
+      if (address!=null&&policy.isPrivate(address)) address = null;
     }
 
 	if (outputFormat == TEXT_CSV) {
