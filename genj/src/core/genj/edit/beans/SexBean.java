@@ -103,7 +103,7 @@ public class SexBean extends PropertyBean {
       setText(PropertySex.getLabelForSex(sex));
     }
     protected void execute() {
-      changeSupport.fireChangeEvent();
+      SexBean.this.changeSupport.fireChangeEvent();
     }
 
   } //Gender

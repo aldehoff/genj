@@ -58,9 +58,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 
+import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -70,6 +70,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -78,17 +79,22 @@ import javax.swing.event.ListSelectionListener;
  * The central component of the GenJ application
  */
 public class ControlCenter extends JPanel {
+  
+  private final static String
+    ACC_SAVE = "ctrl S",
+    ACC_EXIT = "ctrl X",
+    ACC_NEW = "ctrl N",
+    ACC_OPEN = "ctrl O";
 
   /** members */
   private JMenuBar menuBar; 
   private GedcomTableWidget tGedcoms;
   private Registry registry;
-  private Vector gedcomButtons = new Vector();
-  private Vector tniButtons = new Vector();
   private Resources resources = Resources.get(this);
   private WindowManager windowManager;
   private ViewManager viewManager;
   private PrintManager printManager;
+  private List gedcomActions = new ArrayList();
     
   /**
    * Constructor
@@ -102,12 +108,13 @@ public class ControlCenter extends JPanel {
     viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager);
     
     // Table of Gedcoms
-    tGedcoms = new GedcomTableWidget(viewManager, registry, new ActionSave(false), new ActionClose());
+    tGedcoms = new GedcomTableWidget(viewManager, registry, new ActionSave(false, true), new ActionClose(true));
     
     // ... Listening
     tGedcoms.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
-        ButtonHelper.setEnabled(gedcomButtons, tGedcoms.getSelectedGedcom() != null);
+        for (int i=0;i<gedcomActions.size();i++)
+          ((ActionDelegate)gedcomActions.get(i)).setEnabled(tGedcoms.getSelectedGedcom() != null);
       }
     });
     
@@ -179,40 +186,35 @@ public class ControlCenter extends JPanel {
     // create it
     JToolBar result = new JToolBar();
 
-    // wether we're showing text on the buttons, too    
-    boolean imageAndText = registry.get("imagesandtext", false);
-
     // .. Buttons
     ButtonHelper bh =
       new ButtonHelper()
         .setResources(resources)
         .setInsets(4)
-        .setFocusable(false)
         .setContainer(result)
-        .setTextAllowed(imageAndText)
-        .setShortTexts(true)
-        .setImageOverText(true)
-        .setFontSize(10)
-        .addCollection(tniButtons);
+        .setFontSize(10);
 
-    bh.setEnabled(true).create(new ActionNew());
-    bh.setEnabled(true).create(new ActionOpen());
+    bh.create(new ActionNew());
+    bh.create(new ActionOpen());
     
     result.addSeparator();
 
-    bh.setEnabled(false).addCollection(gedcomButtons).setResources(null);
+    bh.setResources(null);
+    
+    int maxButtonWidth = 0;
     ViewFactory[] factories = viewManager.getFactories();
+    AbstractButton[] buttons  = new AbstractButton[factories.length];
     for (int i = 0; i < factories.length; i++) {
-      bh.create(new ActionView(-1, factories[i]));
+      ActionView action = new ActionView(-1, factories[i]);
+      gedcomActions.add(action);
+      buttons[i] = bh.create(action);
+      maxButtonWidth = Math.max(buttons[i].getPreferredSize().width, maxButtonWidth);
     }
-    bh.setEnabled(true).removeCollection(gedcomButtons).setResources(resources);
-
+    for (int i=0;i<buttons.length;i++)
+      buttons[i].setPreferredSize(new Dimension(maxButtonWidth, 10));
+    
+    
     result.add(Box.createGlue());
-
-    // Menu
-    MenuHelper mh = new MenuHelper().setResources(resources);
-    mh.createPopup(result);
-    mh.createItem(new ActionToggleTnI());
 
     // done
     return result;
@@ -231,11 +233,20 @@ public class ControlCenter extends JPanel {
     mh.createMenu("cc.menu.file");
     mh.createItem(new ActionNew());
     mh.createItem(new ActionOpen());
-    mh.createSeparator().setEnabled(false).setCollection(gedcomButtons);
-    mh.createItem(new ActionSave(false));
-    mh.createItem(new ActionSave(true));
-    mh.createItem(new ActionClose());
-    mh.setEnabled(true).setCollection(null);
+    mh.createSeparator();
+    
+    ActionDelegate
+      save = new ActionSave(false, false),
+      saveAs = new ActionSave(true, false),
+      close = new ActionClose(false);
+    
+    gedcomActions.add(save);
+    gedcomActions.add(saveAs);
+    gedcomActions.add(close);
+    
+    mh.createItem(save);
+    mh.createItem(saveAs);
+    mh.createItem(close);
     
     if (!EnvironmentChecker.isMac()) { // Mac's don't need exit actions in application menus apparently
       mh.createSeparator();
@@ -244,12 +255,15 @@ public class ControlCenter extends JPanel {
 
     mh.popMenu().createMenu("cc.menu.view");
 
-    mh.setEnabled(false).setCollection(gedcomButtons).setResources(null);
+    mh.setResources(null);
     ViewFactory[] factories = viewManager.getFactories();
-    for (int i = 0; i < factories.length; i++)
-      mh.createItem(new ActionView(i+1, factories[i]));
-    mh.setEnabled(true).setCollection(null).setResources(resources);
+    for (int i = 0; i < factories.length; i++) {
+      ActionView action = new ActionView(i+1, factories[i]);
+      gedcomActions.add(action);
+      mh.createItem(action);
+    }
     mh.createSeparator();
+    mh.setResources(resources);
     mh.createItem(new ActionOptions());
 
     // 20060209
@@ -274,7 +288,7 @@ public class ControlCenter extends JPanel {
     if (!EnvironmentChecker.isMac())
       result.add(Box.createHorizontalGlue());
 
-    mh.popMenu().setEnabled(true).createMenu("cc.menu.help");
+    mh.popMenu().createMenu("cc.menu.help");
 
     mh.createItem(new ActionHelp());
     mh.createItem(new ActionAbout());
@@ -303,22 +317,6 @@ public class ControlCenter extends JPanel {
     registry.put("last.dir", file.getParentFile().getAbsolutePath());
     // done
     return file;
-  }
-
-  /**
-   * Action - toggle text&images
-   */
-  private class ActionToggleTnI extends ActionDelegate {
-    /** constructor */
-    protected ActionToggleTnI() {
-      setText("cc.menu.tni");
-    }
-    /** run */
-    protected void execute() {
-      boolean set = !registry.get("imagesandtext", false);
-      registry.put("imagesandtext", set);
-      ButtonHelper.setTextAllowed(tniButtons, set);
-    }
   }
 
   /**
@@ -375,6 +373,7 @@ public class ControlCenter extends JPanel {
   private class ActionExit extends ActionDelegate {
     /** constructor */
     protected ActionExit() {
+      setAccelerator(ACC_EXIT);
       setText("cc.menu.exit");
       setImage(Images.imgExit);
     }
@@ -440,6 +439,7 @@ public class ControlCenter extends JPanel {
     
     /** constructor */
     ActionNew() {
+      setAccelerator(ACC_NEW);
       setText("cc.menu.new" );
       setTip("cc.tip.create_file");
       setImage(Images.imgNew);
@@ -501,6 +501,7 @@ public class ControlCenter extends JPanel {
 
     /** constructor */
     protected ActionOpen() {
+      setAccelerator(ACC_OPEN); 
       setTip("cc.tip.open_file");
       setText("cc.menu.open");
       setImage(Images.imgOpen);
@@ -805,17 +806,20 @@ public class ControlCenter extends JPanel {
     private File temp, result;
     /** password used */
     private String password;
+    
     /** 
-     * Constructor for saving gedcom file 
+     * Constructor for saving gedcom file without interaction
      */
     protected ActionSave(Gedcom gedcom) {
-      this(false);
+      this(false, true);
       this.gedcom = gedcom;
     }
     /** 
      * Constructor
      */
-    protected ActionSave(boolean ask) {
+    protected ActionSave(boolean ask, boolean enabled) {
+      // setup accelerator
+      if (!ask) setAccelerator(ACC_SAVE);
       // remember
       this.ask = ask;
       // text
@@ -826,6 +830,7 @@ public class ControlCenter extends JPanel {
       // setup
       setImage(Images.imgSave);
       setAsync(ASYNC_NEW_INSTANCE);
+      setEnabled(enabled);
     }
     /**
      * Initialize save
@@ -990,9 +995,10 @@ public class ControlCenter extends JPanel {
    */
   private class ActionClose extends ActionDelegate {
     /** constructor */
-    protected ActionClose() {
+    protected ActionClose(boolean enabled) {
       setText(resources.getString("cc.menu.close"));
       setImage(Images.imgClose);
+      setEnabled(enabled);
     }
     /** run */
     protected void execute() {
@@ -1045,20 +1051,26 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionView(int i, ViewFactory vw) {
       factory = vw;
-      setText( (i>0 ? Integer.toString(i) + ' ' : "") +factory.getTitle(false));
-      setShortText(factory.getTitle(true));
-      setTip(
-        resources.getString("cc.tip.open_view", factory.getTitle(false)));
+      if (i>0) 
+        setText(Integer.toString(i) +" "+ factory.getTitle(false));
+      else
+        setText(factory.getTitle(true));
+      setTip(resources.getString("cc.tip.open_view", factory.getTitle(false)));
       setImage(factory.getImage());
+      setEnabled(false);
     }
     /** run */
     protected void execute() {
-      // Current Gedcom
+      // grab current Gedcom
       final Gedcom gedcom = tGedcoms.getSelectedGedcom();
       if (gedcom == null)
         return;
-      // Create new View
-      viewManager.openView(factory, gedcom);
+      // create new View
+      JComponent view = viewManager.openView(factory, gedcom);
+      // install some accelerators
+      ActionSave save = new ActionSave(gedcom);
+      view.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(ACC_SAVE), save);
+      view.getActionMap().put(save, save);
     }
   } //ActionView
 

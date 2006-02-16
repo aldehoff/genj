@@ -527,8 +527,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     // overview
     ButtonHelper bh = new ButtonHelper()
       .setContainer(bar)
-      .setResources(resources)
-      .setFocusable(false);
+      .setResources(resources);
     bh.create(new ActionOverview(), null, overview.isVisible());
     
     // gap

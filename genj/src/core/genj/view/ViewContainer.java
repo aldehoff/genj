@@ -19,6 +19,8 @@
  */
 package genj.view;
 
+import genj.edit.actions.Redo;
+import genj.edit.actions.Undo;
 import genj.gedcom.Gedcom;
 import genj.print.Printer;
 import genj.util.ActionDelegate;
@@ -40,6 +42,11 @@ import javax.swing.SwingConstants;
  * A wrapper for our views enabling action buttons
  */
 /*package*/ class ViewContainer extends JPanel {
+  
+  private final static String
+    ACC_CLOSE = "ctrl W",
+    ACC_UNDO = "ctrl Z",
+    ACC_REDO = "ctrl Y";
 
   /** the registry this view is for */
   private Registry registry;
@@ -87,8 +94,6 @@ import javax.swing.SwingConstants;
     add(view, BorderLayout.CENTER);
     
     // hook-up keyboard shortcuts & right mouse-click
-    
-    // TODO configurable keyboard shortcurts
     Object key = "genj.view.contextmenu";
     InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     inputs.put(KeyStroke.getKeyStroke("shift F10"), key);
@@ -96,7 +101,16 @@ import javax.swing.SwingConstants;
     inputs.put(KeyStroke.getKeyStroke("CONTEXT_MENU"), key); // this only works in Tiger 1.5 on Windows
     
     getActionMap().put(key, manAger.HOOK);
-    
+
+    inputs.put(KeyStroke.getKeyStroke(ACC_CLOSE), ACC_CLOSE);
+    getActionMap().put(ACC_CLOSE, new ActionClose());
+
+    inputs.put(KeyStroke.getKeyStroke(ACC_UNDO), ACC_UNDO);
+    getActionMap().put(ACC_UNDO, new Undo(gedcom, true));
+
+    inputs.put(KeyStroke.getKeyStroke(ACC_REDO), ACC_REDO);
+    getActionMap().put(ACC_REDO, new Redo(gedcom, true));
+
     // done
   }
   
@@ -128,7 +142,6 @@ import javax.swing.SwingConstants;
 
     // add our buttons     
     ButtonHelper bh = new ButtonHelper()
-      .setFocusable(false)
       .setResources(ViewManager.resources)
       .setContainer(bar);
 

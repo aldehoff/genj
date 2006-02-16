@@ -75,7 +75,7 @@ public class FileChooserWidget extends JPanel {
   public FileChooserWidget(String extensions) {
     super(new BorderLayout());
     
-    button = new ButtonHelper().setInsets(0).setFocusable(false).create(new Choose());
+    button = new ButtonHelper().setInsets(0).create(new Choose());
     text.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         fireActionEvent();

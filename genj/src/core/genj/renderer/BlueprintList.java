@@ -28,7 +28,6 @@ import genj.window.WindowManager;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,9 +105,7 @@ public class BlueprintList extends JSplitPane {
     
     ButtonHelper bh = new ButtonHelper()
       .setContainer(left)
-      .setResources(resources)
-      .setEnabled(false)
-      .setMaximumSize(new Dimension(Integer.MAX_VALUE, -1));
+      .setResources(resources);
     bAdd = bh.create(new Add());
     bDel = bh.create(new Del());
     
@@ -147,6 +144,7 @@ public class BlueprintList extends JSplitPane {
      * Constructor     */
     private Add() {
       super.setText("blueprint.add");
+      super.setEnabled(false);
     }
     /**
      * @see genj.util.ActionDelegate#execute()
@@ -195,6 +193,7 @@ public class BlueprintList extends JSplitPane {
      */
     private Del() {
       super.setText("blueprint.del");
+      super.setEnabled(false);
     }
     /**
      * @see genj.util.ActionDelegate#execute()

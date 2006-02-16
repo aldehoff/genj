@@ -120,7 +120,7 @@ import javax.swing.event.ChangeListener;
 
     // create panel for actions
     buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttonPanel).setFocusable(false);
+    ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttonPanel);
     bh.create(ok);
     bh.create(cancel);
     

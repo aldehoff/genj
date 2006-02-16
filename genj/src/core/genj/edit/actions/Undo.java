@@ -24,7 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
 import genj.util.ActionDelegate;
-import genj.view.ViewManager;
 
 /**
  * Redo on Gedcom
@@ -37,10 +36,17 @@ public class Undo extends ActionDelegate implements GedcomListener {
   /**
    * Constructor
    */
-  public Undo(Gedcom gedcom, ViewManager mgr) {
+  public Undo(Gedcom gedcom) {
+    this(gedcom, gedcom.canUndo());
+  }
+
+  /**
+   * Constructor
+   */
+  public Undo(Gedcom gedcom, boolean enabled) {
     setImage(Images.imgUndo);
     setText(AbstractChange.resources.getString("undo"));    
-    setEnabled(gedcom.canUndo());
+    setEnabled(enabled);
     this.gedcom = gedcom;
   }
 
@@ -48,7 +54,8 @@ public class Undo extends ActionDelegate implements GedcomListener {
    * Undo changes from last transaction
    */
   protected void execute() {
-    gedcom.undo();
+    if (gedcom.canUndo())
+      gedcom.undo();
   }
   
   /**

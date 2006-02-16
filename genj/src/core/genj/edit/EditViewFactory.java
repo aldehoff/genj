@@ -235,8 +235,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
 
     result.add(ActionDelegate.NOOP);
-    result.add(new Undo(gedcom, manager));
-    result.add(new Redo(gedcom, manager));
+    result.add(new Undo(gedcom));
+    result.add(new Redo(gedcom));
 
     // done
     return result;

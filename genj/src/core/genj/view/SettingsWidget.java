@@ -25,7 +25,6 @@ import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
 import java.util.Map;
-import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 
@@ -43,7 +42,8 @@ import javax.swing.border.TitledBorder;
   
   /** components */
   private JPanel pSettings,pActions;
-  private Vector vButtons = new Vector();
+  private ActionApply apply = new ActionApply();
+  private ActionReset reset = new ActionReset();
   
   /** settings */
   private Settings settings;
@@ -67,15 +67,11 @@ import javax.swing.border.TitledBorder;
 
     ButtonHelper bh = new ButtonHelper()
       .setResources(resources)
-      .setContainer(pActions)
-      .addCollection(vButtons)
-      .setEnabled(false);
-      
-    bh.create(new ActionApply());
-    bh.create(new ActionReset());
-    bh.removeCollection(vButtons)
-      .setEnabled(true)
-      .create(new ActionClose());
+      .setContainer(pActions);
+    
+    bh.create(apply);
+    bh.create(reset);
+    bh.create(new ActionClose());
 
     // Layout
     setLayout(new BorderLayout());
@@ -104,7 +100,8 @@ import javax.swing.border.TitledBorder;
     }
       
     // enable buttons
-    ButtonHelper.setEnabled(vButtons, settings!=null);
+    apply.setEnabled(settings!=null);
+    reset.setEnabled(settings!=null);
     
     // show
     pSettings.revalidate();
@@ -129,7 +126,10 @@ import javax.swing.border.TitledBorder;
    * Applies the changes currently being done
    */
   private class ActionApply extends ActionDelegate {
-    protected ActionApply() { super.setText("view.apply"); }
+    protected ActionApply() { 
+      setText("view.apply"); 
+      setEnabled(false);
+    }
     protected void execute() {
       settings.apply();
     }
@@ -139,7 +139,10 @@ import javax.swing.border.TitledBorder;
    * Resets any change being done
    */
   private class ActionReset extends ActionDelegate {
-    protected ActionReset() { super.setText("view.reset"); }
+    protected ActionReset() { 
+      setText("view.reset"); 
+      setEnabled(false);
+    }
     protected void execute() {
       settings.reset();
     }

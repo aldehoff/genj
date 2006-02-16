@@ -20,21 +20,30 @@
 package genj.util;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 
 /**
  * An Action
  */
-public abstract class ActionDelegate implements Runnable, ActionListener, Cloneable {
+public abstract class ActionDelegate extends AbstractAction implements Runnable, Cloneable {
   
+  protected final static String 
+    TEXT = Action.NAME,
+    SHORT_TEXT = "shortname",
+    TIP = Action.SHORT_DESCRIPTION,
+    ENABLED = "enabled",
+    MNEMONIC = Action.MNEMONIC_KEY,
+    ICON = Action.SMALL_ICON;
+    
   private final static Logger LOG = Logger.getLogger("genj.actions");
   
   /** a noop ActionDelegate */
@@ -47,12 +56,8 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  private Icon       img;
-  private String     txt;
-  private String     stxt;
-  private String     tip;
   private JComponent target;
-  private boolean   enabled = true;
+  private KeyStroke accelerator;
   
   /** whether we're async or not */
   private int async = ASYNC_NOT_APPLICABLE;
@@ -60,9 +65,6 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
   /** the thread executing asynchronously */
   private Thread thread;
   private Object threadLock = new Object();
-  
-  /** change support */
-  private ChangeSupport changeSupport = new ChangeSupport(this);
   
   /**
    * trigger execution - ActionListener support
@@ -246,26 +248,42 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
     return target;
   }
   
-  /**
-   * accessor - image 
-   */
-  public ActionDelegate setImage(Icon i) {
-    img=i;
+  /** accessor - accelerator */
+  public ActionDelegate setAccelerator(String s) {
+    accelerator = KeyStroke.getKeyStroke(s);
     return this;
   }
   
   /**
    * accessor - image 
    */
-  public Icon getImage() {
-    return img;
+  public ActionDelegate setImage(Icon icon) {
+    super.putValue(ICON, icon);
+    return this;
   }
   
   /**
    * accessor - text
    */
-  public ActionDelegate setText(String t) {
-    txt=t;
+  public ActionDelegate setText(String txt) {
+    
+    // check txt?
+    if (txt!=null&&txt.length()>0)  {
+        // calc mnemonic 
+        MnemonicAndText mat = new MnemonicAndText(txt);
+        txt  = mat.getText();
+        // use accelerator keys on mac and mnemonic otherwise
+        setMnemonic(mat.getMnemonic());
+    }
+    super.putValue(TEXT, txt);
+    return this;
+  }
+  
+  /**
+   * acessor - mnemonic
+   */
+  public ActionDelegate setMnemonic(char c) {
+    super.putValue(MNEMONIC, c==0 ? null : new Integer(c));
     return this;
   }
 
@@ -273,74 +291,36 @@ public abstract class ActionDelegate implements Runnable, ActionListener, Clonea
    * accessor - text
    */
   public String getText() {
-    return txt;
-  }
-  
-  /**
-   * accessor - short text
-   */
-  public ActionDelegate setShortText(String t) {
-    stxt=t;
-    return this;
-  }
-
-  /**
-   * accessor - short text
-   */
-  public String getShortText() {
-    return stxt;
+    return (String)super.getValue(TEXT);
   }
   
   /**
    * accessor - tip
    */
-  public ActionDelegate setTip(String t) {
-    tip=t;
-    // notify
-    changeSupport.fireChangeEvent();
+  public ActionDelegate setTip(String tip) {
+    super.putValue(TIP, tip);
     return this;
   }
   
-  /**
-   * accessor - tip
-   */
-  public String getTip() {
-    return tip;
-  }
-  
-  /**
-   * accessor - enabled
-   */
-  public ActionDelegate setEnabled(boolean e) {
-    // remember
-    enabled = e;
-    // notify
-    changeSupport.fireChangeEvent();
-    // done
-    return this;
-  }
+    /**
+     * accessor - tip
+     */
+    public String getTip() {
+      return (String)super.getValue(TIP);
+    }
 
-  /**
-   * accessor - enabled
-   */
-  public boolean isEnabled() {
-    return enabled;
-  }
-  
-  /**
-   * add listener
-   */
-  public void addChangeListener(ChangeListener l) {
-    changeSupport.addChangeListener(l);
-  }
-  
-  /**
-   * remove listener
-   */
-  public void removeChangeListener(ChangeListener l) {
-    changeSupport.removeChangeListener(l);
-  }
-  
+    /**
+       * accessor - image 
+       */
+      public Icon getImage() {
+        return (Icon)super.getValue(ICON);
+      }
+
+      /** accessor - accelerator */
+      public KeyStroke getAccelerator() {
+        return accelerator;
+      }
+
   /**
    * Async Execution
    */

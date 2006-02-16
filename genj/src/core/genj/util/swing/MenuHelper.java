@@ -20,19 +20,16 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
-import genj.util.EnvironmentChecker;
 import genj.util.MnemonicAndText;
 import genj.util.Resources;
 
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import java.util.Vector;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -42,7 +39,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 
 /**
  * Class which provides some static helpers for menu-handling
@@ -50,9 +46,7 @@ import javax.swing.KeyStroke;
 public class MenuHelper  {
   
   private Stack menus            = new Stack();  // JMenu or JPopupMenu or JMenuBar
-  private Vector collection       = null;
   private Resources resources     = null;
-  private boolean enabled         = true;
   private JComponent target       = null;
 
   /** Setters */    
@@ -66,9 +60,7 @@ public class MenuHelper  {
     return this; 
   }
   public MenuHelper pushMenu(JPopupMenu popup) { menus.push(popup); return this; }
-  public MenuHelper setCollection(Vector set) { collection=set; return this; }
   public MenuHelper setResources(Resources set) { resources=set; return this; }
-  public MenuHelper setEnabled(boolean set) { enabled=set; return this; }
   public MenuHelper setTarget(JComponent set) { target=set; return this; }
 
   /**
@@ -92,7 +84,14 @@ public class MenuHelper  {
    */
   public JMenu createMenu(String text, Icon img) {
     JMenu result = new JMenu();
-    set(text, result);
+    
+    // no text?
+    if (text!=null&&text.length()>0) {
+      text = resources!=null ? resources.getString(text) : text;  
+      MnemonicAndText mat = new MnemonicAndText(text);
+      result.setText(mat.getText());
+      result.setMnemonic(mat.getMnemonic());
+    }
     if (img!=null) 
       result.setIcon(img);
     Object menu = peekMenu();
@@ -218,14 +217,17 @@ public class MenuHelper  {
       return null;
     }
     
+    // patch text?
+    if (resources!=null)
+      action.setText(resources.getString(action.getText()));
+    
     // create a menu item
     JMenuItem result = new JMenuItem();
-    result.addActionListener(action);
-    if (action.getText()!=null) 
-      set(action.getText(), result);
-    if (action.getImage()!=null) 
-      result.setIcon(action.getImage());
-    result.setEnabled(enabled&&action.isEnabled());
+    result.setAction(action);
+
+    // patch it up
+    if (action.getAccelerator()!=null)
+      result.setAccelerator(action.getAccelerator());
   
     // add it to current menu on stack  
     Object menu = peekMenu();
@@ -236,9 +238,6 @@ public class MenuHelper  {
     if (menu instanceof JMenuBar)
       ((JMenuBar)menu).add(result);
       
-    // put it in collection if applicable
-    if (collection!=null) collection.addElement(result);
-
     // propagate target
     if (target!=null) action.setTarget(target);
     
@@ -283,31 +282,5 @@ public class MenuHelper  {
     return menus.peek();
   }
   
-  /**
-   * Set text taking mnemonic into account
-   */
-  private void set(String txt, JMenuItem item) {
-
-    // no text?
-    if (txt==null) 
-      return;
-    // localize?
-    if (resources!=null) {
-      txt = resources.getString(txt);  
-    }
-    // safety check on ""
-    if (txt.length()==0)
-      return;
-    // calc mnemonic 
-    MnemonicAndText mat = new MnemonicAndText(txt);
-    item.setText(mat.getText());
-    
-    // use accelerator keys on mac and mnemonic otherwise
-    if (!(item instanceof JMenu) && EnvironmentChecker.isMac())
-      item.setAccelerator(KeyStroke.getKeyStroke(mat.getMnemonic(), Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-    else 
-      item.setMnemonic(mat.getMnemonic());
-  }
-
 } //MenuHelper
 

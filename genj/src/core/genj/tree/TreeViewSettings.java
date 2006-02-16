@@ -128,7 +128,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     bookmarks.add(new JScrollPane(bookmarkList));
     
     JPanel bookmarkActions = new JPanel();
-    ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions).setEnabled(false);
+    ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions);
     bUp     = bh.create(new ActionMove(-1));
     bDown   = bh.create(new ActionMove( 1));
     bDelete = bh.create(new ActionDelete());
@@ -281,6 +281,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
      */
     private ActionMove(int how) {
       setText(resources.getString("bookmark.move."+how));
+      setEnabled(false);
       by = how;
     }
     /**
@@ -305,6 +306,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
      */
     private ActionDelete() {
       setText(resources.getString("bookmark.del"));
+      setEnabled(false);
     }
     /**
      * @see genj.util.ActionDelegate#execute()

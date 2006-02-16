@@ -303,7 +303,7 @@ public class DateWidget extends JPanel {
       result.append(newCalendar.getName());
       result.setFiller(" - ");
       try {
-        PointInTime pit = getValue().getPointInTime(newCalendar); 
+        PointInTime pit = DateWidget.this.getValue().getPointInTime(newCalendar); 
         result.append(pit.getDayOfWeek(true));
         result.append(pit);
       } catch (Throwable t) {
@@ -314,7 +314,7 @@ public class DateWidget extends JPanel {
      * @see genj.util.ActionDelegate#execute()
      */
     protected void execute() {
-      PointInTime pit = getValue();
+      PointInTime pit = DateWidget.this.getValue();
       if (pit!=null) {
         try {
           pit.set(newCalendar);

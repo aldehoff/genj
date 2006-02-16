@@ -299,7 +299,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
     if (bClose!=null) {
       bClose.setEnabled(!on);
     }
-    bReload.setEnabled(!ReportLoader.getInstance().isReportsInClasspath());
 
     taOutput.setCursor(Cursor.getPredefinedCursor(
       on?Cursor.WAIT_CURSOR:Cursor.DEFAULT_CURSOR
@@ -317,14 +316,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // Buttons at bottom
     ButtonHelper bh = new ButtonHelper()
       .setResources(RESOURCES)
-      .setContainer(bar)
-      .setFocusable(false);
+      .setContainer(bar);
 
     ActionStart astart = new ActionStart();
     bStart = bh.create(astart);
-    bStop  = bh.setEnabled(false).create(new ActionStop(astart));    
-    bSave  = bh.setEnabled(true).create(new ActionSave());
-    bReload= bh.setEnabled(!ReportLoader.getInstance().isReportsInClasspath()).create(new ActionReload());
+    bStop  = bh.create(new ActionStop(astart));    
+    bSave  = bh.create(new ActionSave());
+    bReload= bh.create(new ActionReload());
    
     // done 
   }
@@ -336,6 +334,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     protected ActionReload() {
       setImage(imgReload);
       setTip("report.reload.tip");
+      setEnabled(!ReportLoader.getInstance().isReportsInClasspath());
     }
     protected void execute() {
       // show first page and unselect report
@@ -359,6 +358,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     protected ActionStop(ActionStart start) {
       setImage(imgStop);
       setTip("report.stop.tip");
+      setEnabled(false);
       this.start=start;
     }
     protected void execute() {

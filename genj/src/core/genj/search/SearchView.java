@@ -252,11 +252,11 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
    * @see genj.view.ToolBarSupport#populate(javax.swing.JToolBar)
    */
   public void populate(JToolBar bar) {
-    ButtonHelper bh = new ButtonHelper().setContainer(bar).setFocusable(false);
+    ButtonHelper bh = new ButtonHelper().setContainer(bar);
     ActionSearch search = new ActionSearch();
     ActionStop   stop   = new ActionStop  (search);
-    bSearch = bh.setEnabled(true ).create(search);
-    bStop   = bh.setEnabled(false).create(stop);
+    bSearch = bh.create(search);
+    bStop   = bh.create(stop);
   }
   
   /**
@@ -569,6 +569,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     /** constructor */
     private ActionStop(ActionSearch start) {
       setImage(IMG_STOP);
+      setEnabled(false);
       this.start = start;
     }
     /** run */

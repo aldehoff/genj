@@ -113,8 +113,11 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     beanFactory = new BeanFactory(manager);
 
     // prepare undo/redo actions
-    undo = new Undo(gedcom, manager);
-    redo = new Redo(gedcom, manager);
+    undo = new Undo(gedcom);
+    redo = new Redo(gedcom);
+    
+    undo.setText(null);
+    redo.setText(null);
     
     // prepare mode action
     mode = new Mode();
@@ -364,16 +367,12 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
 
     // buttons for property manipulation    
     ButtonHelper bh = new ButtonHelper()
-      .setFocusable(false)
-      .setEnabled(false)
       .setResources(resources)
       .setInsets(0)
-      .setMinimumSize(new Dimension(0,0))
-      .setTextAllowed(false)
       .setContainer(bar);
 
     // return in history
-    bh.setEnabled(true).create(back);
+    bh.create(back);
     
     // toggle sticky
     bh.create(sticky, Images.imgStickOn, isSticky);
