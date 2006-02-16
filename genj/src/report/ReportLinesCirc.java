@@ -80,7 +80,7 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
-import genj.window.WindowManager;
+import genj.util.swing.Action2;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -197,7 +197,7 @@ public class ReportLinesCirc extends Report {
       initUserOptions();
 
       // ask for file
-      File file = getFileFromUser(translate("output.file"), WindowManager.TXT_OK,true);
+      File file = getFileFromUser(translate("output.file"), Action2.TXT_OK,true);
       if (file == null)
         return ;
       

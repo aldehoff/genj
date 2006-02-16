@@ -19,16 +19,15 @@
  */
 package genj.window;
 
+
 import java.awt.Component;
-import java.awt.Container;
 import java.util.List;
 
+import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 /**
  * The manager for window creation/handling
@@ -43,21 +42,6 @@ public interface WindowManager {
     QUESTION_MESSAGE = JOptionPane.QUESTION_MESSAGE,
     PLAIN_MESSAGE = JOptionPane.PLAIN_MESSAGE;
   
-  /** predefined strings */
-  public final static String
-    TXT_YES         = UIManager.getString("OptionPane.yesButtonText"),
-    TXT_NO          = UIManager.getString("OptionPane.noButtonText"),
-    TXT_OK          = UIManager.getString("OptionPane.okButtonText"),
-    TXT_CANCEL  = UIManager.getString("OptionPane.cancelButtonText");
-
-  /** predefined action groups */
-  public final static String[]
-    ACTIONS_YES_NO = { TXT_YES, TXT_NO },
-    ACTIONS_YES_NO_CANCEL = { TXT_YES, TXT_NO, TXT_CANCEL },
-    ACTIONS_OK = { TXT_OK },
-    ACTIONS_CANCEL = { TXT_CANCEL },
-    ACTIONS_OK_CANCEL = { TXT_OK, TXT_CANCEL };
-
   /**
    * Opens a frame
    * @param key a unique key 
@@ -80,7 +64,7 @@ public interface WindowManager {
    * @param action a single action to close the frame
    * @return key 
    */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, Object action);
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, Action action);
 
   /**
    * Opens a dialog containing a custom component
@@ -92,7 +76,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, int messageType, JComponent content, Object[] actions, Component owner);
+  public int openDialog(String key, String title, int messageType, JComponent content, Action[] actions, Component owner);
 
   /**
    * Opens a dialog containing several stacked custom components
@@ -104,7 +88,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title, int messageType, JComponent[] content, Object[] actions, Component owner);
+  public int openDialog(String key, String title, int messageType, JComponent[] content, Action[] actions, Component owner);
 
   /**
    * Opens a dialog with a simple text message
@@ -112,11 +96,11 @@ public interface WindowManager {
    * @param title text for titlebar
    * @param image image for titlebar
    * @param txt text to show in a scroll text area
-   * @param actions text labels for buttons that will close dialog
+   * @param actions resoved into option buttons closing dialog
    * @param owner the 'owning' component
    * @return index of actions choosen or -1 
    */
-  public int openDialog(String key, String title,  int messageType, String txt, Object[] actions, Component owner);
+  public int openDialog(String key, String title,  int messageType, String txt, Action[] actions, Component owner);
   
   /**
    * Opens a dialog prompting the user for a simple text value
@@ -139,7 +123,7 @@ public interface WindowManager {
    * @param owner the 'owning' component
    * @return key 
    */
-  public String openNonModalDialog(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner);
+  public String openNonModalDialog(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner);
   
   /**
    * Close dialog/frame 
@@ -169,74 +153,6 @@ public interface WindowManager {
    * @return success or no valid key supplied
    */
   public boolean show(String key);
-
-  /**
-   * An action for a dialog
-   */
-  public static class Action {
-    
-    /** some text */
-    private String text;
-    
-    /** a linked button */
-    private JButton button;
-    
-    /** whether we're a valid action right now */
-    private boolean isValid = true;
-    
-    /** constructor */
-    public Action(String text) {
-      this.text = text;
-    }
-    
-    /** constructor */
-    public Action(String text, boolean valid) {
-      this(text);
-      this.isValid = valid;
-    }
-    
-    /** check whether this action is a valid choice atm */
-    /*package*/ boolean isValid() {
-      return isValid;
-    }
-    
-    /** text representation */
-    public String toString() {
-      return getText();
-    }
-    
-    /*package*/ String getText() {
-      return text;
-    }
-
-    /** context hook-up */
-    /*package*/ boolean findMeIn(Container container) {
-      
-      // find a button that corresponds to this action
-      for (int i=0, j=container.getComponentCount(); i<j ; i++) {
-        Component c = container.getComponent(i);
-        if (c instanceof JButton) {
-          JButton b = (JButton)c;
-          if (text.equals(b.getText())) {
-            button = b;
-            button.setEnabled(isValid);
-            return true;
-          }
-        }
-        // recursive step
-        if (c instanceof Container&& findMeIn((Container)c))
-          return true;
-        // try next
-      }
-      // didn't work out
-      return false;
-    }
-    
-    /** accessor - validity */
-    public void setValid(boolean set) {
-      isValid = set;
-      if (button!=null) button.setEnabled(isValid);
-    }
-  }
   
+ 
 } //WindowManager

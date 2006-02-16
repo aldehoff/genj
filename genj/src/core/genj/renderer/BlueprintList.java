@@ -20,8 +20,8 @@
 package genj.renderer;
 
 import genj.gedcom.Gedcom;
-import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.HeadlessLabel;
 import genj.window.WindowManager;
@@ -137,7 +137,7 @@ public class BlueprintList extends JSplitPane {
   /**
    * Action Add
    */
-  private class Add extends ActionDelegate {
+  private class Add extends Action2 {
     /**
      * Constructor     */
     private Add() {
@@ -145,7 +145,7 @@ public class BlueprintList extends JSplitPane {
       super.setEnabled(false);
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       // check selection
@@ -185,7 +185,7 @@ public class BlueprintList extends JSplitPane {
   /**
    * Action Remove
    */
-  private class Del extends ActionDelegate {
+  private class Del extends Action2 {
     /**
      * Constructor
      */
@@ -194,7 +194,7 @@ public class BlueprintList extends JSplitPane {
       super.setEnabled(false);
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       // check selection
@@ -206,7 +206,7 @@ public class BlueprintList extends JSplitPane {
         return;
       // confirm
       Blueprint blueprint = (Blueprint)node;
-      int rc = windowManager.openDialog(null,null,WindowManager.QUESTION_MESSAGE,resources.getString("blueprint.del.confirm", blueprint.getName()),WindowManager.ACTIONS_OK_CANCEL,BlueprintList.this); 
+      int rc = windowManager.openDialog(null,null,WindowManager.QUESTION_MESSAGE,resources.getString("blueprint.del.confirm", blueprint.getName()),Action2.okCancel(),BlueprintList.this); 
       if (rc!=0) 
         return;
       // remove selection

@@ -28,11 +28,11 @@ import genj.io.GedcomWriter;
 import genj.option.OptionProvider;
 import genj.option.OptionsWidget;
 import genj.print.PrintManager;
-import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -114,7 +115,7 @@ public class ControlCenter extends JPanel {
     tGedcoms.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
         for (int i=0;i<gedcomActions.size();i++)
-          ((ActionDelegate)gedcomActions.get(i)).setEnabled(tGedcoms.getSelectedGedcom() != null);
+          ((Action2)gedcomActions.get(i)).setEnabled(tGedcoms.getSelectedGedcom() != null);
       }
     });
     
@@ -167,7 +168,7 @@ public class ControlCenter extends JPanel {
   /**
    * Exit action
    */
-  /*package*/ ActionDelegate getExitAction() {
+  /*package*/ Action2 getExitAction() {
     return new ActionExit().setTarget(this);
   }
   
@@ -192,7 +193,7 @@ public class ControlCenter extends JPanel {
         .setFontSize(10);
 
     // Open & New |
-    ActionDelegate 
+    Action2 
       actionNew = new ActionNew(),
       actionOpen = new ActionOpen();
     actionNew.setText(null);
@@ -243,7 +244,7 @@ public class ControlCenter extends JPanel {
     mh.createItem(new ActionOpen());
     mh.createSeparator();
     
-    ActionDelegate
+    Action2
       save = new ActionSave(false, false),
       saveAs = new ActionSave(true, false),
       close = new ActionClose(false);
@@ -328,7 +329,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - about
    */
-  private class ActionAbout extends ActionDelegate {
+  private class ActionAbout extends Action2 {
     /** constructor */
     protected ActionAbout() {
       setText(resources, "cc.menu.about");
@@ -343,7 +344,7 @@ public class ControlCenter extends JPanel {
         resources.getString("cc.menu.about"),
         Gedcom.getImage(),
         new AboutWidget(viewManager),
-        resources.getString("cc.menu.close")
+        new Action2(resources, "cc.menu.close")
       );
       // done      
     }
@@ -352,7 +353,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - help
    */
-  private class ActionHelp extends ActionDelegate {
+  private class ActionHelp extends Action2 {
     /** constructor */
     protected ActionHelp() {
       setText(resources, "cc.menu.contents");
@@ -367,7 +368,7 @@ public class ControlCenter extends JPanel {
         resources.getString("cc.menu.help"),
         Images.imgHelp,
         new HelpWidget(),
-        resources.getString("cc.menu.close")
+        new Action2(resources, "cc.menu.close")
       );
       // done
     }
@@ -376,7 +377,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - exit
    */
-  private class ActionExit extends ActionDelegate {
+  private class ActionExit extends Action2 {
     /** constructor */
     protected ActionExit() {
       setAccelerator(ACC_EXIT);
@@ -396,7 +397,7 @@ public class ControlCenter extends JPanel {
           int rc = windowManager.openDialog(
               "confirm-exit", null, WindowManager.WARNING_MESSAGE, 
               resources.getString("cc.savechanges?", gedcom.getName()), 
-              WindowManager.ACTIONS_YES_NO_CANCEL, ControlCenter.this
+              Action2.yesNoCancel(), ControlCenter.this
             );
           // cancel - we're done
           if (rc==2) return;
@@ -441,7 +442,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - new
    */
-  private class ActionNew extends ActionDelegate {
+  private class ActionNew extends Action2 {
     
     /** constructor */
     ActionNew() {
@@ -466,7 +467,7 @@ public class ControlCenter extends JPanel {
             resources.getString("cc.create.title"),
             WindowManager.WARNING_MESSAGE,
             resources.getString("cc.open.file_exists", file.getName()),
-            WindowManager.ACTIONS_YES_NO,
+            Action2.yesNo(),
             ControlCenter.this
           );
           if (rc!=0)
@@ -485,7 +486,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - open
    */
-  private class ActionOpen extends ActionDelegate {
+  private class ActionOpen extends Action2 {
 
     /** a preset origin we're reading from */
     private Origin origin;
@@ -527,10 +528,10 @@ public class ControlCenter extends JPanel {
       
       // need to ask for origin?
       if (origin==null) {
-        String actions[] = {
-          resources.getString("cc.open.choice.local"),
-          resources.getString("cc.open.choice.inet" ),
-          WindowManager.TXT_CANCEL,
+        Action actions[] = {
+          new Action2(resources, "cc.open.choice.local"),
+          new Action2(resources, "cc.open.choice.inet" ),
+          Action2.cancel(),
         };
         int rc = windowManager.openDialog(
           null,
@@ -603,7 +604,7 @@ public class ControlCenter extends JPanel {
           origin.getName(), 
           WindowManager.ERROR_MESSAGE, 
           resources.getString("cc.open.read_error", "" + exception.getLine()) + ":\n" + exception.getMessage(),
-          WindowManager.ACTIONS_OK, 
+          Action2.okOnly(), 
           ControlCenter.this
         );
 
@@ -618,7 +619,7 @@ public class ControlCenter extends JPanel {
               resources.getString("cc.open.warnings", gedcom.getName()),
               WindowManager.WARNING_MESSAGE,
               new JScrollPane(new JList(warnings.toArray())),
-              WindowManager.ACTIONS_OK,
+              Action2.okOnly(),
               ControlCenter.this
             );
           }
@@ -662,7 +663,7 @@ public class ControlCenter extends JPanel {
       ChoiceWidget choice = new ChoiceWidget(choices, "");
       JLabel label = new JLabel(resources.getString("cc.open.enter_url"));
       
-      int rc = windowManager.openDialog(null, resources.getString("cc.open.title"), WindowManager.QUESTION_MESSAGE, new JComponent[]{label,choice}, WindowManager.ACTIONS_OK_CANCEL, ControlCenter.this);
+      int rc = windowManager.openDialog(null, resources.getString("cc.open.title"), WindowManager.QUESTION_MESSAGE, new JComponent[]{label,choice}, Action2.okCancel(), ControlCenter.this);
     
       // check the selection
       String item = choice.getText();
@@ -673,7 +674,7 @@ public class ControlCenter extends JPanel {
       try {
         origin = Origin.create(item);
       } catch (MalformedURLException ex) {
-        windowManager.openDialog(null, item, WindowManager.ERROR_MESSAGE, resources.getString("cc.open.invalid_url"), WindowManager.ACTIONS_OK_CANCEL, ControlCenter.this);
+        windowManager.openDialog(null, item, WindowManager.ERROR_MESSAGE, resources.getString("cc.open.invalid_url"), Action2.okCancel(), ControlCenter.this);
         return null;
       }
 
@@ -696,7 +697,7 @@ public class ControlCenter extends JPanel {
 
       // Check if already open
       if (tGedcoms.getGedcom(origin.getName())!=null) {
-        windowManager.openDialog(null,origin.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.open.already_open", origin.getName()),WindowManager.ACTIONS_OK,ControlCenter.this);
+        windowManager.openDialog(null,origin.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.open.already_open", origin.getName()),Action2.okOnly(),ControlCenter.this);
         return false;
       }
 
@@ -715,7 +716,7 @@ public class ControlCenter extends JPanel {
             + "\n["
             + ex.getMessage()
             + "]";
-        windowManager.openDialog(null, origin.getName(), WindowManager.ERROR_MESSAGE, txt, WindowManager.ACTIONS_OK, ControlCenter.this);
+        windowManager.openDialog(null, origin.getName(), WindowManager.ERROR_MESSAGE, txt, Action2.okOnly(), ControlCenter.this);
         return false;
       }
 
@@ -725,7 +726,7 @@ public class ControlCenter extends JPanel {
         resources.getString("cc.open.loading", origin.getName()),
         WindowManager.INFORMATION_MESSAGE,
         new ProgressWidget(reader, getThread()),
-        WindowManager.ACTIONS_CANCEL,
+        Action2.cancelOnly(),
         ControlCenter.this
       );
 
@@ -738,7 +739,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - LoadLastOpen
    */
-  private class ActionAutoOpen extends ActionDelegate {
+  private class ActionAutoOpen extends Action2 {
     /** files to load */
     private Set files;
     /** constructor */
@@ -793,7 +794,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - Save
    */
-  private class ActionSave extends ActionDelegate {
+  private class ActionSave extends Action2 {
     /** whether to ask user */
     private boolean ask;
     /** gedcom */
@@ -843,7 +844,7 @@ public class ControlCenter extends JPanel {
     }
     /**
      * Initialize save
-     * @see genj.util.ActionDelegate#preExecute()
+     * @see genj.util.swing.Action2#preExecute()
      */
     protected boolean preExecute() {
 
@@ -892,7 +893,7 @@ public class ControlCenter extends JPanel {
       // Need confirmation if File exists?
       if (result.exists()&&ask) {
 
-        int rc = windowManager.openDialog(null,resources.getString("cc.save.title"),WindowManager.WARNING_MESSAGE,resources.getString("cc.open.file_exists", result.getName()),WindowManager.ACTIONS_YES_NO,ControlCenter.this);
+        int rc = windowManager.openDialog(null,resources.getString("cc.save.title"),WindowManager.WARNING_MESSAGE,resources.getString("cc.open.file_exists", result.getName()),Action2.yesNo(),ControlCenter.this);
         if (rc!=0) {
           newOrigin = null;
           //20030221 no need to go for newOrigin in postExecute()
@@ -916,7 +917,7 @@ public class ControlCenter extends JPanel {
         gedWriter.setPassword(password);
         
       } catch (IOException ex) {
-        windowManager.openDialog(null,gedcom.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.save.open_error", result.getAbsolutePath()),WindowManager.ACTIONS_OK,ControlCenter.this);
+        windowManager.openDialog(null,gedcom.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.save.open_error", result.getAbsolutePath()),Action2.okOnly(),ControlCenter.this);
         return false;
       }
 
@@ -926,7 +927,7 @@ public class ControlCenter extends JPanel {
         resources.getString("cc.save.saving", result.getName()),
         WindowManager.INFORMATION_MESSAGE,
         new ProgressWidget(gedWriter, getThread()),
-        WindowManager.ACTIONS_CANCEL,
+        Action2.cancelOnly(),
         getTarget()
       );
 
@@ -937,7 +938,7 @@ public class ControlCenter extends JPanel {
 
     /** 
      * (async) execute
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
 
@@ -972,7 +973,7 @@ public class ControlCenter extends JPanel {
 
     /**
      * (sync) post write
-     * @see genj.util.ActionDelegate#postExecute(boolean)
+     * @see genj.util.swing.Action2#postExecute(boolean)
      */
     protected void postExecute(boolean preExecuteResult) {
 
@@ -981,7 +982,7 @@ public class ControlCenter extends JPanel {
       
       // problem encountered?      
       if (ioex!=null) {
-        windowManager.openDialog(null,gedcom.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.save.write_error", "" + ioex.getLine()) + ":\n" + ioex.getMessage(),WindowManager.ACTIONS_OK,ControlCenter.this);
+        windowManager.openDialog(null,gedcom.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.save.write_error", "" + ioex.getLine()) + ":\n" + ioex.getMessage(),Action2.okOnly(),ControlCenter.this);
       } else {
         // .. open new
         if (newOrigin != null) {
@@ -1005,7 +1006,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - Close
    */
-  private class ActionClose extends ActionDelegate {
+  private class ActionClose extends Action2 {
     /** constructor */
     protected ActionClose(boolean enabled) {
       setText(resources.getString("cc.menu.close"));
@@ -1025,7 +1026,7 @@ public class ControlCenter extends JPanel {
         
         int rc = windowManager.openDialog(null,null,WindowManager.WARNING_MESSAGE,
             resources.getString("cc.savechanges?", gedcom.getName()),
-            WindowManager.ACTIONS_YES_NO_CANCEL,ControlCenter.this);
+            Action2.yesNoCancel(),ControlCenter.this);
         // cancel everything?
         if (rc==2)
           return;
@@ -1057,7 +1058,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - View
    */
-  private class ActionView extends ActionDelegate {
+  private class ActionView extends Action2 {
     /** which ViewFactory */
     private ViewFactory factory;
     /** constructor */
@@ -1089,7 +1090,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action - Options
    */
-  private class ActionOptions extends ActionDelegate {
+  private class ActionOptions extends Action2 {
     /** constructor */
     protected ActionOptions() {
       setText(resources.getString("cc.menu.options"));
@@ -1103,7 +1104,7 @@ public class ControlCenter extends JPanel {
       OptionsWidget widget = new OptionsWidget(windowManager);
       widget.setOptions(OptionProvider.getAllOptions());
       // open dialog
-      windowManager.openDialog("options", getText(), WindowManager.INFORMATION_MESSAGE, widget, WindowManager.ACTIONS_OK, ControlCenter.this);
+      windowManager.openDialog("options", getText(), WindowManager.INFORMATION_MESSAGE, widget, Action2.okOnly(), ControlCenter.this);
       // done
     }
   } //ActionOptions

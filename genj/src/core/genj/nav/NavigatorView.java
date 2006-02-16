@@ -25,10 +25,10 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertySex;
 import genj.gedcom.Transaction;
-import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
@@ -399,7 +399,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
   /**
    * Jump to another indi
    */
-  private class Jump extends ActionDelegate {
+  private class Jump extends Action2 {
     /** the target */
     private Indi target;
     /** constructor */

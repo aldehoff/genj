@@ -23,11 +23,11 @@ import genj.Version;
 import genj.gedcom.Gedcom;
 import genj.io.GedcomReader;
 import genj.option.OptionProvider;
-import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Trackable;
+import genj.util.swing.Action2;
 import genj.util.swing.ProgressWidget;
 import genj.view.ViewManager;
 import genj.window.DefaultWindowManager;
@@ -38,6 +38,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 
@@ -115,7 +116,7 @@ public class Applet extends java.applet.Applet {
   /**
    * load
    */
-  private class Init extends ActionDelegate implements Trackable {
+  private class Init extends Action2 implements Trackable {
 
     /** url we're loading from */
     private String url;
@@ -147,7 +148,7 @@ public class Applet extends java.applet.Applet {
     }
     
     /**
-     * @see genj.util.ActionDelegate#preExecute()
+     * @see genj.util.swing.Action2#preExecute()
      */
     protected boolean preExecute() {
 
@@ -167,7 +168,7 @@ public class Applet extends java.applet.Applet {
     }
     
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
 
@@ -212,7 +213,7 @@ public class Applet extends java.applet.Applet {
     }
     
     /**
-     * @see genj.util.ActionDelegate#postExecute(boolean)
+     * @see genj.util.swing.Action2#postExecute(boolean)
      */
     protected void postExecute(boolean preExecuteResult) {
 
@@ -222,7 +223,7 @@ public class Applet extends java.applet.Applet {
       // check load status      
       if (throwable!=null) {
         
-        String[] actions = { "Retry",  WindowManager.TXT_CANCEL };
+        Action[] actions = { new Action2("Retry"),  Action2.cancel() };
         int rc = winMgr.openDialog(null, "Error", WindowManager.ERROR_MESSAGE, url+"\n"+throwable.getMessage(), actions, Applet.this);        
         
         if (rc==0) trigger();
@@ -245,10 +246,10 @@ public class Applet extends java.applet.Applet {
     }
 
     /**
-     * @see genj.util.Trackable#cancel()
+     * @see genj.util.Trackable#cancelTrackable()
      */
-    public void cancel() {
-      if (reader!=null) reader.cancel();
+    public void cancelTrackable() {
+      if (reader!=null) reader.cancelTrackable();
     }
     
     /**

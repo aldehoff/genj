@@ -394,7 +394,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         // start transaction for our gedcom
         gedcom.startTransaction();
       
-        // is this an in-parent properties shuffle? FIXME we'll have to
+        // FIXME EditView - DnD
+        // is this an in-parent properties shuffle? we'll have to
         // revisit this in case we allow multiple nodes to be dragged
         // at some point. We'll want to allow an in-parent shuffle where
         // applicable (do as much as we can here).

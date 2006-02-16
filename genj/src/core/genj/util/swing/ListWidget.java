@@ -19,7 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.util.ActionDelegate;
 
 import java.awt.Component;
 
@@ -51,8 +50,8 @@ public class ListWidget extends JList {
      */
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
       super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-      if (value instanceof ActionDelegate) {
-        ActionDelegate action = (ActionDelegate)value; 
+      if (value instanceof Action2) {
+        Action2 action = (Action2)value; 
         setText(action.getText());
         setIcon(action.getImage());
       }

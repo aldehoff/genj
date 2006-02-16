@@ -19,11 +19,12 @@
  */
 package genj.print;
 
-import java.util.logging.Logger;
-
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.window.WindowManager;
+
+import java.util.logging.Logger;
 
 import javax.print.PrintException;
 import javax.swing.JComponent;
@@ -56,7 +57,7 @@ public class PrintManager {
     try {
       new PrintTask(this, printer, title, owner, new PrintRegistry(registry, "print")).trigger();
     } catch (PrintException e) {
-      winMgr.openDialog(null, resources.getString("printer"), WindowManager.ERROR_MESSAGE, resources.getString("unavailable"), WindowManager.ACTIONS_OK, owner);
+      winMgr.openDialog(null, resources.getString("printer"), WindowManager.ERROR_MESSAGE, resources.getString("unavailable"), Action2.okOnly(), owner);
     }
   }
   

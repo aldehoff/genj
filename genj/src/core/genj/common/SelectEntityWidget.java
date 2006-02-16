@@ -27,8 +27,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
-import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.PopupWidget;
 
 import java.awt.BorderLayout;
@@ -236,7 +236,7 @@ public class SelectEntityWidget extends JPanel {
   /**
    * Sort action
    */
-  private class Sort extends ActionDelegate {
+  private class Sort extends Action2 {
 
     /** path */
     private TagPath tagPath;
@@ -264,7 +264,7 @@ public class SelectEntityWidget extends JPanel {
     }      
     
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       // remember

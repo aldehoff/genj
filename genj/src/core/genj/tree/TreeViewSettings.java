@@ -20,8 +20,8 @@
 package genj.tree;
 
 import genj.renderer.BlueprintList;
-import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ColorsWidget;
 import genj.util.swing.FontChooser;
@@ -273,7 +273,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   /**
    * Action - move a bookmark
    */
-  private class ActionMove extends ActionDelegate {
+  private class ActionMove extends Action2 {
     /** by how much to move */
     private int by;
     /**
@@ -285,7 +285,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
       by = how;
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       int i = bookmarkList.getSelectedIndex();
@@ -300,7 +300,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   /**
    * Action - delete a bookmark
    */
-  private class ActionDelete extends ActionDelegate {
+  private class ActionDelete extends Action2 {
     /**
      * Constructor
      */
@@ -309,7 +309,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
       setEnabled(false);
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       int i = bookmarkList.getSelectedIndex();

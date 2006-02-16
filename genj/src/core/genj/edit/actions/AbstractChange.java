@@ -23,8 +23,8 @@ import genj.edit.Images;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
-import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
@@ -32,6 +32,7 @@ import genj.view.Context;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,7 +41,7 @@ import javax.swing.JTextArea;
 /**
  * ActionChange - change the gedcom information
  */
-/*package*/ abstract class AbstractChange extends ActionDelegate {
+/*package*/ abstract class AbstractChange extends Action2 {
   
   /** resources */
   /*package*/ static Resources resources = Resources.get(AbstractChange.class);
@@ -76,7 +77,7 @@ import javax.swing.JTextArea;
     // for a NPE I've seen a null message - better convert that to string here
     String message = ""+t.getMessage();
     // show it
-    manager.getWindowManager().openDialog("err", "Error", WindowManager.ERROR_MESSAGE, message, WindowManager.ACTIONS_OK, getTarget());
+    manager.getWindowManager().openDialog("err", "Error", WindowManager.ERROR_MESSAGE, message, Action2.okOnly(), getTarget());
   }
   
   /** 
@@ -112,7 +113,7 @@ import javax.swing.JTextArea;
   }
   
   /**
-   * @see genj.util.ActionDelegate#execute()
+   * @see genj.util.swing.Action2#execute()
    */
   protected void execute() {
     
@@ -121,7 +122,10 @@ import javax.swing.JTextArea;
     if (msg!=null) {
   
       // prepare actions
-      String[] actions = { resources.getString("confirm.proceed", getText()),  WindowManager.TXT_CANCEL };
+      Action[] actions = { 
+          new Action2(resources.getString("confirm.proceed", getText())),
+          Action2.cancel() 
+      };
       
       // Recheck with the user
       int rc = manager.getWindowManager().openDialog(getClass().getName(), getText(), WindowManager.QUESTION_MESSAGE, getDialogContent(), actions, getTarget() );
@@ -135,7 +139,7 @@ import javax.swing.JTextArea;
     try {
       change();
     } catch (Throwable t) {
-      manager.getWindowManager().openDialog(null, null, WindowManager.ERROR_MESSAGE, t.getMessage(), WindowManager.ACTIONS_OK, getTarget());
+      manager.getWindowManager().openDialog(null, null, WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), getTarget());
     }
     // unlock gedcom
     gedcom.endTransaction();

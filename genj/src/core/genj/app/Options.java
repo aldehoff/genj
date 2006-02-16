@@ -27,11 +27,11 @@ import genj.option.OptionProvider;
 import genj.option.OptionUI;
 import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
-import genj.util.ActionDelegate;
 import genj.util.EnvironmentChecker;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -345,7 +346,7 @@ public class Options extends OptionProvider {
     /**
      * Action for UI
      */
-    private class Edit extends ActionDelegate { 
+    private class Edit extends Action2 { 
       /** file association */
       private FileAssociation association;
       /** constructor */
@@ -384,15 +385,15 @@ public class Options extends OptionProvider {
         }
         
         // prepare some actions
-        final WindowManager.Action 
-          ok = new WindowManager.Action(WindowManager.TXT_OK),
-          delete = new WindowManager.Action(localize("delete"), association!=null),
-          cancel = new WindowManager.Action(WindowManager.TXT_CANCEL);
+        final Action
+          ok = Action2.ok(),
+          delete = new Action2(localize("delete"), association!=null),
+          cancel = Action2.cancel();
         
         // track changes
         ChangeListener l = new ChangeListener() {
           public void stateChanged(ChangeEvent e) {
-            ok.setValid( !suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty() );
+            ok.setEnabled( !suffixes.isEmpty() && !name.isEmpty() && !executable.isEmpty() );
           }
         };
         suffixes.addChangeListener(l);
@@ -402,7 +403,7 @@ public class Options extends OptionProvider {
         
         // show a dialog with file association fields
         WindowManager mgr = widget.getWindowManager();
-        int rc = mgr.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, panel, new Object[]{ ok, delete, cancel }, widget);
+        int rc = mgr.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, panel, new Action[]{ ok, delete, cancel }, widget);
         if (rc==-1||rc==2)
           return;
         

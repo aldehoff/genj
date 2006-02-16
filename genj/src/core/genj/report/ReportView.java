@@ -22,10 +22,10 @@ package genj.report;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.option.OptionsWidget;
-import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.view.Context;
@@ -328,7 +328,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Action: RELOAD
    */
-  private class ActionReload extends ActionDelegate {
+  private class ActionReload extends Action2 {
     protected ActionReload() {
       setImage(imgReload);
       setTip(RESOURCES, "report.reload.tip");
@@ -351,7 +351,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Action: STOP
    */
-  private class ActionStop extends ActionDelegate {
+  private class ActionStop extends Action2 {
     private ActionStart start;
     protected ActionStop(ActionStart start) {
       setImage(imgStop);
@@ -367,7 +367,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Action: START
    */
-  private class ActionStart extends ActionDelegate {
+  private class ActionStart extends Action2 {
     
     /** context to run on */
     private Object context, preset;
@@ -430,7 +430,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // check if appropriate
       if (context==null||report.accepts(context)==null) {
-        manager.getWindowManager().openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,RESOURCES.getString("report.noaccept"),WindowManager.ACTIONS_OK,ReportView.this);
+        manager.getWindowManager().openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,RESOURCES.getString("report.noaccept"),Action2.okOnly(),ReportView.this);
         return false;
       }
       
@@ -482,7 +482,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Action: SAVE
    */
-  private class ActionSave extends ActionDelegate {
+  private class ActionSave extends Action2 {
     protected ActionSave() {
       setImage(imgSave);
       setTip(RESOURCES, "report.save.tip");
@@ -503,7 +503,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   
       // .. exits ?
       if (file.exists()) {
-        int rc = manager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, "File exists. Overwrite?", WindowManager.ACTIONS_YES_NO, ReportView.this);
+        int rc = manager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, "File exists. Overwrite?", Action2.yesNo(), ReportView.this);
         if (rc!=0) {
           return;
         }
@@ -514,7 +514,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       try {
         writer = new FileWriter(file);
       } catch (IOException ex) {
-        manager.getWindowManager().openDialog(null,title,WindowManager.ERROR_MESSAGE,"Error while saving to\n"+file.getAbsolutePath(),WindowManager.ACTIONS_OK,ReportView.this);
+        manager.getWindowManager().openDialog(null,title,WindowManager.ERROR_MESSAGE,"Error while saving to\n"+file.getAbsolutePath(),Action2.okOnly(),ReportView.this);
         return;
       }
   

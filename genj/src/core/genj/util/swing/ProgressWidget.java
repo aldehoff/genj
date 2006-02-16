@@ -114,7 +114,7 @@ public class ProgressWidget extends JPanel {
     timer.stop();
     
     // cancel trackable if still running
-    trackable.cancel();
+    trackable.cancelTrackable();
     
     // continue
     super.removeNotify();

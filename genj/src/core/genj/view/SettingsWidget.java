@@ -19,8 +19,8 @@
  */
 package genj.view;
 
-import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
@@ -115,7 +115,7 @@ import javax.swing.border.TitledBorder;
   /**
    * closes the settings
    */
-  private class ActionClose extends ActionDelegate {
+  private class ActionClose extends Action2 {
     private ActionClose() {
       setText(txtResources, "view.close");
     }
@@ -127,7 +127,7 @@ import javax.swing.border.TitledBorder;
   /**
    * Applies the changes currently being done
    */
-  private class ActionApply extends ActionDelegate {
+  private class ActionApply extends Action2 {
     protected ActionApply() { 
       setText(txtResources, "view.apply"); 
       setEnabled(false);
@@ -140,7 +140,7 @@ import javax.swing.border.TitledBorder;
   /**
    * Resets any change being done
    */
-  private class ActionReset extends ActionDelegate {
+  private class ActionReset extends Action2 {
     protected ActionReset() { 
       setText(txtResources, "view.reset"); 
       setEnabled(false);

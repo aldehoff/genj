@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.6 $ $Author: nmeier $ $Date: 2005-04-04 19:39:50 $
+ * $Revision: 1.7 $ $Author: nmeier $ $Date: 2006-02-16 23:26:16 $
  */
 package genj.chart;
 
@@ -182,7 +182,7 @@ public class Chart extends JPanel {
       renderer = new BarRenderer();
     }
     
-    // TODO parameterize colors
+    // TODO Charts - colors are hardcoded atm
     renderer.setSeriesPaint(0, Color.BLUE);
     renderer.setSeriesPaint(1, Color.RED);
     

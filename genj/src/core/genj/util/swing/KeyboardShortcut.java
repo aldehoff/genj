@@ -3,7 +3,6 @@
  */
 package genj.util.swing;
 
-import genj.util.ActionDelegate;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -25,26 +24,26 @@ public class KeyboardShortcut extends AbstractAction {
   private KeyStroke keystroke;
   
   /** action */
-  private ActionDelegate action;
+  private Action2 action;
   
   /**
    * Constructor
    */
-  public KeyboardShortcut(int key, int mod, ActionDelegate action) throws IllegalArgumentException {
+  public KeyboardShortcut(int key, int mod, Action2 action) throws IllegalArgumentException {
     this( KeyStroke.getKeyStroke(key, mod), action );
   }
   
   /**
    * Constructor
    */
-  public KeyboardShortcut(String code, ActionDelegate action) throws IllegalArgumentException {
+  public KeyboardShortcut(String code, Action2 action) throws IllegalArgumentException {
     this( KeyStroke.getKeyStroke(code), action);
   }
   
   /**
    * Constructor
    */
-  public KeyboardShortcut(KeyStroke keystroke, ActionDelegate action) throws IllegalArgumentException {
+  public KeyboardShortcut(KeyStroke keystroke, Action2 action) throws IllegalArgumentException {
     if (keystroke==null) 
       throw new IllegalArgumentException("illegal keystroke code");
     this.keystroke = keystroke;

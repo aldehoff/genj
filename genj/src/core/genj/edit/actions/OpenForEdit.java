@@ -22,14 +22,14 @@ package genj.edit.actions;
 import genj.edit.EditView;
 import genj.edit.EditViewFactory;
 import genj.edit.Images;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 import genj.view.Context;
 import genj.view.ViewManager;
 
 /**
  * ActionEdit - edit an entity
  */
-public class OpenForEdit extends ActionDelegate {
+public class OpenForEdit extends Action2 {
   /** the context to edit */
   private Context context;
   /** the view manager */
@@ -44,7 +44,7 @@ public class OpenForEdit extends ActionDelegate {
     setText(AbstractChange.resources.getString("edit"));
   }
   /**
-   * @see genj.util.ActionDelegate#execute()
+   * @see genj.util.swing.Action2#execute()
    */
   protected void execute() {
 

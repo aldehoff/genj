@@ -157,7 +157,7 @@ public class GedcomWriter implements Trackable {
   /**
    * Thread-safe cancel of writeGedcom()
    */
-  public void cancel() {
+  public void cancelTrackable() {
     cancel = true;
   }
 

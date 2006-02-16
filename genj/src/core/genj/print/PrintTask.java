@@ -19,11 +19,11 @@
  */
 package genj.print;
 
-import genj.util.ActionDelegate;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.Trackable;
 import genj.util.WordBuffer;
+import genj.util.swing.Action2;
 import genj.util.swing.ProgressWidget;
 import genj.util.swing.UnitGraphics;
 import genj.window.WindowManager;
@@ -56,12 +56,13 @@ import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
+import javax.swing.Action;
 import javax.swing.JComponent;
 
 /**
  * Our own task for printing
  */
-/* package */class PrintTask extends ActionDelegate implements Printable, Trackable {
+/* package */class PrintTask extends Action2 implements Printable, Trackable {
 
   /** our flavor */
   /*package*/ final static DocFlavor FLAVOR = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
@@ -112,7 +113,7 @@ import javax.swing.JComponent;
     registry = setRegistry;
 
     // setup async
-    setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
+    setAsync(Action2.ASYNC_SAME_INSTANCE);
     
     // restore last service
     PrintService service = registry.get(getDefaultService());
@@ -357,7 +358,7 @@ import javax.swing.JComponent;
   }
   
   /**
-   * @see genj.util.ActionDelegate#preExecute()
+   * @see genj.util.swing.Action2#preExecute()
    */
   protected boolean preExecute() {
 
@@ -365,7 +366,10 @@ import javax.swing.JComponent;
     PrintWidget widget = new PrintWidget(this, manager.resources);
 
     // prepare actions
-    String[] actions = { manager.resources.getString("print"), WindowManager.TXT_CANCEL };
+    Action[] actions = { 
+        new Action2(manager.resources, "print"),
+        Action2.cancel() 
+    };
 
     // show it in dialog
     int choice = manager.getWindowManager().openDialog("print", title, WindowManager.QUESTION_MESSAGE, widget, actions, owner);
@@ -383,14 +387,14 @@ import javax.swing.JComponent;
       attributes.add(new Destination(new File(file).toURI()));
     
     // setup progress dlg
-    progress = manager.getWindowManager().openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), WindowManager.ACTIONS_CANCEL, owner);
+    progress = manager.getWindowManager().openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), Action2.cancelOnly(), owner);
 
     // continue
     return true;
   }
 
   /**
-   * @see genj.util.ActionDelegate#execute()
+   * @see genj.util.swing.Action2#execute()
    */
   protected void execute() {
     try {
@@ -401,7 +405,7 @@ import javax.swing.JComponent;
   }
 
   /**
-   * @see genj.util.ActionDelegate#postExecute(boolean)
+   * @see genj.util.swing.Action2#postExecute(boolean)
    */
   protected void postExecute(boolean preExecuteResult) {
     // close progress
@@ -413,9 +417,9 @@ import javax.swing.JComponent;
   }
 
   /**
-   * @see genj.util.Trackable#cancel()
+   * @see genj.util.Trackable#cancelTrackable()
    */
-  public void cancel() {
+  public void cancelTrackable() {
     cancel(true);
   }
 

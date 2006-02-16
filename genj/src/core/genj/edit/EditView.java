@@ -26,9 +26,9 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
@@ -258,7 +258,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
           new JLabel(resources.getString("confirm.keep.changes")),
           auto
         },
-        WindowManager.ACTIONS_YES_NO, 
+        Action2.yesNo(), 
         this
     );
     
@@ -436,7 +436,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   /**
    * Action - toggle
    */
-  private class Sticky extends ActionDelegate {
+  private class Sticky extends Action2 {
     /** constructor */
     protected Sticky() {
       super.setImage(Images.imgStickOff);
@@ -451,7 +451,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   /**
    * Action - back
    */
-  private class Back extends ActionDelegate {
+  private class Back extends Action2 {
     private boolean ignorePush = false;
     private Stack stack = new Stack();
     /** constructor */
@@ -489,7 +489,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   /**
    * Action - advanced or basic
    */
-  private class Mode extends ActionDelegate {
+  private class Mode extends Action2 {
     private boolean advanced = false;
     private Mode() {
       setImage(Images.imgView);

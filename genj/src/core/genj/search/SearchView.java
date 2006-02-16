@@ -27,10 +27,10 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
-import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
@@ -330,7 +330,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
   /**
    * Action - select predefined paths
    */
-  private class ActionPath extends ActionDelegate {
+  private class ActionPath extends Action2 {
     
     private TagPath tagPath;
     
@@ -345,7 +345,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     }
     
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       choicePath.setText(tagPath.toString());
@@ -359,7 +359,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
    *   {2} (selection)
    *   {3} after selection
    */
-  private class ActionPattern extends ActionDelegate {
+  private class ActionPattern extends Action2 {
     /** pattern */
     private String pattern;
     /**
@@ -375,7 +375,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
       pattern = pat;
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       // analyze what we've got
@@ -413,7 +413,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
   /**
    * Action - trigger search
    */
-  private class ActionSearch extends ActionDelegate {
+  private class ActionSearch extends Action2 {
     /** tag path */
     private TagPath tagPath = null;
     /** count of hits found */
@@ -445,7 +445,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
         matcher = getMatcher(value, checkRegExp.isSelected());
         tagPath = path.length()>0 ? new TagPath(path) : null;
       } catch (IllegalArgumentException e) {
-        manager.getWindowManager().openDialog(null,value,WindowManager.ERROR_MESSAGE,e.getMessage(),WindowManager.ACTIONS_OK,SearchView.this);
+        manager.getWindowManager().openDialog(null,value,WindowManager.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(),SearchView.this);
         return false;
       }
       // remember
@@ -470,10 +470,10 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     }
     
     /**
-     * @see genj.util.ActionDelegate#handleThrowable(java.lang.String, java.lang.Throwable)
+     * @see genj.util.swing.Action2#handleThrowable(java.lang.String, java.lang.Throwable)
      */
     protected void handleThrowable(String phase, Throwable t) {
-      manager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,t.getMessage() ,WindowManager.ACTIONS_OK,SearchView.this);
+      manager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,t.getMessage() ,Action2.okOnly(),SearchView.this);
     }
 
     /**
@@ -563,7 +563,7 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
   /**
    * Action - stop search
    */
-  private class ActionStop extends ActionDelegate {
+  private class ActionStop extends Action2 {
     /** start */
     private ActionSearch start;
     /** constructor */

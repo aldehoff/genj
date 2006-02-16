@@ -51,8 +51,8 @@ import genj.gedcom.Relationship;
 import genj.gedcom.Submitter;
 import genj.gedcom.Relationship.XRefBy;
 import genj.io.FileAssociation;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
+import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.view.ActionProvider;
 import genj.view.Context;
@@ -73,7 +73,7 @@ import javax.swing.JComponent;
 public class EditViewFactory implements ViewFactory, ActionProvider, ContextListener {
     
   /** a noop is used for separators in returning actions */  
-  private final static ActionDelegate aNOOP = ActionDelegate.NOOP;
+  private final static Action2 aNOOP = Action2.NOOP;
   
   /**
    * @see genj.view.ViewFactory#createView(genj.gedcom.Gedcom, genj.util.Registry, java.awt.Frame)
@@ -187,7 +187,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     if (entity instanceof Submitter) createActions(result, (Submitter)entity, manager);
     
     // separator
-    result.add(ActionDelegate.NOOP);
+    result.add(Action2.NOOP);
 
     // Check what xrefs can be added
     MetaProperty[] subs = entity.getNestedMetaProperties(0);
@@ -206,13 +206,13 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     }
 
     // add delete
-    result.add(ActionDelegate.NOOP);
+    result.add(Action2.NOOP);
     result.add(new DelEntity(entity, manager));
     
     // add an "edit in EditView"
     EditView[] edits = EditView.getInstances(entity.getGedcom());
     if (edits.length==0) {
-      result.add(ActionDelegate.NOOP);
+      result.add(Action2.NOOP);
       result.add(new OpenForEdit(new Context(entity), manager));
     }
     // done
@@ -234,7 +234,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
 
-    result.add(ActionDelegate.NOOP);
+    result.add(Action2.NOOP);
     result.add(new Undo(gedcom));
     result.add(new Redo(gedcom));
 

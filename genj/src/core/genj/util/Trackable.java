@@ -27,7 +27,7 @@ public interface Trackable {
   /**
    * Cancels operation
    */
-  public void cancel();
+  public void cancelTrackable();
 
   /**
    * Returns progress of operation in %

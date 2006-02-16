@@ -22,9 +22,9 @@ package genj.report;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.view.ActionProvider;
 import genj.view.ViewFactory;
@@ -111,7 +111,7 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
   /**
    * Run a report
    */
-  private class ActionRun extends ActionDelegate {
+  private class ActionRun extends Action2 {
     /** context */
     private Object context;
     /** gedcom */
@@ -131,7 +131,7 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
       setImage(report.getImage());
       setText(txt);
       // we're async
-      setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
+      setAsync(Action2.ASYNC_SAME_INSTANCE);
     }
     /** callback (edt sync) */
     protected boolean preExecute() {

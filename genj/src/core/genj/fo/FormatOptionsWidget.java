@@ -20,12 +20,15 @@
 package genj.fo;
 
 import genj.util.Registry;
-import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.NestedBlockLayout;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
+import javax.swing.Action;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -39,9 +42,10 @@ import javax.swing.JPanel;
  */
 public class FormatOptionsWidget extends JPanel {
   
+  private Action validAction;
   private Document doc;
   private FileChooserWidget chooseFile;
-  private ChoiceWidget chooseFormat;
+  private JComboBox chooseFormat;
   
   /**
    * Constructor
@@ -64,10 +68,18 @@ public class FormatOptionsWidget extends JPanel {
     add(chooseFile);
     
     // and the output format as well (restoring old selection)
-    chooseFormat = new ChoiceWidget(Format.getFormats(), Format.getFormat(registry.get("format", (String)null)));
+    chooseFormat = new JComboBox(Format.getFormats());
+    chooseFormat.setSelectedItem(Format.getFormat(registry.get("format", (String)null)));
     chooseFormat.setEditable(false);
     add(new JLabel("Format"));
     add(chooseFormat);
+
+    // listen to some events
+    chooseFormat.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        updateValidAction();
+      }
+    });
     
     // done for now
   }
@@ -107,10 +119,17 @@ public class FormatOptionsWidget extends JPanel {
   }
   
   /**
-   * wether the current set of options is complete 
+   * sets the action that we want this widget to manage, enabled if options
+   * are ok, disabled otherwise 
    */
-  public boolean isInputValid() {
-    return !chooseFile.isEmpty() && getFormat().supports(doc);
+  public void connect(Action validAction) {
+    this.validAction = validAction;
+    updateValidAction();
+  }
+  
+  private void updateValidAction() {
+    boolean isValid = !chooseFile.isEmpty() && getFormat().supports(doc);
+    validAction.setEnabled(isValid);
   }
 
 } //OutputWidget

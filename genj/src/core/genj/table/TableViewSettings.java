@@ -24,9 +24,9 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ListSelectionWidget;
@@ -165,7 +165,7 @@ public class TableViewSettings extends JPanel implements Settings {
   /**
    * Action - ActionChooseEntity
    */
-  private class ActionChooseEntity extends ActionDelegate {
+  private class ActionChooseEntity extends Action2 {
     /** constructor */
     /** run */
     public void execute() {
@@ -178,7 +178,7 @@ public class TableViewSettings extends JPanel implements Settings {
   /**
    * Action - ActionUpDown
    */
-  private class ActionUpDown extends ActionDelegate {
+  private class ActionUpDown extends Action2 {
     /** up or down */
     private boolean up;
     /** constructor */

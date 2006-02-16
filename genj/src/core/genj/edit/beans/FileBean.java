@@ -22,8 +22,8 @@ package genj.edit.beans;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
-import genj.util.ActionDelegate;
 import genj.util.Origin;
+import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageWidget;
 import genj.view.Context;
@@ -84,7 +84,7 @@ public class FileBean extends PropertyBean {
             String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
           }); 
         
-          viewManager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,WindowManager.ACTIONS_OK, FileBean.this);
+          viewManager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,Action2.okOnly(), FileBean.this);
         }
 
         // done
@@ -210,7 +210,7 @@ public class FileBean extends PropertyBean {
   /**
    * Action - zoom
    */
-  private class ActionZoom extends ActionDelegate {
+  private class ActionZoom extends Action2 {
     /** the level of zoom */
     private int zoom;
     /**
@@ -221,7 +221,7 @@ public class FileBean extends PropertyBean {
       setText(zoom==0?"1:1":zoom+"%");
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       preview.setZoom(zoom/100F);

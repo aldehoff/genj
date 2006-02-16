@@ -23,7 +23,6 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
-import genj.util.ActionDelegate;
 import genj.util.ChangeSupport;
 import genj.util.WordBuffer;
 import genj.window.WindowManager;
@@ -33,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
@@ -285,7 +285,7 @@ public class DateWidget extends JPanel {
   /**
    * Action to switch calendar
    */
-  private class SwitchCalendar extends ActionDelegate {
+  private class SwitchCalendar extends Action2 {
     /** the calendar to switch to */
     private Calendar newCalendar;
     /**
@@ -296,7 +296,7 @@ public class DateWidget extends JPanel {
       setImage(newCalendar.getImage());
     }
     /**
-     * @see genj.util.ActionDelegate#getText()
+     * @see genj.util.swing.Action2#getText()
      */
     public String getText() {
       WordBuffer result = new WordBuffer();
@@ -311,7 +311,7 @@ public class DateWidget extends JPanel {
       return result.toString();
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       PointInTime pit = DateWidget.this.getValue();
@@ -319,7 +319,8 @@ public class DateWidget extends JPanel {
         try {
           pit.set(newCalendar);
         } catch (GedcomException e) {
-          int rc = manager.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, WindowManager.ERROR_MESSAGE, e.getMessage(), new String[]{ WindowManager.TXT_OK, Calendar.TXT_CALENDAR_RESET }, DateWidget.this);
+          Action[] actions = { Action2.ok(),  new Action2(Calendar.TXT_CALENDAR_RESET) };
+          int rc = manager.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, WindowManager.ERROR_MESSAGE, e.getMessage(), actions, DateWidget.this);
           if (rc==0) 
             return;
           pit = new PointInTime(newCalendar);

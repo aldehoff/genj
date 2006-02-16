@@ -28,8 +28,8 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.util.ActionDelegate;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.window.WindowManager;
 
@@ -223,13 +223,13 @@ public class BlueprintEditor extends JSplitPane {
 
   /**
    * Insert a property   */
-  private class ActionInsert extends ActionDelegate {
+  private class ActionInsert extends Action2 {
     /** constructor */
     private ActionInsert() {
       super.setText(resources.getString("prop.insert"));
       super.setTip(resources.getString("prop.insert.tip"));
     }
-    /** @see genj.util.ActionDelegate#execute() */
+    /** @see genj.util.swing.Action2#execute() */
     protected void execute() {
       // only if gedcom is valid
       if (gedcom==null) return;
@@ -238,7 +238,7 @@ public class BlueprintEditor extends JSplitPane {
       TagPath[] paths = Grammar.getAllPaths(blueprint.getTag(), Property.class);
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
-      int option =  windowManager.openDialog(null,resources.getString("prop.insert.tip"),WindowManager.QUESTION_MESSAGE,tree,WindowManager.ACTIONS_OK_CANCEL,BlueprintEditor.this);        
+      int option =  windowManager.openDialog(null,resources.getString("prop.insert.tip"),WindowManager.QUESTION_MESSAGE,tree,Action2.okCancel(),BlueprintEditor.this);        
       // .. OK?
       if (option!=0) return;
       // add those properties

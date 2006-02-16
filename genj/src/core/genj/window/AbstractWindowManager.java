@@ -19,8 +19,8 @@
  */
 package genj.window;
 
-import genj.util.ActionDelegate;
 import genj.util.Registry;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextAreaWidget;
 import genj.util.swing.TextFieldWidget;
@@ -31,11 +31,15 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuBar;
@@ -67,20 +71,13 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, javax.swing.JComponent, java.lang.String)
    */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, Object action) {
+  public String openFrame(String key, String title, ImageIcon image, JComponent content, final Action action) {
     // key is necessary
     if (key==null) 
       key = getTemporaryKey();
     // create option
-    final String close = key;
     JPanel south = new JPanel();
-    new ButtonHelper().setContainer(south).create(
-      new ActionDelegate() {
-        protected void execute() {
-          close(close);
-        }
-      }.setText(action.toString())
-    );
+    new ButtonHelper().setContainer(south).create(action).addActionListener(new Close(key));
     // create new content with one option
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(BorderLayout.CENTER, content);
@@ -117,7 +114,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title,  int messageType, String txt, Object[] actions, Component owner) {
+  public int openDialog(String key, String title,  int messageType, String txt, Action[] actions, Component owner) {
     
     // create a textpane for the txt
     TextAreaWidget text = new TextAreaWidget("", 2, 10);
@@ -138,7 +135,7 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
-  public int openDialog(String key, String title,  int messageType, JComponent[] content, Object[] actions, Component owner) {
+  public int openDialog(String key, String title,  int messageType, JComponent[] content, Action[] actions, Component owner) {
     // assemble content into Box (don't use Box here because
     // Box extends Container in pre JDK 1.4)
     JPanel box = new JPanel();
@@ -162,7 +159,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     JLabel lb = new JLabel(txt);
     
     // delegate
-    int rc = openDialog(key, title, messageType, new JComponent[]{ lb, tf}, ACTIONS_OK_CANCEL, owner);
+    int rc = openDialog(key, title, messageType, new JComponent[]{ lb, tf}, Action2.okCancel(), owner);
     
     // analyze
     return rc==0?tf.getText().trim():null;
@@ -171,10 +168,10 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * dialog core routine
    */
-  public final int openDialog(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner) {
+  public final int openDialog(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner) {
     // check options - default to OK
     if (actions==null) 
-      actions = ACTIONS_OK;
+      actions = Action2.okOnly();
     // key is necessary
     if (key==null) 
       key = getTemporaryKey();
@@ -193,9 +190,9 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
    */
-  public final String openNonModalDialog(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner) {
+  public final String openNonModalDialog(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner) {
     // check options - none ok
-    if (actions==null) actions = new String[0];
+    if (actions==null) actions = new Action[0];
     // key is necessary
     if (key==null) 
       key = getTemporaryKey();
@@ -214,49 +211,8 @@ public abstract class AbstractWindowManager implements WindowManager {
   /**
    * Implementation for core frame handling
    */
-  protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, Object[] actions, Component owner, Rectangle bounds, boolean modal);
+  protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner, Rectangle bounds, boolean modal);
 
-  /**
-   * Helper for assembling dialog content
-   */
-  protected JOptionPane assembleDialogContent(int messageType, JComponent content, Object[] actions) {
-
-    // wrap content in a JPanel - the OptionPaneUI has some code that
-    // depends on this to stretch it :(
-    JPanel wrapper = new JPanel(new BorderLayout());
-    wrapper.add(BorderLayout.CENTER, content);
-    
-    // create the glorious option pane
-    JOptionPane pane  = new JOptionPane(wrapper, messageType, JOptionPane.DEFAULT_OPTION, null, actions) {
-      public void doLayout() {
-        // let super do its thing
-        super.doLayout();
-        // check minimum size
-        Container container = getTopLevelAncestor();
-        Dimension minimumSize = container.getMinimumSize();
-        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        minimumSize.width = Math.min(screen.width/2, minimumSize.width);
-        minimumSize.height = Math.min(screen.height/2, minimumSize.height);
-        Dimension size        = container.getSize();
-        if (size.width < minimumSize.width || size.height < minimumSize.height) {
-          Dimension newSize = new Dimension(Math.max(minimumSize.width,  size.width),
-                                            Math.max(minimumSize.height, size.height));
-          container.setSize(newSize);
-        }
-        // checked
-      }
-    };
-    if (actions!=null&&actions.length>0) 
-      pane.setInitialValue(actions[0]);
-    
-    // find and associate actions with their respective buttons (kinda like a hack)
-    for (int i = 0; i < actions.length; i++) 
-      if (actions[i] instanceof Action) ((Action)actions[i]).findMeIn(pane);
-
-    // done
-    return pane;
-  }
-  
   /**
    * Clip bounds
    */
@@ -337,5 +293,85 @@ public abstract class AbstractWindowManager implements WindowManager {
     
     // done
   }
+  
+  /**
+   * An action listener that closes windows
+    */
+  private class Close implements ActionListener {
+    
+    private String key;
+    
+    private Close(String key) {
+      this.key = key;
+    }
+    public void actionPerformed(ActionEvent e) {
+      close(key);
+    }
+  } //Close
+  
+  /**
+   * A patched up JOptionPane
+   */
+  protected class Content extends JOptionPane {
+    
+    /** constructor */
+    protected Content(int messageType, JComponent content, Action[] actions) {
+      super(new JLabel(),messageType, JOptionPane.DEFAULT_OPTION, null, new String[0] );
+      
+      // wrap content in a JPanel - the OptionPaneUI has some code that
+      // depends on this to stretch it :(
+      JPanel wrapper = new JPanel(new BorderLayout());
+      wrapper.add(BorderLayout.CENTER, content);
+      setMessage(wrapper);
+
+      // create our action buttons
+      Option[] options = new Option[actions.length];
+      for (int i=0;i<actions.length;i++)
+        options[i] = new Option(actions[i]);
+      setOptions(options);
+      
+      // set defalut?
+      if (options.length>0) 
+        setInitialValue(options[0]);
+      
+      // done
+    }
+
+    /** patch up layout - don't allow too small */
+    public void doLayout() {
+      // let super do its thing
+      super.doLayout();
+      // check minimum size
+      Container container = getTopLevelAncestor();
+      Dimension minimumSize = container.getMinimumSize();
+      Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+      minimumSize.width = Math.min(screen.width/2, minimumSize.width);
+      minimumSize.height = Math.min(screen.height/2, minimumSize.height);
+      Dimension size        = container.getSize();
+      if (size.width < minimumSize.width || size.height < minimumSize.height) {
+        Dimension newSize = new Dimension(Math.max(minimumSize.width,  size.width),
+                                          Math.max(minimumSize.height, size.height));
+        container.setSize(newSize);
+      }
+      // checked
+    }
+    
+    /** an option in our option-pane */
+    private class Option extends JButton implements ActionListener {
+      
+      /** constructor */
+      private Option(Action action) {
+        super(action);
+        addActionListener(this);
+      }
+      
+      /** trigger */
+      public void actionPerformed(ActionEvent e) {
+        setValue(getAction());
+      }
+      
+    } //Action2Button
+    
+  } // Content 
   
 } //AbstractWindowManager

@@ -31,8 +31,8 @@ import genj.gedcom.PropertySimpleValue;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
@@ -43,7 +43,6 @@ import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
-import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -98,7 +97,7 @@ import javax.swing.event.ChangeListener;
   private EditView view;
 
   /** actions */
-  private ActionDelegate ok = new OK(), cancel = new Cancel();
+  private Action2 ok = new OK(), cancel = new Cancel();
   
   /** current panels */
   private BeanPanel beanPanel;
@@ -417,11 +416,11 @@ import javax.swing.event.ChangeListener;
   /**
    * A ok action
    */
-  private class OK extends ActionDelegate {
+  private class OK extends Action2 {
 
     /** constructor */
     private OK() {
-      setText(WindowManager.TXT_OK);
+      setText(Action2.TXT_OK);
     }
 
     /** cancel current proxy */
@@ -452,11 +451,11 @@ import javax.swing.event.ChangeListener;
   /**
    * A cancel action
    */
-  private class Cancel extends ActionDelegate {
+  private class Cancel extends Action2 {
 
     /** constructor */
     private Cancel() {
-      setText(WindowManager.TXT_CANCEL);
+      setText(Action2.TXT_CANCEL);
     }
 
     /** cancel current proxy */
@@ -782,7 +781,7 @@ import javax.swing.event.ChangeListener;
    }
     
     /** An action for adding 'new tabs' */
-    private class ActionAdd extends ActionDelegate {
+    private class ActionAdd extends Action2 {
       
       private MetaProperty meta;
       
@@ -831,7 +830,7 @@ import javax.swing.event.ChangeListener;
     /**
      * A remove tab action
      */
-    private class ActionDelete extends ActionDelegate implements MouseListener  {
+    private class ActionDelete extends Action2 implements MouseListener  {
       int tabIndex = -1;
       private ActionDelete() {
         setText("Remove");

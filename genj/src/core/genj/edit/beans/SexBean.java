@@ -21,7 +21,7 @@ package genj.edit.beans;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 
 import javax.swing.AbstractButton;
@@ -96,7 +96,7 @@ public class SexBean extends PropertyBean {
   /**
    * Gender change action
    */
-  private class Gender extends ActionDelegate {
+  private class Gender extends Action2 {
     int sex;
     private Gender(int sex) {
       this.sex = sex;

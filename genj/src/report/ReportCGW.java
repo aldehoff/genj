@@ -10,7 +10,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyPlace;
 import genj.report.Report;
-import genj.window.WindowManager;
+import genj.util.swing.Action2;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -71,7 +71,7 @@ public class ReportCGW extends Report {
     private void start(Gedcom gedcom, Collection indis) {
 
 	// Get a directory to write to
-	File dir = getDirectoryFromUser(translate("target.dir"), WindowManager.TXT_OK);
+	File dir = getDirectoryFromUser(translate("target.dir"), Action2.TXT_OK);
 	if (dir==null)
 	    return;
 

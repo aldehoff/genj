@@ -22,14 +22,14 @@ package genj.edit.actions;
 import genj.gedcom.Gedcom;
 import genj.gedcom.PropertyFile;
 import genj.io.FileAssociation;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 
 import java.io.File;
 
 /**
  * External action 
  */
-public class RunExternal extends ActionDelegate {
+public class RunExternal extends Action2 {
   
   /** the wrapped association */
   private FileAssociation association;
@@ -57,7 +57,7 @@ public class RunExternal extends ActionDelegate {
   }
   
   /**
-   * @see genj.util.ActionDelegate#execute()
+   * @see genj.util.swing.Action2#execute()
    */
   protected void execute() {
     if (file!=null) association.execute(file);

@@ -23,8 +23,8 @@ import genj.edit.actions.Redo;
 import genj.edit.actions.Undo;
 import genj.gedcom.Gedcom;
 import genj.print.Printer;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
@@ -226,7 +226,7 @@ import javax.swing.SwingConstants;
   /**
    * Action - close view
    */
-  private class ActionClose extends ActionDelegate {
+  private class ActionClose extends Action2 {
     /** constructor */
     protected ActionClose() {
       super.setImage(Images.imgClose);
@@ -240,7 +240,7 @@ import javax.swing.SwingConstants;
   /**
    * Action - print view
    */
-  private class ActionPrint extends ActionDelegate {
+  private class ActionPrint extends Action2 {
     /** constructor */
     protected ActionPrint() {
       super.setImage(Images.imgPrint).setTip(ViewManager.resources, "view.print.tip");
@@ -259,7 +259,7 @@ import javax.swing.SwingConstants;
   /**
    * Action - open the settings of a view
    */
-  private class ActionOpenSettings extends ActionDelegate {
+  private class ActionOpenSettings extends Action2 {
     /** constructor */
     protected ActionOpenSettings() {
       super.setImage(Images.imgSettings).setTip(ViewManager.resources, "view.settings.tip");

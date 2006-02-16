@@ -19,14 +19,13 @@
  */
 package genj.util.swing;
 
-import genj.util.ActionDelegate;
-
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
@@ -62,7 +61,7 @@ public class ButtonHelper {
   /**
    * Creates a toggle button
    */
-  public AbstractButton create(ActionDelegate action, ImageIcon toggle, boolean state) {
+  public AbstractButton create(Action action, ImageIcon toggle, boolean state) {
     
     JToggleButton result = (JToggleButton)create(action, JToggleButton.class);
     result.setSelectedIcon(toggle);
@@ -73,18 +72,18 @@ public class ButtonHelper {
   /**
    * Creates the button
    */
-  public AbstractButton create(ActionDelegate action) {
+  public AbstractButton create(Action action) {
     return create(action, buttonType);
   }
       
   /**
    * Creates the button
    */
-  private AbstractButton create(final ActionDelegate action, Class type) {
+  private AbstractButton create(final Action action, Class type) {
     
     // no mnemonic in JToolbars please
     if (container instanceof JToolBar)
-      action.setMnemonic('\0');
+      action.putValue(Action.MNEMONIC_KEY, null);
     
     // create the button and hook it up to action
     final AbstractButton result = createButton(type);

@@ -423,7 +423,6 @@ public class ImageSniffer {
 
   /**
    * Read one byte 
-   * @param in TODO
    */
   private int read(InputStream in) throws IOException {
     read++;
@@ -432,7 +431,6 @@ public class ImageSniffer {
   
   /**
    * Skip bytes
-   * @param in TODO
    */
   private void skip(int num, InputStream in) throws IOException {
     read += num;

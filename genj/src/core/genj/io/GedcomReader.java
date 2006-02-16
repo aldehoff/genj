@@ -176,7 +176,7 @@ public class GedcomReader implements Trackable {
   /**
    * Thread-safe cancel of read()
    */
-  public void cancel() {
+  public void cancelTrackable() {
 
     // Stop it as soon as possible
     cancel=true;

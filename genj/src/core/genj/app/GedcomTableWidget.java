@@ -23,9 +23,9 @@ import genj.gedcom.Change;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.SortableTableHeader;
 import genj.view.Context;
 import genj.view.ContextProvider;
@@ -60,12 +60,12 @@ import javax.swing.table.TableColumnModel;
   private Model model;
   
   /** actions */
-  private ActionDelegate save, close;
+  private Action2 save, close;
   
   /**
    * Constructor
    */
-  public GedcomTableWidget(ViewManager mgr, Registry reGistry, ActionDelegate save, ActionDelegate close) {
+  public GedcomTableWidget(ViewManager mgr, Registry reGistry, Action2 save, Action2 close) {
 
     this.save = save;
     this.close = close;

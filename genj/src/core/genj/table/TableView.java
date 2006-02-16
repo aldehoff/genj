@@ -28,9 +28,9 @@ import genj.gedcom.Options;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
 import genj.view.ContextListener;
@@ -273,7 +273,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   /**
    * Action - flip view to entity type
    */
-  private class ActionChangeType extends ActionDelegate {
+  private class ActionChangeType extends Action2 {
     /** the mode this action triggers */
     private Mode mode;
     /** constructor */

@@ -30,9 +30,9 @@ import genj.io.Filter;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
@@ -929,7 +929,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * Action for opening overview
    */
-  private class ActionOverview extends ActionDelegate {
+  private class ActionOverview extends Action2 {
     /**
      * Constructor
      */
@@ -937,7 +937,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       super.setImage(Images.imgOverview);
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       overview.setVisible(!overview.isVisible());
@@ -947,7 +947,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * ActionTree
    */
-  private class ActionRoot extends ActionDelegate {
+  private class ActionRoot extends Action2 {
     /** entity */
     private Entity root;
     /**
@@ -960,7 +960,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     }
     
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       setRoot(root);
@@ -969,7 +969,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
 
   /**
    * Action Orientation change   */
-  private class ActionOrientation extends ActionDelegate {
+  private class ActionOrientation extends Action2 {
     /**
      * Constructor     */
     private ActionOrientation() {
@@ -977,7 +977,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       super.setTip("orientation.tip");
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       model.setVertical(!model.isVertical());
@@ -988,7 +988,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * Action Families n Spouses
    */
-  private class ActionFamsAndSpouses extends ActionDelegate {
+  private class ActionFamsAndSpouses extends Action2 {
     /**
      * Constructor
      */
@@ -997,7 +997,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       super.setTip("families.tip");
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       model.setFamilies(!model.isFamilies());
@@ -1008,7 +1008,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * Action FoldSymbols on/off
    */
-  private class ActionFoldSymbols extends ActionDelegate {
+  private class ActionFoldSymbols extends Action2 {
     /**
      * Constructor
      */
@@ -1017,7 +1017,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       super.setTip("foldsymbols.tip");
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       model.setFoldSymbols(!model.isFoldSymbols());
@@ -1028,7 +1028,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * Action - choose a root through dialog
    */
-  private class ActionChooseRoot extends ActionDelegate {
+  private class ActionChooseRoot extends Action2 {
 
     /** constructor */
     private ActionChooseRoot() {
@@ -1040,7 +1040,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       
       // let the user choose an individual
       SelectEntityWidget select = new SelectEntityWidget(model.getGedcom(), Gedcom.INDI, null);
-      int rc = manager.getWindowManager().openDialog("select.root", getText(), WindowManager.QUESTION_MESSAGE, select, WindowManager.ACTIONS_OK_CANCEL, TreeView.this);
+      int rc = manager.getWindowManager().openDialog("select.root", getText(), WindowManager.QUESTION_MESSAGE, select, Action2.okCancel(), TreeView.this);
       if (rc==0) 
         setRoot(select.getSelection());
       
@@ -1052,7 +1052,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * Action - bookmark something
    */
-  private class ActionBookmark extends ActionDelegate {
+  private class ActionBookmark extends Action2 {
     /** the entity */
     private Entity entity;
     /** 
@@ -1069,7 +1069,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       }
     } 
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       

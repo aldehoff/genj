@@ -8,7 +8,7 @@
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.report.Report;
-import genj.window.WindowManager;
+import genj.util.swing.Action2;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,7 +25,7 @@ import java.util.LinkedList;
  * GenJ - ReportPSCirc
  * adapted from LifeLines ps-fan report
  *
- * TODO:
+ * TODO Daniel
  * - multipages split (ne pas oublier gsave grestore )
 * - intergre la fenetre de choix de fichier
  */
@@ -53,7 +53,7 @@ public class ReportLinesFan extends Report {
      */
     public void start(Indi indi) {
 	
-        File file = getFileFromUser(translate("output.file"), WindowManager.TXT_OK,true);
+        File file = getFileFromUser(translate("output.file"), Action2.TXT_OK,true);
         if (file == null)
         return ;
         

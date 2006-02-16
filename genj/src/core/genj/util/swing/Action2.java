@@ -17,7 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.util;
+package genj.util.swing;
+
+
+import genj.util.MnemonicAndText;
+import genj.util.Resources;
 
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
@@ -30,11 +34,12 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 /**
  * An Action
  */
-public abstract class ActionDelegate extends AbstractAction implements Runnable, Cloneable {
+public class Action2 extends AbstractAction implements Runnable, Cloneable {
   
   protected final static String 
     TEXT = Action.NAME,
@@ -48,7 +53,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   private final static Logger LOG = Logger.getLogger("genj.actions");
   
   /** a noop ActionDelegate */
-  public static final ActionDelegate NOOP = new ActionNOOP();
+  public static final Action2 NOOP = new ActionNOOP();
   
   /** async modes */
   public static final int 
@@ -66,10 +71,37 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /** the thread executing asynchronously */
   private Thread thread;
   private Object threadLock = new Object();
+
+  /** predefined strings */
+  public final static String
+    TXT_YES         = UIManager.getString("OptionPane.yesButtonText"),
+    TXT_NO          = UIManager.getString("OptionPane.noButtonText"),
+    TXT_OK          = UIManager.getString("OptionPane.okButtonText"),
+    TXT_CANCEL  = UIManager.getString("OptionPane.cancelButtonText");
+  
+  /** constructor */
+  public Action2() {
+  }
+  
+  /** constructor */
+  public Action2(Resources resources, String text) {
+    this(resources.getString(text));
+  }
+  
+  /** constructor */
+  public Action2(String text) {
+    putValue(javax.swing.Action.NAME, text);
+  }
+  
+  /** constructor */
+  public Action2(String text, boolean enabled) {
+    this(text);
+    setEnabled(enabled);
+  }
   
   /**
    * trigger execution - ActionListener support
-   * @see ActionDelegate#trigger()
+   * @see Action2#trigger()
    */
   public final void actionPerformed(ActionEvent e) {
     trigger();
@@ -77,7 +109,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   
   /**
    * trigger execution - Runnable support
-   * @see ActionDelegate#trigger()
+   * @see Action2#trigger()
    */
   public final void run() {
     trigger();
@@ -92,7 +124,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
     // do we have to create a new instance?
     if (async==ASYNC_NEW_INSTANCE) {
       try {
-        ActionDelegate ad = (ActionDelegate)clone();
+        Action2 ad = (Action2)clone();
         ad.setAsync(ASYNC_SAME_INSTANCE);
         return ad.trigger();
       } catch (Throwable t) {
@@ -196,7 +228,9 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
    * Implementor's functionality 
    * (called asynchronously to EDT if !ASYNC_NOT_APPLICABLE)
    */
-  protected abstract void execute();
+  protected void execute() {
+    //noop
+  }
   
   /**
    * Trigger a syncExecute callback
@@ -217,7 +251,6 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   
   /**
    * Implementor's functionality (always sync to EDT)
-   * @param preExecuteResult TODO
    */
   protected void postExecute(boolean preExecuteResult) {
     // Default NOOP
@@ -237,7 +270,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * accessor - target component
    */
-  public ActionDelegate setTarget(JComponent t) {
+  public Action2 setTarget(JComponent t) {
     target = t;
     return this;
   }
@@ -250,7 +283,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   }
   
   /** accessor - accelerator */
-  public ActionDelegate setAccelerator(String s) {
+  public Action2 setAccelerator(String s) {
     accelerator = KeyStroke.getKeyStroke(s);
     return this;
   }
@@ -258,7 +291,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * accessor - image 
    */
-  public ActionDelegate setImage(Icon icon) {
+  public Action2 setImage(Icon icon) {
     super.putValue(ICON, icon);
     return this;
   }
@@ -266,7 +299,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * accessor - text
    */
-  public ActionDelegate restoreText() {
+  public Action2 restoreText() {
     setText((String)super.getValue(OLDTEXT));
     return this;
   }
@@ -274,14 +307,14 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * accessor - text
    */
-  public ActionDelegate setText(String txt) {
+  public Action2 setText(String txt) {
     return setText(null, txt);
   }
     
   /**
    * accessor - text
    */
-  public ActionDelegate setText(Resources resources, String txt) {
+  public Action2 setText(Resources resources, String txt) {
     
     // translate?
     if (resources!=null)
@@ -308,7 +341,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * acessor - mnemonic
    */
-  public ActionDelegate setMnemonic(char c) {
+  public Action2 setMnemonic(char c) {
     super.putValue(MNEMONIC, c==0 ? null : new Integer(c));
     return this;
   }
@@ -323,14 +356,14 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * accessor - tip
    */
-  public ActionDelegate setTip(String tip) {
+  public Action2 setTip(String tip) {
     return setTip(null, tip);
   }
   
   /**
    * accessor - tip
    */
-  public ActionDelegate setTip(Resources resources, String tip) {
+  public Action2 setTip(Resources resources, String tip) {
     if (resources!=null) tip = resources.getString(tip);
     super.putValue(TIP, tip);
     return this;
@@ -355,6 +388,51 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
     return accelerator;
   }
 
+  /** convenience factory */
+  public static Action yes() {
+    return new Action2(Action2.TXT_YES);
+  }
+
+  /** convenience factory */
+  public static Action no() {
+    return new Action2(Action2.TXT_NO);
+  }
+
+  /** convenience factory */
+  public static Action ok() {
+    return new Action2(Action2.TXT_OK);
+  }
+
+  /** convenience factory */
+  public static Action cancel() {
+    return new Action2(Action2.TXT_CANCEL);
+  }
+
+  /** convenience factory */
+  public static Action[] yesNo() {
+    return new Action[]{ yes(), no() };
+  }
+  
+  /** convenience factory */
+  public static Action[] yesNoCancel() {
+    return new Action[]{ yes(), no(), cancel() };
+  }
+  
+  /** convenience factory */
+  public static Action[] okCancel() {
+    return new Action[]{ ok(), cancel() };
+  }
+  
+  /** convenience factory */
+  public static Action[] okOnly() {
+    return new Action[]{ ok() };
+  }
+  
+  /** convenience factory */
+  public static Action[] cancelOnly() {
+    return new Action[]{ cancel() };
+  }
+  
   /**
    * Async Execution
    */
@@ -428,9 +506,9 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * Action - noop
    */
-  private static class ActionNOOP extends ActionDelegate {
+  private static class ActionNOOP extends Action2 {
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       // ignored

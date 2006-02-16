@@ -30,9 +30,9 @@ import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
 
+import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -111,7 +112,7 @@ import javax.swing.event.TreeSelectionListener;
   private EditView editView;
 
   /** actions */
-  private ActionDelegate    
+  private Action2    
     ok   = new OK(), 
     cancel = new Cancel();
 
@@ -141,13 +142,13 @@ import javax.swing.event.TreeSelectionListener;
           context.addAction(new Cut(selection));
           context.addAction(new Copy(selection));
           context.addAction(new Paste(selection));
-          context.addAction(ActionDelegate.NOOP);
+          context.addAction(Action2.NOOP);
           context.addAction(new Add(selection));
           try {
             context.addAction(new Propagate(selection));
           } catch (IllegalArgumentException i) {
           }
-          context.addAction(ActionDelegate.NOOP);
+          context.addAction(Action2.NOOP);
         }
         // done
         return context;
@@ -231,7 +232,7 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * Action - propagate properties
    */
-  private class Propagate extends ActionDelegate {
+  private class Propagate extends Action2 {
     /** state */
     private Property property;
     /** constructor */
@@ -272,7 +273,7 @@ import javax.swing.event.TreeSelectionListener;
       select.setSelection(gedcom.getEntity(registry.get("select."+entity.getTag(), (String)null)));
 
       // show it
-      boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, WindowManager.ACTIONS_OK_CANCEL, AdvancedEditor.this);
+      boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, Action2.okCancel(), AdvancedEditor.this);
       if (cancel)
         return;
 
@@ -357,7 +358,7 @@ import javax.swing.event.TreeSelectionListener;
           selection.getTag(), selection.getEntity().toString(), veto 
         });
         // prepare actions
-        String[] actions = { resources.getString("action.cut"), WindowManager.TXT_CANCEL };
+        Action[] actions = { new Action2(resources.getString("action.cut")), Action2.cancel() };
         // ask the user
         int rc = editView.getWindowManager().openDialog("cut.warning", resources.getString("action.cut"), WindowManager.WARNING_MESSAGE, msg, actions, AdvancedEditor.this );
         if (rc!=0)
@@ -381,7 +382,7 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * Action - copy
    */
-  private class Copy extends ActionDelegate {
+  private class Copy extends Action2 {
   	
     /** selection */
     protected Property selection; 
@@ -418,7 +419,7 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * Action - paste
    */
-  private class Paste extends ActionDelegate {
+  private class Paste extends Action2 {
   	
     /** selection */
     private Property parent; 
@@ -466,7 +467,7 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * Action - add
    */
-  private class Add extends ActionDelegate {
+  private class Add extends Action2 {
     /** parent */
     private Property parent; 
     /** constructor */
@@ -487,7 +488,7 @@ import javax.swing.event.TreeSelectionListener;
       ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
       JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
   
-      int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },WindowManager.ACTIONS_OK_CANCEL, AdvancedEditor.this); 
+      int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(), AdvancedEditor.this); 
       
       // .. not OK?
       if (option!=0)
@@ -499,7 +500,7 @@ import javax.swing.event.TreeSelectionListener;
       // .. calculate chosen tags
       String[] tags = choose.getSelectedTags();
       if (tags.length==0)  {
-        editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),WindowManager.ACTIONS_OK, AdvancedEditor.this);
+        editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),Action2.okOnly(), AdvancedEditor.this);
         return;
       }
   
@@ -530,11 +531,11 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * A ok action
    */
-  private class OK extends ActionDelegate {
+  private class OK extends Action2 {
   
     /** constructor */
     private OK() {
-      setText(WindowManager.TXT_OK);
+      setText(Action2.TXT_OK);
     }
   
     /** cancel current proxy */
@@ -561,11 +562,11 @@ import javax.swing.event.TreeSelectionListener;
   /**
    * A cancel action
    */
-  private class Cancel extends ActionDelegate {
+  private class Cancel extends Action2 {
   
     /** constructor */
     private Cancel() {
-      setText(WindowManager.TXT_CANCEL);
+      setText(Action2.TXT_CANCEL);
     }
   
     /** cancel current proxy */

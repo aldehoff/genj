@@ -30,7 +30,7 @@ import java.util.TreeMap;
  *   - Texte
  *   - Texte, colonnes tronquees
  *   - HTML
- * TODO: 
+ * TODO Daniel 
  * - read gedcom header place format to set placeJurisdictionIndex
  *   in a more comprehensive way.
  * - Tune .property file

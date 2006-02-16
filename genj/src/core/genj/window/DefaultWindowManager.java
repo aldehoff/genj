@@ -19,8 +19,8 @@
  */
 package genj.window;
 
-import genj.util.ActionDelegate;
 import genj.util.Registry;
+import genj.util.swing.Action2;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -36,6 +36,7 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -59,7 +60,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
    */
   public DefaultWindowManager(Registry registry, ImageIcon defaultDialogImage) {
     super(registry);
-    defaultFrame.setIconImage(defaultDialogImage.getImage());
+    if (defaultDialogImage!=null) defaultFrame.setIconImage(defaultDialogImage.getImage());
   }
   
   /**
@@ -124,10 +125,10 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * Dialog implementation
    */
-  protected Object openDialogImpl(final String key, String title,  int messageType, JComponent content, Object[] actions, Component owner, Rectangle bounds, final boolean isModal) {
+  protected Object openDialogImpl(final String key, String title,  int messageType, JComponent content, Action[] actions, Component owner, Rectangle bounds, final boolean isModal) {
 
     // create an option pane
-    JOptionPane optionPane = assembleDialogContent(messageType, content, actions);
+    JOptionPane optionPane = new Content(messageType, content, actions);
     
     // let it create the dialog
     final JDialog dlg = optionPane.createDialog(owner != null ? owner : defaultFrame, title);
@@ -249,7 +250,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * An named action closing a dialog
    */
-  private class Close extends ActionDelegate {
+  private class Close extends Action2 {
     private JDialog dlg;
     private JOptionPane op;
     private Close(JDialog dlg, JOptionPane op, String action) {

@@ -23,9 +23,9 @@ import genj.option.Option;
 import genj.option.OptionListener;
 import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
-import genj.util.ActionDelegate;
 import genj.util.Dimension2d;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
@@ -231,7 +231,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
   /**
    * Action : printer settings
    */
-  private class Settings extends ActionDelegate {
+  private class Settings extends Action2 {
 
     /** constructor */
     private Settings() {

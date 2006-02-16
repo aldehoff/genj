@@ -22,7 +22,7 @@ package genj.view;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -97,7 +97,7 @@ public class Context {
   /**
    * Add an action
    */
-  public Context addAction(ActionDelegate action) {
+  public Context addAction(Action2 action) {
     actions.add(action);
     return this;
   }

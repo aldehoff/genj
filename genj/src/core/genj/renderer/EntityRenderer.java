@@ -618,7 +618,7 @@ public class EntityRenderer {
    */
   private class PropertyView extends MyView {
     
-    // FIXME got to do some caching of size&alignment
+    // FIXME Performance - can we improve property views through some caching of size&alignment?
     
     /** our preference when looking at the property */
     private int preference;

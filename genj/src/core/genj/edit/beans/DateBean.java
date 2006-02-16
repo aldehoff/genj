@@ -21,7 +21,7 @@ package genj.edit.beans;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
@@ -162,7 +162,7 @@ public class DateBean extends PropertyBean {
   /**
    * Action for format change
    */
-  private class ChangeFormat extends ActionDelegate {
+  private class ChangeFormat extends Action2 {
     
     private PropertyDate.Format format;
     

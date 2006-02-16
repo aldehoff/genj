@@ -6,8 +6,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 /**
- * TODO voir avec ie (page break)
- * TODO inclure dans la liste les sources, repo, ... fictifs pour faire un tri
+ * TODO Daniel: voir avec ie (page break)
+ * TODO Daniel: inclure dans la liste les sources, repo, ... fictifs pour faire un tri
  */
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;

@@ -23,12 +23,12 @@ import genj.edit.Images;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 
 /**
  * Undo on Gedcom
  */  
-public class Redo extends ActionDelegate implements GedcomListener {
+public class Redo extends Action2 implements GedcomListener {
   
   /** the gedcom */
   private Gedcom gedcom;

@@ -3,7 +3,6 @@
  */
 package genj.util.swing;
 
-import genj.util.ActionDelegate;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -25,7 +24,7 @@ public class LinkWidget extends JLabel {
   private boolean hover = false;
 
   /** action */
-  private ActionDelegate action;
+  private Action2 action;
   
   /** normal color */
   private Color normal;
@@ -33,7 +32,7 @@ public class LinkWidget extends JLabel {
   /**
    * Constructor
    */
-  public LinkWidget(ActionDelegate action) {
+  public LinkWidget(Action2 action) {
     this(action.getText(), action.getImage());
     this.action = action;
   }

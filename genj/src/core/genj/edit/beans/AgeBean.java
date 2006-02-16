@@ -22,7 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.time.Delta;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
@@ -81,7 +81,7 @@ public class AgeBean extends PropertyBean {
   /**
    * Action Update age
    */
-  private class ActionUpdate extends ActionDelegate {
+  private class ActionUpdate extends Action2 {
     /**
      * Constructor
      */
@@ -90,7 +90,7 @@ public class AgeBean extends PropertyBean {
       setTip(resources.getString("age.tip"));
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       PropertyAge age = (PropertyAge)property;

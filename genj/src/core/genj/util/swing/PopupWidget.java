@@ -19,7 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.util.ActionDelegate;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -246,7 +245,7 @@ public class PopupWidget extends JButton {
         
         List as = getActions();
         if (!as.isEmpty())
-          ((ActionDelegate)as.get(0)).trigger();
+          ((Action2)as.get(0)).trigger();
       }
     }
   } //Model

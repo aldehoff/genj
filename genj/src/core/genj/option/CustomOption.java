@@ -17,11 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.5 $ $Author: nmeier $ $Date: 2006-02-16 07:23:09 $
+ * $Revision: 1.6 $ $Author: nmeier $ $Date: 2006-02-16 23:26:11 $
  */
 package genj.option;
 
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 
 import javax.swing.JComponent;
@@ -51,7 +51,7 @@ public abstract class CustomOption extends Option {
   /** 
    * Custom UI is a button only
    */
-  private class UI extends ActionDelegate implements OptionUI {
+  private class UI extends Action2 implements OptionUI {
     
     /** callback - text representation = none */
     public String getTextRepresentation() {

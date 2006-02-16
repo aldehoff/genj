@@ -25,10 +25,6 @@
  *
  *   FMMF  FMM   FMMM      MMMM  MMM   MMMF
  *
- * TODO: get links out of the GEDCOM and put them in.
- *
- * __b: xx-mm-yyyy d: dd-mm-yyyy__
- * 1234567890123456789012345678901
  */
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;

@@ -20,9 +20,9 @@
 package genj.applet;
 
 import genj.gedcom.Gedcom;
-import genj.util.ActionDelegate;
 import genj.util.GridBagHelper;
 import genj.util.WordBuffer;
+import genj.util.swing.Action2;
 import genj.util.swing.LinkWidget;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
@@ -108,7 +108,7 @@ public class ControlCenter extends JPanel {
   /**
    * Action to open view
    */
-  private class ActionView extends ActionDelegate {
+  private class ActionView extends Action2 {
     /** factory */
     private ViewFactory factory;
     /**
@@ -120,7 +120,7 @@ public class ControlCenter extends JPanel {
       setImage(vfactory.getImage());
     }
     /**
-     * @see genj.util.ActionDelegate#execute()
+     * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       viewManager.openView(factory, gedcom);

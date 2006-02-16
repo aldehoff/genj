@@ -19,7 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.util.ActionDelegate;
 import genj.util.MnemonicAndText;
 
 import java.awt.Component;
@@ -192,8 +191,8 @@ public class MenuHelper  {
         continue;
       }
       // an action?
-      if (o instanceof ActionDelegate) {
-        createItem((ActionDelegate)o);
+      if (o instanceof Action2) {
+        createItem((Action2)o);
         continue;
       }
       // n/a
@@ -205,10 +204,10 @@ public class MenuHelper  {
   /**
    * Creates an item
    */
-  public JMenuItem createItem(ActionDelegate action) {
+  public JMenuItem createItem(Action2 action) {
     
     // a NOOP results in separator
-    if (action == ActionDelegate.NOOP) {
+    if (action == Action2.NOOP) {
       createSeparator(false);
       return null;
     }
