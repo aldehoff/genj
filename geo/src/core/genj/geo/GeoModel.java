@@ -22,7 +22,7 @@ package genj.geo;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -241,14 +241,14 @@ import com.vividsolutions.jts.geom.Coordinate;
   /**
    * A resolver for our locations
    */
-  private class Resolver extends ActionDelegate {
+  private class Resolver extends Action2 {
     
     private ArrayList todo;
     private Throwable err = null;
 
     /** constructor */
     private Resolver(Collection todo) {
-      setAsync(ActionDelegate.ASYNC_SAME_INSTANCE);
+      setAsync(Action2.ASYNC_SAME_INSTANCE);
       getThread().setDaemon(true);
       // make a private copy of todo
       this.todo = new ArrayList(todo);

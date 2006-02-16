@@ -22,7 +22,7 @@ package genj.geo;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.util.ActionDelegate;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.view.Context;
 import genj.view.ContextProvider;
@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -160,7 +161,7 @@ import swingx.tree.AbstractTreeModel;
   /**
    * An action for (unf)folding
    */
-  private class UnFold extends ActionDelegate {
+  private class UnFold extends Action2 {
     private boolean fold;
     private UnFold(boolean fold) {
       setText( fold ? "+" : "-");
@@ -177,7 +178,7 @@ import swingx.tree.AbstractTreeModel;
   /**
    * An action for updating a location
    */
-  private class Update extends ActionDelegate implements TreeSelectionListener {
+  private class Update extends Action2 implements TreeSelectionListener {
     
     private Update() {
       setText(TXT_CHANGE);
@@ -189,7 +190,7 @@ import swingx.tree.AbstractTreeModel;
     }
     protected void execute() {
       // show query widget to user
-      Object[] actions = new Object[]{ GeoView.RESOURCES.getString("query.remember"), WindowManager.TXT_CANCEL };
+      Action[] actions = new Action[]{ new Action2(GeoView.RESOURCES, "query.remember"), Action2.cancel()  };
       GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
       final QueryWidget query = new QueryWidget(location, view);
       //GeoLocation selection = query.getSelectedLocation();

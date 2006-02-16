@@ -20,9 +20,9 @@
 package genj.geo;
 
 import genj.gedcom.Gedcom;
-import genj.util.ActionDelegate;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
@@ -215,7 +215,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     // add zoom
     ButtonHelper bh = new ButtonHelper();
-    bh.setContainer(bar).setResources(RESOURCES);
+    bh.setContainer(bar);
     bh.create(new ZoomExtent());
     bh.setButtonType(JToggleButton.class).create(new ZoomOnOff());
     
@@ -312,12 +312,12 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Action - Zoom to Map Extent
    */
-  private class ZoomExtent extends ActionDelegate {
+  private class ZoomExtent extends Action2 {
 
     /** constructor */
     private ZoomExtent() {
       setImage(IMG_ZOOM_EXTENT);
-      setTip("toolbar.extent");
+      setTip(RESOURCES, "toolbar.extent");
     }
     /** zoom to all */
     public void execute() {
@@ -332,11 +332,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Action - Zoom On Off
    */
-  private class ZoomOnOff extends ActionDelegate {
+  private class ZoomOnOff extends Action2 {
     /** constructor */
     private ZoomOnOff() {
       setImage(IMG_ZOOM);
-      setTip("toolbar.zoom");
+      setTip(RESOURCES, "toolbar.zoom");
     }
     /** choose current map */
     protected void execute() {
@@ -349,7 +349,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Action - choose a map
    */
-  private class ChooseMap extends ActionDelegate {
+  private class ChooseMap extends Action2 {
     private GeoMap map;
     /** constructor */
     private ChooseMap(GeoMap map) {
@@ -647,7 +647,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Action - locate GeoLocations through service
    */
-  private class ActionLocate extends ActionDelegate {
+  private class ActionLocate extends Action2 {
     private ActionLocate() {
       setImage(STATUS2IMG[GeoModel.ALL_MATCHED]);
     }
