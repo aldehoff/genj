@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.102 $ $Author: nmeier $ $Date: 2006-01-25 03:37:08 $
+ * $Revision: 1.103 $ $Author: nmeier $ $Date: 2006-02-16 13:42:20 $
  */
 package genj.gedcom;
 
@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 /**
  * The object-representation of a Gedom file
  */
-public class Gedcom {
+public class Gedcom implements Comparable {
   
   /*package*/ final static Logger LOG = Logger.getLogger("genj.gedcom");
   
@@ -945,5 +945,13 @@ public class Gedcom {
     // done
     return cachedCollator;
   }
+  
+  /**
+   * can be compared by name
+   */
+  public int compareTo(Object other) {
+    Gedcom that = (Gedcom)other;
+    return getName().compareTo(that.getName());
+  };
   
 } //Gedcom
