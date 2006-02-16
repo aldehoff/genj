@@ -17,10 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.12 $ $Author: nmeier $ $Date: 2005-06-18 04:18:35 $
+ * $Revision: 1.13 $ $Author: nmeier $ $Date: 2006-02-16 18:48:59 $
  */
 package genj.report;
 
+import genj.gedcom.PrivacyPolicy;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
 
@@ -63,6 +64,15 @@ public class Options extends OptionProvider {
     
     /** child of symbol in reports */
     private String childOfSymbol = "/";
+    
+    /** tag marking private */
+    public  String privateTag = "_PRIV";
+    
+    /** whether information pertaining to deceased people is public */
+    public boolean deceasedIsPublic = true;
+    
+    /** number of years an event is private */
+    public int yearsEventsArePrivate = 0; 
     
     public int getIndentPerLevel() {
         return indentPerLevel;
@@ -166,6 +176,13 @@ public class Options extends OptionProvider {
             childOfSymbol = set;
         else
             childOfSymbol = "/";
+    }
+    
+    /**
+     * accessor - PrivacyPolicy configured by user
+     */
+    public PrivacyPolicy getPrivacyPolicy() {
+      return new PrivacyPolicy(deceasedIsPublic, yearsEventsArePrivate, privateTag);    
     }
     
     /**

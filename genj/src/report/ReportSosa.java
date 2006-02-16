@@ -96,10 +96,7 @@ public class ReportSosa extends Report {
     public boolean reportDateOfResi = true;
 
     // Privacy
-    public int privateYears = 100;
     public int privateGen = 0;
-    public boolean deadIsPublic=false;
-    public String privateTag="_PRIV";
 
     /**
      * Main for argument individual
@@ -144,7 +141,7 @@ public class ReportSosa extends Report {
 						     (reportFormat != ONE_LINE)));
 	}
     
-    PrivacyPolicy policy  = new PrivacyPolicy(deadIsPublic, privateYears, privateTag);
+    PrivacyPolicy policy  = OPTIONS.getPrivacyPolicy();
 
 	nbColumns = 2;
 	if (reportPlaceOfBirth ||  reportDateOfBirth) nbColumns++;

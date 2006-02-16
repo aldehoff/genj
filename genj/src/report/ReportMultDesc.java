@@ -67,11 +67,7 @@ public class ReportMultDesc extends Report {
     public boolean reportMailingAddress = true;
 
     // Privacy
-    public int privateYears = 0;
     public int publicGen = 0;
-    public boolean deadIsPublic=true;
-    public String privateTag="_PRIV";
-
 
     /**
      * Main for argument individual
@@ -114,7 +110,7 @@ public class ReportMultDesc extends Report {
 	    output = new FormatterCsv(this);
 	}
 
-    PrivacyPolicy policy = new PrivacyPolicy(deadIsPublic, privateYears, privateTag);
+    PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
 
 	nbColumns = 2;
 	if (reportPlaceOfBirth ||  reportDateOfBirth) nbColumns++;
