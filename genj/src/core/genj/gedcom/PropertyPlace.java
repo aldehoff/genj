@@ -196,41 +196,33 @@ public class PropertyPlace extends PropertyChoiceValue {
   }
   
   /**
-   * Accessor - first non-empty jurisdiction from skip starting point 
-   * @return jurisdiction of zero+ length
-   */
-  public String getFirstAvailableJurisdiction(int skip) {
-      if (skip<0) throw new IllegalArgumentException("negative skip value");
-    DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR);
-    String result = jurisdictions.get(skip);
-    if (result==null)
-      return "";
-    for (int i=skip+1; result.length()==0 && jurisdictions.get(i)!=null ;i++) 
-      result = jurisdictions.get(i);
-    return result;
-  }
-
-  /**
-   * Accessor - first non-empty jurisdiction
+   * Accessor - first non-empty jurisdiction  
    * @return jurisdiction of zero+ length
    */
   public String getFirstAvailableJurisdiction() {
-    return getFirstAvailableJurisdiction(0);
+    DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR);
+    String result = "";
+    for (int i=0; result.length()==0 ;i++) {
+      result = jurisdictions.get(i, true);
+      if (result==null)
+        return "";
+    }
+    return result;
   }
-  
+
   /**
    * Accessor - jurisdiction of given level
    * @return jurisdiction of zero+ length or null if n/a
    */
   public String getJurisdiction(int hierarchyLevel) {
-    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(hierarchyLevel);
+    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(hierarchyLevel, true);
   }
   
   /**
    * Accessor - jurisdictions that is the city
    */
   public String getCity() {
-    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(getCityIndex());
+    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(getCityIndex(), true);
   }
   
   /**
@@ -253,7 +245,7 @@ public class PropertyPlace extends PropertyChoiceValue {
       Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
       DirectAccessTokenizer hs = new DirectAccessTokenizer(hierarchy, ",");
       for (int index=0; hs.get(index)!=null ;index++) {
-        if (cityKeys.contains(hs.get(index).toLowerCase())) 
+        if (cityKeys.contains(hs.get(index, true).toLowerCase())) 
           return index;
       }
     }
