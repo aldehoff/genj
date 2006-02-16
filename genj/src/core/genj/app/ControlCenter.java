@@ -195,6 +195,8 @@ public class ControlCenter extends JPanel {
     ActionDelegate 
       actionNew = new ActionNew(),
       actionOpen = new ActionOpen();
+    actionNew.setText(null);
+    actionOpen.setText(null);
     
     toolbarActions.add(actionNew);
     toolbarActions.add(actionOpen);
@@ -209,6 +211,7 @@ public class ControlCenter extends JPanel {
     ViewFactory[] factories = viewManager.getFactories();
     for (int i = 0; i < factories.length; i++) {
       ActionView action = new ActionView(-1, factories[i]);
+      action.setText(null);
       bh.create(action);
       toolbarActions.add(action);
       gedcomActions.add(action);
@@ -218,17 +221,9 @@ public class ControlCenter extends JPanel {
     result.add(Box.createGlue());
 
     // setup a menu for enabling buttons' short titles
-    MenuHelper mh = new MenuHelper();
-    mh.createPopup(result);
-    mh.createItem(new ActionToggleText());
-    
-    /*
-    buttons[i] = bh.create(action);
-    maxButtonWidth = Math.max(buttons[i].getPreferredSize().width, maxButtonWidth);
-    for (int i=0;i<buttons.length;i++)
-      buttons[i].setPreferredSize(new Dimension(maxButtonWidth, 10));
-
-     */
+//    MenuHelper mh = new MenuHelper();
+//    mh.createPopup(result);
+//    mh.createItem(new ActionToggleText());
     
     // done
     return result;
@@ -1113,25 +1108,25 @@ public class ControlCenter extends JPanel {
     }
   } //ActionOptions
 
-  /**
-   * Action - toggle text on buttons
-   */
-  private class ActionToggleText extends ActionDelegate {
-    /** constructor */
-    protected ActionToggleText() {
-      setText(resources, "cc.menu.tni");
-      if (!registry.get("imagesandtext", false))
-        flip();
-    }
-    /** run */
-    protected void execute() {
-      registry.put("imagesandtext", !registry.get("imagesandtext", false));
-      flip();
-    }
-    private void flip() {
-      for (int i=0;i<toolbarActions.size();i++) 
-        ((ActionDelegate)toolbarActions.get(i)).restoreText();
-    }
-  }
+//  /**
+//   * Action - toggle text on buttons
+//   */
+//  private class ActionToggleText extends ActionDelegate {
+//    /** constructor */
+//    protected ActionToggleText() {
+//      setText(resources, "cc.menu.tni");
+//      if (!registry.get("imagesandtext", false))
+//        flip();
+//    }
+//    /** run */
+//    protected void execute() {
+//      registry.put("imagesandtext", !registry.get("imagesandtext", false));
+//      flip();
+//    }
+//    private void flip() {
+//      for (int i=0;i<toolbarActions.size();i++) 
+//        ((ActionDelegate)toolbarActions.get(i)).restoreText();
+//    }
+//  }
   
 } //ControlCenter
