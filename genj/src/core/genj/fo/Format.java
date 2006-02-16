@@ -137,6 +137,13 @@ public abstract class Format {
   }
   
   /**
+   * By default all formats support all documents
+   */
+  public boolean supports(Document doc) {
+    return true;
+  }
+  
+  /**
    * Format a document
    */
   public void format(Document doc, File file) throws IOException {

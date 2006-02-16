@@ -39,16 +39,19 @@ import javax.swing.JPanel;
  */
 public class FormatOptionsWidget extends JPanel {
   
+  private Document doc;
   private FileChooserWidget chooseFile;
   private ChoiceWidget chooseFormat;
   
   /**
    * Constructor
    */
-  public FormatOptionsWidget(Registry registry) {
+  public FormatOptionsWidget(Document document, Registry registry) {
     
     setLayout(new NestedBlockLayout("<col><row><label/><file wx=\"1\"/></row><row><label/><format wx=\"1\"/></row></col>"));
 
+    doc = document;
+    
     // let user choose an output file
     chooseFile  = new FileChooserWidget();
     String file = registry.get("file", (String)null);
@@ -101,6 +104,13 @@ public class FormatOptionsWidget extends JPanel {
     }
     // add well known extension
     return new File(path+"."+format.getFileExtension());
+  }
+  
+  /**
+   * wether the current set of options is complete 
+   */
+  public boolean isInputValid() {
+    return !chooseFile.isEmpty() && getFormat().supports(doc);
   }
 
 } //OutputWidget

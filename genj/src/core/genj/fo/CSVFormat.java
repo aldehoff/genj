@@ -40,6 +40,13 @@ public class CSVFormat extends Format {
   }
 
   /**
+   * We don't support documents with csv tables inside
+   */
+  public boolean supports(Document doc) {
+    return doc.containsCSV();
+  }
+  
+  /**
    * Formatting logic 
    */
   protected void formatImpl(Document doc, OutputStream out) throws Throwable {

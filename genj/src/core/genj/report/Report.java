@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.95 $ $Author: nmeier $ $Date: 2006-02-14 03:36:32 $
+ * $Revision: 1.96 $ $Author: nmeier $ $Date: 2006-02-16 19:54:59 $
  */
 package genj.report;
 
@@ -366,7 +366,7 @@ public abstract class Report implements Cloneable {
     
     String title = "Document '"+doc.getTitle();
 
-    FormatOptionsWidget output = new FormatOptionsWidget(new Registry(registry, "fo"));
+    FormatOptionsWidget output = new FormatOptionsWidget(doc, new Registry(registry, "fo"));
     
     int rc = viewManager.getWindowManager().openDialog("reportdoc", title, WindowManager.QUESTION_MESSAGE, output, WindowManager.ACTIONS_OK_CANCEL, owner);
     
