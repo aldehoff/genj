@@ -89,21 +89,16 @@ public class PrivacyPolicy {
   private boolean isInfoOfDeceased(Property prop) {
     // contained in indi? check death-date
     Entity e = prop.getEntity();
-    if (e instanceof Indi) {
-      Property deathdate = e.getProperty(new TagPath("INDI:DEAT:DATE"));
-      if (deathdate!=null&&deathdate.isValid())
-        return true;
-    } 
+    if (e instanceof Indi) 
+      return ((Indi)e).isDeceased();
+    
     // contained in Fam? check husband and wife
     if (e instanceof Fam) {
-      Property deathdate = e.getProperty(new TagPath("FAM:HUSB:*:INDI:DEAT:DATE"));
-      if (deathdate==null||!deathdate.isValid())
+      Indi husband = ((Fam)e).getHusband();
+      if (husband!=null&&!husband.isDeceased())
         return false;
-      deathdate = e.getProperty(new TagPath("FAM:WIFE:*:INDI:DEAT:DATE"));
-      if (deathdate==null||!deathdate.isValid())
-        return false;
-      // yes both wife and husband are deceased
-      return true;
+      Indi wife = ((Fam)e).getWife();
+      return wife!=null && wife.isDeceased();
     }
     
     // dunno

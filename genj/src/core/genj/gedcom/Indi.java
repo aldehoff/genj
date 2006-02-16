@@ -518,4 +518,12 @@ public class Indi extends Entity {
     return f!=null ? f.getWife() : null;
   }  
   
+  /**
+   * Checks whether this person is deceased
+   */
+  public boolean isDeceased() {
+    Property date = getProperty(PATH_INDIDEATDATE);
+    return date!=null&&date.isValid();
+  }
+  
 } //Indi
