@@ -60,7 +60,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -95,6 +94,7 @@ public class ControlCenter extends JPanel {
   private ViewManager viewManager;
   private PrintManager printManager;
   private List gedcomActions = new ArrayList();
+  private List toolbarActions = new ArrayList();
     
   /**
    * Constructor
@@ -182,40 +182,54 @@ public class ControlCenter extends JPanel {
    * Returns a button bar for the top
    */
   private JToolBar createToolBar() {
-
-    // create it
+    
+    // create toolbar and setup helper
     JToolBar result = new JToolBar();
-
-    // .. Buttons
     ButtonHelper bh =
       new ButtonHelper()
-        .setResources(resources)
         .setInsets(4)
         .setContainer(result)
         .setFontSize(10);
 
-    bh.create(new ActionNew());
-    bh.create(new ActionOpen());
+    // Open & New |
+    ActionDelegate 
+      actionNew = new ActionNew(),
+      actionOpen = new ActionOpen();
+    
+    toolbarActions.add(actionNew);
+    toolbarActions.add(actionOpen);
+    
+    bh.create(actionNew);
+    bh.create(actionOpen);
     
     result.addSeparator();
 
-    bh.setResources(null);
-    
+    // buttons for views
     int maxButtonWidth = 0;
     ViewFactory[] factories = viewManager.getFactories();
-    AbstractButton[] buttons  = new AbstractButton[factories.length];
     for (int i = 0; i < factories.length; i++) {
       ActionView action = new ActionView(-1, factories[i]);
+      bh.create(action);
+      toolbarActions.add(action);
       gedcomActions.add(action);
-      buttons[i] = bh.create(action);
-      maxButtonWidth = Math.max(buttons[i].getPreferredSize().width, maxButtonWidth);
     }
-    for (int i=0;i<buttons.length;i++)
-      buttons[i].setPreferredSize(new Dimension(maxButtonWidth, 10));
     
-    
+    // some glue at the end to space things out
     result.add(Box.createGlue());
 
+    // setup a menu for enabling buttons' short titles
+    MenuHelper mh = new MenuHelper();
+    mh.createPopup(result);
+    mh.createItem(new ActionToggleText());
+    
+    /*
+    buttons[i] = bh.create(action);
+    maxButtonWidth = Math.max(buttons[i].getPreferredSize().width, maxButtonWidth);
+    for (int i=0;i<buttons.length;i++)
+      buttons[i].setPreferredSize(new Dimension(maxButtonWidth, 10));
+
+     */
+    
     // done
     return result;
   }
@@ -225,12 +239,11 @@ public class ControlCenter extends JPanel {
    */
   private JMenuBar createMenuBar() {
 
-    MenuHelper mh = new MenuHelper().setResources(resources);
-
+    MenuHelper mh = new MenuHelper();
     JMenuBar result = mh.createBar();
 
     // Create Menues
-    mh.createMenu("cc.menu.file");
+    mh.createMenu(resources.getString("cc.menu.file"));
     mh.createItem(new ActionNew());
     mh.createItem(new ActionOpen());
     mh.createSeparator();
@@ -253,9 +266,8 @@ public class ControlCenter extends JPanel {
       mh.createItem(new ActionExit());
     }
 
-    mh.popMenu().createMenu("cc.menu.view");
+    mh.popMenu().createMenu(resources.getString("cc.menu.view"));
 
-    mh.setResources(null);
     ViewFactory[] factories = viewManager.getFactories();
     for (int i = 0; i < factories.length; i++) {
       ActionView action = new ActionView(i+1, factories[i]);
@@ -263,7 +275,6 @@ public class ControlCenter extends JPanel {
       mh.createItem(action);
     }
     mh.createSeparator();
-    mh.setResources(resources);
     mh.createItem(new ActionOptions());
 
     // 20060209
@@ -288,7 +299,7 @@ public class ControlCenter extends JPanel {
     if (!EnvironmentChecker.isMac())
       result.add(Box.createHorizontalGlue());
 
-    mh.popMenu().createMenu("cc.menu.help");
+    mh.popMenu().createMenu(resources.getString("cc.menu.help"));
 
     mh.createItem(new ActionHelp());
     mh.createItem(new ActionAbout());
@@ -325,7 +336,7 @@ public class ControlCenter extends JPanel {
   private class ActionAbout extends ActionDelegate {
     /** constructor */
     protected ActionAbout() {
-      setText("cc.menu.about");
+      setText(resources, "cc.menu.about");
       setImage(Images.imgAbout);
     }
     /** run */
@@ -349,7 +360,7 @@ public class ControlCenter extends JPanel {
   private class ActionHelp extends ActionDelegate {
     /** constructor */
     protected ActionHelp() {
-      setText("cc.menu.contents");
+      setText(resources, "cc.menu.contents");
       setImage(Images.imgHelp);
     }
     /** run */
@@ -374,7 +385,7 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionExit() {
       setAccelerator(ACC_EXIT);
-      setText("cc.menu.exit");
+      setText(resources, "cc.menu.exit");
       setImage(Images.imgExit);
     }
     /** run */
@@ -440,8 +451,8 @@ public class ControlCenter extends JPanel {
     /** constructor */
     ActionNew() {
       setAccelerator(ACC_NEW);
-      setText("cc.menu.new" );
-      setTip("cc.tip.create_file");
+      setText(resources, "cc.menu.new" );
+      setTip(resources, "cc.tip.create_file");
       setImage(Images.imgNew);
     }
 
@@ -502,8 +513,8 @@ public class ControlCenter extends JPanel {
     /** constructor */
     protected ActionOpen() {
       setAccelerator(ACC_OPEN); 
-      setTip("cc.tip.open_file");
-      setText("cc.menu.open");
+      setTip(resources, "cc.tip.open_file");
+      setText(resources, "cc.menu.open");
       setImage(Images.imgOpen);
       setAsync(ASYNC_NEW_INSTANCE);
     }
@@ -1102,4 +1113,25 @@ public class ControlCenter extends JPanel {
     }
   } //ActionOptions
 
+  /**
+   * Action - toggle text on buttons
+   */
+  private class ActionToggleText extends ActionDelegate {
+    /** constructor */
+    protected ActionToggleText() {
+      setText(resources, "cc.menu.tni");
+      if (!registry.get("imagesandtext", false))
+        flip();
+    }
+    /** run */
+    protected void execute() {
+      registry.put("imagesandtext", !registry.get("imagesandtext", false));
+      flip();
+    }
+    private void flip() {
+      for (int i=0;i<toolbarActions.size();i++) 
+        ((ActionDelegate)toolbarActions.get(i)).restoreText();
+    }
+  }
+  
 } //ControlCenter

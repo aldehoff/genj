@@ -183,7 +183,7 @@ import javax.swing.table.TableColumnModel;
   public void addGedcom(Gedcom gedcom) {
     model.addGedcom(gedcom);
     int row = model.getRowFor(gedcom);
-    getSelectionModel().setSelectionInterval(row-1,row-1);
+    getSelectionModel().setSelectionInterval(row,row);
   }
 
   /**

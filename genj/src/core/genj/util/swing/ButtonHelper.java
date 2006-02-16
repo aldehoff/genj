@@ -20,7 +20,6 @@
 package genj.util.swing;
 
 import genj.util.ActionDelegate;
-import genj.util.Resources;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -42,7 +41,6 @@ public class ButtonHelper {
   /** Members */
   private Class buttonType        = JButton.class;
   private Insets insets           = null;
-  private Resources resources     = null;
   private Container container     = null;
   private ButtonGroup group       = null;
   private int fontSize            = -1;
@@ -51,7 +49,6 @@ public class ButtonHelper {
   public ButtonHelper setButtonType(Class set) { buttonType=set; return this; }
   public ButtonHelper setInsets(Insets set) { insets=set; return this; }
   public ButtonHelper setInsets(int val) { insets=new Insets(val,val,val,val); return this; }
-  public ButtonHelper setResources(Resources set) { resources=set; return this; }
   public ButtonHelper setContainer(Container set) { container=set; return this; }
   public ButtonHelper setFontSize(int set) { fontSize=set; return this; }
   
@@ -84,12 +81,6 @@ public class ButtonHelper {
    * Creates the button
    */
   private AbstractButton create(final ActionDelegate action, Class type) {
-    
-    // translate text if we have to
-    if (resources!=null) {
-      action.setText(resources.getString(action.getText()));
-      action.setTip(resources.getString(action.getTip()));
-    }
     
     // no mnemonic in JToolbars please
     if (container instanceof JToolBar)
@@ -135,14 +126,4 @@ public class ButtonHelper {
     }
   }
   
-  /**
-   * Helper that takes given text and tries to use resources
-   */
-  private String string(String string) {
-    if (string==null) return "";
-    if (resources!=null) 
-      string = resources.getString(string);
-    return string;    
-  }
-
 } //ButtonHelper

@@ -21,7 +21,6 @@ package genj.util.swing;
 
 import genj.util.ActionDelegate;
 import genj.util.MnemonicAndText;
-import genj.util.Resources;
 
 import java.awt.Component;
 import java.awt.Font;
@@ -46,7 +45,6 @@ import javax.swing.JPopupMenu;
 public class MenuHelper  {
   
   private Stack menus            = new Stack();  // JMenu or JPopupMenu or JMenuBar
-  private Resources resources     = null;
   private JComponent target       = null;
 
   /** Setters */    
@@ -60,7 +58,6 @@ public class MenuHelper  {
     return this; 
   }
   public MenuHelper pushMenu(JPopupMenu popup) { menus.push(popup); return this; }
-  public MenuHelper setResources(Resources set) { resources=set; return this; }
   public MenuHelper setTarget(JComponent set) { target=set; return this; }
 
   /**
@@ -87,7 +84,6 @@ public class MenuHelper  {
     
     // no text?
     if (text!=null&&text.length()>0) {
-      text = resources!=null ? resources.getString(text) : text;  
       MnemonicAndText mat = new MnemonicAndText(text);
       result.setText(mat.getText());
       result.setMnemonic(mat.getMnemonic());
@@ -216,10 +212,6 @@ public class MenuHelper  {
       createSeparator(false);
       return null;
     }
-    
-    // patch text?
-    if (resources!=null)
-      action.setText(resources.getString(action.getText()));
     
     // create a menu item
     JMenuItem result = new JMenuItem();

@@ -367,7 +367,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
 
     // buttons for property manipulation    
     ButtonHelper bh = new ButtonHelper()
-      .setResources(resources)
       .setInsets(0)
       .setContainer(bar);
 
@@ -380,6 +379,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     // add undo/redo
     bh.create(undo);
     bh.create(redo);
+    undo.setText(null);
+    redo.setText(null);
     
     // add actions
     bar.add(contextMenu);
@@ -439,7 +440,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     /** constructor */
     protected Sticky() {
       super.setImage(Images.imgStickOff);
-      super.setTip("action.stick.tip");
+      super.setTip(resources, "action.stick.tip");
     }
     /** run */
     protected void execute() {
@@ -455,7 +456,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     private Stack stack = new Stack();
     /** constructor */
     protected Back() {
-      super.setImage(Images.imgReturn).setTip("action.return.tip");
+      super.setImage(Images.imgReturn).setTip(resources, "action.return.tip");
     }
     /** run */
     protected void execute() {
@@ -493,7 +494,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     private Mode() {
       setImage(Images.imgView);
       setEditor(new BasicEditor());
-      setTip("action.mode");
+      setTip(resources, "action.mode");
     }
     protected void execute() {
       advanced = !advanced;

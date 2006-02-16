@@ -314,9 +314,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   public void populate(JToolBar bar) {
     
     // Buttons at bottom
-    ButtonHelper bh = new ButtonHelper()
-      .setResources(RESOURCES)
-      .setContainer(bar);
+    ButtonHelper bh = new ButtonHelper().setContainer(bar);
 
     ActionStart astart = new ActionStart();
     bStart = bh.create(astart);
@@ -333,7 +331,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private class ActionReload extends ActionDelegate {
     protected ActionReload() {
       setImage(imgReload);
-      setTip("report.reload.tip");
+      setTip(RESOURCES, "report.reload.tip");
       setEnabled(!ReportLoader.getInstance().isReportsInClasspath());
     }
     protected void execute() {
@@ -357,7 +355,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     private ActionStart start;
     protected ActionStop(ActionStart start) {
       setImage(imgStop);
-      setTip("report.stop.tip");
+      setTip(RESOURCES, "report.stop.tip");
       setEnabled(false);
       this.start=start;
     }
@@ -393,7 +391,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       setAsync(ASYNC_SAME_INSTANCE);
       // show
       setImage(imgStart);
-      setTip("report.start.tip");
+      setTip(RESOURCES, "report.start.tip");
     }
     
     /**
@@ -487,7 +485,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private class ActionSave extends ActionDelegate {
     protected ActionSave() {
       setImage(imgSave);
-      setTip("report.save.tip");
+      setTip(RESOURCES, "report.save.tip");
     }
     protected void execute() {
 

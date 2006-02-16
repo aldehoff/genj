@@ -103,9 +103,7 @@ public class BlueprintList extends JSplitPane {
     scroll.setAlignmentX(0);
     left.add(scroll);
     
-    ButtonHelper bh = new ButtonHelper()
-      .setContainer(left)
-      .setResources(resources);
+    ButtonHelper bh = new ButtonHelper().setContainer(left);
     bAdd = bh.create(new Add());
     bDel = bh.create(new Del());
     
@@ -143,7 +141,7 @@ public class BlueprintList extends JSplitPane {
     /**
      * Constructor     */
     private Add() {
-      super.setText("blueprint.add");
+      super.setText(resources, "blueprint.add");
       super.setEnabled(false);
     }
     /**
@@ -192,7 +190,7 @@ public class BlueprintList extends JSplitPane {
      * Constructor
      */
     private Del() {
-      super.setText("blueprint.del");
+      super.setText(resources, "blueprint.del");
       super.setEnabled(false);
     }
     /**

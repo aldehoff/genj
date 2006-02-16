@@ -38,6 +38,7 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   
   protected final static String 
     TEXT = Action.NAME,
+    OLDTEXT = Action.NAME+".old",
     SHORT_TEXT = "shortname",
     TIP = Action.SHORT_DESCRIPTION,
     ENABLED = "enabled",
@@ -265,7 +266,29 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
   /**
    * accessor - text
    */
+  public ActionDelegate restoreText() {
+    setText((String)super.getValue(OLDTEXT));
+    return this;
+  }
+  
+  /**
+   * accessor - text
+   */
   public ActionDelegate setText(String txt) {
+    return setText(null, txt);
+  }
+    
+  /**
+   * accessor - text
+   */
+  public ActionDelegate setText(Resources resources, String txt) {
+    
+    // translate?
+    if (resources!=null)
+      txt = resources.getString(txt);
+      
+    // remember old
+    super.putValue(OLDTEXT, getText());
     
     // check txt?
     if (txt!=null&&txt.length()>0)  {
@@ -275,7 +298,10 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
         // use accelerator keys on mac and mnemonic otherwise
         setMnemonic(mat.getMnemonic());
     }
+    
+    // remember new 
     super.putValue(TEXT, txt);
+    
     return this;
   }
   
@@ -298,28 +324,36 @@ public abstract class ActionDelegate extends AbstractAction implements Runnable,
    * accessor - tip
    */
   public ActionDelegate setTip(String tip) {
+    return setTip(null, tip);
+  }
+  
+  /**
+   * accessor - tip
+   */
+  public ActionDelegate setTip(Resources resources, String tip) {
+    if (resources!=null) tip = resources.getString(tip);
     super.putValue(TIP, tip);
     return this;
   }
   
-    /**
-     * accessor - tip
+  /**
+   * accessor - tip
+   */
+  public String getTip() {
+    return (String)super.getValue(TIP);
+  }
+
+  /**
+     * accessor - image 
      */
-    public String getTip() {
-      return (String)super.getValue(TIP);
-    }
+  public Icon getImage() {
+    return (Icon)super.getValue(ICON);
+  }
 
-    /**
-       * accessor - image 
-       */
-      public Icon getImage() {
-        return (Icon)super.getValue(ICON);
-      }
-
-      /** accessor - accelerator */
-      public KeyStroke getAccelerator() {
-        return accelerator;
-      }
+  /** accessor - accelerator */
+  public KeyStroke getAccelerator() {
+    return accelerator;
+  }
 
   /**
    * Async Execution

@@ -51,6 +51,9 @@ import javax.swing.border.TitledBorder;
   /** ViewManager */
   private ViewManager viewManager;
   
+  /** resources */
+  private Resources txtResources;
+  
   /**
    * Constructor
    */
@@ -58,6 +61,7 @@ import javax.swing.border.TitledBorder;
     
     // remember
     viewManager = manager;
+    txtResources = resources;
     
     // Panel for ViewSettingsWidget
     pSettings = new JPanel(new BorderLayout());
@@ -65,9 +69,7 @@ import javax.swing.border.TitledBorder;
     // Panel for Actions
     JPanel pActions = new JPanel();
 
-    ButtonHelper bh = new ButtonHelper()
-      .setResources(resources)
-      .setContainer(pActions);
+    ButtonHelper bh = new ButtonHelper().setContainer(pActions);
     
     bh.create(apply);
     bh.create(reset);
@@ -115,7 +117,7 @@ import javax.swing.border.TitledBorder;
    */
   private class ActionClose extends ActionDelegate {
     private ActionClose() {
-      setText("view.close");
+      setText(txtResources, "view.close");
     }
     protected void execute() {
       viewManager.getWindowManager().close("settings");
@@ -127,7 +129,7 @@ import javax.swing.border.TitledBorder;
    */
   private class ActionApply extends ActionDelegate {
     protected ActionApply() { 
-      setText("view.apply"); 
+      setText(txtResources, "view.apply"); 
       setEnabled(false);
     }
     protected void execute() {
@@ -140,7 +142,7 @@ import javax.swing.border.TitledBorder;
    */
   private class ActionReset extends ActionDelegate {
     protected ActionReset() { 
-      setText("view.reset"); 
+      setText(txtResources, "view.reset"); 
       setEnabled(false);
     }
     protected void execute() {

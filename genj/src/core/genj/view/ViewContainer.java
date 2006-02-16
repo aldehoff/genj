@@ -141,9 +141,7 @@ import javax.swing.SwingConstants;
     bar.add(Box.createGlue());
 
     // add our buttons     
-    ButtonHelper bh = new ButtonHelper()
-      .setResources(ViewManager.resources)
-      .setContainer(bar);
+    ButtonHelper bh = new ButtonHelper().setContainer(bar);
 
     // .. a button for editing the View's settings
     if (SettingsWidget.hasSettings(view))
@@ -245,7 +243,7 @@ import javax.swing.SwingConstants;
   private class ActionPrint extends ActionDelegate {
     /** constructor */
     protected ActionPrint() {
-      super.setImage(Images.imgPrint).setTip("view.print.tip");
+      super.setImage(Images.imgPrint).setTip(ViewManager.resources, "view.print.tip");
     }
     /** run */
     protected void execute() {
@@ -264,7 +262,7 @@ import javax.swing.SwingConstants;
   private class ActionOpenSettings extends ActionDelegate {
     /** constructor */
     protected ActionOpenSettings() {
-      super.setImage(Images.imgSettings).setTip("view.settings.tip");
+      super.setImage(Images.imgSettings).setTip(ViewManager.resources, "view.settings.tip");
     }
     /** run */
     protected void execute() {

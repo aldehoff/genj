@@ -104,7 +104,7 @@ public class BlueprintEditor extends JSplitPane {
       JScrollPane scroll = new JScrollPane(html);
       scroll.setBorder(BorderFactory.createTitledBorder("HTML"));
       // buttons
-      ButtonHelper helper = new ButtonHelper().setResources(resources);
+      ButtonHelper helper = new ButtonHelper();
       bInsert = helper.create(new ActionInsert());
     edit.setMinimumSize(new Dimension(0,0));
     edit.add(scroll, BorderLayout.CENTER);
@@ -226,8 +226,8 @@ public class BlueprintEditor extends JSplitPane {
   private class ActionInsert extends ActionDelegate {
     /** constructor */
     private ActionInsert() {
-      super.setText("prop.insert");
-      super.setTip("prop.insert.tip");
+      super.setText(resources.getString("prop.insert"));
+      super.setTip(resources.getString("prop.insert.tip"));
     }
     /** @see genj.util.ActionDelegate#execute() */
     protected void execute() {

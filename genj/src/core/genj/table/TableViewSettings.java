@@ -95,7 +95,7 @@ public class TableViewSettings extends JPanel implements Settings {
     };
 
     // Up/Down of ordering
-    ButtonHelper bh = new ButtonHelper().setResources(resources).setInsets(0);
+    ButtonHelper bh = new ButtonHelper().setInsets(0);
     AbstractButton bUp   = bh.create(new ActionUpDown(true));
     AbstractButton bDown = bh.create(new ActionUpDown(false));
     
@@ -184,8 +184,8 @@ public class TableViewSettings extends JPanel implements Settings {
     /** constructor */
     protected ActionUpDown(boolean up) {
       this.up=up;
-      if (up) setText("info.up");
-      else setText("info.down");
+      if (up) setText(resources, "info.up");
+      else setText(resources, "info.down");
     }
     /** run */
     public void execute() {
