@@ -36,7 +36,7 @@ public class CSVFormat extends Format {
    * Constructor
    */
   public CSVFormat() {
-    super("CSV", "txt", true);
+    super("CSV", "csv", true);
   }
 
   /**
