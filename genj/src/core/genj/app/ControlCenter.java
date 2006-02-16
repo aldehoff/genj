@@ -397,7 +397,7 @@ public class ControlCenter extends JPanel {
           // yes - close'n save it
           if (rc==0) {
             removeGedcom(gedcom);
-            new ActionSave(gedcom) {
+            new ActionSave(gedcom, ControlCenter.this) {
               // after the save
               protected void postExecute(boolean preExecuteResult) {
                 // super first
@@ -810,14 +810,17 @@ public class ControlCenter extends JPanel {
     /** 
      * Constructor for saving gedcom file without interaction
      */
-    protected ActionSave(Gedcom gedcom) {
+    protected ActionSave(Gedcom gedcom, JComponent target) {
       this(false, true);
+      setTarget(target);
       this.gedcom = gedcom;
     }
     /** 
      * Constructor
      */
     protected ActionSave(boolean ask, boolean enabled) {
+      // setup default target
+      setTarget(ControlCenter.this);
       // setup accelerator
       if (!ask) setAccelerator(ACC_SAVE);
       // remember
@@ -918,7 +921,7 @@ public class ControlCenter extends JPanel {
         WindowManager.INFORMATION_MESSAGE,
         new ProgressWidget(gedWriter, getThread()),
         WindowManager.ACTIONS_CANCEL,
-        ControlCenter.this
+        getTarget()
       );
 
       // .. continue (async)
@@ -984,6 +987,9 @@ public class ControlCenter extends JPanel {
           open.trigger();
         }
       }
+      
+      // ok, this is a hack :)
+      tGedcoms.repaint();
 
       // .. done
     }
@@ -1022,7 +1028,7 @@ public class ControlCenter extends JPanel {
           // Remove it so the user won't change it while being saved
           removeGedcom(gedcom);
           // and save
-          new ActionSave(gedcom) {
+          new ActionSave(gedcom, ControlCenter.this) {
             protected void postExecute(boolean preExecuteResult) {
               // super first
               super.postExecute(preExecuteResult);
@@ -1068,7 +1074,7 @@ public class ControlCenter extends JPanel {
       // create new View
       JComponent view = viewManager.openView(factory, gedcom);
       // install some accelerators
-      ActionSave save = new ActionSave(gedcom);
+      ActionSave save = new ActionSave(gedcom, view);
       view.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(ACC_SAVE), save);
       view.getActionMap().put(save, save);
     }

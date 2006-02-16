@@ -19,6 +19,7 @@
  */
 package genj.app;
 
+import genj.gedcom.Change;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
@@ -33,7 +34,6 @@ import genj.view.ViewManager;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JTable;
@@ -152,20 +152,6 @@ import javax.swing.table.TableColumnModel;
   }
   
   /**
-   * Remove gedcom by name
-   */
-  public boolean removesGedcom(String name) {
-    for (int i=0; i<model.getRowCount(); i++) {
-      Gedcom gedcom = model.getGedcom(i);
-      if (gedcom.getName().equals(name)) {
-        model.removeGedcom(gedcom);
-        return true;
-      }
-    }
-    return false;
-  }
-  
-  /**
    * Check for gedcom with name
    */
   public Gedcom getGedcom(String name) {
@@ -196,8 +182,8 @@ import javax.swing.table.TableColumnModel;
    */
   public void addGedcom(Gedcom gedcom) {
     model.addGedcom(gedcom);
-    List gs = model.getAllGedcoms();
-    getSelectionModel().setSelectionInterval(gs.size()-1,gs.size()-1);
+    int row = model.getRowFor(gedcom);
+    getSelectionModel().setSelectionInterval(row-1,row-1);
   }
 
   /**
@@ -243,11 +229,7 @@ import javax.swing.table.TableColumnModel;
      */
     public void addGedcom(Gedcom gedcom) {
       gedcoms.add(gedcom);
-      Collections.sort(gedcoms, new Comparator() {
-        public int compare(Object o1, Object o2) {
-          return ((Gedcom)o1).getName().compareTo(((Gedcom)o1).getName());
-        }
-      });
+      Collections.sort(gedcoms);
       gedcom.addGedcomListener(this);
       fireTableDataChanged();
     }
