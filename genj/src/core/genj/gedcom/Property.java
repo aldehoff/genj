@@ -985,31 +985,42 @@ public abstract class Property implements Comparable {
   
     Matcher matcher = FORMAT_PATTERN.matcher(format);
     StringBuffer result = new StringBuffer(format.length()+20);
-    boolean matched = false;
+    int masked = 0;
+    int matches = 0;
     int cursor = 0;
     while (matcher.find()) {
       result.append(format.substring(cursor, matcher.start()));
-      if (formatAppend(matcher.group(1), format.charAt(matcher.start(2)), matcher.group(3), policy, result))
-        matched = true;
+      // analyze next {...$x...}
+      String prefix = matcher.group(1);
+      char marker = format.charAt(matcher.start(2));
+      String suffix = matcher.group(3);
+      // translate marker into a value
+      String value = formatMarker(marker, policy);
+      // did we get the mask back, had already masked out and the prefix is empty? => skip this one then
+      if (value==Options.getInstance().maskPrivate && masked++>0 && prefix.trim().length()==0) 
+        value="";
+      // append if value is good
+      if (value.length()>0) {
+        result.append(prefix);
+        result.append(value);
+        result.append(suffix);
+        matches++;
+      }
       // continue
       cursor = matcher.end();
     }
+    
     // append the rest
     result.append(format.substring(cursor));
     
-    // nothing matched at all?
-    if (!matched)
-      return "";
-    
-    // trim it and done
-    return result.toString().trim();
+    // got anything at all?
+    return matches>0 ? result.toString().trim() : "";
   }
   
-  private boolean formatAppend(String prefix, char marker, String suffix, PrivacyPolicy policy, StringBuffer out) {
+  private String formatMarker(char marker, PrivacyPolicy policy) {
 
     Property prop = null;
     String value = null;
-    boolean countsAsMatched = true;
     
     switch (marker) {
       case 'D' : {
@@ -1043,11 +1054,9 @@ public abstract class Property implements Comparable {
         break;
       case 't':
         value = getTag();
-        countsAsMatched = false;
         break;
       case 'T':
         value = Gedcom.getName(getTag());
-        countsAsMatched = false;
         break;
     }
     
@@ -1059,17 +1068,8 @@ public abstract class Property implements Comparable {
     if (policy!=null&&prop!=null&&policy.isPrivate(prop))
       value = Options.getInstance().maskPrivate;
     
-    // no result?
-    if (value.length()==0)
-      return false;
-    
-    // append
-    out.append(prefix);
-    out.append(value);
-    out.append(suffix);
-    
     // done
-    return countsAsMatched;
+    return value;
   }
 
 } //Property

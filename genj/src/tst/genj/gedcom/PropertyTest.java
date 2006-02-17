@@ -132,7 +132,7 @@ public class PropertyTest extends TestCase {
    */
   public void testPrivacyPolicy() {     
     
-    String mask = Options.getInstance().maskPrivate;
+    Options.getInstance().maskPrivate = "xxx";
 
     Indi indi = createIndi();
     
@@ -140,22 +140,34 @@ public class PropertyTest extends TestCase {
     Property date = birt.addProperty("DATE", "25 May 1970");
     Property plac = birt.addProperty("PLAC", "Rendsburg");
     
+    // normal: have date and place all public -> get all
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
+    
+    // normal: have all with non applying policy -> get all back
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 10, "_SECRET")));
-    assertEquals(mask+mask, birt.format("{$D}{$P}", new PrivacyPolicy(false, Integer.MAX_VALUE, "_SECRET")));
     
+    // case of privacy: the  info is there but event is too recent -> getting masks back
+    assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, "_SECRET")));
+
+    // special case: making date secret -> date is masked
     date.addProperty("_SECRET", "");
-    assertEquals(mask+" Rendsburg", birt.format("{$D}{ $P}", new PrivacyPolicy(false, 0, "_SECRET")));
-    
+    assertEquals("born xxx Rendsburg", birt.format("born{ $D}{ $P}", new PrivacyPolicy(false, 0, "_SECRET")));
+
+    // broader case: the event is marked private -> with public policy all's there with sensitive policy everything collapses
     birt.addProperty("_SECRET", "");
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
-    assertEquals(mask+mask, birt.format("{$D}{$P}", new PrivacyPolicy(false, 0, "_SECRET")));
+    assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 0, "_SECRET")));
+    
+    // ... note how only one mask is shown here since there's no prefix in {$P}
+    assertEquals("born xxx", birt.format("born{ $D} {$P}", new PrivacyPolicy(false, 0, "_SECRET")));
 
+    // exception to the rule: the person is deceased -> everything is public IF infoOfDeceasedIsPublic
     indi.addProperty("DEAT", "").addProperty("DATE", "(im Hohen Alter)");
-    assertEquals(mask+mask, birt.format("{$D}{$P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
+    assertEquals("born xxx in xxx", birt.format("born{ $D}{ in $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
+    assertEquals("born xxx", birt.format("born{ $D}{ $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
     assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(true, Integer.MAX_VALUE, null)));
 
-    
+    // all good ;)
   }
   
   /**
@@ -179,7 +191,7 @@ public class PropertyTest extends TestCase {
     
     assertFormatted(indi, "BIRT", "", "25 May 1970", "Rendsburg, SH", "{$T}{ $D}{ in $p}", "Birth 25 May 1970 in Rendsburg");
     assertFormatted(indi, "BIRT", "", ""                     , "Rendsburg, SH", "{$t}{ $D}{ $P}"    , "BIRT Rendsburg, SH");
-    assertFormatted(indi, "BIRT", "", ""                     , ""                        , "{$T}{ $D}{ in $p}", "");
+    assertFormatted(indi, "BIRT", "", ""                     , ""                        , "{$T}{ $D}{ in $p}", "Birth");
   }
   
   private void assertFormatted(Indi indi, String evenTag, String evenValue, String date, String place, String format, String result) {
