@@ -26,7 +26,8 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.Relationship;
+import genj.gedcom.PropertyHusband;
+import genj.gedcom.PropertyWife;
 import genj.gedcom.TagPath;
 
 import java.awt.BorderLayout;
@@ -117,9 +118,9 @@ public class ParentsBean extends PropertyBean {
     
     private final static TagPath PATHS[] = {
       new TagPath("FAM"),  
-      new TagPath("FAM:HUSB:*:..", Relationship.LABEL_FATHER),  
+      new TagPath("FAM:HUSB:*:..", PropertyHusband.LABEL_FATHER),  
       new TagPath("FAM:HUSB:*:..:NAME"),  
-      new TagPath("FAM:WIFE:*:..", Relationship.LABEL_MOTHER),
+      new TagPath("FAM:WIFE:*:..", PropertyWife.LABEL_MOTHER),
       new TagPath("FAM:WIFE:*:..:NAME")
     };
     

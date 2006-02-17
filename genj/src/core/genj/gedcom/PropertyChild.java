@@ -116,7 +116,7 @@ public class PropertyChild extends PropertyXRef {
     Indi children[] = fam.getChildren();
     for (int i=0;i<children.length;i++) {
       if ( children[i] == child ) 
-        throw new GedcomException(resources.getString("error.already.child", new String[]{ child.toString(), fam.toString()}));
+        throw new GedcomException(getLabelChildAlreadyinFamily(child, fam));
     }
 
     // Child is ancestor of husband or wife ?
@@ -142,6 +142,13 @@ public class PropertyChild extends PropertyXRef {
     setTarget(pfc);
 
     // Done
+  }
+  
+  /**
+   * an externalized label we need in some ui actions
+   */
+  public static String getLabelChildAlreadyinFamily(Indi child, Fam fam) {
+    return resources.getString("error.already.child", new String[]{ child.toString(), fam.toString()});
   }
 
   /**

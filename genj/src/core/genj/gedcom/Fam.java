@@ -152,7 +152,7 @@ public class Fam extends Entity {
   /**
    * Sets the husband of this family
    */
-  private Indi setHusband(Indi husband) throws GedcomException {
+  public Indi setHusband(Indi husband) throws GedcomException {
     
     // Remove old husband (first valid one would be the one)
     for (int i=0,j=getNoOfProperties();i<j;i++) {
@@ -190,7 +190,7 @@ public class Fam extends Entity {
   /**
    * Sets the wife of the family
    */
-  private Indi setWife(Indi wife) throws GedcomException {
+  public Indi setWife(Indi wife) throws GedcomException {
 
     // Remove old wife (first valid one would be the one)
     for (int i=0,j=getNoOfProperties();i<j;i++) {
@@ -228,7 +228,7 @@ public class Fam extends Entity {
   /**
    * Sets one of the spouses
    */
-  /*package*/ void setSpouse(Indi spouse) throws GedcomException {  
+  public void setSpouse(Indi spouse) throws GedcomException {  
     
     Indi husband = getHusband();
     Indi wife = getWife();
@@ -270,7 +270,7 @@ public class Fam extends Entity {
   /**
    * Adds another child to the family
    */
-  Fam addChild(Indi newChild) throws GedcomException {
+  public Fam addChild(Indi newChild) throws GedcomException {
 
     // Remember Indi who is child
     PropertyChild pc = new PropertyChild(newChild.getId());

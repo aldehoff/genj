@@ -44,7 +44,7 @@ import javax.swing.JTextArea;
 /*package*/ abstract class AbstractChange extends Action2 {
   
   /** resources */
-  /*package*/ static Resources resources = Resources.get(AbstractChange.class);
+  /*package*/ final static Resources resources = Resources.get(AbstractChange.class);
   
   /** the gedcom we're working on */
   protected Gedcom gedcom;

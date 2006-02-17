@@ -23,7 +23,7 @@ import genj.common.SelectEntityWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.Relationship;
+import genj.gedcom.Property;
 import genj.util.WordBuffer;
 import genj.util.swing.NestedBlockLayout;
 import genj.view.ViewManager;
@@ -38,12 +38,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- * Add an entity via relationship (new or existing)
+ * Base type for all relationships we create - it always uses the same pattern
+ * <il>
+ *  <li>ask the user for a new or existing entity based on the target type of the relationship and
+ *  <li>explain what is going to happen
+ *  <li>perform the necessary actions in a concrete implementation
+ * </il>
  */
-public class CreateRelationship extends AbstractChange {
-
-  /** the relationship */
-  private Relationship relationship;
+public abstract class CreateRelationship extends AbstractChange {
 
   /** the referenced entity */
   private Entity existing;
@@ -54,21 +56,17 @@ public class CreateRelationship extends AbstractChange {
   /** text field for entering id */
   private JTextField requestID;
   
+  /** the target type of the relationship (where it points to) */
+  protected String targetType;
+  
   /**
    * Constructor
    */
-  public CreateRelationship(Relationship relatshp, ViewManager manager) {
-    super(relatshp.getGedcom(), relatshp.getImage().getOverLayed(imgNew), resources.getString("new", relatshp.getName()), manager);
-    relationship = relatshp;
+  public CreateRelationship(String name, Gedcom gedcom, String targetType, ViewManager manager) {
+    super(gedcom, Gedcom.getEntityImage(targetType).getOverLayed(imgNew), resources.getString("new", name), manager);
+    this.targetType = targetType;
   }
 
-  /**
-   * Target Type
-   */
-  private String getTargetType() {
-    return relationship.getTargetType();
-  }
-  
   /**
    * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
    */
@@ -79,23 +77,35 @@ public class CreateRelationship extends AbstractChange {
     // You are about to create a {0} in {1}! / You are about to reference {0} in {1}!
     // This {0} will be {1}.
     result.append( existing==null ?
-      resources.getString("confirm.new", new Object[]{ Gedcom.getName(getTargetType(),false), gedcom}) :
+      resources.getString("confirm.new", new Object[]{ Gedcom.getName(targetType,false), gedcom}) :
       resources.getString("confirm.use", new Object[]{ existing.getId(), gedcom})
     );
     
     // relationship detail
-    result.append( resources.getString("confirm.new.related", relationship.getDescription()) );
+    result.append( resources.getString("confirm.new.related", getDescription()) );
 
     // Entity comment?
-    result.append( resources.getString("confirm."+getTargetType()) );
+    result.append( resources.getString("confirm."+targetType) );
     
     // A warning already?
-    String warning = relationship.getWarning(existing);
+    String warning = getWarning(existing);
     if (warning!=null) 
       result.append( "**Note**: " + warning );
 
     // combine
     return result.toString();
+  }
+  
+  /**
+   * Provide a description
+   */
+  public abstract String getDescription();
+
+  /**
+   * Provide a warning for given existing target (default none)
+   */
+  public String getWarning(Entity target) {
+    return null;
   }
 
   /**
@@ -106,10 +116,10 @@ public class CreateRelationship extends AbstractChange {
     JPanel result = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><text wx=\"1\" wy=\"1\"/></row><row><check/><text/></row></col>"));
 
     // create selector
-    final SelectEntityWidget select = new SelectEntityWidget(gedcom, getTargetType(), resources.getString("select.new"));
+    final SelectEntityWidget select = new SelectEntityWidget(gedcom, targetType, resources.getString("select.new"));
  
     // prepare id checkbox and textfield
-    requestID = new JTextField(gedcom.getNextAvailableID(getTargetType()), 8);
+    requestID = new JTextField(gedcom.getNextAvailableID(targetType), 8);
     requestID.setEditable(false);
     
     checkID = new JCheckBox(resources.getString("assign_id"));
@@ -139,8 +149,8 @@ public class CreateRelationship extends AbstractChange {
     });
     
     // preselect something (for anything but indi and fam)?
-    if (!(getTargetType().equals(Gedcom.INDI)||getTargetType().equals(Gedcom.FAM)))
-      select.setSelection(gedcom.getEntity(manager.getRegistry(gedcom).get("select."+getTargetType(), (String)null)));
+    if (!(targetType.equals(Gedcom.INDI)||targetType.equals(Gedcom.FAM)))
+      select.setSelection(gedcom.getEntity(manager.getRegistry(gedcom).get("select."+targetType, (String)null)));
     
     // done
     return result;
@@ -156,23 +166,30 @@ public class CreateRelationship extends AbstractChange {
       String id = null;
       if (requestID.isEditable()) {
         id = requestID.getText();
-        if (gedcom.getEntity(getTargetType(), id)!=null)
+        if (gedcom.getEntity(targetType, id)!=null)
           throw new GedcomException(resources.getString("assign_id_error", id));
       }
       // focus always changes to new that we create now
-      existing = gedcom.createEntity(getTargetType(), id);
+      existing = gedcom.createEntity(targetType, id);
       focus = existing;
       focus.addDefaultProperties();
       // perform the relationship to new
-      relationship.apply(existing, true);
+      change(existing, true);
     } else {
       // perform the relationship to existing
-      focus = relationship.apply(existing, false);
+      focus = change(existing, false);
     }
     // remember selection
-    manager.getRegistry(gedcom).put("select."+getTargetType(), existing.getId());
+    manager.getRegistry(gedcom).put("select."+targetType, existing.getId());
     // done
   }
+  
+  /**
+   * Apply the relationship
+   * @param target the entity that the resulting relationship has to point to
+   * @param targetIsNew whether the target was newly created for this relationship
+   * @return the property that should receive focus after this action
+   */
+  protected abstract Property change(Entity target, boolean targetIsNew) throws GedcomException;
 
-} //CreateRelationship
-
+}

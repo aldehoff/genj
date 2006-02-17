@@ -20,8 +20,13 @@
 package genj.edit;
 
 import genj.crypto.Enigma;
+import genj.edit.actions.CreateAssociation;
+import genj.edit.actions.CreateChild;
 import genj.edit.actions.CreateEntity;
-import genj.edit.actions.CreateRelationship;
+import genj.edit.actions.CreateParent;
+import genj.edit.actions.CreateSibling;
+import genj.edit.actions.CreateSpouse;
+import genj.edit.actions.CreateXReference;
 import genj.edit.actions.DelEntity;
 import genj.edit.actions.OpenForEdit;
 import genj.edit.actions.Redo;
@@ -46,10 +51,7 @@ import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertyRepository;
 import genj.gedcom.PropertySource;
 import genj.gedcom.PropertySubmitter;
-import genj.gedcom.PropertyXRef;
-import genj.gedcom.Relationship;
 import genj.gedcom.Submitter;
-import genj.gedcom.Relationship.XRefBy;
 import genj.io.FileAssociation;
 import genj.util.Registry;
 import genj.util.swing.Action2;
@@ -154,7 +156,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
           (type==PropertyMedia.class&&genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities) 
         ) {
         // .. make sure @@ forces a non-substitute!
-        result.add(new CreateRelationship(new XRefBy(property, (PropertyXRef)subs[s].create("@@")), manager));
+        result.add(new CreateXReference(property,subs[s].getTag(), manager));
         // continue
         continue;
       }
@@ -162,7 +164,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     
     // Add Association to this one (*only* for events)
     if (property instanceof PropertyEvent)
-      result.add(new CreateRelationship(new Relationship.Association(property), manager));
+      result.add(new CreateAssociation(property, manager));
     
     // Toggle "Private"
     if (Enigma.isAvailable())
@@ -200,8 +202,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
           type==PropertySubmitter.class||
           (type==PropertyMedia.class&&genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities) 
           ) {
-        // .. make sure @@ forces a non-substitute!
-        result.add(new CreateRelationship(new Relationship.XRefBy(entity, (PropertyXRef)subs[s].create("@@")), manager));
+        result.add(new CreateXReference(entity,subs[s].getTag(), manager));
       }
     }
 
@@ -246,19 +247,19 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi, ViewManager manager) {
-    result.add(new CreateRelationship(new Relationship.ChildOf(indi), manager));
-    result.add(new CreateRelationship(new Relationship.ParentOf(indi), manager));
-    result.add(new CreateRelationship(new Relationship.SpouseOf(indi), manager));
-    result.add(new CreateRelationship(new Relationship.SiblingOf(indi), manager));
+    result.add(new CreateChild(indi, manager));
+    result.add(new CreateParent(indi, manager));
+    result.add(new CreateSpouse(indi, manager));
+    result.add(new CreateSibling(indi, manager));
   }
   
   /**
    * Create actions for Families
    */
   private void createActions(List result, Fam fam, ViewManager manager) {
-    result.add(new CreateRelationship(new Relationship.ChildIn(fam), manager));
+    result.add(new CreateChild(fam, manager));
     if (fam.getNoOfSpouses()<2)
-      result.add(new CreateRelationship(new Relationship.ParentIn(fam), manager));
+      result.add(new CreateParent(fam, manager));
     if (fam.getNoOfSpouses()!=0)
       result.add(new SwapSpouses(fam, manager));
   }
