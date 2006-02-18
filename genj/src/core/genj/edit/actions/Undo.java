@@ -46,6 +46,7 @@ public class Undo extends Action2 implements GedcomListener {
   public Undo(Gedcom gedcom, boolean enabled) {
     setImage(Images.imgUndo);
     setText(AbstractChange.resources.getString("undo"));    
+    setTip(getText());
     setEnabled(enabled);
     this.gedcom = gedcom;
   }

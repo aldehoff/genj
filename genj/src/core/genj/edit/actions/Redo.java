@@ -46,6 +46,7 @@ public class Redo extends Action2 implements GedcomListener {
   public Redo(Gedcom gedcom, boolean enabled) {
     setImage(Images.imgRedo);
     setText(AbstractChange.resources.getString("redo"));    
+    setTip(getText());
     setEnabled(enabled);
     this.gedcom = gedcom;
   }
