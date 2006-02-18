@@ -25,6 +25,14 @@
 	<classpathentry exported="true" kind="lib" path="contrib/fop/fop.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="contrib/fop/commons-logging-api-1.0.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="contrib/fop/batik-all-1.6.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-awt-util.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-bridge.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-css.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-dom.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-ext.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-gvt.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-svg-dom.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-svggen.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/batik-util.jar"/>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>
