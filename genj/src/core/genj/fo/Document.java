@@ -61,7 +61,9 @@ public class Document {
   protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]*(\\(.*?\\))?)");
   
   /** xsl fo namespace URI */
-  private final static String NSURI = "http://www.w3.org/1999/XSL/Format";
+  private final static String 
+    NS_XSLFO = "http://www.w3.org/1999/XSL/Format",
+    NS_GENJ = "http://genj.sourceforge.net/XSL/Format";
   
   private org.w3c.dom.Document doc;
   private Element cursor;
@@ -102,7 +104,10 @@ public class Document {
     //     <block/>
     //    </flow>
     //   </page-sequence>
-    cursor = (Element)doc.appendChild(doc.createElementNS(NSURI, "root")); // "xmlns:fo="+NSURI ?
+    cursor = (Element)doc.appendChild(doc.createElementNS(NS_XSLFO, "root")); 
+    cursor.setAttribute("xmlns", NS_XSLFO);
+    cursor.setAttribute("xmlns:genj", NS_GENJ);
+    
     push("layout-master-set");
     push("simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
     push("region-body");
@@ -442,12 +447,8 @@ public class Document {
     StringTokenizer cols = new StringTokenizer(columns, ",", false);
     if (cols.countTokens()==0) cols = new StringTokenizer("25%,25%,25%,25%", ",", false);
 
-    // patch format
-    format  = "table-layout=fixed,"+format; // FOP only supports table-layout=fixed
-    if ((type&TABLE_CSV)!=0) {
-      containsCSV = true;
-      format = "role=csv,"+format;
-    }
+    // patch format - FOP only supports table-layout=fixed
+    format  = "table-layout=fixed,"+format;
     
     //<table>
     // <table-column/>
@@ -463,10 +464,20 @@ public class Document {
     //    <block>    
     //    ...
     push("table", format);
+    
+    // mark as cvs if applicable
+    if ((type&TABLE_CSV)!=0) {
+      containsCSV = true;
+      cursor.setAttributeNS(NS_GENJ, "genj:csv", "true");
+    }
+    
+    // columns
     while (cols.hasMoreTokens()) {
       String w = cols.nextToken(); 
       push("table-column", "column-width="+w).pop();
     }
+    
+    // head/body & row
     if ((type&TABLE_HEADER)!=0) {
       push("table-header"); 
       push("table-row", "color=#ffffff,background-color=#c0c0c0,font-weight=bold");
@@ -497,8 +508,16 @@ public class Document {
     if (cells==columns) 
       return nextTableRow();
 
+    // 20060215 wanted to use border=inherit here but that would require table-row
+    // and table-body to have border=inherit as well. table-body can't have a
+    // border property in a table with border-collapse=separate (which is the only
+    // model FOP supports).
+    // So we're simply doing our own 'inherit' here :) Alternative would be to do
+    // us border=from-nearest-specified-value() on each cell or border=inherit
+    // on the table-columns and then border=from-table-column() on the cells.
+    
     // add now
-    push("table-cell", "border="+table.getAttribute("border")+","+format);  // shouldn't border=inherit do the same automatically?
+    push("table-cell", "border="+table.getAttribute("border")+","+format);  
     push("block");
 
     // done 
@@ -720,7 +739,7 @@ public class Document {
    */
   private Document push(String name, String attributes, boolean asFirst) {
     // create it, set attributes and hook it up
-    Element elem = doc.createElementNS(NSURI, name);
+    Element elem = doc.createElementNS(NS_XSLFO, name);
     if (asFirst)
       cursor.insertBefore(elem, cursor.getFirstChild());
     else
@@ -846,13 +865,13 @@ public class Document {
         format = Format.getFormat(args[0]);
       else 
         format = new PDFFormat();
-      
+
       String ext = format.getFileExtension();
       File file = new File("c:/temp/foo."+ext);
-      
       format.format(doc, file);
 
-      Runtime.getRuntime().exec("c:/Program Files/Internet Explorer/iexplore.exe \""+file.getAbsolutePath()+"\"");
+      if (file.exists())
+        Runtime.getRuntime().exec("c:/Program Files/Internet Explorer/iexplore.exe \""+file.getAbsolutePath()+"\"");
 
     } catch (IOException e) {
       e.printStackTrace();

@@ -75,7 +75,8 @@ public abstract class Format {
   }
   
   /**
-   * Valid file extension without dot (e.g. xml, pdf, html, fo) 
+   * Valid file extension without dot (e.g. xml, pdf, html, fo)
+   * @return file extension without dot of null if streaming output is not supported
    */
   public String getFileExtension() {
     return extension;
@@ -148,12 +149,22 @@ public abstract class Format {
    */
   public void format(Document doc, File file) throws IOException {
     
-    // try to create output stream
-    FileOutputStream out = new FileOutputStream(file);
+    FileOutputStream out = null;
     
-    // chance to externalize files if applicable
-    if (isExternalizedFiles)
-      externalizeFiles(doc, file);
+    // no need for stream?
+    if (getFileExtension()!=null) {
+      
+      if (file==null)
+        throw new IOException("Formatter requires output file");
+      
+      // try to create output stream
+      out = new FileOutputStream(file);
+      
+      // chance to externalize files if applicable
+      if (isExternalizedFiles)
+        externalizeFiles(doc, file);
+
+    }
     
     // continue
     format(doc, out);

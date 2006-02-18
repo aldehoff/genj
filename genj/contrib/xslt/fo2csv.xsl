@@ -11,12 +11,13 @@
 <xsl:stylesheet version="1.0"
  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
  xmlns:fo="http://www.w3.org/1999/XSL/Format"
+ xmlns:genj="http://genj.sourceforge.net/XSL/Format"
  exclude-result-prefixes="fo">
  
 <xsl:output method="text" encoding="utf-8" indent="no"/>
 
 <xsl:template match="fo:table">
-  <xsl:if test="@role='csv'">
+  <xsl:if test="@genj:csv='true'">
    <xsl:apply-templates/>
   </xsl:if>
 </xsl:template>

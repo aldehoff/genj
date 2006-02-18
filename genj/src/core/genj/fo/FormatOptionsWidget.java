@@ -77,7 +77,7 @@ public class FormatOptionsWidget extends JPanel {
     // listen to some events
     chooseFormat.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        updateValidAction();
+        validateOptions();
       }
     });
     
@@ -106,6 +106,8 @@ public class FormatOptionsWidget extends JPanel {
     Format format = getFormat();
     File result = chooseFile.getFile();
     // strip any of our known extensions
+    if (format.getFileExtension()==null)
+      return  result;
     String path = result.getAbsolutePath();
     Format[] formats = Format.getFormats();
     for (int f=0;f<formats.length;f++) {
@@ -124,12 +126,27 @@ public class FormatOptionsWidget extends JPanel {
    */
   public void connect(Action validAction) {
     this.validAction = validAction;
-    updateValidAction();
+    validateOptions();
   }
   
-  private void updateValidAction() {
-    boolean isValid = !chooseFile.isEmpty() && getFormat().supports(doc);
-    validAction.setEnabled(isValid);
+  private void validateOptions() {
+    
+    Format format = getFormat();
+    boolean valid = true;
+    
+    // check file
+    if (format.getFileExtension()!=null&&chooseFile.isEmpty())
+      valid = false;
+    
+    // check file support
+    chooseFile.setEnabled(format.getFileExtension()!=null);
+    
+    // check document support
+    if (!format.supports(doc))
+      valid = false;
+    
+    // update valid action
+    validAction.setEnabled(valid);
   }
 
 } //OutputWidget
