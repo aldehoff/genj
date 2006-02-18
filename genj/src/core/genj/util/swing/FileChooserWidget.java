@@ -66,6 +66,15 @@ public class FileChooserWidget extends JPanel {
     this(null);
   }
   
+  /**
+   * delegate enabled to sub-components
+   */
+  public void setEnabled(boolean set) {
+    super.setEnabled(set);
+    button.setEnabled(set);
+    text.setEnabled(set);
+  }
+  
   /** 
    * constructor 
    * @param extensions comma-separated list of extensions applying to selectable files
