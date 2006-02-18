@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.97 $ $Author: nmeier $ $Date: 2006-02-16 23:26:15 $
+ * $Revision: 1.98 $ $Author: nmeier $ $Date: 2006-02-18 19:02:53 $
  */
 package genj.report;
 
@@ -42,7 +42,6 @@ import genj.window.WindowManager;
 import java.awt.BorderLayout;
 import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -366,7 +365,7 @@ public abstract class Report implements Cloneable {
    */
   public final void showDocumentToUser(Document doc) {
     
-    String title = "Document '"+doc.getTitle();
+    String title = "Document "+doc.getTitle();
 
     Action[] actions = Action2.okCancel();
     FormatOptionsWidget output = new FormatOptionsWidget(doc, new Registry(registry, "fo"));
@@ -379,30 +378,36 @@ public abstract class Report implements Cloneable {
     
     // grab formatter and output file
     Format formatter = output.getFormat();
-    
-    // grab file
-    File file = output.getFile();
-    if (file==null)
-      return;
+
+    File file = null;
+    String progress = null;
+    if (formatter.getFileExtension()!=null) {
+      
+      file = output.getFile();
+      if (file==null)
+        return;
+      file.getParentFile().mkdirs();
+
+      // show a progress dialog
+      progress = viewManager.getWindowManager().openNonModalDialog(
+          null, title, WindowManager.INFORMATION_MESSAGE, new JLabel("Writing Document to file "+file+" ..."), Action2.okOnly(), owner);
+      
+    }
     
     // store options
     output.remember(new Registry(registry, "fo"));
     
-    // show a progress dialog
-    String progress = viewManager.getWindowManager().openNonModalDialog(
-        null, title, WindowManager.INFORMATION_MESSAGE, new JLabel("Writing Document to File "+file+" ..."), Action2.okOnly(), owner);
-    
     // format and write
     try {
-      file.getParentFile().mkdirs();
       formatter.format(doc, file);
-    } catch (IOException e) {
-      viewManager.getWindowManager().openDialog(null, "Formatting "+doc+" failed", WindowManager.ERROR_MESSAGE,e.getMessage(), Action2.okOnly(), owner);
+    } catch (Throwable t) {
+      viewManager.getWindowManager().openDialog(null, "Formatting "+doc+" failed", WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), owner);
       file = null;
     }
     
     // close progress dialog
-    viewManager.getWindowManager().close(progress);
+    if (progress!=null)
+      viewManager.getWindowManager().close(progress);
     
     // open document
     if (file!=null) {
