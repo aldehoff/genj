@@ -30,20 +30,6 @@ public class PropertyNote extends PropertyXRef {
   public static final String TAG = "NOTE";
 
   /**
-   * Empty Constructor
-   */
-  public PropertyNote() {
-  }
-  
-  /**
-   * Constructor with reference
-   * @param target reference of property this property links to
-   */
-  public PropertyNote(PropertyXRef target) {
-    super(target);
-  }
-  
-  /**
    * This will be called once when instantiation has
    * happend - it's our chance to substitute this with
    * a multilinevalue if no reference applicable

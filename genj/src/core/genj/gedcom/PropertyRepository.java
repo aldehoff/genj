@@ -29,20 +29,6 @@ public class PropertyRepository extends PropertyXRef {
   private String repository;
 
   /**
-   * Empty Constructor
-   */
-  public PropertyRepository() {
-  }
-  
-  /**
-   * Constructor with reference
-   * @param target reference of property this property links to
-   */
-  public PropertyRepository(PropertyXRef target) {
-    super(target);
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {	

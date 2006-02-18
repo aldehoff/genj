@@ -36,14 +36,7 @@ public class PropertyFamilyChild extends PropertyXRef {
   /**
    * Constructor with reference
    */
-  public PropertyFamilyChild(String target) {
-    setValue(target);
-  }
-
-  /**
-   * Constructor with reference
-   */
-  public PropertyFamilyChild(PropertyXRef target) {
+  protected PropertyFamilyChild(PropertyXRef target) {
     super(target);
   }
   

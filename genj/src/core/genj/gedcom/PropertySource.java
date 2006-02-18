@@ -28,20 +28,6 @@ import genj.util.swing.ImageIcon;
 public class PropertySource extends PropertyXRef {
 
   /**
-   * Empty Constructor
-   */
-  public PropertySource() {
-  }
-  
-  /**
-   * Constructor with reference
-   * @param target reference of property this property links to
-   */
-  public PropertySource(PropertyXRef target) {
-    super(target);
-  }
-
-  /**
    * This will be called once when instantiation has
    * happend - it's our chance to substitute this with
    * a multilinevalue if no reference applicable

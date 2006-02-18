@@ -41,14 +41,14 @@ public abstract class PropertyXRef extends Property {
   /**
    * Empty Constructor
    */
-  public PropertyXRef() {
+  protected PropertyXRef() {
   }
 
   /**
    * Constructor with reference
    * @param target reference of property this property links to
    */
-  public PropertyXRef(PropertyXRef target) {
+  protected PropertyXRef(PropertyXRef target) {
     setTarget(target);
   }
 

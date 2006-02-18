@@ -38,14 +38,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
   /**
    * Constructor with reference
    */
-  public PropertyFamilySpouse(String target) {
-    setValue(target);
-  }
-
-  /**
-   * Constructor with reference
-   */
-  public PropertyFamilySpouse(PropertyXRef target) {
+  protected PropertyFamilySpouse(PropertyXRef target) {
     super(target);
   }
 

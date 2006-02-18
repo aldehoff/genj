@@ -37,14 +37,14 @@ public class PropertyHusband extends PropertyXRef {
   /**
    * Constructor with reference
    */
-  public PropertyHusband(String target) {
+  protected PropertyHusband(String target) {
     setValue(target);
   }
 
   /**
    * Constructor with reference
    */
-  public PropertyHusband(PropertyXRef target) {
+  protected PropertyHusband(PropertyXRef target) {
     super(target);
   }
 

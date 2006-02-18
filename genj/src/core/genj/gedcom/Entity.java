@@ -22,7 +22,7 @@ package genj.gedcom;
 /**
  * Abstract base type for all Entities
  */
-public class Entity extends Property {
+public abstract class Entity extends Property {
   
   /** the containing gedcom */
   private Gedcom gedcom;

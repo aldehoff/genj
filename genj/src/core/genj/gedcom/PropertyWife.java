@@ -42,14 +42,14 @@ public class PropertyWife extends PropertyXRef {
   /**
    * Constructor
    */
-  public PropertyWife(String target) {
+  protected PropertyWife(String target) {
     setValue(target);
   }
-  
+
   /**
    * Constructor with reference
    */
-  public PropertyWife(PropertyXRef target) {
+  protected PropertyWife(PropertyXRef target) {
     super(target);
   }
 

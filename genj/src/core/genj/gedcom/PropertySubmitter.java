@@ -28,20 +28,6 @@ package genj.gedcom;
 public class PropertySubmitter extends PropertyXRef {
 
   /**
-   * Empty Constructor
-   */
-  public PropertySubmitter() {
-  }
-  
-  /**
-   * Constructor with reference
-   * @param target reference of property this property links to
-   */
-  public PropertySubmitter(PropertyXRef target) {
-    super(target);
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {

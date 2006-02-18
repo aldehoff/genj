@@ -26,18 +26,18 @@ import genj.util.swing.ImageIcon;
  * This XRef is for pointing back to XRefs in case
  * Gedcom does only support uni-direction
  */
-public class PropertyForeignXRef extends PropertyXRef {
+/*package*/ class PropertyForeignXRef extends PropertyXRef {
 
   /**
    * Empty Constructor
    */
-  public PropertyForeignXRef() {
+  protected PropertyForeignXRef() {
   }
   
   /**
    * Constructor with reference
    */
-  public PropertyForeignXRef(PropertyXRef target) {
+  protected PropertyForeignXRef(PropertyXRef target) {
     super(target);
   }
 

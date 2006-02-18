@@ -46,7 +46,7 @@ public class PropertyChild extends PropertyXRef {
   /**
    * Constructor
    */
-  public PropertyChild(String target) {
+  protected PropertyChild(String target) {
     setValue(target);
   }
   
@@ -54,7 +54,7 @@ public class PropertyChild extends PropertyXRef {
    * Constructor with reference
    * @param target referenced PropertyXRef
    */
-  public PropertyChild(PropertyXRef target) {
+  protected PropertyChild(PropertyXRef target) {
     super(target);
   }
 
@@ -171,5 +171,5 @@ public class PropertyChild extends PropertyXRef {
       default: return overlay(IMG_UNKNOWN);
     }
   }
-  
+
 } //PropertyChild
