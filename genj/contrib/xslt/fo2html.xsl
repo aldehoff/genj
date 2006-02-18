@@ -285,6 +285,7 @@
     </xsl:if>
     <xsl:apply-templates select="@*" mode="get-table-attributes"/>
     <xsl:apply-templates mode="check-for-pre"/>
+    <xsl:if test=".=''">&#160;</xsl:if>
   </td>
 </xsl:template>
 
