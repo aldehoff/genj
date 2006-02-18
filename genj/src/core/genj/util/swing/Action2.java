@@ -41,14 +41,14 @@ import javax.swing.UIManager;
  */
 public class Action2 extends AbstractAction implements Runnable, Cloneable {
   
-  protected final static String 
-    TEXT = Action.NAME,
-    OLDTEXT = Action.NAME+".old",
-    SHORT_TEXT = "shortname",
-    TIP = Action.SHORT_DESCRIPTION,
-    ENABLED = "enabled",
-    MNEMONIC = Action.MNEMONIC_KEY,
-    ICON = Action.SMALL_ICON;
+  private final static String 
+    KEY_TEXT = Action.NAME,
+    KEY_OLDTEXT = Action.NAME+".old",
+    KEY_SHORT_TEXT = "shortname",
+    KEY_TIP = Action.SHORT_DESCRIPTION,
+    KEY_ENABLED = "enabled",
+    KEY_MNEMONIC = Action.MNEMONIC_KEY,
+    KEY_ICON = Action.SMALL_ICON;
     
   private final static Logger LOG = Logger.getLogger("genj.actions");
   
@@ -268,6 +268,20 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
   }
   
   /**
+   * Intercepted super class getter - delegate calls to getters so they can be overridden. this
+   * method is not supposed to be called from sub-types to avoid a potential endless-loop
+   */
+  public Object getValue(String key) {
+    if (KEY_TEXT.equals(key))
+      return getText();
+    if (KEY_ICON.equals(key))
+      return getImage();
+    if (KEY_TIP.equals(key))
+      return getTip();
+    return super.getValue(key);
+  }
+  
+  /**
    * accessor - target component
    */
   public Action2 setTarget(JComponent t) {
@@ -292,7 +306,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
    * accessor - image 
    */
   public Action2 setImage(Icon icon) {
-    super.putValue(ICON, icon);
+    super.putValue(KEY_ICON, icon);
     return this;
   }
   
@@ -300,7 +314,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
    * accessor - text
    */
   public Action2 restoreText() {
-    setText((String)super.getValue(OLDTEXT));
+    setText((String)super.getValue(KEY_OLDTEXT));
     return this;
   }
   
@@ -321,7 +335,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
       txt = resources.getString(txt);
       
     // remember old
-    super.putValue(OLDTEXT, getText());
+    super.putValue(KEY_OLDTEXT, getText());
     
     // check txt?
     if (txt!=null&&txt.length()>0)  {
@@ -333,7 +347,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
     }
     
     // remember new 
-    super.putValue(TEXT, txt);
+    super.putValue(KEY_TEXT, txt);
     
     return this;
   }
@@ -342,7 +356,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
    * acessor - mnemonic
    */
   public Action2 setMnemonic(char c) {
-    super.putValue(MNEMONIC, c==0 ? null : new Integer(c));
+    super.putValue(KEY_MNEMONIC, c==0 ? null : new Integer(c));
     return this;
   }
 
@@ -350,7 +364,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
    * accessor - text
    */
   public String getText() {
-    return (String)super.getValue(TEXT);
+    return (String)super.getValue(KEY_TEXT);
   }
   
   /**
@@ -365,7 +379,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
    */
   public Action2 setTip(Resources resources, String tip) {
     if (resources!=null) tip = resources.getString(tip);
-    super.putValue(TIP, tip);
+    super.putValue(KEY_TIP, tip);
     return this;
   }
   
@@ -373,14 +387,14 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
    * accessor - tip
    */
   public String getTip() {
-    return (String)super.getValue(TIP);
+    return (String)super.getValue(KEY_TIP);
   }
 
   /**
      * accessor - image 
      */
   public Icon getImage() {
-    return (Icon)super.getValue(ICON);
+    return (Icon)super.getValue(KEY_ICON);
   }
 
   /** accessor - accelerator */
