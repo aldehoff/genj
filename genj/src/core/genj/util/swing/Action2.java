@@ -90,7 +90,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
   
   /** constructor */
   public Action2(String text) {
-    putValue(javax.swing.Action.NAME, text);
+    setText(text);
   }
   
   /** constructor */
