@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.98 $ $Author: nmeier $ $Date: 2006-02-18 19:02:53 $
+ * $Revision: 1.99 $ $Author: nmeier $ $Date: 2006-02-19 16:38:53 $
  */
 package genj.report;
 
@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -165,7 +166,7 @@ public abstract class Report implements Cloneable {
   /**
    * integration - private instance for a run
    */
-  /*package*/ Report getInstance(ViewManager viEwManager, JComponent owNer, PrintWriter ouT) {
+  /*package*/ Report getInstance(ViewManager viewManager, JComponent owner, PrintWriter out) {
 
     try {
 
@@ -176,9 +177,9 @@ public abstract class Report implements Cloneable {
       Report result = (Report)clone();
 
       // remember context for result
-      result.viewManager = viEwManager;
-      result.out = ouT;
-      result.owner = owNer;
+      result.viewManager = viewManager;
+      result.out = out;
+      result.owner = owner;
       
       // done
       return result;
@@ -411,9 +412,17 @@ public abstract class Report implements Cloneable {
     
     // open document
     if (file!=null) {
-      FileAssociation association = FileAssociation.get(formatter.getFileExtension(), formatter.getFileExtension(), "Open", owner);
-      if (association!=null)
-        association.execute(file);
+
+      // let ReportView show the file or show it in external application
+      if (owner instanceof ReportView && file.getName().endsWith(".html")) {
+        try {
+          log(""+file.toURL());
+        } catch (MalformedURLException e) {}
+      } else {
+        FileAssociation association = FileAssociation.get(formatter.getFileExtension(), formatter.getFileExtension(), "Open", owner);
+        if (association!=null)
+          association.execute(file);
+      }
     }
     
     // done

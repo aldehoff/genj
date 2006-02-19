@@ -49,7 +49,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.Collections;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
@@ -71,8 +73,10 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.html.HTMLEditorKit;
 
 /**
@@ -84,9 +88,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
   /** time between flush of output writer to output text area */
   private final static long FLUSH_WAIT = 200;
-    private final static String EOL= System.getProperty("line.separator");
-    private String theText="";
-    private final static int MAX_HTML_SIZE=300000;
+  private final static String EOL= System.getProperty("line.separator");
+    
   /** statics */
   private final static ImageIcon 
     imgStart = new ImageIcon(ReportView.class,"Start.gif"      ), 
@@ -222,27 +225,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * Create the tab content for report output
    * Output tab is a JEditorPane that displays either plain text or html text:
-   * - If the output starts with <HTML> then the report is considered as 
-   *   html document
-   * - If the output starts with <html> then the report is considered as 
-   *   html document and all newlins charaters (\n) are replaced with <br>. 
-   *   This should be used to create near plaint text report but with some
-   *   text decoration capability (bold, ...)
-   * - otherwise (default) the report is considered as plain text to keep
-   *   backward compatibility with all other reports.
-   *   
-   *   NM 20051031 as discussed I didn't really want another way for
-   *   reports to generate formatted output - I fear that report writers
-   *   will spread html throughout their code for a quick visual fix even
-   *   though the real answer for formatted output is fo.Document
-   *   Leaving this in for now and keeping an eye on this :) Fixed an
-   *   import warning though.
    */  
   private JComponent createReportOutput(Callback callback) {
     
     // Panel for Report Output
     taOutput = new JEditorPane();
-    taOutput.setEditorKit(new HTMLEditorKit());
     taOutput.setContentType("text/plain");
     taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
     taOutput.setEditable(false);
@@ -408,7 +395,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
         return false;
       
       out = new PrintWriter(new OutputWriter());
-      theText = "";
       
       // create our own private instance  
       instance = report.getInstance(manager, ReportView.this, out);
@@ -474,6 +460,25 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // flush
       out.flush();
       out.close();
+      
+      // check last line for url
+      URL url = null;
+      try {
+        AbstractDocument doc = (AbstractDocument)taOutput.getDocument();
+        Element p = doc.getParagraphElement(doc.getLength()-1);
+        String line = doc.getText(p.getStartOffset(), p.getEndOffset()-p.getStartOffset());
+        url = new URL(line);
+      } catch (Throwable t) {
+      }
+      
+      if (url!=null) {
+        try {
+          taOutput.setPage(url);
+        } catch (IOException e) {
+          LOG.log(Level.WARNING, "couldn't show html in report output", e);
+        }
+      }
+      
       // stop run
       setRunning(false);
     }
@@ -522,10 +527,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
       try {
   
         BufferedWriter out = new BufferedWriter(writer);
-/*        String data = taOutput.getText();
+        String data = taOutput.getText();
         out.write(data,0,data.length());
-*/
-        out.write(theText,0,theText.length());
         out.close();
   
       } catch (IOException ex) {
@@ -699,19 +702,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * @see java.io.Writer#close()
      */
     public void close() {
-      
-      // did we buffer html?
-      if (taOutput.getContentType().equals("text/html")) {
-        // replace end-line-designators and dump it
-        String txt = buffer.toString();
-	theText = txt;
-	//        txt  =txt.replaceAll(EOL, "<br>"+EOL);
-	if (txt.length() > MAX_HTML_SIZE){
-	    txt = txt.substring(0,MAX_HTML_SIZE);
-	}
-        taOutput.setText(txt);
-      }
-      
       // clear buffer
       buffer.setLength(0);
     }
@@ -728,35 +718,18 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // make sure we see output pane
       tabbedPane.getModel().setSelectedIndex(2);
       
-      // first flush we check for a html marker
-      if (lastFlush==-1) {
-        
-        // html?
-        if (buffer.length()>=6&&buffer.substring(0,6).equalsIgnoreCase("<html>"))
-          taOutput.setContentType("text/html");
-        else
-          taOutput.setContentType("text/plain");
-
-      }
-      
       // mark
       lastFlush = System.currentTimeMillis();
       
-      // dump partial plain text?
-      if (taOutput.getContentType().equals("text/plain")) {
-      
-        // grab text, reset buffer and dump it 
-        String txt = buffer.toString();
-        buffer.setLength(0);
-        Document doc = taOutput.getDocument();
-        try {
-          doc.insertString(doc.getLength(), txt, null);
-        } catch (Throwable t) {
-        }
-	theText += txt;
-        
+      // grab text, reset buffer and dump it 
+      String txt = buffer.toString();
+      buffer.setLength(0);
+      Document doc = taOutput.getDocument();
+      try {
+        doc.insertString(doc.getLength(), txt, null);
+      } catch (Throwable t) {
       }
-      
+        
       // done
     }
     
