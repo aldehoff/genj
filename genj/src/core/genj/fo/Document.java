@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,11 +48,6 @@ import org.w3c.dom.Text;
  *
  */
 public class Document {
-  
-  public static int
-    TABLE_SIMPLE = 0,
-    TABLE_HEADER = 1,
-    TABLE_CSV = 2;
   
   private final static Resources RESOURCES = Resources.get(Document.class);
   
@@ -73,7 +67,7 @@ public class Document {
   private List sections = new ArrayList();
   private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm,space-after=0.2cm,keep-with-next.within-page=always";
   private Map index2primary2secondary2elements = new TreeMap();
-  private int numIndexTerms = 0;
+  private int idSequence = 0;
   private boolean containsCSV = false;
   
   /**
@@ -202,7 +196,7 @@ public class Document {
     addText(title);
     
     // create the following block
-    addParagraph();
+    nextParagraph();
     
     // done
     return this;
@@ -266,10 +260,19 @@ public class Document {
       secondary2elements.put(secondary, elements);
     }
     
-    // add anchor
-    push("block", "id=_"+(++numIndexTerms));
-    elements.add(cursor);
-    pop();
+    // add anchor - normally that would be a fo:inline 
+    //   push("inline", "id=_"+(++idSequence));
+    // but FOP doesn't support IDs on those elements
+    // so instead we attach an id to the surrounding block
+    String id = cursor.getAttribute("id");
+    if (id.length()==0) {
+      id = ""+(++idSequence);
+      cursor.setAttribute("id", id);
+    }
+    
+    // remember the element for primary+secondary if the element isn't in there already
+    if (!elements.contains(cursor))
+        elements.add(cursor);
     
     return this;
   }
@@ -301,17 +304,17 @@ public class Document {
    * Add text with given CSS styling
    * @see http://www.w3.org/TR/REC-CSS2/fonts.html#font-styling
    */
-  public Document addText(String text, String format) {
-    text(text, format);
+  public Document addText(String text, String atts) {
+    text(text, atts);
     return this;
   }
     
   /**
    * Add image file reference to the document
    * @param file the file pointing to the image
-   * @param format 
+   * @param atts fo attributes for the image
    */
-  public Document addImage(File file, String format) {
+  public Document addImage(File file, String atts) {
     
     // anything we care about?
     if (file==null||!file.exists())
@@ -322,13 +325,13 @@ public class Document {
     if (dim==null)
       return this;
     if (dim.getWidth()>dim.getHeight()) {
-      if (dim.getWidth()>1) format = "width=1in,content-width=scale-to-fit,"+format; // can be overriden
+      if (dim.getWidth()>1) atts = "width=1in,content-width=scale-to-fit,"+atts; // can be overriden
     } else {
-      if (dim.getHeight()>1) format = "height=1in,content-height=scale-to-fit,"+format; // can be overriden
+      if (dim.getHeight()>1) atts = "height=1in,content-height=scale-to-fit,"+atts; // can be overriden
     }
     
     //  <fo:external-graphic src="file"/> 
-    push("external-graphic", "src="+file.getAbsolutePath()+","+format);
+    push("external-graphic", "src="+file.getAbsolutePath()+","+atts);
     
     // remember file in case a formatter wants to resolve file location later
     List elements = (List)file2elements.get(file);
@@ -371,7 +374,7 @@ public class Document {
   /**
    * Add a paragraph
    */
-  public Document addParagraph() {
+  public Document nextParagraph() {
     
     // start a new block if the current is not-empty
     if (cursor.getFirstChild()!=null)
@@ -386,6 +389,7 @@ public class Document {
   public Document startList() {
     
     //<list-block>
+    pop();
     push("list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt");
     nextListItem();
     
@@ -405,8 +409,8 @@ public class Document {
     //    </list-item-body>
     //  </list-item>
     
-    // are we in an empty list-item-body list already?
-    if (cursor.getFirstChild()==null && cursor.getParentNode().getLocalName().equals("list-item-body"))
+    // are we in an empty block within list-item-body already?
+    if (cursor.getNodeName().equals("block")&&cursor.getFirstChild()==null && cursor.getParentNode().getLocalName().equals("list-item-body"))
       return this;
 
     // pop up to list-block and add new
@@ -430,6 +434,7 @@ public class Document {
     // *
     //  <list-block>
     pop("list-block", "endList() is not applicable outside list-block").pop();
+    push("block","");
     
     return this;
   }
@@ -437,21 +442,16 @@ public class Document {
   /**
    * Start a table
    */
-  public Document startTable(String columns, int type) {
-    return startTable(columns, type, "width=100%,border=0.5pt solid black", "");
+  public Document startTable() {
+    return startTable("width=100%,border=0.5pt solid black");
   }
   
-  public Document startTable(String columns, int type, String format, String cellFormat) {
-
-    // check columns first
-    StringTokenizer cols = new StringTokenizer(columns, ",", false);
-    if (cols.countTokens()==0) cols = new StringTokenizer("25%,25%,25%,25%", ",", false);
+  public Document startTable(String atts) {
 
     // patch format - FOP only supports table-layout=fixed
-    format  = "table-layout=fixed,"+format;
+    atts  = "table-layout=fixed,"+atts;
     
     //<table>
-    // <table-column/>
     // <table-header>
     //  <table-row>
     //   <table-cell>
@@ -463,22 +463,17 @@ public class Document {
     //   <table-cell>
     //    <block>    
     //    ...
-    push("table", format);
+    push("table", atts);
+    Element table = cursor;
     
-    // mark as cvs if applicable
-    if ((type&TABLE_CSV)!=0) {
+    // mark as cvs if applicable - non fo namespace attributes won't be picked up by push() and attributes()
+    if (atts.indexOf("genj:csv=true")>=0) {
       containsCSV = true;
       cursor.setAttributeNS(NS_GENJ, "genj:csv", "true");
     }
     
-    // columns
-    while (cols.hasMoreTokens()) {
-      String w = cols.nextToken(); 
-      push("table-column", "column-width="+w).pop();
-    }
-    
     // head/body & row
-    if ((type&TABLE_HEADER)!=0) {
+    if (atts.indexOf("genj:header=true")>=0) {
       push("table-header"); 
       push("table-row", "color=#ffffff,background-color=#c0c0c0,font-weight=bold");
     } else { 
@@ -487,7 +482,35 @@ public class Document {
     }
     
     // cell and done
-    return nextTableCell(cellFormat);
+    push("table-cell", "border="+table.getAttribute("border"));  
+    push("block");
+    
+    return this;
+  }
+  
+  /**
+   * Add a column to the table (this is not necessary)
+   */
+  public Document addTableColumn(String atts) {
+    
+    //<table>
+    // <table-column/>
+    Element save = cursor;
+    
+    // find the enclosing table
+    pop("table", "addTableColumn() is not applicable outside enclosing table");
+    
+    // find last table definition
+    Node before = cursor.getFirstChild();
+    while (before!=null && before.getNodeName().equals("table-column"))
+      before = before.getNextSibling();
+    
+    push("table-column", atts, before);
+
+    // done for now
+    cursor = save;
+    
+    return this;
   }
   
   /**
@@ -496,18 +519,33 @@ public class Document {
   public Document nextTableCell() {
     return nextTableCell("");
   }
-  public Document nextTableCell(String format) {
+  public Document nextTableCell(String atts) {
     
-    // pop to row
-    pop("table-row", "nextTableCell() is not applicable outside enclosing table row");
-    int cells = cursor.getElementsByTagName("table-cell").getLength();
+    // peek at current cell - stay with it IF
+    //  + it's the first cell in the row 
+    //  + the current cursor points at the first child (a block)
+    //  + the block pointed by cursor is empty
+    Element cell = peek("table-cell", "nextTableCell() is not applicable outside enclosing table");
+    if (cell.getPreviousSibling()==null&&cursor==cell.getFirstChild()&&!cursor.hasChildNodes()) {
+      attributes(cell, atts);
+      // add empty content to block so another call to nextTableCell() willl actually move forward
+      push("inline", "").pop(); 
+      return this;
+    }
+    
+    // peek at row
+    Element row = peek("table-row", "nextTableCell() is not applicable outside enclosing table row");
+    int cells = row.getElementsByTagName("table-cell").getLength();
     
     // peek at table - add new row if we have all columns already
     Element table = peek("table", "nextTableCell() is not applicable outside enclosing table");
-    int columns = table.getElementsByTagName("table-column").getLength();
-    if (cells==columns) 
+    int cols = table.getElementsByTagName("table-column").getLength();
+    if (cols>0&&cells==cols) 
       return nextTableRow();
 
+    // pop to row
+    pop("table-row", "nextTableCell() is not applicable outside enclosing table row");
+    
     // 20060215 wanted to use border=inherit here but that would require table-row
     // and table-body to have border=inherit as well. table-body can't have a
     // border property in a table with border-collapse=separate (which is the only
@@ -517,7 +555,7 @@ public class Document {
     // on the table-columns and then border=from-table-column() on the cells.
     
     // add now
-    push("table-cell", "border="+table.getAttribute("border")+","+format);  
+    push("table-cell", "border="+table.getAttribute("border")+","+atts);  
     push("block");
 
     // done 
@@ -528,16 +566,40 @@ public class Document {
    * Jump to next row in table
    */
   public Document nextTableRow() {
-    // pop to parent of row
-    pop("table-row", "nextTableRow() is not applicable outside enclosing table row").pop();
-    // leaving header now?
-    if (cursor.getNodeName().equals("table-header")) 
-      pop().push("table-body");
-    // add row
-    push("table-row");
+    return nextTableRow("");
+  }
+  public Document nextTableRow(String atts) {
     
-    // cell and done
-    return nextTableCell();
+    // peek at current cell - stay with it IF
+    //  + it's the first cell in the row 
+    //  + the current cursor points at the first child (a block)
+    //  + the block pointed by cursor is empty
+    Element cell = peek("table-cell", "nextTableRow() is not applicable outside enclosing table");
+    if (cell.getPreviousSibling()==null&&cursor==cell.getFirstChild()&&!cursor.hasChildNodes()) {
+      attributes((Element)cell.getParentNode(), atts);
+      return this;
+    }
+    
+    // pop to table
+    pop("table", "nextTableRow() is not applicable outside enclosing table");
+    Element table = cursor;
+    
+    // last child is already table-body?
+    if ( table.getLastChild().getNodeName().equals("table-body") ) {
+      cursor = (Element)table.getLastChild();
+    } else {
+      push("table-body");
+    }
+    
+    // add row
+    push("table-row", atts);
+    
+    // add cell
+    push("table-cell", "border="+table.getAttribute("border"));  
+    push("block");
+    
+    // done
+    return this;
   }
   
   /**
@@ -547,7 +609,6 @@ public class Document {
     
     // leave table
     pop("table", "endTable() is not applicable outside enclosing table").pop();
-    push("block");
     
     // done
     return this;
@@ -651,7 +712,9 @@ public class Document {
             String id = element.getAttribute("id");
             
             push("basic-link", "internal-destination="+id);
-            push("page-number-citation", "ref-id="+id+",role="+(e+1)).pop();
+            push("page-number-citation", "ref-id="+id);
+            cursor.setAttributeNS(NS_GENJ, "genj:counter", Integer.toString(e+1));
+            pop();
             pop();
           }
           
@@ -687,7 +750,7 @@ public class Document {
     pop("flow", "can't create TOC without enclosing flow");
     
     // add block for toc AS FIRST child
-    push("block", "", true);
+    push("block", "", cursor.getFirstChild());
     
     //<block>
     //  Table of Contents
@@ -731,24 +794,37 @@ public class Document {
    * Add qualified element to parent
    */
   private Document push(String name, String attributes) {
-    return push(name, attributes, false);
+    return push(name, attributes, null);
   }
   
   /**
    * Add qualified element to parent
    */
-  private Document push(String name, String attributes, boolean asFirst) {
+  private Document push(String name, String attributes, Node before) {
     // create it, set attributes and hook it up
     Element elem = doc.createElementNS(NS_XSLFO, name);
-    if (asFirst)
-      cursor.insertBefore(elem, cursor.getFirstChild());
+    if (before!=null)
+      cursor.insertBefore(elem, before);
     else
       cursor.appendChild(elem);
     cursor =  elem;
+    // attribute it and done
+    return attributes(elem, attributes);
+  }
+  
+  /**
+   * Set attributes on current element
+   */
+  private Document attributes(Element elem, String attributes) {
     // parse attributes
     Matcher m = REGEX_ATTR.matcher(attributes);
     while (m.find()) {
-      cursor.setAttribute(m.group(1).trim(), m.group(2).trim());
+      // accept only fo attributes here
+      String key = m.group(1).trim();
+      if (key.indexOf(':')<0) {
+        String val = m.group(2).trim();
+        elem.setAttribute(key, val);
+      }
     }
     // done
     return this;
@@ -757,11 +833,16 @@ public class Document {
   /**
    * Add text element
    */
-  private Document text(String text, String format) {
+  private Document text(String text, String atts) {
     
+    // ignore empties
+    if (text.length()==0)
+      return this;
+
+    // create a text node for it
     Node txt = doc.createTextNode(text);
-    if (format.length()>0) {
-      push("inline", format);
+    if (atts.length()>0) {
+      push("inline", atts);
       cursor.appendChild(txt);
       pop();
     } else {
@@ -790,11 +871,11 @@ public class Document {
    * find element in current stack upwards
    */
   private Element peek(String qname, String error) {
-    Element loop = cursor;
-    while (loop!=null) {
+    Node loop = cursor;
+    while (loop instanceof Element) {
       if (loop.getLocalName().equals(qname)) 
-        return loop;
-      loop = (Element)loop.getParentNode();
+        return (Element)loop;
+      loop = loop.getParentNode();
     }
     throw new IllegalArgumentException(error);
   }
@@ -811,12 +892,16 @@ public class Document {
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
       doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
       
-      doc.startTable("10%,10%,80%", Document.TABLE_HEADER|Document.TABLE_CSV);
+      doc.startTable("width=100%,border=0.5pt solid black,genj:csv=true");
+      doc.addTableColumn("column-width=10%");
+      doc.addTableColumn("column-width=10%");
+      doc.addTableColumn("column-width=80%");
+      doc.nextTableCell("color=red");
       doc.addText("AA");
       doc.nextTableCell();
       doc.addText("AB");
       doc.nextTableCell();
-      doc.addText("AC");
+      //doc.addText("AC");
       doc.nextTableCell();
       doc.addText("BA"); // next row
       doc.nextTableCell("number-columns-spanned=2");
@@ -841,7 +926,7 @@ public class Document {
       doc.addText(" ponys and even ");
       doc.addIndexTerm("Animals", "Fish", "");
       doc.addText(" fish");
-      doc.addParagraph();
+      doc.nextParagraph();
       doc.addText("and a newline");
       doc.nextListItem();
       doc.addText("Item 2");
@@ -866,11 +951,14 @@ public class Document {
       else 
         format = new PDFFormat();
 
+      File file = null;
       String ext = format.getFileExtension();
-      File file = new File("c:/temp/foo."+ext);
+      if (ext!=null) {
+        file = new File("c:/temp/foo."+ext);
+      }
       format.format(doc, file);
 
-      if (file.exists())
+      if (file!=null)
         Runtime.getRuntime().exec("c:/Program Files/Internet Explorer/iexplore.exe \""+file.getAbsolutePath()+"\"");
 
     } catch (IOException e) {

@@ -105,7 +105,9 @@ public class ReportSummaryOfRecords extends Report {
     doc.startSection( ent.toString(), ent );
     
     // start a table for the entity
-    doc.startTable("80%,20%", Document.TABLE_SIMPLE, "", "");
+    doc.startTable("width=100%");
+    doc.addTableColumn("column-width=80%");
+    doc.addTableColumn("column-width=20%");
 
     // export its properties
     exportProperties(ent, doc, 0);

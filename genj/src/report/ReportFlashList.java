@@ -92,7 +92,10 @@ public class ReportFlashList extends Report {
 
       doc.startSection(p);
       
-      doc.startTable("80%,10%,10%", Document.TABLE_CSV);
+      doc.startTable("genj:csv=true,width=%100");
+      doc.addTableColumn("column-width=80%");
+      doc.addTableColumn("column-width=10%");
+      doc.addTableColumn("column-width=10%");
       
       Map secondary = (Map)lookup(primary, p, null);
       for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {
@@ -100,12 +103,12 @@ public class ReportFlashList extends Report {
         String s = (String)ss.next();
         Range range = (Range)lookup(secondary, s, null);
 
+        doc.nextTableRow();
         doc.addText(s);
         doc.nextTableCell();
         doc.addText(range.getFirst());
         doc.nextTableCell();
         doc.addText(range.getLast());
-        if (ss.hasNext()) doc.nextTableCell();
       }
       
       doc.endTable();
