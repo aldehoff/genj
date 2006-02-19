@@ -397,8 +397,17 @@ public abstract class PropertyOption extends Option {
      * Accessor - current value of this option
      */
     public final void setValue(Object value) {
+      
+      // a change in value?
       try {
+        Object old = getValueImpl();
+        if (old==value)
+          return;
+        if (old!=null&&value!=null&&old.equals(value))
+          return;
+        
         setValueImpl(mapper.toObject(value, type));
+        
       } catch (Throwable t) {
         // not much we can do about that - ignored
       }
