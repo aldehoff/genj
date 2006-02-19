@@ -310,9 +310,9 @@ public class Almanac {
       if (date.length()<4)
         return null;
       int year  = Integer.parseInt(date.substring(0, 4));
-      int month = date.length()>=6 ? Integer.parseInt(date.substring(4, 6)) : 0;
-      int day   = date.length()>=8 ? Integer.parseInt(date.substring(6, 8)) : 0;
-      PointInTime time = new PointInTime(day-1, month-1, year);
+      int month = date.length()>=6 ? Integer.parseInt(date.substring(4, 6))-1 : PointInTime.UNKNOWN;
+      int day   = date.length()>=8 ? Integer.parseInt(date.substring(6, 8))-1 : PointInTime.UNKNOWN;
+      PointInTime time = new PointInTime(day, month, year);
       if (!time.isValid())
         return null;
       // #2 date
