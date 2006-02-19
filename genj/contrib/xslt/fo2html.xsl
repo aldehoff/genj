@@ -9,6 +9,7 @@
 <!-- is included in all copies and/or derived work.                  -->
 <!--                                                                 -->
 <!-- Author: Nikolai Grigoriev, grig@renderx.com                     -->
+<!--         Nils Meier, nmeier at users dot sourceforge dot net     -->
 <!--                                                                 -->
 <!-- =============================================================== -->
 
@@ -21,6 +22,7 @@
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                xmlns:genj="http://genj.sourceforge.net/XSL/Format"
                 exclude-result-prefixes="fo">
 
 <xsl:output method="html"
@@ -280,12 +282,18 @@
 
 <xsl:template match="fo:table-cell" mode="display">
   <td>&add-style;
-    <xsl:if test="not(@display-align)">
-      <xsl:attribute name="valign">top</xsl:attribute>
-    </xsl:if>
-    <xsl:apply-templates select="@*" mode="get-table-attributes"/>
-    <xsl:apply-templates mode="check-for-pre"/>
-    <xsl:if test=".=''">&#160;</xsl:if>
+   <xsl:choose>
+    <xsl:when test=".=''">
+     &#160;
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:if test="not(@display-align)">
+        <xsl:attribute name="valign">top</xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="@*" mode="get-table-attributes"/>
+      <xsl:apply-templates mode="check-for-pre"/>
+    </xsl:otherwise>
+   </xsl:choose>
   </td>
 </xsl:template>
 
@@ -619,8 +627,8 @@
   </xsl:variable>
 
 <xsl:template match="fo:page-number | fo:page-number-citation">
-	<xsl:if test="@role">
-  <a href="#{@ref-id}">[<xsl:value-of select="@role"/>]</a>
+	<xsl:if test="@genj:counter">
+  <a href="#{@ref-id}">[<xsl:value-of select="@genj:counter"/>]</a>
   </xsl:if>
 </xsl:template>
  
