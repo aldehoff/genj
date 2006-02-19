@@ -1,6 +1,0 @@
-This look and feel is part of the jgoodies Looks-NC library. See:
-http://www.jgoodies.com/downloads/libraries.html
-
-It is licensed under the Creative Commons Attribution-NoDerivs-NonCommercial 1.0 license. 
-See:
-CreativeCommons.html
