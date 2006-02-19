@@ -145,6 +145,9 @@ public class FormatOptionsWidget extends JPanel {
     if (!format.supports(doc))
       valid = false;
     
+    // update filename
+    chooseFile.setFile(getFile());
+    
     // update valid action
     validAction.setEnabled(valid);
   }
