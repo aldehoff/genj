@@ -282,15 +282,15 @@
 
 <xsl:template match="fo:table-cell" mode="display">
   <td>&add-style;
+   <xsl:if test="not(@display-align)">
+     <xsl:attribute name="valign">top</xsl:attribute>
+   </xsl:if>
+   <xsl:apply-templates select="@*" mode="get-table-attributes"/>
    <xsl:choose>
     <xsl:when test=".=''">
      &#160;
     </xsl:when>
     <xsl:otherwise>
-      <xsl:if test="not(@display-align)">
-        <xsl:attribute name="valign">top</xsl:attribute>
-      </xsl:if>
-      <xsl:apply-templates select="@*" mode="get-table-attributes"/>
       <xsl:apply-templates mode="check-for-pre"/>
     </xsl:otherwise>
    </xsl:choose>
