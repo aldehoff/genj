@@ -93,6 +93,9 @@ public class LnF {
           url     = r.get(prefix+".url",""),
           version = r.get(prefix+".version",""),
           archive = r.get(prefix+".jar",(String)null);
+        
+        if (name.length()==0)
+          continue;
       
         // patch name (don't want it to be too long)
         int i = name.indexOf('(');
@@ -172,12 +175,9 @@ public class LnF {
       
       // calc theme jar       
       String themejar =  new File(getLnFDir(), getTheme()).getAbsolutePath();
-    
+      
       // HACK: for www.lfprod.com's SkinLookAndFeel ONLY right now
-      UIManager.put(
-        "SkinLookAndFeel.Skin", 
-        instance.getClass().getMethod("loadThemePack", new Class[]{String.class}).invoke(instance, new Object[]{themejar})
-      );
+      System.setProperty("skinlf.themepack", themejar);
     
       // Done
     }
