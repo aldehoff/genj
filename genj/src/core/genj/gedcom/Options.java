@@ -117,9 +117,9 @@ public class Options extends OptionProvider {
    */
   public void setTxtMarriageSymbol(String set) {
     if (set!=null&&set.trim().length()>0)
-      txtMarriageSymbol = set;
+      txtMarriageSymbol = ' '+set.trim()+' ';
     else
-      txtMarriageSymbol = "+";
+      txtMarriageSymbol = " + ";
   }
 
   /**
