@@ -33,6 +33,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -70,7 +71,7 @@ public class Almanac {
   private List events = new ArrayList();
   
   /** categories */
-  private List categories = new ArrayList();
+  private Set categories = new HashSet();
   
   /** whether we've loaded all events */
   private boolean isLoaded = false;
@@ -92,8 +93,10 @@ public class Almanac {
     new Thread(new Runnable() {
       public void run() {
         try {
-          new WikipediaLoader().load();
-          new AlmanacLoader().load();
+          if ("fr".equals(Locale.getDefault().getLanguage()))
+            new AlmanacLoader().load();
+          else
+            new WikipediaLoader().load();
         } catch (Throwable t) {
         }
   	    LOG.info("Loaded "+events.size()+" events");
@@ -135,24 +138,15 @@ public class Almanac {
   }
   
   /**
-   * Get a category by name - this effectivly reusee
-   * category strings if the first word in name is a
-   * valid prefix
+   * Registers another category
    */
-  protected String getCategory(String name) {
-    
-    String key = new StringTokenizer(name," ").nextToken().toLowerCase();
+  protected String addCategory(String name) {
     
     synchronized (categories) {
-      for (int i = 0; i < categories.size(); i++) {
-        String old = (String)categories.get(i);
-        if (old.toLowerCase().startsWith(key))
-          return old;
-      }
       categories.add(name);
-      return name;
     }
     
+    return name;
   }
   
   /**
@@ -361,7 +355,7 @@ public class Almanac {
         String cat = RESOURCES.getString("category."+key, false);
         if (cat==null)
           cat = RESOURCES.getString("category.*");
-        result.add(getCategory(cat));
+        result.add(addCategory(cat));
       }
       
       return result;
@@ -457,7 +451,7 @@ public class Almanac {
         return null;
       
 		  // lookup category
-		  List cats = Collections.singletonList(getCategory(group));
+		  List cats = Collections.singletonList(addCategory(group));
 
       // create event
 		  return new Event(cats, pit, text); 
