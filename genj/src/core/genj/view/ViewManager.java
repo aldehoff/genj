@@ -70,7 +70,7 @@ public class ViewManager {
   /*package*/ final static Logger LOG = Logger.getLogger("genj.view");
 
   /** resources */
-  public static Resources resources = Resources.get(ViewManager.class);
+  /*package*/ static Resources RESOURCES = Resources.get(ViewManager.class);
   
   /** registry */
   private Registry registry;
@@ -295,11 +295,11 @@ public class ViewManager {
     // Frame already open?
     SettingsWidget settings = (SettingsWidget)windowManager.getContent("settings");
     if (settings==null) {
-      settings = new SettingsWidget(resources, this);
+      settings = new SettingsWidget(this);
       settings.setViewWidget(viewWidget);
       windowManager.openFrame(
         "settings", 
-        resources.getString("view.edit.title"),
+        RESOURCES.getString("view.edit.title"),
         Images.imgSettings,
         settings,
         null, null

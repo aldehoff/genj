@@ -19,7 +19,6 @@
  */
 package genj.view;
 
-import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 
@@ -51,17 +50,13 @@ import javax.swing.border.TitledBorder;
   /** ViewManager */
   private ViewManager viewManager;
   
-  /** resources */
-  private Resources txtResources;
-  
   /**
    * Constructor
    */
-  protected SettingsWidget(Resources resources, ViewManager manager) {
+  protected SettingsWidget(ViewManager manager) {
     
     // remember
     viewManager = manager;
-    txtResources = resources;
     
     // Panel for ViewSettingsWidget
     pSettings = new JPanel(new BorderLayout());
@@ -117,7 +112,7 @@ import javax.swing.border.TitledBorder;
    */
   private class ActionClose extends Action2 {
     private ActionClose() {
-      setText(txtResources, "view.close");
+      setText(ViewManager.RESOURCES, "view.close");
     }
     protected void execute() {
       viewManager.getWindowManager().close("settings");
@@ -129,7 +124,7 @@ import javax.swing.border.TitledBorder;
    */
   private class ActionApply extends Action2 {
     protected ActionApply() { 
-      setText(txtResources, "view.apply"); 
+      setText(ViewManager.RESOURCES, "view.apply"); 
       setEnabled(false);
     }
     protected void execute() {
@@ -142,7 +137,7 @@ import javax.swing.border.TitledBorder;
    */
   private class ActionReset extends Action2 {
     protected ActionReset() { 
-      setText(txtResources, "view.reset"); 
+      setText(ViewManager.RESOURCES, "view.reset"); 
       setEnabled(false);
     }
     protected void execute() {
