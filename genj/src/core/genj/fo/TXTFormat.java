@@ -21,15 +21,17 @@ package genj.fo;
 
 import java.io.OutputStream;
 
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * Format  for text - using FOP
  */
 public class TXTFormat extends Format {
 
+  private final static Templates TEMPLATES = getTemplates("./contrib/xslt/fo2txt.xsl");
+  
   /**
    * Constructor
    */
@@ -42,14 +44,16 @@ public class TXTFormat extends Format {
    */
   protected void formatImpl(Document doc, OutputStream out) throws Throwable {
 
-    // create FOP tree builder that handles the document content and generates out
-    org.xml.sax.ContentHandler handler = new org.apache.fop.fo.FOTreeBuilder("text/plain", new org.apache.fop.apps.FOUserAgent(), out);
+    // could do thsi with FOP TextRenderer but it doesn't do the trick for simple text that we want to generate
+//    org.xml.sax.ContentHandler handler = new org.apache.fop.fo.FOTreeBuilder("text/plain", new org.apache.fop.apps.FOUserAgent(), out);
+//    Transformer transformer = TransformerFactory.newInstance().newTransformer();
+//    transformer.transform(doc.getDOMSource(), new SAXResult(handler));
 
     // grab xsl transformer
-    Transformer transformer = TransformerFactory.newInstance().newTransformer();
+    Transformer transformer = TEMPLATES.newTransformer();
     
     // do the transformation
-    transformer.transform(doc.getDOMSource(), new SAXResult(handler));
+    transformer.transform(doc.getDOMSource(), new StreamResult(out));
 
     // done
   }
