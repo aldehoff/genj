@@ -88,6 +88,7 @@ public class Document {
     
     // boilerplate
     //  <root>
+    //   <title>
     //   <layout-master-set>
     //    <simple-page-master>
     //     <region-body/>
@@ -101,6 +102,8 @@ public class Document {
     cursor = (Element)doc.appendChild(doc.createElementNS(NS_XSLFO, "root")); 
     cursor.setAttribute("xmlns", NS_XSLFO);
     cursor.setAttribute("xmlns:genj", NS_GENJ);
+    
+    push("title").text(getTitle(), "").pop();
     
     push("layout-master-set");
     push("simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
@@ -419,7 +422,7 @@ public class Document {
     push("list-item");
     push("list-item-label", "end-indent=label-end()");
     push("block");
-    text("\u2022", "");
+    text("\u2219", ""); // &bullet; /u2219 works in JEditPane, &bull; \u2022 doesn't
     pop().pop().push("list-item-body", "start-indent=body-start()");
     push("block");
 
