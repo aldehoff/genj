@@ -88,13 +88,13 @@ public class Document {
     
     // boilerplate
     //  <root>
-    //   <title>
     //   <layout-master-set>
     //    <simple-page-master>
     //     <region-body/>
     //    </simple-page-master>
     //   </layout-master-set>
     //   <page-sequence>
+    //    <title>
     //    <flow>
     //     <block/>
     //    </flow>
@@ -103,12 +103,13 @@ public class Document {
     cursor.setAttribute("xmlns", NS_XSLFO);
     cursor.setAttribute("xmlns:genj", NS_GENJ);
     
-    push("title").text(getTitle(), "").pop();
-    
     push("layout-master-set");
     push("simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
     push("region-body");
     pop().pop().pop().push("page-sequence","master-reference=master");
+    
+    // don't do the title yet - FOP doesn't like it
+    //push("title").text(getTitle(), "").pop();
     push("flow", "flow-name=xsl-region-body");
     push("block");
     
@@ -887,8 +888,8 @@ public class Document {
     
     try {
     
-      Document doc = new Document("test");
-  
+      Document doc = new Document("Testing FO");
+      
       doc.addTOC();
       doc.startSection("Section 1");
       doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
