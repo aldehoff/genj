@@ -20,9 +20,10 @@
 package genj.gedcom;
 
 /**
- * Abstract base type for all Entities
+ * Abstract base type for all Entities - don't make abstract since we actually
+ * instantiate this for entities we don't know 
  */
-public abstract class Entity extends Property {
+public class Entity extends Property {
   
   /** the containing gedcom */
   private Gedcom gedcom;
