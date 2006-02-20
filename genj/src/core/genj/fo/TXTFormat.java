@@ -21,7 +21,6 @@ package genj.fo;
 
 import java.io.OutputStream;
 
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
 
@@ -30,8 +29,6 @@ import javax.xml.transform.stream.StreamResult;
  */
 public class TXTFormat extends Format {
 
-  private final static Templates TEMPLATES = getTemplates("./contrib/xslt/fo2txt.xsl");
-  
   /**
    * Constructor
    */
@@ -50,7 +47,7 @@ public class TXTFormat extends Format {
 //    transformer.transform(doc.getDOMSource(), new SAXResult(handler));
 
     // grab xsl transformer
-    Transformer transformer = TEMPLATES.newTransformer();
+    Transformer transformer = getTemplates("./contrib/xslt/fo2txt.xsl").newTransformer();
     
     // do the transformation
     transformer.transform(doc.getDOMSource(), new StreamResult(out));

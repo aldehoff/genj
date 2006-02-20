@@ -21,7 +21,6 @@ package genj.fo;
 
 import java.io.OutputStream;
 
-import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
 
@@ -29,8 +28,6 @@ import javax.xml.transform.stream.StreamResult;
  * Format for CSV 
  */
 public class CSVFormat extends Format {
-  
-  private final static Templates TEMPLATES = getTemplates("./contrib/xslt/fo2csv.xsl");
   
   /**
    * Constructor
@@ -52,7 +49,7 @@ public class CSVFormat extends Format {
   protected void formatImpl(Document doc, OutputStream out) throws Throwable {
     
     // grab xsl transformer
-    Transformer transformer = TEMPLATES.newTransformer();
+    Transformer transformer = getTemplates("./contrib/xslt/fo2csv.xsl").newTransformer();
     
     // do the transformation
     transformer.transform(doc.getDOMSource(), new StreamResult(out));

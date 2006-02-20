@@ -62,8 +62,8 @@ public abstract class Format {
   /** whether this format requires externalization of referenced files (imagedata) */
   private boolean isExternalizedFiles;
   
-  /** caching for xsl 2 templates */
-  private Map xsl2templates = new HashMap();
+  /** caching for xsl templates */
+  private Map xslCache = new HashMap();
 
   /** 
    * Constructor 
@@ -201,14 +201,37 @@ public abstract class Format {
   /**
    * Get transformation templates for given file
    */
-  protected static Templates getTemplates(String filename) {
+  private class TemplatesCache {
+    Templates templates;
+    long timestamp;
+  }
+  
+  protected Templates getTemplates(String filename) {
+    
+    File file = new File(filename);
+    
+    // check timestamp if we have it already
+    long lastModified = file.lastModified();
+    TemplatesCache cache = (TemplatesCache)xslCache.get(file);
+    if (cache!=null&&cache.timestamp==lastModified)
+        return cache.templates;
+
+    cache = new TemplatesCache();
+    cache.timestamp = lastModified;
+
+    // get a new
     try {
-        TransformerFactory factory = TransformerFactory.newInstance();
-        return factory.newTemplates(new StreamSource(new File(filename)));
+      TransformerFactory factory = TransformerFactory.newInstance();
+      cache.templates = factory.newTemplates(new StreamSource(file));
     } catch (TransformerConfigurationException e) {
       throw new RuntimeException("Exception reading templates from "+filename+": "+e.getMessage());
     }
     
+    // keep it
+    xslCache.put(file, cache);
+
+    // done
+    return cache.templates;
   }
   
   /**
@@ -253,5 +276,5 @@ public abstract class Format {
     // done
     return formats;
   }
-  
+
 }
