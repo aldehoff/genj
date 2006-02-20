@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.100 $ $Author: nmeier $ $Date: 2006-02-20 08:13:56 $
+ * $Revision: 1.101 $ $Author: nmeier $ $Date: 2006-02-20 21:33:21 $
  */
 package genj.report;
 
@@ -54,7 +54,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,8 +108,8 @@ public abstract class Report implements Cloneable {
   /** language we're trying to use */
   private final static String lang = Locale.getDefault().getLanguage();
 
-  /** i18n texts */
-  private Properties properties;
+  /** translation texts */
+  private Resources resources;
 
   /** out */
   private PrintWriter out;
@@ -635,29 +634,16 @@ public abstract class Report implements Cloneable {
    */
   public final String translate(String key, Object[] values) {
 
-    // get i18n properties
-    Properties i18n = getProperties();
+    Resources resources = getResources();
 
     // look it up in language
     String result = null;
-    if (lang!=null) {
-      result = i18n.getProperty(key+'.'+lang);
-    }
+    if (lang!=null) 
+      result = resources.getString(key+'.'+lang, values, false);
 
     // fallback if necessary
     if (result==null)
-      result = i18n.getProperty(key);
-
-    // check result and apply format
-    if (result==null) {
-      result = "";
-    } else {
-      if (values!=null&&values.length>0) {
-        for (int i=0;i<values.length;i++) 
-          if (values[i]==null) values[i]="";
-        result = Resources.getMessageFormat(result).format(values);
-      }
-    }
+      result = resources.getString(key, values, true);
 
     // done
     return result;
@@ -683,16 +669,15 @@ public abstract class Report implements Cloneable {
   /**
    * Access to report properties
    */
-  private Properties getProperties() {
-    if (properties==null) {
-      properties = new Properties();
+  private Resources getResources() {
+    if (resources==null) {
       try {
-        properties.load(getClass().getResourceAsStream(getTypeName()+".properties"));
+        resources = new Resources(getClass().getResourceAsStream(getTypeName()+".properties"));
       } catch (Throwable t) {
         ReportView.LOG.info("Couldn't read properties for "+this);
       }
     }
-    return properties;
+    return resources;
   }
 
   /**
