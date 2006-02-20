@@ -8,7 +8,7 @@
 <!-- Permission to copy and modify is granted, provided this notice  -->
 <!-- is included in all copies and/or derived work.                  -->
 <!--                                                                 -->
-<!-- Author: Nikolai Grigoriev, grig@renderx.com                     -->
+<!-- Author: Nikolai Grigoriev, grig at renderx dot com              -->
 <!--         Nils Meier, nmeier at users dot sourceforge dot net     -->
 <!--                                                                 -->
 <!-- =============================================================== -->
@@ -120,7 +120,10 @@
 <!-- =============================================================== -->
 
 <xsl:template match="fo:block">
-  &anchor;<div>&add-style;<xsl:apply-templates mode="check-for-pre"/></div>
+  <!-- NM20060219 ignore empty blocks since swing's html viewer doesn't -->
+  <xsl:if test=".!=''">
+   &anchor;<div>&add-style;<xsl:apply-templates mode="check-for-pre"/></div>
+  </xsl:if>
 </xsl:template>
 
 <!-- =============================================================== -->
@@ -199,6 +202,7 @@
   <xsl:param name="gap-width"/>
 
   <tr>
+  
     <xsl:apply-templates select="." mode="draw-cell">
        <xsl:with-param name="width" select="$label-width"/>
     </xsl:apply-templates>
@@ -218,6 +222,7 @@
 <xsl:template match="fo:list-item-label | fo:list-item-body" mode="draw-cell">
   <xsl:param name="width" select="'auto'"/>
   <td valign="top">&add-style;&anchor;
+  
     <xsl:if test="$width != 'auto'">
       <xsl:attribute name="width">
         <xsl:value-of select="$width"/>
@@ -286,6 +291,8 @@
      <xsl:attribute name="valign">top</xsl:attribute>
    </xsl:if>
    <xsl:apply-templates select="@*" mode="get-table-attributes"/>
+   
+   <!-- NM20060218 patch empty table cells with a nbsp -->
    <xsl:choose>
     <xsl:when test=".=''">
      &#160;
@@ -619,7 +626,7 @@
 </xsl:template>
 
 <!-- =============================================================== -->
-<!-- Page number - replace with [@role] if available                 -->
+<!-- Page number - replace with [@genj:citation] if available        -->
 <!-- =============================================================== -->
 
   <xsl:variable name="cleaned-url">
@@ -627,9 +634,16 @@
   </xsl:variable>
 
 <xsl:template match="fo:page-number | fo:page-number-citation">
-	<xsl:if test="@genj:counter">
-  <a href="#{@ref-id}">[<xsl:value-of select="@genj:counter"/>]</a>
-  </xsl:if>
+  <!-- NM20060218 use our extension to select a citation text if avail bullet otherwise -->
+  <a href="#{@ref-id}">
+   <xsl:choose>
+   <xsl:when test="@genj:citation">
+    [<xsl:value-of select="@genj:citation"/>]
+   </xsl:when>
+   <xsl:otherwise>&#x2219;</xsl:otherwise>
+   </xsl:choose>
+  </a>
+  
 </xsl:template>
  
 <!-- =============================================================== -->

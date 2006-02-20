@@ -716,7 +716,7 @@ public class Document {
             
             push("basic-link", "internal-destination="+id);
             push("page-number-citation", "ref-id="+id);
-            cursor.setAttributeNS(NS_GENJ, "genj:counter", Integer.toString(e+1));
+            cursor.setAttributeNS(NS_GENJ, "genj:citation", Integer.toString(e+1));
             pop();
             pop();
           }
