@@ -58,6 +58,13 @@ public class FileChooserWidget extends JPanel {
   
   /** action listeners */
   private List listeners = new ArrayList();
+  
+  /** action listener connector to text field */
+  private ActionListener actionProxy = new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+      fireActionEvent();
+    }
+  };
  
   /** 
    * constructor 
@@ -83,11 +90,6 @@ public class FileChooserWidget extends JPanel {
     super(new BorderLayout());
     
     button = new ButtonHelper().setInsets(0).create(new Choose());
-    text.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        fireActionEvent();
-      }
-    });
     
     add(BorderLayout.CENTER, text );
     add(BorderLayout.EAST  , button);      
@@ -122,6 +124,9 @@ public class FileChooserWidget extends JPanel {
    * Add listener
    */
   public void addActionListener(ActionListener l) {
+    // hook up to textfields action if this is the first listener
+    if (listeners.isEmpty())
+      text.addActionListener(actionProxy);
     listeners.add(l);
   }
   
@@ -130,6 +135,9 @@ public class FileChooserWidget extends JPanel {
    */
   public void removeActionListener(ActionListener l) {
     listeners.remove(l);
+    // dehook from textfields action if this was the last listener
+    if (listeners.isEmpty())
+      text.removeActionListener(actionProxy);
   }
   
   /**
