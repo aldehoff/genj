@@ -28,6 +28,7 @@ import genj.io.GedcomWriter;
 import genj.option.OptionProvider;
 import genj.option.OptionsWidget;
 import genj.print.PrintManager;
+import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -41,6 +42,7 @@ import genj.util.swing.ProgressWidget;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewFactory;
+import genj.view.ViewHandle;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -106,7 +108,7 @@ public class ControlCenter extends JPanel {
     registry = new Registry(setRegistry, "cc");
     windowManager = winManager;
     printManager = new PrintManager(windowManager);
-    viewManager = new ViewManager(new Registry(setRegistry, "views"), printManager, windowManager);
+    viewManager = new ViewManager(printManager, windowManager);
     
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget(viewManager, registry, new ActionSave(false, true), new ActionClose(true));
@@ -422,10 +424,26 @@ public class ControlCenter extends JPanel {
           }
           // no - skip it
         }
-        // remember as being open
-        save.add(gedcom.hasPassword() ? gedcom.getOrigin() + "," + gedcom.getPassword() : gedcom.getOrigin().toString());
+        // remember as being open, password and open views
+        StringBuffer restore = new StringBuffer();
+        restore.append(gedcom.getOrigin());
+        restore.append(",");
+        if (gedcom.hasPassword())
+          restore.append(gedcom.getPassword());
+        restore.append(",");
+        ViewHandle[] views = viewManager.getViews(gedcom);
+        for (int i=0, j=0;i<views.length;i++) {
+          if (j++>0) restore.append(",");
+          restore.append(views[i].persist());
+        }
+        save.add(restore);
+        // next gedcom
       }
       registry.put("open", save);
+      
+      // grab all currently open views
+      
+      // FIXME store current views
 
       // Close all Windows
       windowManager.closeAll();
@@ -505,8 +523,34 @@ public class ControlCenter extends JPanel {
     
     /** password in use */
     private String password = Gedcom.PASSWORD_NOT_SET;
+    
+    /** views to load */
+    private List views2restore = new ArrayList();
+    
+    /** constructor - good for reloading */
+    protected ActionOpen(String restore) throws MalformedURLException {
+      
+      setAsync(ASYNC_SAME_INSTANCE);
+      
+      // grab "file[, password][, view#x]"
+      DirectAccessTokenizer tokens = new DirectAccessTokenizer(restore, ",", false);
+      String url = tokens.get(0);
+      String pwd = tokens.get(1);
+      if (url==null)
+        throw new IllegalArgumentException("can't restore "+restore);
 
-    /** constructor */
+      origin = Origin.create(url);
+      if (pwd!=null) password = pwd;
+      
+      // grab views we're going to open if successful
+      for (int i=2; tokens.get(i)!=null; i++) {
+        views2restore.add(tokens.get(i));
+      }
+      
+      // done
+    }
+
+    /** constructor - good for button or menu item */
     protected ActionOpen() {
       setAccelerator(ACC_OPEN); 
       setTip(resources, "cc.tip.open_file");
@@ -515,9 +559,9 @@ public class ControlCenter extends JPanel {
       setAsync(ASYNC_NEW_INSTANCE);
     }
 
-    /** constructor */
+    /** constructor - good for loading a specific file*/
     protected ActionOpen(Origin setOrigin) {
-      setAsync(ASYNC_NEW_INSTANCE);
+      setAsync(ASYNC_SAME_INSTANCE);
       origin = setOrigin;
     }
 
@@ -607,30 +651,37 @@ public class ControlCenter extends JPanel {
           Action2.okOnly(), 
           ControlCenter.this
         );
+        
+        return;
 
-      } else {
+      } 
         
-        // show warnings
-        if (reader!=null) {
-          List warnings = reader.getWarnings();
-          if (!warnings.isEmpty()) {
-            windowManager.openNonModalDialog(
-              null,
-              resources.getString("cc.open.warnings", gedcom.getName()),
-              WindowManager.WARNING_MESSAGE,
-              new JScrollPane(new JList(warnings.toArray())),
-              Action2.okOnly(),
-              ControlCenter.this
-            );
-          }
-        }
-        
-      }
-      
       // got a successfull gedcom
-      if (gedcom != null) 
+      if (gedcom != null) {
+        
         addGedcom(gedcom);
       
+        // open views again
+        for (int i=0;i<views2restore.size();i++)
+          ViewHandle.restore(viewManager, gedcom, (String)views2restore.get(i));
+          
+      }
+      
+      // show warnings
+      if (reader!=null) {
+        List warnings = reader.getWarnings();
+        if (!warnings.isEmpty()) {
+          windowManager.openNonModalDialog(
+            null,
+            resources.getString("cc.open.warnings", gedcom.getName()),
+            WindowManager.WARNING_MESSAGE,
+            new JScrollPane(new JList(warnings.toArray())),
+            Action2.okOnly(),
+            ControlCenter.this
+          );
+        }
+      }
+        
       // done
     }
 
@@ -759,29 +810,14 @@ public class ControlCenter extends JPanel {
     /** run */
     public void execute() {
 
-      // Loop over files to load
+      // Loop over files to open
       for (Iterator it = files.iterator(); it.hasNext(); ) {
-        
-        // grab "file[, password]"
-        String last = it.next().toString();
-        String pwd = null;
-        int comma = last.indexOf(',');
-        if (comma>0) {
-          pwd = last.substring(comma+1);
-          last = last.substring(0, comma);
-        }
-        
-        // is it a local file?
-        File file = new File(last);
-        if (file.exists()) last = "file:" + last;        
-        
-        // open it 
+        String restore = it.next().toString();
         try {
-          ActionOpen open = new ActionOpen(Origin.create(last));
-          if (pwd!=null) open.password = pwd;
+          ActionOpen open = new ActionOpen(restore);
           open.trigger();
-        } catch (MalformedURLException x) {
-          App.LOG.log(Level.WARNING, "Couldn't re-open "+last);
+        } catch (Throwable t) {
+          App.LOG.log(Level.WARNING, "cannot restore "+restore, t);
         }
         
         // next
@@ -1079,11 +1115,11 @@ public class ControlCenter extends JPanel {
       if (gedcom == null)
         return;
       // create new View
-      JComponent view = viewManager.openView(factory, gedcom);
+      ViewHandle handle = viewManager.openView(gedcom, factory);
       // install some accelerators
-      ActionSave save = new ActionSave(gedcom, view);
-      view.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(ACC_SAVE), save);
-      view.getActionMap().put(save, save);
+      ActionSave save = new ActionSave(gedcom, handle.getView());
+      handle.getView().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(ACC_SAVE), save);
+      handle.getView().getActionMap().put(save, save);
     }
   } //ActionView
 

@@ -138,10 +138,10 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
       // a report with standard out?
       if (report.usesStandardOut()) {
         // get handle of a ReportView 
-        Object[] views = manager.getInstances(ReportView.class, gedcom);
+        Object[] views = manager.getViews(ReportView.class, gedcom);
         ReportView view;
         if (views.length==0)
-          view = (ReportView)manager.openView(ReportViewFactory.class, gedcom);
+          view = (ReportView)manager.openView(ReportViewFactory.class, gedcom).getView();
         else 
           view = (ReportView)views[0];
         // run it in view

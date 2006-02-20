@@ -48,8 +48,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.FocusManager;
@@ -72,14 +75,12 @@ public class ViewManager {
   /** resources */
   /*package*/ static Resources RESOURCES = Resources.get(ViewManager.class);
   
-  /** registry */
-  private Registry registry;
-
   /** factory instances of views */
   private ViewFactory[] factories = null;
   
   /** open views */
-  private Map key2viewwidget = new HashMap();
+  private Map factory2vHandles = new HashMap();
+  private LinkedList allHandles = new LinkedList();
   
   /** the currently valid context */
   private Map gedcom2context = new HashMap();
@@ -99,7 +100,7 @@ public class ViewManager {
   /**
    * Constructor
    */
-  public ViewManager(Registry registry, PrintManager printManager, WindowManager windowManager) {
+  public ViewManager(PrintManager printManager, WindowManager windowManager) {
 
     // lookup all factories dynamically
     List factories = new ArrayList();
@@ -108,13 +109,13 @@ public class ViewManager {
       factories.add(it.next());
 
     // continue with init
-    init(registry, printManager, windowManager, factories);
+    init(printManager, windowManager, factories);
   }
   
   /**
    * Constructor
    */
-  public ViewManager(Registry registry, PrintManager printManager, WindowManager windowManager, String[] factoryTypes) {
+  public ViewManager(PrintManager printManager, WindowManager windowManager, String[] factoryTypes) {
     
     // instantiate factories
     List factories = new ArrayList();
@@ -127,16 +128,32 @@ public class ViewManager {
     }
     
     // continue with init
-    init(registry, printManager, windowManager, factories);
+    init(printManager, windowManager, factories);
+  }
+  
+  /**
+   * get all views for given gedcom 
+   */
+  public ViewHandle[] getViews(Gedcom gedcom) {
+    
+    // look for views looking at gedcom    
+    List result = new ArrayList();
+    for (Iterator handles = allHandles.iterator(); handles.hasNext() ; ) {
+      ViewHandle handle = (ViewHandle)handles.next();
+      if (handle.getGedcom()==gedcom)  
+        result.add(handle);
+    }
+    
+    // done
+    return (ViewHandle[])result.toArray(new ViewHandle[result.size()]);
   }
   
   /**
    * Initialization
    */
-  private void init(Registry registry, PrintManager printManager, WindowManager windowManager, List factories) {
+  private void init(PrintManager printManager, WindowManager windowManager, List factories) {
     
     // remember
-    this.registry = registry;
     this.printManager = printManager;
     this.windowManager = windowManager;
     
@@ -151,7 +168,7 @@ public class ViewManager {
     
     // done
   }
-
+  
   /**
    * Returns all known view factories
    */
@@ -231,19 +248,24 @@ public class ViewManager {
     // connect to us
     context.setManager(ViewManager.this);
     
-    // loop and tell to views
-    Iterator it = key2viewwidget.values().iterator();
-    while (it.hasNext()) {
-      ViewContainer vw = (ViewContainer)it.next();
-      // only if view on same gedcom
-      if (vw.getGedcom()!= gedcom) continue;
-      // and context supported
-      if (vw.getView() instanceof ContextListener) try {
-        ((ContextListener)vw.getView()).handleContextSelectionEvent(e);
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "ContextListener threw throwable", t);
+    // loop and tell to views 
+    for (Iterator lists = factory2vHandles.values().iterator(); lists.hasNext() ;) {
+      List list = (List)lists.next();
+      for(Iterator handles = list.iterator(); handles.hasNext(); ) {
+        ViewHandle handle = (ViewHandle)handles.next();
+        // empty ?
+        if (handle==null) continue;
+        // only if view on same gedcom
+        if (handle.getGedcom()!= gedcom) continue;
+        // and context supported
+        if (handle.getView() instanceof ContextListener) try {
+          ((ContextListener)handle.getView()).handleContextSelectionEvent(e);
+        } catch (Throwable t) {
+          LOG.log(Level.WARNING, "ContextListener threw throwable", t);
+        }
+        // next viewhandle
       }
-      // next
+      // next list
     }
     
     // loop and tell to context listeners
@@ -290,13 +312,13 @@ public class ViewManager {
   /**
    * Opens settings for given view settings component
    */
-  /*package*/ void openSettings(ViewContainer viewWidget) {
+  /*package*/ void openSettings(ViewHandle handle) {
     
     // Frame already open?
     SettingsWidget settings = (SettingsWidget)windowManager.getContent("settings");
     if (settings==null) {
       settings = new SettingsWidget(this);
-      settings.setViewWidget(viewWidget);
+      settings.setView(handle);
       windowManager.openFrame(
         "settings", 
         RESOURCES.getString("view.edit.title"),
@@ -305,7 +327,7 @@ public class ViewManager {
         null, null
       );
     } else {
-      settings.setViewWidget(viewWidget);
+      settings.setView(handle);
     }
     // done
   }
@@ -318,75 +340,65 @@ public class ViewManager {
     String name = origin.getFileName();
     return Registry.lookup(name, origin);
   }
-
+  
   /**
-   * Helper that returns the next logical registry-view
-   * for given gedcom and name of view
+   * Get the package name of a Factory
    */
-  private Registry getNextRegistry(Gedcom gedcom, String nameOfView) {
-
-    // Check which iteration number is available next
-    String name = gedcom.getOrigin().getFileName();
-    int number;
-    for (number=1;;number++) {
-      if (!key2viewwidget.containsKey(name+"."+nameOfView+"."+number)) 
-        break;
-    }
-
-    // create the view
-    return new Registry(getRegistry(gedcom), nameOfView+"."+number);
+  /*package*/ String getPackage(ViewFactory factory) {
+    
+    Matcher m = Pattern.compile(".*\\.(.*)\\..*").matcher(factory.getClass().getName());
+    if (!m.find())
+      throw new IllegalArgumentException("can't resolve package for "+factory);
+    return m.group(1);
+    
   }
-  
-  
-  /**
-   * Calculate a logical key for given factory
-   */
-  private String getKey(ViewFactory factory) {
-    
-    String key = factory.getClass().getName();
-    
-    // get rid of classname
-    int lastdot = key.lastIndexOf('.');
-    if (lastdot>0) key = key.substring(0, lastdot);
-    
-    // get rid of pre-packages
-    while (true) {
-      int dot = key.indexOf('.');
-      if (dot<0) break;
-      key = key.substring(dot+1);
-    }
 
-    return key.toLowerCase();    
-// 20030521 interestingly getPackage() doesn't
-// always seem to return something (e.g. Konqueror applet)
-//    String pkg = factory.getClass().getPackage().getName();
-//    int lastdot = pkg.lastIndexOf('.');
-//    return lastdot<0 ? pkg : pkg.substring(lastdot+1);
+  /**
+   * Next in the number of views for given factory
+   */
+  private int getNextInSequence(ViewFactory factory) {
+    
+    // check handles for factory
+    List handles = (List)factory2vHandles.get(factory);
+    if (handles==null)
+      return 1;
+    
+    // find first empty spot
+    int result = 1;
+    for (Iterator it = handles.iterator(); it.hasNext(); ) {
+      ViewHandle handle = (ViewHandle)it.next();
+      if (handle==null) break;
+      result++;
+    }
+    
+    return result;
   }
   
   /**
    * Closes a view
    */
-  protected void closeView(String key) {
+  protected void closeView(ViewHandle handle) {
     // close property editor if open and showing settings
     windowManager.close("settings");
     // now close view
-    windowManager.close(key);
+    windowManager.close(handle.getKey());
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
     // forget about it
-    key2viewwidget.remove(key);
+    List handles = (List)factory2vHandles.get(handle.getFactory());
+    handles.set(handle.getSequence()-1, null);
+    allHandles.remove(handle);
     // done
   }
-
+  
   /**
    * Opens a view on a gedcom file
    * @return the view component
    */
-  public JComponent openView(Class factory, Gedcom gedcom) {
+  public ViewHandle openView(Class factory, Gedcom gedcom) {
     for (int f=0; f<factories.length; f++) {
       if (factories[f].getClass().equals(factory)) 
-        return openView(factories[f], gedcom);   	
+        return openView(gedcom, factories[f]);   	
     }
     throw new IllegalArgumentException("Unknown factory "+factory.getName());
   }
@@ -395,42 +407,62 @@ public class ViewManager {
    * Opens a view on a gedcom file
    * @return the view component
    */
-  public JComponent openView(ViewFactory factory, final Gedcom gedcom) {
+  public ViewHandle openView(Gedcom gedcom, ViewFactory factory) {
+    return openView(gedcom, factory, -1);
+  }
+  
+  /**
+   * Opens a view on a gedcom file
+   * @return the view component
+   */
+  protected ViewHandle openView(final Gedcom gedcom, ViewFactory factory, int sequence) {
+    
+    // figure out what sequence # this view will get
+    if (sequence<0)
+      sequence = getNextInSequence(factory);
+    Vector handles = (Vector)factory2vHandles.get(factory);
+    if (handles==null) {
+      handles = new Vector(10);
+      factory2vHandles.put(factory, handles);
+    }
+    handles.setSize(Math.max(handles.size(), sequence));
+    
+    // already open?
+    if (handles.get(sequence-1)!=null)
+      return (ViewHandle)handles.get(sequence-1);
     
     // get a registry 
-    Registry registry = getNextRegistry(gedcom, getKey(factory));
+    Registry registry = new Registry( getRegistry(gedcom), getPackage(factory)+"."+sequence) ;
+
+    // title 
+    String title = gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")";
+
+    // create the view
+    JComponent view = factory.createView(title, gedcom, registry, this);
     
-    // title & key
-    final String 
-      title = gedcom.getName()+" - "+factory.getTitle(false)+" ("+registry.getViewSuffix()+")",
-      key = gedcom.getName() + "." + registry.getView();
+    // create a handle for it
+    final ViewHandle handle = new ViewHandle(this, gedcom, title, registry, factory, view, sequence);
     
-    // the viewwidget
-    final ViewContainer viewWidget = new ViewContainer(key,title,gedcom,registry,factory, this);
+    // wrap it into a container
+    ViewContainer container = new ViewContainer(handle);
 
     // remember
-    key2viewwidget.put(key, viewWidget);
+    handles.set(handle.getSequence()-1, handle);
+    allHandles.add(handle);
 
     // prepare to forget
     Runnable close = new Runnable() {
       public void run() {
         // let us handle close
-        closeView(key);
+        closeView(handle);
       }
     };
     
     // open frame
-    windowManager.openFrame(
-      key, 
-      title, 
-      factory.getImage(),
-      viewWidget,
-      null, 
-      close
-    );
+    windowManager.openFrame(handle.getKey(), title, factory.getImage(), container, null,  close);
         
     // done
-    return viewWidget.getView();
+    return handle;
   }
   
   /**
@@ -439,10 +471,10 @@ public class ViewManager {
   public void closeViews(Gedcom gedcom) {
     
     // look for views looking at gedcom    
-    ViewContainer[] vws = (ViewContainer[])key2viewwidget.values().toArray(new ViewContainer[key2viewwidget.size()]);
-    for (int i=0;i<vws.length;i++) {
-      if (vws[i].getGedcom()==gedcom) 
-        closeView(vws[i].getKey());
+    ViewHandle[] handles = (ViewHandle[])allHandles.toArray(new ViewHandle[allHandles.size()]);
+    for (int i=0;i<handles.length;i++) {
+      if (handles[i].getGedcom()==gedcom) 
+        closeView(handles[i]);
     }
     
     // remove its key from gedcom2current
@@ -457,11 +489,10 @@ public class ViewManager {
   public void showView(JComponent view) {
 
     // loop through views
-    Iterator vws = key2viewwidget.values().iterator();
-    while (vws.hasNext()) {
-      ViewContainer vw = (ViewContainer)vws.next();
-      if (vw.getView()==view) {
-        windowManager.show(vw.getKey());
+    for (Iterator handles = allHandles.iterator(); handles.hasNext(); ) {
+      ViewHandle handle = (ViewHandle)handles.next();
+      if (handle.getView()==view) {
+        windowManager.show(handle.getKey());
         break;
       }
     }
@@ -472,7 +503,7 @@ public class ViewManager {
   /**
    * Returns views and factories with given support 
    */
-  public Object[] getInstances(Class of, Gedcom gedcom) {
+  public Object[] getViews(Class of, Gedcom gedcom) {
     
     List result = new ArrayList(16);
     
@@ -482,11 +513,10 @@ public class ViewManager {
         result.add(factories[f]);
     }
     // loop through views
-    Iterator views = key2viewwidget.values().iterator();
-    while (views.hasNext()) {
-      ViewContainer view = (ViewContainer)views.next();
-      if (view.getGedcom()==gedcom && of.isAssignableFrom(view.getView().getClass()))
-        result.add(view.getView());
+    for (Iterator handles = allHandles.iterator(); handles.hasNext(); ) {
+      ViewHandle handle = (ViewHandle)handles.next();
+      if (handle.getGedcom()==gedcom && of.isAssignableFrom(handle.getView().getClass()))
+        result.add(handle.getView());
     }
     
     // done
@@ -531,7 +561,7 @@ public class ViewManager {
     mh.createItems(context.getActions(), false);
   
     // find ActionSupport implementors
-    ActionProvider[] as = (ActionProvider[])getInstances(ActionProvider.class, context.getGedcom());
+    ActionProvider[] as = (ActionProvider[])getViews(ActionProvider.class, context.getGedcom());
     
     // items for set of entities? more specific than Entity.class for the moment!
     Entity[] entities = context.getEntities();

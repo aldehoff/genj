@@ -21,9 +21,7 @@ package genj.view;
 
 import genj.edit.actions.Redo;
 import genj.edit.actions.Undo;
-import genj.gedcom.Gedcom;
 import genj.print.Printer;
-import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 
@@ -39,7 +37,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 /**
- * A wrapper for our views enabling action buttons
+ * A swing container for a view widget 
  */
 /*package*/ class ViewContainer extends JPanel {
   
@@ -48,50 +46,23 @@ import javax.swing.SwingConstants;
     ACC_UNDO = "ctrl Z",
     ACC_REDO = "ctrl Y";
 
-  /** the registry this view is for */
-  private Registry registry;
-  
   /** the toolbar we're using */
   private JToolBar bar;
   
-  /** the view we're wrapping */
-  private JComponent view;
-  
-  /** the factory we've used */
-  private ViewFactory factory;
-  
-  /** the gedcom this view looks at */
-  private Gedcom gedcom;
-  
-  /** the manager */
-  private ViewManager manager;
-  
-  /** title */
-  private String title;
-  
-  /** key */
-  private String key;
-  
+  /** the view's handle */
+  private ViewHandle viewHandle;
   
   /** 
    * Constructor
    */
-  /*package*/ ViewContainer(String kEy, String tiTle, Gedcom geDcom, Registry regIstry, ViewFactory facTory, ViewManager manAger) {
+  /*package*/ ViewContainer(ViewHandle handle) {
     
     // remember
-    manager = manAger;
-    key = kEy;
-    title = tiTle;
-    gedcom = geDcom;
-    registry = regIstry;
-    factory = facTory;
+    viewHandle = handle;
     
-    // create the view component
-    view = factory.createView(title, gedcom, registry, manager);
-
     // setup layout
     setLayout(new BorderLayout());
-    add(view, BorderLayout.CENTER);
+    add(viewHandle.getView(), BorderLayout.CENTER);
     
     // hook-up keyboard shortcuts & right mouse-click
     Object key = "genj.view.contextmenu";
@@ -100,16 +71,16 @@ import javax.swing.SwingConstants;
     inputs.put(KeyStroke.getKeyStroke("ctrl SPACE"), key);
     inputs.put(KeyStroke.getKeyStroke("CONTEXT_MENU"), key); // this only works in Tiger 1.5 on Windows
     
-    getActionMap().put(key, manAger.HOOK);
+    getActionMap().put(key, viewHandle.getManager().HOOK);
 
     inputs.put(KeyStroke.getKeyStroke(ACC_CLOSE), ACC_CLOSE);
     getActionMap().put(ACC_CLOSE, new ActionClose());
 
     inputs.put(KeyStroke.getKeyStroke(ACC_UNDO), ACC_UNDO);
-    getActionMap().put(ACC_UNDO, new Undo(gedcom, true));
+    getActionMap().put(ACC_UNDO, new Undo(viewHandle.getGedcom(), true));
 
     inputs.put(KeyStroke.getKeyStroke(ACC_REDO), ACC_REDO);
-    getActionMap().put(ACC_REDO, new Redo(gedcom, true));
+    getActionMap().put(ACC_REDO, new Redo(viewHandle.getGedcom(), true));
 
     // done
   }
@@ -118,18 +89,12 @@ import javax.swing.SwingConstants;
    * Install toolbar at time of add
    */
   public void addNotify() {
-    // continue
+    
+    // let super do its things
     super.addNotify();
-    // install a toolbar
-    installToolBar(view, factory);
-  }
-  
-  /**
-   * Helper that creates the toolbar for the view
-   */
-  private void installToolBar(JComponent view, ViewFactory factory) {
     
     // only if ToolBarSupport and no bar installed
+    JComponent view = viewHandle.getView();
     if (!(view instanceof ToolBarSupport)||bar!=null) 
       return;
 
@@ -148,14 +113,14 @@ import javax.swing.SwingConstants;
       bh.create(new ActionOpenSettings());
     
     // .. a button for printing View
-    if (manager.getPrintManager()!=null&&isPrintable()) 
+    if (viewHandle.getManager().getPrintManager()!=null&&isPrintable()) 
       bh.create(new ActionPrint());
 
     // .. a button for closing the View
     bh.create(new ActionClose());
 
     // add it
-    add(bar, registry.get("toolbar", BorderLayout.WEST));
+    add(bar, viewHandle.getRegistry().get("toolbar", BorderLayout.WEST));
     
     // done
   }
@@ -165,7 +130,7 @@ import javax.swing.SwingConstants;
    */
   /*package*/ boolean isPrintable() {
     try {
-      if (Printer.class.isAssignableFrom(Class.forName(view.getClass().getName()+"Printer")))
+      if (Printer.class.isAssignableFrom(Class.forName(viewHandle.getView().getClass().getName()+"Printer")))
         return true;
     } catch (Throwable t) {
     }
@@ -173,43 +138,13 @@ import javax.swing.SwingConstants;
   }
   
   /**
-   * Accessor - the view
-   */
-  /*package*/ JComponent getView() {
-    return view;
-  }
-  
-  /**
-   * Accessor - the gedcom
-   */
-  /*package*/ Gedcom getGedcom() {
-    return gedcom;
-  }
-  
-  /**
-   * Accessor - the title
-   */
-  /*package*/ String getTitle() {
-    return title;
-  }
-  
-  /**
-   * Accessor - the key
-   */
-  /*package*/ String getKey() {
-    return key;
-  }
-  
-  /**
-   * When adding components we fix a Toolbar's sub-component's
-   * orientation
-   * @see java.awt.Container#addImpl(Component, Object, int)
+   * When adding components we fix a Toolbar's sub-component's orientation
    */
   protected void addImpl(Component comp, Object constraints, int index) {
     // restore toolbar orientation?
     if (comp==bar) {
       // remember
-      registry.put("toolbar", constraints.toString());
+      viewHandle.getRegistry().put("toolbar", constraints.toString());
       // find orientation
       int orientation = SwingConstants.HORIZONTAL;
       if (BorderLayout.WEST.equals(constraints)||BorderLayout.EAST.equals(constraints))
@@ -233,7 +168,7 @@ import javax.swing.SwingConstants;
     }
     /** run */
     protected void execute() {
-      manager.closeView(key);
+      viewHandle.getManager().closeView(viewHandle);
     }
   } //ActionClose
   
@@ -248,9 +183,10 @@ import javax.swing.SwingConstants;
     /** run */
     protected void execute() {
       try {
+        JComponent view = viewHandle.getView();
         Printer printer = (Printer)Class.forName(view.getClass().getName()+"Printer").newInstance();
         printer.setView(view);
-        manager.getPrintManager().print(printer, title, view, registry); 
+        viewHandle.getManager().getPrintManager().print(printer, viewHandle.getTitle(), view, viewHandle.getRegistry()); 
       } catch (Throwable t) {
       }
     }
@@ -266,7 +202,7 @@ import javax.swing.SwingConstants;
     }
     /** run */
     protected void execute() {
-      manager.openSettings(ViewContainer.this);
+      viewHandle.getManager().openSettings(viewHandle);
     }
   } //ActionOpenSettings
   

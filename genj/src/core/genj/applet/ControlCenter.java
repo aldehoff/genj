@@ -123,7 +123,7 @@ public class ControlCenter extends JPanel {
      * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
-      viewManager.openView(factory, gedcom);
+      viewManager.openView(gedcom, factory);
     }
   } //ActionView
   

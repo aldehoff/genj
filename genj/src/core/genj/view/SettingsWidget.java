@@ -81,17 +81,17 @@ import javax.swing.border.TitledBorder;
   /**
    * Sets the ViewSettingsWidget to display
    */
-  protected void setViewWidget(ViewContainer vw) {
+  protected void setView(ViewHandle handle) {
     
     // clear content
     pSettings.removeAll();
     
     // try to get settings
-    settings = getSettings(vw.getView());
+    settings = getSettings(handle.getView());
     if (settings!=null) {
-      settings.setView(vw.getView());
+      settings.setView(handle.getView());
       JComponent editor = settings.getEditor();
-      editor.setBorder(new TitledBorder(vw.getTitle()));
+      editor.setBorder(new TitledBorder(handle.getTitle()));
       pSettings.add(editor, BorderLayout.CENTER);
       settings.reset();
     }
