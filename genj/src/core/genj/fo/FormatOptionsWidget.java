@@ -31,6 +31,8 @@ import javax.swing.Action;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * A widget for setting formatted output options - choose
@@ -75,9 +77,14 @@ public class FormatOptionsWidget extends JPanel {
     add(chooseFormat);
 
     // listen to some events
+    chooseFile.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        validateOptions(false);
+      }
+    });
     chooseFormat.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        validateOptions();
+        validateOptions(true);
       }
     });
     
@@ -103,12 +110,14 @@ public class FormatOptionsWidget extends JPanel {
    * selected file
    */
   public File getFile() {
-    Format format = getFormat();
     File result = chooseFile.getFile();
+    if (result.getPath().length()==0)
+      return result;
+    Format format = getFormat();
     // strip any of our known extensions
     if (format.getFileExtension()==null)
       return  result;
-    String path = result.getAbsolutePath();
+    String path = result.getPath();
     Format[] formats = Format.getFormats();
     for (int f=0;f<formats.length;f++) {
       String suffix = "."+formats[f].getFileExtension();
@@ -126,10 +135,10 @@ public class FormatOptionsWidget extends JPanel {
    */
   public void connect(Action validAction) {
     this.validAction = validAction;
-    validateOptions();
+    validateOptions(true);
   }
   
-  private void validateOptions() {
+  private void validateOptions(boolean updateFilename) {
     
     Format format = getFormat();
     boolean valid = true;
@@ -146,7 +155,8 @@ public class FormatOptionsWidget extends JPanel {
       valid = false;
     
     // update filename
-    chooseFile.setFile(getFile());
+    if (updateFilename)
+      chooseFile.setFile(getFile());
     
     // update valid action
     validAction.setEnabled(valid);
