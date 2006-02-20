@@ -260,11 +260,23 @@ public class Resources {
    * @param values array of values to replace placeholders in value
    */
   public String getString(String key, Object[] substitutes) {
+    return getString(key, substitutes, true);
+  }
+  
+  /**
+   * Returns a localized string
+   * @param key identifies string to return
+   * @param values array of values to replace placeholders in value
+   */
+  public String getString(String key, Object[] substitutes, boolean notNull) {
 
     // do we have a message format already?
     MessageFormat format = (MessageFormat)msgFormats.get(key);
     if (format==null) {
-      format = getMessageFormat(getString(key));
+      String string = getString(key, false);
+      if (string==null)
+        return notNull ? key : null;
+      format = getMessageFormat(string);
       msgFormats.put(key, format);
     }
 
