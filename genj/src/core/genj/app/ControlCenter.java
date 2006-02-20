@@ -543,8 +543,10 @@ public class ControlCenter extends JPanel {
       if (pwd!=null) password = pwd;
       
       // grab views we're going to open if successful
-      for (int i=2; tokens.get(i)!=null; i++) {
-        views2restore.add(tokens.get(i));
+      for (int i=2; ; i++) {
+        String token = tokens.get(i);
+        if (token==null) break;
+        if (token.length()>0) views2restore.add(tokens.get(i));
       }
       
       // done
