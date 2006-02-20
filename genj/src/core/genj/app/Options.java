@@ -74,6 +74,9 @@ public class Options extends OptionProvider {
   /** the current language code */    
   private int language = -1;
   
+  /** restore views during startup */
+  public boolean isRestoreViews = true;
+  
   /** all available language codes */
   private static String[] languages;
   

@@ -664,9 +664,10 @@ public class ControlCenter extends JPanel {
         addGedcom(gedcom);
       
         // open views again
-        for (int i=0;i<views2restore.size();i++)
-          ViewHandle.restore(viewManager, gedcom, (String)views2restore.get(i));
-          
+        if (Options.getInstance().isRestoreViews) {
+          for (int i=0;i<views2restore.size();i++)
+            ViewHandle.restore(viewManager, gedcom, (String)views2restore.get(i));
+        }          
       }
       
       // show warnings
