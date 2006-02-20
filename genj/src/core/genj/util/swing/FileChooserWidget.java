@@ -190,7 +190,7 @@ public class FileChooserWidget extends JPanel {
     // 20060126 in version 1.7 I thought about using file's absolute path
     // from here on but sometimes that undersirable since file might
     // not contain a valid full path in the first place
-    text.setText(file!=null ? file.toString() : "");
+    text.setText(file!=null ? file.getPath() : "");
   }
   
   /**
