@@ -92,7 +92,7 @@ public class ReportFlashList extends Report {
 
       doc.startSection(p);
       
-      doc.startTable("genj:csv=true,width=%100");
+      doc.startTable("genj:csv=true,width=100%");
       doc.addTableColumn("column-width=80%");
       doc.addTableColumn("column-width=10%");
       doc.addTableColumn("column-width=10%");
