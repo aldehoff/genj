@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
+import genj.util.Resources;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -53,6 +54,7 @@ import com.vividsolutions.jts.geom.Coordinate;
  */
 public class GeoService {
   
+  final static Resources RESOURCES = Resources.get(GeoService.class);
   final static Integer TIMEOUT = new Integer(10*1000);
   final static Charset UTF8 = Charset.forName("UTF8");
   final static Logger LOG = Logger.getLogger("genj.geo");
@@ -218,7 +220,7 @@ public class GeoService {
         }
         out.close();
       } catch (IOException e) {
-        throw new GeoServiceException("Accessing GEO Webservice failed");
+        throw new GeoServiceException(RESOURCES.getString("service.noaccess"));
       }
       
       // read input
@@ -244,12 +246,12 @@ public class GeoService {
         }
         in.close();
       } catch (IOException e) {
-        throw new GeoServiceException("Reading from GEO Webservice failed");
+        throw new GeoServiceException(RESOURCES.getString("service.noread"));
       }
 
       // check what we've got
       if (rows.size()<locations.size()) 
-        throw new GeoServiceException("GEO Webservice returned "+rows.size()+" rows for "+locations.size()+" locations");
+        throw new GeoServiceException(RESOURCES.getString("service.badresult", new Integer[]{ new Integer(rows.size()), new Integer(locations.size())}));
       
       // done
       return rows;

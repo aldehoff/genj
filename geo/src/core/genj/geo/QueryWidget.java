@@ -275,7 +275,7 @@ public class QueryWidget extends JPanel {
             SwingUtilities.invokeLater(new Runnable() {
               public void run() {
                 if (QueryWidget.this.isVisible())
-                  view.getWindowManager().openDialog(null, "Query", WindowManager.INFORMATION_MESSAGE, e.getMessage()+" - are you connected to the internet?", Action2.okOnly(), QueryWidget.this);
+                  view.getWindowManager().openDialog(null, TXT_QUERYING, WindowManager.INFORMATION_MESSAGE, e.getMessage(), Action2.okOnly(), QueryWidget.this);
               }
             });
           }
