@@ -12,6 +12,7 @@
     <pathelement path ="${dir.build}/version"/>
     <pathelement path ="${dir.build}/classes/contrib"/>
     <pathelement path ="${dir.build}/classes/core"/>
+    <pathelement path ="${dir.build}/classes/tst"/>
     <fileset dir=".">
         <include name="**/*.jar"/>
     </fileset>
@@ -89,6 +90,17 @@
   <target name="compile.report" depends="init">
     <mkdir dir="${dir.build}/classes/report"/>
     <javac srcdir="src/report" destdir="${dir.build}/classes/report"
+           debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
+      <classpath refid="project.class.path"/>
+    </javac>
+  </target>
+
+  <!--
+   Report Compilation
+   -->
+  <target name="compile.tst" depends="init">
+    <mkdir dir="${dir.build}/classes/tst"/>
+    <javac srcdir="src/tst" destdir="${dir.build}/classes/tst"
            debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
@@ -387,6 +399,16 @@
 
   </target>
 
+  <!--
+   Diff to languages' resources
+   -->
+  <target name="diff" depends="compile.tst">
+  	<java fork="true" classname="genj.util.ResourcesTest" 
+      classpathref="project.class.path">
+      <jvmarg value="-Duser.language=${user.language}"/>
+  	</java>
+  </target>
+	
   <!--
    Run
    -->
