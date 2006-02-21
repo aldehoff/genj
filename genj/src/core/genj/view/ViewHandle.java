@@ -106,7 +106,10 @@ public class ViewHandle {
     return factory.getClass().getName() + "#" + sequence;
   }
   
-  /** restore */
+  /** 
+   * Restore a view based on a persisted string from persist()
+   * @return handle of opened view or null
+   */
   public static ViewHandle restore(ViewManager manager, Gedcom gedcom, String persisted) {
 
     try {
@@ -115,7 +118,7 @@ public class ViewHandle {
       int sequence = Integer.parseInt(persisted.substring(hash+1).trim());
       return manager.openView(gedcom, factory, sequence); 
     } catch (Throwable t) {
-      throw new IllegalArgumentException("persisted string is no good: "+persisted);
+      return null;
     }
  
     // done
