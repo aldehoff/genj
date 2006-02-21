@@ -116,7 +116,7 @@ public class GeoImport {
       //  xx = country
       //  yy = state code
       //  aaa,bbb,ccc = state names or abbreviations
-      for (Iterator keys = jurisdictions.getKeys(); keys.hasNext(); ) {
+      for (Iterator keys = jurisdictions.getKeys().iterator(); keys.hasNext(); ) {
         // grab key
         String key = keys.next().toString();
         if (key.length()!=5) continue;
