@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.6 $ $Author: nmeier $ $Date: 2006-02-16 23:26:11 $
+ * $Revision: 1.7 $ $Author: nmeier $ $Date: 2006-02-21 22:48:55 $
  */
 package genj.option;
 
@@ -31,15 +31,13 @@ import javax.swing.JComponent;
  */
 public abstract class CustomOption extends Option {
 
-  /** reference widget */
-  protected OptionsWidget widget;
-
   /** our ui */
-  private UI ui = new UI();
+  private UI ui;
   
   /** callback - ui access */
   public OptionUI getUI(OptionsWidget widget) {
-    this.widget = widget;
+    // do this lazy
+    if (ui==null)  ui = new UI();
     return ui;
   }
   

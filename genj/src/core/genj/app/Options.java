@@ -48,6 +48,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -55,6 +56,9 @@ import javax.swing.event.ChangeListener;
  * Application options
  */
 public class Options extends OptionProvider {
+
+  /** constants */
+  private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
 
   /** singleton */
   private final static Options instance = new Options();
@@ -191,6 +195,19 @@ public class Options extends OptionProvider {
     // remember
     this.language = language;
 
+    // set swing resource strings (ok, cancel, etc.)
+    Resources resources = Resources.get(this);
+    Iterator keys = resources.getKeys().iterator();
+    while (keys.hasNext()) {
+      String key = (String)keys.next();
+      if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
+        UIManager.put(
+          key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
+          resources.getString(key)
+        );
+      }
+    }
+    
     // done
   }
   

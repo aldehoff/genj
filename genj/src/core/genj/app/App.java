@@ -35,7 +35,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -45,7 +44,6 @@ import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 /**
  * Main Class for GenJ Application
@@ -54,9 +52,6 @@ public class App {
   
   /*package*/ static Logger LOG = Logger.getLogger("genj");
   
-  /** constants */
-  private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
-
   /**
    * GenJ Main Method
    */
@@ -152,9 +147,6 @@ public class App {
       // get app resources now
       Resources resources = Resources.get(App.class);
 
-      // Make sure that Swing shows our localized texts
-      initSwing(resources);
-
       // create window manager
       WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"), Gedcom.getImage());
       
@@ -176,42 +168,7 @@ public class App {
       // done
       LOG.info("/Startup");
     }
-    
-    /**
-     * Initialize Swing resources
-     */  
-    private static void initSwing(Resources resources) {
-      
-      // make some adjustment for MacOS
-      //  switch menubar to be mac compatible - one on the top
-      // don't know how to set dock programmatically -Xdock:name="JUnit on Mac OS X"
-      
-      // 20050620 Usage of com.apple.macos.useScreenMenuBar  seems to be deprecated
-      // with Java 1.4 on MacOS AND maybe this is the reason for a reported exception
-      // java.lang.ArrayIndexOutOfBoundsException: 6 > 5
-      //    at java.util.Vector.insertElementAt(Vector.java:557)
-      //    at apple.laf.ScreenMenuBar.add(ScreenMenuBar.java:242)
-      //    at apple.laf.ScreenMenuBar.addSubmenu(ScreenMenuBar.java:200)
-      //    at apple.laf.ScreenMenuBar.addNotify(ScreenMenuBar.java:51)
-      // see also http://supportforum.sun.com/sjes/index.php?t=msg&goto=1151&rid=0
-      //System.setProperty("com.apple.macos.useScreenMenuBar", "true");
-      
-      // So let's not put in Mac adjustments if we can't test them anymore :(
-      
-      // set swing resource strings (ok, cancel, etc.)
-      Iterator keys = resources.getKeys().iterator();
-      while (keys.hasNext()) {
-        String key = (String)keys.next();
-        if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
-          UIManager.put(
-            key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
-            resources.getString(key)
-          );
-        }
-      }
-      
-    }
-    
+        
   } //Startup
 
   /**
