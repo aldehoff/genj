@@ -502,7 +502,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     public void asyncResolveEnd(int status, String msg) {
       if (locate!=null) {
         locate.setEnabled(true);
-        locate.setTip(msg + " - click to query again");
+        locate.setTip(msg + " - " + RESOURCES.getString("resolve.again"));
         locate.setImage(STATUS2IMG[status]);
       }
     }

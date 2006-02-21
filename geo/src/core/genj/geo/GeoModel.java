@@ -281,9 +281,9 @@ import com.vividsolutions.jts.geom.Coordinate;
       }
       // signal we're done
       if (err!=null) 
-        fireAsyncResolveEnd( ERROR, "Error while resolving locations ("+err.getMessage()+")");
+        fireAsyncResolveEnd( ERROR, GeoView.RESOURCES.getString("resolve.error", err.getMessage() ));
       else
-        fireAsyncResolveEnd( misses>0 ? SOME_MATCHED : ALL_MATCHED, (todo.size()-misses)+" of "+todo.size()+" locations found");
+        fireAsyncResolveEnd( misses>0 ? SOME_MATCHED : ALL_MATCHED, GeoView.RESOURCES.getString("resolve.matches", new Integer[]{ new Integer(todo.size()-misses), new Integer(todo.size())}));
       // start pending?
       synchronized (resolvers) {
         if (!resolvers.isEmpty())
