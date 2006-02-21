@@ -199,7 +199,7 @@ public class App {
       // So let's not put in Mac adjustments if we can't test them anymore :(
       
       // set swing resource strings (ok, cancel, etc.)
-      Iterator keys = resources.getKeys();
+      Iterator keys = resources.getKeys().iterator();
       while (keys.hasNext()) {
         String key = (String)keys.next();
         if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {

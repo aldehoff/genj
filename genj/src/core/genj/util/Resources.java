@@ -25,8 +25,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -51,6 +52,7 @@ public class Resources {
 
   /** the mapping key, resource  */
   private Map key2string;
+  private List keys;
 
   /** the package name this resource is for */
   private String pkg;
@@ -64,9 +66,10 @@ public class Resources {
   public Resources(InputStream in) {
     
     key2string = new HashMap();
+    keys = new ArrayList(1000);
     
     try {
-      load(in, key2string);
+      load(in, keys, key2string);
     } catch (IOException e) {
       // swallow
     }
@@ -133,7 +136,7 @@ public class Resources {
   /**
    * Loads key/value pairs from inputstream with unicode content
    */
-  private static void load(InputStream in, Map out) throws IOException {
+  private static void load(InputStream in, List keys, Map key2string) throws IOException {
     try {
       BufferedReader lines = new BufferedReader(new InputStreamReader(in, "UTF-8"));
       // loop over all lines
@@ -155,7 +158,7 @@ public class Resources {
         // .. continuation or key=value
         if (last!=null&&(c=='+'||c=='&')) {
           key = last;
-          val = (String)out.get(key);
+          val = (String)key2string.get(key);
           if (c=='+') val += '\n';
           val += line.substring(1);
         } else {
@@ -163,9 +166,11 @@ public class Resources {
           if (i<0) continue;
           key = line.substring(0, i).trim();
           val = line.substring(i+1).trim();
+          keys.add(key);
+          key = key.toLowerCase();
         }
         // remember
-        out.put(key, val);
+        key2string.put(key, val);
         // next
         last = key;
       }
@@ -179,10 +184,11 @@ public class Resources {
    */
   private Map getKey2String() {
     
-    // easy if already initialized
+    // easy if already initialized - outside synchronization
     if (key2string!=null)
       return key2string;
     
+    // synchronize loading - everyone will wait for this one
     synchronized (this) {
       
       // check again
@@ -191,28 +197,30 @@ public class Resources {
       
       // load resources for current locale now
       Locale locale = Locale.getDefault();
-      Map result = new HashMap();    
+      Map tmpKey2Val = new HashMap();    
+      List tmpKeys = new ArrayList(100);
 
       // loading english first (primary language)
       try {
-        load(getClass().getResourceAsStream(calcFile(pkg, null, null)), result);
+        load(getClass().getResourceAsStream(calcFile(pkg, null, null)), tmpKeys, tmpKey2Val);
       } catch (Throwable t) {
       }
       
       // trying to load language specific next
       try {
-        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), null)), result);
+        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), null)), tmpKeys, tmpKey2Val);
       } catch (Throwable t) {
       }
   
       // trying to load language and country specific next
       try {
-        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), locale.getCountry())), result);
+        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), locale.getCountry())), tmpKeys, tmpKey2Val);
       } catch (Throwable t) {
       }
 
       // remember
-      key2string = result;
+      key2string = tmpKey2Val;
+      keys = tmpKeys;
     }
     
     // done
@@ -232,7 +240,7 @@ public class Resources {
    * @param notNull will return key if resource is not defined
    */
   public String getString(String key, boolean notNull) {
-    String result = (String)getKey2String().get(key);
+    String result = (String)getKey2String().get(key.toLowerCase());
     if (result==null&&notNull) result = key;
     return result;
   }
@@ -306,8 +314,10 @@ public class Resources {
   /**
    * Returns the available Keys
    */
-  public Iterator getKeys() {
-    return getKey2String().keySet().iterator();
+  public List getKeys() {
+    // initialize first
+    getKey2String();
+    return keys;
   }
   
 } //Resources
