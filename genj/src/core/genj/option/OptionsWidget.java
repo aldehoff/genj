@@ -26,6 +26,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
 import java.awt.font.FontRenderContext;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -175,7 +177,14 @@ public class OptionsWidget extends JPanel {
     private OptionUI ui;
     
     /** panel container */
-    private JPanel panel = new JPanel();
+    private JPanel panel = new JPanel() {
+      // override key binding process - intercept enter as end of edit
+      protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        if (ks.getKeyCode()==KeyEvent.VK_ENTER)
+          stopEditing();
+        return true;
+      }
+    };
     
     /** label for option name */
     private JLabel labelForName = new JLabel();
