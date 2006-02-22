@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.25 $ $Author: nmeier $ $Date: 2005-10-31 19:16:27 $
+ * $Revision: 1.26 $ $Author: nmeier $ $Date: 2006-02-22 22:11:43 $
  */
 package genj.util;
 
@@ -524,8 +524,10 @@ public class Registry {
     else
       result = parent.get(view+"."+key,def);
 
-    // .. existing ? 20040523 removed trim() to allow for leading/trailing space values
-    if (result==null||result.length()==0)
+    // verify it exists
+    // 20060222 NM can't assume length()==0 means default should apply - it could indeed mean an empty value!
+    // 20040523 NM removed trim() to allow for leading/trailing space values
+    if (result==null)
       return def;
       
     // Done
