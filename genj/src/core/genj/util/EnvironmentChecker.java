@@ -51,7 +51,7 @@ public class EnvironmentChecker {
   public static boolean isJava14(Object receipient) {
     String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
     // o.k. this should be more flexible 8)
-    return version.startsWith("1.4") || version.startsWith("1.5");
+    return version.startsWith("1.4") || version.startsWith("1.5")  || version.startsWith("1.6");
   }
   
   /**
