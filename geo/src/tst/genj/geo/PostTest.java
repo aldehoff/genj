@@ -60,8 +60,10 @@ public class PostTest {
       new GeoLocation("Hambu*", null, null)
     };
     
+    GeoService service = GeoService.getInstance();
+    
     int i=0;
-    for (Iterator rows = GeoService.getInstance().webservice(Arrays.asList(locs)).iterator(); rows.hasNext(); i++) {
+    for (Iterator rows = service.webservice(GeoService.URL, Arrays.asList(locs), true).iterator(); rows.hasNext(); i++) {
       System.out.println("---"+locs[i]+"---");
       for (Iterator hits = ((Collection)rows.next()).iterator(); hits.hasNext(); )
         System.out.println(hits.next());

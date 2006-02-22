@@ -24,7 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
-import genj.util.Resources;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,11 +53,10 @@ import com.vividsolutions.jts.geom.Coordinate;
  */
 public class GeoService {
   
-  final static Resources RESOURCES = Resources.get(GeoService.class);
   final static Integer TIMEOUT = new Integer(10*1000);
   final static Charset UTF8 = Charset.forName("UTF8");
   final static Logger LOG = Logger.getLogger("genj.geo");
-  final static URL GEOQ = createQueryURL();
+  final static URL URL = createQueryURL();
   
   /** our work directory */
   private static final String GEO_DIR = "./geo";
@@ -191,7 +189,7 @@ public class GeoService {
    * @param list list of locations to query
    * @return list of list of locations
    */
-  protected List webservice(List locations) throws GeoServiceException {
+  protected List webservice(URL url, List locations, boolean followRedirect) throws GeoServiceException {
 
     long start = System.currentTimeMillis();
     int rowCount = 0, hitCount = 0;
@@ -200,7 +198,7 @@ public class GeoService {
       // open connection
       HttpURLConnection con;
       try {
-        con = (HttpURLConnection)GEOQ.openConnection();
+        con = (HttpURLConnection)url.openConnection();
         
         try {
           con.getClass().getMethod("setConnectTimeout", new Class[]{ Integer.TYPE }).invoke(con, new Object[]{ TIMEOUT } );
@@ -220,7 +218,7 @@ public class GeoService {
         }
         out.close();
       } catch (IOException e) {
-        throw new GeoServiceException(RESOURCES.getString("service.noaccess"));
+        throw new GeoServiceException("Accessing GEO Webservice failed");
       }
       
       // read input
@@ -228,8 +226,20 @@ public class GeoService {
       try {
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), UTF8));
         for (int l=0;l<locations.size();l++) {
+          
+          // line by line
           String line = in.readLine();
           if (line==null) break;
+          
+          // is it a redirect?
+          if (l==0&&followRedirect) {
+            try {
+              return webservice(new URL(line), locations, false);
+            } catch (MalformedURLException e) {
+            }
+          }
+          
+          // analyze row
           rowCount++;
           List row = new ArrayList();
           if (!line.startsWith("?")) {
@@ -246,12 +256,12 @@ public class GeoService {
         }
         in.close();
       } catch (IOException e) {
-        throw new GeoServiceException(RESOURCES.getString("service.noread"));
+        throw new GeoServiceException("Reading from GEO Webservice failed");
       }
 
       // check what we've got
       if (rows.size()<locations.size()) 
-        throw new GeoServiceException(RESOURCES.getString("service.badresult", new Integer[]{ new Integer(rows.size()), new Integer(locations.size())}));
+        throw new GeoServiceException("GEO Webservice returned "+rows.size()+" rows for "+locations.size()+" locations");
       
       // done
       return rows;
@@ -269,7 +279,7 @@ public class GeoService {
    */
   public List query(GeoLocation location) throws GeoServiceException {
     // run query and grab first result list
-    List rows = webservice(Collections.singletonList(location ));
+    List rows = webservice(URL, Collections.singletonList(location ), true);
     return rows.isEmpty() ?  new ArrayList() : (List)rows.get(0);
   }
   
@@ -305,7 +315,7 @@ public class GeoService {
       return;
     
     // do a webservice call for all the todos
-    List rows = webservice(todos);
+    List rows = webservice(URL, todos, true);
     
     // recheck todos for results
     for (int i=0;i<todos.size();i++) {
