@@ -81,7 +81,6 @@ public class GedcomReader implements Trackable {
   private String tag;
   private String value;
   private boolean redoLine = false;
-  private Origin origin;
   private List xrefs = new ArrayList(16);
   private String tempSubmitter;
   private boolean cancel=false;
@@ -133,24 +132,33 @@ public class GedcomReader implements Trackable {
   }
   
   /**
+   * Constructor for a reader that reads from stream
+   */
+  public GedcomReader(InputStream in) throws IOException {
+    init(new Gedcom(), in);
+  }
+  
+  /**
    * Constructor for a reader that reads from given origin
    * @param org the origin of the gedcom stream to read from
    */
-  public GedcomReader(Origin org) throws IOException {
+  public GedcomReader(Origin origin) throws IOException {
+    LOG.info("Initializing reader for "+origin);
+    init(new Gedcom(origin), origin.open());
+  }
+  
+  /**
+   * initializer
+   */
+  private void init(Gedcom ged, InputStream oin) throws IOException {
     
-    LOG.info("Initializing reader for "+org);
-    
-    // open origin
-    InputStream oin = org.open();
-
     // prepare sniffer
     SniffedInputStream sin = new SniffedInputStream(oin);
     
     // init some data
     in       = new BufferedReader(new InputStreamReader(sin, sin.getCharset()));
-    origin   = org;
     length   = oin.available();
-    gedcom   = new Gedcom(origin);
+    gedcom = ged;
     gedcom.setEncoding(sin.getEncoding());
     
     // Done
