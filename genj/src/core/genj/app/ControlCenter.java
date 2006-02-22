@@ -30,6 +30,7 @@ import genj.option.OptionsWidget;
 import genj.print.PrintManager;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
+import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -1104,7 +1105,7 @@ public class ControlCenter extends JPanel {
     protected ActionView(int i, ViewFactory vw) {
       factory = vw;
       if (i>0) 
-        setText(Integer.toString(i) +" "+ factory.getTitle(false));
+        setText(Integer.toString(i) +" "+ new MnemonicAndText(factory.getTitle(false)).getText());
       else
         setText(factory.getTitle(true));
       setTip(resources.getString("cc.tip.open_view", factory.getTitle(false)));

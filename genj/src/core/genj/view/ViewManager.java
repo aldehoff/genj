@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
 import genj.renderer.BlueprintManager;
+import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -58,6 +59,7 @@ import javax.swing.AbstractAction;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 
@@ -74,6 +76,9 @@ public class ViewManager {
 
   /** resources */
   /*package*/ static Resources RESOURCES = Resources.get(ViewManager.class);
+  
+  /** global accelerators */
+  /*package*/ Map keyStrokes2factories = new HashMap();
   
   /** factory instances of views */
   private ViewFactory[] factories = null;
@@ -151,23 +156,35 @@ public class ViewManager {
   /**
    * Initialization
    */
-  private void init(PrintManager printManager, WindowManager windowManager, List factories) {
+  private void init(PrintManager setPrintManager, WindowManager setWindowManager, List setFactories) {
     
     // remember
-    this.printManager = printManager;
-    this.windowManager = windowManager;
+    printManager = setPrintManager;
+    windowManager = setWindowManager;
     
     // keep factories
-    this.factories = (ViewFactory[])factories.toArray(new ViewFactory[factories.size()]);
-
-    // sign up context listeners
-    for (int f=0;f<this.factories.length;f++) {    
-        if (this.factories[f] instanceof ContextListener)
-          addContextListener((ContextListener)this.factories[f]);
+    factories = (ViewFactory[])setFactories.toArray(new ViewFactory[setFactories.size()]);
+    
+    // loop over factories, grab keyboard shortcuts and sign up context listeners
+    for (int f=0;f<factories.length;f++) {    
+      ViewFactory factory = factories[f];
+      // a context listener?
+      if (factory instanceof ContextListener)
+        addContextListener((ContextListener)factory);
+      // check shortcut
+      KeyStroke accelerator = KeyStroke.getKeyStroke("ctrl "+new MnemonicAndText(factory.getTitle(false)).getMnemonic());
+      if (accelerator!=null&&!keyStrokes2factories.containsKey(accelerator)) {
+        keyStrokes2factories.put(accelerator, factory);
+      }
     }
     
     // done
   }
+  
+  /**
+   * Installs global key accelerators for given component
+   */
+   
   
   /**
    * Returns all known view factories
@@ -428,8 +445,11 @@ public class ViewManager {
     handles.setSize(Math.max(handles.size(), sequence));
     
     // already open?
-    if (handles.get(sequence-1)!=null)
-      return (ViewHandle)handles.get(sequence-1);
+    if (handles.get(sequence-1)!=null) {
+      ViewHandle old = (ViewHandle)handles.get(sequence-1);
+      windowManager.show(old.getKey());
+      return old;
+    }
     
     // get a registry 
     Registry registry = new Registry( getRegistry(gedcom), getPackage(factory)+"."+sequence) ;
@@ -741,4 +761,5 @@ public class ViewManager {
     
   } //ContextMenuHook
   
+
 } //ViewManager

@@ -27,7 +27,9 @@ import genj.util.swing.ButtonHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.util.Iterator;
 
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -57,6 +59,8 @@ import javax.swing.SwingConstants;
    */
   /*package*/ ViewContainer(ViewHandle handle) {
     
+    ViewManager mgr = handle.getManager();
+    
     // remember
     viewHandle = handle;
     
@@ -64,25 +68,36 @@ import javax.swing.SwingConstants;
     setLayout(new BorderLayout());
     add(viewHandle.getView(), BorderLayout.CENTER);
     
-    // hook-up keyboard shortcuts & right mouse-click
-    Object key = "genj.view.contextmenu";
+    // hook-up context menu hook
+    Action hook = mgr.HOOK;
     InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    inputs.put(KeyStroke.getKeyStroke("shift F10"), key);
-    inputs.put(KeyStroke.getKeyStroke("ctrl SPACE"), key);
-    inputs.put(KeyStroke.getKeyStroke("CONTEXT_MENU"), key); // this only works in Tiger 1.5 on Windows
+    inputs.put(KeyStroke.getKeyStroke("shift F10"), hook);
+    inputs.put(KeyStroke.getKeyStroke("ctrl SPACE"), hook);
+    inputs.put(KeyStroke.getKeyStroke("CONTEXT_MENU"), hook); // this only works in Tiger 1.5 on Windows
+    getActionMap().put(hook, hook);
     
-    getActionMap().put(key, viewHandle.getManager().HOOK);
+    // .. factory accelerators
+    for (Iterator it = mgr.keyStrokes2factories.keySet().iterator(); it.hasNext();) {
+      KeyStroke key = (KeyStroke) it.next();
+      ViewFactory factory = (ViewFactory)mgr.keyStrokes2factories.get(key);
+      installAccelerator(key, new ActionOpen(factory));
+    }
 
-    inputs.put(KeyStroke.getKeyStroke(ACC_CLOSE), ACC_CLOSE);
-    getActionMap().put(ACC_CLOSE, new ActionClose());
-
-    inputs.put(KeyStroke.getKeyStroke(ACC_UNDO), ACC_UNDO);
-    getActionMap().put(ACC_UNDO, new Undo(viewHandle.getGedcom(), true));
-
-    inputs.put(KeyStroke.getKeyStroke(ACC_REDO), ACC_REDO);
-    getActionMap().put(ACC_REDO, new Redo(viewHandle.getGedcom(), true));
+    // ... default view accelerators (overwriting anything else)
+    installAccelerator(KeyStroke.getKeyStroke(ACC_CLOSE), new ActionClose());
+    installAccelerator(KeyStroke.getKeyStroke(ACC_UNDO), new Undo(viewHandle.getGedcom(), true));
+    installAccelerator(KeyStroke.getKeyStroke(ACC_REDO), new Redo(viewHandle.getGedcom(), true));
 
     // done
+  }
+  
+  /**
+   * helper - install accelerator
+   */
+  private void installAccelerator(KeyStroke key, Action action) {
+    InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    inputs.put(key, key);
+    getActionMap().put(key, action);
   }
   
   /**
@@ -206,4 +221,19 @@ import javax.swing.SwingConstants;
     }
   } //ActionOpenSettings
   
+  /**
+   * Open a view or bring to front
+   */
+  private class ActionOpen extends Action2 {
+    private ViewFactory factory;
+    /** constructor */
+    private ActionOpen(ViewFactory factory) {
+      this.factory = factory;
+    }
+    /** run */
+    protected void execute() {
+      viewHandle.getManager().openView(viewHandle.getGedcom(), factory, 1);
+    }
+  }
+    
 } //ViewWidget

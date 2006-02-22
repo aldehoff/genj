@@ -21,6 +21,7 @@ package genj.applet;
 
 import genj.gedcom.Gedcom;
 import genj.util.GridBagHelper;
+import genj.util.MnemonicAndText;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.LinkWidget;
@@ -116,7 +117,7 @@ public class ControlCenter extends JPanel {
      */
     private ActionView(ViewFactory vfactory) {
       factory = vfactory;
-      setText(vfactory.getTitle(false));
+      setText(new MnemonicAndText(vfactory.getTitle(false)).getText());
       setImage(vfactory.getImage());
     }
     /**
