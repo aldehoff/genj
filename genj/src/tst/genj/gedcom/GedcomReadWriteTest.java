@@ -26,6 +26,21 @@ import junit.framework.TestCase;
 public class GedcomReadWriteTest extends TestCase {
   
   /**
+   * Read a stress file
+   */
+  public void testStressFile() throws IOException, GedcomException {
+    
+    // we don't need log output for this
+    Logger.getLogger("").setLevel(Level.OFF);
+
+    // try to read file
+    Gedcom ged = new GedcomReader(getClass().getResourceAsStream("stress.ged")).read();
+    
+    assertEquals("should be three entities INDI, SUBM, UNKNOWN and FOO", 4, ged.getEntities().size());
+    
+  }
+  
+  /**
    * Read a file / write it / compare
    */
   public void testReadWrite() throws IOException, GedcomException {
