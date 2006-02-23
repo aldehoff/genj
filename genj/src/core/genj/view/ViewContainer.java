@@ -179,7 +179,8 @@ import javax.swing.SwingConstants;
   private class ActionClose extends Action2 {
     /** constructor */
     protected ActionClose() {
-      super.setImage(Images.imgClose);
+      setImage(Images.imgClose);
+      setTip(ViewManager.RESOURCES, "view.close.tip");
     }
     /** run */
     protected void execute() {
@@ -193,7 +194,8 @@ import javax.swing.SwingConstants;
   private class ActionPrint extends Action2 {
     /** constructor */
     protected ActionPrint() {
-      super.setImage(Images.imgPrint).setTip(ViewManager.RESOURCES, "view.print.tip");
+      setImage(Images.imgPrint);
+      setTip(ViewManager.RESOURCES, "view.print.tip");
     }
     /** run */
     protected void execute() {
