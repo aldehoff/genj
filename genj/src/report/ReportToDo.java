@@ -8,6 +8,9 @@
 /**
  * TODO Daniel: voir avec ie (page break)
  * TODO Daniel: inclure dans la liste les sources, repo, ... fictifs pour faire un tri
+ * TODO Daniel: classer les colonnes au choix, avec plusieurs clé
+ * TODO Daniel: limiter aux événements/général/tous
+ * TODO Daniel: differencier les todo sur evt des todo globaux
  */
 import genj.fo.Document;
 import genj.gedcom.Entity;
@@ -33,7 +36,7 @@ import javax.swing.ImageIcon;
  */
 public class ReportToDo extends Report {
 
-  private final static String PLACE_AND_DATE_FORMAT = "{$D}{ $p}";
+  private final static String PLACE_AND_DATE_FORMAT = "{$V }{$D}{ $P}";
 
   public String todoTag = "NOTE";
 
@@ -44,7 +47,17 @@ public class ReportToDo extends Report {
   public boolean outputSummary = true;
   
   private final static String
-    ROW_FORMAT_HEADER1 = "font-size=larger,background-color=#00ccff,font-weight=bold";
+	ROW_FORMAT_HEADER1 = "font-size=larger,background-color=#00ccff,font-weight=bold";
+  private final static String
+	FORMAT_HEADER2 = "font-size=large,background-color=#33ffff,font-weight=bold";
+  private final static String
+	FORMAT_HEADER3 = "background-color=#ffffcc,font-weight=bold";
+  private final static String
+	FORMAT_HEADER3_TODO = "background-color=#99cccc,font-weight=bold";
+  private final static String
+  	FORMAT_HEADER4 = "background-color=#ffffcc";
+  private final static String FORMAT_EMPHASIS = "font-weight=italic";
+  private final static String FORMAT_STRONG = "font-weight=bold";
   
   /*
          ".head1{background-color:#00ccff;font-size:20px;font-weight:bold;}"+
@@ -136,18 +149,18 @@ public class ReportToDo extends Report {
       doc.addTableColumn("");
       
       doc.nextTableCell("number-columns-spanned=5");
-      doc.addText(translate("titletodos")); // "head1"
+      doc.addText(translate("titletodos"),ROW_FORMAT_HEADER1);
 
       doc.nextTableRow();
-      doc.addText( translate("evt.col") ); // strong
+      doc.addText( translate("evt.col"),FORMAT_STRONG );
       doc.nextTableCell();
-      doc.addText( translate("date.col") ); // strong
+      doc.addText( translate("date.col"),FORMAT_STRONG );
       doc.nextTableCell();
-      doc.addText( translate("place.col") ); // strong
+      doc.addText( translate("place.col"),FORMAT_STRONG );
       doc.nextTableCell();
-      doc.addText( translate("indi.col") ); // strong
+      doc.addText( translate("indi.col"),FORMAT_STRONG );
       doc.nextTableCell();
-      doc.addText( translate("todo.col") ); // strong
+      doc.addText( translate("todo.col"),FORMAT_STRONG );
       
       int nbTodos = exportSummary(entities, doc);
       doc.endTable();
@@ -215,13 +228,13 @@ public class ReportToDo extends Report {
     tempFam = (tempIndi == null) ? null : tempIndi .getFamilyWhereBiologicalChild();
     if (tempFam != null) {
       doc.nextTableRow();
-      doc.addText( translate("father") + ":"); // "head3" 
+      doc.addText( translate("father") + ":", FORMAT_HEADER3); 
       doc.nextTableCell("number-columns-spanned=5");
-      doc.addText( getIndiString(tempFam.getHusband()) );
+      addIndiString(tempFam.getHusband(), doc);
       doc.nextTableRow();
       doc.addText( translate("mother") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
-      doc.addText( getIndiString(tempFam.getWife()) );
+      addIndiString(tempFam.getWife(), doc);
     }
 
     // //// Epouse
@@ -241,11 +254,11 @@ public class ReportToDo extends Report {
       doc.nextTableRow();
       doc.addText( translate("father") );
       doc.nextTableCell("number-columns-spanned=5");
-      doc.addText( getIndiString(tempFam.getHusband()) );
+      addIndiString(tempFam.getHusband(), doc) ;
       doc.nextTableRow();
       doc.addText( translate("mother") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
-      doc.addText( getIndiString(tempFam.getWife()) );
+      addIndiString(tempFam.getWife(), doc) ;
     }
     outputEventRow(fam, "MARR", todos, doc);
 
@@ -257,9 +270,10 @@ public class ReportToDo extends Report {
       doc.addText( Gedcom.getName("CHIL", children.length > 1) );
       for (int c = 0; c < children.length; c++) {
         doc.nextTableRow();
+        doc.nextTableCell();
         doc.addText("" + (c + 1) );
         doc.nextTableCell("number-columns-spanned=5");
-        doc.addText( getIndiString(children[c]) );
+        addIndiString(children[c], doc) ;
       }
     }
 
@@ -328,20 +342,23 @@ public class ReportToDo extends Report {
     doc.addText( translate("titleindi", new String[] { indi.getName(), indi.getId() }) );
 
     doc.nextTableRow();
-    doc.nextTableCell("number-columns-spanned=6");
-    doc.addText( translate("titleinfosperso") ); // "head2"
+    doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);
+    doc.addText( translate("titleinfosperso") );
     
     doc.nextTableRow();
-    doc.addText( Gedcom.getName("NAME") ); // "head3"
+    doc.nextTableCell(FORMAT_HEADER3);
+    doc.addText( Gedcom.getName("NAME") );
     doc.nextTableCell("number-columns-spanned=3");
-    doc.addText( indi.getLastName() ); // 0, 3
+    doc.addText( indi.getLastName()+" ", FORMAT_STRONG ); 
+    doc.addText( indi.getFirstName() );
     doc.nextTableCell();
     doc.addText( "ID: " + indi.getId() );
     doc.nextTableCell();
     doc.addText( Gedcom.getName("SEX") + ": " + PropertySex.getLabelForSex(indi.getSex()) );
     
     doc.nextTableRow();
-    doc.addText( Gedcom.getName("NICK") ); // "head3"
+    doc.nextTableCell(FORMAT_HEADER3);
+    doc.addText( Gedcom.getName("NICK")); 
     doc.nextTableCell("number-columns-spanned=5");
     doc.addText( outputProperty(indi, "INDI:NAME:NICK") );
     
@@ -351,33 +368,36 @@ public class ReportToDo extends Report {
     outputEventRow(indi, "BURI", todos, doc);
     
     doc.nextTableRow();
-    doc.addText( Gedcom.getName("REFN") ); // "head3"
+    doc.nextTableCell(FORMAT_HEADER3);
+    doc.addText( Gedcom.getName("REFN") );
     doc.nextTableCell("number-columns-spanned=3");
     doc.addText( outputProperty(indi, "INDI:REFN") );
-    doc.nextTableCell();
-    doc.addText( Gedcom.getName("CHAN") ); //  "head3"
+    doc.nextTableCell(FORMAT_HEADER3);
+    doc.addText( Gedcom.getName("CHAN") );
     doc.nextTableCell();
     doc.addText( outputProperty(indi, "INDI:CHAN") ); 
     
     Fam fam = indi.getFamilyWhereBiologicalChild();
     if (fam != null) {
       doc.nextTableRow();
-      doc.addText( translate("father") + ":" ); // "head3"
+      doc.nextTableCell(FORMAT_HEADER3);
+      doc.addText( translate("father") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
-      doc.addText( getIndiString(fam.getHusband()) ); 
+      addIndiString(fam.getHusband(), doc) ; 
       
       doc.nextTableRow();
-      doc.addText( translate("mother") + ":" ); // , "head3"
+      doc.nextTableCell(FORMAT_HEADER3);
+      doc.addText( translate("mother") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
-      doc.addText( getIndiString(fam.getWife()) ); 
+      addIndiString(fam.getWife(), doc) ; 
     }
 
     // And we loop through its families
     Fam[] fams = indi.getFamiliesWhereSpouse();
     if (fams.length > 0) {
       doc.nextTableRow();
-      doc.nextTableCell("number-columns-spanned=6");
-      doc.addText( Gedcom.getName("FAM", fams.length > 1) ); // "head2"
+      doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);
+      doc.addText( Gedcom.getName("FAM", fams.length > 1) );
     }
     
     for (int f = 0; f < fams.length; f++) {
@@ -388,30 +408,33 @@ public class ReportToDo extends Report {
         Indi[] children = famc.getChildren();
         
         doc.nextTableRow();
-        doc.addText(translate("spouse") + ":" ); // "head3",
-        doc.nextTableCell();
-        doc.addText( getIndiString(spouse) );
+        doc.nextTableCell("number-rows-spanned="+(children.length+1)+","+FORMAT_HEADER3);
+        doc.addText(translate("spouse") + ":" );
+        doc.nextTableCell("number-columns-spanned=6");
+        addIndiString(spouse, doc) ;
         doc.nextParagraph();
-        doc.addText( Gedcom.getName("MARR") + " : "); // strong
+        doc.addText( Gedcom.getName("MARR") + " : ",FORMAT_STRONG);
         doc.addText( famc.format("MARR", PLACE_AND_DATE_FORMAT) ); // 0, 5
 
         if (children.length > 0) {
           
           doc.nextTableRow();
-          doc.addText(Gedcom.getName("CHIL", children.length > 1) ); // "head4", children.length, 1)
-          doc.nextTableCell();
-          doc.addText( getIndiString(children[0]) ); // 0, 4
+          doc.nextTableCell("number-rows-spanned="+children.length+","+FORMAT_HEADER4);
+          doc.addText(Gedcom.getName("CHIL", children.length > 1) );
+          doc.nextTableCell("number-columns-spanned=4");
+          addIndiString(children[0], doc) ;
           for (int c = 1; c < children.length; c++) {
             doc.nextTableRow();
-            doc.addText( getIndiString(children[c]) ); // 0,4
+            doc.nextTableCell("number-columns-spanned=4");
+            addIndiString(children[c], doc) ;
           }
         }
       }
     }
 
     doc.nextTableRow();
-    doc.nextTableCell("number-columns-spanned=6");
-    doc.addText( Gedcom.getName("EVEN", true) ); // "head2"
+    doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);
+    doc.addText( Gedcom.getName("EVEN", true) );
 
     outputEventRow(indi, "OCCU", todos, doc);
     outputEventRow(indi, "RESI", todos, doc);
@@ -425,19 +448,19 @@ public class ReportToDo extends Report {
         continue;
       if (!seenNote) {
         doc.nextTableRow();
-        doc.nextTableCell("number-columns-spanned=6");
-        doc.addText( translate("main.notes") ); //  "head2"
+        doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);
+        doc.addText( translate("main.notes") );
         seenNote = true;
       }
       doc.nextTableRow();
-      doc.nextTableCell("number-columns-spanned=5");
+      doc.nextTableCell("number-columns-spanned=6");
       outputPropertyValue(prop, doc);
     }
 
     /** ************** Todos */
     doc.nextTableRow();
-    doc.nextTableCell("number-columns-spanned=6");
-    doc.addText( translate("titletodo") ); // "head2"
+    doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);
+    doc.addText( translate("titletodo") );
     for (int i = 0; i < todos.size(); i++) {
       prop = (Property) todos.get(i);
       Property parent = prop.getParent();
@@ -449,7 +472,8 @@ public class ReportToDo extends Report {
         outputPropertyValue(prop,doc);
       } else {
         doc.nextTableRow();
-        doc.addText( Gedcom.getName(parent.getTag()) ); // "head3-todo"
+        doc.nextTableCell(FORMAT_HEADER3_TODO);
+        doc.addText( Gedcom.getName(parent.getTag()) );
         doc.nextTableCell("number-columns-spanned=5");
         doc.addText( parent.format(PLACE_AND_DATE_FORMAT) );
         doc.nextParagraph();
@@ -477,7 +501,8 @@ public class ReportToDo extends Report {
     if (props.length == 1) {
       
       doc.nextTableRow();
-      doc.addText( Gedcom.getName(tag) ); // "head3"
+      doc.nextTableCell(FORMAT_HEADER3);
+      doc.addText( Gedcom.getName(tag) );
       doc.nextTableCell("number-columns-spanned=5");
       doc.addText( indi.format(tag, PLACE_AND_DATE_FORMAT) );
       doc.nextParagraph();
@@ -488,7 +513,8 @@ public class ReportToDo extends Report {
     
     for (int i = 0; i < props.length; i++) {
       doc.nextTableRow();
-      doc.addText(Gedcom.getName(tag) ); // "head3"
+      doc.nextTableCell(FORMAT_HEADER3);
+      doc.addText(Gedcom.getName(tag) );
       doc.nextTableCell("number-columns-spanned=5");
       doc.addText( props[i].format(PLACE_AND_DATE_FORMAT) );
       doc.nextParagraph();
@@ -589,7 +615,7 @@ public class ReportToDo extends Report {
     for (int i = 0; i < props.length; i++) {
       if (exclude.contains(props[i]))
         continue;
-      doc.addText( prefix );
+      doc.addText( prefix ,FORMAT_STRONG);
       outputPropertyValue(props[i], doc);
     }
     
@@ -610,13 +636,14 @@ public class ReportToDo extends Report {
     }
   }
 
-  private String getIndiString(Indi indi) {
+  private void addIndiString(Indi indi, Document doc) {
     // Might be null
     if (indi == null)
-      return "";
+      return ;
     String birth = indi.format("BIRT", OPTIONS.getBirthSymbol() + " " + PLACE_AND_DATE_FORMAT);
     String death = indi.format("DEAT", OPTIONS.getDeathSymbol() + " " + PLACE_AND_DATE_FORMAT);
-    return indi.toString() + " " + birth + " " + death; // name was strong
+    doc.addText(indi.toString(),FORMAT_STRONG);
+    doc.addText(" " + birth + " " + death);
   }
 
   /**
@@ -639,11 +666,17 @@ public class ReportToDo extends Report {
       
     // loop over multilines
     MultiLineProperty.Iterator lines = ((MultiLineProperty)prop).getLineIterator();
-    do {
-      doc.nextParagraph();
-      doc.addText(lines.getValue());
-    } while (lines.next());
+    doc.addText(lines.getValue());
+    while (lines.next()) {
+    	doc.nextParagraph();
+    	doc.addText(lines.getValue());
+    }
 
+/*    do {
+      doc.addText(lines.getValue());
+      doc.nextParagraph();
+    } while (lines.next());
+*/
     // done
   }
 
