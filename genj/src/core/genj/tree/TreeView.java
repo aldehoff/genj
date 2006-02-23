@@ -974,7 +974,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      * Constructor     */
     private ActionOrientation() {
       super.setImage(Images.imgHori);
-      super.setTip("orientation.tip");
+      super.setTip(resources, "orientation.tip");
     }
     /**
      * @see genj.util.swing.Action2#execute()
@@ -994,7 +994,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      */
     private ActionFamsAndSpouses() {
       super.setImage(Images.imgDontFams);
-      super.setTip("families.tip");
+      super.setTip(resources, "families.tip");
     }
     /**
      * @see genj.util.swing.Action2#execute()
@@ -1014,7 +1014,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      */
     private ActionFoldSymbols() {
       super.setImage(Images.imgFoldSymbols);
-      super.setTip("foldsymbols.tip");
+      super.setTip(resources, "foldsymbols.tip");
     }
     /**
      * @see genj.util.swing.Action2#execute()
@@ -1032,7 +1032,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
 
     /** constructor */
     private ActionChooseRoot() {
-      setText(resources.getString("select.root"));
+      setText(resources, "select.root");
     }
 
     /** do the choosin' */
@@ -1061,10 +1061,10 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     private ActionBookmark(Entity e, boolean local) {
       entity = e;
       if (local) {
-        setText(resources.getString("bookmark.add"));
+        setText(resources, "bookmark.add");
         setImage(BOOKMARK_ICON);
       } else {
-        setText(resources.getString("bookmark.in",title));
+        setText(resources, "bookmark.in");
         setImage(Images.imgView);
       }
     } 
