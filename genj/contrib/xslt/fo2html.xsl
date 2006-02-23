@@ -44,6 +44,10 @@
             <!-- NM20060219 this was just select="fo:title" but that didn't pick up the title -->
             <xsl:value-of select="descendant::fo:title[1]"/>
           </xsl:when>
+          <xsl:when test="@genj:title">
+            <!-- NM20060220 since FOP crashes when encountering title we workaround with a root attribute -->
+            <xsl:value-of select="@genj:title"/>
+          </xsl:when>
           <xsl:otherwise>XSL FO Document</xsl:otherwise>
         </xsl:choose>
       </title>

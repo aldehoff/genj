@@ -62,7 +62,7 @@ public class Document {
   private org.w3c.dom.Document doc;
   private Element cursor;
   private String title;
-  private boolean needsTOC = true;
+  private boolean needsTOC = false;
   private Map file2elements = new HashMap();
   private List sections = new ArrayList();
   private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm,space-after=0.2cm,keep-with-next.within-page=always";
@@ -103,13 +103,18 @@ public class Document {
     cursor.setAttribute("xmlns", NS_XSLFO);
     cursor.setAttribute("xmlns:genj", NS_GENJ);
     
+    // FOP crashes when a title element is present so we use an extension to pass it to our fo2html stylesheet
+    // @see http://issues.apache.org/bugzilla/show_bug.cgi?id=38710
+    cursor.setAttributeNS(NS_GENJ, "genj:title", title);
+    
     push("layout-master-set");
     push("simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
     push("region-body");
     pop().pop().pop().push("page-sequence","master-reference=master");
+
+    // don't use title - see above
+    // push("title").text(getTitle(), "").pop();
     
-    // don't do the title yet - FOP doesn't like it
-    //push("title").text(getTitle(), "").pop();
     push("flow", "flow-name=xsl-region-body");
     push("block");
     
@@ -379,10 +384,19 @@ public class Document {
    * Add a paragraph
    */
   public Document nextParagraph() {
+    return nextParagraph("");
+  } 
+  
+  /**
+   * Add a paragraph
+   */
+  public Document nextParagraph(String format) {
     
     // start a new block if the current is not-empty
     if (cursor.getFirstChild()!=null)
-      pop().push("block", "");
+      pop().push("block", format);
+    else
+      attributes(cursor, format);
     
     return this;
   }
@@ -391,10 +405,17 @@ public class Document {
    * Start a list
    */
   public Document startList() {
+    return startList("");
+  }
+    
+  /**
+   * Start a list
+   */
+  public Document startList(String format) {
     
     //<list-block>
     pop();
-    push("list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt");
+    push("list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt,"+format);
     nextListItem();
     
     return this;
@@ -890,64 +911,74 @@ public class Document {
     
       Document doc = new Document("Testing FO");
       
-      doc.addTOC();
-      doc.startSection("Section 1");
-      doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
-      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
+      doc.addText("A paragraph");
+      doc.nextParagraph("start-indent=10pt");
+      doc.addText("The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. ");
+      doc.startList("start-indent=20pt");
+      doc.addText("A");
+      doc.nextListItem();
+      doc.addText("B");
+      doc.nextListItem();
+      doc.addText("C");
       
-      doc.startTable("width=100%,border=0.5pt solid black,genj:csv=true");
-      doc.addTableColumn("column-width=10%");
-      doc.addTableColumn("column-width=10%");
-      doc.addTableColumn("column-width=80%");
-      doc.nextTableCell("color=red");
-      doc.addText("AA");
-      doc.nextTableCell();
-      doc.addText("AB");
-      doc.nextTableCell();
-      //doc.addText("AC");
-      doc.nextTableCell();
-      doc.addText("BA"); // next row
-      doc.nextTableCell("number-columns-spanned=2");
-      doc.addText("BB+BC");
-      doc.nextTableRow();
-      doc.addText("CA");
-      doc.nextTableCell();
-      doc.addText("CB");
-      doc.nextTableCell();
-      doc.addText("CC");
-      doc.endTable();
-  
-      doc.startList();
-      doc.nextListItem();
-      doc.addText("Item 1");
-      doc.addText(" with text talking about");
-      doc.addIndexTerm("Animals", "Mammals");
-      doc.addText(" elephants and ");
-      doc.addIndexTerm("Animals", "Mammals", "Horse");
-      doc.addText(" horses as well as ");
-      doc.addIndexTerm("Animals", "Mammals", "Horse");
-      doc.addText(" ponys and even ");
-      doc.addIndexTerm("Animals", "Fish", "");
-      doc.addText(" fish");
-      doc.nextParagraph();
-      doc.addText("and a newline");
-      doc.nextListItem();
-      doc.addText("Item 2");
-      doc.startList();
-      doc.addText("Item 2.1");
-      doc.nextListItem();
-      doc.addText("Item 2.2");
-      doc.endList();
-      doc.endList();
-      doc.addText("Text");
-  
-      doc.startSection("Section 2");
-      doc.addText("Text and a page break");
-      doc.nextPage();
-      
-      doc.startSection("Section 2");
-      doc.addText("Text");
+//      doc.addTOC();
+//      doc.startSection("Section 1");
+//      doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
+//      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
+//      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
+//      
+//      doc.startTable("width=100%,border=0.5pt solid black,genj:csv=true");
+//      doc.addTableColumn("column-width=10%");
+//      doc.addTableColumn("column-width=10%");
+//      doc.addTableColumn("column-width=80%");
+//      doc.nextTableCell("color=red");
+//      doc.addText("AA");
+//      doc.nextTableCell();
+//      doc.addText("AB");
+//      doc.nextTableCell();
+//      //doc.addText("AC");
+//      doc.nextTableCell();
+//      doc.addText("BA"); // next row
+//      doc.nextTableCell("number-columns-spanned=2");
+//      doc.addText("BB+BC");
+//      doc.nextTableRow();
+//      doc.addText("CA");
+//      doc.nextTableCell();
+//      doc.addText("CB");
+//      doc.nextTableCell();
+//      doc.addText("CC");
+//      doc.endTable();
+//  
+//      doc.startList();
+//      doc.nextListItem();
+//      doc.addText("Item 1");
+//      doc.addText(" with text talking about");
+//      doc.addIndexTerm("Animals", "Mammals");
+//      doc.addText(" elephants and ");
+//      doc.addIndexTerm("Animals", "Mammals", "Horse");
+//      doc.addText(" horses as well as ");
+//      doc.addIndexTerm("Animals", "Mammals", "Horse");
+//      doc.addText(" ponys and even ");
+//      doc.addIndexTerm("Animals", "Fish", "");
+//      doc.addText(" fish");
+//      doc.nextParagraph();
+//      doc.addText("and a newline");
+//      doc.nextListItem();
+//      doc.addText("Item 2");
+//      doc.startList();
+//      doc.addText("Item 2.1");
+//      doc.nextListItem();
+//      doc.addText("Item 2.2");
+//      doc.endList();
+//      doc.endList();
+//      doc.addText("Text");
+//  
+//      doc.startSection("Section 2");
+//      doc.addText("Text and a page break");
+//      doc.nextPage();
+//      
+//      doc.startSection("Section 2");
+//      doc.addText("Text");
 
       Format format;
       if (args.length>0)
