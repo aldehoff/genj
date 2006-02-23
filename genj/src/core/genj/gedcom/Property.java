@@ -962,7 +962,7 @@ public abstract class Property implements Comparable {
    * @see Property#format(String, PrivacyPolicy)
    */
   public String format(String format) {
-    return format(format, null);
+    return format(format, PrivacyPolicy.PUBLIC);
   }
   
   /**
@@ -983,28 +983,47 @@ public abstract class Property implements Comparable {
    */
   public String format(String format, PrivacyPolicy policy) {
   
+    // match format given
     Matcher matcher = FORMAT_PATTERN.matcher(format);
+    // prepare running parameters
     StringBuffer result = new StringBuffer(format.length()+20);
     int masked = 0;
     int matches = 0;
     int cursor = 0;
+    // go through all matches in format
     while (matcher.find()) {
+      // grab prefix
       result.append(format.substring(cursor, matcher.start()));
       // analyze next {...$x...}
       String prefix = matcher.group(1);
       char marker = format.charAt(matcher.start(2));
       String suffix = matcher.group(3);
       // translate marker into a value
-      String value = formatMarker(marker, policy);
-      // did we get the mask back, had already masked out and the prefix is empty? => skip this one then
-      if (value==Options.getInstance().maskPrivate && masked++>0 && prefix.trim().length()==0) 
-        value="";
+      Property prop;
+      String value;
+      switch (marker) {
+        case 'D' : { prop = getProperty("DATE"); value = (prop instanceof PropertyDate)&&prop.isValid() ? prop.getDisplayValue() : ""; break; }
+        case 'y': { prop = getProperty("DATE"); value = (prop instanceof PropertyDate)&&prop.isValid() ? Integer.toString(((PropertyDate)prop).getStart().getYear()) : ""; break; }
+        case 'p': { prop = getProperty("PLAC"); value = (prop instanceof PropertyPlace) ? ((PropertyPlace)prop).getCity() : ""; if (value==null) value=""; break; }
+        case 'P': { prop = getProperty("PLAC"); value = (prop instanceof PropertyPlace) ? prop.getDisplayValue() : ""; break;}
+        case 'v': { prop = this; value = getDisplayValue(); break; }
+        case 'V': { prop = this; value = getValue(); break; }
+        case 't': { prop = null; value = getTag(); break; }
+        case 'T': { prop = null; value = Gedcom.getName(getTag()); break; }
+        default:
+          throw new IllegalArgumentException("unknown formatting marker "+marker);
+      }
+      // check property against policy if applicable
+      if (prop!=null && policy.isPrivate(prop)) {
+        // we didn't have a mask yet or the prefix is not empty? use mask
+        value = (masked++==0||prefix.trim().length()>0)  ? Options.getInstance().maskPrivate : "";
+      }
       // append if value is good
       if (value.length()>0) {
         result.append(prefix);
         result.append(value);
         result.append(suffix);
-        matches++;
+        if (prop!=null) matches++;
       }
       // continue
       cursor = matcher.end();
@@ -1017,60 +1036,5 @@ public abstract class Property implements Comparable {
     return matches>0 ? result.toString().trim() : "";
   }
   
-  private String formatMarker(char marker, PrivacyPolicy policy) {
-
-    Property prop = null;
-    String value = null;
-    
-    switch (marker) {
-      case 'D' : {
-        prop = getProperty("DATE");
-        value = (prop instanceof PropertyDate)&&prop.isValid() ? prop.getDisplayValue() : "";
-        break;
-      }
-      case 'y': {
-        prop = getProperty("DATE");
-        value = (prop instanceof PropertyDate)&&prop.isValid() ? Integer.toString(((PropertyDate)prop).getStart().getYear()) : "";
-        break;
-      }
-      case 'p': {
-        prop = getProperty("PLAC");
-        value = (prop instanceof PropertyPlace) ? ((PropertyPlace)prop).getCity() : "";
-        if (value==null) value=""; // make sure we don't end up with a null here
-        break;
-      }
-      case 'P': {
-        prop = getProperty("PLAC");
-        value = (prop instanceof PropertyPlace) ? prop.getDisplayValue() : "";
-        break;
-      }
-      case 'v': 
-        prop = this;
-        value = getDisplayValue();
-        break;
-      case 'V': 
-        prop = this;
-        value = getValue();
-        break;
-      case 't':
-        value = getTag();
-        break;
-      case 'T':
-        value = Gedcom.getName(getTag());
-        break;
-    }
-    
-    // no marker matched?
-    if (value==null)
-      throw new IllegalArgumentException("unknown formatting marker "+marker);
-    
-    // check policy
-    if (policy!=null&&prop!=null&&policy.isPrivate(prop))
-      value = Options.getInstance().maskPrivate;
-    
-    // done
-    return value;
-  }
-
 } //Property
 
