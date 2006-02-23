@@ -222,36 +222,48 @@ public class PropertyPlace extends PropertyChoiceValue {
    * Accessor - jurisdictions that is the city
    */
   public String getCity() {
-    return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(getCityIndex(), true);
+    int cityIndex = getCityIndex();
+    if (cityIndex<0)
+      return getFirstAvailableJurisdiction();
+    String city = new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(cityIndex, true);
+    return city!=null ? city : ""; 
   }
   
   /**
    * Accessor - all jurisdictions starting with city
    */
   public String getValueStartingWithCity() {
+    // grab result
     String result = getValue();
-    int city = getCityIndex();
-    if (city==0)
+    // check city index - we assume it start with the first if n/a
+    int cityIndex = getCityIndex();
+    if (cityIndex<=0)
       return result;
-    return new DirectAccessTokenizer(result, JURISDICTION_SEPARATOR).getSubstring(city);
+    // grab sub
+    return new DirectAccessTokenizer(result, JURISDICTION_SEPARATOR).getSubstring(cityIndex);
   }
   
+  /**
+   * Derive index of city value in the list of jurisdictions in this place 
+   * @return zero based index or -1 if not determined
+   */
   private int getCityIndex() {
-    
-    // calculate the city index in place format
+
+    // try to get a place format
     String hierarchy = getHierarchy();
-    if (hierarchy.length()>0) {
-      // look for a city key in the hierarchy
-      Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
-      DirectAccessTokenizer hs = new DirectAccessTokenizer(hierarchy, ",");
-      for (int index=0; hs.get(index)!=null ;index++) {
-        if (cityKeys.contains(hs.get(index, true).toLowerCase())) 
-          return index;
-      }
+    if (hierarchy.length()==0)
+      return -1;
+    
+    // look for a city key in the hierarchy
+    Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
+    DirectAccessTokenizer hs = new DirectAccessTokenizer(hierarchy, ",");
+    for (int index=0; hs.get(index)!=null ;index++) {
+      if (cityKeys.contains(hs.get(index, true).toLowerCase())) 
+        return index;
     }
     
-    // assuming first
-    return 0;
+    // don't know
+    return -1;
   }
   
 } //PropertyPlace
