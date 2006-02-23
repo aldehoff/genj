@@ -140,7 +140,7 @@ public class ReportToDo extends Report {
     if (outputSummary) {
       
       // Loop through individuals & families
-      doc.startTable();
+      doc.startTable("genj:csv=true");
       
       doc.nextTableRow(ROW_FORMAT_HEADER1);
       doc.addTableColumn("column-width=8%");
