@@ -8,9 +8,10 @@
 /**
  * TODO Daniel: voir avec ie (page break)
  * TODO Daniel: inclure dans la liste les sources, repo, ... fictifs pour faire un tri
- * TODO Daniel: classer les colonnes au choix, avec plusieurs clé
- * TODO Daniel: limiter aux événements/général/tous
- * TODO Daniel: differencier les todo sur evt des todo globaux
+ * TODO Daniel: classer les colonnes au choix, avec plusieurs cle
+ * TODO Daniel: limiter aux evenements/general/tous
+ * TODO Daniel: differencier les todos sur evt des todo globaux
+ * FIXME CONC in NOTEs is seen as a new line
  */
 import genj.fo.Document;
 import genj.gedcom.Entity;
@@ -215,7 +216,7 @@ public class ReportToDo extends Report {
     
     // //// Epoux
     tempIndi = fam.getHusband();
-    doc.nextTableRow();
+    doc.nextTableRow(FORMAT_HEADER2);
     doc.addText( Gedcom.getName("HUSB"));
     doc.nextTableCell("number-columns-spanned=5");
     doc.addText( tempIndi.getName() );
@@ -228,10 +229,12 @@ public class ReportToDo extends Report {
     tempFam = (tempIndi == null) ? null : tempIndi .getFamilyWhereBiologicalChild();
     if (tempFam != null) {
       doc.nextTableRow();
-      doc.addText( translate("father") + ":", FORMAT_HEADER3); 
+      doc.nextTableCell(FORMAT_HEADER3);
+      doc.addText( translate("father") + ":" ); 
       doc.nextTableCell("number-columns-spanned=5");
       addIndiString(tempFam.getHusband(), doc);
       doc.nextTableRow();
+      doc.nextTableCell(FORMAT_HEADER3);
       doc.addText( translate("mother") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
       addIndiString(tempFam.getWife(), doc);
@@ -239,7 +242,7 @@ public class ReportToDo extends Report {
 
     // //// Epouse
     tempIndi = fam.getWife();
-    doc.nextTableRow();
+    doc.nextTableRow(FORMAT_HEADER2);
     doc.addText( Gedcom.getName("WIFE") );
     doc.nextTableCell("number-columns-spanned=5");
     doc.addText( tempIndi.getName() );
@@ -252,10 +255,12 @@ public class ReportToDo extends Report {
     tempFam = (tempIndi == null) ? null : tempIndi .getFamilyWhereBiologicalChild();
     if (tempFam != null) {
       doc.nextTableRow();
+      doc.nextTableCell(FORMAT_HEADER3);
       doc.addText( translate("father") );
       doc.nextTableCell("number-columns-spanned=5");
       addIndiString(tempFam.getHusband(), doc) ;
       doc.nextTableRow();
+      doc.nextTableCell(FORMAT_HEADER3);
       doc.addText( translate("mother") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
       addIndiString(tempFam.getWife(), doc) ;
@@ -265,12 +270,12 @@ public class ReportToDo extends Report {
     // //// Enfants
     Indi[] children = fam.getChildren();
     if (children.length > 0) {
-      doc.nextTableRow();
+      doc.nextTableRow(FORMAT_HEADER2);
       doc.nextTableCell("number-columns-spanned=6");
       doc.addText( Gedcom.getName("CHIL", children.length > 1) );
       for (int c = 0; c < children.length; c++) {
         doc.nextTableRow();
-        doc.nextTableCell();
+        doc.nextTableCell(FORMAT_HEADER3);
         doc.addText("" + (c + 1) );
         doc.nextTableCell("number-columns-spanned=5");
         addIndiString(children[c], doc) ;
@@ -285,7 +290,7 @@ public class ReportToDo extends Report {
       if (todos.contains(prop))
         continue;
       if (!seenNote) {
-        doc.nextTableRow();
+        doc.nextTableRow(FORMAT_HEADER2);
         doc.nextTableCell("number-columns-spanned=6");
         doc.addText( translate("main.notes") );
         seenNote = true;
@@ -297,7 +302,7 @@ public class ReportToDo extends Report {
     }
 
     /** ************** Todos */
-    doc.nextTableRow();
+    doc.nextTableRow(FORMAT_HEADER2);
     doc.nextTableCell("number-columns-spanned=6");
     doc.addText( translate("titletodo") );
     for (int i = 0; i < todos.size(); i++) {
@@ -309,8 +314,9 @@ public class ReportToDo extends Report {
         doc.nextTableCell("number-columns-spanned=5");
         outputPropertyValue(prop, doc);
       } else {
+    	  doc.nextTableCell(FORMAT_HEADER3_TODO);
         doc.addText( Gedcom.getName(parent.getTag()) );
-        doc.nextTableCell("number-columns-spanned=5");
+        doc.nextTableCell("number-columns-spanned=5,");
         doc.addText( parent.format(PLACE_AND_DATE_FORMAT) );
         doc.nextParagraph();
         outputPropertyValue(prop,doc);
