@@ -14,8 +14,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyMultilineValue;
 import genj.report.Report;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 
@@ -80,7 +79,7 @@ public class ReportMultDesc extends Report {
    * don't need stdout
    */
   public boolean usesStandardOut() {
-    return false;
+    return true;
   }
   
   /**
@@ -110,7 +109,7 @@ public class ReportMultDesc extends Report {
   private void start(Indi[] indis, String title) {
     
     // keep track of who we looked at already
-    Set done = new HashSet();
+    HashMap done = new HashMap();
 
     // Init some stuff
     PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
@@ -151,9 +150,8 @@ public class ReportMultDesc extends Report {
   /**
    * Generate descendants information for one individual
    */
-  private void iterate(Indi indi, int level, String num, Set done, PrivacyPolicy policy, Document doc) {
+  private void iterate(Indi indi, int level, String num, HashMap done, PrivacyPolicy policy, Document doc) {
     
-    done.add(indi);
     nbIndi++;
     if (indi!=null&&!indi.isDeceased()) nbLiving ++;
 
@@ -165,7 +163,6 @@ public class ReportMultDesc extends Report {
     PrivacyPolicy localPolicy = level < publicGen + 1 ? PrivacyPolicy.PUBLIC : policy;
 
     // format the indi's information
-    doc.addAnchor(indi);
     doc.startList();
     format(indi, (Fam)null, num, localPolicy, doc);
 
@@ -175,22 +172,24 @@ public class ReportMultDesc extends Report {
       
       // .. here's the fam and spouse
       Fam fam = fams[f];
+
       Indi spouse = fam.getOtherSpouse(indi);
 
       // output the spouse
-    	if (fams.length==1)
+        if (fams.length==1)
     	    format(spouse,fam,"x", localPolicy, doc); 
     	else 
     	    format(spouse,fam,"x"+(f+1), localPolicy, doc); 
 
       // put out a link if we've seen the spouse already
-      if (done.contains(spouse)) {
+      if (done.containsKey(fam)) {
         doc.nextParagraph();
         doc.addText("====> " + translate("see") +" ");
-        doc.addLink(spouse.getId(), spouse);
+        doc.addLink((String)done.get(fam), fam);
       } else {
 
-        done.add(spouse);
+   	    doc.addAnchor(fam);
+          done.put(fam,num);
         nbIndi++;
         nbFam++;
         if (spouse!=null&&!spouse.isDeceased()) nbLiving ++;
@@ -227,9 +226,7 @@ public class ReportMultDesc extends Report {
     // FIXME Nils re-enable anchors for individuals processes
     
     doc.nextParagraph();
-//    doc.addText( prefix, FORMAT_UNDERLINE ); //FIXME Daniel: should be put in replacement of the bullet for list item
 	doc.nextListItem("genj:label="+prefix);
-//    doc.addText( " ");
 	doc.addText(policy.getDisplayValue(indi, "NAME"), FORMAT_STRONG);
     doc.addText(" (" + indi.getId() + ")" );
     
