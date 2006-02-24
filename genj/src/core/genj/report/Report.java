@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.101 $ $Author: nmeier $ $Date: 2006-02-20 21:33:21 $
+ * $Revision: 1.102 $ $Author: nmeier $ $Date: 2006-02-24 20:27:28 $
  */
 package genj.report;
 
@@ -477,13 +477,7 @@ public abstract class Report implements Cloneable {
    * A sub-class can open a browser that will show the given URL with this method
    */
   public final void showBrowserToUser(URL url) {
-
-    // run browser
-    FileAssociation association = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
-    if (association!=null)  
-      association.execute(url);
-
-    // done
+    FileAssociation.open(url, owner);
   }
 
   /**

@@ -210,7 +210,7 @@ public class FileAssociation {
       }
     }
   }
-
+  
   /**
    * Gets all
    */
@@ -251,6 +251,16 @@ public class FileAssociation {
     if (suffix.length()==0)
       return null;
     return get(suffix, suffix, name, owner);
+  }
+  
+  /**
+   * Gets first available association or asks the user for appropriate one for a browser url and executes it
+   */
+  public static void open(URL url, JComponent owner) {
+    // find browser capable assoc
+    FileAssociation association = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
+    if (association!=null)  
+      association.execute(url);
   }
   
   /**
