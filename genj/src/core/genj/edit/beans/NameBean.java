@@ -36,8 +36,8 @@ public class NameBean extends PropertyBean {
   private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><l/><v wx=\"1\"/></row><row><l/><v wx=\"1\"/></row><row><l/><v wx=\"1\"/></row></col>");
   
   /** our components */
-  private ChoiceWidget cLast;
-  private TextFieldWidget tFirst, tSuff;
+  private ChoiceWidget cLast, cFirst;
+  private TextFieldWidget tSuff;
 
   /**
    * Initialization
@@ -49,13 +49,14 @@ public class NameBean extends PropertyBean {
     cLast  = new ChoiceWidget();
     cLast.addChangeListener(changeSupport);
     cLast.setIgnoreCase(true);
-    tFirst = new TextFieldWidget("", 10); 
-    tFirst.addChangeListener(changeSupport);
+    cFirst = new ChoiceWidget();
+    cFirst.addChangeListener(changeSupport);
+    cFirst.setIgnoreCase(true);
     tSuff  = new TextFieldWidget("", 10); 
     tSuff.addChangeListener(changeSupport);
 
     add(new JLabel(PropertyName.getLabelForFirstName()));
-    add(tFirst);
+    add(cFirst);
 
     add(new JLabel(PropertyName.getLabelForLastName()));
     add(cLast);
@@ -64,7 +65,7 @@ public class NameBean extends PropertyBean {
     add(tSuff);
 
 
-    defaultFocus = tFirst;
+    defaultFocus = cFirst;
 
   }
 
@@ -74,7 +75,7 @@ public class NameBean extends PropertyBean {
   public void commit() {
 
     // ... calc texts
-    String first = tFirst.getText().trim();
+    String first = cFirst.getText().trim();
     String last  = cLast .getText().trim();
     String suff  = tSuff .getText().trim();
 
@@ -95,7 +96,8 @@ public class NameBean extends PropertyBean {
     
     cLast.setValues(pname.getLastNames(true));
     cLast.setText(pname.getLastName());
-    tFirst.setText(pname.getFirstName()); 
+    cFirst.setValues(pname.getFirstNames(true));
+    cFirst.setText(pname.getFirstName()); 
     tSuff.setText(pname.getSuffix()); 
 
     // done

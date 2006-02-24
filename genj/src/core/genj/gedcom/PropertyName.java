@@ -32,6 +32,10 @@ public class PropertyName extends Property {
   
   public final static String TAG =  "NAME";
   
+  private final static String 
+    KEY_LASTNAME = TAG+".last",
+    KEY_FIRSTNAME = TAG+".first";
+  
   /** the first + last name */
   private String
     lastName  = "",
@@ -228,8 +232,8 @@ public class PropertyName extends Property {
     last = last.trim().intern();
     suff = suff.trim();
 
-    // forget/remember
-    rememberLastName(lastName, last);
+    // remember us
+    remember(first, last);
 
     // Make sure no Information is kept in base class
     nameAsString=null;
@@ -255,7 +259,7 @@ public class PropertyName extends Property {
     // continue
     super.addNotify(parent);
     // our change to remember the last name
-    rememberLastName(lastName, lastName);
+    remember(firstName, lastName);
     // done
   }
   
@@ -266,7 +270,7 @@ public class PropertyName extends Property {
    */
   /*package*/ void delNotify(Property old) {
     // forget value
-    rememberLastName(lastName, "");
+    remember("", "");
     // continue
     super.delNotify(old);
     // done
@@ -316,10 +320,27 @@ public class PropertyName extends Property {
   }
 
   /**
+   * Return all first names
+   */
+  public List getFirstNames(boolean sortByName) {
+    Gedcom gedcom = getGedcom();
+    if (gedcom==null)
+      return new ArrayList(0);
+    return getFirstNames(gedcom, sortByName);
+  }
+
+  /**
    * Return all last names
    */
   public static List getLastNames(Gedcom gedcom, boolean sortByName) {
-    return gedcom.getReferenceSet(TAG).getKeys(sortByName ? gedcom.getCollator() : null);
+    return gedcom.getReferenceSet(KEY_LASTNAME).getKeys(sortByName ? gedcom.getCollator() : null);
+  }
+
+  /**
+   * Return all first names
+   */
+  public static List getFirstNames(Gedcom gedcom, boolean sortByName) {
+    return gedcom.getReferenceSet(KEY_FIRSTNAME).getKeys(sortByName ? gedcom.getCollator() : null);
   }
 
   /**
@@ -336,28 +357,31 @@ public class PropertyName extends Property {
    * Returns all PropertyNames that contain the same name 
    */
   public static int getLastNameCount(Gedcom gedcom, String last) {
-    return gedcom.getReferenceSet(TAG).getReferences(last).size();
+    return gedcom.getReferenceSet(KEY_LASTNAME).getReferences(last).size();
   }
   
   /**
    * Returns all PropertyNames that contain the same name 
    */
   public Property[] getSameLastNames() {
-    return toArray(getGedcom().getReferenceSet(TAG).getReferences(getLastName()));
+    return toArray(getGedcom().getReferenceSet(KEY_LASTNAME).getReferences(getLastName()));
   }
   /**
    * Remember a last name
    */
-  private void rememberLastName(String oldName, String newName) {
+  private void remember(String newFirst, String newLast) {
     // got access to a reference set?
     Gedcom gedcom = getGedcom();
     if (gedcom==null)
       return;
-    ReferenceSet refSet = gedcom.getReferenceSet(TAG);
-    // forget old
-    if (oldName!=null&&oldName.length()>0) refSet.remove(oldName, this);
-    // remember new
-    if (newName!=null&&newName.length()>0) refSet.add(newName, this);
+    // forget old last and remember new
+    ReferenceSet refSet = gedcom.getReferenceSet(KEY_LASTNAME);
+    if (lastName.length()>0) refSet.remove(lastName, this);
+    if (newLast.length()>0) refSet.add(newLast, this);
+    // forget old first and remember new
+    refSet = gedcom.getReferenceSet(KEY_FIRSTNAME);
+    if (firstName.length()>0) refSet.remove(firstName, this);
+    if (newFirst.length()>0) refSet.add(newFirst, this);
     // done
   }
 } //PropertyName
