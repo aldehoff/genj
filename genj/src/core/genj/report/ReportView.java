@@ -21,6 +21,7 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.io.FileAssociation;
 import genj.option.OptionsWidget;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
@@ -214,6 +215,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     tpInfo.setEditable(false);
     tpInfo.setEditorKit(new HTMLEditorKit());
     tpInfo.setFont(new JTextField().getFont()); //don't use standard clunky text area font
+    tpInfo.addHyperlinkListener(new FollowHyperlink(tpInfo));
     JScrollPane spInfo = new JScrollPane(tpInfo);
     gh.add(new JLabel(RESOURCES.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,GridBagHelper.FILL_BOTH);
@@ -234,7 +236,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     taOutput.setContentType("text/plain");
     taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
     taOutput.setEditable(false);
-    taOutput.addHyperlinkListener(callback);
+    taOutput.addHyperlinkListener(new FollowHyperlink(taOutput));
     taOutput.addMouseMotionListener(callback);
 
     // Done
@@ -551,9 +553,38 @@ public class ReportView extends JPanel implements ToolBarSupport {
   } //ActionSave
   
   /**
+   * A Hyperlink Follow Action
+   */
+  private static class FollowHyperlink implements HyperlinkListener {
+    
+    private JEditorPane editor;
+    
+    /** constructor */
+    private FollowHyperlink(JEditorPane editor) {
+      this.editor = editor;
+    }
+    
+    /** callback - link clicked */
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+      // need activate
+      if (e.getEventType()!=HyperlinkEvent.EventType.ACTIVATED)
+        return;
+      // internal?
+      if (e.getDescription().startsWith("#")) try {
+        editor.setPage(e.getURL());
+      } catch (Throwable t) {
+      } else {
+        FileAssociation.open(e.getURL(), editor);
+      }
+      // done
+    }
+    
+  } //FollowHyperlink
+  
+  /**
    * A private callback for various messages coming in 
    */
-  private class Callback extends MouseMotionAdapter implements HyperlinkListener, ListCellRenderer, ListSelectionListener {
+  private class Callback extends MouseMotionAdapter implements ListCellRenderer, ListSelectionListener {
 
     /** a default renderer for list */
     private DefaultListCellRenderer defRenderer = new DefaultListCellRenderer();
@@ -676,16 +707,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
       return null;
     }
 
-    /** callback - link clicked */
-    public void hyperlinkUpdate(HyperlinkEvent e) {
-      if (e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) try {
-        // only follow links in same page for now
-        if (e.getDescription().startsWith("#"))
-          taOutput.setPage(e.getURL());
-      } catch (Throwable t) {
-      }
-    }
-    
     /**
      * have to implement MouseMotionListener.mouseDragger()
      * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
