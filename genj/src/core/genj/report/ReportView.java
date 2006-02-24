@@ -454,12 +454,23 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * post execute
      */
     protected void postExecute(boolean preExecuteResult) {
-      // tx to end?
-      if (preExecuteResult&&!instance.isReadOnly()) 
-        gedcom.endTransaction();
+      
+      // stop run
+      setRunning(false);
+      
       // flush
-      out.flush();
-      out.close();
+      if (out!=null) {
+        out.flush();
+        out.close();
+      }
+      
+      // no more cleanup to do?
+      if (!preExecuteResult)
+        return;
+      
+      // close tx?
+      if (!instance.isReadOnly()) 
+        gedcom.endTransaction();
       
       // check last line for url
       URL url = null;
@@ -479,8 +490,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         }
       }
       
-      // stop run
-      setRunning(false);
+      // done
     }
   } //ActionStart
   
