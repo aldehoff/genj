@@ -934,7 +934,8 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      * Constructor
      */
     private ActionOverview() {
-      super.setImage(Images.imgOverview);
+      setImage(Images.imgOverview);
+      setTip(resources, "overview.tip");
     }
     /**
      * @see genj.util.swing.Action2#execute()
