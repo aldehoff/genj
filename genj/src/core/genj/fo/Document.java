@@ -425,6 +425,13 @@ public class Document {
    * Add a list item
    */
   public Document nextListItem() {
+    return nextListItem("");
+  }
+    
+  /**
+   * Add a list item
+   */
+  public Document nextListItem(String format) {
     
     //<list-block>
     //  <list-item>
@@ -434,19 +441,32 @@ public class Document {
     //    </list-item-body>
     //  </list-item>
     
-    // are we in an empty block within list-item-body already?
-    if (cursor.getNodeName().equals("block")&&cursor.getFirstChild()==null && cursor.getParentNode().getLocalName().equals("list-item-body"))
-      return this;
+    // check containing list-block
+    Element list = peek("list-block", "nextListItem() is not applicable outside list block");
+    
+    // a list with only one item containing an empty block?
+    if (list.getChildNodes().getLength()==1&&cursor.getFirstChild()==null&&cursor.getPreviousSibling()==null&&cursor.getParentNode().getLocalName().equals("list-item-body")) {
+      // delete list-item and start over
+      list.removeChild(list.getFirstChild());
+    } 
+    
+    // continue with list
+    cursor = list;
+    
+    // find out what 'bullet' to use
+    String bullet = attribute("genj:bullet", format);
+    if (bullet==null)
+      bullet = "\u2219";  // &bullet; /u2219 works in JEditPane, &bull; \u2022 doesn't
 
-    // pop up to list-block and add new
-    Element last = cursor;
-    pop("list-block", "nextListItem() is not applicable outside list block");
+    // add new item
     push("list-item");
-    push("list-item-label", "end-indent=label-end()");
-    push("block");
-    text("\u2219", ""); // &bullet; /u2219 works in JEditPane, &bull; \u2022 doesn't
-    pop().pop().push("list-item-body", "start-indent=body-start()");
-    push("block");
+     push("list-item-label", "end-indent=label-end()");
+      push("block");
+       text(bullet, ""); 
+      pop();
+     pop();
+    push("list-item-body", "start-indent=body-start()");
+     push("block");
 
     return this;
   }
@@ -471,10 +491,10 @@ public class Document {
     return startTable("width=100%,border=0.5pt solid black");
   }
   
-  public Document startTable(String atts) {
+  public Document startTable(String format) {
 
     // patch format - FOP only supports table-layout=fixed
-    atts  = "table-layout=fixed,"+atts;
+    format  = "table-layout=fixed,"+format;
     
     //<table>
     // <table-header>
@@ -488,17 +508,17 @@ public class Document {
     //   <table-cell>
     //    <block>    
     //    ...
-    push("table", atts);
+    push("table", format);
     Element table = cursor;
     
     // mark as cvs if applicable - non fo namespace attributes won't be picked up by push() and attributes()
-    if (atts.indexOf("genj:csv=true")>=0) {
+    if ("true".equals(attribute("genj:csv", format))) {
       containsCSV = true;
       cursor.setAttributeNS(NS_GENJ, "genj:csv", "true");
     }
     
     // head/body & row
-    if (atts.indexOf("genj:header=true")>=0) {
+    if (format.indexOf("genj:header=true")>=0) {
       push("table-header"); 
       push("table-row", "color=#ffffff,background-color=#c0c0c0,font-weight=bold");
     } else { 
@@ -840,9 +860,9 @@ public class Document {
   /**
    * Set attributes on current element
    */
-  private Document attributes(Element elem, String attributes) {
+  private Document attributes(Element elem, String format) {
     // parse attributes
-    Matcher m = REGEX_ATTR.matcher(attributes);
+    Matcher m = REGEX_ATTR.matcher(format);
     while (m.find()) {
       // accept only fo attributes here
       String key = m.group(1).trim();
@@ -853,6 +873,20 @@ public class Document {
     }
     // done
     return this;
+  }
+  
+  /**
+   * find an attribute in format
+   */
+  private String attribute(String key, String format) {
+    // parse attributes
+    Matcher m = REGEX_ATTR.matcher(format);
+    while (m.find()) {
+      if (m.group(1).trim().equals(key) )
+          return m.group(2).trim();
+    }
+    // not found
+    return null;
   }
   
   /**
@@ -914,13 +948,21 @@ public class Document {
       doc.addText("A paragraph");
       doc.nextParagraph("start-indent=10pt");
       doc.addText("The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. ");
-      doc.startList("start-indent=20pt");
-      doc.addText("A");
-      doc.nextListItem();
-      doc.addText("B");
-      doc.nextListItem();
-      doc.addText("C");
+
+      doc.nextParagraph("text-decoration=underline");
+      doc.addText("this paragraph is underlined");
       
+      doc.nextParagraph();
+      doc.addText("this line contains ");
+      doc.addText("underlined", "text-decoration=underline");
+      doc.addText(" text");
+      
+      doc.startList("provisional-distance-between-starts=40pt");
+      doc.nextListItem("genj:bullet=Foo");
+      doc.addText("A foo'd bullet");
+      doc.nextListItem();
+      doc.addText("A normal bullet");
+
 //      doc.addTOC();
 //      doc.startSection("Section 1");
 //      doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
