@@ -165,6 +165,7 @@ public class ReportMultDesc extends Report {
     PrivacyPolicy localPolicy = level < publicGen + 1 ? PrivacyPolicy.PUBLIC : policy;
 
     // format the indi's information
+    doc.addAnchor(indi);
     doc.startList();
     format(indi, (Fam)null, num, localPolicy, doc);
 
@@ -185,10 +186,8 @@ public class ReportMultDesc extends Report {
       // put out a link if we've seen the spouse already
       if (done.contains(spouse)) {
         doc.nextParagraph();
-        doc.addText("====> " + translate("see") );
-        
-        // FIXME Nils re-enable links to already seen individuals
-        // doc.addLink( seeIndi.toString(), seeIndi.getId() );
+        doc.addText("====> " + translate("see") +" ");
+        doc.addLink(spouse.getId(), spouse);
       } else {
 
         done.add(spouse);
