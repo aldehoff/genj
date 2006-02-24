@@ -522,8 +522,19 @@ public class Indi extends Entity {
    * Checks whether this person is deceased
    */
   public boolean isDeceased() {
-    Property date = getProperty(PATH_INDIDEATDATE);
-    return date!=null&&date.isValid();
+    // check death event
+    PropertyEvent deat = (PropertyEvent)getProperty("DEAT");
+    if (deat!=null) {
+      // known to have happened?
+      if (deat.isKnownToHaveHappened().booleanValue())
+        return true;
+      // valid date?
+      Property date = deat.getProperty("DATE");
+      if (date!=null&&date.isValid())
+        return true;
+    }
+    // not afaik
+    return false;
   }
   
 } //Indi
