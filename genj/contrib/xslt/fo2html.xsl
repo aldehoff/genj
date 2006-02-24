@@ -639,15 +639,10 @@
   </xsl:variable>
 
 <xsl:template match="fo:page-number | fo:page-number-citation">
-  <!-- NM20060218 use our extension to select a citation text if avail bullet otherwise -->
-  <a href="#{@ref-id}">
-   <xsl:choose>
-   <xsl:when test="@genj:citation">
-    [<xsl:value-of select="@genj:citation"/>]
-   </xsl:when>
-   <xsl:otherwise>&#x2219;</xsl:otherwise>
-   </xsl:choose>
-  </a>
+  <!-- NM20060218 use our extension to select a citation text if avail blank otherwise -->
+  <xsl:if test="@genj:citation">
+    <a href="#{@ref-id}">[<xsl:value-of select="@genj:citation"/>]</a>
+  </xsl:if>
   
 </xsl:template>
  
