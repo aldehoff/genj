@@ -372,7 +372,9 @@ public class ReportSosa extends Report {
     /** this is called once at the beginning of the recursion - we add our table around it */
     void formatStart(Indi root, Document doc) {
       // open table first
-      doc.startTable(""); 
+      doc.startTable("width=100%"); 
+      doc.addTableColumn("");
+      doc.addTableColumn("");
     }
     
     /** called at each generation add a generation info row*/
