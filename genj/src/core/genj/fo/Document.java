@@ -674,8 +674,14 @@ public class Document {
   public Document addAnchor(String id) {
     if (id.startsWith("_"))
       throw new IllegalArgumentException("underscore is reserved for internal IDs");
-    push("block", "id="+id);
-    pop();
+    // normally I'd use fo:inline for anchors but FOP can't handle IDs on those elements
+    // so i have to use block here - since the EditorPane uses extra space even for
+    // empty blocks i'm trying to reuse the current block here IF it doesn't have an ID
+    // already
+    if (cursor.getAttribute("id")==null)
+      cursor.setAttribute("id", id);
+    else
+      push("block", "id="+id).pop();
     return this;
   }
     
