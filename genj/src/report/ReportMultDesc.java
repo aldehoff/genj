@@ -20,10 +20,16 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 
 /**
- * GenJ - ReportMultDesc TODO Daniel titles statistics (nb pers distinctes, nb
- * pers vivantes, nb fam, ...)
+ * GenJ - ReportMultDesc 
+ * TODO Daniel titles statistics (nb pers distinctes, nbpers vivantes, nb fam, ...)
+ * TODO Daniel: Remove bullet with possibly replacement with d'abboville number
+ * TODO Daniel: Add table output (for csv)
+ * TODO Daniel: reenable global privacy disabling
  */
 public class ReportMultDesc extends Report {
+
+  private final static String FORMAT_STRONG = "font-weight=bold";
+  private final static String FORMAT_UNDERLINE = "text-decoration=underline";
 
   private int nbColumns;
 
@@ -127,7 +133,7 @@ public class ReportMultDesc extends Report {
     for (int i = 0; i < indis.length; i++) {
       Indi indi = indis[i];
       doc.startSection( translate("title.descendant", indi.getName()) );
-      iterate(indi, 1, done, policy, doc);
+      iterate(indi, 1, (new Integer(i+1).toString()), done, policy, doc);
     }
 
     doc.startSection( translate("title.stats") );
@@ -145,7 +151,7 @@ public class ReportMultDesc extends Report {
   /**
    * Generate descendants information for one individual
    */
-  private void iterate(Indi indi, int level, Set done, PrivacyPolicy policy, Document doc) {
+  private void iterate(Indi indi, int level, String num, Set done, PrivacyPolicy policy, Document doc) {
     
     done.add(indi);
     nbIndi++;
@@ -160,7 +166,7 @@ public class ReportMultDesc extends Report {
 
     // format the indi's information
     doc.startList();
-    format(indi, (Fam)null, "", localPolicy, doc);
+    format(indi, (Fam)null, num, localPolicy, doc);
 
     // And we loop through its families
     Fam[] fams = indi.getFamiliesWhereSpouse();
@@ -195,9 +201,9 @@ public class ReportMultDesc extends Report {
         for (int c = 0; c < children.length; c++) {
           // do the recursive step
           if (fams.length == 1)
-            iterate(children[c], level + 1, done, policy, doc);
+            iterate(children[c], level + 1, num+'.'+(c+1), done, policy, doc);
           else
-            iterate(children[c], level + 1, done, policy, doc);
+            iterate(children[c], level + 1, num+'x'+(f+1)+'.'+(c+1), done, policy, doc);
           
           // .. next child
         }
@@ -222,7 +228,11 @@ public class ReportMultDesc extends Report {
     // FIXME Nils re-enable anchors for individuals processes
     
     doc.nextParagraph();
-    doc.addText( policy.getDisplayValue(indi, "NAME") + " (" + indi.getId() + ")" );
+//    doc.addText( prefix, FORMAT_UNDERLINE ); //FIXME Daniel: should be put in replacement of the bullet for list item
+	doc.nextListItem("genj:label="+prefix);
+//    doc.addText( " ");
+	doc.addText(policy.getDisplayValue(indi, "NAME"), FORMAT_STRONG);
+    doc.addText(" (" + indi.getId() + ")" );
     
     String birt = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
     String marr = fam!=null ? format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "";
