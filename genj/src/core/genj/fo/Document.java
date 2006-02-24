@@ -454,7 +454,7 @@ public class Document {
     cursor = list;
     
     // find out what 'bullet' to use
-    String bullet = attribute("genj:bullet", format);
+    String bullet = attribute("genj:label", format);
     if (bullet==null)
       bullet = "\u2219";  // &bullet; /u2219 works in JEditPane, &bull; \u2022 doesn't
 
@@ -958,7 +958,9 @@ public class Document {
       doc.addText(" text");
       
       doc.startList("provisional-distance-between-starts=40pt");
-      doc.nextListItem("genj:bullet=Foo");
+      doc.nextListItem("genj:label=a)");
+      doc.addText("A foo'd bullet");
+      doc.nextListItem("genj:label=b)");
       doc.addText("A foo'd bullet");
       doc.nextListItem();
       doc.addText("A normal bullet");
