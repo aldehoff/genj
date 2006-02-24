@@ -159,7 +159,7 @@ public class FileAssociation {
     if (cmd.indexOf('%')<0) 
       cmd += " " + url;
     else
-      cmd.replaceAll("%", url.toString());
+      cmd = cmd.replaceAll("%", url.toString());
     // go
     new Thread(new Sequence(cmd)).start();
   }
