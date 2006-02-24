@@ -40,9 +40,8 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -71,6 +70,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AbstractDocument;
@@ -233,8 +234,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
     taOutput.setContentType("text/plain");
     taOutput.setFont(new Font("Monospaced", Font.PLAIN, 12));
     taOutput.setEditable(false);
+    taOutput.addHyperlinkListener(callback);
     taOutput.addMouseMotionListener(callback);
-    taOutput.addMouseListener(callback);
 
     // Done
     return new JScrollPane(taOutput);
@@ -552,7 +553,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * A private callback for various messages coming in 
    */
-  private class Callback extends MouseAdapter implements ListCellRenderer, ListSelectionListener, MouseMotionListener {
+  private class Callback extends MouseMotionAdapter implements HyperlinkListener, ListCellRenderer, ListSelectionListener {
 
     /** a default renderer for list */
     private DefaultListCellRenderer defRenderer = new DefaultListCellRenderer();
@@ -600,9 +601,12 @@ public class ReportView extends JPanel implements ToolBarSupport {
       
       // try to find id at location
       id = markIDat(e.getPoint());
-      
-      // set cursor
-      taOutput.setCursor(Cursor.getPredefinedCursor(id==null?Cursor.DEFAULT_CURSOR:Cursor.HAND_CURSOR));
+      if (id!=null) {
+        // propagate to other views through manager
+        Entity entity = gedcom.getEntity(id);
+        if (entity!=null)
+          manager.fireContextSelected(new Context(entity), e.getClickCount()>1, null);
+      }      
       
       // done
     }
@@ -671,6 +675,16 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // not found
       return null;
     }
+
+    /** callback - link clicked */
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+      if (e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) try {
+        // only follow links in same page for now
+        if (e.getDescription().startsWith("#"))
+          taOutput.setPage(e.getURL());
+      } catch (Throwable t) {
+      }
+    }
     
     /**
      * have to implement MouseMotionListener.mouseDragger()
@@ -678,21 +692,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
      */
     public void mouseDragged(MouseEvent e) {
       // ignored
-    }
-
-    /**
-     * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
-     */
-    public void mouseClicked(MouseEvent e) {
-      // no id no fun
-      if (id==null)
-        return;
-      // propagate to other views through manager
-      Entity entity = gedcom.getEntity(id);
-      if (entity!=null)
-        manager.fireContextSelected(new Context(entity), e.getClickCount()>1, null);
-      
-      // done
     }
 
   } //Callback
