@@ -244,7 +244,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Create the tab content for report options
    */
   private JComponent createReportOptions() {
-    owOptions = new OptionsWidget(manager.getWindowManager());
+    owOptions = new OptionsWidget(getName(), manager.getWindowManager());
     return owOptions;
   }
 

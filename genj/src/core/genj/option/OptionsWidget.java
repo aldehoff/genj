@@ -67,18 +67,22 @@ public class OptionsWidget extends JPanel {
   /** first column width */
   private int widthOf1stColumn = 32;
   
+  /** a title for the options we're looking at - is used as default category */
+  private String title;
+  
   /**
    * Constructor
    */
-  public OptionsWidget(WindowManager manager) {
-    this(manager, null);
+  public OptionsWidget(String title, WindowManager manager) {
+    this(title, manager, null);
   }
   
   /**
    * Constructor
    */
-  public OptionsWidget(WindowManager manager, List options) {
+  public OptionsWidget(String title, WindowManager manager, List options) {
 
+    this.title = title;
     this.manager = manager;
         
     // setup
@@ -181,7 +185,9 @@ public class OptionsWidget extends JPanel {
       // override key binding process - intercept enter as end of edit
       protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         if (ks.getKeyCode()==KeyEvent.VK_ENTER)
-          stopEditing();
+          stopCellEditing();
+        if (ks.getKeyCode()==KeyEvent.VK_ESCAPE)
+          cancelCellEditing();
         return true;
       }
     };
@@ -284,12 +290,13 @@ public class OptionsWidget extends JPanel {
     }
     
     private List getCategory(String cat) {
+      if (cat==null)
+        cat = title;
       List result = (List)cat2options.get(cat);
       if (result==null) {
         result = new ArrayList();
         cat2options.put(cat, result);
-        if (cat!=null)
-          categories.add(cat);
+        categories.add(cat);
       }
       return result;
     }
@@ -306,8 +313,7 @@ public class OptionsWidget extends JPanel {
       HashMap categories = new HashMap();
       for (int i = 0; i < set.size(); i++) {
         Option option = (Option)set.get(i);
-        String cat = option.getCategory();
-        getCategory(cat).add(option);
+        getCategory(option.getCategory()).add(option);
       }
       
       // notify
@@ -326,7 +332,7 @@ public class OptionsWidget extends JPanel {
      */
     public int getChildCount(Object parent) {
       if (parent==this)
-        return getCategory(null).size() + cat2options.size()-1;
+        return categories.size();
       return getCategory((String)parent).size();
     }
   
@@ -341,12 +347,8 @@ public class OptionsWidget extends JPanel {
      * option by index
      */
     public Object getChild(Object parent, int index) {
-      if (parent==this) {
-        List toplevel = getCategory(null);
-        if (index<toplevel.size())
-          return toplevel.get(index);
-        return categories.get(index - toplevel.size());
-      }
+      if (parent==this) 
+        return categories.get(index);
       return getCategory((String)parent).get(index);
     }
   

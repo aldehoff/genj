@@ -129,7 +129,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     List options = PropertyOption.introspect(task.getRenderer());
     for (int i = 0; i < options.size(); i++) 
       ((Option)options.get(i)).addOptionListener(this);
-    return new OptionsWidget(task.getPrintManager().getWindowManager(), options);
+    return new OptionsWidget(resources.getString("printer"), task.getPrintManager().getWindowManager(), options);
   }
   
   /**
