@@ -415,7 +415,7 @@ public class Document {
     
     //<list-block>
     pop();
-    push("list-block", "provisional-distance-between-starts=10pt, provisional-label-separation=3pt,"+format);
+    push("list-block", "provisional-distance-between-starts=0.6em, provisional-label-separation=0pt,"+format);
     nextListItem();
     
     return this;
@@ -454,15 +454,24 @@ public class Document {
     cursor = list;
     
     // find out what 'bullet' to use
-    String bullet = attribute("genj:label", format);
-    if (bullet==null)
-      bullet = "\u2219";  // &bullet; /u2219 works in JEditPane, &bull; \u2022 doesn't
+    String label = attribute("genj:label", format);
+    if (label!=null) {
+      // check provisional-distance-between-starts - we assume a certain 'em' per label character
+      String dist = list.getAttribute("provisional-distance-between-starts");
+      if (dist.endsWith("em")) {
+        float len = label.length()*0.6F;
+        if (Float.parseFloat(dist.substring(0, dist.length()-2))<len)
+          list.setAttribute("provisional-distance-between-starts", len+"em");
+      }
+    } else {
+      label = "\u2219";  // &bullet; /u2219 works in JEditPane, &bull; \u2022 doesn't
+    }
 
     // add new item
     push("list-item");
      push("list-item-label", "end-indent=label-end()");
       push("block");
-       text(bullet, ""); 
+       text(label, ""); 
       pop();
      pop();
     push("list-item-body", "start-indent=body-start()");
@@ -963,7 +972,7 @@ public class Document {
       doc.addText("underlined", "text-decoration=underline");
       doc.addText(" text");
       
-      doc.startList("provisional-distance-between-starts=40pt");
+      doc.startList();
       doc.nextListItem("genj:label=a)");
       doc.addText("A foo'd bullet");
       doc.nextListItem("genj:label=b)");
