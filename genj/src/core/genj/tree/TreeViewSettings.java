@@ -174,6 +174,9 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   private JSpinner createSpinner(String key, Container c, double min, double max) {
     
     JSpinner result = new JSpinner(new SpinnerNumberModel(1D, min, max, 0.1D));
+    JSpinner.NumberEditor editor = new JSpinner.NumberEditor(result, "##0.0");
+    result.setEditor(editor);
+    result.addChangeListener(editor);
     result.setToolTipText(resources.getString("info."+key+".tip"));
     
     c.add(new JLabel(resources.getString("info."+key)));
