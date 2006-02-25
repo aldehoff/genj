@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.103 $ $Author: nmeier $ $Date: 2006-02-16 13:42:20 $
+ * $Revision: 1.104 $ $Author: nmeier $ $Date: 2006-02-25 20:12:32 $
  */
 package genj.gedcom;
 
@@ -772,7 +772,7 @@ public class Gedcom implements Comparable {
    */
   public static String getName(String tag, boolean plural) {
     if (plural) {
-      String name = resources.getString(tag+"s.name", false);
+      String name = resources.getString(tag+".s.name", false);
       if (name!=null)
         return name;
     }
