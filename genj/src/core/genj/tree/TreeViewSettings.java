@@ -26,13 +26,12 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ColorsWidget;
 import genj.util.swing.FontChooser;
 import genj.util.swing.ListWidget;
-import genj.util.swing.SpinnerWidget;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.Settings;
 import genj.view.ViewManager;
 
 import java.awt.Color;
 import java.awt.Container;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,12 +42,15 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -59,8 +61,8 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   /** keeping track of tree these settings are for */
   private TreeView view;
 
-  /** models for spinners */
-  private SpinnerWidget.FractionModel[] spinModels = new SpinnerWidget.FractionModel[5]; 
+  /** spinners */
+  private JSpinner[] spinners = new JSpinner[5]; 
   
   /** colorchooser for colors */
   private ColorsWidget colorWidget;
@@ -89,31 +91,42 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   /** bookmark list */
   private JList bookmarkList;
 
-
   /**
    * @see genj.view.Settings#init(genj.view.ViewManager)
    */
   public void init(ViewManager manager) {
     
     // panel for checkbox options    
-    Box options = new Box(BoxLayout.Y_AXIS);
+    JPanel options = new JPanel(new NestedBlockLayout(
+        "<col>"+
+         "<check gx=\"1\"/>"+
+         "<check gx=\"1\"/>"+
+         "<check gx=\"1\"/>"+
+         "<check gx=\"1\"/>"+
+         "<font gx=\"1\"/>"+
+         "<row><label/><spinner/></row>"+
+         "<row><label/><spinner/></row>"+
+         "<row><label/><spinner/></row>"+
+         "<row><label/><spinner/></row>"+
+         "<row><label/><spinner/></row>"+
+         "</col>"
+     ));
 
-    checkBending.setToolTipText(resources.getString("bend.tip"));
-    options.add(checkBending);
-    checkAntialiasing.setToolTipText(resources.getString("antialiasing.tip"));
-    options.add(checkAntialiasing);
-    checkAdjustFonts.setToolTipText(resources.getString("adjustfonts.tip"));
-    options.add(checkAdjustFonts);
+    checkBending       .setToolTipText(resources.getString("bend.tip"));
+    checkAntialiasing  .setToolTipText(resources.getString("antialiasing.tip"));
+    checkAdjustFonts .setToolTipText(resources.getString("adjustfonts.tip"));
     checkMarrSymbols.setToolTipText(resources.getString("marrsymbols.tip"));
+    options.add(checkBending);
+    options.add(checkAntialiasing);
+    options.add(checkAdjustFonts);
     options.add(checkMarrSymbols);
-    
     options.add(fontChooser);    
     
-    spinModels[0] = createSpinner("indiwidth",  options, 1.0, 16.0);
-    spinModels[1] = createSpinner("indiheight", options, 0.4, 16.0);
-    spinModels[2] = createSpinner("famwidth",   options, 1.0, 16.0);
-    spinModels[3] = createSpinner("famheight",  options, 0.4, 16.0);
-    spinModels[4] = createSpinner("padding",    options, 1.0,  4.0);
+    spinners[0] = createSpinner("indiwidth",  options, 1.0, 16.0);
+    spinners[1] = createSpinner("indiheight", options, 0.4, 16.0);
+    spinners[2] = createSpinner("famwidth",   options, 1.0, 16.0);
+    spinners[3] = createSpinner("famheight",  options, 0.4, 16.0);
+    spinners[4] = createSpinner("padding",    options, 1.0,  4.0);
     
     // color chooser
     colorWidget = new ColorsWidget();
@@ -158,25 +171,13 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   /**
    * Create a spinner
    */
-  private SpinnerWidget.FractionModel createSpinner(String key, Container c, double min, double max) {
+  private JSpinner createSpinner(String key, Container c, double min, double max) {
     
-    // prepare data
-    String 
-      txt = resources.getString("info."+key),
-      tip = resources.getString("info."+key+".tip");
-
-    // prepare format
-    NumberFormat format = NumberFormat.getInstance();
-    format.setMinimumFractionDigits(1);
-    format.setMaximumFractionDigits(1);
-
-    // create
-    SpinnerWidget.FractionModel result = new SpinnerWidget.FractionModel(min, max, 1);
-        
-    SpinnerWidget sw = new SpinnerWidget(txt, 5, result);
-    sw.setToolTipText(tip);
-    sw.setFormat(format);
-    c.add(sw);
+    JSpinner result = new JSpinner(new SpinnerNumberModel(1D, min, max, 0.1D));
+    result.setToolTipText(resources.getString("info."+key+".tip"));
+    
+    c.add(new JLabel(resources.getString("info."+key)));
+    c.add(result);
     
     // done
     return result;
@@ -218,11 +219,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     view.getModel().setBookmarks(bookmarks);
     // metrics
     view.getModel().setMetrics(new TreeMetrics(
-      (int)(spinModels[0].getDoubleValue()*10),
-      (int)(spinModels[1].getDoubleValue()*10),
-      (int)(spinModels[2].getDoubleValue()*10),
-      (int)(spinModels[3].getDoubleValue()*10),
-      (int)(spinModels[4].getDoubleValue()*10)
+      (int)(((Double)spinners[0].getModel().getValue()).doubleValue()*10),
+      (int)(((Double)spinners[1].getModel().getValue()).doubleValue()*10),
+      (int)(((Double)spinners[2].getModel().getValue()).doubleValue()*10),
+      (int)(((Double)spinners[3].getModel().getValue()).doubleValue()*10),
+      (int)(((Double)spinners[4].getModel().getValue()).doubleValue()*10)
     ));
     // blueprints
     view.setBlueprints(blueprintList.getSelection());
@@ -256,7 +257,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
       m.wIndis, m.hIndis, m.wFams, m.hFams, m.pad   
     };
     for (int i=0;i<values.length;i++) {
-      spinModels[i].setDoubleValue(values[i]*0.1D);
+      spinners[i].setValue(new Double(values[i]*0.1D));
     }
     // blueprints
     blueprintList.setSelection(view.getBlueprints());
