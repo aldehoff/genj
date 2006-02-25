@@ -136,9 +136,9 @@ public class DefaultWindowManager extends AbstractWindowManager {
     dlg.setModal(isModal);
     if (bounds==null) {
       dlg.pack();
-      dlg.setLocationRelativeTo(owner);
+      dlg.setLocationRelativeTo(owner.getParent());
     } else {
-      dlg.setBounds(clip(bounds,screen));
+	    dlg.setBounds(clip(bounds,screen));
     }
 
     // hook up to the dialog being hidden by the optionpane
