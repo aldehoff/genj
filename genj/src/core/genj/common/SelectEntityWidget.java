@@ -144,10 +144,17 @@ public class SelectEntityWidget extends JPanel {
   }
   
   /**
-   * @see javax.swing.JComponent#getMaximumSize()
+   * Override maximum size - we can't affort to stretch vertically
    */
   public Dimension getMaximumSize() {
     return new Dimension(super.getMaximumSize().width, super.getPreferredSize().height);
+  }
+  
+  /**
+   * Override preferred size - we can't affort prefer horizontally based on contents 
+   */
+  public Dimension getPreferredSize() {
+    return new Dimension(128, super.getPreferredSize().height);
   }
   
   /**
