@@ -173,6 +173,7 @@ import javax.swing.border.TitledBorder;
       result.init(viewManager);
       cache.put(viewType, result);
     } catch (Throwable t) {
+      result = null;
       ViewManager.LOG.log(Level.WARNING, "couldn't instantiate settings for "+view, t);
     }
     
