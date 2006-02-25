@@ -55,7 +55,7 @@ class HelpWidget extends JPanel {
     // create center component
     JComponent pCenter = getContent();
     if (pCenter==null) {
-      pCenter = new JLabel(RESOURCES.getString("cc.help.help_file_missing", Locale.getDefault().getCountry().toLowerCase()), SwingConstants.CENTER);
+      pCenter = new JLabel(RESOURCES.getString("cc.help.help_file_missing", Locale.getDefault().getLanguage().toLowerCase()), SwingConstants.CENTER);
       pCenter.setBorder(new EmptyBorder(16,16,16,16));
     }
     
