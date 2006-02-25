@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.swing.Action;
 import javax.swing.BoxLayout;
@@ -116,8 +117,24 @@ public abstract class AbstractWindowManager implements WindowManager {
    */
   public int openDialog(String key, String title,  int messageType, String txt, Action[] actions, Component owner) {
     
+    // analyze the text
+    int maxLine = 40;
+    int cols = 40, rows = 1;
+    StringTokenizer lines = new StringTokenizer(txt, "\n\r");
+    while (lines.hasMoreTokens()) {
+      String line = lines.nextToken();
+      if (line.length()>maxLine) {
+        cols = maxLine;
+        rows += line.length()/maxLine;
+      } else {
+        cols = Math.max(cols, line.length());
+        rows++;
+      }
+    }
+    rows = Math.min(10, rows);
+    
     // create a textpane for the txt
-    TextAreaWidget text = new TextAreaWidget("", 2, 10);
+    TextAreaWidget text = new TextAreaWidget("", rows, cols);
     text.setLineWrap(true);
     text.setWrapStyleWord(true);
     text.setText(txt);
