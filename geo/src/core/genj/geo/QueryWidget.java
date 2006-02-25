@@ -100,7 +100,7 @@ public class QueryWidget extends JPanel {
     lon.setToolTipText(RESOURCES.getString("query.lon.tip"));
     
     hits = new JTable(model);
-    hits.setPreferredScrollableViewportSize(new Dimension());
+    hits.setPreferredScrollableViewportSize(new Dimension(64,64));
     
     status = new JLabel();
     
