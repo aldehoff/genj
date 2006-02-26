@@ -165,7 +165,7 @@
   <!--
    Distribution - javadocs
    -->
-  <target name="dist.javadoc" depends="javadoc">
+  <target name="dist.javadoc" depends="javadoc" if="javadoc">
   	
     <zip zipfile="${dir.dist}/genj_javadoc-${app.version}.zip" update="True">
       <fileset dir="${dir.build}" includes="javadoc/**"/>
