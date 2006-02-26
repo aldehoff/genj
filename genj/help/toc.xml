@@ -33,5 +33,4 @@
     <tocitem target="x.translation" text="@x.translation@"   />
     <tocitem target="x.faq"         text="@x.faq@"     />
   </tocitem>
-  <tocitem target="team"        text="@team@"/>
 </toc>

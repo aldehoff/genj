@@ -36,8 +36,6 @@
   <mapID target="x.translation"  url="special/translation.html" />
   <mapID target="x.faq"          url="special/faq.html" />
 
-  <mapID target="team"      url="team.html" />
-
   <mapID target="img.Edit"       url="../images/views/Edit.gif"     />
   <mapID target="img.Tree"       url="../images/views/Tree.gif"     />
   <mapID target="img.Table"      url="../images/views/Table.gif"    />
