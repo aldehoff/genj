@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.102 $ $Author: nmeier $ $Date: 2006-02-24 20:27:28 $
+ * $Revision: 1.103 $ $Author: nmeier $ $Date: 2006-02-27 20:27:26 $
  */
 package genj.report;
 
@@ -663,7 +663,7 @@ public abstract class Report implements Cloneable {
   /**
    * Access to report properties
    */
-  private Resources getResources() {
+  protected Resources getResources() {
     if (resources==null) {
       try {
         resources = new Resources(getClass().getResourceAsStream(getTypeName()+".properties"));
