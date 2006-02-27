@@ -3,9 +3,9 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 import genj.util.ReferenceSet;
+import genj.util.Resources;
 
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -101,7 +101,7 @@ public class ReportPhonetics extends Report {
                 Iterator first = names.getReferences(str).iterator();
                 while(first.hasNext()) {
                     indi  = (Indi)first.next();
-                    println(getIndent(2)+translate("entity", new String[] {indi.getId(), indi.getFirstName()} )+": "+encode(str));
+                    println(getIndent(2)+indi.getFirstName()+" ("+indi.getId()+")"+": "+encode(str));
                 }
             }
         }
@@ -139,10 +139,8 @@ public class ReportPhonetics extends Report {
     
     private String encode(String input) {
         Phonetics p = phonetics[outputFormat];
-        String s = p.encode(input);
-        if(s==null)
-            return "";
-        return s;
+        String s = p.encode(input, getResources());
+        return s==null ? "" : s;
     }
     
     /**
@@ -152,8 +150,9 @@ public class ReportPhonetics extends Report {
         
         /**
          * encode implementation
+         * @param resources TODO
          */
-        public String encode(String name);
+        public String encode(String name, Resources resources);
         
     } //Phonetics
     
@@ -324,7 +323,7 @@ public class ReportPhonetics extends Report {
                 current++;
         }
         
-        public String encode(String in) {
+        public String encode(String in, Resources resources) {
             if (in == null || in.length() == 0)
                 return null;
             
@@ -1001,7 +1000,7 @@ public class ReportPhonetics extends Report {
         /**
          * get the MetaPhone code for THE FIRST WORD in this string
          */
-        public String encode(String txt) {
+        public String encode(String txt, Resources resources) {
             int mtsz = 0;
             boolean hard = false;
             if ((txt == null) || (txt.length() == 0))
@@ -1009,7 +1008,7 @@ public class ReportPhonetics extends Report {
             
             // check the first letter is a character
             if (!Character.isLetter(txt.charAt(0)))
-                return encode(txt.substring(1));
+                return encode(txt.substring(1), resources);
             
             // single character is itself
             if (txt.length() == 1)
@@ -1252,13 +1251,13 @@ public class ReportPhonetics extends Report {
         
         /**
          * encode - Nysiis phonetic encoding.
-         *
-         *
          * @param  String originalWord
+         *
+         *
          * @return String - the encoded word
          *
          */
-        public String encode(String originalWord) {
+        public String encode(String originalWord, Resources resources) {
             if (originalWord == null || originalWord.length() == 0)
                 return null;
             
@@ -1477,7 +1476,7 @@ public class ReportPhonetics extends Report {
          * they are ignored but accented characters are NOT (well they
          * will just be ignored too!)
          */
-        public String encode(String txt) {
+        public String encode(String txt, Resources resources) {
             
             if (txt == null || txt.length() == 0)
                 return null;
@@ -1660,76 +1659,82 @@ public class ReportPhonetics extends Report {
      * see http://www.generationjava.com/licencing.shtml
      */
     
-    static class Soundex implements Phonetics {
+    public static class Soundex implements Phonetics {
         
         static public final char[] US_ENGLISH_SOUNDEX_MAPPING = "01230120022455012623010202".toCharArray();
         
-        static private String[] ACCENTS;
-
-        static {
-
-          Vector buffer = new Vector(512);
-          
-          // parse soundex accents
-          try {
-            Properties props = new Properties();
-            props.load(ReportPhonetics.class.getResourceAsStream("ReportPhonetics.properties"));
-
-            // loop over soundex accent tokens
-            StringTokenizer tokens = new StringTokenizer(props.getProperty("soundex.accents"));
-	          while (tokens.hasMoreTokens()) {
-	            String token = tokens.nextToken();
-	            int unicode = token.charAt(0);
-	            String substitute = token.substring(1);
-	            if (buffer.size()<unicode+1)
-	              buffer.setSize(unicode+1);
-	            buffer.set(unicode, substitute);
-	          }
-          } catch (Throwable t) {
-            
-          }
-          // done
-          ACCENTS = (String[])buffer.toArray(new String[buffer.size()]);
-        }
-        
+        private String[] accents;
         
         private char[] soundexMapping;
-        
+
+        /** constructor */
         public Soundex() {
             this(US_ENGLISH_SOUNDEX_MAPPING);
         }
-        
+
+        /** constructor */
         public Soundex(char[] mapping) {
-            this.soundexMapping = mapping;
+          // remember soundex mapping
+          this.soundexMapping = mapping;
+          // done
         }
         
         /**
-         * returns a string stripped of accented characters
+         * Substitute an accent (if applicable) with a non-accented character
+         * as specified in soundex.accents of ReportPhonetics.properties
          */
-        public String substituteAccents(String str) {
-            StringBuffer result = new StringBuffer(str.length() * 2);
-            for (int i = 0; i < str.length(); i++) {
-                char c = str.charAt(i);
-                String substitute = ACCENTS[c];
-                if (substitute!=null) result.append(substitute);
-                else result.append(c);
+        public String substituteAccents(Resources resources, String str) {
+
+          // have we parsed soundex accents yet?
+          if (accents==null) {
+            Vector buffer = new Vector(256);
+            try {
+              // loop over soundex accent tokens
+              StringTokenizer tokens = new StringTokenizer(resources.getString("soundex.accents"));
+                while (tokens.hasMoreTokens()) {
+                  String token = tokens.nextToken();
+                  int unicode = token.charAt(0);
+                  String substitute = token.substring(1);
+                  if (buffer.size()<unicode+1)
+                    buffer.setSize(unicode+1);
+                  buffer.set(unicode, substitute);
+                }
+            } catch (Throwable t) {
             }
-            return result.toString();
+            // now we have
+            accents = (String[])buffer.toArray(new String[buffer.size()]);
+          }
+
+          // gather result
+          StringBuffer result = new StringBuffer(str.length() * 2);
+          for (int i = 0; i < str.length(); i++) {
+              char c = str.charAt(i);
+              if (c<accents.length&&accents[c]!=null)
+                result.append(accents[c]);
+              else 
+                result.append(c);
+          }
+
+          // done
+          return result.toString();
         }
+        
         /**
          * Get the SoundEx value of a string.
          * it will return the SoundEx code for the FIRST word in the string
          */
-        public String encode(String s) {
-            if (s == null || s.length() == 0)
-                return null;
+        public String encode(String s, Resources resources) {
+          
+          // safety check
+          if (s == null || s.length() == 0)
+              return null;
             
             // should get a true code for each acented character
-            String str = substituteAccents(s);
+            String str = substituteAccents(resources, s);
             
             // check the first letter is a character
             if (!Character.isLetter(str.charAt(0)))
-                return encode(str.substring(1));
+                return encode(str.substring(1), resources);
             
             char out[] = { '0', '0', '0', '0' };
             char last, mapped;
