@@ -23,7 +23,6 @@ The people behind GenJ (alphabetically):
 
     Translators :
       . Alex Evdokimenko (Russian translation)
-      . Nicola Fragale (Italian translation)
       . Nestor Garcia (Spanish translation)
       . Mauricio Girardi (Brazilian portuguese)
       . Frantisek Grebenicek (Czech translation)
@@ -32,5 +31,4 @@ The people behind GenJ (alphabetically):
       . Francois Massonneau (French translation)
       . Carsten Muessig (German translation) 
       . Marcus Sandberg (German translation)
-      
       
