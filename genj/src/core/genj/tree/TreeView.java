@@ -1065,7 +1065,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
         setText(resources, "bookmark.add");
         setImage(BOOKMARK_ICON);
       } else {
-        setText(resources, "bookmark.in");
+        setText(resources.getString("bookmark.in",title));
         setImage(Images.imgView);
       }
     } 
