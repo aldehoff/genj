@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="language/en"/>
 	<classpathentry kind="lib" path="contrib/jump/jump.jar"/>
 	<classpathentry kind="lib" path="language/de"/>
+	<classpathentry kind="lib" path="contrib/junit/junit.jar"/>
 	<classpathentry kind="output" path="build/classes/lostnfound"/>
 </classpath>
