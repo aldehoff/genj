@@ -244,8 +244,10 @@ public class GeoLocation extends Point implements Feature, Comparable {
     
     // still need a a state?
     Property pstate = addr.getProperty("STAE");
-    if (pstate!=null) 
-      jurisdictions.add(pstate.getDisplayValue());
+    if (pstate!=null) {
+      String state = pstate.getDisplayValue();
+      if (state.length()>0) jurisdictions.add(state);
+    }
     
     // good
     return;
