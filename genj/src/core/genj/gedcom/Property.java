@@ -485,7 +485,6 @@ public abstract class Property implements Comparable {
    * Returns property's properties by criteria
    * @param tag  regular expression pattern of tag to match
    * @param value regular expression pattern of value to match
-   * @param recursively whether to recurse into sub-properties
    * @return matching properties
    */
   public List findProperties(Pattern tag, Pattern value) {

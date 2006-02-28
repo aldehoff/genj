@@ -140,7 +140,7 @@ public class GedcomReader implements Trackable {
   
   /**
    * Constructor for a reader that reads from given origin
-   * @param org the origin of the gedcom stream to read from
+   * @param origin source of gedcom stream
    */
   public GedcomReader(Origin origin) throws IOException {
     LOG.info("Initializing reader for "+origin);
