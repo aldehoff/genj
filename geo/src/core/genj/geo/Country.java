@@ -162,12 +162,20 @@ public class Country implements Comparable {
     collator.setStrength(Collator.PRIMARY);
     for (int i = 0; i < countries.size(); i++) {
       Country country = (Country)countries.get(i);
-      if (collator.compare(country.getDisplayName(), displayName)==0) {
+      // compare country code
+      if (country.iso.equalsIgnoreCase(displayName)) {
+        result = country;
+        break;
+      } else if (collator.compare(country.getDisplayName(), displayName)==0) {
         // create a private instance for this display name
         result = new Country(country.iso, displayName);
         break;
       }
     }
+    
+    // not found? try english
+    if (result==null&&!locale.getLanguage().equals(Locale.ENGLISH.getLanguage()))
+        result = get(Locale.ENGLISH, displayName);
 
     // cache it under displayName for next time
     displayName2Country.put(displayName, result);
