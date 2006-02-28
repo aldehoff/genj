@@ -1,14 +1,21 @@
 <project name="lnf" default="dist" basedir=".">
 
   <property file="./build.properties"/>
+  <property prefix="genj" file="${dir.genj}/build.properties"/>
+	
+  <!--
+   Initialization
+   -->
+  <target name="init">
+  	
+  	<fail unless="genj.app.version" message="Couldn't find GenJ files in ${dir.genj} - please update ./build.properties"/>
 
-  <target name="dist">
-  
-    <!-- create ${dir.out} -->
-    <mkdir dir="${dir.out}"/>
+ 	</target>
+  	
+  <target name="dist" depends="init">
   
     <!-- create ./genj_lnf-yy.zip -->
-    <zip zipfile="${dir.out}/genj_lnf-${version}.zip" update="True">
+    <zip zipfile="${dir.genj}/build/dist/genj_lnf-${genj.app.version}.zip" update="false">
       <fileset dir="." includes="lnf/**"/>
     </zip>
   
