@@ -27,7 +27,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 
 import org.geotools.shapefile.Shapefile;
@@ -66,9 +65,6 @@ public class GeoMap {
   /** background color */
   private Color background = Color.WHITE;
   
-  /** countries */
-  private Country[] countries;
-
   /** constructor */
   /*package*/ GeoMap(File fileOrDir) {
     
@@ -95,9 +91,9 @@ public class GeoMap {
     }
     
     // init name&color
-    name = i18n("name", fileOrDir.getName());
+    name = translate("name", fileOrDir.getName());
     try {
-      background =  new Color(Integer.decode(i18n("color.background", "#ffffff")).intValue());
+      background =  new Color(Integer.decode(translate("color.background", "#ffffff")).intValue());
     } catch (Throwable t) {
     }
     
@@ -109,19 +105,8 @@ public class GeoMap {
     return fileOrDir.getName();
   }
   
-  /** countries */
-  public Country[] getCountries() {
-    if (countries==null) {
-      StringTokenizer tokens = new StringTokenizer(i18n("countries", ""), ",");
-      countries = new Country[tokens.countTokens()];
-      for (int i=0;i<countries.length;i++)
-        countries[i] = Country.get(tokens.nextToken());
-    }
-    return countries;
-  }
-  
   /** resource access */
-  private String i18n(String key, String fallback) {
+  private String translate(String key, String fallback) {
     // no resource?
     if (resources==null)
       return fallback;
@@ -168,7 +153,7 @@ public class GeoMap {
       Layer layer = manager.addLayer(getName(), name, fc);
       // check for parameters
       if (Character.isDigit(name.charAt(0))) name = name.substring(1);
-      String color = i18n("color."+name, null);
+      String color = translate("color."+name, null);
       if (color!=null) try {
         Color c = new Color(Integer.decode(color).intValue());
         BasicStyle style = layer.getBasicStyle();
