@@ -119,8 +119,8 @@ public class PropertySex extends Property {
    * Returns the logical proxy to render/edit this property
    */
   public String getProxy() {
-    if (sexAsString!=null)
-      return "Unknown";
+    if (sexAsString!=null&&!isPrivate())
+      return super.getProxy();
     return "Sex";
   }
 
@@ -185,7 +185,7 @@ public class PropertySex extends Property {
     String old = getValue();
 
     // Cannot parse anything longer than 1
-    if (newValue.length()>1) {
+    if (newValue.trim().length()>1) {
       sexAsString=newValue;
     } else {
 	    // zero length -> unknown

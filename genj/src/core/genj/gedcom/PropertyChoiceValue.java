@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.crypto.Enigma;
 import genj.util.ReferenceSet;
 
 import java.util.List;
@@ -37,6 +38,9 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     if (isTransient||gedcom==null)
       return false;
     ReferenceSet refSet = gedcom.getReferenceSet(getTag());
+    // check for secret values
+    if (Enigma.isEncrypted(oldValue)) oldValue = "";
+    if (Enigma.isEncrypted(newValue)) newValue = ""; 
     // forget old
     if (oldValue.length()>0) refSet.remove(oldValue, this);
     // remember new
@@ -86,7 +90,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * @see genj.gedcom.PropertySimpleValue#setValue(java.lang.String)
    */
   public void setValue(String value) {
-    setValueInternal(trim(value));
+    setValueInternal(value.intern());
   }
   
   /**
@@ -94,7 +98,10 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    */
   public void setValue(String value, boolean global) {
     
-    value = trim(value);
+    // TUNING: for choices we expect a lot of repeating values so
+    // we build the intern representation of value here - this makes
+    // us share string instances for an upfront cost
+    value = value.intern();
     
     // more?
     if (global) {
@@ -113,13 +120,6 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     // done
   }
 
-  protected String trim(String value) {
-    // TUNING: for choices we expect a lot of repeating values so
-    // we build the intern representation of value here - this makes
-    // us share string instances for an upfront cost
-    return value.intern();
-  }
-  
   private void setValueInternal(String value) {
     // remember
     remember(super.getValue(), value);

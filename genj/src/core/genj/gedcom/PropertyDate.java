@@ -37,6 +37,7 @@ public class PropertyDate extends Property {
     start = new PIT(),
     end = new PIT();
   private boolean isAdjusting = false;
+  private String valueAsString = null;
 
   /** the format of the contained date */
   private Format format = DATE;
@@ -129,7 +130,7 @@ public class PropertyDate extends Property {
    * Accessor Value
    */
   public String getValue() {
-    return format.getValue(this);
+    return valueAsString!=null ? valueAsString : format.getValue(this);
   }
 
   /**
@@ -144,7 +145,7 @@ public class PropertyDate extends Property {
    * @return <code>boolean</code> indicating validity
    */
   public boolean isValid() {
-    return format.isValid(this);
+    return valueAsString==null && format.isValid(this);
   }
   
   /**
@@ -226,6 +227,7 @@ public class PropertyDate extends Property {
       start.reset();
       end.reset();
       format = DATE;
+      valueAsString = newValue;
       phrase= "";
   
       // empty string is fine
@@ -235,6 +237,7 @@ public class PropertyDate extends Property {
         for (int f=0; f<FORMATS.length;f++) {
           if (FORMATS[f].setValue(newValue, this)) {
             format  = FORMATS[f];
+            valueAsString = null;
             break;
           }
         } 
@@ -353,6 +356,10 @@ public class PropertyDate extends Property {
     private Format(String s, String e) {
       start  = s; 
       end    = e;
+    }
+    
+    public String toString() {
+      return start+end;
     }
     
     public boolean usesPhrase() {
@@ -517,14 +524,13 @@ public class PropertyDate extends Property {
         }
       }
       
-      // trim possible brackets in case of ''(...)'?
-      int from = 0, to = text.length();
-      if (text.startsWith("(")) from++;
-      if (text.endsWith(")")) to--;
+      // need bracketed phrase ''(...)'?
+      if (!text.startsWith("(")||!text.endsWith(")"))
+        return false;
       
-      date.phrase = text.substring(from, to).trim();
+      date.phrase = text.substring(1, text.length()-1).trim();
       
-      // basically it's the fallback that always works
+      // didn't work
       return true;
     }
     

@@ -312,7 +312,9 @@ public class Indi extends Entity {
    */
   public String getName() {
     PropertyName p = (PropertyName)getProperty(PropertyName.TAG,true);
-    return p!=null ? p.getName() : ""; 
+    if (p==null)
+      return "";
+    return p.isSecret() ? "" : p.getName(); 
   }
   
   /**
