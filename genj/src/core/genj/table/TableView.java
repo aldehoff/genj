@@ -50,7 +50,6 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 
 /**
  * Component for showing entities of a gedcom file in a tabular way
@@ -223,9 +222,9 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       String tag = Gedcom.ENTITIES[i];
       // don't offer OBJEct button unless there are some of those already or the option to create them is selected
       if (!tag.equals("OBJE")||!gedcom.getEntities(tag).isEmpty()||Options.getInstance().isAllowNewOBJEctEntities) {
-        ActionChangeType change = new ActionChangeType(getMode(tag)); 
-        inputs.put(KeyStroke.getKeyStroke("ctrl "+(j++)), change);
-        getActionMap().put(change, change);
+        ActionChangeType change = new ActionChangeType(getMode(tag));
+        change.setAccelerator("ctrl "+(j++));
+        change.install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
         bar.add(bh.create(change));
       }
     }

@@ -63,41 +63,35 @@ import javax.swing.SwingConstants;
     
     // remember
     viewHandle = handle;
+    JComponent view = viewHandle.getView();
     
     // setup layout
     setLayout(new BorderLayout());
-    add(viewHandle.getView(), BorderLayout.CENTER);
+    add(view, BorderLayout.CENTER);
     
     // hook-up context menu hook
     Action hook = mgr.HOOK;
-    InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    InputMap inputs = view.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     inputs.put(KeyStroke.getKeyStroke("shift F10"), hook);
     inputs.put(KeyStroke.getKeyStroke("ctrl SPACE"), hook);
     inputs.put(KeyStroke.getKeyStroke("CONTEXT_MENU"), hook); // this only works in Tiger 1.5 on Windows
-    getActionMap().put(hook, hook);
+    view.getActionMap().put(hook, hook);
     
     // .. factory accelerators
     for (Iterator it = mgr.keyStrokes2factories.keySet().iterator(); it.hasNext();) {
-      KeyStroke key = (KeyStroke) it.next();
-      ViewFactory factory = (ViewFactory)mgr.keyStrokes2factories.get(key);
-      installAccelerator(key, new ActionOpen(factory));
+      String keystroke = it.next().toString();
+      ViewFactory factory = (ViewFactory)mgr.keyStrokes2factories.get(keystroke);
+      ActionOpen open = new ActionOpen(factory);
+      open.setAccelerator(keystroke);
+      open.install(view, JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     // ... default view accelerators (overwriting anything else)
-    installAccelerator(KeyStroke.getKeyStroke(ACC_CLOSE), new ActionClose());
-    installAccelerator(KeyStroke.getKeyStroke(ACC_UNDO), new Undo(viewHandle.getGedcom(), true));
-    installAccelerator(KeyStroke.getKeyStroke(ACC_REDO), new Redo(viewHandle.getGedcom(), true));
+    new ActionClose().setAccelerator(ACC_CLOSE).install(view, JComponent.WHEN_IN_FOCUSED_WINDOW);
+    new Undo(viewHandle.getGedcom(), true).setAccelerator(ACC_UNDO).install(view, JComponent.WHEN_IN_FOCUSED_WINDOW);
+    new Redo(viewHandle.getGedcom(), true).setAccelerator(ACC_REDO).install(view, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
     // done
-  }
-  
-  /**
-   * helper - install accelerator
-   */
-  private void installAccelerator(KeyStroke key, Action action) {
-    InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    inputs.put(key, key);
-    getActionMap().put(key, action);
   }
   
   /**

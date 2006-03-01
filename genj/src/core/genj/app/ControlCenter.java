@@ -73,7 +73,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -662,8 +661,11 @@ public class ControlCenter extends JPanel {
       
         // open views again
         if (Options.getInstance().isRestoreViews) {
-          for (int i=0;i<views2restore.size();i++)
-            ViewHandle.restore(viewManager, gedcom, (String)views2restore.get(i));
+          for (int i=0;i<views2restore.size();i++) {
+            ViewHandle handle = ViewHandle.restore(viewManager, gedcom, (String)views2restore.get(i));
+            if (handle!=null)
+              new ActionSave(gedcom, handle.getView()).install(handle.getView(), JComponent.WHEN_IN_FOCUSED_WINDOW);
+          }
         }          
       }
       
@@ -868,7 +870,7 @@ public class ControlCenter extends JPanel {
       // setup default target
       setTarget(ControlCenter.this);
       // setup accelerator
-      if (!ask) setAccelerator(ACC_SAVE);
+      setAccelerator(ACC_SAVE);
       // remember
       this.ask = ask;
       // text
@@ -1120,9 +1122,7 @@ public class ControlCenter extends JPanel {
       // create new View
       ViewHandle handle = viewManager.openView(gedcom, factory);
       // install some accelerators
-      ActionSave save = new ActionSave(gedcom, handle.getView());
-      handle.getView().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(ACC_SAVE), save);
-      handle.getView().getActionMap().put(save, save);
+      new ActionSave(gedcom, handle.getView()).install(handle.getView(), JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
   } //ActionView
 
