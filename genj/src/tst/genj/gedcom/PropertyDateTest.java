@@ -48,7 +48,8 @@ public class PropertyDateTest extends TestCase {
     
     testParsing("INT 25 MAY 1970 (foo)", PropertyDate.INTERPRETED, GREGORIAN, 1970, 5, 25, true);
     testParsing("(sometime in may)", PropertyDate.INTERPRETED, GREGORIAN, 0, 0, 0, true);
-    testParsing("foo bar", PropertyDate.INTERPRETED, GREGORIAN, 0, 0, 0, false);
+    testParsing("foo bar", PropertyDate.DATE, GREGORIAN, 0, 0, 0, false);
+    assertFalse(date.isValid());
     
     // nmeier 20050109 
     // + make calendar escapes case insensitive
@@ -62,7 +63,7 @@ public class PropertyDateTest extends TestCase {
     date.setValue(value);
     if (verbatim)
       assertEquals(value, date.getValue());
-    assertEquals("wrong format", date.getFormat(), format);
+    assertEquals("wrong format", format, date.getFormat());
     testPIT(date.getStart(), cal, year, month, day);
   }
   
