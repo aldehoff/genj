@@ -17,11 +17,12 @@
 0 @I1@ INDI
 1 NAME John /Doe/
 1 SEX M
-1 _FOO bar
+1 UNKNOWN tag
+3 BAD indent
 0 @B1@ SUBM
 1 NAME A submitter
-0 UNKNOWN
+0 UNKNOWN entity
 1 FOO bar
-0 @X1@ _EXT
-1 BAR foo
+0 @X1@ UNKNOWN entity
+1 FOO foo
 0 TRLR

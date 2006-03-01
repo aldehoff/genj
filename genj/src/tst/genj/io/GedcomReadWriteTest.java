@@ -13,11 +13,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
@@ -52,7 +56,14 @@ public class GedcomReadWriteTest extends TestCase {
     new GedcomWriter(ged, temp.getName(), null, out).write();
     out.close();
     
-    // read again
+    // read again - first without then with password
+    try {
+      GedcomReader reader = new GedcomReader(Origin.create(temp.toURL()));
+      ged = reader.read();
+      fail("reading without password should fail");
+    } catch (GedcomIOException e) {
+      // this should happen
+    }
     GedcomReader reader = new GedcomReader(Origin.create(temp.toURL()));
     reader.setPassword(Gedcom.PASSWORD_UNKNOWN);
     ged = reader.read();
@@ -76,7 +87,7 @@ public class GedcomReadWriteTest extends TestCase {
     out.close();
     
     // compare original to last temp now
-    assertEquals(original, temp);
+    assertEquals( Collections.EMPTY_LIST, diff(original, temp) );
     
     // done
     
@@ -93,8 +104,14 @@ public class GedcomReadWriteTest extends TestCase {
     // try to read file
     Gedcom ged = new GedcomReader(getClass().getResourceAsStream("stress.ged")).read();
     
-    assertEquals("should be INDI SUBM UNKNOWN FOO", 4, ged.getEntities().size());
+    // write it again
+    File temp = File.createTempFile("test", ".ged");
+    OutputStream out = new FileOutputStream(temp);
+    new GedcomWriter(ged, temp.getName(), null, out).write();
+    out.close();
     
+    // compare line by line
+    assertEquals( Collections.singletonList("2 _TAG<>"), diff(temp, getClass().getResourceAsStream("stress.ged")) );
   }
   
   /**
@@ -117,47 +134,81 @@ public class GedcomReadWriteTest extends TestCase {
     new GedcomWriter(ged, temp.getName(), null, out).write();
     out.close();
     
-    // compare line by line
-    assertEquals(original, temp);
+    // diff files and there should be one difference
+    assertEquals(Collections.EMPTY_LIST, diff(original, temp));
     
   }
   
-  private void assertEquals(File file1, File file2) throws IOException {
+  private List diff(File file1, File file2) throws IOException {
+    return diff(file1, new FileInputStream(file2));
+  }
+    
+  private List diff(File file1, InputStream file2) throws IOException {
+    
+    List result = new ArrayList();
     
     BufferedReader left = new BufferedReader(new InputStreamReader(new FileInputStream(file1)));
-    BufferedReader right = new BufferedReader(new InputStreamReader(new FileInputStream(file2)));
+    BufferedReader right = new BufferedReader(new InputStreamReader(file2));
     
-    Pattern ignore = Pattern.compile("2 VERS|1 DATE|2 TIME|1 FILE");
-    Pattern commaspace = Pattern.compile(", ");
-    String comma = ",";
+    // read past the header
+    String lineLeft = left.readLine();
+    while (true) {
+      left.mark(256);
+      lineLeft = left.readLine();
+      if (lineLeft.startsWith("0")) break;
+    }
+    left.reset();
+    String lineRight = right.readLine();
+    while (true) {
+      right.mark(256);
+      lineRight = right.readLine();
+      if (lineRight.startsWith("0")) break;
+    }
+    right.reset();
     
+    // compare records
     while (true) {
       
-      String 
-        lineLeft = left.readLine(),
-        lineRight = right.readLine();
+      left.mark(256); right.mark(256);
+      lineLeft = left.readLine();
+      lineRight = right.readLine();
 
       // done?
       if (lineLeft==null&&lineRight==null)
         break;
       
-      // not critical?
-      Matcher match = ignore.matcher(lineLeft);
-      if (match.find()&&match.start()==0) continue;
-      
       // assume "," equals ", "
-      lineLeft = commaspace.matcher(lineLeft).replaceAll(comma);
-      lineRight = commaspace.matcher(lineRight).replaceAll(comma);
-      
+      if (lineLeft==null||lineRight==null) {
+        result.add(lineLeft+"<>"+lineRight);
+        break;
+      }
+        
       // assert equal
-      assertEquals(lineLeft, lineRight);
+      if (!matches(lineLeft, lineRight)) {
+        
+        // maybe next line matches again?
+        left.mark(256);
+        if (matches(left.readLine(), lineRight))
+          result.add(lineLeft+"<>");
+        else
+          result.add(lineLeft+"<>"+lineRight);
+        left.reset();
+        right.reset();
+      }
     }
     
     left.close();
     right.close();
     
     // done
+    return result;
   }
   
+  private static Pattern COMMASPACE = Pattern.compile(", ");
+  private static String COMMA = ",";
+
+  private boolean matches(String left, String right) {
+    return COMMASPACE.matcher(left).replaceAll(COMMA).equals(COMMASPACE.matcher(right).replaceAll(COMMA));
+  }
   
 } //GedcomIDTest

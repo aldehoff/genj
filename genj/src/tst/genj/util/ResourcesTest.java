@@ -6,7 +6,9 @@ package genj.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -20,16 +22,18 @@ public class ResourcesTest extends TestCase {
   
   private final static File dir = new File("./language");
 
-  /** check english resources against translations */
-  public void testCompleteness() {
-    
-    try {
-      diff("en", "de");
-    } catch (IOException e) {
-      fail("ioex during file operations");
-    }
-    
-    // done
+  /** check english resources against german*/
+  public void testDE() throws IOException {
+    testTranslated("de");
+  }
+  
+  /** check english resources against german*/
+  public void testFR() throws IOException {
+    testTranslated("fr");
+  }
+  
+  private void testTranslated(String lang) throws IOException {
+    assertEquals("differences in translation between en and "+lang, 0, diff("en", lang).size());
   }
   
   /**
@@ -43,7 +47,14 @@ public class ResourcesTest extends TestCase {
     }
     System.out.println("Diffing en against "+translation);
     try  {
-      new ResourcesTest().diff("en", translation);
+      List diffs = new ResourcesTest().diff("en", translation);
+      if (diffs.isEmpty())
+        System.out.println("No differences found - Good Job!");
+      else {
+        System.out.println(diffs.size()+" differences found:");
+        for (Iterator it=diffs.iterator();it.hasNext();)
+          System.out.println(it.next());
+      }      
     } catch (IOException e) {
       System.out.println("IOException during diff: "+e.getMessage());
     }
@@ -52,24 +63,16 @@ public class ResourcesTest extends TestCase {
   /**
    * Diff directories
    */
-  private void diff(String original, String translation) throws IOException {
-    
-    // diff it
-    int diffs = diffResources(loadResources(original), loadResources(translation));
-
-    if (diffs==0)
-      System.out.println("No differences found - Good Job!");
-    else
-      System.out.println(diffs+" differences found");
-    // done
+  private List diff(String original, String translation) throws IOException {
+    return diffResources(loadResources(original), loadResources(translation));
   }
   
   /** 
    * Diff resources of the original vs the translation
    */
-  private int diffResources(Map originals, Map translations) {
+  private List diffResources(Map originals, Map translations) {
     
-    int diffs = 0;
+    List diffs = new ArrayList();
 
     // go package by package
     for (Iterator packages = originals.keySet().iterator(); packages.hasNext(); ) {
@@ -78,17 +81,16 @@ public class ResourcesTest extends TestCase {
       Resources original = (Resources)originals.get(pckg);
       Resources translation = (Resources)translations.get(pckg);
       if (translation==null)
-        System.out.println(pckg+",*,not translated");
+        diffs.add(pckg+",*,not translated");
       else
-        diffs += diffResource(pckg, original, translation);
+        diffResource(pckg, original, translation, diffs);
     }
     
     // done
     return diffs;
   }
   
-  private int diffResource(String pckg, Resources original, Resources translation) {
-    int diffs = 0;
+  private void diffResource(String pckg, Resources original, Resources translation, List diffs) {
     // go key bey key
     for (Iterator keys = original.getKeys().iterator(); keys.hasNext(); ) {
       // grab key, original value and translated value
@@ -100,15 +102,13 @@ public class ResourcesTest extends TestCase {
         continue;
       // check translation
       if (val2==null) {
-        System.out.println(pckg+","+key+",not translated");
-        diffs++;
+        diffs.add(pckg+","+key+",not translated");
       } else {
         try {
           int fs1 = Resources.getMessageFormat(val1).getFormats().length;
           int fs2 = Resources.getMessageFormat(val2).getFormats().length;
           if (fs1!=fs2) {
-            System.out.println(pckg+","+key+",wrong # of {n}s");
-            diffs++;
+            diffs.add(pckg+","+key+",wrong # of {n}s");
           }
         } catch (IllegalArgumentException e) {
           // some values contain e.g. '{n}' which doesn't go with MessageFormat - ignored
@@ -125,12 +125,10 @@ public class ResourcesTest extends TestCase {
         continue;
       // compare!
       if (!original.contains(key)) {
-        System.out.println(pckg+","+key+",translated but not in original");
-        diffs++;
+        diffs.add(pckg+","+key+",translated but not in original");
       }
     }
     // done
-    return diffs;
   }
   
   /**
