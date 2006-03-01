@@ -442,10 +442,6 @@ public class ControlCenter extends JPanel {
       }
       registry.put("open", save);
       
-      // grab all currently open views
-      
-      // FIXME store current views
-
       // Close all Windows
       windowManager.closeAll();
       
