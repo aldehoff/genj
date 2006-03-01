@@ -132,13 +132,16 @@ public class PlaceBean extends PropertyBean {
       thought about using getDisplayValue() here but the problem is that getAllJurisdictions()
       works on values (PropertyChoiceValue stuff) - se we have to use getValue() here
      */
+    
+    // secret info?
+    String value = prop.isSecret() ? "" : prop.getValue();
    
     // either a simple value or broken down into comma separated jurisdictions
     if (!Options.getInstance().isSplitJurisdictions || place.getHierarchy().length()==0) {
-      createChoice(null, place.getValue(), place.getAllJurisdictions(-1,true));
+      createChoice(null, value, place.getAllJurisdictions(-1,true));
     } else {
       DirectAccessTokenizer format = new DirectAccessTokenizer(place.getHierarchy(), ",");
-      DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( place.getValue(), ",");
+      DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( value, ",");
       for (int i=0;;i++) {
         if (format.get(i)==null&&jurisdictions.get(i)==null) break;
         createChoice(format.get(i, true), jurisdictions.get(i, true), place.getAllJurisdictions(i, true));

@@ -116,7 +116,7 @@ public class ChoiceBean extends PropertyBean {
     // case there might be more in the gedcom value than what we want to display 
     // e.g. witness@INDI:BIRT
     choice.setValues(((PropertyChoiceValue)property).getChoices(true));
-    choice.setText(property!=null ? property.getDisplayValue() : "");
+    choice.setText(property!=null&&!property.isSecret() ? property.getDisplayValue() : "");
     global.setSelected(false);
     global.setVisible(false);
     
