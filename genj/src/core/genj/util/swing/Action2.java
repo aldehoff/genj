@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -400,6 +401,18 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
   /** accessor - accelerator */
   public KeyStroke getAccelerator() {
     return accelerator;
+  }
+  
+  /** install into components action map */
+  public void install(JComponent into, int condition) {
+    
+    if (accelerator==null)
+      return;
+    
+    InputMap inputs = into.getInputMap(condition);
+    inputs.put(accelerator, this);
+    into.getActionMap().put(this, this);
+      
   }
 
   /** convenience factory */
