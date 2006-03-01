@@ -23,7 +23,6 @@ import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
@@ -31,18 +30,14 @@ import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.Trackable;
 
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,7 +49,7 @@ import java.util.logging.Logger;
  */
 public class GedcomReader implements Trackable {
 
-  private final static Resources resources = Resources.get("genj.io");
+  private final static Resources RESOURCES = Resources.get("genj.io");
   
   private static Logger LOG = Logger.getLogger("genj.io");
 
@@ -68,68 +63,23 @@ public class GedcomReader implements Trackable {
   private Gedcom              gedcom;
   private BufferedReader      in;
   
-  private boolean isIndentForLevels = false;
   private int progress;
-  private int level = 0;
-  private int line = 0;
   private int entity = 0;
-  private int read = 0;
   private int state;
   private long length;
   private String gedcomLine;
-  private String xref;
-  private String tag;
-  private String value;
-  private boolean redoLine = false;
-  private List xrefs = new ArrayList(16);
+  private ArrayList lineAndXRefs = new ArrayList();
   private String tempSubmitter;
   private boolean cancel=false;
   private Thread worker;
   private Object lock = new Object();
+  private EntityReader reader;
   
   /** encryption */
   private Enigma enigma;
 
   /** collecting warnings */
   private List warnings = new ArrayList(128);
-  
-  /**
-   * Read properties from input and create Gedcom properties for given property
-   * @param reader where to read from
-   * @param parent the parent to add to
-   * @param pos the position to add read properties to or -1 for best placement
-   * @see genj.gedcom.Property
-   */
-  public static List read(Reader reader, Property parent, int pos) throws IOException, UnsupportedFlavorException {
-    
-    // read it through custom reader
-    GedcomReader instance = new GedcomReader();
-    
-    // we expect indent encoded through leading spaced
-    instance.isIndentForLevels = true;
-    
-    // faking a buffered read
-    instance.in = new BufferedReader(reader);
-    
-    // simply read properties into parent
-    List result = new ArrayList(16);
-    try {
-      instance.readProperties(parent, pos, -1, result);
-    } catch (GedcomIOException e) {
-    }
-    
-    // link what needs linkage
-    instance.linkReferences();
-
-    // done
-    return result;
-  }
-  
-  /**
-   * Constructor
-   */
-  private GedcomReader() {
-  }
   
   /**
    * Constructor for a reader that reads from stream
@@ -156,11 +106,12 @@ public class GedcomReader implements Trackable {
     SniffedInputStream sin = new SniffedInputStream(oin);
     
     // init some data
-    in       = new BufferedReader(new InputStreamReader(sin, sin.getCharset()));
-    length   = oin.available();
+    in = new BufferedReader(new InputStreamReader(sin, sin.getCharset()));
+    length = oin.available();
     gedcom = ged;
     gedcom.setEncoding(sin.getEncoding());
-    
+    reader = new EntityReader();
+
     // Done
   }
   
@@ -209,11 +160,11 @@ public class GedcomReader implements Trackable {
   public String getState() {
     switch (state) {
       case READHEADER :
-        return resources.getString("progress.read.header");
+        return RESOURCES.getString("progress.read.header");
       case READENTITIES :default:
-        return resources.getString("progress.read.entities", new String[]{ ""+line, ""+entity} );
+        return RESOURCES.getString("progress.read.entities", new String[]{ ""+reader.getLines(), ""+entity} );
       case LINKING      :
-        return resources.getString("progress.read.linking");
+        return RESOURCES.getString("progress.read.linking");
     }
   }
 
@@ -223,78 +174,6 @@ public class GedcomReader implements Trackable {
    */
   public List getWarnings() {
     return warnings;
-  }
-
-  /**
-   * Helper to get gedcom-line
-   * @exception GedcomIOException reading from <code>BufferedReader</code> failed
-   * @exception GedcomFormatException reading Gedcom-data brought up wrong format
-   */
-  private void peekLine() throws GedcomIOException, GedcomFormatException {
-    readLine();
-    redoLine();
-  }
-
-  /**
-   * Put back gedcom-line
-   */
-  private void redoLine() {
-    redoLine = true;
-  }
-  
-  /**
-   * Read entity
-   * @exception GedcomIOException reading from <code>BufferedReader</code> failed
-   * @exception GedcomFormatException reading Gedcom-data brought up wrong format
-   */
-  private void readEntity() throws GedcomIOException, GedcomFormatException {
-
-    readLine();
-    
-    // records should start with level 0
-    if (level!=0) 
-      throw new GedcomFormatException(resources.getString("read.error.nonumber"), line);
-    
-    // warn about missing xref if it's a well known type
-    for (int i=0;i<Gedcom.ENTITIES.length;i++) {
-      if (tag.equals(Gedcom.ENTITIES[i])&&xref.length()==0) {
-        addWarning(line, resources.getString("read.warn.recordnoid", Gedcom.getName(tag)));
-      }
-    }
-
-    // Create entity and read its properties
-    try {
-      
-      Entity ent = gedcom.createEntity(tag, xref);
-      
-      // preserve value for those who care
-      ent.setValue(value);
-      
-      // Read entity's properties till end of record
-      readProperties(ent, 0,  0, null);
-
-    } catch (GedcomException ex) {
-      skipEntity(ex.getMessage());
-    }
-
-    // Done
-    entity++;
-  }
-  
-  /**
-   * Skip entity
-   */
-  private void skipEntity(String msg) throws GedcomFormatException, GedcomIOException {
-    //  track it
-    int start = line;
-    try {
-      do {
-        readLine();
-      } while (level!=0);
-      redoLine();
-    } finally {
-      addWarning(start, resources.getString("read.warn.skipped", new String[]{ ""+(line-start), msg } ));
-    }
   }
 
   /**
@@ -319,7 +198,7 @@ public class GedcomReader implements Trackable {
     } catch (Throwable t) {
       // catch anything bubbling up here
       LOG.log(Level.SEVERE, "unexpected throwable", t);
-      throw new GedcomIOException(t.toString(), line);
+      throw new GedcomIOException(t.toString(), reader.getLines());
     } finally  {
       // close in
       try { in.close(); } catch (Throwable t) {};
@@ -336,12 +215,7 @@ public class GedcomReader implements Trackable {
    * Read Gedcom as a whole
    *
    */
-  private void readGedcom() throws GedcomIOException, GedcomFormatException {
-
-
-    // Create Gedcom
-    int expected = Math.max((int)length/ENTITY_AVG_SIZE,100);
-    xrefs = new ArrayList(expected);
+  private void readGedcom() throws IOException {
 
     // Read the Header
     readHeader();
@@ -349,38 +223,25 @@ public class GedcomReader implements Trackable {
     // Next state
     state++;
 
-    // Read records
-    do {
-      // .. still there ?
-      peekLine();
-      if (level!=0) 
-        throw new GedcomFormatException(resources.getString("read.error.norecord"),line);
-
-      // .. end ?
-      if (tag.equals("TRLR")) break;
-
-      // .. entity to parse
-      readEntity();
-
-      // .. next
-    } while (true);
-
-
-    // Read Tail
-    readLine();
-    if (level!=0) 
-      throw new GedcomFormatException(resources.getString("read.error.notrailer"), line);
+    // Read records after the other
+    while (true) {
+      Entity record = reader.readEntity();
+      if (record.getTag().equals("TRLR")) {
+        gedcom.deleteEntity(record);
+        break;
+      }
+    }
 
     // Next state
     state++;
 
     // Prepare submitter
-    if (tempSubmitter!=null) {
+    if (tempSubmitter.length()>0) {
       try {
         Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, tempSubmitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (IllegalArgumentException t) {
-        addWarning(line, resources.getString("read.warn.setsubmitter", tempSubmitter));
+        addWarning(reader.getLines(), RESOURCES.getString("read.warn.setsubmitter", tempSubmitter));
       }
     }
 
@@ -396,14 +257,15 @@ public class GedcomReader implements Trackable {
   private void linkReferences() {
 
     // loop over kept references
-    for (int i=0,j=xrefs.size();i<j;i++) {
-      XRef xref = (XRef)xrefs.get(i);
+    for (int i=0,n=lineAndXRefs.size()/2; i<n; i++) {
+      String line = (String)lineAndXRefs.get(i*2+0);
+      PropertyXRef xref = (PropertyXRef)lineAndXRefs.get(i*2+1);
       try {
-        if (xref.prop.getTarget()==null)
-          xref.prop.link();
-        progress = Math.min(100,(int)(i*(100*2)/j));  // 100*2 because Links are probably backref'd
+        if (xref.getTarget()==null)
+          xref.link();
+        progress = Math.min(100,(int)(i*(100*2)/n));  // 100*2 because Links are probably backref'd
       } catch (GedcomException ex) {
-        addWarning(xref.line, resources.getString("read.warn.reference", new String[]{ xref.prop.getTag(), ex.getMessage() }));
+        warnings.add(RESOURCES.getString("read.warn", new Object[]{ line, ex.getMessage() } ));
       }
     }
 
@@ -415,8 +277,12 @@ public class GedcomReader implements Trackable {
    * @exception GedcomIOException reading from <code>BufferedReader</code> failed
    * @exception GedcomFormatException reading Gedcom-data brought up wrong format
    */
-  private boolean readHeader() throws GedcomIOException, GedcomFormatException {
+  private boolean readHeader() throws IOException {
 
+    Entity header = reader.readEntity();
+    if (!header.getTag().equals("HEAD"))
+      throw new GedcomFormatException(RESOURCES.getString("read.error.noheader"),0);
+    
     //  0 HEAD
     //  1 SOUR GENJ
     //  2 VERS Version.getInstance().toString()
@@ -436,354 +302,59 @@ public class GedcomReader implements Trackable {
     //  1 PLAC 
     //  2 FORM place format
     //  1 FILE file
-    readLine();
-    if (level!=0||!tag.equals("HEAD"))
-      throw new GedcomFormatException(resources.getString("read.error.noheader"),line);
 
-    String lastTag = "";
-    String sourceID = null;
-    int gedc = 0;
-    do {
+    // check 1 SUBM
+    tempSubmitter = header.getPropertyValue("SUBM");
+    if (tempSubmitter.length()==0)
+      addWarning(0, RESOURCES.getString("read.warn.nosubmitter"));
 
-      // read until end of header
-      readLine();
-      if (level==0)
-        break;
+    // check 1 SOUR
+    String source = header.getPropertyValue("SOUR");
+    if (source.length()==0)
+      addWarning(0, RESOURCES.getString("read.warn.nosourceid"));
 
-      // check for SUBMitter
-      if (level==1&&"SUBM".equals(tag)) 
-        tempSubmitter = value; 
+    // check for 
+    // 1 GEDC 
+    // 2 VERSion and 
+    // 2 FORMat
+    Property gedc = header.getProperty("GEDC");
+    if (gedc==null||gedc.getProperty("VERS")==null||gedc.getProperty("FORM")==null)
+      addWarning(0, RESOURCES.getString("read.warn.badgedc"));
         
-      // check for SOUR
-      if (level==1&&"SOUR".equals(tag)) 
-        sourceID = value; 
-        
-      // check for GEDC VERSion and FORMat
-      if (level==1&&"GEDC".equals(tag)) gedc |= 1;
-      if (level==2&&"VERS".equals(tag)) gedc |= 2;
-      if (level==2&&"FORM".equals(tag)) gedc |= 4;
-        
-      // check for language
-      if (level==1&&"LANG".equals(tag)&&value.length()>0) {
-        gedcom.setLanguage(value);
-        LOG.info("Found LANG "+value+" - Locale is "+gedcom.getLocale());
-      }
+    // check 1 LANG
+    String lang = header.getPropertyValue("LANG");
+    if (lang.length()>0) {
+      gedcom.setLanguage(lang);
+      LOG.info("Found LANG "+lang+" - Locale is "+gedcom.getLocale());
+    }
       
-      // check for encoding
-      if (level==1&&"CHAR".equals(tag)&&"ASCII".equals(value))
-        addWarning(line, resources.getString("read.warn.ascii"));
+    // check 1 CHAR
+    if (header.getPropertyValue("CHAR").equals("ASCII"))
+      addWarning(reader.getLines(), RESOURCES.getString("read.warn.ascii"));
       
-      // check for place hierarchy description
-      if (level==2&&"PLAC".equals(lastTag)) {
-        if ("FORM".equals(tag)) {
-          gedcom.setPlaceFormat(value);
-          LOG.info("Found Place.Format "+value);
-        } else {
-          addWarning(line, resources.getString("read.warn.placform"));
-        }
-      }
-        
-      lastTag = tag;
-      
-      // done
-    } while (true);
+    // check 
+    // 1 PLAC
+    // 2 FORM
+    Property plac = header.getProperty("PLAC");
+    if (plac!=null) {
+      String form = plac.getPropertyValue("FORM");
+      gedcom.setPlaceFormat(form);
+      LOG.info("Found Place.Format "+form);
+    }
     
-    // check for warnings from header
-    if (tempSubmitter==null)
-      addWarning(line, resources.getString("read.warn.nosubmitter"));
-    if (sourceID==null)
-      addWarning(line, resources.getString("read.warn.nosourceid"));
-    if (gedc!=7)
-      addWarning(line, resources.getString("read.warn.badgedc"));
-    
-    // Last still to be used
-    redoLine();
+    // get rid of it for now
+    gedcom.deleteEntity(header);
 
     // Done
     return true;
   }
 
   /**
-   * Helper to get gedcom-line
-   * @exception GedcomIOException reading from <code>BufferedReader</code> failed
-   * @exception GedcomFormatException reading Gedcom-data brought up wrong format
-   */
-  private void readLine() throws GedcomIOException, GedcomFormatException {
-
-    // Still running ?
-    if (cancel)
-      throw new GedcomIOException(resources.getString("read.error.cancelled"), line);
-      
-
-    // Still undo we can use?
-    if (redoLine) {
-      redoLine = false;
-      return;
-    }
-
-    // .. get new
-    try {
-      
-      // Read
-      do {
-
-        line++;
-        gedcomLine = in.readLine();
-        
-        // no more data - where has the trailer gone?
-        if (gedcomLine==null) 
-          throw new GedcomIOException(resources.getString("read.error.notrailer"), line);
-        
-        // .. update statistics
-        read+=gedcomLine.length()+2;
-        if (length>0) {
-          progress = Math.min(100,(int)(read*100/length));
-        }
-        
-        // check for empty line now - don't trim though because
-        // that's need for indentation level computation and we
-        // don't want to take stuff away if we don't have to (trailing spaces)
-        if (gedcomLine.trim().length()==0) 
-          addWarning(line, resources.getString("read.error.emptyline"));
-        
-        
-      } while ( gedcomLine.length()==0 );
-
-    } catch (Exception ex) {
-
-      // .. cancel
-      if (cancel) 
-        throw new GedcomIOException(resources.getString("read.error.cancelled"), line);
-
-      // .. file erro
-      if (ex instanceof GedcomIOException)
-        throw (GedcomIOException)ex;
-      
-      throw new GedcomIOException(ex.getMessage(), line);
-    }
-
-    // Parse gedcom-line 
-    // 20040322 use space and also \t for delim in case someone used tabs in file
-    StringTokenizer tokens = new StringTokenizer(gedcomLine," \t");
-
-    try {
-
-      // .. caclulate level by looking at spaces or parsing a number
-      try {
-        if (isIndentForLevels) {
-          level = 0;
-          while (gedcomLine.charAt(level)==' ') level++;
-        } else {
-          level = Integer.parseInt(tokens.nextToken(),10);
-        }
-      } catch (StringIndexOutOfBoundsException sioobe) {
-        throw new GedcomFormatException(resources.getString("read.error.emptyline"),line);
-      } catch (NumberFormatException nfe) {
-        throw new GedcomFormatException(resources.getString("read.error.nonumber"),line);
-      }
-
-      // .. tag (?)
-      if (tokens.hasMoreTokens()) 
-        tag = tokens.nextToken();
-      else {
-        tag = "_MISSING";
-        addWarning(line, resources.getString("read.error.emptyline"));
-      }
-        
-      // .. xref ?
-      if (tag.startsWith("@")&&level==0) {
-
-        // .. valid ?
-        if (!tag.endsWith("@")||tag.length()<=2)
-          throw new GedcomFormatException(resources.getString("read.error.invalidid"),line);
- 
-        // .. indeed, xref !
-        xref = tag.substring(1,tag.length()-1);
-        
-        // .. tag is the next token
-        tag = tokens.nextToken();
-
-      } else {
-
-        // .. no reference in line !
-        xref = "";
-      }
-
-      // .. value
-      if (tokens.hasMoreElements()) {
-        // 20030530 o.k. gotta switch to delim "\n" because we want everything 
-        // to end of line including contained spaces 
-        value = tokens.nextToken("\n");
-        // 20030609 strip leading space that forms delimiter to tag/xref
-        // (this was trim() once but identified as too greedy)
-        if (value.startsWith(" "))
-          value = value.substring(1);
-      } else {
-        value = "";
-      }
-
-    } catch (NoSuchElementException ex) {
-      // .. not enough tokens
-      throw new GedcomFormatException(resources.getString("read.error.cantparse"),line);
-    }
-    
-    // TUNING: for tags we expect a lot of repeating strings (limited numbe of tags) so
-    // we build the intern representation of tag here - this makes us share string 
-    // instances for an upfront cost
-    tag = tag.intern();
-    
-    // Done
-  }
-
-  /**
-   * Read propertiees of property
-   * @exception GedcomIOException reading from <code>BufferedReader</code> failed
-   * @exception GedcomFormatException reading Gedcom-data brought up wrong format
-   */
-  private void readProperties(Property prop, int pos, int currentlevel, List trackAdded) throws GedcomIOException, GedcomFormatException {
-
-    // read more for multiline property prop?
-    if (prop instanceof MultiLineProperty) {
-
-      MultiLineProperty.Collector collector = ((MultiLineProperty)prop).getLineCollector();
-      try { 
-        
-        while (true) {
-          
-          // check next line
-          readLine();
-          
-          // end of property ?
-          if (level<=currentlevel) 
-            break;
-            
-          // can we continue with current?
-          if (!collector.append(level-currentlevel, tag, value)) 
-            break;
-        } 
-      
-      } finally {
-        // commit collected value
-        prop.setValue(collector.getValue());
-      }
-
-      // redo last line
-      redoLine();
-      
-    }
-
-    // decrypt value now
-    decryptLazy(prop);
-    
-    // Get subs of property
-    Property sub;
-    do {
-  
-      // check next line
-      readLine();
-  
-      // end of property ?
-      if (level<=currentlevel) 
-        break;
-        
-      // level>currentLevel would be wrong e.g.
-      //  0 INDI
-      //  1 BIRT
-      //  3 DATE
-      // we simply spit out a warning and continue as if nothing happened
-      if (level>currentlevel+1) 
-        addWarning(line, resources.getString("read.warn.badlevel", ""+level));
-  
-      // add sub property
-      if (pos<0)
-        sub = prop.addProperty(tag, value, true);
-      else
-        sub  = prop.addProperty(tag, value, pos++);
-      
-      // track it?
-      if (trackAdded!=null)
-        trackAdded.add(sub);
-      
-      // a reference ? Remember !
-      if (sub instanceof PropertyXRef)
-        xrefs.add(new XRef(line,(PropertyXRef)sub));
-  
-      // recurse into its properties
-      readProperties(sub, 0, level, null);
-      
-      // next property
-    } while (true);
-
-    // restore what we haven't consumed
-    redoLine();
-  }
-  
-  /**
-   * Decrypt a value if necessary
-   */
-  private void decryptLazy(Property prop) throws GedcomEncryptionException {
-
-    String value = prop.getValue();
-    
-    // no need to do anything if not encrypted value 
-    if (!Enigma.isEncrypted(value))
-      return;
-      
-    // set property private
-    prop.setPrivate(true, false);
-      
-    // no need to do anything for unknown password
-    String password = gedcom.getPassword();
-    if (password==Gedcom.PASSWORD_UNKNOWN) {
-      addWarning(line, resources.getString("crypt.password.unknown"));
-      return;
-    }
-      
-    // not set password with encrypted value is error
-    if (password==Gedcom.PASSWORD_NOT_SET) 
-      throw new GedcomEncryptionException(resources.getString("crypt.password.required"), line);
-    
-    // try to init decryption
-    if (enigma==null) {
-      enigma = Enigma.getInstance(password);
-      if (enigma==null) {
-        addWarning(line, resources.getString("crypt.password.mismatch"));
-        gedcom.setPassword(Gedcom.PASSWORD_UNKNOWN);
-        return;
-      }
-    }
-
-    // try to decrypt    
-    try {
-      // set decrypted value
-      prop.setValue(enigma.decrypt(value));
-    } catch (IOException e) {
-      throw new GedcomEncryptionException(resources.getString("crypt.password.invalid"), line);
-    }
-      
-    // done
-  }
-
-  /**
    * Add a warning
    */
-  private void addWarning(int wline, String txt) {
-    warnings.add(resources.getString("read.warn", new String[]{  ""+wline, txt} ));
+  private void addWarning(int line, String txt) {
+    warnings.add(RESOURCES.getString("read.warn", new String[]{ Integer.toString(line), txt} ));
   }
-  
-  /**
-   * Keeping track of XRefs
-   */
-  private static class XRef {
-    /** attributes */
-    int line;
-    PropertyXRef prop;
-    /** constructor */
-    XRef(int l, PropertyXRef p) {
-      line = l;
-      prop = p;
-    }
-  } //XRef
   
   /**
    * SniffedInputStream
@@ -912,5 +483,119 @@ public class GedcomReader implements Trackable {
     }
     
   } //InputStreamSniffer
+  
+  /** 
+   * our entity reader
+   */
+  private class EntityReader extends PropertyReader {
+    
+    /** constructor */
+    EntityReader() {
+      super(in, false);
+    }
+
+    /** read one entity */
+    Entity readEntity() throws IOException {
+      
+      if (!readLine(true)) 
+        throw new GedcomFormatException(RESOURCES.getString("read.error.norecord"),lines);
+
+      if (level!=0) 
+        throw new GedcomFormatException(RESOURCES.getString("read.error.nonumber"), lines);
+      
+      // warn about missing xref if it's a well known type
+      for (int i=0;i<Gedcom.ENTITIES.length;i++) {
+        if (tag.equals(Gedcom.ENTITIES[i])&&xref.length()==0) {
+          addWarning(lines, RESOURCES.getString("read.warn.recordnoid", Gedcom.getName(tag)));
+        }
+      }
+
+      // Create entity and read its properties
+      Entity result;
+      try {
+        
+        result = gedcom.createEntity(tag, xref);
+        
+        // preserve value for those who care
+        result.setValue(value);
+        
+        // continue into properties
+        readProperties(result, 0, 0);
+        
+      } catch (GedcomException ex) {
+        throw new GedcomIOException(ex.getMessage(), lines);
+      }
+
+      // Done
+      entity++;
+      return result;
+    }
+    
+    /** override read to get a chance to decrypt values */
+    protected void readProperties(Property prop, int currentLevel, int pos) throws IOException {
+      // let super do its thing
+      super.readProperties(prop, currentLevel, pos);
+      // decrypt lazy
+      decryptLazy(prop);
+    }
+    
+    /**
+     * Decrypt a value if necessary
+     */
+    private void decryptLazy(Property prop) throws GedcomEncryptionException {
+
+      String value = prop.getValue();
+      
+      // no need to do anything if not encrypted value 
+      if (!Enigma.isEncrypted(value))
+        return;
+        
+      // set property private
+      prop.setPrivate(true, false);
+        
+      // no need to do anything for unknown password
+      String password = gedcom.getPassword();
+      if (password==Gedcom.PASSWORD_UNKNOWN) {
+        addWarning(lines, RESOURCES.getString("crypt.password.unknown"));
+        return;
+      }
+        
+      // not set password with encrypted value is error
+      if (password==Gedcom.PASSWORD_NOT_SET) 
+        throw new GedcomEncryptionException(RESOURCES.getString("crypt.password.required"), lines);
+      
+      // try to init decryption
+      if (enigma==null) {
+        enigma = Enigma.getInstance(password);
+        if (enigma==null) {
+          addWarning(lines, RESOURCES.getString("crypt.password.mismatch"));
+          gedcom.setPassword(Gedcom.PASSWORD_UNKNOWN);
+          return;
+        }
+      }
+
+      // try to decrypt    
+      try {
+        // set decrypted value
+        prop.setValue(enigma.decrypt(value));
+      } catch (IOException e) {
+        throw new GedcomEncryptionException(RESOURCES.getString("crypt.password.invalid"), lines);
+      }
+        
+      // done
+    }
+    
+    /** keep track of xrefs */
+    protected void trackXRef(PropertyXRef xref) {
+      lineAndXRefs.add(Integer.toString(getLines()));
+      lineAndXRefs.add(xref);
+    }
+    
+    /** keep track of bad levels */
+    protected void trackBadLevel(int level) {
+      addWarning(getLines(), RESOURCES.getString("read.warn.badlevel", ""+level));
+    }
+    
+  } //EntityReader
   
 } //GedcomReader

@@ -27,7 +27,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
 import genj.gedcom.Transaction;
-import genj.io.GedcomReader;
+import genj.io.PropertyReader;
 import genj.io.PropertyTransferable;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
@@ -445,7 +445,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         // still some text we can paste into new parent?
         if (string!=null) {
           EditView.LOG.fine("reading dropped text '"+string+"'");
-          GedcomReader.read(new StringReader(string), newParent, index);
+          new PropertyReader(new StringReader(string), true).read(newParent, index);
         }
         
         // done

@@ -28,8 +28,8 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
-import genj.io.GedcomReader;
-import genj.io.GedcomWriter;
+import genj.io.PropertyReader;
+import genj.io.PropertyTransferable;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -47,14 +47,14 @@ import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -78,6 +78,11 @@ import javax.swing.event.TreeSelectionListener;
  */
 /*package*/ class AdvancedEditor extends Editor {
   
+  private final static String
+    ACC_CUT = "ctrl X",
+    ACC_COPY = "ctrl C",
+    ACC_PASTE = "ctrl V";
+
   private final static Clipboard clipboard = initClipboard();
 
   /**
@@ -161,6 +166,8 @@ import javax.swing.event.TreeSelectionListener;
     JScrollPane treePane = new JScrollPane(tree);
     treePane.setMinimumSize  (new Dimension(160, 128));
     treePane.setPreferredSize(new Dimension(160, 128));
+    treePane.getHorizontalScrollBar().setFocusable(false); // dont allow focus on scroll bars
+    treePane.getVerticalScrollBar().setFocusable(false);
         
     // EDIT Component
     editPane = new JPanel(new BorderLayout());
@@ -180,6 +187,11 @@ import javax.swing.event.TreeSelectionListener;
     // setup focus policy
     setFocusTraversalPolicy(new FocusPolicy());
     setFocusCycleRoot(true);
+    
+    // shortcuts
+    new Cut().install(tree, JComponent.WHEN_FOCUSED);
+    new Copy().install(tree, JComponent.WHEN_FOCUSED);
+    new Paste().install(tree, JComponent.WHEN_FOCUSED);
     
     // done    
   }
@@ -225,6 +237,11 @@ import javax.swing.event.TreeSelectionListener;
     // set selection
     Property property = context.getProperty();
     tree.setSelection(property!=null ? property : entity);  
+    
+    // 20060301 set focus since selection change won't do that anymore
+    if (bean!=null)
+      bean.requestFocusInWindow();
+    
   
     // Done
   }
@@ -342,13 +359,23 @@ import javax.swing.event.TreeSelectionListener;
     /** constructor */
     private Cut(Property deletee) {
       super(deletee);
-      
       super.setImage(Images.imgCut);
       super.setText(resources.getString("action.cut"));
-
+    }
+    
+    /** constructor */
+    private Cut() {
+      setAccelerator(ACC_CUT);
     }
     /** run */
     protected void execute() {
+      
+      // available
+      Property selection = presetSelection;
+      if (selection==null)
+        selection = tree.getSelection();
+      if (selection==null)
+        return;
       
       // warn about cut
       String veto = selection.getDeleteVeto();
@@ -372,7 +399,10 @@ import javax.swing.event.TreeSelectionListener;
       // now cut
       Gedcom gedcom = selection.getGedcom();
       gedcom.startTransaction();
-      selection.getParent().delProperty(selection);
+      if (selection instanceof Entity)
+        selection.delProperties();
+      else
+        selection.getParent().delProperty(selection);
       gedcom.endTransaction();
       
       // done
@@ -385,30 +415,46 @@ import javax.swing.event.TreeSelectionListener;
   private class Copy extends Action2 {
   	
     /** selection */
-    protected Property selection; 
+    protected Property presetSelection; 
     
     /** constructor */
     protected Copy(Property property) {
-
-      super.setText(resources.getString("action.copy"));
-      super.setImage(Images.imgCopy);
-
-      this.selection = property;
-      
-      setEnabled(selection!=null && !(selection instanceof Entity) && !(selection.isTransient()));
-
+      presetSelection = property;
+      setText(resources.getString("action.copy"));
+      setImage(Images.imgCopy);
+      setEnabled(isCopyAvail(presetSelection));
+    }
+    /** constructor */
+    protected Copy() {
+      setAccelerator(ACC_COPY);
+    }
+    private boolean isCopyAvail(Property prop) {
+      return prop!=null&&!(prop.isTransient());
     }
     /** run */
     protected void execute() {
+      
+      // check selection
+      Property selection = presetSelection;
+      if (selection==null)
+        selection = tree.getSelection();
+      if (!isCopyAvail(selection))
+        return;
+      
       try {
-        // Write properties and their subs into a transferable
-        StringWriter out = new StringWriter();
-        try {
-          GedcomWriter.write(Collections.singletonList(selection), out);
-        } catch (IOException e) {
-          // can't happen
+        // either the property itself or all (non transient) subs of entity
+        List copy = new ArrayList();
+        if (selection instanceof Entity) {
+          copy.addAll(Arrays.asList(selection.getProperties()));
+          for (ListIterator it=copy.listIterator(); it.hasNext(); ) { 
+            Property p = (Property)it.next();
+            if (p.isTransient()) it.remove();
+          }
+        } else {
+          copy.add(selection);
         }
-        clipboard.setContents(new StringSelection(out.toString()), null);
+        // write properties and their subs into a transferable
+        clipboard.setContents(new PropertyTransferable(copy).getStringTransferable(), null);
       } catch (Throwable t) {
         EditView.LOG.log(Level.WARNING, "Couldn't ask system clipboard for flavor", t);
       }
@@ -422,29 +468,38 @@ import javax.swing.event.TreeSelectionListener;
   private class Paste extends Action2 {
   	
     /** selection */
-    private Property parent; 
+    private Property presetParent; 
     
     /** constructor */
     protected Paste(Property property) {
-  
-      super.setText(resources.getString("action.paste"));
-      super.setImage(Images.imgPaste);
-  
-      this.parent = property;
-      
-      super.setEnabled(isPasteAvail());
+      presetParent = property;
+      setText(resources.getString("action.paste"));
+      setImage(Images.imgPaste);
+      setEnabled(isPasteAvail());
+    }
+    /** constructor */
+    protected Paste() {
+      setAccelerator(ACC_PASTE);
     }
     /** check whether pasting is available */
     private boolean isPasteAvail() {
       try {
         return Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this).isDataFlavorSupported(DataFlavor.stringFlavor);
       } catch (Throwable t) {
-        EditView.LOG.log(Level.WARNING, "Couldn't ask system clipboard for flavor", t);
+        EditView.LOG.log(Level.WARNING, "Accessing system clipboard failed", t);
       }
       return false;
     }
     /** run */
     protected void execute() {
+      
+      Property parent = presetParent;
+      
+      // got a parent already?
+      if (parent==null) 
+        parent = tree.getSelection();
+      if (parent==null)
+        return;
       
       // forget about it if data flavor is no good
       if (!isPasteAvail())
@@ -454,7 +509,26 @@ import javax.swing.event.TreeSelectionListener;
       gedcom.startTransaction();
       try {
         String s = clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
-        GedcomReader.read(new StringReader(s), parent, -1);
+        new PropertyReader(new StringReader(s), true) {
+          /** intercept add so we can add/merge */
+          protected Property addProperty(Property prop, String tag, String value, int pos) {
+            // reuse prop's existing child with same tag if singleton
+            Property child = prop.getProperty(tag);
+            if (child!=null&&prop.getMetaProperty().getNested(tag, false).isSingleton()&&!(child instanceof PropertyXRef)) {
+              child.setValue(value);
+              return child;
+            }
+            return super.addProperty(prop, tag, value, pos);
+          }
+          /** intercept xrefs so we can link 'em */
+          protected void trackXRef(PropertyXRef xref) {
+            try {
+              xref.link();
+            } catch (Throwable t) {
+              xref.getParent().delProperty(xref);
+            }
+          }
+        }.read(parent);
       } catch (Throwable t) {
         EditView.LOG.log(Level.WARNING, "Couldn't paste clipboard content", t);
       }
@@ -612,7 +686,7 @@ import javax.swing.event.TreeSelectionListener;
       
       // setup beans
       Property prop = tree.getSelection(); 
-      if (prop!=null&&!prop.isSecret()) {
+      if (prop!=null) {
   
         // get a bean for property
         bean = editView.getBeanFactory().get(prop);
@@ -641,19 +715,6 @@ import javax.swing.event.TreeSelectionListener;
           // listen to it
           bean.addChangeListener(this);
   
-          // and request focus - this only works consistently
-          // if invoked later (especially when tabbing)
-          SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-              // 20050624 - seeing a problem with value change happening after switching
-              // away from editor - check still visible and with parent
-              if (!isVisible()||getParent()==null)
-                return;
-              requestFocusInWindow();
-              if  (bean!=null) bean.requestFocusInWindow();
-            }
-          });
-          
         } catch (Throwable t) {
           EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
         }
@@ -692,8 +753,9 @@ import javax.swing.event.TreeSelectionListener;
       // choose next row in tree IF
       //  - a bean is still displayed at the moment
       //  - next component is not part of that bean
-      if (bean!=null&&!SwingUtilities.isDescendingFrom(result, bean)) 
+      if (bean!=null&&!SwingUtilities.isDescendingFrom(result, bean)) {
         tree.setSelectionRow( (tree.getSelectionRows()[0]+1) % tree.getRowCount());
+      }
       // done for me
       return result;
     }

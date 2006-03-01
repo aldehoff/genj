@@ -23,7 +23,6 @@ import genj.Version;
 import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.time.PointInTime;
@@ -33,14 +32,12 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -54,13 +51,11 @@ public class GedcomWriter implements Trackable {
   private static Logger LOG = Logger.getLogger("genj.io");
   
   /** lots of state */
-  private boolean isIndentForLevels = false;
   private Gedcom gedcom;
   private BufferedWriter out;
   private String file;
   private String date;
   private String time;
-  private int level;
   private int total, progress;
   private int line;
   private int entity;
@@ -70,33 +65,6 @@ public class GedcomWriter implements Trackable {
   private String password;
   private String encoding;
 
-  /**
-   * Convert a list of Gedcom properties into a text representation
-   * @param props a list of properties
-   * @param writer output to write to
-   * @see genj.gedcom.Property
-   */
-  public static void write(List props, Writer writer) throws IOException {
-    new GedcomWriter(props,writer);
-  }
-  private GedcomWriter(List props, Writer writer) throws IOException {
-    
-    // use a buffered out
-    out = new BufferedWriter(writer);
-    
-    // setup indent-spaces as level
-    isIndentForLevels = true;
-    
-    // write properties
-    for (int i=0,j=props.size();i<j;i++) {
-      level = 0;
-      writeProperty("", (Property)props.get(i));
-    }
-    
-    // done
-    out.close();
-  }
-  
   /**
    * Constructor for a writer that will write gedcom-formatted output
    * on writeGedcom()
@@ -114,13 +82,12 @@ public class GedcomWriter implements Trackable {
     password = gedcom.getPassword();
     encoding = enc!=null ? enc : ged.getEncoding();
     file = name;
-    level = 0;
     line = 1;
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
     out = new BufferedWriter(new OutputStreamWriter(stream, getCharset(encoding)));
-
+    
     // Done
   }
 
@@ -166,9 +133,8 @@ public class GedcomWriter implements Trackable {
    * @return percent as 0 to 100
    */
   public int getProgress() {
-    if (progress == 0) {
+    if (progress == 0) 
       return 0;
-    }
     return progress * 100 / total;
   }
 
@@ -197,94 +163,6 @@ public class GedcomWriter implements Trackable {
   }
 
   /**
-   * Helper for writing Gedcom-line
-   * @exception IOException
-   * @exception GedcomIOException
-   */
-  private void line(int ldelta, String tag, String value) throws IOException, GedcomIOException {
-    level += ldelta;
-    line(tag, value);
-    level -= ldelta;
-  }
-
-  /**
-   * Helper for writing Gedcom-line
-   * @exception IOException
-   * @exception GedcomIOException
-   */
-  private void line(String tag, String value) throws IOException, GedcomIOException {
-
-    // Still Operation ?
-    if (cancel) {
-      throw new GedcomIOException("Operation cancelled", line);
-    }
-    
-    // Level+Tag
-    if (isIndentForLevels) {
-      for (int i=0;i<level;i++)
-        out.write(' ');
-    } else {
-	    String l = Integer.toString(level);
-	    out.write(l);
-	    out.write(' ');
-    }
-    out.write(tag);
-
-    // Value
-    if (value!=null&&value.length()>0) {
-      // 20030715 only write separating ' ' if value.length()>0 
-      out.write(' ');
-      out.write(value);
-    }
-    out.newLine();
-
-    // next
-    line++;
-
-    // Done
-  }
-
-  /**
-   * Write Entities information
-   * @exception IOException
-   * @exception GedcomIOException
-   */
-  private void writeEntities(Collection ents) throws IOException, GedcomIOException {
-
-    // Loop through entities
-    for (Iterator it=ents.iterator();it.hasNext();) {
-      writeEntity((Entity)it.next());
-    }
-
-    // Done
-  }
-
-  /**
-   * Write Entity
-   * @exception IOException
-   * @exception GedcomIOException
-   */
-  private void writeEntity(Entity ent) throws IOException, GedcomIOException {
-
-    // Filters
-    for (int f = 0; f < filters.length; f++) {
-      if (filters[f].accept(ent) == false)
-        return;
-    }
-
-    // Entity line (might be missing xref in case of custom records)
-    String xref = ent.getId();
-    if (xref.length()>0) 
-      xref = "@" + xref + "@ ";
-    
-    // .. writing it and its subs
-    writeProperty(xref, ent);
-
-    // Done
-    entity++;
-  }
-
-  /**
    * Actually writes the gedcom-information 
    * @exception GedcomIOException
    */
@@ -310,151 +188,146 @@ public class GedcomWriter implements Trackable {
 
     // Done
   }
-
-  /**
-   * Write Header information
-   * @exception IOException
-   * @exception GedcomIOException
-   */
-  private void writeHeader() throws IOException, GedcomIOException {
-
-    // Header
-    line("HEAD", "");
-    line( 1, "SOUR", "GENJ");
-    line( 2, "VERS", Version.getInstance().toString());
-    line( 2, "NAME", "GenealogyJ");
-    line( 2, "CORP", "Nils Meier");
-    line( 3, "ADDR", "http://genj.sourceforge.net");
-    line( 1, "DEST", "ANY");
-    line( 1, "DATE", date);
-    line( 2, "TIME", time);
-    if (gedcom.getSubmitter()!=null)
-      line( 1, "SUBM", '@'+gedcom.getSubmitter().getId()+'@');
-    line( 1, "FILE", file);
-    line( 1, "GEDC", "");
-    line( 2, "VERS", "5.5");
-    line( 2, "FORM", "Lineage-Linked");
-    line( 1, "CHAR", encoding);
-    line( 1, "LANG", gedcom.getLanguage());
-    if (gedcom.getPlaceFormat().length()>0) {
-      line( 1, "PLAC", "");
-      line( 2, "FORM", gedcom.getPlaceFormat());
-    }
-    // done
-  }
-
-  /**
-   * Write Property
-   * @exception IOException
-   * @exception GedcomIOException
-   */
-  private void writeProperty(String prefix, Property prop) throws IOException, GedcomIOException {
-
-    // Filters
-    Entity target = null;
-    if (prop instanceof PropertyXRef) {
-      Property p = ((PropertyXRef) prop).getTarget();
-      if (p != null)
-        target = p.getEntity();
-    }
-    for (int f = 0; f < filters.length; f++) {
-      if (filters[f].accept(prop) == false)
-        return;
-      if (target != null)
-        if (filters[f].accept(target) == false)
-          return;
-    }
-
-    // This property's value
-    boolean encrypt = prop.isPrivate();
-    
-    if (prop instanceof MultiLineProperty) {
-      
-      MultiLineProperty multi = (MultiLineProperty)prop;
-
-      // prep an iterator to loop through lines in this property
-      MultiLineProperty.Iterator lines = multi.getLineIterator();
-      
-      // encrypt lines value?
-      if (encrypt)
-        lines.setValue(encrypt(prop.getValue()));
-        
-      // loop for write
-      line(lines.getIndent(), prefix + lines.getTag(), lines.getValue());
-      while (lines.next())
-        line(lines.getIndent(), lines.getTag(), lines.getValue());
-
-
-    } else {
-
-      // encrypt value?
-      String value = prop.getValue();
-      if (encrypt)
-        value = encrypt(value);
-        
-      
-      // .. just a single line
-      line(prefix + prop.getTag(), value);
-      
-    }
-
-    // Sub Properties
-    level++;
-
-    int num = prop.getNoOfProperties();
-    for (int i = 0; i < num; i++) {
-      Property pi = prop.getProperty(i);
-      if (!pi.isTransient()) {
-        writeProperty("", pi);
-      }
-    }
-
-    level--;
-    
-    // done
+  
+  /** write line for header and footer */
+  private void writeLine(String line) throws IOException {
+    out.write(line);
+    out.newLine();
+    this.line++;
   }
   
   /**
-   * encrypt a value
+   * Write Header information
+   * @exception IOException
    */
-  private String encrypt(String value) throws IOException {
+  private void writeHeader() throws IOException {
     
-    // Make sure enigma is setup
-    if (enigma==null) {
-
-      // no need if password is unknown (data is already/still encrypted)
-      if (password==Gedcom.PASSWORD_UNKNOWN)
-        return value;
-        
-      // no need if password empty
-      if (password.length()==0)
-        return value;
-
-      // error if password isn't set    
-      if (password==Gedcom.PASSWORD_NOT_SET)
-        throw new IOException("Password not set - needed for encryption");
-        
-      // error if can't encrypt
-      enigma = Enigma.getInstance(password);
-      if (enigma==null) 
-        throw new IOException("Encryption not available");
-        
+    // Header
+    writeLine( "0 HEAD");
+    writeLine( "1 SOUR GENJ");
+    writeLine( "2 VERS "+Version.getInstance());
+    writeLine( "2 NAME GenealogyJ");
+    writeLine( "2 CORP Nils Meier");
+    writeLine( "3 ADDR http://genj.sourceforge.net");
+    writeLine( "1 DEST ANY");
+    writeLine( "1 DATE "+date);
+    writeLine( "2 TIME "+time);
+    if (gedcom.getSubmitter()!=null)
+      writeLine( "1 SUBM @"+gedcom.getSubmitter().getId()+'@');
+    writeLine( "1 FILE "+file);
+    writeLine( "1 GEDC");
+    writeLine( "2 VERS 5.5");
+    writeLine( "2 FORM Lineage-Linked");
+    writeLine( "1 CHAR "+encoding);
+    writeLine( "1 LANG "+gedcom.getLanguage());
+    if (gedcom.getPlaceFormat().length()>0) {
+      writeLine( "1 PLAC");
+      writeLine( "2 FORM "+gedcom.getPlaceFormat());
     }
-    
-    // encrypt and done
-    return enigma.encrypt(value);
+    // done
+  }
+
+  /**
+   * Write Entities information
+   * @exception IOException
+   */
+  private void writeEntities(Collection ents) throws IOException {
+
+    // Loop through entities
+    for (Iterator it=ents.iterator();it.hasNext();) {
+      // .. check op
+      if (cancel) throw new GedcomIOException("Operation cancelled", line);
+      // .. writing it and its subs
+      Entity e = (Entity)it.next();
+      line += new EntityWriter().write(0, e);
+      // .. track it
+      entity++;
+    }
+
+    // Done
   }
 
   /**
    * Write Tail information
    * @exception IOException
-   * @exception GedcomIOException
    */
-  private void writeTail() throws IOException, GedcomIOException {
-
+  private void writeTail() throws IOException {
     // Tailer
-    line("TRLR", "");
+    writeLine("0 TRLR");
   }
-  
+
+  /**
+   * our entity writer
+   */
+  private class EntityWriter extends PropertyWriter {
+    
+    /** constructor */
+    EntityWriter() {
+      super(out, false);
+    }
+    
+    /** intercept prop decoding to check filters */
+    protected void writeProperty(int level, Property prop) throws IOException {
+      
+      // check against filters
+      Entity target = null;
+      if (prop instanceof PropertyXRef) {
+        Property p = ((PropertyXRef) prop).getTarget();
+        if (p != null)
+          target = p.getEntity();
+      }
+      for (int f = 0; f < filters.length; f++) {
+        if (filters[f].accept(prop) == false)
+          return;
+        if (target != null)
+          if (filters[f].accept(target) == false)
+            return;
+      }
+      
+      // continue
+      super.writeProperty(level, prop);
+    }
+     
+    /** intercept value decoding to facilitate encryption */
+    protected String getValue(Property prop) throws IOException {
+      return prop.isPrivate() ? encrypt(prop.getValue()) : super.getValue(prop);
+    }
+    
+    /**
+     * encrypt a value
+     */
+    private String encrypt(String value) throws IOException {
+      
+      // not necessary for empty values
+      if (value.length()==0)
+        return value;
+      
+      // Make sure enigma is setup
+      if (enigma==null) {
+
+        // no need if password is unknown (data is already/still encrypted)
+        if (password==Gedcom.PASSWORD_UNKNOWN)
+          return value;
+          
+        // no need if password empty
+        if (password.length()==0)
+          return value;
+
+        // error if password isn't set    
+        if (password==Gedcom.PASSWORD_NOT_SET)
+          throw new IOException("Password not set - needed for encryption");
+          
+        // error if can't encrypt
+        enigma = Enigma.getInstance(password);
+        if (enigma==null) 
+          throw new IOException("Encryption not available");
+          
+      }
+      
+      // encrypt and done
+      return enigma.encrypt(value);
+    }
+
+  } //EntityDecoder
   
 } //GedcomWriter
