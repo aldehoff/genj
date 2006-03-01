@@ -267,6 +267,16 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Removes all properties
+   */
+  public void delProperties() {
+    Property[] cs = (Property[])children.toArray(new Property[children.size()]);
+    for (int c = 0; c < cs.length; c++) {
+      delProperty(cs[c]);
+    }
+  }
+  
+  /**
    * Removes a property by looking in the property's properties
    */
   public void delProperty(Property deletee) {
@@ -757,6 +767,16 @@ public abstract class Property implements Comparable {
    */
   public String getDisplayValue() {
     return getValue();
+  }
+
+  /**
+   * Returns a property value of a child property. This is
+   * a convenient method to access a child-property without having
+   * to check for null before calling its getValue()
+   */
+  public String getPropertyValue(String tag) {
+    Property child = getProperty(tag);
+    return child!=null ? child.getValue() : "";
   }
 
   /**
