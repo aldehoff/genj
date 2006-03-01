@@ -59,7 +59,6 @@ import javax.swing.AbstractAction;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 
@@ -84,7 +83,7 @@ public class ViewManager {
   private ViewFactory[] factories = null;
   
   /** open views */
-  private Map factory2vHandles = new HashMap();
+  private Map factoryType2viewHandles = new HashMap();
   private LinkedList allHandles = new LinkedList();
   
   /** the currently valid context */
@@ -172,9 +171,9 @@ public class ViewManager {
       if (factory instanceof ContextListener)
         addContextListener((ContextListener)factory);
       // check shortcut
-      KeyStroke accelerator = KeyStroke.getKeyStroke("ctrl "+new MnemonicAndText(factory.getTitle(false)).getMnemonic());
-      if (accelerator!=null&&!keyStrokes2factories.containsKey(accelerator)) {
-        keyStrokes2factories.put(accelerator, factory);
+      String keystroke = "ctrl "+new MnemonicAndText(factory.getTitle(false)).getMnemonic();
+      if (!keyStrokes2factories.containsKey(keystroke)) {
+        keyStrokes2factories.put(keystroke, factory);
       }
     }
     
@@ -266,7 +265,7 @@ public class ViewManager {
     context.setManager(ViewManager.this);
     
     // loop and tell to views 
-    for (Iterator lists = factory2vHandles.values().iterator(); lists.hasNext() ;) {
+    for (Iterator lists = factoryType2viewHandles.values().iterator(); lists.hasNext() ;) {
       List list = (List)lists.next();
       for(Iterator handles = list.iterator(); handles.hasNext(); ) {
         ViewHandle handle = (ViewHandle)handles.next();
@@ -376,7 +375,7 @@ public class ViewManager {
   private int getNextInSequence(ViewFactory factory) {
     
     // check handles for factory
-    List handles = (List)factory2vHandles.get(factory);
+    List handles = (List)factoryType2viewHandles.get(factory);
     if (handles==null)
       return 1;
     
@@ -402,7 +401,7 @@ public class ViewManager {
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
     // forget about it
-    List handles = (List)factory2vHandles.get(handle.getFactory());
+    List handles = (List)factoryType2viewHandles.get(handle.getFactory().getClass());
     handles.set(handle.getSequence()-1, null);
     allHandles.remove(handle);
     // done
@@ -437,10 +436,10 @@ public class ViewManager {
     // figure out what sequence # this view will get
     if (sequence<0)
       sequence = getNextInSequence(factory);
-    Vector handles = (Vector)factory2vHandles.get(factory);
+    Vector handles = (Vector)factoryType2viewHandles.get(factory.getClass());
     if (handles==null) {
       handles = new Vector(10);
-      factory2vHandles.put(factory, handles);
+      factoryType2viewHandles.put(factory.getClass(), handles);
     }
     handles.setSize(Math.max(handles.size(), sequence));
     
