@@ -296,6 +296,16 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     // grab the default renderer now
     defaultRenderer = new DefaultTreeCellRenderer();
   }
+  
+  /**
+   * override to provide simple text value (is used by getNextMatch on key presses) 
+   *
+   */
+  public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    if (value instanceof Property)
+      return ((Property)value).getTag();
+    return "";
+  }
 
   /** The current dragged model */
   private static Model dragModel;
