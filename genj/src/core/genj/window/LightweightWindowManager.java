@@ -129,14 +129,14 @@ public class LightweightWindowManager extends DefaultWindowManager {
 
     // place
     JDesktopPane desktop = getDesktop(title, image);
-    Dimension screen = desktop.getSize();
+    Rectangle screen = new Rectangle(desktop.getSize());
     
     if (bounds==null) { 
       frame.pack();
       Dimension dim = frame.getSize();
       bounds = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
     }
-    frame.setBounds(clip(bounds, screen));
+    frame.setBounds(bounds.intersection(screen));
     
     if (maximized) try {
       frame.setMaximum(true);

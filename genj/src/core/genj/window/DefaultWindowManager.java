@@ -50,7 +50,7 @@ import javax.swing.JOptionPane;
 public class DefaultWindowManager extends AbstractWindowManager {
 
   /** screen we're dealing with */
-  private Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+  private Rectangle screen = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
   
   /** a hidden default frame */
   private JFrame defaultFrame = new JFrame();
@@ -110,7 +110,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
       Dimension dim = frame.getSize();
       bounds = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
     }
-    frame.setBounds(clip(bounds,screen));
+    frame.setBounds(bounds.intersection(screen));
     
     if (maximized)
       frame.setExtendedState(Frame.MAXIMIZED_BOTH);
@@ -138,7 +138,12 @@ public class DefaultWindowManager extends AbstractWindowManager {
       dlg.pack();
       dlg.setLocationRelativeTo(owner.getParent());
     } else {
-	    dlg.setBounds(clip(bounds,screen));
+      if (owner==null) {
+        dlg.setBounds(bounds.intersection(screen));
+      } else {
+        dlg.setBounds(new Rectangle(bounds.getSize()).intersection(screen));
+        dlg.setLocationRelativeTo(owner.getParent());
+      }
     }
 
     // hook up to the dialog being hidden by the optionpane

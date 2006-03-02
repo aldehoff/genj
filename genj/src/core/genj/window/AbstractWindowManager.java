@@ -231,29 +231,6 @@ public abstract class AbstractWindowManager implements WindowManager {
   protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner, Rectangle bounds, boolean modal);
 
   /**
-   * Clip bounds
-   */
-  protected Rectangle clip(Rectangle r, Dimension screen) {
-
-    // grab data
-    int 
-     x      = r.x,
-     y      = r.y,
-     width  = r.width,
-     height = r.height;
-  
-    if (width>screen.width) width=screen.width;
-    if (height>screen.height) height=screen.height;        
-    if (x<0) x=0;
-    if (y<0) y=0;
-    if (x+width>screen.width) x=screen.width-width;
-    if (y+height>screen.height) y=screen.height-height;
-  
-    // done
-    return new Rectangle(x,y,width,height);
-  }
-  
-  /**
    * Create a temporary key
    */
   protected String getTemporaryKey() {
