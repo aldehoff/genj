@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.103 $ $Author: nmeier $ $Date: 2006-02-27 20:27:26 $
+ * $Revision: 1.104 $ $Author: nmeier $ $Date: 2006-03-02 21:13:48 $
  */
 package genj.report;
 
@@ -496,7 +496,7 @@ public abstract class Report implements Cloneable {
       select.setSelection(entity);
 
     // show it
-    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),select},Action2.okCancel(),owner);
+    int rc = viewManager.getWindowManager().openDialog("select."+tag,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),select},Action2.okCancel(),owner);
     if (rc!=0)
       return null;
 
