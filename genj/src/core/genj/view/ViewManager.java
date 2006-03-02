@@ -375,7 +375,7 @@ public class ViewManager {
   private int getNextInSequence(ViewFactory factory) {
     
     // check handles for factory
-    List handles = (List)factoryType2viewHandles.get(factory);
+    List handles = (List)factoryType2viewHandles.get(factory.getClass());
     if (handles==null)
       return 1;
     
