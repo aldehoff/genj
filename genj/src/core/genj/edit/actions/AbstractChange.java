@@ -139,7 +139,7 @@ import javax.swing.JTextArea;
     try {
       change();
     } catch (Throwable t) {
-      manager.getWindowManager().openDialog(null, null, WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), getTarget());
+      manager.getWindowManager().openDialog(getClass().getName(), null, WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), getTarget());
     }
     // unlock gedcom
     gedcom.endTransaction();
