@@ -136,7 +136,8 @@ public class DefaultWindowManager extends AbstractWindowManager {
     dlg.setModal(isModal);
     if (bounds==null) {
       dlg.pack();
-      dlg.setLocationRelativeTo(owner.getParent());
+      if (owner!=null)
+        dlg.setLocationRelativeTo(owner.getParent());
     } else {
       if (owner==null) {
         dlg.setBounds(bounds.intersection(screen));
