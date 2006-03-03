@@ -38,6 +38,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
+import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.ProgressWidget;
 import genj.view.ContextListener;
@@ -129,8 +130,9 @@ public class ControlCenter extends JPanel {
     
     // Layout
     setLayout(new BorderLayout());
-    add(createToolBar(), "North");
-    add(new JScrollPane(tGedcoms), "Center");
+    add(createToolBar(), BorderLayout.NORTH);
+    add(new JScrollPane(tGedcoms), BorderLayout.CENTER);
+    add(createStatusBar(), BorderLayout.SOUTH);
 
     // Init menu bar at this point (so it's ready when the first file is loaded)
     menuBar = createMenuBar();
@@ -182,12 +184,25 @@ public class ControlCenter extends JPanel {
   }
   
   /**
+   * Returns a status bar for the bottom
+   */
+  private JPanel createStatusBar() {
+    
+    HeapStatusWidget mem = new HeapStatusWidget();
+    
+    JPanel result = new JPanel(new BorderLayout());
+    result.add(mem, BorderLayout.EAST);
+    return result;
+  }
+  
+  /**
    * Returns a button bar for the top
    */
   private JToolBar createToolBar() {
     
     // create toolbar and setup helper
     JToolBar result = new JToolBar();
+    result.setFloatable(false);
     ButtonHelper bh =
       new ButtonHelper()
         .setInsets(4)
@@ -239,7 +254,7 @@ public class ControlCenter extends JPanel {
 
     MenuHelper mh = new MenuHelper();
     JMenuBar result = mh.createBar();
-
+    
     // Create Menues
     mh.createMenu(resources.getString("cc.menu.file"));
     mh.createItem(new ActionNew());
