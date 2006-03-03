@@ -189,6 +189,7 @@ public class ControlCenter extends JPanel {
   private JPanel createStatusBar() {
     
     HeapStatusWidget mem = new HeapStatusWidget();
+    mem.setToolTipText(resources.getString("cc.heap"));
     
     JPanel result = new JPanel(new BorderLayout());
     result.add(mem, BorderLayout.EAST);

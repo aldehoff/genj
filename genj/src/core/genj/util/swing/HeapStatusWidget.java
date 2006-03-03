@@ -22,6 +22,7 @@ package genj.util.swing;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.text.NumberFormat;
 
 import javax.swing.JProgressBar;
@@ -33,6 +34,8 @@ import javax.swing.Timer;
 public class HeapStatusWidget extends JProgressBar {
   
   private final static NumberFormat FORMAT = new DecimalFormat("0.0");
+  
+  private MessageFormat tooltip = new MessageFormat("Heap: {0}MB used {1}MB free {2}MB max");
 
   /**
    * constructor
@@ -42,21 +45,48 @@ public class HeapStatusWidget extends JProgressBar {
     setValue(0);
     setBorderPainted(false);
     setStringPainted(true);
-    new Timer(3000, new Update()).start();
+    new Timer(3000, new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        update();
+      }
+    }).start();
   }
   
   /** update status */
-  private class Update implements ActionListener {
-    public void actionPerformed(ActionEvent e) {
-      
-      Runtime r = Runtime.getRuntime();
-      long max = r.maxMemory();
-      long used = r.totalMemory()-r.freeMemory();
-      int percent = (int)(used*100/max);
-      setValue(percent);
-      setString(FORMAT.format(used/1000000D)+"MB ("+percent+"%)");
+  private void update() {
+    
+    // calc values
+    Runtime r = Runtime.getRuntime();
+    long max = r.maxMemory();
+    long free = r.freeMemory();
+    long total = r.totalMemory();
+    long used = total-free;
+    int percent = (int)(used*100/max);
+    
+    // set status
+    setValue(percent);
+    setString(format(used, true)+"MB ("+percent+"%)");
 
-    }
+    // add tip
+    super.setToolTipText(null);
+    super.setToolTipText(tooltip.format(new String[]{ format(used, false), format(free, false), format(max, false)}));
+    
+    // done
+  }
+  
+  private String format(long mb, boolean decimals) {
+    double val = mb/1000000D;
+    return decimals ? FORMAT.format(mb/1000000D) : Integer.toString((int)Math.round(val));
+  }
+
+  /**
+   * Allow to set tooltip with placeholders {0} for used memory, {1} for free memory, {2} max memory 
+   */
+  public void setToolTipText(String text) {
+    // remember
+    this.tooltip = new MessageFormat(text);
+    // blank for now
+    super.setToolTipText("");
   }
   
 }
