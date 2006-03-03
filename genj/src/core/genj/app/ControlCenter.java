@@ -20,6 +20,8 @@
 package genj.app;
 
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.Transaction;
 import genj.io.Filter;
 import genj.io.GedcomEncryptionException;
 import genj.io.GedcomIOException;
@@ -34,12 +36,14 @@ import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.FileChooser;
 import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.MenuHelper;
+import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ProgressWidget;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
@@ -74,6 +78,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -99,6 +104,7 @@ public class ControlCenter extends JPanel {
   private PrintManager printManager;
   private List gedcomActions = new ArrayList();
   private List toolbarActions = new ArrayList();
+  private Stats stats = new Stats();
     
   /**
    * Constructor
@@ -155,6 +161,7 @@ public class ControlCenter extends JPanel {
    */
   /*package*/ void addGedcom(Gedcom gedcom) {
     tGedcoms.addGedcom(gedcom);
+    gedcom.addGedcomListener(stats);
   }
 
   /**
@@ -167,6 +174,7 @@ public class ControlCenter extends JPanel {
 
     // forget about it
     tGedcoms.removeGedcom(gedcom);
+    gedcom.removeGedcomListener(stats);
   }
   
   /**
@@ -191,8 +199,10 @@ public class ControlCenter extends JPanel {
     HeapStatusWidget mem = new HeapStatusWidget();
     mem.setToolTipText(resources.getString("cc.heap"));
     
-    JPanel result = new JPanel(new BorderLayout());
-    result.add(mem, BorderLayout.EAST);
+    JPanel result = new JPanel(new NestedBlockLayout("<row><info wx=\"1\" gx=\"1\"/><mem/></row>"));
+    result.add(stats);
+    result.add(mem);
+    
     return result;
   }
   
@@ -683,10 +693,15 @@ public class ControlCenter extends JPanel {
               new ActionSave(gedcom, handle.getView()).install(handle.getView(), JComponent.WHEN_IN_FOCUSED_WINDOW);
           }
         }          
+        
       }
       
-      // show warnings
+      // show warnings&stats
       if (reader!=null) {
+        
+        stats.handleRead(reader.getLines());
+        
+        // warnings
         List warnings = reader.getWarnings();
         if (!warnings.isEmpty()) {
           windowManager.openNonModalDialog(
@@ -1054,6 +1069,10 @@ public class ControlCenter extends JPanel {
       
       // ok, this is a hack :)
       tGedcoms.repaint();
+      
+      // track what we read
+      if (gedWriter!=null)
+        stats.handleWrite(gedWriter.getLines());
 
       // .. done
     }
@@ -1164,25 +1183,44 @@ public class ControlCenter extends JPanel {
     }
   } //ActionOptions
 
-//  /**
-//   * Action - toggle text on buttons
-//   */
-//  private class ActionToggleText extends ActionDelegate {
-//    /** constructor */
-//    protected ActionToggleText() {
-//      setText(resources, "cc.menu.tni");
-//      if (!registry.get("imagesandtext", false))
-//        flip();
-//    }
-//    /** run */
-//    protected void execute() {
-//      registry.put("imagesandtext", !registry.get("imagesandtext", false));
-//      flip();
-//    }
-//    private void flip() {
-//      for (int i=0;i<toolbarActions.size();i++) 
-//        ((ActionDelegate)toolbarActions.get(i)).restoreText();
-//    }
-//  }
+  /**
+   * a little status tracker
+   */
+  private class Stats extends JLabel implements GedcomListener {
+    
+    private int commits;
+    private int read,written;
+    
+    private Stats() {
+      setHorizontalAlignment(SwingConstants.LEFT);
+    }
+
+    public void handleChange(Transaction tx) {
+      commits++;
+      update();
+    }
+    
+    public synchronized void handleRead(int lines) {
+      read+=lines;
+      update();
+    }
+    
+    public synchronized void handleWrite(int lines) {
+      written+=lines;
+      update();
+    }
+    
+    private void update() {
+      WordBuffer buf = new WordBuffer(", ");
+      if (commits>0)
+        buf.append(resources.getString("stat.commits", new Integer(commits)));
+      if (read>0)
+        buf.append(resources.getString("stat.lines.read", new Integer(read)));
+      if (written>0)
+        buf.append(resources.getString("stat.lines.written", new Integer(written)));
+      setText(buf.toString());
+    }
+    
+  } //Stats
   
 } //ControlCenter
