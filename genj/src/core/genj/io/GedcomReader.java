@@ -175,6 +175,13 @@ public class GedcomReader implements Trackable {
   public List getWarnings() {
     return warnings;
   }
+  
+  /**
+   * number of lines read
+   */
+  public int getLines() {
+    return reader.getLines();
+  }
 
   /**
    * Actually writes the gedcom-information 

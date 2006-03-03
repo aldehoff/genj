@@ -56,7 +56,7 @@ public class GedcomWriter implements Trackable {
   private String file;
   private String date;
   private String time;
-  private int total, progress;
+  private int total;
   private int line;
   private int entity;
   private boolean cancel = false;
@@ -82,7 +82,7 @@ public class GedcomWriter implements Trackable {
     password = gedcom.getPassword();
     encoding = enc!=null ? enc : ged.getEncoding();
     file = name;
-    line = 1;
+    line = 0;
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
@@ -133,9 +133,9 @@ public class GedcomWriter implements Trackable {
    * @return percent as 0 to 100
    */
   public int getProgress() {
-    if (progress == 0) 
+    if (entity == 0) 
       return 0;
-    return progress * 100 / total;
+    return entity * 100 / total;
   }
 
   /**
@@ -162,6 +162,13 @@ public class GedcomWriter implements Trackable {
     password = pwd;
   }
 
+  /**
+   * Number of lines written
+   */
+  public int getLines() {
+    return line;
+  }
+  
   /**
    * Actually writes the gedcom-information 
    * @exception GedcomIOException

@@ -169,10 +169,10 @@ public class PropertyReader {
       in.mark(256);
       
       // grab it
-      lines ++;
       line = in.readLine();
       if (line==null)
         return false;
+      lines ++;
     
       // 20040322 use space and also \t for delim in case someone used tabs in file
       StringTokenizer tokens = new StringTokenizer(line," \t");
