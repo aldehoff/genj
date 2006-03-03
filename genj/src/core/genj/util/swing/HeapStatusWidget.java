@@ -61,7 +61,7 @@ public class HeapStatusWidget extends JProgressBar {
     long free = r.freeMemory();
     long total = r.totalMemory();
     long used = total-free;
-    int percent = (int)(used*100/max);
+    int percent = (int)Math.round(used*100D/max);
     
     // set status
     setValue(percent);
