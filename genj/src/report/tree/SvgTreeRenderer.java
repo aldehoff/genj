@@ -21,7 +21,7 @@ import genj.report.Options;
 /**
  * Outputs the generated tree to a SVG file.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public class SvgTreeRenderer implements TreeRenderer {
 

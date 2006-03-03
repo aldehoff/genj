@@ -14,7 +14,7 @@ import genj.gedcom.Indi;
 /**
  * Class representing a single individual box and its links to adjecent boxes.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 class IndiBox {
 

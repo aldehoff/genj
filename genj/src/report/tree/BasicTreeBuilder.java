@@ -21,7 +21,7 @@ import genj.gedcom.Indi;
 /**
  * Builds the family tree based on gedcom data.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public class BasicTreeBuilder implements TreeBuilder {
 

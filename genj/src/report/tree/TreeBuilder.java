@@ -15,7 +15,7 @@ import genj.gedcom.Indi;
  * classes. The builder class does not determine the positions of boxes but only
  * generates the tree structure.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public interface TreeBuilder {
 	public IndiBox build(Indi indi);

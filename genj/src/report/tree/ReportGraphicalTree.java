@@ -22,7 +22,7 @@ import java.nio.charset.Charset;
 /**
  * GenJ - ReportGraphicalTree
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  * @version 0.05
  */
 public class ReportGraphicalTree extends Report {

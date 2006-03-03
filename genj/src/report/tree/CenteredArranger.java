@@ -14,7 +14,7 @@ import tree.IndiBox.Direction;
  * Centers the tree. Uses AlignRightArranger and AlignLeftArranger for
  * parts of the tree.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public class CenteredArranger extends AlignLeftArranger {
 

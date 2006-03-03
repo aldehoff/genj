@@ -13,7 +13,7 @@ import tree.IndiBox.Direction;
 /**
  * Aligns the tree to the right edge.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public class AlignRightArranger extends AbstractArranger {
 

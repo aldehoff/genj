@@ -11,7 +11,7 @@ package tree;
 /**
  * Interface for classes used to arrange individual boxes in the family tree.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public interface TreeArranger {
 

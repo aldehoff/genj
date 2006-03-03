@@ -11,7 +11,7 @@ package tree;
 /**
  * Abstract class for arranger classes.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public abstract class AbstractArranger implements TreeArranger {
 

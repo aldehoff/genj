@@ -11,7 +11,7 @@ package tree;
 /**
  * Interface for classes writing the family tree to an output.
  *
- * @author Przemek Więch <pwiech@losthive.org>
+ * @author Przemek Wiech <pwiech@losthive.org>
  */
 public interface TreeRenderer {
 	public void render(IndiBox indibox);
