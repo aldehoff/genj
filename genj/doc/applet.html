@@ -45,7 +45,10 @@
 <pre>
   + place genj.jar + graphj.jar in [directory]
 
-  + place [file].ged + [file].ged.properties + genj.properties and any images into [directory]
+  + place [file].ged and any associated images into [directory]
+  
+  + optionally copy [file].ged.properties and the folder blueprints into [directory] to keep custom settings*
+     (* the local settings files are stored under ~/.genj or c:/documents and settings/[username]/application data/genj)
 
   + add a HTML page that includes the following tag
 
@@ -66,13 +69,16 @@
     ./file.ged
     ./file.ged.properties
     ./image1.jpg
-    ./...
-</pre>
+    ./blueprints
+    
+ </pre>
 
 <h2>PREPARING APPLET FILES (zipped)</h2>
 
 <pre>
-  + zip [file].ged + [file].get.properties + genj.properties and any images into [file].zip
+  + zip [file].ged and any associated images into [file].zip
+  
+  + optionally add [file].ged.properties and the folder blueprints to keep custom settings*
 
   + place [file].zip into [directory]
 
