@@ -16,6 +16,7 @@
 	<classpathentry kind="lib" path="language/fr"/>
 	<classpathentry kind="lib" path="language/hu"/>
 	<classpathentry kind="lib" path="language/nl"/>
+	<classpathentry kind="lib" path="language/pl"/>
 	<classpathentry kind="lib" path="language/pt_BR"/>
 	<classpathentry kind="lib" path="language/ru"/>
 	<classpathentry exported="true" kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
