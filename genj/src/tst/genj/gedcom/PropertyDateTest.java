@@ -28,6 +28,8 @@ public class PropertyDateTest extends TestCase {
   public void testDates() {     
 
     testParsing("", PropertyDate.DATE, GREGORIAN, 0, 0, 0, true);
+    assertFalse(date.isValid());
+    
     testParsing("25 MAY 1970", PropertyDate.DATE, GREGORIAN, 1970, 5, 25, true);
     testParsing("@#DJULIAN@ 25 MAY 1970", PropertyDate.DATE, JULIAN, 1970, 5, 25, true);
     testParsing("@#DFRENCH R@ 3 GERM An I", PropertyDate.DATE, FRENCHR, 1, 7, 3, false);

@@ -176,6 +176,7 @@ public class PropertyDate extends Property {
       else
         end.set(newEnd);
       phrase = newPhrase;
+      valueAsString = null;
       
       format = (newFormat.needsValidStart() && !start.isValid()) || (newFormat.needsValidEnd() && !end.isValid()) ? DATE : newFormat ;
     } finally {
@@ -223,25 +224,23 @@ public class PropertyDate extends Property {
     // do an atomic change
     isAdjusting = true;
     try {
+      
       // Reset value
       start.reset();
       end.reset();
       format = DATE;
-      valueAsString = newValue;
       phrase= "";
+      valueAsString = newValue.trim();
   
-      // empty string is fine
-      newValue = newValue.trim();
-      if (newValue.length()>0) {
-        // try to apply one of the formats
-        for (int f=0; f<FORMATS.length;f++) {
-          if (FORMATS[f].setValue(newValue, this)) {
-            format  = FORMATS[f];
-            valueAsString = null;
-            break;
-          }
-        } 
-      }
+      // try to apply one of the formats for non empty
+      if (valueAsString.length()>0) for (int f=0; f<FORMATS.length;f++) {
+        if (FORMATS[f].setValue(newValue, this)) {
+          format  = FORMATS[f];
+          valueAsString = null;
+          break;
+        }
+      } 
+      
     } finally {
       isAdjusting = false;
     }
