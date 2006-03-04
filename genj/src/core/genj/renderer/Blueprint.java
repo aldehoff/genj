@@ -81,6 +81,13 @@ public class Blueprint {
   }
   
   /**
+   * internal name
+   */
+  /*package*/ void setName(String name) {
+    this.name = name;
+  }
+  
+  /**
    * Accessor - readonly
    */
   /*package*/ boolean isReadOnly() {

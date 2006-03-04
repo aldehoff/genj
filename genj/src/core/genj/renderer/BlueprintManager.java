@@ -127,25 +127,34 @@ public class BlueprintManager {
   }
   
   /**
+   * Resolve blueprint filename
+   */
+  private File getBlueprintFile(Blueprint blueprint) {
+    return new File(getBlueprintDirectory(), "/"+blueprint.getTag()+"/"+blueprint.getName()+SUFFIX); 
+  }
+  
+  /**
    * Save a blueprint to disk
    */
-  /*package*/ void saveBlueprint(Blueprint blueprint) {
+  /*package*/ boolean saveBlueprint(Blueprint blueprint) {
     
     // put it back to where it belongs
-    File file = new File(getBlueprintDirectory(), "/"+blueprint.getTag()+"/"+blueprint.getName()+SUFFIX); 
+    File file = getBlueprintFile(blueprint); 
     File parent = file.getParentFile();
     parent.mkdirs();
     if (!parent.exists()||!parent.isDirectory())
-      return;
+      return false;
     
     try {
       readwrite(new StringReader(blueprint.getHTML()), new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
       LOG.log(Level.INFO, "saved blueprint "+file);
     } catch (IOException e) {
       LOG.log(Level.WARNING, "unexpected throwable saving blueprint "+file, e);
+      return false;
     }
     
     // done
+    return true;
   }
   
   /**
@@ -273,14 +282,26 @@ public class BlueprintManager {
   /**
    * Adds a blueprint   */
   public Blueprint addBlueprint(Blueprint blueprint) {
-
-    // keep it overriding same name
+    
+    // patch name - no slashes and colons etc.
+    String name = blueprint.getName();
+    char[] replace = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
+    for (int i=0;i<replace.length;i++)
+      name = name.replace(replace[i], '-');
+    blueprint.setName(name);
+          
+    // keep it overriding same name unless read-only
     List blueprints = getBlueprintsInternal(blueprint.getTag());
     for (ListIterator it=blueprints.listIterator(); it.hasNext(); ) {
       Blueprint other = (Blueprint)it.next();
+      // found one with same name?
       if (other.getName().equalsIgnoreCase(blueprint.getName())) {
-        it.remove();
-        break;
+        // don't allow if read only
+        if (other.isReadOnly())
+          return other;
+        // exchange
+        it.set(blueprint);
+        return blueprint;
       }
     }
     
@@ -297,34 +318,16 @@ public class BlueprintManager {
     // allowed?
     if (blueprint.isReadOnly()) 
       throw new IllegalArgumentException("Can't delete read-only Blueprint");
+    // remove it from disk
+    if (!blueprint.isReadOnly()) {
+      if (!getBlueprintFile(blueprint).delete()) {
+        LOG.warning("Couldn't delete blueprint "+blueprint);
+        return;
+      }
+    }
     // remove it
     getBlueprintsInternal(blueprint.getTag()).remove(blueprint);
     // done
   }
   
-//  /**
-//   * Helper that reads blueprints from a registry//   */
-//  public Blueprint[] recallBlueprints(Registry registry) {
-//    // resolve blueprints
-//    Blueprint[] bps = new Blueprint[Gedcom.NUM_TYPES];
-//    String[] names = registry.get("blueprints", (String[])null);
-//    for (int i=0; i<bps.length; i++) {
-//      String name = names!=null&&i<names.length ? names[i] : "";
-//      bps[i] = getBlueprint(i, name);
-//    }
-//    // done
-//    return bps;
-//  }
-//
-//  /**
-//   * Helper that writes blueprings to a registry
-//   */
-//  public void rememberBlueprints(Blueprint[] bps, Registry registry) {
-//    String[] names = new String[bps.length];
-//    for (int i=0; i<names.length; i++) {
-//      names[i] = bps[i].getName();     
-//    }
-//    registry.put("blueprints", names);
-//  }
-
 } //BlueprintManager

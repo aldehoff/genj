@@ -173,10 +173,11 @@ public class BlueprintList extends JSplitPane {
       ));
       // update model
       model.fireStructureChanged();
-      // re-select
-      treeBlueprints.setSelectionPath(model.getPathToRoot(blueprint));
-      // make sure the html editor shows
-      editor.setHTMLVisible(true);
+      // re-select and make html visible
+      if (blueprint!=null) {
+        treeBlueprints.setSelectionPath(model.getPathToRoot(blueprint));
+        editor.setHTMLVisible(true);
+      }
       // done
     }
   } //ActionAdd
