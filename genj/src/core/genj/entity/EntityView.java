@@ -96,7 +96,7 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
     BlueprintManager bpm = viewManager.getBlueprintManager();
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       String tag = Gedcom.ENTITIES[t];
-      type2blueprint.put(tag, bpm.getBlueprint(tag, registry.get("blueprint."+tag, "")));
+      type2blueprint.put(tag, bpm.getBlueprint(ged.getOrigin(), tag, registry.get("blueprint."+tag, "")));
     }
     isAntialiasing  = registry.get("antial"  , false);
     
@@ -172,7 +172,7 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   /*package*/ Blueprint getBlueprint(String tag) {
     Blueprint result = (Blueprint)type2blueprint.get(tag);
     if (result==null) {
-      result = viewManager.getBlueprintManager().getBlueprint(tag, "");
+      result = viewManager.getBlueprintManager().getBlueprint(gedcom.getOrigin(),tag, "");
       type2blueprint.put(tag, result);
     }
     return result;

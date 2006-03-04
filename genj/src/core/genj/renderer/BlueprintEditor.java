@@ -161,6 +161,7 @@ public class BlueprintEditor extends JSplitPane {
   public void commit() {
     if (blueprint!=null&&isChanged) {
       blueprint.setHTML(html.getText());
+      blueprintManager.saveBlueprint(blueprint);
       // mark unchanged
       isChanged = false;
     }

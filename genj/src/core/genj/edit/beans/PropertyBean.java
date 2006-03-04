@@ -239,7 +239,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     protected void setEntity(Entity ent) {
       entity = ent;
       if (entity!=null)
-        renderer = new EntityRenderer(viewManager.getBlueprintManager().getBlueprint(entity.getTag(), ""));
+        renderer = new EntityRenderer(viewManager.getBlueprintManager().getBlueprint(entity.getGedcom().getOrigin(), entity.getTag(), ""));
       repaint();
     }
   } //Preview

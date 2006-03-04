@@ -19,12 +19,8 @@
  */
 package genj.renderer;
 
-import genj.option.Option;
 import genj.option.OptionProvider;
-import genj.option.OptionUI;
-import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
-import genj.util.Registry;
 
 import java.awt.Font;
 import java.util.List;
@@ -65,50 +61,7 @@ public class Options extends OptionProvider {
    * Access to our options (one)
    */
   public List getOptions() {
-    List result= PropertyOption.introspect(getInstance());
-    result.add(new Mgr());
-    return result;
+    return PropertyOption.introspect(getInstance());
   }
   
-  /**
-   * Our headless option
-   */
-  private class Mgr extends Option {
-
-    public String getName() {
-      return "blueprints";
-    }
-
-    public void restore(Registry registry) {
-      
-      // read old style blueprints if available
-      //   views.blueprints.INDI=foo bar
-      //   views.blueprints.INDI.foo=...
-      //   views.blueprints.INDI.bar=...
-      // new is the current view (options)
-      //   options.blueprints.INDI=foo bar
-      //   options.blueprints.INDI.foo=...
-      //   options.blueprints.INDI.bar=...
-      Registry root = registry.getRoot();
-      if (root.get("views.blueprints.INDI", (String)null)!=null) 
-        registry = new Registry(root, "views");
-      
-      // continue
-      BlueprintManager.getInstance().read(registry);
-      
-      // continue old leftovers
-      root.remove("views.blueprints.");
-      root.remove("blueprints.");
-    }
-
-    public void persist(Registry registry) {
-      BlueprintManager.getInstance().write(registry);
-    }
-
-    public OptionUI getUI(OptionsWidget widget) {
-      return null;
-    }
-
-  } //Default
-
 } //Options

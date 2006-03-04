@@ -145,7 +145,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * Constructor
    */
-  public TreeView(String titl, Gedcom gedcm, Registry regIstry, ViewManager manAger) {
+  public TreeView(String titl, Gedcom gedcom, Registry regIstry, ViewManager manAger) {
     
     // remember
     registry = regIstry;
@@ -173,11 +173,11 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     BlueprintManager bpm = manager.getBlueprintManager();
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       String tag = Gedcom.ENTITIES[t];
-      tag2blueprint.put(tag, bpm.getBlueprint(tag, registry.get("blueprint."+tag, "")));
+      tag2blueprint.put(tag, bpm.getBlueprint(gedcom.getOrigin(), tag, registry.get("blueprint."+tag, "")));
     }
     
     // setup model
-    model = new Model(gedcm);
+    model = new Model(gedcom);
     model.setVertical(registry.get("vertical",true));
     model.setFamilies(registry.get("families",true));
     model.setBendArcs(registry.get("bend"    ,true));
@@ -197,20 +197,20 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     // root
     Entity root = null;
     try { 
-      root = gedcm.getEntity(registry.get("root",(String)null));
+      root = gedcom.getEntity(registry.get("root",(String)null));
     } catch (Exception e) {
     }
     if (root==null) {
-      Context context = manager.getLastSelectedContext(gedcm);
+      Context context = manager.getLastSelectedContext(gedcom);
       root = context.getEntity();
       // make sure the root we're trying is an Indi or Fam (if available)
       if (!(root instanceof Indi || root instanceof Fam))
-        root = gedcm.getFirstEntity(Gedcom.INDI);
+        root = gedcom.getFirstEntity(Gedcom.INDI);
     } 
     model.setRoot(root);
     
     try { 
-      currentEntity = gedcm.getEntity(registry.get("current",(String)null));
+      currentEntity = gedcom.getEntity(registry.get("current",(String)null));
     } catch (Exception e) {
       currentEntity = model.getRoot();
     }
@@ -220,7 +220,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     List bookmarks = new ArrayList();
     for (int i=0;i<bs.length;i++) {
       try {
-        bookmarks.add(new Bookmark(this, gedcm, bs[i]));
+        bookmarks.add(new Bookmark(this, gedcom, bs[i]));
       } catch (Throwable t) {
       }
     }
@@ -625,7 +625,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /*package*/ Blueprint getBlueprint(String tag) {
     Blueprint result = (Blueprint)tag2blueprint.get(tag);
     if (result==null) {
-      result = manager.getBlueprintManager().getBlueprint(tag,"");
+      result = manager.getBlueprintManager().getBlueprint(model.getGedcom().getOrigin(),tag,"");
       tag2blueprint.put(tag, result);
     }
     return result;

@@ -167,11 +167,10 @@ public class BlueprintList extends JSplitPane {
       // get html
       String html = node instanceof Blueprint ? ((Blueprint)node).getHTML() : "";
       // add it
-      Blueprint blueprint = blueprintManager.addBlueprint(
-        node instanceof Blueprint ? ((Blueprint)node).getTag() : (String)node, 
-        name, 
-        html
-      );
+      Blueprint blueprint = blueprintManager.addBlueprint(new Blueprint(
+        node instanceof Blueprint ? ((Blueprint)node).getTag() : (String)node,
+        name, html, false
+      ));
       // update model
       model.fireStructureChanged();
       // re-select
