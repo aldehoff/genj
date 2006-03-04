@@ -7,7 +7,7 @@ cd `dirname $0`
 # check the script for being a symbolik link we can follow
 SCRIPT=`basename $0`
 while [ -h "$SCRIPT" ]; do
- SCRIPT=`ls -l $SCRIPT | grep -o '[/.[:alnum:]]*$'`
+ SCRIPT=`ls -l $SCRIPT | grep -o '[-_/.[:alnum:]]*$'`
  echo "*** INFO: Following symlink $SCRIPT"
  cd `dirname $SCRIPT`
  SCRIPT=`basename $SCRIPT`
