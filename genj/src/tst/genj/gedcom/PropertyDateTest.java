@@ -29,8 +29,11 @@ public class PropertyDateTest extends TestCase {
 
     testParsing("", PropertyDate.DATE, GREGORIAN, 0, 0, 0, true);
     assertFalse(date.isValid());
+    date.setValue(PropertyDate.DATE, PointInTime.getNow(), null, null);
+    assertTrue(date.isValid()); // 2.4.1 BUG setValue(...) on invalid property didn't make it valid again
     
     testParsing("25 MAY 1970", PropertyDate.DATE, GREGORIAN, 1970, 5, 25, true);
+    
     testParsing("@#DJULIAN@ 25 MAY 1970", PropertyDate.DATE, JULIAN, 1970, 5, 25, true);
     testParsing("@#DFRENCH R@ 3 GERM An I", PropertyDate.DATE, FRENCHR, 1, 7, 3, false);
     testParsing("@#DHEBREW@ 1     CSH 5000", PropertyDate.DATE, HEBREW, 5000,  2, 1, false);
