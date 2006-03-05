@@ -334,7 +334,7 @@ public class ImageWidget extends JPanel {
   public abstract static class Source {
     
     /** name */
-    private String name;
+    protected String name;
     
     /** constructor */
     private Source() {
@@ -363,13 +363,11 @@ public class ImageWidget extends JPanel {
   public static class RelativeSource extends Source {
     
     private Origin origin;
-    private String name;
     
     /** constructor */
     public RelativeSource(Origin origin, String name) {
       super(name);
       this.origin = origin;
-      this.name = name;
     }
     
     /** impl */

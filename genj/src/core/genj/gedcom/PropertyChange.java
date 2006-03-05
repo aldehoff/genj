@@ -249,7 +249,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    */
   private class DateTimeCollector implements MultiLineProperty.Collector {
 
-    private String date, time;
+    private String dateCollected, timeCollected;
     
     /**
      * @see genj.gedcom.MultiLineSupport.Continuation#append(int, java.lang.String, java.lang.String)
@@ -258,13 +258,13 @@ public class PropertyChange extends Property implements MultiLineProperty {
       
       // DATE
       if (indent==1&&DATE.equals(tag)) {
-        date = value; 
+        dateCollected = value; 
         return true;
       }
     
       // TIME
       if (indent==2&&TIME.equals(tag)) {
-        time = value;
+        timeCollected = value;
         return true;
       }
       
@@ -276,7 +276,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
      * @see genj.gedcom.MultiLineProperty.Collector#getValue()
      */
     public String getValue() {
-      return date+','+time;
+      return dateCollected+','+timeCollected;
     }
     
   } //MyContinuation

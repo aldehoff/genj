@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.4 $ $Author: nmeier $ $Date: 2005-07-20 22:04:29 $
+ * $Revision: 1.5 $ $Author: nmeier $ $Date: 2006-03-05 01:17:38 $
  */
 package genj.report;
 
@@ -146,9 +146,6 @@ public class PropertyList {
 
     /** a headless label for rendering */
     private HeadlessLabel label = new HeadlessLabel();
-
-    /** gedcom */
-    private Gedcom gedcom;
 
     /**
      * Constructor

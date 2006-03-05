@@ -19,7 +19,6 @@
  */
 package genj.app;
 
-import genj.gedcom.Change;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;

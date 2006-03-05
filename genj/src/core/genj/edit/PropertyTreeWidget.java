@@ -74,7 +74,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   private DefaultTreeCellRenderer defaultRenderer;
   
   /** stored gedcom */
-  private Gedcom gedcom;
+  private Gedcom lazyGedcom;
 
   /**
    * Constructor
@@ -85,7 +85,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     super.setModel(new Model());
 
     // remember
-    this.gedcom = gedcom;
+    this.lazyGedcom = gedcom;
     
     // setup callbacks
     setCellRenderer(new Renderer());
@@ -107,7 +107,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     if (selection!=null) return new Context(selection);
     Entity root = (Entity)getRoot();
     if (root!=null) return new Context(root);
-    return new Context(gedcom);
+    return new Context(lazyGedcom);
   }
   
   /**
@@ -136,7 +136,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
    */
   public void addNotify() {
     // connect model to gedcom
-    getPropertyModel().setGedcom(gedcom);
+    getPropertyModel().setGedcom(lazyGedcom);
     // continue
     super.addNotify();
     

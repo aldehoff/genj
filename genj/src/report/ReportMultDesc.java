@@ -17,7 +17,6 @@ import genj.report.Report;
 
 import java.util.HashMap;
 
-import javax.sound.sampled.BooleanControl;
 import javax.swing.ImageIcon;
 
 /**

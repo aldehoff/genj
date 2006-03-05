@@ -473,7 +473,7 @@ public class Almanac {
     
     private Event next;
 
-    private Set categories;
+    private Set cats;
     
     /**
      * Constructor
@@ -510,7 +510,7 @@ public class Almanac {
     
     private void init(Set cats) {
       
-      categories = cats;
+      this.cats = cats;
       
 	    synchronized (events) {
 	      end = events.size();
@@ -548,7 +548,7 @@ public class Almanac {
 	        // here's the next
 		      next = (Event)events.get(start++);
 		      // good category?
-		      if (categories!=null&&!next.isCategory(categories)) 
+		      if (cats!=null&&!next.isCategory(cats)) 
 	          continue;
 		      // before earliest?
 		      PointInTime time = next.getTime();

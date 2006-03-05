@@ -178,7 +178,7 @@ public class OptionsWidget extends JPanel {
   private class Cell extends AbstractCellEditor implements TreeCellRenderer, TreeCellEditor {
     
     /** current ui */
-    private OptionUI ui;
+    private OptionUI optionUi;
     
     /** panel container */
     private JPanel panel = new JPanel() {
@@ -225,18 +225,18 @@ public class OptionsWidget extends JPanel {
       if (panel.getComponentCount()>1) 
         panel.remove(1);
       // lookup option and ui
-      ui = option.getUI(OptionsWidget.this);
+      optionUi = option.getUI(OptionsWidget.this);
       // prepare name
       labelForName.setText(option.getName());
       labelForName.setPreferredSize(new Dimension(widthOf1stColumn,16));
       // and value (either text or ui)
       JComponent compForValue;
-      String text = ui.getTextRepresentation();
+      String text = optionUi.getTextRepresentation();
       if (text!=null&&!forceUI) {
         labelForValue.setText(text);
         compForValue = labelForValue;
       } else {
-        compForValue = ui.getComponentRepresentation();
+        compForValue = optionUi.getComponentRepresentation();
       }
       panel.add(compForValue, BorderLayout.CENTER);
       
@@ -260,14 +260,14 @@ public class OptionsWidget extends JPanel {
 
     /** callback - cancel editing */     
     public void cancelCellEditing() {
-      ui = null;
+      optionUi = null;
       super.cancelCellEditing();
     }
   
     /** callback - stop editing = commit */     
     public boolean stopCellEditing() {
-      if (ui!=null)
-        ui.endRepresentation();
+      if (optionUi!=null)
+        optionUi.endRepresentation();
       return super.stopCellEditing();
     }
 

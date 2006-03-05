@@ -73,7 +73,7 @@ public class ReportAncestorStatistics extends Report {
     private class ConsanguinityInfo {
         public Indi indi;
         public int count;
-        public double dConsanguinityFactor;
+        public double consanguinityFactor;
         public Stack stackIndi = new Stack();
     }
     
@@ -202,7 +202,7 @@ public class ReportAncestorStatistics extends Report {
             
             // Print individual description
             println(align(getIndiDescription(info.indi), 60, Report.ALIGN_LEFT) +
-            align(info.dConsanguinityFactor + "", 20, Report.ALIGN_RIGHT));
+            align(info.consanguinityFactor + "", 20, Report.ALIGN_RIGHT));
             
             // Print ancestor lists
             if (DEBUG) {
@@ -464,7 +464,7 @@ public class ReportAncestorStatistics extends Report {
             double dPower = iLevelRight + iLevelLeft + 1;
             double dConsanguinityPart = Math.pow(0.5, dPower);
             dConsanguinityFactor += dConsanguinityPart;
-            info.dConsanguinityFactor += dConsanguinityPart;
+            info.consanguinityFactor += dConsanguinityPart;
             info.count++;
             return;
         }

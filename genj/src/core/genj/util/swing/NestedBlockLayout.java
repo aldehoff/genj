@@ -198,6 +198,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     protected Object clone() {
       try {
         Block clone = (Block)super.clone();
+        
         clone.subs = new ArrayList(subs.size());
         for (int i=0;i<subs.size();i++)
           clone.subs.add( ((Block)subs.get(i)).clone() );
@@ -280,7 +281,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return result;
     }
 
-  } //Area
+  } //Block
   
   /**
    * a row
@@ -468,14 +469,14 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** wrapped component */
     private Component component;
     
-    /** weight constraints */
-    private Point2D.Float weight = new Point2D.Float();
-    
     /** grow constraints */
     private Point grow = new Point();
     
     /** padding */
     private int padding;
+    
+    /** cached weight */
+    private Point2D.Double staticWeight = new Point2D.Double();
     
     /** constructor */
     private Cell(String element, Attributes attributes, int padding) {
@@ -492,10 +493,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // look for weight info
       String wx = getAttribute("wx");
       if (wx!=null)
-        weight.x = Float.parseFloat(wx);
+        staticWeight.x = Float.parseFloat(wx);
       String wy = getAttribute("wy");
       if (wy!=null)
-        weight.y = Float.parseFloat(wy);
+        staticWeight.y = Float.parseFloat(wy);
       
       // look for grow info
       String gx = getAttribute("gx");
@@ -535,11 +536,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return (String)attrs.get(attr);
     }
     
-    /** set weight of cell */
-    public void setWeight(Point2D weight) {
-      if (weight!=null) this.weight.setLocation(weight);
-    }
-    
     /** remove */
     boolean remove(Component component) {
       if (this.component==component) {
@@ -573,7 +569,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** weight */
     Point2D weight() {
-      return weight;
+      return staticWeight;
     }
     
     /** layout */
@@ -590,12 +586,12 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       Dimension max = component.getMaximumSize();
       if (grow.x!=0) 
         max.width = avail.width;
-      else if (weight.x==0) 
+      else if (staticWeight.x==0) 
         max.width = pref.width;
         
       if (grow.y!=0) 
         max.height = avail.height;
-      else if (weight.y==0)
+      else if (staticWeight.y==0)
         max.height = pref.height;
       
       // share space

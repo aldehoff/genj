@@ -148,16 +148,23 @@ public abstract class Origin {
    */
   public String calcRelativeLocation(String file) {
 
-    file = "file:"+back2forwardslash(file);
-
     String path = back2forwardslash(url.toString());
     path = path.substring(0,path.lastIndexOf(FSLASH)+1);
-
-    if (!file.startsWith(path)) {
-      return null;
-    }
-
-    return file.substring(path.length());
+    
+    // 20060304 - i was prefixing the file with file: here but it seems like
+    // it has to be file:/ to be matching the url.toString() for files. Wonder
+    // why noone complained that relative calc for files didn't work. Checking
+    // both here for now
+    
+    String tst1 = "file:"+back2forwardslash(file);
+    if (tst1.startsWith(path)) 
+      return tst1.substring(path.length());
+    
+    String tst2 = "file:/"+back2forwardslash(file);
+    if (tst2.startsWith(path)) 
+      return tst2.substring(path.length());
+    
+    return null;
   }
   
   /**

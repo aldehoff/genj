@@ -164,15 +164,15 @@ public class DateBean extends PropertyBean {
    */
   private class ChangeFormat extends Action2 {
     
-    private PropertyDate.Format format;
+    private PropertyDate.Format formatToSet;
     
     private ChangeFormat(PropertyDate.Format set) {
-      format = set;
+      formatToSet = set;
       super.setText(set.getName());
     }
     
     protected void execute() {
-      setFormat(format);
+      setFormat(formatToSet);
     }
     
   } //ChangeFormat 
