@@ -832,7 +832,7 @@ public class ControlCenter extends JPanel {
       // by default we offer the user to load example.ged
       HashSet deflt = new HashSet();
       if (files.length==0) try {
-        deflt.add(new File("./gedcom/example.ged").toURL());
+        deflt.add(new File("gedcom/example.ged").toURL());
       } catch (Throwable t) {
         // ignored
       }
