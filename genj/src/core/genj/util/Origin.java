@@ -148,22 +148,26 @@ public abstract class Origin {
    */
   public String calcRelativeLocation(String file) {
 
-    String path = back2forwardslash(url.toString());
-    path = path.substring(0,path.lastIndexOf(FSLASH)+1);
+    // 20060304 was using file: only here but need to
+    // check for file:/ as well - don't know if the former is
+    // necessary at all but keeping it in for now
+    String here = url.toString();
+    if (here.startsWith("file:/"))
+      here = here.substring("file:/".length());
+    if (here.startsWith("file:"))
+      here = here.substring("file:".length());
+
+    // try to compare canonical forms
+    try {
+      here = back2forwardslash(new File(here.substring(0,here.lastIndexOf(FSLASH))).getCanonicalPath()) + "/";
+      file = back2forwardslash(new File(file).getCanonicalPath()); 
+      if (file.startsWith(here))
+        return file.substring(here.length());
+    } catch (Throwable t) {
+    }
     
-    // 20060304 - i was prefixing the file with file: here but it seems like
-    // it has to be file:/ to be matching the url.toString() for files. Wonder
-    // why noone complained that relative calc for files didn't work. Checking
-    // both here for now
-    
-    String tst1 = "file:"+back2forwardslash(file);
-    if (tst1.startsWith(path)) 
-      return tst1.substring(path.length());
-    
-    String tst2 = "file:/"+back2forwardslash(file);
-    if (tst2.startsWith(path)) 
-      return tst2.substring(path.length());
-    
+
+    // no good
     return null;
   }
   
