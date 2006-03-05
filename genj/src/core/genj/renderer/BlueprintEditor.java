@@ -40,6 +40,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -161,9 +162,13 @@ public class BlueprintEditor extends JSplitPane {
   public void commit() {
     if (blueprint!=null&&isChanged) {
       blueprint.setHTML(html.getText());
-      blueprintManager.saveBlueprint(blueprint);
-      // mark unchanged
-      isChanged = false;
+      try {
+        blueprintManager.saveBlueprint(blueprint);
+        // mark unchanged
+        isChanged = false;
+      } catch (IOException e) {
+        // FIXME add a user warning
+      }
     }
   }
   

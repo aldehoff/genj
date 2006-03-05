@@ -34,6 +34,9 @@ public class Blueprint {
   
   /** read-only */
   private boolean isReadOnly = false;
+  
+  /** dirty */
+  private boolean isDirty = true;
 
   /**
    * Constructor - temporary blueprint w/o name
@@ -63,7 +66,22 @@ public class Blueprint {
       throw new IllegalArgumentException("Can't change read-only Blueprint");
     // remember
     html = hTml;
+    isDirty = true;
     // done
+  }
+  
+  /**
+   * clear dirty
+   */
+  /*package*/ void clearDirty() {
+    isDirty = false;
+  }
+  
+  /**
+   * dirty check
+   */
+  /*package*/ boolean isDirty() {
+    return isDirty;
   }
   
   /**
@@ -78,13 +96,6 @@ public class Blueprint {
    */
   public String getName() {
     return name;
-  }
-  
-  /**
-   * internal name
-   */
-  /*package*/ void setName(String name) {
-    this.name = name;
   }
   
   /**

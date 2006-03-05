@@ -28,6 +28,7 @@ import genj.window.WindowManager;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -167,16 +168,18 @@ public class BlueprintList extends JSplitPane {
       // get html
       String html = node instanceof Blueprint ? ((Blueprint)node).getHTML() : "";
       // add it
-      Blueprint blueprint = blueprintManager.addBlueprint(new Blueprint(
-        node instanceof Blueprint ? ((Blueprint)node).getTag() : (String)node,
-        name, html, false
-      ));
-      // update model
-      model.fireStructureChanged();
-      // re-select and make html visible
-      if (blueprint!=null) {
+      try {
+        Blueprint blueprint = blueprintManager.addBlueprint(new Blueprint(
+          node instanceof Blueprint ? ((Blueprint)node).getTag() : (String)node,
+          name, html, false
+        ));
+        // update model
+        model.fireStructureChanged();
+        // re-select and make html visible
         treeBlueprints.setSelectionPath(model.getPathToRoot(blueprint));
         editor.setHTMLVisible(true);
+      } catch (IOException e) {
+        // FIXME add user dialog 
       }
       // done
     }
@@ -212,7 +215,11 @@ public class BlueprintList extends JSplitPane {
       // remove selection
       selection.remove(blueprint.getTag());
       // delete it
-      blueprintManager.delBlueprint(blueprint);
+      try {
+        blueprintManager.delBlueprint(blueprint);
+      } catch (IOException e) {
+        // FIXME show a warning dialog
+      }
       // show it
       model.fireStructureChanged();
       // done

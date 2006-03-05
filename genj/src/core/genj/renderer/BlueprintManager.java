@@ -87,31 +87,31 @@ public class BlueprintManager {
       while (names.hasMoreTokens()) {
         String name = names.nextToken();
         String html =  resources.getString("blueprints."+tag+"."+name);
-        addBlueprint(new Blueprint(tag, name, html.toString(), true));
+        try {
+          addBlueprint(new Blueprint(tag, name, html.toString(), true));
+        } catch (IOException e) {
+          // can't happen
+        }
       }
       
     }
     
     // try to load old style blueprints from registry
     Registry registry = Registry.lookup("genj", null);
-    // load user-defined blueprints (from registry)
-    try {
-      for (int t=0;t<Gedcom.ENTITIES.length;t++) {
-        String tag = Gedcom.ENTITIES[t];
-        StringTokenizer names = new StringTokenizer(registry.get("options.blueprints."+tag,""));
-        while (names.hasMoreTokens()) {
-          String name = names.nextToken();
-          String html = registry.get("options.blueprints."+tag+"."+name, (String)null);
-          if (html!=null&&html.length()>0)
-            saveBlueprint(addBlueprint(new Blueprint(tag, name, html, false)));
+    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+      String tag = Gedcom.ENTITIES[t];
+      StringTokenizer names = new StringTokenizer(registry.get("options.blueprints."+tag,""));
+      while (names.hasMoreTokens()) {
+        String name = names.nextToken();
+        String html = registry.get("options.blueprints."+tag+"."+name, (String)null);
+        if (html!=null&&html.length()>0) try {
+          addBlueprint(new Blueprint(tag, name, html, false));
+        } catch (IOException e) {
+          LOG.log(Level.WARNING, "converting old-style blueprint '"+name+"' failed",e);
         }
       }
-      
-      // remove old-style settings
-      registry.remove("options.blueprints");
-    } catch (Throwable t) {
-      LOG.log(Level.WARNING, "couldn't convert old-style blueprints",t);
     }
+    registry.remove("options.blueprints");
     
     // load user defined blueprints from disk
     loadBlueprints();
@@ -129,32 +129,36 @@ public class BlueprintManager {
   /**
    * Resolve blueprint filename
    */
-  private File getBlueprintFile(Blueprint blueprint) {
-    return new File(getBlueprintDirectory(), "/"+blueprint.getTag()+"/"+blueprint.getName()+SUFFIX); 
+  private File getBlueprintFile(Blueprint blueprint) throws IOException {
+    // check for quotes in there
+    if (blueprint.getName().indexOf('\"')>=0)
+      throw new IOException("Quotes are not allowed in blueprint names");
+    return new File(getBlueprintDirectory(), "/"+blueprint.getTag()+"/"+blueprint.getName()+SUFFIX).getCanonicalFile(); 
   }
   
   /**
    * Save a blueprint to disk
    */
-  /*package*/ boolean saveBlueprint(Blueprint blueprint) {
+  /*package*/ void saveBlueprint(Blueprint blueprint) throws IOException {
+    
+    // necessary?
+    if (!blueprint.isDirty())
+      return;
     
     // put it back to where it belongs
     File file = getBlueprintFile(blueprint); 
     File parent = file.getParentFile();
     parent.mkdirs();
     if (!parent.exists()||!parent.isDirectory())
-      return false;
+      throw new IOException("Cannot create folder for blueprint "+blueprint.getName());
     
-    try {
-      readwrite(new StringReader(blueprint.getHTML()), new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
-      LOG.log(Level.INFO, "saved blueprint "+file);
-    } catch (IOException e) {
-      LOG.log(Level.WARNING, "unexpected throwable saving blueprint "+file, e);
-      return false;
-    }
+    readwrite(new StringReader(blueprint.getHTML()), new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
+    
+    blueprint.clearDirty();
+    
+    LOG.log(Level.INFO, "saved blueprint "+file);
     
     // done
-    return true;
   }
   
   /**
@@ -189,17 +193,19 @@ public class BlueprintManager {
       return;
     
     // loop over blueprints
-    File[] blueprints = dir.listFiles();
-    for (int b=0;b<blueprints.length;b++) {
+    File[] files = dir.listFiles();
+    for (int b=0;b<files.length;b++) {
       
       // check name of blueprint
-      File blueprint = blueprints[b];
-      String name = blueprint.getName();
-      if (!name.endsWith(SUFFIX))
+      File file = files[b];
+      String name = file.getName();
+      if (!name.endsWith(SUFFIX)||file.isDirectory())
         continue;
       name = name.substring(0, name.length()-SUFFIX.length());
       
-      addBlueprint(loadBlueprint(new FileInputStream(blueprint), tag, name, false));
+      Blueprint blueprint = loadBlueprint(new FileInputStream(file), tag, name, false);
+      blueprint.clearDirty();
+      addBlueprint(blueprint);
       
     }
     
@@ -281,15 +287,12 @@ public class BlueprintManager {
   
   /**
    * Adds a blueprint   */
-  public Blueprint addBlueprint(Blueprint blueprint) {
+  public Blueprint addBlueprint(Blueprint blueprint) throws IOException {
     
-    // patch name - no slashes and colons etc.
-    String name = blueprint.getName();
-    char[] replace = { '\\', '/', ':', '*', '?', '\"', '<', '>', '|' };
-    for (int i=0;i<replace.length;i++)
-      name = name.replace(replace[i], '-');
-    blueprint.setName(name);
-          
+    // try calculating its filename - just for test in case it's !readOnly
+    if (!blueprint.isReadOnly())
+      getBlueprintFile(blueprint);
+    
     // keep it overriding same name unless read-only
     List blueprints = getBlueprintsInternal(blueprint.getTag());
     for (ListIterator it=blueprints.listIterator(); it.hasNext(); ) {
@@ -298,12 +301,16 @@ public class BlueprintManager {
       if (other.getName().equalsIgnoreCase(blueprint.getName())) {
         // don't allow if read only
         if (other.isReadOnly())
-          return other;
-        // exchange
-        it.set(blueprint);
-        return blueprint;
+          throw new IOException("Can't override read-only blueprint");
+        // remove
+        it.remove();
+        break;
       }
     }
+    
+    // save it
+    if (!blueprint.isReadOnly())
+      saveBlueprint(blueprint);
     
     // keep it
     blueprints.add(blueprint);
@@ -314,16 +321,14 @@ public class BlueprintManager {
   
   /**
    * Deletes a blueprint   */
-  public void delBlueprint(Blueprint blueprint) {
+  public void delBlueprint(Blueprint blueprint) throws IOException {
     // allowed?
     if (blueprint.isReadOnly()) 
-      throw new IllegalArgumentException("Can't delete read-only Blueprint");
+      throw new IOException("Can't delete read-only Blueprint");
     // remove it from disk
     if (!blueprint.isReadOnly()) {
-      if (!getBlueprintFile(blueprint).delete()) {
-        LOG.warning("Couldn't delete blueprint "+blueprint);
-        return;
-      }
+      if (!getBlueprintFile(blueprint).delete()) 
+        throw new IOException("Couldn't delete blueprint "+blueprint);
     }
     // remove it
     getBlueprintsInternal(blueprint.getTag()).remove(blueprint);
