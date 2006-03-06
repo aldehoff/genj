@@ -237,10 +237,10 @@ public class FileChooserWidget extends JPanel {
       if (file!=null)  {
         setFile(file);
         directory = file.getParent();
+        
+        // notify
+        fireActionEvent();
       }
-      
-      // notify
-      fireActionEvent();
       
       // done
     }
