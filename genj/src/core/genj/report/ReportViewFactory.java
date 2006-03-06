@@ -32,6 +32,7 @@ import genj.view.ViewManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.JComponent;
 
@@ -100,9 +101,13 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
     Report[] reports = ReportLoader.getInstance().getReports();
     for (int r=0;r<reports.length;r++) {
       Report report = reports[r];
-      String accept = report.accepts(context); 
-      if (accept!=null)
-        result.add(new ActionRun(accept, context, gedcom, report, manager));
+      try {
+        String accept = report.accepts(context); 
+        if (accept!=null)
+          result.add(new ActionRun(accept, context, gedcom, report, manager));
+      } catch (Throwable t) {
+        ReportView.LOG.log(Level.WARNING, "Report "+report.getClass().getName()+" failed in accept()", t);
+      }
     }
     // done
     return result;

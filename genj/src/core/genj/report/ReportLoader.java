@@ -124,7 +124,12 @@ import java.util.logging.Level;
     // sort 'em
     Collections.sort(instances, new Comparator() { 
       public int compare(Object a, Object b) {
-        return ((Report)a).getName().compareTo(((Report)b).getName());
+        // 20063008 this can actually fail if the report is bad
+        try {
+          return ((Report)a).getName().compareTo(((Report)b).getName());
+        } catch (Throwable t) {
+          return 0;
+        }
       }
     });
     
