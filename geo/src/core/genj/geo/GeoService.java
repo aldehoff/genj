@@ -371,14 +371,11 @@ public class GeoService {
       // loop over files 
       File[] files = getGeoFiles();
       for (int i=0;i<files.length;i++) {
-        // only directories - later zip files as well
-        if (!files[i].isDirectory())
-          continue;
         // 20050504 don't consider directory 'CVS'
         if (files[i].getName().equals("CVS"))
           continue;
-        // add it to available maps
-        try {
+        // add it to available maps if directory or zip
+        if (files[i].isDirectory()||files[i].getName().endsWith(".zip")) try {
           maps.add(new GeoMap(files[i]));
         } catch (Throwable t) {
           LOG.log(Level.SEVERE, "problem reading map from "+files[i], t);

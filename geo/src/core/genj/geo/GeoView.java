@@ -61,6 +61,7 @@ import javax.swing.ToolTipManager;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jump.feature.Feature;
 import com.vividsolutions.jump.feature.FeatureCollection;
 import com.vividsolutions.jump.feature.FeatureSchema;
 import com.vividsolutions.jump.workbench.model.FeatureEventType;
@@ -430,6 +431,12 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     /** selection access */
     public List getFeatures() {
+      if (!selection.isEmpty()) {
+        GeoLocation one = (GeoLocation)selection.iterator().next();
+        FeatureSchema schema = getFeatureSchema();
+        int i =0;
+        //one.setAttribute(getFeatureSchema().getAttributeIndex())
+      }
       return selection;
     }
     
@@ -554,7 +561,13 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     /** feature collection - feature access */
     public List query(Envelope envelope) {
-      return getFeatures();
+      ArrayList result = new ArrayList(locations.size());
+      for (Iterator it = locations.iterator(); it.hasNext();) {
+        Feature feature = (Feature) it.next();
+        if (feature.getGeometry().getEnvelopeInternal().intersects(envelope)) 
+          result.add(feature);
+      }
+      return result;
     }
     
   } //LocationsLayer
