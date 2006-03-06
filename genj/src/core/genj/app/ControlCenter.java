@@ -825,24 +825,29 @@ public class ControlCenter extends JPanel {
    */
   private class ActionAutoOpen extends Action2 {
     /** files to load */
-    private Set files;
+    private Collection files;
     /** constructor */
-    private ActionAutoOpen(String[] files) {
+    private ActionAutoOpen(String[] args) {
+      
+      // if we got files then we don't open old ones
+      if (args.length>0) {
+        files = Arrays.asList(args);
+        return;
+      }
       
       // by default we offer the user to load example.ged
       HashSet deflt = new HashSet();
-      if (files.length==0) try {
+      if (args.length==0) try {
         deflt.add(new File("gedcom/example.ged").toURL());
       } catch (Throwable t) {
         // ignored
       }
 
       // check registry for the previously opened now
-      this.files = (Set)registry.get("open", deflt);
+      files = (Set)registry.get("open", deflt);
       
-      // and add the argument as well
-      this.files.addAll(Arrays.asList(files));
     }
+    
     /** run */
     public void execute() {
 
