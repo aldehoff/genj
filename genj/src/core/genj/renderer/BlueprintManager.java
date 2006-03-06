@@ -261,10 +261,11 @@ public class BlueprintManager {
         return bp;   	
     }
     // not found - try origin
+    String local = "blueprints/"+tag+"/"+name+SUFFIX;
     try {
-      return loadBlueprint(origin.open("blueprints/"+tag+"/name"+SUFFIX), tag, name, true);
+      return loadBlueprint(origin.open(local), tag, name, true);
     } catch (IOException e) {
-      LOG.log(Level.WARNING, "Failed to load blueprint "+tag+"/"+name+" from "+origin, e);
+      LOG.log(Level.WARNING, "Failed to load blueprint "+local+" from "+origin, e);
     }
     // fallback try first
     return (Blueprint)bps.get(0);
