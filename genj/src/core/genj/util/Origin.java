@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -172,6 +173,11 @@ public abstract class Origin {
   }
   
   /**
+   * Lists the files available at this origin if that information is available
+   */
+  public abstract String[] list() throws IOException ;
+  
+  /**
    * Returns the Origin as a File. For remote origins
    * this will be a local representation of the file.
    * [new File(file://d:/gedcom/example.ged)]
@@ -207,6 +213,8 @@ public abstract class Origin {
    */
   public String getName() {
     String path = back2forwardslash(url.toString());
+    if (path.endsWith(""+FSLASH))
+      path = path.substring(0, path.length()-1);
     return path.substring(path.lastIndexOf(FSLASH)+1);
   }
   
@@ -272,6 +280,18 @@ public abstract class Origin {
       }
 
     }
+
+    /**
+     * list directory of origin if file
+     */
+    public String[] list() {
+      if (!isFile()) 
+        throw new IllegalArgumentException("list() not supported by url protocol");
+      File dir = getFile();
+      if (!dir.isDirectory())
+        dir = dir.getParentFile();
+      return dir.list();
+    }
     
     /**
      * @see genj.util.Origin#isFile()
@@ -325,6 +345,21 @@ public abstract class Origin {
     }
 
     /**
+     * list directory of origin if file
+     */
+    public String[] list() throws IOException {
+      ArrayList result = new ArrayList();
+      ZipInputStream in  = openImpl();
+      while (true) {
+        ZipEntry entry = in.getNextEntry();
+        if (entry==null) break;
+        result.add(entry.getName());
+      }
+      in.close();
+      return (String[]) result.toArray(new String[result.size()]);
+    }
+    
+    /**
      * @see genj.util.Origin#open()
      */
     public InputStream open() throws IOException {
@@ -340,17 +375,26 @@ public abstract class Origin {
     }
     
     /**
-     * @see genj.util.Origin#openImpl(java.lang.String)
+     * open the zip input stream
      */
-    protected InputStream openImpl(String file) throws IOException {
-
+    private ZipInputStream openImpl() throws IOException {
+      
       // We either load from cached bits or try to open the connection
       if (cachedBits==null) {
         cachedBits = new ByteArray(url.openConnection().getInputStream()).getBytes();
       }
 
       // Then we can read the zip from the cached bits
-      ZipInputStream zin = new ZipInputStream(new ByteArrayInputStream(cachedBits));
+      return new ZipInputStream(new ByteArrayInputStream(cachedBits));
+
+    }
+    
+    /**
+     * @see genj.util.Origin#openImpl(java.lang.String)
+     */
+    protected InputStream openImpl(String file) throws IOException {
+
+       ZipInputStream zin = openImpl();
 
       // .. loop through files
       for (ZipEntry zentry = zin.getNextEntry();zentry!=null;zentry=zin.getNextEntry()) {
