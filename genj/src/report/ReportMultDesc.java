@@ -191,9 +191,9 @@ public class ReportMultDesc extends Report {
       // output the spouse
       output.startSpouse(doc);
         if (fams.length==1)
-    	    format(spouse,fam,"x", localPolicy, doc); 
+    	    format(spouse,fam,num+"x", localPolicy, doc); 
     	else 
-    	    format(spouse,fam,"x"+(f+1), localPolicy, doc); 
+    	    format(spouse,fam,num+"x"+(f+1), localPolicy, doc); 
 
       // put out a link if we've seen the spouse already
       if (done.containsKey(fam)) {
@@ -240,11 +240,11 @@ public class ReportMultDesc extends Report {
     output.name(policy.getDisplayValue(indi, "NAME"),doc);
     output.id(indi.getId(),doc);
 
-    String birt = format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
-    String marr = fam!=null ? format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "";
-    String deat = format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, policy);
-    String occu = format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu, policy);
-    String resi = format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi, policy);
+    String birt = output.format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
+    String marr = fam!=null ? output.format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "";
+    String deat = output.format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, policy);
+    String occu = output.format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu, policy);
+    String resi = output.format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi, policy);
     PropertyMultilineValue addr = reportMailingAddress ? indi.getAddress() : null;
     if (addr != null && policy.isPrivate(addr)) addr = null;
 
@@ -257,6 +257,7 @@ public class ReportMultDesc extends Report {
     	output.event(infos[i],doc);
     }
 	if (addr != null) {
+		output.addressPrefix(doc);
 		String[] lines = addr.getLines();
 		for (int i = 0; i < lines.length; i++) {
 			output.event(lines[i],doc);
@@ -266,22 +267,6 @@ public class ReportMultDesc extends Report {
     // done
   }
   
-  /**
-   * convert given prefix, date and place switches into a format string
-   */
-  private String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
-    
-    Property prop = e.getProperty(tag);
-    if (prop == null)
-      return "";
-
-    String format = prefix + (date ? "{ $D}" : "")
-        + (place && showAllPlaceJurisdictions ? "{ $P}" : "")
-        + (place && !showAllPlaceJurisdictions ? "{ $p}" : "");
-
-    return prop.format(format, policy);
-
-  }
   abstract class Output{
 	  abstract void title(Indi indi, Document doc);
 	  abstract void statistiques(Document doc);
@@ -296,6 +281,7 @@ public class ReportMultDesc extends Report {
 	  abstract void endEvents(Document doc);
 	  abstract void event(String event, Document doc);
 	  abstract void number(String num, Document doc);
+	  abstract void addressPrefix(Document doc);
 	  
 	  private HashMap format(Indi indi, Fam fam, String prefix, PrivacyPolicy policy) {
 		  HashMap result = new HashMap();
@@ -317,13 +303,13 @@ public class ReportMultDesc extends Report {
 	  /**
 	   * convert given prefix, date and place switches into a format string
 	   */
-	  private String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
+	  String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
 	    
 	    Property prop = e.getProperty(tag);
 	    if (prop == null)
 	      return "";
 
-	    String format = prefix + (date ? "{ $D}" : "")
+	    String format = prefix + "{ $v}"+(date ? "{ $D}" : "")
 	        + (place && showAllPlaceJurisdictions ? "{ $P}" : "")
 	        + (place && !showAllPlaceJurisdictions ? "{ $p}" : "");
 
@@ -396,6 +382,9 @@ public class ReportMultDesc extends Report {
 	      doc.addText(event);
 	      isFirstEvent = false;
 	  }
+	  void addressPrefix(Document doc){
+	      doc.addText(translate("AddressPrefix"));
+	  }
   }
 	  
   // Loop through individuals & families
@@ -404,6 +393,10 @@ public class ReportMultDesc extends Report {
   
   class OutputTable extends Output{
 
+	  String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
+		  return super.format(e,tag,"",date,place,policy);
+	  }
+	  
 	void title(Indi indi, Document doc) {
 		  doc.startTable("genj:csv=true");
 		  
@@ -430,7 +423,7 @@ public class ReportMultDesc extends Report {
 		  doc.addText( Gedcom.getName("OCCU"),FORMAT_STRONG );
 		  doc.nextTableCell();
 		  doc.addText( Gedcom.getName("RESI"),FORMAT_STRONG );
-/*		  doc.nextTableCell();
+		  doc.nextTableCell();
 		  doc.addText( translate("addr1.col"),FORMAT_STRONG );
 		  doc.nextTableCell();
 		  doc.addText( translate("addr2.col"),FORMAT_STRONG );
@@ -440,7 +433,7 @@ public class ReportMultDesc extends Report {
 		  doc.addText( translate("addr4.col"),FORMAT_STRONG );
 		  doc.nextTableCell();
 		  doc.addText( translate("addr5.col"),FORMAT_STRONG );
-	*/}
+	}
 
 	void statistiques(Document doc) {
 		  doc.startSection( translate("title.stats") );
@@ -501,6 +494,9 @@ public class ReportMultDesc extends Report {
 	void number(String num, Document doc) {
 		doc.nextTableCell();
 		doc.addText(num);
+	}
+	
+	void addressPrefix(Document doc){
 	}
   }
 } // ReportMulDesv
