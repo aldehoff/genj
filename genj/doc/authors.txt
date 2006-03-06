@@ -13,6 +13,7 @@ The people behind GenJ (alphabetically):
       . Thierry Hardy
       . Jerome Hettich
       . Daniel P. Kionka
+      . Przemek Wiech
       
     Contributors :
       . Stuart Grimshaw
@@ -22,13 +23,14 @@ The people behind GenJ (alphabetically):
       . Sean Timm
 
     Translators :
-      . Alex Evdokimenko (Russian translation)
-      . Nestor Garcia (Spanish translation)
-      . Mauricio Girardi (Brazilian portuguese)
-      . Frantisek Grebenicek (Czech translation)
-      . Theo Guelcher (Dutch translation) 
-      . Pere Jover (Spanish translation)
-      . Francois Massonneau (French translation)
-      . Carsten Muessig (German translation) 
-      . Marcus Sandberg (German translation)
+      . Alex Evdokimenko (Russian)
+      . Nestor Garcia (Spanish)
+      . Mauricio Girardi (Brazilian Portuguese)
+      . Frantisek Grebenicek (Czech)
+      . Theo Guelcher (Dutch) 
+      . Pere Jover (Spanish)
+      . Francois Massonneau (French)
+      . Carsten Muessig (German) 
+      . Marcus Sandberg (German)
+      . Przemek Wiech (Polish)
       
