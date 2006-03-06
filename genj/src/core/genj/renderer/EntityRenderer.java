@@ -339,8 +339,8 @@ public class EntityRenderer {
         
       }
       
-      // maybe its "tag"
-      if ("i18n".equals(name)) {
+      // maybe its "name" or "i18n"
+      if ("name".equals(name)||"i18n".equals(name)) {
         return new I18NView(elem);
       }
         
@@ -586,14 +586,13 @@ public class EntityRenderer {
      * Constructor     */
     private I18NView(Element elem) {
       super(elem);
-      // resolve and localize text .. tag
+      // resolve and localize text .. tag|entity
       Object o = elem.getAttributes().getAttribute("tag");
       if (o!=null) txt = Gedcom.getName(o.toString());
-      // resolve and localize text .. type
-      o = elem.getAttributes().getAttribute("entity");
-      if (o!=null) try {
-        txt = Gedcom.getName(o.toString(), false);
-      } catch (IllegalArgumentException e) {}
+      else {
+        o = elem.getAttributes().getAttribute("entity");
+        if (o!=null) txt = Gedcom.getName(o.toString());
+      }
       // done
     }
     /**
