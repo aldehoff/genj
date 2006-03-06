@@ -22,7 +22,7 @@ package gj.shell;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.shell.model.Graph;
-import gj.shell.swing.UnifiedAction;
+import gj.shell.swing.Action2;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
@@ -62,7 +62,7 @@ public class AlgorithmWidget extends JPanel {
     actionSelect = new ActionSelect();
     
   /** listeners */
-  private List alisteners = new ArrayList(); 
+  private List<ActionListener> alisteners = new ArrayList<ActionListener>(); 
 
   /**
    * Constructor
@@ -148,8 +148,12 @@ public class AlgorithmWidget extends JPanel {
   /**
    * How to handle - Run the algorithm
    */
-  protected class ActionExecute extends UnifiedAction {
-    protected ActionExecute() { super("Execute"); setEnabled(false); }
+  protected class ActionExecute extends Action2 {
+    protected ActionExecute() { 
+      super("Execute"); 
+      setEnabled(false); 
+    }
+    @Override
     public void execute() throws LayoutAlgorithmException {
       if (getSelectedAlgorithm()==null) 
         return;
@@ -165,8 +169,11 @@ public class AlgorithmWidget extends JPanel {
   /**
    * How to handle - Select an algorithm
    */
-  protected class ActionSelect extends UnifiedAction {
-    protected ActionSelect() { super("Select"); }
+  protected class ActionSelect extends Action2 {
+    protected ActionSelect() { 
+      super("Select"); 
+    }
+    @Override
     public void execute() {
       // get the selected algorithm
       Object algorithm = comboAlgorithms.getModel().getSelectedItem();

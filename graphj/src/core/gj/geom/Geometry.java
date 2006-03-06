@@ -69,10 +69,10 @@ public class Geometry {
    * For non-'parallel' shapes the result is Double.MAX_VALUE.
    * @param shape1 first shape
    * @param shape2 second shape
-   * @param axis degree of axis
+   * @param axis angle of axis in bogenmass where zero is up
    * @return distance
    */
-  public static double getDistance(ResettablePathIterator shape1, ResettablePathIterator shape2, double axis) {
+  public static double getDistance(Shape shape1, Shape shape2, double axis) {
     return new OpShapeShapeDistance(shape1, shape2, axis).getResult();
   }
   
@@ -81,28 +81,24 @@ public class Geometry {
    */
   private static class OpShapeShapeDistance extends SegmentConsumer {
     
-    private double result = Double.MAX_VALUE;
-    
-    /** the current shape we're calculating distance for */
-    private ResettablePathIterator shape;
+    private double result = Double.POSITIVE_INFINITY;
     
     /** the axis vector we're measuring distance on */
     private Point2D vector;
+
+    /** the current shape we're intersecting against */
+    private Shape intersectWith;
     
     private Line2D line;
     
     /**
      * Constructor
      */
-    protected OpShapeShapeDistance(ResettablePathIterator shape1, ResettablePathIterator shape2, double axis) throws IllegalArgumentException {
+    protected OpShapeShapeDistance(Shape shape1, Shape shape2, double axis) throws IllegalArgumentException {
 
       // calculate
       Rectangle2D area = getBounds(shape2, getBounds(shape1, null));
       double span = getLength(area.getWidth(), area.getHeight());
-      
-      // reset iterators!
-      shape1.reset();
-      shape2.reset();
       
       // keep an axis vector
       vector = new Point2D.Double(
@@ -111,13 +107,12 @@ public class Geometry {
       );
       
       // iterate over shape1 intersecting lines along the axis with shape2
-      shape = shape2;
-      ShapeHelper.iteratePath(new FlatteningPathIterator(shape1, DEFAULT_FLATNESS), this);
-      shape1.reset();
+      intersectWith = shape2;
+      ShapeHelper.iterateShape(new FlatteningPathIterator(shape1.getPathIterator(null), DEFAULT_FLATNESS), this);
       
       // iterate over shape2 intersecting lines along the axis with shape1
-      shape = shape1;
-      ShapeHelper.iteratePath(new FlatteningPathIterator(shape2, DEFAULT_FLATNESS), this);
+      intersectWith = shape1;
+      ShapeHelper.iterateShape(new FlatteningPathIterator(shape2.getPathIterator(null), DEFAULT_FLATNESS), this);
       
       // done
     }
@@ -132,6 +127,7 @@ public class Geometry {
     /**
      * only expecting lines to consume
      */
+    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       
       // create a line along axis going through 'end' 
@@ -140,11 +136,8 @@ public class Geometry {
         b = new Point2D.Double(end.getX()-vector.getX(), end.getY()-vector.getY());
 
       // intersect line (a,b) with shape
-      ArrayList is = new ArrayList(10);
-      getIntersections(a, b, shape, is);
-      
-      // reset shape's path iterator
-      shape.reset();
+      ArrayList<Point2D> is = new ArrayList<Point2D>(10);
+      getIntersections(a, b, intersectWith, is);
       
       // calculate smallest distance
       if (is.size()>0) {
@@ -192,7 +185,7 @@ public class Geometry {
       lineEndY   = lineEnd.getY();
       // iterate over line segments in shape
       PathIterator it = new FlatteningPathIterator(shape, DEFAULT_FLATNESS);
-      ShapeHelper.iteratePath(it, this);
+      ShapeHelper.iterateShape(it, this);
       // done
     }
     
@@ -207,6 +200,7 @@ public class Geometry {
      * Callback - since we're using a flattening path iterator
      * only lines have to be consumed
      */
+    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       // calculate distance of line segment's start/end
       delta = Math.min(delta, Line2D.ptLineDist(lineStartX, lineStartY, lineEndX, lineEndY, start.getX(), start.getY()));
@@ -237,7 +231,7 @@ public class Geometry {
      */
     protected OpPointShapeDistance(Point2D point, PathIterator shape) {
       this.point = point;
-      ShapeHelper.iteratePath(new FlatteningPathIterator(shape, DEFAULT_FLATNESS), this);
+      ShapeHelper.iterateShape(new FlatteningPathIterator(shape, DEFAULT_FLATNESS), this);
     }
     
     /**
@@ -250,6 +244,7 @@ public class Geometry {
     /**
      * @see gj.geom.SegmentConsumer#consumeLine(java.awt.geom.Point2D, java.awt.geom.Point2D)
      */
+    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       
       double distance = Line2D.ptSegDist(start.getX(), start.getY(), end.getX(), end.getY(), point.getX(), point.getY());
@@ -340,11 +335,11 @@ public class Geometry {
    * Calculates the intersecting points of a line and a shape
    * @param lineStart start of line
    * @param lineEnd end of line
-   * @param shape the shape described as a PathIterator
+   * @param shape the shape
    * @return intersections with shape
    */
-  public static void getIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape, Collection result) {
-    new OpLineShapeIntersections(lineStart, lineEnd, shape, result);
+  public static void getIntersections(Point2D lineStart, Point2D lineEnd, Shape shape, Collection<Point2D> result) {
+    new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(null), result);
   }
   
   /**
@@ -355,8 +350,8 @@ public class Geometry {
    * @param shape the shape 
    * @return intersection with shape
    */
-  public static void getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape, Collection result) {
-    getIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())), result);
+  public static void getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape, Collection<Point2D> result) {
+    new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())), result);
   }
   
   /**
@@ -365,7 +360,7 @@ public class Geometry {
   private static class OpLineShapeIntersections extends SegmentConsumer {
     
     /** the intersections */
-    private Collection result;
+    private Collection<Point2D> result;
     
     /** it's distance */
     private double distance = Double.MAX_VALUE;
@@ -376,14 +371,14 @@ public class Geometry {
     /**
      * Constructor
      */
-    protected OpLineShapeIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape, Collection result) {
+    protected OpLineShapeIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape, Collection<Point2D> result) {
       // remember
       this.lineStart = lineStart;
       this.lineEnd   = lineEnd;
       this.result    = result;
       // iterate over line segments in shape
       PathIterator it = new FlatteningPathIterator(shape, DEFAULT_FLATNESS);
-      ShapeHelper.iteratePath(it, this);
+      ShapeHelper.iterateShape(it, this);
       // done
     }
     
@@ -391,6 +386,7 @@ public class Geometry {
      * Callback - since we're using a flattening path iterator
      * only lines have to be consumed
      */
+    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       Point2D p = getIntersection(lineStart, lineEnd, start, end);
       if (p!=null) 
@@ -516,8 +512,8 @@ public class Geometry {
   /**
    * Calculate the 2D bounds of given iterator
    */
-  public static Rectangle2D getBounds(PathIterator it, Rectangle2D result) {
-  	return new OpShapeBounds(it, result).getResult();
+  public static Rectangle2D getBounds(Shape shape, Rectangle2D result) {
+  	return new OpShapeBounds(shape, result).getResult();
   }
 
   /**
@@ -530,9 +526,9 @@ public class Geometry {
     /**
      * Constructor
      */
-    protected OpShapeBounds(PathIterator it, Rectangle2D result) {
+    protected OpShapeBounds(Shape shape, Rectangle2D result) {
       this.result = result;
-      ShapeHelper.iteratePath(it, this);
+      ShapeHelper.iterateShape(shape.getPathIterator(null), this);
     }
     
     /**
@@ -550,6 +546,7 @@ public class Geometry {
       }
     }
     
+    @Override
     public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
       add(start);
       add(ctrl1);
@@ -557,11 +554,13 @@ public class Geometry {
       add(end);
       return true;
     }
+    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       add(start);
       add(end);
       return true;
     }
+    @Override
     public boolean consumeQuadCurve(Point2D start, Point2D ctrl, Point2D end) {
       add(start);
       add(ctrl);

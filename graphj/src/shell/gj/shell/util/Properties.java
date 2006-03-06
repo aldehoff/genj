@@ -149,7 +149,7 @@ public class Properties {
     Class target = def.getClass().getComponentType();  
     
     // Loop
-    List result = new ArrayList();
+    List<Object> result = new ArrayList<Object>();
     
     try {
 	    for (int i = 0; i<types.length; i++) {
@@ -292,6 +292,7 @@ public class Properties {
   /**
    * String representation
    */
+  @Override
   public String toString() {
     return content.toString();
   }

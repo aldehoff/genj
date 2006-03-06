@@ -29,6 +29,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * GraphFactory - a directed graph creation
@@ -112,6 +113,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
   /**
    * @see gj.shell.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
    */
+  @Override
   public Graph create(Rectangle2D bounds) {
     
     // create graph
@@ -149,7 +151,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   private void createArcs(Graph graph) {
   
-    List nodes = new ArrayList(graph.getVertices());
+    List<Vertex> nodes = new ArrayList<Vertex>((Set<Vertex>)graph.getVertices());
     
     // No Nodes?
     if (nodes.isEmpty())
@@ -184,7 +186,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   private void ensureMinDegree(Graph graph) {
     
-    List nodes = new ArrayList(graph.getVertices());
+    List<Vertex> nodes = new ArrayList<Vertex>(graph.getVertices());
     
     // validate minDegree - maximum n-1 so that there
     // are always enough nodes to connect to without dups
@@ -195,12 +197,12 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
     while (true) {
       
       // .. there's a node with deg(n)<minDegree
-      Vertex vertex = (Vertex)getMinDegNode(graph, nodes, false);
+      Vertex vertex = getMinDegNode(graph, nodes, false);
       if (graph.getNeighbours(vertex).size()>=minDegree) 
         break;
       
       // we don't want to connect to a neighbour
-      List others = new LinkedList(nodes);
+      List<Vertex> others = new LinkedList<Vertex>(nodes);
       others.removeAll(graph.getNeighbours(vertex));
       
       // find other
@@ -231,12 +233,12 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   protected void ensureConnected(Graph graph) {
     
-    List nodes = new LinkedList(graph.getVertices());
+    List<Vertex> nodes = new LinkedList<Vertex>(graph.getVertices());
     
     while (nodes.size()>1) {
-      Vertex from = (Vertex)getMinDegNode(graph,nodes,true);
+      Vertex from = getMinDegNode(graph,nodes,true);
       if (!ModelHelper.isNeighbour(graph,from,nodes)) {
-        Vertex to = (Vertex)getMinDegNode(graph, nodes,false);
+        Vertex to = getMinDegNode(graph, nodes,false);
         graph.addEdge(from, to, null);
       }
     }

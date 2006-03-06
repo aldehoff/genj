@@ -52,14 +52,17 @@ public abstract class SegmentConsumer {
 
   private static class DebugSegmentConsumer extends SegmentConsumer {
     
+    @Override
     public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
       System.out.println("cubic:"+start+">"+ctrl1+">"+ctrl2+">"+end);
       return true;
     }
+    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       System.out.println("line:"+start+">"+end);
       return true;
     }
+    @Override
     public boolean consumeQuadCurve(Point2D start, Point2D ctrl, Point2D end) {
       System.out.println("quad:"+start+">"+ctrl+">"+end);
       return true;

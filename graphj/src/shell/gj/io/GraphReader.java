@@ -59,10 +59,9 @@ public class GraphReader implements PathIteratorKnowHow  {
   private Graph result;
 
   /** identity support */
-  private Map 
-    id2vertex = new HashMap(),
-    id2edge = new HashMap(),
-    id2shape = new HashMap();
+  private Map<String,Vertex> id2vertex = new HashMap<String,Vertex>();
+  private Map<String,Edge>  id2edge = new HashMap<String,Edge>();
+  private Map<String,Shape> id2shape = new HashMap<String,Shape>();
 
   /**
    * Constructor
@@ -127,6 +126,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     protected GraphHandler(Graph grAph) {
       graph = grAph;
     }
+    @Override
     protected ElementHandler start(String name, Attributes atts) {
       if ("node".equals(name)||"vertex".equals(name)) return new VertexHandler(graph, atts);
       if ("arc".equals(name)||"edge".equals(name)) return new EdgeHandler(graph, atts);
@@ -163,6 +163,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       id2vertex.put(id, v);
       // done
     }
+    @Override
     protected ElementHandler start(String name, Attributes atts) {
       error(name+" not allowed in vertex");
       return this;
@@ -182,6 +183,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       edge = graph.addEdge(s, e, null);
       id2edge.put(atts.getValue("id"),edge);
     }
+    @Override
     protected ElementHandler start(String name, Attributes atts) {
       if ("shape".equals(name)) {
         shapeHandler = new ShapeHandler(atts);
@@ -189,6 +191,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       }
       return this;
     }
+    @Override
     protected void end(String name) {
       if (shapeHandler!=null) {
         edge.setShape(shapeHandler.getResult());
@@ -207,6 +210,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     protected ShapeHandler(Attributes atts) {
       id = atts.getValue("id");
     }
+    @Override
     protected ElementHandler start(String name, Attributes atts) {
       for (int i=0;i<SEG_NAMES.length;i++) {
         if (SEG_NAMES[i].equals(name)) {
@@ -219,6 +223,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       }
       return this;
     }
+    @Override
     protected void end(String name) {
       if (!"shape".equals(name)) return;
       values[size++]=-1;
@@ -237,7 +242,7 @@ public class GraphReader implements PathIteratorKnowHow  {
    */
   private final class XMLHandler extends DefaultHandler {
     
-    private Stack stack = new Stack();
+    private Stack<ElementHandler> stack = new Stack<ElementHandler>();
     
     /**
      * Constructor
@@ -249,6 +254,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     /**
      * @see org.xml.sax.ContentHandler#startElement(String, String, String, Attributes)
      */
+    @Override
     public void startElement(String namespaceURI,String localName,String qName,Attributes atts)throws SAXException {
       ElementHandler current = (ElementHandler)stack.peek();
       ElementHandler next = current.start(qName,atts);
@@ -259,6 +265,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     /**
      * @see org.xml.sax.ContentHandler#endElement(String, String, String)
      */
+    @Override
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
       ElementHandler current = (ElementHandler)stack.pop();
       current.end(qName);

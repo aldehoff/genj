@@ -19,7 +19,9 @@
  */
 package gj.shell.factory;
 
+import gj.shell.model.Edge;
 import gj.shell.model.Graph;
+import gj.shell.model.Vertex;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -56,19 +58,20 @@ public abstract class AbstractGraphFactory {
   /**
    * Helper that returns the node with minimum degree from a list
    */
-  protected Object getMinDegNode(Graph graph, List list, boolean remove) {
+  protected Vertex getMinDegNode(Graph graph, List<Vertex> list, boolean remove) {
     
     int pos = getRandomIndex(list.size());
 
-    Object result = list.get(pos);
+    Vertex result = list.get(pos);
     int min = graph.getNeighbours(result).size();
     
     for (int i=1;i<list.size();i++) {
-      Object other = list.get( (pos+i)%list.size() );
+      Vertex other = list.get( (pos+i)%list.size() );
       if (graph.getNeighbours(other).size()<min) 
         result=other;
     }
     if (remove) list.remove(result);
+    
     return result;
   }
   
@@ -84,7 +87,7 @@ public abstract class AbstractGraphFactory {
   /**
    * Helper that returns a random DefaultNode from a list
    */
-  protected Object getRandomNode(List list, boolean remove) {
+  protected Vertex getRandomNode(List<Vertex> list, boolean remove) {
     int i = getRandomIndex(list.size());
     return remove ? list.remove(i) : list.get(i);
   }
@@ -92,7 +95,7 @@ public abstract class AbstractGraphFactory {
   /**
    * Helper that returns a random DefaultArc from a list
    */
-  protected Object getRandomArc(List list, boolean remove) {
+  protected Object getRandomArc(List<Edge> list, boolean remove) {
     int i = getRandomIndex(list.size());
     return remove ? list.remove(i) : list.get(i);
   }
@@ -120,6 +123,7 @@ public abstract class AbstractGraphFactory {
   /**
    * @see java.lang.Object#toString()
    */
+  @Override
   public String toString() {
     String s = getClass().getName();
     return s.substring(s.lastIndexOf('.')+1);

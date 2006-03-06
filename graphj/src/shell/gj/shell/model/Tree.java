@@ -49,6 +49,7 @@ public class Tree extends Graph implements gj.model.Tree {
   /**
    * Validate
    */
+  @Override
   public void validate() {
     
     // empty is fine
@@ -61,7 +62,7 @@ public class Tree extends Graph implements gj.model.Tree {
       throw new IllegalArgumentException("graph doesn't contain root of tree");
 
     // look for cycles
-    Set visited = new HashSet();
+    Set<Vertex> visited = new HashSet<Vertex>();
     if (cycleCheck(null, root, visited))
     	throw new IllegalArgumentException("graph is not acyclic");
     
@@ -74,7 +75,7 @@ public class Tree extends Graph implements gj.model.Tree {
   /**
    * Find cycles
    */
-  private boolean cycleCheck(Vertex from, Vertex to, Set visited) {
+  private boolean cycleCheck(Vertex from, Vertex to, Set<Vertex> visited) {
     
     // to shouldn't have been visited before
     if (visited.contains(to)) 
@@ -100,6 +101,7 @@ public class Tree extends Graph implements gj.model.Tree {
   /** 
    * overriden - provide special stroke for root vertex
    */
+  @Override
   protected Stroke getStroke(Vertex vertex) {
     if (vertex!=getRootOfTree())
       return super.getStroke(vertex);

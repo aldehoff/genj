@@ -22,9 +22,6 @@ package gj.shell.swing;
 import java.awt.event.ActionEvent;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -35,7 +32,7 @@ import javax.swing.SwingUtilities;
 /**
  * A base Action for the shell
  */
-public abstract class UnifiedAction extends AbstractAction {
+public abstract class Action2 extends AbstractAction implements Runnable {
 
   /** async modes */
   public static final int 
@@ -53,20 +50,27 @@ public abstract class UnifiedAction extends AbstractAction {
   /** 
    * Constructor 
    */
-  protected UnifiedAction() {
+  protected Action2() {
   }
   
   /** 
    * Constructor 
    */
-  protected UnifiedAction(String name) {
+  protected Action2(String name) {
     super(name);
   }
   
   /**
-   * Callback - action was performed
+   * Callback - action needs to perform
    */
   public final void actionPerformed(ActionEvent e) {
+    trigger();
+  }
+  
+  /**
+   * Callback - action needs to perform
+   */
+  public void run() {
     trigger();
   }
   
@@ -101,14 +105,14 @@ public abstract class UnifiedAction extends AbstractAction {
   /**
    * Triggers the action
    */
-  public final UnifiedAction trigger() {
+  public final Action2 trigger() {
     
     int tasync = getAsync();
     
     // do we have to create a new instance?
     if (tasync==ASYNC_NEW_INSTANCE) {
       try {
-        UnifiedAction action = (UnifiedAction)clone();
+        Action2 action = (Action2)clone();
         action.setAsync(ASYNC_SAME_INSTANCE);
         return action.trigger();
       } catch (Throwable t) {
@@ -183,27 +187,6 @@ public abstract class UnifiedAction extends AbstractAction {
    */
   public boolean isSelected() {
     return false;    
-  }
-  
-  /**
-   * Returns this Action as a proxy for given interface callback
-   */
-  public Object as(Class contract) {
-    // has to be a contract by interface
-    if (!contract.isInterface()) 
-      throw new IllegalArgumentException("Interface expected");
-    // generate the Proxy
-    InvocationHandler ihandler = new InvocationHandler() {
-      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        trigger();
-        return null;
-      }
-    };
-    return Proxy.newProxyInstance(
-      getClass().getClassLoader(),
-      new Class[]{contract}, 
-      ihandler
-    );
   }
   
   /**

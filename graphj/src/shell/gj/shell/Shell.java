@@ -30,7 +30,7 @@ import gj.shell.model.Graph;
 import gj.shell.model.Layout;
 import gj.shell.model.Vertex;
 import gj.shell.swing.SwingHelper;
-import gj.shell.swing.UnifiedAction;
+import gj.shell.swing.Action2;
 import gj.shell.util.Properties;
 
 import java.awt.BorderLayout;
@@ -118,13 +118,13 @@ public class Shell {
     } catch (Throwable t) {
     }
     
-    new Shell();
+    new Shell(args.length>0?args[0]:null);
   }
   
   /**
    * Constructor
    */
-  private Shell() {
+  private Shell(String preload) {
     
     // Create our widgets
     graphWidget = new GraphWidget();
@@ -136,6 +136,7 @@ public class Shell {
     
     // Create our frame
     frame = new JFrame("GraphJ - Shell") {
+      @Override
       public void dispose() {
         super.dispose();
         System.exit(0);
@@ -155,18 +156,12 @@ public class Shell {
     
     // Show the whole thing
     frame.setBounds(128,128,480,480);
-    frame.show();
+    frame.setVisible(true);
     
     // Start with a Graph or load a preset
-    Runnable run = null;
-    String preset = System.getProperty("gj.preset");
-    if (preset==null) { 
-//      if (factories.length>0) 
-//        run = (Runnable)new ActionNewGraph(factories[0]).as(Runnable.class);
-    } else {
-      run = (Runnable)new ActionLoadGraph(new File(preset)).as(Runnable.class);
+    if (preload!=null) { 
+      SwingUtilities.invokeLater(new ActionLoadGraph(new File(preload)));
     }
-    if (run!=null) SwingUtilities.invokeLater(run);
     
     // Done
   }
@@ -248,7 +243,7 @@ public class Shell {
   /**
    * How to handle - run an algorithm
    */
-  /*package*/ class ActionExecuteLayout extends UnifiedAction {
+  /*package*/ class ActionExecuteLayout extends Action2 {
     
     /** an animation that we're working on */
     private Animation animation;
@@ -261,6 +256,7 @@ public class Shell {
     }
     
     /** initializer (EDT) */
+    @Override
     protected boolean preExecute() throws LayoutAlgorithmException {
       // something to do?
       if (graph==null) 
@@ -319,6 +315,7 @@ public class Shell {
       return result;
     }
     /** async execute */
+    @Override
     protected void execute() throws LayoutAlgorithmException {
       try {
         while (true) {
@@ -332,6 +329,7 @@ public class Shell {
     }
     
     /** sync post-execute */
+    @Override
     protected void postExecute() throws Exception {
       graphWidget.setGraph(graph);
       graphWidget.setCurrentAlgorithm(algorithmWidget.getSelectedAlgorithm());
@@ -342,12 +340,13 @@ public class Shell {
   /**
    * How to handle - switch to Layout
    */
-  /*package*/ class ActionSelectLayout extends UnifiedAction {
+  /*package*/ class ActionSelectLayout extends Action2 {
     private LayoutAlgorithm algorithm;
     /*package*/ ActionSelectLayout(LayoutAlgorithm set) {
       super(set.toString());
       algorithm=set;
     }
+    @Override
     protected void execute() { 
       algorithmWidget.setSelectedAlgorithm(algorithm); 
     }
@@ -356,12 +355,13 @@ public class Shell {
   /**
    * How to handle - Load Graph
    */
-  /*package*/ class ActionLoadGraph extends UnifiedAction  {
+  /*package*/ class ActionLoadGraph extends Action2  {
     private File preset;
     /*package*/ ActionLoadGraph(File file) { 
       preset=file;
     }
     /*package*/ ActionLoadGraph() { super("Load"); }
+    @Override
     protected void execute() throws IOException { 
       File file = preset;
       if (file==null) {
@@ -391,10 +391,11 @@ public class Shell {
   /**
    * How to handle - Save Graph
    */
-  /*package*/ class ActionSaveGraph extends UnifiedAction {
+  /*package*/ class ActionSaveGraph extends Action2 {
     /*package*/ ActionSaveGraph() { 
       setName("Save"); 
     }
+    @Override
     protected void execute() throws IOException { 
       JFileChooser fc = new JFileChooser(new File("./save"));
       if (JFileChooser.APPROVE_OPTION!=fc.showSaveDialog(frame)) return;
@@ -405,20 +406,22 @@ public class Shell {
   /**
    * How to handle - Close Graph
    */
-  /*package*/ class ActionCloseGraph extends UnifiedAction {
+  /*package*/ class ActionCloseGraph extends Action2 {
     /*package*/ ActionCloseGraph() { super("Close"); }
+    @Override
     protected void execute() { frame.dispose(); }
   }
   
   /**
    * How to handle - New Graph
    */
-  /*package*/ class ActionNewGraph extends UnifiedAction {
+  /*package*/ class ActionNewGraph extends Action2 {
     private AbstractGraphFactory factory;
     /*package*/ ActionNewGraph(AbstractGraphFactory factory) { 
       super(factory.toString());
       this.factory = factory;
     }
+    @Override
     protected void execute() {
       setGraph(factory);
     }
@@ -427,9 +430,11 @@ public class Shell {
   /**
    * How to handle - Toggle antialiasing
    */
-  /*package*/ class ActionToggleAntialias extends UnifiedAction {
+  /*package*/ class ActionToggleAntialias extends Action2 {
     /*package*/ ActionToggleAntialias() { super("Antialiasing"); }
+    @Override
     public boolean isSelected() { return graphWidget.isAntialiasing(); }
+    @Override
     protected void execute() {
       graphWidget.setAntialiasing(!graphWidget.isAntialiasing());
     }    
@@ -438,9 +443,11 @@ public class Shell {
   /**
    * How to handle - Toggle animation
    */
-  /*package*/ class ActionToggleAnimation extends UnifiedAction {
+  /*package*/ class ActionToggleAnimation extends Action2 {
     /*package*/ ActionToggleAnimation() { super("Animation"); }
+    @Override
     public boolean isSelected() { return isAnimation; }
+    @Override
     protected void execute() {
       isAnimation = !isAnimation;
     }    

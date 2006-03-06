@@ -72,10 +72,11 @@ public class SwingHelper {
    * Helper that returns a JCheckBoxMenuItem which knows how
    * to handle our UnifiedAction's isSelected
    */
-  public static JCheckBoxMenuItem getCheckBoxMenuItem(final UnifiedAction action) {
+  public static JCheckBoxMenuItem getCheckBoxMenuItem(final Action2 action) {
     
     JCheckBoxMenuItem result = new JCheckBoxMenuItem(action);
     result.setModel(new DefaultButtonModel() {
+      @Override
       public boolean isSelected() {
         return action.isSelected();
       }

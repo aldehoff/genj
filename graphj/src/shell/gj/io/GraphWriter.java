@@ -47,11 +47,10 @@ public class GraphWriter implements PathIteratorKnowHow {
   private PrintWriter out;
   
   /** stack */
-  private Stack stack = new Stack();
+  private Stack<String> stack = new Stack<String>();
   
   /** elements mapped to ids */
-  private Map 
-    element2id  = new HashMap();
+  private Map<Object,Integer> element2id  = new HashMap<Object,Integer>();
   
   /**
    * Constructor
@@ -193,14 +192,14 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Get id for element (vertex or edge)
    */
-  private Object getId(Object element) {
+  private int getId(Object element) {
     // lookup
-    Object result = element2id.get(element);
+    Integer result = element2id.get(element);
     if (result==null) {
-      result = new Integer(element2id.size()+1);
+      result = element2id.size()+1;
       element2id.put(element, result);
     }
-    // don
+    // done
     return result;
   }
 
@@ -238,30 +237,21 @@ public class GraphWriter implements PathIteratorKnowHow {
    * Element information
    */
   public static class ElementInfo {
-    private ArrayList list = new ArrayList(6);
-    public void put(Object key, double val) {
+    private ArrayList<String> list = new ArrayList<String>(6);
+    public void put(String key, double val) {
       list.add(key);
-      list.add(new Double(val));
+      list.add(Double.toString(val));
     }    
-    public void put(Object key, int val) {
+    public void put(String key, int val) {
       list.add(key);
-      list.add(new Integer(val));
+      list.add(Integer.toString(val));
     }    
-    public void put(Object key, Object val) {
+    public void put(String key, String val) {
       if (val==null)
         return;
       list.add(key);
       list.add(val);
     }    
-    public void put(Map atts) {
-      Iterator keys = atts.keySet().iterator();
-      while (keys.hasNext()) {
-        Object key = keys.next();
-        Object val = atts.get(key);
-        list.add(key);
-        list.add(val);
-      }
-    }
     public void append(StringBuffer b) {
       Iterator it = list.iterator();
       while (it.hasNext()) {

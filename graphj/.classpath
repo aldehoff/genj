@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry output="build/classes/core" kind="src" path="src/core"/>
-	<classpathentry output="build/classes/shell" kind="src" path="src/shell"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="build/lostnfound"/>
+	<classpathentry kind="src" path="src/core"/>
+	<classpathentry kind="src" path="src/shell"/>
+	<classpathentry kind="src" path="src/layouts"/>
+	<classpathentry kind="src" path="src/tst"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.5.0"/>
+	<classpathentry kind="output" path="build/eclipse"/>
 </classpath>

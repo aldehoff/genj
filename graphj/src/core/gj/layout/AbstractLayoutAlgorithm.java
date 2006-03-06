@@ -49,6 +49,7 @@ public abstract class AbstractLayoutAlgorithm implements LayoutAlgorithm {
   /**
    * @see java.lang.Object#toString()
    */
+  @Override
   public String toString() {
     String s = getClass().getName();
     return s.substring(s.lastIndexOf('.')+1);

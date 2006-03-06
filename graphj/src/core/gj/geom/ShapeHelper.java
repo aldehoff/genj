@@ -76,7 +76,10 @@ public class ShapeHelper implements PathIteratorKnowHow {
   /**
    * Applies a PathConsumer to given Path
    */
-  public static void iteratePath(PathIterator iterator, SegmentConsumer consumer) {
+  public static void iterateShape(Shape shape, SegmentConsumer consumer) {
+    iterateShape(shape.getPathIterator(null), consumer);
+  }
+  public static void iterateShape(PathIterator iterator, SegmentConsumer consumer) {
     
     // Loop through the path
     double[] segment = new double[6];
@@ -141,17 +144,5 @@ public class ShapeHelper implements PathIteratorKnowHow {
     gp.transform(AffineTransform.getScaleInstance(scale,scale));
     return gp;
   }
-  
-  /**
-   * Dump a PathIterator to stdout
-   */
-  public static void dump(PathIterator it) {
-    iteratePath(it, new SegmentConsumer() {
-      public boolean consumeLine(Point2D start, Point2D end) {
-        System.out.println(start+">"+end);
-        return true;
-      }
-    });
-  }
-  
+    
 } //ShapeHelper

@@ -42,7 +42,7 @@ public class EdgeLayoutHelper {
   public static void setShapes(Graph graph, Layout2D layout) {
     // loop over vertices
     Iterator vertices = graph.getVertices().iterator();
-    HashSet done = new HashSet();
+    HashSet<Object> done = new HashSet<Object>();
     while (vertices.hasNext()) {
       Object vertex = vertices.next();
       Iterator neighbours = graph.getNeighbours(vertex).iterator();
@@ -153,7 +153,7 @@ public class EdgeLayoutHelper {
   
   private static Point2D calcEnd(Point2D from, Point2D to, Shape shape) {
     
-    ArrayList points = new ArrayList();
+    ArrayList<Point2D> points = new ArrayList<Point2D>();
     Geometry.getIntersections(from, to, to, shape, points);
     
     return points.isEmpty() ? to : Geometry.getClosest(from, points);

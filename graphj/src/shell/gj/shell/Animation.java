@@ -43,7 +43,7 @@ import java.util.List;
   private Movement[] moves;
   
   /** the shapes of edges */
-  private List edgesAndShapes;
+  private List<Object> edgesAndShapes;
   
   /** animation status */
   private long 
@@ -91,10 +91,9 @@ import java.util.List;
       for (int m=0;m<moves.length;m++) 
         moves[m].snapshot();
       
-      edgesAndShapes = new ArrayList(graph.getEdges().size());
-      Iterator edges = graph.getEdges().iterator();
-      while (edges.hasNext()) {
-        Edge edge = (Edge)edges.next();
+      edgesAndShapes = new ArrayList<Object>(graph.getEdges().size());
+      for (Iterator<Edge> edges = graph.getEdges().iterator(); edges.hasNext(); ) {
+        Edge edge = edges.next();
         edgesAndShapes.add(edge);
         edgesAndShapes.add(edge.getShape());
       }

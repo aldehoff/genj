@@ -21,11 +21,14 @@ package gj.shell;
 
 import gj.shell.swing.GBLayout;
 import gj.shell.util.ReflectHelper;
+
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EventListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JComboBox;
@@ -49,10 +52,10 @@ public class PropertyWidget extends JPanel {
   private Object instance;
   
   /** its properties */
-  private ReflectHelper.Property[] properties;
+  private List<ReflectHelper.Property> properties;
   
   /** the components */
-  private Map components;
+  private Map<String,JComponent> components;
   
   /** biggest preferred size */
   private Dimension biggestPreferredSize = new Dimension(0,0);
@@ -87,8 +90,8 @@ public class PropertyWidget extends JPanel {
       return;
     
     // gather the values
-    for (int p=0; p<properties.length; p++) 
-      ReflectHelper.setValue(properties[p], getValue((JComponent)components.get(properties[p].getName())));
+    for (int p=0; p<properties.size(); p++) 
+      ReflectHelper.setValue(properties.get(p), getValue(components.get(properties.get(p).getName())));
     
     // done
   }
@@ -106,8 +109,8 @@ public class PropertyWidget extends JPanel {
     properties = ReflectHelper.getProperties(instance, true);
     
     // gather the values
-    for (int p=0; p<properties.length; p++) {
-      setValue((JComponent)components.get(properties[p].getName()), ReflectHelper.getValue(properties[p]));
+    for (int p=0; p<properties.size(); p++) {
+      setValue(components.get(properties.get(p).getName()), ReflectHelper.getValue(properties.get(p)));
     }
     
     // done
@@ -117,7 +120,7 @@ public class PropertyWidget extends JPanel {
    * Checks whether given instance has properties
    */
   public static boolean hasProperties(Object instance) {
-    return ReflectHelper.getProperties(instance, true).length!=0;
+    return ReflectHelper.getProperties(instance, true).size()!=0;
   }
   
   /** 
@@ -133,18 +136,18 @@ public class PropertyWidget extends JPanel {
     GBLayout layout = new GBLayout(this);
     
     // nothing to do?
-    if (properties.length==0) {
+    if (properties.size()==0) {
       
       layout.add(new JLabel("No Properties"),0,0,1,1,false,false,true,true);
       
     } else {
   
       // loop through properties
-      components = new HashMap(properties.length);
+      components = new HashMap<String,JComponent>(properties.size());
 
-      for (int p=0; p<properties.length; p++) {
+      for (int p=0; p<properties.size(); p++) {
 
-        ReflectHelper.Property prop = properties[p];
+        ReflectHelper.Property prop = properties.get(p);
         
         JComponent component = getComponent(ReflectHelper.getValue(prop));
         components.put(prop.getName(), component);
@@ -154,7 +157,7 @@ public class PropertyWidget extends JPanel {
        
       }
       
-      layout.add(new JLabel(),0,properties.length,2,1,true,true,true,true);
+      layout.add(new JLabel(),0,properties.size(),2,1,true,true,true,true);
 
     }
     
@@ -207,6 +210,7 @@ public class PropertyWidget extends JPanel {
   /**
    * @see Component#getPreferredSize()
    */
+  @Override
   public Dimension getPreferredSize() {
     Dimension d = super.getPreferredSize();
     d.width = Math.max(d.width,biggestPreferredSize.width);

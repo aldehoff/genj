@@ -35,10 +35,10 @@ import java.util.Stack;
 /*package*/ class CircularGraph {
 
   /** the circles in a graph */
-  private Set circles;
+  private Set<Circle> circles;
   
   /** the mapping between node and its circle */
-  private Map node2circle;
+  private Map<Object, Circle> node2circle;
   
   /**
    * Constructor
@@ -50,8 +50,8 @@ import java.util.Stack;
       return;
     
     // prepare our nodes and their initial circles
-    circles = new HashSet();
-    node2circle = new HashMap(graph.getVertices().size());
+    circles = new HashSet<Circle>();
+    node2circle = new HashMap<Object,Circle>(graph.getVertices().size());
     
     // simple for isSingleCircle=true
     if (isSingleCircle) {
@@ -60,9 +60,9 @@ import java.util.Stack;
     }
     
     // find circles for all
-    Set unvisited = new HashSet(graph.getVertices());
+    Set<Object> unvisited = new HashSet<Object>(graph.getVertices());
     while (!unvisited.isEmpty()) 
-      findCircles(graph, unvisited.iterator().next(), null, new Stack(), unvisited);
+      findCircles(graph, unvisited.iterator().next(), null, new Stack<Object>(), unvisited);
 
     // done    
   }
@@ -70,7 +70,7 @@ import java.util.Stack;
   /**
    * Find circles starting at given node
    */
-  private void findCircles(Graph graph, Object node, Object parent, Stack path, Set unvisited) {
+  private void findCircles(Graph graph, Object node, Object parent, Stack<Object> path, Set<Object> unvisited) {
     
     // have we been here before?
     if (path.contains(node)) {
@@ -125,12 +125,12 @@ import java.util.Stack;
   /**
    * The circle in a graph
    */
-  /*package*/ class Circle extends HashSet {
+  /*package*/ class Circle extends HashSet<Object> {
 
     /**
      * Creates a new circle
      */
-    Circle(Collection nodes) {
+    Circle(Collection<? extends Object> nodes) {
       addAll(nodes);
       circles.add(this);
     }
@@ -146,6 +146,7 @@ import java.util.Stack;
     /**
      * Add a node
      */
+    @Override
     public boolean add(Object node) {
       // let super do its thing
       boolean rc = super.add(node);
@@ -182,7 +183,7 @@ import java.util.Stack;
     /**
      * Accessor - the nodes
      */
-    /*package*/ Set getNodes() {
+    /*package*/ Set<Object> getNodes() {
       return this;
     }
     

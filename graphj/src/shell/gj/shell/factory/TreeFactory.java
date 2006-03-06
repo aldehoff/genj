@@ -111,13 +111,14 @@ public class TreeFactory extends AbstractGraphFactory {
   /**
    * @see gj.shell.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
    */
+  @Override
   public Graph create(Rectangle2D bounds) {
     
     // create the graph
     Graph graph = new Graph();
     
     // We loop through the sample data
-    Map nodes = new HashMap(sample.length);
+    Map<String,Vertex> nodes = new HashMap<String,Vertex>(sample.length);
     for (int s = 0; s < sample.length; s++) {
 
       String key = sample[s][0];
@@ -127,10 +128,10 @@ public class TreeFactory extends AbstractGraphFactory {
     }
      
     for (int s = 0; s < sample.length; s++) {
-      Vertex from = (Vertex)nodes.get(sample[s][0]);
+      Vertex from = nodes.get(sample[s][0]);
       for (int c = 1; c < sample[s].length; c++) {
         String key = sample[s][c];        
-        Vertex to = (Vertex)nodes.get(key);
+        Vertex to = nodes.get(key);
 
         if (Math.random()>0.5) {
           graph.addEdge(from, to, null);

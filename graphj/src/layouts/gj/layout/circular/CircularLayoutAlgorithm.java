@@ -116,8 +116,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
   private void layout(Layout2D layout, CircularGraph.Circle circle, double cx, double cy) {
     
     // nodes
-    Object[] nodes = new Object[circle.getNodes().size()];
-    circle.getNodes().toArray(nodes);
+    Object[] nodes = circle.getNodes().toArray();
     
     // one node only?
     if (nodes.length==1) {

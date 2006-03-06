@@ -56,6 +56,7 @@ public class Edge extends Element {
   /**
    * overriden - create a default edge shape if necessary
    */
+  @Override
   public void setShape(Shape set) {
     if (set==null) 
       set = EdgeLayoutHelper.getShape(start.getPosition(), start.getShape(), end.getPosition(), end.getShape(), 1);
@@ -65,6 +66,7 @@ public class Edge extends Element {
   /**
    * String represenation
    */
+  @Override
   public String toString() {
     return start.toString() + ">" + end.toString();
   }

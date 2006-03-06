@@ -25,8 +25,8 @@ import gj.shell.model.Edge;
 import gj.shell.model.Graph;
 import gj.shell.model.Layout;
 import gj.shell.model.Vertex;
+import gj.shell.swing.Action2;
 import gj.shell.swing.SwingHelper;
-import gj.shell.swing.UnifiedAction;
 import gj.shell.util.ReflectHelper;
 import gj.util.ModelHelper;
 
@@ -45,6 +45,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -134,6 +135,7 @@ public class GraphWidget extends JPanel {
   /**
    * @see JComponent#revalidate()
    */
+  @Override
   public void revalidate() {
     if (content!=null) content.revalidate();
     super.revalidate();
@@ -158,10 +160,10 @@ public class GraphWidget extends JPanel {
     result.add(new ActionDeleteEdge());
 
     // collect public setters(Edge)
-    ReflectHelper.Property[] props = ReflectHelper.getProperties(graph, false);
-    for (int a=0; a<props.length; a++) { 
-      if (props[a].getType()==Edge.class)
-        result.add(new ActionGraphProperty(props[a]));
+    List<ReflectHelper.Property> props = ReflectHelper.getProperties(graph, false);
+    for (int a=0; a<props.size(); a++) { 
+      if (props.get(a).getType()==Edge.class)
+        result.add(new ActionGraphProperty(props.get(a)));
     }
     // done
     return result;
@@ -183,10 +185,10 @@ public class GraphWidget extends JPanel {
     result.add(new ActionDeleteVertex());
 
     // collect public setters(Vertex)
-    ReflectHelper.Property[] props = ReflectHelper.getProperties(graph, false);
-    for (int a=0; a<props.length; a++) { 
-      if (props[a].getType()==Vertex.class)
-        result.add(new ActionGraphProperty(props[a]));
+    List<ReflectHelper.Property> props = ReflectHelper.getProperties(graph, false);
+    for (int a=0; a<props.size(); a++) { 
+      if (props.get(a).getType()==Vertex.class)
+        result.add(new ActionGraphProperty(props.get(a)));
     }
 
     // done
@@ -226,8 +228,10 @@ public class GraphWidget extends JPanel {
     /** stop */
     protected void stop() { }
     /** callback */
+    @Override
     public void mousePressed(MouseEvent e) {}
     /** callback */
+    @Override
     public void mouseReleased(MouseEvent e) {}
     /** callback */
     public void mouseDragged(MouseEvent e) {}
@@ -240,6 +244,7 @@ public class GraphWidget extends JPanel {
    */
   private class DnDIdle extends DnD {
     /** callback */
+    @Override
     public void mousePressed(MouseEvent e) {
       // nothing to do?
       if (graph==null) return;
@@ -266,6 +271,7 @@ public class GraphWidget extends JPanel {
       // done
     }
     /** callback */
+    @Override
     public void mouseReleased(MouseEvent e) {
       
       // context menu?
@@ -302,15 +308,18 @@ public class GraphWidget extends JPanel {
   private class DnDMoveVertex extends DnD {
     Point from;
     /** start */
+    @Override
     protected void start(Point at) {
       super.start(at);
       from = at;
     }
     /** callback */
+    @Override
     public void mouseReleased(MouseEvent e) {
       dndNoOp.start(e.getPoint());
     }
     /** callback */
+    @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
       ModelHelper.translate(layout, graph.getSelection(), Geometry.sub(from, e.getPoint()));
@@ -329,6 +338,7 @@ public class GraphWidget extends JPanel {
     /** a dummy to */
     private Vertex dummy;
     /** start */
+    @Override
     protected void start(Point at) {
       super.start(at);
       from = (Vertex)graph.getSelection();
@@ -336,6 +346,7 @@ public class GraphWidget extends JPanel {
       graph.setSelection(null);
     }
     /** stop */
+    @Override
     protected void stop() {
       // delete dummy which will also delete the arc
       if (dummy!=null)  {
@@ -345,6 +356,7 @@ public class GraphWidget extends JPanel {
       // done
     }
     /** callback */
+    @Override
     public void mouseReleased(MouseEvent e) {
       // make sure we're stopped
       stop();
@@ -365,6 +377,7 @@ public class GraphWidget extends JPanel {
       dndNoOp.start(e.getPoint());
     }
     /** callback */
+    @Override
     public void mouseDragged(MouseEvent e) {
       // not really dragging yet?
       if (dummy==null) {
@@ -394,6 +407,7 @@ public class GraphWidget extends JPanel {
     private Shape shape;
     private Dimension dim;
     /** start */
+    @Override
     protected void start(Point pos) {
       super.start(pos);
       // remember
@@ -402,10 +416,12 @@ public class GraphWidget extends JPanel {
       dim = shape.getBounds().getSize();
     }
     /** callback */
+    @Override
     public void mouseReleased(MouseEvent e) {
       dndNoOp.start(e.getPoint());
     }
     /** callback */
+    @Override
     public void mouseMoved(MouseEvent e) {
 
       // change shape
@@ -426,8 +442,9 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Delete a Vertex
    */
-  private class ActionDeleteVertex extends UnifiedAction {
+  private class ActionDeleteVertex extends Action2 {
     protected ActionDeleteVertex() { super("Delete Vertex"); }
+    @Override
     protected void execute() {
       Vertex selection = (Vertex)graph.getSelection();
       if (selection==null)
@@ -443,8 +460,9 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Delete an edge
    */
-  private class ActionDeleteEdge extends UnifiedAction {
+  private class ActionDeleteEdge extends Action2 {
     protected ActionDeleteEdge() { super("Delete Edge"); }
+    @Override
     protected void execute() {
       Edge selection = (Edge)graph.getSelection();
       if (selection==null)
@@ -460,11 +478,12 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Sets a Node's Shape
    */
-  private class ActionSetVertexShape extends UnifiedAction {
+  private class ActionSetVertexShape extends Action2 {
     Shape shape;
     protected ActionSetVertexShape(Shape set) {
       shape = set;
     }
+    @Override
     protected void execute() {
       Vertex vertex = (Vertex)graph.getSelection();
       vertex.setShape(shape);
@@ -475,8 +494,9 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Change node content
    */
-  private class ActionSetVertexContent extends UnifiedAction {
+  private class ActionSetVertexContent extends Action2 {
     protected ActionSetVertexContent() { super("Set content"); }
+    @Override
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
       if (txt==null) 
@@ -490,20 +510,22 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Change node size
    */
-  private class ActionResizeVertex extends UnifiedAction {
+  private class ActionResizeVertex extends Action2 {
     protected ActionResizeVertex() { super("Resize"); }
+    @Override
     protected void execute() { dndResizeNode.start(null); }
   }
   
   /**
    * How to handle - create an edge
    */
-  private class ActionCreateEdge extends UnifiedAction {
+  private class ActionCreateEdge extends Action2 {
     private Vertex from, to;
     protected ActionCreateEdge(Vertex v1, Vertex v2) {
       from = v1;
       to = v2;
     }
+    @Override
     protected void execute() throws Exception {
       graph.addEdge(from, to, null);
     }
@@ -512,12 +534,13 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Create a vertex
    */
-  private class ActionCreateVertex extends UnifiedAction {
+  private class ActionCreateVertex extends Action2 {
     private Point2D pos;
     protected ActionCreateVertex(Point2D setPos) { 
       super("Create node"); 
       pos = setPos;
     }
+    @Override
     protected void execute() {
       String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
       if (txt!=null) 
@@ -529,21 +552,24 @@ public class GraphWidget extends JPanel {
   /**
    * How to handle - Toggle quick node
    */
-  private class ActionToggleQuickVertex extends UnifiedAction {
+  private class ActionToggleQuickVertex extends Action2 {
     protected ActionToggleQuickVertex() { super("QuickNode"); }
+    @Override
     protected void execute() { quickNode=!quickNode; }
+    @Override
     public boolean isSelected() { return quickNode; }
   }
   
   /**
    * How to handle - Graph property 
    */
-  private class ActionGraphProperty extends UnifiedAction {
+  private class ActionGraphProperty extends Action2 {
     private ReflectHelper.Property prop;
     protected ActionGraphProperty(ReflectHelper.Property prop) { 
       super.setName("set"+prop.getName()+"()"); 
       this.prop = prop;
     }
+    @Override
     protected void execute() { 
       try {
         prop.setValue(graph.getSelection() );
@@ -583,6 +609,7 @@ public class GraphWidget extends JPanel {
     /**
      * @see java.awt.Component#getPreferredSize()
      */
+    @Override
     public Dimension getPreferredSize() {
       if (graph==null) return new Dimension();
       return graphBounds.getSize();
@@ -591,6 +618,7 @@ public class GraphWidget extends JPanel {
     /**
      * @see javax.swing.JComponent#paintComponent(Graphics)
      */
+    @Override
     protected void paintComponent(Graphics g) {
       
       // clear background

@@ -50,10 +50,10 @@ public class Graph implements DirectedGraph {
   private Object selection;
   
   /** the contained nodes */
-  protected Set vertices = new HashSet(10);
+  protected Set<Vertex> vertices = new HashSet<Vertex>(10);
 
   /** the contained arcs */
-  private Collection edges = new HashSet(10);
+  private Collection<Edge> edges = new HashSet<Edge>(10);
   
   /**
    * Constructor
@@ -87,7 +87,7 @@ public class Graph implements DirectedGraph {
   /**
    * All Edges
    */
-  public Collection getEdges() {
+  public Collection<Edge> getEdges() {
     return edges;
   }
   
@@ -118,7 +118,7 @@ public class Graph implements DirectedGraph {
    */
   public void removeVertex(Vertex node) {
     
-    Iterator arcs = new ArrayList(node.getEdges()).iterator();
+    Iterator arcs = new ArrayList<Edge>(node.getEdges()).iterator();
     while (arcs.hasNext()) 
       removeEdge((Edge)arcs.next());
       
@@ -203,14 +203,14 @@ public class Graph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Set getVertices() {
+  public Set<Vertex> getVertices() {
     return vertices;
   }
   
   /**
    * interface implementation
    */
-  public Set getNeighbours(Object vertex) {
+  public Set<? extends Object> getNeighbours(Object vertex) {
     return ((Vertex)vertex).getNeighbours();
   }
   

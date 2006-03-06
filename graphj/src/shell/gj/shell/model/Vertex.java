@@ -41,10 +41,10 @@ public class Vertex extends Element {
   private Point2D position;
   
   /** all neighbours of this vertex */
-  private Set neighbours = new HashSet();
+  private Set<Vertex> neighbours = new HashSet<Vertex>();
   
   /** all edges of this vertex */
-  private List edges = new ArrayList(3);
+  private List<Edge> edges = new ArrayList<Edge>(3);
   
   /**
    * Constructor
@@ -60,7 +60,7 @@ public class Vertex extends Element {
   /**
    * Returns neighbours
    */
-  public Set getNeighbours() {
+  public Set<Vertex> getNeighbours() {
     return neighbours;
   }
   
@@ -71,7 +71,7 @@ public class Vertex extends Element {
 
     // don't allow duplicates
     if (neighbours.contains(that))
-      throw new IllegalArgumentException("already exists edge between from and to");
+      throw new IllegalArgumentException("already exists edge between "+this+" and "+that);
 
     // setup self
     Edge edge = new Edge(this, that, shape);
@@ -104,7 +104,7 @@ public class Vertex extends Element {
   /**
    * Retrieves all edges
    */
-  /*package*/ Collection getEdges() {
+  /*package*/ Collection<Edge> getEdges() {
     return edges;
   }
   
@@ -129,6 +129,7 @@ public class Vertex extends Element {
   /**
    * overriden - shape
    */
+  @Override
   public void setShape(Shape set) {
     // check for null
     if (set==null)
@@ -179,6 +180,7 @@ public class Vertex extends Element {
   /**
    * String representation
    */
+  @Override
   public String toString() {
     if (content==null) {
       return super.toString();

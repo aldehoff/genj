@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,11 +34,11 @@ public class ReflectHelper {
   /**
    * Returns setters of given instance with given argumentType
    */
-  public static Method[] getMethods(Object instance, String prefix, Class[] arguments) {
+  public static Method[] getMethods(Object instance, String prefix, Class<?>[] arguments) {
     
     // loop over methods
     Method[] methods = instance.getClass().getMethods();
-    ArrayList collect = new ArrayList(methods.length);
+    ArrayList<Method> collect = new ArrayList<Method>(methods.length);
     compliance: for (int m=0; m<methods.length; m++) {
       // here's a method
       Method method = methods[m];
@@ -50,19 +49,16 @@ public class ReflectHelper {
       // check static
       if (Modifier.isStatic(method.getModifiers())) continue;
       // check parameter types
-      Class[] ptypes = method.getParameterTypes();
+      Class<?>[] ptypes = method.getParameterTypes();
       if (ptypes.length!=arguments.length) continue;
       for (int a=0; a<ptypes.length; a++) {
         if (!arguments[a].isAssignableFrom(ptypes[a])) continue compliance;
-        //if (!ptypes[a].isAssignableFrom(arguments[a])) continue compliance;
       }
       collect.add(method);
     }
     
     // done
-    Method[] result = new Method[collect.size()];
-    collect.toArray(result);
-    return result;
+    return collect.toArray(new Method[collect.size()]);
   }
 
   /**
@@ -70,10 +66,10 @@ public class ReflectHelper {
    * are all its public attributes)
    * @return a map with field-name/value pairs
    */
-  public static Property[] getProperties(Object instance, boolean primitiveOnly) {
+  public static List<Property> getProperties(Object instance, boolean primitiveOnly) {
     
     // prepare a result
-    List list = new ArrayList();
+    List<Property> list = new ArrayList<Property>();
     
     // loop over *public* methods, *no* prefix, *no* argument
     Method[] methods = getMethods(instance, "", new Class[0]);
@@ -101,10 +97,7 @@ public class ReflectHelper {
     }
     
     // done
-    Collections.sort(list);
-    Property[] result = new Property[list.size()];
-    list.toArray(result);
-    return result;
+    return list;
   }
 
   /**
@@ -182,7 +175,7 @@ public class ReflectHelper {
    * Wraps a given value into an single-argument constructor 
    * of given type
    */
-  public static Object wrap(Object instance, Class target) {
+  public static Object wrap(Object instance, Class<?> target) {
     // check for primitive wrappers
     if (Boolean.TYPE.equals(target)) {
       target = Boolean.class;
@@ -218,7 +211,7 @@ public class ReflectHelper {
   /**
    * Returns an instance of a named type or null
    */
-  public static Object getInstance(String type, Class target) {
+  public static Object getInstance(String type, Class<?> target) {
     try {
       Class c = Class.forName(type);
       if (!target.isAssignableFrom(c)) return null;
@@ -264,6 +257,7 @@ public class ReflectHelper {
       setter.invoke(instance, new Object[]{ wrap(value, setter.getParameterTypes()[0]) });
     }
     /** string representation */
+    @Override
     public String toString() {
       Object value;
       try {
