@@ -5,6 +5,6 @@
 	<classpathentry kind="src" path="src/layouts"/>
 	<classpathentry kind="src" path="src/tst"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.5.0"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/j2se1.5"/>
 	<classpathentry kind="output" path="build/eclipse"/>
 </classpath>
