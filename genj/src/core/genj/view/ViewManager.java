@@ -587,8 +587,11 @@ public class ViewManager {
     if (entities.length>1 && entities.getClass().getComponentType()!=Entity.class) {
       // a sub-menu with appropriate actions
       mh.createMenu(entities.length+" "+Gedcom.getName(entities[0].getTag(), true), entities[0].getImage(false));
-      for (int i = 0; i < as.length; i++) 
+      for (int i = 0; i < as.length; i++) try {
         mh.createItems(as[i].createActions(entities, this), true);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Action Provider threw "+t.getClass()+" on createActions(Entity[])", t);
+      }
       mh.popMenu();
       
     }
@@ -598,8 +601,11 @@ public class ViewManager {
 
       // a sub-menu with appropriate actions
       mh.createMenu(Property.LABEL+" '"+TagPath.get(property).getName() + '\'' , property.getImage(false));
-      for (int i = 0; i < as.length; i++) 
+      for (int i = 0; i < as.length; i++) try {
         mh.createItems(as[i].createActions(property, this), true);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Property)", t);
+      }
       mh.popMenu();
       
       // recursively for parents
@@ -610,8 +616,10 @@ public class ViewManager {
     if (entity!=null) {
       String title = Gedcom.getName(entity.getTag(),false)+" '"+entity.getId()+'\'';
       mh.createMenu(title, entity.getImage(false));
-      for (int i = 0; i < as.length; i++) {
+      for (int i = 0; i < as.length; i++) try {
         mh.createItems(as[i].createActions(entity, this), true);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Entity)", t);
       }
       mh.popMenu();
     }
@@ -619,8 +627,10 @@ public class ViewManager {
     // items for gedcom
     String title = "Gedcom '"+gedcom.getName()+'\'';
     mh.createMenu(title, Gedcom.getImage());
-    for (int i = 0; i < as.length; i++) {
+    for (int i = 0; i < as.length; i++) try {
       mh.createItems(as[i].createActions(gedcom, this), true);
+    } catch (Throwable t) {
+      LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Gedcom", t);
     }
     mh.popMenu();
 
