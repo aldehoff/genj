@@ -118,9 +118,9 @@ public abstract class Property implements Comparable {
   
   /**
    * This called by the property in process of being
-   * changed before the value has changed.
+   * changed after the value has changed.
    */
-  protected void propagateChange(String old) {
+  /*package*/ void propagateChange(String old) {
     
     // remember being modified
     Transaction tx = getTransaction();
@@ -139,7 +139,7 @@ public abstract class Property implements Comparable {
    * Propagate something has changed to the
    * parent hierarchy
    */
-  protected void propagateChange(Change change) {
+  /*package*/ void propagateChange(Change change) {
     // tell it to parent
     if (parent!=null)
       parent.propagateChange(change);
@@ -148,7 +148,7 @@ public abstract class Property implements Comparable {
   /**
    * get current transaction
    */
-  protected Transaction getTransaction() {
+  /*package*/ Transaction getTransaction() {
     return parent==null ? null : parent.getTransaction();
   }
   
@@ -202,7 +202,7 @@ public abstract class Property implements Comparable {
    * Adds a sub-property to this property
    * @param prop new property to add
    */
-  protected Property addProperty(Property prop) {
+  /*package*/ Property addProperty(Property prop) {
     return addProperty(prop, true);
   }
 
@@ -211,7 +211,7 @@ public abstract class Property implements Comparable {
    * @param prop new property to add
    * @param place whether to place the sub-property according to grammar
    */
-  protected Property addProperty(Property prop, boolean place) {
+  /*package*/ Property addProperty(Property prop, boolean place) {
 
     // check grammar for placement if applicable
     int pos = -1;
@@ -236,7 +236,7 @@ public abstract class Property implements Comparable {
   /**
    * Adds another property to this property
    */
-  protected Property addProperty(Property child, int pos) {
+  /*package*/ Property addProperty(Property child, int pos) {
 
     // position valid?
     if (pos>=0&&pos<children.size())
@@ -372,9 +372,9 @@ public abstract class Property implements Comparable {
   }
 
   /**
-   * Return a parent of given type in the hierarchy of parents 
+   * Return a containgin property of given type in the hierarchy of parents 
    */
-  public Property getParent(Class type) {
+  public Property getContaining(Class type) {
     Property prop = this;
     while (prop!=null) {
       if (type.isAssignableFrom(prop.getClass())) 
@@ -390,6 +390,15 @@ public abstract class Property implements Comparable {
    */
   public Property getParent() {
     return parent;
+  }
+  
+  /**
+   * Returns the path from this to containing property
+   */
+  public TagPath getPathToContaining(Property rparent) {    
+    Stack result = new Stack();
+    getPathToContaining(rparent, result);
+    return new TagPath(result);
   }
   
   /**
@@ -448,6 +457,15 @@ public abstract class Property implements Comparable {
         return true;
     }
     return false;
+  }
+
+  /**
+   * Test for (recursive) containment
+   */
+  public boolean isContained(Property in) {
+    Property parent = getParent();
+    if (parent==in) return true;
+    return parent==null ? false : parent.isContained(in);
   }
 
   /**
