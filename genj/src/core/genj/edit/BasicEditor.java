@@ -725,7 +725,7 @@ import javax.swing.event.ChangeListener;
           if (prop==null)
             return null;
           // provide a context with delete
-          return new Context(prop).addAction(new ActionDelete(prop));
+          return new Context(prop).addAction(new DelTab(prop));
         }
       });
       
@@ -761,7 +761,7 @@ import javax.swing.event.ChangeListener;
         if (topLevelTags.contains(meta.getTag())&&meta.isSingleton())
           continue;
         // create a button for it
-        newTab.add(new LinkWidget(new ActionAdd(meta)));
+        newTab.add(new LinkWidget(new AddTab(meta)));
       }
     
       // done
@@ -792,12 +792,12 @@ import javax.swing.event.ChangeListener;
   } //BeanPanel
   
   /** An action for adding 'new tabs' */
-  private class ActionAdd extends Action2 {
+  private class AddTab extends Action2 {
     
     private MetaProperty meta;
     
     /** constructor */
-    private ActionAdd(MetaProperty meta) {
+    private AddTab(MetaProperty meta) {
       // remember
       this.meta = meta;
       // looks
@@ -842,10 +842,10 @@ import javax.swing.event.ChangeListener;
   /**
    * A remove tab action
    */
-  private class ActionDelete extends Action2 {
+  private class DelTab extends Action2 {
     private Property prop;
-    private ActionDelete(Property prop) {
-      setText("Delete "+prop.getPropertyName());
+    private DelTab(Property prop) {
+      setText(EditView.resources.getString("action.del", prop.getPropertyName()));
       setImage(Images.imgCut);
       this.prop = prop;
     }
