@@ -715,7 +715,19 @@ import javax.swing.event.ChangeListener;
       
       // 'create' tab panel
       tabs = new JTabbedPane();
-      //tabPanel.addMouseListener(new RemoveTab());
+      tabs.putClientProperty(ContextProvider.class, new ContextProvider() {
+        public Context getContext() {
+          // check if tab for property
+          Component selection = tabs.getSelectedComponent();
+          if (!(selection instanceof JComponent))
+            return null;
+          Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
+          if (prop==null)
+            return null;
+          // provide a context with delete
+          return new Context(prop).addAction(new ActionDelete(prop));
+        }
+      });
       
       // create all tabs
       Set skippedTags = new HashSet();
@@ -769,6 +781,8 @@ import javax.swing.event.ChangeListener;
      
      // create the panel
      JPanel tab = new JPanel();
+     tab.putClientProperty(Property.class, prop);
+
      parse(tab, prop, descriptor.copy());
      tabs.insertTab(meta.getName(), meta.getImage(), tab, meta.getInfo(), 0);
 
@@ -836,6 +850,29 @@ import javax.swing.event.ChangeListener;
       this.prop = prop;
     }
    protected void execute() {
+     
+     // safety check
+     if (currentEntity==null)
+       return;
+     
+     // start tx
+     Transaction tx = gedcom.startTransaction();
+     
+     // commit bean changes
+     if (ok.isEnabled()&&view.isCommitChanges()) 
+       try {
+         beanPanel.commit();
+       } catch (Throwable t) {
+         EditView.LOG.log(Level.SEVERE, "problem comitting bean panel", t);
+       }
+       
+     // delete property
+     prop.getParent().delProperty(prop);
+       
+     // end transaction - this will refresh our view as well
+     gedcom.endTransaction();
+
+     // done
    }
  }
 
