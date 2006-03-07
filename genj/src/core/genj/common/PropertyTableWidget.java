@@ -290,6 +290,7 @@ public class PropertyTableWidget extends JPanel {
      * Constructor
      */
     private Content() {
+      super(new Model(null));
       
       setDefaultRenderer(Object.class, new PropertyTableCellRenderer());
       getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
