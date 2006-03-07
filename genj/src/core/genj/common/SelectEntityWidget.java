@@ -27,6 +27,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
+import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.PopupWidget;
@@ -64,6 +65,9 @@ public class SelectEntityWidget extends JPanel {
   /** widgets */
   private PopupWidget sortWidget;
   private JComboBox listWidget;
+  
+  /** registry */
+  private Registry registry = Registry.lookup("genj", null);
   
   /** sorts */
   private Sort sort;
@@ -122,7 +126,7 @@ public class SelectEntityWidget extends JPanel {
         continue;
       Sort s = new Sort(path);
       sorts.add(s);
-      if (sort==null) sort = s;
+      if (sort==null||path.equals(registry.get("select.sort."+type, ""))) sort = s;
     }
     sortWidget.setActions(sorts);
 
@@ -137,7 +141,8 @@ public class SelectEntityWidget extends JPanel {
     add(BorderLayout.WEST  , sortWidget);
 
     // init state
-    sort.trigger();
+    if (sort!=null) 
+      sort.trigger();
     if (list.length>0) listWidget.setSelectedIndex(0);
     
     // done
@@ -216,7 +221,7 @@ public class SelectEntityWidget extends JPanel {
       // might be text of entity
       String txt;
       if (value instanceof Entity) {
-        txt = getString((Entity)value, sort.tagPath);
+        txt = getString((Entity)value);
       } else {
         txt = value!=null ? value.toString() : "";
       }
@@ -227,9 +232,12 @@ public class SelectEntityWidget extends JPanel {
     /**
      * generate a string to show for entity&path
      */
-    private String getString(Entity e, TagPath path) {
+    private String getString(Entity e) {
       
-      Property p = e.getProperty(path);
+      if (sort==null)
+        return e.toString();
+      
+      Property p = e.getProperty(sort.tagPath);
       String value;
       if (p==e)
         value = e.getId();
@@ -276,6 +284,7 @@ public class SelectEntityWidget extends JPanel {
     protected void execute() {
       // remember
       sort = this;
+      registry.put("select.sort."+type, tagPath.toString());
       // Sort
       Comparator comparator = new PropertyComparator(tagPath);
       Arrays.sort(list, none!=null ? 1 : 0, list.length, comparator);
