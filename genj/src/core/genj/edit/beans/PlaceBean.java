@@ -80,6 +80,8 @@ public class PlaceBean extends PropertyBean {
    */
   private String getCommitValue() {
     
+    boolean hierarchy = Options.getInstance().isSplitJurisdictions && ((PropertyPlace)getProperty()).getHierarchy().length()>0;
+    
     // collect the result by looking at all of the choices
     StringBuffer result = new StringBuffer();
     for (int c=0, n=getComponentCount(), j=0; c<n; c++) {
@@ -91,7 +93,7 @@ public class PlaceBean extends PropertyBean {
         String jurisdiction = ((ChoiceWidget)comp).getText().trim();
         
         // make sure the user doesn't enter a comma ',' if there is a field per jurisdiction
-        if (n>1) jurisdiction = jurisdiction.replaceAll(PropertyPlace.JURISDICTION_SEPARATOR, ";"); 
+        if (hierarchy) jurisdiction = jurisdiction.replaceAll(PropertyPlace.JURISDICTION_SEPARATOR, ";"); 
           
         // always add separator for jurisdictions j>0 regardless of jurisdiction.length()
         if (j++>0)  result.append(PropertyPlace.JURISDICTION_SEPARATOR); 
