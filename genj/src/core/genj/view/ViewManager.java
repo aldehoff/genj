@@ -663,10 +663,15 @@ public class ViewManager {
       // find context provider in component hierarchy
       Component c = (Component)source;
       while (c!=null) {
-        // found?
+        // component can provide context?
         if (c instanceof ContextProvider) {
           ContextProvider provider = (ContextProvider)c;
           if (provider.getContext()!=null)
+            return provider;
+        }
+        if (c instanceof JComponent) {
+          ContextProvider provider = (ContextProvider)((JComponent)c).getClientProperty(ContextProvider.class);
+          if (provider!=null&&provider.getContext()!=null) 
             return provider;
         }
         // try parent
