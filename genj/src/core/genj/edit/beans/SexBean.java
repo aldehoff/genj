@@ -40,7 +40,7 @@ public class SexBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     
     PropertySex sex = (PropertySex)property; 
     sex.setSex(getSex());
@@ -83,11 +83,10 @@ public class SexBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // show it
-    PropertySex p = (PropertySex) property;
-    buttons[p.getSex()].setSelected(true);
+    buttons[((PropertySex)property).getSex()].setSelected(true);
     defaultFocus = buttons[0];
 
     // Done

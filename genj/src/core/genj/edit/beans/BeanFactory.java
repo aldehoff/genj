@@ -20,6 +20,7 @@
 package genj.edit.beans;
 
 import genj.gedcom.Property;
+import genj.util.Registry;
 import genj.view.ViewManager;
 
 import java.util.ArrayList;
@@ -34,6 +35,9 @@ import java.util.regex.Pattern;
  */
 public class BeanFactory {
   
+  /** registry used for all beans */
+  private Registry registry;
+  
   /** manager reference */
   private ViewManager viewManager;
   
@@ -46,8 +50,9 @@ public class BeanFactory {
   /**
    * Constructor
    */
-  public BeanFactory(ViewManager viewManager) {
+  public BeanFactory(ViewManager viewManager, Registry registry) {
     this.viewManager = viewManager;
+    this.registry = registry;
   }
 
   /**
@@ -86,7 +91,7 @@ public class BeanFactory {
       result = new SimpleValueBean();
     }
     // initialize it
-    result.initialize(this, viewManager);
+    result.initialize(this, viewManager, registry);
 
     // done
     return result;

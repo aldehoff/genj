@@ -72,7 +72,7 @@ public class NameBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
 
     // ... calc texts
     String first = cFirst.getText().trim();
@@ -89,7 +89,7 @@ public class NameBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // first, last, suff
     PropertyName pname = (PropertyName)property;

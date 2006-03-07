@@ -46,7 +46,7 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     
     if (!property.isReadOnly())
       property.setValue(tfield.getText());
@@ -56,13 +56,13 @@ public class SimpleValueBean extends PropertyBean {
    * Editable depends on property
    */  
   public boolean isEditable() {
-    return !property.isReadOnly();
+    return tfield.isEditable();
   }
 
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // show value
     String txt = property.getDisplayValue();

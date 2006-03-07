@@ -110,7 +110,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     gedcom   = setGedcom;
     registry = setRegistry;
     manager  = setManager;
-    beanFactory = new BeanFactory(manager);
+    beanFactory = new BeanFactory(manager, registry);
 
     // prepare undo/redo actions
     undo = new Undo(gedcom);

@@ -47,6 +47,8 @@ public class PlaceBean extends PropertyBean {
   private GridBagHelper gh = new GridBagHelper(this);
   private int rows = 0;
   private JCheckBox global = new JCheckBox();
+  
+  private Property[] sameChoices = new Property[0];
 
 
   /**
@@ -78,8 +80,6 @@ public class PlaceBean extends PropertyBean {
    */
   private String getCommitValue() {
     
-    boolean hierarchy = Options.getInstance().isSplitJurisdictions && ((PropertyPlace)property).getHierarchy().length()>0;
-    
     // collect the result by looking at all of the choices
     StringBuffer result = new StringBuffer();
     for (int c=0, n=getComponentCount(), j=0; c<n; c++) {
@@ -91,7 +91,7 @@ public class PlaceBean extends PropertyBean {
         String jurisdiction = ((ChoiceWidget)comp).getText().trim();
         
         // make sure the user doesn't enter a comma ',' if there is a field per jurisdiction
-        if (hierarchy) jurisdiction = jurisdiction.replaceAll(PropertyPlace.JURISDICTION_SEPARATOR, ";"); 
+        if (n>1) jurisdiction = jurisdiction.replaceAll(PropertyPlace.JURISDICTION_SEPARATOR, ";"); 
           
         // always add separator for jurisdictions j>0 regardless of jurisdiction.length()
         if (j++>0)  result.append(PropertyPlace.JURISDICTION_SEPARATOR); 
@@ -107,7 +107,7 @@ public class PlaceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     
     // propagate change
     ((PropertyPlace)property).setValue(getCommitValue(), global.isSelected());
@@ -118,10 +118,10 @@ public class PlaceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
-    // check property's format
-    PropertyPlace place = (PropertyPlace)prop;
+    PropertyPlace place = (PropertyPlace)property;
+    sameChoices = place.getSameChoices();
     
     // remove all current fields and clear current default focus - this is all dynamic for each context
     removeAll();
@@ -134,7 +134,7 @@ public class PlaceBean extends PropertyBean {
      */
     
     // secret info?
-    String value = prop.isSecret() ? "" : prop.getValue();
+    String value = property.isSecret() ? "" : property.getValue();
    
     // either a simple value or broken down into comma separated jurisdictions
     if (!Options.getInstance().isSplitJurisdictions || place.getHierarchy().length()==0) {
@@ -182,13 +182,12 @@ public class PlaceBean extends PropertyBean {
    * Create confirm message for global
    */
   private String getGlobalConfirmMessage() {
-    int others = ((PropertyPlace)property).getSameChoices().length;
-    if (others<2)
+    if (sameChoices.length<2)
       return null;
     // we're using getDisplayValue() here
     // because like in PropertyRelationship's case there might be more
     // in the gedcom value than what we want to display (witness@INDI:BIRT)
-    return resources.getString("choice.global.confirm", new String[]{ ""+others, property.getDisplayValue(), getCommitValue() });
+    return resources.getString("choice.global.confirm", new String[]{ ""+sameChoices.length, sameChoices[0].getDisplayValue(), getCommitValue() });
   }
   
 } //PlaceBean

@@ -70,7 +70,7 @@ public class EventBean extends PropertyBean {
   /**
    * Finish proxying edit for property Birth
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     if (cKnown.isVisible()) {
       ((PropertyEvent)property).setKnownToHaveHappened(cKnown.isSelected());
     }
@@ -86,7 +86,7 @@ public class EventBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     PropertyEvent event = (PropertyEvent)property;
     PropertyDate date = event.getDate(true);

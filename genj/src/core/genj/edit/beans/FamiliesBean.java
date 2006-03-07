@@ -63,20 +63,26 @@ public class FamiliesBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // connect to current indi
-    table.setModel(new Families());
+    table.setModel(new Families((Indi)property));
     
     // done
   }
   
   private class Families extends AbstractPropertyTableModel {
     
-    private Fam[] fams = ((Indi)property).getFamiliesWhereSpouse();
+    private Indi indi;
+    private Fam[] fams;
+    
+    private Families(Indi indi) {
+      this.indi = indi;
+      fams = indi.getFamiliesWhereSpouse();
+    }
     
     public Gedcom getGedcom() {
-      return property.getGedcom();
+      return indi.getGedcom();
     }
     public int getNumCols() {
       return 5;
@@ -85,7 +91,6 @@ public class FamiliesBean extends PropertyBean {
       return fams.length;
     }
     public TagPath getPath(int col) {
-      Indi indi = (Indi)property;
       switch (col) {
         default:
         case 0:

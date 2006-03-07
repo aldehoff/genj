@@ -72,7 +72,7 @@ public class FileBean extends PropertyBean {
     chooser.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         registry.put("bean.file.dir", chooser.getDirectory());
-        File file = property.getGedcom().getOrigin().getFile(chooser.getFile().toString());
+        File file = getProperty().getGedcom().getOrigin().getFile(chooser.getFile().toString());
         preview.setSource(new ImageWidget.FileSource(file));
 
         // warn about size
@@ -108,7 +108,7 @@ public class FileBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // calc directory
     Origin origin = property.getGedcom().getOrigin();
@@ -169,7 +169,7 @@ public class FileBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     
     // propagate
     String file = chooser.getFile().toString();
@@ -190,19 +190,16 @@ public class FileBean extends PropertyBean {
    * ContextProvider callback 
    */
   public Context getContext() {
-    if (property.getEntity()==null)
-      return null;
-    
-    Context result = new Context(property);
-    
-    result.addAction(new ActionZoom( 10));
-    result.addAction(new ActionZoom( 25));
-    result.addAction(new ActionZoom( 50));
-    result.addAction(new ActionZoom(100));
-    result.addAction(new ActionZoom(150));
-    result.addAction(new ActionZoom(200));
-    result.addAction(new ActionZoom(  0));
-
+    Context result = super.getContext();
+    if (result!=null) {
+      result.addAction(new ActionZoom( 10));
+      result.addAction(new ActionZoom( 25));
+      result.addAction(new ActionZoom( 50));
+      result.addAction(new ActionZoom(100));
+      result.addAction(new ActionZoom(150));
+      result.addAction(new ActionZoom(200));
+      result.addAction(new ActionZoom(  0));
+    }
     // all done
     return result;
   }

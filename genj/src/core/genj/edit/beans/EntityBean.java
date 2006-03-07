@@ -40,7 +40,7 @@ public class EntityBean extends PropertyBean {
    * Finish editing a property through proxy (no changes here unless
    * hasChanged()==true since this will be called in all cases)
    */
-  public void commit() {
+  public void commitImpl(Property property) {
   }
 
   /**
@@ -65,7 +65,7 @@ public class EntityBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     Entity entity = (Entity)property;
     

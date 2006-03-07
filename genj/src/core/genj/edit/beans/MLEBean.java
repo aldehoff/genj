@@ -55,14 +55,14 @@ public class MLEBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     property.setValue(tarea.getText());
   }
 
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // show value
     tarea.setText(property.getValue());

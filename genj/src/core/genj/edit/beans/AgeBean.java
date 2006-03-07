@@ -39,11 +39,12 @@ public class AgeBean extends PropertyBean {
   /** members */
   private TextFieldWidget tfield;
   private ActionUpdate update;
+  private String newAge;
   
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     property.setValue(tfield.getText());
   }
   
@@ -67,14 +68,17 @@ public class AgeBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // update components
     PropertyAge age = (PropertyAge)property;
     
     tfield.setText(property.getValue());
-    update.setEnabled(age.getEarlier()!=null&&age.getLater()!=null);
 
+    Delta delta = Delta.get(age.getEarlier(), age.getLater());
+    newAge = delta==null ? null : delta.toString();
+    update.setEnabled(newAge!=null);
+    
     // Done
   }
   
@@ -82,6 +86,7 @@ public class AgeBean extends PropertyBean {
    * Action Update age
    */
   private class ActionUpdate extends Action2 {
+    
     /**
      * Constructor
      */
@@ -93,11 +98,7 @@ public class AgeBean extends PropertyBean {
      * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
-      PropertyAge age = (PropertyAge)property;
-      Delta delta = Delta.get(age.getEarlier(), age.getLater());
-      if (delta==null)
-        return;
-      tfield.setText(delta.getValue());
+      tfield.setText(newAge);
     }
   } //ActionUpdate
 

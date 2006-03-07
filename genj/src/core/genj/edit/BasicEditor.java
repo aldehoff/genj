@@ -21,13 +21,11 @@ package genj.edit;
 
 import genj.edit.beans.BeanFactory;
 import genj.edit.beans.PropertyBean;
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertySimpleValue;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -36,7 +34,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
-import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
@@ -49,8 +46,6 @@ import java.awt.Component;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -67,7 +62,6 @@ import javax.swing.FocusManager;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutFocusTraversalPolicy;
@@ -171,13 +165,14 @@ import javax.swing.event.ChangeListener;
    * Callback - our current context
    */
   public Context getContext() {
-    Context result = null;
+    // try to find a bean with focus
     PropertyBean bean = getFocus();
-    if (bean!=null) result = bean.getContext();
-    if (result!=null)
-      return result;
+    if (bean!=null&&bean.getContext()!=null) 
+      return bean.getContext();
+    // currently edited?
     if (currentEntity!=null)
       return new Context(currentEntity);
+    // gedcom at least
     return new Context(gedcom);
   }
 
@@ -318,46 +313,28 @@ import javax.swing.event.ChangeListener;
   }
   
   /**
-   * A proxy proparty - hooks up temporary properties to their context and propagates
-   * changes to an original
+   * A proxy for a property - it can be used as a container
+   * for temporary sub-properties that are not committed to
+   * the proxied context 
    */
-  private class Proxy extends PropertySimpleValue {
-    /** the original root */
-    private Property root;
-    /** a late binding parent */
-    private Property lateBindingParent;
+  private static class PropertyProxy extends Property {
+    private Property proxied;
     /** constructor */
-    private Proxy(Property root , Property lateBindingParent) {
-      this.root = root;
-      this.lateBindingParent = lateBindingParent;
-      this.isTransient = true;
+    private PropertyProxy(Property prop) {
+      this.proxied = prop;
     }
-    /** hook into change notifications */
-    protected void propagateChange(Change change) {
-      // a late binding parent to consider?
-      if (lateBindingParent!=null) {
-        root = lateBindingParent.addProperty(root.getTag(), "");
-        lateBindingParent = null;
-      }
-      // consider value changes only at this point
-      if (change instanceof Change.PropertyValue) {
-        // something to consider?
-        Property changed = ((Change.PropertyValue)change).getChanged();
-        String value = changed.getValue();
-        if (value.length()==0)
-          return;
-        root.setValue(getPathToNested(changed), value);
-        // done
-      }
-      // intercepted, consumed and won't propagate more
+    public Property getProxied() {
+      return proxied;
     }
-    /** offer context - gedcom and  transaction */
-    public Gedcom getGedcom() { return gedcom; }
-    protected Transaction getTransaction() { return gedcom.isTransaction() ? gedcom.getTransaction() : null; }
-    /** proxied stuff */
-    public String getTag() { return root.getTag(); }
-    public TagPath getPath() { return root.getPath(); }
-    public MetaProperty getMetaProperty() { return root.getMetaProperty(); }
+    public boolean isContained(Property in) {
+      return proxied==in ? true : proxied.isContained(in);
+    }
+    public Gedcom getGedcom() { return proxied.getGedcom(); }
+    public String getValue() { throw new IllegalArgumentException(); };
+    public void setValue(String val) { throw new IllegalArgumentException(); };
+    public String getTag() { return proxied.getTag(); }
+    public TagPath getPath() { return proxied.getPath(); }
+    public MetaProperty getMetaProperty() { return proxied.getMetaProperty(); }
   }
     
   /**
@@ -525,8 +502,19 @@ import javax.swing.event.ChangeListener;
      */
     public void commit() {
       
+      // loop over beans
       for (Iterator it = beans.iterator(); it.hasNext();) {
-        ( (PropertyBean)it.next()).commit();
+        // check next
+        PropertyBean bean = (PropertyBean)it.next();
+        if (bean.hasChanged()) {
+          Property prop = bean.getProperty();
+          // proxied?
+          PropertyProxy proxy = (PropertyProxy)prop.getContaining(PropertyProxy.class);
+          if (proxy!=null) 
+            prop = proxy.getProxied().setValue(prop.getPathToContaining(proxy), "");
+          // commit its changes
+          bean.commit(prop);
+        }
       }
       
     }
@@ -555,24 +543,31 @@ import javax.swing.event.ChangeListener;
      * Select a property's bean
      */
     public void select(Property prop) {
-      if (prop==null)
+      if (prop==null||beans.isEmpty())
         return;
-      // look for appropriate bean - showing prop or first one in case of Entity
+      
+      // look for appropriate bean showing prop
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.canFocus(prop)) {
+        if (bean.getProperty()==prop) {
           bean.requestFocusInWindow();
           return;
         }
       }
-      // hmm, nothing found - try first displayable
+      
+      // check if one of the beans' properties is contained in prop
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.isDisplayable()) {
+        if (bean.getProperty().isContained(prop)) {
           bean.requestFocusInWindow();
           return;
         }
       }
+      
+      // otherwise use first bean
+      PropertyBean first = (PropertyBean)beans.get(0);
+      first.requestFocusInWindow();
+      
       // done
     }
 
@@ -696,12 +691,12 @@ import javax.swing.event.ChangeListener;
       // the root and add create a temporary holder (enjoys the necessary
       // context - namely gedcom)
       if (prop==null) 
-        prop = new Proxy(root, null).setValue(path, "");
+        prop = new PropertyProxy(root).setValue(path, "");
 
       // create bean for property
       BeanFactory factory = view.getBeanFactory();
       PropertyBean bean = beanOverride!=null ? factory.get(beanOverride) : factory.get(prop);
-      bean.setContext(prop, registry);
+      bean.setProperty(prop);
       bean.addChangeListener(this);
       beans.add(bean);
       
@@ -773,100 +768,75 @@ import javax.swing.event.ChangeListener;
        return;
      
      // create the panel
-     JPanel panel = new JPanel();
-     parse(panel, prop, descriptor.copy());
-     tabs.insertTab(meta.getName(), meta.getImage(), new JScrollPane(panel), meta.getInfo(), 0);
+     JPanel tab = new JPanel();
+     parse(tab, prop, descriptor.copy());
+     tabs.insertTab(meta.getName(), meta.getImage(), tab, meta.getInfo(), 0);
 
      // done
    }
     
-    /** An action for adding 'new tabs' */
-    private class ActionAdd extends Action2 {
-      
-      private MetaProperty meta;
-      
-      /** constructor */
-      private ActionAdd(MetaProperty meta) {
-        // remember
-        this.meta = meta;
-        // looks
-        setText(meta.getName());
-        setImage(meta.getImage());
-      }
-    
-      /** callback initiate create */
-      protected void execute() {
-        
-        // create a temporary root that we'll add later to entity on change
-        Property root = new Proxy(meta.create(""), currentEntity);
-        
-        // create a tab for it
-        final int i = beans.size();
-        createTab(root);
-        
-        // add focus to first new bean (this will also make it visible switching tabs if necessary)
-        // sadly we have to do that 'later' - otherwise the focus doesn't seem to go over reliably
-        if (beans.size()>i) 
-          requestFocus((PropertyBean)beans.get(i));
-        
-        // done
-      }
-      
-      /** 
-       * Focus Helper (hack)
-       */
-      private void requestFocus(final Component c) {
-        
-        SwingUtilities.invokeLater(new Runnable() { 
-          public void run() {
-            c.requestFocusInWindow();
-          }
-        });
-        
-      }
-
-    } //ActionNewTab
-    
-    /**
-     * A remove tab action
-     */
-    private class ActionDelete extends Action2 implements MouseListener  {
-      int tabIndex = -1;
-      private ActionDelete() {
-        setText("Remove");
-        setImage(Images.imgCut);
-      }
-      public void mouseEntered(MouseEvent e) {
-      }
-      public void mouseExited(MouseEvent e) {
-      }
-      public void mouseClicked(MouseEvent e) {
-      }
-      public void mousePressed(MouseEvent e) {
-        mouseReleased(e);
-      }
-      public void mouseReleased(MouseEvent e) {
-        // popup?
-        if (!e.isPopupTrigger())
-          return;
-        // calculate tab 
-        tabIndex = tabs.indexAtLocation(e.getX(), e.getY());
-        if (tabIndex<0)
-          return;
-        // show popup
-        MenuHelper mh = new MenuHelper();
-        JPopupMenu menu = mh.createPopup(tabs);
-        mh.createItem(this);
-        menu.show(tabs, e.getX(), e.getY());
-        // done
-     }
-     protected void execute() {
-       if (tabIndex<0)
-         return;
-       tabs.removeTabAt(tabIndex);
-     }
-   }
-
   } //BeanPanel
   
+  /** An action for adding 'new tabs' */
+  private class ActionAdd extends Action2 {
+    
+    private MetaProperty meta;
+    
+    /** constructor */
+    private ActionAdd(MetaProperty meta) {
+      // remember
+      this.meta = meta;
+      // looks
+      setText(meta.getName());
+      setImage(meta.getImage());
+      setTip(meta.getInfo());
+    }
+  
+    /** callback initiate create */
+    protected void execute() {
+      
+      // safety check
+      if (currentEntity==null)
+        return;
+      
+      // start tx
+      Transaction tx = gedcom.startTransaction();
+      
+      // commit bean changes
+      if (ok.isEnabled()&&view.isCommitChanges()) 
+        try {
+          beanPanel.commit();
+        } catch (Throwable t) {
+          EditView.LOG.log(Level.SEVERE, "problem comitting bean panel", t);
+        }
+        
+      // add property for tab
+      final Property tab = currentEntity.addProperty(meta.getTag(), "");
+
+      // end transaction - this will refresh our view as well
+      gedcom.endTransaction();
+
+      // find panel for our new property
+      if (beanPanel!=null)
+        beanPanel.select(tab);
+      
+      // done
+    }
+    
+  } //ActionNewTab
+  
+  /**
+   * A remove tab action
+   */
+  private class ActionDelete extends Action2 {
+    private Property prop;
+    private ActionDelete(Property prop) {
+      setText("Delete "+prop.getPropertyName());
+      setImage(Images.imgCut);
+      this.prop = prop;
+    }
+   protected void execute() {
+   }
+ }
+
 } //BasicEditor

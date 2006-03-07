@@ -67,29 +67,33 @@ public class ChildrenBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
     
     // connect to current fam
-    table.setModel(new Children());
+    table.setModel(new Children((Fam)property));
     
     // done
   }
   
   private class Children extends AbstractPropertyTableModel {
+    private Fam fam;
+    private Children(Fam fam) {
+      this.fam = fam;
+    }
     public Gedcom getGedcom() {
-      return property.getGedcom();
+      return fam.getGedcom();
     }
     public int getNumCols() {
       return PATHS.length;
     }
     public int getNumRows() {
-      return ((Fam)property).getNoOfChildren();
+      return fam.getNoOfChildren();
     }
     public TagPath getPath(int col) {
       return PATHS[col];
     }
     public Property getProperty(int row) {
-      return ((Fam)property).getChild(row);
+      return fam.getChild(row);
     }
   }
 

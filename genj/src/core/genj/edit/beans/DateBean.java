@@ -92,7 +92,7 @@ public class DateBean extends PropertyBean {
   /**
    * Finish proxying edit for property Date
    */
-  public void commit() {
+  public void commitImpl(Property property) {
 
     PropertyDate p = (PropertyDate)property;
     
@@ -106,8 +106,6 @@ public class DateBean extends PropertyBean {
    */
   private void setFormat(PropertyDate.Format set) {
 
-    PropertyDate p = (PropertyDate)property;
-    
     // already?
     if (format==set)
       return;
@@ -145,16 +143,16 @@ public class DateBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // we know it's a date
-    PropertyDate p = (PropertyDate)property;
+    PropertyDate date = (PropertyDate)property;
 
     // connect
-    date1.setValue(p.getStart());
-    date2.setValue(p.getEnd());
-    phrase.setText(p.getPhrase());
-    setFormat(p.getFormat());
+    date1.setValue(date.getStart());
+    date2.setValue(date.getEnd());
+    phrase.setText(date.getPhrase());
+    setFormat(date.getFormat());
     
     // done
   }

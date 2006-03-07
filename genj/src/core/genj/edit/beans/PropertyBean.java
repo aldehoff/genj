@@ -56,7 +56,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   private BeanFactory factory;
   
   /** the property to edit */
-  protected Property property;
+  private Property property;
   
   /** the current view manager */
   protected ViewManager viewManager;
@@ -73,10 +73,11 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Initialize (happens once)
    */
-  /*package*/ final void initialize(BeanFactory factory, ViewManager viewManager) {
+  /*package*/ final void initialize(BeanFactory factory, ViewManager viewManager, Registry registry) {
     // our state
     this.viewManager = viewManager;
     this.factory = factory;
+    this.registry = registry;
     // propagate init to sub-classes
     initializeImpl();
   }
@@ -90,26 +91,24 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
 
   /**
    * Set context to edit
-   * @return default component to receive focus
    */
-  public final void setContext(Property prop, Registry reg) {
+  public final void setProperty(Property property) {
     
     // remember property
-    this.property = prop;
-    this.registry = reg;
+    this.property = property;
     
-    // propagate to implementation
-    setContextImpl(prop);
-    
-  }
-
-  /**
-   * Implementation's set context
-   */
-  protected void setContextImpl(Property prop) {
+    // tell to imple
+    setPropertyImpl(property);
     
   }
   
+  /**
+   * Subtypes implementation for rendering a property
+   */
+  protected void setPropertyImpl(Property prop) {
+    
+  }
+
   /**
    * ContextProvider callback 
    */
@@ -130,6 +129,13 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   }
   
   /**
+   * Whether the bean has changed since first listener was attached
+   */
+  public boolean hasChanged() {
+    return changeSupport.hasChanged();
+  }
+  
+  /**
    * Listener 
    */
   public void addChangeListener(ChangeListener l) {
@@ -146,7 +152,21 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Commit any changes made by the user
    */
-  public void commit() {
+  public final void commit() {
+    commitImpl(property);
+  }
+  
+  /**
+   * Commit any changes made by the user
+   */
+  public final void commit(Property overideProperty) {
+    commitImpl(overideProperty);
+  }
+  
+  /**
+   * Commit any changes made by the user
+   */
+  protected void commitImpl(Property property) {
     // noop
   }
   
@@ -201,13 +221,6 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
       super.requestFocus();
   }
   
-  /** 
-   * Check whether this bean displays given property
-   */
-  public boolean canFocus(Property prop) {
-    return isDisplayable() && (property==prop || prop.contains(property));
-  }
-
   /**
    * A preview component using EntityRenderer for an entity
    */

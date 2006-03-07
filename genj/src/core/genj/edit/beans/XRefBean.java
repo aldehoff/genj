@@ -54,7 +54,7 @@ public class XRefBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
 
     // set preview
     PropertyXRef xref = (PropertyXRef)property;

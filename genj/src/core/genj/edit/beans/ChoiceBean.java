@@ -42,8 +42,21 @@ import javax.swing.event.ChangeListener;
 public class ChoiceBean extends PropertyBean {
 
   /** members */
-  private ChoiceWidget choice;
+  private ChoiceWidget choices;
   private JCheckBox global;
+  private Property[] sameChoices = new Property[0];
+  
+  /**
+   * Calculate global replace message
+   */
+  private String getGlobalReplaceMsg() {
+    if (sameChoices.length<2)
+      return null;
+    // we're using getDisplayValue() here
+    // because like in PropertyRelationship's case there might be more
+    // in the gedcom value than what we want to display (witness@INDI:BIRT)
+    return resources.getString("choice.global.confirm", new String[]{ ""+sameChoices.length, sameChoices[0].getDisplayValue(), choices.getText()});
+  }
   
   /**
    * Initialization
@@ -51,9 +64,9 @@ public class ChoiceBean extends PropertyBean {
   protected void initializeImpl() {
     
     // prepare a choice for the user
-    choice = new ChoiceWidget();
-    choice.addChangeListener(changeSupport);
-    choice.setIgnoreCase(true);
+    choices = new ChoiceWidget();
+    choices.addChangeListener(changeSupport);
+    choices.setIgnoreCase(true);
 
     // add a checkbox for global
     global = new JCheckBox();
@@ -62,12 +75,12 @@ public class ChoiceBean extends PropertyBean {
     global.setRequestFocusEnabled(false);
     
     // listen to changes in choice and show global checkbox if applicable
-    choice.addChangeListener(new ChangeListener() {
+    choices.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
-        String confirm = getGlobalConfirmMessage();
-        if (confirm!=null) {
+        String msg = getGlobalReplaceMsg();
+        if (msg!=null) {
           global.setVisible(true);
-          global.setToolTipText(confirm);
+          global.setToolTipText(msg);
         }
       }
     });
@@ -75,9 +88,9 @@ public class ChoiceBean extends PropertyBean {
     // listen to selection of global and ask for confirmation
     global.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        String confirm = getGlobalConfirmMessage();
-        if (confirm!=null&&global.isSelected()) {
-          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, confirm, Action2.yesNo(), ChoiceBean.this);
+        String msg = getGlobalReplaceMsg();
+        if (msg!=null&&global.isSelected()) {
+          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, msg, Action2.yesNo(), ChoiceBean.this);
           global.setSelected(rc==0);
         }        
       }
@@ -85,23 +98,23 @@ public class ChoiceBean extends PropertyBean {
     
     // layout
     GridBagHelper layout = new GridBagHelper(this);
-    layout.add(choice, 0, 0, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
+    layout.add(choices, 0, 0, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
     layout.add(global, 1, 0);
     layout.addFiller(0,1);
     
     // focus
-    defaultFocus = choice;
+    defaultFocus = choices;
   }
   
   /**
    * Finish editing a property through proxy
    */
-  public void commit() {
+  public void commitImpl(Property property) {
     
-    PropertyChoiceValue prop = (PropertyChoiceValue)property;
+    PropertyChoiceValue choice = (PropertyChoiceValue)property;
 
-	    // change value
-	    prop.setValue(choice.getText(), global.isSelected());
+    // change value
+    choice.setValue(choices.getText(), global.isSelected());
       
     // Done
   }
@@ -109,31 +122,23 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setContextImpl(Property prop) {
+  protected void setPropertyImpl(Property property) {
+    
+    PropertyChoiceValue choice = (PropertyChoiceValue)property;
 
     // setup choices    
     // Note: we're using getDisplayValue() here because like in PropertyRelationship's 
     // case there might be more in the gedcom value than what we want to display 
     // e.g. witness@INDI:BIRT
-    choice.setValues(((PropertyChoiceValue)property).getChoices(true));
-    choice.setText(property!=null&&!property.isSecret() ? property.getDisplayValue() : "");
+    choices.setValues(choice.getChoices(true));
+    choices.setText(property.isSecret() ? "" : choice.getDisplayValue());
     global.setSelected(false);
     global.setVisible(false);
+    
+    // prepare global confirm message
+    sameChoices = choice.getSameChoices();
     
     // done
   }
 
-  /**
-   * Create confirm message for global
-   */
-  private String getGlobalConfirmMessage() {
-    int others = ((PropertyChoiceValue)property).getSameChoices().length;
-    if (others<2)
-      return null;
-    // we're using getDisplayValue() here
-    // because like in PropertyRelationship's case there might be more
-    // in the gedcom value than what we want to display (witness@INDI:BIRT)
-    return resources.getString("choice.global.confirm", new String[]{ ""+others, property.getDisplayValue(), choice.getText() });
-  }
-  
 } //ProxyChoice
