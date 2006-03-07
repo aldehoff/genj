@@ -26,31 +26,31 @@ import java.util.TreeMap;
  * Chart names and their usage in a gedcom file
  */
 public class ReportNameHistory extends Report {
-  
+
   /** whether to group non-considered names */
   public boolean makeGroupOther = false;
-  
+
   /** lifespan we assume if there's no death */
   private int lifespanWithoutDEAT = 80;
-  
+
   /** minimum percentage of name to be considered */
   private float minUseOfName = 2;
-  
+
   /** Accessor - minimum percentage of name to be considered */
   public float getMinUseOfName() {
     return minUseOfName;
   }
-  
+
   /** Accessor - minimum percentage of name to be considered */
   public void setMinUseOfName(float set) {
     minUseOfName = Math.max(0, Math.min(set, 50));
   }
-  
+
   /** Accessor - lifespan we assume when there's no DEAT */
   public int getLifespanWithoutDEAT() {
     return lifespanWithoutDEAT;
   }
-  
+
   /** Accessor - lifespan we assume when there's no DEAT */
   public void setLifespanWithoutDEAT(int set) {
     lifespanWithoutDEAT = Math.max(20, Math.min(120, set));
@@ -62,22 +62,22 @@ public class ReportNameHistory extends Report {
   public boolean usesStandardOut() {
     return false;
   }
-  
+
   /**
    * Main
    */
   public void start(Gedcom gedcom) {
-    
+
     Collection indis = gedcom.getEntities(Gedcom.INDI);
-    
+
     // determine range
-    int 
+    int
       start  = findStart(indis),
       length = PointInTime.getNow().getYear() - start + 1;
-    
+
     // prepare a series of 'others'
     IndexedSeries others = new IndexedSeries("", start, length);
-    
+
     // loop over individuals
     Map name2series = new TreeMap();
     Iterator iterator = indis.iterator();
@@ -85,24 +85,26 @@ public class ReportNameHistory extends Report {
       Indi indi = (Indi)iterator.next();
       analyze(gedcom, indis, indi, name2series, others);
     }
-    
+
     // check if got something
-    if (name2series.isEmpty()) 
+    if (name2series.isEmpty())
       return;
-    
+
     // name the group 'other' now: "14 Other Names"
-    int numOthers = (PropertyName.getLastNames(gedcom, false).size()-name2series.size());
-    if (numOthers>0) {
-	    others.setName(translate("others", numOthers));
-	    name2series.put(String.valueOf('\uffff'), others);
+    if (makeGroupOther) {
+        int numOthers = (PropertyName.getLastNames(gedcom, false).size()-name2series.size());
+        if (numOthers>0) {
+    	    others.setName(translate("others", numOthers));
+    	    name2series.put(String.valueOf('\uffff'), others);
+        }
     }
-    
+
     // show it
     showChartToUser(new Chart(translate("title", gedcom.getName()), null, translate("yaxis"), IndexedSeries.toArray(name2series.values()), new DecimalFormat("#"), true));
 
     // done
   }
-  
+
   /**
    * Find earliest year
    */
@@ -131,7 +133,7 @@ public class ReportNameHistory extends Report {
    * Analyze one individual
    */
   private void analyze(Gedcom gedcom, Collection indis, Indi indi, Map name2series, IndexedSeries others) {
-    
+
     // check name
 	  PropertyName name = (PropertyName)indi.getProperty("NAME");
 	  if (name==null||!name.isValid())
@@ -139,7 +141,7 @@ public class ReportNameHistory extends Report {
 	  String last = name.getLastName();
 	  if (last.length()==0)
 	    return;
-    
+
 	  // calculate start
 	  int start;
 	  try {
@@ -149,7 +151,7 @@ public class ReportNameHistory extends Report {
 	  } catch (Throwable t) {
 	    return;
 	  }
-	  
+
 	  // calculate end
 	  int end = PointInTime.UNKNOWN;
 	  try {
@@ -158,11 +160,11 @@ public class ReportNameHistory extends Report {
 	  }
     if (end==PointInTime.UNKNOWN)
 	    end = start+lifespanWithoutDEAT;
-	  
+
 	  // check minimum percentage of name
 	  IndexedSeries series;
 	  if (name.getLastNameCount()<indis.size()*minUseOfName/100) {
-	    if (!makeGroupOther) 
+	    if (!makeGroupOther)
 	      return;
 	    series = others;
 	  } else {
@@ -172,12 +174,12 @@ public class ReportNameHistory extends Report {
 		    name2series.put(last, series);
 		  }
 	  }
-	  
+
 	  // increase indexedseries for last-name throughout lifespan (start to end)
-	  for (;start<=end;start++) 
+	  for (;start<=end;start++)
 	    series.inc(start);
-	  
+
 	  // done
 	}
-  
+
 } //ReportNameUsage
