@@ -22,7 +22,6 @@ package gj.shell.model;
 import java.awt.BasicStroke;
 import java.awt.Stroke;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 
@@ -85,9 +84,7 @@ public class Tree extends Graph implements gj.model.Tree {
     visited.add(to);
     
     // Recurse into neighbours
-    Iterator neighbours = to.getNeighbours().iterator();
-    while (neighbours.hasNext()) {
-      Vertex neighbour = (Vertex)neighbours.next();
+    for (Vertex neighbour : to.getNeighbours()) {
       if (neighbour==from) 
         continue;
       if (cycleCheck(to, neighbour, visited))

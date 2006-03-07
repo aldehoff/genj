@@ -69,9 +69,9 @@ import java.util.List;
 
     // create movements for vertices ...
     moves = new Movement[graph.getVertices().size()];
-    Iterator vertices = graph.getVertices().iterator();
+    Iterator<Vertex> vertices = graph.getVertices().iterator();
     int m=0; for (;vertices.hasNext();m++) 
-      moves[m] = new Movement((Vertex)vertices.next());
+      moves[m] = new Movement(vertices.next());
     
   }
   
@@ -136,6 +136,7 @@ import java.util.List;
     if (moves!=null) 
       animate(moves,1D);
     // restore edges
+    // FIXME edges *AND* shapes???
     Iterator it = edgesAndShapes.iterator();
     while (it.hasNext()) {
       ((Edge)it.next()).setShape((Shape)it.next());

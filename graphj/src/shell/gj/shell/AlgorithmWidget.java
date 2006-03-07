@@ -27,7 +27,6 @@ import gj.shell.swing.Action2;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Action;
@@ -158,10 +157,8 @@ public class AlgorithmWidget extends JPanel {
       if (getSelectedAlgorithm()==null) 
         return;
       widgetProperties.commit();
-      Iterator it = alisteners.iterator();
-      while (it.hasNext()) {
-        ((ActionListener)it.next()).actionPerformed(null);
-      }
+      for (ActionListener listener : alisteners) 
+        listener.actionPerformed(null);
       widgetProperties.refresh();
     }
   }
@@ -179,9 +176,8 @@ public class AlgorithmWidget extends JPanel {
       Object algorithm = comboAlgorithms.getModel().getSelectedItem();
       if (algorithm==null) 
         return;
-      Iterator it = alisteners.iterator();
-      while (it.hasNext()) 
-        ((ActionListener)it.next()).actionPerformed(null);
+      for (ActionListener listener : alisteners) 
+        listener.actionPerformed(null);
       // show its properties
       widgetProperties.setInstance(algorithm);
     }

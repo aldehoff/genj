@@ -28,9 +28,8 @@ import gj.layout.LayoutAlgorithmException;
 import gj.shell.factory.AbstractGraphFactory;
 import gj.shell.model.Graph;
 import gj.shell.model.Layout;
-import gj.shell.model.Vertex;
-import gj.shell.swing.SwingHelper;
 import gj.shell.swing.Action2;
+import gj.shell.swing.SwingHelper;
 import gj.shell.util.Properties;
 
 import java.awt.BorderLayout;
@@ -43,8 +42,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
@@ -229,7 +226,7 @@ public class Shell {
     }
     // create the graph
     factory.setNodeShape(shapes[0]);
-    setGraph((Graph)factory.create(createGraphBounds()));
+    setGraph(factory.create(createGraphBounds()));
     // done
   }
   
@@ -372,20 +369,6 @@ public class Shell {
       setGraph(new GraphReader(new FileInputStream(file)).read());
     }
     
-    /**
-     * io interface implementation
-     */
-    public Map getAttributes(Object element) {
-      return Collections.singletonMap("c", ((Vertex)element).getContent());
-    }
-    
-    /**
-     * io interface implementation
-     */
-    public void setAttribute(Object element, String key, String val) {
-      if (element instanceof Vertex&&"c".equals(key)) 
-        ((Vertex)element).setContent(val);
-    }
   } //LoadGraph
 
   /**

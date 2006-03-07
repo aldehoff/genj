@@ -151,7 +151,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       if (id==null)
         error("expected id=");
       // find a shape
-      shape = (Shape)id2shape.get(atts.getValue("sid"));
+      shape = id2shape.get(atts.getValue("sid"));
       if (shape==null) shape = DEFAULT_SHAPE;
       // its position
       pos = new Point2D.Double(Double.parseDouble(atts.getValue("x")), Double.parseDouble(atts.getValue("y")));
@@ -178,8 +178,8 @@ public class GraphReader implements PathIteratorKnowHow  {
     private Edge edge;
     protected EdgeHandler(Graph graph, Attributes atts) {
       Vertex
-        s = (Vertex)id2vertex.get(atts.getValue("s")),
-        e = (Vertex)id2vertex.get(atts.getValue("e"));
+        s = id2vertex.get(atts.getValue("s")),
+        e = id2vertex.get(atts.getValue("e"));
       edge = graph.addEdge(s, e, null);
       id2edge.put(atts.getValue("id"),edge);
     }

@@ -160,11 +160,11 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
     // create num arcs
     for (int i=0;i<minArcs;i++) {
       
-      Vertex from = (Vertex)super.getRandomNode(nodes, false);
-      Vertex to   = (Vertex)super.getRandomNode(nodes, false);
+      Vertex from = super.getRandomNode(nodes, false);
+      Vertex to   = super.getRandomNode(nodes, false);
       
       if (to==from) 
-        to = (Vertex)super.getRandomNode(nodes, false);
+        to = super.getRandomNode(nodes, false);
       
       Edge edge = graph.addEdge(from, to, null);
     }
@@ -207,7 +207,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       
       // find other
       while (true) {
-        Vertex other = (Vertex)getRandomNode(others,true);
+        Vertex other = getRandomNode(others,true);
         if (graph.getNeighbours(other).size()<minDegree||others.isEmpty()) {
           graph.addEdge(vertex, other, null);
           break;

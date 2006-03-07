@@ -29,12 +29,12 @@ public interface Graph {
   /**
    * Access to the graph's vertices
    */
-  public Set<? extends Object> getVertices();
+  public Set<?> getVertices();
  
   /**
    * Access to the neighbours of a vertex
    */
-  public Set<? extends Object> getNeighbours(Object vertex);
+  public Set<?> getNeighbours(Object vertex);
   
 } //Graph
  

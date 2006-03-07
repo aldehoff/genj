@@ -92,9 +92,7 @@ public class Vertex extends Element {
    * Retrieves one edge
    */
   public Edge getEdge(Vertex to) {
-    Iterator it = edges.iterator();
-    while (it.hasNext()) {
-      Edge edge = (Edge)it.next();
+    for (Edge edge : edges) {
       if (edge.getStart()==this&&edge.getEnd()==to||edge.getStart()==to&&edge.getEnd()==this)
         return edge;
     }

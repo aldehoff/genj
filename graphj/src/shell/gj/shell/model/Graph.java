@@ -118,9 +118,8 @@ public class Graph implements DirectedGraph {
    */
   public void removeVertex(Vertex node) {
     
-    Iterator arcs = new ArrayList<Edge>(node.getEdges()).iterator();
-    while (arcs.hasNext()) 
-      removeEdge((Edge)arcs.next());
+    for (Edge edge : new ArrayList<Edge>(node.getEdges()) )
+      removeEdge(edge);
       
     vertices.remove(node);
   }
@@ -135,6 +134,7 @@ public class Graph implements DirectedGraph {
   /**
    * Access - current selection
    */
+  // FIXME why not an Element type?
   public Object getSelection() {
     return selection;
   }
@@ -164,14 +164,12 @@ public class Graph implements DirectedGraph {
    */
   public Edge getEdge(Point2D point) {
     
-    Iterator it = edges.iterator();
     Edge result = null;
-    
-    while (it.hasNext()) {
+
+    for (Edge edge : edges) {
       // check an edge
-      Edge edge = (Edge)it.next();
       if (edge.contains(point))
-        result=edge;
+        result = edge;
       else
         if (result!=null) break;
     }
@@ -210,7 +208,7 @@ public class Graph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Set<? extends Object> getNeighbours(Object vertex) {
+  public Set<Vertex> getNeighbours(Object vertex) {
     return ((Vertex)vertex).getNeighbours();
   }
   
@@ -242,10 +240,8 @@ public class Graph implements DirectedGraph {
   private void renderVertices(Graphics2D graphics) {
     
     // Loop through the graph's nodes
-    Iterator it = vertices.iterator();
-    while (it.hasNext()) {
-      Vertex v = (Vertex)it.next();
-      renderVertex(v, graphics);
+    for (Vertex vertex : vertices) {
+      renderVertex(vertex, graphics);
     }
     
     // Done

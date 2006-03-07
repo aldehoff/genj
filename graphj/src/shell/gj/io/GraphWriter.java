@@ -84,9 +84,8 @@ public class GraphWriter implements PathIteratorKnowHow {
     push("edges",null,false);
     
     // write 'em
-    Iterator it = g.getEdges().iterator();
-    while (it.hasNext())
-      writeEdge(g, (Edge)it.next());
+    for (Edge edge : g.getEdges()) 
+      writeEdge(g, edge);
     
     pop();
   }
@@ -112,10 +111,9 @@ public class GraphWriter implements PathIteratorKnowHow {
     // starting shapes
     push("shapes",null,false);
     // loop through vertices
-    Iterator it = g.getVertices().iterator();
-    while (it.hasNext()) {
+    for (Vertex vertex: g.getVertices()) {
       // check known shape
-      Shape s = ((Vertex)it.next()).getShape();
+      Shape s = vertex.getShape();
       if (!element2id.containsKey(s))
         writeShape(s, element2id.size()+1);
       // next
@@ -162,9 +160,8 @@ public class GraphWriter implements PathIteratorKnowHow {
    */
   private void writeVertices(Graph g) throws IOException {
     push("vertices",null,false);
-    Iterator vertices = g.getVertices().iterator();
-    while (vertices.hasNext()) 
-      writeVertex((Vertex)vertices.next());
+    for (Vertex vertex : g.getVertices()) 
+      writeVertex(vertex);
     pop();
   }
   

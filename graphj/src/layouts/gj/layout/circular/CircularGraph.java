@@ -22,6 +22,7 @@ package gj.layout.circular;
 import gj.model.Graph;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -83,7 +84,7 @@ import java.util.Stack;
     unvisited.remove(node);
     
     // create a circle for it
-    new Circle(node);
+    new Circle(Collections.singleton(node));
 
     // add current node to stack
     path.push(node);
@@ -116,9 +117,9 @@ import java.util.Stack;
    * Accessor - a circle
    */
   /*package*/ Circle getCircle(Object node) {
-    Circle result = (Circle)node2circle.get(node);
+    Circle result = node2circle.get(node);
     if (result==null)
-      result = new Circle(node);
+      result = new Circle(Collections.singleton(node));
     return result;
   }
   
@@ -130,16 +131,8 @@ import java.util.Stack;
     /**
      * Creates a new circle
      */
-    Circle(Collection<? extends Object> nodes) {
+    Circle(Collection<?> nodes) {
       addAll(nodes);
-      circles.add(this);
-    }
-    
-    /**
-     * Creates a new circle with one elements
-     */
-    Circle(Object node) {
-      add(node);
       circles.add(this);
     }
     
