@@ -34,6 +34,8 @@ import java.awt.Dimension;
  */
 public class ChildrenBean extends PropertyBean {
 
+  private final static String COLS_KEY = "bean.children.cols";
+  
   private final static TagPath PATHS[] = {
     new TagPath("INDI", Gedcom.getName("CHIL")),
     new TagPath("INDI:NAME"),
@@ -57,6 +59,27 @@ public class ChildrenBean extends PropertyBean {
     
   }
 
+  /**
+   * on add - set column widths
+   */
+  public void addNotify() {
+    // let super continue
+    super.addNotify();
+    // set widths
+    int[] widths = registry.get(COLS_KEY, (int[])null);
+    if (widths!=null)
+      table.setColumnWidths(widths);
+  }
+  
+  /**
+   * on remove - keep column widths
+   */
+  public void removeNotify() {
+    registry.put(COLS_KEY, table.getColumnWidths());
+    // let super continue
+    super.removeNotify();
+  }
+  
   /**
    * we can't focus anything
    */

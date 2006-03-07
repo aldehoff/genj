@@ -19,7 +19,7 @@
   <label path="FAM:HUSB"/><label path="FAM:WIFE"/>
  </row>
  <row>
-  <bean path="FAM" type="Parents" wx="1"/>
+  <bean path="FAM" type="Spouses" wx="1"/>
  </row>
  <row>
   <label path="FAM:CHIL" plural="1"/>
