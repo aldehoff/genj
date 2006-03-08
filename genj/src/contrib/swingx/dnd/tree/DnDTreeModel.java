@@ -30,19 +30,68 @@ import javax.swing.tree.*;
  */
 public interface DnDTreeModel extends TreeModel {
     
+    /**
+     * Constant indicating a <code>COPY</code> DnD action.
+     */
     public static final int COPY = DnDConstants.ACTION_COPY;
+
+    /**
+     * Constant indicating a <code>MOVE</code> DnD action.
+     */
     public static final int MOVE = DnDConstants.ACTION_MOVE;
+
+    /**
+     * Constant indicating a <code>LINK</code> DnD action.
+     */
     public static final int LINK = DnDConstants.ACTION_LINK;
 
+    /**
+     * Create a transferable for the given children.
+     * 
+     * @param children  children to get transferable for
+     * @return          transferable
+     * @see #releaseTransferable(Transferable)
+     */
     public Transferable createTransferable(Object[] children);
 
+    /**
+     * Get the actions for the given transferable supported for a drag.
+     * 
+     * @param transferable      transferable to get actions for
+     * @return                  actions, {@link #COPY}, {@link #MOVE} and {@link #LINK}
+     */
     public int getDragActions(Transferable transferable);
     
+    /**
+     * Get the actions for the given transferable supported for a drop.
+     * 
+     * @param transferable      transferable to get actions for
+     * @return                  actions, {@link #COPY}, {@link #MOVE} and {@link #LINK}
+     */
     public int getDropActions(Transferable transferable, Object parent, int index);
     
+    /**
+     * Perform a drag of the given transferable.
+     * 
+     * @param transferable      transferable that is dragged
+     * @param action            action of drag
+     * @throws UnsupportedFlavorException if action is not supported
+     */
     public void drag(Transferable transferable, int action) throws UnsupportedFlavorException, IOException;
     
+    /**
+     * Perform a drop of the given transferable.
+     * 
+     * @param transferable      transferable that is dropped
+     * @param action            action of drag
+     * @throws UnsupportedFlavorException if action is not supported
+     */
     public void drop(Transferable transferable, Object parent, int index, int action) throws UnsupportedFlavorException, IOException;
     
+    /**
+     * Release a transferable previously create in {@link #createTransferable(Object[])}.
+     * 
+     * @param transferable  transferable to release
+     */
     public void releaseTransferable(Transferable transferable);
 }

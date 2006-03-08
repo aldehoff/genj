@@ -176,7 +176,7 @@ public class BlueprintList extends JSplitPane {
         // update model
         model.fireStructureChanged();
         // re-select and make html visible
-        treeBlueprints.setSelectionPath(model.getPathToRoot(blueprint));
+        treeBlueprints.setSelectionPath(new TreePath(model.getPathToRoot(blueprint)));
         editor.setHTMLVisible(true);
       } catch (IOException e) {
         // FIXME add user dialog 
@@ -333,7 +333,7 @@ public class BlueprintList extends JSplitPane {
      * change notification 
      */
     protected void fireStructureChanged() {
-      fireTreeStructureChanged(this, new TreePath(this), null, null);
+      fireTreeStructureChanged(this, new Object[] { this }, null, null);
     }
 
     /**

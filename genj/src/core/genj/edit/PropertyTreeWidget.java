@@ -127,7 +127,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   /**
    * return a path for a property
    */
-  public TreePath getPathFor(Property property) {
+  public Object[] getPathFor(Property property) {
     return getPropertyModel().getPathToRoot(property);
   }
 
@@ -227,7 +227,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       return;
     }
     // show and select
-    TreePath tpath = getPropertyModel().getPathToRoot(select);
+    TreePath tpath = new TreePath(getPropertyModel().getPathToRoot(select));
     scrollPathToVisible(tpath);
     setSelectionPath(tpath);
     // done
@@ -306,7 +306,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       return ((Property)value).getTag();
     return "";
   }
-
+  
   /** The current dragged model */
   private static Model dragModel;
   

@@ -20,7 +20,8 @@ package swingx.tree;
 
 import java.util.*;
 import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 /**
  * Abstract base class for custom tree models.
@@ -30,8 +31,11 @@ public abstract class AbstractTreeModel implements TreeModel {
     protected EventListenerList listenerList = new EventListenerList();
 
     /**
-      * Get the parent of a node.
-      */
+     * Get the parent of a node.
+     * 
+     * @param node  node to get parent for
+     * @return      parent of node
+     */
     protected abstract Object getParent(Object node);
 
     /**
@@ -44,12 +48,12 @@ public abstract class AbstractTreeModel implements TreeModel {
       * Invoke this method after you've changed how node is to be
       * represented in the tree.
       */
-    public void nodeChanged(Object object) {
-        if(listenerList != null && object != null) {
-            Object parent = getParent(object);
+    public void nodeChanged(Object node) {
+        if(listenerList != null && node != null) {
+            Object parent = getParent(node);
 
             if(parent != null) {
-                int anIndex = this.getIndexOfChild(parent, object);
+                int anIndex = this.getIndexOfChild(parent, node);
                 if (anIndex != -1) {
                     int[] cIndexs = new int[1];
 
@@ -57,8 +61,8 @@ public abstract class AbstractTreeModel implements TreeModel {
                     nodesChanged(parent, cIndexs);
                 }
             }
-            else if (object == getRoot()) {
-                nodesChanged(object, null);
+            else if (node == getRoot()) {
+                nodesChanged(node, null);
             }
         }
     }
@@ -142,20 +146,50 @@ public abstract class AbstractTreeModel implements TreeModel {
      * where the original node is the last element in the returned array.
      * The length of the returned array gives the node's depth in the
      * tree.
-     *
-     * @param node  the node to get the path for
+     * 
+     * @param aNode the TreeNode to get the path for
      */
-    public TreePath getPathToRoot(Object node) {
-      if (node == null) {
-        return null;
-      }
-      Object parent = getParent(node);
-      if (parent == null) {
-        return new TreePath(node);
-      } else {
-        return getPathToRoot(parent).pathByAddingChild(node);
-      }
+    public Object[] getPathToRoot(Object aNode) {
+        return getPathToRoot(aNode, 0);
     }
+
+    /**
+     * Builds the parents of node up to and including the root node,
+     * where the original node is the last element in the returned array.
+     * The length of the returned array gives the node's depth in the
+     * tree.
+     * 
+     * @param aNode  the TreeNode to get the path for
+     * @param depth  an int giving the number of steps already taken towards
+     *        the root (on recursive calls), used to size the returned array
+     * @return an array of TreeNodes giving the path from the root to the
+     *         specified node 
+     */
+    protected Object[] getPathToRoot(Object aNode, int depth) {
+        Object[] retNodes;
+    // This method recurses, traversing towards the root in order
+    // size the array. On the way back, it fills in the nodes,
+    // starting from the root and working back to the original node.
+
+        /* Check for null, in case someone passed in a null node, or
+           they passed in an element that isn't rooted at root. */
+        if(aNode == null) {
+            if(depth == 0)
+                return null;
+            else
+                retNodes = new Object[depth];
+        }
+        else {
+            depth++;
+            if(aNode == getRoot())
+                retNodes = new Object[depth];
+            else
+                retNodes = getPathToRoot(getParent(aNode), depth);
+            retNodes[retNodes.length - depth] = aNode;
+        }
+        return retNodes;
+    }
+
 
     /**
      * Adds a listener for the TreeModelEvent posted after the tree changes.
@@ -184,7 +218,7 @@ public abstract class AbstractTreeModel implements TreeModel {
      * the fire method.
      * @see EventListenerList
      */
-    protected void fireTreeNodesChanged(Object source, TreePath path,
+    protected void fireTreeNodesChanged(Object source, Object[] path,
                                         int[] childIndices,
                                         Object[] children) {
         // Guaranteed to return a non-null array
@@ -210,7 +244,7 @@ public abstract class AbstractTreeModel implements TreeModel {
      * the fire method.
      * @see EventListenerList
      */
-    protected void fireTreeNodesInserted(Object source, TreePath path,
+    protected void fireTreeNodesInserted(Object source, Object[] path,
                                         int[] childIndices,
                                         Object[] children) {
         // Guaranteed to return a non-null array
@@ -236,7 +270,7 @@ public abstract class AbstractTreeModel implements TreeModel {
      * the fire method.
      * @see EventListenerList
      */
-    protected void fireTreeNodesRemoved(Object source, TreePath path,
+    protected void fireTreeNodesRemoved(Object source, Object[] path,
                                         int[] childIndices,
                                         Object[] children) {
         // Guaranteed to return a non-null array
@@ -262,7 +296,7 @@ public abstract class AbstractTreeModel implements TreeModel {
      * the fire method.
      * @see EventListenerList
      */
-    protected void fireTreeStructureChanged(Object source, TreePath path,
+    protected void fireTreeStructureChanged(Object source, Object[] path,
                                             int[] childIndices,
                                             Object[] children) {
         // Guaranteed to return a non-null array
@@ -282,17 +316,60 @@ public abstract class AbstractTreeModel implements TreeModel {
     }
 
     /**
-     * Return an array of all the listeners of the given type that
-     * were added to this model.
+     * Returns an array of all the objects currently registered
+     * as <code><em>Foo</em>Listener</code>s
+     * upon this model.
+     * <code><em>Foo</em>Listener</code>s are registered using the
+     * <code>add<em>Foo</em>Listener</code> method.
      *
-     * @return all of the objects recieving <em>listenerType</em> notifications
-     *         from this model
+     * <p>
      *
+     * You can specify the <code>listenerType</code> argument
+     * with a class literal,
+     * such as
+     * <code><em>Foo</em>Listener.class</code>.
+     * For example, you can query a
+     * <code>DefaultTreeModel</code> <code>m</code>
+     * for its tree model listeners with the following code:
+     *
+     * <pre>TreeModelListener[] tmls = (TreeModelListener[])(m.getListeners(TreeModelListener.class));</pre>
+     *
+     * If no such listeners exist, this method returns an empty array.
+     *
+     * @param listenerType the type of listeners requested; this parameter
+     *          should specify an interface that descends from
+     *          <code>java.util.EventListener</code>
+     * @return an array of all objects registered as
+     *          <code><em>Foo</em>Listener</code>s on this component,
+     *          or an empty array if no such
+     *          listeners have been added
+     * @exception ClassCastException if <code>listenerType</code>
+     *          doesn't specify a class or interface that implements
+     *          <code>java.util.EventListener</code>
+     *
+     * @see #getTreeModelListeners
+     * 
      * @since 1.3
      */
-    public EventListener[] getListeners(Class listenerType) {
-        return listenerList.getListeners(listenerType);
+    public EventListener[] getListeners(Class listenerType) { 
+    return listenerList.getListeners(listenerType); 
+    }
+
+    /**
+     * Returns an array of all the tree model listeners
+     * registered on this model.
+     *
+     * @return all of this model's <code>TreeModelListener</code>s
+     *         or an empty
+     *         array if no tree model listeners are currently registered
+     *
+     * @see #addTreeModelListener
+     * @see #removeTreeModelListener
+     *
+     * @since 1.4
+     */
+    public TreeModelListener[] getTreeModelListeners() {
+        return (TreeModelListener[])listenerList.getListeners(
+                TreeModelListener.class);
     }
 }
-
-

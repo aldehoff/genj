@@ -317,7 +317,7 @@ public class OptionsWidget extends JPanel {
       }
       
       // notify
-      fireTreeStructureChanged(this, new TreePath(this), null, null);
+      fireTreeStructureChanged(this, new Object[] {this}, null, null);
     }
     
     /**

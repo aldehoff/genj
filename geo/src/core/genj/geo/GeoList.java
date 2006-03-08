@@ -361,18 +361,17 @@ import swingx.tree.AbstractTreeModel;
       int pos = it.nextIndex();
       it.add(location);
       // tell about it
-      fireTreeNodesInserted(this, new TreePath(this), new int[] { pos }, new Object[] { location });
+      fireTreeNodesInserted(this, new Object[]{this}, new int[] { pos }, new Object[] { location });
     }
 
     public void locationUpdated(GeoLocation location) {
-      fireTreeStructureChanged(this, new TreePath(this).pathByAddingChild(location), null , null);
-      //fireTreeNodesChanged(this, new TreePath(this), new int[]{ locations.indexOf(location)} , new Object[] { location });
+      fireTreeStructureChanged(this, new Object[]{ this, location}, null , null);
     }
 
     public void locationRemoved(GeoLocation location) {
       int i = locations.indexOf(location);
       locations.remove(i);
-      fireTreeNodesRemoved(this, new TreePath(this), new int[] { i }, new Object[] { location });
+      fireTreeNodesRemoved(this, new Object[]{this}, new int[] { i }, new Object[] { location });
     }
     
     public void asyncResolveEnd(int status, String msg) {

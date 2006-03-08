@@ -71,6 +71,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.TreePath;
 
 /**
  * Our advanced version of the editor allowing low-level
@@ -595,7 +596,7 @@ import javax.swing.event.TreeSelectionListener;
         Property pdate = ((PropertyEvent)newProp).getDate(false);
         if (pdate!=null) newProp = pdate;
       }
-      tree.setSelectionPath(tree.getPathFor(newProp));
+      tree.setSelectionPath(new TreePath(tree.getPathFor(newProp)));
       
       // done
     }
