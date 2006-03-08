@@ -20,7 +20,10 @@
 package genj.edit.beans;
 
 import genj.gedcom.Property;
+import genj.gedcom.PropertyMultilineValue;
+import genj.util.Registry;
 import genj.util.swing.TextAreaWidget;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
@@ -35,10 +38,8 @@ public class MLEBean extends PropertyBean {
   /** members */
   private TextAreaWidget tarea;
 
-  /** 
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     tarea = new TextAreaWidget("",3,20);
     tarea.addChangeListener(changeSupport);
@@ -55,15 +56,18 @@ public class MLEBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     property.setValue(tarea.getText());
   }
 
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyMultilineValue property) {
 
+    // remember property
+    this.property = property;
+    
     // show value
     tarea.setText(property.getValue());
 

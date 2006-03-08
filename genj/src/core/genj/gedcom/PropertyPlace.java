@@ -128,13 +128,6 @@ public class PropertyPlace extends PropertyChoiceValue {
   }
 
   /**
-   * We expect our own proxy here
-   */
-  public String getProxy() {
-    return "Place";
-  }
-
-  /**
    * Accessor - the format of this place's value (non localized)
    */
   public String getHierarchy() {

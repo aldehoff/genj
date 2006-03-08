@@ -749,13 +749,6 @@ public abstract class Property implements Comparable {
 //  }
 
   /**
-   * Returns the logical name of the proxy-object which knows this object
-   */
-  public String getProxy() {
-    return "SimpleValue";
-  }
-
-  /**
    * Returns the Gedcom-Tag of this property
    */
   public abstract String getTag();
@@ -1070,7 +1063,7 @@ public abstract class Property implements Comparable {
     result.append(format.substring(cursor));
     
     // got anything at all?
-    return matches>0 ? result.toString().trim() : "";
+    return matches>0 ? result.toString() : "";
   }
   
 } //Property

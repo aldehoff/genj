@@ -23,10 +23,12 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.util.Origin;
+import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageWidget;
 import genj.view.Context;
+import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -59,11 +61,9 @@ public class FileBean extends PropertyBean {
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
   
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
-
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
+    
     setLayout(new BorderLayout());
     
     // setup chooser
@@ -108,8 +108,19 @@ public class FileBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyFile file) {
+    set(file);
+  }
+  
+  public void setProperty(PropertyBlob blob) {
+    set(blob);
+  }
+  
+  private void set(Property property) {
 
+    // remember property
+    this.property = property;
+    
     // calc directory
     Origin origin = property.getGedcom().getOrigin();
     String dir = origin.isFile() ? origin.getFile().getParent() : null;
@@ -169,7 +180,7 @@ public class FileBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     
     // propagate
     String file = chooser.getFile().toString();

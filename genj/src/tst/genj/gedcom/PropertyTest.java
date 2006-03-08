@@ -159,7 +159,7 @@ public class PropertyTest extends TestCase {
     assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 0, "_SECRET")));
     
     // ... note how only one mask is shown here since there's no prefix in {$P}
-    assertEquals("born xxx", birt.format("born{ $D} {$P}", new PrivacyPolicy(false, 0, "_SECRET")));
+    assertEquals("born xxx", birt.format("born{ $D}{ $P}", new PrivacyPolicy(false, 0, "_SECRET")));
 
     // exception to the rule: the person is deceased -> everything is public IF infoOfDeceasedIsPublic
     indi.addProperty("DEAT", "").addProperty("DATE", "(im Hohen Alter)");
@@ -185,7 +185,7 @@ public class PropertyTest extends TestCase {
     assertFormatted(indi, "BIRT", "", ""                     , ""                        , "born {$y}{ in $P}", "");
     assertFormatted(indi, "OCCU", "Pilot", null        , null                    , "{$V}{ in $p}", "Pilot");
     assertFormatted(indi, "OCCU", "Pilot", null        , "Ottawa"            , "{$V}{ in $p}", "Pilot in Ottawa");
-    assertFormatted(indi, "OCCU", ""      , null         , "Ottawa"            , "{$V}{ in $p}", "in Ottawa");
+    assertFormatted(indi, "OCCU", ""      , null         , "Ottawa"            , "{$V }{in $p}", "in Ottawa");
     assertFormatted(indi, "OCCU", ""      , null         , "Ottawa"            , "Occupation: {$V}", "");
     assertFormatted(indi, "IMMI", ""      , null           , "Vancouver"       , "Immigration{ in $p (landed)}{ on $D}", "Immigration in Vancouver (landed)");
     

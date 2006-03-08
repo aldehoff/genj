@@ -148,12 +148,5 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     // continue
     super.delNotify(old);
   }
-  
-  /**
-   * Our proxy of choice
-   */
-  public String getProxy() {
-    return "Choice";
-  }
 
 } //PropertyChoiceValue

@@ -19,8 +19,9 @@
  */
 package genj.edit.beans;
 
-import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.util.Registry;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -32,10 +33,8 @@ public class XRefBean extends PropertyBean {
 
   private Preview preview;
   
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     preview = new Preview();
     
@@ -54,10 +53,12 @@ public class XRefBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyXRef xref) {
+    
+    // remember property
+    property = xref;
 
     // set preview
-    PropertyXRef xref = (PropertyXRef)property;
     if (xref!=null&&xref.getTargetEntity()!=null) 
       preview.setEntity(xref.getTargetEntity());
     

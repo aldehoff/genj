@@ -33,13 +33,6 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
   private String lines = "";
   
   /**
-   * Which Proxy to use for this property
-   */
-  public String getProxy() {
-    return "MLE";
-  }
-  
-  /**
    * @see genj.gedcom.Property#getTag()
    */
   public String getTag() {

@@ -72,13 +72,6 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   }
 
   /**
-   * Returns the logical name of the proxy-object which knows this object
-   */
-  public String getProxy() {
-    return "File";
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {

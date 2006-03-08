@@ -24,8 +24,10 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 import genj.util.DirectAccessTokenizer;
 import genj.util.GridBagHelper;
+import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
+import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.Component;
@@ -51,10 +53,8 @@ public class PlaceBean extends PropertyBean {
   private Property[] sameChoices = new Property[0];
 
 
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     // nothing much we can do - hook up to change events and show changeAll on change 
     changeSupport.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
@@ -109,7 +109,7 @@ public class PlaceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     
     // propagate change
     ((PropertyPlace)property).setValue(getCommitValue(), global.isSelected());
@@ -120,9 +120,11 @@ public class PlaceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyPlace place) {
 
-    PropertyPlace place = (PropertyPlace)property;
+    // remember property
+    property = place;
+    
     sameChoices = place.getSameChoices();
     
     // remove all current fields and clear current default focus - this is all dynamic for each context
@@ -136,7 +138,7 @@ public class PlaceBean extends PropertyBean {
      */
     
     // secret info?
-    String value = property.isSecret() ? "" : property.getValue();
+    String value = place.isSecret() ? "" : place.getValue();
    
     // either a simple value or broken down into comma separated jurisdictions
     if (!Options.getInstance().isSplitJurisdictions || place.getHierarchy().length()==0) {

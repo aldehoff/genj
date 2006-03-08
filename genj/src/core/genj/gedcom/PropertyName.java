@@ -149,13 +149,6 @@ public class PropertyName extends Property {
   }
 
   /**
-   * a proxy tag
-   */
-  public String getProxy() {
-    return "Name";
-  }
-
-  /**
    * the tag
    */
   public String getTag() {

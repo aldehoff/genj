@@ -134,13 +134,6 @@ public class PropertyAge extends Property {
   }
 
   /**
-   * @see genj.gedcom.Property#getProxy()
-   */
-  public String getProxy() {
-    return "Age";
-  }
-
-  /**
    * Calculates earlier point in time (the birth)
    *
    *  INDI:EVENT:AGE -> INDI:BIRT:DATE

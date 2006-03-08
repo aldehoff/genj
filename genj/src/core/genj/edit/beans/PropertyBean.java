@@ -34,6 +34,8 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -52,11 +54,8 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /** the resources */
   protected final static Resources resources = Resources.get(PropertyBean.class); 
   
-  /** factory for us */
-  private BeanFactory factory;
-  
   /** the property to edit */
-  private Property property;
+  protected Property property;
   
   /** the current view manager */
   protected ViewManager viewManager;
@@ -73,42 +72,52 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Initialize (happens once)
    */
-  /*package*/ final void initialize(BeanFactory factory, ViewManager viewManager, Registry registry) {
+  /*package*/ void initialize(ViewManager setViewManager, Registry setRegistry) {
     // our state
-    this.viewManager = viewManager;
-    this.factory = factory;
-    this.registry = registry;
-    // propagate init to sub-classes
-    initializeImpl();
+    viewManager = setViewManager;
+    registry = setRegistry;
   }
   
   /**
-   * Custom bean initialization code after member attributes have been initialized
+   * test for setter
    */
-  protected void initializeImpl() {
-    
-  }
-
-  /**
-   * Set context to edit
-   */
-  public final void setProperty(Property property) {
-    
-    // remember property
-    this.property = property;
-    
-    // tell to imple
-    setPropertyImpl(property);
-    
+  /*package*/ boolean accepts(Property prop) {
+    return getSetter(prop)!=null;
   }
   
   /**
-   * Subtypes implementation for rendering a property
+   * set property to look at
    */
-  protected void setPropertyImpl(Property prop) {
-    
+  public void setProperty(Property prop) {
+    Method m = getSetter(prop);
+    if (m==null)
+      throw new IllegalArgumentException(getClass().getName()+".setProperty("+prop.getClass().getName()+") n/a");
+      
+    try {
+      m.invoke(this, new Object[]{ prop });
+    } catch (Throwable t) {
+      throw new RuntimeException("unexpected throwable in "+getClass().getName()+".setProperty("+prop.getClass().getName());
+    }
   }
-
+  
+  private Method getSetter(Property prop) {
+    
+    try {
+      Method[] ms = getClass().getDeclaredMethods();
+      for (int i=0;i<ms.length;i++) {
+        Method m = ms[i];
+        if ("setProperty".equals(m.getName())&&Modifier.isPublic(m.getModifiers())) {
+          Class[] argTypes = m.getParameterTypes();
+          if (argTypes.length==1&&argTypes[0].isAssignableFrom(prop.getClass()))
+            return m;
+        }
+      }
+    } catch (Throwable t) {
+    }
+    
+    return null;
+  }
+  
   /**
    * ContextProvider callback 
    */
@@ -153,20 +162,13 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
    * Commit any changes made by the user
    */
   public final void commit() {
-    commitImpl(property);
+    commit(property);
   }
   
   /**
    * Commit any changes made by the user
    */
-  public final void commit(Property overideProperty) {
-    commitImpl(overideProperty);
-  }
-  
-  /**
-   * Commit any changes made by the user
-   */
-  protected void commitImpl(Property property) {
+  public void commit(Property property) {
     // noop
   }
   

@@ -21,12 +21,14 @@ package genj.edit.beans;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
+import genj.view.ViewManager;
 
 import java.util.ArrayList;
 
@@ -48,10 +50,8 @@ public class DateBean extends PropertyBean {
   private JLabel label2;
   private TextFieldWidget phrase;
 
-  /**
-   * Initializer
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     // setup Laout
     setLayout(LAYOUT.copy());
@@ -92,7 +92,7 @@ public class DateBean extends PropertyBean {
   /**
    * Finish proxying edit for property Date
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
 
     PropertyDate p = (PropertyDate)property;
     
@@ -143,11 +143,11 @@ public class DateBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyDate date) {
 
-    // we know it's a date
-    PropertyDate date = (PropertyDate)property;
-
+    // remember property
+    property = date;
+    
     // connect
     date1.setValue(date.getStart());
     date2.setValue(date.getEnd());

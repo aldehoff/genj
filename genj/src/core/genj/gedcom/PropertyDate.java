@@ -113,13 +113,6 @@ public class PropertyDate extends Property {
   }
 
   /**
-   * Returns generic proxy's logical name
-   */
-  public String getProxy() {
-    return "Date";
-  }
-
-  /**
    * Accessor Tag
    */
   public String getTag() {

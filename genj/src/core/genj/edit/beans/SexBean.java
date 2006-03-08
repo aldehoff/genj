@@ -21,8 +21,10 @@ package genj.edit.beans;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
+import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
+import genj.view.ViewManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -40,16 +42,14 @@ public class SexBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     
     PropertySex sex = (PropertySex)property; 
     sex.setSex(getSex());
   }
   
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     // use our layout
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -83,10 +83,13 @@ public class SexBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertySex sex) {
 
+    // remember property
+    property = sex;
+    
     // show it
-    buttons[((PropertySex)property).getSex()].setSelected(true);
+    buttons[sex.getSex()].setSelected(true);
     defaultFocus = buttons[0];
 
     // Done

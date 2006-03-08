@@ -20,7 +20,9 @@
 package genj.edit.beans;
 
 import genj.gedcom.Property;
+import genj.util.Registry;
 import genj.util.swing.TextFieldWidget;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
@@ -33,8 +35,8 @@ public class SimpleValueBean extends PropertyBean {
   /** members */
   private TextFieldWidget tfield;
 
-  /** initialization */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     tfield = new TextFieldWidget("", 8);
     tfield.addChangeListener(changeSupport);
@@ -46,7 +48,7 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     
     if (!property.isReadOnly())
       property.setValue(tfield.getText());
@@ -58,12 +60,22 @@ public class SimpleValueBean extends PropertyBean {
   public boolean isEditable() {
     return tfield.isEditable();
   }
+  
+  /**
+   * we accept anything
+   */
+  public boolean accepts(Property prop) {
+    return true;
+  }
 
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(Property property) {
 
+    // remember property
+    this.property = property;
+    
     // show value
     String txt = property.getDisplayValue();
     tfield.setText(txt);

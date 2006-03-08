@@ -25,7 +25,9 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
+import genj.util.Registry;
 import genj.util.swing.NestedBlockLayout;
+import genj.view.ViewManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -45,10 +47,8 @@ public class EventBean extends PropertyBean {
   private JLabel lAgeAt;
   private JTextField tAge;
   
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     setLayout(LAYOUT.copy());
     
@@ -70,7 +70,7 @@ public class EventBean extends PropertyBean {
   /**
    * Finish proxying edit for property Birth
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     if (cKnown.isVisible()) {
       ((PropertyEvent)property).setKnownToHaveHappened(cKnown.isSelected());
     }
@@ -86,13 +86,15 @@ public class EventBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyEvent event) {
 
-    PropertyEvent event = (PropertyEvent)property;
+    // remember property
+    property = event;
+    
     PropertyDate date = event.getDate(true);
     
     // show age of individual?
-    if (property.getEntity() instanceof Indi) {
+    if (event.getEntity() instanceof Indi) {
     
       Indi indi = (Indi)event.getEntity();
       
@@ -123,7 +125,7 @@ public class EventBean extends PropertyBean {
     // show event-has-happened?
     Boolean known = null;
     
-    if (!"EVEN".equals(property.getTag())) 
+    if (!"EVEN".equals(event.getTag())) 
       known = event.isKnownToHaveHappened();
     
     if (known!=null) {

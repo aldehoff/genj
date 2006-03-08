@@ -22,10 +22,12 @@ package genj.edit.beans;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.time.Delta;
+import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
+import genj.view.ViewManager;
 
 import javax.swing.JLabel;
 
@@ -44,15 +46,13 @@ public class AgeBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     property.setValue(tfield.getText());
   }
   
-  /** 
-   * Initialize once
-   */
-  protected void initializeImpl() {
-
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
+    
     tfield = new TextFieldWidget("", TEMPLATE.length());
     tfield.addChangeListener(changeSupport);
     
@@ -68,12 +68,13 @@ public class AgeBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyAge age) {
 
-    // update components
-    PropertyAge age = (PropertyAge)property;
+    // remember property
+    property = age;
     
-    tfield.setText(property.getValue());
+    // update components
+    tfield.setText(age.getValue());
 
     Delta delta = Delta.get(age.getEarlier(), age.getLater());
     newAge = delta==null ? null : delta.toString();

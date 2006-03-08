@@ -61,13 +61,6 @@ public class PropertyEvent extends Property {
   }
 
   /**
-   * Returns the logical name of the proxy-object which knows this object
-   */
-  public String getProxy() {
-    return "Event";
-  }
-
-  /**
    * Returns the tag of this property
    */
   public String getTag() {

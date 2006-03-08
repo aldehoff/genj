@@ -21,9 +21,11 @@ package genj.edit.beans;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
+import genj.util.Registry;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
+import genj.view.ViewManager;
 
 import javax.swing.JLabel;
 
@@ -39,10 +41,8 @@ public class NameBean extends PropertyBean {
   private ChoiceWidget cLast, cFirst;
   private TextFieldWidget tSuff;
 
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     setLayout(LAYOUT.copy());
 
@@ -72,7 +72,7 @@ public class NameBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
 
     // ... calc texts
     String first = cFirst.getText().trim();
@@ -89,16 +89,18 @@ public class NameBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyName name) {
 
-    // first, last, suff
-    PropertyName pname = (PropertyName)property;
+    // remember property
+    property = name;
     
-    cLast.setValues(pname.getLastNames(true));
-    cLast.setText(pname.getLastName());
-    cFirst.setValues(pname.getFirstNames(true));
-    cFirst.setText(pname.getFirstName()); 
-    tSuff.setText(pname.getSuffix()); 
+    // first, last, suff
+    
+    cLast.setValues(name.getLastNames(true));
+    cLast.setText(name.getLastName());
+    cFirst.setValues(name.getFirstNames(true));
+    cFirst.setText(name.getFirstName()); 
+    tSuff.setText(name.getSuffix()); 
 
     // done
   }

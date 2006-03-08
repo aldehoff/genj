@@ -184,13 +184,6 @@ public class Entity extends Property {
   }
 
   /**
-   * @see genj.gedcom.PropertyNote#getProxy()
-   */
-  public String getProxy() {
-    return "Entity";
-  }
-  
-  /**
    * @see genj.gedcom.Property#getTag()
    */
   public String getTag() {

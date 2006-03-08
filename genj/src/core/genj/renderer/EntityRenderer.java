@@ -703,12 +703,7 @@ public class EntityRenderer {
       // might resolve to a different proxy
       
       // derive from property?
-      PropertyRenderer result;
-      if (prop!=null) {
-        result = PropertyRenderer.get(prop);
-      } else {
-        result = PropertyRenderer.get(path!=null ? path.getLast() : "");
-      }
+      PropertyRenderer result = PropertyRenderer.get(path, prop);
 
       // check renderer/prop compatibility
       if (prop==null&&!result.isNullRenderer()) 

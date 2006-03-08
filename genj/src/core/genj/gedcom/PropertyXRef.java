@@ -78,14 +78,6 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
-   * Returns the logical name of the proxy-object which knows this object
-   * @return proxy's logical name
-   */
-  public String getProxy() {
-    return "XRef";
-  }
-
-  /**
    * Returns the entity this reference points to
    * @return entity this property links to
    */

@@ -28,6 +28,8 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyHusband;
 import genj.gedcom.PropertyWife;
 import genj.gedcom.TagPath;
+import genj.util.Registry;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -41,10 +43,8 @@ public class ParentsBean extends PropertyBean {
   
   private PropertyTableWidget table;
   
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     // setup layout & table
     table = new PropertyTableWidget(viewManager);
@@ -87,9 +87,12 @@ public class ParentsBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property prop) {
+  public void setProperty(Indi indi) {
 
-    table.setModel(new ParentsOfChild((Indi)prop));
+    // remember property
+    property = indi;
+    
+    table.setModel(new ParentsOfChild(indi));
     
     // done
   }

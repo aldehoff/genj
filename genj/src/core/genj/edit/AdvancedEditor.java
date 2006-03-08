@@ -689,13 +689,11 @@ import javax.swing.tree.TreePath;
       Property prop = tree.getSelection(); 
       if (prop!=null) {
   
-        // get a bean for property
-        bean = editView.getBeanFactory().get(prop);
         
         try {
   
-          // initialize bean
-          bean.setProperty(prop);
+          // get a bean for property
+          bean = editView.getBeanFactory().get(prop);
           
           // add bean to center of editPane 
           editPane.add(bean, BorderLayout.CENTER);

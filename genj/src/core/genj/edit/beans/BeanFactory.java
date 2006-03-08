@@ -23,17 +23,31 @@ import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.view.ViewManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * A factory for cached PropertyBeans
  */
 public class BeanFactory {
+  
+  private final static Class[] beanTypes = {
+    EntityBean.class,
+    PlaceBean.class, // before choice!
+    AgeBean.class,
+    ChoiceBean.class,
+    DateBean.class,
+    EventBean.class,
+    FileBean.class,
+    MLEBean.class,
+    NameBean.class,
+    SexBean.class,
+    XRefBean.class,
+    SimpleValueBean.class // last!
+  };
   
   /** registry used for all beans */
   private Registry registry;
@@ -42,7 +56,7 @@ public class BeanFactory {
   private ViewManager viewManager;
   
   /** cached instances */
-  private final static Map proxy2instances = new HashMap();
+  private final static List cache = new LinkedList();
   
   /** map a 'proxy' to a resolved type */
   private static Map proxy2type = new HashMap();
@@ -56,66 +70,93 @@ public class BeanFactory {
   }
 
   /**
-   * Returns a cached property bean suitable to let the user edit given property
+   * Returns a cached property bean of given type name
    */
-  public PropertyBean get(Property prop) {
-    return get(prop.getProxy());
+  public PropertyBean get(String type, Property prop) {
+    
+    // grab a bean
+    PropertyBean bean = getBeanOfType(type);
+    
+    // set its value
+    bean.setProperty(prop);
+    
+    // done
+    return bean;
   }
   
   /**
-   * Returns a cached property bean for given 'name' (genj.edit.beans.{PROXY}Bean)
+   * Returns a cached property bean suitable to let the user edit given property
    */
-  public PropertyBean get(String proxy) {
-    PropertyBean result = null;
-    // maybe we can use a cached version?
-    synchronized (proxy2instances) {
-      List instances = (List)proxy2instances.get(proxy);
-      if (instances!=null&&!instances.isEmpty())
-        return (PropertyBean)instances.remove(instances.size()-1);
-    }
-    // lookup a type for that proxy key
-    Class type = (Class)proxy2type.get(proxy);
-    if (type==null) {
-      try {
-        type = Class.forName( "genj.edit.beans." + proxy + "Bean");
-        result = (PropertyBean)type.newInstance();
-      } catch (Throwable t) {
-        type = SimpleValueBean.class;
-      }
-      proxy2type.put(proxy, type);
-    }
-    // instantiate if still necessary
-    if (result==null) try {
-      result = (PropertyBean)type.newInstance();
-    } catch (Throwable t) {
-      result = new SimpleValueBean();
-    }
-    // initialize it
-    result.initialize(this, viewManager, registry);
+  public PropertyBean get(Property prop) {
 
+    // grab a bean
+    PropertyBean bean = getSuitable(prop);
+    
+    // set its value
+    bean.setProperty(prop);
+    
     // done
-    return result;
+    return bean;
+  }
+  
+  /**
+   * Try to lookup a recycled bean
+   */
+  private synchronized PropertyBean getBeanOfType(String type) {
+    
+    try {
+      Class beanType = Class.forName(type);
+      
+      // look into cache
+      for (ListIterator it=cache.listIterator(); it.hasNext(); ) {
+        PropertyBean bean = (PropertyBean)it.next();
+        if (bean.getClass()==beanType) {
+          it.remove();
+          return bean;
+        }
+      }
+      // create new instance
+      PropertyBean bean = (PropertyBean)beanType.newInstance();
+      bean.initialize(viewManager, registry);
+      return bean;
+      
+    } catch (Throwable t) {
+    }
+    
+    return new SimpleValueBean();
+  }
+  
+  /**
+   * Try to lookup a recycled bean
+   */
+  private synchronized PropertyBean getSuitable(Property prop) {
+    // look into cache
+    for (ListIterator it=cache.listIterator(); it.hasNext(); ) {
+      PropertyBean bean = (PropertyBean)it.next();
+      if (bean.accepts(prop)) {
+        it.remove();
+        return bean;
+      }
+    }
+    // create new instances
+    try {
+      for (int i=0;i<beanTypes.length;i++) {
+        PropertyBean bean = (PropertyBean)beanTypes[i].newInstance();
+        bean.initialize(viewManager, registry);
+        if (bean.accepts(prop))
+          return bean;
+        cache.add(bean);
+      }
+    } catch (Throwable t) {
+    }
+    return new SimpleValueBean();
   }
   
   /**
    * Recycle a bean
    */
-  public void recycle(PropertyBean bean) {
-
-    Matcher m = Pattern.compile("genj.edit.beans.(.*)Bean").matcher(bean.getClass().getName());
-    if (!m.matches())
-      return;
-    String proxy = m.group(1);
-
-    synchronized (proxy2instances) {
-      List instances = (List)proxy2instances.get(proxy);
-      if (instances==null) {
-        instances = new ArrayList();
-        proxy2instances.put(proxy, instances);
-      }
-      instances.add(bean);
-    }
-    // done
+  public synchronized void recycle(PropertyBean bean) {
+    cache.add(bean);
   }
   
 }

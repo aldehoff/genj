@@ -27,6 +27,8 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
+import genj.util.Registry;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -49,10 +51,8 @@ public class FamiliesBean extends PropertyBean {
   
   private final static String COLS_KEY = "bean.families.cols";
 
-  /**
-   * Initialiazer
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     // prepare a simple table
     table = new PropertyTableWidget(viewManager);
@@ -87,10 +87,13 @@ public class FamiliesBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(Indi indi) {
 
+    // remember property
+    property = indi;
+    
     // connect to current indi
-    table.setModel(new Families((Indi)property));
+    table.setModel(new Families(indi));
     
     // done
   }

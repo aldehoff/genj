@@ -25,6 +25,8 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.util.Registry;
+import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -45,10 +47,8 @@ public class ChildrenBean extends PropertyBean {
   
   private PropertyTableWidget table;
   
-  /**
-   * Init
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     // a table for the families
     table = new PropertyTableWidget(viewManager);
@@ -90,10 +90,13 @@ public class ChildrenBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(Fam fam) {
+    
+    // remember property
+    property = fam;
     
     // connect to current fam
-    table.setModel(new Children((Fam)property));
+    table.setModel(new Children(fam));
     
     // done
   }

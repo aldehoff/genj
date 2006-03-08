@@ -22,8 +22,10 @@ package genj.edit.beans;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.util.GridBagHelper;
+import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
+import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.event.ActionEvent;
@@ -58,10 +60,8 @@ public class ChoiceBean extends PropertyBean {
     return resources.getString("choice.global.confirm", new String[]{ ""+sameChoices.length, sameChoices[0].getDisplayValue(), choices.getText()});
   }
   
-  /**
-   * Initialization
-   */
-  protected void initializeImpl() {
+  void initialize(ViewManager setViewManager, Registry setRegistry) {
+    super.initialize(setViewManager, setRegistry);
     
     // prepare a choice for the user
     choices = new ChoiceWidget();
@@ -109,7 +109,7 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commitImpl(Property property) {
+  public void commit(Property property) {
     
     PropertyChoiceValue choice = (PropertyChoiceValue)property;
 
@@ -122,16 +122,17 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  protected void setPropertyImpl(Property property) {
+  public void setProperty(PropertyChoiceValue choice) {
     
-    PropertyChoiceValue choice = (PropertyChoiceValue)property;
+    // remember property
+    property = choice;
 
     // setup choices    
     // Note: we're using getDisplayValue() here because like in PropertyRelationship's 
     // case there might be more in the gedcom value than what we want to display 
     // e.g. witness@INDI:BIRT
     choices.setValues(choice.getChoices(true));
-    choices.setText(property.isSecret() ? "" : choice.getDisplayValue());
+    choices.setText(choice.isSecret() ? "" : choice.getDisplayValue());
     global.setSelected(false);
     global.setVisible(false);
     

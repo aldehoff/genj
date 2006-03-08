@@ -695,8 +695,7 @@ import javax.swing.event.ChangeListener;
 
       // create bean for property
       BeanFactory factory = view.getBeanFactory();
-      PropertyBean bean = beanOverride!=null ? factory.get(beanOverride) : factory.get(prop);
-      bean.setProperty(prop);
+      PropertyBean bean = beanOverride==null ? factory.get(prop) : factory.get(beanOverride, prop);
       bean.addChangeListener(this);
       beans.add(bean);
       
@@ -714,7 +713,7 @@ import javax.swing.event.ChangeListener;
         throw new IllegalArgumentException("tabs can't be generated twice");
       
       // 'create' tab panel
-      tabs = new JTabbedPane();
+      tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
       tabs.putClientProperty(ContextProvider.class, new ContextProvider() {
         public Context getContext() {
           // check if tab for property
@@ -784,7 +783,7 @@ import javax.swing.event.ChangeListener;
      tab.putClientProperty(Property.class, prop);
 
      parse(tab, prop, descriptor.copy());
-     tabs.insertTab(meta.getName(), meta.getImage(), tab, meta.getInfo(), 0);
+     tabs.insertTab(meta.getName() + prop.format("{ $y}"), meta.getImage(), tab, meta.getInfo(), 0);
 
      // done
    }

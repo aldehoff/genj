@@ -116,15 +116,6 @@ public class PropertySex extends Property {
   }
 
   /**
-   * Returns the logical proxy to render/edit this property
-   */
-  public String getProxy() {
-    if (sexAsString!=null&&!isPrivate())
-      return super.getProxy();
-    return "Sex";
-  }
-
-  /**
    * Accessor for Sex
    */
   public int getSex() {
