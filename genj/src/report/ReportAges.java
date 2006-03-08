@@ -20,12 +20,13 @@ import genj.report.Report;
  *
  * @author Daniel P. Kionka
  * @author Carsten Muessig <carsten.muessig@gmx.net>
- * @version 1.3
+ * @version 1.4
  */
 
 public class ReportAges extends Report {
 
     public boolean reportBaptismAge = true;
+    public boolean reportConfirmationAge = true;
     public boolean reportMarriageAge = true;
     public boolean reportAgeAtDivorce = true;
     public boolean reportAgeAtChildBirth = true;
@@ -37,11 +38,7 @@ public class ReportAges extends Report {
 
     /** localized strings */
     private final static String AGE = Gedcom.getName("AGE");
-    private final static String VERSION = "1.31";
 
-    public String getVersion() {
-        return VERSION;
-    }
 
     private String familyToString(Fam f) {
         Indi husband = f.getHusband(), wife = f.getWife();
@@ -69,9 +66,7 @@ public class ReportAges extends Report {
     /**
      * Analyze an event and report its information, date and age of indi
      */
-    private boolean analyzeEvent(boolean header, Indi indi, String tag, boolean printTag) {
-
-        int indent = 3;
+    private boolean analyzeEvent(boolean header, Indi indi, String tag) {
 
         // check for date under tag
         PropertyDate prop = (PropertyDate) indi.getProperty(new TagPath("INDI:" + tag + ":DATE"));
@@ -83,14 +78,10 @@ public class ReportAges extends Report {
             println(getIndent(2) + Gedcom.getName(tag) + ':');
 
         // format and ouput
-        String toPrint = "";
-        if (printTag) {
-            toPrint = "INDI:" + tag + ": ";
-            indent = 4;
-        }
-        println(getIndent(3) + toPrint + prop.getDisplayValue());
+        println(getIndent(3) + prop.getDisplayValue());
         Delta age = indi.getAge(prop.getStart());
-        printAge(age, indent);
+        printAge(age, 4);
+        println();
 
         // done
         return true;
@@ -107,7 +98,7 @@ public class ReportAges extends Report {
 
         // print birth date (give up if none)
         PropertyDate birth = indi.getBirthDate();
-        if (birth == null) {
+        if (birth == null || !birth.isValid()) {
             println(OPTIONS.getBirthSymbol()+" "+translate("noData"));
             return;
         }
@@ -115,119 +106,104 @@ public class ReportAges extends Report {
         println();
 
         if (reportBaptismAge) {
-            println(getIndent(2) + translate("baptism"));
-            boolean ok = false;
-            ok |= analyzeEvent(!ok, indi, "BAPM", true);
-            ok |= analyzeEvent(!ok, indi, "BAPL", true);
-            ok |= analyzeEvent(!ok, indi, "CHR", true);
-            ok |= analyzeEvent(!ok, indi, "CHRA", true);
-            if(!ok)
-                println(getIndent(3) + translate("noData"));
-            println();
+            analyzeEvent(true, indi, "BAPM");
+            analyzeEvent(true, indi, "BAPL");
+            analyzeEvent(true, indi, "CHR");
+            analyzeEvent(true, indi, "CHRA");
         }
 
+        if (reportConfirmationAge)
+            analyzeEvent(true, indi, "CONF");
+
         if (reportMarriageAge) {
-            println(getIndent(2) + translate("marriage"));
             Fam[] fams = indi.getFamiliesWhereSpouse();
             if (fams.length > 0) {
+                println(getIndent(2) + Gedcom.getName("MARR") + ":");
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
-                    String text = getIndent(2)+OPTIONS.getMarriageSymbol() + " "+familyToString(fam)+": ";
+                    String text = getIndent(3) + OPTIONS.getMarriageSymbol() +
+                        " " + familyToString(fam) + ": ";
                     if (fam.getMarriageDate() == null)
                         println(text + translate("noData"));
                     else {
                         println(text + fam.getMarriageDate());
                         age = indi.getAge(fam.getMarriageDate().getStart());
-                        printAge(age,3);
+                        printAge(age, 4);
                     }
                 }
+                println();
             }
-            else
-                println(getIndent(3) + translate("noData"));
-            println();
         }
 
         if (reportAgeAtDivorce) {
-            println(getIndent(2) + translate("divorce"));
             Fam[] fams = indi.getFamiliesWhereSpouse();
             if (fams.length > 0) {
+                boolean found = false;
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
-                    if (fam.getDivorceDate() == null)
-                        println(getIndent(3) + translate("noData"));
-                    else {
-                        println(getIndent(2)+OPTIONS.getDivorceSymbol() + " "+translate("entity", new String[] {fam.getId(), fam.toString()}) + ": " + fam.getDivorceDate());
+                    if (fam.getDivorceDate() != null) {
+                        if (!found) {
+                            println(getIndent(2) + Gedcom.getName("DIV") + ":");
+                            found = true;
+                        }
+                        println(getIndent(3) + OPTIONS.getDivorceSymbol() +
+                                " " + familyToString(fam) + ": " + fam.getDivorceDate());
                         age = indi.getAge(fam.getDivorceDate().getStart());
-                        printAge(age,3);
+                        printAge(age,4);
                     }
                 }
-            } else
-                println(getIndent(3) + translate("noData"));
-            println();
+                if (found)
+                    println();
+            }
         }
 
         if (reportAgeAtChildBirth) {
-            println(getIndent(2) + translate("childBirths"));
             Indi[] children = indi.getChildren();
             if (children.length > 0) {
+                println(getIndent(2) + translate("childBirths") + ":");
                 for (int i = 0; i < children.length; i++) {
                     Indi child = children[i];
-                    String text = getIndent(2) + OPTIONS.getBirthSymbol()+" "+translate("entity", new String[] {child.getId(), children[i].getName()})+": ";
+                    String text = getIndent(3) + OPTIONS.getBirthSymbol()+" "+translate("entity", new String[] {child.getId(), children[i].getName()})+": ";
                     PropertyDate cbirth = child.getBirthDate();
                     if (cbirth == null)
                         println(text + translate("noData"));
                     else {
                         println(text + cbirth);
                         age = indi.getAge(cbirth.getStart());
-                        printAge(age,3);
+                        printAge(age,4);
                     }
                 }
-            } else
-                println(getIndent(3) + translate("noData"));
-            println();
+                println();
+            }
         }
 
-        if (reportAgeAtEmigration) {
-            println(getIndent(2) + translate("emigration"));
-            boolean ok = analyzeEvent(true, indi, "EMIG", false);
-            if(!ok)
-                println(getIndent(3) + translate("noData"));
-            println();
-        }
+        if (reportAgeAtEmigration)
+            analyzeEvent(true, indi, "EMIG");
 
-        if (reportAgeAtImmigration) {
-            println(getIndent(2) + translate("immigration"));
-            boolean ok = analyzeEvent(true, indi, "IMMI", false);
-            if(!ok)
-                println(getIndent(3) + translate("noData"));
-            println();
-        }
+        if (reportAgeAtImmigration)
+            analyzeEvent(true, indi, "IMMI");
 
-        if (reportAgeAtNaturalization) {
-            println(getIndent(2) + translate("naturalization"));
-            boolean ok = analyzeEvent(true, indi, "NATU", false);
-            if(!ok)
-                println(getIndent(3) + translate("noData"));
-            println();
-        }
+        if (reportAgeAtNaturalization)
+            analyzeEvent(true, indi, "NATU");
 
         if (reportAgeAtDeath) {
-            println(getIndent(2) + translate("death"));
             PropertyDate death = indi.getDeathDate();
             if (death != null) {
-                println(getIndent(2) + OPTIONS.getDeathSymbol()+" " + death);
+                println(getIndent(2) + Gedcom.getName("DEAT") + ":");
+                println(getIndent(3) + OPTIONS.getDeathSymbol()+" " + death);
                 age = indi.getAge(indi.getDeathDate().getStart());
-                printAge(age,3);
-            } else
-                println(getIndent(3) + translate("noData"));
-            println();
+                printAge(age,4);
+                println();
+            }
         }
 
         if (reportAgeSinceBirth) {
             PointInTime now = PointInTime.getNow();
-            println(getIndent(2) + translate("sinceBirth", now));
             age = indi.getAge(now);
-            printAge(age,3);
+            if (age != null) {
+                println(getIndent(2) + translate("sinceBirth", now) + ":");
+                printAge(age, 4);
+            }
         }
     }
 
