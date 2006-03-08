@@ -21,7 +21,6 @@ package genj.window;
 
 import genj.util.Registry;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.TextAreaWidget;
 import genj.util.swing.TextFieldWidget;
 
@@ -70,27 +69,9 @@ public abstract class AbstractWindowManager implements WindowManager {
   }
   
   /**
-   * @see genj.window.WindowManager#openFrame(java.lang.String, java.lang.String, javax.swing.ImageIcon, javax.swing.JComponent, java.lang.String)
+   * Setup a new independant window
    */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, final Action action) {
-    // key is necessary
-    if (key==null) 
-      key = getTemporaryKey();
-    // create option
-    JPanel south = new JPanel();
-    new ButtonHelper().setContainer(south).create(action).addActionListener(new Close(key));
-    // create new content with one option
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.add(BorderLayout.CENTER, content);
-    panel.add(BorderLayout.SOUTH , south  );
-    // delegate
-    return openFrame(key, title, image, panel, null, null);
-  }
-
-  /**
-   * Core frame handling implementation
-   */
-  public final String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable close) {
+  public final String openWindow(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Action close) {
     // create a key?
     if (key==null) 
       key = getTemporaryKey();
@@ -100,7 +81,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     Rectangle bounds = registry.get(key, (Rectangle)null);
     boolean maximized = registry.get(key+".maximized", false);
     // deal with it in impl
-    Object frame = openFrameImpl(key, title, image, content, menu, bounds, maximized, close);
+    Object frame = openWindowImpl(key, title, image, content, menu, bounds, maximized, close);
     // remember it
     key2framedlg.put(key, frame);
     // done
@@ -108,9 +89,9 @@ public abstract class AbstractWindowManager implements WindowManager {
   }
   
   /**
-   * Implementation for core frame handling
+   * Implementation for handling an independant window
    */
-  protected abstract Object openFrameImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Runnable close);
+  protected abstract Object openWindowImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Action onClosing);
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, String[], javax.swing.JComponent)

@@ -74,7 +74,7 @@ public class AboutWidget extends JPanel{
     JLabel pNorth = new JLabel(resources.getString("cc.about.dialog.northpanel.label"), null, JLabel.CENTER);
     
     // create a center panel
-    JTabbedPane pCenter = new JTabbedPane(SwingConstants.LEFT);
+    JTabbedPane pCenter = new JTabbedPane(SwingConstants.TOP);
     pCenter.addTab(resources.getString("cc.about.dialog.tab1.title"), null, new WelcomePanel());
     pCenter.addTab(resources.getString("cc.about.dialog.tab2.title"), null, new AuthorsPanel());
     pCenter.addTab(resources.getString("cc.about.dialog.tab3.title"), null, new CopyrightPanel());

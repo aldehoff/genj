@@ -29,6 +29,7 @@ import java.awt.Frame;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -66,7 +67,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
   /**
    * Frame implementation
    */
-  protected Object openFrameImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Runnable close) {
+  protected Object openWindowImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Action onClosing) {
     
     // Create a frame
     final JFrame frame = new JFrame() {
@@ -92,14 +93,14 @@ public class DefaultWindowManager extends AbstractWindowManager {
     frame.getContentPane().add(content);
 
     // DISPOSE_ON_CLOSE?
-    if (close==null) {
+    if (onClosing==null) {
       frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     } else {
       // responsibility to dispose passed to onClosing?
       frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
       frame.addWindowListener(new WindowAdapter() {
         public void windowClosing(WindowEvent e) {
-          close.run();
+          onClosing.actionPerformed(new ActionEvent(this, 0, key));
         }
       });
     }

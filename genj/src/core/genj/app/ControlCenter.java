@@ -367,13 +367,7 @@ public class ControlCenter extends JPanel {
     protected void execute() {
       if (windowManager.show("about"))
         return;
-      windowManager.openFrame(
-        "about",
-        resources.getString("cc.menu.about"),
-        Gedcom.getImage(),
-        new AboutWidget(viewManager),
-        new Action2(resources, "cc.menu.close")
-      );
+      windowManager.openDialog("about",resources.getString("cc.menu.about"),WindowManager.INFORMATION_MESSAGE,new AboutWidget(viewManager),Action2.okOnly(),ControlCenter.this);
       // done      
     }
   } //ActionAbout
@@ -391,13 +385,7 @@ public class ControlCenter extends JPanel {
     protected void execute() {
       if (windowManager.show("help"))
         return;
-      windowManager.openFrame(
-        "help",
-        resources.getString("cc.menu.help"),
-        Images.imgHelp,
-        new HelpWidget(),
-        new Action2(resources, "cc.menu.close")
-      );
+      windowManager.openWindow("help",resources.getString("cc.menu.help"),Images.imgHelp,new HelpWidget(),null,null);
       // done
     }
   } //ActionHelp

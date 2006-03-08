@@ -29,6 +29,7 @@ import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
 
@@ -335,7 +336,7 @@ public class ViewManager {
     if (settings==null) {
       settings = new SettingsWidget(this);
       settings.setView(handle);
-      windowManager.openFrame(
+      windowManager.openWindow(
         "settings", 
         RESOURCES.getString("view.edit.title"),
         Images.imgSettings,
@@ -470,15 +471,15 @@ public class ViewManager {
     allHandles.add(handle);
 
     // prepare to forget
-    Runnable close = new Runnable() {
-      public void run() {
+    Action2 close = new Action2() {
+      protected void execute() {
         // let us handle close
         closeView(handle);
       }
     };
     
     // open frame
-    windowManager.openFrame(handle.getKey(), title, factory.getImage(), container, null,  close);
+    windowManager.openWindow(handle.getKey(), title, factory.getImage(), container, null,  close);
         
     // done
     return handle;

@@ -43,7 +43,7 @@ public interface WindowManager {
     PLAIN_MESSAGE = JOptionPane.PLAIN_MESSAGE;
   
   /**
-   * Opens a frame
+   * Opens a non-modal window
    * @param key a unique key 
    * @param title text for titlebar
    * @param image image for titlebar
@@ -52,19 +52,7 @@ public interface WindowManager {
    * @param close code to run on closing (frame won't close automatically if != null)
    * @return key 
    */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Runnable close);
-
-  /**
-   * Opens a frame with one close button
-   * @param key a unique key 
-   * @param title text for titlebar
-   * @param image image for titlebar
-   * @param content component to be shown in frame
-   * @param menu menubar to be shown in frame
-   * @param action a single action to close the frame
-   * @return key 
-   */
-  public String openFrame(String key, String title, ImageIcon image, JComponent content, Action action);
+  public String openWindow(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Action onClosing);
 
   /**
    * Opens a dialog containing a custom component

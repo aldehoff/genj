@@ -163,7 +163,7 @@ public class App {
       ControlCenter center = new ControlCenter(registry, winMgr, args);
 
       // show it
-      winMgr.openFrame("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
+      winMgr.openWindow("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
 
       // done
       LOG.info("/Startup");
