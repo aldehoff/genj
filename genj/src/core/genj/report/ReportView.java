@@ -42,8 +42,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -240,6 +241,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     taOutput.setEditable(false);
     taOutput.addHyperlinkListener(new FollowHyperlink(taOutput));
     taOutput.addMouseMotionListener(callback);
+    taOutput.addMouseListener(callback);
 
     // Done
     return new JScrollPane(taOutput);
@@ -586,7 +588,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * A private callback for various messages coming in
    */
-  private class Callback extends MouseMotionAdapter implements ListCellRenderer, ListSelectionListener {
+  private class Callback extends MouseAdapter implements MouseMotionListener, ListCellRenderer, ListSelectionListener {
 
     /** a default renderer for list */
     private DefaultListCellRenderer defRenderer = new DefaultListCellRenderer();
@@ -634,14 +636,20 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // try to find id at location
       id = markIDat(e.getPoint());
+
+      // done
+    }
+    
+    /**
+     * Check if user clicks on marked ID
+     */
+    public void mouseClicked(MouseEvent e) {
       if (id!=null) {
         // propagate to other views through manager
         Entity entity = gedcom.getEntity(id);
         if (entity!=null)
           manager.fireContextSelected(new Context(entity), e.getClickCount()>1, null);
       }
-
-      // done
     }
 
     /**
