@@ -90,7 +90,7 @@ public class BeanFactory {
   public PropertyBean get(Property prop) {
 
     // grab a bean
-    PropertyBean bean = getSuitable(prop);
+    PropertyBean bean = getBeanFor(prop);
     
     // set its value
     bean.setProperty(prop);
@@ -129,7 +129,7 @@ public class BeanFactory {
   /**
    * Try to lookup a recycled bean
    */
-  private synchronized PropertyBean getSuitable(Property prop) {
+  private synchronized PropertyBean getBeanFor(Property prop) {
     // look into cache
     for (ListIterator it=cache.listIterator(); it.hasNext(); ) {
       PropertyBean bean = (PropertyBean)it.next();
@@ -142,10 +142,10 @@ public class BeanFactory {
     try {
       for (int i=0;i<beanTypes.length;i++) {
         PropertyBean bean = (PropertyBean)beanTypes[i].newInstance();
-        bean.initialize(viewManager, registry);
-        if (bean.accepts(prop))
+        if (bean.accepts(prop)) {
+          bean.initialize(viewManager, registry);
           return bean;
-        cache.add(bean);
+        }
       }
     } catch (Throwable t) {
     }
