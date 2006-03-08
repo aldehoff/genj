@@ -905,8 +905,8 @@ public class ControlCenter extends JPanel {
     protected ActionSave(boolean ask, boolean enabled) {
       // setup default target
       setTarget(ControlCenter.this);
-      // setup accelerator
-      setAccelerator(ACC_SAVE);
+      // setup accelerator - IF this is a no-ask save it instead of SaveAs
+      if (!ask) setAccelerator(ACC_SAVE);
       // remember
       this.ask = ask;
       // text
