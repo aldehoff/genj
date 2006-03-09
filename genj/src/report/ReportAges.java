@@ -212,7 +212,7 @@ public class ReportAges extends Report {
      */
     private void printAge(Delta age, int indent) {
         if (age == null)
-            println(getIndent(indent) + translate("error"));
+            println(getIndent(indent) + translate("noData"));
         else
             println(getIndent(indent) + AGE + ": " + age);
     }
