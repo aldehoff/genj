@@ -11,6 +11,7 @@
  * TODO Daniel: classer les colonnes au choix, avec plusieurs cle
  * TODO Daniel: limiter aux evenements/general/tous
  * TODO Daniel: differencier les todos sur evt des todo globaux
+ * TODO Daniel: ligne blanche entre la fin des taches, et le resume
  * FIXME CONC in NOTEs is seen as a new line
  */
 import genj.fo.Document;
@@ -140,13 +141,16 @@ public class ReportToDo extends Report {
     if (outputSummary) {
       
       // Loop through individuals & families
-      doc.startTable("genj:csv=true");
+    	doc.startTable("width=100%,border=0.5pt solid black,genj:csv=true");
       
       doc.nextTableRow(ROW_FORMAT_HEADER1);
-      doc.addTableColumn("column-width=8%");
-      doc.addTableColumn("column-width=8%");
-      doc.addTableColumn("column-width=8%");
       doc.addTableColumn("");
+      doc.addTableColumn("");
+      doc.addTableColumn("");
+/*      doc.addTableColumn("column-width=8%");
+      doc.addTableColumn("column-width=8%");
+      doc.addTableColumn("column-width=8%");
+*/      doc.addTableColumn("");
       doc.addTableColumn("");
       
       doc.nextTableCell("number-columns-spanned=5");
