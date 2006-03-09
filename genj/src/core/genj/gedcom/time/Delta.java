@@ -30,24 +30,27 @@ public class Delta implements Comparable {
 
   /** localizations */
   public final static String
-    TXT_YEAR  = PointInTime.resources.getString("time.year"  ),
-    TXT_YEARS = PointInTime.resources.getString("time.years" ),
-    TXT_MONTH = PointInTime.resources.getString("time.month" ),
-    TXT_MONTHS= PointInTime.resources.getString("time.months"),
-    TXT_DAY   = PointInTime.resources.getString("time.day"   ),
-    TXT_DAYS  = PointInTime.resources.getString("time.days"  );
+    TXT_YEAR    = PointInTime.resources.getString("time.year"   ),
+    TXT_YEARS   = PointInTime.resources.getString("time.years"  ),
+    TXT_YEARSS  = PointInTime.resources.getString("time.yearss" ),
+    TXT_MONTH   = PointInTime.resources.getString("time.month"  ),
+    TXT_MONTHS  = PointInTime.resources.getString("time.months" ),
+    TXT_MONTHSS = PointInTime.resources.getString("time.monthss"),
+    TXT_DAY     = PointInTime.resources.getString("time.day"    ),
+    TXT_DAYS    = PointInTime.resources.getString("time.days"   ),
+    TXT_DAYSS   = PointInTime.resources.getString("time.dayss"  );
 
   /** values */
   private int years, months, days;
   private Calendar calendar;
-  
+
   /**
    * Constructor
    */
   public Delta(int d, int m, int y) {
     this(d,m,y,PointInTime.GREGORIAN);
   }
-  
+
   /**
    * Constructor
    */
@@ -57,35 +60,35 @@ public class Delta implements Comparable {
     days  = d;
     calendar = c;
   }
-  
+
   /**
    * Accessor - years
    */
   public int getYears() {
     return years;
   }
-  
+
   /**
    * Accessor - months
    */
   public int getMonths() {
     return months;
   }
-  
+
   /**
    * Accessor - days
    */
   public int getDays() {
     return days;
   }
-  
+
   /**
    * Accessor - calendar
    */
   public Calendar getCalendar() {
     return calendar;
   }
-  
+
   /**
    * Factory
    * @return Delta or null if n/a
@@ -93,18 +96,18 @@ public class Delta implements Comparable {
   public static Delta get(PointInTime earlier, PointInTime later) {
 
     // null check
-    if (earlier==null||later==null) 
+    if (earlier==null||later==null)
       return null;
-         
+
     // valid?
     if (!earlier.isValid()||!later.isValid())
       return null;
-    
+
     // same calendar?
     Calendar calendar = earlier.getCalendar();
     if (calendar!=later.getCalendar())
       return null;
-      
+
     // ordering?
     if (earlier.compareTo(later)>0) {
       PointInTime p = earlier;
@@ -112,60 +115,60 @@ public class Delta implements Comparable {
       later = p;
     }
 
-    // grab earlier values  
-    int 
+    // grab earlier values
+    int
       yearlier =  earlier.getYear (),
       mearlier = earlier.getMonth(),
       dearlier = earlier.getDay();
-  
+
     // age at what point in time?
-    int 
+    int
       ylater =  later.getYear (),
       mlater = later.getMonth(),
       dlater = later.getDay();
-    
+
     // make sure years are not empty (could be on all UNKNOWN PIT)
     if (yearlier==PointInTime.UNKNOWN||ylater==PointInTime.UNKNOWN)
       return null;
     int years  = ylater - yearlier;
-    
+
     // check months
     int months = 0;
     int days = 0;
     if (mearlier!=PointInTime.UNKNOWN&&mlater!=PointInTime.UNKNOWN) {
-      
+
       // got the month
       months = mlater - mearlier;
-    
+
       // check days
       if (dearlier!=PointInTime.UNKNOWN&&dlater!=PointInTime.UNKNOWN) {
-        
+
         // got the days
         days = dlater - dearlier;
-      
+
         // check day
         if (days<0) {
           // decrease months
           months --;
           // increase days with days in previous month
-          days = dlater + (calendar.getDays(mearlier, yearlier)-dearlier); 
+          days = dlater + (calendar.getDays(mearlier, yearlier)-dearlier);
         }
 
       }
-      
+
       // check month now<then
       if (months<0) {
         // decrease years
         years -=1;
         // increase months
         months += calendar.getMonths();
-      } 
-    
+      }
+
     }
     // done
     return new Delta(days, months, years, calendar);
   }
-  
+
   /**
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
@@ -184,7 +187,7 @@ public class Delta implements Comparable {
     return delta;
   }
 
-  
+
   /**
    * @see java.lang.Object#toString()
    */
@@ -197,19 +200,53 @@ public class Delta implements Comparable {
     WordBuffer buffer = new WordBuffer();
     if (years >0) {
       buffer.append(years);
-      buffer.append(years==1 ? TXT_YEAR : TXT_YEARS);
-    } 
+      int form = getPluralForm(years);
+      if (form == 1)
+          buffer.append(TXT_YEAR);
+      else if (form == 2)
+          buffer.append(TXT_YEARS);
+      else
+          buffer.append(TXT_YEARSS);
+    }
     if (months>0) {
       buffer.append(months);
-      buffer.append(months==1 ? TXT_MONTH : TXT_MONTHS);
-    } 
+      int form = getPluralForm(months);
+      if (form == 1)
+          buffer.append(TXT_MONTH);
+      else if (form == 2)
+          buffer.append(TXT_MONTHS);
+      else
+          buffer.append(TXT_MONTHSS);
+    }
     if (days  >0) {
       buffer.append(days);
-      buffer.append(days==1 ? TXT_DAY : TXT_DAYS);
-    } 
+      int form = getPluralForm(days);
+      if (form == 1)
+          buffer.append(TXT_DAY);
+      else if (form == 2)
+          buffer.append(TXT_DAYS);
+      else
+          buffer.append(TXT_DAYSS);
+    }
     return buffer.toString();
   }
-  
+
+  /**
+   * Returns the plural form to use. Many Slavonic
+   * languages (e.g. Polish, Russian) have two plural forms when used with
+   * numbers (e.g 1 rok, 2 lata, 5 lat)
+   * @param number  the number
+   * @return 1 - singular, 2 - plural1, 3 - plural2
+   */
+  private int getPluralForm(int number) {
+      number = Math.abs(number);
+      if (number == 1)
+          return 1;
+      if (number % 100 / 10 != 1 && number % 10 >= 2 && number % 10 <= 4)
+          return 2;
+      return 3;
+  }
+
   /**
    * Gedcom value
    */
@@ -220,7 +257,7 @@ public class Delta implements Comparable {
     if ( (years==0&&months==0) || (years>0&&months>0) || days>0) buffer.append(days +"d");
     return buffer.toString();
   }
-  
+
   /**
    * Gedcom value
    */
@@ -234,24 +271,24 @@ public class Delta implements Comparable {
     // try to parse delta string tokens
     StringTokenizer tokens = new StringTokenizer(value);
     while (tokens.hasMoreTokens()) {
-        
+
         String token = tokens.nextToken();
         int len = token.length();
-        
+
         // check 1234x
         if (len<2) return false;
         for (int i=0;i<len-1;i++) {
-            if (!Character.isDigit(token.charAt(i))) 
+            if (!Character.isDigit(token.charAt(i)))
               return false;
         }
-        
+
         int i;
         try {
           i = Integer.parseInt(token.substring(0, token.length()-1));;
         } catch (NumberFormatException e) {
           return false;
         }
-        
+
         // check last
         switch (token.charAt(len-1)) {
             case 'y' : years = i; break;
@@ -264,5 +301,5 @@ public class Delta implements Comparable {
     // parsed!
     return true;
   }
-  
+
 } // Delta
