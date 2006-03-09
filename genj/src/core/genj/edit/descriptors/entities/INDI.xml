@@ -17,8 +17,8 @@
   </col>
  </row>
  <row><label path="INDI:FAMS"/></row>
- <row><bean path="INDI" type="Families" wx="1" wy="0.1"/></row>
+ <row><bean path="INDI" type="genj.edit.beans.FamiliesBean" wx="1" wy="0.1"/></row>
  <row><label path="INDI:FAMC" plural="1"/></row>
- <row><bean path="INDI" type="Parents" wx="1" wy="0.1"/></row>
+ <row><bean path="INDI" type="genj.edit.beans.ParentsBean" wx="1" wy="0.1"/></row>
  <row><tabs wx="1" wy="1"/></row>
 </col>

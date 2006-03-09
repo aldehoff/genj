@@ -123,7 +123,10 @@ public class BeanFactory {
     } catch (Throwable t) {
     }
     
-    return new SimpleValueBean();
+    // fallback with new instance
+    PropertyBean bean = (PropertyBean)new SimpleValueBean();
+    bean.initialize(viewManager, registry);
+    return bean;
   }
   
   /**

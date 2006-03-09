@@ -19,13 +19,13 @@
   <label path="FAM:HUSB"/><label path="FAM:WIFE"/>
  </row>
  <row>
-  <bean path="FAM" type="Spouses" wx="1"/>
+  <bean path="FAM" type="genj.edit.beans.SpousesBean" wx="1"/>
  </row>
  <row>
   <label path="FAM:CHIL" plural="1"/>
  </row>
  <row>
-  <bean path="FAM" type="Children" wx="1" wy="0.1"/>
+  <bean path="FAM" type="genj.edit.beans.ChildrenBean" wx="1" wy="0.1"/>
  </row>
  <row><tabs wx="1" wy="1"/></row>
 </col> 
