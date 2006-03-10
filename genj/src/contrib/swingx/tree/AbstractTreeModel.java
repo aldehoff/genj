@@ -174,10 +174,7 @@ public abstract class AbstractTreeModel implements TreeModel {
         /* Check for null, in case someone passed in a null node, or
            they passed in an element that isn't rooted at root. */
         if(aNode == null) {
-            if(depth == 0)
-                return null;
-            else
-                retNodes = new Object[depth];
+            return null;
         }
         else {
             depth++;
@@ -185,6 +182,8 @@ public abstract class AbstractTreeModel implements TreeModel {
                 retNodes = new Object[depth];
             else
                 retNodes = getPathToRoot(getParent(aNode), depth);
+            if (retNodes==null)
+              return null;
             retNodes[retNodes.length - depth] = aNode;
         }
         return retNodes;
