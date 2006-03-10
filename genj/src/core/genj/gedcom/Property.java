@@ -20,11 +20,13 @@
 package genj.gedcom;
 
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.ImageIcon;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -959,7 +961,53 @@ public abstract class Property implements Comparable {
   public String getPropertyName() {
     return Gedcom.getName(getTag());
   }
-
+  
+  /**
+   * Returns a list of property names for given list of properties
+   * @param properties the properties to look at
+   * @param limit max number of names followed by "..." where zero is all
+   */
+  public static String getPropertyNames(Property[] properties, int limit) {
+    
+    WordBuffer result = new WordBuffer(", ");
+    int i=0;
+    while (i<properties.length) {
+      result.append(properties[i++].getPropertyName());
+      if (i==limit) break;
+    }
+    if (i<properties.length)
+      result.append("...");
+    
+    return result.toString();
+  }
+  
+  /**
+   * normalizes a list of properties - that is for each element in result
+   * <pre>
+   * n(property) : for (Property property : list) !list.contains(property.getParent()) && n(property.getParent())
+   * </pre>
+   * @param list of properties
+   * @return normalized list
+   */
+  public static List normalize(List properties) {
+    
+    ArrayList result = new ArrayList(properties.size());
+    
+    for (Iterator it = properties.iterator(); it.hasNext(); ) {
+      Property prop = (Property)it.next();
+      // any containing in selection as well?
+      Property parent = prop.getParent();
+      while (parent!=null) {
+        if (properties.contains(parent)) break;
+        parent = parent.getParent();
+      }
+      if (parent==null) result.add(prop);
+    }
+    
+    // done
+    return result;
+  }
+  
   /**
    * Generate a string representation based on given template.
    * @see Property#format(String, PrivacyPolicy)

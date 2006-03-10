@@ -29,7 +29,6 @@ import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
@@ -591,14 +590,9 @@ public class ViewManager {
       Class propTypes = properties.getClass().getComponentType();
       String text;
       if (propTypes==Entity.class||propTypes==Property.class) {
-        WordBuffer list = new WordBuffer(", ");
-        for (int i=0;i<properties.length&&i<5;i++) 
-          list.append(Gedcom.getName(properties[i].getTag()));
-        if (properties.length>5)
-          list.append("...");
-        text = list.toString()+" ("+properties.length+"+)";
+        text = "'"+Property.getPropertyNames(properties, 5)+"' ("+properties.length+")";
       } else {
-        text = Gedcom.getName(properties[0].getTag())+" ("+properties.length+"x)";
+        text = "'"+Gedcom.getName(properties[0].getTag())+"' ("+properties.length+")";
       }
       mh.createMenu(text);
       for (int i = 0; i < as.length; i++) try {

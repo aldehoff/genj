@@ -32,7 +32,6 @@ import genj.io.PropertyReader;
 import genj.io.PropertyTransferable;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
@@ -150,8 +149,8 @@ import javax.swing.tree.TreePath;
         if (props.length==0)
           return result;
 
-        result.addAction(new Cut(tree.getSelection(true)));
-        result.addAction(new Copy(tree.getSelection(true)));
+        result.addAction(new Cut(tree.getSelection()));
+        result.addAction(new Copy(tree.getSelection()));
         
         if (props.length==1)
           result.addAction(new Paste(props[0]));
@@ -162,7 +161,7 @@ import javax.swing.tree.TreePath;
           result.addAction(new Add(props[0]));
         
         try {
-          result.addAction(new Propagate(tree.getSelection(true)));
+          result.addAction(new Propagate(tree.getSelection()));
         } catch (IllegalArgumentException i) {
         }
         result.addAction(Action2.NOOP);
@@ -263,25 +262,21 @@ import javax.swing.tree.TreePath;
    */
   private class Propagate extends Action2 {
     /** selection to propagate */
-    private List selection;
+    private Entity entity;
+    private List properties;
+    private String what;
     /** constructor */
     private Propagate(List selection) {
       // remember
-      this.selection = selection;
-      setText(resources.getString("action.propagate"));
-      //setImage(prop.getImage(false));
+      this.entity = (Entity)tree.getRoot();
+      properties = Property.normalize(selection);
+      if (properties.contains(entity))
+        properties = Arrays.asList(entity.getProperties());
+      this.what = "'"+Property.getPropertyNames(Property.toArray(properties),5)+"' ("+properties.size()+")";
+      setText(resources.getString("action.propagate", what));
     }
     /** apply it */
     protected void execute() {
-      
-      // contains entity?
-      final Entity entity = (Entity)tree.getRoot();
-      if (selection.contains(entity))
-        selection = Arrays.asList(entity.getProperties());
-      
-      final WordBuffer what = new WordBuffer(", ");
-      for (int i=0;i<selection.size();i++)
-        what.append(((Property)selection.get(i)).getPropertyName());
       
       // prepare options
       final TextAreaWidget text = new TextAreaWidget("", 4, 10, false, true);
@@ -324,9 +319,9 @@ import javax.swing.tree.TreePath;
         
       try {
         if (to!=null)
-          execute(selection, entity, to, check.isSelected());
+          execute(properties, entity, to, check.isSelected());
         else for (Iterator it = gedcom.getEntities(entity.getTag()).iterator(); it.hasNext(); ) 
-          execute(selection, entity, (Entity)it.next(), check.isSelected());
+          execute(properties, entity, (Entity)it.next(), check.isSelected());
       } finally {
         gedcom.endTransaction();
       }
@@ -377,7 +372,7 @@ import javax.swing.tree.TreePath;
     
     /** constructor */
     private Cut(List preset) {
-      presetSelection = preset;
+      presetSelection = Property.normalize(preset);
       super.setImage(Images.imgCut);
       super.setText(resources.getString("action.cut"));
     }
@@ -393,7 +388,7 @@ import javax.swing.tree.TreePath;
       // available
       List selection = presetSelection;
       if (selection==null)
-        selection = tree.getSelection(true);
+        selection = Property.normalize(tree.getSelection());
       if (selection.isEmpty())
         return;
       
@@ -458,7 +453,7 @@ import javax.swing.tree.TreePath;
     
     /** constructor */
     protected Copy(List preset) {
-      presetSelection = preset;
+      presetSelection = Property.normalize(preset);
       setText(resources.getString("action.copy"));
       setImage(Images.imgCopy);
     }
@@ -472,7 +467,7 @@ import javax.swing.tree.TreePath;
       // check selection
       List selection = presetSelection;
       if (selection==null) 
-        selection = tree.getSelection(true);
+        selection = Property.normalize(tree.getSelection());
       
       // contains entity?
       if (selection.contains(tree.getRoot()))
@@ -522,7 +517,7 @@ import javax.swing.tree.TreePath;
       
       // got a parent already?
       if (parent==null) {
-        List selection = tree.getSelection(false);
+        List selection = tree.getSelection();
         if (selection.size()!=1)
           return;
         parent = (Property)selection.get(0);
@@ -667,7 +662,7 @@ import javax.swing.tree.TreePath;
       ok.setEnabled(false);
       cancel.setEnabled(false);
       // simulate a selection change
-      List selection = tree.getSelection(false);
+      List selection = tree.getSelection();
       tree.clearSelection();
       tree.setSelection(selection);
     }
@@ -703,7 +698,7 @@ import javax.swing.tree.TreePath;
       editPane.repaint();
       
       // setup beans
-      List selection = tree.getSelection(false); 
+      List selection = tree.getSelection(); 
       if (selection.isEmpty())
         return;
       

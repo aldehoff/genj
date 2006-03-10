@@ -110,12 +110,12 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     if (root==null) 
       return new Context(lazyGedcom);
     // no selection - it's the root
-    List selection = getSelection(false);
+    List selection = getSelection();
     if (selection.isEmpty())
       return new Context(root);
     // we can be specific now
     Context result = new Context(lazyGedcom);
-    result.addProperties(getSelection(false));
+    result.addProperties(selection);
     return result;
   }
   
@@ -255,42 +255,13 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   /**
    * returns the currently selected properties
    */
-  public List getSelection(boolean normalize) {
+  public List getSelection() {
     // go through selection paths
     List result = new ArrayList();
     TreePath[] paths = getSelectionPaths();
     for (int i=0;paths!=null&&i<paths.length;i++) {
       result.add(paths[i].getLastPathComponent());
     }
-    // normalize?
-    if (normalize) result = normalize(result);
-    // done
-    return result;
-  }
-  
-  /**
-   * normalizes a selection - that is for each element in result
-   * <pre>
-   * n(property) : for (Property property : list) !list.contains(property.getParent()) && n(property.getParent())
-   * </pre>
-   * @param selection
-   * @return
-   */
-  private List normalize(List selection) {
-    
-    ArrayList result = new ArrayList(selection.size());
-    
-    for (Iterator it = selection.iterator(); it.hasNext(); ) {
-      Property prop = (Property)it.next();
-      // any containing in selection as well?
-      Property parent = prop.getParent();
-      while (parent!=null) {
-        if (selection.contains(parent)) break;
-        parent = parent.getParent();
-      }
-      if (parent==null) result.add(prop);
-    }
-    
     // done
     return result;
   }
@@ -410,7 +381,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       draggingFrom = gedcom;
       
       // normalize selection
-      List list = normalize(Arrays.asList(nodes));
+      List list = Property.normalize(Arrays.asList(nodes));
       
       // done 
       return new PropertyTransferable(list);
@@ -628,7 +599,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         return;
         
       // always try to stay with current selection
-      List selection = getSelection(false);
+      List selection = getSelection();
       
       // follow changes
       Change[] changes = tx.getChanges();
