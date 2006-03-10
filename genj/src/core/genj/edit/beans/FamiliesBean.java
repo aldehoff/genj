@@ -62,6 +62,11 @@ public class FamiliesBean extends PropertyBean {
     add(BorderLayout.CENTER, table);
     
   }
+
+  /** we can't focus on any prop */
+  public boolean canFocus(Property prop) {
+    return false;
+  }
   
   /**
    * on add - set column widths
