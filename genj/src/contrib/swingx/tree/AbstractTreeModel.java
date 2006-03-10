@@ -174,6 +174,7 @@ public abstract class AbstractTreeModel implements TreeModel {
         /* Check for null, in case someone passed in a null node, or
            they passed in an element that isn't rooted at root. */
         if(aNode == null) {
+          // NM a null node is simply bad - return null
             return null;
         }
         else {
@@ -182,6 +183,7 @@ public abstract class AbstractTreeModel implements TreeModel {
                 retNodes = new Object[depth];
             else
                 retNodes = getPathToRoot(getParent(aNode), depth);
+            // NM a null node is simply bad - return null recursively (maybe throw an exception)
             if (retNodes==null)
               return null;
             retNodes[retNodes.length - depth] = aNode;
@@ -307,7 +309,8 @@ public abstract class AbstractTreeModel implements TreeModel {
             if (listeners[i]==TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null)
-                    e = new TreeModelEvent(source, path,
+                  // NM use TreePath() constructor here - if the path is null (because of root=null) then passing Object[] to TreeModelEvent results in IAE
+                    e = new TreeModelEvent(source, path==null ? null : new TreePath(path),
                                            childIndices, children);
                 ((TreeModelListener)listeners[i+1]).treeStructureChanged(e);
             }
