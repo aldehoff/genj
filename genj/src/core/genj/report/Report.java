@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.104 $ $Author: nmeier $ $Date: 2006-03-02 21:13:48 $
+ * $Revision: 1.105 $ $Author: nmeier $ $Date: 2006-03-10 04:30:33 $
  */
 package genj.report;
 
@@ -49,12 +49,9 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -126,9 +123,6 @@ public abstract class Report implements Cloneable {
   /** image */
   private ImageIcon image;
   
-  /** our accepted types */
-  private Map inputType2startMethod = new HashMap();
-
   /**
    * Constructor
    */
@@ -146,20 +140,6 @@ public abstract class Report implements Cloneable {
     } catch (Throwable t) {
     }
     
-    // check for what this report accepts
-    Method[] methods = getClass().getDeclaredMethods();
-    for (int m = 0; m < methods.length; m++) {
-      // needs to be named start
-      if (!methods[m].getName().equals("start")) continue;
-      // make sure its a one-arg
-      Class[] params = methods[m].getParameterTypes();
-      if (params.length!=1) continue;
-      // keep it
-      inputType2startMethod.put(params[0], methods[m]);
-      // next
-    }
-    
-    // done
   }
   
   /**
@@ -800,14 +780,7 @@ public abstract class Report implements Cloneable {
    */
   public void start(Object context) {
     try {
-      Class contextType = context.getClass();
-      Method method = null;
-      while (contextType!=null) {
-         method = (Method)inputType2startMethod.get(contextType);
-         if (method!=null) break;
-         contextType = contextType.getSuperclass();
-      }
-      method.invoke(this, new Object[]{ context });
+      getStartMethod(context).invoke(this, new Object[]{ context });
     } catch (Throwable t) {
       String msg = "can't run report on input";
       if (t instanceof InvocationTargetException) {
@@ -847,20 +820,33 @@ public abstract class Report implements Cloneable {
      * @return title of action for given context or null for n/a
      */
     public String accepts(Object context) {
-      Class contextType = context.getClass();
-      while (contextType!=null) {
-        if (inputType2startMethod.containsKey(contextType)) return getName();
-        contextType = contextType.getSuperclass();
+      return getStartMethod(context)!=null ? getName() : null;
+    }
+    
+    /**
+     * resolve start method to use for given argument type
+     */
+    /*package*/ Method getStartMethod(Object context) {
+      
+      // check for what this report accepts
+      try {
+        Method[] methods = getClass().getDeclaredMethods();
+        for (int m = 0; m < methods.length; m++) {
+          // needs to be named start
+          if (!methods[m].getName().equals("start")) continue;
+          // make sure its a one-arg
+          Class[] params = methods[m].getParameterTypes();
+          if (params.length!=1) continue;
+          // keep it
+          Class param = params[0];
+          if (param.isAssignableFrom(context.getClass()))
+            return methods[m];
+          // try next
+        }
+      } catch (Throwable t) {
       }
-      // not applicable
+      // n/a
       return null;
     }
-  
-  /**
-   * Resolve acceptable types
-   */
-  /*package*/ final Set getInputTypes() {
-    return inputType2startMethod.keySet();
-  }
   
 } //Report

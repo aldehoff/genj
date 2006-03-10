@@ -67,8 +67,8 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
   /**
    * Plugin actions for entities
    */
-  public List createActions(Entity[] entities, ViewManager manager) {
-    return getActions(entities, entities[0].getGedcom(), manager);
+  public List createActions(Property[] properties, ViewManager manager) {
+    return getActions(properties, properties[0].getGedcom(), manager);
   }
 
   /**

@@ -409,11 +409,12 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // either use preset context, gedcom file or ask for entity
       context = preset;
       if (context==null) {
-        if (instance.getInputTypes().contains(Gedcom.class))
+        if (instance.getStartMethod(gedcom)!=null)
           context = gedcom;
         else  for (int i=0;i<Gedcom.ENTITIES.length;i++) {
           String tag = Gedcom.ENTITIES[i];
-          if (instance.getInputTypes().contains(Gedcom.getEntityType(tag))) {
+          Entity sample = gedcom.getFirstEntity(tag);
+          if (instance.getStartMethod(sample)!=null) {
             context = instance.getEntityFromUser(Gedcom.getName(tag), gedcom, tag);
             if (context==null) return false;
             break;

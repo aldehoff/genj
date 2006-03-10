@@ -29,6 +29,7 @@ import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
@@ -584,12 +585,24 @@ public class ViewManager {
     // find ActionSupport implementors
     ActionProvider[] as = (ActionProvider[])getViews(ActionProvider.class, context.getGedcom());
     
-    // items for set of entities? more specific than Entity.class for the moment!
-    if (entities.length>1 && entities.getClass().getComponentType()!=Entity.class) {
-      // a sub-menu with appropriate actions
-      mh.createMenu(entities.length+" "+Gedcom.getName(entities[0].getTag(), true), entities[0].getImage(false));
+    // items for set of properties?
+    if (properties.length>1) {
+      // calculate a name for selection of properties
+      Class propTypes = properties.getClass().getComponentType();
+      String text;
+      if (propTypes==Entity.class||propTypes==Property.class) {
+        WordBuffer list = new WordBuffer(", ");
+        for (int i=0;i<properties.length&&i<5;i++) 
+          list.append(Gedcom.getName(properties[i].getTag()));
+        if (properties.length>5)
+          list.append("...");
+        text = list.toString()+" ("+properties.length+"+)";
+      } else {
+        text = Gedcom.getName(properties[0].getTag())+" ("+properties.length+"x)";
+      }
+      mh.createMenu(text);
       for (int i = 0; i < as.length; i++) try {
-        mh.createItems(as[i].createActions(entities, this), true);
+        mh.createItems(as[i].createActions(properties, this), true);
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "Action Provider threw "+t.getClass()+" on createActions(Entity[])", t);
       }
@@ -597,8 +610,6 @@ public class ViewManager {
       
     }
 
-    // items for set of properties?
-    
     // items for single property
     if (properties.length==1&&!(properties[0] instanceof Entity)) {
       Property property = properties[0];

@@ -125,7 +125,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
   /**
    * @see genj.view.ActionProvider#createActions(Entity[], ViewManager)
    */
-  public List createActions(Entity[] entities, ViewManager manager) {
+  public List createActions(Property[] properties, ViewManager manager) {
     // not supported
     return null;
   }
