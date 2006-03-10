@@ -49,31 +49,36 @@ public class CreateSibling extends CreateRelationship {
   /** do the change */
   protected Property change(Entity target, boolean targetIsNew) throws GedcomException {
     
-    // get Family where sibling is child
+    // try to add target to sibling's family or vice versa
     Fam[] fams = sibling.getFamiliesWhereChild();
     if (fams.length>0) {
-      
-      // add target to first family
       fams[0].addChild((Indi)target);
-      
     } else {
       
-      Gedcom ged = sibling.getGedcom();
-      Fam fam = (Fam)ged.createEntity(Gedcom.FAM);
-      
-      try {
-        fam.addChild((Indi)target);
-      } catch (GedcomException e) {
-        ged.deleteEntity(fam);
-        throw e;
-      }
-      
-      // 20040619 adding missing spouse automatically now
-      fam.setHusband((Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties());
-      fam.setWife((Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties());
-      fam.addChild(sibling);
-    }
+      // try to add sibling to target's family
+      fams = ((Indi)target).getFamiliesWhereChild();
+      if (fams.length>0) {
+        fams[0].addChild(sibling);
+      } else {
 
+        // both indis are not children yet - create a new family
+        Gedcom ged = sibling.getGedcom();
+        Fam fam = (Fam)ged.createEntity(Gedcom.FAM);
+        try {
+          fam.addChild((Indi)target);
+        } catch (GedcomException e) {
+          ged.deleteEntity(fam);
+          throw e;
+        }
+        
+        // 20040619 adding missing spouse automatically now
+        fam.setHusband((Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties());
+        fam.setWife((Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties());
+        fam.addChild(sibling);
+      }
+
+    }
+    
     // set it's name if new
     if (targetIsNew) 
       ((Indi)target).setName("", sibling.getLastName());        
