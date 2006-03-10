@@ -1361,35 +1361,35 @@ private String put_given_name(Indi person,int length){
 	return result;
     }
 
+  class PersonCell {
+    List cells;
+    int max;
+    PersonCell(){
+        cells = new ArrayList(5);
+        max = 0;
+    }
+    int add(String text,int index){
+        if (text == null || text.length() == 0) return 0;
+        cells.add(""+index+" {("+text);
+        max++;
+        return 1;
+    }
+    String get(int ahnen,int info){
+        String result="";
+        int offset;
+        for (offset=1; offset<=max; offset++){
+        result += (String)(cells.get(offset-1))+") "+ahnen+" "+offset+" "+info+" "+max+"} addind\n";
+        }
+        return(result);
+    }
+    String getCenter(int sex){
+        String result="";
+        int offset;
+        for (offset=1; offset<=max; offset++){
+        result += (String)(cells.get(offset-1))+") "+sex+" "+offset+" 0} addcenterindi\n";
+        }
+        return(result);
+    }
+  }
 }    //ReportLinesCirc
 
- class PersonCell {
-	List cells;
-	int max;
-	PersonCell(){
-	    cells = new ArrayList(5);
-	    max = 0;
-	}
-	int add(String text,int index){
-	    if (text == null || text.length() == 0) return 0;
-	    cells.add(""+index+" {("+text);
-	    max++;
-	    return 1;
-	}
-	String get(int ahnen,int info){
-	    String result="";
-	    int offset;
-	    for (offset=1; offset<=max; offset++){
-		result += (String)(cells.get(offset-1))+") "+ahnen+" "+offset+" "+info+" "+max+"} addind\n";
-	    }
-	    return(result);
-	}
-	String getCenter(int sex){
-	    String result="";
-	    int offset;
-	    for (offset=1; offset<=max; offset++){
-		result += (String)(cells.get(offset-1))+") "+sex+" "+offset+" 0} addcenterindi\n";
-	    }
-	    return(result);
-	}
-    }
