@@ -108,7 +108,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     Entity root = (Entity)getRoot();
     if (root==null) 
       return new Context(lazyGedcom);
-    Context result = new Context(lazyGedcom);
+    Context result = new Context(root);
     result.addProperties(getSelection(false));
     return result;
   }
@@ -384,7 +384,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       // remember
       root = set;
       // .. tell about it
-      fireTreeStructureChanged(this, getPathToRoot(getRoot()), null, null);
+      rootExchanged();
       // make sure we don't show null-root
       setRootVisible(root!=null);
       // expand all

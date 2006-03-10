@@ -236,6 +236,8 @@ import javax.swing.tree.TreePath;
 
     // set selection
     Property property = context.getProperty();
+    if (property==null)
+      return;
     tree.setSelection(Collections.singletonList(property!=null ? property : entity));  
     
     // 20060301 set focus since selection change won't do that anymore
@@ -413,9 +415,11 @@ import javax.swing.tree.TreePath;
         
         Property p = (Property)checks.next();
         String veto = p.getDeleteVeto();
-        if (veto!=null) 
+        if (veto!=null) {
           // Removing property {0} from {1} leads to:\n{2}
           result.append(resources.getString("del.warning", new String[] { p.getPropertyName(), p.getParent().getPropertyName(), veto  }));
+          result.append("\n");
+        }
       }
 
       return result.toString();

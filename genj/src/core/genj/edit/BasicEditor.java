@@ -549,7 +549,7 @@ import javax.swing.event.ChangeListener;
       // look for appropriate bean showing prop
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.getProperty()==prop) {
+        if (bean.canFocus(prop)) {
           bean.requestFocusInWindow();
           return;
         }
@@ -558,7 +558,7 @@ import javax.swing.event.ChangeListener;
       // check if one of the beans' properties is contained in prop
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.getProperty().isContained(prop)) {
+        if (bean.isDisplayable() && bean.getProperty()!=null && bean.getProperty().isContained(prop)) {
           bean.requestFocusInWindow();
           return;
         }

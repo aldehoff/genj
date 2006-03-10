@@ -387,7 +387,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     
     // add basic/advanced
     bar.addSeparator();
-    bh.create(mode, Images.imgAdvanced, mode.advanced);
+    bh.create(mode, Images.imgAdvanced, mode.advanced).setFocusable(false);
     
     // done
   }
