@@ -278,11 +278,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
    */
   private List normalize(List selection) {
     
-    // switch to children for root
-    Property root = (Property)((Model)getModel()).getRoot();
-    if (selection.contains(root))
-      return Arrays.asList(root.getProperties());
-    
     ArrayList result = new ArrayList(selection.size());
     
     for (Iterator it = selection.iterator(); it.hasNext(); ) {
@@ -473,6 +468,10 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
           
           String string = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
           
+          // paste text keep track of xrefs
+          final List xrefs = new ArrayList();
+          new PropertyReader(new StringReader(string), true).read(newParent, index);
+          
           // delete children for MOVE within same gedcom (drag won't do it)
           if (action==MOVE&&draggingFrom==gedcom) {
             List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
@@ -482,12 +481,10 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
             }
           }
           
-          // paste text
-          new PropertyReader(new StringReader(string), true) {
-            protected void trackXRef(PropertyXRef xref) {
-              try { xref.link(); } catch (Throwable t) {}
-            }
-          }.read(newParent, index);
+          // link xrefs now that already existing props have been deleted
+          for (int i=0;i<xrefs.size();i++) {
+            try { ((PropertyXRef)xrefs.get(i)).link(); } catch (Throwable t) {}
+          }
           
           // done
           return;

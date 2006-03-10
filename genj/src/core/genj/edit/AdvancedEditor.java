@@ -19,19 +19,24 @@
  */
 package genj.edit;
 
+import genj.common.SelectEntityWidget;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
 import genj.io.PropertyReader;
 import genj.io.PropertyTransferable;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.TextAreaWidget;
 import genj.view.Context;
 import genj.window.WindowManager;
 
@@ -43,9 +48,12 @@ import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
@@ -153,11 +161,11 @@ import javax.swing.tree.TreePath;
         if (props.length==1)
           result.addAction(new Add(props[0]));
         
-//        try {
-//          context.addAction(new Propagate(properties));
-//        } catch (IllegalArgumentException i) {
-//        }
-//        context.addAction(Action2.NOOP);
+        try {
+          result.addAction(new Propagate(tree.getSelection(true)));
+        } catch (IllegalArgumentException i) {
+        }
+        result.addAction(Action2.NOOP);
         
         // done
         return result;
@@ -250,107 +258,114 @@ import javax.swing.tree.TreePath;
     // Done
   }
   
-//  /**
-//   * Action - propagate properties
-//   */
-//  private class Propagate extends Action2 {
-//    /** state */
-//    private Property property;
-//    /** constructor */
-//    private Propagate(Property[] properties) {
-//      // remember
-////      property = prop;
-//      setText(resources.getString("action.propagate"));
-////      setImage(prop.getImage(false));
-//      setEnabled(false);
-//    }
-//    /** apply it */
-//    protected void execute() {
-//      // prepare options
-//      final Entity entity = property.getEntity();
-//      final TextAreaWidget text = new TextAreaWidget("", 4, 10, false, true);
-//      final SelectEntityWidget select = new SelectEntityWidget(gedcom, entity.getTag(), resources.getString("action.propagate.toall"));
-//      select.addActionListener(new ActionListener() {
-//        public void actionPerformed(ActionEvent e) {
-//          String what = property.getTag() + " " + property.toString();
-//          Entity selection = select.getSelection();
-//          String string = selection==null ? resources.getString("action.propagate.all", new Object[] { what, ""+select.getEntityCount(), Gedcom.getName(entity.getTag()) } )
-//              : resources.getString("action.propagate.one", new Object[]{ what, selection.getId(), Gedcom.getName(selection.getTag()) });
-//          text.setText(string);
-//        }
-//      });
-//      
-//      JCheckBox check = new JCheckBox(resources.getString("action.propagate.value"));
-//      
-//      JPanel panel = new JPanel(new NestedBlockLayout("<col><select wx=\"1\"/><note wx=\"1\" wy=\"1\"/><check wx=\"1\"/></col>"));
-//      panel.add(select);
-//      panel.add(new JScrollPane(text));
-//      panel.add(check);
-//      
-//      // preselect something?
-//      select.setSelection(gedcom.getEntity(registry.get("select."+entity.getTag(), (String)null)));
-//
-//      // show it
-//      boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, Action2.okCancel(), AdvancedEditor.this);
-//      if (cancel)
-//        return;
-//
-//      Entity selection = select.getSelection();
-//      
-//      // remember selection
-//      registry.put("select."+entity.getTag(), selection!=null ? selection.getId() : null);
-//      
-//      // change it
-//      try {
-//        gedcom.startTransaction();
-//      } catch (IllegalStateException ise) {
-//        return;
-//      }
-//        
-//      try {
-//        if (selection!=null)
-//          execute(selection, check.isSelected());
-//        else for (Iterator it = gedcom.getEntities(entity.getTag()).iterator(); it.hasNext(); ) 
-//          execute((Entity)it.next(), check.isSelected());
-//      } finally {
-//        gedcom.endTransaction();
-//      }
-//
-//      // change focus
-//      if (selection!=null)
-//        editView.setContext(new Context(selection), true);
-//    }
-//    
-//    /** apply the template to an entity */
-//    private void execute(Entity entity, boolean values) {
-//      // make sure we're not propagating to self
-//      if (property.getEntity()==entity)
-//        return;
-//      // check we got the root of the property's path
-//      TagPath path = property.getPath();
-//      Property to = entity;
-//      for (int i=1;i<path.length()-1;i++) {
-//        Property p = to.getProperty(path.get(i));
-//        to = p!=null ? p :  to.addProperty(path.get(i), "");
-//      }
-//      copy(property, to, values);
-//    }
-//    private void copy(Property prop,  Property to, boolean values) {
-//      // check to for child
-//      Property copy = to.getProperty(prop.getTag(), false);
-//      if (copy==null)
-//        copy = to.addProperty(prop.getTag(), values ? prop.getValue() : "");
-//      // loop over children of prop
-//      for (int i=0, j=prop.getNoOfProperties(); i<j; i++) {
-//        Property child = prop.getProperty(i);
-//        // apply to non-xrefs, non-transient, non-existent 
-//        if ( !(child instanceof PropertyXRef) && !child.isTransient() && to.getProperty(child.getTag(), false)==null) 
-//          copy(child, copy, values);
-//        // next
-//      }
-//      // done
-//    }
-//  } //Template
+  /**
+   * Action - propagate properties
+   */
+  private class Propagate extends Action2 {
+    /** selection to propagate */
+    private List selection;
+    /** constructor */
+    private Propagate(List selection) {
+      // remember
+      this.selection = selection;
+      setText(resources.getString("action.propagate"));
+      //setImage(prop.getImage(false));
+    }
+    /** apply it */
+    protected void execute() {
+      
+      // contains entity?
+      final Entity entity = (Entity)tree.getRoot();
+      if (selection.contains(entity))
+        selection = Arrays.asList(entity.getProperties());
+      
+      final WordBuffer what = new WordBuffer(", ");
+      for (int i=0;i<selection.size();i++)
+        what.append(((Property)selection.get(i)).getPropertyName());
+      
+      // prepare options
+      final TextAreaWidget text = new TextAreaWidget("", 4, 10, false, true);
+      final SelectEntityWidget select = new SelectEntityWidget(gedcom, entity.getTag(), resources.getString("action.propagate.toall"));
+      select.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          Entity target = select.getSelection();
+          String string = target==null ? resources.getString("action.propagate.all", new Object[] { what, ""+select.getEntityCount(), Gedcom.getName(entity.getTag()) } )
+              : resources.getString("action.propagate.one", new Object[]{ what, target.getId(), Gedcom.getName(target.getTag()) });
+          text.setText(string);
+        }
+      });
+      
+      JCheckBox check = new JCheckBox(resources.getString("action.propagate.value"));
+      
+      JPanel panel = new JPanel(new NestedBlockLayout("<col><select wx=\"1\"/><note wx=\"1\" wy=\"1\"/><check wx=\"1\"/></col>"));
+      panel.add(select);
+      panel.add(new JScrollPane(text));
+      panel.add(check);
+      
+      // preselect something?
+      select.setSelection(gedcom.getEntity(registry.get("select."+entity.getTag(), (String)null)));
+
+      // show it
+      boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, Action2.okCancel(), AdvancedEditor.this);
+      if (cancel)
+        return;
+
+      Entity to = select.getSelection();
+      
+      // remember selection
+      registry.put("select."+entity.getTag(), to!=null ? to.getId() : null);
+      
+      // change it
+      try {
+        gedcom.startTransaction();
+      } catch (IllegalStateException ise) {
+        return;
+      }
+        
+      try {
+        if (to!=null)
+          execute(selection, entity, to, check.isSelected());
+        else for (Iterator it = gedcom.getEntities(entity.getTag()).iterator(); it.hasNext(); ) 
+          execute(selection, entity, (Entity)it.next(), check.isSelected());
+      } finally {
+        gedcom.endTransaction();
+      }
+
+      // done
+    }
+    
+    /** apply the template to an entity */
+    private void execute(List selection, Entity from, Entity to, boolean values) {
+      // make sure we're not propagating to self
+      if (from==to)
+        return;
+      // loop over selection
+      for (int i=0;i<selection.size();i++) {
+        Property property = (Property)selection.get(i);
+        TagPath path = property.getParent().getPath();
+        Property root = to.getProperty(path);
+        if (root==null)
+          root = to.setValue(path, "");
+        copy(property, root, values);
+      }
+      // done
+    }
+    private void copy(Property prop,  Property to, boolean values) {
+      // check to for child
+      Property copy = to.getProperty(prop.getTag(), false);
+      if (copy==null)
+        copy = to.addProperty(prop.getTag(), values ? prop.getValue() : "");
+      // loop over children of prop
+      for (int i=0, j=prop.getNoOfProperties(); i<j; i++) {
+        Property child = prop.getProperty(i);
+        // apply to non-xrefs, non-transient, non-existent 
+        if ( !(child instanceof PropertyXRef) && !child.isTransient() && to.getProperty(child.getTag(), false)==null) 
+          copy(child, copy, values);
+        // next
+      }
+      // done
+    }
+  } //Propagate
   
   /**
    * Action - cut
@@ -381,6 +396,10 @@ import javax.swing.tree.TreePath;
         selection = tree.getSelection(true);
       if (selection.isEmpty())
         return;
+      
+      // contains entity?
+      if (selection.contains(tree.getRoot()))
+        selection = Arrays.asList(tree.getRoot().getProperties());
       
       // warn about cut
       String veto = getVeto(selection);
@@ -452,7 +471,7 @@ import javax.swing.tree.TreePath;
       
       // check selection
       List selection = presetSelection;
-      if (selection==null)
+      if (selection==null) 
         selection = tree.getSelection(true);
       
       // contains entity?
@@ -527,14 +546,6 @@ import javax.swing.tree.TreePath;
               return child;
             }
             return super.addProperty(prop, tag, value, pos);
-          }
-          /** intercept xrefs so we can link 'em */
-          protected void trackXRef(PropertyXRef xref) {
-            try {
-              xref.link();
-            } catch (Throwable t) {
-              xref.getParent().delProperty(xref);
-            }
           }
         }.read(parent);
       } catch (Throwable t) {

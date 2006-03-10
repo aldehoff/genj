@@ -141,7 +141,7 @@ public class PropertyReader {
       
       // a reference?
       if (child instanceof PropertyXRef)
-        trackXRef((PropertyXRef)child);
+        link((PropertyXRef)child);
         
       // continue with child
       readProperties(child, currentLevel+1, 0);
@@ -253,8 +253,13 @@ public class PropertyReader {
     return true;
   }
   
-  /** track a reference - default noop */
-  protected void trackXRef(PropertyXRef xref) {
+  /** link a reference - default tries to link and ignores errors */
+  protected void link(PropertyXRef xref) {
+    try {
+      xref.link();
+    } catch (Throwable t) {
+      // ignored
+    }
   }
   
   /** track a bad level - default noop */

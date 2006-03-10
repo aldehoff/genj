@@ -592,8 +592,8 @@ public class GedcomReader implements Trackable {
       // done
     }
     
-    /** keep track of xrefs */
-    protected void trackXRef(PropertyXRef xref) {
+    /** keep track of xrefs - we're going to link them lazily afterwards */
+    protected void link(PropertyXRef xref) {
       lineAndXRefs.add(Integer.toString(getLines()));
       lineAndXRefs.add(xref);
     }
