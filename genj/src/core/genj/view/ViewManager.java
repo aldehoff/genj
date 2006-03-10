@@ -84,7 +84,7 @@ public class ViewManager {
   private ViewFactory[] factories = null;
   
   /** open views */
-  private Map factoryType2viewHandles = new HashMap();
+  private Map gedcom2factory2handles = new HashMap();
   private LinkedList allHandles = new LinkedList();
   
   /** the currently valid context */
@@ -208,19 +208,9 @@ public class ViewManager {
         result = new Context(gedcom.getEntity(getRegistry(gedcom).get("lastEntity", (String)null)));
       } catch (Throwable t) {
       }
-    } else {
-      // still in valid entity?
-      Entity entity = result.getEntity();
-      // 20040305 make sure entity isn't null by now
-      if (entity==null||!gedcom.getEntities(entity.getTag()).contains(entity)) {
-        // remove from map 
-        gedcom2context.remove(gedcom);
-        // reset
-        result=null;
-      }
     }
     
-    // fallback to first indi 
+    // fallback to first indi or gedcom 
     if (result==null) {
       Entity e = gedcom.getFirstEntity(Gedcom.INDI);
       result = e!=null ? new Context(e) : new Context(gedcom);
@@ -255,8 +245,11 @@ public class ViewManager {
     // remember context
     Gedcom gedcom = context.getGedcom();
     gedcom2context.put(gedcom, context);
-    if (context.getEntity()!=null)
-      getRegistry(gedcom).put("lastEntity", context.getEntity().getId());
+    
+    // keep last selected entity around
+    Entity[] es = context.getEntities();
+    if (es.length>0)
+      getRegistry(gedcom).put("lastEntity", es[es.length-1].getId());
     
     // clear any menu selections if different from last context
     if (!context.equals(getLastSelectedContext(gedcom)))
@@ -266,14 +259,13 @@ public class ViewManager {
     context.setManager(ViewManager.this);
     
     // loop and tell to views 
-    for (Iterator lists = factoryType2viewHandles.values().iterator(); lists.hasNext() ;) {
+    Map factory2handles = (Map)gedcom2factory2handles.get(gedcom);
+    if (factory2handles!=null) for (Iterator lists = factory2handles.values().iterator(); lists.hasNext() ;) {
       List list = (List)lists.next();
       for(Iterator handles = list.iterator(); handles.hasNext(); ) {
         ViewHandle handle = (ViewHandle)handles.next();
         // empty ?
         if (handle==null) continue;
-        // only if view on same gedcom
-        if (handle.getGedcom()!= gedcom) continue;
         // and context supported
         if (handle.getView() instanceof ContextListener) try {
           ((ContextListener)handle.getView()).handleContextSelectionEvent(e);
@@ -373,10 +365,13 @@ public class ViewManager {
   /**
    * Next in the number of views for given factory
    */
-  private int getNextInSequence(ViewFactory factory) {
+  private int getNextInSequence(Gedcom gedcom, ViewFactory factory) {
     
     // check handles for factory
-    List handles = (List)factoryType2viewHandles.get(factory.getClass());
+    Map factories2handles = (Map)gedcom2factory2handles.get(gedcom);
+    if (factories2handles==null)
+      return 1;
+    List handles = (List)factories2handles.get(factory.getClass());
     if (handles==null)
       return 1;
     
@@ -402,7 +397,8 @@ public class ViewManager {
     // 20021017 @see note at the bottom of file
     MenuSelectionManager.defaultManager().clearSelectedPath();
     // forget about it
-    List handles = (List)factoryType2viewHandles.get(handle.getFactory().getClass());
+    Map factory2handles = (Map)gedcom2factory2handles.get(handle.getGedcom());
+    List handles = (List)factory2handles.get(handle.getFactory().getClass());
     handles.set(handle.getSequence()-1, null);
     allHandles.remove(handle);
     // done
@@ -436,11 +432,16 @@ public class ViewManager {
     
     // figure out what sequence # this view will get
     if (sequence<0)
-      sequence = getNextInSequence(factory);
-    Vector handles = (Vector)factoryType2viewHandles.get(factory.getClass());
+      sequence = getNextInSequence(gedcom, factory);
+    Map factory2handles = (Map)gedcom2factory2handles.get(gedcom);
+    if (factory2handles==null) {
+      factory2handles = new HashMap();
+      gedcom2factory2handles.put(gedcom, factory2handles);
+    }
+    Vector handles = (Vector)factory2handles.get(factory.getClass());
     if (handles==null) {
       handles = new Vector(10);
-      factoryType2viewHandles.put(factory.getClass(), handles);
+      factory2handles.put(factory.getClass(), handles);
     }
     handles.setSize(Math.max(handles.size(), sequence));
     
@@ -566,8 +567,8 @@ public class ViewManager {
     if (context==null)
       return null;
     
-    Property property = context.getProperty();
-    Entity entity = context.getEntity();
+    Property[] properties = context.getProperties();
+    Entity[] entities = context.getEntities();
     Gedcom gedcom = context.getGedcom();
 
     // make sure any existing popup is cleared
@@ -584,7 +585,6 @@ public class ViewManager {
     ActionProvider[] as = (ActionProvider[])getViews(ActionProvider.class, context.getGedcom());
     
     // items for set of entities? more specific than Entity.class for the moment!
-    Entity[] entities = context.getEntities();
     if (entities.length>1 && entities.getClass().getComponentType()!=Entity.class) {
       // a sub-menu with appropriate actions
       mh.createMenu(entities.length+" "+Gedcom.getName(entities[0].getTag(), true), entities[0].getImage(false));
@@ -597,8 +597,11 @@ public class ViewManager {
       
     }
 
+    // items for set of properties?
+    
     // items for single property
-    while (property!=null&&!(property instanceof Entity)) {
+    if (properties.length==1&&!(properties[0] instanceof Entity)) {
+      Property property = properties[0];
 
       // a sub-menu with appropriate actions
       mh.createMenu(Property.LABEL+" '"+TagPath.get(property).getName() + '\'' , property.getImage(false));
@@ -614,7 +617,8 @@ public class ViewManager {
     }
         
     // items for single entity
-    if (entity!=null) {
+    if (entities.length==1) {
+      Entity entity = entities[0];
       String title = Gedcom.getName(entity.getTag(),false)+" '"+entity.getId()+'\'';
       mh.createMenu(title, entity.getImage(false));
       for (int i = 0; i < as.length; i++) try {

@@ -37,9 +37,7 @@ import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.Context;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
-import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
@@ -76,7 +74,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * View for searching
  */
-public class SearchView extends JPanel implements ToolBarSupport, ContextListener {
+public class SearchView extends JPanel implements ToolBarSupport {
   
   /** formatting */
   private final static String
@@ -208,19 +206,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     // done
   }
   
-  /**
-   * callback - context changed
-   */  
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    selectContext(event.getContext());
-  }
-  
-  private void selectContext(Context context) {
-    int row = results.getRow(context.getEntity(), context.getProperty());
-    listResults.setSelectedIndex(row);
-    listResults.ensureIndexIsVisible(row);
-  }
-
   /**
    * @see javax.swing.JComponent#addNotify()
    */
@@ -620,26 +605,6 @@ public class SearchView extends JPanel implements ToolBarSupport, ContextListene
     public void handleChange(Transaction tx) {
       if (!tx.get(Transaction.PROPERTIES_DELETED).isEmpty())
         clear();
-    }
-    
-    /**
-     * Find a result for entity, property
-     */
-    public int getRow(Entity entity, Property prop) {
-      // gotta be good
-      if (entity==null)
-        return -1;
-      // loop
-      int e = -1;
-      for (int p=0;p<hits.size();p++) {
-        Hit hit = (Hit)hits.get(p);
-        if (hit.getProperty()==prop)
-          return p;
-        if (e<0&&hit.getProperty().getEntity()==entity)
-          e = p;
-      }
-      // return row for entity
-      return e;
     }
     
     /**

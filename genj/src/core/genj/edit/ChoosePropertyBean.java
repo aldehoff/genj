@@ -25,10 +25,16 @@ import genj.util.GridBagHelper;
 import genj.util.Resources;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -45,7 +51,7 @@ import javax.swing.event.ListSelectionListener;
 /**
  * A bean that allows to choose a property from a list of properties
  */
-public class ChoosePropertyBean extends JComponent implements ItemListener, ListSelectionListener {
+public class ChoosePropertyBean extends JComponent {
 
   private JRadioButton rbChoose,rbNew;
   private JTextField tfNew;
@@ -53,6 +59,8 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
   private JScrollPane spInfo;
   private JTextPane tpInfo;
   private Property parent;
+  private List listeners = new ArrayList();
+  private Callback callback = new Callback();
 
   /**
    * Constructor
@@ -62,12 +70,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     // keep parent and calculate possible properties
     parent = pArent;
     MetaProperty[] defs = parent.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
-    Arrays.sort(defs, new Comparator() {
-      public int compare(Object o1, Object o2) {
-        MetaProperty m1 = (MetaProperty)o1, m2 = (MetaProperty)o2;
-        return m1.getTag().compareTo(m2.getTag());
-      }
-    });
+    Arrays.sort(defs, callback);
         
     // Layout
     GridBagHelper gh = new GridBagHelper(this);
@@ -75,7 +78,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     // Checkbox for known props
     rbChoose = new JRadioButton(resources.getString("choose.known"),defs.length>0);
     rbChoose.setEnabled(defs.length>0);
-    rbChoose.addItemListener(this);
+    rbChoose.addItemListener(callback);
     rbChoose.setAlignmentX(0);
     gh.add(rbChoose,1,1,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
 
@@ -84,7 +87,8 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     lChoose.setVisibleRowCount(4);
     lChoose.setEnabled(defs.length>0);
     lChoose.setCellRenderer(new MetaDefRenderer());
-    lChoose.addListSelectionListener(this);
+    lChoose.addListSelectionListener(callback);
+    lChoose.addMouseListener(callback);
     JScrollPane sp = new JScrollPane(lChoose);
     // 20030527 grrrrrrr why is this necessary
     sp.setMinimumSize(sp.getPreferredSize());
@@ -99,7 +103,7 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
 
     // RadioButton for new props
     rbNew = new JRadioButton(resources.getString("choose.new"),defs.length==0);
-    rbNew.addItemListener(this);
+    rbNew.addItemListener(callback);
     rbNew.setAlignmentX(0);
     gh.add(rbNew,1,3,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
 
@@ -144,43 +148,17 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
   }
 
   /**
-   * RadioButtons have been changed
+   * add action listener
    */
-  public void itemStateChanged(ItemEvent e) {
-    if (e.getSource() == rbChoose) {
-      lChoose.setEnabled(true);
-      tfNew.setEnabled(false);
-      lChoose.requestFocusInWindow();
-    }
-    if (e.getSource() == rbNew) {
-      lChoose.clearSelection();
-      lChoose.setEnabled(false);
-      tfNew.setEnabled(true);
-      tfNew.requestFocusInWindow();
-    }
+  public void addActionListener(ActionListener listener) {
+    listeners.add(listener);
   }
 
   /**
-   * One of the tag-items in the item list has been (de-)selected
+   * remove action listener
    */
-  public void valueChanged(ListSelectionEvent e) {
-
-    // Check selection
-    Object[] selection = lChoose.getSelectedValues();
-
-    // None selected
-    if ((selection==null)||(selection.length==0)) {
-      tpInfo.setText("");
-      return;
-    }
-
-    // Show info of last selected
-    MetaProperty meta = (MetaProperty)selection[selection.length-1];
-    tpInfo.setText(meta.getInfo());
-    if (!rbChoose.isSelected())
-      rbChoose.doClick();
-
-    // Done
+  public void removeActionListener(ActionListener listener) {
+    listeners.remove(listener);
   }
 
   /**
@@ -200,6 +178,70 @@ public class ChoosePropertyBean extends JComponent implements ItemListener, List
     }
 
   } //MetaDefRenderer
+  
+  /**
+   * Internal Callback
+   */
+  private class Callback extends MouseAdapter implements ItemListener, ListSelectionListener, Comparator  {
+    
+    /** compare meta properties for alphabetic sorting */
+    public int compare(Object o1, Object o2) {
+      MetaProperty m1 = (MetaProperty)o1, m2 = (MetaProperty)o2;
+      return m1.getTag().compareTo(m2.getTag());
+    }
+    
+    /** check double clicks */
+    public void mouseClicked(MouseEvent event) {
+      if (event.getClickCount()>1) {
+        ActionEvent e = new ActionEvent(ChoosePropertyBean.this, 0, null);
+        ActionListener[] as = (ActionListener[])listeners.toArray(new ActionListener[listeners.size()]);
+        for (int i = 0; i < as.length; i++) {
+          as[i].actionPerformed(e);
+        }
+      }
+    }
+    
+    /**
+     * RadioButtons have been changed
+     */
+    public void itemStateChanged(ItemEvent e) {
+      if (e.getSource() == rbChoose) {
+        lChoose.setEnabled(true);
+        tfNew.setEnabled(false);
+        lChoose.requestFocusInWindow();
+      }
+      if (e.getSource() == rbNew) {
+        lChoose.clearSelection();
+        lChoose.setEnabled(false);
+        tfNew.setEnabled(true);
+        tfNew.requestFocusInWindow();
+      }
+    }
+
+    /**
+     * One of the tag-items in the item list has been (de-)selected
+     */
+    public void valueChanged(ListSelectionEvent e) {
+    
+      // Check selection
+      Object[] selection = lChoose.getSelectedValues();
+    
+      // None selected
+      if ((selection==null)||(selection.length==0)) {
+        tpInfo.setText("");
+        return;
+      }
+    
+      // Show info of last selected
+      MetaProperty meta = (MetaProperty)selection[selection.length-1];
+      tpInfo.setText(meta.getInfo());
+      if (!rbChoose.isSelected())
+        rbChoose.doClick();
+    
+      // Done
+    }
+    
+  }
 
 } //ChoosePropertyBean
 

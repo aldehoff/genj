@@ -19,8 +19,6 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Abstract base class for all Gedcom changes
@@ -99,32 +97,6 @@ public abstract class Change {
    
   } //Structure
 
-  /**
-   * Shuffled Properties
-   */
-  public static class PropertyShuffle extends PropertyStructure {
-    
-    private List children;
-    
-    PropertyShuffle(Property owner, List childrenBeforeShuffle) {
-      super(owner);
-      children = new ArrayList(childrenBeforeShuffle);
-    }
-    
-    void undo() {
-      root.setProperties(children);
-    }
-    
-    public String toString() {
-      return "Shuffled "+children+" of "+root.getPath();
-    }
-    
-    public boolean equals(Object o) {
-      PropertyShuffle that = (PropertyShuffle)o;
-      return this.root==that.root && this.children.equals(that.children);
-    }
-  } //Shuffle
-  
   /**
    * Added Property
    */  

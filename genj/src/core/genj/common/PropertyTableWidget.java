@@ -19,7 +19,6 @@
  */
 package genj.common;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
@@ -93,7 +92,7 @@ public class PropertyTableWidget extends JPanel {
   private ViewManager viewManager;
   
   /** table component */
-  private JTable table;
+  private Content table;
   
   /** shortcuts panel */
   private JPanel panelShortcuts;
@@ -194,28 +193,44 @@ public class PropertyTableWidget extends JPanel {
     if (event.getProvider()==table)
       return;
 
-    // check context
-    Context context = event.getContext();
-    Entity entity = context.getEntity();
-    Property prop = context.getProperty();
-    if (entity==null)
-      return;
-    
-    // check row
-    int r = getRow(entity);
-    int c = prop!=null ? getCol(r, prop) : -1;
+    try {
+      table.ignoreSelection = true;
+      
+      // loop over selected properties
+      Context context = event.getContext();
+      Property[] props = context.getProperties();
+      
+      ListSelectionModel rows = table.getSelectionModel();
+      ListSelectionModel cols = table.getColumnModel().getSelectionModel();
+      table.clearSelection();
+      
+      int r=-1,c=-1;
+      for (int i=0;i<props.length;i++) {
+  
+        Property prop = props[i];
+        r = getRow(prop.getEntity());
+        c = getCol(r, prop);
+  
+        // change selection
+        if (r>=0) {
+          rows.addSelectionInterval(r,r);
+          if (c>=0)
+            cols.addSelectionInterval(c,c);
+        }
+      }
+      
+      // scroll to last selection
+      if (r>=0) {
+        Rectangle visible = table.getVisibleRect();
+        Rectangle scrollto = table.getCellRect(r,c,true);
+        if (c<0) scrollto.x = visible.x;
+        table.scrollRectToVisible(scrollto);
+      }
 
-    // scroll to visible
-    Rectangle visible = table.getVisibleRect();
-    Rectangle scrollto = table.getCellRect(r,c,true);
-    if (c<0) scrollto.x = visible.x;
-    table.scrollRectToVisible(scrollto);
-
-    // change selection
-    if (c>=0)
-      table.setColumnSelectionInterval(c,c);
-    if (r>=0)
-      table.setRowSelectionInterval(r,r);
+    } finally {
+      table.ignoreSelection = false;
+    }
+    // done
   }
   
   /**
@@ -286,6 +301,8 @@ public class PropertyTableWidget extends JPanel {
    */
   private class Content extends JTable implements ContextProvider, ListSelectionListener  {
     
+    private boolean ignoreSelection  = false;
+    
     /**
      * Constructor
      */
@@ -319,15 +336,35 @@ public class PropertyTableWidget extends JPanel {
       super.valueChanged(e);
       
       // propagate selection change?
-      if (!e.getValueIsAdjusting()) {
-        int row = getSelectedRow();
-        int col = getSelectedColumn();
-        // 20050721 check arguments - Swing might not always send something
-        // smart here
-        TableModel model = getModel();
-        if (row>=0&&row<model.getRowCount()&&col>=0&&col<model.getColumnCount()) 
-          viewManager.fireContextSelected(((Model)getModel()).getContextAt(row, col), this);
+      if (ignoreSelection||e.getValueIsAdjusting())
+        return;
+
+      Context context = null;
+      ListSelectionModel rows = getSelectionModel();
+      ListSelectionModel cols  = getColumnModel().getSelectionModel();
+      TableModel model = getModel();
+      
+      for (int r=rows.getMinSelectionIndex() ; r<=rows.getMaxSelectionIndex() ; r++) {
+        for (int c=cols.getMinSelectionIndex(); c<=cols.getMaxSelectionIndex(); c++) {
+          // check specific row col
+          if (!rows.isSelectedIndex(r)||!cols.isSelectedIndex(c))
+            continue;
+          // 20050721 check arguments - Swing might not always send something smart here
+          if (r<0||r>=model.getRowCount()||c<0||c>=model.getColumnCount())
+            continue;
+          Property prop = ((Model)getModel()).getPropertyAt(r,c);
+          if (prop==null)
+            continue;
+          // keep it
+          if (context==null) context = new Context(prop);
+          else context.addProperty(prop);
+        }
       }
+      
+      // tell about it
+      if (context!=null)
+        viewManager.fireContextSelected(context, this);
+
       
       // done
     }

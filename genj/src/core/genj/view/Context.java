@@ -26,10 +26,11 @@ import genj.util.swing.Action2;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.ListIterator;
 
 /**
  * A context represents a 'current context in Gedcom terms', a gedcom
@@ -39,10 +40,11 @@ public class Context {
   
   private ViewManager manager;
   private Gedcom gedcom;
-  private Set entities = new HashSet();
-  private Set properties = new HashSet();
+  private List entities = new ArrayList();
+  private List properties = new ArrayList();
   private List actions = new ArrayList();
   private Class entityType = null;
+  private Class propertyType = null;
   
   /**
    * Constructor
@@ -73,25 +75,42 @@ public class Context {
    * Add an entity
    */
   public void addEntity(Entity e) {
-    if (e.getGedcom()!=gedcom)
-      throw new IllegalArgumentException("entity's gedcom can't be different");
+    // keep as property 
+    addProperty(e);
+  }
+  
+  /**
+   * Add a property
+   */
+  public void addProperty(Property p) {
+    // check gedcom
+    if (p.getGedcom()!=gedcom)
+      throw new IllegalArgumentException("properties' gedcom can't be different");
+    // keep track of entity/types we contain
+    Entity e = p.getEntity();
+    entities.remove(e);
     if (entityType!=null&&entityType!=e.getClass())
       entityType = Entity.class;
     else 
       entityType = e.getClass();
     entities.add(e);
+    // keep track of property types we contain
+    properties.remove(p);
+    if (propertyType!=null&&propertyType!=p.getClass())
+      propertyType = Property.class;
+    else 
+      propertyType = p.getClass();
+    // keep it
+    properties.add(p);
   }
   
   /**
-   * Add an property
+   * Add properties
    */
-  public void addProperty(Property p) {
-    if (p instanceof Entity) {
-      addEntity((Entity)p);
-      return;
+  public void addProperties(Collection ps) {
+    for (Iterator it = ps.iterator();it.hasNext();) {
+      addProperty((Property)it.next());
     }
-    properties.add(p);
-    addEntity(p.getEntity());
   }
   
   /**
@@ -124,50 +143,55 @@ public class Context {
   }
   
   /**
-   * Accessor - all entities if available
+   * Accessor - last entity selected
+   */
+  public Entity getEntity() {
+    Entity[] es = getEntities();
+    return es.length>0 ? es[es.length-1] : null;
+  }
+  
+  /**
+   * Accessor - last property selected
+   */
+  public Property getProperty() {
+    Property[] ps = getProperties();
+    return ps.length>0 ? ps[ps.length-1] : null;
+  }
+  
+  /**
+   * Accessor - all entities
    */
   public Entity[] getEntities() {
+    // nothing there?
     if (entities.isEmpty())
       return new Entity[0];
+    // check for still valid entities
+    for (ListIterator it = entities.listIterator(); it.hasNext(); ) {
+      if (!gedcom.contains((Entity)it.next()))
+        it.remove();
+    }
     Entity[] result = (Entity[])Array.newInstance(entityType, entities.size());
     entities.toArray(result);
     return result;
   }
 
   /**
-   * Accessor - the SINGLE entity if available
+   * Accessor - properties
    */
-  public Entity getEntity() {
-    // only for a singleton context
-    if (entities.size()!=1)
-      return null;
-    // check entity valid
-    Entity e = (Entity)entities.iterator().next();
-    if (!gedcom.contains(e)) {
-      e = null;
-      entities.clear();
+  public Property[] getProperties() {
+    // nothing there?
+    if (properties.isEmpty())
+      return new Property[0];
+    // check for still valid properties
+    for (ListIterator it = properties.listIterator(); it.hasNext(); ) {
+      Property p = (Property)it.next();
+      Entity e = p.getEntity();
+      if (e==null||!gedcom.contains(e))
+        it.remove();
     }
-    // done
-    return e;
-  }
-  
-  /**
-   * Accessor - the SINGLE property if available
-   */
-  public Property getProperty() {
-    // only for a singleton context
-    if (properties.size()!=1||entities.size()!=1)
-      return null;
-    // check prop valid
-    Property p = (Property)properties.iterator().next();
-    Entity e = p.getEntity();
-    if (e==null||!gedcom.contains(e)) {
-      p = null;
-      properties.clear();
-      entities.remove(e);
-    }
-    // done
-    return p;
+    Property[] result = (Property[])Array.newInstance(propertyType, properties.size());
+    properties.toArray(result);
+    return result;
   }
 
   /**

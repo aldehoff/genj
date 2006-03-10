@@ -108,7 +108,10 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     if (!Options.getInstance().isOpenEditor)
       return;
     // what's the entity
-    Entity entity = context.getEntity();
+    Entity[] entities = context.getEntities();
+    if (entities.length!=1)
+      return;
+    Entity entity = entities[0];
     // noop if EditView non-sticky or current is open
     EditView[] edits = EditView.getInstances(context.getGedcom());
     for (int i=0;i<edits.length;i++) {

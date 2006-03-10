@@ -476,33 +476,6 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Allows to change the order of the properties contained. This
-   * method will throw an IllegalArgumentException if 
-   * ! set.contains(getProperties()) && getProperties.contains(set)
-   */
-  public void setProperties(List set) {
-    // check mutual inclusion
-    if (!(children.containsAll(set)&&set.containsAll(children)))
-      throw new IllegalArgumentException("change of properties not allowed");
-    // do the change
-    List old = new ArrayList(children);
-    children.clear();
-    children.addAll(set);
-	  // remember change
-	  Transaction tx = getTransaction();
-	  if (tx!=null) {
-	    Change change = new Change.PropertyShuffle(this, old);
-	    tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
-	    tx.addChange(change);
-	    
-			// propagate
-      propagateChange(change);
-
-	  }
-    // done
-  }
-  
-  /**
    * Returns this property's properties (all children)
    */
   public Property[] getProperties() {

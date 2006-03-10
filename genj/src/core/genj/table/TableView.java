@@ -196,17 +196,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
    * callback - context changed
    */
   public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    
-    // a type that we're interested in?
-    Context context  = event.getContext();
-    Entity entity = context.getEntity();
-    if (entity==null||!entity.getTag().equals(currentMode.getTag())) 
-      return;
-      
-    // change selection
     propertyTable.handleContextSelectionEvent(event);
-
-    // done
   }
 
   /**

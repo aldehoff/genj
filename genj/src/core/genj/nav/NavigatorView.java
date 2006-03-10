@@ -118,13 +118,9 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     gedcom.addGedcomListener(this);
 
     // init
-    Context context = manager.getLastSelectedContext(gedcom);
-    if (context!=null&&(context.getEntity() instanceof Indi))
-      setCurrentEntity(context.getEntity());
-    else {
-      Indi first = (Indi)gedcom.getFirstEntity(Gedcom.INDI);
-      if (first!=null) setCurrentEntity(first);
-    }
+    Entity entity = manager.getLastSelectedContext(gedcom).getEntity();
+    if (entity instanceof Indi)
+      setCurrentEntity(entity);
     
 //    // setup key bindings
 //    new Shortcut(FATHER  );
@@ -182,7 +178,8 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
    * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
    */
   public void handleChange(Transaction tx) {
-    if (tx.get(Transaction.ENTITIES_DELETED).contains(current)) setCurrentEntity(null);
+    if (tx.get(Transaction.ENTITIES_DELETED).contains(current)) 
+      setCurrentEntity(gedcom.getFirstEntity(Gedcom.INDI));
     else setCurrentEntity(current);
   }
   
@@ -206,10 +203,6 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
    */
   public void setCurrentEntity(Entity e) {
     
-    // try to get one if entity==null
-    if (e == null) 
-      e = gedcom.getFirstEntity(Gedcom.INDI);
-
     // only individuals - and not already current
     if (e==current || (e!=null&&!(e instanceof Indi)) ) 
       return;

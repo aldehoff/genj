@@ -3,11 +3,10 @@
  */
 package genj.gedcom;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import genj.util.Origin;
+
+import java.util.Arrays;
+
 import junit.framework.TestCase;
 
 /**
@@ -46,43 +45,6 @@ public class PropertyTest extends TestCase {
     
     // done
     return indi;
-  }
-  
-  /**
-   * Test the 'new' shuffling 
-   */
-  public void testShuffle() {     
-    
-    Indi indi = createIndi();
-    List original = Arrays.asList(indi.getProperties());
-    
-    // shuffle properties of indi
-    List shuffled = Arrays.asList(indi.getProperties());
-    Collections.shuffle(shuffled);
-
-    // commit it
-    gedcom.startTransaction();
-    try {
-      indi.setProperties(shuffled);
-    } catch (IllegalArgumentException e) {
-      fail("couldn't shuffle properties of "+indi);
-    }
-    Transaction tx = gedcom.endTransaction();
-    
-    // check resulting properties
-    Property[] after = indi.getProperties();
-    for (int i=0;i<shuffled.size();i++) {
-      assertSame("expected shuffled at "+i, shuffled.get(i), after[i]);
-    }
-    
-    // check changes
-    Change[] changes = tx.getChanges();
-    
-    assertEquals("expected 2 changes", 2, changes.length);
-    assertEquals("expected Change.shuffle", changes[0], new Change.PropertyShuffle(indi, original));
-    assertEquals("expected Change.add/CHAN", changes[1], new Change.PropertyAdd(indi, after.length-1, after[after.length-1]));
-    
-    // done
   }
   
   /**

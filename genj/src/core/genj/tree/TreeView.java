@@ -195,14 +195,9 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     model.setHideDescendantsIDs(registry.get("hide.descendants", new ArrayList()));
  
     // root
-    Entity root = null;
-    try { 
-      root = gedcom.getEntity(registry.get("root",(String)null));
-    } catch (Exception e) {
-    }
+    Entity root = gedcom.getEntity(registry.get("root",""));
     if (root==null) {
-      Context context = manager.getLastSelectedContext(gedcom);
-      root = context.getEntity();
+      root = manager.getLastSelectedContext(gedcom).getEntity();
       // make sure the root we're trying is an Indi or Fam (if available)
       if (!(root instanceof Indi || root instanceof Fam))
         root = gedcom.getFirstEntity(Gedcom.INDI);
@@ -421,6 +416,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
    * view callback
    */
   public void handleContextSelectionEvent(ContextSelectionEvent event) {
+    
     // need to get entity and no property
     Context context = event.getContext();
     Entity entity = context.getEntity();
