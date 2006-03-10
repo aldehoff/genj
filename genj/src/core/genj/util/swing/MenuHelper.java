@@ -179,6 +179,13 @@ public class MenuHelper  {
     Iterator it = actions.iterator();
     while (it.hasNext()) {
       Object o = it.next();
+      // an action group?
+      if (o instanceof Action2.Group) {
+        createMenu(((Action2.Group)o).getName());
+        createItems((List)o, false);
+        popMenu();
+        continue;
+      }
       // a nested list ?
       if (o instanceof List) {
         createSeparator(false);

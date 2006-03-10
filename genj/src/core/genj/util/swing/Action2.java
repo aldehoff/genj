@@ -24,6 +24,7 @@ import genj.util.MnemonicAndText;
 import genj.util.Resources;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -541,6 +542,26 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
       // ignored
     }
   } //ActionNOOP
+  
+  /**
+   * An action group
+   */
+  public static class Group extends ArrayList {
+    
+    /** a name */
+    private String name;
+    
+    /** constructor */
+    public Group(String name) {
+      
+      this.name = name;
+    }
+    
+    /** accessor */
+    public String getName() {
+      return name;
+    }
+  }
   
 } //ActionDelegate
 

@@ -122,6 +122,14 @@ public class Context {
   }
   
   /**
+   * Add actions
+   */
+  public Context addActions(Action2.Group group) {
+    actions.add(group);
+    return this;
+  }
+  
+  /**
    * Access to actions
    */
   public List getActions() {
