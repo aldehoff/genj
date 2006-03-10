@@ -209,14 +209,14 @@ public class PropertyTableWidget extends JPanel {
   
         Property prop = props[i];
         r = getRow(prop.getEntity());
+        if (r<0)
+          continue;
         c = getCol(r, prop);
   
         // change selection
-        if (r>=0) {
-          rows.addSelectionInterval(r,r);
-          if (c>=0)
-            cols.addSelectionInterval(c,c);
-        }
+        rows.addSelectionInterval(r,r);
+        if (c>=0)
+          cols.addSelectionInterval(c,c);
       }
       
       // scroll to last selection
@@ -354,7 +354,7 @@ public class PropertyTableWidget extends JPanel {
             continue;
           Property prop = ((Model)getModel()).getPropertyAt(r,c);
           if (prop==null)
-            continue;
+            prop = ((Model)getModel()).getProperty(r);
           // keep it
           if (context==null) context = new Context(prop);
           else context.addProperty(prop);
