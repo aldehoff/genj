@@ -21,6 +21,7 @@ package genj.gedcom;
 
 import genj.util.swing.ImageIcon;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -206,7 +207,7 @@ public class MetaProperty implements Comparable {
    */
   public int compareTo(Object o) {
     MetaProperty other = (MetaProperty)o;
-    return getName().compareTo(other.getName());
+    return Collator.getInstance().compare(getName(), other.getName());
   }
 
   /**
