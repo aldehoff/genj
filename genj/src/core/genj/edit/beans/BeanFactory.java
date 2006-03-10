@@ -159,7 +159,8 @@ public class BeanFactory {
    * Recycle a bean
    */
   public synchronized void recycle(PropertyBean bean) {
-    cache.add(bean);
+    // FIXME needs some thought
+    //cache.add(bean);
   }
   
 }
