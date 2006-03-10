@@ -23,6 +23,7 @@ import genj.common.SelectEntityWidget;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
@@ -141,36 +142,7 @@ import javax.swing.tree.TreePath;
     registry = regty;
     
     // TREE Component's 
-    tree = new PropertyTreeWidget(gedcom) {
-      public Context getContext() {
-        // check selection
-        Context result = super.getContext();
-        Property[] props = result.getProperties();
-        if (props.length==0)
-          return result;
-
-        result.addAction(new Cut(tree.getSelection()));
-        result.addAction(new Copy(tree.getSelection()));
-        
-        if (props.length==1)
-          result.addAction(new Paste(props[0]));
-        
-        result.addAction(Action2.NOOP);
-        
-        if (props.length==1)
-          result.addAction(new Add(props[0]));
-        
-        try {
-          result.addAction(new Propagate(tree.getSelection()));
-        } catch (IllegalArgumentException i) {
-        }
-        result.addAction(Action2.NOOP);
-        
-        // done
-        return result;
-      }
-    };
-
+    tree = new Tree();
     callback = new InteractionListener();
     tree.addTreeSelectionListener(callback);
     
@@ -273,7 +245,7 @@ import javax.swing.tree.TreePath;
       if (properties.contains(entity))
         properties = Arrays.asList(entity.getProperties());
       this.what = "'"+Property.getPropertyNames(Property.toArray(properties),5)+"' ("+properties.size()+")";
-      setText(resources.getString("action.propagate", what));
+      setText(resources.getString("action.propagate", what)+" ...");
     }
     /** apply it */
     protected void execute() {
@@ -558,38 +530,46 @@ import javax.swing.tree.TreePath;
   private class Add extends Action2 {
     /** parent */
     private Property parent; 
+    private String[] tags;
+    private boolean addDefaults = true;
+    /** constructor */
+    protected Add(Property parent, MetaProperty meta) {
+      this.parent = parent;
+      String txt = meta.getName();
+      if (!txt.equals(meta.getTag()))
+        txt += " ("+meta.getTag()+")";
+      setText(txt);
+      setImage(meta.getImage());
+      tags = new String[]{meta.getTag()};
+    }
     /** constructor */
     protected Add(Property parent) {
-
-      super.setText(resources.getString("action.add"));
-      super.setImage(Images.imgNew);
-
       this.parent = parent;
-      
-      super.setEnabled(parent!=null);
+      setText(resources.getString("action.add")+" ...");
+      setImage(Images.imgNew);
     }
     /** run */
     protected void execute() {
-  
-      // .. Confirm
-      JLabel label = new JLabel(resources.getString("add.choose"));
-      ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
-      JCheckBox check = new JCheckBox(resources.getString("add.default_too"),true);
-      int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(), AdvancedEditor.this); 
       
-      // .. not OK?
-      if (option!=0)
-        return;
-
+      // need to let user select tags to add?
+      if (tags==null) {
+        JLabel label = new JLabel(resources.getString("add.choose"));
+        ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
+        JCheckBox check = new JCheckBox(resources.getString("add.default_too"),addDefaults);
+        int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(), AdvancedEditor.this); 
+        if (option!=0)
+          return;
+        // .. calculate chosen tags
+        tags = choose.getSelectedTags();
+        addDefaults = check.isSelected();
+        if (tags.length==0)  {
+          editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),Action2.okOnly(), AdvancedEditor.this);
+          return;
+        }
+      }
+      
       // .. stop current 
       tree.clearSelection();
-  
-      // .. calculate chosen tags
-      String[] tags = choose.getSelectedTags();
-      if (tags.length==0)  {
-        editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),Action2.okOnly(), AdvancedEditor.this);
-        return;
-      }
   
       // .. add properties
       gedcom.startTransaction();
@@ -597,7 +577,7 @@ import javax.swing.tree.TreePath;
       try {
         for (int i=0;i<tags.length;i++) {
           newProp = parent.addProperty(tags[i], "");
-          if (check.isSelected()) newProp.addDefaultProperties();
+          if (addDefaults) newProp.addDefaultProperties();
         } 
       } finally {
         gedcom.endTransaction();
@@ -791,5 +771,53 @@ import javax.swing.tree.TreePath;
       return result;
     }
   } //FocusPolicy
+  
+  /**
+   * our patched up PropertyTreeWidget
+   */
+  private class Tree extends PropertyTreeWidget {
+    
+    /** constructor */
+    private Tree() {
+      super(gedcom);
+    }
+
+    /** provide context */
+    public Context getContext() {
+      
+      // check selection
+      Context result = super.getContext();
+      Property[] props = result.getProperties();
+      if (props.length==0)
+        return result;
+
+      // cut copy paste
+      result.addAction(new Cut(tree.getSelection()));
+      result.addAction(new Copy(tree.getSelection()));
+      if (props.length==1)
+        result.addAction(new Paste(props[0]));
+
+      // add
+      result.addAction(Action2.NOOP);
+      if (props.length==1) {
+        Property prop = props[0];
+        result.addAction(new Add(prop));
+        Action2.Group group = new Action2.Group(resources.getString("action.add"));
+        MetaProperty[] metas = prop.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+        Arrays.sort(metas);
+        for (int i=0;i<metas.length;i++) 
+          group.add(new Add(prop, metas[i]));
+        result.addActions(group);
+      }
+      
+      // propagate
+      result.addAction(new Propagate(tree.getSelection()));
+      result.addAction(Action2.NOOP);
+
+      // done
+      return result;
+    }
+
+  } //Tree
   
 } //AdvancedEditor

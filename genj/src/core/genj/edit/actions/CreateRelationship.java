@@ -63,7 +63,7 @@ public abstract class CreateRelationship extends AbstractChange {
    * Constructor
    */
   public CreateRelationship(String name, Gedcom gedcom, String targetType, ViewManager manager) {
-    super(gedcom, Gedcom.getEntityImage(targetType).getOverLayed(imgNew), resources.getString("new", name), manager);
+    super(gedcom, Gedcom.getEntityImage(targetType).getOverLayed(imgNew), resources.getString("link", name), manager);
     this.targetType = targetType;
   }
 
