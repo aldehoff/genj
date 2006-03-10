@@ -75,19 +75,12 @@ public class SpousesBean extends PropertyBean {
   }
   
   /**
-   * we can't focus anything
-   */
-  public boolean canFocus(Property prop) {
-    return false;
-  }
-  
-  /**
    * Set context to edit
    */
   public void setProperty(Fam fam) {
 
-    // remember property
-    property = fam;
+    //  don't propagate property since we're technically not looking at it
+    // property = fam;
     
     table.setModel(new SpousesInFamily(fam));
     

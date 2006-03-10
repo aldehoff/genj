@@ -23,16 +23,19 @@ import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.view.ViewManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A factory for cached PropertyBeans
  */
 public class BeanFactory {
+  
+  private Logger LOG = Logger.getLogger("genj.edit"); 
   
   private final static Class[] beanTypes = {
     EntityBean.class,
@@ -56,7 +59,7 @@ public class BeanFactory {
   private ViewManager viewManager;
   
   /** cached instances */
-  private final static List cache = new LinkedList();
+  private final static Map property2cached= new HashMap();
   
   /** map a 'proxy' to a resolved type */
   private static Map proxy2type = new HashMap();
@@ -105,22 +108,14 @@ public class BeanFactory {
   private synchronized PropertyBean getBeanOfType(String type) {
     
     try {
-      Class beanType = Class.forName(type);
-      
-      // look into cache
-      for (ListIterator it=cache.listIterator(); it.hasNext(); ) {
-        PropertyBean bean = (PropertyBean)it.next();
-        if (bean.getClass()==beanType) {
-          it.remove();
-          return bean;
-        }
-      }
       // create new instance
-      PropertyBean bean = (PropertyBean)beanType.newInstance();
+      PropertyBean bean = (PropertyBean)Class.forName(type).newInstance();
       bean.initialize(viewManager, registry);
+      // done
       return bean;
       
     } catch (Throwable t) {
+      LOG.log(Level.WARNING, "can't instantiate bean of type "+type, t);
     }
     
     // fallback with new instance
@@ -134,13 +129,9 @@ public class BeanFactory {
    */
   private synchronized PropertyBean getBeanFor(Property prop) {
     // look into cache
-    for (ListIterator it=cache.listIterator(); it.hasNext(); ) {
-      PropertyBean bean = (PropertyBean)it.next();
-      if (bean.accepts(prop)) {
-        it.remove();
-        return bean;
-      }
-    }
+    List cached = (List)property2cached.get(prop.getClass());
+    if (cached!=null&&!cached.isEmpty()) 
+      return (PropertyBean)cached.remove(cached.size()-1);
     // create new instances
     try {
       for (int i=0;i<beanTypes.length;i++) {
@@ -151,6 +142,7 @@ public class BeanFactory {
         }
       }
     } catch (Throwable t) {
+      LOG.log(Level.WARNING, "can't instantiate/init bean for "+prop.getClass().getName(), t);
     }
     return new SimpleValueBean();
   }
@@ -159,8 +151,17 @@ public class BeanFactory {
    * Recycle a bean
    */
   public synchronized void recycle(PropertyBean bean) {
-    // FIXME needs some thought
-    //cache.add(bean);
+    Property property = bean.getProperty();
+    if (property==null)
+      return;
+    // look into cache
+    List cached = (List)property2cached.get(property.getClass());
+    if (cached==null) {
+      cached = new ArrayList();
+      property2cached.put(property.getClass(), cached);
+    }
+    cached.add(bean);
+    // done
   }
   
 }

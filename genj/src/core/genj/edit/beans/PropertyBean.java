@@ -197,13 +197,6 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     // not contained in tabbed pane
   }
   
-  /**
-   * whether this bean can focus on given property
-   */
-  public boolean canFocus(Property prop) {
-    return property==prop;    
-  }
-  
   /** 
    * overridden requestFocusInWindow()
    */

@@ -81,19 +81,12 @@ public class ChildrenBean extends PropertyBean {
   }
   
   /**
-   * we can't focus anything
-   */
-  public boolean canFocus(Property prop) {
-    return false;
-  }
-  
-  /**
    * Set context to edit
    */
   public void setProperty(Fam fam) {
     
-    // remember property
-    property = fam;
+    //  don't propagate property since we're technically not looking at it
+    // property = fam;
     
     // connect to current fam
     table.setModel(new Children(fam));

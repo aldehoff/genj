@@ -78,19 +78,12 @@ public class ParentsBean extends PropertyBean {
   }
   
   /**
-   * we can't focus anything
-   */
-  public boolean canFocus(Property prop) {
-    return false;
-  }
-  
-  /**
    * Set context to edit
    */
   public void setProperty(Indi indi) {
 
-    // remember property
-    property = indi;
+    // don't propagate property since we're technically not looking at it
+    // property = indi;
     
     table.setModel(new ParentsOfChild(indi));
     

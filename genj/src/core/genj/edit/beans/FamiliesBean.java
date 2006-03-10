@@ -63,11 +63,6 @@ public class FamiliesBean extends PropertyBean {
     
   }
 
-  /** we can't focus on any prop */
-  public boolean canFocus(Property prop) {
-    return false;
-  }
-  
   /**
    * on add - set column widths
    */
@@ -94,8 +89,8 @@ public class FamiliesBean extends PropertyBean {
    */
   public void setProperty(Indi indi) {
 
-    // remember property
-    property = indi;
+    //  don't propagate property since we're technically not looking at it
+    // property = indi;
     
     // connect to current indi
     table.setModel(new Families(indi));

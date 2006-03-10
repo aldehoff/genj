@@ -692,6 +692,8 @@ import javax.swing.tree.TreePath;
       }
 
       // Clean up
+      if (bean!=null)
+        editView.getBeanFactory().recycle(bean);
       bean = null;
       editPane.removeAll();
       editPane.revalidate();

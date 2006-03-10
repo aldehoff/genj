@@ -359,7 +359,7 @@ import javax.swing.event.ChangeListener;
       if (prop.getValue().length()==0)
         img = img.getDisabled(50);
       setIcon(img);
-      setToolTipText(wrapped.getProperty().getPropertyName());
+      setToolTipText(prop.getPropertyName());
       
       // fix looks
       setFocusable(false);
@@ -367,7 +367,7 @@ import javax.swing.event.ChangeListener;
       
       // prepare 'actions'
       List actions = new ArrayList();
-      actions.add(new JLabel(wrapped.getProperty().getPropertyName()));
+      actions.add(new JLabel(prop.getPropertyName()));
       actions.add(wrapped);
       setActions(actions);
 
@@ -506,7 +506,7 @@ import javax.swing.event.ChangeListener;
       for (Iterator it = beans.iterator(); it.hasNext();) {
         // check next
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.hasChanged()) {
+        if (bean.hasChanged()&&bean.getProperty()!=null) {
           Property prop = bean.getProperty();
           // proxied?
           PropertyProxy proxy = (PropertyProxy)prop.getContaining(PropertyProxy.class);
@@ -549,7 +549,7 @@ import javax.swing.event.ChangeListener;
       // look for appropriate bean showing prop
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
-        if (bean.canFocus(prop)) {
+        if (bean.getProperty()==prop) {
           bean.requestFocusInWindow();
           return;
         }
