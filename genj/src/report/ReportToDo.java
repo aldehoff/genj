@@ -87,16 +87,8 @@ public class ReportToDo extends Report {
    * The report's entry point
    */
   public void start(Gedcom gedcom) {
-    
-    Entity[] indis = gedcom.getEntities(Gedcom.INDI, "INDI:NAME");
-    Entity[] fams = gedcom.getEntities(Gedcom.FAM, "FAM");
-    
-    Entity[] ents = new Entity[indis.length+fams.length];
-    System.arraycopy(indis, 0, ents, 0, indis.length);
-    System.arraycopy(fams, 0, ents, indis.length, fams.length);
-    
-    start(ents);
-    
+    List ents = gedcom.getEntities();
+    start((Entity[])ents.toArray(new Entity[ents.size()]));
   }
   
   /**
@@ -556,16 +548,13 @@ public class ReportToDo extends Report {
         Property parent = prop.getParent();
         
         doc.nextTableRow();
-        if (parent instanceof Indi) {
-          doc.nextTableCell();
-          doc.nextTableCell();
-          doc.nextTableCell();
-        } else if (parent instanceof Fam) {
+        if (!(parent instanceof Entity)) {
           doc.nextTableCell();
           doc.nextTableCell();
           doc.nextTableCell();
         } else {
-          doc.addText( Gedcom.getName(parent.getTag()) + parent.getValue() );
+          if (parent==null) parent = prop;
+          doc.addText( Gedcom.getName(parent.getTag()) );
           doc.nextTableCell();
           doc.addText( parent.getPropertyDisplayValue("DATE") );
           doc.nextTableCell();
