@@ -105,10 +105,16 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
    * @return Gedcom tree's root and selection 
    */
   public Context getContext() {
+    // no root - it's the gedcom itself
     Entity root = (Entity)getRoot();
     if (root==null) 
       return new Context(lazyGedcom);
-    Context result = new Context(root);
+    // no selection - it's the root
+    List selection = getSelection(false);
+    if (selection.isEmpty())
+      return new Context(root);
+    // we can be specific now
+    Context result = new Context(lazyGedcom);
     result.addProperties(getSelection(false));
     return result;
   }

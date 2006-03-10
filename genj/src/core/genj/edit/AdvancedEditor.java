@@ -136,29 +136,31 @@ import javax.swing.tree.TreePath;
     // TREE Component's 
     tree = new PropertyTreeWidget(gedcom) {
       public Context getContext() {
-//        // check selection
-       Context context = super.getContext();
-//       Property[] properties = context.getProperties();
-//       if (properties.length==0)
-//         return context;
-//       for (int i=0;i<properties.length;i++)
-//         if (properties[i].isTransient())
-//           return context;
-//       // add actions
-//        context.addAction(new Cut(properties));
-//        context.addAction(new Copy(properties));
-//        if (properties.length==1)
-//          context.addAction(new Paste(properties[0]));
-//        context.addAction(Action2.NOOP);
-//        if (properties.length==1)
-//          context.addAction(new Add(properties[0]));
+        // check selection
+        Context result = super.getContext();
+        Property[] props = result.getProperties();
+        if (props.length==0)
+          return result;
+
+        result.addAction(new Cut(tree.getSelection(true)));
+        result.addAction(new Copy(tree.getSelection(true)));
+        
+        if (props.length==1)
+          result.addAction(new Paste(props[0]));
+        
+        result.addAction(Action2.NOOP);
+        
+        if (props.length==1)
+          result.addAction(new Add(props[0]));
+        
 //        try {
 //          context.addAction(new Propagate(properties));
 //        } catch (IllegalArgumentException i) {
 //        }
 //        context.addAction(Action2.NOOP);
-//        // done
-        return context;
+        
+        // done
+        return result;
       }
     };
 
@@ -359,8 +361,8 @@ import javax.swing.tree.TreePath;
     protected List presetSelection; 
     
     /** constructor */
-    private Cut(Property[] properties) {
-      presetSelection = Arrays.asList(properties);
+    private Cut(List preset) {
+      presetSelection = preset;
       super.setImage(Images.imgCut);
       super.setText(resources.getString("action.cut"));
     }
@@ -436,8 +438,8 @@ import javax.swing.tree.TreePath;
     protected List presetSelection; 
     
     /** constructor */
-    protected Copy(Property[] properties) {
-      presetSelection = Arrays.asList(properties);
+    protected Copy(List preset) {
+      presetSelection = preset;
       setText(resources.getString("action.copy"));
       setImage(Images.imgCopy);
     }
