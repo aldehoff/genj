@@ -48,6 +48,27 @@ public class ReportAlmanac extends Report {
   }
   
   /**
+   * main for dates
+   */
+  public void start(PropertyDate[] dates) 
+  {
+    // collect 'lifespan'
+    PointInTime 
+      from = new PointInTime(), 
+      to   = new PointInTime();
+
+    for (int i=0;i<dates.length;i++) 
+      getTimespan(dates[i], from, to);
+
+    if (!from.isValid()||!to.isValid())
+      return;
+
+    // report it
+    report(getAlmanac().getEvents(from, to, null));
+    
+  }
+  
+  /**
    * Report events for list of individuals
    */
   private void report(Gedcom ged, Collection indis) {
@@ -57,6 +78,12 @@ public class ReportAlmanac extends Report {
       println(translate("norange", indis.size()));
       return;
     }
+    
+    report(events);
+    
+  }
+  
+  private void report(Iterator events) {
 
     int num = 0;
     while (events.hasNext()) {
@@ -100,22 +127,26 @@ public class ReportAlmanac extends Report {
     for (int e=0; e<events.size(); e++) {
       Property event = (Property)events.get(e);
       PropertyDate date = (PropertyDate)event.getProperty("DATE");
-      if (date==null||!date.isValid())
-        continue;
-      try {
-	      PointInTime 
-	      	start = date.getStart().getPointInTime(PointInTime.GREGORIAN),
-	      	end   = date.isRange() ? date.getEnd().getPointInTime(PointInTime.GREGORIAN) : start;
-	      if (!from.isValid()||from.compareTo(start)>0)
-	        from.set(start);
-	      if (!to.isValid()||to  .compareTo(end  )<0)
-	        to.set(end);
-      } catch (GedcomException ge) {
-        // ignored
-      }
+      getTimespan(date, from, to);
     }
     
     // done
+  }
+  
+  private void getTimespan(PropertyDate date, PointInTime from, PointInTime to) {
+    if (date==null||!date.isValid())
+      return;
+    try {
+      PointInTime 
+        start = date.getStart().getPointInTime(PointInTime.GREGORIAN),
+        end   = date.isRange() ? date.getEnd().getPointInTime(PointInTime.GREGORIAN) : start;
+      if (!from.isValid()||from.compareTo(start)>0)
+        from.set(start);
+      if (!to.isValid()||to  .compareTo(end  )<0)
+        to.set(end);
+    } catch (GedcomException ge) {
+      // ignored
+    }
   }
   
   /**

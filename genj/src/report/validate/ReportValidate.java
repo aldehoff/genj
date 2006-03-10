@@ -86,16 +86,40 @@ public class ReportValidate extends Report {
   }
   
   /**
+   * Start for argument properties
+   */
+  public void start(Property[] props) {
+    
+    List tests = createTests();
+    
+    PropertyList issues = new PropertyList(props[0].getGedcom());    
+    for (int i=0;i<props.length;i++) {
+      TagPath path = props[i].getPath();
+      test(props[i], path, Grammar.getMeta(path), tests, issues);
+    }
+    
+    // show results
+    results(issues);
+  }
+  
+  /**
    * Start for argument entity
    */
   public void start(Entity entity) {
+    start(new Entity[]{ entity });
+  }
+  
+  public void start(Entity[] entities) {
     
     List tests = createTests();
-    Gedcom gedcom = entity.getGedcom();
+    
+    Gedcom gedcom = entities[0].getGedcom();
     PropertyList issues = new PropertyList(gedcom);    
-    TagPath path = new TagPath(entity.getTag());
-    test(entity, path, Grammar.getMeta(path), tests, issues);
-      
+    for (int i=0;i<entities.length;i++) {
+      TagPath path = new TagPath(entities[i].getTag());
+      test(entities[i], path, Grammar.getMeta(path), tests, issues);
+    }
+    
     // show results
     results(issues);
   }
