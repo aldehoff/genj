@@ -272,6 +272,11 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
    */
   private List normalize(List selection) {
     
+    // switch to children for root
+    Property root = (Property)((Model)getModel()).getRoot();
+    if (selection.contains(root))
+      return Arrays.asList(root.getProperties());
+    
     ArrayList result = new ArrayList(selection.size());
     
     for (Iterator it = selection.iterator(); it.hasNext(); ) {
@@ -420,10 +425,13 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
 
         // an in-vm dnd?
         if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
-          // we don't allow drop on parent if parent is in list of dragged
+          // we don't allow drop on parent if parent is in list of dragged (recursive)
           List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
-          if (dragged.contains(parent))
-            return 0;
+          Property pparent = (Property)parent;
+          while (pparent!=null) {
+            if (dragged.contains(pparent)) return 0;
+            pparent = pparent.getParent();
+          }
           return COPY | MOVE;
         }
         

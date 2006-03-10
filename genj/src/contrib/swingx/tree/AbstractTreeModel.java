@@ -174,7 +174,14 @@ public abstract class AbstractTreeModel implements TreeModel {
         /* Check for null, in case someone passed in a null node, or
            they passed in an element that isn't rooted at root. */
         if(aNode == null) {
-          // NM a null node is simply bad - return null
+          // [NM] normally I'd say let's throw an exception if the node doesn't
+          // have a path to root. If not then we simply should unwind back an
+          // return null. The path generated otherwise doesn't seem to make
+          // much sense - was:
+          //   if(depth == 0)
+          //      return null;
+          //   else
+         //       retNodes = new Object[depth];          
             return null;
         }
         else {
@@ -183,7 +190,7 @@ public abstract class AbstractTreeModel implements TreeModel {
                 retNodes = new Object[depth];
             else
                 retNodes = getPathToRoot(getParent(aNode), depth);
-            // NM a null node is simply bad - return null recursively (maybe throw an exception)
+            // [NM] see above - need to check for null path
             if (retNodes==null)
               return null;
             retNodes[retNodes.length - depth] = aNode;
@@ -309,7 +316,10 @@ public abstract class AbstractTreeModel implements TreeModel {
             if (listeners[i]==TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null)
-                  // NM use TreePath() constructor here - if the path is null (because of root=null) then passing Object[] to TreeModelEvent results in IAE
+                  // [NM] use TreePath() constructor here - if the root was changed to a null-root then the path array is going to
+                  // be null. We can't pass that to TreeModelEvent or new TreePath(null) respectively or we'll see an exception  
+                  // gotta check for that case and either hand off null or TreePath()
+                  //    e = new TreeModelEvent(source, path, childIndices, children);
                     e = new TreeModelEvent(source, path==null ? null : new TreePath(path),
                                            childIndices, children);
                 ((TreeModelListener)listeners[i+1]).treeStructureChanged(e);

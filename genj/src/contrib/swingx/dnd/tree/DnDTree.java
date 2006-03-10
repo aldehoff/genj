@@ -257,7 +257,12 @@ public class DnDTree extends JTree implements Autoscroll {
                     boolean selectionHit = false;
                     Object[] nodes = new Object[paths.length];
                     for (int p = 0; p < paths.length; p++) {
-                        if (paths[p].getPathCount() > 1) {
+                      // [NM] this was 
+                      //    if (paths[p].getPathCount() > 1) {
+                      // if the user chooses the root node as well then there will be a one element path though
+                      // leading to a Node array with first element null. I think any path over length 0 is ok (so
+                      // also the root)
+                        if (paths[p].getPathCount() > 0) {
                             nodes[p] = paths[p].getLastPathComponent();
         
                             Rectangle rect = getPathBounds(paths[p]);
