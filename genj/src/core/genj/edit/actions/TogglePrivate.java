@@ -27,20 +27,35 @@ import genj.util.swing.Action2;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 /**
  * TogglePrivate - toggle "private" of a property
  */
 public class TogglePrivate extends AbstractChange {
   
-  /** the property */
-  private Property property;
+  /** the properties */
+  private Collection properties;
+  
+  /** make public or private */
+  private boolean makePrivate;
   
   /**
    * Constructor
    */
-  public TogglePrivate(Property prop, ViewManager mgr) {
-    super(prop.getGedcom(), MetaProperty.IMG_PRIVATE, AbstractChange.resources.getString(!prop.isPrivate()?"private":"public"), mgr);
-    property = prop;
+  public TogglePrivate(Gedcom gedcom, Collection properties, ViewManager mgr) {
+    super(gedcom, MetaProperty.IMG_PRIVATE, "", mgr);
+    this.gedcom = gedcom;
+    this.properties = properties;
+    
+    // assuming we want to make them all private
+    makePrivate = true;
+    for (Iterator ps = properties.iterator(); ps.hasNext();) {
+      Property p = (Property) ps.next();
+      if (p.isPrivate()) makePrivate = false;
+    }
+    setText(resources.getString(makePrivate?"private":"public"));
   }
   
   protected String getConfirmMessage() {
@@ -48,21 +63,15 @@ public class TogglePrivate extends AbstractChange {
   }
   
   protected void change() throws GedcomException {
-
-    // check if the user wants to do it recursively
-    int recursive = 0;
-    if (property.getNoOfProperties()>0)
-      recursive = manager.getWindowManager().openDialog(null,getText(),WindowManager.QUESTION_MESSAGE,AbstractChange.resources.getString("recursive"), Action2.okCancel(),getTarget());
-
-    // check gedcom
-    Gedcom gedcom = property.getGedcom();
+    
+    // check if that's something we can do
     String pwd = gedcom.getPassword();
-    
     if (pwd==Gedcom.PASSWORD_UNKNOWN) {
-      manager.getWindowManager().openDialog(null,getText(),WindowManager.WARNING_MESSAGE,"This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of other information",Action2.okOnly(),getTarget());
-      return;              
+        manager.getWindowManager().openDialog(null,getText(),WindowManager.WARNING_MESSAGE,"This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of other information",Action2.okOnly(),getTarget());
+        return;              
     }
-    
+      
+    // check gedcom
     if (pwd==Gedcom.PASSWORD_NOT_SET) {
       
       pwd = manager.getWindowManager().openDialog(
@@ -79,9 +88,16 @@ public class TogglePrivate extends AbstractChange {
         return;
     }
 
+    // check if the user wants to do it recursively
+    int recursive = manager.getWindowManager().openDialog(null,getText(),WindowManager.QUESTION_MESSAGE,AbstractChange.resources.getString("recursive"), Action2.okCancel(),getTarget());
+
     // change it
     gedcom.setPassword(pwd); 
-    property.setPrivate(!property.isPrivate(), recursive==0);
+    
+    for (Iterator ps = properties.iterator(); ps.hasNext();) {
+      Property p = (Property) ps.next();
+      p.setPrivate(makePrivate, recursive==0);
+    }
 
     // done
   }

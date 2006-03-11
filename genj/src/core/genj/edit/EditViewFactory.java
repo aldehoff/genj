@@ -64,6 +64,8 @@ import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -126,8 +128,13 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
    * @see genj.view.ActionProvider#createActions(Entity[], ViewManager)
    */
   public List createActions(Property[] properties, ViewManager manager) {
-    // not supported
-    return null;
+    List result = new ArrayList();
+    // Toggle "Private"
+    if (Enigma.isAvailable())
+      result.add(new TogglePrivate(properties[0].getGedcom(), Arrays.asList(properties), manager));
+    
+    // done
+    return result;
   }
 
   /**
@@ -171,7 +178,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     
     // Toggle "Private"
     if (Enigma.isAvailable())
-      result.add(new TogglePrivate(property, manager));
+      result.add(new TogglePrivate(property.getGedcom(), Collections.singletonList(property), manager));
 
     // done
     return result;
