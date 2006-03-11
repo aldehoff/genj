@@ -52,7 +52,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.StringReader;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -216,10 +215,7 @@ import javax.swing.tree.TreePath;
       tree.setRoot(entity);
 
     // set selection
-    Property property = context.getProperty();
-    if (property==null)
-      return;
-    tree.setSelection(Collections.singletonList(property!=null ? property : entity));  
+    tree.setSelection(Arrays.asList(context.getProperties()));
     
     // 20060301 set focus since selection change won't do that anymore
     if (bean!=null)
