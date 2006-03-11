@@ -476,7 +476,7 @@ import javax.swing.tree.TreePath;
     /** check whether pasting is available */
     private boolean isPasteAvail() {
       try {
-        return Toolkit.getDefaultToolkit().getSystemClipboard().getContents(this).isDataFlavorSupported(DataFlavor.stringFlavor);
+        return clipboard.getContents(this).isDataFlavorSupported(DataFlavor.stringFlavor);
       } catch (Throwable t) {
         EditView.LOG.log(Level.WARNING, "Accessing system clipboard failed", t);
       }
@@ -721,7 +721,9 @@ import javax.swing.tree.TreePath;
       // tell to view
       try {
         ignoreSelection = true;
-        editView.setContext(getContext(), true);
+        Context context = new Context(gedcom);
+        context.addProperties(selection);
+        editView.setContext(context, true);
       } finally {
         ignoreSelection = false;
       }
