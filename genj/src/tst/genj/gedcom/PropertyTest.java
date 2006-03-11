@@ -3,6 +3,7 @@
  */
 package genj.gedcom;
 
+import genj.gedcom.time.PointInTime;
 import genj.util.Origin;
 
 import java.util.Arrays;
@@ -98,15 +99,18 @@ public class PropertyTest extends TestCase {
 
     Indi indi = createIndi();
     
+    Options options = Options.getInstance();
+    options.dateFormat = PointInTime.FORMAT_GEDCOM;
+    
     Property birt = indi.addProperty("BIRT", "");
-    Property date = birt.addProperty("DATE", "25 May 1970");
+    Property date = birt.addProperty("DATE", "25 MAY 1970");
     Property plac = birt.addProperty("PLAC", "Rendsburg");
     
     // normal: have date and place all public -> get all
-    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
+    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
     
     // normal: have all with non applying policy -> get all back
-    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 10, "_SECRET")));
+    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 10, "_SECRET")));
     
     // case of privacy: the  info is there but event is too recent -> getting masks back
     assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, "_SECRET")));
@@ -117,7 +121,7 @@ public class PropertyTest extends TestCase {
 
     // broader case: the event is marked private -> with public policy all's there with sensitive policy everything collapses
     birt.addProperty("_SECRET", "");
-    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
+    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
     assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 0, "_SECRET")));
     
     // ... note how only one mask is shown here since there's no prefix in {$P}
@@ -127,7 +131,7 @@ public class PropertyTest extends TestCase {
     indi.addProperty("DEAT", "").addProperty("DATE", "(im Hohen Alter)");
     assertEquals("born xxx in xxx", birt.format("born{ $D}{ in $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
     assertEquals("born xxx", birt.format("born{ $D}{ $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
-    assertEquals("born 25 May 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(true, Integer.MAX_VALUE, null)));
+    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(true, Integer.MAX_VALUE, null)));
 
     // all good ;)
   }
@@ -137,13 +141,16 @@ public class PropertyTest extends TestCase {
    */
   public void testFormatting() {     
     
+    Options options = Options.getInstance();
+    options.dateFormat = PointInTime.FORMAT_GEDCOM;
+    
     Indi indi = createIndi();
     
-    assertFormatted(indi, "BIRT", "", "25 May 1970", "Rendsburg, SH", "geboren{ am $D}{ in $P}", "geboren am 25 May 1970 in Rendsburg, SH");
+    assertFormatted(indi, "BIRT", "", "25 MAY 1970", "Rendsburg, SH", "geboren{ am $D}{ in $P}", "geboren am 25 MAY 1970 in Rendsburg, SH");
     assertFormatted(indi, "BIRT", "", null                 , "Rendsburg, SH", "geboren{ am $D}{ in $P}", "geboren in Rendsburg, SH");
     assertFormatted(indi, "BIRT", "", null                 , "Rendsburg, SH", "geboren{ am $D}{ in $p}", "geboren in Rendsburg");
     assertFormatted(indi, "BIRT", "", null                 , null                    , "geboren{ am $D}{ in $p}", "");
-    assertFormatted(indi, "BIRT", "", "25 May 1970", ""                        , "born {$y}{ in $P}", "born 1970");
+    assertFormatted(indi, "BIRT", "", "25 MAY 1970", ""                        , "born {$y}{ in $P}", "born 1970");
     assertFormatted(indi, "BIRT", "", ""                     , ""                        , "born {$y}{ in $P}", "");
     assertFormatted(indi, "OCCU", "Pilot", null        , null                    , "{$V}{ in $p}", "Pilot");
     assertFormatted(indi, "OCCU", "Pilot", null        , "Ottawa"            , "{$V}{ in $p}", "Pilot in Ottawa");
@@ -151,7 +158,7 @@ public class PropertyTest extends TestCase {
     assertFormatted(indi, "OCCU", ""      , null         , "Ottawa"            , "Occupation: {$V}", "");
     assertFormatted(indi, "IMMI", ""      , null           , "Vancouver"       , "Immigration{ in $p (landed)}{ on $D}", "Immigration in Vancouver (landed)");
     
-    assertFormatted(indi, "BIRT", "", "25 May 1970", "Rendsburg, SH", "{$T}{ $D}{ in $p}", "Birth 25 May 1970 in Rendsburg");
+    assertFormatted(indi, "BIRT", "", "25 MAY 1970", "Rendsburg, SH", "{$T}{ $D}{ in $p}", "Birth 25 MAY 1970 in Rendsburg");
     assertFormatted(indi, "BIRT", "", ""                     , "Rendsburg, SH", "{$t}{ $D}{ $P}"    , "BIRT Rendsburg, SH");
     assertFormatted(indi, "BIRT", "", ""                     , ""                        , "{$T}{ $D}{ in $p}", "");
   }

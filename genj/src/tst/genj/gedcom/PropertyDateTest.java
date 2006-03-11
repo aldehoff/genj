@@ -3,6 +3,8 @@
  */
 package genj.gedcom;
 
+import java.util.Locale;
+
 import genj.gedcom.PropertyDate.Format;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.Delta;
@@ -21,6 +23,32 @@ public class PropertyDateTest extends TestCase {
     JULIAN = PointInTime.JULIAN,
     HEBREW = PointInTime.HEBREW,
     FRENCHR = PointInTime.FRENCHR;
+  
+  /**
+   * Test dates
+   */
+  public void testFormatting() {     
+    
+    int
+     y = 1970,
+     m = 1,
+     d = 25;
+  
+    PointInTime pit = new PointInTime(d-1, m-1, y);
+
+    Locale.setDefault(Locale.ENGLISH);
+    Options options = Options.getInstance();
+    options.dateFormat = PointInTime.FORMAT_GEDCOM;
+    assertEquals("25 JAN 1970", pit.toString());
+    options.dateFormat = PointInTime.FORMAT_SHORT;
+    assertEquals("25 Jan 1970", pit.toString());
+    options.dateFormat = PointInTime.FORMAT_LONG;
+    assertEquals("25 January 1970", pit.toString());
+    options.dateFormat = PointInTime.FORMAT_NUMERIC;
+    assertEquals("1/25/1970", pit.toString());
+    
+  }
+  
   
   /**
    * Test dates

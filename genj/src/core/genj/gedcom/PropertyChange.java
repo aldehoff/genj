@@ -20,7 +20,6 @@
 package genj.gedcom;
 
 import genj.gedcom.time.PointInTime;
-import genj.util.WordBuffer;
 
 import java.text.DecimalFormat;
 import java.util.StringTokenizer;
@@ -59,7 +58,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * Get the last change date
    */
   public String getDateAsString() {
-    return time<0 ? "" : PointInTime.getPointInTime(time).toString(new WordBuffer(), true).toString();    
+    return time<0 ? "" : PointInTime.getPointInTime(time).toString().toString();    
   }
   
   /**

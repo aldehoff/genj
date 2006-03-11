@@ -151,27 +151,34 @@ public abstract class Calendar {
   }
 
   /**
-   * Returns the (localized short) month as string (either MAY or Mai)
+   * Returns the month as gedcom value
    */
-  public String getMonth(int month, boolean localize) {
+  public String getMonth(int month) {
     // what's the numeric value?
     if (month<0||month>=months.length)
       return "";
-    // calculate text
-    String mmm = months[month];
-    if (localize) 
-      mmm = abbreviatedMonthNames.get(mmm).toString();
     // done
-    return mmm;
+    return months[month];
+  }
+  
+  public String getDisplayMonth(int month, boolean abbrev) {
+    String mmm = getMonth(month);
+    if (mmm.length()==0)
+      return mmm;
+    return abbrev ? abbreviatedMonthNames.get(mmm).toString() : localizedMonthNames.get(mmm).toString();
   }
   
   /**
-   * Returns the (localized) year as string
+   * Returns the year as a gedcom (numeric) value
    */
-  public String getYear(int year, boolean localize) {
+  public String getYear(int year) {
     if (year==PointInTime.UNKNOWN)
       return "";
     return ""+year;
+  }
+  
+  public String getDisplayYear(int year) {
+    return getYear(year);
   }
   
   /**

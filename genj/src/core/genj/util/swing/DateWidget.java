@@ -167,7 +167,7 @@ public class DateWidget extends JPanel {
     widgetCalendar.setToolTipText(calendar.getName());
     
     // update year widget
-    widgetYear.setText(calendar.getYear(pit.getYear (), true));
+    widgetYear.setText(calendar.getDisplayYear(pit.getYear ()));
 
     // update day widget
     widgetDay.setText(calendar.getDay(pit.getDay()));

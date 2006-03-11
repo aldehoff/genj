@@ -415,17 +415,17 @@ public class PropertyDate extends Property {
         if (start.length()>0)
           result.append(Gedcom.getResources().getString("prop.date.mod."+start));
         if (calendar==null||date.start.getCalendar()==calendar) 
-          date.start.toString(result, true);
+          date.start.toString(result);
         else 
-          date.start.getPointInTime(calendar).toString(result, true);
+          date.start.getPointInTime(calendar).toString(result);
     
         // end modifier & point in time
         if (isRange()) {
           result.append(Gedcom.getResources().getString("prop.date.mod."+end));
           if (calendar==null||date.end.getCalendar()==calendar) 
-            date.end.toString(result,true);
+            date.end.toString(result);
           else 
-            date.end.getPointInTime(calendar).toString(result, true);
+            date.end.getPointInTime(calendar).toString(result);
         }
     
         // done    
@@ -534,9 +534,9 @@ public class PropertyDate extends Property {
         // start modifier & point in time
         if (date.start.isValid()) {
           if (calendar==null||date.start.getCalendar()==calendar) 
-            date.start.toString(result, true);
+            date.start.toString(result);
           else 
-            date.start.getPointInTime(calendar).toString(result, true);
+            date.start.getPointInTime(calendar).toString(result);
         }
         
         // phrase

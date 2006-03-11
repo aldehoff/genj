@@ -20,15 +20,24 @@
 package genj.gedcom.time;
 
 import genj.gedcom.GedcomException;
+import genj.gedcom.Options;
 import genj.util.DirectAccessTokenizer;
 import genj.util.Resources;
 import genj.util.WordBuffer;
+
+import java.text.SimpleDateFormat;
 
 /**
  * A point in time - either hebrew, roman, frenchr, gregorian or julian
  */
 public class PointInTime implements Comparable {
   
+  public final static int
+    FORMAT_GEDCOM = 0,
+    FORMAT_SHORT = 1,
+    FORMAT_LONG = 2,
+    FORMAT_NUMERIC = 3;
+
   /** resources */
   /*package*/ final static Resources resources = Resources.get(PointInTime.class);
 
@@ -415,7 +424,7 @@ public class PointInTime implements Comparable {
   public WordBuffer getValue(WordBuffer buffer) {
     if (calendar!=GREGORIAN)
       buffer.append(calendar.escape);
-    toString(buffer, false);
+    toString(buffer, FORMAT_GEDCOM);
     return buffer;
   }
     
@@ -423,28 +432,60 @@ public class PointInTime implements Comparable {
    * String representation
    */
   public String toString() {
-    return toString(new WordBuffer(),true).toString();
+    return toString(new WordBuffer()).toString();
   }
 
   /**
    * String representation
    */
-  public WordBuffer toString(WordBuffer buffer, boolean localize) {
+  public WordBuffer toString(WordBuffer buffer) {
+    return toString(buffer, Options.getInstance().dateFormat);
+  }
+  
+  private final static String DATE_FORMAT = new SimpleDateFormat().toPattern();
+  
+  /**
+   * String representation
+   */
+  public WordBuffer toString(WordBuffer buffer, int format) {
     
-    if (year!=UNKNOWN) {
-      if (month!=UNKNOWN) {
-        if (day!=UNKNOWN) {
-          buffer.append(new Integer(day+1));
-        }
-        buffer.append(calendar.getMonth(month, localize));
-      }
-          
-      buffer.append(calendar.getYear(year, localize));
+    // numeric
+    if (format==FORMAT_NUMERIC) {
       
-      if (localize&&calendar==JULIAN)
-        buffer.append("(j)");
+      String y = year==UNKNOWN  ? "?" : Integer.toString(year);
+      String m = month ==UNKNOWN  ? "?" : Integer.toString(month+1);
+      String d = day==UNKNOWN  ? "?" : Integer.toString(day+1);
+
+      switch (DATE_FORMAT.charAt(0)) {
+      case 'm': case 'M':
+        buffer.append(m+"/"+d+"/"+y);
+        break;
+      case 'd': case 'D':
+        buffer.append(d+"."+m+"."+y);
+        break;
+      default: 
+        buffer.append(y+"-"+m+"-"+d);
+        break;
+      }
+      
+    } else {
+      // Gedcom, short or long
+      if (year!=UNKNOWN) {
+        if (month!=UNKNOWN) {
+          if (day!=UNKNOWN) {
+            buffer.append(new Integer(day+1));
+          }
+          buffer.append(format==FORMAT_GEDCOM ? calendar.getMonth(month) : calendar.getDisplayMonth(month, format==FORMAT_SHORT));
+        }
+        buffer.append(format==FORMAT_GEDCOM ? calendar.getYear(year) : calendar.getDisplayYear(year));
+      }
     }
     
+    // add calendar indicator for julian
+    if (format!=FORMAT_GEDCOM&&calendar==JULIAN)
+      buffer.append("(j)");
+    
+    // done
     return buffer;
   }
 

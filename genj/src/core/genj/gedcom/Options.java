@@ -21,6 +21,7 @@ package genj.gedcom;
 
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
+import genj.util.Resources;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -31,6 +32,8 @@ import java.util.Set;
  * Application options
  */
 public class Options extends OptionProvider {
+  
+  private final static Resources RESOURCES = Resources.get(Options.class);
   
   /** singleton */
   private final static Options instance = new Options();
@@ -69,6 +72,16 @@ public class Options extends OptionProvider {
   public int defaultEncoding = 0;
   
   public final static String[] defaultEncodings = Gedcom.ENCODINGS;
+  
+  /** option - how to display dates */
+  public int dateFormat = 1;
+  
+  public final static String[] dateFormats = {
+      RESOURCES.getString("option.dateFormat.gedcom"),
+      RESOURCES.getString("option.dateFormat.short"),
+      RESOURCES.getString("option.dateFormat.long"),
+      RESOURCES.getString("option.dateFormat.numeric")
+  };
 
   /**
    * Singleton access
