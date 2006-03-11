@@ -255,6 +255,13 @@ public class MetaProperty implements Comparable {
   }
   
   /**
+   * Accessor - whether instantiated
+   */
+  public boolean isInstantiated() {
+    return isInstantiated;
+  }
+  
+  /**
    * Accessor - image
    */
   public ImageIcon getImage() {
