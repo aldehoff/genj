@@ -31,6 +31,6 @@ The people behind GenJ (alphabetically):
       . Pere Jover (Spanish)
       . Francois Massonneau (French)
       . Carsten Muessig (German) 
+      . Sini Ruohomaa (Finnish)
       . Marcus Sandberg (German)
       . Przemek Wiech (Polish)
-      

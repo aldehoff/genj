@@ -232,16 +232,17 @@
    Distribution - All languages
    -->
   <target name="dist.languages" depends="init">
+    <antcall target="dist.language"><param name="language" value="cs"/></antcall>
     <antcall target="dist.language"><param name="language" value="de"/></antcall>
     <antcall target="dist.language"><param name="language" value="en"/></antcall>
+    <antcall target="dist.language"><param name="language" value="es"/></antcall>
+    <antcall target="dist.language"><param name="language" value="fi"/></antcall>
     <antcall target="dist.language"><param name="language" value="fr"/></antcall>
     <antcall target="dist.language"><param name="language" value="hu"/></antcall>
-    <antcall target="dist.language"><param name="language" value="es"/></antcall>
-    <antcall target="dist.language"><param name="language" value="pt_BR"/></antcall>
     <antcall target="dist.language"><param name="language" value="nl"/></antcall>
-    <antcall target="dist.language"><param name="language" value="ru"/></antcall>
-    <antcall target="dist.language"><param name="language" value="cs"/></antcall>
     <antcall target="dist.language"><param name="language" value="pl"/></antcall>
+    <antcall target="dist.language"><param name="language" value="pt_BR"/></antcall>
+    <antcall target="dist.language"><param name="language" value="ru"/></antcall>
   </target>
 
   <!--
