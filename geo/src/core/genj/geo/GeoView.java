@@ -431,12 +431,12 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     /** selection access */
     public List getFeatures() {
-      if (!selection.isEmpty()) {
-        GeoLocation one = (GeoLocation)selection.iterator().next();
-        FeatureSchema schema = getFeatureSchema();
-        int i =0;
-        //one.setAttribute(getFeatureSchema().getAttributeIndex())
-      }
+//      if (!selection.isEmpty()) {
+//        GeoLocation one = (GeoLocation)selection.iterator().next();
+//        FeatureSchema schema = getFeatureSchema();
+//        int i =0;
+//        //one.setAttribute(getFeatureSchema().getAttributeIndex())
+//      }
       return selection;
     }
     
@@ -561,6 +561,7 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     
     /** feature collection - feature access */
     public List query(Envelope envelope) {
+      List locations = getFeatures();
       ArrayList result = new ArrayList(locations.size());
       for (Iterator it = locations.iterator(); it.hasNext();) {
         Feature feature = (Feature) it.next();
