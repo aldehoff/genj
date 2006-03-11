@@ -17,6 +17,7 @@ import junit.framework.TestCase;
 public class PropertyDateTest extends TestCase {
   
   private PropertyDate date = new PropertyDate();
+  private PointInTime pit = new PointInTime();
 
   private Calendar
     GREGORIAN = PointInTime.GREGORIAN,
@@ -24,29 +25,40 @@ public class PropertyDateTest extends TestCase {
     HEBREW = PointInTime.HEBREW,
     FRENCHR = PointInTime.FRENCHR;
   
+  private int
+    FORMAT_GEDCOM = PointInTime.FORMAT_GEDCOM,
+    FORMAT_SHORT = PointInTime.FORMAT_SHORT,
+    FORMAT_LONG = PointInTime.FORMAT_LONG,
+    FORMAT_NUMERIC = PointInTime.FORMAT_NUMERIC;
+   
+  
   /**
    * Test dates
    */
   public void testFormatting() {     
     
-    int
-     y = 1970,
-     m = 1,
-     d = 25;
-  
-    PointInTime pit = new PointInTime(d-1, m-1, y);
-
-    Locale.setDefault(Locale.ENGLISH);
-    Options options = Options.getInstance();
-    options.dateFormat = PointInTime.FORMAT_GEDCOM;
-    assertEquals("25 JAN 1970", pit.toString());
-    options.dateFormat = PointInTime.FORMAT_SHORT;
-    assertEquals("25 Jan 1970", pit.toString());
-    options.dateFormat = PointInTime.FORMAT_LONG;
-    assertEquals("25 January 1970", pit.toString());
-    options.dateFormat = PointInTime.FORMAT_NUMERIC;
-    assertEquals("1/25/1970", pit.toString());
+    testFormat("25 JAN 1970", FORMAT_GEDCOM, "25 JAN 1970");
+    testFormat("25 JAN 1970", FORMAT_SHORT, "25 Jan 1970");
+    testFormat("25 JAN 1970", FORMAT_LONG, "25 January 1970");
     
+    Locale.setDefault(Locale.ENGLISH);
+    PointInTime.localeChangedNotify();
+    testFormat("25 JAN 1970", FORMAT_NUMERIC, "1/25/1970");
+    testFormat("JAN 1970", FORMAT_NUMERIC, "Jan 1970");
+    testFormat("1970", FORMAT_NUMERIC, "1970");
+    
+    Locale.setDefault(Locale.GERMAN);
+    PointInTime.localeChangedNotify();
+    testFormat("25 JAN 1970", FORMAT_NUMERIC, "25.01.1970");
+    testFormat("JAN 1970", FORMAT_NUMERIC, "Jan 1970");
+    testFormat("1970", FORMAT_NUMERIC, "1970");
+    
+  }
+  
+  private void testFormat(String value, int format, String display) {
+    Options.getInstance().dateFormat = format;
+    pit.set(value);
+    assertEquals(display, pit.toString());
   }
   
   

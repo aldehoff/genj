@@ -25,6 +25,7 @@ import genj.util.DirectAccessTokenizer;
 import genj.util.Resources;
 import genj.util.WordBuffer;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 /**
@@ -442,48 +443,63 @@ public class PointInTime implements Comparable {
     return toString(buffer, Options.getInstance().dateFormat);
   }
   
-  private final static String DATE_FORMAT = new SimpleDateFormat().toPattern();
+  /** our numeric format */
+  private static DateFormat NUMERICDATEFORMAT = initNumericDateFormat();
+  
+  private static DateFormat initNumericDateFormat() {
+    DateFormat result = DateFormat.getDateInstance(DateFormat.SHORT);
+    try {
+      // check SHORT pattern
+      String pattern = ((SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT)).toPattern();
+      // patch yy to yyyy if necessary
+      int yyyy = pattern.indexOf("yyyy");
+      if (yyyy<0) 
+        result = new SimpleDateFormat(pattern.replaceAll("yy", "yyyy"));
+    } catch (Throwable t) {
+    }
+    return result;
+  }
+  
+  /**
+   * Notifies all PointInTimes of a change in locale. This is exposed for
+   * testing purposes only.
+   */
+  public static void localeChangedNotify() {
+    NUMERICDATEFORMAT = initNumericDateFormat();
+  }
   
   /**
    * String representation
    */
   public WordBuffer toString(WordBuffer buffer, int format) {
     
-    // numeric
+    // numeric && gregorian && complete
     if (format==FORMAT_NUMERIC) {
-      
-      String y = year==UNKNOWN  ? "?" : Integer.toString(year);
-      String m = month ==UNKNOWN  ? "?" : Integer.toString(month+1);
-      String d = day==UNKNOWN  ? "?" : Integer.toString(day+1);
-
-      switch (DATE_FORMAT.charAt(0)) {
-      case 'm': case 'M':
-        buffer.append(m+"/"+d+"/"+y);
-        break;
-      case 'd': case 'D':
-        buffer.append(d+"."+m+"."+y);
-        break;
-      default: 
-        buffer.append(y+"-"+m+"-"+d);
-        break;
+      if (calendar==GREGORIAN&&isComplete()) {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.set(year, month, day+1);
+        buffer.append(NUMERICDATEFORMAT.format(c.getTime()));
+        return buffer;
       }
       
-    } else {
-      // Gedcom, short or long
-      if (year!=UNKNOWN) {
-        if (month!=UNKNOWN) {
-          if (day!=UNKNOWN) {
-            buffer.append(new Integer(day+1));
-          }
-          buffer.append(format==FORMAT_GEDCOM ? calendar.getMonth(month) : calendar.getDisplayMonth(month, format==FORMAT_SHORT));
-        }
-        buffer.append(format==FORMAT_GEDCOM ? calendar.getYear(year) : calendar.getDisplayYear(year));
-      }
+      // fallback to short
+      format = FORMAT_SHORT;
     }
-    
-    // add calendar indicator for julian
-    if (format!=FORMAT_GEDCOM&&calendar==JULIAN)
-      buffer.append("(j)");
+        
+    // non-gregorian, Gedcom, short or long
+    if (year!=UNKNOWN) {
+      if (month!=UNKNOWN) {
+        if (day!=UNKNOWN) {
+          buffer.append(new Integer(day+1));
+        }
+        buffer.append(format==FORMAT_GEDCOM ? calendar.getMonth(month) : calendar.getDisplayMonth(month, format==FORMAT_SHORT));
+      }
+      buffer.append(format==FORMAT_GEDCOM ? calendar.getYear(year) : calendar.getDisplayYear(year));
+      
+      // add calendar indicator for julian
+      if (format!=FORMAT_GEDCOM&&calendar==JULIAN)
+        buffer.append("(j)");
+    }      
     
     // done
     return buffer;
