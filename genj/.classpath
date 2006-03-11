@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/core"/>
-	<classpathentry kind="src" path="src/run"/>
-	<classpathentry kind="src" path="src/report"/>
-	<classpathentry kind="src" path="src/contrib"/>
-	<classpathentry kind="src" path="src/tst"/>
+	<classpathentry output="build/eclipse/core" kind="src" path="src/core"/>
+	<classpathentry output="build/eclipse/run" kind="src" path="src/run"/>
+	<classpathentry output="build/eclipse/report" kind="src" path="src/report"/>
+	<classpathentry output="build/eclipse/contrib" kind="src" path="src/contrib"/>
+	<classpathentry output="build/eclipse/tst" kind="src" path="src/tst"/>
 	<classpathentry exported="true" kind="lib" path="images"/>
 	<classpathentry exported="true" kind="lib" path="lib/jhbasic.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/graphj.jar"/>
@@ -33,5 +33,5 @@
 	<classpathentry kind="lib" path="contrib/fop/batik-svggen.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/batik-util.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/j2se1.4"/>
-	<classpathentry kind="output" path="build/eclipse"/>
+	<classpathentry kind="output" path="build/eclipse/lostnfound"/>
 </classpath>
