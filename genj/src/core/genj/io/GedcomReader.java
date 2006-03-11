@@ -496,6 +496,8 @@ public class GedcomReader implements Trackable {
    */
   private class EntityReader extends PropertyReader {
     
+    private boolean warnedAboutPassword = false;
+    
     /** constructor */
     EntityReader() {
       super(in, false);
@@ -563,7 +565,10 @@ public class GedcomReader implements Trackable {
       // no need to do anything for unknown password
       String password = gedcom.getPassword();
       if (password==Gedcom.PASSWORD_UNKNOWN) {
-        addWarning(lines, RESOURCES.getString("crypt.password.unknown"));
+        if (!warnedAboutPassword) {
+          warnedAboutPassword = true;
+          addWarning(lines, RESOURCES.getString("crypt.password.unknown"));
+        }
         return;
       }
         
