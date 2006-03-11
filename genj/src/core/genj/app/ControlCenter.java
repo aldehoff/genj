@@ -550,7 +550,7 @@ public class ControlCenter extends JPanel {
         throw new IllegalArgumentException("can't restore "+restore);
 
       origin = Origin.create(url);
-      if (pwd!=null) password = pwd;
+      if (pwd!=null&&pwd.length()>0) password = pwd;
       
       // grab views we're going to open if successful
       for (int i=2; ; i++) {
