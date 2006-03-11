@@ -807,8 +807,10 @@ import javax.swing.tree.TreePath;
         Action2.Group group = new Action2.Group(resources.getString("action.add"));
         MetaProperty[] metas = prop.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
         Arrays.sort(metas);
-        for (int i=0;i<metas.length;i++) 
-          group.add(new Add(prop, metas[i]));
+        for (int i=0;i<metas.length;i++) {
+          if (metas[i].isInstantiated())
+            group.add(new Add(prop, metas[i]));
+        }
         result.addActions(group);
       }
       
