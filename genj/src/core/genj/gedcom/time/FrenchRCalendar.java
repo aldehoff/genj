@@ -137,7 +137,7 @@ public class FrenchRCalendar extends Calendar {
   }
   
   /**
-   * @see genj.gedcom.time.Calendar#getYear(int, boolean)
+   * @see genj.gedcom.time.Calendar#getDisplayYear(int)
    */
   public String getDisplayYear(int year) {
     if (year<1||year>FrenchRCalendar.YEARS.length)

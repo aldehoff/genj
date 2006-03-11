@@ -986,7 +986,7 @@ public abstract class Property implements Comparable {
    * <pre>
    * n(property) : for (Property property : list) !list.contains(property.getParent()) && n(property.getParent())
    * </pre>
-   * @param list of properties
+   * @param properties properties to normalize
    * @return normalized list
    */
   public static List normalize(List properties) {
