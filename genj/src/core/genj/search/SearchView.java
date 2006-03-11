@@ -666,10 +666,14 @@ public class SearchView extends JPanel implements ToolBarSupport {
      */
     public Context getContext() {
       
-      Hit hit = (Hit)getSelectedValue();
-      if (hit!=null) 
-        return new Context(hit.getProperty());
-      return new Context(gedcom);
+      Context result = new Context(gedcom);
+      
+      Object[] selection = getSelectedValues();
+      for (int i = 0; i < selection.length; i++) {
+        Hit hit = (Hit)selection[i];
+        result.addProperty(hit.getProperty());
+      }
+      return result;
     }
 
     /**
