@@ -579,7 +579,8 @@ public class ViewManager {
     JPopupMenu popup = mh.createPopup();
 
     // popup local actions?
-    mh.createItems(context.getActions(), false);
+    mh.createItems(context.getActions());
+    mh.createSeparator(); // it's lazy
   
     // find ActionSupport implementors
     ActionProvider[] as = (ActionProvider[])getViews(ActionProvider.class, context.getGedcom());
@@ -596,7 +597,8 @@ public class ViewManager {
       }
       mh.createMenu(text);
       for (int i = 0; i < as.length; i++) try {
-        mh.createItems(as[i].createActions(properties, this), true);
+        mh.createSeparator();
+        mh.createItems(as[i].createActions(properties, this));
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "Action Provider threw "+t.getClass()+" on createActions(Entity[])", t);
       }
@@ -611,7 +613,7 @@ public class ViewManager {
       // a sub-menu with appropriate actions
       mh.createMenu(Property.LABEL+" '"+TagPath.get(property).getName() + '\'' , property.getImage(false));
       for (int i = 0; i < as.length; i++) try {
-        mh.createItems(as[i].createActions(property, this), true);
+        mh.createItems(as[i].createActions(property, this));
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Property)", t);
       }
@@ -627,7 +629,7 @@ public class ViewManager {
       String title = Gedcom.getName(entity.getTag(),false)+" '"+entity.getId()+'\'';
       mh.createMenu(title, entity.getImage(false));
       for (int i = 0; i < as.length; i++) try {
-        mh.createItems(as[i].createActions(entity, this), true);
+        mh.createItems(as[i].createActions(entity, this));
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Entity)", t);
       }
@@ -638,7 +640,7 @@ public class ViewManager {
     String title = "Gedcom '"+gedcom.getName()+'\'';
     mh.createMenu(title, Gedcom.getImage());
     for (int i = 0; i < as.length; i++) try {
-      mh.createItems(as[i].createActions(gedcom, this), true);
+      mh.createItems(as[i].createActions(gedcom, this));
     } catch (Throwable t) {
       LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Gedcom", t);
     }

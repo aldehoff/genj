@@ -168,13 +168,10 @@ public class MenuHelper  {
    * @param actions either ActionDelegates or lists of ActionDelegates that
    * will be separated visually by createSeparator
    */
-  public void createItems(List actions, boolean addLeadingSeparator) {
+  public void createItems(List actions) {
     // nothing to do?
     if (actions==null||actions.isEmpty())
       return;
-    // add separator
-    if (addLeadingSeparator)
-      createSeparator(false);      
     // Loop through list
     Iterator it = actions.iterator();
     while (it.hasNext()) {
@@ -182,14 +179,14 @@ public class MenuHelper  {
       // an action group?
       if (o instanceof Action2.Group) {
         createMenu(((Action2.Group)o).getName());
-        createItems((List)o, false);
+        createItems((List)o);
         popMenu();
         continue;
       }
       // a nested list ?
       if (o instanceof List) {
-        createSeparator(false);
-        createItems((List)o, false);
+        createSeparator();
+        createItems((List)o);
         continue;
       }
       // a component?
@@ -215,7 +212,7 @@ public class MenuHelper  {
     
     // a NOOP results in separator
     if (action == Action2.NOOP) {
-      createSeparator(false);
+      createSeparator();
       return null;
     }
     
@@ -247,25 +244,18 @@ public class MenuHelper  {
    * Creates an separator
    */
   public MenuHelper createSeparator() {
-    return createSeparator(true);
-  }
-  
-  /**
-   * Creates an separator
-   * @param force whether to force the separator even though the current
-   * menu is empty
-   */
-  public MenuHelper createSeparator(boolean force) {
     // try to create one
     Object menu = peekMenu();
     if (menu instanceof JMenu) {
       JMenu jmenu = (JMenu)menu;
-      if (force||jmenu.getItemCount()>0)
+      int count = jmenu.getItemCount();
+      if (count>0 && jmenu.getItem(count-1).getClass() != JPopupMenu.Separator.class)
         jmenu.addSeparator();
     }
     if (menu instanceof JPopupMenu) {
       JPopupMenu pmenu = (JPopupMenu)menu;
-      if (force||pmenu.getComponentCount()>0)
+      int count = pmenu.getComponentCount();
+      if (count>0 && pmenu.getComponent(count-1).getClass() != JPopupMenu.Separator.class)
         pmenu.addSeparator();
     }
     // done      

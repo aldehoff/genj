@@ -171,7 +171,7 @@ public class PopupWidget extends JButton {
       popup.setLayout(new GridLayout(16,0));
     MenuHelper mh = new MenuHelper();
     mh.pushMenu(popup);
-    mh.createItems(as, false);
+    mh.createItems(as);
 
     
     // done

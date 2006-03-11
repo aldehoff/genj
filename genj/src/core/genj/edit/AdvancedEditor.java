@@ -792,10 +792,11 @@ import javax.swing.tree.TreePath;
       Property[] props = result.getProperties();
       if (props.length==0)
         return result;
+      List selection = tree.getSelection();
 
       // cut copy paste
-      result.addAction(new Cut(tree.getSelection()));
-      result.addAction(new Copy(tree.getSelection()));
+      result.addAction(new Cut(selection));
+      result.addAction(new Copy(selection));
       if (props.length==1)
         result.addAction(new Paste(props[0]));
 
@@ -815,8 +816,8 @@ import javax.swing.tree.TreePath;
       }
       
       // propagate
-      result.addAction(new Propagate(tree.getSelection()));
-      result.addAction(Action2.NOOP);
+      if (!selection.contains(tree.getRoot()))
+        result.addAction(new Propagate(selection));
 
       // done
       return result;
