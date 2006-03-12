@@ -88,8 +88,11 @@ import com.vividsolutions.jts.geom.Coordinate;
     // new one?
     if (gedcom!=null) {
       // grab everything again
-      parse(gedcom.getEntities(Gedcom.INDI));
-      parse(gedcom.getEntities(Gedcom.FAM));
+      for (Iterator it = GeoLocation.parseEntities(gedcom.getEntities()).iterator(); it.hasNext();) {
+        GeoLocation loc = (GeoLocation) it.next();
+        locations.put(loc, loc);
+        fireLocationAdded(loc);
+      }
       // start a resolver
       resolve(locations.keySet(), false);
       // attach
@@ -97,14 +100,6 @@ import com.vividsolutions.jts.geom.Coordinate;
     }
     
     // done
-  }
-  
-  private void parse(Collection entities) {
-    for (Iterator it = GeoLocation.parseEntities(entities).iterator(); it.hasNext();) {
-      GeoLocation loc = (GeoLocation) it.next();
-      locations.put(loc, loc);
-      fireLocationAdded(loc);
-    }
   }
   
   /**
