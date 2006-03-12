@@ -8,15 +8,16 @@
 
 package tree;
 
+import genj.gedcom.Fam;
+import genj.gedcom.Indi;
+import genj.gedcom.PropertySex;
+import genj.report.Options;
+
 import java.io.PrintWriter;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import tree.IndiBox.Direction;
-
-import genj.gedcom.Indi;
-import genj.gedcom.PropertySex;
-import genj.report.Options;
 
 /**
  * Outputs the generated tree to a SVG file.
@@ -49,6 +50,9 @@ public class SvgTreeRenderer implements TreeRenderer {
 	private int indiboxHeight;
 	private int verticalGap;
 	private int verticalUnit;
+    private int famboxWidth;
+    private int famboxHeight;
+    private boolean displayFambox;
 
     /**
      * Constructs the object.
@@ -57,13 +61,20 @@ public class SvgTreeRenderer implements TreeRenderer {
      * @param indiboxHeight height of the individual box in pixels
      * @param verticalGap minimal vertical gap between individual boxes
      */
-	public SvgTreeRenderer(PrintWriter out, int maxNames, int indiboxWidth, int indiboxHeight, int verticalGap) {
+	public SvgTreeRenderer(PrintWriter out, int maxNames, int indiboxWidth,
+            int indiboxHeight, int verticalGap, int famboxWidth, int famboxHeight,
+            boolean displayFambox) {
 		this.out = out;
         this.maxNames = maxNames;
 		this.indiboxWidth = indiboxWidth;
 		this.indiboxHeight = indiboxHeight;
 		this.verticalGap = verticalGap;
+        this.famboxWidth = famboxWidth;
+        this.famboxHeight = famboxHeight;
+        this.displayFambox = displayFambox;
 		verticalUnit = indiboxHeight + verticalGap;
+        if (displayFambox)
+            verticalUnit += famboxHeight;
 	}
 
     /**
@@ -87,6 +98,13 @@ public class SvgTreeRenderer implements TreeRenderer {
 		baseX += indibox.x;
 		baseY += indibox.y;
 		printIndiBox(indibox.individual, baseX, baseY * verticalUnit, gen);
+
+        if (displayFambox && indibox.family != null) {
+            int famX = baseX + (indiboxWidth - famboxWidth) / 2;
+            if (indibox.spouse != null)
+                famX += indibox.spouse.x / 2;
+            printFamBox(indibox.family, famX, baseY * verticalUnit + indiboxHeight, gen);
+        }
 
 		// Spouse
 		if (indibox.spouse != null)
@@ -118,6 +136,9 @@ public class SvgTreeRenderer implements TreeRenderer {
 				midX = baseX + (indibox.spouse.x + indiboxWidth) / 2;
 				midY -= indiboxHeight / 2;
 			}
+            if (displayFambox && indibox.family != null)
+                midY = baseY * verticalUnit + indiboxHeight + famboxHeight;
+
 			printLine(midX, midY, midX, (baseY + 1) * verticalUnit - verticalGap / 2);
 
 			SortedSet xSet = new TreeSet();
@@ -154,9 +175,7 @@ public class SvgTreeRenderer implements TreeRenderer {
      * @param gen generation number
      */
 	private void printIndiBox(Indi i, int x, int y, int gen) {
-        String color = BOX_COLORS[0];
-        if (gen + 5 < BOX_COLORS.length && gen + 5 >= 0)
-            color = BOX_COLORS[gen + 5];
+        String color = getBoxColor(gen);
 		String sex = "";
 		if (i.getSex() == PropertySex.MALE)
 			sex = "Male";
@@ -172,7 +191,7 @@ public class SvgTreeRenderer implements TreeRenderer {
 		out.println("      <text x=\"" + indiboxWidth / 2 + "\" y=\"26\" font-family=\"Verdana\" font-size=\"12\" font-weight=\"bold\" text-anchor=\"middle\">");
 		out.println("        " + i.getLastName());
 		out.println("      </text>");
-		if (i.getBirthDate() != null && !i.getBirthDate().toString().equals("")) {
+		if (i.getBirthDate() != null && i.getBirthDate().isValid()) {
 			out.println("      <text x=\"4\" y=\"38\" font-family=\"Verdana\" font-size=\"10\">");
 			out.println("        " + Options.getInstance().getBirthSymbol() + " " + i.getBirthDate());
 			out.println("      </text>");
@@ -187,6 +206,29 @@ public class SvgTreeRenderer implements TreeRenderer {
 		out.println("      </text>");
 		out.println("    </g>");
 	}
+
+    /**
+     * Outputs a an individual box.
+     * @param i  individual
+     * @param x  x coordinate
+     * @param y  y coordinate
+     * @param gen generation number
+     */
+    private void printFamBox(Fam f, int x, int y, int gen) {
+        String color = getBoxColor(gen);
+
+        out.println("    <g transform=\"translate(" + x + ", " + y + ")\">");
+        out.println("      <use xlink:href=\"#FamilyBox\" fill=\"" + color + "\"/>");
+        if (f.getMarriageDate() != null && f.getMarriageDate().isValid()) {
+            out.println("      <text x=\"4\" y=\"12\" font-family=\"Verdana\" font-size=\"10\">");
+            out.println("        " + Options.getInstance().getMarriageSymbol() + " " + f.getMarriageDate());
+            out.println("      </text>");
+        }
+        out.println("      <text x=\"" + (famboxWidth - 4) + "\" y=\"" + (famboxHeight - 2) + "\" font-family=\"Verdana\" font-size=\"8\" text-anchor=\"end\">");
+        out.println("        " + f.getId());
+        out.println("      </text>");
+        out.println("    </g>");
+    }
 
     /**
      * Outputs a line.
@@ -225,8 +267,9 @@ public class SvgTreeRenderer implements TreeRenderer {
 		out.println("    <rect id=\"PersonBox\" rx=\"25\" ry=\"25\" width=\"" + indiboxWidth + "\" height=\"" + indiboxHeight + "\" stroke=\"black\"/>");
 		out.println("    <rect id=\"PersonBoxMale\" rx=\"5\" ry=\"5\" width=\"" + indiboxWidth + "\" height=\"" + indiboxHeight + "\" stroke=\"#000044\"/>");
 		out.println("    <rect id=\"PersonBoxFemale\" rx=\"15\" ry=\"15\" width=\"" + indiboxWidth + "\" height=\"" + indiboxHeight + "\" stroke=\"#440000\"/>");
+        out.println("    <rect id=\"FamilyBox\" rx=\"5\" ry=\"5\" width=\"" + famboxWidth + "\" height=\"" + famboxHeight + "\" stroke=\"#000044\"/>");
 		out.println("  </defs>");
-		out.println("  <g transform=\"translate(" + HORIZONTAL_MARGIN + ", " + (y - indiboxHeight + VERTICAL_MARGIN) + ")\">");
+		out.println("  <g transform=\"translate(" + HORIZONTAL_MARGIN + ", " + (y - verticalUnit + verticalGap + VERTICAL_MARGIN) + ")\">");
 	}
 
     /**
@@ -236,6 +279,12 @@ public class SvgTreeRenderer implements TreeRenderer {
 		out.println("  </g>");
 		out.println("</svg>");
 	}
+
+    private String getBoxColor(int gen) {
+        if (gen + 5 < BOX_COLORS.length && gen + 5 >= 0)
+            return BOX_COLORS[gen + 5];
+        return BOX_COLORS[0];
+    }
 
     /**
      * Returns a maximum of <code>maxNames</code> given names of the given

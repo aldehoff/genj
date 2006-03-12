@@ -48,6 +48,16 @@ public class ReportGraphicalTree extends Report {
     private final int HORIZONTAL_GAP = 10;
 
     /**
+     * Family box width in pixels.
+     */
+    private final int FAMBOX_WIDTH = 100;
+
+    /**
+     * Family box height in pixels.
+     */
+    private final int FAMBOX_HEIGHT = 22;
+
+    /**
      * Number of generations of ancestors.
      */
     public int gen_ancestors = 0;
@@ -70,6 +80,11 @@ public class ReportGraphicalTree extends Report {
 
     public String[] gen_descendantss = { translate("nolimit"), "0", "1", "2",
             "3", "4", "5", "6", "7", "8", "9", "10" };
+
+    /**
+     * Whether to display the family box.
+     */
+    public boolean display_fambox = true;
 
     /**
      * Maximal number of first names to display.
@@ -118,7 +133,8 @@ public class ReportGraphicalTree extends Report {
         else
             arranger = new AlignLeftArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
         TreeRenderer outputter = new SvgTreeRenderer(svgOut, max_names,
-                INDIBOX_WIDTH, INDIBOX_HEIGHT, VERTICAL_GAP);
+                INDIBOX_WIDTH, INDIBOX_HEIGHT, VERTICAL_GAP, FAMBOX_WIDTH,
+                FAMBOX_HEIGHT, display_fambox);
 
         IndiBox indibox = builder.build(indi);
         arranger.arrange(indibox);
