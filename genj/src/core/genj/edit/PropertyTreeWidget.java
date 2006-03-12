@@ -401,10 +401,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
           List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
           Property pparent = (Property)parent;
           while (pparent!=null) {
-            if (dragged.contains(pparent)) {
-              System.out.println("nope");
+            if (dragged.contains(pparent)) 
               return 0;
-            }
             pparent = pparent.getParent();
           }
           return COPY | MOVE;
