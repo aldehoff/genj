@@ -248,8 +248,8 @@ public class MenuHelper  {
     Object menu = peekMenu();
     if (menu instanceof JMenu) {
       JMenu jmenu = (JMenu)menu;
-      int count = jmenu.getItemCount();
-      if (count>0 && jmenu.getItem(count-1).getClass() != JPopupMenu.Separator.class)
+      int count = jmenu.getComponentCount();
+      if (count>0 && jmenu.getComponent(count-1).getClass() != JPopupMenu.Separator.class)
         jmenu.addSeparator();
     }
     if (menu instanceof JPopupMenu) {
