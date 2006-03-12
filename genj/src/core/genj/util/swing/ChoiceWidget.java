@@ -337,8 +337,6 @@ public class ChoiceWidget extends JComboBox {
      */
     public void actionPerformed(ActionEvent e) {
       
-      System.out.println("FOO");
-      
       // grab current 'prefix'
       String prefix = text.getText();
       if (prefix.length()==0)
