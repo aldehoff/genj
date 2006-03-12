@@ -23,7 +23,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URLClassLoader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,17 +70,32 @@ public class EnvironmentChecker {
   public static boolean isWindows() {
     return System.getProperty("os.name").indexOf("Windows")>-1;
   }
+  
+  private static String getDatePattern(int format) {
+    try {
+      return ((SimpleDateFormat)DateFormat.getDateInstance(format)).toPattern();
+    } catch (Throwable t) {
+      return "?";
+    }
+  }
 
   /**
    * Check the environment
    */
   public static void log() {
     
-    // Go through system properties
     try {
+      // Go through system properties
       for (int i=0; i<SYSTEM_PROPERTIES.length; i++) {
         LOG.info(SYSTEM_PROPERTIES[i] + " = "+System.getProperty(SYSTEM_PROPERTIES[i]));
       }
+      
+      // check locale specific stuff
+      LOG.info("Locale = "+Locale.getDefault());
+      LOG.info("DateFormat (short) = "+getDatePattern(DateFormat.SHORT));
+      LOG.info("DateFormat (medium) = "+getDatePattern(DateFormat.MEDIUM));
+      LOG.info("DateFormat (long) = "+getDatePattern(DateFormat.LONG));
+      LOG.info("DateFormat (full) = "+getDatePattern(DateFormat.FULL));
 
       // check classpath
       String cpath = System.getProperty("java.class.path");
