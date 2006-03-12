@@ -51,6 +51,26 @@ public abstract class PropertyXRef extends Property {
   protected PropertyXRef(PropertyXRef target) {
     setTarget(target);
   }
+  
+  /**
+   * Method for notification of being added to parent
+   */
+  void addNotify(Property parent) {
+    // let super do its thing
+    super.addNotify(parent);
+    
+    // is this an undo?
+    Transaction tx = parent.getTransaction();
+    if (tx!=null&&tx.isRollback()) {
+      
+      // 20060312  make sure the target looks at us - again @see delNotify()
+      target.setValue("");
+      target.target = this;
+
+    }
+    
+    // done
+  }
 
   /**
    * Method for notifying being removed from another parent
@@ -64,7 +84,7 @@ public abstract class PropertyXRef extends Property {
     if (target==null)
       return;
 
-    // is it owned by a parent?
+    // is it still owned by a parent? (not if we were called after the fact of our target getting a delNotify)
     if (target.getParent()==null)
       return;
       
@@ -72,9 +92,21 @@ public abstract class PropertyXRef extends Property {
     // We have to use oldParent for transaction resolution since 
     // parent is already set to null by super
     Transaction tx = oldParent.getTransaction();
-    if (tx!=null&&!tx.isRollback())
-      target.getParent().delProperty(target);
-
+    if (tx!=null&&!tx.isRollback()) {
+      
+      // 20060312 don't delete target if it has children since we don't want
+      // to loose that information. In case of undo this' addNotify() will make
+      // sure we're hooked up again
+      if (target.getNoOfProperties()>0) {
+        target.target = null;
+        target.setValue("");
+      } else {
+        target.getParent().delProperty(target);
+      }
+      
+    }
+    
+    // done
   }
 
   /**
@@ -109,8 +141,8 @@ public abstract class PropertyXRef extends Property {
     // can't be linked yet
     if (target!=null)
       return false;
-    // check entity
-    return entity.getId().equals(value);
+    // if it's an empty id or the entity's id matches
+    return value.length()==0 || entity.getId().equals(value);
   }
 
   /**
@@ -162,14 +194,11 @@ public abstract class PropertyXRef extends Property {
    */
   protected void setTarget(PropertyXRef target) {
 
-    String old = getValue();
-    
     // Do it
     this.target=target;
-    this.value =null;
 
-    // Remember change
-    propagateChange(old);
+    // propagate as changed
+    propagateChange(value);
 
     // Done
   }

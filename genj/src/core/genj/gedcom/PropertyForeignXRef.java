@@ -75,7 +75,7 @@ import genj.util.swing.ImageIcon;
    * setValue method comment.
    */
   public void setValue(String newValue) {
-    throw new RuntimeException("setValue is not support by ForeignXRefs");
+    // ignored
   }
 
   /**
@@ -89,7 +89,7 @@ import genj.util.swing.ImageIcon;
    * The expected referenced type
    */
   public String getTargetType() {
-    throw new RuntimeException("getExpectedReferencedType is not support by ForeignXRefs");
+    throw new RuntimeException("getTargetType is not support by ForeignXRefs");
   }
 
   /**
