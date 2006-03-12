@@ -658,13 +658,10 @@ import javax.swing.tree.TreePath;
       // current root
       Property root = tree.getRoot();
       if (root!=null) {
-  
         Gedcom gedcom = root.getGedcom();
-  
         // ask user for commit if
         if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()&&editView.isCommitChanges()) 
           ok.trigger();
-  
       }
 
       // Clean up
@@ -675,47 +672,46 @@ import javax.swing.tree.TreePath;
       editPane.revalidate();
       editPane.repaint();
       
-      // setup beans
-      List selection = tree.getSelection(); 
-      if (selection.isEmpty())
-        return;
-      
-      // can show bean for first selection
-      Property prop = (Property)selection.get(0);
-      try {
-
-        // get a bean for property
-        bean = editView.getBeanFactory().get(prop);
-        
-        // add bean to center of editPane 
-        editPane.add(bean, BorderLayout.CENTER);
-
-        // and a label to the top
-        final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
-        editPane.add(label, BorderLayout.NORTH);
-
-        // and actions to the bottom
-        if (bean.isEditable()) {
-          JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-          ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons);
-          bh.create(ok);
-          bh.create(cancel);
-          editPane.add(buttons, BorderLayout.SOUTH);
+      // can show bean if single selection
+      List selection = tree.getSelection();
+      if (selection.size()==1) {
+        Property prop = (Property)selection.get(0);
+        try {
+  
+          // get a bean for property
+          bean = editView.getBeanFactory().get(prop);
+          
+          // add bean to center of editPane 
+          editPane.add(bean, BorderLayout.CENTER);
+  
+          // and a label to the top
+          final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
+          editPane.add(label, BorderLayout.NORTH);
+  
+          // and actions to the bottom
+          if (bean.isEditable()) {
+            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons);
+            bh.create(ok);
+            bh.create(cancel);
+            editPane.add(buttons, BorderLayout.SOUTH);
+          }
+          
+          // listen to it
+          bean.addChangeListener(this);
+  
+        } catch (Throwable t) {
+          EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
         }
         
-        // listen to it
-        bean.addChangeListener(this);
+        // start without ok and cancel
+        ok.setEnabled(false);
+        cancel.setEnabled(false);
 
-      } catch (Throwable t) {
-        EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
       }
       
-      // start without ok and cancel
-      ok.setEnabled(false);
-      cancel.setEnabled(false);
-      
       // tell to view
-      try {
+      if (!selection.isEmpty()) try {
         ignoreSelection = true;
         Context context = new Context(gedcom);
         context.addProperties(selection);
