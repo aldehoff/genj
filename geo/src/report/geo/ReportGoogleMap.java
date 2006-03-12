@@ -75,7 +75,7 @@ public class ReportGoogleMap extends Report {
     // match locations
     Collection locations = GeoLocation.parseEntities(indis);
     try {
-      GeoService.getInstance().match(ged, locations);
+      GeoService.getInstance().match(ged, locations, true);
     } catch (GeoServiceException e) {
       super.println(e.getMessage());
     }

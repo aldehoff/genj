@@ -88,20 +88,23 @@ import com.vividsolutions.jts.geom.Coordinate;
     // new one?
     if (gedcom!=null) {
       // grab everything again
-      Set added = GeoLocation.parseEntities(gedcom.getEntities(Gedcom.INDI));
-      // tell about it 
-      for (Iterator it = added.iterator(); it.hasNext();) {
-        GeoLocation loc = (GeoLocation) it.next();
-        locations.put(loc, loc);
-        fireLocationAdded(loc);
-      }
+      parse(gedcom.getEntities(Gedcom.INDI));
+      parse(gedcom.getEntities(Gedcom.FAM));
       // start a resolver
-      resolve(locations.keySet());
+      resolve(locations.keySet(), false);
       // attach
       gedcom.addGedcomListener(this);
     }
     
     // done
+  }
+  
+  private void parse(Collection entities) {
+    for (Iterator it = GeoLocation.parseEntities(entities).iterator(); it.hasNext();) {
+      GeoLocation loc = (GeoLocation) it.next();
+      locations.put(loc, loc);
+      fireLocationAdded(loc);
+    }
   }
   
   /**
@@ -163,7 +166,7 @@ import com.vividsolutions.jts.geom.Coordinate;
       }
       
       // resolve
-      resolve(added);
+      resolve(added, true);
       
     // done
   }
@@ -222,15 +225,15 @@ import com.vividsolutions.jts.geom.Coordinate;
    * Resolve all locations (again)
    */
   public void resolveAll() {
-    resolve(locations.keySet());
+    resolve(locations.keySet(), true);
   }
   
   /**
    * Start a resolver
    */
-  private void resolve(Collection todo) {
+  private void resolve(Collection todo, boolean matchAll) {
     synchronized (resolvers) {
-      Resolver resolver = new Resolver(todo);
+      Resolver resolver = new Resolver(todo, matchAll);
       if (resolvers.isEmpty())
         resolver.trigger();
       else
@@ -244,14 +247,16 @@ import com.vividsolutions.jts.geom.Coordinate;
   private class Resolver extends Action2 {
     
     private ArrayList todo;
+    private boolean matchAll;
     private Throwable err = null;
 
     /** constructor */
-    private Resolver(Collection todo) {
+    private Resolver(Collection todo, boolean matchAll) {
       setAsync(Action2.ASYNC_SAME_INSTANCE);
       getThread().setDaemon(true);
       // make a private copy of todo
       this.todo = new ArrayList(todo);
+      this.matchAll = matchAll;
     }
     
     /** just signal that we're busy */
@@ -263,7 +268,7 @@ import com.vividsolutions.jts.geom.Coordinate;
     /** async exec */
     protected void execute() {
       try { 
-        GeoService.getInstance().match(gedcom, todo);
+        GeoService.getInstance().match(gedcom, todo, matchAll);
       } catch (Throwable t) {
         err = t;
       }

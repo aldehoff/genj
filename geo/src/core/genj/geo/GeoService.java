@@ -285,9 +285,11 @@ public class GeoService {
   
   /**
    * Find best matches for given locations
+   * @param gedcom the gedcom file the locations are for
    * @param location list of locations
+   * @param matchAll if some locations couldn't be matched out of the cache then this will force access of the Geo service 
    */
-  public void match(Gedcom gedcom, Collection locations) throws GeoServiceException {
+  public void match(Gedcom gedcom, Collection locations, boolean matchAll) throws GeoServiceException {
 
     // grab registry
     Registry registry = gedcom!=null ? getRegistry(gedcom) : new Registry();
@@ -311,7 +313,7 @@ public class GeoService {
     }
     
     // no more todos?
-    if (todos.isEmpty())
+    if (todos.isEmpty() || (todos.size()!=locations.size()&&!matchAll) )
       return;
     
     // do a webservice call for all the todos
