@@ -443,8 +443,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
           String string = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
           
           // paste text keep track of xrefs
-          final List xrefs = new ArrayList();
-          new PropertyReader(new StringReader(string), true).read(newParent, index);
+          List xrefs = new ArrayList();
+          new PropertyReader(new StringReader(string), xrefs, true).read(newParent, index);
           
           // delete children for MOVE within same gedcom (drag won't do it)
           if (action==MOVE&&draggingFrom==gedcom) {
@@ -486,7 +486,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         // still some text we can paste into new parent?
         if (string!=null) {
           EditView.LOG.fine("reading dropped text '"+string+"'");
-          new PropertyReader(new StringReader(string), true).read(newParent, index);
+          new PropertyReader(new StringReader(string), null, true).read(newParent, index);
         }
         
         // done

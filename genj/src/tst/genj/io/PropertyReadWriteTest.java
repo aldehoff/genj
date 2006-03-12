@@ -56,7 +56,7 @@ public class PropertyReadWriteTest extends TestCase {
 
     // restore properties
     indi = (Indi)gedcom.createEntity(Gedcom.INDI);
-    new PropertyReader(new StringReader(left),false).read(indi);
+    new PropertyReader(new StringReader(left),null,false).read(indi);
     
     // flatten once more
     out = new StringWriter();

@@ -27,6 +27,7 @@ import genj.util.Resources;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -40,6 +41,7 @@ public class PropertyReader {
   private boolean useIndents = false;
   protected int lines = 0;
   private String line = null;
+  private Collection collectXRefs;
   
   /** variables read line by line */
   protected int level;
@@ -50,15 +52,24 @@ public class PropertyReader {
   /** input */
   private BufferedReader in;
   
-  /** constructor */
-  public PropertyReader(Reader in, boolean useIndents) {
-    this(new BufferedReader(in), useIndents);
+  /** 
+   * Constructor 
+   * @param in reader to read from
+   * @param collectXRefs collection to collect xrefs in (otherwise xrefs are linked immediately)
+   * @param useIndents whether to use spaces as indent declarations
+   */
+  public PropertyReader(Reader in, Collection collectXRefs, boolean useIndents) {
+    this(new BufferedReader(in), collectXRefs, useIndents);
   }
   
-  /** constructor */
-  public PropertyReader(BufferedReader in, boolean useIndents) {
+  /** 
+   * Constructor 
+   * @see PropertyReader#PropertyReader(Reader, Collection, boolean)
+   */
+  public PropertyReader(BufferedReader in, Collection collectXRefs, boolean useIndents) {
     this.in = in;
     this.useIndents = useIndents;
+    this.collectXRefs = collectXRefs;
   }
   
   /** lines read */
@@ -253,9 +264,11 @@ public class PropertyReader {
     return true;
   }
   
-  /** link a reference - default tries to link and ignores errors */
+  /** link a reference - keep in lazyXRefs is available otherwise link and ignore errors */
   protected void link(PropertyXRef xref) {
-    try {
+    if (collectXRefs!=null)
+      collectXRefs.add(xref);
+    else try {
       xref.link();
     } catch (Throwable t) {
       // ignored

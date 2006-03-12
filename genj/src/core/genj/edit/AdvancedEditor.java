@@ -499,7 +499,7 @@ import javax.swing.tree.TreePath;
       gedcom.startTransaction();
       try {
         String s = clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
-        new PropertyReader(new StringReader(s), true) {
+        new PropertyReader(new StringReader(s), null, true) {
           /** intercept add so we can add/merge */
           protected Property addProperty(Property prop, String tag, String value, int pos) {
             // reuse prop's existing child with same tag if singleton

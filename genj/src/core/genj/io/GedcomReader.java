@@ -500,7 +500,7 @@ public class GedcomReader implements Trackable {
     
     /** constructor */
     EntityReader() {
-      super(in, false);
+      super(in, null, false);
     }
 
     /** read one entity */
