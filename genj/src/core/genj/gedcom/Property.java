@@ -984,7 +984,9 @@ public abstract class Property implements Comparable {
   /**
    * normalizes a list of properties - that is for each element in result
    * <pre>
-   * n(property) : for (Property property : list) !list.contains(property.getParent()) && n(property.getParent())
+   * n(property) : 
+   *   for (Property property : list) 
+   *    !list.contains(property.getParent()) && n(property.getParent()) && !property.isTransient()
    * </pre>
    * @param properties properties to normalize
    * @return normalized list
@@ -995,6 +997,8 @@ public abstract class Property implements Comparable {
     
     for (Iterator it = properties.iterator(); it.hasNext(); ) {
       Property prop = (Property)it.next();
+      if (prop.isTransient())
+        continue;
       // any containing in selection as well?
       Property parent = prop.getParent();
       while (parent!=null) {
