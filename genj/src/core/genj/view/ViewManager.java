@@ -607,20 +607,20 @@ public class ViewManager {
     }
 
     // items for single property
-    if (properties.length==1&&!(properties[0] instanceof Entity)) {
+    if (properties.length==1) {
       Property property = properties[0];
-
-      // a sub-menu with appropriate actions
-      mh.createMenu(Property.LABEL+" '"+TagPath.get(property).getName() + '\'' , property.getImage(false));
-      for (int i = 0; i < as.length; i++) try {
-        mh.createItems(as[i].createActions(property, this));
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Property)", t);
+      while (property!=null&&!(property instanceof Entity)&&!property.isTransient()) {
+        // a sub-menu with appropriate actions
+        mh.createMenu(Property.LABEL+" '"+TagPath.get(property).getName() + '\'' , property.getImage(false));
+        for (int i = 0; i < as.length; i++) try {
+          mh.createItems(as[i].createActions(property, this));
+        } catch (Throwable t) {
+          LOG.log(Level.WARNING, "Action Provider "+as[i].getClass().getName()+" threw "+t.getClass()+" on createActions(Property)", t);
+        }
+        mh.popMenu();
+        // recursively for parents
+        property = property.getParent();
       }
-      mh.popMenu();
-      
-      // recursively for parents
-      property = property.getParent();
     }
         
     // items for single entity
