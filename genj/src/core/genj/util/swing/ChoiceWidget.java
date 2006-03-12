@@ -179,7 +179,12 @@ public class ChoiceWidget extends JComboBox {
     if (!isEditable) 
       throw new IllegalArgumentException("setText && !isEditable n/a");
     model.setSelectedItem(null);
-    getTextEditor().setText(text);
+    try {
+      blockAutoComplete = true;
+      getTextEditor().setText(text);
+    } finally {
+      blockAutoComplete = false;
+    }
   }
   
   /**
@@ -285,7 +290,7 @@ public class ChoiceWidget extends JComboBox {
       timer.setRepeats(false);
     }
     
-    private void attach(JTextField text) {
+    private void attach(JTextField set) {
       
       // old?
       if (text!=null) {
@@ -295,7 +300,7 @@ public class ChoiceWidget extends JComboBox {
       }
       
       // new!
-      this.text = text;
+      text = set;
       text.getDocument().addDocumentListener(this);
       text.addFocusListener(this);
       text.addKeyListener(this);
@@ -331,7 +336,9 @@ public class ChoiceWidget extends JComboBox {
      * Our auto-complete callback
      */
     public void actionPerformed(ActionEvent e) {
-
+      
+      System.out.println("FOO");
+      
       // grab current 'prefix'
       String prefix = text.getText();
       if (prefix.length()==0)
