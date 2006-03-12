@@ -117,12 +117,12 @@ public class ReportToDo extends Report {
     if (outputWorkingSheet) {
       
       doc.startTable();
+      doc.addTableColumn("column-width=12%");
       doc.addTableColumn("column-width=10%");
-      doc.addTableColumn("column-width=10%");
       doc.addTableColumn("column-width=20%");
       doc.addTableColumn("column-width=20%");
-      doc.addTableColumn("column-width=20%");
-      doc.addTableColumn("column-width=20%");
+      doc.addTableColumn("column-width=19%");
+      doc.addTableColumn("column-width=19%");
 
       exportWorkingSheet(entities, doc);
       doc.endTable();
