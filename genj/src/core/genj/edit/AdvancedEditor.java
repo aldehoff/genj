@@ -240,6 +240,13 @@ import javax.swing.tree.TreePath;
       properties = Property.normalize(selection);
       if (properties.contains(entity))
         properties = Arrays.asList(entity.getProperties());
+      // something there?
+      if (properties.isEmpty()) {
+        setText(resources.getString("action.propagate", ""));
+        setEnabled(false);
+        return;
+      }
+      // setup looks
       this.what = "'"+Property.getPropertyNames(Property.toArray(properties),5)+"' ("+properties.size()+")";
       setText(resources.getString("action.propagate", what)+" ...");
     }
@@ -796,15 +803,17 @@ import javax.swing.tree.TreePath;
       result.addAction(Action2.NOOP);
       if (props.length==1) {
         Property prop = props[0];
-        result.addAction(new Add(prop));
-        Action2.Group group = new Action2.Group(resources.getString("action.add"));
-        MetaProperty[] metas = prop.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
-        Arrays.sort(metas);
-        for (int i=0;i<metas.length;i++) {
-          if (metas[i].isInstantiated())
-            group.add(new Add(prop, metas[i]));
+        if (!prop.isTransient()) {
+          result.addAction(new Add(prop));
+          Action2.Group group = new Action2.Group(resources.getString("action.add"));
+          MetaProperty[] metas = prop.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+          Arrays.sort(metas);
+          for (int i=0;i<metas.length;i++) {
+            if (metas[i].isInstantiated())
+              group.add(new Add(prop, metas[i]));
+          }
+          result.addActions(group);
         }
-        result.addActions(group);
       }
       
       // propagate
