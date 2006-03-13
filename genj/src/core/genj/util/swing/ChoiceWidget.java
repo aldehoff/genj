@@ -40,7 +40,6 @@ import javax.swing.Timer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Caret;
 
 /**
  * Our own JComboBox
@@ -311,6 +310,9 @@ public class ChoiceWidget extends JComboBox {
      */
     public void removeUpdate(DocumentEvent e) {
       changeSupport.fireChangeEvent();
+      // add a auto-complete callback
+      if (!blockAutoComplete&&isEditable())
+        timer.start();
     }
       
     /**
@@ -318,6 +320,9 @@ public class ChoiceWidget extends JComboBox {
      */
     public void changedUpdate(DocumentEvent e) {
       changeSupport.fireChangeEvent();
+      // add a auto-complete callback
+      if (!blockAutoComplete&&isEditable())
+        timer.start();
     }
       
     /**
@@ -342,28 +347,25 @@ public class ChoiceWidget extends JComboBox {
       if (prefix.length()==0)
         return;
 
-      // don't auto-complete unless cursor at end of text
-      Caret c = text.getCaret();
-      if (c.getDot()!=prefix.length())
-        return;
-
-      // try to select an item by prefix
+      // try to select an item by prefix - save current caret pos
+      int caretPos = text.getCaretPosition();
       String match = model.setSelectedPrefix(prefix);
       
       // no match
       if (match.length()==0)
         return;
       
-      // restore the original text
+      // restore the original text & selection
       blockAutoComplete = true;
       text.setText(prefix);
       blockAutoComplete = false;
+      text.setCaretPosition(caretPos);
       
       // show where we're at in case of a partial match
       if (match.length()>prefix.length()) {
         showPopup();
         text.setFocusTraversalKeysEnabled(false);
-      }
+      } 
         
       // done      
     }
