@@ -202,14 +202,28 @@ public class PropertyName extends Property {
   /**
    * Sets name to a new value
    */
-  public PropertyName setName(String first, String last) {
-    return setName(first,last,"");
+  public PropertyName setName(String setLast) {
+    return setName(firstName,setLast,suffix);
   }
 
   /**
    * Sets name to a new value
    */
-  public PropertyName setName(String first, String last, String suff) {
+  public PropertyName setName(String setFirst, String setLast) {
+    return setName(setFirst,setLast,suffix);
+  }
+
+  /**
+   * Sets name to a new value
+   */
+  public PropertyName setName(String setFirst, String setLast, String setSuffix) {
+    return setName(setFirst, setLast, setSuffix, false);
+  }
+  
+  /**
+   * Sets name to a new value
+   */
+  public PropertyName setName(String first, String last, String suff, boolean replaceAllLastNames) {
 
     String old = getValue();
     
@@ -224,6 +238,18 @@ public class PropertyName extends Property {
     last = last.trim().intern();
     suff = suff.trim();
 
+    // replace all last names?
+    if (replaceAllLastNames) {
+      // change value of all with value
+      Property[] others = getSameLastNames();
+      for (int i=0;i<others.length;i++) {
+        Property other = others[i];
+        if (other instanceof PropertyName&&other!=this) {
+          ((PropertyName)other).setName(last);
+        }
+      }
+    }    
+    
     // remember us
     remember(first, last);
 
