@@ -122,12 +122,13 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
    * ContextProvider callback 
    */
   public Context getContext() {
-    // ok, this is tricky since the property we're looking at might
-    // actually not be part of an entity yet - we check for
-    // that - no context in that case
+    // ok, this is tricky since some beans might not
+    // want to expose a property (is null) and the one
+    // we're looking at might actually not be part of 
+    // an entity yet - no context in those cases
     // (otherwise other code that relies on properties being
     // part of an entity might break)
-    return property.getEntity()==null ? null : new Context(property);
+    return property==null||property.getEntity()==null ? null : new Context(property);
   }
   
   /**
