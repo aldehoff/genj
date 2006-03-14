@@ -7,13 +7,13 @@
  */
 package validate;
 
+import genj.gedcom.Annotation;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.report.PropertyList;
 import genj.report.Report;
 
 import java.util.ArrayList;
@@ -92,14 +92,14 @@ public class ReportValidate extends Report {
     
     List tests = createTests();
     
-    PropertyList issues = new PropertyList(props[0].getGedcom());    
+    List issues = new ArrayList();
     for (int i=0;i<props.length;i++) {
       TagPath path = props[i].getPath();
       test(props[i], path, Grammar.getMeta(path), tests, issues);
     }
     
     // show results
-    results(issues);
+    results(props[0].getGedcom(), issues);
   }
   
   /**
@@ -114,14 +114,14 @@ public class ReportValidate extends Report {
     List tests = createTests();
     
     Gedcom gedcom = entities[0].getGedcom();
-    PropertyList issues = new PropertyList(gedcom);    
+    List issues = new ArrayList();
     for (int i=0;i<entities.length;i++) {
       TagPath path = new TagPath(entities[i].getTag());
       test(entities[i], path, Grammar.getMeta(path), tests, issues);
     }
     
     // show results
-    results(issues);
+    results(gedcom, issues);
   }
   
   /**
@@ -131,13 +131,11 @@ public class ReportValidate extends Report {
 
     // prepare tests
     List tests = createTests();
-    PropertyList issues;
-    
-    issues = new PropertyList(gedcom);
+    List issues = new ArrayList();
     
     // test if there's a submitter
     if (gedcom.getSubmitter()==null)
-      issues.add(translate("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null);
+      issues.add(new Annotation(translate("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null));
 
     // Loop through entities and test 'em
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
@@ -149,13 +147,13 @@ public class ReportValidate extends Report {
     }
     
     // show results
-    results(issues);
+    results(gedcom, issues);
   }
   
   /**
    * show validation results
    */
-  private void results(PropertyList issues) {
+  private void results(Gedcom gedcom, List issues) {
     
     // any fixes proposed at all?
     if (issues.size()==0) {
@@ -164,7 +162,7 @@ public class ReportValidate extends Report {
     }
     
     // show fixes
-    showPropertiesToUser(translate("issues"), issues);
+    showAnnotationsToUser(gedcom, translate("issues"), issues);
     
     // done
   }
@@ -172,7 +170,7 @@ public class ReportValidate extends Report {
   /**
    * Test a property (recursively)
    */
-  private void test(Property prop, TagPath path, MetaProperty meta, List tests, PropertyList issues) {
+  private void test(Property prop, TagPath path, MetaProperty meta, List tests, List issues) {
     // test tests
     for (int i=0, j=tests.size(); i<j; i++) {
       Test tst = (Test)tests.get(i);
@@ -200,7 +198,7 @@ public class ReportValidate extends Report {
       // check if Gedcom grammar allows it
       if (!meta.allows(ctag)) {
         String msg = translate("err.notgedcom", new String[]{ctag,path.toString()});
-        issues.add(msg, MetaProperty.IMG_ERROR, child);
+        issues.add(new Annotation(msg, MetaProperty.IMG_ERROR, child));
         continue;
       }
       // dive into

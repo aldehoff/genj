@@ -7,14 +7,16 @@
  */
 package validate;
 
+import genj.gedcom.Annotation;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
-import genj.report.PropertyList;
 import genj.util.WordBuffer;
+
+import java.util.List;
 
 /**
  * Test age of individuals at specific dates
@@ -74,7 +76,7 @@ public class TestAge extends Test {
   /**
    * Test individual(s)'s age at given date property 
    */
-  /*package*/ void test(Property prop, TagPath trigger, PropertyList issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
     
     // get to the date
     PropertyDate date ;
@@ -124,7 +126,7 @@ public class TestAge extends Test {
       words.append("-");
       words.append(report.translate(explanation));
 
-      issues.add(words.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop);
+      issues.add(new Annotation(words.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop));
     }
     
     // done

@@ -19,6 +19,7 @@
  */
 package genj.app;
 
+import genj.common.AnnotationListWidget;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
@@ -73,7 +74,6 @@ import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -696,7 +696,7 @@ public class ControlCenter extends JPanel {
             null,
             resources.getString("cc.open.warnings", gedcom.getName()),
             WindowManager.WARNING_MESSAGE,
-            new JScrollPane(new JList(warnings.toArray())),
+            new JScrollPane(new AnnotationListWidget(viewManager, gedcom, warnings)),
             Action2.okOnly(),
             ControlCenter.this
           );

@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2006 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,6 +20,7 @@
 package genj.io;
 
 import genj.crypto.Enigma;
+import genj.gedcom.Annotation;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -249,7 +250,7 @@ public class GedcomReader implements Trackable {
         Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, tempSubmitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (IllegalArgumentException t) {
-        warnings.add(new Warning(getLines(), RESOURCES.getString("read.warn.setsubmitter", tempSubmitter), null));
+        warnings.add(new Warning(0, RESOURCES.getString("read.warn.setsubmitter", tempSubmitter), null));
       }
     }
 
@@ -277,7 +278,7 @@ public class GedcomReader implements Trackable {
           xref.link();
         progress = Math.min(100,(int)(i*(100*2)/n));  // 100*2 because Links are probably backref'd
       } catch (GedcomException ex) {
-        lazyLink.setMessage(ex.getMessage());
+        lazyLink.setText(ex.getMessage());
         warnings.add(lazyLink);
       }
     }
@@ -610,19 +611,22 @@ public class GedcomReader implements Trackable {
   } //EntityReader
   
   /**
-   * A warning generated Gedcom read
+   * A generated warning 
    */
-  public static class Warning implements Comparable {
+  private static class Warning extends Annotation implements Comparable {
     
     private int lineNumber;
-    private String message;
-    private Property property;
     
     /** constructor */
-    private Warning(int lineNumber, String message, Property property) {
+    private Warning(int lineNumber, Property property) {
+      super("", property);
       this.lineNumber = lineNumber;
-      this.message = message;
-      this.property = property;
+    }
+
+    /** constructor */
+    private Warning(int lineNumber, String text, Property property) {
+      super(RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), text }), property);
+      this.lineNumber = lineNumber;
     }
 
     /**
@@ -633,40 +637,11 @@ public class GedcomReader implements Trackable {
       return lineNumber - that.lineNumber;
     }
     
-    /** 
-     * the line number where the warning occured
-     */
-    public int getLineNumber() {
-      return lineNumber;
-    }
-    
     /**
-     * string representation
+     * @see Annotation#setText(String)
      */
-    public String toString() {
-      return RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), message });
-    }
-    
-    /** 
-     * returns the localized warning message 
-     */
-    public String getMessage() {
-      return message;
-    }
-    
-    /** 
-     * sets the localized warning message 
-     */
-    public void setMessage(String set) {
-      message = set;
-    }
-    
-    /** 
-     * the concerned property 
-     * @return property or null if n/a
-     */ 
-    public Property getProperty() {
-      return property;
+    public void setText(String text) {
+      super.setText(RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), text }));
     }
     
   } //Warning

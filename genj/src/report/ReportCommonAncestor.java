@@ -5,10 +5,13 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Annotation;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.report.PropertyList;
 import genj.report.Report;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Compute the common ancestor of two individuals
@@ -71,12 +74,12 @@ public class ReportCommonAncestor extends Report {
     }
     
     // show the result
-    PropertyList list = new PropertyList(indi.getGedcom());
-    list.add(translate("result.first", indi), indi);
-    list.add(translate("result.second", other), other);
-    list.add(translate("result.ancestor", ancestor), ancestor);
+    List list = new ArrayList();
+    list.add(new Annotation(translate("result.first", indi), indi));
+    list.add(new Annotation(translate("result.second", other), other));
+    list.add(new Annotation(translate("result.ancestor", ancestor), ancestor));
     
-    showPropertiesToUser(getName(), list);
+    showAnnotationsToUser(indi.getGedcom(), getName(), list);
     
   }
   

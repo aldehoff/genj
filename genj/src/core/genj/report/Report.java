@@ -17,11 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.105 $ $Author: nmeier $ $Date: 2006-03-10 04:30:33 $
+ * $Revision: 1.106 $ $Author: nmeier $ $Date: 2006-03-14 19:58:59 $
  */
 package genj.report;
 
 import genj.chart.Chart;
+import genj.common.AnnotationListWidget;
 import genj.common.SelectEntityWidget;
 import genj.fo.Document;
 import genj.fo.Format;
@@ -437,15 +438,14 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * A sub-class can show items containing text and references to Gedcom
-   * objects to the user with this method
+   * Show annotations containing text and references to Gedcom objects 
    */
-  public final void showPropertiesToUser(String msg, PropertyList bookmarks) {
+  public final void showAnnotationsToUser(Gedcom gedcom, String msg, List annotations) {
 
     // prepare content
     JPanel content = new JPanel(new BorderLayout());
     content.add(BorderLayout.NORTH, new JLabel(msg));
-    content.add(BorderLayout.CENTER, new JScrollPane(bookmarks.new UI(viewManager)));
+    content.add(BorderLayout.CENTER, new JScrollPane(new AnnotationListWidget(viewManager, gedcom, annotations)));
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#items",getName(),WindowManager.INFORMATION_MESSAGE,content,Action2.okOnly(),owner);

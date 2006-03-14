@@ -7,6 +7,7 @@
  */
 package validate;
 
+import genj.gedcom.Annotation;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
@@ -14,8 +15,9 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
-import genj.report.PropertyList;
 import genj.util.WordBuffer;
+
+import java.util.List;
 
 /**
  * Test two dates
@@ -82,7 +84,7 @@ import genj.util.WordBuffer;
   /**
    * test a prop (PropertyDate.class) at given path 
    */
-  /*package*/ void test(Property prop, TagPath trigger, PropertyList issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
     
     Entity entity = prop.getEntity();
     PropertyDate date1;
@@ -118,7 +120,7 @@ import genj.util.WordBuffer;
         buf.append(entity.toString());
       }
        
-      issues.add(buf.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop);
+      issues.add(new Annotation(buf.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop));
     }
     
     // done

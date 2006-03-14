@@ -5,12 +5,12 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Annotation;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
-import genj.report.PropertyList;
 import genj.report.Report;
 
 import java.util.ArrayList;
@@ -109,19 +109,19 @@ public class ReportRelatives extends Report {
     }
     
     // Loop over relative descriptions
-    PropertyList items = new PropertyList(gedcom);
+    List items= new ArrayList();
     for (int i=0; i<RELATIVES.length; i++) {
       Relative relative = RELATIVES[i];
       List result = find(indi, relative.expression, relative.sex, key2relative);
       for (int j=0;j<result.size();j++) {
         Indi found = (Indi)result.get(j);
         String name = translate(relative.key) + ": " + found;
-        items.add(name, found);
+        items.add(new Annotation(name, found));
       }
     }
     
     // show it
-    showPropertiesToUser(title, items);
+    showAnnotationsToUser(gedcom, title, items);
 
     // done
   }

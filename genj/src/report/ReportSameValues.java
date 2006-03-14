@@ -5,13 +5,17 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import genj.gedcom.Annotation;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyName;
-import genj.report.PropertyList;
 import genj.report.Report;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A report that uses PropertyChoiceValue's referencing ability. For
@@ -79,7 +83,7 @@ public class ReportSameValues extends Report {
       return;
     
     // collect parents of sameProps
-    PropertyList items = new PropertyList(gedcom);
+    List items = new ArrayList();
     for (int i=0; i<sameProps.length; i++) {
 
       // "Birth, Meier, Nils (I001)"
@@ -92,15 +96,15 @@ public class ReportSameValues extends Report {
       else
         txt = parent.getPropertyName() + " | " +prop.getEntity();
 
-      // one item for each
-    	items.add(txt, prop);
+      // one annotation for each
+      items.add(new Annotation(txt, prop));
     }
     
     // sort 'em
-    items.sort();
+    Collections.sort(items);
     
     // show 'em
-    showPropertiesToUser( translate("xname",new String[]{ propName, val}), items);
+    showAnnotationsToUser(gedcom, translate("xname",new String[]{ propName, val}), items);
     
     // done
   }
