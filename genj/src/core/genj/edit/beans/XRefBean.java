@@ -61,7 +61,8 @@ public class XRefBean extends PropertyBean {
     // set preview
     if (xref!=null&&xref.getTargetEntity()!=null) 
       preview.setEntity(xref.getTargetEntity());
-    
+    else
+      preview.setEntity(null);
   }
   
   /**
