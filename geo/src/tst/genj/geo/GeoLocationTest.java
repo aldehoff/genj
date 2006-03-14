@@ -59,10 +59,8 @@ public class GeoLocationTest extends TestCase {
     GeoLocation[] locations = {
       locate(place("Timaru, Neuseeland")),
       locate(place("Timaru, New Zealand")),
-      locate(place("Timaru, nz")),
       locate(addr("Timaru", "New Zealand")),
       locate(addr("Timaru", "Neuseeland")),
-      locate(addr("Timaru", "nz"))
     };
     
     for (int l = 1; l < locations.length; l++) {
@@ -75,6 +73,10 @@ public class GeoLocationTest extends TestCase {
       // interesting - use Object cast otherwise GeoLocation's super.equals() is called
       assertFalse(other.equals((Object)locations[l])); 
     }
+    
+    // US state shouldn't be taken as countries (e.g. IL for Illinois vs. Israel)
+    assertNull("don't consider iso country codes", locate(place("Washington, IL")).getCountry());
+    assertEquals("consider country names", "il", locate(place("Washington, Israel")).getCountry().getCode());
     
 
     // done
