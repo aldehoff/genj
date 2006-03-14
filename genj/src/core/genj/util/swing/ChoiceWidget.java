@@ -125,15 +125,12 @@ public class ChoiceWidget extends JComboBox {
    * set values
    */
   public void setValues(Object[] set) {
-//    String text = getText();
-    // set
-    model.setValues(set);
-    // clear selection in model since it 
-    // might differ from what's in the editor right now
-//    if (isEditable) 
-//      setText(text);
-    
-    // done  
+    try {
+      blockAutoComplete = true;
+      model.setValues(set);
+    } finally {
+      blockAutoComplete = false;
+    }
   }
 
   /**
