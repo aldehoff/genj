@@ -208,6 +208,8 @@ public class GedcomReadWriteTest extends TestCase {
   private static String COMMA = ",";
 
   private boolean matches(String left, String right) {
+    if (left==null||right==null)
+      return false;
     return COMMASPACE.matcher(left).replaceAll(COMMA).equals(COMMASPACE.matcher(right).replaceAll(COMMA));
   }
   

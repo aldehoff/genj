@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +69,7 @@ public class GedcomReader implements Trackable {
   private int state;
   private long length;
   private String gedcomLine;
-  private ArrayList lineAndXRefs = new ArrayList();
+  private ArrayList lazyLinks = new ArrayList();
   private String tempSubmitter;
   private boolean cancel=false;
   private Thread worker;
@@ -169,7 +170,7 @@ public class GedcomReader implements Trackable {
   }
 
   /**
-   * Returns warnings encountered while reading
+   * Returns warnings List<Warning> encountered while reading
    * @return the warnings as a list of String
    */
   public List getWarnings() {
@@ -248,12 +249,16 @@ public class GedcomReader implements Trackable {
         Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, tempSubmitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (IllegalArgumentException t) {
-        addWarning(reader.getLines(), RESOURCES.getString("read.warn.setsubmitter", tempSubmitter));
+        warnings.add(new Warning(getLines(), RESOURCES.getString("read.warn.setsubmitter", tempSubmitter), null));
       }
     }
 
     // Link references
     linkReferences();
+    
+    // sort warnings
+    Collections.sort(warnings);
+    
 
     // Done
   }
@@ -264,15 +269,16 @@ public class GedcomReader implements Trackable {
   private void linkReferences() {
 
     // loop over kept references
-    for (int i=0,n=lineAndXRefs.size()/2; i<n; i++) {
-      String line = (String)lineAndXRefs.get(i*2+0);
-      PropertyXRef xref = (PropertyXRef)lineAndXRefs.get(i*2+1);
+    for (int i=0,n=lazyLinks.size(); i<n; i++) {
+      Warning lazyLink = (Warning)lazyLinks.get(i);
+      PropertyXRef xref = (PropertyXRef)lazyLink.getProperty();
       try {
         if (xref.getTarget()==null)
           xref.link();
         progress = Math.min(100,(int)(i*(100*2)/n));  // 100*2 because Links are probably backref'd
       } catch (GedcomException ex) {
-        warnings.add(RESOURCES.getString("read.warn", new Object[]{ line, ex.getMessage() } ));
+        lazyLink.setMessage(ex.getMessage());
+        warnings.add(lazyLink);
       }
     }
 
@@ -313,12 +319,12 @@ public class GedcomReader implements Trackable {
     // check 1 SUBM
     tempSubmitter = header.getPropertyValue("SUBM");
     if (tempSubmitter.length()==0)
-      addWarning(0, RESOURCES.getString("read.warn.nosubmitter"));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosubmitter"), null));
 
     // check 1 SOUR
     String source = header.getPropertyValue("SOUR");
     if (source.length()==0)
-      addWarning(0, RESOURCES.getString("read.warn.nosourceid"));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosourceid"), null));
 
     // check for 
     // 1 GEDC 
@@ -326,7 +332,7 @@ public class GedcomReader implements Trackable {
     // 2 FORMat
     Property gedc = header.getProperty("GEDC");
     if (gedc==null||gedc.getProperty("VERS")==null||gedc.getProperty("FORM")==null)
-      addWarning(0, RESOURCES.getString("read.warn.badgedc"));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.badgedc"), null));
         
     // check 1 LANG
     String lang = header.getPropertyValue("LANG");
@@ -337,7 +343,7 @@ public class GedcomReader implements Trackable {
       
     // check 1 CHAR
     if (header.getPropertyValue("CHAR").equals("ASCII"))
-      addWarning(reader.getLines(), RESOURCES.getString("read.warn.ascii"));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.ascii"), null));
       
     // check 
     // 1 PLAC
@@ -356,13 +362,6 @@ public class GedcomReader implements Trackable {
     return true;
   }
 
-  /**
-   * Add a warning
-   */
-  private void addWarning(int line, String txt) {
-    warnings.add(RESOURCES.getString("read.warn", new String[]{ Integer.toString(line), txt} ));
-  }
-  
   /**
    * SniffedInputStream
    */
@@ -512,19 +511,16 @@ public class GedcomReader implements Trackable {
       if (level!=0) 
         throw new GedcomFormatException(RESOURCES.getString("read.error.nonumber"), lines);
       
-      // warn about missing xref if it's a well known type
-      for (int i=0;i<Gedcom.ENTITIES.length;i++) {
-        if (tag.equals(Gedcom.ENTITIES[i])&&xref.length()==0) {
-          addWarning(lines, RESOURCES.getString("read.warn.recordnoid", Gedcom.getName(tag)));
-        }
-      }
-
       // Create entity and read its properties
       Entity result;
       try {
         
         result = gedcom.createEntity(tag, xref);
         
+        // warn about missing xref if it's a well known type
+        if (result.getClass()!=Entity.class&&xref.length()==0) 
+          warnings.add(new Warning(getLines(), RESOURCES.getString("read.warn.recordnoid", Gedcom.getName(tag)), result));
+
         // preserve value for those who care
         result.setValue(value);
         
@@ -567,7 +563,7 @@ public class GedcomReader implements Trackable {
       if (password==Gedcom.PASSWORD_UNKNOWN) {
         if (!warnedAboutPassword) {
           warnedAboutPassword = true;
-          addWarning(lines, RESOURCES.getString("crypt.password.unknown"));
+          warnings.add(new Warning(getLines(), RESOURCES.getString("crypt.password.unknown"), prop));
         }
         return;
       }
@@ -580,7 +576,10 @@ public class GedcomReader implements Trackable {
       if (enigma==null) {
         enigma = Enigma.getInstance(password);
         if (enigma==null) {
-          addWarning(lines, RESOURCES.getString("crypt.password.mismatch"));
+          if (!warnedAboutPassword) {
+            warnedAboutPassword = true;
+            warnings.add(new Warning(getLines(), RESOURCES.getString("crypt.password.mismatch"), prop));
+          }
           gedcom.setPassword(Gedcom.PASSWORD_UNKNOWN);
           return;
         }
@@ -599,15 +598,77 @@ public class GedcomReader implements Trackable {
     
     /** keep track of xrefs - we're going to link them lazily afterwards */
     protected void link(PropertyXRef xref) {
-      lineAndXRefs.add(Integer.toString(getLines()));
-      lineAndXRefs.add(xref);
+      // keep as warning
+      lazyLinks.add(new Warning(getLines(), null, xref));
     }
     
     /** keep track of bad levels */
-    protected void trackBadLevel(int level) {
-      addWarning(getLines(), RESOURCES.getString("read.warn.badlevel", ""+level));
+    protected void trackBadLevel(int level, Property parent) {
+      warnings.add(new Warning(getLines(), RESOURCES.getString("read.warn.badlevel", ""+level), parent));
     }
     
   } //EntityReader
+  
+  /**
+   * A warning generated Gedcom read
+   */
+  public static class Warning implements Comparable {
+    
+    private int lineNumber;
+    private String message;
+    private Property property;
+    
+    /** constructor */
+    private Warning(int lineNumber, String message, Property property) {
+      this.lineNumber = lineNumber;
+      this.message = message;
+      this.property = property;
+    }
+
+    /**
+     * compare by line #
+     */
+    public int compareTo(Object o) {
+      Warning that = (Warning)o;
+      return lineNumber - that.lineNumber;
+    }
+    
+    /** 
+     * the line number where the warning occured
+     */
+    public int getLineNumber() {
+      return lineNumber;
+    }
+    
+    /**
+     * string representation
+     */
+    public String toString() {
+      return RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), message });
+    }
+    
+    /** 
+     * returns the localized warning message 
+     */
+    public String getMessage() {
+      return message;
+    }
+    
+    /** 
+     * sets the localized warning message 
+     */
+    public void setMessage(String set) {
+      message = set;
+    }
+    
+    /** 
+     * the concerned property 
+     * @return property or null if n/a
+     */ 
+    public Property getProperty() {
+      return property;
+    }
+    
+  } //Warning
   
 } //GedcomReader

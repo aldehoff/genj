@@ -142,7 +142,7 @@ public class PropertyReader {
       //  3 DATE
       // we simply spit out a warning and continue as if nothing happened
       if (level>currentLevel+1) {
-        trackBadLevel(level);
+        trackBadLevel(level, prop);
         while (level-1>currentLevel++) 
           prop = prop.addProperty("_TAG", "");
       }
@@ -276,7 +276,7 @@ public class PropertyReader {
   }
   
   /** track a bad level - default noop */
-  protected void trackBadLevel(int level) {
+  protected void trackBadLevel(int level, Property parent) {
   }
   
 } //PropertyDecoder
