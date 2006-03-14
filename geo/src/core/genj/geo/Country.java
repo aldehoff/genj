@@ -163,10 +163,16 @@ public class Country implements Comparable {
     for (int i = 0; i < countries.size(); i++) {
       Country country = (Country)countries.get(i);
       // compare country code
-      if (country.iso.equalsIgnoreCase(displayName)) {
-        result = country;
-        break;
-      } else if (collator.compare(country.getDisplayName(), displayName)==0) {
+// 20060314 nice idea to try to match country iso codes
+// problem is that they also match US states which *will*
+// show up in the jurisdictions. For that reason I'm
+// reverting this back - users will better write readable
+// country names instead of iso country codes
+//      if (country.iso.equalsIgnoreCase(displayName)) {
+//        result = country;
+//        break;
+//      } else 
+      if (collator.compare(country.getDisplayName(), displayName)==0) {
         // create a private instance for this display name
         result = new Country(country.iso, displayName);
         break;
