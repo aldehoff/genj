@@ -23,24 +23,24 @@ import java.util.List;
  * Test two dates
  */
 /*package*/ class TestDate extends Test {
-  
+
   /** comparisons */
-  /*package*/ final static int 
+  /*package*/ final static int
     AFTER = 0,
     BEFORE = 1;
 
   /** path1 pointing to date to compare */
-  private TagPath path1;    
-    
+  private TagPath path1;
+
   /** path2 to compare to */
   private TagPath path2;
-  
+
   /** the mode AFTER, BEFORE, ... */
   private int comparison;
 
   /**
    * Constructor
-   * @see TestDate#TestDate(String[], int, String) 
+   * @see TestDate#TestDate(String[], int, String)
    */
   /*package*/ TestDate(String trigger, int comp, String path2) {
     this(new String[]{trigger}, null, comp, path2);
@@ -48,7 +48,7 @@ import java.util.List;
 
   /**
    * Constructor
-   * @see TestDate#TestDate(String[], int, String) 
+   * @see TestDate#TestDate(String[], int, String)
    */
   /*package*/ TestDate(String trigger, String path1, int comp, String path2) {
     this(new String[]{trigger}, path1, comp, path2);
@@ -63,7 +63,7 @@ import java.util.List;
   /*package*/ TestDate(String[] triggers, int comp, String path2) {
     this(triggers, null, comp, path2);
   }
-  
+
   /**
    * Constructor
    * @param paths to trigger test
@@ -82,13 +82,13 @@ import java.util.List;
   }
 
   /**
-   * test a prop (PropertyDate.class) at given path 
+   * test a prop (PropertyDate.class) at given path
    */
   /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
-    
+
     Entity entity = prop.getEntity();
     PropertyDate date1;
-    
+
     // did we get a path1 or assuming prop instanceof date?
     if (path1!=null) {
       date1 = (PropertyDate)prop.getProperty(path1);
@@ -97,47 +97,46 @@ import java.util.List;
     }
     if (date1==null)
       return;
-    
+
     // get date to check against - won't continue if
     // that's not a PropertyDate
     Property date2 = entity.getProperty(path2);
     if (!(date2 instanceof PropertyDate))
       return;
-      
-    // test it 
+
+    // test it
     if (isError(date1, (PropertyDate)date2)) {
-      
+
       WordBuffer buf = new WordBuffer();
-      
-      buf.append(Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1))));
+
+      String event1 = Gedcom.getName(trigger.get(trigger.length()-(trigger.getLast().equals("DATE")?2:1)));
+      String event2 = Gedcom.getName(path2.get(path2.length()-2));
+      String[] events = new String[] { event1, event2 };
       if (comparison==BEFORE)
-        buf.append(report.translate("err.date.before"));
+        buf.append(report.translate("err.date.before", events));
       else
-        buf.append(report.translate("err.date.after"));
-      buf.append(Gedcom.getName(path2.get(path2.length()-2)));
-      if (entity instanceof Indi) {
-        buf.append(report.translate("err.date.of"));    
-        buf.append(entity.toString());
-      }
-       
+        buf.append(report.translate("err.date.after", events));
+      if (entity instanceof Indi)
+        buf.append(report.translate("err.date.of", entity.toString()));
+
       issues.add(new Annotation(buf.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop));
     }
-    
+
     // done
   }
-  
+
   /**
    * test for error in date1 vs. date2
    */
   private boolean isError(PropertyDate date1, PropertyDate date2) {
-    
+
     // check valid first
     if (!(date1.isComparable()&&date2.isComparable()))
       return false;
 
-    // depending on comparison mode      
+    // depending on comparison mode
     PointInTime pit1, pit2;
-    int sign;    
+    int sign;
     if (comparison==AFTER) {
       // AFTER
       pit1 = date1.getStart();
@@ -149,7 +148,7 @@ import java.util.List;
       pit2 = date2.getStart();
       sign = -1;
     }
-    
+
     // result
     return pit1.compareTo(pit2)*sign>0;
   }
