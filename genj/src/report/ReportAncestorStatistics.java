@@ -129,7 +129,7 @@ public class ReportAncestorStatistics extends Report {
         // Print root individual
         println(translate("root_individual"));
         println(LINE_SEPARATOR);
-        println(getIndiDescription(indi));
+        println(indi.toString());
         println();
         
         // Print factors
@@ -178,10 +178,7 @@ public class ReportAncestorStatistics extends Report {
         Collection col = mapImplexCommonIndi.values();
         itr = col.iterator();
         while (itr.hasNext()) {
-            Indi indi = (Indi) itr.next();
-            
-            // Display individual description
-            println(getIndiDescription(indi));
+            println(itr.next());
         }
         println();
     }
@@ -201,7 +198,7 @@ public class ReportAncestorStatistics extends Report {
             ConsanguinityInfo info = (ConsanguinityInfo) itr.next();
             
             // Print individual description
-            println(align(getIndiDescription(info.indi), 60, Report.ALIGN_LEFT) +
+            println(align(info.indi.toString(), 60, Report.ALIGN_LEFT) +
             align(info.consanguinityFactor + "", 20, Report.ALIGN_RIGHT));
             
             // Print ancestor lists
@@ -222,13 +219,6 @@ public class ReportAncestorStatistics extends Report {
                 }
             }
         }
-    }
-    
-    /**
-     * Returns an individual description.
-     */
-    private String getIndiDescription(Indi indi) {
-        return translate("entity", new String[] {indi.getId(), indi.getName()});
     }
     
     /**
