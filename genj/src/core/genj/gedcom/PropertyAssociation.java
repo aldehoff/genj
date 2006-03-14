@@ -97,6 +97,9 @@ public class PropertyAssociation extends PropertyXRef {
    * @return warning as <code>String</code>, <code>null</code> when no warning
    */
   public String getDeleteVeto() {
+    // warn if linked
+    if (getTargetEntity()==null) 
+      return null;
     return resources.getString("prop.asso.veto");
   }
 

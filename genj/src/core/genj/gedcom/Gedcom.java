@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.105 $ $Author: nmeier $ $Date: 2006-03-10 22:12:13 $
+ * $Revision: 1.106 $ $Author: nmeier $ $Date: 2006-03-14 19:56:23 $
  */
 package genj.gedcom;
 
@@ -260,6 +260,8 @@ public class Gedcom implements Comparable {
    * Adds a Listener which will be notified when data changes
    */
   public synchronized void addGedcomListener(GedcomListener which) {
+    if (which==null)
+      throw new IllegalArgumentException("listener can't be null");
     listeners.add(which);
   }
 
@@ -280,7 +282,7 @@ public class Gedcom implements Comparable {
       try {
         gls[l].handleChange(transaction);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener", t);
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
       }
     }
     // done
