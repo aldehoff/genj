@@ -982,12 +982,9 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * normalizes a list of properties - that is for each element in result
-   * <pre>
-   * n(property) : 
-   *   for (Property property : list) 
-   *    !list.contains(property.getParent()) && n(property.getParent()) && !property.isTransient()
-   * </pre>
+   * Returns a normalized list of properties for given argument. Normalization
+   * means that there are no two properties in the result shareing a common 
+   * containing property and no transient property.
    * @param properties properties to normalize
    * @return normalized list
    */
