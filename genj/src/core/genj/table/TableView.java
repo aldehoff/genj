@@ -41,6 +41,7 @@ import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,6 +51,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 
 /**
  * Component for showing entities of a gedcom file in a tabular way
@@ -113,6 +115,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     // lay it out
     setLayout(new BorderLayout());
     add(propertyTable, BorderLayout.CENTER);
+    
+    // shortcuts
+    new NextMode(true).install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
+    new NextMode(false).install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
     
     // done
   }
@@ -212,9 +218,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       String tag = Gedcom.ENTITIES[i];
       // don't offer OBJEct button unless there are some of those already or the option to create them is selected
       if (!tag.equals("OBJE")||!gedcom.getEntities(tag).isEmpty()||Options.getInstance().isAllowNewOBJEctEntities) {
-        ActionChangeType change = new ActionChangeType(getMode(tag));
-        change.setAccelerator("ctrl shift "+Gedcom.getName(tag).charAt(0));
-        change.install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        SwitchMode change = new SwitchMode(getMode(tag));
         bar.add(bh.create(change));
       }
     }
@@ -260,13 +264,40 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   }  
   
   /**
+   * Action - go to next mode
+   */
+  private class NextMode extends Action2 {
+    private int dir;
+    private NextMode(boolean left) {
+      int vk;
+      if (left) {
+        vk = KeyEvent.VK_LEFT;
+        dir = -1;
+      } else {
+        vk = KeyEvent.VK_RIGHT;
+        dir = 1;
+      }
+      setAccelerator(KeyStroke.getKeyStroke(vk, KeyEvent.CTRL_DOWN_MASK));
+    }
+    protected void execute() {
+      int next = -1;
+      for (int i=0,j=Gedcom.ENTITIES.length; i<j; i++) {
+        next = (i+j+dir)%Gedcom.ENTITIES.length;
+        if (currentMode == getMode(Gedcom.ENTITIES[i])) 
+          break;
+      }
+      setMode(getMode(Gedcom.ENTITIES[next]));
+    }
+  } //NextMode
+  
+  /**
    * Action - flip view to entity type
    */
-  private class ActionChangeType extends Action2 {
+  private class SwitchMode extends Action2 {
     /** the mode this action triggers */
     private Mode mode;
     /** constructor */
-    ActionChangeType(Mode mode) {
+    SwitchMode(Mode mode) {
       this.mode = mode;
       setTip(resources.getString("mode.tip", Gedcom.getName(mode.getTag(),true)));
       setImage(Gedcom.getEntityImage(mode.getTag()));
