@@ -213,7 +213,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       // don't offer OBJEct button unless there are some of those already or the option to create them is selected
       if (!tag.equals("OBJE")||!gedcom.getEntities(tag).isEmpty()||Options.getInstance().isAllowNewOBJEctEntities) {
         ActionChangeType change = new ActionChangeType(getMode(tag));
-        change.setAccelerator("ctrl "+(j++));
+        change.setAccelerator("ctrl shift "+Gedcom.getName(tag).charAt(0));
         change.install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
         bar.add(bh.create(change));
       }
