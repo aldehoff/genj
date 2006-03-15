@@ -35,6 +35,7 @@
   <mapID target="x.report"       url="special/report.html" />
   <mapID target="x.translation"  url="special/translation.html" />
   <mapID target="x.faq"          url="special/faq.html" />
+  <mapID target="x.shortcuts"    url="special/shortcuts.html" />
 
   <mapID target="img.Edit"       url="../images/views/Edit.gif"     />
   <mapID target="img.Tree"       url="../images/views/Tree.gif"     />

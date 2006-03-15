@@ -32,5 +32,6 @@
     <tocitem target="x.report"      text="@x.report@"   />
     <tocitem target="x.translation" text="@x.translation@"   />
     <tocitem target="x.faq"         text="@x.faq@"     />
+    <tocitem target="x.shortcuts"   text="@x.shortcuts@"     />
   </tocitem>
 </toc>
