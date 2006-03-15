@@ -602,7 +602,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       // always try to stay with current selection
       List selection = getSelection();
       
-      // follow changes
+      // scan for deleted properties first
       Change[] changes = tx.getChanges();
       for (int i=0;i<changes.length;i++) {
         // applicable?
@@ -614,9 +614,18 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
           if (change instanceof Change.PropertyAdd&&!(((Change.PropertyAdd)change).getAdded() instanceof PropertyChange))
             selection = Collections.singletonList( ((Change.PropertyAdd)change).getAdded() );
           setRoot(root);
+          changes = new Change[0];
           break;
         }
-        // simple change?
+        // next
+      }
+      
+      // follow simple changes if still necessary
+      for (int i=0;i<changes.length;i++) {
+        // applicable?
+        Change change = changes[i];
+        if (change.getEntity()!=entity)
+          continue;
         if (change instanceof Change.PropertyValue) {
           Property changed = ((Change.PropertyValue)change).getChanged();
           // .. tell about it
