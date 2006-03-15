@@ -290,10 +290,14 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     String suffix = file.getSuffix();
       
     // lookup associations
-    Iterator it = FileAssociation.getAll(suffix).iterator();
-    while (it.hasNext()) {
-      FileAssociation fa = (FileAssociation)it.next(); 
-      result.add(new RunExternal(file,fa));
+    List assocs = FileAssociation.getAll(suffix);
+    if (assocs.isEmpty()) {
+      result.add(new RunExternal(file));
+    } else {
+      for (Iterator it = assocs.iterator(); it.hasNext(); ) {
+        FileAssociation fa = (FileAssociation)it.next(); 
+        result.add(new RunExternal(file,fa));
+      }
     }
     // done
   }

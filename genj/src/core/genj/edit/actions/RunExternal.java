@@ -40,6 +40,15 @@ public class RunExternal extends Action2 {
   /**
    * Constructor
    */
+  public RunExternal(PropertyFile f) {
+    file = f.getFile();
+    super.setImage(f.getImage(false));
+    super.setText("Open...");
+  }
+  
+  /**
+   * Constructor
+   */
   public RunExternal(PropertyFile f, FileAssociation fa) {
     association = fa;
     file = f.getFile();
@@ -60,7 +69,12 @@ public class RunExternal extends Action2 {
    * @see genj.util.swing.Action2#execute()
    */
   protected void execute() {
-    if (file!=null) association.execute(file);
+    if (file==null)
+      return;
+    if (association==null)
+      association = FileAssociation.get(file, "View", getTarget());
+    if (association!=null)
+      association.execute(file);
   }
   
 } //RunExternal
