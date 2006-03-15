@@ -304,6 +304,12 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
     return this;
   }
   
+  /** accessor - accelerator */
+  public Action2 setAccelerator(KeyStroke accelerator) {
+    this.accelerator = accelerator;
+    return this;
+  }
+  
   /**
    * accessor - image 
    */
