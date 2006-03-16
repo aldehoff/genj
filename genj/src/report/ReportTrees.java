@@ -7,16 +7,23 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+ /*
+  * TODO Daniel: add start(Indi) and start(Indi[]) entry points
+  * TODO Daniel: print pedigree chart for trees less than ???
+  * TODO Daniel: print additionnal info (ox+) for each indi
+  */
 
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+//import genj.gedcom.MultiLineProperty.Iterator;
 import genj.report.Report;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,19 +43,54 @@ public class ReportTrees extends Report {
      * interface when available
      */
     public int minGroupSize = 2;  // Don't print groups with size less than this
+    public int maxGroupSize = 20;
     
     /**
      * This method actually starts this report
      */
     public void start(Gedcom gedcom) {
         
+		String title = translate("fileheader",gedcom.getName());
         // Get a list of the individuals 
         Entity[] indis = gedcom.getEntities(Gedcom.INDI, "INDI:NAME");
-        println(translate("fileheader",gedcom.getName()));
+
+        println(title);
         
         // Step through all the Individuals we haven't seen yet
         println(translate("indicount",indis.length)+"\n");
         
+
+        HashSet unvisited = new HashSet(Arrays.asList(indis));
+        start(indis,unvisited);
+	}
+
+  /**
+   * Main for argument individual
+   */
+  public void start(Indi indi) {
+
+      println( translate("indiheader",indi.getName()));
+      println();
+    
+    HashSet unvisited = new HashSet(Arrays.asList(indi.getGedcom().getEntities(Gedcom.INDI, "INDI:NAME")));
+
+    start( new Indi[] { indi }, unvisited);
+  }
+
+  public void start(Indi[] indis) {
+      println(translate("indisheader",indis.length));
+
+      for (int i=0; i<indis.length; i++) {
+          println ("- "+indis[i].getName());
+      }
+      println();
+      
+      // Get a list of the individuals 
+    HashSet unvisited = new HashSet(Arrays.asList(indis[0].getGedcom().getEntities(Gedcom.INDI, "INDI:NAME")));
+      start(indis,unvisited);
+    }
+
+  public void start(Entity[] indis, HashSet allIndis) {
         HashSet unvisited = new HashSet(Arrays.asList(indis));
         List trees = new ArrayList();
         while (!unvisited.isEmpty()) {
@@ -61,7 +103,7 @@ public class ReportTrees extends Report {
           unvisited.remove(indi);
           
           // collect all relatives
-          iterate(indi, tree, unvisited);
+          iterate(indi, tree, allIndis);
           
           // remember
           trees.add(tree);
@@ -87,8 +129,22 @@ public class ReportTrees extends Report {
               grandtotal += tree.size();
               if (tree.size()<minGroupSize) 
                 loners +=tree.size();
-              else
+              else if (tree.size()<maxGroupSize){
+                  if (i != 0) println();
+                  String prefix = ""+tree.size();
+                  Iterator it = tree.iterator();
+                  while (it.hasNext()){
+                      Indi indi = (Indi)it.next();
+                      println(align(prefix,7, Report.ALIGN_RIGHT)+"  "+indi.getId()+
+                              " "+indi.getName()+
+                              "("+indi.getBirthAsString()+ "-"+
+                              indi.getDeathAsString()+")" );
+                      prefix = "";
+                  }
+              }
+              else {
                 println(align(""+tree.size(),7, Report.ALIGN_RIGHT)+"  "+tree );
+              }
             }
             
             println("");
@@ -114,7 +170,8 @@ public class ReportTrees extends Report {
 
       // individuals we need to check
       Stack todos  = new Stack();
-      todos.add(indi);
+      if (unvisited.remove(indi))
+          todos.add(indi);
 
       // loop 
       while (!todos.isEmpty()) {
@@ -174,7 +231,10 @@ public class ReportTrees extends Report {
       }
       
       public String toString() {
-        return oldestIndividual.getId()+" "+oldestIndividual.getName()+" "+oldestIndividual.getBirthAsString();
+        return oldestIndividual.getId()+
+        " "+oldestIndividual.getName()+
+        "("+oldestIndividual.getBirthAsString()+ "-"+
+        oldestIndividual.getDeathAsString()+")";
       }
       
       public boolean add(Object o) {
