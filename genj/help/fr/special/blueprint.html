@@ -99,19 +99,100 @@ diff&eacute;rentes couleurs peuvent &ecirc;tre choisies :
 </p>
 
 <p>
- Les vues utilisant des calques offriront de les s&eacute;lectionner et de 
- les &eacute;diter &agrave; travers leurs options. Les calques 
- pr&eacute;d&eacute;finis ne peuvent &ecirc;tre chang&eacute;s mais les 
- calques faits par l'utilisateur peuvent &ecirc;tre chang&eacute;s une 
- fois cr&eacute;&eacute;s (les calques sont g&eacute;r&eacute;s globalement 
- et non par vue). 
+ Les vues utilisant des calques offriront de les s&eacute;lectionner 
+ et de les &eacute;diter &agrave; travers leurs options. Les calques 
+ pr&eacute;d&eacute;finis ne peuvent &ecirc;tre chang&eacute;s mais 
+ les calques faits par l'utilisateur peuvent &ecirc;tre chang&eacute;s 
+ une fois cr&eacute;&eacute;s (les calques sont g&eacute;r&eacute;s 
+ globalement et non par vue). 
 </p>
 
-<p> 
- <b><font color="red">Note</font></b>: C'est une fonctionnalit&eacute; 
- tr&egrave;s avanc&eacute;e qui n'a pas besoin d'&ecirc;tre assimil&eacute;e 
- par tous les utilisateurs. Les calques par d&eacute;faut seront suffisants 
- pour 80% des utilisateurs. 
+<b><U>ORGANISATION</U></b>
+
+<p>
+ <b><font color="red">Note</font></b>: Les calques sont une 
+ fonctionnalit&eacute; tr&egrave;s avanc&eacute;e qui n'a pas 
+ besoin d'&ecirc;tre assimil&eacute;e par tous. Les calques par 
+ d&eacute;faut seront suffisants pour 80% des utilisateurs.<br>
+ Si cependant vous voulez mieux comprendre comment cr&eacute;er, charger, 
+ &eacute;changer vos calques, voil&agrave; quelques informations.
+</p>
+
+<p>
+  On va supposer que vous ayez r&eacute;ussi &agrave; faire un 
+  calque g&eacute;nial qui vous va &agrave; merveille. Ce cadre on va 
+  aussi supposer que l'ayez nomm&eacute; "LeNomDeVotreCalque".<br>
+  Et bien sachez que ce cadre va &ecirc;tre enregistr&eacute; dans 
+  un sous r&eacute;pertoire appel&eacute; "<b>blueprints/</b>" qui se 
+  situe sous le r&eacute;pertoire "<b>.genj/</b>". Je vous laisse voir 
+  dans cette aide o&ugrave; il est situ&eacute; chez vous suivant 
+  votre Syst&egrave;me d'Exploitation (Operating System), mais par 
+  exemple, sous Linux, le 
+  r&eacute;pertoire est sous "<b>genj/.genj/blueprints</b>".<br>
+  Sous ce sous-r&eacute;pertoire, vous allez trouver un sous 
+  sous-r&eacute;pertoire par entit&eacute; (un pour INDi, un pour 
+  FAM, etc... ) et &agrave; l'int&eacute;rieur, vous avez votre calque 
+  personnel. Si bien s&ucirc;r, vous n'avez jamais confectionn&eacute; 
+  de calques persos, vous n'aurez rien dedans ;-).<br>
+  Voil&agrave; la structure :<br>
+  <font color="#666666">
+  <i>
+  <ul>
+   <li>.genj/</li>
+    <ul>
+     <li>blueprints/</li>
+      <ul>
+       <li>FAM/</li>
+        <ul>
+         LeNomDeVotreCalque.html
+        </ul>
+      </ul>
+      <ul>
+       <li>INDI/</li>
+        <ul>
+         LeNomDeVotreCalque.html
+        </ul>
+      </ul>
+      <ul>
+       <li>NOTE/</li>
+        <ul>
+         LeNomDeVotreCalque.html
+        </ul>
+      </ul>
+      <ul>
+       <li>OBJE/</li>
+        <ul>
+         LeNomDeVotreCalque.html
+        </ul>
+      </ul>
+      <ul>
+       <li>REPO/</li>
+        <ul>
+         LeNomDeVotreCalque.html
+        </ul>
+      </ul>
+      <ul>
+       <li>SOUR/</li>
+        <ul>
+         LeNomDeVotreCalque.html
+        </ul>
+      </ul>
+      <ul>
+       <li>SUBM/</li>
+        <ul>
+         LeNomDeVotreCalque.html
+        </ul>
+      </ul>
+    </ul>
+  </ul>
+  </i>
+  </font>
+  <br>
+  Comme vous le voyez, ces fichiers n'&eacute;tant pas 
+  &eacute;cras&eacute;s lors d'une mise &agrave; jour, vous ne risquez 
+  pas de les perdre. Cependant, et je le dis souvent, il est toujours 
+  tr&egrave;s prudent d'en faire des copies de sauvegarde.<br>
+  <br>
 </p>
 
 </body>
