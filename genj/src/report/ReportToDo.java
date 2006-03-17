@@ -548,7 +548,7 @@ public class ReportToDo extends Report {
         Property parent = prop.getParent();
         
         doc.nextTableRow();
-        if (!(parent instanceof Entity)) {
+        if ((parent instanceof Entity)) {
           doc.nextTableCell();
           doc.nextTableCell();
           doc.nextTableCell();
