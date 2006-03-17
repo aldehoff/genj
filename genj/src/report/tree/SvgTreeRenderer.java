@@ -14,45 +14,15 @@ import genj.gedcom.PropertySex;
 import genj.report.Options;
 
 import java.io.PrintWriter;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import tree.IndiBox.Direction;
 
 /**
  * Outputs the generated tree to a SVG file.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class SvgTreeRenderer implements TreeRenderer {
-
-    /**
-     * Size of left and right image margin.
-     */
-	private final int VERTICAL_MARGIN = 10;
-
-    /**
-     * Size of top and bottom image margin.
-     */
-	private final int HORIZONTAL_MARGIN = 10;
-
-    /**
-     * Box background colors.
-     */
-	private final String[] BOX_COLORS = { "#FFFFFF", "#FFFFFF", "#DDDDFF", "#FFDDFF", "#FFDDDD",
-	                                      "#FFFFDD",
-	                                      "#DDFFDD", "#DDFFFF", "#DDDDFF", "#FFFFFF", "#FFFFFF" };
+public class SvgTreeRenderer extends AbstractTreeRenderer {
 
 	private PrintWriter out;
-
-    private int maxNames;
-	private int indiboxWidth;
-	private int indiboxHeight;
-	private int verticalGap;
-	private int verticalUnit;
-    private int famboxWidth;
-    private int famboxHeight;
-    private boolean displayFambox;
 
     /**
      * Constructs the object.
@@ -64,107 +34,9 @@ public class SvgTreeRenderer implements TreeRenderer {
 	public SvgTreeRenderer(PrintWriter out, int maxNames, int indiboxWidth,
             int indiboxHeight, int verticalGap, int famboxWidth, int famboxHeight,
             boolean displayFambox) {
+        super(maxNames, indiboxWidth, indiboxHeight, verticalGap, famboxWidth,
+            famboxHeight, displayFambox);
 		this.out = out;
-        this.maxNames = maxNames;
-		this.indiboxWidth = indiboxWidth;
-		this.indiboxHeight = indiboxHeight;
-		this.verticalGap = verticalGap;
-        this.famboxWidth = famboxWidth;
-        this.famboxHeight = famboxHeight;
-        this.displayFambox = displayFambox;
-		verticalUnit = indiboxHeight + verticalGap;
-        if (displayFambox)
-            verticalUnit += famboxHeight;
-	}
-
-    /**
-     * Outputs the family tree starting from the given IndiBox.
-     * @param indibox root individual box
-     */
-	public void render(IndiBox indibox) {
-		printSvgStart(indibox.wMinus + indibox.wPlus, indibox.hMinus + indibox.hPlus);
-		printTree(indibox, indibox.wMinus, -indibox.hPlus + 1, 0);
-		printSvgEnd();
-	}
-
-    /**
-     * Outputs the family tree starting from the given IndiBox.
-     * @param indibox root individual box
-     * @param baseX  x coordinate
-     * @param baseY  y coordinate
-     * @param gen  generation number
-     */
-	private void printTree(IndiBox indibox, int baseX, int baseY, int gen) {
-		baseX += indibox.x;
-		baseY += indibox.y;
-		printIndiBox(indibox.individual, baseX, baseY * verticalUnit, gen);
-
-        if (displayFambox && indibox.family != null) {
-            int famX = baseX + (indiboxWidth - famboxWidth) / 2;
-            if (indibox.spouse != null)
-                famX += indibox.spouse.x / 2;
-            printFamBox(indibox.family, famX, baseY * verticalUnit + indiboxHeight, gen);
-        }
-
-		// Spouse
-		if (indibox.spouse != null)
-			printTree(indibox.spouse, baseX, baseY, gen);
-
-		// Parent
-		if (indibox.parent != null) {
-			printTree(indibox.parent, baseX, baseY, gen - 1);
-			printLine(baseX + indiboxWidth / 2, baseY * verticalUnit,
-			               baseX + indiboxWidth / 2, (baseY + indibox.parent.y + 1) * verticalUnit
-			               - verticalGap / 2);
-		}
-
-		// Children
-		if (indibox.hasChildren())
-			for (int i = 0; i < indibox.children.length; i++) {
-				printTree(indibox.children[i], baseX, baseY, gen + 1);
-				printLine(baseX + indibox.children[i].x + indiboxWidth / 2,
-						(baseY + indibox.children[i].y) * verticalUnit,
-						baseX + indibox.children[i].x + indiboxWidth / 2,
-						(baseY + 1) * verticalUnit - verticalGap / 2);
-			}
-
-		// Lines
-		if (indibox.hasChildren() || indibox.getDir() == Direction.PARENT) {
-			int midX = baseX + indiboxWidth / 2;
-			int midY = baseY * verticalUnit + indiboxHeight;
-			if (indibox.spouse != null) {
-				midX = baseX + (indibox.spouse.x + indiboxWidth) / 2;
-				midY -= indiboxHeight / 2;
-			}
-            if (displayFambox && indibox.family != null)
-                midY = baseY * verticalUnit + indiboxHeight + famboxHeight;
-
-			printLine(midX, midY, midX, (baseY + 1) * verticalUnit - verticalGap / 2);
-
-			SortedSet xSet = new TreeSet();
-			xSet.add(new Integer(midX));
-			if (indibox.getDir() == Direction.PARENT)
-				xSet.add(new Integer(baseX - indibox.x + indiboxWidth / 2));
-			if (indibox.hasChildren())
-				for (int i = 0; i < indibox.children.length; i++)
-					xSet.add(new Integer(baseX + indibox.children[i].x + indiboxWidth / 2));
-			int x1 = ((Integer)xSet.first()).intValue();
-			int x2 = ((Integer)xSet.last()).intValue();
-
-			printLine(x1, (baseY + 1) * verticalUnit - verticalGap / 2,
-					x2, (baseY + 1) * verticalUnit - verticalGap / 2);
-		}
-
-		// Next marriage
-		if (indibox.nextMarriage != null) {
-			printTree(indibox.nextMarriage, baseX, baseY, gen);
-			if (indibox.nextMarriage.x > 0)
-				printDashedLine(baseX + indiboxWidth, baseY * verticalUnit + indiboxHeight / 2,
-						baseX + indibox.nextMarriage.x, baseY * verticalUnit + indiboxHeight / 2);
-			else
-				printDashedLine(baseX, baseY * verticalUnit + indiboxHeight / 2,
-						baseX + indibox.nextMarriage.x + indiboxWidth, baseY * verticalUnit + indiboxHeight / 2);
-		}
 	}
 
     /**
@@ -174,14 +46,14 @@ public class SvgTreeRenderer implements TreeRenderer {
      * @param y  y coordinate
      * @param gen generation number
      */
-	private void printIndiBox(Indi i, int x, int y, int gen) {
+	protected void drawIndiBox(Indi i, int x, int y, int gen) {
         String color = getBoxColor(gen);
 		String sex = "";
 		if (i.getSex() == PropertySex.MALE)
 			sex = "Male";
 		else if (i.getSex() == PropertySex.FEMALE)
 			sex = "Female";
-        String firstName = getFirstNames(i, maxNames);
+        String firstName = getFirstNames(i);
 
 		out.println("    <g transform=\"translate(" + x + ", " + y + ")\">");
 		out.println("      <use xlink:href=\"#PersonBox" + sex + "\" fill=\"" + color + "\"/>");
@@ -214,7 +86,7 @@ public class SvgTreeRenderer implements TreeRenderer {
      * @param y  y coordinate
      * @param gen generation number
      */
-    private void printFamBox(Fam f, int x, int y, int gen) {
+    protected void drawFamBox(Fam f, int x, int y, int gen) {
         String color = getBoxColor(gen);
 
         out.println("    <g transform=\"translate(" + x + ", " + y + ")\">");
@@ -237,7 +109,7 @@ public class SvgTreeRenderer implements TreeRenderer {
      * @param x2 end x
      * @param y2 end y
      */
-	private void printLine(int x1, int y1, int x2, int y2) {
+	protected void drawLine(int x1, int y1, int x2, int y2) {
 		out.println("    <line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" stroke=\"black\"/>");
 	}
 
@@ -248,7 +120,7 @@ public class SvgTreeRenderer implements TreeRenderer {
      * @param x2 end x
      * @param y2 end y
      */
-	private void printDashedLine(int x1, int y1, int x2, int y2) {
+	protected void drawDashedLine(int x1, int y1, int x2, int y2) {
 		out.println("    <line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 + "\" stroke=\"black\" style=\"stroke-dasharray:3 3\"/>");
 	}
 
@@ -257,49 +129,25 @@ public class SvgTreeRenderer implements TreeRenderer {
      * @param w family tree width in pixels
      * @param h family tree height in generation lines
      */
-	private void printSvgStart(int w, int h) {
-		int y = h * verticalUnit - verticalGap;
+	protected void header() {
 		out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		out.println("<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"");
 		out.println(" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-basic.dtd\">");
-		out.println("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"" + (w + HORIZONTAL_MARGIN * 2) + "\" height=\"" + (y + VERTICAL_MARGIN * 2) + "\">");
+		out.println("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"");
+        out.println("     width=\"" + getImageWidth() + "\"");
+        out.println("     height=\"" + getImageHeight() + "\">");
 		out.println("  <defs>");
 		out.println("    <rect id=\"PersonBox\" rx=\"25\" ry=\"25\" width=\"" + indiboxWidth + "\" height=\"" + indiboxHeight + "\" stroke=\"black\"/>");
 		out.println("    <rect id=\"PersonBoxMale\" rx=\"5\" ry=\"5\" width=\"" + indiboxWidth + "\" height=\"" + indiboxHeight + "\" stroke=\"#000044\"/>");
 		out.println("    <rect id=\"PersonBoxFemale\" rx=\"15\" ry=\"15\" width=\"" + indiboxWidth + "\" height=\"" + indiboxHeight + "\" stroke=\"#440000\"/>");
         out.println("    <rect id=\"FamilyBox\" rx=\"5\" ry=\"5\" width=\"" + famboxWidth + "\" height=\"" + famboxHeight + "\" stroke=\"#000044\"/>");
 		out.println("  </defs>");
-		out.println("  <g transform=\"translate(" + HORIZONTAL_MARGIN + ", " + (y - verticalUnit + verticalGap + VERTICAL_MARGIN) + ")\">");
 	}
 
     /**
      * Outputs the SVG footer.
      */
-	private void printSvgEnd() {
-		out.println("  </g>");
+	protected void footer() {
 		out.println("</svg>");
 	}
-
-    private String getBoxColor(int gen) {
-        if (gen + 5 < BOX_COLORS.length && gen + 5 >= 0)
-            return BOX_COLORS[gen + 5];
-        return BOX_COLORS[0];
-    }
-
-    /**
-     * Returns a maximum of <code>maxNames</code> given names of the given
-     * individual. If <code>maxNames</code> is 0, this method returns all
-     * given names.
-     */
-    private String getFirstNames(Indi indi, int maxNames) {
-        String firstName = indi.getFirstName();
-        if (maxNames <= 0)
-            return firstName;
-
-        String[] names = firstName.split("  *");
-        firstName = "";
-        for (int j = 0; j < maxNames && j < names.length; j++)
-            firstName += names[j] + " ";
-        return firstName.trim();
-    }
 }

@@ -113,18 +113,6 @@ public class ReportGraphicalTree extends Report {
      */
     public void start(Indi indi) {
 
-        // TODO: Set file filter in JFileChooser to *.svg
-        File svgFile = getFileFromUser(translate("output.file"),
-                Action2.TXT_OK, true);
-        PrintWriter svgOut = null;
-        try {
-            svgOut = new PrintWriter(new OutputStreamWriter(
-                    new FileOutputStream(svgFile), Charset.forName("UTF-8")));
-        } catch (IOException e) {
-            println("Error: Couldn't create file: " + e.getMessage());
-            return;
-        }
-
         TreeBuilder builder = new BasicTreeBuilder(gen_ancestors - 1,
                 gen_ancestor_descendants - 1, gen_descendants - 1);
         TreeArranger arranger;
@@ -132,16 +120,28 @@ public class ReportGraphicalTree extends Report {
             arranger = new CenteredArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
         else
             arranger = new AlignLeftArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
-        TreeRenderer outputter = new SvgTreeRenderer(svgOut, max_names,
-                INDIBOX_WIDTH, INDIBOX_HEIGHT, VERTICAL_GAP, FAMBOX_WIDTH,
-                FAMBOX_HEIGHT, display_fambox);
 
         IndiBox indibox = builder.build(indi);
         arranger.arrange(indibox);
-        outputter.render(indibox);
 
-        svgOut.close();
+        // SVG
+        // TODO: Set file filter in JFileChooser to *.svg
+        File svgFile = getFileFromUser(translate("output.file"),
+                Action2.TXT_OK, true);
+        try {
+            PrintWriter svgOut = new PrintWriter(new OutputStreamWriter(
+                    new FileOutputStream(svgFile), Charset.forName("UTF-8")));
+            TreeRenderer renderer = new SvgTreeRenderer(svgOut, max_names,
+                    INDIBOX_WIDTH, INDIBOX_HEIGHT, VERTICAL_GAP, FAMBOX_WIDTH,
+                    FAMBOX_HEIGHT, display_fambox);
 
-        showFileToUser(svgFile);
+            renderer.render(indibox);
+
+            svgOut.close();
+            showFileToUser(svgFile);
+        } catch (IOException e) {
+            println("Error: Couldn't write to file: " + e.getMessage());
+            return;
+        }
     }
 }

@@ -8,11 +8,13 @@
 
 package tree;
 
+import java.io.IOException;
+
 /**
  * Interface for classes writing the family tree to an output.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
 public interface TreeRenderer {
-	public void render(IndiBox indibox);
+	public void render(IndiBox indibox) throws IOException;
 }
