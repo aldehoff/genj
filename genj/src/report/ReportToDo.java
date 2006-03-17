@@ -412,7 +412,7 @@ public class ReportToDo extends Report {
         doc.nextTableRow();
         doc.nextTableCell("number-rows-spanned="+(children.length+1)+","+FORMAT_HEADER3);
         doc.addText(translate("spouse") + ":" );
-        doc.nextTableCell("number-columns-spanned=6");
+        doc.nextTableCell("number-columns-spanned=5");
         addIndiString(spouse, doc) ;
         doc.nextParagraph();
         doc.addText( Gedcom.getName("MARR") + " : ",FORMAT_STRONG);
