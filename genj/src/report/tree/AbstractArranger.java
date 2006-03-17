@@ -127,12 +127,12 @@ public abstract class AbstractArranger implements TreeArranger {
 
 			indibox.spouse.hMinus = parent.hPlus + parent.hMinus;
 			indibox.hMinus = indibox.spouse.hMinus;
-			if (parent.wPlus > indibox.spouse.wPlus)
-				indibox.spouse.wPlus = parent.wPlus;
+			if (parent.wPlus + parent.x > indibox.spouse.wPlus)
+				indibox.spouse.wPlus = parent.wPlus + parent.x;
 			if (indibox.spouse.wPlus + indibox.spouse.x > indibox.wPlus)
 				indibox.wPlus = indibox.spouse.wPlus + indibox.spouse.x;
-			if (parent.wMinus > indibox.spouse.wMinus)
-				indibox.spouse.wMinus = parent.wMinus;
+			if (parent.wMinus - parent.x > indibox.spouse.wMinus)
+				indibox.spouse.wMinus = parent.wMinus - parent.x;
 			if (indibox.spouse.wMinus - indibox.spouse.x > indibox.wMinus)
 				indibox.wMinus = indibox.spouse.wMinus - indibox.spouse.x;
 		}
