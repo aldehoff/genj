@@ -33,4 +33,5 @@ The people behind GenJ (alphabetically):
       . Carsten Muessig (German) 
       . Sini Ruohomaa (Finnish)
       . Marcus Sandberg (German)
+      . Klaus-Peter Schubert (German)
       . Przemek Wiech (Polish)
