@@ -172,6 +172,7 @@ public class MenuHelper  {
     // nothing to do?
     if (actions==null||actions.isEmpty())
       return;
+    createSeparator();
     // Loop through list
     Iterator it = actions.iterator();
     while (it.hasNext()) {
@@ -248,8 +249,8 @@ public class MenuHelper  {
     Object menu = peekMenu();
     if (menu instanceof JMenu) {
       JMenu jmenu = (JMenu)menu;
-      int count = jmenu.getComponentCount();
-      if (count>0 && jmenu.getComponent(count-1).getClass() != JPopupMenu.Separator.class)
+      int count = jmenu.getMenuComponentCount();
+      if (count>0 && jmenu.getMenuComponent(count-1).getClass() != JPopupMenu.Separator.class)
         jmenu.addSeparator();
     }
     if (menu instanceof JPopupMenu) {
