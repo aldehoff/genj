@@ -1,22 +1,13 @@
-<html>
-
-<body>
-
-<h2>Arbeiten mit Kennzeichenpfaden</h2>
-
-<p>
-Der Abschnitt &uuml;ber <a href="./gedcom.html">Gedcom</a> hat das Datenmodel, auf dem GenJ arbeitet, dargestellt. Die unterst&uuml;tzten Instanzen (z.B. Individuen) sind vergleichbar mit
-Datens&auml;tzen, die Informationen in eine hierarchische Form verpacken. Jede Instanz wird &uuml;ber eine Identifikation angesprochen. An verschiedenen Stellen &uuml;bernimmt GenJ das Erzeugen von Instanzen f&uuml;r Sie.
-</p>
-
-<p>
-Wenn eine Identifikation eine Instanz bestimmt, wie k&ouml;nnen dann die
-Eigenschaften dieser Instanz eindeutig bestimmt werden? Die Antwort lautet Kennzeichenpfade. Lassen Sie uns ein Beispiel ansehen:
-</p>
-
- <blockquote>
- <pre>
- 0 INDI @I001@
+<HTML>
+<BODY>
+<H2>Arbeiten mit Kennzeichenpfaden</H2>
+<P>Im Abschnitt &uuml;ber <A HREF="./gedcom.html">Gedcom</A>
+ist das Datenmodell dargestellt, auf dem GenJ arbeitet. Die Objekte,
+z.B. eine Person, sind in Datens&auml;tzen beschrieben, welche die
+Eigenschaften der Objekte in hierarchischer Ordnung enthalten.</P>
+<P>Dazu hier noch einmal ein Beispiel: 
+</P>
+<PRE STYLE="margin-left: 1cm; margin-right: 1cm"> 0 INDI @I001@
    1 NAME Nils /Meier/
    1 SEX M
    1 BIRT
@@ -28,35 +19,32 @@ Eigenschaften dieser Instanz eindeutig bestimmt werden? Die Antwort lautet Kennz
        3 CITY San Francisco
        3 POST 94107
    1 NOTE @N003@
- </pre>
- </blockquote>
-
-Um eine Eigenschaft in dieser Informationshierarchie zu
-bestimmen, ist an der Wurzel INDI zu starten und schrittweise zum gew&uuml;nschten Eintrag wie
-beispielsweise NAME zu navigieren. Beachten Sie, dass jede Stufe mit einem
-Kennzeichen beginnt, welches den Typ der Eigenschaft bestimmt (z.B. SEX oder
-DATE). Dies sind Abk&uuml;rzungen entsprechend dem Gedcom-Standard. Wenn die Kennzeichen in der selben Reihenfolge ihres Vorfindes und mit ':' getrennt zusammensetzt, erh&auml;lt man den Kennzeichenpfad INDI:NAME.
-</p>
-
-<p>Hier ist eine komplette Liste der m&ouml;glichen Kennzeichenpfade f&uuml;r das Individuum:
-
- <ul>
-  <li>INDI
-  <li>INDI:NAME
-  <li>INDI:SEX
-  <li><font color=gray>INDI:BIRT</font>
-  <li>INDI:BIRT:DATE
-  <li>INDI:BIRT:PLAC
-  <li><font color=gray>INDI:RESI</font>
-  <li><font color=gray>INDI:RESI:DATE</font>
-  <li>INDI:RESI:ADDR
-  <li>INDI:RESI:CITY
-  <li>INDI:RESI:POST
-  <li>INDI:NOTE
- </ul>
-
-Abh&auml;ngig davon, ob man sich f&uuml;r die Eigenschaftswerte der letzten Stufe interessiert werden meistens nur einige Pfade n&uuml;tzlich sein. Der einfachste Fall, bei dem diese Pfade Verwendung finden, ist die <a href="../view/table.html">Tabellen-Ansicht</a>.</p>
-
-</body>
-
-</html>
+ </PRE><P>
+Bei manchen Arbeiten m&ouml;chte man einzelne dieser Eigenschaften
+adressieren,  z.B. in der <A HREF="../view/table.html">Tabellen-Ansicht</A>,
+wenn man ausw&auml;hlt, welche Werte man als Spalte sehen m&ouml;chte,
+oder beim Gestalten von Vorlagen f&uuml;r die grafische Darstellung
+in der Baumansicht.</P>
+<P>Dazu braucht man die Kennzeichenpfade:</P>
+<P>Man startet auf der Ebene 0 und h&auml;ngt die Kennzeichen der
+Eigenschaften und Untereigenschaften (Gedcom tags) getrennt durch ':'
+in ihrer hierarchischen Reihenfolge aneinander.</P>
+<P>Hier ist eine Liste der m&ouml;glichen Kennzeichenpfade f&uuml;r
+eine Person: 
+</P>
+<UL>
+	<LI>INDI 
+	<LI>INDI:NAME 
+	<LI>INDI:SEX 
+	<LI>INDI:BIRT
+	<LI>INDI:BIRT:DATE 
+	<LI>INDI:BIRT:PLAC 
+	<LI>INDI:RESI
+	<LI>INDI:RESI:DATE
+	<LI>INDI:RESI:ADDR 
+	<LI>INDI:RESI:CITY 
+	<LI>INDI:RESI:POST 
+	<LI>INDI:NOTE 
+</UL>
+</BODY>
+</HTML>
