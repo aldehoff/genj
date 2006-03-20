@@ -6,7 +6,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree;
+package tree.arrange;
+
+import tree.IndiBox;
 
 /**
  * Abstract class for arranger classes.

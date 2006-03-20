@@ -10,20 +10,30 @@ package tree;
 
 import genj.gedcom.Indi;
 import genj.report.Report;
-import genj.util.swing.Action2;
+import genj.util.Registry;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
+
+import tree.arrange.AlignLeftArranger;
+import tree.arrange.CenteredArranger;
+import tree.arrange.TreeArranger;
+import tree.build.BasicTreeBuilder;
+import tree.build.TreeBuilder;
+import tree.output.OutputFactory;
+import tree.output.TreeOutput;
 
 /**
- * GenJ - ReportGraphicalTree
+ * GenJ - ReportGraphicalTree.
+ * The report works in 3 phases:
+ * <ol>
+ *   <li> Choose people to display and build the target tree structure</li>
+ *   <li> Arrange the individual boxes - assign (x, y) coordinates to all boxes</li>
+ *   <li> Output the final tree to a file or to the screen and display the result</li>
+ * </ol>
+ * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.05
+ * @version 0.09
  */
 public class ReportGraphicalTree extends Report {
 
@@ -56,6 +66,14 @@ public class ReportGraphicalTree extends Report {
      * Family box height in pixels.
      */
     private final int FAMBOX_HEIGHT = 22;
+
+    /**
+     * Output type.
+     */
+    public int output_type = 0;
+
+    public String[] output_types = { translate("output_type.svg"),
+            translate("output_type.pdf"), translate("output_type.screen")};
 
     /**
      * Number of generations of ancestors.
@@ -98,8 +116,8 @@ public class ReportGraphicalTree extends Report {
      */
     public int arrangement = 0;
 
-    public String[] arrangements = { translate("arrangement.0"),
-            translate("arrangement.1") };
+    public String[] arrangements = { translate("arrangement.center"),
+            translate("arrangement.left") };
 
     /**
      * The result is stored in files
@@ -113,35 +131,42 @@ public class ReportGraphicalTree extends Report {
      */
     public void start(Indi indi) {
 
-        TreeBuilder builder = new BasicTreeBuilder(gen_ancestors - 1,
-                gen_ancestor_descendants - 1, gen_descendants - 1);
+        Registry properties = new Registry();
+        properties.put("genAncestors", gen_ancestors - 1);
+        properties.put("genAncestorDescendants", gen_ancestor_descendants - 1);
+        properties.put("genDescendants", gen_descendants - 1);
+        properties.put("maxNames", max_names);
+        properties.put("indiboxWidth", INDIBOX_WIDTH);
+        properties.put("indiboxHeight", INDIBOX_HEIGHT);
+        properties.put("verticalGap", VERTICAL_GAP);
+        properties.put("horizontalGap", HORIZONTAL_GAP);
+        properties.put("famboxWidth", FAMBOX_WIDTH);
+        properties.put("famboxHeight", FAMBOX_HEIGHT);
+        properties.put("displayFambox", display_fambox);
+
+        // Build the tree
+        TreeBuilder builder = new BasicTreeBuilder(properties);
+        IndiBox indibox = builder.build(indi);
+
+        // Arrange the tree boxes
         TreeArranger arranger;
         if (arrangement == 0)
             arranger = new CenteredArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
         else
             arranger = new AlignLeftArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
-
-        IndiBox indibox = builder.build(indi);
         arranger.arrange(indibox);
 
-        // SVG
-        // TODO: Set file filter in JFileChooser to *.svg
-        File svgFile = getFileFromUser(translate("output.file"),
-                Action2.TXT_OK, true);
-        try {
-            PrintWriter svgOut = new PrintWriter(new OutputStreamWriter(
-                    new FileOutputStream(svgFile), Charset.forName("UTF-8")));
-            TreeRenderer renderer = new SvgTreeRenderer(svgOut, max_names,
-                    INDIBOX_WIDTH, INDIBOX_HEIGHT, VERTICAL_GAP, FAMBOX_WIDTH,
-                    FAMBOX_HEIGHT, display_fambox);
-
-            renderer.render(indibox);
-
-            svgOut.close();
-            showFileToUser(svgFile);
-        } catch (IOException e) {
-            println("Error: Couldn't write to file: " + e.getMessage());
+        // Render and display the tree
+        OutputFactory outputFactory = new OutputFactory(this, properties);
+        TreeOutput output = outputFactory.createOutput(output_type);
+        if (output == null)
             return;
+
+        try {
+            output.output(indibox);
+            output.display(this);
+        } catch (IOException e) {
+            println("Error generating output: " + e.getMessage());
         }
     }
 }

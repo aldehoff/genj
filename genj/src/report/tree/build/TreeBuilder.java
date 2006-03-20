@@ -6,8 +6,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree;
+package tree.build;
 
+import tree.IndiBox;
 import genj.gedcom.Indi;
 
 /**

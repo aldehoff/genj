@@ -6,40 +6,56 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree;
+package tree.render;
 
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.util.Registry;
 
-import java.io.IOException;
+import java.awt.Color;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import tree.IndiBox;
 import tree.IndiBox.Direction;
 
 /**
- * Common code for rendering classes.
+ * Common code for family tree rendering classes.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public abstract class AbstractTreeRenderer implements TreeRenderer {
+public abstract class AbstractTreeRenderer {
+
+    protected static final float STROKE_WIDTH = 2.0f;
 
     /**
      * Size of left and right image margin.
      */
-	protected final int VERTICAL_MARGIN = 10;
+	protected static final int VERTICAL_MARGIN = 10;
 
     /**
      * Size of top and bottom image margin.
      */
-	protected final int HORIZONTAL_MARGIN = 10;
+	protected static final int HORIZONTAL_MARGIN = 10;
 
     /**
      * Box background colors.
      */
-	private final String[] BOX_COLORS = { "#FFFFFF", "#FFFFFF", "#DDDDFF", "#FFDDFF", "#FFDDDD",
-	                                      "#FFFFDD",
-	                                      "#DDFFDD", "#DDFFFF", "#DDDDFF", "#FFFFFF", "#FFFFFF" };
+	private static final Color[] BOX_COLORS = {
+        new Color(0xff, 0xff, 0xff), // -5
+        new Color(0xff, 0xff, 0xff), // -4
+        new Color(0xdd, 0xdd, 0xff), // -3
+        new Color(0xff, 0xdd, 0xff), // -2
+        new Color(0xff, 0xdd, 0xdd), // -1
+
+        new Color(0xff, 0xff, 0xdd), //  0
+
+        new Color(0xdd, 0xff, 0xdd), //  1
+        new Color(0xdd, 0xff, 0xff), //  2
+        new Color(0xdd, 0xdd, 0xff), //  3
+        new Color(0xff, 0xff, 0xff), //  4
+        new Color(0xff, 0xff, 0xff)  //  5
+    };
 
     protected int maxNames;
 	protected int indiboxWidth;
@@ -58,16 +74,15 @@ public abstract class AbstractTreeRenderer implements TreeRenderer {
      * @param indiboxHeight height of the individual box in pixels
      * @param verticalGap minimal vertical gap between individual boxes
      */
-	public AbstractTreeRenderer(int maxNames, int indiboxWidth,
-            int indiboxHeight, int verticalGap, int famboxWidth, int famboxHeight,
-            boolean displayFambox) {
-        this.maxNames = maxNames;
-		this.indiboxWidth = indiboxWidth;
-		this.indiboxHeight = indiboxHeight;
-		this.verticalGap = verticalGap;
-        this.famboxWidth = famboxWidth;
-        this.famboxHeight = famboxHeight;
-        this.displayFambox = displayFambox;
+	public AbstractTreeRenderer(IndiBox firstIndi, Registry properties) {
+        this.firstIndi = firstIndi;
+        this.maxNames = properties.get("maxNames", -1);
+		this.indiboxWidth = properties.get("indiboxWidth", 0);
+		this.indiboxHeight = properties.get("indiboxHeight", 0);
+		this.verticalGap = properties.get("verticalGap", 0);
+        this.famboxWidth = properties.get("famboxWidth", 0);
+        this.famboxHeight = properties.get("famboxHeight", 0);
+        this.displayFambox = properties.get("displayFambox", true);
 		verticalUnit = indiboxHeight + verticalGap;
         if (displayFambox)
             verticalUnit += famboxHeight;
@@ -75,12 +90,10 @@ public abstract class AbstractTreeRenderer implements TreeRenderer {
 
     /**
      * Outputs the family tree starting from the given IndiBox.
-     * @param indibox root individual box
      */
-	public void render(IndiBox indibox) throws IOException {
-        firstIndi = indibox;
+	public void render() {
 		header();
-        drawTree(indibox, indibox.wMinus + HORIZONTAL_MARGIN, indibox.hMinus, 0);
+        drawTree(firstIndi, firstIndi.wMinus + HORIZONTAL_MARGIN, firstIndi.hMinus, 0);
 		footer();
 	}
 
@@ -205,24 +218,24 @@ public abstract class AbstractTreeRenderer implements TreeRenderer {
      * @param w family tree width in pixels
      * @param h family tree height in generation lines
      */
-	protected abstract void header() throws IOException;
+	protected abstract void header();
 
     /**
      * Outputs the image footer.
      */
-    protected abstract void footer() throws IOException;
+    protected abstract void footer();
 
     /**
      * Returns the image width (in pixels, including margins)
      */
-    protected int getImageWidth() {
+    public int getImageWidth() {
         return firstIndi.wMinus + firstIndi.wPlus + 2 * HORIZONTAL_MARGIN;
     }
 
     /**
      * Returns the image height (in pixels, including margins)
      */
-    protected int getImageHeight() {
+    public int getImageHeight() {
         return (firstIndi.hMinus + firstIndi.hPlus) * verticalUnit - verticalGap + 2 * VERTICAL_MARGIN;
     }
 
@@ -236,7 +249,7 @@ public abstract class AbstractTreeRenderer implements TreeRenderer {
     /**
      * Returns the box color for the given generation.
      */
-    protected String getBoxColor(int gen) {
+    protected Color getBoxColor(int gen) {
         if (gen + 5 < BOX_COLORS.length && gen + 5 >= 0)
             return BOX_COLORS[gen + 5];
         return BOX_COLORS[0];

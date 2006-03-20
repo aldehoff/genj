@@ -6,8 +6,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree;
+package tree.arrange;
 
+import tree.IndiBox;
 import tree.IndiBox.Direction;
 
 /**
@@ -48,8 +49,8 @@ public class AlignLeftArranger extends AbstractArranger {
 	}
 
 	protected void arrangeNextMarriages(IndiBox indibox, IndiBox next) {
-		next.x = indibox.wPlus - indiboxWidth + horizontalGap;
 		arrange(next);
+        next.x = indibox.wPlus + next.wMinus - indiboxWidth + horizontalGap;
 	}
 
 	protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {

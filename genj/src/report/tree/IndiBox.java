@@ -16,17 +16,17 @@ import genj.gedcom.Indi;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-class IndiBox {
+public class IndiBox {
 
     /**
      * Direction of the previous connected IndiBox.
      */
-    static class Direction {
-        static int NONE = 0;
-        static int SPOUSE = 1;
-        static int PARENT = 2;
-        static int CHILD = 3;
-        static int NEXTMARRIAGE = 4;
+    public static class Direction {
+        public static int NONE = 0;
+        public static int SPOUSE = 1;
+        public static int PARENT = 2;
+        public static int CHILD = 3;
+        public static int NEXTMARRIAGE = 4;
     }
     /* This will wait for Java 5.0 compatibility
     static enum Direction {
@@ -37,64 +37,64 @@ class IndiBox {
     /**
      * Previous box in the tree.
      */
-    IndiBox prev = null;
+    public IndiBox prev = null;
 
     /**
      * Spouse's box.
      */
-    IndiBox spouse = null;
+    public IndiBox spouse = null;
 
     /**
      * Parent's box.
      */
-    IndiBox parent = null;
+    public IndiBox parent = null;
 
     /**
      * Children's boxes.
      */
-    IndiBox[] children = null;
+    public IndiBox[] children = null;
 
     /**
      * Box of an individual in the next marriage of one of this individual or
      * his/her spouse.
      */
-    IndiBox nextMarriage = null;
+    public IndiBox nextMarriage = null;
 
     /**
      * X coordinate relative to the position of the previous IndiBox in pixels.
      */
-    int x = 0;
+    public int x = 0;
 
     /**
      * Y coordinate relative to the position of the previous IndiBox in
      * generation lines.
      */
-    int y = 0;
+    public int y = 0;
 
     // Space taken by all child-nodes of this IndiBox.
-    int wPlus = 0;
+    public int wPlus = 0;
 
-    int wMinus = 0;
+    public int wMinus = 0;
 
-    int hPlus = 1;
+    public int hPlus = 1;
 
-    int hMinus = 0;
+    public int hMinus = 0;
 
     /**
      * The individual connected with this box.
      */
-    Indi individual;
+    public Indi individual;
 
     /**
      * Family where spouse.
      */
-    Fam family;
+    public Fam family;
 
     /**
      * Constructs the object.
      * @param individual  individual connected with this box
      */
-    IndiBox(Indi individual) {
+    public IndiBox(Indi individual) {
         this.individual = individual;
     }
 
@@ -103,7 +103,7 @@ class IndiBox {
      * @param individual  individual connected with this box
      * @param prev
      */
-    IndiBox(Indi individual, IndiBox prev) {
+    public IndiBox(Indi individual, IndiBox prev) {
         this.individual = individual;
         this.prev = prev;
     }
@@ -111,7 +111,7 @@ class IndiBox {
     /**
      * Returns the direction of the previous connected IndiBox.
      */
-    int getDir() {
+    public int getDir() {
         if (prev == null)
             return Direction.NONE;
         if (this == prev.spouse)
@@ -126,7 +126,7 @@ class IndiBox {
     /**
      * @return true if this IndiBox has child boxes connected.
      */
-    boolean hasChildren() {
+    public boolean hasChildren() {
         return (children != null && children.length > 0);
     }
 }

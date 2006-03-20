@@ -6,17 +6,19 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree;
+package tree.build;
+
+import genj.gedcom.Fam;
+import genj.gedcom.Indi;
+import genj.util.Registry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import tree.IndiBox;
 import tree.IndiBox.Direction;
-
-import genj.gedcom.Fam;
-import genj.gedcom.Indi;
 
 /**
  * Builds the family tree based on gedcom data.
@@ -36,8 +38,13 @@ public class BasicTreeBuilder implements TreeBuilder {
 		this.gen_ancestors = gen_ancestors;
 		this.gen_ancestor_descendants = gen_ancestor_descendants;
 		this.gen_descendants = gen_descendants;
-
 	}
+
+    public BasicTreeBuilder(Registry properties) {
+        gen_ancestors = properties.get("genAncestors", -1);
+        gen_ancestor_descendants = properties.get("genAncestorDescendants", -1);
+        gen_descendants = properties.get("genDescendants", -1);
+    }
 
 	public IndiBox build(Indi indi) {
 		IndiBox indibox = new IndiBox(indi);

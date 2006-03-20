@@ -6,7 +6,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree;
+package tree.arrange;
+
+import tree.IndiBox;
 
 /**
  * Interface for classes used to arrange individual boxes in the family tree.
