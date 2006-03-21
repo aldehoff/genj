@@ -163,10 +163,6 @@ public abstract class Origin {
       here = back2forwardslash(new File(here.substring(0,here.lastIndexOf(FSLASH))).getCanonicalPath()) + "/";
       file = back2forwardslash(new File(file).getCanonicalPath()); 
       
-System.out.println("CHECKING FOR RELATIVE PATH ");
-System.out.println("HERE"+here);
-System.out.println("FILE"+file);
-
       if (file.startsWith(here))
         return file.substring(here.length());
     } catch (Throwable t) {
