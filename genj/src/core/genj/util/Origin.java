@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -43,6 +44,8 @@ import java.util.zip.ZipInputStream;
  * pulled from the same archive.
  */
 public abstract class Origin {
+  
+  private static Logger LOG = Logger.getLogger( "genj.util");
   
   /** chars we need */
   private final static char
@@ -163,7 +166,9 @@ public abstract class Origin {
       here = back2forwardslash(new File(here.substring(0,here.lastIndexOf(FSLASH))).getCanonicalPath()) + "/";
       file = back2forwardslash(new File(file).getCanonicalPath()); 
       
-      if (file.startsWith(here))
+      boolean startsWith = file.startsWith(here);
+      LOG.fine("File "+file+" is "+(startsWith?"":"not ")+"relative to "+here);
+      if (startsWith)
         return file.substring(here.length());
     } catch (Throwable t) {
     }
