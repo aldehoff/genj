@@ -2,7 +2,7 @@
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="genj.app.App"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="GenJ"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgenj.debug.file= -Dgenj.report.dir=build/eclipse/report"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgenj.debug.file= -Dgenj.report.dir=build/eclipse/report -Djava.util.logging.config.file=.settings/logging.properties"/>
 <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
