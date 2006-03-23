@@ -2,20 +2,29 @@
 
 <body>
 
-<h2><a href="../views.html">Ansichten</a> - Report Ansicht</h2>
+<h2><a href="../views.html">Ansichten</a> - Report-Ansicht</h2>
 
 <p>
-Ein Report ist eine Java-Klasse, die eine Schnittstelle zu GenJ implementiert. Reporte sind im Verzeichnis <b>./reports</b> abzulegen und werden dynamisch von GenJ geladen. Nach &Ouml;ffnen der Report-Ansicht wird eine Liste der verf&uuml;gbaren Reporte gezeigt. Durch Auswahl eines Listeneintrages wird rechts der Liste eine Beschreibung des Reportes sowie Informationen zum Autor angezeigt.
+In der Report-Ansicht können Sie eine ganze Reihe von Auswertungen und andere Funktionen ansto&szlig;en f&uuml;r die Datei, die im Kontrollzentrum markiert ist.<br>
+Unter dem Reiter 'Reportliste' werden die derzeit verf&uuml;gbaren Reports aufgelistet. Durch Auswahl eines Reports werden rechts eine Beschreibung des Reports sowie Informationen zum Autor angezeigt.<br>
+Bei manchen Reports k&ouml;nnen Sie unter dem Reiter 'Optionen' noch Einstellungen für den Report vornehmen.
 </p>
 
 <p>
-Mit den Auswahlkn&ouml;pfen wird ein Report gestartet, angehalten, nach einer &Auml;nderung neu geladen, das Ergebnis gespeichert oder die Ansicht geschlossen, Beachten Sie, dass alle Reporte auf die Gedcom-Datei zugreifen, die zum Zeitpunkt der Auswahl der Report-Ansicht ge&ouml;ffnet war.
+Mit den Auswahlkn&ouml;pfen wird ein Report gestartet, angehalten, nach einer &Auml;nderung neu geladen, das Ergebnis gespeichert oder die Ansicht geschlossen. 
 </p>
 
 <p>
-Abh&auml;ngig vom Report-Typ springt die Ansicht nach dem Report-Start zur Ergebnis-Karteikarte. Ein Report kann entweder vom Typ Konsole
-oder Fenster sein. Der letztgenannte Typ erstellt eine einfache Ausgabe,
-die innerhalb der Karteikarte dargestellt wird (kann sp&auml;ter abgespeichert werde). Beim erstgenannten Typ erscheinen angepasste Dialogfenster, ohne das Ergebnis im Standard-Ausgabeformat zu erstellen. </p>
+Abh&auml;ngig vom Report-Typ springt die Ansicht nach dem Report-Start zum Reiter 'Ergebnis'. Ein Report kann entweder vom Typ Fenster 
+oder Konsole sein. Der erstere erstellt eine einfache Ausgabe im Reiter 'Ergebnis' (kann sp&auml;ter abgespeichert werde). Beim letzteren Typ erscheinen entsprechende Dialogfenster, ohne das Ergebnis im Standard-Ausgabeformat zu erstellen. 
+</p>
+
+<p>&nbsp
+</p>
+
+<p>
+Technisch ist ein Report eine Java-Klasse, die eine Schnittstelle zu GenJ implementiert. Reporte sind im Verzeichnis <b>./reports</b> abzulegen und werden dynamisch von GenJ geladen. 
+</p>
 
 <p>
 Um zu erfahren, was man mit Reporten tun kann und wie Sie Ihre eigenen
