@@ -139,7 +139,7 @@
    <SOUR super="INDI:SOUR"/>
    <NOTE super="INDI:NAME:NOTE"/>
   </ASSO>
-  <ALIA type="PropertySimpleValue" img="Indi.gif"/>
+  <ALIA type="PropertyAlias" img="Indi.gif"/>
   +++++++++++++ numbers +++++++++++++
   <RFN type="PropertySimpleValue" img="Code.gif"/>
   <AFN type="PropertyNumericValue" img="Code.gif"/>

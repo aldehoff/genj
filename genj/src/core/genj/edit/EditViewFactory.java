@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.crypto.Enigma;
+import genj.edit.actions.CreateAlias;
 import genj.edit.actions.CreateAssociation;
 import genj.edit.actions.CreateChild;
 import genj.edit.actions.CreateEntity;
@@ -261,6 +262,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateParent(indi, manager));
     result.add(new CreateSpouse(indi, manager));
     result.add(new CreateSibling(indi, manager));
+    result.add(new CreateAlias(indi, manager));
   }
   
   /**
