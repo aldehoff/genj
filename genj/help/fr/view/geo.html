@@ -3,8 +3,8 @@
 
 <h2><a href="../views.html">Vues</a> - La Localisation G&eacute;ographique</h2>
 
-<div style="margin-left: 100px;">
 <p>
+<div style="margin-left: 100px;">
 <b><u>Remarque</u> :</b><br>
 Cette fonction de localisation g&eacute;ographique est une extension 
 &agrave; GenJ, ce qui signifie que le fichier la contenant, doit 
@@ -16,9 +16,9 @@ votre fichier gedcom, que ce soit le programme lui-m&ecirc;me ou
 les cartes. Pour l'installer, il suffit de d&eacute;compresser ce 
 fichier dans le r&eacute;pertoire d'installation de GenJ, tout en 
 pr&eacute;servant la structure interne de l'archive (les 
-sous-r&eacute;pertoires).<br>
-</p>
+sous-r&eacute;pertoires).
 </div>
+</p>
 
 <p>
 Pour lancer cette application, une fois qu'elle sera install&eacute;e, 
@@ -44,33 +44,33 @@ appara&icirc;tre.
 </p>
 
 <p>
- Cette fen&ecirc;tre va vous permettre de localiser les gens qui 
- sont pr&eacute;sents dans votre arbre g&eacute;n&eacute;alogique.<br>
- Une fois que GenJ se <a href="#_geo_import_data_">sera connect&eacute;</a> 
- sur le serveur pour r&eacute;cup&eacute;rer 
- les diff&eacute;rentes localit&eacute;s, 
- vous pourrez en cliquant sur le nom d'une ville qui appara&icirc;t 
- sur la carte, voir dans la fen&ecirc;tre de droite la liste se 
- centrer sur ladite ville, et en cliquant sur le signe "+" &agrave; 
- c&ocirc;t&eacute; du nom de cette m&ecirc;me ville, visualiser tous 
- les &eacute;v&egrave;nements qui se sont pass&eacute;s dans cette 
- localit&eacute;.<br>
- A l'inverse, si vous cliquez sur le nom d'une ville dans la liste 
- d&eacute;roulante, la carte va se centrer sur cette ville et un 
- cercle rouge vous permettra de mieux voir o&ugrave; elle est.
+Cette fen&ecirc;tre va vous permettre de localiser les gens qui 
+sont pr&eacute;sents dans votre arbre g&eacute;n&eacute;alogique.<br>
+Une fois que GenJ se <a href="#_geo_import_data_">sera connect&eacute;</a> 
+sur le serveur pour r&eacute;cup&eacute;rer 
+les diff&eacute;rentes localit&eacute;s, 
+vous pourrez en cliquant sur le nom d'une ville qui appara&icirc;t 
+sur la carte, voir dans la fen&ecirc;tre de droite la liste se 
+centrer sur ladite ville, et en cliquant sur le signe "+" &agrave; 
+c&ocirc;t&eacute; du nom de cette m&ecirc;me ville, visualiser tous 
+les &eacute;v&egrave;nements qui se sont pass&eacute;s dans cette 
+localit&eacute;.<br>
+A l'inverse, si vous cliquez sur le nom d'une ville dans la liste 
+d&eacute;roulante, la carte va se centrer sur cette ville et un 
+cercle rouge vous permettra de mieux voir o&ugrave; elle est.
 </p>
 
 <p>
- Dernier d&eacute;tail, les signes "<b>+</b>" et "<b>-</b>" qui se 
- trouvent sous la liste des localit&eacute;s, vous permettent 
- d'expanser ou de concentrer toutes les villes de la liste. Essayez, 
- vous comprendrez facilement de quoi il retourne.
+Dernier d&eacute;tail, les signes "<b>+</b>" et "<b>-</b>" qui se 
+trouvent sous la liste des localit&eacute;s, vous permettent 
+d'expanser ou de concentrer toutes les villes de la liste. Essayez, 
+vous comprendrez facilement de quoi il retourne.
 </p>
 
 <p>
-<h3><u>Résoudre des Problèmes</u></h3>
- Il est possible que vous remarquiez des aberrations &nbsp;; trois 
- types de probl&egrave;mes peuvent se poser&nbsp;:<br>
+<h3><u>R&eacute;soudre des Probl&egrave;mes</u></h3>
+Il est possible que vous remarquiez des aberrations &nbsp;; trois 
+types de probl&egrave;mes peuvent se poser&nbsp;:<br>
  <ol>
   <li>
    Des localit&eacute;s sont mises dans la colonne de droite 
@@ -106,14 +106,14 @@ appara&icirc;tre.
    leurs coordonn&eacute;es, va cr&eacute;er un fichier qui 
    s'appelera "lenomdemongedcom.geo.properties" et qui ressemblera 
    &agrave; &ccedil;a&nbsp;:<br>
-   <ul>
+   <div style="margin-left: 25px">
     <i>
     #lenomdemongedcom.geo<br>
     #Sun Jan 22 21:28:41 CET 2006<br>
     Bordeaux=44.83333206176758,-0.5666667222976685<br>
     machinville=47.123456,-1.12345<br>
     </i>
-   </ul>
+   </div>
   </li>
   <li>
    Des localit&eacute;s sont mal positionn&eacute;es. Il est 
@@ -154,9 +154,8 @@ appara&icirc;tre.
    est li&eacute;e au fait que dans le header de votre fichier 
    gedcom vous allez avoir les tags (&eacute;tiquettes) qui 
    vont bien &agrave; savoir&nbsp;:<br>
-   <ul>
-    <i>
-    0 HEAD<br>
+   <div style="margin-left: 25px">
+    <i>0 HEAD<br>
     1 SOUR GENJ<br>
     2 VERS 2.x<br>
     2 NAME GenealogyJ<br>
@@ -172,7 +171,8 @@ appara&icirc;tre.
     2 FORM Lineage-Linked<br>
     1 CHAR ANSEL<br>
     1 LANG French<br>
-    1 PLAC</i> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    1 PLAC
+    </i>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -180,11 +180,16 @@ appara&icirc;tre.
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&lt;------------- Ici</b><br>
-    <i>
-    2 FORM Lieudit,Commune,Code,D&eacute;partement,R&eacute;gion,Pays</i> 
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&lt;------------- Ici</b><br>
-    </ul>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <b>&lt;------------- Ici</b>
+    <br>
+    <i>2 FORM Lieudit,Commune,Code,D&eacute;partement,R&eacute;gion,Pays
+    </i>
+    &nbsp;&nbsp;&nbsp;
+    <b>&lt;------------- Ici</b>
+    <br>
+   </div>
    Si donc vos localit&eacute;s &eacute;taient organis&eacute;es 
    comme &ccedil;a, la quasi totalit&eacute; seraient correctement 
    positionn&eacute;es sur la carte, car GenJ se sert du nom du 
@@ -197,18 +202,19 @@ appara&icirc;tre.
  </ol>
 </p>
 
-
+<p>
 <h3><u>Info technique - Comment les localit&eacute;s sont d&eacute;finies</u></h3>
- La fonction G&eacute;ographique va retenir la localit&eacute; 
- associ&eacute;e &agrave; chaque &eacute;v&eacute;nement de votre 
- arbre et pour lequel on trouvera une &eacute;tiquette PLAC (endroit) 
- ou ADDR (adresse), mais seul le premier endroit sera retenu. Deux 
- localit&eacute;s seront consid&eacute;r&eacute;es comme 
- diff&eacute;rentes si la hi&eacute;rarchie des juridictions 
- diff&egrave;re. Voil&agrave; quelques exemples qui vous montreront 
- que les informations gedcom ne sont pas trait&eacute;es de la 
- m&ecirc;me mani&egrave;re :<br>
- <ul>
+La fonction G&eacute;ographique va retenir la localit&eacute; 
+associ&eacute;e &agrave; chaque &eacute;v&eacute;nement de votre 
+arbre et pour lequel on trouvera une &eacute;tiquette PLAC (endroit) 
+ou ADDR (adresse), mais seul le premier endroit sera retenu. Deux 
+localit&eacute;s seront consid&eacute;r&eacute;es comme 
+diff&eacute;rentes si la hi&eacute;rarchie des juridictions 
+diff&egrave;re. Voil&agrave; quelques exemples qui vous montreront 
+que les informations gedcom ne sont pas trait&eacute;es de la 
+m&ecirc;me mani&egrave;re :<br>
+<br>
+ <div style="margin-left: 25px">
   1 BIRT<br>
   2 PLAC La Chaise-Dieu<br>
   => <i>La Chaise-Dieu</i><br>
@@ -230,14 +236,15 @@ appara&icirc;tre.
   3 CITY La Chaise-Dieu<br>
   3 CTRY France<br>
   => <i>La Chaise-Dieu, France</i><br>
- </ul>
+ </div>
+<br>
 Pour information je vous rappelle que la structure donn&eacute;e 
 ci-dessus comme 4&egrave;me exemple, est celle qui est 
 <a href="#_hierarchie_juridictions_">pr&eacute;f&eacute;r&eacute;e</a>.
-
-<br>
+</p>
 
 <a name="_limitation_technique_"></a>
+<p>
 <h3><u>Info technique - Limitations</u></h3>
 Cette fonction de localisation g&eacute;ographique rentre en contact 
 avec un serveur de donn&eacute;es pour r&eacute;cup&eacute;rer les 
@@ -250,11 +257,14 @@ tel n'est pas le cas, ouvrez le menu dees Options, et entrez les
 informations du proxy &agrave; utiliser &agrave; savoir le nom du 
 serveur et le port.<br>
 Les lieux sont enregistr&eacute;s dans un fichier sur votre disque.
+</p>
 
-<br>
-
+<p>
 <h3><u>Barre d'Outils</u></h3>
- <blockquote><img src="../../images/screenshots/geo2.png"></blockquote>
+<blockquote>
+ <img src="../../images/screenshots/geo2.png">
+</blockquote>
+<div style="margin-left: 10px">
  <ol>
   <li>Choisir une nouvelle Carte.</li>
   <li>Revenir &agrave; la taille initiale de la Carte.</li>
@@ -268,8 +278,8 @@ Les lieux sont enregistr&eacute;s dans un fichier sur votre disque.
   vous verrez des infos appara&icirc;tre).</li>
   <li>Fermer la fen&ecirc;tre de Localisation G&eacute;ographique.</li>
  </ol>
-
-<br>
+</div>
+</p>
 
 <p>
 <b><u>Remarque</u> :</b><br>
