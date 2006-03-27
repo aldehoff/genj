@@ -600,7 +600,7 @@ import javax.swing.event.ChangeListener;
       for (Iterator cells = descriptor.getCells().iterator(); cells.hasNext(); ) {
         NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
         String path = cell.getAttribute("path");
-        if (path!=null && path.indexOf(TagPath.SEPARATOR)>=0)
+        if (root instanceof Entity&&path!=null && path.indexOf(TagPath.SEPARATOR)>=0)
           topLevelTags.add(new TagPath(path).get(1));
       }
       
@@ -732,6 +732,9 @@ import javax.swing.event.ChangeListener;
       Set skippedTags = new HashSet();
       props: for (int i=0, j=currentEntity.getNoOfProperties(); i<j; i++) {
         Property prop = currentEntity.getProperty(i);
+        // don't do anything for references right now
+        if (prop instanceof PropertyXRef)
+          continue;
         // check tag - skipped or covered already?
         String tag = prop.getTag();
         if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
