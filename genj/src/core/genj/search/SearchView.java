@@ -528,7 +528,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
         return;
       // too many?
       if (hitCount==MAX_HITS)
-        throw new IndexOutOfBoundsException("Too many hits found! Restricting result to "+MAX_HITS+" hits.");
+        throw new IndexOutOfBoundsException(resources.getString("maxhits", Integer.toString(MAX_HITS)));
       hitCount++;
       // keep entity
       entities.add(entity);
