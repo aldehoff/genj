@@ -50,7 +50,9 @@ public class AlignLeftArranger extends AbstractArranger {
 
 	protected void arrangeNextMarriages(IndiBox indibox, IndiBox next) {
 		arrange(next);
-        next.x = indibox.wPlus + next.wMinus - indiboxWidth + horizontalGap;
+        next.x = indibox.wPlus + next.wMinus + horizontalGap;
+        if (indibox.spouse != null && indibox.spouse.nextMarriage == next)
+            next.x -= indibox.spouse.x;
 	}
 
 	protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {

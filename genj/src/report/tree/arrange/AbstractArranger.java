@@ -113,13 +113,27 @@ public abstract class AbstractArranger implements TreeArranger {
 
 			if (next.hPlus > indibox.hPlus)
 				indibox.hPlus = next.hPlus;
-			indibox.spouse.wMinus = next.wMinus - next.x;
-			indibox.spouse.wPlus = next.wPlus + next.x;
-			if (indibox.spouse.wMinus - indibox.spouse.x > indibox.wMinus)
+            if (indibox.spouse.wMinus < next.wMinus - next.x)
+                indibox.spouse.wMinus = next.wMinus - next.x;
+            if (indibox.spouse.wPlus < next.wPlus + next.x)
+                indibox.spouse.wPlus = next.wPlus + next.x;
+			if (indibox.wMinus < indibox.spouse.wMinus - indibox.spouse.x)
 				indibox.wMinus = indibox.spouse.wMinus - indibox.spouse.x;
-			if (indibox.spouse.wPlus + indibox.spouse.x > indibox.wPlus)
+			if (indibox.wPlus < indibox.spouse.wPlus + indibox.spouse.x)
 				indibox.wPlus = indibox.spouse.wPlus + indibox.spouse.x;
 		}
+        if (indibox.nextMarriage != null) {
+            IndiBox next = indibox.nextMarriage;
+
+            arrangeNextMarriages(indibox, next);
+
+            if (next.hPlus > indibox.hPlus)
+                indibox.hPlus = next.hPlus;
+            if (indibox.wMinus < next.wMinus - next.x)
+                indibox.wMinus = next.wMinus - next.x;
+            if (indibox.wPlus < next.wPlus + next.x)
+                indibox.wPlus = next.wPlus + next.x;
+        }
 
 		// 3. Arrange parents
 		if (indibox.spouse != null && indibox.spouse.parent != null) {

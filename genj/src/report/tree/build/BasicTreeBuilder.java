@@ -75,6 +75,9 @@ public class BasicTreeBuilder implements TreeBuilder {
 				indibox.spouse = new IndiBox(spouse, indibox);
 
 			IndiBox last = indibox.spouse;
+            if (last == null)
+                last = indibox;
+
 			Iterator i = families.iterator();
 			i.next();
 			while (i.hasNext()) {
@@ -87,6 +90,8 @@ public class BasicTreeBuilder implements TreeBuilder {
 				box.spouse = new IndiBox(f.getOtherSpouse(indi), box);
 				last.nextMarriage = box;
 				last = box.spouse;
+                if (last == null)
+                    last = box;
 			}
 
 			// for each of these families:
@@ -110,10 +115,10 @@ public class BasicTreeBuilder implements TreeBuilder {
     				}
                 }
 
-				if (last.spouse == null)
-					last = null;
-				else
-					last = last.spouse.nextMarriage;
+                if (last.spouse != null)
+                    last = last.spouse.nextMarriage;
+                else
+                    last = last.nextMarriage;
 			}
 
 		}
