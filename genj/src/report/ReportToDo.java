@@ -25,6 +25,7 @@ import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.report.Report;
 
+import java.util.StringTokenizer;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -663,19 +664,12 @@ public class ReportToDo extends Report {
       return;
     }
       
-    // loop over multilines
-    MultiLineProperty.Iterator lines = ((MultiLineProperty)prop).getLineIterator();
-    doc.addText(lines.getValue());
-    while (lines.next()) {
-    	doc.nextParagraph();
-    	doc.addText(lines.getValue());
-    }
-
-/*    do {
-      doc.addText(lines.getValue());
-      doc.nextParagraph();
-    } while (lines.next());
-*/
+    // multilines
+     StringTokenizer lines = new StringTokenizer(prop.getValue(), "\n");
+     while (lines.hasMoreTokens()) { 
+         doc.nextParagraph();
+         doc.addText(lines.nextToken());
+     }
     // done
   }
 
