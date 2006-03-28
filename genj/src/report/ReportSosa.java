@@ -35,6 +35,9 @@ import java.util.List;
  * rap lignee 6. voir utilisation de la couleur **** 7. modify generation xx
  * formatting (cadre, souligne, ...)
  */
+/*
+ * TODO: mettre une sortie texte uniquement 
+ */
 public class ReportSosa extends Report {
 
   /** option - our report types defined, the value and choices */
@@ -494,7 +497,39 @@ public class ReportSosa extends Report {
    */
   class Agnatic extends DepthFirst  {
     
-    /** our title */
+      /** 
+       * each layout iterates over all individuals starting with the root
+       * up to the maximum number of generations
+       * @param indi the current individual
+       * @param fam the family that this individual was pulled out of (null for root)
+       * @param gen the current generation
+       * @param sosa the sosa index
+       * @param policy the privacy policy
+       */
+      void recursion(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+        
+        // stop here?
+        if (gen > reportMaxGenerations)
+          return;
+
+        // let implementation handle individual
+        formatIndi(indi, fam, gen, sosa, gen < privateGen ? PrivacyPolicy.PRIVATE : policy, doc);
+        
+        // go one generation up to father and mother 
+        Fam famc = indi.getFamilyWhereBiologicalChild();
+        if (famc == null) 
+          return;
+        
+        Indi father = famc.getHusband();
+        
+        // recurse into father 
+        if (father != null) 
+          recursion(father, famc, gen+1,  sosa*2, policy, doc);
+
+        // done
+      }
+
+      /** our title */
     String getTitle(Indi root) {
       return translate("title.agnatic", root.getName());
     }
