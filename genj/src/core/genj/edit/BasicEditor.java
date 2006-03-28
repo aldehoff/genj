@@ -114,8 +114,8 @@ import javax.swing.event.ChangeListener;
     // create panel for actions
     buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttonPanel);
-    bh.create(ok);
-    bh.create(cancel);
+    bh.create(ok).setFocusable(false);    
+    bh.create(cancel).setFocusable(false);
     
     // done
   }
@@ -406,7 +406,7 @@ import javax.swing.event.ChangeListener;
       // bean panel?
       if (beanPanel==null)
         return;
-
+      
       // commit changes
       Transaction tx = gedcom.startTransaction();
 
@@ -417,8 +417,15 @@ import javax.swing.event.ChangeListener;
         EditView.LOG.log(Level.SEVERE, "problem comitting bean panel", t);
       }
 
+      // lookup current focus now (any temporary props are committed now)
+      PropertyBean focussedBean = getFocus();
+      Property focus = focussedBean !=null ? focussedBean.getProperty() : null;
+      
       // end transaction - this will refresh our view as well
       gedcom.endTransaction();
+      
+      // set selection
+      beanPanel.select(focus);
 
       // done
     }
