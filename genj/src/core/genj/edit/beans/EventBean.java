@@ -71,6 +71,7 @@ public class EventBean extends PropertyBean {
    * Finish proxying edit for property Birth
    */
   public void commit(Property property) {
+    super.commit(property);
     if (cKnown.isVisible()) {
       ((PropertyEvent)property).setKnownToHaveHappened(cKnown.isSelected());
     }

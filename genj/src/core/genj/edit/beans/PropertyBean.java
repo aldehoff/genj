@@ -162,15 +162,17 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Commit any changes made by the user
    */
-  public final void commit() {
+  public void commit() {
     commit(property);
   }
   
   /**
-   * Commit any changes made by the user
+   * Commit any changes made by the user switching target property
    */
   public void commit(Property property) {
-    // noop
+    // remember property
+    this.property = property;
+    // nothing more
   }
   
   /**

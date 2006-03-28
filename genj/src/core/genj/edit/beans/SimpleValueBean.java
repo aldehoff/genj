@@ -50,6 +50,8 @@ public class SimpleValueBean extends PropertyBean {
    */
   public void commit(Property property) {
     
+    super.commit(property);
+    
     if (!property.isReadOnly())
       property.setValue(tfield.getText());
   }

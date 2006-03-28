@@ -20,7 +20,6 @@
 package genj.edit.beans;
 
 import genj.gedcom.Entity;
-import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
 import genj.util.Registry;
 import genj.view.ViewManager;
@@ -37,13 +36,6 @@ public class EntityBean extends PropertyBean {
 
   private Preview preview;
   private JLabel changed;
-
-  /**
-   * Finish editing a property through proxy (no changes here unless
-   * hasChanged()==true since this will be called in all cases)
-   */
-  public void commit(Property property) {
-  }
 
   /**
    * Nothing to edit

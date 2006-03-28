@@ -57,6 +57,9 @@ public class MLEBean extends PropertyBean {
    * Finish editing a property through proxy
    */
   public void commit(Property property) {
+    
+    super.commit(property);
+    
     property.setValue(tarea.getText());
   }
 

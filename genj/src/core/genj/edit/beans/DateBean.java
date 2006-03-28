@@ -94,6 +94,8 @@ public class DateBean extends PropertyBean {
    */
   public void commit(Property property) {
 
+    super.commit(property);
+    
     PropertyDate p = (PropertyDate)property;
     
     p.setValue(format, date1.getValue(), date2.getValue(), phrase.getText());

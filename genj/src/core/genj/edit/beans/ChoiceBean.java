@@ -111,6 +111,8 @@ public class ChoiceBean extends PropertyBean {
    */
   public void commit(Property property) {
     
+    super.commit(property);
+    
     PropertyChoiceValue choice = (PropertyChoiceValue)property;
 
     // change value

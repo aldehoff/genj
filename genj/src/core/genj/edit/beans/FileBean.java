@@ -182,6 +182,8 @@ public class FileBean extends PropertyBean {
    */
   public void commit(Property property) {
     
+    super.commit(property);
+    
     // propagate
     String file = chooser.getFile().toString();
     

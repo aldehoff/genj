@@ -124,6 +124,8 @@ public class NameBean extends PropertyBean {
    */
   public void commit(Property property) {
 
+    super.commit(property);
+    
     // ... calc texts
     String first = cFirst.getText().trim();
     String last  = cLast .getText().trim();
