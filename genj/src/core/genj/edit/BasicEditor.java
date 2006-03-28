@@ -720,7 +720,7 @@ import javax.swing.event.ChangeListener;
         throw new IllegalArgumentException("tabs can't be generated twice");
       
       // 'create' tab panel
-      tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+      tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
       tabs.putClientProperty(ContextProvider.class, new ContextProvider() {
         public Context getContext() {
           // check if tab for property
