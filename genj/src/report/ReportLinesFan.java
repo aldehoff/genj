@@ -40,7 +40,7 @@ public class ReportLinesFan extends Report {
 
 
     private LinkedList indiList = new LinkedList();
-    
+
     /**
      * Helper - Create a PrintWriter wrapper for output stream
      */
@@ -52,11 +52,11 @@ public class ReportLinesFan extends Report {
      * Main for argument individual
      */
     public void start(Indi indi) {
-	
+
         File file = getFileFromUser(translate("output.file"), Action2.TXT_OK,true);
         if (file == null)
         return ;
-        
+
 	try{
 
 /*
@@ -110,10 +110,17 @@ public class ReportLinesFan extends Report {
 	}
 	out.flush();
         out.close();
-        
+
         // show file the result to the user
         showFileToUser(file);
-        
+
+    }
+
+    /**
+     * Returns the category of this report.
+     */
+    public Category getCategory() {
+        return CATEGORY_PRESENTATION;
     }
 
     private void  pedigree (int in, int gen, int lev, int ah, Indi indi){
@@ -146,7 +153,7 @@ public class ReportLinesFan extends Report {
 			" "+(ah-lev)+
 			" "+(indiList.size()/2+pageNo)+
 			" j");
-	}	    
+	}
 
         if (in < genPerPage) {
 	    // And we loop through its ascendants
@@ -161,14 +168,14 @@ public class ReportLinesFan extends Report {
 
     }
     /*
-      Fullname returns the name of a person in a variety of formats. 
-      If the second parameter is true the surname is shown in upper case; 
-      otherwise the surname is as in the record. 
+      Fullname returns the name of a person in a variety of formats.
+      If the second parameter is true the surname is shown in upper case;
+      otherwise the surname is as in the record.
       If the third parameter is true the parts of the name are shown in the order
-      as found in the record; otherwise the surname is given first, followed 
-      by a comma, followed by the other name parts. 
+      as found in the record; otherwise the surname is given first, followed
+      by a comma, followed by the other name parts.
       The fourth parameter specifies the maximum length field that can be used
-      to show the name; various conversions occur 
+      to show the name; various conversions occur
       if it is necessary to shorten the name to fit this length.
     */
     private String fullname(Indi indi,int isUpper,int type,int length){

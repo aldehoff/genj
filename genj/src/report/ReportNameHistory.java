@@ -106,6 +106,13 @@ public class ReportNameHistory extends Report {
   }
 
   /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_STATISTICS;
+  }
+
+  /**
    * Find earliest year
    */
   private int findStart(Collection indis) {

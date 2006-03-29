@@ -20,7 +20,7 @@ import java.util.HashMap;
 import javax.swing.ImageIcon;
 
 /**
- * GenJ - ReportMultDesc 
+ * GenJ - ReportMultDesc
  * TODO Daniel titles statistics (nb pers distinctes, nbpers vivantes, nb fam, ...)
  * TODO Daniel: Remove bullet with possibly replacement with d'abboville number
  * TODO Daniel: Add table output (for csv)
@@ -79,17 +79,17 @@ public class ReportMultDesc extends Report {
 
   // outputer
   	private Output output;
-  	
+
   // Privacy
   public int publicGen = 0;
-  
+
   /**
    * don't need stdout
    */
   public boolean usesStandardOut() {
     return true;
   }
-  
+
   /**
    * use the fo image
    */
@@ -110,12 +110,19 @@ public class ReportMultDesc extends Report {
   public void start(Indi[] indis) {
     start( indis, getName() + " - " + indis[0].getGedcom().getName());
   }
-  
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_PRESENTATION;
+  }
+
   /**
    * Our main private report point
    */
   private void start(Indi[] indis, String title) {
-    
+
 	  switch (reportFormat){
 	  case TABLE:
 		  output = new OutputTable();
@@ -146,7 +153,7 @@ public class ReportMultDesc extends Report {
       nbColumns++;
 
     Document doc = new Document(title);
-    
+
     // iterate into individuals and all its descendants
     for (int i = 0; i < indis.length; i++) {
       Indi indi = indis[i];
@@ -165,7 +172,7 @@ public class ReportMultDesc extends Report {
    * Generate descendants information for one individual
    */
   private void iterate(Indi indi, int level, String num, HashMap done, PrivacyPolicy policy, Document doc) {
-    
+
     nbIndi++;
     if (indi!=null&&!indi.isDeceased()) nbLiving ++;
 
@@ -182,7 +189,7 @@ public class ReportMultDesc extends Report {
     // And we loop through its families
     Fam[] fams = indi.getFamiliesWhereSpouse();
     for (int f = 0; f < fams.length; f++) {
-      
+
       // .. here's the fam and spouse
       Fam fam = fams[f];
 
@@ -191,9 +198,9 @@ public class ReportMultDesc extends Report {
       // output the spouse
       output.startSpouse(doc);
         if (fams.length==1)
-    	    format(spouse,fam,num+"x", localPolicy, doc); 
-    	else 
-    	    format(spouse,fam,num+"x"+(f+1), localPolicy, doc); 
+    	    format(spouse,fam,num+"x", localPolicy, doc);
+    	else
+    	    format(spouse,fam,num+"x"+(f+1), localPolicy, doc);
 
       // put out a link if we've seen the spouse already
       if (done.containsKey(fam)) {
@@ -205,7 +212,7 @@ public class ReportMultDesc extends Report {
         nbIndi++;
         nbFam++;
         if (spouse!=null&&!spouse.isDeceased()) nbLiving ++;
-        
+
         // .. and all the kids
         Indi[] children = fam.getChildren();
         for (int c = 0; c < children.length; c++) {
@@ -214,14 +221,14 @@ public class ReportMultDesc extends Report {
             iterate(children[c], level + 1, num+'.'+(c+1), done, policy, doc);
           else
             iterate(children[c], level + 1, num+'x'+(f+1)+'.'+(c+1), done, policy, doc);
-          
+
           // .. next child
         }
-        
+
       }
       // .. next family
     }
-    
+
     // done
     output.endIndi(indi, doc);
   }
@@ -251,7 +258,7 @@ public class ReportMultDesc extends Report {
     // dump the information
 
     	output.startEvents(doc);
-    
+
     String[] infos = new String[] { birt, marr, deat, occu, resi };
     for (int i=0, j=0; i<infos.length ; i++) {
     	output.event(infos[i],doc);
@@ -266,7 +273,7 @@ public class ReportMultDesc extends Report {
     output.endEvents(doc);
     // done
   }
-  
+
   abstract class Output{
 	  abstract void title(Indi indi, Document doc);
 	  abstract void statistiques(Document doc);
@@ -282,13 +289,13 @@ public class ReportMultDesc extends Report {
 	  abstract void event(String event, Document doc);
 	  abstract void number(String num, Document doc);
 	  abstract void addressPrefix(Document doc);
-	  
+
 	  private HashMap format(Indi indi, Fam fam, String prefix, PrivacyPolicy policy) {
 		  HashMap result = new HashMap();
 		  // Might be null
 		  if (indi == null)
 			  return null;
-		  
+
 		  result.put("birt", format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy));
 		  result.put("marr", fam!=null ? format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "");
 		  result.put("deat", format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, policy));
@@ -298,13 +305,13 @@ public class ReportMultDesc extends Report {
 		  if (addr != null && policy.isPrivate(addr)) addr = null;
 		  result.put("addr", addr);
 		  return result;
-		  
+
 	  }
 	  /**
 	   * convert given prefix, date and place switches into a format string
 	   */
 	  String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
-	    
+
 	    Property prop = e.getProperty(tag);
 	    if (prop == null)
 	      return "";
@@ -342,7 +349,7 @@ public class ReportMultDesc extends Report {
         if (reportNumberScheme != NUM_NONE)
         	doc.addLink(label, fam);
         else
-        	doc.addLink(fam.getDisplayValue(), fam);        	
+        	doc.addLink(fam.getDisplayValue(), fam);
 	  }
 	  void anchor(Fam fam, Document doc){
 	   	    doc.addAnchor(fam);
@@ -363,12 +370,12 @@ public class ReportMultDesc extends Report {
 		  doc.addText(" (" + id + ")" );
 	  }
 	  void startEvents(Document doc){
-		  if (reportFormat!=ONE_LINE) 
+		  if (reportFormat!=ONE_LINE)
 			  doc.startList();
 		  isFirstEvent = true;
 	  }
 	  void endEvents(Document doc){
-		  if (reportFormat!=ONE_LINE) 
+		  if (reportFormat!=ONE_LINE)
 			  doc.endList();
 	  }
 	  void event(String event, Document doc){
@@ -386,20 +393,20 @@ public class ReportMultDesc extends Report {
 	      doc.addText(translate("AddressPrefix"));
 	  }
   }
-	  
-  // Loop through individuals & families
-  
 
-  
+  // Loop through individuals & families
+
+
+
   class OutputTable extends Output{
 
 	  String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
 		  return super.format(e,tag,"",date,place,policy);
 	  }
-	  
+
 	void title(Indi indi, Document doc) {
 		  doc.startTable("genj:csv=true");
-		  
+
 		  doc.nextTableRow();
 /*		  doc.addTableColumn("");
 		  doc.addTableColumn("");
@@ -462,7 +469,7 @@ public class ReportMultDesc extends Report {
       if (reportNumberScheme != NUM_NONE)
       	doc.addText(label);
       else
-      	doc.addText(fam.getDisplayValue());        	
+      	doc.addText(fam.getDisplayValue());
 	}
 
 	void anchor(Fam fam, Document doc) {
@@ -495,7 +502,7 @@ public class ReportMultDesc extends Report {
 		doc.nextTableCell();
 		doc.addText(num);
 	}
-	
+
 	void addressPrefix(Document doc){
 	}
   }

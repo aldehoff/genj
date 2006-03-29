@@ -27,29 +27,29 @@ import javax.swing.ImageIcon;
  * @version 1.0
  */
 public class ReportSummaryOfRecords extends Report {
-  
+
   private final static TagPath PATH2IMAGES = new TagPath("INDI:OBJE:FILE");
-  
+
   /** whether we're genering indexes for places */
   public  int generatePlaceIndex = 0;
   public String[] generatePlaceIndexs = {
     translate("place.index.none"), translate("place.index.one"), translate("place.index.each")
   };
-  
+
   /** max # of images per record */
   private  int maxImagesPerRecord = 4;
-  
+
   /**
-   * Overriden image - we're using the provided FO image 
+   * Overriden image - we're using the provided FO image
    */
   protected ImageIcon getImage() {
     return Report.IMG_FO;
   }
-  
+
   public int getMaxImagesPerRecord() {
     return maxImagesPerRecord;
   }
-  
+
   public void setMaxImagesPerRecord(int set) {
     maxImagesPerRecord = Math.max(0,set);
   }
@@ -67,43 +67,50 @@ public class ReportSummaryOfRecords extends Report {
    * The report's entry point
    */
   public void start(Gedcom gedcom) {
-    
+
     // create a document
     Document doc = new Document(translate("title", gedcom.getName()));
 
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
-    
+
     // Loop through individuals & families
     exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc);
     exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM"), doc);
-    
+
     // add a new page here - before the index is generated
     doc.nextPage();
-    
+
     // Done
     showDocumentToUser(doc);
-    
+
   }
 
   /**
-   * Exports the given entities 
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_PRESENTATION;
+  }
+
+  /**
+   * Exports the given entities
    */
   private void exportEntities(Entity[] ents, Document doc)  {
     for (int e = 0; e < ents.length; e++) {
       exportEntity(ents[e], doc);
     }
   }
-  
+
   /**
-   * Exports the given entity 
+   * Exports the given entity
    */
   private void exportEntity(Entity ent, Document doc) {
 
     println(translate("exporting", ent.toString() ));
-      
+
     // start a new section
     doc.startSection( ent.toString(), ent );
-    
+
     // start a table for the entity
     doc.startTable("width=100%");
     doc.addTableColumn("column-width=80%");
@@ -119,11 +126,11 @@ public class ReportSummaryOfRecords extends Report {
       PropertyFile file = (PropertyFile)files[f];
       doc.addImage(file.getFile(),"");
     }
-    
+
     // done
     doc.endTable();
-  }    
-  
+  }
+
   /**
    * Exports the given property's properties
    */
@@ -132,13 +139,13 @@ public class ReportSummaryOfRecords extends Report {
     // anything to do?
     if (of.getNoOfProperties()==0)
       return;
-    
+
     // create a list
     doc.startList();
 
     // an item per property
     for (int i=0;i<of.getNoOfProperties();i++) {
-      
+
       Property prop = of.getProperty(i);
 
       // we don't do anything for xrefs to non-indi/fam
@@ -150,7 +157,7 @@ public class ReportSummaryOfRecords extends Report {
 
       // here comes the item
       doc.nextListItem();
-      
+
       // fill index while we're at it
       if (prop instanceof PropertyName) {
         PropertyName name = (PropertyName)prop;
@@ -167,7 +174,7 @@ public class ReportSummaryOfRecords extends Report {
       if (level==1) format =  "font-style=italic";
       doc.addText(Gedcom.getName(prop.getTag()), format);
       doc.addText(" ");
-      
+
       // with its value
       exportPropertyValue(prop, doc);
 
@@ -184,13 +191,13 @@ public class ReportSummaryOfRecords extends Report {
 
     // check for links to other indi/fams
     if (prop instanceof PropertyXRef) {
-      
+
       PropertyXRef xref = (PropertyXRef)prop;
       doc.addLink(xref.getTargetEntity());
-      
+
       // done
       return;
-    } 
+    }
 
     // multiline needs loop
     if (prop instanceof MultiLineProperty) {
@@ -203,14 +210,14 @@ public class ReportSummaryOfRecords extends Report {
     }
 
     // patch for NAME
-    String value;    
+    String value;
     if (prop instanceof PropertyName)
       value = ((PropertyName)prop).getName();
     else
       value = prop.getDisplayValue();
 
     doc.addText(value);
-      
+
     // done
   }
 

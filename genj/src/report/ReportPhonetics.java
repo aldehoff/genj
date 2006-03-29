@@ -15,14 +15,14 @@ import java.util.Vector;
  * @version 0.2
  */
 public class ReportPhonetics extends Report {
-    
+
     public int outputFormat = 0;
     public boolean reportFirstNames = true;
-    
+
     public static String[] outputFormats = {
         "Soundex", "Metaphone", "Double Metaphone", "NYSIIS", "Phonex"
     };
-    
+
     private static Phonetics[] phonetics = {
         new Soundex(),
         new Metaphone(),
@@ -30,7 +30,7 @@ public class ReportPhonetics extends Report {
         new Nysiis(),
         new Phonex()
     };
-    
+
     /**
      * Indication of how this reports shows information
      * to the user. Standard Out here only.
@@ -38,14 +38,14 @@ public class ReportPhonetics extends Report {
     public boolean usesStandardOut() {
         return true;
     }
-    
+
     /**
      * Tells whether this report doesn't change information in the Gedcom-file
      */
     public boolean isReadOnly() {
         return true;
     }
-    
+
     /**
      * @see genj.report.Report#accepts(java.lang.Object)
      */
@@ -53,7 +53,7 @@ public class ReportPhonetics extends Report {
         // we accept GEDCOM or Individuals
         return context instanceof Indi || context instanceof Gedcom ? getName() : null;
     }
-    
+
     /**
      * Main for argument Gedcom
      */
@@ -61,12 +61,12 @@ public class ReportPhonetics extends Report {
       Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
       printPhonetic(gedcom, indis);
     }
-    
+
     /**
      * Main for argument Individual
      */
     public void start(Indi indi) {
-        
+
           String selection = (String) getValueFromUser(translate("select"), outputFormats, null);
           if (selection == null)
               return;
@@ -80,14 +80,21 @@ public class ReportPhonetics extends Report {
           }
           printPhonetic(indi);
     }
-    
+
+    /**
+     * Returns the category of this report.
+     */
+    public Category getCategory() {
+        return CATEGORY_ANALYSIS;
+    }
+
     private void printPhonetic(Gedcom gedcom, Entity[] indis) {
         Indi indi = null;
         String str = "";
-        
+
         println(translate("outputFormat")+": "+outputFormats[outputFormat]);
         println();
-        
+
         if(reportFirstNames) {
             ReferenceSet names = new ReferenceSet();
             for (int i = 0; i < indis.length; i++) {
@@ -118,16 +125,16 @@ public class ReportPhonetics extends Report {
             }
         }
     }
-    
+
     private void printPhonetic(Indi indi) {
-        
+
         // grab information from indi
         String firstName = indi.getFirstName();
         String lastName = indi.getLastName();
-        
+
         println(translate("outputFormat")+": "+outputFormats[outputFormat]);
         println();
-        
+
         if(reportFirstNames) {
             println(firstName+": "+encode(firstName));
             println(lastName+": "+encode(lastName));
@@ -136,26 +143,26 @@ public class ReportPhonetics extends Report {
             println(lastName+": "+encode(lastName));
         }
     }
-    
+
     private String encode(String input) {
         Phonetics p = phonetics[outputFormat];
         String s = p.encode(input, getResources());
         return s==null ? "" : s;
     }
-    
+
     /**
      * Our phonetics interface
      */
     interface Phonetics {
-        
+
         /**
          * encode implementation
          * @param resources TODO
          */
         public String encode(String name, Resources resources);
-        
+
     } //Phonetics
-    
+
     /**
      * from http://www.bgw.org/projects/java/
      * says GNU openSource but not sure what license
@@ -168,15 +175,15 @@ public class ReportPhonetics extends Report {
      * also available (Apache Licsence) in the
      * org.apache.commons.codec.language package
      */
-    
+
     static class DoubleMetaphone implements Phonetics {
-        
+
         private int current;
         private int encodeLimit = 4;
         private StringBuffer primary = new StringBuffer();
         private StringBuffer alternate = new StringBuffer();
         private String input;
-        
+
         private final static char[] vowels = { 'A', 'E', 'I', 'O', 'U', 'Y' };
         private final static char[] AEOU = { 'A', 'E', 'O', 'U' };
         private final static char[] AO = "AO".toCharArray();
@@ -229,38 +236,38 @@ public class ReportPhonetics extends Report {
         private final static String[] Van_Von_ = { "VAN ", "VON " };
         private final static String[] WiczWitz = { "WICZ", "WITZ" };
         private final static String[] ZaZiZo = { "ZO", "ZI", "ZA" };
-        
+
         /** Creates new DoubleMetaphone */
         public DoubleMetaphone() {
         }
-        
+
         public String getPrimary() {
             return primary.toString();
         }
-        
+
         public StringBuffer getPrimaryBuffer() {
             return primary;
         }
-        
+
         public String getAlternate() {
             return alternate.toString();
         }
-        
+
         public StringBuffer getAlternateBuffer() {
             return alternate;
         }
-        
+
         public int getEncodeLimit() {
             return encodeLimit;
         }
-        
+
         public boolean setEncodeLimit(int newLimit) {
             if (newLimit < 1)
                 return false;
             encodeLimit = newLimit;
             return true;
         }
-        
+
         void setInput(String in) {
             if (in != null) {
                 input = in.toUpperCase() + "     ";
@@ -268,16 +275,16 @@ public class ReportPhonetics extends Report {
                 input = "";
             }
         }
-        
+
         void add(char ch) {
             add(ch, ch);
         }
-        
+
         void add(char primaryChar, char alternateChar) {
             primary.append(primaryChar);
             alternate.append(alternateChar);
         }
-        
+
         boolean charAt(int index, char[] list) {
             if (index < 0 || index >= input.length())
                 return false;
@@ -288,13 +295,13 @@ public class ReportPhonetics extends Report {
             }
             return false;
         }
-        
+
         boolean stringAt(int start, int length, String str) {
             String[] list = new String[1];
             list[0] = str;
             return stringAt(start, length, list);
         }
-        
+
         boolean stringAt(int start, int length, String[] list) {
             if (length <= 0)
                 return false;
@@ -304,29 +311,29 @@ public class ReportPhonetics extends Report {
             }
             return false;
         }
-        
+
         boolean isVowel(int index) {
             return charAt(index, vowels);
         }
-        
+
         boolean isSlavoGermanic() {
             if ((input.indexOf('W') > -1) || (input.indexOf('K') > -1) || (input.indexOf("CZ") > -1) || (input.indexOf("WITZ") > -1)) {
                 return true;
             }
             return false;
         }
-        
+
         void addCode(char ch, char code) {
             add(code);
             current++;
             if (input.charAt(current) == ch)
                 current++;
         }
-        
+
         public String encode(String in, Resources resources) {
             if (in == null || in.length() == 0)
                 return null;
-            
+
             primary.delete(0, primary.length());
             alternate.delete(0, alternate.length());
             int length = in.length();
@@ -335,21 +342,21 @@ public class ReportPhonetics extends Report {
             int last = length - 1; //zero based index
             setInput(in);
             current = 0;
-            
+
             //skip these when at start of word
             if (stringAt(0, 2, GnKnPnPsWr))
                 current++;
-            
+
             //Initial 'X' is pronounced 'Z' e.g. 'Xavier'
             if (input.startsWith("X")) {
                 add('S'); //'Z' maps to 'S'
                 current++;
             }
-            
+
             while (primary.length() < encodeLimit || alternate.length() < encodeLimit) {
                 if (current >= length)
                     break;
-                
+
                 switch (input.charAt(current)) {
                     case 'A' :
                     case 'E' :
@@ -361,18 +368,18 @@ public class ReportPhonetics extends Report {
                             add('A'); // all init vowels map to 'A'
                         current++;
                         break;
-                        
+
                     case 'B' :
                         // "-mb", e.g "dumb", already skipped over...
                         addCode('B', 'P');
                         break;
-                        
+
                     case '\u00c7' : // C with an accent at the bottom (C;)
                         add('S');
                         current++;
                         // Note: no doublecheck
                         break;
-                        
+
                     case 'C' :
                         // various germanic
                         if ((current > 1) && !isVowel(current - 2) && input.regionMatches(current - 1, "ACH", 0, 3) && (input.charAt(current + 2) != 'I' && input.charAt(current + 2) != 'E' || stringAt(current - 2, 6, BacherMacher))) {
@@ -380,21 +387,21 @@ public class ReportPhonetics extends Report {
                             current += 2;
                             break;
                         }
-                        
+
                         // special case 'caesar'
                         if (current == 0 && input.regionMatches(current, "CAESAR", 0, 6)) {
                             add('S');
                             current += 2;
                             break;
                         }
-                        
+
                         //italian 'chianti'
                         if (input.regionMatches(current, "CHIA", 0, 4)) {
                             add('K');
                             current += 2;
                             break;
                         }
-                        
+
                         if (input.regionMatches(current, "CH", 0, 2)) {
                             //find 'michael'
                             if (current > 0 && input.regionMatches(current, "CHAE", 0, 4)) {
@@ -402,14 +409,14 @@ public class ReportPhonetics extends Report {
                                 current += 2;
                                 break;
                             }
-                            
+
                             // greek roots e.g. 'chemistry', 'chorus'
                             if (current == 0 && (stringAt(current + 1, 5, HaracHaris) || stringAt((current + 1), 3, HemHiaHorHym)) && !input.regionMatches(0, "CHORE", 0, 5)) {
                                 add('K');
                                 current += 2;
                                 break;
                             }
-                            
+
                             // germanic, greek, or otherwise 'ch' for 'kh' sound
                             if ((stringAt(0, 4, Van_Von_) || input.regionMatches(0, "SCH ", 0, 3)) // 'architect' but not 'arch', 'orchestra', 'orchid'
                             || stringAt(0, 6, ArchitOrchesOrchid)
@@ -432,21 +439,21 @@ public class ReportPhonetics extends Report {
                             current += 2;
                             break;
                         }
-                        
+
                         // e.g. 'czerny'
                         if (input.regionMatches(current, "CZ", 0, 2) && !input.regionMatches(current - 2, "WICZ", 0, 4)) {
                             add('S', 'X');
                             current += 2;
                             break;
                         }
-                        
+
                         // e.g. 'focaccia'
                         if (input.regionMatches(current + 1, "CIA", 0, 3)) {
                             add('X');
                             current += 3;
                             break;
                         }
-                        
+
                         // double 'C', but not if e.g. 'McClellan'
                         if (input.regionMatches(current, "CC", 0, 2) && !((current == 1) && (input.charAt(0) == 'M'))) {
                             // 'bellocchio' but not 'bacchus'
@@ -466,13 +473,13 @@ public class ReportPhonetics extends Report {
                                 break;
                             }
                         }
-                        
+
                         if (stringAt(0, 2, CkCgCq)) {
                             add('K');
                             current += 2;
                             break;
                         }
-                        
+
                         if (stringAt(0, 2, CeCiCy)) {
                             // italian vs. english
                             if (stringAt(0, 3, CiaCieCio)) {
@@ -483,10 +490,10 @@ public class ReportPhonetics extends Report {
                             current += 2;
                             break;
                         }
-                        
+
                         // else
                         add('K');
-                        
+
                         // name sent in 'mac caffrey', 'mac gregor'
                         if (charAt(current + 1, CGQ)) {
                             current += 3;
@@ -498,7 +505,7 @@ public class ReportPhonetics extends Report {
                             }
                         }
                         break;
-                        
+
                     case 'D' :
                         if (input.regionMatches(current, "DG", 0, 2)) {
                             if (charAt(current + 2, EIY)) {
@@ -514,22 +521,22 @@ public class ReportPhonetics extends Report {
                                 break;
                             }
                         }
-                        
+
                         if (stringAt(current, 2, DdDt)) {
                             add('T');
                             current += 2;
                             break;
                         }
-                        
+
                         //else
                         add('T');
                         current++;
                         break;
-                        
+
                     case 'F' : // NTR: this is typical default behavior
                         addCode('F', 'F');
                         break;
-                        
+
                     case 'G' :
                         if (input.charAt(current + 1) == 'H') {
                             if (current > 0 && !isVowel(current - 1)) {
@@ -537,7 +544,7 @@ public class ReportPhonetics extends Report {
                                 current += 2;
                                 break;
                             }
-                            
+
                             if (current < 3) {
                                 // 'ghislane', 'ghiradelli'
                                 if (current == 0) {
@@ -569,7 +576,7 @@ public class ReportPhonetics extends Report {
                                 break;
                             }
                         }
-                        
+
                         boolean slavoGermanic = isSlavoGermanic();
                         if (input.charAt(current + 1) == 'N') {
                             if (current == 1 && isVowel(0) && !slavoGermanic) {
@@ -588,7 +595,7 @@ public class ReportPhonetics extends Report {
                                 break;
                             }
                         }
-                        
+
                         //'tagliaro'
                         if (input.regionMatches(current + 1, "LI", 0, 2) && !slavoGermanic) {
                             primary.append('K');
@@ -596,21 +603,21 @@ public class ReportPhonetics extends Report {
                             current += 2;
                             break;
                         }
-                        
+
                         //-ges-,-gep-,-gel-, -gie- at beginning
                         if ((current == 0) && (input.charAt(current + 1) == 'Y' || stringAt(current + 1, 2, EbEiElEpErEsEyIbIlInIe))) {
                             add('K', 'J');
                             current += 2;
                             break;
                         }
-                        
+
                         // -ger-,  -gy-
                         if ((input.regionMatches(current + 1, "ER", 0, 2) || input.charAt(current + 1) == 'Y') && !stringAt(0, 6, DangerMangerRanger) && !charAt(current - 1, EI) && !stringAt(current - 1, 3, OgyRgy)) {
                             add('K', 'J');
                             current += 2;
                             break;
                         }
-                        
+
                         // italian e.g, 'biaggi'
                         if (charAt(current + 1, EIY) || stringAt(current - 1, 4, AggiOggi)) {
                             //obvious germanic
@@ -627,7 +634,7 @@ public class ReportPhonetics extends Report {
                                 break;
                             }
                         }
-                        
+
                         if (input.charAt(current + 1) == 'G') {
                             current += 2;
                         } else {
@@ -635,7 +642,7 @@ public class ReportPhonetics extends Report {
                         }
                         add('K');
                         break;
-                        
+
                     case 'H' :
                         // only keep if first & before vowel or btw. 2 vowels
                         if ((current == 0 || isVowel(current - 1)) && isVowel(current + 1)) {
@@ -645,7 +652,7 @@ public class ReportPhonetics extends Report {
                             current++;
                         }
                         break;
-                        
+
                     case 'J' :
                         //obvious spanish, 'jose', 'san jacinto'
                         if (stringAt(current, 4, "JOSE") || stringAt(0, 4, "SAN ")) {
@@ -657,7 +664,7 @@ public class ReportPhonetics extends Report {
                             current += 1;
                             break;
                         }
-                        
+
                         if (current == 0 && !stringAt(current, 4, "JOSE")) {
                             add('J', 'A'); // Yankelovich/Jankelowicz
                         } else {
@@ -674,16 +681,16 @@ public class ReportPhonetics extends Report {
                                 }
                             }
                         }
-                        
+
                         current++;
                         if (input.charAt(current) == 'J')
                             current++; // doublecheck
                         break;
-                        
+
                     case 'K' : // NTR: this is typical default behavior
                         addCode('K', 'K');
                         break;
-                        
+
                     case 'L' :
                         if (input.charAt(current + 1) == 'L') {
                             //spanish e.g. 'cabrillo', 'gallegos'
@@ -698,7 +705,7 @@ public class ReportPhonetics extends Report {
                         }
                         add('L');
                         break;
-                        
+
                     case 'M' :
                         if ((stringAt(current - 1, 3, "UMB") && (((current + 1) == last) || stringAt(current + 2, 2, "ER"))) //'dumb','thumb'
                         || (input.charAt(current + 1) == 'M')) {
@@ -708,23 +715,23 @@ public class ReportPhonetics extends Report {
                         }
                         add('M');
                         break;
-                        
+
                     case 'N' : // NTR: this is typical default behavior
                         addCode('N', 'N');
                         break;
-                        
+
                     case '\u00D1': // N with a wiggle (N~)
                         current++;
                         add('N');
                         break;
-                        
+
                     case 'P' :
                         if (input.charAt(current + 1) == 'H') {
                             add('F');
                             current += 2;
                             break;
                         }
-                        
+
                         //also account for 'campbell', 'raspberry'
                         if (charAt(current + 1, BP))
                             current += 2;
@@ -732,11 +739,11 @@ public class ReportPhonetics extends Report {
                             current++;
                         add('P');
                         break;
-                        
+
                     case 'Q' : // NTR: this is typical default behavior
                         addCode('Q', 'K');
                         break;
-                        
+
                     case 'R' :
                         //french e.g. 'rogier', but exclude 'hochmeier'
                         if ((current == last) && !isSlavoGermanic() && stringAt(current - 2, 2, "IE") && !stringAt(current - 4, 2, MaMe)) {
@@ -744,26 +751,26 @@ public class ReportPhonetics extends Report {
                         } else {
                             add('R');
                         }
-                        
+
                         current++;
                         if (input.charAt(current) == 'R')
                             current++; // doublecheck
                         break;
-                        
+
                     case 'S' :
                         //special cases 'island', 'isle', 'carlisle', 'carlysle'
                         if (stringAt(current - 1, 3, IslYsl)) {
                             current++;
                             break;
                         }
-                        
+
                         //special case 'sugar-'
                         if ((current == 0) && stringAt(current, 5, "SUGAR")) {
                             add('X', 'S');
                             current++;
                             break;
                         }
-                        
+
                         if (stringAt(current, 2, "SH")) {
                             //germanic
                             if (stringAt(current + 1, 4, HeimHoekHolmHolz)) {
@@ -774,7 +781,7 @@ public class ReportPhonetics extends Report {
                             current += 2;
                             break;
                         }
-                        
+
                         //italian & armenian
                         if (stringAt(current, 3, SiaSio) || stringAt(current, 4, "SIAN")) {
                             if (!isSlavoGermanic()) {
@@ -785,7 +792,7 @@ public class ReportPhonetics extends Report {
                             current += 3;
                             break;
                         }
-                        
+
                         //german & anglicisations, e.g. 'smith' match 'schmidt', 'snider' match 'schneider'
                         //also, -sz- in slavic language altho in hungarian it is pronounced 's'
                         if ((current == 0 && charAt(current + 1, LMNW)) || input.charAt(current + 1) == 'Z') {
@@ -797,7 +804,7 @@ public class ReportPhonetics extends Report {
                             }
                             break;
                         }
-                        
+
                         if (stringAt(current, 2, "SC")) {
                             //Schlesinger's rule
                             if (input.charAt(current + 2) == 'H') {
@@ -823,47 +830,47 @@ public class ReportPhonetics extends Report {
                                     break;
                                 }
                             }
-                            
+
                             if (charAt(current + 2, EIY)) {
                                 add('S');
                                 current += 3;
                                 break;
                             }
-                            
+
                             //else
                             add('S');
                             add('K');
                             current += 3;
                             break;
                         }
-                        
+
                         //french e.g. 'resnais', 'artois'
                         if (current == last && stringAt(current - 2, 2, AiOi)) {
                             alternate.append('S');
                         } else {
                             add('S');
                         }
-                        
+
                         if (charAt(current + 1, SZ)) {
                             current += 2;
                         } else {
                             current++;
                         }
                         break;
-                        
+
                     case 'T' :
                         if (stringAt(current, 4, "TION")) {
                             add('X');
                             current += 3;
                             break;
                         }
-                        
+
                         if (stringAt(current, 3, TiaTch)) {
                             add('X');
                             current += 3;
                             break;
                         }
-                        
+
                         if (stringAt(current, 2, "TH") || stringAt(current, 3, "TTH")) {
                             //special case 'thomas', 'thames' or germanic
                             if (stringAt(current + 2, 2, AmOm) || stringAt(0, 4, Van_Von_) || stringAt(0, 3, "SCH")) {
@@ -874,18 +881,18 @@ public class ReportPhonetics extends Report {
                             current += 2;
                             break;
                         }
-                        
+
                         if (charAt(current + 1, DT))
                             current += 2;
                         else
                             current++;
                         add('T');
                         break;
-                        
+
                     case 'V' : // NTR: this is typical default behavior
                         addCode('V', 'F');
                         break;
-                        
+
                     case 'W' :
                         //can also be in middle of word
                         if (stringAt(current, 2, "WR")) {
@@ -893,7 +900,7 @@ public class ReportPhonetics extends Report {
                             current += 2;
                             break;
                         }
-                        
+
                         if (current == 0 && (isVowel(current + 1) || stringAt(current, 2, "WH"))) {
                             //Wasserman should match Vasserman
                             if (isVowel(current + 1)) {
@@ -903,14 +910,14 @@ public class ReportPhonetics extends Report {
                                 add('A');
                             }
                         }
-                        
+
                         //'Arnow' should match 'Arnoff'
                         if ((current == last && isVowel(current - 1)) || stringAt(current - 1, 5, EwskiEwskyOwskiOwsky) || stringAt(0, 3, "SCH")) {
                             alternate.append('F');
                             current += 1;
                             break;
                         }
-                        
+
                         //polish e.g. 'filipowicz'
                         if (stringAt(current, 4, WiczWitz)) {
                             add('T', 'F');
@@ -918,25 +925,25 @@ public class ReportPhonetics extends Report {
                             current += 4;
                             break;
                         }
-                        
+
                         //else skip it
                         current += 1;
                         break;
-                        
+
                     case 'X' :
                         //french e.g. breaux
                         if (!(current == last && (stringAt((current - 3), 3, EauIau) || stringAt((current - 2), 2, AuOu)))) {
                             add('K');
                             add('S');
                         }
-                        
+
                         if (charAt(current + 1, CX)) {
                             current += 2;
                         } else {
                             current++;
                         }
                         break;
-                        
+
                     case 'Z' :
                         //chinese pinyin e.g. 'zhao'
                         if (input.charAt(current + 1) == 'H') {
@@ -951,14 +958,14 @@ public class ReportPhonetics extends Report {
                                 add('S');
                             }
                         }
-                        
+
                         if (input.charAt(current + 1) == 'Z') {
                             current += 2;
                         } else {
                             current++;
                         }
                         break;
-                        
+
                     case '0' :
                     case '1' :
                     case '2' :
@@ -972,12 +979,12 @@ public class ReportPhonetics extends Report {
                         add(input.charAt(current));
                         current++;
                         break;
-                        
+
                     default :
                         current++;
                 } // switch
             } // while
-            
+
             // Only give back the specified length
             if (primary.length() > encodeLimit) {
                 primary.delete(encodeLimit, primary.length());
@@ -985,18 +992,18 @@ public class ReportPhonetics extends Report {
             if (alternate.length() > encodeLimit) {
                 alternate.delete(encodeLimit, alternate.length());
             }
-            
+
             return primary.toString();
         }
     } //DoubleMetaphone
-    
+
     static class Metaphone implements Phonetics {
-        
+
         private static String vowels = "AEIOU";
         private static String frontv = "EIY";
         private static String varson = "CSPTG";
         private static final int maxCodeLen = 4;
-        
+
         /**
          * get the MetaPhone code for THE FIRST WORD in this string
          */
@@ -1005,11 +1012,11 @@ public class ReportPhonetics extends Report {
             boolean hard = false;
             if ((txt == null) || (txt.length() == 0))
                 return null;
-            
+
             // check the first letter is a character
             if (!Character.isLetter(txt.charAt(0)))
                 return encode(txt.substring(1), resources);
-            
+
             // single character is itself
             if (txt.length() == 1)
                 return txt.toUpperCase();
@@ -1236,7 +1243,7 @@ public class ReportPhonetics extends Report {
             return code.toString();
         }
     } //MetaPhone
-    
+
     /**
      * the New York State Identification and Intelligence Algorithm
      * modified from the verion at from http://www.bgw.org/projects/java/
@@ -1245,10 +1252,10 @@ public class ReportPhonetics extends Report {
      * org.apache.commons.codec.language package
      */
     static class Nysiis implements Phonetics {
-        
+
         boolean debug = false;
         StringBuffer word = null;
-        
+
         /**
          * encode - Nysiis phonetic encoding.
          * @param  String originalWord
@@ -1260,19 +1267,19 @@ public class ReportPhonetics extends Report {
         public String encode(String originalWord, Resources resources) {
             if (originalWord == null || originalWord.length() == 0)
                 return null;
-            
+
             word = new StringBuffer(originalWord.toUpperCase());
             char first;
-            
+
             //check we actually have a word!
             if (word.length() == 0)
                 return null;
-            
+
             // strip any trailing S or Zs
             while (word.toString().endsWith("S") || word.toString().endsWith("Z")) {
                 word.deleteCharAt(word.length() - 1);
             }
-            
+
             // remove any non character letter
             int current = 0;
             while (current < word.length()) {
@@ -1281,94 +1288,94 @@ public class ReportPhonetics extends Report {
                 else
                     current++;
             }
-            
+
             // check there is a word left!
             if (word.length() == 0)
                 return null;
-            
+
             replaceFront("MAC", "MC");
             replaceFront("PF", "F");
             replaceEnd("IX", "IC");
             replaceEnd("EX", "EC");
-            
+
             replaceEnd("YE", "Y");
             replaceEnd("EE", "Y");
             replaceEnd("IE", "Y");
-            
+
             replaceEnd("DT", "D");
             replaceEnd("RT", "D");
             replaceEnd("RD", "D");
-            
+
             replaceEnd("NT", "N");
             replaceEnd("ND", "N");
-            
+
             // .EV => .EF
             replaceAll("EV", "EF", 1);
-            
+
             first = word.charAt(0);
-            
+
             // replace all vowels with 'A'
             // word = replaceAll(   word, "A",  "A" );
             replaceAll("E", "A");
             replaceAll("I", "A");
             replaceAll("O", "A");
             replaceAll("U", "A");
-            
+
             // remove any 'W' that follows a vowel
             replaceAll("AW", "A");
-            
+
             replaceAll("GHT", "GT");
             replaceAll("DG", "G");
             replaceAll("PH", "F");
-            
+
             replaceAll("AH", "A", 1);
             replaceAll("HA", "A", 1);
-            
+
             replaceAll("KN", "N");
             replaceAll("K", "C");
-            
+
             replaceAll("M", "N", 1);
             replaceAll("Q", "G", 1);
-            
+
             replaceAll("SH", "S");
             replaceAll("SCH", "S");
-            
+
             replaceAll("YW", "Y");
-            
+
             replaceAll("Y", "A", 1, word.length() - 2);
-            
+
             replaceAll("WR", "R");
-            
+
             replaceAll("Z", "S", 1);
-            
+
             replaceEnd("AY", "Y");
-            
+
             while (word.toString().endsWith("A")) {
                 word.deleteCharAt(word.length() - 1);
             }
-            
+
             // if the word was only As will be left with nothing
             if (word.length() == 0)
                 return null;
-            
+
             reduceDuplicates();
-            
+
             if ('A' == first || 'E' == first || 'I' == first || 'O' == first || 'U' == first) {
                 word.deleteCharAt(0);
                 word.insert(0, first);
             }
-            
+
             return word.toString();
         }
-        
+
         private void reduceDuplicates() {
             char lastChar;
             StringBuffer newWord = new StringBuffer();
-            
+
             if (0 == word.length()) {
                 return;
             }
-            
+
             lastChar = word.charAt(0);
             newWord.append(lastChar);
             for (int i = 1; i < word.length(); ++i) {
@@ -1377,23 +1384,23 @@ public class ReportPhonetics extends Report {
                 }
                 lastChar = word.charAt(i);
             }
-            
+
             log("reduceDuplicates: " + word);
-            
+
             word = newWord;
         }
-        
+
         private void replaceAll(String find, String repl) {
             replaceAll(find, repl, 0, -1);
         }
-        
+
         private void replaceAll(String find, String repl, int startPos) {
             replaceAll(find, repl, startPos, -1);
         }
-        
+
         private void replaceAll(String find, String repl, int startPos, int endPos) {
             int pos = word.toString().indexOf(find, startPos);
-            
+
       /*
       log("Nysiis.replaceAll(): "
         + "pos: "      + pos      + " "
@@ -1404,11 +1411,11 @@ public class ReportPhonetics extends Report {
         + "endPos: "   + endPos   + " "
       );
        */
-            
+
             if (-1 == endPos) {
                 endPos = word.length() - 1;
             }
-            
+
             while (-1 != pos) {
                 if (-1 != endPos && pos > endPos) {
                     log("stopping pos > endPos: " + pos + ":" + endPos);
@@ -1416,20 +1423,20 @@ public class ReportPhonetics extends Report {
                 }
                 // log("word[" + word.length() + "]: " + word);
                 // log("deleting at: " + pos + ", " + (find.length() - 1));
-                
+
                 word.delete(pos, pos + find.length());
                 // log("del[" + word.length() + "]:  " + word);
-                
+
                 word.insert(pos, repl);
                 // log("ins[" + word.length() + "]:  " + word);
-                
+
                 pos = word.toString().indexOf(find);
                 // log("new pos[" + word.length() + "]: " + pos);
                 log("replaceAll[" + find + "," + repl + "]: " + word);
             }
-            
+
         }
-        
+
         private void replaceFront(String find, String repl) {
             if (word.toString().startsWith(find)) {
                 word.delete(0, find.length());
@@ -1437,7 +1444,7 @@ public class ReportPhonetics extends Report {
                 log("replaceFront[" + find + "]: " + word);
             }
         }
-        
+
         private void replaceEnd(String find, String repl) {
             if (word.toString().endsWith(find)) {
                 word.delete(word.length() - find.length(), word.length());
@@ -1445,7 +1452,7 @@ public class ReportPhonetics extends Report {
                 log("replaceEnd[" + find + "]: " + word);
             }
         }
-        
+
         private void log(String msg) {
             if (!debug) {
                 return;
@@ -1454,17 +1461,17 @@ public class ReportPhonetics extends Report {
             System.out.flush();
         }
     } //Nysiis
-    
+
     /**
      * A class to generate a phonex phonetic code of a string
      * @author jerome@hettich.org.uk
      */
     static class Phonex implements Phonetics {
-        
+
         static public final char[] CHAR_MAPPING = "01230120022455012623010202".toCharArray();
-        
+
         private int maxCodeLen = 4;
-        
+
         /**
          * Find the phonex value of a String. This a hybrid of the soundex
          * and the metaphone algorithms which attemps to use the best
@@ -1477,13 +1484,13 @@ public class ReportPhonetics extends Report {
          * will just be ignored too!)
          */
         public String encode(String txt, Resources resources) {
-            
+
             if (txt == null || txt.length() == 0)
                 return null;
-            
+
             //convert to uppercase
             txt = txt.toUpperCase();
-            
+
             //strip any remaining punctuation
             int current = 0;
             StringBuffer word = new StringBuffer(txt);
@@ -1493,24 +1500,24 @@ public class ReportPhonetics extends Report {
                 else
                     current++;
             }
-            
+
             // preprocessing
-            
+
             // strip any trailing S
             while (word.toString().endsWith("S"))
                 word.deleteCharAt(word.length() - 1);
-            
+
             // strip any initial H
             while (word.toString().startsWith("H"))
                 word.deleteCharAt(0);
-            
+
             // check there is a word left!
             if (word.length() == 0)
                 return null;
-            
+
             char[] input = word.toString().toCharArray();
             StringBuffer processed = new StringBuffer();
-            
+
             // handle initial 1 and 2 characters exceptions
             switch (input[0]) {
                 case 'K' :
@@ -1564,11 +1571,11 @@ public class ReportPhonetics extends Report {
                 default :
                     processed.append(input);
             }
-            
+
             // End of preprocessing. Find the actual code
-            
+
             String processedString = processed.toString();
-            
+
             StringBuffer code = new StringBuffer(maxCodeLen);
             char last, mapped;
             int incount = 1, count = 1;
@@ -1580,14 +1587,14 @@ public class ReportPhonetics extends Report {
                 }
                 last = mapped;
             }
-            
+
             // padd to max code length
             while (code.length() < maxCodeLen)
                 code.append('0');
-            
+
             return code.toString().substring(0, maxCodeLen);
         }
-        
+
         /**
          * Used internally by the Phonex algorithm.
          * returns the code for a character at a given location
@@ -1595,19 +1602,19 @@ public class ReportPhonetics extends Report {
          */
         private char getCode(String s, int location) {
             Character a = null, b = null, c = null;
-            
+
             if (location - 1 >= 0 && location - 1 < s.length())
                 a = new Character(s.charAt(location - 1));
-            
+
             if (location >= 0 && location < s.length())
                 b = new Character(s.charAt(location));
-            
+
             if (location + 1 >= 0 && location + 1 < s.length())
                 c = new Character(s.charAt(location + 1));
-            
+
             return getCode(a, b, c);
         }
-        
+
         /**
          * Used to actually determine the code for a given character
          * (which also depends on the previous and next characters)
@@ -1634,14 +1641,14 @@ public class ReportPhonetics extends Report {
                 }
             }
         }
-        
+
         /**
          * Returns the maxCodeLen.
          */
         public int getMaxCodeLen() {
             return maxCodeLen;
         }
-        
+
         /**
          * Sets the maxCodeLen.
          * @param maxCodeLen The maxCodeLen to set
@@ -1650,7 +1657,7 @@ public class ReportPhonetics extends Report {
             this.maxCodeLen = maxCodeLen;
         }
     } //Phonex
-    
+
     /**
      * The soundex implementation modified from the com.generationjava.util package
      * to cope with accented characters better
@@ -1658,13 +1665,13 @@ public class ReportPhonetics extends Report {
      * it was origionally Licensed under the BSD license
      * see http://www.generationjava.com/licencing.shtml
      */
-    
+
     public static class Soundex implements Phonetics {
-        
+
         static public final char[] US_ENGLISH_SOUNDEX_MAPPING = "01230120022455012623010202".toCharArray();
-        
+
         private String[] accents;
-        
+
         private char[] soundexMapping;
 
         /** constructor */
@@ -1678,7 +1685,7 @@ public class ReportPhonetics extends Report {
           this.soundexMapping = mapping;
           // done
         }
-        
+
         /**
          * Substitute an accent (if applicable) with a non-accented character
          * as specified in soundex.accents of ReportPhonetics.properties
@@ -1711,31 +1718,31 @@ public class ReportPhonetics extends Report {
               char c = str.charAt(i);
               if (c<accents.length&&accents[c]!=null)
                 result.append(accents[c]);
-              else 
+              else
                 result.append(c);
           }
 
           // done
           return result.toString();
         }
-        
+
         /**
          * Get the SoundEx value of a string.
          * it will return the SoundEx code for the FIRST word in the string
          */
         public String encode(String s, Resources resources) {
-          
+
           // safety check
           if (s == null || s.length() == 0)
               return null;
-            
+
             // should get a true code for each acented character
             String str = substituteAccents(resources, s);
-            
+
             // check the first letter is a character
             if (!Character.isLetter(str.charAt(0)))
                 return encode(str.substring(1), resources);
-            
+
             char out[] = { '0', '0', '0', '0' };
             char last, mapped;
             int incount = 1, count = 1;
@@ -1749,7 +1756,7 @@ public class ReportPhonetics extends Report {
             }
             return new String(out);
         }
-        
+
         /**
          * Used internally by the SoundEx algorithm.
          */
@@ -1764,5 +1771,5 @@ public class ReportPhonetics extends Report {
             }
         }
     } //Soundex
-    
+
 } //ReportSoundex

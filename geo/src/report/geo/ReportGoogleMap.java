@@ -36,7 +36,7 @@ import java.util.Locale;
  * This GenJ Report exports places for viewing online in Google Maps
  */
 public class ReportGoogleMap extends Report {
-  
+
   private final static DecimalFormat FORMAT = new DecimalFormat("##0.###", new DecimalFormatSymbols(Locale.US));
 
   /**
@@ -45,33 +45,40 @@ public class ReportGoogleMap extends Report {
   public boolean usesStandardOut() {
     return false;
   }
-  
+
   /**
    * Our main method for a gedcom file
    */
   public void start(Gedcom ged) {
     operate(ged, ged.getEntities());
   }
-  
+
   /**
    * Our main method for one individual
    */
   public void start(Indi indi) {
     operate(indi.getGedcom(), Collections.singletonList(indi));
   }
-  
+
   /**
    * Our main method for a set of individuals
    */
   public void start(Indi[] indis) {
     operate(indis[0].getGedcom(), Arrays.asList(indis));
   }
-  
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_UTILITIES;
+  }
+
   /**
    * Working on a collection of individiuals
    */
   private void operate(Gedcom ged, Collection indis) {
-    
+
     // match locations
     Collection locations = GeoLocation.parseEntities(indis);
     try {
@@ -83,12 +90,12 @@ public class ReportGoogleMap extends Report {
       getOptionFromUser(translate("none_mapable"), OPTION_OK);
       return;
     }
-    
+
     // ask for google key
     String key = getValueFromUser("google-key", translate("enter_key"));
     if (key==null)
       return;
-      
+
     // ask the user for file(s)
     File html = getFileFromUser(translate("which_html_file"), translate("generate"));
     if (html==null)
@@ -99,29 +106,29 @@ public class ReportGoogleMap extends Report {
       html = new File(html.getAbsolutePath()+"."+suffix);
     }
     File xml = new File(html.getAbsolutePath().replaceAll("."+suffix, ".xml"));
-    
+
     // write the html file
     if (!writeHTML(ged, (GeoLocation)locations.iterator().next(), html, xml, key))
       return;
-    
+
     // write the xml file
     if (!writeXML(locations, xml))
       return;
-    
+
     // let the user know
     getOptionFromUser(translate("done", new String[] { html.getName(), xml.getName(), html.getParent() }), OPTION_OK );
 
     // done
   }
-  
+
   /**
    * write the html file
    */
   private boolean writeHTML(Gedcom ged, GeoLocation center, File html, File xml, String key) {
-    
+
     String[] match = { "MAPGED", "MAPLAT", "MAPLON", "MAPXML", "MAPKEY" };
     String[] replace = { ged.getName(), FORMAT.format(center.getY()), FORMAT.format(center.getX()), xml.getName(), key };
-    
+
     // copy template
     try {
       BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(html), Charset.forName("UTF8")));
@@ -151,16 +158,16 @@ public class ReportGoogleMap extends Report {
     // done
     return true;
   }
-  
+
   /**
    * write the xml file
    */
   private boolean writeXML(Collection locations, File xml) {
-    
+
     // <ls>
     //   <l x="37.441" y="-122.141">foo</l>
     //   <l x="37.322" y="-121.213"/>
-    // </ls>      
+    // </ls>
     try {
       BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(xml), Charset.forName("UTF8")));
       out.write("<ls>");
@@ -194,9 +201,9 @@ public class ReportGoogleMap extends Report {
       getOptionFromUser(translate("ioerror", xml), OPTION_OK);
       return false;
     }
-    
+
     // done
     return true;
   }
-  
+
 } //ReportGoogleMap

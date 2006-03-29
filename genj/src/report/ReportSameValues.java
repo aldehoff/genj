@@ -21,9 +21,9 @@ import java.util.List;
  * A report that uses PropertyChoiceValue's referencing ability. For
  * a given PropertyChoiceValue's value it shows those properties
  * with the same value (e.g. everyone living in Rendsburg)
- * 
+ *
  * 20030529: NAME*, PLAC, CITY, POST, CTRY, FORM, OCCU, RELA
- * 
+ *
  * @author nils
  */
 public class ReportSameValues extends Report {
@@ -36,18 +36,18 @@ public class ReportSameValues extends Report {
    * @see genj.report.Report#accepts(java.lang.Object)
    */
   public String accepts(Object context) {
-    
+
     // accepting all PropertyChoices and PropertyNames
     String val = null;
     if (context instanceof PropertyChoiceValue)
       val = ((PropertyChoiceValue)context).getValue();
     if (context instanceof PropertyName)
       val = ((PropertyName)context).getLastName();
-      
+
     // o.k.?
-    if (val==null||val.length()==0) 
+    if (val==null||val.length()==0)
       return null;
-    
+
     // return a meaningfull text for that context
     return translate("xname", new String[]{ ((Property)context).getPropertyName(), val } );
   }
@@ -66,14 +66,21 @@ public class ReportSameValues extends Report {
   public void start(PropertyChoiceValue choice) {
     find(choice.getGedcom(), choice.getPropertyName(), choice.getSameChoices(), choice.getDisplayValue());
   }
-  
+
   /**
    * Our entry point for names
    */
   public void start(PropertyName name) {
     find(name.getGedcom(), name.getPropertyName(), name.getSameLastNames(), name.getLastName());
   }
-  
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_UTILITIES;
+  }
+
   /**
    * our main logic
    */
@@ -81,15 +88,15 @@ public class ReportSameValues extends Report {
 
     if (val==null||val.length()==0)
       return;
-    
+
     // collect parents of sameProps
     List items = new ArrayList();
     for (int i=0; i<sameProps.length; i++) {
 
       // "Birth, Meier, Nils (I001)"
-      Property prop = sameProps[i];      
+      Property prop = sameProps[i];
       Property parent = prop.getParent();
-      
+
       String txt;
       if (parent==null||parent instanceof Entity)
         txt = prop.getEntity().toString();
@@ -99,13 +106,13 @@ public class ReportSameValues extends Report {
       // one annotation for each
       items.add(new Annotation(txt, prop));
     }
-    
+
     // sort 'em
     Collections.sort(items);
-    
+
     // show 'em
     showAnnotationsToUser(gedcom, translate("xname",new String[]{ propName, val}), items);
-    
+
     // done
   }
 

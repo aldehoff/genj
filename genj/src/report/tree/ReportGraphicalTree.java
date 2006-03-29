@@ -169,4 +169,11 @@ public class ReportGraphicalTree extends Report {
             println("Error generating output: " + e.getMessage());
         }
     }
+
+    /**
+     * Returns the category of this report.
+     */
+    public Category getCategory() {
+        return CATEGORY_PRESENTATION;
+    }
 }

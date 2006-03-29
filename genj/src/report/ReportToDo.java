@@ -33,7 +33,7 @@ import javax.swing.ImageIcon;
 
 /**
  * GenJ - Report
- * 
+ *
  * @author Daniel ANDRE <daniel.andre@free.fr>
  * @version 1.0
  */
@@ -48,7 +48,7 @@ public class ReportToDo extends Report {
   public boolean outputWorkingSheet = false;
 
   public boolean outputSummary = true;
-  
+
   private final static String
 	ROW_FORMAT_HEADER1 = "font-size=larger,background-color=#00ccff,font-weight=bold";
   private final static String
@@ -61,7 +61,7 @@ public class ReportToDo extends Report {
   	FORMAT_HEADER4 = "background-color=#ffffcc";
   private final static String FORMAT_EMPHASIS = "font-weight=italic";
   private final static String FORMAT_STRONG = "font-weight=bold";
-  
+
   /*
          ".head1{background-color:#00ccff;font-size:20px;font-weight:bold;}"+
          ".head2{background-color:#33ffff;font-size:16px;font-weight:bold;}"+
@@ -69,7 +69,7 @@ public class ReportToDo extends Report {
          ".head3-todo{background-color:#99cccc;font-weight:bold;}"+
          ".head4{background-color:#ffffcc;}"
          */
-         
+
   /**
    * Overriden image - we're using the provided FO image
    */
@@ -91,7 +91,7 @@ public class ReportToDo extends Report {
     List ents = gedcom.getEntities();
     start((Entity[])ents.toArray(new Entity[ents.size()]));
   }
-  
+
   /**
    * The report's entry point - for a single individual
    */
@@ -110,13 +110,13 @@ public class ReportToDo extends Report {
    * The report's entry point - for a bunch of entities
    */
   public void start(Entity[] entities) {
-    
+
     // create an output document
     Document doc = new Document(translate("titletodos"));
 
     // generate a detailed working sheet?
     if (outputWorkingSheet) {
-      
+
       doc.startTable();
       doc.addTableColumn("column-width=12%");
       doc.addTableColumn("column-width=10%");
@@ -127,15 +127,15 @@ public class ReportToDo extends Report {
 
       exportWorkingSheet(entities, doc);
       doc.endTable();
-      
+
     }
 
     // generate a summary?
     if (outputSummary) {
-      
+
       // Loop through individuals & families
     	doc.startTable("width=100%,border=0.5pt solid black,genj:csv=true");
-      
+
       doc.nextTableRow(ROW_FORMAT_HEADER1);
       doc.addTableColumn("");
       doc.addTableColumn("");
@@ -145,7 +145,7 @@ public class ReportToDo extends Report {
       doc.addTableColumn("column-width=8%");
 */      doc.addTableColumn("");
       doc.addTableColumn("");
-      
+
       doc.nextTableCell("number-columns-spanned=5");
       doc.addText(translate("titletodos"),ROW_FORMAT_HEADER1);
 
@@ -159,28 +159,35 @@ public class ReportToDo extends Report {
       doc.addText( translate("indi.col"),FORMAT_STRONG );
       doc.nextTableCell();
       doc.addText( translate("todo.col"),FORMAT_STRONG );
-      
+
       int nbTodos = exportSummary(entities, doc);
       doc.endTable();
-      
+
       doc.addText( translate("nbtodos", "" + nbTodos) );
     }
-    
+
     // Done
     showDocumentToUser(doc);
 
   }
-  
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_UTILITIES;
+  }
+
   /**
    * Exports the working sheet
    */
   private void exportWorkingSheet(Entity[] entities, Document doc) {
-    
+
     // loop over entities
     for (int e = 0; e < entities.length; e++) {
-      
+
       Entity entity = entities[e];
-      
+
       List todos = findProperties(entity);
       if (!todos.isEmpty()) {
         if (entity instanceof Indi)
@@ -189,9 +196,9 @@ public class ReportToDo extends Report {
           exportEntity((Fam)entity, doc);
       }
     }
-    
+
   }
-  
+
   /**
    * Exports a family
    */
@@ -204,30 +211,30 @@ public class ReportToDo extends Report {
     Fam tempFam;
 
     todos = findProperties(fam);
-    if (todos.size() == 0) 
+    if (todos.size() == 0)
       return;
 
     doc.nextTableRow(ROW_FORMAT_HEADER1);
     doc.nextTableCell("number-columns-spanned=6");
     doc.addText( translate("titlefam", new String[] { fam.toString(), fam.getId() }) );
-    
+
     // //// Epoux
     tempIndi = fam.getHusband();
     doc.nextTableRow(FORMAT_HEADER2);
     doc.addText( Gedcom.getName("HUSB"));
     doc.nextTableCell("number-columns-spanned=5");
     doc.addText( tempIndi.getName() );
-    
+
     outputEventRow(tempIndi, "BIRT", todos, doc);
     outputEventRow(tempIndi, "BAPM", todos, doc);
     outputEventRow(tempIndi, "DEAT", todos, doc);
     outputEventRow(tempIndi, "BURI", todos, doc);
-    
+
     tempFam = (tempIndi == null) ? null : tempIndi .getFamilyWhereBiologicalChild();
     if (tempFam != null) {
       doc.nextTableRow();
       doc.nextTableCell(FORMAT_HEADER3);
-      doc.addText( translate("father") + ":" ); 
+      doc.addText( translate("father") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
       addIndiString(tempFam.getHusband(), doc);
       doc.nextTableRow();
@@ -243,12 +250,12 @@ public class ReportToDo extends Report {
     doc.addText( Gedcom.getName("WIFE") );
     doc.nextTableCell("number-columns-spanned=5");
     doc.addText( tempIndi.getName() );
-    
+
     outputEventRow(tempIndi, "BIRT", todos, doc);
     outputEventRow(tempIndi, "BAPM", todos, doc);
     outputEventRow(tempIndi, "DEAT", todos, doc);
     outputEventRow(tempIndi, "BURI", todos, doc);
-    
+
     tempFam = (tempIndi == null) ? null : tempIndi .getFamilyWhereBiologicalChild();
     if (tempFam != null) {
       doc.nextTableRow();
@@ -323,7 +330,7 @@ public class ReportToDo extends Report {
         doc.addText( outputProperty(prop, prop.getPath().toString() + ":NOTE") );
       }
     }
-    
+
     // done with fam
   }
 
@@ -337,7 +344,7 @@ public class ReportToDo extends Report {
     String tempString = "";
 
     todos = findProperties(indi);
-    if (todos.size() == 0) 
+    if (todos.size() == 0)
       return;
 
     doc.nextTableRow(ROW_FORMAT_HEADER1);
@@ -347,29 +354,29 @@ public class ReportToDo extends Report {
     doc.nextTableRow();
     doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);
     doc.addText( translate("titleinfosperso") );
-    
+
     doc.nextTableRow();
     doc.nextTableCell(FORMAT_HEADER3);
     doc.addText( Gedcom.getName("NAME") );
     doc.nextTableCell("number-columns-spanned=3");
-    doc.addText( indi.getLastName()+" ", FORMAT_STRONG ); 
+    doc.addText( indi.getLastName()+" ", FORMAT_STRONG );
     doc.addText( indi.getFirstName() );
     doc.nextTableCell();
     doc.addText( "ID: " + indi.getId() );
     doc.nextTableCell();
     doc.addText( Gedcom.getName("SEX") + ": " + PropertySex.getLabelForSex(indi.getSex()) );
-    
+
     doc.nextTableRow();
     doc.nextTableCell(FORMAT_HEADER3);
-    doc.addText( Gedcom.getName("NICK")); 
+    doc.addText( Gedcom.getName("NICK"));
     doc.nextTableCell("number-columns-spanned=5");
     doc.addText( outputProperty(indi, "INDI:NAME:NICK") );
-    
+
     outputEventRow(indi, "BIRT", todos, doc);
     outputEventRow(indi, "BAPM", todos, doc);
     outputEventRow(indi, "DEAT", todos, doc);
     outputEventRow(indi, "BURI", todos, doc);
-    
+
     doc.nextTableRow();
     doc.nextTableCell(FORMAT_HEADER3);
     doc.addText( Gedcom.getName("REFN") );
@@ -378,21 +385,21 @@ public class ReportToDo extends Report {
     doc.nextTableCell(FORMAT_HEADER3);
     doc.addText( Gedcom.getName("CHAN") );
     doc.nextTableCell();
-    doc.addText( outputProperty(indi, "INDI:CHAN") ); 
-    
+    doc.addText( outputProperty(indi, "INDI:CHAN") );
+
     Fam fam = indi.getFamilyWhereBiologicalChild();
     if (fam != null) {
       doc.nextTableRow();
       doc.nextTableCell(FORMAT_HEADER3);
       doc.addText( translate("father") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
-      addIndiString(fam.getHusband(), doc) ; 
-      
+      addIndiString(fam.getHusband(), doc) ;
+
       doc.nextTableRow();
       doc.nextTableCell(FORMAT_HEADER3);
       doc.addText( translate("mother") + ":" );
       doc.nextTableCell("number-columns-spanned=5");
-      addIndiString(fam.getWife(), doc) ; 
+      addIndiString(fam.getWife(), doc) ;
     }
 
     // And we loop through its families
@@ -402,14 +409,14 @@ public class ReportToDo extends Report {
       doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);
       doc.addText( Gedcom.getName("FAM", fams.length > 1) );
     }
-    
+
     for (int f = 0; f < fams.length; f++) {
       // .. here's the fam and spouse
       Fam famc = fams[f];
       Indi spouse = famc.getOtherSpouse(indi);
       if (spouse != null) {
         Indi[] children = famc.getChildren();
-        
+
         doc.nextTableRow();
         doc.nextTableCell("number-rows-spanned="+(children.length+1)+","+FORMAT_HEADER3);
         doc.addText(translate("spouse") + ":" );
@@ -420,7 +427,7 @@ public class ReportToDo extends Report {
         doc.addText( famc.format("MARR", PLACE_AND_DATE_FORMAT) ); // 0, 5
 
         if (children.length > 0) {
-          
+
           doc.nextTableRow();
           doc.nextTableCell("number-rows-spanned="+children.length+","+FORMAT_HEADER4);
           doc.addText(Gedcom.getName("CHIL", children.length > 1) );
@@ -493,16 +500,16 @@ public class ReportToDo extends Report {
    * create a row for an event
    */
   private void outputEventRow(Entity indi, String tag, List todos, Document doc) {
-    
+
     if (indi == null)
       return;
-    
+
     Property props[] = indi.getProperties(tag);
     if (props.length==0)
       return;
-    
+
     if (props.length == 1) {
-      
+
       doc.nextTableRow();
       doc.nextTableCell(FORMAT_HEADER3);
       doc.addText( Gedcom.getName(tag) );
@@ -510,10 +517,10 @@ public class ReportToDo extends Report {
       doc.addText( indi.format(tag, PLACE_AND_DATE_FORMAT) );
       doc.nextParagraph();
       outputNotes( "Note : ", indi.getProperty(tag), todos, doc); // Note should be emphasized
-      
+
       return;
     }
-    
+
     for (int i = 0; i < props.length; i++) {
       doc.nextTableRow();
       doc.nextTableCell(FORMAT_HEADER3);
@@ -523,7 +530,7 @@ public class ReportToDo extends Report {
       doc.nextParagraph();
       outputNotes( "Note : ", props[i], todos, doc); // Note should be emphasized
     }
-    
+
     // done
   }
 
@@ -531,23 +538,23 @@ public class ReportToDo extends Report {
    * Export todo summary only into a 5 column table
    */
   private int exportSummary(Entity[] ents, Document doc) {
-    
+
     List todos;
     boolean isFirstPage = true;
     int nbTodos = 0;
 
     // loop over all entities
     for (int e = 0; e < ents.length; e++) {
-      
+
       todos = findProperties(ents[e]);
-      if (todos.size() == 0) 
+      if (todos.size() == 0)
         continue;
-      
+
       // loop over todos for entity
       for (int i = 0; i < todos.size(); i++) {
         Property prop = (Property) todos.get(i);
         Property parent = prop.getParent();
-        
+
         doc.nextTableRow();
         if ((parent instanceof Entity)) {
           doc.nextTableCell();
@@ -565,11 +572,11 @@ public class ReportToDo extends Report {
         doc.addText( prop.getEntity().toString() );
         doc.nextTableCell();
         outputPropertyValue(prop, doc);
-        
+
         nbTodos++;
       }
     }
-    
+
     // done
     return nbTodos;
   }
@@ -610,7 +617,7 @@ public class ReportToDo extends Report {
     // prop exists?
     if (prop == null)
       return;
-    
+
     Property[] props = prop.getProperties("NOTE");
     for (int i = 0; i < props.length; i++) {
       if (exclude.contains(props[i]))
@@ -618,7 +625,7 @@ public class ReportToDo extends Report {
       doc.addText( prefix ,FORMAT_STRONG);
       outputPropertyValue(props[i], doc);
     }
-    
+
     // done
   }
 
@@ -663,10 +670,10 @@ public class ReportToDo extends Report {
       doc.addText(prop.getDisplayValue());
       return;
     }
-      
+
     // multilines
      StringTokenizer lines = new StringTokenizer(prop.getValue(), "\n");
-     while (lines.hasMoreTokens()) { 
+     while (lines.hasMoreTokens()) {
          doc.nextParagraph();
          doc.addText(lines.nextToken());
      }

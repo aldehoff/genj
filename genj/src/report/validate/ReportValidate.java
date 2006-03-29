@@ -25,19 +25,19 @@ import java.util.List;
  * anomalies and 'standard' compliancy issues
  */
 public class ReportValidate extends Report {
-  
+
   /** whether we consider an empty value to be valid */
   public boolean isEmptyValueValid = true;
-  
+
   /** whether we consider 'private' information valid or not */
   public boolean isPrivateValueValid = true;
-  
+
   /** whether we consider missing files as valid or not */
   public boolean isFileNotFoundValid = true;
 
   /** whether we consider underscore tags to be valid custom tags */
   public boolean isUnderscoreValid = true;
-  
+
   /** whether we consider extramarital children (before MARR after DIV) to be valid */
   public boolean isExtramaritalValid = false;
 
@@ -50,16 +50,16 @@ public class ReportValidate extends Report {
     minAgeFather = 14,
     minAgeMother = 16,
     maxAgeMother = 44;
-    
+
   /** Jerome's checks that haven't made it yet
 
    [ ] individuals who are cremated more than MAX_BURRYING_OR_CREM years after they die
    [ ] families containing a man who has fathered a child (more than 9 months) after they have died
    [ ] age difference between husband and wife is not greater than SOME_VALUE.
    [ ] women who have given birth more than once within 9 months (discounting twins)
-  
-  **/  
- 
+
+  **/
+
   private final static String[] LIFETIME_DATES = {
     "INDI:ADOP:DATE",
     "INDI:ADOP:DATE",
@@ -77,53 +77,53 @@ public class ReportValidate extends Report {
     "INDI:CENS:DATE",
     "INDI:RETI:DATE"
   };
-  
+
   /**
    * @see genj.report.Report#usesStandardOut()
    */
   public boolean usesStandardOut() {
     return false;
   }
-  
+
   /**
    * Start for argument properties
    */
   public void start(Property[] props) {
-    
+
     List tests = createTests();
-    
+
     List issues = new ArrayList();
     for (int i=0;i<props.length;i++) {
       TagPath path = props[i].getPath();
       test(props[i], path, Grammar.getMeta(path), tests, issues);
     }
-    
+
     // show results
     results(props[0].getGedcom(), issues);
   }
-  
+
   /**
    * Start for argument entity
    */
   public void start(Entity entity) {
     start(new Entity[]{ entity });
   }
-  
+
   public void start(Entity[] entities) {
-    
+
     List tests = createTests();
-    
+
     Gedcom gedcom = entities[0].getGedcom();
     List issues = new ArrayList();
     for (int i=0;i<entities.length;i++) {
       TagPath path = new TagPath(entities[i].getTag());
       test(entities[i], path, Grammar.getMeta(path), tests, issues);
     }
-    
+
     // show results
     results(gedcom, issues);
   }
-  
+
   /**
    * Start for argument gedcom
    */
@@ -132,7 +132,7 @@ public class ReportValidate extends Report {
     // prepare tests
     List tests = createTests();
     List issues = new ArrayList();
-    
+
     // test if there's a submitter
     if (gedcom.getSubmitter()==null)
       issues.add(new Annotation(translate("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null));
@@ -145,28 +145,35 @@ public class ReportValidate extends Report {
         test(e, path, Grammar.getMeta(path), tests, issues);
       }
     }
-    
+
     // show results
     results(gedcom, issues);
   }
-  
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_UTILITIES;
+  }
+
   /**
    * show validation results
    */
   private void results(Gedcom gedcom, List issues) {
-    
+
     // any fixes proposed at all?
     if (issues.size()==0) {
       getOptionFromUser(translate("noissues"), Report.OPTION_OK);
       return;
     }
-    
+
     // show fixes
     showAnnotationsToUser(gedcom, translate("issues"), issues);
-    
+
     // done
   }
-  
+
   /**
    * Test a property (recursively)
    */
@@ -188,7 +195,7 @@ public class ReportValidate extends Report {
     for (int i=0,j=prop.getNoOfProperties();i<j;i++) {
       // for non-system, non-transient children
       Property child = prop.getProperty(i);
-      if (child.isTransient()) 
+      if (child.isTransient())
         continue;
       // get child tag
       String ctag = child.getTag();
@@ -207,19 +214,19 @@ public class ReportValidate extends Report {
     }
     // done
   }
-  
+
   /**
    * Create the tests we're using
    */
   private List createTests() {
-    
+
     List result = new ArrayList();
 
     // ******************** SPECIALIZED TESTS *******************************
 
     // non-valid properties
     result.add(new TestValid(this));
-    
+
     // spouses with wrong gender
     result.add(new TestSpouseGender());
 
@@ -231,19 +238,19 @@ public class ReportValidate extends Report {
 
     // birth after death
     result.add(new TestDate("INDI:BIRT:DATE",TestDate.AFTER  ,"INDI:DEAT:DATE"));
-    
+
     // burial before death
     result.add(new TestDate("INDI:BURI:DATE",TestDate.BEFORE ,"INDI:DEAT:DATE"));
-    
+
     // events before birth
     result.add(new TestDate(LIFETIME_DATES  ,TestDate.BEFORE ,"INDI:BIRT:DATE"));
-    
+
     // events after death
     result.add(new TestDate(LIFETIME_DATES  ,TestDate.AFTER  ,"INDI:DEAT:DATE"));
 
-    // marriage after divorce 
+    // marriage after divorce
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:DIV:DATE"));
-    
+
     // marriage after death of husband/wife
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:HUSB:*:..:DEAT:DATE"));
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:WIFE:*:..:DEAT:DATE"));
@@ -256,42 +263,42 @@ public class ReportValidate extends Report {
 	    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.BEFORE ,"FAM:MARR:DATE"));
 	    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.AFTER  ,"FAM:DIV:DATE"));
     }
-    
+
     // ************************* AGE TESTS **********************************
-    
+
     // max lifespane
     if (maxLife>0)
       result.add(new TestAge ("INDI:DEAT:DATE","..:..", TestAge.OVER ,   maxLife, "maxLife"  ));
-    
+
     // max BAPM age
-    if (maxAgeBAPM>0) 
+    if (maxAgeBAPM>0)
       result.add(new TestAge ("INDI:BAPM:DATE","..:..", TestAge.OVER ,maxAgeBAPM,"maxAgeBAPM"));
-    
+
     // max CHRI age
-    if (maxAgeBAPM>0) 
+    if (maxAgeBAPM>0)
       result.add(new TestAge ("INDI:CHRI:DATE","..:..", TestAge.OVER ,maxAgeBAPM,"maxAgeBAPM"));
-    
+
     // min RETI age
     if (minAgeRETI>0)
       result.add(new TestAge ("INDI:RETI:DATE","..:..", TestAge.UNDER,minAgeRETI,"minAgeRETI"));
 
     // min MARR age of husband, wife
-    if (minAgeMARR>0) 
+    if (minAgeMARR>0)
       result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:HUSB:*:..", TestAge.UNDER  ,minAgeMARR,"minAgeMARR"));
-    if (minAgeMARR>0) 
+    if (minAgeMARR>0)
       result.add(new TestAge ("FAM:MARR:DATE" ,"..:..:WIFE:*:..", TestAge.UNDER  ,minAgeMARR,"minAgeMARR"));
-    
+
     // min/max age for father, mother
-    if (minAgeMother>0) 
+    if (minAgeMother>0)
       result.add(new TestAge ("FAM:CHIL", "*:..:BIRT:DATE" ,"..:WIFE:*:..", TestAge.UNDER,minAgeMother,"minAgeMother"));
-    if (maxAgeMother>0) 
+    if (maxAgeMother>0)
       result.add(new TestAge ("FAM:CHIL", "*:..:BIRT:DATE" ,"..:WIFE:*:..", TestAge.OVER ,maxAgeMother,"maxAgeMother"));
-    if (minAgeFather>0) 
+    if (minAgeFather>0)
       result.add(new TestAge ("FAM:CHIL", "*:..:BIRT:DATE" ,"..:HUSB:*:..", TestAge.UNDER,minAgeFather,"minAgeFather"));
-    
+
 
     // **********************************************************************
-    return result;    
+    return result;
   }
 
 } //ReportValidate

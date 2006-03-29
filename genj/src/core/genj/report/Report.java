@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
- * $Revision: 1.106 $ $Author: nmeier $ $Date: 2006-03-14 19:58:59 $
+ *
+ * $Revision: 1.107 $ $Author: pewu $ $Date: 2006-03-29 20:35:49 $
  */
 package genj.report;
 
@@ -72,12 +72,13 @@ import javax.swing.JScrollPane;
  */
 public abstract class Report implements Cloneable {
 
-  protected final static Logger LOG = Logger.getLogger("genj.report"); 
-  
-  protected final static ImageIcon     
-    IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell.gif"), 
-    IMG_FO  = new genj.util.swing.ImageIcon(ReportView.class,"ReportFO.gif"  ),
-    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui.gif"  );
+  protected final static Logger LOG = Logger.getLogger("genj.report");
+
+  protected final static ImageIcon
+    IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell.gif"),
+    IMG_FO    = new genj.util.swing.ImageIcon(ReportView.class,"ReportFO.gif"  ),
+    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui.gif"  ),
+    IMG_STAT  = new genj.util.swing.ImageIcon(ReportView.class,"ReportStat.gif"  );
 
   /** global report options */
   protected Options OPTIONS = Options.getInstance();
@@ -88,12 +89,19 @@ public abstract class Report implements Cloneable {
     OPTION_OKCANCEL = 1,
     OPTION_OK       = 2;
 
+  /** categories */
+  protected final static Category
+      CATEGORY_UTILITIES    = new Category("utilities",    IMG_SHELL),
+      CATEGORY_ANALYSIS     = new Category("analysis",     IMG_GUI),
+      CATEGORY_STATISTICS   = new Category("statistics",   IMG_STAT),
+      CATEGORY_PRESENTATION = new Category("presentation", IMG_FO);
+
   private final static String[][] OPTION_TEXTS = {
-    new String[]{Action2.TXT_YES, Action2.TXT_NO     }, 
-    new String[]{Action2.TXT_OK , Action2.TXT_CANCEL }, 
+    new String[]{Action2.TXT_YES, Action2.TXT_NO     },
+    new String[]{Action2.TXT_OK , Action2.TXT_CANCEL },
     new String[]{Action2.TXT_OK }
   };
-    
+
   /** alignment options */
   protected final static int
     ALIGN_LEFT   = 0,
@@ -117,21 +125,21 @@ public abstract class Report implements Cloneable {
 
   /** owning component */
   private JComponent owner;
-  
+
   /** options */
   private List options;
-  
+
   /** image */
   private ImageIcon image;
-  
+
   /**
    * Constructor
    */
   protected Report() {
-    
+
     // prepare default image
     image = usesStandardOut() ? IMG_SHELL : IMG_GUI;
-    
+
     // try to load a custom one too
     try {
       String file = getTypeName()+".gif";
@@ -140,9 +148,9 @@ public abstract class Report implements Cloneable {
         image = new genj.util.swing.ImageIcon(file, in);
     } catch (Throwable t) {
     }
-    
+
   }
-  
+
   /**
    * integration - private instance for a run
    */
@@ -160,7 +168,7 @@ public abstract class Report implements Cloneable {
       result.viewManager = viewManager;
       result.out = out;
       result.owner = owner;
-      
+
       // done
       return result;
 
@@ -177,7 +185,7 @@ public abstract class Report implements Cloneable {
     if (out!=null)
       out.println(txt);
   }
-  
+
   /**
    * Store report's options
    */
@@ -191,17 +199,17 @@ public abstract class Report implements Cloneable {
       ((Option)it.next()).persist(registry);
     // done
   }
-  
+
   /**
    * Get report's options
    */
   /*package*/ List getOptions() {
-    
+
     // already calculated
     if (options!=null)
       return options;
-      
-    // calculate options 
+
+    // calculate options
     options = PropertyOption.introspect(this);
 
     // restore options values
@@ -212,21 +220,26 @@ public abstract class Report implements Cloneable {
       option.restore(registry);
       // we use i18n() to resolve names for options
       String oname = translate(option.getProperty());
-      if (oname.length()>0) option.setName(oname);    
+      if (oname.length()>0) option.setName(oname);
       // set category
       option.setCategory(getName());
     }
-    
+
     // done
     return options;
   }
-  
+
   /**
    * An image
    */
   protected ImageIcon getImage() {
-    return image; 
+    return image;
   }
+
+  /**
+   * Returns the report category. Each report has to be assigned to a category.
+   */
+  protected abstract Category getCategory();
 
   /**
    * When a report is executed all its text output is gathered and
@@ -250,7 +263,7 @@ public abstract class Report implements Cloneable {
   /**
    * When a report is executed all its text output is gathered and
    * shown to the user (if run through ReportView). A sub-class can
-   * append the text-representation of an object (toString) to the 
+   * append the text-representation of an object (toString) to the
    * current log with this method.
    */
   public final void println(Object o) {
@@ -269,7 +282,7 @@ public abstract class Report implements Cloneable {
    * When a report is executed all its text output is gathered and
    * shown to the user (if run through ReportView). A sub-class can
    * let the user know about an exception with this method. The
-   * information about the exception is appended in text-form to 
+   * information about the exception is appended in text-form to
    * the current log.
    */
   public final void println(Throwable t) {
@@ -277,19 +290,19 @@ public abstract class Report implements Cloneable {
     t.printStackTrace(new PrintWriter(awriter));
     log(awriter.toString());
   }
-  
+
   /**
    * An implementation of Report can ask the user for a file with this method.
    */
   public File getFileFromUser(String title, String button) {
     return getFileFromUser(title, button, false);
   }
-  
+
   /**
    * An implementation of Report can ask the user for a file with this method.
    */
   public File getFileFromUser(String title, String button, boolean askForOverwrite) {
-    
+
     String key = getClass().getName()+".file";
 
     // show filechooser
@@ -298,21 +311,21 @@ public abstract class Report implements Cloneable {
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setDialogTitle(title);
     int rc = chooser.showDialog(owner,button);
-    
+
     // check result
-    File result = chooser.getSelectedFile(); 
+    File result = chooser.getSelectedFile();
     if (rc!=JFileChooser.APPROVE_OPTION||result==null)
       return null;
-    
+
     // choose an existing file?
     if (result.exists()&&askForOverwrite) {
       rc = viewManager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, ReportView.RESOURCES.getString("report.file.overwrite"), Action2.yesNo(), owner);
-      if (rc!=0) 
+      if (rc!=0)
         return null;
     }
-    
+
     // keep it
-    registry.put(key, result.getParent().toString());    
+    registry.put(key, result.getParent().toString());
     return result;
   }
 
@@ -329,14 +342,14 @@ public abstract class Report implements Cloneable {
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle(title);
     int rc = chooser.showDialog(owner,button);
-    
+
     // check result
-    File result = chooser.getSelectedFile(); 
+    File result = chooser.getSelectedFile();
     if (rc!=JFileChooser.APPROVE_OPTION||result==null)
       return null;
-    
+
     // keep it
-    registry.put(key, result.toString());    
+    registry.put(key, result.toString());
     return result;
   }
 
@@ -345,27 +358,27 @@ public abstract class Report implements Cloneable {
    * to save, transform and view it
    */
   public final void showDocumentToUser(Document doc) {
-    
+
     String title = "Document "+doc.getTitle();
 
     Registry foRegistry = new Registry(registry, getClass().getName()+".fo");
-    
+
     Action[] actions = Action2.okCancel();
     FormatOptionsWidget output = new FormatOptionsWidget(doc, foRegistry);
     output.connect(actions[0]);
     int rc = viewManager.getWindowManager().openDialog("reportdoc", title, WindowManager.QUESTION_MESSAGE, output, actions, owner);
-    
+
     // cancel?
     if (rc!=0)
       return;
-    
+
     // grab formatter and output file
     Format formatter = output.getFormat();
 
     File file = null;
     String progress = null;
     if (formatter.getFileExtension()!=null) {
-      
+
       file = output.getFile();
       if (file==null)
         return;
@@ -374,12 +387,12 @@ public abstract class Report implements Cloneable {
       // show a progress dialog
       progress = viewManager.getWindowManager().openNonModalDialog(
           null, title, WindowManager.INFORMATION_MESSAGE, new JLabel("Writing Document to file "+file+" ..."), Action2.okOnly(), owner);
-      
+
     }
-    
+
     // store options
     output.remember(foRegistry);
-    
+
     // format and write
     try {
       formatter.format(doc, file);
@@ -387,11 +400,11 @@ public abstract class Report implements Cloneable {
       viewManager.getWindowManager().openDialog(null, "Formatting "+doc+" failed", WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), owner);
       file = null;
     }
-    
+
     // close progress dialog
     if (progress!=null)
       viewManager.getWindowManager().close(progress);
-    
+
     // open document
     if (file!=null) {
 
@@ -406,10 +419,10 @@ public abstract class Report implements Cloneable {
           association.execute(file);
       }
     }
-    
+
     // done
   }
-  
+
   /**
    * Show a file if there's a file association for it
    */
@@ -418,27 +431,27 @@ public abstract class Report implements Cloneable {
     if (association!=null)
       association.execute(file);
   }
-  
+
   /**
    * A sub-class can show a chart to the user with this method
    */
   public final void showChartToUser(Chart chart) {
     showComponentToUser(chart);
   }
-  
+
   /**
    * A sub-class can show a Java Swing component to the user with this method
    */
   public final void showComponentToUser(JComponent component) {
-    
+
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#component",getName(), WindowManager.INFORMATION_MESSAGE,component,Action2.okOnly(),owner);
-    
+
     // done
   }
 
   /**
-   * Show annotations containing text and references to Gedcom objects 
+   * Show annotations containing text and references to Gedcom objects
    */
   public final void showAnnotationsToUser(Gedcom gedcom, String msg, List annotations) {
 
@@ -452,7 +465,7 @@ public abstract class Report implements Cloneable {
 
     // done
   }
-  
+
   /**
    * A sub-class can open a browser that will show the given URL with this method
    */
@@ -467,9 +480,9 @@ public abstract class Report implements Cloneable {
    * @param tag tag of entities to show for selection (e.g. Gedcom.INDI)
    */
   public final Entity getEntityFromUser(String msg, Gedcom gedcom, String tag) {
-    
+
     SelectEntityWidget select = new SelectEntityWidget(gedcom, tag, null);
-    
+
     // preselect something?
     Entity entity = gedcom.getEntity(registry.get("select."+tag, (String)null));
     if (entity!=null)
@@ -485,7 +498,7 @@ public abstract class Report implements Cloneable {
     if (result==null)
       return null;
     registry.put("select."+result.getTag(), result.getId());
-    
+
     // done
     return result;
   }
@@ -510,7 +523,7 @@ public abstract class Report implements Cloneable {
   public final String getValueFromUser(String key, String msg) {
     return getValueFromUser(key, msg, new String[0]);
   }
-  
+
   /**
    * A sub-class can query the user for a text value with this method. The value
    * that was selected the last time is automatically suggested.
@@ -521,7 +534,7 @@ public abstract class Report implements Cloneable {
     if (key!=null) {
       key = getClass().getName()+"."+key;
       String[] presets = registry.get(key, (String[])null);
-      if (presets != null) 
+      if (presets != null)
         defaultChoices = presets;
     }
 
@@ -534,7 +547,7 @@ public abstract class Report implements Cloneable {
     if (key!=null&&result!=null&&result.length()>0) {
       List values = new ArrayList(defaultChoices.length+1);
       values.add(result);
-      for (int d=0;d<defaultChoices.length&&d<20;d++) 
+      for (int d=0;d<defaultChoices.length&&d<20;d++)
         if (!result.equalsIgnoreCase(defaultChoices[d]))
           values.add(defaultChoices[d]);
       registry.put(key, values);
@@ -553,18 +566,18 @@ public abstract class Report implements Cloneable {
   public final boolean getOptionFromUser(String msg, int option) {
     return 0==getOptionFromUser(msg, OPTION_TEXTS[option]);
   }
-  
+
   /**
    * Helper method that queries the user for yes/no input
    */
   private int getOptionFromUser(String msg, String[] actions) {
-    
+
     Action[] as  = new Action[actions.length];
     for (int i=0;i<as.length;i++)
       as[i]  = new Action2(actions[i]);
-    
+
     return viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, msg, as, owner);
-    
+
   }
 
   /**
@@ -612,7 +625,7 @@ public abstract class Report implements Cloneable {
 
     // look it up in language
     String result = null;
-    if (lang!=null) 
+    if (lang!=null)
       result = resources.getString(key+'.'+lang, values, false);
 
     // fallback if necessary
@@ -622,14 +635,14 @@ public abstract class Report implements Cloneable {
     // done
     return result;
   }
-  
+
   /**
    * Filename
    */
   public String getFilename() {
     return getClass().getName().replace('.','/')+".java";
   }
-  
+
   /**
    * Type name (name without packages)
    */
@@ -639,7 +652,7 @@ public abstract class Report implements Cloneable {
       rtype = rtype.substring(rtype.indexOf('.')+1);
     return rtype;
   }
-  
+
   /**
    * Access to report properties
    */
@@ -673,8 +686,8 @@ public abstract class Report implements Cloneable {
         if (prefix!=null)
           buffer.append(prefix);
         return buffer.toString();
-    }  
-    
+    }
+
     /**
      * Creates an empty String for text output. Spaces per Level are taken from
      * OPTIONS.getIndentPerLevel()
@@ -682,8 +695,8 @@ public abstract class Report implements Cloneable {
     public final String getIndent(int level) {
       return getIndent(level, OPTIONS.getIndentPerLevel(), null);
     }
-  
-  
+
+
   /**
    * Aligns a simple text for text outputs.
    * @param txt the text to align
@@ -730,10 +743,10 @@ public abstract class Report implements Cloneable {
     // done
     return buffer.toString();
   }
-  
+
   /**
    * Returns the name of a report - this by default is the value of key "name"
-   * in the file [ReportName].properties. A report has to override this method 
+   * in the file [ReportName].properties. A report has to override this method
    * to provide a localized name if that file doesn't exist.
    * @return name of the report
    */
@@ -745,7 +758,7 @@ public abstract class Report implements Cloneable {
 
   /**
    * Returns the author of a report - this by default is the value of key "author"
-   * in the file [ReportName].properties. A report has to override this method 
+   * in the file [ReportName].properties. A report has to override this method
    * to provide the author if that file doesn't exist.
    * @return name of the author
    */
@@ -755,7 +768,7 @@ public abstract class Report implements Cloneable {
 
   /**
    * Returns the version of a report - this by default is the value of key "version"
-   * in the file [ReportName].properties. A report has to override this method 
+   * in the file [ReportName].properties. A report has to override this method
    * to provide the version if that file doesn't exist.
    * @return version of report
    */
@@ -765,7 +778,7 @@ public abstract class Report implements Cloneable {
 
   /**
    * Returns information about a report - this by default is the value of key "info"
-   * in the file [ReportName].properties. A report has to override this method 
+   * in the file [ReportName].properties. A report has to override this method
    * to provide localized information if that file doesn't exist.
    * @return information about report
    */
@@ -775,7 +788,7 @@ public abstract class Report implements Cloneable {
 
   /**
    * Called by GenJ to start this report's execution - can be overriden by a user defined report.
-   * @param context normally an instance of type Gedcom but depending on 
+   * @param context normally an instance of type Gedcom but depending on
    *    accepts() could also be of type Entity or Property
    */
   public void start(Object context) {
@@ -809,7 +822,7 @@ public abstract class Report implements Cloneable {
 
     /**
      * Whether the report allows to be run on a given context - default
-     * checks for methods called 
+     * checks for methods called
      * <il>
      *  <li>start(Gedcom|Object)
      *  <li>start(Property)
@@ -822,12 +835,12 @@ public abstract class Report implements Cloneable {
     public String accepts(Object context) {
       return getStartMethod(context)!=null ? getName() : null;
     }
-    
+
     /**
      * resolve start method to use for given argument type
      */
     /*package*/ Method getStartMethod(Object context) {
-      
+
       // check for what this report accepts
       try {
         Method[] methods = getClass().getDeclaredMethods();
@@ -848,5 +861,27 @@ public abstract class Report implements Cloneable {
       // n/a
       return null;
     }
-  
+
+    /**
+     * Represents the report category.
+     */
+    public static class Category
+    {
+        private String name;
+        private ImageIcon image;
+
+        public Category(String name, ImageIcon image) {
+            this.name = name;
+            this.image = image;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public ImageIcon getImage() {
+            return image;
+        }
+    }
+
 } //Report

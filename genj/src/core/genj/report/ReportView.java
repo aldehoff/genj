@@ -36,7 +36,6 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -57,26 +56,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -99,7 +92,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
     imgStart = new ImageIcon(ReportView.class,"Start.gif"      ),
     imgStop  = new ImageIcon(ReportView.class,"Stop.gif"       ),
     imgSave  = new ImageIcon(ReportView.class,"Save.gif"       ),
-    imgReload= new ImageIcon(ReportView.class,"Reload.gif"     );
+    imgReload= new ImageIcon(ReportView.class,"Reload.gif"     ),
+    imgGroup = new ImageIcon(ReportView.class,"Group.gif"      );
 
 
   /** gedcom this view is for */
@@ -108,10 +102,10 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /** components to show report info */
   private JLabel      lFile,lAuthor,lVersion;
   private JTextPane   tpInfo;
-  private JEditorPane   taOutput;
-  private JList       listOfReports;
+  private JEditorPane taOutput;
+  private ReportList  listOfReports;
   private JTabbedPane tabbedPane;
-  private AbstractButton bStart,bStop,bClose,bSave,bReload;
+  private AbstractButton bStart,bStop,bClose,bSave,bReload,bGroup;
   private OptionsWidget owOptions;
 
   /** registry for settings */
@@ -174,10 +168,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
     GridBagHelper gh = new GridBagHelper(reportPanel);
 
     // ... List of reports
-    listOfReports = new JList(ReportLoader.getInstance().getReports());
-    listOfReports.setCellRenderer(callback);
-    listOfReports.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    listOfReports.addListSelectionListener(callback);
+    listOfReports = new ReportList(ReportLoader.getInstance().getReports(),
+            registry.get("group", ReportList.VIEW_TREE), registry);
+    listOfReports.setSelectionListener(callback);
 
     JScrollPane spList = new JScrollPane(listOfReports) {
       /** min = preferred */
@@ -278,7 +271,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // to front
     manager.showView(this);
     // start it
-    listOfReports.setSelectedValue(report, true);
+    listOfReports.setSelection(report);
     new ActionStart(context).trigger();
   }
 
@@ -315,6 +308,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     bStop  = bh.create(new ActionStop(astart));
     bSave  = bh.create(new ActionSave());
     bReload= bh.create(new ActionReload());
+    bGroup = bh.create(new ActionGroup());
 
     // done
   }
@@ -331,13 +325,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
     protected void execute() {
       // show first page and unselect report
       tabbedPane.getModel().setSelectedIndex(0);
-      listOfReports.setSelectedIndices(new int[0]);
+      listOfReports.setSelection(null);
       // .. do it (forced!);
       ReportLoader.clear();
       // .. get them
       Report reports[] = ReportLoader.getInstance().getReports();
       // .. update
-      listOfReports.setListData(reports);
+      listOfReports.setReports(reports);
       // .. done
     }
   } //ActionReload
@@ -397,7 +391,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       setRunning(true);
 
       // Calc Report
-      Report report = (Report)listOfReports.getSelectedValue();
+      Report report = listOfReports.getSelection();
       if (report==null)
         return false;
 
@@ -558,6 +552,32 @@ public class ReportView extends JPanel implements ToolBarSupport {
   } //ActionSave
 
   /**
+   * Toggles gouping of reports into categories.
+   * Action: GROUP
+   */
+  private class ActionGroup extends Action2 {
+    /**
+     * Creates the action object.
+     */
+    protected ActionGroup() {
+      setImage(imgGroup);
+      setTip(RESOURCES, "report.group.tip");
+    }
+
+    /**
+     * Toggles grouping of reports.
+     */
+    protected void execute() {
+        int viewType = listOfReports.getViewType();
+        if (viewType == ReportList.VIEW_LIST)
+            listOfReports.setViewType(ReportList.VIEW_TREE);
+        else
+            listOfReports.setViewType(ReportList.VIEW_LIST);
+        registry.put("group", listOfReports.getViewType());
+    }
+  } //ActionGroup
+
+  /**
    * A Hyperlink Follow Action
    */
   private static class FollowHyperlink implements HyperlinkListener {
@@ -589,38 +609,24 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * A private callback for various messages coming in
    */
-  private class Callback extends MouseAdapter implements MouseMotionListener, ListCellRenderer, ListSelectionListener {
-
-    /** a default renderer for list */
-    private DefaultListCellRenderer defRenderer = new DefaultListCellRenderer();
+  private class Callback extends MouseAdapter implements MouseMotionListener,
+      ReportSelectionListener {
 
     /** the currently found entity id */
     private String id = null;
 
     /**
-     * Return component for rendering list element
-     */
-    public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
-      defRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-      Report report = (Report)value;
-      defRenderer.setText(report.getName());
-      defRenderer.setIcon(report.getImage());
-      return defRenderer;
-    }
-
-    /**
      * Monitor changes to selection of reports
      */
-    public void valueChanged(ListSelectionEvent e) {
+    public void valueChanged(Report report) {
       // update info
-      if (listOfReports.getSelectedIndices().length!=1) {
+      if (report == null) {
         lFile    .setText("");
         lAuthor  .setText("");
         lVersion .setText("");
         tpInfo   .setText("");
         owOptions.setOptions(Collections.EMPTY_LIST);
       } else {
-        Report report = (Report)listOfReports.getSelectedValue();
         lFile    .setText(report.getFilename());
         lAuthor  .setText(report.getAuthor());
         lVersion .setText(report.getVersion());
@@ -640,7 +646,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // done
     }
-    
+
     /**
      * Check if user clicks on marked ID
      */

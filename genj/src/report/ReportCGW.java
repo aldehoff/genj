@@ -36,7 +36,7 @@ import javax.swing.ImageIcon;
 public class ReportCGW extends Report {
 
     private final static Charset UTF8 = Charset.forName("ISO-8859-1");
-  
+
     /** option - Index jurisdiction for analysis in PLAC tags */
     public int depPos = 2;
     /** option - Index jurisdiction for analysis in PLAC tags */
@@ -45,7 +45,7 @@ public class ReportCGW extends Report {
     public int depLen = 0;
 
     /**
-     * Overriden image - we're using the provided FO image 
+     * Overriden image - we're using the provided FO image
      */
     protected ImageIcon getImage() {
       return Report.IMG_FO;
@@ -66,6 +66,13 @@ public class ReportCGW extends Report {
     }
 
     /**
+     * Returns the category of this report.
+     */
+    public Category getCategory() {
+        return CATEGORY_UTILITIES;
+    }
+
+    /**
      * Our main logic
      */
     private void start(Gedcom gedcom, Collection indis) {
@@ -83,9 +90,9 @@ public class ReportCGW extends Report {
 
 	// prepare our index
 	Map primary = new TreeMap();
-	for (Iterator it = indis.iterator(); it.hasNext();) 
+	for (Iterator it = indis.iterator(); it.hasNext();)
 	    analyze(  (Indi) it.next(), primary);
-    
+
 	// Create all the files
 	for (Iterator ps = primary.keySet().iterator(); ps.hasNext(); ) {
 	    String p = (String)ps.next();
@@ -96,14 +103,14 @@ public class ReportCGW extends Report {
 	    System.err.println("IO Exception!");
 	    ioe.printStackTrace();
 	}
-      
+
 	    //      doc.endSection();
 	}
-    
+
 	// done
 	//    showDocumentToUser(doc);
     }
-  
+
     private void export(String dept, Map primary, File dir) throws IOException{
 	File file = new File(dir, dept+".csv");
 	PrintWriter out = getWriter(new FileOutputStream(file));
@@ -112,7 +119,7 @@ public class ReportCGW extends Report {
 	Map secondary = (Map)lookup(primary, dept, null);
 	for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {
 	    String s = (String)ss.next();
-	    
+
 	    Map namelist = (Map)lookup(secondary, s, null);
 	    for (Iterator ns = namelist.keySet().iterator(); ns.hasNext(); ) {
 		String t = (String)ns.next();
@@ -127,12 +134,12 @@ public class ReportCGW extends Report {
      * Analyze an individual
      */
     private void analyze(Indi indi, Map primary) {
-    
+
 	// consider non-empty last names only
 	String name = indi.getLastName();
 	if (name.length()==0)
 	    return;
-    
+
 	// loop over all dates in indi
 	for (Iterator places = indi.getProperties(PropertyPlace.class).iterator(); places.hasNext(); ) {
 
@@ -152,7 +159,7 @@ public class ReportCGW extends Report {
     }
 
     private void keep(String name, String place, String dept, Map primary) {
-    
+
 	// calculate primary and secondary key
 	// remember
 	Map secondary = (Map)lookup(primary, dept, TreeMap.class);
@@ -160,7 +167,7 @@ public class ReportCGW extends Report {
 	lookup(namelist, name, TreeMap.class);
 	// done
     }
-  
+
     /**
      * Lookup an object in a map with a default class
      */
@@ -186,6 +193,6 @@ public class ReportCGW extends Report {
     private PrintWriter getWriter(OutputStream out) {
 	return new PrintWriter(new OutputStreamWriter(out, UTF8));
     }
-  
+
 
 } //ReportCGW

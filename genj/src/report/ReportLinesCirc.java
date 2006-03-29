@@ -154,7 +154,7 @@ public class ReportLinesCirc extends Report {
 				    i18n("uprintmarr.0")};
     */
 
-    //==== character Encoding 
+    //==== character Encoding
     public int uenc_choice=0;
     private int enc_choice=1;
     public String uenc_choices[] = { translate("uenc_choice.0"),
@@ -192,7 +192,7 @@ public class ReportLinesCirc extends Report {
      * Main for argument individual
      */
     public void start(Indi indi) {
-	
+
       // init options
       initUserOptions();
 
@@ -200,7 +200,7 @@ public class ReportLinesCirc extends Report {
       File file = getFileFromUser(translate("output.file"), Action2.TXT_OK,true);
       if (file == null)
         return ;
-      
+
       // open output stream
       try{
         out = getWriter(new FileOutputStream(file));
@@ -219,6 +219,13 @@ public class ReportLinesCirc extends Report {
       // show file the result to the user
       showFileToUser(file);
 
+    }
+
+    /**
+     * Returns the category of this report.
+     */
+    public Category getCategory() {
+        return CATEGORY_PRESENTATION;
     }
 
     private void initUserOptions(){
@@ -241,7 +248,7 @@ public class ReportLinesCirc extends Report {
 	case 6:x_pages=6;y_pages=4;break;
 	default:x_pages=1;y_pages=1;break;
 	}
-	    
+
     }
 
 private String put_given_name(Indi person,int length){
@@ -259,9 +266,9 @@ private String put_given_name(Indi person,int length){
     private void endline(int ahnen,int offset,int info,int max){
 	out.println(") "+ahnen+" "+offset+" "+info+" "+max+"} addind");
     }
-    
+
     private void putperson(Fam family, Indi person, int level, int ahnen, int info, int dateformat) {
-	
+
 	int[] levellength = {25,26,23,16,15,15,21,21,21,21,21};
 	PersonCell pCell = new PersonCell();
 	if (eq(level,1)) {
@@ -286,7 +293,7 @@ private String put_given_name(Indi person,int length){
 	}
         if (printmarr){
 	    // marriage date estimation does not yet work!
-	    if (marrest && false){ 
+	    if (marrest && false){
 		//		if (ne(date(marriage(family)),"")){if (eq("M",sex(person))){set(nummarr,add(nummarr,1))d(nummarr)" {(" stddate(marriage(family)) ") " d(ahnen) " " d(info)"} addmarr\n"}}
 	    }else{
 		if (marriage(family)!=null){
@@ -335,7 +342,7 @@ private String put_given_name(Indi person,int length){
 	Property prop = entity.getProperty("BIRT");
 	if (prop==null)
 	    return null;
-	
+
 	return (PropertyDate) prop.getProperty("DATE");
     }
     PropertyDate death(Indi entity){
@@ -345,17 +352,17 @@ private String put_given_name(Indi person,int length){
 	Property prop = entity.getProperty("DEAT");
 	if (prop==null)
 	    return null;
-	
+
 	return (PropertyDate) prop.getProperty("DATE");
     }
-    String date(PropertyDate date){ 
+    String date(PropertyDate date){
 	if (date != null ) {
 	    return date.getDisplayValue();
 	} else {
 	    return "";
 	}
     }
-    String year(PropertyDate date){ 
+    String year(PropertyDate date){
 	if (date != null ) {
 	    return date.getStart().isValid()?""+date.getStart().getYear():"????";
 	} else {
@@ -377,14 +384,14 @@ private String put_given_name(Indi person,int length){
     Indi mother(Indi person){return (person == null)?null:wife(parents(person));}
     String sex(Indi indi){return((indi.getSex() == PropertySex.MALE )? "M":"F");}
     /*
-      Fullname returns the name of a person in a variety of formats. 
-      If the second parameter is true the surname is shown in upper case; 
-      otherwise the surname is as in the record. 
+      Fullname returns the name of a person in a variety of formats.
+      If the second parameter is true the surname is shown in upper case;
+      otherwise the surname is as in the record.
       If the third parameter is true the parts of the name are shown in the order
-      as found in the record; otherwise the surname is given first, followed 
-      by a comma, followed by the other name parts. 
+      as found in the record; otherwise the surname is given first, followed
+      by a comma, followed by the other name parts.
       The fourth parameter specifies the maximum length field that can be used
-      to show the name; various conversions occur 
+      to show the name; various conversions occur
       if it is necessary to shorten the name to fit this length.
     */
     private String fullname(Indi indi,int isUpper,int type,int length){
@@ -418,13 +425,13 @@ private String put_given_name(Indi person,int length){
 	result = result.replaceAll("\\)","\\\\)");
 	return result;
     }
-    
+
     private void putpageprintouts(int xn,int yn){
 	int page_num = 0;
 	int yi = yn-1;
 	int yi_ord;
 	int xi;
-	
+
 	while(yi >= 0) {
 	    yi_ord = yn-1-yi;
 	    xi=xn- 1;
@@ -453,7 +460,7 @@ private String put_given_name(Indi person,int length){
 	out.println("%%BeginDefaults");
 	out.println("%%ViewingOrientation: 1 0 0 1");
 	out.println("%%EndDefaults\n");
-	
+
 	out.println("%%BeginProlog\n");
 	out.println("%   much of the code involved with font encoding and with multipaging");
 	out.println("%   is borrowed from Robert Simms <rsimms@ces.clemson.edu>\n");
@@ -1214,20 +1221,20 @@ private String put_given_name(Indi person,int length){
 	}else{
 	    if (!alternating){
 		out.println("/transparent 1 def         % 1=transparent, 0=color shading\n");
-		
+
 		out.println("/rf 1.0 def /gf 1.0 def /bf 1.0 def %rgb female box fill");
 		out.println("/rm 1.0 def /gm 1.0 def /bm 1.0 def %rgb male box fill\n");
 	    }else{
 		out.println("/transparent 0 def         % 1=transparent, 0=color shading\n");
-		
+
 		out.println("/rf 0.8 def /gf 0.8 def /bf 1.0 def %rgb female box fill");
 		out.println("/rm 1.0 def /gm 0.8 def /bm 0.8 def %rgb male box fill\n");
 	    }
 	}
 	/*	println("/printmarr "+d(printmarr)+" def");*/
-	
+
 	out.println("/rl 0.0 def /gl 0.0 def /bl 0.0 def %  rgb for lines");
-	
+
 	out.println("%     partially borrowed from Robert Simms");
 	out.println("% Find printable dimension for chart with a sequence of steps\n");
 
@@ -1254,7 +1261,7 @@ private String put_given_name(Indi person,int length){
 	if(eq(radius,0)) {out.println("	/mindim tw0 def\n");}
 	out.println("	tw0 hp div ceiling cvi ypages lt {/ypages tw0 hp div ceiling cvi def /th0 hp ypages mul def /xpages xpages def}{/xpages xpages def /ypages ypages def}ifelse");
 	out.println("}ifelse\n");
-	
+
 	if(gt(radius,0)) {
 	    out.println("/radfactor " +d(radius)+ " inch 8 inch div def");
 	}else{
@@ -1288,7 +1295,7 @@ private String put_given_name(Indi person,int length){
 	out.println("		grestore");
 	out.println("	} if");
 	out.println("} def      % print-a-page procedure\n");
-	
+
 	out.println("%%EndProlog");
 	out.println("%%BeginSetUp\n");
 
@@ -1324,7 +1331,7 @@ private String put_given_name(Indi person,int length){
 	putpageprintouts(x_pages,y_pages);
 	out.println("%%EOF");
     }
-    
+
     private String getDateString(PropertyDate birth, PropertyDate death, int dateformat){
 	String result = "";
 	String birthstr = "";

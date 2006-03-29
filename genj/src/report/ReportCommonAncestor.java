@@ -18,14 +18,14 @@ import java.util.List;
  *
  */
 public class ReportCommonAncestor extends Report {
-  
+
   /**
    * we're not using the console
    */
   public boolean usesStandardOut() {
     return false;
   }
-  
+
   /**
    * special treatmen context argument check
    */
@@ -42,7 +42,7 @@ public class ReportCommonAncestor extends Report {
     // no go
     return null;
   }
-  
+
   /**
    * our main method for an argument individual
    */
@@ -54,16 +54,16 @@ public class ReportCommonAncestor extends Report {
     // continue
     start(new Indi[] { indi, other});
   }
-  
+
   /**
    * our main method for an argument of a bunch of individuals
    */
   public void start(Indi[] indis) {
-    
+
     // first and second
     Indi indi = indis[0];
     Indi other = indis[1];
-      
+
     // Recurse into indi
     Indi ancestor = getCommonAncestor(indi, other);
 
@@ -72,17 +72,24 @@ public class ReportCommonAncestor extends Report {
       getOptionFromUser(translate("nocommon"), Report.OPTION_OK);
       return;
     }
-    
+
     // show the result
     List list = new ArrayList();
     list.add(new Annotation(translate("result.first", indi), indi));
     list.add(new Annotation(translate("result.second", other), other));
     list.add(new Annotation(translate("result.ancestor", ancestor), ancestor));
-    
+
     showAnnotationsToUser(indi.getGedcom(), getName(), list);
-    
+
   }
-  
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_ANALYSIS;
+  }
+
   private Indi getCommonAncestor(Indi indi, Indi other) {
     // check father and mother of indi
     Indi father = indi.getBiologicalFather();
@@ -90,7 +97,7 @@ public class ReportCommonAncestor extends Report {
       if (father.isAncestorOf(other))
         return father;
       Indi ancestor = getCommonAncestor(father, other);
-      if (ancestor!=null) 
+      if (ancestor!=null)
         return ancestor;
     }
     Indi mother = indi.getBiologicalMother();
@@ -98,7 +105,7 @@ public class ReportCommonAncestor extends Report {
       if (mother.isAncestorOf(other))
         return mother;
       Indi ancestor = getCommonAncestor(mother, other);
-      if (ancestor!=null) 
+      if (ancestor!=null)
         return ancestor;
     }
     // none found

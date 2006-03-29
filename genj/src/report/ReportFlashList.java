@@ -29,17 +29,17 @@ import javax.swing.ImageIcon;
  * @version 1.0
  */
 public class ReportFlashList extends Report {
-  
+
   private final static TagPath CITY = new TagPath(".:ADDR:CITY");
-  
+
   /** option - whether to use last name as primary index */
   public boolean isIndexByLastName = true;
 
   /** option - whether to use a TOC or not */
   public boolean weAddaTOC = true;
-  
+
   /**
-   * Overriden image - we're using the provided FO image 
+   * Overriden image - we're using the provided FO image
    */
   protected ImageIcon getImage() {
     return Report.IMG_FO;
@@ -69,6 +69,13 @@ public class ReportFlashList extends Report {
   }
 
   /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_ANALYSIS;
+  }
+
+  /**
    * Our main logic
    */
   private void start(Gedcom gedcom, Collection indis) {
@@ -76,30 +83,30 @@ public class ReportFlashList extends Report {
     // prepare our index
     Map primary = new TreeMap();
 
-    for (Iterator it = indis.iterator(); it.hasNext();) 
+    for (Iterator it = indis.iterator(); it.hasNext();)
       analyze(  (Indi) it.next(), primary);
-    
+
     // write it out
     Document doc = new Document(getName());
     if (weAddaTOC) {
       doc.addTOC();
       if (primary.size()>10) doc.nextPage();
     }
-    
-        
+
+
     for (Iterator ps = primary.keySet().iterator(); ps.hasNext(); ) {
       String p = (String)ps.next();
 
       doc.startSection(p);
-      
+
       doc.startTable("genj:csv=true,width=100%");
       doc.addTableColumn("column-width=80%");
       doc.addTableColumn("column-width=10%");
       doc.addTableColumn("column-width=10%");
-      
+
       Map secondary = (Map)lookup(primary, p, null);
       for (Iterator ss = secondary.keySet().iterator(); ss.hasNext(); ) {
-        
+
         String s = (String)ss.next();
         Range range = (Range)lookup(secondary, s, null);
 
@@ -110,26 +117,26 @@ public class ReportFlashList extends Report {
         doc.nextTableCell();
         doc.addText(range.getLast());
       }
-      
+
       doc.endTable();
 
       // done
     }
-    
+
     // done
     showDocumentToUser(doc);
   }
-  
+
   /**
    * Analyze an individual
    */
   private void analyze(Indi indi, Map primary) {
-    
+
     // consider non-empty last names only
     String name = indi.getLastName();
     if (name.length()==0)
       return;
-    
+
     // loop over all dates in indi
     for (Iterator dates = indi.getProperties(PropertyDate.class).iterator(); dates.hasNext(); ) {
       // consider valid dates only
@@ -141,12 +148,12 @@ public class ReportFlashList extends Report {
       if (start>end) continue;
       // find all places for it
       analyzePlaces(name, start, end, date.getParent(), primary);
-      // find all cities for it 
+      // find all cities for it
       analyzeCities(name, start, end, date.getParent(), primary);
-      
+
       // next date
     }
-    
+
     // done
   }
 
@@ -165,7 +172,7 @@ public class ReportFlashList extends Report {
     }
     // done
   }
-  
+
   /**
    * Analyze all places for given indi, start, end & property
    */
@@ -182,15 +189,15 @@ public class ReportFlashList extends Report {
     }
     // done
   }
-  
+
   private void keep(String name, int start, int end, String place, Map primary) {
-    
+
     // calculate primary and secondary key
     String pk, ss;
     if (isIndexByLastName) {
       pk = name;
       ss = place;
-    } else { 
+    } else {
       pk= place;
       ss = name;
     }
@@ -200,7 +207,7 @@ public class ReportFlashList extends Report {
     range.add(start, end);
     // done
   }
-  
+
   /**
    * Lookup an object in a map with a default class
    */
@@ -219,13 +226,13 @@ public class ReportFlashList extends Report {
     // done
     return result;
   }
-  
+
   /**
    * our ranges
    */
   static class Range {
     int firstYear = Integer.MAX_VALUE, lastYear = -Integer.MAX_VALUE;
-    
+
     void add(int start, int end) {
       // check for valid year - this might still be UNKNOWN even though a date was valid
       if (start!=PointInTime.UNKNOWN)
@@ -233,21 +240,21 @@ public class ReportFlashList extends Report {
       if (end!=PointInTime.UNKNOWN)
         lastYear = Math.max(lastYear, end);
     }
-    
+
     public String toString() {
       // check for valid year - this might still be UNKNOWN even though a date was valid
       if (firstYear==Integer.MAX_VALUE|| lastYear==Integer.MAX_VALUE)
         return "";
       return firstYear + " " + lastYear;
     }
-    
+
     String getFirst() {
       // check for valid year - this might still be UNKNOWN even though a date was valid
       if (firstYear==Integer.MAX_VALUE|| lastYear==Integer.MAX_VALUE)
         return "";
       return Integer.toString(firstYear);
     }
-    
+
     String getLast() {
       return Integer.toString(lastYear);
     }

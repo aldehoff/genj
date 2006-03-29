@@ -27,7 +27,7 @@ import javax.swing.JTabbedPane;
  * A report that shows pie charts with events by months
  */
 public class ReportEventsByMonths extends Report {
-  
+
   /** calendar we use */
   private int calendar;
 
@@ -43,36 +43,36 @@ public class ReportEventsByMonths extends Report {
   public int getCalendar() {
     return calendar;
   }
-  
+
   /** accessor - calendar */
   public void setCalendar(int set) {
     calendar = Math.max(0, Math.min(CALENDARS.length-1, set));
   }
-  
+
   /** accessor - calendars */
   public Calendar[] getCalendars() {
     return CALENDARS;
   }
-  
+
   /**
    * No STDOUT necessary
    */
   public boolean usesStandardOut() {
     return false;
   }
-  
+
   /**
    * Report's main
    */
   public void start(Gedcom gedcom) {
-    
+
     // look for events we consider
     IndexedSeries[] series = {
-      analyze(gedcom.getEntities("INDI"), "BIRT"),  
+      analyze(gedcom.getEntities("INDI"), "BIRT"),
       analyze(gedcom.getEntities("INDI"), "DEAT"),
       analyze(gedcom.getEntities("FAM" ), "MARR")
     };
-    
+
     // show it in a chart per series
     String[] categories = CALENDARS[calendar].getMonths(true);
 
@@ -86,20 +86,27 @@ public class ReportEventsByMonths extends Report {
     panel.add(BorderLayout.CENTER, charts);
 
     showComponentToUser(panel);
-    
+
     // done
   }
-  
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_STATISTICS;
+  }
+
   private IndexedSeries analyze(Collection entities, String tag) {
-    
+
     int months = CALENDARS[calendar].getMonths(true).length;
-    
+
     IndexedSeries series = new IndexedSeries(tag, months);
-    
+
     // loop over entities
     Iterator it = entities.iterator();
     while (it.hasNext()) {
-      
+
       Entity e = (Entity)it.next();
 
       // check it out
@@ -107,7 +114,7 @@ public class ReportEventsByMonths extends Report {
       if (!(event instanceof PropertyEvent))
         continue;
       PropertyDate date = ((PropertyEvent)event).getDate();
-      if (date==null) 
+      if (date==null)
         continue;
 
       // inc appropriate month
@@ -115,12 +122,12 @@ public class ReportEventsByMonths extends Report {
         series.inc(date.getStart().getPointInTime(CALENDARS[calendar]).getMonth());
       } catch (Throwable t) {
       }
-      
+
       // next
     }
-    
+
     // done
     return series;
   }
-  
+
 } //ReportBirthMonths

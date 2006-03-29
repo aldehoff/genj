@@ -23,7 +23,7 @@ import javax.swing.JLabel;
 public class ReportDateCalculator extends Report {
 
     public String accepts(Object context) {
-    
+
 	// accepting all PropertyChoices and PropertyNames
 	String val = null;
 	if (context instanceof PropertyDate) {
@@ -73,9 +73,9 @@ public class ReportDateCalculator extends Report {
         // check if the user cancelled this
         if (ageStr==null)
           return;
-        
+
 	  }
-    
+
 	  Delta age = new Delta(0,0,0);
 	  if (age.setValue(ageStr) || age.setValue(ageStr+"y")){
 	      if (date.getParent().getTag().equals("BIRT")){
@@ -87,43 +87,50 @@ public class ReportDateCalculator extends Report {
 	      }
 	  } else {
 	      result = translate("age.invalid");
-	  } 
+	  }
       }
       showComponentToUser(new JLabel(result));
+  }
+
+  /**
+   * Returns the category of this report.
+   */
+  public Category getCategory() {
+      return CATEGORY_UTILITIES;
   }
 
     // only for gregorian
     private static PointInTime getDateFromDateAndAge(PointInTime date, Delta age, int op) {
 
     // null check
-    if (date==null||age==null) 
+    if (date==null||age==null)
       return null;
-         
+
     // valid?
     if (!date.isValid())
       return null;
-    
+
     // same calendar?
     Calendar calendar = date.getCalendar();
     if (calendar!=age.getCalendar())
       return null;
-      
-    // grab earlier values  
-    int 
+
+    // grab earlier values
+    int
       y =  date.getYear (),
       m = date.getMonth(),
       d = date.getDay();
-  
+
     // make sure years are not empty (could be on all UNKNOWN PIT)
     if (date.getYear()==PointInTime.UNKNOWN)
 	return null;
     int year  = date.getYear() + op * age.getYears();
     int month = date.getMonth();
     int day = date.getDay();
-    if (date.getMonth()!=PointInTime.UNKNOWN){      
+    if (date.getMonth()!=PointInTime.UNKNOWN){
 	// got the month
 	month += op*age.getMonths();
-    
+
 	// check days
 	if (day!=PointInTime.UNKNOWN){
 	    // got the days
@@ -133,7 +140,7 @@ public class ReportDateCalculator extends Report {
     // done
     return normalize(new PointInTime(day, month, year, calendar));
   }
-  
+
     private static PointInTime normalize(PointInTime pit){
 	int year=pit.getYear();
 	int month=pit.getMonth();
@@ -154,6 +161,6 @@ public class ReportDateCalculator extends Report {
 	    return normalize(new PointInTime(day+cal.getDays(month-1,year),month-1,year,cal));
 	return pit;
     }
-	    
-  
+
+
 } //ReportDateCalculator

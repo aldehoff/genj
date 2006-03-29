@@ -64,6 +64,13 @@ public class ReportAges extends Report {
     }
 
     /**
+     * Returns the category of this report.
+     */
+    public Category getCategory() {
+        return CATEGORY_ANALYSIS;
+    }
+
+    /**
      * Analyze an event and report its information, date and age of indi
      */
     private boolean analyzeEvent(boolean header, Indi indi, String tag) {
