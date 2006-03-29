@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.107 $ $Author: pewu $ $Date: 2006-03-29 20:35:49 $
+ * $Revision: 1.108 $ $Author: pewu $ $Date: 2006-03-29 21:44:34 $
  */
 package genj.report;
 
@@ -94,7 +94,8 @@ public abstract class Report implements Cloneable {
       CATEGORY_UTILITIES    = new Category("utilities",    IMG_SHELL),
       CATEGORY_ANALYSIS     = new Category("analysis",     IMG_GUI),
       CATEGORY_STATISTICS   = new Category("statistics",   IMG_STAT),
-      CATEGORY_PRESENTATION = new Category("presentation", IMG_FO);
+      CATEGORY_PRESENTATION = new Category("presentation", IMG_FO),
+      CATEGORY_UNASSIGNED   = new Category("unassigned",   IMG_SHELL);
 
   private final static String[][] OPTION_TEXTS = {
     new String[]{Action2.TXT_YES, Action2.TXT_NO     },
@@ -237,9 +238,12 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Returns the report category. Each report has to be assigned to a category.
+   * Returns the report category. If the report class doesn't override this method,
+   * the default category ("unassigned") is returned.
    */
-  protected abstract Category getCategory();
+  public Category getCategory() {
+      return CATEGORY_UNASSIGNED;
+  }
 
   /**
    * When a report is executed all its text output is gathered and
