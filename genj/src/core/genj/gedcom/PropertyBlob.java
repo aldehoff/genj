@@ -24,7 +24,6 @@ import genj.util.ByteArray;
 import genj.util.swing.ImageIcon;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -201,7 +200,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
         byte[] newContent = new ByteArray(in, in.available()).getBytes();
         in.close();
         content = newContent;
-      } catch (IOException ex) {
+      } catch (Throwable t) {
         return false;
       }
     }

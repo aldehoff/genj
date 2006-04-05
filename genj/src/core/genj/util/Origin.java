@@ -386,8 +386,10 @@ public abstract class Origin {
     private ZipInputStream openImpl() throws IOException {
       
       // We either load from cached bits or try to open the connection
-      if (cachedBits==null) {
+      if (cachedBits==null) try {
         cachedBits = new ByteArray(url.openConnection().getInputStream()).getBytes();
+      } catch (InterruptedException e) {
+        // ignored
       }
 
       // Then we can read the zip from the cached bits

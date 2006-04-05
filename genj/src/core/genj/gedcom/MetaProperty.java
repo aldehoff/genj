@@ -428,8 +428,16 @@ public class MetaProperty implements Comparable {
     // look up
     ImageIcon result = (ImageIcon)name2images.get(name);
     if (result==null) {
-      result = new ImageIcon(MetaProperty.class, "images/"+name);
-      name2images.put(name, result);
+      // this could potentially be interrupted - we'll have to try again in that case
+      while (true) {
+        try {
+          result = new ImageIcon(name, MetaProperty.class.getResourceAsStream("images/"+name));
+          name2images.put(name, result);
+          break;
+        } catch (IllegalStateException iae) {
+          // retry
+        }
+      }
     }
     // done
     return result;

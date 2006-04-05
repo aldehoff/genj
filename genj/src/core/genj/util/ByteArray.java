@@ -39,7 +39,7 @@ public class ByteArray {
   /**
    * Constructor
    */
-  public ByteArray(InputStream in) throws IOException {
+  public ByteArray(InputStream in) throws InterruptedException, IOException {
     // 20030519 check available 
     this(in, Math.max(in.available(), CLUSTER));
   }
@@ -47,7 +47,7 @@ public class ByteArray {
   /**
    * Constructor
    */
-  public ByteArray(InputStream in, int cluster) throws IOException {
+  public ByteArray(InputStream in, int cluster) throws InterruptedException, IOException {
 
     // Read from stream - if the callee knows the size of the
     // file it might be passed in as 'cluster'. So we increase
@@ -62,7 +62,7 @@ public class ByteArray {
 
       // Interrupted?
       if (Thread.currentThread().isInterrupted())
-        throw new IOException("interrupted");
+        throw new InterruptedException();
 
       // End of stream ?
       if (len<0) break;
