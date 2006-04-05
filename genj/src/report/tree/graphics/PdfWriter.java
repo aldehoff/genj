@@ -6,7 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.output;
+package tree.graphics;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,7 +14,6 @@ import java.io.OutputStream;
 import org.apache.batik.ext.awt.g2d.GraphicContext;
 import org.apache.fop.svg.PDFDocumentGraphics2D;
 
-import tree.render.GraphicsRenderer;
 
 /**
  * Outputs generated graphics to a PDF file.
@@ -32,6 +31,7 @@ public class PdfWriter implements GraphicsWriter
         PDFDocumentGraphics2D pdfGraphics = new PDFDocumentGraphics2D(true, out,
             renderer.getImageWidth(), renderer.getImageHeight());
         pdfGraphics.setGraphicContext(new GraphicContext());
+        pdfGraphics.rotate(0.1);
         renderer.render(pdfGraphics);
         pdfGraphics.finish();
 	}

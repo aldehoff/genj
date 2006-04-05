@@ -6,12 +6,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.output;
+package tree.graphics;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import tree.render.GraphicsRenderer;
 
 /**
  * Interface for classes writing different file types based on drawing on

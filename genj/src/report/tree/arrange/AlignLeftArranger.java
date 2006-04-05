@@ -40,7 +40,7 @@ public class AlignLeftArranger extends AbstractArranger {
 			IndiBox child = indibox.children[i];
 			child.x = currentX;
 			child.y = 1;
-			arrange(child);
+			filter(child);
 			currentX += child.wPlus + horizontalGap;
 		}
 		if (indibox.children.length == 1 && indibox.children[0].spouse == null &&
@@ -49,19 +49,19 @@ public class AlignLeftArranger extends AbstractArranger {
 	}
 
 	protected void arrangeNextMarriages(IndiBox indibox, IndiBox next) {
-		arrange(next);
+		filter(next);
         next.x = indibox.wPlus + next.wMinus + horizontalGap;
         if (indibox.spouse != null && indibox.spouse.nextMarriage == next)
             next.x -= indibox.spouse.x;
 	}
 
 	protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {
-		arrange(parent);
+		filter(parent);
 		parent.y = -parent.hPlus;
 	}
 
 	protected void arrangeParent(IndiBox indibox, IndiBox parent) {
-		arrange(parent);
+		filter(parent);
 		parent.y = -indibox.hMinus - parent.hPlus;
 	}
 }

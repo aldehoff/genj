@@ -6,7 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.render;
+package tree.output;
 
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
@@ -21,6 +21,7 @@ import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 
 import tree.IndiBox;
+import tree.graphics.GraphicsRenderer;
 
 /**
  * Outputs the generated tree to a Graphics2D object.
@@ -68,25 +69,18 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
         graphics.drawRoundRect(x, y, indiboxWidth, indiboxHeight, 15, 15);
 
         graphics.setFont(new Font("verdana", Font.BOLD, 12));
-        String firstNames = getFirstNames(i);
-        String lastName = i.getLastName();
-        Rectangle2D rect = graphics.getFont().getStringBounds(firstNames,
-                graphics.getFontRenderContext());
-        int firstW = (int)rect.getWidth();
-        rect = graphics.getFont().getStringBounds(lastName,
-                graphics.getFontRenderContext());
-        int lastW = (int)rect.getWidth();
-
-        graphics.drawString(firstNames, x + (indiboxWidth - firstW)/2, y + 14);
-        graphics.drawString(lastName, x + (indiboxWidth - lastW)/2, y + 26);
+        centerString(graphics, getFirstNames(i), x + indiboxWidth/2, y + 14);
+        centerString(graphics, i.getLastName(), x + indiboxWidth/2, y + 26);
 
         graphics.setFont(new Font("verdana", Font.PLAIN, 10));
-        if (i.getBirthDate() != null && i.getBirthDate().isValid())
-            graphics.drawString(Options.getInstance().getBirthSymbol() + " " +
-                    i.getBirthDate(), x + 4, y + 38);
-        if (i.getDeathDate() != null)
-            graphics.drawString(Options.getInstance().getDeathSymbol() + " " +
-                    i.getDeathDate(), x + 4, y + 48);
+        if (i.getBirthDate() != null && i.getBirthDate().isValid()) {
+            centerString(graphics, Options.getInstance().getBirthSymbol(), x + 7, y + 38);
+            graphics.drawString(""+i.getBirthDate(), x + 13, y + 38);
+        }
+        if (i.getDeathDate() != null) {
+            centerString(graphics, Options.getInstance().getDeathSymbol(), x + 7, y + 48);
+            graphics.drawString(""+i.getDeathDate(), x + 13, y + 48);
+        }
 	}
 
     /**
@@ -105,7 +99,7 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
 
         graphics.setFont(new Font("verdana", Font.PLAIN, 10));
         if (f.getMarriageDate() != null)
-            graphics.drawString(Options.getInstance().getBirthSymbol() + " " +
+            graphics.drawString(Options.getInstance().getMarriageSymbol() + " " +
                     f.getMarriageDate(), x + 4, y + 12);
     }
 
@@ -130,7 +124,7 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
 	protected void drawDashedLine(int x1, int y1, int x2, int y2) {
         Stroke oldStroke = graphics.getStroke();
         graphics.setStroke(new BasicStroke(STROKE_WIDTH, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f,
-                new float[] { 3.0f, 3.0f }, 0.0f));
+                new float[] { 3.0f, 6.0f }, 0.0f));
         graphics.drawLine(x1, y1, x2, y2);
         graphics.setStroke(oldStroke);
     }
@@ -146,4 +140,14 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
      */
 	protected void footer() {
 	}
+
+    /**
+     * Outputs a string centered.
+     */
+    private void centerString(Graphics2D graphics, String text, int x, int y) {
+        Rectangle2D rect = graphics.getFont().getStringBounds(text,
+                graphics.getFontRenderContext());
+        int width = (int)rect.getWidth();
+        graphics.drawString(text, x - width/2, y);
+    }
 }

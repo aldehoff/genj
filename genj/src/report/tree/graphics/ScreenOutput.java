@@ -6,39 +6,28 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.output;
+package tree.graphics;
 
 import genj.report.Report;
-import genj.util.Registry;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import javax.swing.JComponent;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 
-import tree.IndiBox;
-import tree.render.GraphicsRenderer;
-import tree.render.GraphicsTreeRenderer;
-
 /**
- * Displays the family tree in a component on screen.
+ * Displays the report output in a component on screen.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class ScreenOutput extends JScrollPane implements TreeOutput {
+public class ScreenOutput extends JScrollPane implements GraphicsOutput {
 
     /**
-     * Report properties.
+     * Renders output to a Graphics2D object.
      */
-    private Registry properties;
-
-    /**
-     * Renders the tree to a Graphics2D object.
-     */
-    private GraphicsRenderer renderer;
+    private GraphicsRenderer renderer = null;
 
     /**
      * The component containing the whole tree view.
@@ -48,8 +37,7 @@ public class ScreenOutput extends JScrollPane implements TreeOutput {
     /**
      * Constructs the object.
      */
-    public ScreenOutput(Registry properties) {
-        this.properties = properties;
+    public ScreenOutput() {
         view = new JComponent() {
             public void paint(Graphics g) {
                 renderer.render((Graphics2D)g);
@@ -63,16 +51,18 @@ public class ScreenOutput extends JScrollPane implements TreeOutput {
     /**
      * Prepares the component to be displayed.
      */
-    public void output(IndiBox indibox) {
-        renderer = new GraphicsTreeRenderer(indibox, properties);
+    public void output(GraphicsRenderer renderer) {
+        this.renderer = renderer;
         view.setPreferredSize(new Dimension(renderer.getImageWidth(),
                 renderer.getImageHeight()));
 
+        /* This was supposed to center both scrollbars but it doesn't work
         JScrollBar sb = getHorizontalScrollBar();
         sb.setValue(1); // Without this the next instruction doesn't work correctly
         sb.setValue((sb.getMaximum() - sb.getMinimum()) / 2);
         sb = getVerticalScrollBar();
         sb.setValue((sb.getMaximum() - sb.getMinimum()) / 2);
+        */
     }
 
     /**

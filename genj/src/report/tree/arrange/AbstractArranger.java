@@ -9,13 +9,14 @@
 package tree.arrange;
 
 import tree.IndiBox;
+import tree.TreeFilter;
 
 /**
  * Abstract class for arranger classes.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public abstract class AbstractArranger implements TreeArranger {
+public abstract class AbstractArranger implements TreeFilter {
 
     /**
      * Width of the individual box.
@@ -76,7 +77,7 @@ public abstract class AbstractArranger implements TreeArranger {
      * Arranges the family tree starting from the selected individual.
      * @param indibox  root individual
      */
-	public void arrange(IndiBox indibox) {
+	public void filter(IndiBox indibox) {
 
 		indibox.wPlus = indiboxWidth;
 

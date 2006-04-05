@@ -6,7 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.output;
+package tree.graphics;
 
 import java.awt.Dimension;
 import java.io.IOException;
@@ -19,7 +19,6 @@ import org.apache.batik.svggen.SVGGraphics2D;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
-import tree.render.GraphicsRenderer;
 
 /**
  * Outputs generated graphics to a SVG file.

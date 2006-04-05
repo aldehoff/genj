@@ -9,6 +9,7 @@
 package tree.arrange;
 
 import tree.IndiBox;
+import tree.TreeFilter;
 import tree.IndiBox.Direction;
 
 /**
@@ -19,8 +20,8 @@ import tree.IndiBox.Direction;
  */
 public class CenteredArranger extends AlignLeftArranger {
 
-	private TreeArranger leftArranger;
-	private TreeArranger rightArranger;
+	private TreeFilter leftArranger;
+	private TreeFilter rightArranger;
 
 	public CenteredArranger(int indiboxWidth, int horizontalGap) {
 		super(indiboxWidth, horizontalGap);
@@ -31,10 +32,10 @@ public class CenteredArranger extends AlignLeftArranger {
 	protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {
 		if (indibox.parent != null) {
 			parent.x = horizontalGap / 2;
-			rightArranger.arrange(parent);
+			rightArranger.filter(parent);
 		} else {
 			parent.x = -indiboxWidth / 2;
-			arrange(parent);
+			filter(parent);
 		}
 		parent.y = -parent.hPlus;
 	}
@@ -42,11 +43,11 @@ public class CenteredArranger extends AlignLeftArranger {
 	protected void arrangeParent(IndiBox indibox, IndiBox parent) {
 		if (indibox.spouse != null && indibox.spouse.parent != null) {
 			parent.x = -horizontalGap / 2;
-			leftArranger.arrange(parent);
+			leftArranger.filter(parent);
 		} else {
             if (!parent.hasChildren())
                 parent.x = -indiboxWidth / 2;
-			arrange(parent);
+			filter(parent);
 		}
 		parent.y = -parent.hPlus;
 	}
@@ -58,7 +59,7 @@ public class CenteredArranger extends AlignLeftArranger {
 		for (int i = 0; i < indibox.children.length; i++) {
 			IndiBox child = indibox.children[i];
 			child.y = 1;
-			arrange(child);
+			filter(child);
 			child.x = currentX + child.wMinus;
 			currentX += child.wMinus + child.wPlus + horizontalGap;
 		}

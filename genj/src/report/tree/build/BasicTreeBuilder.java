@@ -30,20 +30,13 @@ public class BasicTreeBuilder implements TreeBuilder {
 	private int gen_ancestors;
 	private int gen_ancestor_descendants;
 	private int gen_descendants;
-
-	public BasicTreeBuilder() {
-	}
-
-	public BasicTreeBuilder(int gen_ancestors, int gen_ancestor_descendants, int gen_descendants) {
-		this.gen_ancestors = gen_ancestors;
-		this.gen_ancestor_descendants = gen_ancestor_descendants;
-		this.gen_descendants = gen_descendants;
-	}
+    private boolean otherMarriages;
 
     public BasicTreeBuilder(Registry properties) {
         gen_ancestors = properties.get("genAncestors", -1);
         gen_ancestor_descendants = properties.get("genAncestorDescendants", -1);
         gen_descendants = properties.get("genDescendants", -1);
+        otherMarriages = properties.get("otherMarriages", true);
     }
 
 	public IndiBox build(Indi indi) {
@@ -70,32 +63,33 @@ public class BasicTreeBuilder implements TreeBuilder {
 			} else
 				spouse = indibox.family.getOtherSpouse(indibox.individual);
 
-			// build indiboxes for these marriages
 			if (spouse != null)
 				indibox.spouse = new IndiBox(spouse, indibox);
 
-			IndiBox last = indibox.spouse;
-            if (last == null)
-                last = indibox;
-
-			Iterator i = families.iterator();
-			i.next();
-			while (i.hasNext()) {
-				Fam f = (Fam)i.next();
-				Indi indi = indibox.individual;
-				if (indibox.individual != f.getHusband() && indibox.individual != f.getWife())
-					indi = spouse;
-				IndiBox box = new IndiBox(indi, last);
-				box.family = f;
-				box.spouse = new IndiBox(f.getOtherSpouse(indi), box);
-				last.nextMarriage = box;
-				last = box.spouse;
+            // build indiboxes for these marriages
+            if (otherMarriages || genDown != 0) {
+    			IndiBox last = indibox.spouse;
                 if (last == null)
-                    last = box;
-			}
+                    last = indibox;
 
+    			Iterator i = families.iterator();
+    			i.next();
+    			while (i.hasNext()) {
+    				Fam f = (Fam)i.next();
+    				Indi indi = indibox.individual;
+    				if (indibox.individual != f.getHusband() && indibox.individual != f.getWife())
+    					indi = spouse;
+    				IndiBox box = new IndiBox(indi, last);
+    				box.family = f;
+    				box.spouse = new IndiBox(f.getOtherSpouse(indi), box);
+    				last.nextMarriage = box;
+    				last = box.spouse;
+                    if (last == null)
+                        last = box;
+    			}
+            }
 			// for each of these families:
-			last = indibox;
+			IndiBox last = indibox;
 			while (last != null) {
                 // check whether to add children
                 if ((genUp == 0 && (gen_descendants == -1 || genDown < gen_descendants)) ||
@@ -115,7 +109,9 @@ public class BasicTreeBuilder implements TreeBuilder {
     				}
                 }
 
-                if (last.spouse != null)
+                if (!otherMarriages && genDown == 0)
+                    last = null;
+                else if (last.spouse != null)
                     last = last.spouse.nextMarriage;
                 else
                     last = last.nextMarriage;

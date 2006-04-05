@@ -6,33 +6,22 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.output;
+package tree.graphics;
 
 import genj.report.Report;
-import genj.util.Registry;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import tree.IndiBox;
-import tree.render.GraphicsRenderer;
-import tree.render.GraphicsTreeRenderer;
-
 /**
- * Writes the family tree to a file in an appropriate format.
- * The GraphicsWriter object generates the data using the
- * GraphicsTreeRenderer object.
+ * Writes report output to a file in an appropriate format.
+ * A GraphicsWriter object is used to draw the content.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class GraphicsFileOutput implements TreeOutput {
-
-    /**
-     * Report properties.
-     */
-    private Registry properties;
+public class GraphicsFileOutput implements GraphicsOutput {
 
     /**
      * Destination file.
@@ -47,9 +36,7 @@ public class GraphicsFileOutput implements TreeOutput {
     /**
      * Creates the object
      */
-    public GraphicsFileOutput(Registry properties, File file,
-            GraphicsWriter writer) {
-        this.properties = properties;
+    public GraphicsFileOutput(File file, GraphicsWriter writer) {
         this.file = file;
         this.writer = writer;
     }
@@ -57,8 +44,7 @@ public class GraphicsFileOutput implements TreeOutput {
     /**
      * Writes the family tree to the output file.
      */
-    public void output(IndiBox indibox) throws IOException {
-        GraphicsRenderer renderer = new GraphicsTreeRenderer(indibox, properties);
+    public void output(GraphicsRenderer renderer) throws IOException {
         OutputStream out = new FileOutputStream(file);
         writer.write(out, renderer);
         out.close();

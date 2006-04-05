@@ -6,7 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.render;
+package tree.graphics;
 
 import java.awt.Graphics2D;
 

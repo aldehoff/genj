@@ -10,9 +10,8 @@ package tree.output;
 
 import genj.report.Report;
 import genj.util.Registry;
-import genj.util.swing.Action2;
-
-import java.io.File;
+import tree.graphics.GraphicsOutput;
+import tree.graphics.GraphicsOutputFactory;
 
 /**
  * Creates classes that write the family tree to an output. This can be
@@ -22,14 +21,10 @@ import java.io.File;
  */
 public class OutputFactory {
 
-    public static int SVG_OUTPUT = 0;
-    public static int PDF_OUTPUT = 1;
-    public static int SCREEN_OUTPUT = 2;
-
     /**
-     * Containing report. Used to show dialogs and translate strings.
+     * Report output factory.
      */
-    private Report report;
+    private GraphicsOutputFactory reportOutputFactory;
 
     /**
      * Report properties.
@@ -42,7 +37,7 @@ public class OutputFactory {
      * @param properties  report properties
      */
     public OutputFactory(Report report, Registry properties) {
-        this.report = report;
+        reportOutputFactory = new GraphicsOutputFactory(report);
         this.properties = properties;
     }
 
@@ -51,21 +46,7 @@ public class OutputFactory {
      * @param type  output type
      */
     public TreeOutput createOutput(int type) {
-        File file = null;
-        if (type == SVG_OUTPUT || type == PDF_OUTPUT) {
-            file = report.getFileFromUser(report.translate("output.file"),
-                    Action2.TXT_OK, true);
-            if (file == null)
-                return null;
-        }
-
-        if (type == SVG_OUTPUT) {
-            return new GraphicsFileOutput(properties, file, new SvgWriter());
-        } else if (type == PDF_OUTPUT) {
-            return new GraphicsFileOutput(properties, file, new PdfWriter());
-        } else if (type == SCREEN_OUTPUT) {
-            return new ScreenOutput(properties);
-        } else
-            return null;
+        GraphicsOutput reportOutput = reportOutputFactory.createOutput(type);
+        return new GraphicsTreeOutput(reportOutput, properties);
     }
 }

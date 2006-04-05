@@ -6,7 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.render;
+package tree.output;
 
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
@@ -65,6 +65,7 @@ public abstract class AbstractTreeRenderer {
     protected int famboxWidth;
     protected int famboxHeight;
     protected boolean displayFambox;
+    protected boolean useColors;
 
     private IndiBox firstIndi;
 
@@ -76,13 +77,14 @@ public abstract class AbstractTreeRenderer {
      */
 	public AbstractTreeRenderer(IndiBox firstIndi, Registry properties) {
         this.firstIndi = firstIndi;
-        this.maxNames = properties.get("maxNames", -1);
-		this.indiboxWidth = properties.get("indiboxWidth", 0);
-		this.indiboxHeight = properties.get("indiboxHeight", 0);
-		this.verticalGap = properties.get("verticalGap", 0);
-        this.famboxWidth = properties.get("famboxWidth", 0);
-        this.famboxHeight = properties.get("famboxHeight", 0);
-        this.displayFambox = properties.get("displayFambox", true);
+        maxNames = properties.get("maxNames", -1);
+		indiboxWidth = properties.get("indiboxWidth", 0);
+		indiboxHeight = properties.get("indiboxHeight", 0);
+		verticalGap = properties.get("verticalGap", 0);
+        famboxWidth = properties.get("famboxWidth", 0);
+        famboxHeight = properties.get("famboxHeight", 0);
+        displayFambox = properties.get("displayFambox", true);
+        useColors = properties.get("useColors", true);
 		verticalUnit = indiboxHeight + verticalGap;
         if (displayFambox)
             verticalUnit += famboxHeight;
@@ -109,7 +111,8 @@ public abstract class AbstractTreeRenderer {
 		baseY += indibox.y;
 		drawIndiBox(indibox.individual, baseX, getYCoord(baseY), gen);
 
-        if (displayFambox && indibox.family != null) {
+        // TODO: Should family boxes be displayed when there's no spouse?
+        if (displayFambox && indibox.family != null && indibox.spouse != null) {
             int famX = baseX + (indiboxWidth - famboxWidth) / 2;
             if (indibox.spouse != null)
                 famX += indibox.spouse.x / 2;
@@ -146,7 +149,7 @@ public abstract class AbstractTreeRenderer {
 				midX = baseX + (indibox.spouse.x + indiboxWidth) / 2;
 				midY -= indiboxHeight / 2;
 			}
-            if (displayFambox && indibox.family != null)
+            if (displayFambox && indibox.family != null & indibox.spouse != null)
                 midY = getYCoord(baseY) + indiboxHeight + famboxHeight;
 
 			drawLine(midX, midY, midX, getYCoord(baseY + 1) - verticalGap / 2);
@@ -250,6 +253,8 @@ public abstract class AbstractTreeRenderer {
      * Returns the box color for the given generation.
      */
     protected Color getBoxColor(int gen) {
+        if (!useColors)
+            return Color.WHITE;
         if (gen + 5 < BOX_COLORS.length && gen + 5 >= 0)
             return BOX_COLORS[gen + 5];
         return BOX_COLORS[0];
