@@ -288,9 +288,12 @@ public class SelectEntityWidget extends JPanel {
       // Sort
       Comparator comparator = new PropertyComparator(tagPath);
       Arrays.sort(list, none!=null ? 1 : 0, list.length, comparator);
+      // reset our data
+      Entity selection = getSelection();
       listWidget.setModel(new DefaultComboBoxModel(list));
       sortWidget.setIcon(getImage());
       sortWidget.setToolTipText(getText());
+      setSelection(selection);
     }
         
   } //Sort
