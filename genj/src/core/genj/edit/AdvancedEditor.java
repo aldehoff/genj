@@ -470,24 +470,26 @@ import javax.swing.tree.TreePath;
       presetParent = property;
       setText(resources.getString("action.paste"));
       setImage(Images.imgPaste);
-      setEnabled(isPasteAvail());
+      
+      // 20060404 isPasteAvail() apparently is VERY costly - depending on what's in the system clipboard
+      // so let's not do this anymore and check on execute() instead
+      // setEnabled(isPasteAvail());
     }
     /** constructor */
     protected Paste() {
       setAccelerator(ACC_PASTE);
     }
-    /** check whether pasting is available */
-    private boolean isPasteAvail() {
-      try {
-        return clipboard.getContents(this).isDataFlavorSupported(DataFlavor.stringFlavor);
-      } catch (Throwable t) {
-        EditView.LOG.log(Level.WARNING, "Accessing system clipboard failed", t);
-      }
-      return false;
-    }
     /** run */
     protected void execute() {
-      
+
+      // grab the clipboard content now
+      String content;
+      try {
+        content = clipboard.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
+      } catch (Throwable t) {
+        EditView.LOG.log(Level.WARNING, "Accessing system clipboard as stringFlavor failed", t);
+        return;
+      }
       Property parent = presetParent;
       
       // got a parent already?
@@ -498,15 +500,10 @@ import javax.swing.tree.TreePath;
         parent = (Property)selection.get(0);
       }
       
-      // forget about it if data flavor is no good
-      if (!isPasteAvail())
-        return;
-      
       // start a transaction and grab from clipboard
       gedcom.startTransaction();
       try {
-        String s = clipboard.getContents(null).getTransferData(DataFlavor.stringFlavor).toString();
-        new PropertyReader(new StringReader(s), null, true) {
+        new PropertyReader(new StringReader(content), null, true) {
           /** intercept add so we can add/merge */
           protected Property addProperty(Property prop, String tag, String value, int pos) {
             // reuse prop's existing child with same tag if singleton
