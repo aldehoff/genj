@@ -208,16 +208,12 @@ import javax.swing.JTextField;
     }
     
     /**
-     * @see genj.io.Filter#accept(genj.gedcom.Entity)
-     */
-    public boolean accept(Entity entity) {
-      return true;
-    }
-
-    /**
      * @see genj.io.Filter#accept(genj.gedcom.Property)
      */
     public boolean accept(Property property) {
+      // allow all entities
+      if (property instanceof Entity)
+        return true;
       // check if tag is applying
       if (tags.contains(property.getTag())) return false;
       // check if path is applying
@@ -261,17 +257,12 @@ import javax.swing.JTextField;
       return result.types.size()<Gedcom.ENTITIES.length ? result : null;
     }
     /**
-     * accepting only specific entity types
-     * @see genj.io.Filter#accept(genj.gedcom.Entity)
-     */
-    public boolean accept(Entity entity) {
-      return types.contains(entity.getTag());
-    }
-    /**
-     * accepting all properties
+     * accepting all properties, limit to entities of parameterized types
      * @see genj.io.Filter#accept(genj.gedcom.Property)
      */
     public boolean accept(Property property) {
+      if (property instanceof Entity && !types.contains(property.getTag()))
+          return false;
       return true;
     }
   } //FilterByType

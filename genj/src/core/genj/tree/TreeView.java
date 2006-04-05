@@ -428,10 +428,12 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     if (prop instanceof Entity)
       prop = null;
     
-    // change root? need 'action' and context pointing to root or xref
+    // change root (only the originating TreeView if any)?
     if (event.isActionPerformed()&&prop==null) {
-      setRoot(entity);
-      return;
+      if (!(event.getProvider() instanceof Content)||event.getProvider()==content)  {
+        setRoot(entity);
+        return;
+      }
     }
     
     // context a link?
@@ -665,6 +667,8 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
    * A filter that includes visible indis/families
    */
   private static class VisibleFilter implements Filter {
+    /** gedcom */
+    private Gedcom gedcom;
     /** entities that are 'in' */
     private Set ents;
     /** whether we're showing families */
@@ -674,17 +678,25 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
      */
     private VisibleFilter(Model model) {
       // all ents from the model
+      gedcom = model.getGedcom();
       ents = new HashSet(model.getEntities());
       fams = model.isFamilies();
       // done
     }
     /**
-     * @see genj.io.Filter#accept(genj.gedcom.Entity)
+     * @see genj.io.Filter#accept(Property)
      */
-    public boolean accept(Entity ent) {
+    public boolean accept(Property prop) {
+      // all non-entities are fine
+      if (!(prop instanceof Entity))
+        return true;
+      Entity ent = (Entity)prop;
       // fam/indi
       if (Gedcom.INDI.equals(ent.getTag())||(Gedcom.FAM.equals(ent.getTag())&&fams))
         return ents.contains(ent);
+      // let submitter through if it's THE one
+      if (gedcom.getSubmitter()==ent)
+        return true;
       // maybe a referenced other type?
       Entity[] refs = PropertyXRef.getReferences(ent);
       for (int r=0; r<refs.length; r++) {
@@ -692,12 +704,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
       }
       // not
       return false;
-    }
-    /**
-     * @see genj.io.Filter#accept(genj.gedcom.Property)
-     */
-    public boolean accept(Property property) {
-      return true;
     }
   } //VisibleFilter
 

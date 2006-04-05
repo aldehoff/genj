@@ -19,18 +19,12 @@
  */
 package genj.io;
 
-import genj.gedcom.Entity;
 import genj.gedcom.Property;
 
 /**
  * The immutable filter
  */
 public interface Filter {
-
-  /**
-   * Whether given entity is "in" (not "out")
-   */
-  public boolean accept(Entity entity);
 
   /**
    * Whether given property is "in" (not "out")
