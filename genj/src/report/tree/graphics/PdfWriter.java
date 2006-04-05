@@ -31,7 +31,6 @@ public class PdfWriter implements GraphicsWriter
         PDFDocumentGraphics2D pdfGraphics = new PDFDocumentGraphics2D(true, out,
             renderer.getImageWidth(), renderer.getImageHeight());
         pdfGraphics.setGraphicContext(new GraphicContext());
-        pdfGraphics.rotate(0.1);
         renderer.render(pdfGraphics);
         pdfGraphics.finish();
 	}
