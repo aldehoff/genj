@@ -68,13 +68,6 @@ public class ReportGoogleMap extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_UTILITIES;
-  }
-
-  /**
    * Working on a collection of individiuals
    */
   private void operate(Gedcom ged, Collection indis) {
