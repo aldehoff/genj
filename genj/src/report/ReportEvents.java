@@ -158,13 +158,6 @@ public class ReportEvents extends Report {
     }
 
     /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_ANALYSIS;
-    }
-
-    /**
      * Analyze one individual
      */
     private void analyze(Indi indi, ArrayList births, ArrayList baptisms, ArrayList marriages, ArrayList divorces, ArrayList emigrations, ArrayList immigrations, ArrayList naturalizations, ArrayList deaths) {

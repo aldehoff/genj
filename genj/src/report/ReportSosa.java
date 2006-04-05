@@ -36,7 +36,7 @@ import java.util.List;
  * formatting (cadre, souligne, ...)
  */
 /*
- * TODO: mettre une sortie texte uniquement 
+ * TODO: mettre une sortie texte uniquement
  */
 public class ReportSosa extends Report {
 
@@ -122,13 +122,6 @@ public class ReportSosa extends Report {
 
     // Done
     showDocumentToUser(doc);
-  }
-
-  /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_PRESENTATION;
   }
 
   /**
@@ -504,7 +497,7 @@ public class ReportSosa extends Report {
    */
   class Agnatic extends DepthFirst  {
 
-      /** 
+      /**
        * each layout iterates over all individuals starting with the root
        * up to the maximum number of generations
        * @param indi the current individual
@@ -514,23 +507,23 @@ public class ReportSosa extends Report {
        * @param policy the privacy policy
        */
       void recursion(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
-        
+
         // stop here?
         if (gen > reportMaxGenerations)
           return;
 
         // let implementation handle individual
         formatIndi(indi, fam, gen, sosa, gen < privateGen ? PrivacyPolicy.PRIVATE : policy, doc);
-        
-        // go one generation up to father and mother 
+
+        // go one generation up to father and mother
         Fam famc = indi.getFamilyWhereBiologicalChild();
-        if (famc == null) 
+        if (famc == null)
           return;
-        
+
         Indi father = famc.getHusband();
-        
-        // recurse into father 
-        if (father != null) 
+
+        // recurse into father
+        if (father != null)
           recursion(father, famc, gen+1,  sosa*2, policy, doc);
 
         // done

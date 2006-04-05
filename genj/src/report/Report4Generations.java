@@ -171,13 +171,6 @@ public class Report4Generations extends Report {
     }
 
     /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_PRESENTATION;
-    }
-
-    /**
      * parent - prints information about one parent and then recurses
      */
     private Indi ancestor(Indi indi, String path) {

@@ -69,13 +69,6 @@ public class ReportFlashList extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_ANALYSIS;
-  }
-
-  /**
    * Our main logic
    */
   private void start(Gedcom gedcom, Collection indis) {

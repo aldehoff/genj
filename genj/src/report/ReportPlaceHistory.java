@@ -107,13 +107,6 @@ public class ReportPlaceHistory extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_STATISTICS;
-  }
-
-  /**
    * Analyze indi or fam
    */
   private void analyze(Entity ent, Map plac2series, int jurisdiction) {

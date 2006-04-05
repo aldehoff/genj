@@ -127,13 +127,6 @@ public class ReportRelatives extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_ANALYSIS;
-  }
-
-  /**
    * Find all relatives of given roots and expression
    */
   private List find(List roots, String expression, int sex, Map key2relative) {

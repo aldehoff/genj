@@ -53,11 +53,4 @@ public class ReportExec extends Report {
     return true;
   }
 
-  /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_UTILITIES;
-  }
-
 } //ReportExec

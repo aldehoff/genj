@@ -86,13 +86,6 @@ public class ReportSummaryOfRecords extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_PRESENTATION;
-  }
-
-  /**
    * Exports the given entities
    */
   private void exportEntities(Entity[] ents, Document doc)  {

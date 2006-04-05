@@ -69,13 +69,6 @@ public class ReportAlmanac extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_UTILITIES;
-  }
-
-  /**
    * Report events for list of individuals
    */
   private void report(Gedcom ged, Collection indis) {

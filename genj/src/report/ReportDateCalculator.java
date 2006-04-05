@@ -92,13 +92,6 @@ public class ReportDateCalculator extends Report {
       showComponentToUser(new JLabel(result));
   }
 
-  /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_UTILITIES;
-  }
-
     // only for gregorian
     private static PointInTime getDateFromDateAndAge(PointInTime date, Delta age, int op) {
 

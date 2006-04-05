@@ -66,13 +66,6 @@ public class ReportCGW extends Report {
     }
 
     /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_UTILITIES;
-    }
-
-    /**
      * Our main logic
      */
     private void start(Gedcom gedcom, Collection indis) {

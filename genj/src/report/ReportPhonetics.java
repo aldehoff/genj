@@ -81,13 +81,6 @@ public class ReportPhonetics extends Report {
           printPhonetic(indi);
     }
 
-    /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_ANALYSIS;
-    }
-
     private void printPhonetic(Gedcom gedcom, Entity[] indis) {
         Indi indi = null;
         String str = "";

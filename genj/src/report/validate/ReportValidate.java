@@ -151,13 +151,6 @@ public class ReportValidate extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_UTILITIES;
-  }
-
-  /**
    * show validation results
    */
   private void results(Gedcom gedcom, List issues) {

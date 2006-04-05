@@ -45,13 +45,6 @@ public class ReportFamily extends Report {
       analyzeFam(fam);
     }
 
-    /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_PRESENTATION;
-    }
-
     private String trim(Object o) {
         if(o == null)
             return "";

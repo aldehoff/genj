@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.108 $ $Author: pewu $ $Date: 2006-03-29 21:44:34 $
+ * $Revision: 1.109 $ $Author: pewu $ $Date: 2006-04-05 07:39:40 $
  */
 package genj.report;
 
@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,8 +78,7 @@ public abstract class Report implements Cloneable {
   protected final static ImageIcon
     IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell.gif"),
     IMG_FO    = new genj.util.swing.ImageIcon(ReportView.class,"ReportFO.gif"  ),
-    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui.gif"  ),
-    IMG_STAT  = new genj.util.swing.ImageIcon(ReportView.class,"ReportStat.gif"  );
+    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui.gif"  );
 
   /** global report options */
   protected Options OPTIONS = Options.getInstance();
@@ -90,12 +90,12 @@ public abstract class Report implements Cloneable {
     OPTION_OK       = 2;
 
   /** categories */
-  protected final static Category
-      CATEGORY_UTILITIES    = new Category("utilities",    IMG_SHELL),
-      CATEGORY_ANALYSIS     = new Category("analysis",     IMG_GUI),
-      CATEGORY_STATISTICS   = new Category("statistics",   IMG_STAT),
-      CATEGORY_PRESENTATION = new Category("presentation", IMG_FO),
-      CATEGORY_UNASSIGNED   = new Category("unassigned",   IMG_SHELL);
+  private static final Category DEFAULT_CATEGORY = new Category("Other", IMG_SHELL);
+  private static final Categories categories = new Categories();
+  static {
+      // Default category when category isn't defined in properties file
+      categories.add(DEFAULT_CATEGORY);
+  }
 
   private final static String[][] OPTION_TEXTS = {
     new String[]{Action2.TXT_YES, Action2.TXT_NO     },
@@ -238,11 +238,35 @@ public abstract class Report implements Cloneable {
   }
 
   /**
-   * Returns the report category. If the report class doesn't override this method,
-   * the default category ("unassigned") is returned.
+   * Returns the report category. If the category is not defined in the report's
+   * properties file, the category is set to "Other".
    */
   public Category getCategory() {
-      return CATEGORY_UNASSIGNED;
+      String name = translate("category");
+      if (name.equals("category"))
+          return DEFAULT_CATEGORY;
+
+      Category category = (Category)categories.get(name);
+      if (category == null) {
+          category = createCategory(name);
+          categories.add(category);
+      }
+      return category;
+  }
+
+  private Category createCategory(String name) {
+      String file = "Category" + name + ".gif";
+
+      InputStream in = Report.class.getResourceAsStream(file);
+      if (in == null)
+          in = getClass().getResourceAsStream(file);
+
+      ImageIcon image;
+      if (in != null)
+          image = new genj.util.swing.ImageIcon(file, in);
+      else
+          image = IMG_SHELL;
+      return new Category(name, image);
   }
 
   /**
@@ -888,4 +912,9 @@ public abstract class Report implements Cloneable {
         }
     }
 
+    private static class Categories extends TreeMap {
+        void add(Category category) {
+            put(category.getName(), category);
+        }
+    }
 } //Report

@@ -83,13 +83,6 @@ public class ReportCommonAncestor extends Report {
 
   }
 
-  /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_ANALYSIS;
-  }
-
   private Indi getCommonAncestor(Indi indi, Indi other) {
     // check father and mother of indi
     Indi father = indi.getBiologicalFather();

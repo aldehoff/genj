@@ -116,13 +116,6 @@ public class ReportLinesFan extends Report {
 
     }
 
-    /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_PRESENTATION;
-    }
-
     private void  pedigree (int in, int gen, int lev, int ah, Indi indi){
 	if (indi == null){
 	    return;

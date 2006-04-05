@@ -93,13 +93,6 @@ public class ReportDemography extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_STATISTICS;
-  }
-
-  /**
    * Analyze one individual
    */
   private void analyze(Indi indi, IndexedSeries males, IndexedSeries females, int max) {

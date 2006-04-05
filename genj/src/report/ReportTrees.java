@@ -163,13 +163,6 @@ public class ReportTrees extends Report {
     }
 
     /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_ANALYSIS;
-    }
-
-    /**
      * Iterate over an individual who's part of a sub-tree
      */
     private void iterate(Indi indi, Tree tree, Set unvisited) {

@@ -16,8 +16,8 @@ import java.io.IOException;
 
 import tree.arrange.AlignLeftArranger;
 import tree.arrange.CenteredArranger;
-import tree.arrange.TreeArranger;
 import tree.build.BasicTreeBuilder;
+import tree.build.NoSpouseFilter;
 import tree.build.TreeBuilder;
 import tree.output.OutputFactory;
 import tree.output.TreeOutput;
@@ -33,7 +33,7 @@ import tree.output.TreeOutput;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.09
+ * @version 0.10
  */
 public class ReportGraphicalTree extends Report {
 
@@ -100,16 +100,31 @@ public class ReportGraphicalTree extends Report {
             "3", "4", "5", "6", "7", "8", "9", "10" };
 
     /**
-     * Whether to display the family box.
-     */
-    public boolean display_fambox = true;
-
-    /**
      * Maximal number of first names to display.
      */
     public int max_names = 0;
 
     public String[] max_namess = { translate("nolimit"), "1", "2", "3" };
+
+    /**
+     * Whether to display other marriages of ancestors.
+     */
+    public boolean other_marriages = true;
+
+    /**
+     * Whether to display spouses (excluding ancestors).
+     */
+    public boolean show_spouses = true;
+
+    /**
+     * Whether to display the family box.
+     */
+    public boolean display_fambox = true;
+
+    /**
+     * Whether to use colors (or only black and white).
+     */
+    public boolean use_colors = true;
 
     /**
      * Type of arrangement.
@@ -143,18 +158,23 @@ public class ReportGraphicalTree extends Report {
         properties.put("famboxWidth", FAMBOX_WIDTH);
         properties.put("famboxHeight", FAMBOX_HEIGHT);
         properties.put("displayFambox", display_fambox);
+        properties.put("useColors", use_colors);
+        properties.put("otherMarriages", other_marriages);
+        properties.put("showSpouses", show_spouses);
 
         // Build the tree
         TreeBuilder builder = new BasicTreeBuilder(properties);
         IndiBox indibox = builder.build(indi);
+        if (!show_spouses)
+            new NoSpouseFilter().filter(indibox);
 
         // Arrange the tree boxes
-        TreeArranger arranger;
+        TreeFilter arranger;
         if (arrangement == 0)
             arranger = new CenteredArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
         else
             arranger = new AlignLeftArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
-        arranger.arrange(indibox);
+        arranger.filter(indibox);
 
         // Render and display the tree
         OutputFactory outputFactory = new OutputFactory(this, properties);
@@ -168,12 +188,5 @@ public class ReportGraphicalTree extends Report {
         } catch (IOException e) {
             println("Error generating output: " + e.getMessage());
         }
-    }
-
-    /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_PRESENTATION;
     }
 }

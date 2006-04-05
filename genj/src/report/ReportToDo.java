@@ -172,13 +172,6 @@ public class ReportToDo extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_UTILITIES;
-  }
-
-  /**
    * Exports the working sheet
    */
   private void exportWorkingSheet(Entity[] entities, Document doc) {

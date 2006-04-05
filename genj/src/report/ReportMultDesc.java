@@ -112,13 +112,6 @@ public class ReportMultDesc extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_PRESENTATION;
-  }
-
-  /**
    * Our main private report point
    */
   private void start(Indi[] indis, String title) {

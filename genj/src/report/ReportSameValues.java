@@ -75,13 +75,6 @@ public class ReportSameValues extends Report {
   }
 
   /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_UTILITIES;
-  }
-
-  /**
    * our main logic
    */
   private void find(Gedcom gedcom, String propName, Property[] sameProps, String val) {

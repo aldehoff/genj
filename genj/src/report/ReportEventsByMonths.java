@@ -90,13 +90,6 @@ public class ReportEventsByMonths extends Report {
     // done
   }
 
-  /**
-   * Returns the category of this report.
-   */
-  public Category getCategory() {
-      return CATEGORY_STATISTICS;
-  }
-
   private IndexedSeries analyze(Collection entities, String tag) {
 
     int months = CALENDARS[calendar].getMonths(true).length;

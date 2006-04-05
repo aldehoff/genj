@@ -27,7 +27,7 @@ import java.util.Iterator;
 /**
  * GenJ - Report
  * Note: this report requires Java2
- * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.71 2006-03-29 20:35:49 pewu Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/genj/src/report/ReportGedcomStatistics.java,v 1.72 2006-04-05 07:39:43 pewu Exp $
  * @author Francois Massonneau <fmas@celtes.com>
  * @author Carsten Muessig <carsten.muessig@gmx.net>
  * @version 2.2
@@ -367,13 +367,6 @@ public class ReportGedcomStatistics extends Report {
             reportPlaces(reportIndisToDeathPlaces, sortDeathPlacesByName ? gedcom.getCollator() : null, deaths);
         }
 
-    }
-
-    /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_STATISTICS;
     }
 
     /** Rounds a number to a specified number digits in the fraction portion

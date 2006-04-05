@@ -239,7 +239,7 @@ import javax.swing.tree.TreeSelectionModel;
     private TreeModel createTree() {
         SortedMap categories = new TreeMap();
         for (int i = 0; i < reports.length; i++) {
-            String name = reports[i].getCategory().getName();
+            String name = getCategoryText(reports[i].getCategory());
             CategoryList list = (CategoryList)categories.get(name);
             if (list == null) {
                 list = new CategoryList(reports[i].getCategory());
@@ -259,6 +259,17 @@ import javax.swing.tree.TreeSelectionModel;
             top.add(cat);
         }
         return new DefaultTreeModel(top);
+    }
+
+    /**
+     * Returns the translated category name.
+     */
+    private String getCategoryText(Report.Category category) {
+        String resourceName = "category." + category.getName();
+        String text = RESOURCES.getString(resourceName);
+        if (text.equals(resourceName))
+            text = category.getName();
+        return text;
     }
 
     /**
@@ -287,7 +298,7 @@ import javax.swing.tree.TreeSelectionModel;
                 defTreeRenderer.setIcon(report.getImage());
             } else if (v instanceof Report.Category) {
                 Report.Category category = (Report.Category)v;
-                defTreeRenderer.setText(RESOURCES.getString("category." + category.getName()));
+                defTreeRenderer.setText(getCategoryText(category));
                 defTreeRenderer.setIcon(category.getImage());
             }
 

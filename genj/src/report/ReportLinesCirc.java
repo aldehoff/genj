@@ -221,13 +221,6 @@ public class ReportLinesCirc extends Report {
 
     }
 
-    /**
-     * Returns the category of this report.
-     */
-    public Category getCategory() {
-        return CATEGORY_PRESENTATION;
-    }
-
     private void initUserOptions(){
 	/*	marrest=(uprintmarr == 1);
 	  printmarr=(uprintmarr != 0);*/
