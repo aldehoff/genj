@@ -72,8 +72,14 @@ public class CreateSibling extends CreateRelationship {
         }
         
         // 20040619 adding missing spouse automatically now
-        fam.setHusband((Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties());
-        fam.setWife((Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties());
+        Indi husband = (Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties();
+        Indi wife = (Indi)ged.createEntity(Gedcom.INDI).addDefaultProperties();
+        
+        husband.setName("", sibling.getLastName());
+        wife.setName("", sibling.getLastName());
+        
+        fam.setHusband(husband);
+        fam.setWife(wife);
         fam.addChild(sibling);
       }
 
