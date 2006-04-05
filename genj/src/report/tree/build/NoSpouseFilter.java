@@ -40,8 +40,8 @@ public class NoSpouseFilter implements TreeFilter {
         filter(indibox.spouse);
         filter(indibox.nextMarriage);
         if (indibox.hasChildren())
-            for (IndiBox i : indibox.children)
-                filter(i);
+            for (int i = 0; i < indibox.children.length; i++)
+                filter(indibox.children[i]);
     }
 
     /**
