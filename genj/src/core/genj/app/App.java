@@ -83,6 +83,7 @@ public class App {
 
       // Setup File Logging and check environment
       Handler handler = new FileHandler(new File(home, "genj.log").getAbsolutePath(), Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
+      handler.setLevel(Level.ALL);
       handler.setFormatter(formatter);
       LOG.addHandler(handler);
       
@@ -205,6 +206,8 @@ public class App {
     private Handler wrapped;
     private FlushingHandler(Handler wrapped) {
       this.wrapped = wrapped;
+      wrapped.setLevel(Level.ALL);
+      setLevel(Level.ALL);
     }
     public void publish(LogRecord record) {
       wrapped.publish(record);
