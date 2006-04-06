@@ -590,6 +590,10 @@ import javax.swing.tree.TreePath;
       }
       tree.setSelectionPath(new TreePath(tree.getPathFor(newProp)));
       
+      // bean we can give focus to (in case of single selection)?
+      if (bean!=null)
+        bean.requestFocusInWindow();
+      
       // done
     }
 
