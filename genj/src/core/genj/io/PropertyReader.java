@@ -150,12 +150,15 @@ public class PropertyReader {
       // add sub property
       Property child = addProperty(prop, tag, value, pos<0 ? -1 : pos++);
       
-      // a reference?
+      // first recurse into child
+      readProperties(child, currentLevel+1, 0);
+        
+      // 20060406 if we allow children to be added first then that can
+      // make a difference for link() e.g. in case of ASSO that looks at RELA
+      
+      // link child last (if reference)?
       if (child instanceof PropertyXRef)
         link((PropertyXRef)child);
-        
-      // continue with child
-      readProperties(child, currentLevel+1, 0);
         
       // next line
     }
