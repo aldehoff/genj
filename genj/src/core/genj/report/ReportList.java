@@ -253,7 +253,7 @@ import javax.swing.tree.TreeSelectionModel;
         while (iterator.hasNext()) {
             CategoryList list = (CategoryList)((Map.Entry)iterator.next()).getValue();
             DefaultMutableTreeNode cat = new DefaultMutableTreeNode(list.getCategory());
-            Report[] reps = list.getReports();
+            Report[] reps = list.getReportsInCategory();
             for (int i = 0; i < reps.length; i++)
                 cat.add(new DefaultMutableTreeNode(reps[i]));
             top.add(cat);
@@ -351,7 +351,7 @@ import javax.swing.tree.TreeSelectionModel;
     private class CategoryList
     {
         private Report.Category category;
-        private List reports = new ArrayList();
+        private List reportsInCategory = new ArrayList();
 
         public CategoryList(Report.Category category) {
             this.category = category;
@@ -361,12 +361,12 @@ import javax.swing.tree.TreeSelectionModel;
             return category;
         }
 
-        public Report[] getReports() {
-            return (Report[])reports.toArray(new Report[reports.size()]);
+        public Report[] getReportsInCategory() {
+            return (Report[])reportsInCategory.toArray(new Report[reportsInCategory.size()]);
         }
 
         public void add(Report report) {
-            reports.add(report);
+            reportsInCategory.add(report);
         }
     }
 }
