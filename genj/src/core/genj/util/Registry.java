@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.26 $ $Author: nmeier $ $Date: 2006-02-22 22:11:43 $
+ * $Revision: 1.27 $ $Author: nmeier $ $Date: 2006-04-06 20:46:05 $
  */
 package genj.util;
 
@@ -43,11 +43,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 /**
  * Registry - improved java.util.Properties
  */
 public class Registry {
+  
+  private final static Logger LOG = Logger.getLogger("genj.util");
 
   private String view;
   private Properties properties;
@@ -102,9 +105,13 @@ public class Registry {
    * Constructor for registry loaded relative to given Origin
    */
   public Registry(String name, Origin origin) {
+    
     this();
+
     // read all relative to origin
     if (origin!=null) {
+      
+      LOG.fine("Loading registry '"+name+".properties' from origin "+origin);
       try {
         InputStream in = origin.open(name+".properties");
         properties.load(in);
@@ -115,7 +122,9 @@ public class Registry {
     
     // read all from local registry
     try {
-      FileInputStream in = new FileInputStream(getFile(name));
+      File file = getFile(name);
+      LOG.fine("Loading registry '"+name+"' from file "+file.getAbsolutePath());
+      FileInputStream in = new FileInputStream(file);
       properties.load(in);
       in.close();
     } catch (Throwable t) {
@@ -777,6 +786,8 @@ public class Registry {
       // Open known file
       try {
         File file = getFile(key);
+        
+        LOG.fine("Storing registry in file "+file.getAbsolutePath());
         file.getParentFile().mkdirs();
         FileOutputStream out = new FileOutputStream(file);
         registry.properties.store(out,key);
