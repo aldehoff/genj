@@ -537,6 +537,14 @@ public class GedcomReader implements Trackable {
       return result;
     }
     
+    /** override readline to track lines read */
+    protected boolean readLine(boolean consume) throws IOException {
+      // track progress
+      progress = Math.min(100,(int)(lines*32*100/length));
+      // continue with super
+      return super.readLine(consume);
+    }
+    
     /** override read to get a chance to decrypt values */
     protected void readProperties(Property prop, int currentLevel, int pos) throws IOException {
       // let super do its thing
