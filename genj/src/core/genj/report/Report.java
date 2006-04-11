@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.109 $ $Author: pewu $ $Date: 2006-04-05 07:39:40 $
+ * $Revision: 1.110 $ $Author: nmeier $ $Date: 2006-04-11 20:30:59 $
  */
 package genj.report;
 
@@ -425,6 +425,7 @@ public abstract class Report implements Cloneable {
     try {
       formatter.format(doc, file);
     } catch (Throwable t) {
+      LOG.log(Level.WARNING, "formatting "+doc+" failed", t);
       viewManager.getWindowManager().openDialog(null, "Formatting "+doc+" failed", WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), owner);
       file = null;
     }
