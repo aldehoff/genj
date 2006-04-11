@@ -39,6 +39,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
@@ -50,7 +51,7 @@ import javax.swing.SwingUtilities;
  */
 public class App {
   
-  /*package*/ static Logger LOG = Logger.getLogger("genj");
+  /*package*/ static Logger LOG;
   
   /**
    * GenJ Main Method
@@ -59,6 +60,10 @@ public class App {
 
     // Catch anything that might happen
     try {
+      
+      // prepare our master log and own LogManager for GenJ
+      System.setProperty("java.util.logging.manager", "genj.app.App$PatchedLogManager");
+      LOG = Logger.getLogger("genj");
       
       // prepare some basic logging for now
       Formatter formatter = new LogFormatter();
@@ -80,7 +85,7 @@ public class App {
       
       // initialize options first
       OptionProvider.getAllOptions(registry);
-
+      
       // Setup File Logging and check environment
       Handler handler = new FileHandler(new File(home, "genj.log").getAbsolutePath(), Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
       handler.setLevel(Level.ALL);
@@ -108,10 +113,8 @@ public class App {
         }
       }
       
-      // Startup the UI
+      // run startup and hook up shutdown
       SwingUtilities.invokeLater(new Startup(registry, args));
-      
-      // Hook into Shutdown
       Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(registry)));
 
       // Done
@@ -168,8 +171,9 @@ public class App {
 
       // done
       LOG.info("/Startup");
+      
     }
-        
+    
   } //Startup
 
   /**
@@ -196,7 +200,13 @@ public class App {
 	    Registry.persist();      
 	    // done
       LOG.info("/Shutdown");
+      // shutdown our patched log manager now
+      LogManager mgr = LogManager.getLogManager();
+      if (mgr instanceof PatchedLogManager)
+        ((PatchedLogManager)mgr).doReset();
+      // done
     }
+    
   } //Shutdown
 
   /**
@@ -217,6 +227,7 @@ public class App {
       wrapped.flush();
     }
     public void close() throws SecurityException {
+      flush();
       wrapped.close();
     }
   }
@@ -305,6 +316,15 @@ public class App {
         LOG.logp(level, sourceClass, sourceMethod, String.valueOf(buffer, 0, size).trim());
         size = 0;
       }
+    }
+  }
+  
+  public static class PatchedLogManager extends LogManager {
+    public void reset() throws SecurityException {
+      // noop
+    }
+    public void doReset() throws SecurityException {
+      super.reset();
     }
   }
   
