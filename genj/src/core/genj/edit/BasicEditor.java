@@ -739,9 +739,6 @@ import javax.swing.event.ChangeListener;
       Set skippedTags = new HashSet();
       props: for (int i=0, j=currentEntity.getNoOfProperties(); i<j; i++) {
         Property prop = currentEntity.getProperty(i);
-//        // don't do anything for references right now
-//        if (prop instanceof PropertyXRef)
-//          continue;
         // check tag - skipped or covered already?
         String tag = prop.getTag();
         if (skippedTags.add(tag)&&topLevelTags.contains(tag)) 
@@ -782,6 +779,12 @@ import javax.swing.event.ChangeListener;
     */
    private void createTab(Property prop) {
      
+     // show simple xref bean for PropertyXRef (avoid showing xrefs like NOTE inline)
+     if (prop instanceof PropertyXRef) {
+       tabs.insertTab(prop.getPropertyName(), prop.getImage(false), view.getBeanFactory().get(prop), prop.getPropertyInfo(), 0);
+       return;
+     }
+     
      // got a descriptor for it?
      MetaProperty meta = prop.getMetaProperty();
      NestedBlockLayout descriptor = getSharedDescriptor(meta);
@@ -793,7 +796,7 @@ import javax.swing.event.ChangeListener;
      tab.putClientProperty(Property.class, prop);
 
      parse(tab, prop, descriptor.copy());
-     tabs.insertTab(meta.getName() + prop.format("{ $y}"), meta.getImage(), tab, meta.getInfo(), 0);
+     tabs.insertTab(meta.getName() + prop.format("{ $y}"), prop.getImage(false), tab, meta.getInfo(), 0);
 
      // done
    }
