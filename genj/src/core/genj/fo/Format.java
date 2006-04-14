@@ -122,12 +122,20 @@ public abstract class Format {
         for (int i = 0; i < files.length; i++) {
           File file = files[i];
           File copy = new File(dir, file.getName());
-          FileChannel from = new FileInputStream(file).getChannel();
-          FileChannel to = new FileOutputStream(copy).getChannel();
-          from.transferTo(0, from.size(), to);
-          from.close();
-          to.close();      
-          doc.setImage(file, dir.getName() + "/" + copy.getName());
+          FileChannel from = null, to = null;
+          long count = -1;
+          try {
+            from = new FileInputStream(file).getChannel();
+            count = from.size();
+            to = new FileOutputStream(copy).getChannel();
+            from.transferTo(0, count, to);
+            doc.setImage(file, dir.getName() + "/" + copy.getName());
+          } catch (Throwable t) {
+            LOG.log(Level.WARNING, "Copying '"+file+"' to '"+copy+"' failed (size="+count+")", t);
+          } finally {
+            try { to.close(); } catch (Throwable t) {}
+            try { from.close(); } catch (Throwable t) {}
+          }
         }
       }
 
