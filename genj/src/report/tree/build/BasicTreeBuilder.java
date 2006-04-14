@@ -81,7 +81,8 @@ public class BasicTreeBuilder implements TreeBuilder {
     					indi = spouse;
     				IndiBox box = new IndiBox(indi, last);
     				box.family = f;
-    				box.spouse = new IndiBox(f.getOtherSpouse(indi), box);
+                    if (f.getOtherSpouse(indi) != null)
+                        box.spouse = new IndiBox(f.getOtherSpouse(indi), box);
     				last.nextMarriage = box;
     				last = box.spouse;
                     if (last == null)
