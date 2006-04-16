@@ -58,6 +58,14 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
   }
   
   /**
+   * Column name
+   */
+  public String getName(int col) {
+    return getPath(col).getName();    
+  }
+  
+  
+  /**
    * Structure change
    */
   protected void fireRowsChanged() {

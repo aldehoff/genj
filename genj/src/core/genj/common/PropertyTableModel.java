@@ -53,6 +53,11 @@ public interface PropertyTableModel {
    */
   public TagPath getPath(int col);
   
+  /**
+   * Column name
+   */
+  public String getName(int col);
+  
   /** 
    * Add listener
    */

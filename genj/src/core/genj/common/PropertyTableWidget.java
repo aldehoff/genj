@@ -120,7 +120,7 @@ public class PropertyTableWidget extends JPanel {
     
     // create panel for shortcuts
     panelShortcuts = new JPanel();
-
+    
     // setup layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));
@@ -501,7 +501,7 @@ public class PropertyTableWidget extends JPanel {
      *  patched column name
      */
     public String getColumnName(int col) {
-      return model!=null ? model.getPath(col).getName() : "";
+      return model!=null ? model.getName(col) : "";
     }
     
     /** num columns */
@@ -991,6 +991,7 @@ public class PropertyTableWidget extends JPanel {
 
       // remove old
       panelShortcuts.removeAll();
+      GridBagHelper gh = new GridBagHelper(panelShortcuts);
       panelShortcuts.revalidate();
       
       // anything we can offer? need ascending sorted column and at least 10 rows
@@ -1007,7 +1008,6 @@ public class PropertyTableWidget extends JPanel {
           if (sg!=null) {
             List shortcuts = new ArrayList();
             sg.generate(col, model, shortcuts);
-            GridBagHelper gh = new GridBagHelper(panelShortcuts);
             for (int i=0;i<shortcuts.size();i++)
               gh.add((Shortcut)shortcuts.get(i), 0, i, 1, 1, GridBagHelper.FILL_HORIZONTAL);
             gh.addFiller(0, shortcuts.size());
