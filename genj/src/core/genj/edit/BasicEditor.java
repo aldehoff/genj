@@ -214,7 +214,7 @@ import javax.swing.event.ChangeListener;
     if (focus==null) {
       // last bean's property would be most appropriate
       PropertyBean bean = getFocus();
-      if (bean!=null&&bean.getProperty().getEntity()==currentEntity) focus  = bean.getProperty();
+      if (bean!=null&&bean.getProperty()!=null&&bean.getProperty().getEntity()==currentEntity) focus  = bean.getProperty();
       // fallback to entity itself
       if (focus==null) focus = currentEntity;
     }
