@@ -21,10 +21,13 @@ package genj.edit.beans;
 
 import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
+import genj.view.Context;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * A proxy for a property that links entities
@@ -41,7 +44,21 @@ public class XRefBean extends PropertyBean {
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, preview);
     
+    preview.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        // no double-click?
+        if (e.getClickCount()<2)
+          return;
+        // property good? (should)
+        if (property==null)
+          return;
+        // tell about it
+        viewManager.fireContextSelected(new Context(property), true, XRefBean.this);
+      }
+    });
   }
+  
+  
   
   /**
    * Nothing to edit

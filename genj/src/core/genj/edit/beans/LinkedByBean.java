@@ -91,7 +91,8 @@ public class LinkedByBean extends PropertyBean {
     // done
   }
   
-  private final static TagPath DOT = new TagPath(".");
+  private final static TagPath 
+    DOT = new TagPath(".");
   
   private class Model extends AbstractPropertyTableModel {
     
@@ -124,7 +125,7 @@ public class LinkedByBean extends PropertyBean {
     }
     
     public String getName(int col) {
-      return "Linked By";
+      return entity.getPropertyName();
     }
     
     public Property getProperty(int row) {
