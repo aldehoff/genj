@@ -519,31 +519,7 @@ public class PropertyRenderer {
       return prop instanceof PropertyXRef;
     }
 
-    /** 
-     * size override
-     */
-    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, int preference, Point dpi) {
-      if (prop instanceof PropertyXRef) {
-        Object e = ((PropertyXRef)prop).getTargetEntity();
-        if (e!=null) 
-          return super.getSizeImpl(font, context, prop, e.toString(), preference, dpi);
-      }
-      return super.getSizeImpl(font, context, prop, preference, dpi);
-    }
-
-    /**
-     * render override
-     */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, int preference, Point dpi) {
-      if (prop instanceof PropertyXRef) {
-        Object e = ((PropertyXRef)prop).getTargetEntity();
-        if (e!=null) {
-          super.renderImpl(g, bounds, prop, e.toString(), preference, dpi);
-          return;
-        }
-      }
-      super.renderImpl(g, bounds, prop, preference, dpi);
-    }
+    // 20050416 the same as default - use displayValue
   
   } //XRef
       
