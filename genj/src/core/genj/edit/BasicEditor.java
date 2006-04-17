@@ -26,6 +26,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyVisitor;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.Transaction;
@@ -684,15 +685,20 @@ import javax.swing.event.ChangeListener;
       //    PLAC somewhere
       // the result of INDI:BIRT:DATE/INDI:BIRT:PLAC is
       //   somtime/somewhere
-      Property prop = root.getProperty(path);
       
-      // .. for an existing reference we try to use a suitable
-      // target property that we can edit inline
-      if (prop instanceof PropertyXRef) {
-        prop = ((PropertyXRef)prop).getTargetValueProperty();
-        if (prop==null) 
-          return null;
-      }
+      final Property[] _prop = new Property[1];
+      path.iterate(root, new PropertyVisitor() {
+        protected boolean leaf(Property leaf) {
+          // continue in case of xref - can't use those
+          if (leaf instanceof PropertyXRef)
+            return true;
+          // keep it otherwise
+          _prop[0] = leaf;
+          // done
+          return false;
+        }
+      });
+      Property prop = _prop[0];
       
       // addressed property doesn't exist yet? create a proxy that mirrors
       // the root and add create a temporary holder (enjoys the necessary
