@@ -615,33 +615,38 @@ public abstract class Property implements Comparable {
    * Returns one of this property's properties by path
    */
   public Property getProperty(TagPath path) {
+    
+    final Property[] result = new Property[1];
 
     PropertyVisitor visitor = new PropertyVisitor() {
       protected boolean leaf(Property prop) {
-       return keep(prop, false);
+        result[0] = prop;
+        return false;
       }
     };
     
     path.iterate(this, visitor);
     
-    return visitor.getProperty();
-    
+    return result[0];
   }
   
   /**
    * Returns this property's properties by path
    */
   public Property[] getProperties(TagPath path) {
+    
+   final  List result = new ArrayList(10);
 
     PropertyVisitor visitor = new PropertyVisitor() {
       protected boolean leaf(Property prop) {
-       return keep(prop, true);
+        result.add(prop);
+        return true;
       }
     };
     
     path.iterate(this, visitor);
     
-    return visitor.getProperties();
+    return Property.toArray(result);
   }
 
 //  private static Property getPropertyRecursively(Property prop, TagPath path, int pos, List listAll, boolean checkPropsTagFirst) {
@@ -786,11 +791,19 @@ public abstract class Property implements Comparable {
    * Set a value at given path
    */
   public Property setValue(final TagPath path, final String value) {
+
+    final Property[] result = new Property[1];
     
     PropertyVisitor visitor = new PropertyVisitor() {
       protected boolean leaf(Property prop) {
+        // don't apply setValue to xref - use substitute instead
+        if (prop instanceof PropertyXRef && ((PropertyXRef)prop).getTarget()!=null) 
+          prop = prop.getParent().addProperty(prop.getTag(), "");
+        // set it and remember
         prop.setValue(value);
-        return keep(prop, false);
+        result[0] = prop;
+        // done - don't continue;
+        return false;
       }
       protected boolean recursion(Property parent,String child) {
         if (parent.getProperty(child, false)==null)
@@ -800,9 +813,9 @@ public abstract class Property implements Comparable {
     };
     
     path.iterate(this, visitor);
-    
-    return visitor.getProperty();
-    
+
+    // done
+    return result[0];
   }
   
   /**

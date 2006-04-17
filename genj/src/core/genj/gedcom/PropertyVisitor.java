@@ -19,38 +19,11 @@
  */
 package genj.gedcom;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A visitor pattern for recursion over properties
  */
 public abstract class PropertyVisitor {
-  
-  /** collector */
-  private List result = new ArrayList();
-  
-  /**
-   * Result access
-   */
-  public Property[] getProperties() {
-    return Property.toArray(result);
-  }
-  
-  /**
-   * Result access - first in result
-   */
-  public Property getProperty() {
-    return result.isEmpty() ? null : (Property)result.get(0);
-  }
-  
-  /**
-   * Add to result
-   */
-  protected boolean keep(Property property, boolean cont) {
-    result.add(property);
-    return cont;
-  }
   
   /**
    * callback for reaching a leaf
