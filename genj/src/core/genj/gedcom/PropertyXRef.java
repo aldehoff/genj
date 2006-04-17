@@ -185,7 +185,10 @@ public abstract class PropertyXRef extends Property {
    * PropertyAssociation "Witness: John Doe")
    */
   protected String getForeignDisplayValue() {
-    return resources.getString("foreign.xref", getEntity().toString());
+    Entity entity = getEntity();
+    Property parent = getParent();
+    String by = parent!=entity ? entity.toString() + " - " + parent.getPropertyName() : entity.toString();
+    return resources.getString("foreign.xref", by);
   }
   
   /**
