@@ -540,7 +540,8 @@ public class GedcomReader implements Trackable {
     /** override readline to track lines read */
     protected boolean readLine(boolean consume) throws IOException {
       // track progress
-      progress = Math.min(100,(int)(lines*32*100/length));
+      if (length>0)
+        progress = Math.min(100,(int)(lines*32*100/length));
       // continue with super
       return super.readLine(consume);
     }
