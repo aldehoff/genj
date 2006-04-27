@@ -8,44 +8,57 @@
  Examiner une information Gedcom dans une structure hi&eacute;rarchis&eacute;e 
  comme dans la <a href="../view/edit.html">Fen&ecirc;tre d'Edition</a> ou le 
  <a href="../view/table.html">Tableau des Donn&eacute;es</a> est une chose. 
- Fournir l'information d'une identit&eacute; dans une vue statique en 
+ Fournir l'information d'une entit&eacute; dans une vue statique en 
  2D en est une autre. La visualisation de l'<a href="../view/tree.html">Arbre 
  G&eacute;n&eacute;alogique</a> et la <a href="../view/entity.html">Visualisation 
- d'Entit&eacute;</a> le font toutes deux. Elles pr&eacute;sentent les individus et 
- les entit&eacute;s dans un espace rectangulaire fixe, sur votre &eacute;cran ou 
- votre papier.
+ d'Entit&eacute;</a> le font toutes deux. Elles pr&eacute;sentent les 
+ individus et les entit&eacute;s dans un espace rectangulaire fixe, 
+ sur votre &eacute;cran ou votre papier.
 </p>
 
 <p>
  La technologie sous jacente utilis&eacute;e pour cela par GenJ est le 
  langage HTML. Les instructions indiquant comment d&eacute;ployer une 
  entit&eacute; sont appel&eacute;es un Calque. Il est form&eacute; de 
- langage HTML standard avec l'ajout d'un nouvel &eacute;l&eacute;ment HTML 
- "prop" (signifiant "propri&eacute;t&eacute;").
+ langage HTML standard avec l'ajout d'un nouvel &eacute;l&eacute;ment 
+ HTML "prop" (signifiant "propri&eacute;t&eacute;").
 </p>
 
-<p>
+<a name="_blueprint_path_explanation_"></a>
+<div>
  Voici un exemple :
- <pre>
-      &lt;b&gt;<b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI</font><b>&gt;</b>&lt;/b&gt;
-      <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:NAME</font><b>&gt;</b>
-      n&eacute; le <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:DATE</font><b>&gt;</b>
-      &agrave; <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:PLAC</font><b>&gt;</b>,
-      vivant &agrave; <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:RESI:ADDR:CITY</font><b>&gt;</b>
-      et travaillant en tant que <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:OCCU</font><b>&gt;</b>. </pre>
-ce qui donnera ceci :
-      <blockquote>
-        <b>I008</b> Meier, Nils n&eacute; le 25 Mai 1970 &agrave; Rendsburg, 
-        vivant &agrave; San Francisco et travaillant en tant que Programmeur. 
-      </blockquote>
+ <div style="margin-left: 30px;">
+ &lt;b&gt;<b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI</font><b>&gt;</b>&lt;/b&gt;<br>
+ <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:NAME</font><b>&gt;</b><br>
+ n&eacute; le <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:DATE</font><b>&gt;</b><br>
+ &agrave; <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:BIRT:PLAC</font><b>&gt;</b>,<br>
+ vivant &agrave; <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:RESI:ADDR:CITY</font><b>&gt;</b><br>
+ et travaillant en tant que <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI:OCCU</font><b>&gt;</b>.<br>
+ </div>
+ <br>
+ Ce qui donnera ceci :
+ <div style="margin-left: 30px;">
+ <b>I008</b> Meier, Nils n&eacute; le 25 Mai 1970 &agrave; 
+ Rendsburg, vivant &agrave; San Francisco et travaillant en 
+ tant que Programmeur.
+ </div>
+ <div style="margin-left: 100px;">
+ Donc :<br>
+ &lt;b&gt; ...............&lt;/b&gt; signifie que vous voulez que 
+ l'information repr&eacute;sent&eacute;e entre ces deux &eacute;l&eacute;ments 
+ soit en <b>gras</b> (c'est du langage 
+ html pur et dur - rien de sp&eacute;cifique &agrave; GenJ ici).<br>
+ <b>&lt;</b><font color=green>prop</font> <font color=blue>path=INDI</font><b>&gt;</b>
+ va donner le num&eacute;ro d'identification de l'entit&eacute;.<br>
+ </div>
+</div>
 
 <p>
- Comme vous pouvez le voir l'argument "path" vers "prop" contient 
+ Comme vous pouvez le voir, l'argument "path" vers "prop" contient 
  une identification <a href="../concepts/paths.html">Tag Path</a>
- (Chemin d'Etiquette) indiquant comment redonner le texte r&eacute;dig&eacute;. 
- Voici comment les valeurs suivantes des propri&eacute;t&eacute;s sont 
- solutionn&eacute;es ; 
-
+ (Chemin d'Etiquette) indiquant comment redonner le texte 
+ r&eacute;dig&eacute;. Voici comment les valeurs suivantes des 
+ propri&eacute;t&eacute;s sont solutionn&eacute;es&nbsp;:
  <blockquote>
   <table>
     <tbody>
@@ -87,30 +100,42 @@ ce qui donnera ceci :
     </tbody>
   </table>
 </blockquote>
-
-
+<br>
 En utilisant diff&eacute;rents calques les m&ecirc;mes
 donn&eacute;es peuvent &ecirc;tre affich&eacute;es de
 diff&eacute;rentes mani&egrave;res, car diff&eacute;rents 
 ensembles d'informations, diff&eacute;rentes mises en page et 
-diff&eacute;rentes couleurs peuvent &ecirc;tre choisies :
+diff&eacute;rentes couleurs peuvent &ecirc;tre choisies&nbsp;:
 
 <blockquote><img src="../../images/screenshots/blueprint1.png"></blockquote>
 </p>
 
 <p>
+<div>
  Les vues utilisant des calques offriront de les s&eacute;lectionner 
  et de les &eacute;diter &agrave; travers leurs options. Les calques 
  pr&eacute;d&eacute;finis ne peuvent &ecirc;tre chang&eacute;s mais 
  les calques faits par l'utilisateur peuvent &ecirc;tre chang&eacute;s 
  une fois cr&eacute;&eacute;s (les calques sont g&eacute;r&eacute;s 
- globalement et non par vue). 
+ globalement et non par vue).<br>
+ Deux types de vues vous permettent d'ouvrir un &eacute;diteur pour 
+ charger un nouveau calque, pour en cr&eacute;er un nouveau.<br>
+ Si vous avez r&eacute;cup&eacute;r&eacute; des calques faits par 
+ quelqu'un d'autre, vous pourrez de la m&ecirc;me mani&egrave;re 
+ le charger, et/ou le modifier comme bon vous semble. Ces deux vues, 
+ comme je le disais ci-dessus, sont&nbsp;:<br>
+ <div style="margin-left: 25px;">
+ - La fen&ecirc;tre Arbre G&eacute;n&eacute;alogique,<br>
+ - La fen&ecirc;tre Entit&eacute;.<br>
+ </div>
+ </div>
 </p>
+<br>
 
 <b><U>ORGANISATION</U></b>
 
 <p>
- <b><font color="red">Note</font></b>: Les calques sont une 
+ <b><font color="red">Note</font></b>&nbsp;: Les calques sont une 
  fonctionnalit&eacute; tr&egrave;s avanc&eacute;e qui n'a pas 
  besoin d'&ecirc;tre assimil&eacute;e par tous. Les calques par 
  d&eacute;faut seront suffisants pour 80% des utilisateurs.<br>
@@ -119,9 +144,15 @@ diff&eacute;rentes couleurs peuvent &ecirc;tre choisies :
 </p>
 
 <p>
-  On va supposer que vous ayez r&eacute;ussi &agrave; faire un 
-  calque g&eacute;nial qui vous va &agrave; merveille. Ce cadre on va 
-  aussi supposer que l'ayez nomm&eacute; "LeNomDeVotreCalque".<br>
+  On va supposer que vous ayez r&eacute;ussi &agrave; faire un calque 
+  g&eacute;nial qui vous va &agrave; merveille. Vous avez, peut 
+  &ecirc;tre utilis&eacute; l'&eacute;diteur de GenJ pour le 
+  cr&eacute;er, ou bien vous avez utilis&eacute; un &eacute;diteur 
+  externe &agrave; GenJ, car vous vous y connaissez en mati&egrave;re 
+  de langage HTML. N'oubliez pas cependant 
+  les <a href="#_blueprint_path_explanation_">particularismes</a> qu'il 
+  vous faut respecter.<br>
+  Ce cadre, on va aussi supposer que l'ayez nomm&eacute; "LeNomDeVotreCalque".<br>
   Et bien sachez que ce cadre va &ecirc;tre enregistr&eacute; dans 
   un sous r&eacute;pertoire appel&eacute; "<b>blueprints/</b>" qui se 
   situe sous le r&eacute;pertoire "<b>.genj/</b>". Je vous laisse voir 
