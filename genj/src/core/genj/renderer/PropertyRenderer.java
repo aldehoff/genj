@@ -43,6 +43,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
@@ -137,9 +138,9 @@ public class PropertyRenderer {
       h = 0;
     // calculate text size (the default size we use)
     if (isPreference(preference, PREFER_TXT)) {
-      Rectangle2D bounds = font.getStringBounds(txt, context);
-      w += bounds.getWidth();
-      h = Math.max(h, bounds.getHeight());
+      TextLayout layout = new TextLayout(txt, font, context);
+      w += layout.getAdvance();
+      h = Math.max(h, layout.getAscent() + layout.getDescent());
     }
     // add image size
     if (isPreference(preference, PREFER_IMAGE)) {
@@ -217,18 +218,18 @@ public class PropertyRenderer {
   protected void renderImpl(Graphics2D g, Rectangle bounds, String txt, int preference) {
     
     Font font = g.getFont();
-    LineMetrics lm = font.getLineMetrics("", g.getFontRenderContext());
+    
+    TextLayout layout = new TextLayout(txt, font, g.getFontRenderContext());
     
     // alignment?
     double x = bounds.getX();
     if (isPreference(preference, PREFER_RIGHTALIGN)) {
-      Rectangle2D r = font.getStringBounds(txt, g.getFontRenderContext());
-      if (r.getWidth()< bounds.getWidth())
-        x = bounds.getMaxX() - r.getWidth();
+      if (layout.getAdvance()< bounds.getWidth())
+        x = bounds.getMaxX() - layout.getAdvance();
     }
     
     // draw it
-    g.drawString(txt, (float)x, (float)bounds.getY()+lm.getHeight()-lm.getDescent());
+    layout.draw(g, (float)x, (float)bounds.getY()+layout.getAscent());
   }
   
   /** 
