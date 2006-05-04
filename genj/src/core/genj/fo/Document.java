@@ -687,7 +687,7 @@ public class Document {
     // so i have to use block here - since the EditorPane uses extra space even for
     // empty blocks i'm trying to reuse the current block here IF it doesn't have an ID
     // already
-    if (cursor.getAttribute("id")==null)
+    if (cursor.getAttribute("id").length()==0)
       cursor.setAttribute("id", id);
     else
       push("block", "id="+id).pop();
