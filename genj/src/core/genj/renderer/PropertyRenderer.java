@@ -137,7 +137,7 @@ public class PropertyRenderer {
       w = 0,
       h = 0;
     // calculate text size (the default size we use)
-    if (isPreference(preference, PREFER_TXT)) {
+    if (isPreference(preference, PREFER_TXT)&&txt.length()>0) {
       TextLayout layout = new TextLayout(txt, font, context);
       w += layout.getAdvance();
       h = Math.max(h, layout.getAscent() + layout.getDescent());
@@ -217,9 +217,12 @@ public class PropertyRenderer {
    */
   protected void renderImpl(Graphics2D g, Rectangle bounds, String txt, int preference) {
     
-    Font font = g.getFont();
+    // check for empty string
+    if (txt.length()==0)
+      return;
     
-    TextLayout layout = new TextLayout(txt, font, g.getFontRenderContext());
+    // prepare layout
+    TextLayout layout = new TextLayout(txt, g.getFont(), g.getFontRenderContext());
     
     // alignment?
     double x = bounds.getX();
