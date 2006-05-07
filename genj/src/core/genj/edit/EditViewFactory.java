@@ -261,7 +261,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     result.add(new CreateChild(indi, manager));
     result.add(new CreateParent(indi, manager));
     result.add(new CreateSpouse(indi, manager));
-    result.add(new CreateSibling(indi, manager));
+    result.add(new CreateSibling(indi, manager, true));
+    result.add(new CreateSibling(indi, manager, false));
     result.add(new CreateAlias(indi, manager));
   }
   

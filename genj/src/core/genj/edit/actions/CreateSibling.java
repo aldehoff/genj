@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertySex;
 import genj.view.ViewManager;
 
 /**
@@ -33,11 +34,22 @@ import genj.view.ViewManager;
 public class CreateSibling extends CreateRelationship {
   
   private Indi sibling;
+  private boolean isBrotherNotSister;
   
   /** constructor */
-  public CreateSibling(Indi sibling, ViewManager mgr) {
-    super(resources.getString("create.sibling"), sibling.getGedcom(), Gedcom.INDI, mgr);
+  public CreateSibling(Indi sibling, ViewManager mgr, boolean isBrotherNotSister) {
+    super(calcName(isBrotherNotSister), sibling.getGedcom(), Gedcom.INDI, mgr);
     this.sibling = sibling;
+    this.isBrotherNotSister = isBrotherNotSister;
+  }
+  
+  private static String calcName(boolean isBrotherNotSister) {
+    // still old style sibling key in resources?
+    String sibling = resources.getString("create.sibling", false);
+    if (sibling==null) 
+      return resources.getString( isBrotherNotSister ? "create.brother" : "create.sister" );
+    // fallback to create.sibling
+    return sibling + " (" + (isBrotherNotSister ? PropertySex.TXT_MALE : PropertySex.TXT_FEMALE) + ")";
   }
   
   /** more about what we do */
@@ -85,9 +97,12 @@ public class CreateSibling extends CreateRelationship {
 
     }
     
-    // set it's name if new
-    if (targetIsNew) 
-      ((Indi)target).setName("", sibling.getLastName());        
+    // set it's name & gender if new
+    if (targetIsNew) {
+      Indi indi = (Indi)target;
+      indi.setName("", sibling.getLastName());        
+      indi.setSex(isBrotherNotSister ? PropertySex.MALE : PropertySex.FEMALE);
+    }    
     
     // focus stays with sibling
     return sibling;
