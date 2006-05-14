@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.4 2006-05-14 22:18:58 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.5 2006-05-14 22:29:33 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -50,10 +50,9 @@ public class Console {
     TODO: NOTE note...
     
     3
-    TODO: GIND, GOTO  goto individual ID
     TODO: Handle edge case: empty database
     TODO: SRCH search for name...
-    TODO: UNDO
+    TODO: UNDO - probably going to need more help than the gedcom API provides.
     TODO integrate [via callbacks?] with GenJ GUI.
      */
     protected static final String LB = System.getProperty("line.separator");
@@ -196,6 +195,23 @@ public class Console {
                     public ArgType getArgUse() {  return ArgType.ARG_YES;}
                     public String getArgName() {  return "ID"; }
                 });
+
+        actionMap.put(Arrays.asList(new String[]{"search","find"}), new Action()
+                {
+                    public Indi doIt(final Indi ti ,final String searchArg){
+                        for( Object entity : gedcom.getEntities("INDI"))
+                        {
+                            Indi candidate = (Indi)entity;
+                            if( candidate.getName().toLowerCase().contains(searchArg.toLowerCase()))
+                                System.out.println(candidate);
+                        }
+                        return ti;
+                    }
+                    public String getDoc(){return "Show list of individuals with names containing STR as a substring";}
+                    public ArgType getArgUse() {  return ArgType.ARG_YES;}
+                    public String getArgName() {  return "STR"; }
+                });
+        
         
         actionMap.put(Arrays.asList(new String[]{"gdad","gd"}), new ActionHelper()
                 {
