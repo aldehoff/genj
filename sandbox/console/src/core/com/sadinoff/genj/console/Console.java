@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.6 2006-05-14 22:33:21 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.7 2006-05-14 22:39:26 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -199,12 +199,15 @@ public class Console {
         actionMap.put(Arrays.asList(new String[]{"search","find"}), new Action()
                 {
                     public Indi doIt(final Indi ti ,final String searchArg){
+                        out.println(" Search Results:[[");
                         for( Object entity : gedcom.getEntities("INDI"))
                         {
                             Indi candidate = (Indi)entity;
                             if( candidate.getName().toLowerCase().contains(searchArg.toLowerCase()))
-                                System.out.println(candidate);
+                                out.println("  "+candidate);
                         }
+                        out.println(" ]]");
+                        out.println();
                         return ti;
                     }
                     public String getDoc(){return "Show list of individuals with names containing STR as a substring";}
@@ -559,27 +562,26 @@ public class Console {
         Pattern commandPat = Pattern.compile("^(\\w+)(\\s+(\\w.*))?");
         for(;;)
         {
-                out.println(dump(theIndi));
-                out.print("> ");
-                out.flush();
-                final String line = in.readLine().trim();
-                if( line.length() ==0)
-                    continue;
-                Matcher lineMatcher = commandPat.matcher(line);
-                if( ! lineMatcher.matches())
-                {
-                    out.println("syntax error.  Type 'help' for help");
-                    continue;
-                }
-                String command = lineMatcher.group(1);
-                String args = lineMatcher.group(3);
-            if( ! commandToAction.containsKey(command) )
-                {
-                    out.println("unknown command. Type 'help' for help");
-                    continue;
-                }
+            out.println(dump(theIndi));
+            out.print("> ");
+            out.flush();
+            final String line = in.readLine().trim();
+            if( line.length() ==0)
+                continue;
+            Matcher lineMatcher = commandPat.matcher(line);
+            if( ! lineMatcher.matches())
+            {
+                out.println("syntax error.  Type 'help' for help");
+                continue;
+            }
+            String command = lineMatcher.group(1);
+            String args = lineMatcher.group(3);
+            if( ! commandToAction.containsKey(command) ) {
+                out.println("unknown command. Type 'help' for help");
+                continue;
+            }
             Action action = commandToAction.get(command);
-                theIndi = action.doIt(theIndi, args);
+            theIndi = action.doIt(theIndi, args);
         }
     }
 
@@ -660,7 +662,7 @@ public class Console {
         return buf.toString();
     }
 
-    Indi createChild(final Indi parent, int marriageIndex, int sex) throws GedcomException
+    protected Indi createChild(final Indi parent, int marriageIndex, int sex) throws GedcomException
     {
         Fam[] families = parent.getFamiliesWhereSpouse();
         Fam theFamily;
@@ -683,7 +685,7 @@ public class Console {
         return child;
     }
     
-    Indi createFamilyAndSpouse(Indi ti) throws GedcomException
+    protected Indi createFamilyAndSpouse(Indi ti) throws GedcomException
     {
         Fam theFamily =  (Fam) gedcom.createEntity(Gedcom.FAM);
         Indi spouse = (Indi)gedcom.createEntity(Gedcom.INDI);
