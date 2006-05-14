@@ -2,13 +2,14 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.2 2006-05-14 21:56:09 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.3 2006-05-14 22:10:21 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
  */
 
 package com.sadinoff.genj.console;
+import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.sadinoff.genj.console.Console.Action.ArgType;
 
 public class Console {
     /* to-do priorities
@@ -178,20 +181,37 @@ public class Console {
         public String getArgName() { return "FNAME";}
         });
         
-        actionMap.put(Arrays.asList(new String[]{"gdad","gd"}), new ActionHelper()
-            {
-                public Indi doIt(final Indi ti , String arg){
-                    Indi dad = ti.getBiologicalFather();
-                    if( null == dad)
-                    {   
-                        out.println("sorry, no dad.  Try cdad.\n");
-                        return ti;
+        actionMap.put(Arrays.asList(new String[]{"gind","goto"}), new Action()
+                {
+                    public Indi doIt(final Indi ti ,final String targetID){
+                        Entity  newEntity = gedcom.getEntity("INDI", targetID);
+                        if (null == newEntity)
+                        {
+                            System.out.println("Can't find entity named "+targetID);
+                        }
+                        Indi newInd = (Indi)newEntity;
+                        return newInd;
                     }
-                    else
-                        return dad;
-                }
-                public String getDoc(){return "Go to Biological Father";}
-            });
+                    public String getDoc(){return "Go to Individual with identifier ID";}
+                    public ArgType getArgUse() {  return ArgType.ARG_YES;}
+                    public String getArgName() {  return "ID"; }
+                });
+        
+        actionMap.put(Arrays.asList(new String[]{"gdad","gd"}), new ActionHelper()
+                {
+                    public Indi doIt(final Indi ti , String arg){
+                        Indi dad = ti.getBiologicalFather();
+                        if( null == dad)
+                        {   
+                            out.println("sorry, no dad.  Try cdad.\n");
+                            return ti;
+                        }
+                        else
+                            return dad;
+                    }
+                    public String getDoc(){return "Go to Biological Father";}
+                });        
+        
         actionMap.put(Arrays.asList(new String[]{"gmom","gm"}), new ActionHelper()
                 {
                     public Indi doIt(final Indi ti, String arg){
