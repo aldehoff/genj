@@ -1,0 +1,10 @@
+This is the GenJ-Console, a text-based user interface for the 
+GenJ GEDCOM editor.
+
+  -by Danny Sadinoff
+
+
+NOTE: GenJ-Console requires a J2SE v5.0 or greater JVM to run.
+
+java -classpath PATH_TO_GENJ/genj.jar:PATH_TO_CONSOLE/console.jar com.sadinoff.genj.console.Console
+  
