@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.10 2006-05-14 23:25:48 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.11 2006-05-14 23:28:03 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -164,17 +164,16 @@ FIX:   n justfirstname
             });
         actionMap.put(Arrays.asList(new String[]{"exit","quit"}), new ActionHelper(){
             public Indi doIt(Indi ti, String arg) throws IOException  {
-                if( isDirty() )
-                {
-                    out.println();
-                    out.println("There are unsaved changes!");
-                    out.print("Are you sure that you want to exit? [y/N]: ");
-                    out.flush();
-                    String line = in.readLine();
-                    if( line.toLowerCase().startsWith("y"))
-                        System.exit(0);
-                    out.println("Try the 'save FILENAME' command.");
-                }
+                if( !isDirty())
+                    System.exit(0);
+                out.println();
+                out.println("There are unsaved changes!");
+                out.print("Are you sure that you want to exit? [y/N]: ");
+                out.flush();
+                String line = in.readLine();
+                if( line.toLowerCase().startsWith("y"))
+                    System.exit(0);
+                out.println("Try the 'save FILENAME' command.");
                 return ti;
             }
                 public String getDoc(){return "Exit the program.";}
