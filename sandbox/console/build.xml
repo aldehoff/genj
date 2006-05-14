@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.1 2006-05-14 18:02:51 sadinoff Exp $ -->
+<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.2 2006-05-14 20:02:46 sadinoff Exp $ -->
 <!-- This is the ant buildfile for GenJ:Textmode -->
 
 <project name="GenJ" default="dist" basedir=".">
@@ -13,7 +13,7 @@
   <path id="project.class.path">
     <pathelement path="${dir.build}/classes/core"/>
     <pathelement path="${dir.genj}/build/classes/core"/>
-    <pathelement path="${dir.genj}/build/classes/contrib"/>
+<!--    <pathelement path="${dir.genj}/build/classes/contrib"/> -->
   </path>
 
   <!--
@@ -64,10 +64,11 @@
    <delete file="${dir.lib}/textmode.jar"/>
    <jar jarfile="${dir.lib}/textmode.jar" update="True">
      <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
-     <fileset dir="./images"/>
+<!--     <fileset dir="./images"/>
      <fileset dir="./language/en"/>
      <fileset dir="./language/fr"/>
-     <fileset dir="./src/core" includes="META-INF/**"/>
+-->
+   	<fileset dir="./src/core" includes="META-INF/**"/>
     <fileset dir="./src/core" includes="**/*.properties"/>
    </jar>
     
@@ -77,12 +78,9 @@
 
    <!-- create genj_geo-xyz.zip -->
    <zip zipfile="${dir.dist}/genj_textmode-${genj.app.version}.zip" update="True">
-     <zipfileset dir="${dir.build}" includes="lib/geo.jar"/>
-     <zipfileset dir="${dir.build}" includes="lib/jump.jar"/>
-     <zipfileset dir="./contrib" includes="textmode/**"/>
-     <zipfileset dir="." includes="gedcom/*"/>
-     <zipfileset dir="${dir.build}/classes" includes="report/**/*.class"/>
-     <zipfileset dir="./src" includes="report/**"/>
+     <zipfileset dir="${dir.build}" includes="lib/textmode.jar"/>
+    <zipfileset dir="doc" includes="README"/>
+<!--     <zipfileset dir="./contrib" includes="textmode/**"/> -->
    </zip>
   	
    <!-- copy it to genj's dist directory -->
