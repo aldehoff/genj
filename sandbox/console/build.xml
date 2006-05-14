@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.2 2006-05-14 20:02:46 sadinoff Exp $ -->
+<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.3 2006-05-14 21:41:19 sadinoff Exp $ -->
 <!-- This is the ant buildfile for GenJ:Textmode -->
 
 <project name="GenJ" default="dist" basedir=".">
@@ -60,9 +60,9 @@
    -->
   <target name="dist" depends="compile">
 
-   <!-- create textmode.jar -->
-   <delete file="${dir.lib}/textmode.jar"/>
-   <jar jarfile="${dir.lib}/textmode.jar" update="True">
+   <!-- create console.jar -->
+   <delete file="${dir.lib}/console.jar"/>
+   <jar jarfile="${dir.lib}/console.jar" update="True">
      <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
 <!--     <fileset dir="./images"/>
      <fileset dir="./language/en"/>
@@ -77,17 +77,17 @@
 <!--    <copy file="./contrib/jump/jump.jar" todir="${dir.lib}"/> -->
 
    <!-- create genj_geo-xyz.zip -->
-   <zip zipfile="${dir.dist}/genj_textmode-${genj.app.version}.zip" update="True">
-     <zipfileset dir="${dir.build}" includes="lib/textmode.jar"/>
+   <zip zipfile="${dir.dist}/genj_console-${genj.app.version}.zip" update="True">
+     <zipfileset dir="${dir.build}" includes="lib/console.jar"/>
     <zipfileset dir="doc" includes="README"/>
-<!--     <zipfileset dir="./contrib" includes="textmode/**"/> -->
+<!--     <zipfileset dir="./contrib" includes="console/**"/> -->
    </zip>
   	
    <!-- copy it to genj's dist directory -->
-   <copy file="${dir.dist}/genj_textmode-${genj.app.version}.zip" todir="${dir.genj}/${genj.dir.build}/dist"/>
+   <copy file="${dir.dist}/genj_console-${genj.app.version}.zip" todir="${dir.genj}/${genj.dir.build}/dist"/>
   	
    <!-- report -->
-   <echo level="info">You can find genj_textmode-${genj.app.version}.zip in ${dir.dist} and a copy in ${dir.genj}/${genj.dir.build}/dist</echo>
+   <echo level="info">You can find genj_console-${genj.app.version}.zip in ${dir.dist} and a copy in ${dir.genj}/${genj.dir.build}/dist</echo>
   </target>
 
 </project>
