@@ -21,7 +21,7 @@ obligatoire, sans quoi, aucune recherche ne sera effectu&eacute;e.<br>
 
 <div>
 <a name="_search_first_field_"></a>
-<b>A</b>&nbsp;-&nbsp;Dans le premier champs, entrez simplement une 
+<b>A&nbsp;-&nbsp;Dans le premier champ</b>, entrez simplement une 
 valeur, un mot.<br>
 Ne mettez pas une partie de mot accompagn&eacute;e d'une &eacute;toile. 
 Ainsi, ne faites pas quelque chose du genre "<em>bordie*</em>" 
@@ -35,6 +35,9 @@ mais aussi tous ceux qui comportent ces m&ecirc;mes lettres, et donc
 il vous trouvera aussi le mot "<em>bordier</em>" dans mon exemple.<br>
 GenJ met en surbrillance rouge le mot que vous recherchiez dans 
 les occurences qu'il trouve.<br>
+<br>
+<u>Les Regex (fonction de recherche avanc&eacute;e)</u> :
+<div style="margin-left: 20px;">
 Ce premier champ, est accompagn&eacute; d'un bouton sur la gauche 
 qui vous autorise &agrave; faire des recherches extr&eacute;mement 
 pointues.<br>
@@ -42,16 +45,36 @@ Son usage me semble vraiment tr&eacute;s complexe, mais voil&agrave;
 un peu de quoi il retourne&nbsp;:<br>
 En cliquant sur ce bouton, la liste suivante s'affiche&nbsp;:<br>
 <div style="margin-left: 60px;">
-<font color="#ff0000">^</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;commencement d'une ligne<br>
-<font color="#ff0000">$</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fin d'une ligne<br>
-<font color="#ff0000">.</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n'importe quel caract&egrave;re<br>
-<font color="#ff0000">\s</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;espace blanc<br>
-<font color="#ff0000">X?</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X, une fois ou pas du tout<br>
-<font color="#ff0000">X&#42;</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X, z&eacute;ro fois ou plus<br>
-<font color="#ff0000">X&#43;</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X, une fois ou plus<br>
-<font color="#ff0000">X{n}</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X, exactement n fois<br>
-<font color="#ff0000">X{n,}</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X, au moins n fois<br>
-<font color="#ff0000">X{n,m}</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X, au moins n max. m fois<br>
+<table width="90%" border="0">
+<tr>
+<td width="20%">
+<font color="#ff0000">
+^<br>
+$<br>
+.<br>
+\s<br>
+X?<br>
+X&#42;<br>
+X&#43;<br>
+X{n}<br>
+X{n,}<br>
+X{n,m}<br>
+</font>
+</td>
+<td width="80%">
+commencement d'une ligne<br>
+fin d'une ligne<br>
+n'importe quel caract&egrave;re<br>
+espace blanc<br>
+X, une fois ou pas du tout<br>
+X, z&eacute;ro fois ou plus<br>
+X, une fois ou plus<br>
+X, exactement n fois<br>
+X, au moins n fois<br>
+X, au moins n max. m fois<br>
+</td>
+</tr>
+</table>
 </div>
 Ces recherches sont bas&eacute;es sur ce qu'on appelle les "regex", 
 qui est une contraction de l'anglais "Regular expression" traduit 
@@ -75,8 +98,40 @@ coup de
 .... (le but de cette aide n'&eacute;tant pas 
 de faire un tutorial sur les "regex").<br>
 <br>
+<u>Quelques exemples cependant pour vous faire comprendre</u>&nbsp;:<br>
+Tout d'abord, une n&eacute;cessit&eacute;&nbsp;: Vous devez cocher 
+l'option juste au-dessus dont le label est "Expression Exacte".<br>
+Maintenant, vous voulez rechercher les endroits, o&ugrave; dans votre 
+arbre (votre fichier gedcom), on a le nom "Massonneau".<br>
+La mani&egrave;re la plus simple est de mettre "Massonneau" (avec ou 
+sans majuscule, mais alors ne cochez pas l'option "Expression 
+Exacte) dans le premier champ, et de lancer la recherche.<br>
+Cependant, on peut vouloir rechercher par exemple, le mot 
+"Massonneau", mais qui pourrait &ecirc;tre orthographi&eacute; de 
+diff&eacute;rentes mani&egrave;res, on pourrait par exemple vouloir 
+voir s'afficher les endroits o&ugrave; l'on trouve "Massonneau", 
+"Masonneau", "Massoneau", "Masoneau". Comment faire&nbsp;?<br>
+Il faut dans ces conditions utiliser la fonction de recherche 
+bas&eacute;e sur les expressions r&eacute;guli&egrave;res. On va 
+mettre dans le premier champ le mot "Masoneau", cocher l'option 
+"Expression Exacte", et cliquer sur le bouton &agrave; gauche du 
+premier champ. L&agrave; on va choisir parmi les options 
+propos&eacute;es (il y en a plein d'autres, mais l&agrave; regardez 
+comme je vous le disais dans un tutorial), celle qui nous dit "je 
+veux rechercher les cas o&ugrave; j'ai au moins une fois la lettre 
+"s" et au moins une fois la lettre "n", c'est donc le cas 
+"<font color="#ff0000"><b>X+</b></font> <i><font color="#002aff">(X, 
+une fois ou plus)</font></i>". Il va falloir que dans le premier 
+champ, votre recherche soit &eacute;crite comme &ccedil;a&nbsp;: 
+"<b>Mas+on+eau</b>".<br>
+N.B.&nbsp;: Dans la liste des "regex" propos&eacute;s, "X" s'applique 
+&agrave; ce qu'on recherche, donc ici, c'est la lettre "s" et la 
+lettre "n". Dans mon exemple ci-dessus, on a utilis&eacute; deux fois 
+cette fonction.<br>
+</div>
+<br>
 <a name="_search_second_field_"></a>
-<b>B</b>&nbsp;-&nbsp;Dans le deuxi&egrave;me champ, qui n'est qu'un 
+<b>B&nbsp;-&nbsp;Dans le deuxi&egrave;me champ</b>, qui n'est qu'un 
 champ facultatif, vous pouvez en plus, si vous le souhaitez, entrer une 
 s&eacute;lection pour limiter la recherche uniquement dans une partie 
 particuli&egrave;re de votre fichier Gedcom. L&agrave; vous avez deux 
