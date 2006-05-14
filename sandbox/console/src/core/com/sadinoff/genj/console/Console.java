@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.3 2006-05-14 22:10:21 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.4 2006-05-14 22:18:58 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -495,7 +495,7 @@ public class Console {
                     public String getArgName() { return "S";}
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"bday"}), new Action()
+        actionMap.put(Arrays.asList(new String[]{"bday","b"}), new Action()
                 {
                     public Indi doIt(Indi theIndi, String arg) {
                         PropertyDate date =theIndi.getBirthDate() ;
@@ -512,7 +512,7 @@ public class Console {
                 });
 
 
-        actionMap.put(Arrays.asList(new String[]{"dday"}), new Action()
+        actionMap.put(Arrays.asList(new String[]{"dday","d"}), new Action()
                 {
                     public Indi doIt(Indi theIndi, String arg) {
                         PropertyDate date =theIndi.getDeathDate() ;
@@ -571,7 +571,13 @@ public class Console {
         Map<String,Action>  theMap = new HashMap<String, Action>();
         for(Map.Entry<List<String>,Action> entry  : actionMap.entrySet())
             for( String command : entry.getKey())
+            {
+                if( theMap.containsKey(command))
+                {
+                    throw new RuntimeException("Configuration ERROR!  overlapping command definitions for "+command);
+                }
                 theMap.put(command, entry.getValue());
+            }
         return theMap;
     }
 
