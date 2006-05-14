@@ -46,20 +46,52 @@ public class Indi extends Entity {
     IMG_UNKNOWN = Grammar.getMeta(PATH_INDI).getImage();
     
   /**
-   * Calculate indi's birth date
+   * @return a PropertyDate corresponding to the INDI:BIRT:DATE property.  
+   *          Return null if the property is unset.   
+   * 
    */
   public PropertyDate getBirthDate() {
-    // Calculate BIRT|DATE
-    return (PropertyDate)getProperty(PATH_INDIBIRTDATE);
+    return getBirthDate( false );
   }
 
   /**
-   * Calculate indi's death date
+   * Calculate the INDI's Birthdate 
+   * @param create if false, return null when the property is unset.   
+   *     If true, return an empty PropertyDate when the property is unset
+   * @return  
+   */
+  public PropertyDate getBirthDate( boolean create )
+  {
+      PropertyDate date =  (PropertyDate)getProperty(PATH_INDIBIRTDATE);
+      if( null != date || !create )
+          return date;
+      setValue(PATH_INDIBIRTDATE,"");
+      return (PropertyDate)getProperty(PATH_INDIBIRTDATE);
+  }
+
+  /**
+   * Calculate the death date of the Indi.
+   * @return a PropertyDate corresponding to the INDI:DEAT:DATE property.  
+   *          Return null if the property is unset.   
    */
   public PropertyDate getDeathDate() {
-    // Calculate DEAT|DATE
-    return (PropertyDate)getProperty(PATH_INDIDEATDATE);
+      return getDeathDate( false );
   }
+
+  /**
+   * Calculate indi's death date.
+   * @param create if false, return null when the property is unset.   
+   *     If true, return an empty PropertyDate when the property is unset
+   */
+  public PropertyDate getDeathDate( boolean create ) {
+      PropertyDate date =  (PropertyDate)getProperty(PATH_INDIDEATDATE);
+      if( null != date || !create )
+          return date;
+      setValue(PATH_INDIDEATDATE,"");
+      return (PropertyDate)getProperty(PATH_INDIDEATDATE);
+  }
+  
+  
   
   /**
    * Calculate all siblings (biological)
