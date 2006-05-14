@@ -78,7 +78,7 @@ public class AgeBean extends PropertyBean {
     tfield.setText(age.getValue());
 
     Delta delta = Delta.get(age.getEarlier(), age.getLater());
-    newAge = delta==null ? null : delta.toString();
+    newAge = delta==null ? null : delta.getValue();
     update.setEnabled(newAge!=null);
     
     // Done
