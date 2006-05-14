@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.1 2006-05-14 18:09:46 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.2 2006-05-14 21:56:09 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -495,10 +495,10 @@ public class Console {
         actionMap.put(Arrays.asList(new String[]{"dday"}), new Action()
                 {
                     public Indi doIt(Indi theIndi, String arg) {
-                        PropertyDate date =theIndi.getBirthDate() ;
+                        PropertyDate date =theIndi.getDeathDate() ;
                         if(null == date) {
                             theIndi.setValue(new TagPath("INDI:DEAT:DATE"),"");
-                             date =theIndi.getBirthDate() ;
+                             date =theIndi.getDeathDate() ;
                         }
                         setDate(date, arg);
                         return theIndi;
