@@ -116,7 +116,8 @@ public class Delta implements Comparable {
   }
 
   /**
-   * Factory
+   * Calculate the delta between two points in time. Both earlier and later have to be in the same calendar and
+   * valid for this calculation to return a non-null value.
    * @return Delta or null if n/a
    */
   public static Delta get(PointInTime earlier, PointInTime later) {
