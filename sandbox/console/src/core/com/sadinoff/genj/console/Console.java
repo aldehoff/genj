@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.9 2006-05-14 23:16:31 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.10 2006-05-14 23:25:48 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -45,6 +45,7 @@ public class Console {
      * 
      * 
 1
+FIX:   n justfirstname
     handle ordinary file path as argument
 
     2
@@ -203,6 +204,16 @@ public class Console {
         public ArgType getArgUse() { return ArgType.ARG_YES; }
         public String getArgName() { return "FNAME";}
         });
+        
+
+        actionMap.put(Arrays.asList(new String[]{"look","l"}), new ActionHelper()
+                {
+                    public Indi doIt(final Indi ti ,final String targetID){
+                        out.println(dump(ti));
+                        return ti;
+                    }
+                    public String getDoc(){return "Dump Detailed information on the current person";}
+                });        
         
         actionMap.put(Arrays.asList(new String[]{"gind","goto", "g"}), new Action()
                 {
@@ -586,7 +597,7 @@ public class Console {
         Pattern commandPat = Pattern.compile("^(\\w+)(\\s+(\\w.*))?");
         for(;;)
         {
-            out.println(dump(theIndi));
+            out.println(brief(theIndi));
             out.print("> ");
             out.flush();
             final String line = in.readLine().trim();
@@ -663,8 +674,8 @@ public class Console {
         }
         return buf.toString();
     }
-    
-    protected String dump(final Indi theInd)
+
+    protected String brief(final Indi theInd)
     {
         StringBuffer buf = new StringBuffer(theInd.toString());
         buf.append( "[");
@@ -678,6 +689,12 @@ public class Console {
         buf.append(theInd.getDeathAsString());
         buf.append("}");
         buf.append(LB);
+        return buf.toString();
+    }
+    
+    protected String dump(final Indi theInd)
+    {
+        StringBuffer buf = new StringBuffer(brief(theInd));
         Fam bioKidFamily = theInd.getFamilyWhereBiologicalChild();
         if( null != bioKidFamily)
         {
