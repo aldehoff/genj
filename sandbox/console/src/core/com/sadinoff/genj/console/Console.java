@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.8 2006-05-14 22:54:15 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.9 2006-05-14 23:16:31 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -204,7 +204,7 @@ public class Console {
         public String getArgName() { return "FNAME";}
         });
         
-        actionMap.put(Arrays.asList(new String[]{"gind","goto"}), new Action()
+        actionMap.put(Arrays.asList(new String[]{"gind","goto", "g"}), new Action()
                 {
                     public Indi doIt(final Indi ti ,final String targetID){
                         Entity  newEntity = gedcom.getEntity("INDI", targetID);
