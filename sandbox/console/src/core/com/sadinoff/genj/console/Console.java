@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.5 2006-05-14 22:29:33 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.6 2006-05-14 22:33:21 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -370,7 +370,7 @@ public class Console {
                     public String getArgName() {return "N";}
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"csis","cs"}), new Action()
+        actionMap.put(Arrays.asList(new String[]{"csis"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         return createBiologicalSibling(ti,PropertySex.FEMALE);
@@ -381,7 +381,7 @@ public class Console {
                     public String getArgName() {return "N";}
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"cson","cs"}), new Action()
+        actionMap.put(Arrays.asList(new String[]{"cson"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         int marriageNumber = parseInt(arg,0);
@@ -407,7 +407,7 @@ public class Console {
                 });
 
         
-        actionMap.put(Arrays.asList(new String[]{"cspou", "csp",}), new Action()
+        actionMap.put(Arrays.asList(new String[]{"cspou", "csp","cspouse"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         return createFamilyAndSpouse(ti);
