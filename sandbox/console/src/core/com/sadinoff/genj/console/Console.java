@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.7 2006-05-14 22:39:26 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.8 2006-05-14 22:54:15 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -24,6 +24,7 @@ import genj.util.Origin;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -68,7 +69,17 @@ public class Console {
     protected final Gedcom gedcom;
     protected BufferedReader in;
     protected PrintWriter out;
+    private boolean dirty = false;
     
+    protected boolean isDirty()
+    {
+        return dirty;
+    }
+
+    protected void setDirty(boolean newValue)
+    {
+        dirty = newValue;
+    }
     /**
      * Constructor for a Console session.
      * @gedcomArg the Gedcom to be edited.
@@ -112,7 +123,7 @@ public class Console {
     interface Action
     {
         enum ArgType{ARG_NO, ARG_YES,ARG_OPTIONAL};
-        Indi doIt(Indi theIndi, String arg) throws GedcomException;
+        Indi doIt(Indi theIndi, String arg) throws Exception;
         String getDoc();
         ArgType getArgUse();
         String getArgName();
@@ -150,9 +161,21 @@ public class Console {
             return ti;}
         public String getDoc() {return "print this help message";}
             });
-        actionMap.put(Arrays.asList(new String[]{"exit","quit"}), new ActionHelper(){public Indi doIt(Indi ti, String arg){
-            System.exit(0);
-            return null;}
+        actionMap.put(Arrays.asList(new String[]{"exit","quit"}), new ActionHelper(){
+            public Indi doIt(Indi ti, String arg) throws IOException  {
+                if( isDirty() )
+                {
+                    out.println();
+                    out.println("There are unsaved changes!");
+                    out.print("Are you sure that you want to exit? [y/N]: ");
+                    out.flush();
+                    String line = in.readLine();
+                    if( line.toLowerCase().startsWith("y"))
+                        System.exit(0);
+                    out.println("Try the 'save FILENAME' command.");
+                }
+                return ti;
+            }
                 public String getDoc(){return "Exit the program.";}
             });
 
@@ -166,6 +189,7 @@ public class Console {
                     GedcomWriter writer = new GedcomWriter(gedcom,"filename","UNICODE",fos);                    
                     writer.write();
                     out.println("Wrote file "+arg+" successfully.");
+                    setDirty(false);
                 }
                 catch( Exception e)
                 {
@@ -581,7 +605,15 @@ public class Console {
                 continue;
             }
             Action action = commandToAction.get(command);
-            theIndi = action.doIt(theIndi, args);
+            try
+            {
+                theIndi = action.doIt(theIndi, args);
+            }
+            catch( Exception re)
+            {
+                out.println("ERROR: "+re);
+                re.printStackTrace();
+            }
         }
     }
 
