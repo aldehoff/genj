@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.11 2006-05-14 23:28:03 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.12 2006-05-15 00:03:45 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -46,16 +46,23 @@ public class Console {
      * 
 1
 FIX:   n justfirstname
-    handle ordinary file path as argument
-
+   TODO  handle ordinary file path as argument
+   FIX Determine what the dangerous uses of DELETE are.
+   FIX do paranoid (atomc) saves.
+  
     2
     TODO: NOTE note...
+    TOOD: Think about sound feedback: beep for errors
+                     thud when you can't move
+                     sliding up and down for successful movement up & down
+                     smack for create.
     
     3
     TODO: Handle edge case: empty database
     TODO: SRCH search for name...
     TODO: UNDO - probably going to need more help than the gedcom API provides.
     TODO integrate [via callbacks?] with GenJ GUI.
+    
      */
     protected static final String LB = System.getProperty("line.separator");
 
@@ -221,6 +228,7 @@ FIX:   n justfirstname
                         if (null == newEntity)
                         {
                             System.out.println("Can't find entity named "+targetID);
+                            return ti;
                         }
                         Indi newInd = (Indi)newEntity;
                         return newInd;
@@ -490,7 +498,7 @@ FIX:   n justfirstname
 
         actionMap.put(Arrays.asList(new String[]{"sname","snam","n"}), new Action()
                 {
-                    final Pattern firstLastPat = Pattern.compile("((\\S+\\s+)+)(\\w+)");
+                    final Pattern firstLastPat = Pattern.compile("((\\S+\\s+)+)(\\S+)");
                     public Indi doIt(Indi theIndi, String arg) {
                         Matcher firstLastMatcher = firstLastPat.matcher(arg);
                         if( ! firstLastMatcher.find())
