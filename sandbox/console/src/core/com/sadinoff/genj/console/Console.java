@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.14 2006-05-15 08:35:09 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.15 2006-05-15 09:06:40 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -116,7 +116,7 @@ FIX:   n justfirstname
         if( args.length< 1)
         {
             System.err.println("usage: java [classpath_options] "+ Console.class.getName() +" filename ");
-            System.err.println("       java [classpath_options] "+ Console.class.getName() +"-u URL");
+            System.err.println("       java [classpath_options] "+ Console.class.getName() +" -u URL");
             System.exit(1);
         }
 
@@ -127,7 +127,7 @@ FIX:   n justfirstname
             {
                 System.err.println("Unknown option "+args[0]);
                 System.err.println("usage: java [classpath_options] "+ Console.class.getName() +" filename ");
-                System.err.println("       java [classpath_options] "+ Console.class.getName() +"-u URL");
+                System.err.println("       java [classpath_options] "+ Console.class.getName() +" -u URL");
                 System.exit(1);
             }
             URL url = new URL(args[0]);
