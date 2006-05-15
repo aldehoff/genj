@@ -2,7 +2,7 @@
  * TextMode.java
  * a client of the SF genj GEDCOM model which providedes a text UI to 
  * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.12 2006-05-15 00:03:45 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.13 2006-05-15 08:30:43 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -23,6 +23,7 @@ import genj.util.Origin;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,6 +49,7 @@ public class Console {
 FIX:   n justfirstname
    TODO  handle ordinary file path as argument
    FIX Determine what the dangerous uses of DELETE are.
+       cdaut, cdaut, del, save
    FIX do paranoid (atomc) saves.
   
     2
@@ -59,7 +61,6 @@ FIX:   n justfirstname
     
     3
     TODO: Handle edge case: empty database
-    TODO: SRCH search for name...
     TODO: UNDO - probably going to need more help than the gedcom API provides.
     TODO integrate [via callbacks?] with GenJ GUI.
     
@@ -116,13 +117,31 @@ FIX:   n justfirstname
     {
         if( args.length< 1)
         {
-            System.err.println("usage: java Console URL]");
+            System.err.println("usage: java [classpath_options] "+ Console.class.getName() +" filename ");
+            System.err.println("       java [classpath_options] "+ Console.class.getName() +"-u URL");
             System.exit(1);
         }
-            
+
+        Origin origin;
+        if( args.length ==2 )
+        {
+            if(! args[0].equals("-u"))
+            {
+                System.err.println("Unknown option "+args[0]);
+                System.err.println("usage: java [classpath_options] "+ Console.class.getName() +" filename ");
+                System.err.println("       java [classpath_options] "+ Console.class.getName() +"-u URL");
+                System.exit(1);
+            }
+            URL url = new URL(args[0]);
+            origin = Origin.create(url);
+        }
+        else
+        {
+            origin = Origin.create(new File(args[0]).toURL());
+        }
         // read the gedcom file
-        URL url = new URL(args[0]);
-        GedcomReader reader = new GedcomReader(Origin.create(url));
+
+        GedcomReader reader = new GedcomReader(origin);
         Gedcom gedcom = reader.read();
         Console tt = new Console(gedcom);
         tt.go();
