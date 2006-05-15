@@ -20,5 +20,8 @@ The idea is to:
 BUILD:
    run "ant"
    
-INSTALL
-   
+running:
+  java -classpath PATH_TO_GENJ/genj.jar:PATH_TO_CONSOLE/console.jar com.sadinoff.genj.console.Console  myfile.ged
+or
+  java [classpath_option] com.sadinoff.genj.console.Console -u URL_TO_GEDCOM
+  
