@@ -33,7 +33,7 @@ import tree.output.TreeOutput;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.10
+ * @version 0.12
  */
 public class ReportGraphicalTree extends Report {
 
@@ -45,7 +45,7 @@ public class ReportGraphicalTree extends Report {
     /**
      * Indibox height in pixels.
      */
-    private final int INDIBOX_HEIGHT = 60;
+    private final int INDIBOX_HEIGHT = 64;
 
     /**
      * Minimal vertical gap between boxes.
@@ -65,7 +65,7 @@ public class ReportGraphicalTree extends Report {
     /**
      * Family box height in pixels.
      */
-    private final int FAMBOX_HEIGHT = 22;
+    private final int FAMBOX_HEIGHT = 27;
 
     /**
      * Output type.
@@ -105,6 +105,21 @@ public class ReportGraphicalTree extends Report {
     public int max_names = 0;
 
     public String[] max_namess = { translate("nolimit"), "1", "2", "3" };
+
+    /**
+     * Whether to display sex symbols.
+     */
+    public boolean draw_sex_symbols = true;
+
+    /**
+     * Whether to IDs of individuals.
+     */
+    public boolean draw_indi_ids = false;
+
+    /**
+     * Whether to IDs of families.
+     */
+    public boolean draw_fam_ids = false;
 
     /**
      * Whether to display other marriages of ancestors.
@@ -161,6 +176,9 @@ public class ReportGraphicalTree extends Report {
         properties.put("useColors", use_colors);
         properties.put("otherMarriages", other_marriages);
         properties.put("showSpouses", show_spouses);
+        properties.put("drawSexSymbols", draw_sex_symbols);
+        properties.put("drawIndiIds", draw_indi_ids);
+        properties.put("drawFamIds", draw_fam_ids);
 
         // Build the tree
         TreeBuilder builder = new BasicTreeBuilder(properties);

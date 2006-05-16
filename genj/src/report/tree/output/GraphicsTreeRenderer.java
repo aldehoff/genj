@@ -10,6 +10,7 @@ package tree.output;
 
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.gedcom.PropertySex;
 import genj.report.Options;
 import genj.util.Registry;
 
@@ -30,6 +31,81 @@ import tree.graphics.GraphicsRenderer;
  */
 public class GraphicsTreeRenderer extends AbstractTreeRenderer implements GraphicsRenderer {
 
+    /**
+     * Male sex symbol.
+     */
+    private static final String MALE_SYMBOL = "\u2642";
+
+    /**
+     * Female sex symbol.
+     */
+    private static final String FEMALE_SYMBOL = "\u2640";
+
+    /**
+     * Unknown sex symbol.
+     */
+    private static final String UNKNOWN_SYMBOL = "?";
+
+    /**
+     * Stroke for drawing dashed lines.
+     */
+    private static final Stroke DASHED_STROKE = new BasicStroke(STROKE_WIDTH,
+            BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f,
+            new float[] { 3.0f, 6.0f }, 0.0f);
+
+    /**
+     * Font for individual and family details
+     */
+    private static final Font DETAILS_FONT = new Font("verdana", Font.PLAIN, 10);
+
+    /**
+     * Font for the first and last names.
+     */
+    private static final Font NAME_FONT = new Font("verdana", Font.BOLD, 12);
+
+    /**
+     * Font for individual and family ID.
+     */
+    private static final Font ID_FONT = new Font("verdana", Font.ITALIC, 10);
+
+    /**
+     * Font for drawing the sex symbols.
+     */
+    private static Font sexSymbolFont = null;
+    static {
+        // Find a font with the MALE_SYMBOL in it
+        String[] candidateFontNames = {"sansserif", "apple symbol", "symbol"};
+        for (int i = 0; i < candidateFontNames.length; i++)
+        {
+            Font candidateFont = new Font(candidateFontNames[i], Font.PLAIN, 10);
+            if(candidateFont.canDisplay(MALE_SYMBOL.charAt(0)))
+            {
+                sexSymbolFont = candidateFont;
+                break;
+            }
+        }
+        if (sexSymbolFont == null)
+            sexSymbolFont = new Font("SansSerif", Font.PLAIN,10);
+    }
+
+    /**
+     * Whether to draw the sex symbol.
+     */
+    private boolean drawSexSymbols;
+
+    /**
+     * Whether do draw IDs of individuals.
+     */
+    private boolean drawIndiIds;
+
+    /**
+     * Whether to draw IDs of families.
+     */
+    private boolean drawFamIds;
+
+    /**
+     * The graphics object to paint on.
+     */
 	private Graphics2D graphics = null;
 
     /**
@@ -41,7 +117,10 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
      */
 	public GraphicsTreeRenderer(IndiBox indibox, Registry properties) {
         super(indibox, properties);
-	}
+        drawSexSymbols = properties.get("drawSexSymbols", true);
+        drawIndiIds = properties.get("drawIndiIds", false);
+        drawFamIds = properties.get("drawFamIds", false);
+    }
 
     /**
      * Renders the family tree to the given Graphics2D object.
@@ -68,11 +147,11 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
         graphics.setColor(Color.BLACK);
         graphics.drawRoundRect(x, y, indiboxWidth, indiboxHeight, 15, 15);
 
-        graphics.setFont(new Font("verdana", Font.BOLD, 12));
+        graphics.setFont(NAME_FONT);
         centerString(graphics, getFirstNames(i), x + indiboxWidth/2, y + 14);
         centerString(graphics, i.getLastName(), x + indiboxWidth/2, y + 26);
 
-        graphics.setFont(new Font("verdana", Font.PLAIN, 10));
+        graphics.setFont(DETAILS_FONT);
         if (i.getBirthDate() != null && i.getBirthDate().isValid()) {
             centerString(graphics, Options.getInstance().getBirthSymbol(), x + 7, y + 38);
             graphics.drawString(""+i.getBirthDate(), x + 13, y + 38);
@@ -80,6 +159,18 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
         if (i.getDeathDate() != null) {
             centerString(graphics, Options.getInstance().getDeathSymbol(), x + 7, y + 48);
             graphics.drawString(""+i.getDeathDate(), x + 13, y + 48);
+        }
+
+        if (drawSexSymbols) {
+            int symbolX = x + indiboxWidth  - 14;
+            int symbolY = y + indiboxHeight - 5;
+            graphics.setFont(sexSymbolFont);
+            graphics.drawString(getSexSymbol(i.getSex()), symbolX, symbolY);
+        }
+
+        if (drawIndiIds) {
+            graphics.setFont(ID_FONT);
+            graphics.drawString(i.getId(), x + 8, y + indiboxHeight - 4);
         }
 	}
 
@@ -97,10 +188,15 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
         graphics.setColor(Color.BLACK);
         graphics.drawRoundRect(x, y, famboxWidth, famboxHeight, 5, 5);
 
-        graphics.setFont(new Font("verdana", Font.PLAIN, 10));
+        graphics.setFont(DETAILS_FONT);
         if (f.getMarriageDate() != null)
             graphics.drawString(Options.getInstance().getMarriageSymbol() + " " +
                     f.getMarriageDate(), x + 4, y + 12);
+
+        if (drawFamIds) {
+            graphics.setFont(ID_FONT);
+            graphics.drawString(f.getId(), x + 8, y + famboxHeight - 4);
+        }
     }
 
     /**
@@ -123,8 +219,7 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
      */
 	protected void drawDashedLine(int x1, int y1, int x2, int y2) {
         Stroke oldStroke = graphics.getStroke();
-        graphics.setStroke(new BasicStroke(STROKE_WIDTH, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f,
-                new float[] { 3.0f, 6.0f }, 0.0f));
+        graphics.setStroke(DASHED_STROKE);
         graphics.drawLine(x1, y1, x2, y2);
         graphics.setStroke(oldStroke);
     }
@@ -149,5 +244,13 @@ public class GraphicsTreeRenderer extends AbstractTreeRenderer implements Graphi
                 graphics.getFontRenderContext());
         int width = (int)rect.getWidth();
         graphics.drawString(text, x - width/2, y);
+    }
+
+    private String getSexSymbol(int sex) {
+        if (sex == PropertySex.MALE)
+            return MALE_SYMBOL;
+        if (sex == PropertySex.FEMALE)
+            return FEMALE_SYMBOL;
+        return UNKNOWN_SYMBOL;
     }
 }
