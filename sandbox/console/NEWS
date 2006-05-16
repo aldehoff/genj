@@ -1,3 +1,6 @@
+Since v16 
+   * removed doomed delete operator. (for now)
+
 Since v15:
    * Fixed massive data-corruption bug in cmom and cdad.
       ...which hilghlited the need for a unittest suite.

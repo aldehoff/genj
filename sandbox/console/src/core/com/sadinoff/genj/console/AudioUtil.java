@@ -1,7 +1,7 @@
 package com.sadinoff.genj.console;
 /*
  *  SimpleAudioPlayer.java
- *
+ *  $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/AudioUtil.java,v 1.2 2006-05-16 23:43:23 sadinoff Exp $
  *  This file is part of jsresources.org
  */
 
@@ -75,9 +75,7 @@ public class AudioUtil
             while(true)
             {
                 try {
-                    System.out.println("starting take...");
                     File audioFile = playerInput.take();  //blocking take.
-                    System.out.println("Got it!...");
                     
                     /*
                     We have to read in the sound file.
@@ -134,7 +132,6 @@ public class AudioUtil
                     (which means to your sound card). This has to be
                     activated.
                   */
-                      System.out.println("Line starting...");
                   line.start();
 
                   /*

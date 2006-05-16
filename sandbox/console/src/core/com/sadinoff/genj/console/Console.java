@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.16 2006-05-16 23:16:38 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.17 2006-05-16 23:43:23 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Console {
-    private static final boolean SOUND = true;//experimental feature
+    private static final boolean SOUND = Boolean.getBoolean("console.sound");//experimental feature
     protected static final String LB = System.getProperty("line.separator");
 
     protected static final Map<Integer, String> sexMap  = new HashMap<Integer,String>();
@@ -109,7 +109,7 @@ public class Console {
       switch(  event)
       {
       case SYNTAX_ERROR:
-          AudioUtil.play("/Users/dsadinoff/sound/bzzt.wav");
+          AudioUtil.play("/Users/dsadinoff/sound/huh?.wav");
           break;
       case MOTION_HYPERSPACE:
           AudioUtil.play("/Users/dsadinoff/sound/hyperspace.wav");
@@ -265,7 +265,7 @@ public class Console {
         actionMap.put(Arrays.asList(new String[]{"look","l", "x"}), new ActionHelper()
                 {
                     public Indi doIt(final Indi ti ,final String targetID){
-                        if( targetID != null & targetID.length()>0)
+                        if( targetID != null && targetID.length()>0)
                         {
                             Indi target = (Indi)gedcom.getEntity("INDI", targetID);
                             if( null == target)
@@ -609,7 +609,7 @@ public class Console {
                     public String getArgName() { return "ID";}
                     public boolean modifiesDatamodel() { return true; } 
                 });        
-        
+        /*
         actionMap.put(Arrays.asList(new String[]{"del","delete"}), new ActionHelper()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
@@ -621,7 +621,7 @@ public class Console {
                     public boolean modifiesDatamodel() { return true; } 
                     public String getDoc(){return "Delete the current Individual and return to the root of the Gedcom file";}
                 });
-        
+        */
         
 
         actionMap.put(Arrays.asList(new String[]{"sname","snam","n"}), new Action()
@@ -963,7 +963,7 @@ public class Console {
     
     private static String getVersion()
     {
-        return "This is GenJ-Console version $Revision: 1.16 $".replace("Revision:","").replace("$","");
+        return "This is GenJ-Console version $Revision: 1.17 $".replace("Revision:","").replace("$","");
     }
     
 

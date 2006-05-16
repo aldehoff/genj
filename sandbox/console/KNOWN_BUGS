@@ -1,4 +1,6 @@
 FIX:   n justfirstname
 FIX The following actions cause datafile corruption:
-       cdaut, cdaut, del, save 
+       cdaut, cdaut, del, save
+       It turns out that this is a bug in the Gedcom API,
+        which allows itself to be corrupted by delete() ops.
  
