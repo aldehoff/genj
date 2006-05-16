@@ -1,0 +1,12 @@
+Since v15:
+   * Fixed massive data-corruption bug in cmom and cdad.
+      ...which hilghlited the need for a unittest suite.
+   * Fixed the "dirty data" tracking, which suggests a save if data was written.
+   * set encoding according to the input GEDCOM
+   * Setting the FILE field according to spec (which isn't a terribly good idea, IMHO).
+   * added FNAME as an argument to create commands
+   * added RSIB: relate to existing INDI as a sibling
+   * added Version #
+   * look ID
+   * x is a synonym for look
+   * skeleton of sound support

@@ -1,15 +1,4 @@
 FIX:   n justfirstname
 FIX The following actions cause datafile corruption:
        cdaut, cdaut, del, save 
-  
-  
-From Francois:
-FIX:   When I asked to "save filename" 
-      (eg: save test-console.ged), it saved the file, but
-       not with the filename I asked, but with the name 
-       "filename".
-  
-FIX: The gedcom file I was working on with genj-textmode, 
-      was encoded using "ansel". It saved the file not
-      using "ansel", but "unicode". I would have liked it to
-      keep the encoding schema used originally. 
+ 

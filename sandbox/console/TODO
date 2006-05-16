@@ -1,7 +1,10 @@
 1)
-  FIX do paranoid (atomc) saves.
   I18N
-
+unittest suite.
+rKID  - relate current parent to existing kid
+rspou - relate current person to existing spouse
+rparent - relate current kid  to existing parent
+look[x] iID - examine another ID
 
    2
    
@@ -10,6 +13,8 @@
                      thud when you can't move
                      sliding up and down for successful movement up & down
                      smack for create.
+                     buzz for syntax error
+                     macos startup for startup :)
     
     3
     TODO: Handle edge case: empty database

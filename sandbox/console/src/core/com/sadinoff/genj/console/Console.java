@@ -1,8 +1,8 @@
 /**
- * TextMode.java
- * a client of the SF genj GEDCOM model which providedes a text UI to 
- * browseing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.15 2006-05-15 09:06:40 sadinoff Exp $
+ * Console.java
+ * A client of the SF genj GEDCOM model which providedes a text UI to 
+ * browsing and editing gedcom.
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.16 2006-05-16 23:16:38 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -39,30 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Console {
-    /* to-do priorities
-     * 
-     * 
-     * 
-1
-FIX:   n justfirstname
-   TODO  handle ordinary file path as argument
-   FIX Determine what the dangerous uses of DELETE are.
-       cdaut, cdaut, del, save
-   FIX do paranoid (atomc) saves.
-  
-    2
-    TODO: NOTE note...
-    TOOD: Think about sound feedback: beep for errors
-                     thud when you can't move
-                     sliding up and down for successful movement up & down
-                     smack for create.
-    
-    3
-    TODO: Handle edge case: empty database
-    TODO: UNDO - probably going to need more help than the gedcom API provides.
-    TODO integrate [via callbacks?] with GenJ GUI.
-    
-     */
+    private static final boolean SOUND = true;//experimental feature
     protected static final String LB = System.getProperty("line.separator");
 
     protected static final Map<Integer, String> sexMap  = new HashMap<Integer,String>();
@@ -107,6 +84,46 @@ FIX:   n justfirstname
         this(gedcomArg, new BufferedReader(new InputStreamReader(System.in)), new PrintWriter(System.out));
     }
 
+    
+    /**
+     * experimental sound support...
+     *      
+     */
+    enum UIFeedbackType{ SYNTAX_ERROR, MOTION_SIDEWAYS, MOTION_UP, MOTION_DOWN, MOTION_SPOUSE,
+                       MOTION_HYPERSPACE,
+                       HIT_WALL,
+                       SET_VALUE,
+                       NOT_FOUND,
+                       STALL,
+                       MISSILE_LOCK,
+                       INTERSECT_GRANITE_CLOUD,
+    };
+
+    /**
+     * Provide the user feedback that an even occurred
+     * @param event
+     */
+    public void giveFeedback(UIFeedbackType event) {
+        if (! SOUND)
+            return;
+      switch(  event)
+      {
+      case SYNTAX_ERROR:
+          AudioUtil.play("/Users/dsadinoff/sound/bzzt.wav");
+          break;
+      case MOTION_HYPERSPACE:
+          AudioUtil.play("/Users/dsadinoff/sound/hyperspace.wav");
+          break;
+      case HIT_WALL:
+          AudioUtil.play("/Users/dsadinoff/sound/thump1.wav");
+          break;
+      case SET_VALUE:
+          AudioUtil.play("/Users/dsadinoff/sound/pop.wav");
+          break;
+      default:
+      }
+    }
+    
     /**
      * @param args
      */
@@ -152,12 +169,14 @@ FIX:   n justfirstname
         String getDoc();
         ArgType getArgUse();
         String getArgName();
+        boolean modifiesDatamodel();
     }
 
     abstract class ActionHelper implements Action
     {
         public ArgType getArgUse(){ return ArgType.ARG_NO; }
         public String getArgName(){ return null; }
+        public boolean modifiesDatamodel() { return false; } 
     }
 
     /*
@@ -181,6 +200,13 @@ FIX:   n justfirstname
         final Map<List<String>,Action>  actionMap = new LinkedHashMap<List<String>,Action>();
         
 
+        actionMap.put(Arrays.asList(new String[]{"version"}), new ActionHelper(){public Indi doIt(Indi ti, String arg){
+            out.println(getVersion());
+            return ti;}
+        public String getDoc() {return "print this help message";}
+            });        
+        
+        
         actionMap.put(Arrays.asList(new String[]{"help"}), new ActionHelper(){public Indi doIt(Indi ti, String arg){
             out.println(getHelpText(actionMap));
             return ti;}
@@ -209,19 +235,26 @@ FIX:   n justfirstname
             
             public Indi doIt(Indi ti, String arg){
                 try{
-                    OutputStream fos = new BufferedOutputStream(new FileOutputStream(arg));
-                    GedcomWriter writer = new GedcomWriter(gedcom,"filename","UNICODE",fos);                    
-                    writer.write();
+                    File saveTo = new File( arg );
+                    File tempFile = File.createTempFile(arg,"",saveTo.getCanonicalFile().getParentFile());
+                    
+                    OutputStream fos = new BufferedOutputStream(new FileOutputStream(tempFile));
+                    
+                    GedcomWriter writer = new GedcomWriter(gedcom,arg,null,fos);                    
+                    writer.write(); //closes fos
+                    if(!  tempFile.renameTo(saveTo) )
+                        throw new Exception("unable to rename "+tempFile+" to "+saveTo);
                     out.println("Wrote file "+arg+" successfully.");
+                    out.println("Remember: the pathname of this GEDCOM file is embedded within it.");
                     setDirty(false);
                 }
                 catch( Exception e)
                 {
-                    
                     out.println("failure writing to arg: "+e);
                 }
                 return ti;
             }
+            public boolean modifiesDatamodel() { return true; } 
 
         public String getDoc() { return "Save gedcom with filename FNAME";}
         public ArgType getArgUse() { return ArgType.ARG_YES; }
@@ -229,14 +262,25 @@ FIX:   n justfirstname
         });
         
 
-        actionMap.put(Arrays.asList(new String[]{"look","l"}), new ActionHelper()
+        actionMap.put(Arrays.asList(new String[]{"look","l", "x"}), new ActionHelper()
                 {
                     public Indi doIt(final Indi ti ,final String targetID){
-                        out.println(dump(ti));
+                        if( targetID != null & targetID.length()>0)
+                        {
+                            Indi target = (Indi)gedcom.getEntity("INDI", targetID);
+                            if( null == target)
+                                out.println("No INDI record with that ID");
+                            else
+                                out.println(dump(target));
+                        }
+                        else
+                            out.println(dump(ti));
                         return ti;
                     }
-                    public String getDoc(){return "Dump Detailed information on the current person";}
-                });        
+                    public String getDoc(){return "Dump Detailed information on the current person [person with ID]";}
+                    public ArgType getArgUse() { return ArgType.ARG_OPTIONAL; }
+                    public String getArgName() { return "ID";}
+                    });        
         
         actionMap.put(Arrays.asList(new String[]{"gind","goto", "g"}), new Action()
                 {
@@ -248,8 +292,10 @@ FIX:   n justfirstname
                             return ti;
                         }
                         Indi newInd = (Indi)newEntity;
+                        giveFeedback(UIFeedbackType.MOTION_HYPERSPACE);                                                    
                         return newInd;
                     }
+                    public boolean modifiesDatamodel() { return false; } 
                     public String getDoc(){return "Go to Individual with identifier ID";}
                     public ArgType getArgUse() {  return ArgType.ARG_YES;}
                     public String getArgName() {  return "ID"; }
@@ -269,6 +315,7 @@ FIX:   n justfirstname
                         out.println();
                         return ti;
                     }
+                    public boolean modifiesDatamodel() { return false; } 
                     public String getDoc(){return "Show list of individuals with names containing STR as a substring";}
                     public ArgType getArgUse() {  return ArgType.ARG_YES;}
                     public String getArgName() {  return "STR"; }
@@ -282,6 +329,7 @@ FIX:   n justfirstname
                         if( null == dad)
                         {   
                             out.println("sorry, no dad.  Try cdad.\n");
+                            giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return ti;
                         }
                         else
@@ -297,6 +345,7 @@ FIX:   n justfirstname
                         if( null == mom)
                         {   
                             out.println("sorry, no mom.  Try cmom.\n");
+                            giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return ti;
                         }
                         else
@@ -313,6 +362,7 @@ FIX:   n justfirstname
                         if( marriages.length ==0)
                         {
                             out.println("Not married.");
+                            giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return theIndi;
                         }
                         
@@ -330,6 +380,8 @@ FIX:   n justfirstname
                         return  marriages[targetMarriage].getOtherSpouse(theIndi);
                     }
 
+                    public boolean modifiesDatamodel() { return false; } 
+                    
                     public String getDoc() {return "go to [Nth] spouse";}
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
                     public String getArgName() { return "N";}
@@ -343,6 +395,7 @@ FIX:   n justfirstname
                         if( null == bioKidFamily)
                         {
                             out.println("not a kid in a biofamily");
+                            giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return theIndi;
                         }
                         Indi[]sibs =  bioKidFamily.getChildren();
@@ -379,6 +432,7 @@ FIX:   n justfirstname
                             }
                         }
                     }
+                    public boolean modifiesDatamodel() { return false; } 
                     public String getDoc() {    return "go to next [Nth] sibling";}
                     public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
                     public String getArgName() { return "N";}
@@ -391,6 +445,7 @@ FIX:   n justfirstname
                 public String getDoc() {    return "go to first [Nth] child ";}
                 public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
                 public String getArgName() { return "N";}
+                public boolean modifiesDatamodel() { return false; } 
             public Indi doIt(Indi theIndi, String arg) {
                 
                 // FIX: M'th marriage not implemented.
@@ -398,6 +453,7 @@ FIX:   n justfirstname
                 if(0==children.length)
                 {
                     out.println("no kids!");
+                    giveFeedback(UIFeedbackType.HIT_WALL);                            
                     return theIndi;
                 }
                 if( null == arg || arg.length()==0)
@@ -424,82 +480,136 @@ FIX:   n justfirstname
         actionMap.put(Arrays.asList(new String[]{"cbro","cb"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        return createBiologicalSibling(ti,PropertySex.MALE);
+                        Indi newSib =  createBiologicalSibling(ti,PropertySex.MALE);
+                        if(null != arg && arg.length() > 0)
+                            setFirstName(newSib, arg);
+                        return newSib;
                     }
-                        
-                    public String getDoc(){return "Create a biological brother";}
-                    public ArgType getArgUse() {return ArgType.ARG_NO;}
-                    public String getArgName() {return "N";}
+
+                    public String getDoc(){return "Create a biological brother [with first name FNAME]";}
+                    public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
+                    public String getArgName() {return "FNAME";}
+                    public boolean modifiesDatamodel() { return true; } 
                 });
 
         actionMap.put(Arrays.asList(new String[]{"csis"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        return createBiologicalSibling(ti,PropertySex.FEMALE);
+                        Indi newSib =  createBiologicalSibling(ti,PropertySex.FEMALE);
+                        if(null != arg && arg.length() > 0)
+                            setFirstName(newSib, arg);
+                        return newSib;
                     }
                         
-                    public String getDoc(){return "Create a biological sister";}
-                    public ArgType getArgUse() {return ArgType.ARG_NO;}
-                    public String getArgName() {return "N";}
+                    public String getDoc(){return "Create a biological sister [with first name FNAME]";}
+                    public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
+                    public String getArgName() {return "FNAME";}
+                    public boolean modifiesDatamodel() { return true; } 
                 });
 
         actionMap.put(Arrays.asList(new String[]{"cson"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        int marriageNumber = parseInt(arg,0);
-                        return createChild(ti,marriageNumber-1,PropertySex.MALE);
+                        final int marriageNumber = parseInt(arg,0);
+                        Indi kid = createChild(ti,marriageNumber-1,PropertySex.MALE);
+                        if( 0 == marriageNumber &&null != arg && arg.length()>0)
+                            setFirstName(kid,arg);
+                        return kid;
                     }
                         
-                    public String getDoc(){return "Create son in default/[nth] marriage";}
+                    public String getDoc(){return "Create son in default/[nth] marriage, with first name FNAME";}
 
                     public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
 
-                    public String getArgName() {return "N";}
+                    public String getArgName() {return "N/FNAME";}
+                    public boolean modifiesDatamodel() { return true; } 
                 });
         
         actionMap.put(Arrays.asList(new String[]{"cdaut", "cdau","cd"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         int marriageNumber = parseInt(arg,0);
-                        return createChild(ti,marriageNumber-1,PropertySex.FEMALE);
+                        Indi kid = createChild(ti,marriageNumber-1,PropertySex.FEMALE);
+                        if( 0 == marriageNumber &&null != arg && arg.length()>0)
+                            setFirstName(kid,arg);
+                        return kid;
                     }
-                    public String getDoc(){return "Create daughter in default/[nth] marriage";}
+                    
+                    public String getDoc(){return "Create daughter in default/[nth] marriage, with first name FNAME";}
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() { return "N";}
+                    public String getArgName() { return "N/FNAME";}
+                    public boolean modifiesDatamodel() { return true; } 
                 });
 
         
         actionMap.put(Arrays.asList(new String[]{"cspou", "csp","cspouse"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        return createFamilyAndSpouse(ti);
-
+                        Indi spouse = createFamilyAndSpouse(ti);
+                        if(null != arg && arg.length() > 0 )
+                            setFirstName(spouse,arg);
+                        return spouse;
                     }
-                    public String getDoc(){return "Create and goto a spouse of the opposite sex";}
-                    public ArgType getArgUse() { return ArgType.ARG_NO;}
-                    public String getArgName() { return "N";}
+                    public String getDoc(){return "Create and goto a spouse of the opposite sex [with First name FNAME]";}
+                    public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
+                    public String getArgName() { return "FNAME";}
+                    public boolean modifiesDatamodel() { return true; } 
                 });
 
         
         actionMap.put(Arrays.asList(new String[]{"cdad"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        return createParent(ti,PropertySex.MALE);
+                        Indi parent= createParent(ti,PropertySex.MALE);
+                        if(null != arg && arg.length() > 0 )
+                            setFirstName(parent,arg);
+                        return parent;
                     }
-                    public String getDoc(){return "Create and goto a father";}
-                    public ArgType getArgUse() { return ArgType.ARG_NO;}
-                    public String getArgName() { return "N";}
+                    public String getDoc(){return "Create and goto a father [with first name FNAME]";}
+                    public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
+                    public String getArgName() { return "FNAME";}
+                    public boolean modifiesDatamodel() { return true; } 
                 });
         actionMap.put(Arrays.asList(new String[]{"cmom"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        return createParent(ti,PropertySex.FEMALE);
+                        Indi parent= createParent(ti,PropertySex.FEMALE);
+                        if(null != arg && arg.length() > 0 )
+                            setFirstName(parent,arg);
+                        return parent;
                     }
-                    public String getDoc(){return "Create and goto a mother";}
-                    public ArgType getArgUse() { return ArgType.ARG_NO;}
-                    public String getArgName() { return "N";}
+                    public String getDoc(){return "Create and goto a mother [with first name FNAME]";}
+                    public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
+                    public String getArgName() { return "FNAME";}
+                    public boolean modifiesDatamodel() { return true; } 
                 });
 
+                
+        actionMap.put(Arrays.asList(new String[]{"rsib"}), new Action()
+                {
+                    public Indi doIt(final Indi ti, final String existingSibID) throws GedcomException{
+                        Fam theFam = getCreateBiologicalFamily(ti);
+                        Indi existingSib = (Indi)gedcom.getEntity("INDI", existingSibID);
+                        if (null == existingSib)
+                        {
+                            System.out.println("Can't find entity named "+existingSibID);
+                            return ti;
+                        }
+                        Fam existingFam = existingSib.getFamilyWhereBiologicalChild();
+                        if( null != existingFam )
+                        {
+                            out.println("Error. Individual "+existingSib+" is already a bio-child in family "+existingFam);
+                            return ti;
+                        }
+                        theFam.addChild(existingSib);
+                        return existingSib;
+                    }
+                    public String getDoc(){return "relate the current Individual to an individual with identifier ID";}
+                    public ArgType getArgUse() { return ArgType.ARG_YES;}
+                    public String getArgName() { return "ID";}
+                    public boolean modifiesDatamodel() { return true; } 
+                });        
+        
         actionMap.put(Arrays.asList(new String[]{"del","delete"}), new ActionHelper()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
@@ -508,6 +618,7 @@ FIX:   n justfirstname
                       out.println("Individual Removed.  Returning to Gedcom root...");
                         return (Indi)gedcom.getFirstEntity(Gedcom.INDI);
                     }
+                    public boolean modifiesDatamodel() { return true; } 
                     public String getDoc(){return "Delete the current Individual and return to the root of the Gedcom file";}
                 });
         
@@ -531,6 +642,8 @@ FIX:   n justfirstname
                     public String getDoc() {return "set name to FIRST LAST";}
                     public ArgType getArgUse() { return ArgType.ARG_YES;}
                     public String getArgName() { return "FIRST LAST"; }
+                    public boolean modifiesDatamodel() { return true; 
+                    } 
                 });
 
         actionMap.put(Arrays.asList(new String[]{"sfnm","fn","sfn"}), new Action()
@@ -539,6 +652,7 @@ FIX:   n justfirstname
                         theIndi.setName(arg,theIndi.getLastName());
                         return theIndi;
                     }
+                    public boolean modifiesDatamodel() { return true; } 
                     public String getDoc() { return "set First name to FIRSTNAME";}
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
                     public String getArgName() { return "FIRSTNAME";}
@@ -549,6 +663,7 @@ FIX:   n justfirstname
                         theIndi.setName(theIndi.getFirstName(), arg);
                         return theIndi;
                     }
+                    public boolean modifiesDatamodel() { return true; } 
                     public String getDoc() { return "set Last name to LAST";}
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
                     public String getArgName() { return "LAST";}
@@ -568,6 +683,7 @@ FIX:   n justfirstname
                             out.println("ERROR: argument to ssex must be one of M,F,U");
                         return theIndi;
                     }
+                    public boolean modifiesDatamodel() { return true; } 
                     public String getDoc() { return "set sex of current individual to S. Must be one of {M,F,U}.";}
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
                     public String getArgName() { return "S";}
@@ -584,6 +700,7 @@ FIX:   n justfirstname
                         setDate(date, arg);
                         return theIndi;
                     }
+                    public boolean modifiesDatamodel() { return true; } 
                     public String getDoc() { return "set birthday to BDAY";}
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
                     public String getArgName() { return "BDAY";}
@@ -601,6 +718,7 @@ FIX:   n justfirstname
                         setDate(date, arg);
                         return theIndi;
                     }
+                    public boolean modifiesDatamodel() { return true; } 
                     public String getDoc() { return "set death day to DDAY";}
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
                     public String getArgName() { return "DDAY";}
@@ -621,6 +739,8 @@ FIX:   n justfirstname
         Pattern commandPat = Pattern.compile("^(\\w+)(\\s+(\\w.*))?");
         for(;;)
         {
+            out.println("------");
+            out.print("You are at: ");
             out.println(brief(theIndi));
             out.print("> ");
             out.flush();
@@ -637,11 +757,14 @@ FIX:   n justfirstname
             String args = lineMatcher.group(3);
             if( ! commandToAction.containsKey(command) ) {
                 out.println("unknown command. Type 'help' for help");
+                giveFeedback(UIFeedbackType.SYNTAX_ERROR);
                 continue;
             }
             Action action = commandToAction.get(command);
             try
             {
+                if(action.modifiesDatamodel())
+                    setDirty(true);
                 theIndi = action.doIt(theIndi, args);
             }
             catch( Exception re)
@@ -722,7 +845,7 @@ FIX:   n justfirstname
         Fam bioKidFamily = theInd.getFamilyWhereBiologicalChild();
         if( null != bioKidFamily)
         {
-            buf.append("bioKidFamily:"+LB);
+            buf.append("Child in family:"+LB);
             buf.append(indent(dump(bioKidFamily)));
         }
         buf.append("Marriages:");
@@ -777,13 +900,19 @@ FIX:   n justfirstname
         return spouse;
     }
     
-    protected Indi createBiologicalSibling(Indi ti, int sex) throws GedcomException {
+    protected final Fam getCreateBiologicalFamily(Indi ti ) throws GedcomException
+    {
         Fam theFam =  ti.getFamilyWhereBiologicalChild();
         if( null == theFam)
         {
             Indi dad = createParent(ti,PropertySex.MALE);
             theFam =  ti.getFamilyWhereBiologicalChild();
         }
+        return theFam;
+    }
+    
+    protected Indi createBiologicalSibling(Indi ti, int sex) throws GedcomException {
+        Fam theFam =  getCreateBiologicalFamily(ti);
         Indi child = (Indi)gedcom.createEntity(Gedcom.INDI);
         child.setSex(sex);
         theFam.addChild(child);
@@ -795,19 +924,22 @@ FIX:   n justfirstname
     
     /*
      * creates a pair of parents, and returns one of them.  
+     * Also, link theChild in as a the sole child of the new FAM 
      * <B>NOTE</b> This won't be appropriate in 100% of cases, (just 95).
      */
-    protected Indi createParent(Indi ti, int sex) throws GedcomException
+    protected Indi createParent(Indi theChild, int sex) throws GedcomException
     {
-        if( null != ti.getFamilyWhereBiologicalChild())
+        if( null != theChild.getFamilyWhereBiologicalChild())
             throw new IllegalArgumentException("can't have >1 biological Family");
         Indi parent = (Indi)gedcom.createEntity(Gedcom.INDI);
         parent.setSex(sex);
         Indi newOtherParent = createFamilyAndSpouse(parent);
         if( PropertySex.MALE  == sex)
-            parent.setName("",ti.getLastName());
+            parent.setName("",theChild.getLastName());
         else
-            newOtherParent.setName("",ti.getLastName());
+            newOtherParent.setName("",theChild.getLastName());
+        Fam newFamily = parent.getFamiliesWhereSpouse()[0];
+        newFamily.addChild(theChild);
         return parent;
     }
 
@@ -828,6 +960,12 @@ FIX:   n justfirstname
         assert(date.isValid());
         return false;
     }
+    
+    private static String getVersion()
+    {
+        return "This is GenJ-Console version $Revision: 1.16 $".replace("Revision:","").replace("$","");
+    }
+    
 
     private static String getHelpText(Map<List<String>, Action> actionMap) {
         
@@ -890,6 +1028,10 @@ FIX:   n justfirstname
             buf.append(LB);
         }
         return buf.toString();
+    }
+    
+    private void setFirstName(Indi indi, String firstName) {
+        indi.setName(firstName,indi.getLastName());
     }
 
 }
