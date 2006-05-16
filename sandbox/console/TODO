@@ -1,0 +1,19 @@
+1)
+  FIX do paranoid (atomc) saves.
+  I18N
+
+
+   2
+   
+    TODO: NOTE note...
+    TOOD: Think about sound feedback: beep for errors
+                     thud when you can't move
+                     sliding up and down for successful movement up & down
+                     smack for create.
+    
+    3
+    TODO: Handle edge case: empty database
+    TODO: UNDO - probably going to need more help than the gedcom API provides.
+    TODO integrate [via callbacks?] with GenJ GUI.
+    
+ 
