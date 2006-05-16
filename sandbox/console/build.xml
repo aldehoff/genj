@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.3 2006-05-14 21:41:19 sadinoff Exp $ -->
+<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.4 2006-05-16 07:35:13 sadinoff Exp $ -->
 <!-- This is the ant buildfile for GenJ:Textmode -->
 
 <project name="GenJ" default="dist" basedir=".">
@@ -79,7 +79,8 @@
    <!-- create genj_geo-xyz.zip -->
    <zip zipfile="${dir.dist}/genj_console-${genj.app.version}.zip" update="True">
      <zipfileset dir="${dir.build}" includes="lib/console.jar"/>
-    <zipfileset dir="doc" includes="README"/>
+     <zipfileset dir="doc" includes="README"/>
+     <zipfileset dir="." includes="KNOWN_BUGS"/> 	
 <!--     <zipfileset dir="./contrib" includes="console/**"/> -->
    </zip>
   	
