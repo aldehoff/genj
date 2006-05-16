@@ -21,9 +21,9 @@ import java.io.File;
  */
 public class GraphicsOutputFactory {
 
-    public static int SVG_OUTPUT = 0;
-    public static int PDF_OUTPUT = 1;
-    public static int SCREEN_OUTPUT = 2;
+    public static final int SVG_OUTPUT = 0;
+    public static final int PDF_OUTPUT = 1;
+    public static final int SCREEN_OUTPUT = 2;
 
     /**
      * Containing report. Used to show dialogs and translate strings.
