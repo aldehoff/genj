@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.17 2006-05-16 23:43:23 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.18 2006-05-17 20:56:36 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -16,7 +16,6 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
-import genj.gedcom.TagPath;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
 import genj.util.Origin;
@@ -510,9 +509,15 @@ public class Console {
         actionMap.put(Arrays.asList(new String[]{"cson"}), new Action()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        final int marriageNumber = parseInt(arg,0);
+                        int marriageNumber =1;
+                        boolean numeric = false;
+                        if( null == arg || arg.length() ==0 || Character.isDigit(arg.charAt(0)))
+                        {
+                            marriageNumber = parseInt(arg,1);
+                            numeric = true;
+                        }
                         Indi kid = createChild(ti,marriageNumber-1,PropertySex.MALE);
-                        if( 0 == marriageNumber &&null != arg && arg.length()>0)
+                        if( ! numeric )
                             setFirstName(kid,arg);
                         return kid;
                     }
@@ -525,21 +530,27 @@ public class Console {
                     public boolean modifiesDatamodel() { return true; } 
                 });
         
-        actionMap.put(Arrays.asList(new String[]{"cdaut", "cdau","cd"}), new Action()
+        actionMap.put(Arrays.asList(new String[]{"cdaut", "cdau","cd"}), new Action(){
+            public Indi doIt(final Indi ti, String arg) throws GedcomException{
+                int marriageNumber =1 ;
+                boolean numeric = false;
+                if( null == arg || arg.length() ==0 || Character.isDigit(arg.charAt(0)))
                 {
-                    public Indi doIt(final Indi ti, String arg) throws GedcomException{
-                        int marriageNumber = parseInt(arg,0);
-                        Indi kid = createChild(ti,marriageNumber-1,PropertySex.FEMALE);
-                        if( 0 == marriageNumber &&null != arg && arg.length()>0)
-                            setFirstName(kid,arg);
-                        return kid;
-                    }
+                    marriageNumber = parseInt(arg,1);
+                    numeric = true;
+                }
+                Indi kid = createChild(ti,marriageNumber-1,PropertySex.FEMALE);
+                if( ! numeric )
+                    setFirstName(kid,arg);
+                return kid;
+
+            }
                     
-                    public String getDoc(){return "Create daughter in default/[nth] marriage, with first name FNAME";}
-                    public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() { return "N/FNAME";}
-                    public boolean modifiesDatamodel() { return true; } 
-                });
+            public String getDoc(){return "Create daughter in default/[nth] marriage, with first name FNAME";}
+            public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
+            public String getArgName() { return "N/FNAME";}
+            public boolean modifiesDatamodel() { return true; } 
+        });
 
         
         actionMap.put(Arrays.asList(new String[]{"cspou", "csp","cspouse"}), new Action()
@@ -692,11 +703,7 @@ public class Console {
         actionMap.put(Arrays.asList(new String[]{"bday","b"}), new Action()
                 {
                     public Indi doIt(Indi theIndi, String arg) {
-                        PropertyDate date =theIndi.getBirthDate() ;
-                        if(null == date) {
-                            theIndi.setValue(new TagPath("INDI:BIRT:DATE"),"");
-                             date =theIndi.getBirthDate() ;
-                        }
+                        PropertyDate date =theIndi.getBirthDate(true) ;
                         setDate(date, arg);
                         return theIndi;
                     }
@@ -710,11 +717,7 @@ public class Console {
         actionMap.put(Arrays.asList(new String[]{"dday","d"}), new Action()
                 {
                     public Indi doIt(Indi theIndi, String arg) {
-                        PropertyDate date =theIndi.getDeathDate() ;
-                        if(null == date) {
-                            theIndi.setValue(new TagPath("INDI:DEAT:DATE"),"");
-                             date =theIndi.getDeathDate() ;
-                        }
+                        PropertyDate date =theIndi.getDeathDate(true) ;
                         setDate(date, arg);
                         return theIndi;
                     }
@@ -736,7 +739,7 @@ public class Console {
 
             Map<String, Action> commandToAction= expandActionMap(actionMap);
 
-        Pattern commandPat = Pattern.compile("^(\\w+)(\\s+(\\w.*))?");
+        Pattern commandPat = Pattern.compile("^(\\w+)(\\s+(\\S.*))?");
         for(;;)
         {
             out.println("------");
@@ -864,6 +867,9 @@ public class Console {
         Fam theFamily;
         if( families.length > 1)
         {
+            if( marriageIndex > families.length-1 || marriageIndex<0)
+                throw new IllegalArgumentException("Bad marriage index:" +marriageIndex+ " "+parent
+                       +" is only a spouse in "+families.length+" families");
             theFamily = families[marriageIndex];
         }
         else if( families.length== 0)
@@ -905,7 +911,7 @@ public class Console {
         Fam theFam =  ti.getFamilyWhereBiologicalChild();
         if( null == theFam)
         {
-            Indi dad = createParent(ti,PropertySex.MALE);
+             createParent(ti,PropertySex.MALE);
             theFam =  ti.getFamilyWhereBiologicalChild();
         }
         return theFam;
@@ -956,6 +962,7 @@ public class Console {
         if( date.isValid())
             return true;
         out.println("Couldn't parse the date.");
+        giveFeedback(UIFeedbackType.SYNTAX_ERROR);
         date.setValue(oldValue);
         assert(date.isValid());
         return false;
@@ -963,7 +970,7 @@ public class Console {
     
     private static String getVersion()
     {
-        return "This is GenJ-Console version $Revision: 1.17 $".replace("Revision:","").replace("$","");
+        return "This is GenJ-Console version $Revision: 1.18 $".replace("Revision:","").replace("$","");
     }
     
 
