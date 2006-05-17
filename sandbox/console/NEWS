@@ -1,3 +1,8 @@
+Since v17:
+   * fixed a bug where you couldn't save /absolute/path
+   * Fixed cson/daughter FNAME
+   
+
 Since v16 
    * removed doomed delete operator. (for now)
 
