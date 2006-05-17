@@ -1,7 +1,7 @@
 package com.sadinoff.genj.console;
 /*
  *  SimpleAudioPlayer.java
- *  $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/AudioUtil.java,v 1.2 2006-05-16 23:43:23 sadinoff Exp $
+ *  $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/AudioUtil.java,v 1.3 2006-05-17 21:01:08 sadinoff Exp $
  *  This file is part of jsresources.org
  */
 
@@ -46,7 +46,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 
@@ -158,7 +157,7 @@ public class AudioUtil
                       }
                       if (nBytesRead >= 0)
                       {
-                          int nBytesWritten = line.write(abData, 0, nBytesRead);
+                          line.write(abData, 0, nBytesRead);
                       }
                   }
 
