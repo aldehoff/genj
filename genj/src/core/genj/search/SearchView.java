@@ -68,6 +68,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -363,8 +364,9 @@ public class SearchView extends JPanel implements ToolBarSupport {
      * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
+
       // analyze what we've got
-      JTextField field = choiceValue.getTextEditor();
+      final JTextField field = choiceValue.getTextEditor();
       int 
         selStart = field.getSelectionStart(),
         selEnd   = field.getSelectionEnd  ();
@@ -382,14 +384,21 @@ public class SearchView extends JPanel implements ToolBarSupport {
       String after = all.substring(selEnd);
 
       // calculate result
-      String result = MessageFormat.format(pattern, new String[]{ all, before, selection, after} );
-      int pos = result.indexOf('#');
-      result = result.substring(0,pos)+result.substring(pos+1);
-      
-      // show
-      field.setText(result);
-      field.select(0,0);
-      field.setCaretPosition(pos);
+      final String result = MessageFormat.format(pattern, new String[]{ all, before, selection, after} );
+
+      // invoke this later - selection might otherwise not work correctly
+      SwingUtilities.invokeLater(new Runnable() { public void run() {
+        
+        int pos = result.indexOf('#');
+        
+        // show
+        field.setText(result.substring(0,pos)+result.substring(pos+1));
+        field.select(0,0);
+        field.setCaretPosition(pos);
+        
+        // make sure regular expressions are enabled now
+        checkRegExp.setSelected(true);
+      }});
       
       // done
     }
