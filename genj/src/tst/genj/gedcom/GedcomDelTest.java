@@ -31,6 +31,7 @@ public class GedcomDelTest extends TestCase {
     private Fam createTestFamily() throws GedcomException, GedcomIOException
     {
         Gedcom gedcom = new Gedcom();
+        gedcom.startTransaction();
         Indi husband = (Indi) gedcom.createEntity(Gedcom.INDI, "Ihusband");
         Indi wife = (Indi) gedcom.createEntity(Gedcom.INDI, "Iwife");
         Indi child = (Indi) gedcom.createEntity(Gedcom.INDI, "Ikid");
@@ -38,6 +39,7 @@ public class GedcomDelTest extends TestCase {
         family.setHusband(husband);
         family.setWife(wife);
         family.addChild(child);
+        gedcom.endTransaction();
         
         /* baseline*/
         validate(gedcom);
@@ -48,20 +50,9 @@ public class GedcomDelTest extends TestCase {
      * Test method for 'genj.gedcom.Gedcom.deleteEntity(Entity)'
      */
     public void testDeleteEntity()  throws Exception{
-        testDeleteParent(createTestFamily() );
         testDeleteKid(createTestFamily());
+        testDeleteParent(createTestFamily() );
         testDeleteFamily(createTestFamily());
-    }
-    
-    /**
-     * A stream to nowhere
-     * @author dsadinoff
-     *
-     */
-    private static class SinkOutputStream extends OutputStream{
-        public void write(int arg0) throws IOException {
-            //NOP
-        }
     }
     
     /**
@@ -71,27 +62,35 @@ public class GedcomDelTest extends TestCase {
      */
     private static void validate(Gedcom gedcom) throws GedcomIOException
     {
-        OutputStream fos = new SinkOutputStream();
+        OutputStream sink = new OutputStream() {
+            public void write(int arg0) { /* nop */ }
+        };
         
-        GedcomWriter writer = new GedcomWriter(gedcom,"test",null,fos);                    
+        GedcomWriter writer = new GedcomWriter(gedcom,"test",null,sink);                    
         writer.write(); //closes fos
     }
 
     private void testDeleteFamily(Fam fam) throws Exception {
         Gedcom gedcom = fam.getGedcom();
+        gedcom.startTransaction();
         gedcom.deleteEntity(fam);
+        gedcom.endTransaction();
         validate(gedcom);
     }
 
     private void testDeleteParent(Fam fam) throws Exception {
         Gedcom gedcom = fam.getGedcom();
+        gedcom.startTransaction();
         gedcom.deleteEntity(fam.getHusband());
+        gedcom.endTransaction();
         validate(gedcom);
     }
 
     private void testDeleteKid( Fam fam) throws Exception {
         Gedcom gedcom = fam.getGedcom();
+        gedcom.startTransaction();
         gedcom.deleteEntity(fam.getChild(0));
+        gedcom.endTransaction();
         validate(gedcom);
     }
 
