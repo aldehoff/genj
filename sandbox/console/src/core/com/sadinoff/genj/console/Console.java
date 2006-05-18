@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.18 2006-05-17 20:56:36 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.19 2006-05-18 21:55:16 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -620,11 +620,21 @@ public class Console {
                     public String getArgName() { return "ID";}
                     public boolean modifiesDatamodel() { return true; } 
                 });        
-        /*
+        
         actionMap.put(Arrays.asList(new String[]{"del","delete"}), new ActionHelper()
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
+                        Fam[] famsc = ti.getFamiliesWhereChild();
+                        Fam[] famss = ti.getFamiliesWhereSpouse();
                         gedcom.deleteEntity(ti);
+                        for (Fam fam : famsc)
+                            fam.getChildren();
+                        for(Fam fam: famss)
+                        {
+                            fam.getHusband();
+                            fam.getWife();
+                        }
+                            
                         //FIX handle empty database.
                       out.println("Individual Removed.  Returning to Gedcom root...");
                         return (Indi)gedcom.getFirstEntity(Gedcom.INDI);
@@ -632,7 +642,7 @@ public class Console {
                     public boolean modifiesDatamodel() { return true; } 
                     public String getDoc(){return "Delete the current Individual and return to the root of the Gedcom file";}
                 });
-        */
+        
         
 
         actionMap.put(Arrays.asList(new String[]{"sname","snam","n"}), new Action()
@@ -642,6 +652,7 @@ public class Console {
                         Matcher firstLastMatcher = firstLastPat.matcher(arg);
                         if( ! firstLastMatcher.find())
                         {
+                            giveFeedback(UIFeedbackType.SYNTAX_ERROR);
                             out.println("syntax error: snam first last");
                         }
                         String first = firstLastMatcher.group(1).trim();
@@ -753,6 +764,7 @@ public class Console {
             Matcher lineMatcher = commandPat.matcher(line);
             if( ! lineMatcher.matches())
             {
+                giveFeedback(UIFeedbackType.SYNTAX_ERROR);
                 out.println("syntax error.  Type 'help' for help");
                 continue;
             }
@@ -768,7 +780,9 @@ public class Console {
             {
                 if(action.modifiesDatamodel())
                     setDirty(true);
+                gedcom.startTransaction();
                 theIndi = action.doIt(theIndi, args);
+                gedcom.endTransaction();
             }
             catch( Exception re)
             {
@@ -970,7 +984,7 @@ public class Console {
     
     private static String getVersion()
     {
-        return "This is GenJ-Console version $Revision: 1.18 $".replace("Revision:","").replace("$","");
+        return "This is GenJ-Console version $Revision: 1.19 $".replace("Revision:","").replace("$","");
     }
     
 
