@@ -28,7 +28,7 @@ public class GedcomDelTest extends TestCase {
         junit.textui.TestRunner.run(GedcomDelTest.class);
     }
 
-    private Fam createTestFamily() throws GedcomException
+    private Fam createTestFamily() throws GedcomException, GedcomIOException
     {
         Gedcom gedcom = new Gedcom();
         Indi husband = (Indi) gedcom.createEntity(Gedcom.INDI, "Ihusband");
@@ -38,6 +38,9 @@ public class GedcomDelTest extends TestCase {
         family.setHusband(husband);
         family.setWife(wife);
         family.addChild(child);
+        
+        /* baseline*/
+        validate(gedcom);
         return family;
     }
     
