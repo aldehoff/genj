@@ -1,3 +1,9 @@
+Since v18:
+   * Reinstated del operator for deleting individuals. 
+   * fixed /absolute/path bug *again*
+
+   
+   
 Since v17:
    * fixed a bug where you couldn't save /absolute/path
    * Fixed cson/daughter FNAME

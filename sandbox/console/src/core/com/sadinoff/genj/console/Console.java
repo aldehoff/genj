@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.20 2006-05-18 22:39:07 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.21 2006-05-18 22:42:12 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -306,7 +306,7 @@ public class Console {
                             out.println(dump(ti));
                         return ti;
                     }
-                    public String getDoc(){return "Dump Detailed information on the current person [person with ID]";}
+                    public String getDoc(){return "\"Look around\": Dump Detailed information on the current person [or person with ID]";}
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL; }
                     public String getArgName() { return "ID";}
                     });        
@@ -1019,7 +1019,7 @@ public class Console {
     
     private static String getVersion()
     {
-        return "This is GenJ-Console version $Revision: 1.20 $".replace("Revision:","").replace("$","");
+        return "This is GenJ-Console version $Revision: 1.21 $".replace("Revision:","").replace("$","");
     }
     
 
