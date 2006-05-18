@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.19 2006-05-18 21:55:16 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.20 2006-05-18 22:39:07 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -229,13 +229,17 @@ public class Console {
             });
 
         
+
         
         actionMap.put(Arrays.asList(new String[]{"save"}), new Action(){
             
             public Indi doIt(Indi ti, String arg){
                 try{
                     File saveTo = new File( arg );
-                    File tempFile = File.createTempFile(arg,"",saveTo.getCanonicalFile().getParentFile());
+                    String  fname = saveTo.getName();
+                    File canon = saveTo.getCanonicalFile();
+                    File parentdir = canon.getParentFile();
+                    File tempFile = File.createTempFile(fname,"",parentdir);
                     
                     OutputStream fos = new BufferedOutputStream(new FileOutputStream(tempFile));
                     
@@ -260,6 +264,32 @@ public class Console {
         public String getArgName() { return "FNAME";}
         });
         
+        actionMap.put(Arrays.asList(new String[]{"undo"}), new Action(){
+            
+            public Indi doIt(Indi ti, String arg){
+                String oldID = ti.getId();
+                try
+                {
+                    gedcom.undo();
+                }
+                catch( Exception e)
+                {
+                    out.println("couldn't undo! "+ e);
+                }
+                
+                //if the last operation was a create...                
+                ti = (Indi)gedcom.getEntity(oldID);
+                //TODO go back to previous location.
+                if( null == ti )
+                    System.out.println("Looks like the last ID was a create.  Returning to root of Gedcom");
+                return (Indi)gedcom.getFirstEntity(Gedcom.INDI);
+            }
+            public boolean modifiesDatamodel() { return false; } 
+
+        public String getDoc() { return "Undo the last operation";}
+        public ArgType getArgUse() { return ArgType.ARG_NO; }
+        public String getArgName() { return "";}
+        });
 
         actionMap.put(Arrays.asList(new String[]{"look","l", "x"}), new ActionHelper()
                 {
@@ -637,7 +667,7 @@ public class Console {
                             
                         //FIX handle empty database.
                       out.println("Individual Removed.  Returning to Gedcom root...");
-                        return (Indi)gedcom.getFirstEntity(Gedcom.INDI);
+                      return (Indi)gedcom.getFirstEntity(Gedcom.INDI);
                     }
                     public boolean modifiesDatamodel() { return true; } 
                     public String getDoc(){return "Delete the current Individual and return to the root of the Gedcom file";}
@@ -779,10 +809,15 @@ public class Console {
             try
             {
                 if(action.modifiesDatamodel())
+                {
                     setDirty(true);
-                gedcom.startTransaction();
+                    gedcom.startTransaction();
+                }
                 theIndi = action.doIt(theIndi, args);
-                gedcom.endTransaction();
+                if( action.modifiesDatamodel())
+                {
+                    gedcom.endTransaction();
+                }
             }
             catch( Exception re)
             {
@@ -984,7 +1019,7 @@ public class Console {
     
     private static String getVersion()
     {
-        return "This is GenJ-Console version $Revision: 1.19 $".replace("Revision:","").replace("$","");
+        return "This is GenJ-Console version $Revision: 1.20 $".replace("Revision:","").replace("$","");
     }
     
 
