@@ -1,6 +1,10 @@
+Since v19:
+   * Implemented UNDO
+
 Since v18:
    * Reinstated del operator for deleting individuals. 
    * fixed /absolute/path bug *again*
+   
 
    
    
