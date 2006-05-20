@@ -47,6 +47,8 @@ public class OutputFactory {
      */
     public TreeOutput createOutput(int type) {
         GraphicsOutput reportOutput = reportOutputFactory.createOutput(type);
+        if (reportOutput == null)
+            return null;
         return new GraphicsTreeOutput(reportOutput, properties);
     }
 }
