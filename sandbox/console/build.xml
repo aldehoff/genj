@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.6 2006-05-18 22:42:11 sadinoff Exp $ -->
+<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.7 2006-05-20 23:26:34 sadinoff Exp $ -->
 <!-- This is the ant buildfile for GenJ:Textmode -->
 
 <project name="GenJ" default="dist" basedir=".">
@@ -63,7 +63,8 @@
    <!-- create console.jar -->
    <delete file="${dir.lib}/console.jar"/>
    <jar jarfile="${dir.lib}/console.jar" update="True">
-     <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
+    <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
+<!--    <fileset dir="src/core" includes="**/*.properties"/> -->
 <!--     <fileset dir="./images"/>
      <fileset dir="./language/en"/>
      <fileset dir="./language/fr"/>
