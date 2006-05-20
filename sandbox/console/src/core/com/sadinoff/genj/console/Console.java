@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.22 2006-05-20 23:26:00 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.23 2006-05-20 23:46:23 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -840,15 +840,18 @@ public class Console {
                     gedcom.startTransaction();
                 }
                 theIndi = action.doIt(theIndi, args);
-                if( action.modifiesDatamodel())
-                {
-                    gedcom.endTransaction();
-                }
             }
             catch( Exception re)
             {
                 out.println(resources.getString("error.exception")+re);  //$NON-NLS-1$
                 re.printStackTrace();
+            }
+            finally
+            {
+                if( action.modifiesDatamodel())
+                {
+                    gedcom.endTransaction();
+                }
             }
         }
     }
@@ -1046,7 +1049,7 @@ public class Console {
     private String getVersion()
     {
         return resources.getString("version.version") //$NON-NLS-1$
-        + "$Revision: 1.22 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
+        + "$Revision: 1.23 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
     }
     
 
