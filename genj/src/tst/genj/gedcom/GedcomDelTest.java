@@ -10,7 +10,6 @@ package genj.gedcom;
 import genj.io.GedcomIOException;
 import genj.io.GedcomWriter;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 import junit.framework.TestCase;
@@ -19,6 +18,8 @@ import junit.framework.TestCase;
  * Test for inconsistencies in the Entity.delete() method.
  * This was originally created to track the assicated 
  * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1489891&group_id=46817&atid=447494">SF bug</a>
+ * It now looks like a transaction wrapping the delete seems to be the workaround, which means that 
+ * this is either a documentation bug (in delete) or a bug in the delete implementation.
  * @author Danny Sadinoff
  *
  */
@@ -72,25 +73,25 @@ public class GedcomDelTest extends TestCase {
 
     private void testDeleteFamily(Fam fam) throws Exception {
         Gedcom gedcom = fam.getGedcom();
-        gedcom.startTransaction();
+//        gedcom.startTransaction();
         gedcom.deleteEntity(fam);
-        gedcom.endTransaction();
+//        gedcom.endTransaction();
         validate(gedcom);
     }
 
     private void testDeleteParent(Fam fam) throws Exception {
         Gedcom gedcom = fam.getGedcom();
-        gedcom.startTransaction();
+//        gedcom.startTransaction();
         gedcom.deleteEntity(fam.getHusband());
-        gedcom.endTransaction();
+//        gedcom.endTransaction();
         validate(gedcom);
     }
 
     private void testDeleteKid( Fam fam) throws Exception {
         Gedcom gedcom = fam.getGedcom();
-        gedcom.startTransaction();
+//        gedcom.startTransaction();
         gedcom.deleteEntity(fam.getChild(0));
-        gedcom.endTransaction();
+//        gedcom.endTransaction();
         validate(gedcom);
     }
 
