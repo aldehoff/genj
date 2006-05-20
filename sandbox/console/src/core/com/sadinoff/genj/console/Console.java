@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.21 2006-05-18 22:42:12 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.22 2006-05-20 23:26:00 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -19,6 +19,7 @@ import genj.gedcom.PropertySex;
 import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
 import genj.util.Origin;
+import genj.util.Resources;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -27,8 +28,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,31 +41,28 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Console {
-    private static final boolean SOUND = Boolean.getBoolean("console.sound");//experimental feature
-    protected static final String LB = System.getProperty("line.separator");
+    
+    private static final boolean SOUND = Boolean.getBoolean("console.sound");//experimental feature //$NON-NLS-1$
+    protected static final String LB = System.getProperty("line.separator"); //$NON-NLS-1$
+    private static final boolean DEBUG = Boolean.getBoolean("console.debug");// $NON-NLS-1$
+    
 
-    protected static final Map<Integer, String> sexMap  = new HashMap<Integer,String>();
-    static
-    {
-        sexMap.put(PropertySex.MALE,"M");
-        sexMap.put(PropertySex.FEMALE,"F");
-        sexMap.put(PropertySex.UNKNOWN,"U");
-    }
-
+    /** i18n resources */
+    private Resources resources = Resources.get(this);
     protected final Gedcom gedcom;
     protected BufferedReader in;
     protected PrintWriter out;
-    private boolean dirty = false;
-    
-    protected boolean isDirty()
+
+    /**
+     * User-visible string to use to describe the sex of an Individual
+     */
+    protected  final Map<Integer, String> sexMap  = new HashMap<Integer,String>();
     {
-        return dirty;
+        sexMap.put(PropertySex.MALE,resources.getString("sex-indicator.male")); //$NON-NLS-1$
+        sexMap.put(PropertySex.FEMALE,resources.getString("sex-indicator.female")); //$NON-NLS-1$
+        sexMap.put(PropertySex.UNKNOWN,resources.getString("sex-indicator.unknown")); //$NON-NLS-1$
     }
 
-    protected void setDirty(boolean newValue)
-    {
-        dirty = newValue;
-    }
     /**
      * Constructor for a Console session.
      * @gedcomArg the Gedcom to be edited.
@@ -78,9 +78,11 @@ public class Console {
     /**
      * Constructor for a Console session attached to System.in and System.out
      * @param gedcomArg the Gedcom to be edited.
+     * @throws IOException 
      */
-    public Console(Gedcom gedcomArg) {
-        this(gedcomArg, new BufferedReader(new InputStreamReader(System.in)), new PrintWriter(System.out));
+    public Console(Gedcom gedcomArg) throws IOException {
+        this(gedcomArg, new BufferedReader(new InputStreamReader(System.in,"UTF-8")),  //$NON-NLS-1$
+                new PrintWriter(new OutputStreamWriter(System.out, "UTF-8"))); //$NON-NLS-1$
     }
 
     
@@ -108,16 +110,16 @@ public class Console {
       switch(  event)
       {
       case SYNTAX_ERROR:
-          AudioUtil.play("/Users/dsadinoff/sound/huh?.wav");
+          AudioUtil.play(resources.getString("soundfile.syntax-error")); //$NON-NLS-1$
           break;
       case MOTION_HYPERSPACE:
-          AudioUtil.play("/Users/dsadinoff/sound/hyperspace.wav");
+          AudioUtil.play(resources.getString("soundfile.jump")); //$NON-NLS-1$
           break;
       case HIT_WALL:
-          AudioUtil.play("/Users/dsadinoff/sound/thump1.wav");
+          AudioUtil.play(resources.getString("soundfile.hit-wall")); //$NON-NLS-1$
           break;
       case SET_VALUE:
-          AudioUtil.play("/Users/dsadinoff/sound/pop.wav");
+          AudioUtil.play(resources.getString("soundfile.set-value")); //$NON-NLS-1$
           break;
       default:
       }
@@ -129,21 +131,23 @@ public class Console {
     public static void main(String[] args)  
         throws Exception
     {
+        Resources resources = Resources.get("com.sadinoff.genj.console"); //$NON-NLS-1$
+
         if( args.length< 1)
         {
-            System.err.println("usage: java [classpath_options] "+ Console.class.getName() +" filename ");
-            System.err.println("       java [classpath_options] "+ Console.class.getName() +" -u URL");
+            System.err.println(resources.getString("usage")+ Console.class.getName() +" filename "); //$NON-NLS-1$ //$NON-NLS-2$
+            System.err.println("       java [classpath_options] "+ Console.class.getName() +" -u URL"); //$NON-NLS-1$ //$NON-NLS-2$
             System.exit(1);
         }
 
         Origin origin;
         if( args.length ==2 )
         {
-            if(! args[0].equals("-u"))
+            if(! args[0].equals("-u")) //$NON-NLS-1$
             {
-                System.err.println("Unknown option "+args[0]);
-                System.err.println("usage: java [classpath_options] "+ Console.class.getName() +" filename ");
-                System.err.println("       java [classpath_options] "+ Console.class.getName() +" -u URL");
+                System.err.println(resources.getString("startup.unknown-option")+args[0]); //$NON-NLS-1$
+                System.err.println("usage: java [classpath_options] "+ Console.class.getName() +" filename "); //$NON-NLS-1$ //$NON-NLS-2$
+                System.err.println("       java [classpath_options] "+ Console.class.getName() +" -u URL"); //$NON-NLS-1$ //$NON-NLS-2$
                 System.exit(1);
             }
             URL url = new URL(args[0]);
@@ -189,6 +193,27 @@ public class Console {
 
         return Integer.parseInt(arg);
     }
+
+    private List<String> resourceGetList(String key, String[] defaultList)
+    {
+        List<String> ret = new ArrayList<String>();
+        for(int i=1; ;i++)
+        {
+            String actualKey = key +"."+i; //$NON-NLS-1$
+            String val = resources.getString(actualKey,false);
+            if( null == val)
+                break;
+            ret.add(val);
+        }
+        if( ret.size() == 0)
+            return Arrays.asList(defaultList);
+        return ret;
+    }
+    
+    private List<String> resourceGetList(String key, String defaultSingleVal)
+    {
+        return resourceGetList(key, new String[] {defaultSingleVal});
+    }
     
     /**
      * fetch the  
@@ -199,39 +224,40 @@ public class Console {
         final Map<List<String>,Action>  actionMap = new LinkedHashMap<List<String>,Action>();
         
 
-        actionMap.put(Arrays.asList(new String[]{"version"}), new ActionHelper(){public Indi doIt(Indi ti, String arg){
+        actionMap.put(resourceGetList("version.command", "version"), new ActionHelper(){public Indi doIt(Indi ti, String arg){ //$NON-NLS-1$ //$NON-NLS-2$
             out.println(getVersion());
             return ti;}
-        public String getDoc() {return "print this help message";}
+        public String getDoc() {return resources.getString("version.output");} //$NON-NLS-1$
             });        
         
         
-        actionMap.put(Arrays.asList(new String[]{"help"}), new ActionHelper(){public Indi doIt(Indi ti, String arg){
+        actionMap.put(resourceGetList("help.command", "help"), new ActionHelper(){public Indi doIt(Indi ti, String arg){ //$NON-NLS-1$ //$NON-NLS-2$
             out.println(getHelpText(actionMap));
             return ti;}
-        public String getDoc() {return "print this help message";}
+        public String getDoc() {return resources.getString("help.help", "print this help message");} //$NON-NLS-1$ //$NON-NLS-2$
             });
-        actionMap.put(Arrays.asList(new String[]{"exit","quit"}), new ActionHelper(){
+        
+        
+        actionMap.put(resourceGetList("exit.command", "exit"), new ActionHelper(){ //$NON-NLS-1$ //$NON-NLS-2$
             public Indi doIt(Indi ti, String arg) throws IOException  {
-                if( !isDirty())
+                if( ! gedcom.hasUnsavedChanges())
                     System.exit(0);
                 out.println();
-                out.println("There are unsaved changes!");
-                out.print("Are you sure that you want to exit? [y/N]: ");
+                out.print(resources.getString("exit.unsaved-changes")); //$NON-NLS-1$
                 out.flush();
                 String line = in.readLine();
-                if( line.toLowerCase().startsWith("y"))
+                if( line.toLowerCase().startsWith(resources.getString("yesno.yes")))  //$NON-NLS-1$
                     System.exit(0);
-                out.println("Try the 'save FILENAME' command.");
+                out.println(resources.getString("exit.try-save-filename")); //$NON-NLS-1$
                 return ti;
             }
-                public String getDoc(){return "Exit the program.";}
+                public String getDoc(){return resources.getString("exit.help", "quit the program");} //$NON-NLS-1$ //$NON-NLS-2$
             });
 
         
 
         
-        actionMap.put(Arrays.asList(new String[]{"save"}), new Action(){
+        actionMap.put(resourceGetList("save.command","save"), new Action(){ //$NON-NLS-1$ //$NON-NLS-2$
             
             public Indi doIt(Indi ti, String arg){
                 try{
@@ -239,32 +265,32 @@ public class Console {
                     String  fname = saveTo.getName();
                     File canon = saveTo.getCanonicalFile();
                     File parentdir = canon.getParentFile();
-                    File tempFile = File.createTempFile(fname,"",parentdir);
+                    File tempFile = File.createTempFile(fname,"",parentdir); //$NON-NLS-1$
                     
                     OutputStream fos = new BufferedOutputStream(new FileOutputStream(tempFile));
                     
                     GedcomWriter writer = new GedcomWriter(gedcom,arg,null,fos);                    
                     writer.write(); //closes fos
                     if(!  tempFile.renameTo(saveTo) )
-                        throw new Exception("unable to rename "+tempFile+" to "+saveTo);
-                    out.println("Wrote file "+arg+" successfully.");
-                    out.println("Remember: the pathname of this GEDCOM file is embedded within it.");
-                    setDirty(false);
+                        throw new Exception(resources.getString("save.error.unable-to-rename")+tempFile+" to "+saveTo); //$NON-NLS-1$ //$NON-NLS-2$
+                    out.println(resources.getString("save.wrote-file-successfully",arg)); //$NON-NLS-1$ //$NON-NLS-2$
+                    out.println(resources.getString("save.remember")); //$NON-NLS-1$
+                    gedcom.setUnchanged();
                 }
                 catch( Exception e)
                 {
-                    out.println("failure writing to arg: "+e);
+                    out.println(resources.getString("save.error.io-error")+e); //$NON-NLS-1$
                 }
                 return ti;
             }
             public boolean modifiesDatamodel() { return true; } 
 
-        public String getDoc() { return "Save gedcom with filename FNAME";}
+        public String getDoc() { return resources.getString("save.help"); } //$NON-NLS-1$
         public ArgType getArgUse() { return ArgType.ARG_YES; }
-        public String getArgName() { return "FNAME";}
+        public String getArgName() { return resources.getString("save.arg");} //$NON-NLS-1$
         });
         
-        actionMap.put(Arrays.asList(new String[]{"undo"}), new Action(){
+        actionMap.put(resourceGetList("undo.command","undo"), new Action(){ //$NON-NLS-1$
             
             public Indi doIt(Indi ti, String arg){
                 String oldID = ti.getId();
@@ -274,31 +300,31 @@ public class Console {
                 }
                 catch( Exception e)
                 {
-                    out.println("couldn't undo! "+ e);
+                    out.println(resources.getString("undo.error.couldn't-undo")+ e); //$NON-NLS-1$
                 }
                 
                 //if the last operation was a create...                
                 ti = (Indi)gedcom.getEntity(oldID);
                 //TODO go back to previous location.
                 if( null == ti )
-                    System.out.println("Looks like the last ID was a create.  Returning to root of Gedcom");
+                    out.println(resources.getString("undo.warn.returning-to-root")); //$NON-NLS-1$
                 return (Indi)gedcom.getFirstEntity(Gedcom.INDI);
             }
             public boolean modifiesDatamodel() { return false; } 
 
-        public String getDoc() { return "Undo the last operation";}
+        public String getDoc() { return resources.getString("undo.help");} //$NON-NLS-1$
         public ArgType getArgUse() { return ArgType.ARG_NO; }
-        public String getArgName() { return "";}
+        public String getArgName() { return "";} //$NON-NLS-1$
         });
 
-        actionMap.put(Arrays.asList(new String[]{"look","l", "x"}), new ActionHelper()
+        actionMap.put(resourceGetList("look.command","look"), new ActionHelper() //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 {
                     public Indi doIt(final Indi ti ,final String targetID){
                         if( targetID != null && targetID.length()>0)
                         {
-                            Indi target = (Indi)gedcom.getEntity("INDI", targetID);
+                            Indi target = (Indi)gedcom.getEntity("INDI", targetID); //$NON-NLS-1$
                             if( null == target)
-                                out.println("No INDI record with that ID");
+                                out.println(resources.getString("look.no-record")); //$NON-NLS-1$
                             else
                                 out.println(dump(target));
                         }
@@ -306,18 +332,18 @@ public class Console {
                             out.println(dump(ti));
                         return ti;
                     }
-                    public String getDoc(){return "\"Look around\": Dump Detailed information on the current person [or person with ID]";}
+                    public String getDoc(){return resources.getString("look.help");} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL; }
-                    public String getArgName() { return "ID";}
+                    public String getArgName() { return resources.getString("look.arg");} //$NON-NLS-1$
                     });        
         
-        actionMap.put(Arrays.asList(new String[]{"gind","goto", "g"}), new Action()
+        actionMap.put(resourceGetList("gind.command","gind"), new Action() //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 {
                     public Indi doIt(final Indi ti ,final String targetID){
-                        Entity  newEntity = gedcom.getEntity("INDI", targetID);
-                        if (null == newEntity)
+                        Entity  newEntity = gedcom.getEntity("INDI", targetID); //$NON-NLS-1$
+                        if (null == newEntity )
                         {
-                            System.out.println("Can't find entity named "+targetID);
+                            out.println(resources.getString("error.can't-find-entity")+targetID); //$NON-NLS-1$
                             return ti;
                         }
                         Indi newInd = (Indi)newEntity;
@@ -325,72 +351,72 @@ public class Console {
                         return newInd;
                     }
                     public boolean modifiesDatamodel() { return false; } 
-                    public String getDoc(){return "Go to Individual with identifier ID";}
+                    public String getDoc(){return resources.getString("goto.help");} //$NON-NLS-1$
                     public ArgType getArgUse() {  return ArgType.ARG_YES;}
-                    public String getArgName() {  return "ID"; }
+                    public String getArgName() {  return resources.getString("goto.arg"); } //$NON-NLS-1$
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"search","find"}), new Action()
+        actionMap.put(resourceGetList("search.command","search"), new Action() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(final Indi ti ,final String searchArg){
-                        out.println(" Search Results:[[");
-                        for( Object entity : gedcom.getEntities("INDI"))
+                        out.println(resources.getString("search.results.start")); //$NON-NLS-1$
+                        for( Object entity : gedcom.getEntities("INDI")) //$NON-NLS-1$
                         {
                             Indi candidate = (Indi)entity;
                             if( candidate.getName().toLowerCase().contains(searchArg.toLowerCase()))
-                                out.println("  "+candidate);
+                                out.println("  "+candidate); //$NON-NLS-1$
                         }
-                        out.println(" ]]");
+                        out.println(resources.getString("search.results.end")); //$NON-NLS-1$
                         out.println();
                         return ti;
                     }
                     public boolean modifiesDatamodel() { return false; } 
-                    public String getDoc(){return "Show list of individuals with names containing STR as a substring";}
+                    public String getDoc(){return resources.getString("search.help");} //$NON-NLS-1$
                     public ArgType getArgUse() {  return ArgType.ARG_YES;}
-                    public String getArgName() {  return "STR"; }
+                    public String getArgName() {  return resources.getString("search.arg"); } //$NON-NLS-1$
                 });
         
         
-        actionMap.put(Arrays.asList(new String[]{"gdad","gd"}), new ActionHelper()
+        actionMap.put(resourceGetList("gdad.command","gdad"), new ActionHelper() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(final Indi ti , String arg){
                         Indi dad = ti.getBiologicalFather();
                         if( null == dad)
                         {   
-                            out.println("sorry, no dad.  Try cdad.\n");
+                            out.println(resources.getString("gdad.error.no-dad")); //$NON-NLS-1$
                             giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return ti;
                         }
                         else
                             return dad;
                     }
-                    public String getDoc(){return "Go to Biological Father";}
+                    public String getDoc(){return resources.getString("gdad.help");} //$NON-NLS-1$
                 });        
         
-        actionMap.put(Arrays.asList(new String[]{"gmom","gm"}), new ActionHelper()
+        actionMap.put(resourceGetList("gmom.command","gmom"), new ActionHelper() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(final Indi ti, String arg){
                         Indi mom = ti.getBiologicalMother();
                         if( null == mom)
                         {   
-                            out.println("sorry, no mom.  Try cmom.\n");
+                            out.println(resources.getString("gmom.error.nomom")); //$NON-NLS-1$
                             giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return ti;
                         }
                         else
                             return mom;
                     }
-                    public String getDoc(){return "Go to Biological Mother";}
+                    public String getDoc(){return resources.getString("gmom.help");} //$NON-NLS-1$
                 });
         
-        actionMap.put(Arrays.asList(new String[]{"gspo","gsp"}),new Action()
+        actionMap.put(resourceGetList("gspo.command","gspo"),new Action() //$NON-NLS-1$ //$NON-NLS-2$
                 {
 
                     public Indi doIt(Indi theIndi, String arg) {
                         Fam[] marriages = theIndi.getFamiliesWhereSpouse();
                         if( marriages.length ==0)
                         {
-                            out.println("Not married.");
+                            out.println(resources.getString("gspo.error.notmarried")); //$NON-NLS-1$
                             giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return theIndi;
                         }
@@ -403,7 +429,7 @@ public class Console {
                         }
                         catch(NumberFormatException nfe)
                         {
-                            out.println("couldn't parse "+arg+" as a number");
+                            out.println(resources.getString("gspo.error.cantparse")+arg+" as a number"); //$NON-NLS-1$ //$NON-NLS-2$
                             return theIndi;
                         }
                         return  marriages[targetMarriage].getOtherSpouse(theIndi);
@@ -411,19 +437,19 @@ public class Console {
 
                     public boolean modifiesDatamodel() { return false; } 
                     
-                    public String getDoc() {return "go to [Nth] spouse";}
+                    public String getDoc() {return resources.getString("gspo.help");} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() { return "N";}
+                    public String getArgName() { return resources.getString("gspo.arg");} //$NON-NLS-1$
                     });
 
         
-        actionMap.put(Arrays.asList(new String[]{"gsib"}), new Action()
+        actionMap.put(resourceGetList("gsib.command","gsib"), new Action() //$NON-NLS-1$
                 {
                     public Indi doIt(Indi theIndi, String arg) {
                         Fam bioKidFamily = theIndi.getFamilyWhereBiologicalChild();
                         if( null == bioKidFamily)
                         {
-                            out.println("not a kid in a biofamily");
+                            out.println(resources.getString("gsib.not-a-kid-in-biofamily")); //$NON-NLS-1$
                             giveFeedback(UIFeedbackType.HIT_WALL);                            
                             return theIndi;
                         }
@@ -437,7 +463,7 @@ public class Console {
                                     myIndex =i;
                             if( myIndex == -1)
                             {
-                                out.println("Aiee: can't find myself.");
+                                out.println(resources.getString("gsib.error.cant-find-myself")); //$NON-NLS-1$
                                 return theIndi;
                             }
                             return sibs[(myIndex+1)%sibs.length];
@@ -449,31 +475,31 @@ public class Console {
                                 int kidNumber = parseInt(arg, 0);
                                 if( kidNumber <1 || kidNumber > sibs.length)
                                 {
-                                    out.println("bad sib number");
+                                    out.println("bad sib number"); //$NON-NLS-1$
                                     return theIndi;
                                 }
                                 return sibs[kidNumber-1];
                             }
                             catch(NumberFormatException nfe)
                             {
-                                out.println("couldn't parse "+arg+" as a number");
+                                out.println(resources.getString("error.cant-parse-arg-as-number")+arg+" as a number"); //$NON-NLS-1$ //$NON-NLS-2$
                                 return theIndi;
                             }
                         }
                     }
                     public boolean modifiesDatamodel() { return false; } 
-                    public String getDoc() {    return "go to next [Nth] sibling";}
+                    public String getDoc() {    return resources.getString("gsib.help");}  //$NON-NLS-1$
                     public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() { return "N";}
+                    public String getArgName() { return "N";} //$NON-NLS-1$
 
                 });
    
-        actionMap.put(Arrays.asList(new String[]{"gchi","gkid"}), new Action()
+        actionMap.put(resourceGetList("gchi.command","gchi"), new Action() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     
-                public String getDoc() {    return "go to first [Nth] child ";}
+                public String getDoc() {    return resources.getString("gkid.help");} //$NON-NLS-1$
                 public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
-                public String getArgName() { return "N";}
+                public String getArgName() { return resources.getString("gkid.arg");} //$NON-NLS-1$
                 public boolean modifiesDatamodel() { return false; } 
             public Indi doIt(Indi theIndi, String arg) {
                 
@@ -481,7 +507,7 @@ public class Console {
                 Indi[] children=  theIndi.getChildren();
                 if(0==children.length)
                 {
-                    out.println("no kids!");
+                    out.println(resources.getString("gkid.error.no-kids"));  //$NON-NLS-1$
                     giveFeedback(UIFeedbackType.HIT_WALL);                            
                     return theIndi;
                 }
@@ -492,21 +518,21 @@ public class Console {
                     int kidNumber = Integer.parseInt(arg);
                     if( kidNumber <1 || kidNumber > children.length)
                     {
-                        out.println("bad sib number");
+                        out.println(resources.getString("gkid.error.bad-sib-number"));  //$NON-NLS-1$
                         return theIndi;
                     }
                     return children[kidNumber-1];
                 }
                 catch(NumberFormatException nfe)
                 {
-                    out.println("couldn't parse ["+arg+"] as a number");
+                    out.println(resources.getString("gkid.error.cant-parse-arg")+arg+"] as a number"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
                 return theIndi;
             }
                 });
         
 
-        actionMap.put(Arrays.asList(new String[]{"cbro","cb"}), new Action()
+        actionMap.put(resourceGetList("cbro.command","cbro"), new Action() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         Indi newSib =  createBiologicalSibling(ti,PropertySex.MALE);
@@ -515,13 +541,13 @@ public class Console {
                         return newSib;
                     }
 
-                    public String getDoc(){return "Create a biological brother [with first name FNAME]";}
+                    public String getDoc(){return resources.getString("cbro.help");}  //$NON-NLS-1$
                     public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() {return "FNAME";}
+                    public String getArgName() {return "FNAME";} //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; } 
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"csis"}), new Action()
+        actionMap.put(resourceGetList("csis.command","csis"), new Action() //$NON-NLS-1$
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         Indi newSib =  createBiologicalSibling(ti,PropertySex.FEMALE);
@@ -530,13 +556,13 @@ public class Console {
                         return newSib;
                     }
                         
-                    public String getDoc(){return "Create a biological sister [with first name FNAME]";}
+                    public String getDoc(){return "Create a biological sister [with first name FNAME]";} //$NON-NLS-1$
                     public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() {return "FNAME";}
+                    public String getArgName() {return "FNAME";} //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; } 
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"cson"}), new Action()
+        actionMap.put(resourceGetList("cson.command","cson"), new Action() //$NON-NLS-1$
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         int marriageNumber =1;
@@ -552,15 +578,15 @@ public class Console {
                         return kid;
                     }
                         
-                    public String getDoc(){return "Create son in default/[nth] marriage, with first name FNAME";}
+                    public String getDoc(){return resources.getString("cson.help");} //$NON-NLS-1$
 
                     public ArgType getArgUse() {return ArgType.ARG_OPTIONAL;}
 
-                    public String getArgName() {return "N/FNAME";}
+                    public String getArgName() {return "N/FNAME";} //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; } 
                 });
         
-        actionMap.put(Arrays.asList(new String[]{"cdaut", "cdau","cd"}), new Action(){
+        actionMap.put(resourceGetList("cdaut.command","cdaut"), new Action(){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             public Indi doIt(final Indi ti, String arg) throws GedcomException{
                 int marriageNumber =1 ;
                 boolean numeric = false;
@@ -576,14 +602,14 @@ public class Console {
 
             }
                     
-            public String getDoc(){return "Create daughter in default/[nth] marriage, with first name FNAME";}
+            public String getDoc(){return resources.getString("cdau.help");}  //$NON-NLS-1$
             public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
-            public String getArgName() { return "N/FNAME";}
+            public String getArgName() { return "N/FNAME";} //$NON-NLS-1$
             public boolean modifiesDatamodel() { return true; } 
         });
 
         
-        actionMap.put(Arrays.asList(new String[]{"cspou", "csp","cspouse"}), new Action()
+        actionMap.put(resourceGetList("cspou.command","cspou"), new Action() //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         Indi spouse = createFamilyAndSpouse(ti);
@@ -591,14 +617,14 @@ public class Console {
                             setFirstName(spouse,arg);
                         return spouse;
                     }
-                    public String getDoc(){return "Create and goto a spouse of the opposite sex [with First name FNAME]";}
+                    public String getDoc(){return resources.getString("cspo.help");} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() { return "FNAME";}
+                    public String getArgName() { return "FNAME";} //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; } 
                 });
 
         
-        actionMap.put(Arrays.asList(new String[]{"cdad"}), new Action()
+        actionMap.put(resourceGetList("cdad.command","cdad"), new Action() //$NON-NLS-1$
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         Indi parent= createParent(ti,PropertySex.MALE);
@@ -606,12 +632,12 @@ public class Console {
                             setFirstName(parent,arg);
                         return parent;
                     }
-                    public String getDoc(){return "Create and goto a father [with first name FNAME]";}
+                    public String getDoc(){return resources.getString("cdad.help");} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() { return "FNAME";}
+                    public String getArgName() { return "FNAME";} //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; } 
                 });
-        actionMap.put(Arrays.asList(new String[]{"cmom"}), new Action()
+        actionMap.put(resourceGetList("cmom.command","cmom"), new Action() //$NON-NLS-1$
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         Indi parent= createParent(ti,PropertySex.FEMALE);
@@ -619,39 +645,38 @@ public class Console {
                             setFirstName(parent,arg);
                         return parent;
                     }
-                    public String getDoc(){return "Create and goto a mother [with first name FNAME]";}
+                    public String getDoc(){return "Create and goto a mother [with first name FNAME]";} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_OPTIONAL;}
-                    public String getArgName() { return "FNAME";}
+                    public String getArgName() { return "FNAME";} //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; } 
                 });
 
                 
-        actionMap.put(Arrays.asList(new String[]{"rsib"}), new Action()
-                {
+        actionMap.put(resourceGetList("rsib.command","rsib"), new Action(){ //$NON-NLS-1$ //$NON-NLS-2$
                     public Indi doIt(final Indi ti, final String existingSibID) throws GedcomException{
                         Fam theFam = getCreateBiologicalFamily(ti);
-                        Indi existingSib = (Indi)gedcom.getEntity("INDI", existingSibID);
+                        Indi existingSib = (Indi)gedcom.getEntity("INDI", existingSibID); //$NON-NLS-1$
                         if (null == existingSib)
                         {
-                            System.out.println("Can't find entity named "+existingSibID);
+                            System.out.println(resources.getString("error.can't-find-individual-named",new Object[]{existingSibID})); //$NON-NLS-1$
                             return ti;
                         }
                         Fam existingFam = existingSib.getFamilyWhereBiologicalChild();
                         if( null != existingFam )
                         {
-                            out.println("Error. Individual "+existingSib+" is already a bio-child in family "+existingFam);
+                            out.println(resources.getString("rsib.error-already-in-family",new Object[] {existingSib,ti, existingFam})); //$NON-NLS-1$
                             return ti;
                         }
                         theFam.addChild(existingSib);
                         return existingSib;
                     }
-                    public String getDoc(){return "relate the current Individual to an individual with identifier ID";}
+                    public String getDoc(){return resources.getString("rsib.help");} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_YES;}
-                    public String getArgName() { return "ID";}
+                    public String getArgName() { return resources.getString("rsib.arg");} //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; } 
                 });        
         
-        actionMap.put(Arrays.asList(new String[]{"del","delete"}), new ActionHelper()
+        actionMap.put(resourceGetList("del.command","del"), new ActionHelper() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(final Indi ti, String arg) throws GedcomException{
                         Fam[] famsc = ti.getFamiliesWhereChild();
@@ -666,24 +691,24 @@ public class Console {
                         }
                             
                         //FIX handle empty database.
-                      out.println("Individual Removed.  Returning to Gedcom root...");
+                      out.println(resources.getString("del.returning-to-root")); //$NON-NLS-1$
                       return (Indi)gedcom.getFirstEntity(Gedcom.INDI);
                     }
                     public boolean modifiesDatamodel() { return true; } 
-                    public String getDoc(){return "Delete the current Individual and return to the root of the Gedcom file";}
+                    public String getDoc(){return resources.getString("del.help");} //$NON-NLS-1$
                 });
         
         
 
-        actionMap.put(Arrays.asList(new String[]{"sname","snam","n"}), new Action()
+        actionMap.put(resourceGetList("sname.command","sname"), new Action() //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 {
-                    final Pattern firstLastPat = Pattern.compile("((\\S+\\s+)+)(\\S+)");
+            final Pattern firstLastPat = Pattern.compile("((\\S+\\s+)+)(\\S+)"); //$NON-NLS-1$
                     public Indi doIt(Indi theIndi, String arg) {
                         Matcher firstLastMatcher = firstLastPat.matcher(arg);
                         if( ! firstLastMatcher.find())
                         {
                             giveFeedback(UIFeedbackType.SYNTAX_ERROR);
-                            out.println("syntax error: snam first last");
+                            out.println(resources.getString("snam.error.syntax"));  //$NON-NLS-1$
                         }
                         String first = firstLastMatcher.group(1).trim();
                         String last = firstLastMatcher.group(3);
@@ -691,57 +716,57 @@ public class Console {
                         return theIndi;
                     }
                     
-                    public String getDoc() {return "set name to FIRST LAST";}
+                    public String getDoc() {return resources.getString("snam.help");}  //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_YES;}
-                    public String getArgName() { return "FIRST LAST"; }
+                    public String getArgName() { return resources.getString("snam.arg"); } //$NON-NLS-1$
                     public boolean modifiesDatamodel() { return true; 
                     } 
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"sfnm","fn","sfn"}), new Action()
+        actionMap.put(resourceGetList("sfnm.command","sfnm"), new Action() //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 {
                     public Indi doIt(Indi theIndi, String arg) {
                         theIndi.setName(arg,theIndi.getLastName());
                         return theIndi;
                     }
                     public boolean modifiesDatamodel() { return true; } 
-                    public String getDoc() { return "set First name to FIRSTNAME";}
+                    public String getDoc() { return resources.getString("fnam.help");}  //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
-                    public String getArgName() { return "FIRSTNAME";}
+                    public String getArgName() { return resources.getString("fnam.arg");}  //$NON-NLS-1$
                 });
-        actionMap.put(Arrays.asList(new String[]{"slnm","ln","sln"}), new Action()
+        actionMap.put(resourceGetList("slnm.command","slnm"), new Action() //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 {
                     public Indi doIt(Indi theIndi, String arg) {
                         theIndi.setName(theIndi.getFirstName(), arg);
                         return theIndi;
                     }
                     public boolean modifiesDatamodel() { return true; } 
-                    public String getDoc() { return "set Last name to LAST";}
+                    public String getDoc() { return resources.getString("lnam.help");}  //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
-                    public String getArgName() { return "LAST";}
+                    public String getArgName() { return resources.getString("lnam.arg");} //$NON-NLS-1$
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"ssex","sex"}), new Action()
+        actionMap.put(resourceGetList("ssex.command","ssex"), new Action() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(Indi theIndi, String newSex) {
                         newSex = newSex.toLowerCase();
-                        if(newSex.equals("m"))
+                        if(newSex.equals(resources.getString("ssex.M")))  //$NON-NLS-1$
                             theIndi.setSex(PropertySex.MALE);
-                        else if( newSex.equals("f"))
+                        else if( newSex.equals(resources.getString("ssex.F")))  //$NON-NLS-1$
                             theIndi.setSex(PropertySex.FEMALE);
-                        else if(newSex.equals("u"))
+                        else if(newSex.equals(resources.getString("ssex.U")))  //$NON-NLS-1$
                             theIndi.setSex(PropertySex.UNKNOWN);
                         else
-                            out.println("ERROR: argument to ssex must be one of M,F,U");
+                            out.println(resources.getString("ssex.error.input"));  //$NON-NLS-1$
                         return theIndi;
                     }
                     public boolean modifiesDatamodel() { return true; } 
-                    public String getDoc() { return "set sex of current individual to S. Must be one of {M,F,U}.";}
+                    public String getDoc() { return resources.getString("ssex.help");} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
-                    public String getArgName() { return "S";}
+                    public String getArgName() { return "S";} //$NON-NLS-1$
                 });
 
-        actionMap.put(Arrays.asList(new String[]{"bday","b"}), new Action()
+        actionMap.put(resourceGetList("bday.command","bday"), new Action() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(Indi theIndi, String arg) {
                         PropertyDate date =theIndi.getBirthDate(true) ;
@@ -749,13 +774,13 @@ public class Console {
                         return theIndi;
                     }
                     public boolean modifiesDatamodel() { return true; } 
-                    public String getDoc() { return "set birthday to BDAY";}
+                    public String getDoc() { return resources.getString("bday.help");}  //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
-                    public String getArgName() { return "BDAY";}
+                    public String getArgName() { return "BDAY";} //$NON-NLS-1$
                 });
 
 
-        actionMap.put(Arrays.asList(new String[]{"dday","d"}), new Action()
+        actionMap.put(resourceGetList("dday.command","dday"), new Action() //$NON-NLS-1$ //$NON-NLS-2$
                 {
                     public Indi doIt(Indi theIndi, String arg) {
                         PropertyDate date =theIndi.getDeathDate(true) ;
@@ -763,9 +788,9 @@ public class Console {
                         return theIndi;
                     }
                     public boolean modifiesDatamodel() { return true; } 
-                    public String getDoc() { return "set death day to DDAY";}
+                    public String getDoc() { return resources.getString("dday.help");} //$NON-NLS-1$
                     public ArgType getArgUse() { return ArgType.ARG_YES ; }
-                    public String getArgName() { return "DDAY";}
+                    public String getArgName() { return resources.getString("dday.arg");}  //$NON-NLS-1$
                 });
 
         
@@ -780,13 +805,13 @@ public class Console {
 
             Map<String, Action> commandToAction= expandActionMap(actionMap);
 
-        Pattern commandPat = Pattern.compile("^(\\w+)(\\s+(\\S.*))?");
+        Pattern commandPat = Pattern.compile("^(\\p{Alnum}+)(\\s+(\\S.*))?"); //$NON-NLS-1$
         for(;;)
         {
-            out.println("------");
-            out.print("You are at: ");
+            out.println("------"); //$NON-NLS-1$
+            out.print(resources.getString("you-are-at")); //$NON-NLS-1$
             out.println(brief(theIndi));
-            out.print("> ");
+            out.print("> "); //$NON-NLS-1$
             out.flush();
             final String line = in.readLine().trim();
             if( line.length() ==0)
@@ -795,13 +820,15 @@ public class Console {
             if( ! lineMatcher.matches())
             {
                 giveFeedback(UIFeedbackType.SYNTAX_ERROR);
-                out.println("syntax error.  Type 'help' for help");
+                out.println(resources.getString("error.syntax-error")); //$NON-NLS-1$
                 continue;
             }
             String command = lineMatcher.group(1);
             String args = lineMatcher.group(3);
+            if( DEBUG )
+                out.println("cmd=["+command+"], args=["+args+"]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             if( ! commandToAction.containsKey(command) ) {
-                out.println("unknown command. Type 'help' for help");
+                out.println(resources.getString(resources.getString("error.unknown-command"))); //$NON-NLS-1$
                 giveFeedback(UIFeedbackType.SYNTAX_ERROR);
                 continue;
             }
@@ -810,7 +837,6 @@ public class Console {
             {
                 if(action.modifiesDatamodel())
                 {
-                    setDirty(true);
                     gedcom.startTransaction();
                 }
                 theIndi = action.doIt(theIndi, args);
@@ -821,7 +847,7 @@ public class Console {
             }
             catch( Exception re)
             {
-                out.println("ERROR: "+re);
+                out.println(resources.getString("error.exception")+re);  //$NON-NLS-1$
                 re.printStackTrace();
             }
         }
@@ -834,7 +860,7 @@ public class Console {
             {
                 if( theMap.containsKey(command))
                 {
-                    throw new RuntimeException("Configuration ERROR!  overlapping command definitions for "+command);
+                    throw new RuntimeException(resources.getString("error.configerr")+command);  //$NON-NLS-1$
                 }
                 theMap.put(command, entry.getValue());
             }
@@ -850,24 +876,24 @@ public class Console {
     {
         StringBuffer buf = new StringBuffer();
         buf.append(fam+LB);
-        buf.append("h:"+ fam.getHusband()+LB);
-        buf.append("w:"+fam.getWife()+LB);          
+        buf.append(resources.getString("dump.husband")+ fam.getHusband()+LB);  //$NON-NLS-1$
+        buf.append(resources.getString("dump.wife")+fam.getWife()+LB);      //$NON-NLS-1$
         for( Indi child: fam.getChildren() )
         {
-            buf.append("\t");
+            buf.append("\t"); //$NON-NLS-1$
             buf.append(child.toString());
             buf.append(LB);
         }
-        buf.append("\t");
+        buf.append("\t"); //$NON-NLS-1$
         return buf.toString();
     }
     
     private String indent(String str )
     {
         StringBuffer buf = new StringBuffer(str.length());
-        for( String line : str.split("\\r?\\n"))
+        for( String line : str.split("\\r?\\n")) //$NON-NLS-1$
         {
-            buf.append("  ");
+            buf.append("  "); //$NON-NLS-1$
             buf.append(line);
             buf.append(LB);
         }
@@ -877,16 +903,16 @@ public class Console {
     protected String brief(final Indi theInd)
     {
         StringBuffer buf = new StringBuffer(theInd.toString());
-        buf.append( "[");
+        buf.append( "["); //$NON-NLS-1$
         buf.append( sexMap.get(theInd.getSex()));
-        buf.append("]");
+        buf.append("]"); //$NON-NLS-1$
         buf.append(LB);
-        buf.append(" ");
-        buf.append(" born:{");
+        buf.append("\t"); //$NON-NLS-1$
+        buf.append(resources.getString("dump.born"));  //$NON-NLS-1$
         buf.append(theInd.getBirthAsString());
-        buf.append("}  died:{");
+        buf.append(resources.getString("dump.died"));  //$NON-NLS-1$
         buf.append(theInd.getDeathAsString());
-        buf.append("}");
+        buf.append("}"); //$NON-NLS-1$
         buf.append(LB);
         return buf.toString();
     }
@@ -897,10 +923,10 @@ public class Console {
         Fam bioKidFamily = theInd.getFamilyWhereBiologicalChild();
         if( null != bioKidFamily)
         {
-            buf.append("Child in family:"+LB);
+            buf.append(resources.getString("dump.kid-in-family")+LB);  //$NON-NLS-1$
             buf.append(indent(dump(bioKidFamily)));
         }
-        buf.append("Marriages:");
+        buf.append(resources.getString("dump.marriages"));  //$NON-NLS-1$
         buf.append(LB);
         Fam[] spouseFamilies = theInd.getFamiliesWhereSpouse();
         for(Fam fam : spouseFamilies)
@@ -917,8 +943,8 @@ public class Console {
         if( families.length > 1)
         {
             if( marriageIndex > families.length-1 || marriageIndex<0)
-                throw new IllegalArgumentException("Bad marriage index:" +marriageIndex+ " "+parent
-                       +" is only a spouse in "+families.length+" families");
+                throw new IllegalArgumentException(resources.getString("error.bad-marriage-index") +marriageIndex+ " "+parent   //$NON-NLS-1$//$NON-NLS-2$
+                       +" is only a spouse in "+families.length+" families");  //$NON-NLS-1$ //$NON-NLS-2$
             theFamily = families[marriageIndex];
         }
         else if( families.length== 0)
@@ -932,7 +958,7 @@ public class Console {
         child.setSex(sex);
         theFamily.addChild(child);
         Indi father = child.getBiologicalFather();
-        child.setName("",father.getLastName());
+        child.setName("",father.getLastName()); //$NON-NLS-1$
         return child;
     }
     
@@ -972,7 +998,7 @@ public class Console {
         child.setSex(sex);
         theFam.addChild(child);
         Indi father = child.getBiologicalFather();
-        child.setName("",father.getLastName());
+        child.setName("",father.getLastName()); //$NON-NLS-1$
         return child;       
     }
     
@@ -985,14 +1011,14 @@ public class Console {
     protected Indi createParent(Indi theChild, int sex) throws GedcomException
     {
         if( null != theChild.getFamilyWhereBiologicalChild())
-            throw new IllegalArgumentException("can't have >1 biological Family");
+            throw new IllegalArgumentException(resources.getString("error.cant-have-many-biofamilies"));  //$NON-NLS-1$
         Indi parent = (Indi)gedcom.createEntity(Gedcom.INDI);
         parent.setSex(sex);
         Indi newOtherParent = createFamilyAndSpouse(parent);
         if( PropertySex.MALE  == sex)
-            parent.setName("",theChild.getLastName());
+            parent.setName("",theChild.getLastName()); //$NON-NLS-1$
         else
-            newOtherParent.setName("",theChild.getLastName());
+            newOtherParent.setName("",theChild.getLastName()); //$NON-NLS-1$
         Fam newFamily = parent.getFamiliesWhereSpouse()[0];
         newFamily.addChild(theChild);
         return parent;
@@ -1010,20 +1036,21 @@ public class Console {
         date.setValue(newValue);
         if( date.isValid())
             return true;
-        out.println("Couldn't parse the date.");
+        out.println(resources.getString("error.parse-date")); //$NON-NLS-1$
         giveFeedback(UIFeedbackType.SYNTAX_ERROR);
         date.setValue(oldValue);
         assert(date.isValid());
         return false;
     }
     
-    private static String getVersion()
+    private String getVersion()
     {
-        return "This is GenJ-Console version $Revision: 1.21 $".replace("Revision:","").replace("$","");
+        return resources.getString("version.version") //$NON-NLS-1$
+        + "$Revision: 1.22 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
     }
     
 
-    private static String getHelpText(Map<List<String>, Action> actionMap) {
+    private  String getHelpText(Map<List<String>, Action> actionMap) {
         
         /*
         String[] help = {" COMMAND LIST :",
@@ -1056,7 +1083,7 @@ public class Console {
         ""};
         */
         StringBuffer buf = new StringBuffer(1000);
-        buf.append("Available Commands:");
+        buf.append(resources.getString("help.available-commands"));  //$NON-NLS-1$
         buf.append(LB);
         for( List<String> actionKey: actionMap.keySet())
         {
@@ -1064,7 +1091,7 @@ public class Console {
             for(String cmdName : actionKey)
             {
                 buf.append(cmdName);
-                buf.append(" ");
+                buf.append(" "); //$NON-NLS-1$
                 switch (a.getArgUse())
                 {
                 case ARG_OPTIONAL:
@@ -1078,7 +1105,7 @@ public class Console {
                 }
                 buf.append(LB);
             }
-            buf.append("-");
+            buf.append("-"); //$NON-NLS-1$
             buf.append(a.getDoc());
             buf.append(LB);
             buf.append(LB);
