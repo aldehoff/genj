@@ -1,3 +1,6 @@
+Since v24
+  * added mdate  - set marriage date
+
 Since v23
   * gkid NAME : go to a kid with first name NAME
   * readline integration 
