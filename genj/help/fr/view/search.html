@@ -44,7 +44,7 @@ pointues.<br>
 Son usage me semble vraiment tr&eacute;s complexe, mais voil&agrave; 
 un peu de quoi il retourne&nbsp;:<br>
 En cliquant sur ce bouton, la liste suivante s'affiche&nbsp;:<br>
-<div style="margin-left: 60px;">
+<div style="margin-left: 40px;">
 <table width="90%" border="0">
 <tr>
 <td width="20%">
@@ -100,7 +100,10 @@ de faire un tutorial sur les "regex").<br>
 <br>
 <u>Quelques exemples cependant pour vous faire comprendre</u>&nbsp;:<br>
 Tout d'abord, une n&eacute;cessit&eacute;&nbsp;: Vous devez cocher 
-l'option juste au-dessus dont le label est "Expression Exacte".<br>
+l'option juste au-dessus dont le label est "Expression Exacte" (mais 
+m&ecirc;me si vous ne le faites pas, GenJ le fera pour vous, d&eacute;s 
+que vous allez utiliser cette fonction bas&eacute;e sur les 
+RegEx).<br>
 Maintenant, vous voulez rechercher les endroits, o&ugrave; dans votre 
 arbre (votre fichier gedcom), on a le nom "Massonneau".<br>
 La mani&egrave;re la plus simple est de mettre "Massonneau" (avec ou 
@@ -124,10 +127,30 @@ veux rechercher les cas o&ugrave; j'ai au moins une fois la lettre
 une fois ou plus)</font></i>". Il va falloir que dans le premier 
 champ, votre recherche soit &eacute;crite comme &ccedil;a&nbsp;: 
 "<b>Mas+on+eau</b>".<br>
-N.B.&nbsp;: Dans la liste des "regex" propos&eacute;s, "X" s'applique 
-&agrave; ce qu'on recherche, donc ici, c'est la lettre "s" et la 
-lettre "n". Dans mon exemple ci-dessus, on a utilis&eacute; deux fois 
-cette fonction.<br>
+<div style="margin-left: 40px;">
+<u><b>N.B.</b></u>&nbsp;: Dans la liste des "regex" propos&eacute;es, 
+"X" s'applique &agrave; ce qu'on recherche, donc ici, c'est la 
+lettre "s" et la lettre "n". Dans mon exemple ci-dessus, on a 
+utilis&eacute; deux fois cette fonction.<br>
+Si par contre, vous utilisez la fonction de cette 
+mani&egrave;re&nbsp;:<br>
+<b>(bateau){2,}</b> &ccedil;a va vouloir dire que vous recherchez 
+les endroits o&ugrave; le mot "bateau", se retrouve deux fois de 
+suite au moins, c&ocirc;te &agrave; c&ocirc;te, donc quelque chose 
+du genre "bateaubateau".<br>
+Si vous mettez <b>bateau{2,}</b> (vous voyez que je ne mets pas 
+le mot bateau entre parenth&egrave;ses), vous ne rechercherez que 
+les endroits o&ugrave; l'on trouve dans votre fichier gedcom, la 
+lettre "u", au moins deux fois c&ocirc;te &agrave; c&ocirc;te, 
+donc quelque chose comme "uu" ou "uuu" ou "uuuu", etc....<br>
+Ce qui est entre accolades, s'applique uniquement au caract&egrave;re 
+situ&eacute; juste avant. Donc si vous ne mettez pas de 
+parenth&egrave;se on ne recherchera que la lettre. Si au contraire, 
+vous mettez des parenth&egrave;ses, &ccedil;a recherchera tout ce 
+qui est entre parenth&egrave;ses.<br>
+Vous voyez la puissance du truc, d'o&ugrave; l'int&eacute;r&ecirc;t 
+de reprendre un tutorial.<br>
+</div>
 </div>
 <br>
 <a name="_search_second_field_"></a>
@@ -145,7 +168,7 @@ exemple&nbsp;: INDI:RESI:ADDR:CITY, ou INDI:OCCU.<br>
 structure, et vous utilisez le bouton situ&eacute; &agrave; gauche 
 pour choisir parmi une liste d&eacute;j&agrave; pr&eacute;par&eacute;e, 
 dans laquelle vous aurez&nbsp;:<br>
-<div style="margin-left: 60px;">
+<div style="margin-left: 30px;">
 .&nbsp;Individu<br>
 .&nbsp;Nom<br>
 .&nbsp;Naissance<br>
