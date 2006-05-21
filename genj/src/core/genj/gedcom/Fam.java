@@ -321,11 +321,24 @@ public class Fam extends Entity {
    * @return date or null
    */
   public PropertyDate getMarriageDate() {
+      return getMarriageDate(false);
     // Calculate MARR|DATE
-    return (PropertyDate)getProperty(PATH_FAMMARRDATE);
   }
 
   /**
+   * returns a PropertyDate view on the marriage date of this family
+   * @param create if true, and the property doesn't already exist,  initialize the Property
+   * @return a PropertyDate or null.  If create is true, this method will not return null
+   */
+  public PropertyDate getMarriageDate(boolean create) {
+      PropertyDate date = (PropertyDate)getProperty(PATH_FAMMARRDATE);
+      if( null != date || !create )
+          return date;
+      setValue(PATH_FAMMARRDATE,"");
+      return (PropertyDate)getProperty(PATH_FAMMARRDATE);
+  }
+
+/**
    * Calculate fam's divorce date
    * @return date or null
    */
