@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.24 2006-05-21 20:44:19 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.25 2006-05-21 22:36:58 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -849,6 +849,47 @@ public class Console {
                 });
 
         
+        actionMap.put(resourceGetList("mday.command","mday"), new Action() //$NON-NLS-1$ //$NON-NLS-2$
+                {
+                    final Pattern mdayPat = Pattern.compile("(?:#(\\d+)\\s+)?(\\p{Alnum}.*)"); 
+
+                    public Indi doIt(Indi theIndi, String arg) {
+                        Matcher matcher = mdayPat.matcher(arg);
+                        if( ! matcher.matches())
+                        {
+                            giveFeedback(UIFeedbackType.SYNTAX_ERROR);
+                            out.println("arg to mday has bad syntax! [" +arg+"]");
+                            return theIndi;
+                        }
+                        final String marNumStr = matcher.group(1);
+                        final String mdateArg  = matcher.group(2);
+                        final int marNumArg = parseInt(marNumStr, 1);
+                        final int familyIndex = marNumArg -1;
+                        Fam[] fams = theIndi.getFamiliesWhereSpouse();
+                        if( fams.length <1)
+                        {
+                            giveFeedback(UIFeedbackType.NOT_FOUND);
+                            out.println("This Individual is not a spouse in a Family");
+                            return theIndi;
+                        }
+                        if( marNumArg > fams.length)
+                        {
+                            giveFeedback(UIFeedbackType.NOT_FOUND);
+                            out.println("Marriage/Family number is out of range:"+ marNumArg);
+                            return theIndi;
+                        }
+                        Fam theFam = fams[familyIndex];
+                        PropertyDate mdateProperty = theFam.getMarriageDate(true);
+                        setDate(mdateProperty, mdateArg);
+                        return theIndi;
+                    }
+                    public boolean modifiesDatamodel() { return true; } 
+                    public String getDoc() { return resources.getString("mday.help");} //$NON-NLS-1$
+                    public ArgType getArgUse() { return ArgType.ARG_YES ; }
+                    public String getArgName() { return resources.getString("mday.arg");}  //$NON-NLS-1$
+                });
+        
+        
         return actionMap;
     }
     
@@ -938,7 +979,11 @@ public class Console {
     private String dump(Fam fam)
     {
         StringBuffer buf = new StringBuffer();
-        buf.append(fam+LB);
+        buf.append(fam);
+        PropertyDate mdate = fam.getMarriageDate();
+        if( null != mdate)
+            buf.append(" {"+mdate+"}");
+        buf.append(LB);
         buf.append(resources.getString("dump.husband")+ fam.getHusband()+LB);  //$NON-NLS-1$
         buf.append(resources.getString("dump.wife")+fam.getWife()+LB);      //$NON-NLS-1$
         for( Indi child: fam.getChildren() )
@@ -1109,7 +1154,7 @@ public class Console {
     private String getVersion()
     {
         return resources.getString("version.version") //$NON-NLS-1$
-        + "$Revision: 1.24 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
+        + "$Revision: 1.25 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
     }
     
 
