@@ -25,3 +25,6 @@ running:
 or
   java [classpath_option] com.sadinoff.genj.console.Console -u URL_TO_GEDCOM
   
+There is no runtime-dependency on the GNU Readline library, but it helps to have
+it around when compiling.
+  

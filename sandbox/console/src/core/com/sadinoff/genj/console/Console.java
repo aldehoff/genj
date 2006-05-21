@@ -2,7 +2,7 @@
  * Console.java
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.23 2006-05-20 23:46:23 sadinoff Exp $
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.24 2006-05-21 20:44:19 sadinoff Exp $
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -50,8 +50,8 @@ public class Console {
     /** i18n resources */
     private Resources resources = Resources.get(this);
     protected final Gedcom gedcom;
-    protected BufferedReader in;
-    protected PrintWriter out;
+    protected final LineSource in;
+    protected final PrintWriter out;
 
     /**
      * User-visible string to use to describe the sex of an Individual
@@ -70,10 +70,31 @@ public class Console {
      * @param output Where to send user output.  As of right now, warnings go here too.
      */
     public Console(Gedcom gedcomArg, final BufferedReader userInput, final PrintWriter output) {
-        in = userInput;
         out = output;
+        in = new BufferedReaderSource(userInput, out);
         gedcom = gedcomArg;
-        
+        setPrompt();
+    }
+
+    private void setPrompt()
+    {
+        in.setPrompt("> ");    
+    }
+    
+    public Console(Gedcom gedcomArg, boolean useReadLine) throws IOException
+    {
+        gedcom = gedcomArg;
+        out = new PrintWriter(new OutputStreamWriter(System.out, "UTF-8")); //$NON-NLS-1$
+        if( useReadLine )
+        {
+            ReadLineSource rlSource = new ReadLineSource();
+            in = rlSource;
+        }
+        else
+        {
+            in = new BufferedReaderSource(new BufferedReader(new InputStreamReader(System.in,"UTF-8")), out);  //$NON-NLS-1$
+        }
+        setPrompt();
     }
     /**
      * Constructor for a Console session attached to System.in and System.out
@@ -81,8 +102,7 @@ public class Console {
      * @throws IOException 
      */
     public Console(Gedcom gedcomArg) throws IOException {
-        this(gedcomArg, new BufferedReader(new InputStreamReader(System.in,"UTF-8")),  //$NON-NLS-1$
-                new PrintWriter(new OutputStreamWriter(System.out, "UTF-8"))); //$NON-NLS-1$
+         this(gedcomArg,Boolean.getBoolean("console.use-readline"));
     }
 
     
@@ -97,7 +117,7 @@ public class Console {
                        NOT_FOUND,
                        STALL,
                        MISSILE_LOCK,
-                       INTERSECT_GRANITE_CLOUD,
+                       INTERSECT_GRANITE_CLOUD, //general failure
     };
 
     /**
@@ -246,7 +266,7 @@ public class Console {
                 out.print(resources.getString("exit.unsaved-changes")); //$NON-NLS-1$
                 out.flush();
                 String line = in.readLine();
-                if( line.toLowerCase().startsWith(resources.getString("yesno.yes")))  //$NON-NLS-1$
+                if( null != line && line.toLowerCase().startsWith(resources.getString("yesno.yes")))  //$NON-NLS-1$
                     System.exit(0);
                 out.println(resources.getString("exit.try-save-filename")); //$NON-NLS-1$
                 return ti;
@@ -280,6 +300,7 @@ public class Console {
                 catch( Exception e)
                 {
                     out.println(resources.getString("save.error.io-error")+e); //$NON-NLS-1$
+                    giveFeedback(UIFeedbackType.INTERSECT_GRANITE_CLOUD);
                 }
                 return ti;
             }
@@ -301,6 +322,7 @@ public class Console {
                 catch( Exception e)
                 {
                     out.println(resources.getString("undo.error.couldn't-undo")+ e); //$NON-NLS-1$
+                    giveFeedback(UIFeedbackType.INTERSECT_GRANITE_CLOUD);
                 }
                 
                 //if the last operation was a create...                
@@ -430,6 +452,7 @@ public class Console {
                         catch(NumberFormatException nfe)
                         {
                             out.println(resources.getString("gspo.error.cantparse")+arg+" as a number"); //$NON-NLS-1$ //$NON-NLS-2$
+                            giveFeedback(UIFeedbackType.SYNTAX_ERROR);
                             return theIndi;
                         }
                         return  marriages[targetMarriage].getOtherSpouse(theIndi);
@@ -476,6 +499,7 @@ public class Console {
                                 if( kidNumber <1 || kidNumber > sibs.length)
                                 {
                                     out.println("bad sib number"); //$NON-NLS-1$
+                                    giveFeedback(UIFeedbackType.NOT_FOUND);
                                     return theIndi;
                                 }
                                 return sibs[kidNumber-1];
@@ -483,6 +507,7 @@ public class Console {
                             catch(NumberFormatException nfe)
                             {
                                 out.println(resources.getString("error.cant-parse-arg-as-number")+arg+" as a number"); //$NON-NLS-1$ //$NON-NLS-2$
+                                giveFeedback(UIFeedbackType.SYNTAX_ERROR);                                
                                 return theIndi;
                             }
                         }
@@ -515,17 +540,47 @@ public class Console {
                     return children[0];
                 try 
                 {
-                    int kidNumber = Integer.parseInt(arg);
-                    if( kidNumber <1 || kidNumber > children.length)
+                    if( Character.isDigit(arg.charAt(0)))
                     {
-                        out.println(resources.getString("gkid.error.bad-sib-number"));  //$NON-NLS-1$
-                        return theIndi;
+                        int kidNumber = Integer.parseInt(arg);
+                        if( kidNumber <1 || kidNumber > children.length)
+                        {
+                            out.println(resources.getString("gkid.error.bad-sib-number"));  //$NON-NLS-1$
+                            giveFeedback(UIFeedbackType.NOT_FOUND);                            
+                            return theIndi;
+                        }
+                        return children[kidNumber-1];
                     }
-                    return children[kidNumber-1];
+                    else
+                    {
+                        Indi foundKid =null;
+                        for( int i =0; i< children.length;i++)
+                        {
+                            Indi kid = children[i];
+                            if( ! kid.getFirstName().equals(arg))
+                                continue;
+                            if( null== foundKid)
+                                foundKid = kid;
+                            else
+                            {
+                                out.println(resources.getString("gkid.error.two-or-more-kids-named",arg)); //$NON_NLS-1$
+                                giveFeedback(UIFeedbackType.NOT_FOUND);
+                                return theIndi;
+                            }
+                        }
+                        if (null == foundKid)
+                        {
+                            out.println(resources.getString("gkid.error.no-kid-named",arg)); //$NON_NLS-1$
+                            giveFeedback(UIFeedbackType.NOT_FOUND);
+                            return theIndi;
+                        }
+                        return foundKid;
+                    }
                 }
                 catch(NumberFormatException nfe)
                 {
                     out.println(resources.getString("gkid.error.cant-parse-arg")+arg+"] as a number"); //$NON-NLS-1$ //$NON-NLS-2$
+                    giveFeedback(UIFeedbackType.SYNTAX_ERROR);
                 }
                 return theIndi;
             }
@@ -801,19 +856,23 @@ public class Console {
     public void go()  throws Exception{
         Indi theIndi = (Indi)gedcom.getFirstEntity(Gedcom.INDI);
 
-            final Map<List<String>,Action> actionMap = getActionMap();
+        final Map<List<String>,Action> actionMap = getActionMap();
+        final Map<String, Action> commandToAction= expandActionMap(actionMap);
 
-            Map<String, Action> commandToAction= expandActionMap(actionMap);
-
-        Pattern commandPat = Pattern.compile("^(\\p{Alnum}+)(\\s+(\\S.*))?"); //$NON-NLS-1$
+        final Pattern commandPat = Pattern.compile("^(\\p{Alnum}+)(\\s+(\\S.*))?"); //$NON-NLS-1$
         for(;;)
         {
             out.println("------"); //$NON-NLS-1$
             out.print(resources.getString("you-are-at")); //$NON-NLS-1$
             out.println(brief(theIndi));
-            out.print("> "); //$NON-NLS-1$
             out.flush();
-            final String line = in.readLine().trim();
+            final String line;
+            {
+                final String inputResult = in.readLine();
+                if( null==inputResult)
+                    continue;
+                line = inputResult.trim();
+            }
             if( line.length() ==0)
                 continue;
             Matcher lineMatcher = commandPat.matcher(line);
@@ -828,7 +887,7 @@ public class Console {
             if( DEBUG )
                 out.println("cmd=["+command+"], args=["+args+"]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             if( ! commandToAction.containsKey(command) ) {
-                out.println(resources.getString(resources.getString("error.unknown-command"))); //$NON-NLS-1$
+                out.println(resources.getString(resources.getString("error.unknown-command", command))); //$NON-NLS-1$
                 giveFeedback(UIFeedbackType.SYNTAX_ERROR);
                 continue;
             }
@@ -844,6 +903,7 @@ public class Console {
             catch( Exception re)
             {
                 out.println(resources.getString("error.exception")+re);  //$NON-NLS-1$
+                
                 re.printStackTrace();
             }
             finally
@@ -1049,7 +1109,7 @@ public class Console {
     private String getVersion()
     {
         return resources.getString("version.version") //$NON-NLS-1$
-        + "$Revision: 1.23 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
+        + "$Revision: 1.24 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
     }
     
 

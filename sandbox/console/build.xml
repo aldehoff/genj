@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.7 2006-05-20 23:26:34 sadinoff Exp $ -->
+<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.8 2006-05-21 20:44:19 sadinoff Exp $ -->
 <!-- This is the ant buildfile for GenJ:Textmode -->
 
 <project name="GenJ" default="dist" basedir=".">
@@ -13,6 +13,7 @@
   <path id="project.class.path">
     <pathelement path="${dir.build}/classes/core"/>
     <pathelement path="${dir.genj}/build/classes/core"/>
+    <pathelement path="${readline.path}"/>
 <!--    <pathelement path="${dir.genj}/build/classes/contrib"/> -->
   </path>
 
@@ -62,7 +63,7 @@
 
    <!-- create console.jar -->
    <delete file="${dir.lib}/console.jar"/>
-   <jar jarfile="${dir.lib}/console.jar" update="True">
+   <jar jarfile="${dir.lib}/console.jar" update="True">   	
     <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
 <!--    <fileset dir="src/core" includes="**/*.properties"/> -->
 <!--     <fileset dir="./images"/>
@@ -75,11 +76,12 @@
     
    <!-- copy contrib libraries -->
    <!-- consider adding getopt... -->
-<!--    <copy file="./contrib/jump/jump.jar" todir="${dir.lib}"/> -->
-
+<!--      <copy file="trib/jump/jump.jar" todir="${dir.lib}"/> -->
+    <copy file="${readline.path}" todir="${dir.lib}"/>
+  	
    <!-- create genj_console-xyz.zip -->
    <zip zipfile="${dir.dist}/genj_console-${genj.app.version}.zip" update="True">
-     <zipfileset dir="${dir.build}" includes="lib/console.jar"/>
+     <zipfileset dir="${dir.build}" includes="lib/*.jar"/>
      <zipfileset dir="doc" includes="README"/>
     <zipfileset dir="script"/> 	
     <zipfileset dir="." includes="KNOWN_BUGS"/> 	

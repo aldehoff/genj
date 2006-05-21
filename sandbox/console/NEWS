@@ -1,3 +1,11 @@
+Since v23
+  * gkid NAME : go to a kid with first name NAME
+  * readline integration 
+  * fixed some i18n bugs
+
+Since v22
+  * fix transaction badness if an exception was thrown while setting.
+
 Since v21
   * I18N
 
