@@ -1,4 +1,10 @@
 1)
+    TODO: NOTE note...
+     TODO: RESI ADDR
+          how to implement RESI: COUN RESI:STAE RESI:COUN
+     TODO: Documentation, user guide.
+
+
 unittest suite.
 rKID  - relate current parent to existing kid
 rspou - relate current person to existing spouse
@@ -7,13 +13,11 @@ rparent - relate current kid  to existing parent
    2
 
      TODO : finish configuration of sound   
-    TODO: NOTE note...
 
 	TODO: COLORS
     
     3
     TODO: Handle edge case: empty database
-    TODO: UNDO - probably going to need more help than the gedcom API provides.
     TODO integrate [via callbacks?] with GenJ GUI.
     
  
