@@ -1,8 +1,12 @@
 /**
  * Console.java
+ * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.26 2006-05-22 07:01:25 sadinoff Exp $
+ *
  * A client of the SF genj GEDCOM model which providedes a text UI to 
  * browsing and editing gedcom.
- * $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/src/core/com/sadinoff/genj/console/Console.java,v 1.25 2006-05-21 22:36:58 sadinoff Exp $
+ * 
+ * This module is dedicated to the memory of Anne Cohen Rezak. 
+ * 
  
  ** This program is licenced under the GNU license, v 2.0
  *  AUTHOR: Danny Sadinoff
@@ -247,8 +251,8 @@ public class Console {
         actionMap.put(resourceGetList("version.command", "version"), new ActionHelper(){public Indi doIt(Indi ti, String arg){ //$NON-NLS-1$ //$NON-NLS-2$
             out.println(getVersion());
             return ti;}
-        public String getDoc() {return resources.getString("version.output");} //$NON-NLS-1$
-            });        
+        public String getDoc() {return resources.getString("version.help");} //$NON-NLS-1$
+            });
         
         
         actionMap.put(resourceGetList("help.command", "help"), new ActionHelper(){public Indi doIt(Indi ti, String arg){ //$NON-NLS-1$ //$NON-NLS-2$
@@ -1154,7 +1158,7 @@ public class Console {
     private String getVersion()
     {
         return resources.getString("version.version") //$NON-NLS-1$
-        + "$Revision: 1.25 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
+        + "$Revision: 1.26 $".replace("Revision:","").replace("$",""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$  
     }
     
 
@@ -1203,9 +1207,9 @@ public class Console {
                 switch (a.getArgUse())
                 {
                 case ARG_OPTIONAL:
-                    buf.append('[');
+                    buf.append('[');  //$NON-NLS-1$
                     buf.append(a.getArgName());
-                    buf.append(']');
+                    buf.append(']');  //$NON-NLS-1$
                     break;
                 case ARG_YES:
                     buf.append(a.getArgName());
