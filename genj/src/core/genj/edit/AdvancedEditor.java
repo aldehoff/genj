@@ -507,7 +507,7 @@ import javax.swing.tree.TreePath;
           /** intercept add so we can add/merge */
           protected Property addProperty(Property prop, String tag, String value, int pos) {
             // reuse prop's existing child with same tag if singleton
-            Property child = prop.getProperty(tag);
+            Property child = prop.getProperty(tag, false);
             if (child!=null&&prop.getMetaProperty().getNested(tag, false).isSingleton()&&!(child instanceof PropertyXRef)) {
               child.setValue(value);
               return child;
