@@ -19,11 +19,6 @@ import tree.TreeFilter;
 public abstract class AbstractArranger implements TreeFilter {
 
     /**
-     * Width of the individual box.
-     */
-	protected int indiboxWidth;
-
-    /**
      * Minimal horizontal gap between individual boxes.
      */
 	protected int horizontalGap;
@@ -31,11 +26,9 @@ public abstract class AbstractArranger implements TreeFilter {
     /**
      * Constructs the object.
      *
-     * @param indiboxWidth  width of the individual box
      * @param horizontalGap minimal horizontal gap between individual boxes
      */
-	public AbstractArranger(int indiboxWidth, int horizontalGap) {
-		this.indiboxWidth = indiboxWidth;
+	public AbstractArranger(int horizontalGap) {
 		this.horizontalGap = horizontalGap;
 	}
 
@@ -79,14 +72,14 @@ public abstract class AbstractArranger implements TreeFilter {
      */
 	public void filter(IndiBox indibox) {
 
-		indibox.wPlus = indiboxWidth;
+		indibox.wPlus = indibox.width;
 
 		// 0. Arrange spouse
 		if (indibox.spouse != null) {
-			indibox.spouse.wPlus = indiboxWidth;
+			indibox.spouse.wPlus = indibox.spouse.width;
 			arrangeSpouse(indibox, indibox.spouse);
 			if (indibox.spouse.x > 0)
-				indibox.wPlus = indibox.spouse.x + indiboxWidth;
+				indibox.wPlus = indibox.spouse.width + indibox.spouse.x;
 			else
 				indibox.wMinus = -indibox.spouse.x;
 		}

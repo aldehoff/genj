@@ -21,21 +21,21 @@ public class AlignLeftArranger extends AbstractArranger {
     /**
      * Constructs the object.
      *
-     * @param indiboxWidth  width of the individual box
      * @param horizontalGap minimal horizontal gap between individual boxes
      */
-	public AlignLeftArranger(int indiboxWidth, int horizontalGap) {
-		super(indiboxWidth, horizontalGap);
+	public AlignLeftArranger(int horizontalGap) {
+		super(horizontalGap);
 	}
 
 	protected void arrangeSpouse(IndiBox indibox, IndiBox spouse) {
-		indibox.spouse.x = indiboxWidth;
+		spouse.x = indibox.width;
 	}
 
 	protected void arrangeChildren(IndiBox indibox) {
 		int currentX = 0;
 		if (indibox.getDir() == Direction.PARENT)
-			currentX = indiboxWidth / 2 + horizontalGap;
+            currentX = indibox.prev.width / 2 - indibox.x + horizontalGap;
+
 		for (int i = 0; i < indibox.children.length; i++) {
 			IndiBox child = indibox.children[i];
 			child.x = currentX;
@@ -43,9 +43,14 @@ public class AlignLeftArranger extends AbstractArranger {
 			filter(child);
 			currentX += child.wPlus + horizontalGap;
 		}
-		if (indibox.children.length == 1 && indibox.children[0].spouse == null &&
-				indibox.wMinus + 2 * indibox.children[0].x + indiboxWidth < indibox.wPlus)
-			indibox.children[0].x = (indibox.wPlus - indibox.wMinus - indiboxWidth) / 2;
+		if (indibox.children.length == 1) {
+            IndiBox child = indibox.children[0];
+            int parentWidth = indibox.wMinus + indibox.wPlus;
+            int childWidth = child.wMinus + child.wPlus;
+            int centerX = (parentWidth - childWidth) / 2 - indibox.wMinus + child.wMinus;
+            if (child.x < centerX)
+                child.x = centerX;
+        }
 	}
 
 	protected void arrangeNextMarriages(IndiBox indibox, IndiBox next) {

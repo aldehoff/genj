@@ -71,6 +71,16 @@ public class IndiBox {
      */
     public int y = 0;
 
+    /**
+     * Width of the box in pixels.
+     */
+    public int width = 10;
+
+    /**
+     * Height of the box in pixels.
+     */
+    public int height = 10;
+
     // Space taken by all child-nodes of this IndiBox.
     public int wPlus = 0;
 

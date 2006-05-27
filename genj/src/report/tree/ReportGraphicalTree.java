@@ -33,7 +33,7 @@ import tree.output.TreeOutput;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.12
+ * @version 0.13
  */
 public class ReportGraphicalTree extends Report {
 
@@ -66,6 +66,11 @@ public class ReportGraphicalTree extends Report {
      * Family box height in pixels.
      */
     private final int FAMBOX_HEIGHT = 27;
+
+    /**
+     * Width of the image inside an individual box.
+     */
+    private final int IMAGE_WIDTH = 50;
 
     /**
      * Output type.
@@ -105,6 +110,11 @@ public class ReportGraphicalTree extends Report {
     public int max_names = 0;
 
     public String[] max_namess = { translate("nolimit"), "1", "2", "3" };
+
+    /**
+     * Whether to display images.
+     */
+    public boolean draw_images = true;
 
     /**
      * Whether to display sex symbols.
@@ -166,7 +176,6 @@ public class ReportGraphicalTree extends Report {
         properties.put("genAncestorDescendants", gen_ancestor_descendants - 1);
         properties.put("genDescendants", gen_descendants - 1);
         properties.put("maxNames", max_names);
-        properties.put("indiboxWidth", INDIBOX_WIDTH);
         properties.put("indiboxHeight", INDIBOX_HEIGHT);
         properties.put("verticalGap", VERTICAL_GAP);
         properties.put("horizontalGap", HORIZONTAL_GAP);
@@ -179,6 +188,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("drawSexSymbols", draw_sex_symbols);
         properties.put("drawIndiIds", draw_indi_ids);
         properties.put("drawFamIds", draw_fam_ids);
+        properties.put("imageWidth", draw_images ? IMAGE_WIDTH : 0);
 
         // Build the tree
         TreeBuilder builder = new BasicTreeBuilder(properties);
@@ -186,12 +196,14 @@ public class ReportGraphicalTree extends Report {
         if (!show_spouses)
             new NoSpouseFilter().filter(indibox);
 
+        new DetermineBoxSize(INDIBOX_HEIGHT, INDIBOX_WIDTH, draw_images ? IMAGE_WIDTH : 0).filter(indibox);
+
         // Arrange the tree boxes
         TreeFilter arranger;
         if (arrangement == 0)
-            arranger = new CenteredArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
+            arranger = new CenteredArranger(HORIZONTAL_GAP);
         else
-            arranger = new AlignLeftArranger(INDIBOX_WIDTH, HORIZONTAL_GAP);
+            arranger = new AlignLeftArranger(HORIZONTAL_GAP);
         arranger.filter(indibox);
 
         // Render and display the tree
