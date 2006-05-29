@@ -32,12 +32,12 @@ public class AlignRightArranger extends AbstractArranger {
 	}
 
 	protected void arrangeChildren(IndiBox indibox) {
-		int currentX = 0;
+		int currentX = indibox.width;
 		if (indibox.getDir() == Direction.PARENT)
 			currentX = -indibox.prev.width / 2 - indibox.x - horizontalGap;
 		for (int i = 0; i < indibox.children.length; i++) {
 			IndiBox child = indibox.children[i];
-			child.x = currentX;
+			child.x = currentX - child.width;
 			child.y = 1;
 			filter(child);
 			currentX -= child.wPlus + child.wMinus + horizontalGap;
