@@ -596,7 +596,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         return;
       // internal?
       if (e.getDescription().startsWith("#")) try {
-        editor.setPage(e.getURL());
+          editor.scrollToReference(e.getDescription().substring(1));
       } catch (Throwable t) {
       } else {
         FileAssociation.open(e.getURL(), editor);
