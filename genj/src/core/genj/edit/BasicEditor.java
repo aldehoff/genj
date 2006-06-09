@@ -604,9 +604,11 @@ import javax.swing.event.ChangeListener;
 
       panel.setLayout(descriptor);
       
-      // look for all top level tags first
+      // first look for all top level tags we're creating a bean for
       for (Iterator cells = descriptor.getCells().iterator(); cells.hasNext(); ) {
         NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
+        if (!cell.getElement().equals("bean"))
+          continue;
         String path = cell.getAttribute("path");
         if (root instanceof Entity&&path!=null && path.indexOf(TagPath.SEPARATOR)>=0)
           topLevelTags.add(new TagPath(path).get(1));
@@ -785,8 +787,13 @@ import javax.swing.event.ChangeListener;
     */
    private void createTab(Property prop) {
      
-     // show simple xref bean for PropertyXRef (avoid showing xrefs like NOTE inline)
+     // show simple xref bean for PropertyXRef
      if (prop instanceof PropertyXRef) {
+       // don't create tabs for family relationships
+       String tt = ((PropertyXRef)prop).getTargetType();
+       if (tt.equals(Gedcom.INDI)||tt.equals(Gedcom.FAM))
+         return;
+       // add a tab for anything else
        tabs.insertTab(prop.getPropertyName(), prop.getImage(false), view.getBeanFactory().get(prop), prop.getPropertyInfo(), 0);
        return;
      }
