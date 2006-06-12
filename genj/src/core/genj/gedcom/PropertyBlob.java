@@ -197,7 +197,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
       // Try to open file
       try {
         InputStream in = getGedcom().getOrigin().open(file);
-        byte[] newContent = new ByteArray(in, in.available()).getBytes();
+        byte[] newContent = new ByteArray(in, in.available(), false).getBytes();
         in.close();
         content = newContent;
       } catch (Throwable t) {
