@@ -102,7 +102,7 @@ public class PropertyReader {
    * read recursively while lines available
    */
   protected void readProperties(Property prop, int currentLevel, int pos) throws IOException {
-
+    
     // try to read some multilines first?
     if (prop instanceof MultiLineProperty) {
       // run through collector
@@ -147,18 +147,19 @@ public class PropertyReader {
           prop = prop.addProperty("_TAG", "");
       }
     
+      // remember current line
+      int lineNoForChild = lines;
+
       // add sub property
       Property child = addProperty(prop, tag, value, pos<0 ? -1 : pos++);
       
-      // first recurse into child
+      // first recurse into child(ren)
       readProperties(child, currentLevel+1, 0);
         
-      // 20060406 if we allow children to be added first then that can
-      // make a difference for link() e.g. in case of ASSO that looks at RELA
-      
-      // link child last (if reference)?
+      // 20060406 now link after children are setup - this makes a difference for
+      // e.g. link() in case of ASSO that looks at RELA
       if (child instanceof PropertyXRef)
-        link((PropertyXRef)child);
+        link((PropertyXRef)child, lineNoForChild);
         
       // next line
     }
@@ -268,7 +269,7 @@ public class PropertyReader {
   }
   
   /** link a reference - keep in lazyXRefs is available otherwise link and ignore errors */
-  protected void link(PropertyXRef xref) {
+  protected void link(PropertyXRef xref, int line) {
     if (collectXRefs!=null)
       collectXRefs.add(xref);
     else try {

@@ -607,9 +607,9 @@ public class GedcomReader implements Trackable {
     }
     
     /** keep track of xrefs - we're going to link them lazily afterwards */
-    protected void link(PropertyXRef xref) {
+    protected void link(PropertyXRef xref, int line) {
       // keep as warning
-      lazyLinks.add(new Warning(getLines(), null, xref));
+      lazyLinks.add(new Warning(line, null, xref));
     }
     
     /** keep track of bad levels */
