@@ -387,9 +387,9 @@ public abstract class Origin {
       
       // We either load from cached bits or try to open the connection
       if (cachedBits==null) try {
-        cachedBits = new ByteArray(url.openConnection().getInputStream()).getBytes();
+        cachedBits = new ByteArray(url.openConnection().getInputStream(), true).getBytes();
       } catch (InterruptedException e) {
-        // ignored
+        throw new IOException("interrupted while opening "+getName());
       }
 
       // Then we can read the zip from the cached bits
