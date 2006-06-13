@@ -20,6 +20,11 @@ import junit.framework.TestCase;
  * <a href="http://sourceforge.net/tracker/index.php?func=detail&aid=1489891&group_id=46817&atid=447494">SF bug</a>
  * It now looks like a transaction wrapping the delete seems to be the workaround, which means that 
  * this is either a documentation bug (in delete) or a bug in the delete implementation.
+ * 
+ * Update NM: there was a problem that backlinking references where not delete when there isn't
+ * a transaction as Danny found out - rectified that today. Manipulating gedcom without transactions
+ * is not recommended but possible so this fix was necessary.
+ * 
  * @author Danny Sadinoff
  *
  */

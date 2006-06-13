@@ -92,7 +92,7 @@ public abstract class PropertyXRef extends Property {
     // We have to use oldParent for transaction resolution since 
     // parent is already set to null by super
     Transaction tx = oldParent.getTransaction();
-    if (tx!=null&&!tx.isRollback()) {
+    if (tx==null||!tx.isRollback()) {
       
       // 20060312 don't delete target if it has children since we don't want
       // to loose that information. In case of undo this' addNotify() will make
