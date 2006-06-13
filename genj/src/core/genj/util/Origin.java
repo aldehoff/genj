@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -150,6 +151,8 @@ public abstract class Origin {
    * @param file the file that might be relative to this origin
    * @return relative path or null if not applicable
    */
+  private final static Pattern ABSOLUTE = Pattern.compile("([a-z]:).*|([A-Z]:).*|\\/.*|\\\\.*");
+  
   public String calcRelativeLocation(String file) {
 
     // 20060304 was using file: only here but need to
@@ -160,7 +163,11 @@ public abstract class Origin {
       here = here.substring("file:/".length());
     if (here.startsWith("file:"))
       here = here.substring("file:".length());
-
+    
+    // a relative path can't be made relative
+    if (!ABSOLUTE.matcher(file).matches())
+      return null;
+    
     // try to compare canonical forms
     try {
       here = back2forwardslash(new File(here.substring(0,here.lastIndexOf(FSLASH))).getCanonicalPath()) + "/";

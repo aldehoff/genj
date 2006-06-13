@@ -17,7 +17,7 @@ public class OriginTest extends TestCase {
    */
   public void testRelative() throws Throwable {
     
-    String dir = "./gedcom";
+    String dir = new File("./gedcom").getCanonicalPath();
     Origin origin = Origin.create(new File(dir, "example.ged").toURL());
 
     assertEquals(null, origin.calcRelativeLocation("foo.jpg"));
@@ -26,6 +26,7 @@ public class OriginTest extends TestCase {
     assertEquals("foo.jpg", origin.calcRelativeLocation(new File(dir, "./foo.jpg").toString()));
     assertEquals(null, origin.calcRelativeLocation("/foo.jpg"));
     
+    // making sure that question marks don't break the computation check (canonical throws io)
     assertEquals("question marks are no good", origin.calcRelativeLocation(new File(dir, "question marks are no good").toString()));
     assertEquals(null, origin.calcRelativeLocation(new File(dir, "right?").toString()));
     assertEquals(null, origin.calcRelativeLocation("right?"));
