@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -47,6 +48,8 @@ public class Grammar {
   
   /** meta roots */
   private Map tag2root = new HashMap();
+  
+  private final static Logger LOG = Logger.getLogger("genj.gedcom");
   
   /**
    * Singleton Constructor
@@ -190,7 +193,13 @@ public class Grammar {
         properties.put(attributes.getQName(i), attributes.getValue(i));
       
       // create a meta property for element
-      MetaProperty meta = new MetaProperty(Grammar.this, qName, properties, true);
+      MetaProperty meta;
+      try {
+        meta = new MetaProperty(Grammar.this, qName, properties, true);
+      } catch (Throwable t) {
+        LOG.log(Level.SEVERE, "Problem instantiating meta property for "+qName+" with "+properties, t.getCause()!=null?t.getCause():t);
+        throw new Error("Can't parse Gedcom Grammar");
+      }
 
       // a property root (a.k.a entity) or a nested one?
       if (stack.isEmpty())  {
