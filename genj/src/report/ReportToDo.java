@@ -12,7 +12,6 @@
  * TODO Daniel: limiter aux evenements/general/tous
  * TODO Daniel: differencier les todos sur evt des todo globaux
  * TODO Daniel: ligne blanche entre la fin des taches, et le resume
- * FIXME CONC in NOTEs is seen as a new line
  */
 import genj.fo.Document;
 import genj.gedcom.Entity;
@@ -21,6 +20,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.report.Report;
@@ -546,15 +546,16 @@ public class ReportToDo extends Report {
       // loop over todos for entity
       for (int i = 0; i < todos.size(); i++) {
         Property prop = (Property) todos.get(i);
+        if ((prop instanceof PropertyMultilineValue)) continue;
         Property parent = prop.getParent();
 
-        doc.nextTableRow();
+        if (parent != null){
+        	doc.nextTableRow();
         if ((parent instanceof Entity)) {
           doc.nextTableCell();
           doc.nextTableCell();
           doc.nextTableCell();
         } else {
-          if (parent==null) parent = prop;
           doc.addText( Gedcom.getName(parent.getTag()) );
           doc.nextTableCell();
           doc.addText( parent.getPropertyDisplayValue("DATE") );
@@ -567,6 +568,7 @@ public class ReportToDo extends Report {
         outputPropertyValue(prop, doc);
 
         nbTodos++;
+        }
       }
     }
 
