@@ -58,15 +58,14 @@ public class Indi extends Entity {
    * Calculate the INDI's Birthdate 
    * @param create if false, return null when the property is unset.   
    *     If true, return an empty PropertyDate when the property is unset
-   * @return  
+   * @return  date or null unless create
    */
   public PropertyDate getBirthDate( boolean create )
   {
       PropertyDate date =  (PropertyDate)getProperty(PATH_INDIBIRTDATE);
       if( null != date || !create )
           return date;
-      setValue(PATH_INDIBIRTDATE,"");
-      return (PropertyDate)getProperty(PATH_INDIBIRTDATE);
+      return (PropertyDate)setValue(PATH_INDIBIRTDATE,"");
   }
 
   /**
@@ -87,11 +86,8 @@ public class Indi extends Entity {
       PropertyDate date =  (PropertyDate)getProperty(PATH_INDIDEATDATE);
       if( null != date || !create )
           return date;
-      setValue(PATH_INDIDEATDATE,"");
-      return (PropertyDate)getProperty(PATH_INDIDEATDATE);
+      return (PropertyDate)setValue(PATH_INDIDEATDATE,"");
   }
-  
-  
   
   /**
    * Calculate all siblings (biological)
