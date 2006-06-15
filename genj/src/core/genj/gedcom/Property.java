@@ -500,10 +500,14 @@ public abstract class Property implements Comparable {
     // done
     return result;
   }
+
+  protected boolean findPropertiesRecursivelyTest(Pattern tag, Pattern value) {
+    return tag.matcher(getTag()).matches() && value.matcher(getValue()).matches(); 
+  }
   
   private void findPropertiesRecursively(Collection result, Pattern tag, Pattern value, boolean recursively) {
     // check current
-    if (tag.matcher(getTag()).matches() && value.matcher(getValue()).matches() ) 
+    if (findPropertiesRecursivelyTest(tag, value))
       result.add(this);
     // recurse into properties
     for (int i=0, j=getNoOfProperties(); i<j ; i++) {
