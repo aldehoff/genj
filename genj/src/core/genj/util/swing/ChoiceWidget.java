@@ -283,7 +283,9 @@ public class ChoiceWidget extends JComboBox {
      * Constructor
      */
     private AutoCompleteSupport() {
+      // setup timer
       timer.setRepeats(false);
+      // done
     }
     
     private void attach(JTextField set) {
@@ -361,11 +363,11 @@ public class ChoiceWidget extends JComboBox {
       // show where we're at in case of a partial match
       if (match.length()>prefix.length()) {
         showPopup();
-        text.setFocusTraversalKeysEnabled(false);
       } 
-        
+      
       // done      
     }
+    
     /** selectAll on focus gained */
     public void focusGained(FocusEvent e) {
       if (text.getDocument() != null) {
@@ -377,14 +379,13 @@ public class ChoiceWidget extends JComboBox {
     public void focusLost(FocusEvent e) {
     }
 
-    /** check for cursor-right and open popup */
+    /** check for enter - use as selection */
     public void keyPressed(KeyEvent e) {
       // make a popup selection?
-      if (e.getKeyCode()==KeyEvent.VK_TAB&&isPopupVisible()) {
-          model.setSelectedItem(model.getSelectedItem());
-          setPopupVisible(false);
-          text.setFocusTraversalKeysEnabled(true);
-        }
+      if (e.getKeyCode()==KeyEvent.VK_ENTER&&isPopupVisible()) {
+        model.setSelectedItem(model.getSelectedItem());
+        setPopupVisible(false);
+      }
       // done
     }
   } //AutoCompleteSupport
