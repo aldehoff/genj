@@ -105,6 +105,7 @@ public class ControlCenter extends JPanel {
   private List gedcomActions = new ArrayList();
   private List toolbarActions = new ArrayList();
   private Stats stats = new Stats();
+  private ActionExit exit = new ActionExit();
     
   /**
    * Constructor
@@ -181,7 +182,7 @@ public class ControlCenter extends JPanel {
    * Exit action
    */
   /*package*/ Action2 getExitAction() {
-    return new ActionExit().setTarget(this);
+    return exit;
   }
   
   /**
@@ -287,7 +288,7 @@ public class ControlCenter extends JPanel {
     
     if (!EnvironmentChecker.isMac()) { // Mac's don't need exit actions in application menus apparently
       mh.createSeparator();
-      mh.createItem(new ActionExit());
+      mh.createItem(exit);
     }
 
     mh.popMenu().createMenu(resources.getString("cc.menu.view"));
@@ -399,6 +400,7 @@ public class ControlCenter extends JPanel {
       setAccelerator(ACC_EXIT);
       setText(resources, "cc.menu.exit");
       setImage(Images.imgExit);
+      setTarget(ControlCenter.this);
     }
     /** run */
     protected void execute() {
@@ -419,19 +421,24 @@ public class ControlCenter extends JPanel {
           if (rc==2) return;
           // yes - close'n save it
           if (rc==0) {
-            removeGedcom(gedcom);
+            // block exit
+            ActionExit.this.setEnabled(false);
+            // run save
             new ActionSave(gedcom, ControlCenter.this) {
-              // after the save
+              // apres save
               protected void postExecute(boolean preExecuteResult) {
-                // super first
-                super.postExecute(preExecuteResult);
-                // add gedcom again we removed temporarily
-                addGedcom(gedcom);
-                // stop still unsaved changes that didn't make it through saving
-                if (gedcom.hasUnsavedChanges()) 
-                  return;
+                try {
+                  // super first
+                  super.postExecute(preExecuteResult);
+                  // stop still unsaved changes that didn't make it through saving
+                  if (gedcom.hasUnsavedChanges()) 
+                    return;
+                } finally {
+                  // unblock exit
+                  ActionExit.this.setEnabled(true);
+                }
                 // continue with exit
-                getExitAction().trigger();
+                ActionExit.this.trigger();
               }
             }.trigger();
             return;
