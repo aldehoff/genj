@@ -122,6 +122,10 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
    * @return status of preExecute (true unless overridden)
    */
   public final boolean trigger() {
+    
+    // enabled?
+    if (!isEnabled()) 
+      throw new IllegalArgumentException("trigger() while !isEnabled");
 
     // do we have to create a new instance?
     if (async==ASYNC_NEW_INSTANCE) {
