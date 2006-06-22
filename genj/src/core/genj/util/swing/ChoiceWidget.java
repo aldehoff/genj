@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.util.ChangeSupport;
+import genj.util.EnvironmentChecker;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -45,6 +46,8 @@ import javax.swing.event.DocumentListener;
  * Our own JComboBox
  */
 public class ChoiceWidget extends JComboBox {
+  
+  private final static boolean IS_JAVA_15 = EnvironmentChecker.isJava15(null);
   
   private boolean blockAutoComplete = false;
   
@@ -361,7 +364,7 @@ public class ChoiceWidget extends JComboBox {
       text.setCaretPosition(caretPos);
       
       // show where we're at in case of a partial match
-      if (match.length()>prefix.length()) {
+      if (match.length()>=prefix.length()) {
         showPopup();
       } 
       
@@ -377,6 +380,11 @@ public class ChoiceWidget extends JComboBox {
     }
     
     public void focusLost(FocusEvent e) {
+      // Java 1.5 doesn't cancel the popup on focus lost IF the value in the editor
+      // equals the current selection in the model - @see
+      // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5100422
+      if (IS_JAVA_15)
+        setPopupVisible(false);
     }
 
     /** check for enter - use as selection */
@@ -434,12 +442,9 @@ public class ChoiceWidget extends JComboBox {
       // try to find a match
       for (int i=0;i<values.length;i++) {
         String value = values[i].toString();
-        if (isIgnoreCase)
-          value = value.toLowerCase();
-           
-        if (value.startsWith(prefix)) {
-          setSelectedItem(values[i]);
-          return values[i].toString();        
+        if ((isIgnoreCase ? value.toLowerCase() : value).startsWith(prefix)) {
+          setSelectedItem(value);
+          return value;        
         }
       }
       
