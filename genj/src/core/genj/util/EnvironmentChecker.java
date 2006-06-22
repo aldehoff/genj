@@ -58,6 +58,15 @@ public class EnvironmentChecker {
   }
   
   /**
+   * Check for Java 1.5 and higher
+   */
+  public static boolean isJava15(Object receipient) {
+    String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
+    // o.k. this should be more flexible 8)
+    return version.startsWith("1.5") || version.startsWith("1.6");
+  }
+  
+  /**
    * Check for Mac
    */
   public static boolean isMac() {
