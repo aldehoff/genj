@@ -188,6 +188,9 @@ public class FileAssociation {
       cmd = Pattern.compile("%").matcher(cmd).replaceAll(path);
     }
     
+    // Log it
+    LOG.fine("Running executable "+getExecutable()+" on "+file.getAbsolutePath()+" as: "+cmd);
+    
     // go
     new Thread(new Sequence(cmd)).start();
   }
