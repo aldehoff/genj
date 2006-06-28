@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.110 $ $Author: nmeier $ $Date: 2006-04-11 20:30:59 $
+ * $Revision: 1.111 $ $Author: nmeier $ $Date: 2006-06-28 16:36:16 $
  */
 package genj.report;
 
@@ -31,6 +31,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.io.FileAssociation;
 import genj.option.Option;
+import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -532,6 +533,16 @@ public abstract class Report implements Cloneable {
     return result;
   }
 
+// could do that too - simply show a component to the user
+//
+//  /**
+//   * A sub-class can query the user to choose a value that is somehow represented by given component
+//   */
+//  public final boolean getValueFromUser(JComponent options) {
+//    int rc = viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, new JComponent[]{options}, Action2.okCancel(), owner);
+//    return rc==0;
+//  }
+  
   /**
    * A sub-class can query the user for a selection of given choices with this method
    */
@@ -586,6 +597,37 @@ public abstract class Report implements Cloneable {
     return result;
   }
 
+  /**
+   * A sub-class can query the user for input to given options
+   */
+  public final boolean getOptionsFromUser(String name, List options) {
+
+    // check args
+    if (name==null)
+      throw new IllegalArgumentException("name can't be null");
+    
+    // restore parameters
+    Registry r = new Registry(registry, name);
+    Iterator it = options.iterator();
+    while (it.hasNext())
+      ((Option)it.next()).restore(r);
+    
+    // show to user and check for non-ok
+    OptionsWidget widget = new OptionsWidget(name, viewManager.getWindowManager(), options);
+    int rc = viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, widget, Action2.okCancel(), owner);
+    if (rc!=0)
+      return false;
+    
+    // save parameters
+    widget.stopEditing();
+    it = options.iterator();
+    while (it.hasNext())
+      ((Option)it.next()).persist(r);
+    
+    // done
+    return true;
+  }
+  
   /**
    * A sub-class can query the user for a simple yes/no selection with
    * this method.
