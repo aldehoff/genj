@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.111 $ $Author: nmeier $ $Date: 2006-06-28 16:36:16 $
+ * $Revision: 1.112 $ $Author: nmeier $ $Date: 2006-06-30 14:52:36 $
  */
 package genj.report;
 
@@ -220,7 +220,10 @@ public abstract class Report implements Cloneable {
       PropertyOption option = (PropertyOption)it.next();
       // restore old value
       option.restore(registry);
-      // we use i18n() to resolve names for options
+      // options do try to localize the name based on a properties file
+      // in the same package as the instance - problem is that this
+      // won't work with our special way of resolving i18n in reports
+      // so we have to do that manually
       String oname = translate(option.getProperty());
       if (oname.length()>0) option.setName(oname);
       // set category
@@ -600,27 +603,45 @@ public abstract class Report implements Cloneable {
   /**
    * A sub-class can query the user for input to given options
    */
-  public final boolean getOptionsFromUser(String name, List options) {
+  public final boolean getOptionsFromUser(String title, Object options) {
 
-    // check args
-    if (name==null)
-      throw new IllegalArgumentException("name can't be null");
+    // grab options by introspection
+    List os = PropertyOption.introspect(options);
+    
+    // calculate a logical prefix for this options object (strip packages and enclosing type info)
+    String prefix = options.getClass().getName();
+    
+    int i = prefix.lastIndexOf('.');
+    if (i>0) prefix = prefix.substring(i+1); 
+    
+    i = prefix.lastIndexOf('$');
+    if (i>0) prefix = prefix.substring(i+1); 
     
     // restore parameters
-    Registry r = new Registry(registry, name);
-    Iterator it = options.iterator();
-    while (it.hasNext())
-      ((Option)it.next()).restore(r);
+    Registry r = new Registry(registry, prefix);
+    Iterator it = os.iterator();
+    while (it.hasNext()) {
+      PropertyOption option  = (PropertyOption)it.next();
+      option.restore(r);
+      
+      // translate the options as a courtesy now - while options do try 
+      // to localize the name they base that on a properties file in the 
+      // same package as the instance - problem is that this won't work 
+      // with our special way of resolving i18n in reports 
+      String oname = translate(prefix+"."+option.getName());
+      if (oname.length()>0) option.setName(oname);    
+      
+    }
     
     // show to user and check for non-ok
-    OptionsWidget widget = new OptionsWidget(name, viewManager.getWindowManager(), options);
+    OptionsWidget widget = new OptionsWidget(title, viewManager.getWindowManager(), os);
     int rc = viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, widget, Action2.okCancel(), owner);
     if (rc!=0)
       return false;
     
     // save parameters
     widget.stopEditing();
-    it = options.iterator();
+    it = os.iterator();
     while (it.hasNext())
       ((Option)it.next()).persist(r);
     
