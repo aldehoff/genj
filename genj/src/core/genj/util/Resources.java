@@ -103,7 +103,7 @@ public class Resources {
     Class clazz = object instanceof Class ? (Class)object : object.getClass();
     String name = clazz.getName();
     int last = name.lastIndexOf('.');
-    return last<0 ? name : name.substring(0, last);
+    return last<0 ? "" : name.substring(0, last);
   }
   
   /**
