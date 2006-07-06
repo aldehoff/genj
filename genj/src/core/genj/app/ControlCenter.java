@@ -46,6 +46,7 @@ import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ProgressWidget;
+import genj.view.Context;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewFactory;
@@ -119,7 +120,16 @@ public class ControlCenter extends JPanel {
     viewManager = new ViewManager(printManager, windowManager);
     
     // Table of Gedcoms
-    tGedcoms = new GedcomTableWidget(viewManager, registry, new ActionSave(false, true), new ActionClose(true));
+    tGedcoms = new GedcomTableWidget(viewManager, registry) {
+      public Context getContext() {
+        Context result = super.getContext();
+        if (result!=null) {
+          result.addAction(new ActionSave(false, true));
+          result.addAction(new ActionClose(true));
+        }
+        return result;
+      };
+    };
     
     // ... Listening
     tGedcoms.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -424,7 +434,7 @@ public class ControlCenter extends JPanel {
             // block exit
             ActionExit.this.setEnabled(false);
             // run save
-            new ActionSave(gedcom, ControlCenter.this) {
+            new ActionSave(gedcom) {
               // apres save
               protected void postExecute(boolean preExecuteResult) {
                 try {
@@ -685,7 +695,7 @@ public class ControlCenter extends JPanel {
           for (int i=0;i<views2restore.size();i++) {
             ViewHandle handle = ViewHandle.restore(viewManager, gedcom, (String)views2restore.get(i));
             if (handle!=null)
-              new ActionSave(gedcom, handle.getView()).install(handle.getView(), JComponent.WHEN_IN_FOCUSED_WINDOW);
+              new ActionSave(gedcom).setTarget(handle.getView()).install(handle.getView(), JComponent.WHEN_IN_FOCUSED_WINDOW);
           }
         }          
         
@@ -889,9 +899,10 @@ public class ControlCenter extends JPanel {
     /** 
      * Constructor for saving gedcom file without interaction
      */
-    protected ActionSave(Gedcom gedcom, JComponent target) {
+    protected ActionSave(Gedcom gedcom) {
       this(false, true);
-      setTarget(target);
+      
+      // remember gedcom
       this.gedcom = gedcom;
     }
     /** 
@@ -1067,9 +1078,6 @@ public class ControlCenter extends JPanel {
         }
       }
       
-      // ok, this is a hack :)
-      tGedcoms.repaint();
-      
       // track what we read
       if (gedWriter!=null)
         stats.handleWrite(gedWriter.getLines());
@@ -1111,7 +1119,7 @@ public class ControlCenter extends JPanel {
           // Remove it so the user won't change it while being saved
           removeGedcom(gedcom);
           // and save
-          new ActionSave(gedcom, ControlCenter.this) {
+          new ActionSave(gedcom) {
             protected void postExecute(boolean preExecuteResult) {
               // super first
               super.postExecute(preExecuteResult);
@@ -1157,7 +1165,7 @@ public class ControlCenter extends JPanel {
       // create new View
       ViewHandle handle = viewManager.openView(gedcom, factory);
       // install some accelerators
-      new ActionSave(gedcom, handle.getView()).install(handle.getView(), JComponent.WHEN_IN_FOCUSED_WINDOW);
+      new ActionSave(gedcom).setTarget(handle.getView()).install(handle.getView(), JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
   } //ActionView
 

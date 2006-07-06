@@ -24,7 +24,6 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.Action2;
 import genj.util.swing.SortableTableHeader;
 import genj.view.Context;
 import genj.view.ContextProvider;
@@ -58,17 +57,11 @@ import javax.swing.table.TableColumnModel;
   /** a model */
   private Model model;
   
-  /** actions */
-  private Action2 save, close;
-  
   /**
    * Constructor
    */
-  public GedcomTableWidget(ViewManager mgr, Registry reGistry, Action2 save, Action2 close) {
+  public GedcomTableWidget(ViewManager mgr, Registry reGistry) {
 
-    this.save = save;
-    this.close = close;
-    
     // change the header to ours    
     setTableHeader(new SortableTableHeader());
     
@@ -110,12 +103,7 @@ import javax.swing.table.TableColumnModel;
    */
   public Context getContext() {
     int row = getSelectedRow();
-    if (row<0) 
-      return null;
-    Context context = new Context(model.getGedcom(row));
-    context.addAction(save);
-    context.addAction(close);
-    return context;
+    return row<0 ? null : new Context(model.getGedcom(row));
   }
   
   /**
@@ -283,8 +271,8 @@ import javax.swing.table.TableColumnModel;
     /**
      * @see genj.gedcom.GedcomListener#handleChange(Change)
      */
-    public void handleChange(Transaction change) {
-      int i = getRowFor(change.getGedcom());
+    public void handleChange(Transaction tx) {
+      int i = getRowFor(tx.getGedcom());
       if (i>=0) fireTableRowsUpdated(i,i);
     }
 
