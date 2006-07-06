@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.106 $ $Author: nmeier $ $Date: 2006-03-14 19:56:23 $
+ * $Revision: 1.107 $ $Author: nmeier $ $Date: 2006-07-06 20:54:22 $
  */
 package genj.gedcom;
 
@@ -280,7 +280,7 @@ public class Gedcom implements Comparable {
     GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
     for (int l=0;l<gls.length;l++) {
       try {
-        gls[l].handleChange(transaction);
+        gls[l].handleChange(tx);
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
       }
@@ -577,7 +577,16 @@ public class Gedcom implements Comparable {
    * Clears flag for unsaved changes
    */
   public void setUnchanged() {
+    
+    // not allowed if there's a pending transaction
+    if (transaction!=null)
+      throw new IllegalStateException("setUnchanged() n/a while transaction is active");
+    
+    // remember
     hasUnsavedChanges=false;
+    
+    // fake a transaction
+    notifyGedcomListeners(new Transaction(this));
   }
   
   /**
