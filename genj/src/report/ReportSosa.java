@@ -6,16 +6,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.fo.Document;
-import genj.gedcom.Entity;
-import genj.gedcom.Fam;
-import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
-import genj.gedcom.PrivacyPolicy;
-import genj.gedcom.Property;
-import genj.report.Report;
+import genj.report.*;
+import genj.gedcom.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.*;
 
 /**
  * GenJ - ReportSosa Types de rapports: - Tableau d'ascendance avec num sosa:
@@ -26,7 +22,7 @@ import java.util.List;
  * sortie - Texte - Texte, colonnes tronquees - HTML TODO Daniel - read gedcom
  * header place format to set placeJurisdictionIndex in a more comprehensive
  * way. - Tune .property file - Add one event per line for lineage report - Add
- * different colour for male, female and undef - Add header or footer with
+ * different COLOR for male, female and undef - Add header or footer with
  * issuer informations **** 1. modifier le core pour pouvoir sauvegarde le
  * rapport correctement **** 2. mettre une option pour sortir le rapport en mode
  * texte uniquement (comme avant) **** 3. supprimer la ligne vide dans le
@@ -68,7 +64,8 @@ public class ReportSosa extends Report {
   };
 
   /** option - simple choices */
-  public boolean showGenerations = true;
+  //public boolean showGenerations = true;   // ?? does not seem to be used anymwhere!
+  public int reportMinGenerations = 1;
   public int reportMaxGenerations = 999;
   public boolean showAllPlaceJurisdictions = false;
   public boolean reportPlaceOfBirth = true;
@@ -84,7 +81,43 @@ public class ReportSosa extends Report {
 
   /** option - number of generations from root considered to be private */
   public int privateGen = 0;
+  
+  /** option - display sources for each event */
+  public boolean displaySource = true;
+  public boolean displayEmpty = true;
+  public boolean prefixEvent = false;
+  public String prefixSource = "Src: ";
+  private final static int MAX_SOURCES = 10;
+  
+  /** Formatting COLORs */
+  private static String format_one_line = "";
+  private static String format_multi_lines = "";
+ 
+  private final static int
+    COLOR_BLACK = 0,    
+    COLOR_GREY = 1,     
+    COLOR_PURPLE = 2,   
+    COLOR_INDIGO = 3,   
+    COLOR_BLUE = 4,     
+    COLOR_GREEN = 5,    
+    COLOR_YELLOW = 6,   
+    COLOR_ORANGE = 7,   
+    COLOR_RED = 8;      
+  
+  public int srcColor = COLOR_BLUE;
 
+  public String srcColors[] = {
+      translate("Black"),
+      translate("Grey"),
+      translate("Purple"),
+      translate("Indigo"),
+      translate("Blue"),
+      translate("Green"),
+      translate("Yellow"),
+      translate("Orange"),
+      translate("Red")
+   };
+  
   /**
    * Main for argument individual
    */
@@ -92,6 +125,7 @@ public class ReportSosa extends Report {
 
     // Init some stuff
     PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
+    assignColor(srcColor);
 
     // check recursion type
     Recursion recursion;
@@ -163,6 +197,40 @@ public class ReportSosa extends Report {
        return prop.format(format, policy);
      }
 
+     /**
+      * format source information about an entity's event
+      */
+     String[] getSources(Entity entity, String tagPath, String prefix, boolean displaySrc, PrivacyPolicy policy) {
+     String sourceList[] = new String[MAX_SOURCES];
+     for (int p=0; p<MAX_SOURCES; p++) sourceList[p] = "";
+     if (displaySrc) {
+       Property prop[] = entity.getProperties(new TagPath(tagPath));
+       int min = MAX_SOURCES;
+       if (prop.length<min) min = prop.length;
+       if (displayEmpty) 
+         sourceList[0] = prefixSource+"("+prefix+") "+translate("noSource"); // init in case no source found
+       if (prop.length>0) {
+         for (int p=0; p<min; p++) {
+           if ((prop[p] != null) && (prop[p].toString().trim().length() != 0)) {
+             PropertySource propSrc = (PropertySource)prop[p];
+             if (prop[p] != null) {   
+               Source source = (Source)propSrc.getTargetEntity();
+               Property propAbbr = source.getPropertyByPath("SOUR:ABBR");
+               //String srcText = source.getText();
+               if (propAbbr == null) {
+                 propAbbr = source.getPropertyByPath("SOUR:TITL");
+                 }
+               if (propAbbr != null) {
+                 sourceList[p] = prefixSource+(prefixEvent ? "("+prefix+") " : "")+propAbbr.getDisplayValue();
+                 }
+               }     
+             }
+           }
+         }
+       }
+       return sourceList;
+     }
+    
     /**
      * dump individual's name
      */
@@ -187,21 +255,46 @@ public class ReportSosa extends Report {
       if (returnEmpties||birt.length()>0)
         result.add(birt);
 
+      // birth-source?
+      String birtSrc[] = getSources(indi, "INDI:BIRT:SOUR", usePrefixes ? OPTIONS.getBirthSymbol() : "", displaySource, privacy);
+      for (int p=0; p<birtSrc.length; p++) {
+        if (birtSrc[p].length()>0)
+          result.add(birtSrc[p]);
+        }
+
       // marriage?
       String marr = "";
+      String marrSrc[] = new String[MAX_SOURCES];
+      for (int p=0; p<MAX_SOURCES; p++) marrSrc[p] = "";
       if (fam!=null) {
         String prefix = "";
         if (usePrefixes)
           prefix = OPTIONS.getMarriageSymbol() + (fam.getOtherSpouse(indi) != null ? " " + fam.getOtherSpouse(indi).getName() : "");
         marr = getProperty(fam, "MARR", prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
-      }
+        prefix = "";
+        if (usePrefixes)
+          prefix =  OPTIONS.getMarriageSymbol();
+        marrSrc = getSources(fam, "FAM:MARR:SOUR", prefix, displaySource, privacy);
+        }
       if (returnEmpties||marr.length()>0)
         result.add(marr);
-
+      // marriage-source?
+      for (int p=0; p<marrSrc.length; p++) {
+        if (marrSrc[p].length()>0)
+          result.add(marrSrc[p]);
+        }
+ 
       // death?
       String deat = getProperty(indi, "DEAT", usePrefixes ? OPTIONS.getDeathSymbol() : "", reportDateOfDeath, reportPlaceOfDeath, privacy);
       if (returnEmpties||deat.length()>0)
         result.add(deat);
+
+      // death-source?
+      String deatSrc[] = getSources(indi, "INDI:DEAT:SOUR", usePrefixes ? OPTIONS.getDeathSymbol() : "", displaySource, privacy);
+      for (int p=0; p<deatSrc.length; p++) {
+        if (deatSrc[p].length()>0)
+          result.add(deatSrc[p]);
+        }
 
       // occupation?
       String occu = getProperty(indi, "OCCU", "{$T} ", reportDateOfOccu, reportPlaceOfOccu, privacy);
@@ -382,13 +475,19 @@ public class ReportSosa extends Report {
 
     /** called at each generation add a generation info row*/
     void formatGeneration(int gen, Document doc) {
+      if (gen < reportMinGenerations-1) return;
       doc.nextTableRow();
-      doc.nextTableCell("number-columns-spanned=2,font-size=20pt,background-color=#f0f0f0,border-after-width=0.5pt");
+      doc.nextTableCell("color=#ffffff");
+      doc.addText(".");
+      doc.nextTableRow();
+      doc.nextTableCell("number-columns-spanned=2,font-size=18pt,background-color=#f0f0f0,border-after-width=0.5pt");
       doc.addText(translate("Generation")+" "+(gen+1));
     }
 
     /** this is called at each recursion step - output table rows */
     void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+      
+      if (gen < reportMinGenerations-1) return;
 
       // start with a new row
       doc.nextTableRow();
@@ -398,19 +497,27 @@ public class ReportSosa extends Report {
 
       // then a cell with properies
       String[] props = getProperties(indi, fam, policy, true, false);
+      String format = "";
       if (props.length>0) {
         doc.nextTableCell();
 
         if (reportFormat==ONE_LINE) {
           for (int p=0; p<props.length; p++) {
             if (p!=0) doc.addText(", ");
-            doc.addText(props[p]);
+            if (props[p].lastIndexOf(prefixSource) != -1) format = format_one_line;
+            doc.addText(props[p], format);
+            format = "";
           }
         } else {
           doc.startList();
           for (int p=0; p<props.length; p++) {
-            if (p!=0) doc.nextListItem();
-            doc.addText(props[p]);
+            if ((p!=0) && (props[p].lastIndexOf(prefixSource) == -1)) doc.nextListItem();
+            if (props[p].lastIndexOf(prefixSource) != -1) {
+              format = format_multi_lines;
+              doc.nextParagraph();
+              }
+            doc.addText(props[p],format);
+            format = "";
           }
           doc.endList();
         }
@@ -453,12 +560,15 @@ public class ReportSosa extends Report {
     /** how we format an individual */
     void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
 
+      if (gen < reportMinGenerations-1) return;
+      
       // dump the indi's name
       doc.nextParagraph("space-after=10pt,space-before=10pt,start-indent="+(gen*20)+"pt");
       doc.addText(getName(indi, sosa, policy));
 
       // dump its properties
       String[] props = getProperties(indi, fam, policy, true, false);
+      String format = "";
       if (props.length>0) {
 
         // calculate indent
@@ -467,13 +577,20 @@ public class ReportSosa extends Report {
         if (reportFormat==ONE_LINE) {
           for (int p=0; p<props.length; p++) {
             if (p!=0) doc.addText(", ");
-            doc.addText(props[p]);
+            if (props[p].lastIndexOf(prefixSource) != -1) format = format_one_line;
+            doc.addText(props[p], format);
+            format = "";
           }
         } else {
           doc.startList(indent);
           for (int p=0; p<props.length; p++) {
-            if (p!=0) doc.nextListItem();
-            doc.addText(props[p]);
+            if ((p!=0) && (props[p].lastIndexOf(prefixSource) == -1)) doc.nextListItem();
+            if (props[p].lastIndexOf(prefixSource) != -1) {
+              format = format_multi_lines;
+              doc.nextParagraph();
+              }
+            doc.addText(props[p],format);
+            format = "";
           }
           doc.endList();
         }
@@ -542,6 +659,8 @@ public class ReportSosa extends Report {
     /** how we format an individual */
     void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
 
+      if (gen < reportMinGenerations-1) return;
+
       // only consider fathers
       if (fam!=null&&fam.getHusband()!=indi)
         return;
@@ -552,6 +671,7 @@ public class ReportSosa extends Report {
 
       // dump its properties
       String[] props = getProperties(indi, fam, policy, true, false);
+      String format = "";
       if (props.length>0) {
 
         // calculate indent
@@ -560,13 +680,20 @@ public class ReportSosa extends Report {
         if (reportFormat==ONE_LINE) {
           for (int p=0; p<props.length; p++) {
             if (p!=0) doc.addText(", ");
-            doc.addText(props[p]);
+            if (props[p].lastIndexOf(prefixSource) != -1) format = format_one_line;
+            doc.addText(props[p], format);
+            format = "";
           }
         } else {
           doc.startList(indent);
           for (int p=0; p<props.length; p++) {
-            if (p!=0) doc.nextListItem();
-            doc.addText(props[p]);
+            if ((p!=0) && (props[p].lastIndexOf(prefixSource) == -1)) doc.nextListItem();
+            if (props[p].lastIndexOf(prefixSource) != -1) {
+              format = format_multi_lines;
+              doc.nextParagraph();
+              }
+            doc.addText(props[p],format);
+            format = "";
           }
           doc.endList();
         }
@@ -628,6 +755,8 @@ public class ReportSosa extends Report {
     /** this is called at each recursion step - output table rows */
     void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
 
+      if (gen < reportMinGenerations-1) return;
+    
       // grab properties - no prefixes, but all properties empty or not
       String[] props =  getProperties(indi, fam, policy, false, true);
 
@@ -640,8 +769,9 @@ public class ReportSosa extends Report {
 
       // loop over props
       for (int i=0;i<props.length;i++) {
-        if (i>0) doc.nextTableCell();
-        doc.addText(props[i]);
+        if ((i>0) && (props[i].lastIndexOf(prefixSource) == -1)) doc.nextTableCell();
+        if (props[i].lastIndexOf(prefixSource) != -1) doc.nextParagraph();
+          doc.addText(props[i]);
       }
 
       // done for now
@@ -655,4 +785,34 @@ public class ReportSosa extends Report {
 
   } //Table
 
+  /** Assign format of colors  */
+  void assignColor(int srcColor) {
+    // init color formats
+    String cs = "#000000";
+  
+    switch (srcColor) {
+      case COLOR_BLACK:
+        cs = "#000000"; break;
+      case COLOR_GREY:
+        cs = "#a0a0a0"; break;
+      case COLOR_PURPLE:
+        cs = "#ff60ff"; break;
+      case COLOR_INDIGO:
+        cs = "#8560ff"; break;
+      case COLOR_BLUE:
+        cs = "#6060ff"; break;
+      case COLOR_GREEN:
+        cs = "#00a71c"; break;
+      case COLOR_YELLOW:
+        cs = "#d1de00"; break;
+      case COLOR_ORANGE:
+        cs = "#ffb260"; break;
+      case COLOR_RED:
+        cs = "#ff6060"; break;
+      default:
+        cs = "#000000";
+    }
+  format_one_line = "font-style=italic,color="+cs;
+  format_multi_lines = "margin-left=0px,font-style=italic,color="+cs;
+  }
 }
