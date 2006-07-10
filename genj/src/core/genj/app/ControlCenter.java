@@ -234,15 +234,20 @@ public class ControlCenter extends JPanel {
     // Open & New |
     Action2 
       actionNew = new ActionNew(),
-      actionOpen = new ActionOpen();
+      actionOpen = new ActionOpen(),
+      actionSave = new ActionSave(false, true);
     actionNew.setText(null);
     actionOpen.setText(null);
+    actionSave.setText(null);
+    gedcomActions.add(actionSave);
     
     toolbarActions.add(actionNew);
     toolbarActions.add(actionOpen);
+    toolbarActions.add(actionSave);
     
     bh.create(actionNew);
     bh.create(actionOpen);
+    bh.create(actionSave);
     
     result.addSeparator();
 
