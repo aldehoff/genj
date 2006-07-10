@@ -136,7 +136,7 @@ public class ReportTrees extends Report {
                       Indi indi = (Indi)it.next();
                       println(align(prefix,7, Report.ALIGN_RIGHT)+"  "+indi.getId()+
                               " "+indi.getName()+
-                              "("+indi.getBirthAsString()+ "-"+
+                              " "+"("+indi.getBirthAsString()+ " - "+
                               indi.getDeathAsString()+")" );
                       prefix = "";
                   }
