@@ -925,6 +925,7 @@ public class ControlCenter extends JPanel {
         setText(resources.getString("cc.menu.saveas"));
       else
         setText(resources.getString("cc.menu.save"));
+      setTip(resources, "cc.tip.save_file");
       // setup
       setImage(Images.imgSave);
       setAsync(ASYNC_NEW_INSTANCE);
