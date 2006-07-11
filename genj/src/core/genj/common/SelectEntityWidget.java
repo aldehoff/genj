@@ -88,7 +88,10 @@ public class SelectEntityWidget extends JPanel {
     "SOUR:AUTH", 
     "SOUR:REPO", 
     "SUBM", 
-    "REPO"
+    "REPO",
+    "REPO:NAME",
+    "REPO:REFN",
+    "REPO:RIN"
   };
   
   /**
