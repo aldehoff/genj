@@ -155,13 +155,16 @@ public abstract class Origin {
   
   public String calcRelativeLocation(String file) {
 
-    // 20060304 was using file: only here but need to
-    // check for file:/ as well - don't know if the former is
-    // necessary at all but keeping it in for now
+    // 20060614 by looking at Daniel's log-file with FINE enabled I was able to see that
+    // files are opened as file:/foo/bar/...
+    // Some code change from march took out the file:/ making the filename effectively
+    // relative to user.dir ... not a good idea
     String here = url.toString();
-    if (here.startsWith("file:/"))
+    // .. so lets first check for file:// and strip file:/ away if we can
+    if (here.startsWith("file://"))
       here = here.substring("file:/".length());
-    if (here.startsWith("file:"))
+    // .. a single file:/foo/bar we'll turn into /foo/bar or file:foo/bar into foo/bar
+    else if (here.startsWith("file:"))
       here = here.substring("file:".length());
     
     // a relative path can't be made relative

@@ -4,6 +4,7 @@
 package genj.util;
 
 import java.io.File;
+import java.net.URL;
 
 import junit.framework.TestCase;
 
@@ -31,7 +32,20 @@ public class OriginTest extends TestCase {
     assertEquals(null, origin.calcRelativeLocation(new File(dir, "right?").toString()));
     assertEquals(null, origin.calcRelativeLocation("right?"));
     
+    // handle file:/foo/bar/... this means file /foo/bar/... and apparently happens for File.toURL() on Unix
+    origin = Origin.create(new URL("file:/foo/bar/example.ged"));
+    assertEquals("foo.jpg", origin.calcRelativeLocation("/foo/bar/foo.jpg"));
+    assertEquals(null, origin.calcRelativeLocation("/foo.jpg"));
+
+    // handle file://foo/bar/... this means file /foo/bar/... what I'd normally expect
+    origin = Origin.create(new URL("file://foo/bar/example.ged"));
+    assertEquals("foo.jpg", origin.calcRelativeLocation("/foo/bar/foo.jpg"));
+    assertEquals(null, origin.calcRelativeLocation("/foo.jpg"));
     
+    // handle file:foo/bar/... this means file ./foo/bar/... relative shouldn't but could happen for origin
+    origin = Origin.create(new URL("file:foo/bar/example.ged"));
+    assertEquals("foo.jpg", origin.calcRelativeLocation(System.getProperty("user.dir")+"/foo/bar/foo.jpg"));
+    assertEquals(null, origin.calcRelativeLocation("/foo.jpg"));
   }
   
 }
