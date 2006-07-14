@@ -462,6 +462,11 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
   }
   
   /** convenience factory */
+  public static Action[] okAnd(Action action) {
+    return new Action[]{ ok(), action };
+  }
+  
+  /** convenience factory */
   public static Action[] okOnly() {
     return new Action[]{ ok() };
   }
@@ -572,6 +577,6 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
       return name;
     }
   }
-  
+
 } //ActionDelegate
 
