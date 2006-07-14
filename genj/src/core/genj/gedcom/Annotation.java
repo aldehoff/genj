@@ -11,7 +11,7 @@
  * This code is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Public License for more details
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
@@ -91,6 +91,15 @@ public class Annotation implements Comparable {
    */ 
   public Property getProperty() {
     return prop;
+  }
+
+  /**
+   * Helper for converting array of objects to array of annotations
+   */
+  public static Annotation[] toArray(Object[] array) {
+    Annotation[] result = new Annotation[array.length];
+    System.arraycopy(array, 0, result, 0, array.length);
+    return result;
   }
   
 } //Warning

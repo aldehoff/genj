@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.107 $ $Author: nmeier $ $Date: 2006-07-06 20:54:22 $
+ * $Revision: 1.108 $ $Author: nmeier $ $Date: 2006-07-14 20:31:59 $
  */
 package genj.gedcom;
 
@@ -259,17 +259,21 @@ public class Gedcom implements Comparable {
   /**
    * Adds a Listener which will be notified when data changes
    */
-  public synchronized void addGedcomListener(GedcomListener which) {
+  public void addGedcomListener(GedcomListener which) {
     if (which==null)
       throw new IllegalArgumentException("listener can't be null");
-    listeners.add(which);
+    synchronized (listeners) {
+      listeners.add(which);
+    }
   }
 
   /**
    * Removes a Listener from receiving notifications
    */
-  public synchronized void removeGedcomListener(GedcomListener which) {
-    listeners.remove(which);
+  public void removeGedcomListener(GedcomListener which) {
+    synchronized (listeners) {
+      listeners.remove(which);
+    }
   }
   
   /**

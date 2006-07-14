@@ -792,6 +792,14 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Returns a value at given path or fallback
+   */
+  public String getValue(final TagPath path, String fallback) {
+    Property prop = getProperty(path);
+    return prop==null ? fallback : prop.getValue();
+  }
+  
+  /**
    * Set a value at given path
    */
   public Property setValue(final TagPath path, final String value) {
