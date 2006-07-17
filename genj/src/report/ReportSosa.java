@@ -11,45 +11,33 @@ import genj.gedcom.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.Iterator;
+import java.util.Collection;
 import java.awt.*;
 
 /**
- * GenJ - ReportSosa Types de rapports: - Tableau d'ascendance avec num sosa:
- * une colonne par type d'evenement - Tableau d'ascendance Agnatique (uniquement
- * les peres. Si pas de pere, la mere) - Liste d'ascendance suivant les lignees
- *
- * Format des rapports: - Une ligne par individu - Un evt par ligne Type de
- * sortie - Texte - Texte, colonnes tronquees - HTML TODO Daniel - read gedcom
- * header place format to set placeJurisdictionIndex in a more comprehensive
- * way. - Tune .property file - Add one event per line for lineage report - Add
- * different COLOR for male, female and undef - Add header or footer with
- * issuer informations **** 1. modifier le core pour pouvoir sauvegarde le
- * rapport correctement **** 2. mettre une option pour sortir le rapport en mode
- * texte uniquement (comme avant) **** 3. supprimer la ligne vide dans le
- * rapport en suivant la lignee **** 4. separer les evenements par des virgules
- * dans l'ascendance lignee 5. faire un alignement en cas de debordement dans le
- * rap lignee 6. voir utilisation de la couleur **** 7. modify generation xx
- * formatting (cadre, souligne, ...)
- */
-/*
- * TODO: mettre une sortie texte uniquement
+ * GenJ - ReportSosa
  */
 public class ReportSosa extends Report {
 
   /** option - our report types defined, the value and choices */
   private final static int
     SOSA_REPORT = 0,
-    LINEAGE_REPORT = 1,
-    AGNATIC_REPORT = 2,
-    TABLE_REPORT = 3;
+    TABLE_REPORT = 1,
+    LINEAGE_REPORT = 2,
+    AGNATIC_REPORT = 3;
 
   public int reportType = SOSA_REPORT;
 
   public String reportTypes[] = {
       translate("SosaReport"),
+      translate("TableReport"),
       translate("LineageReport"),
-      translate("AgnaticReport"),
-      translate("TableReport")
+      translate("AgnaticReport")
    };
 
   /** option - individual per line or event per line */
@@ -63,31 +51,55 @@ public class ReportSosa extends Report {
       translate("EventPerLine")
   };
 
-  /** option - simple choices */
-  //public boolean showGenerations = true;   // ?? does not seem to be used anymwhere!
+  public boolean displayBullet = true;
+  
+  /** option - number of generations from root considered to be private and to display */
+  public int privateGen = 0;
   public int reportMinGenerations = 1;
   public int reportMaxGenerations = 999;
-  public boolean showAllPlaceJurisdictions = false;
+  
+  /** option - Events to display */
   public boolean reportPlaceOfBirth = true;
   public boolean reportDateOfBirth = true;
   public boolean reportPlaceOfMarriage = true;
   public boolean reportDateOfMarriage = true;
   public boolean reportPlaceOfDeath = true;
   public boolean reportDateOfDeath = true;
+  public boolean reportOccu = true;
+  public String  occuSymbol = "=";
   public boolean reportPlaceOfOccu = true;
   public boolean reportDateOfOccu = true;
+  public boolean reportResi = true;
+  public String  resiSymbol = "^";
   public boolean reportPlaceOfResi = true;
   public boolean reportDateOfResi = true;
 
-  /** option - number of generations from root considered to be private */
-  public int privateGen = 0;
-  
-  /** option - display sources for each event */
-  public boolean displaySource = true;
+  /** option - Information to display for each event */
+  public boolean showAllPlaceJurisdictions = false;
+  private final static int
+     SRC_NO = 0,
+     SRC_TITLE_NO_TEXT = 1,
+     SRC_TITLE_GEN_NO_TEXT = 2,
+     SRC_TITLE_END_NO_TEXT = 3,
+     SRC_TITLE_TEXT_GEN = 4,
+     SRC_TITLE_TEXT_END = 5,
+     SRC_TITLE_GEN_TEXT_GEN = 6,
+     SRC_TITLE_END_TEXT_END = 7;
+  public int displaySource = SRC_TITLE_NO_TEXT;
+  public String displaySources[] = {
+   translate("src_no"),                // no source title, no source text anywhere
+   translate("src_title_no_text"),     // source title with event, no source text anywhere
+   translate("src_title_gen_no_text"), // "source" link to title, title at gen, no text
+   translate("src_title_end_no_text"), // "source" link, title at end, no source text
+   translate("src_title_text_gen"),    // "source" link, title with event, text at gen
+   translate("src_title_text_end"),    // "source" link, title with event, text at end
+   translate("src_title_gen_text_gen"),// "source" link, title at gen, text after title 
+   translate("src_title_end_text_end") // "source" link, title at end, text after title
+  };
+
   public boolean displayEmpty = true;
   public boolean prefixEvent = false;
   public String prefixSource = "Src: ";
-  private final static int MAX_SOURCES = 10;
   
   /** Formatting COLORs */
   private static String format_one_line = "";
@@ -117,7 +129,35 @@ public class ReportSosa extends Report {
       translate("Orange"),
       translate("Red")
    };
+
+  /** Globale variables */
+  // Logic of sources:
+  // ----------------
+  // If 2 individuals (I34 and I928) are associated for an event to source S21, each one with a note under the source like "abc" for one, and "xyz" for the other; if source title is "title_of_source"; if the text of the source is "text_of_source", and if there is a note to the source "note_of_source", then the following would be displayed for the list of sources:
+  // (S21) title_of_source
+  // text_of_source
+  // note_of_source
+  // I34:BIRT: abc
+  // I928:DEAT: xyz
   
+  // We will store sources in a global list for display at end of generation or end of report; we will store text and note in a list of strings mapped to a source.
+  private static SortedSet globalSrcList  = new TreeSet();  // list of source
+  private static Map       globalSrcNotes = new TreeMap();  // map of sources to a list of strings
+
+  String[] events = { "BIRT", "MARR", "DEAT", "OCCU", "RESI" };
+  boolean[] dispEv = { true, true, true, false, false };
+  String[] symbols = new String[5];
+  private boolean 
+     srcLinkSrc    = false,
+     srcLinkGenSrc = false,
+     srcTitle      = false,
+     srcAtGen      = false,
+     srcAtEnd      = false,
+     srcTextAtGen  = false,
+     srcTextAtEnd  = false,
+     srcDisplay    = false;
+  private static String NOTE  = ".:NOTE";       // Notes tag in Sources
+
   /**
    * Main for argument individual
    */
@@ -125,6 +165,7 @@ public class ReportSosa extends Report {
 
     // Init some stuff
     PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
+    InitVariables();
     assignColor(srcColor);
 
     // check recursion type
@@ -187,50 +228,60 @@ public class ReportSosa extends Report {
     abstract void formatEnd(Document doc);
 
      /**
-      * format some information about an entity's property
+      * Get description about an entity's event (represented by the tag)
       */
      String getProperty(Entity entity, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
        Property prop = entity.getProperty(tag);
        if (prop == null)
          return "";
        String format = prefix + (date ? "{ $D}" : "") + (place && showAllPlaceJurisdictions ? "{ $P}" : "") + (place && !showAllPlaceJurisdictions ? "{ $p}" : "");
-       return prop.format(format, policy);
+       return prop.format(format, policy).trim();
      }
 
      /**
-      * format source information about an entity's event
+      * Get source information about an entity's event
       */
-     String[] getSources(Entity entity, String tagPath, String prefix, boolean displaySrc, PrivacyPolicy policy) {
-     String sourceList[] = new String[MAX_SOURCES];
-     for (int p=0; p<MAX_SOURCES; p++) sourceList[p] = "";
-     if (displaySrc) {
+     List getSources(Entity entity, String tagPath, String prefix) {
+       List src = new ArrayList();
+       if (prefix.length() != 0) prefix = "("+prefix+") ";
        Property prop[] = entity.getProperties(new TagPath(tagPath));
-       int min = MAX_SOURCES;
-       if (prop.length<min) min = prop.length;
-       if (displayEmpty) 
-         sourceList[0] = prefixSource+"("+prefix+") "+translate("noSource"); // init in case no source found
-       if (prop.length>0) {
-         for (int p=0; p<min; p++) {
-           if ((prop[p] != null) && (prop[p].toString().trim().length() != 0)) {
+       for (int p=0; p<prop.length; p++) {
+          if ((prop[p] != null) && (prop[p].toString().trim().length() != 0)) {
              PropertySource propSrc = (PropertySource)prop[p];
-             if (prop[p] != null) {   
-               Source source = (Source)propSrc.getTargetEntity();
-               Property propAbbr = source.getPropertyByPath("SOUR:ABBR");
-               //String srcText = source.getText();
-               if (propAbbr == null) {
-                 propAbbr = source.getPropertyByPath("SOUR:TITL");
-                 }
-               if (propAbbr != null) {
-                 sourceList[p] = prefixSource+(prefixEvent ? "("+prefix+") " : "")+propAbbr.getDisplayValue();
-                 }
-               }     
+             Source source = (Source)(propSrc.getTargetEntity());
+             src.add(source);
+             // Add source to global list
+             globalSrcList.add(source);
+             // Add individual notes to global notes list:
+             //  1. First get list of notes for this source
+             List listOfNotes = (List)globalSrcNotes.get(source);
+             //  2. If no list found for this source, create one and initialise it
+             if (listOfNotes == null) {
+                listOfNotes = new ArrayList();
+                String sText = source.getText();
+                if ((sText != null) && (sText.trim().length() > 0))
+                   listOfNotes.add(sText);
+                String sNote = "";
+                Property sProp = source.getPropertyByPath(NOTE);
+                if (sProp != null) sNote = sProp.toString();
+                if ((sNote != null) && (sNote.trim().length() > 0))
+                   listOfNotes.add(sNote);
+                globalSrcNotes.put(source, listOfNotes);
+                }
+             //  3. Then get individual notes and if it exists, add it to the list
+             // if it is not already in there (for Family entities, both 
+             // husband and wife would get it and it would be redundant!)
+             String strNote = "";
+             Property sProp2 = propSrc.getPropertyByPath(NOTE);
+             if (sProp2 != null) strNote = sProp2.toString();
+             if ((strNote != null) && (strNote.trim().length() > 0) && (!isAlreadyIn(listOfNotes, strNote))) {
+                listOfNotes.add(entity.getId()+": "+prefix+strNote);
+                }
              }
-           }
-         }
+          }
+       return src;
        }
-       return sourceList;
-     }
-    
+           
     /**
      * dump individual's name
      */
@@ -246,68 +297,89 @@ public class ReportSosa extends Report {
      * @param usePrefixes whether to user prefixes in info generation
      * @param returnEmpties whether to return or skip empty values
      */
-    String[] getProperties(Indi indi, Fam fam, PrivacyPolicy privacy, boolean usePrefixes, boolean returnEmpties) {
+    void getProperties(Indi indi, Fam fam, PrivacyPolicy privacy, boolean usePrefixes, boolean returnEmpties, Map eDesc, Map eSrc) {
 
-      List result = new ArrayList();
-
+      // Variables
+      String event = "";
+      String description = "";
+      List sources = new ArrayList();
+    
       // birth?
-      String birt = getProperty(indi, "BIRT", usePrefixes ? OPTIONS.getBirthSymbol() : "", reportDateOfBirth, reportPlaceOfBirth, privacy);
-      if (returnEmpties||birt.length()>0)
-        result.add(birt);
+      if (reportDateOfBirth || reportPlaceOfBirth) {
+         event = "BIRT";
+         description = getProperty(indi, event, usePrefixes ? symbols[0] : "", reportDateOfBirth, reportPlaceOfBirth, privacy);
+         if (returnEmpties||description.length()>0)
+           eDesc.put(event, description);
 
-      // birth-source?
-      String birtSrc[] = getSources(indi, "INDI:BIRT:SOUR", usePrefixes ? OPTIONS.getBirthSymbol() : "", displaySource, privacy);
-      for (int p=0; p<birtSrc.length; p++) {
-        if (birtSrc[p].length()>0)
-          result.add(birtSrc[p]);
+         if (srcDisplay) {
+           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[0] : "");
+           if (displayEmpty||sources.size() > 0)
+             eSrc.put(event, sources);
+           }
         }
 
       // marriage?
-      String marr = "";
-      String marrSrc[] = new String[MAX_SOURCES];
-      for (int p=0; p<MAX_SOURCES; p++) marrSrc[p] = "";
-      if (fam!=null) {
-        String prefix = "";
-        if (usePrefixes)
-          prefix = OPTIONS.getMarriageSymbol() + (fam.getOtherSpouse(indi) != null ? " " + fam.getOtherSpouse(indi).getName() : "");
-        marr = getProperty(fam, "MARR", prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
-        prefix = "";
-        if (usePrefixes)
-          prefix =  OPTIONS.getMarriageSymbol();
-        marrSrc = getSources(fam, "FAM:MARR:SOUR", prefix, displaySource, privacy);
-        }
-      if (returnEmpties||marr.length()>0)
-        result.add(marr);
-      // marriage-source?
-      for (int p=0; p<marrSrc.length; p++) {
-        if (marrSrc[p].length()>0)
-          result.add(marrSrc[p]);
+      if (reportDateOfMarriage || reportPlaceOfMarriage) {
+         event = "MARR";
+         if (fam!=null) {
+           String prefix = "";
+           if (usePrefixes)
+             prefix = symbols[1] + (fam.getOtherSpouse(indi) != null ? " " + fam.getOtherSpouse(indi).getName() : "");
+           description = getProperty(fam, event, prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
+           if (returnEmpties||description.length()>0)
+             eDesc.put(event, description);
+           if (srcDisplay) {
+              sources = getSources(fam, "FAM:"+event+":SOUR", usePrefixes ? symbols[1] : "");
+              if (sources.size() > 0)
+                eSrc.put(event, sources);
+             }
+           }
         }
  
       // death?
-      String deat = getProperty(indi, "DEAT", usePrefixes ? OPTIONS.getDeathSymbol() : "", reportDateOfDeath, reportPlaceOfDeath, privacy);
-      if (returnEmpties||deat.length()>0)
-        result.add(deat);
+      if (reportDateOfDeath || reportPlaceOfDeath) {
+         event = "DEAT";
+         description = getProperty(indi, event, usePrefixes ? symbols[2] : "", reportDateOfDeath, reportPlaceOfDeath, privacy);
+         if (returnEmpties||description.length()>0)
+           eDesc.put(event, description);
 
-      // death-source?
-      String deatSrc[] = getSources(indi, "INDI:DEAT:SOUR", usePrefixes ? OPTIONS.getDeathSymbol() : "", displaySource, privacy);
-      for (int p=0; p<deatSrc.length; p++) {
-        if (deatSrc[p].length()>0)
-          result.add(deatSrc[p]);
+         if (srcDisplay && (reportDateOfDeath || reportPlaceOfDeath)) {
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[2] : "");
+            if (sources.size() > 0)
+              eSrc.put(event, sources);
+           }
         }
 
       // occupation?
-      String occu = getProperty(indi, "OCCU", "{$T} ", reportDateOfOccu, reportPlaceOfOccu, privacy);
-      if (returnEmpties||occu.length()>0)
-        result.add(occu);
+      if (reportOccu) {
+         event = "OCCU";
+         description = getProperty(indi, event, (usePrefixes ? symbols[3] : "")+"{ $V} ", reportDateOfOccu, reportPlaceOfOccu, privacy);
+         if (returnEmpties||description.length()>0)
+           eDesc.put(event, description);
+   
+         if (srcDisplay) {
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[3] : "");
+            if (sources.size() > 0)
+              eSrc.put(event, sources);
+           }
+        }
 
       // residence?
-      String resi = getProperty(indi, "RESI", "{$T} ", reportDateOfResi, reportPlaceOfResi, privacy);
-      if (returnEmpties||resi.length()>0)
-        result.add(resi);
+      if (reportOccu) {
+         event = "RESI";
+         description = getProperty(indi, event, (usePrefixes ? symbols[4] : "")+"{ $V} ", reportDateOfResi, reportPlaceOfResi, privacy);
+         if (returnEmpties||description.length()>0)
+           eDesc.put(event, description);
+
+         if (srcDisplay) {
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[4] : "");
+            if (sources.size() > 0)
+              eSrc.put(event, sources);
+           }
+        }
 
       // done
-      return (String[])result.toArray(new String[result.size()]);
+      return;
     }
 
   } //Layout
@@ -426,11 +498,18 @@ public class ReportSosa extends Report {
 
        // let implementation handle individual
        formatIndi(indi, fam, gen, sosa, gen < privateGen ? PrivacyPolicy.PRIVATE : policy, doc);
-     }
+     } // end of scanning generations
 
      // recurse into next generation
-     if (!nextGeneration.isEmpty())
+     if ((srcDisplay) && (srcAtGen || srcTextAtGen)) {
+        if (gen >= reportMinGenerations-1) 
+           writeSourceList(doc, gen, srcAtGen, srcTextAtGen);
+        else
+           globalSrcList.clear();
+        }
+     if (!nextGeneration.isEmpty()) {
        recursion(nextGeneration, gen+1, policy, doc);
+       }
 
      // done
    }
@@ -442,7 +521,7 @@ public class ReportSosa extends Report {
 
   } //BreadthFirst
 
-  /**
+  /** ********************************************************************************
    * The pretties report with breadth first
    *
    * GENERATION 1
@@ -486,9 +565,14 @@ public class ReportSosa extends Report {
 
     /** this is called at each recursion step - output table rows */
     void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
-      
+
+      // Go back if generation too low    
       if (gen < reportMinGenerations-1) return;
 
+      // For each individual, we will store list of events, their descriptions and sources
+      Map eventDesc = new TreeMap();     // Maps event to their descriptions
+      Map eventSources = new TreeMap();  // Maps event to GenJ source list
+      
       // start with a new row
       doc.nextTableRow();
 
@@ -496,44 +580,25 @@ public class ReportSosa extends Report {
       doc.addText(getName(indi, sosa, policy)); // [sosa] name (id)
 
       // then a cell with properies
-      String[] props = getProperties(indi, fam, policy, true, false);
-      String format = "";
-      if (props.length>0) {
+      getProperties(indi, fam, policy, true, false, eventDesc, eventSources);
+      
+      if (eventDesc.size()>0) {
         doc.nextTableCell();
-
-        if (reportFormat==ONE_LINE) {
-          for (int p=0; p<props.length; p++) {
-            if (p!=0) doc.addText(", ");
-            if (props[p].lastIndexOf(prefixSource) != -1) format = format_one_line;
-            doc.addText(props[p], format);
-            format = "";
-          }
-        } else {
-          doc.startList();
-          for (int p=0; p<props.length; p++) {
-            if ((p!=0) && (props[p].lastIndexOf(prefixSource) == -1)) doc.nextListItem();
-            if (props[p].lastIndexOf(prefixSource) != -1) {
-              format = format_multi_lines;
-              doc.nextParagraph();
-              }
-            doc.addText(props[p],format);
-            format = "";
-          }
-          doc.endList();
+        writeEvents(doc, gen, eventDesc, eventSources, false);
         }
-      }
-      // done for now
+        // done for now
     }
 
     /** called at the end of the recursion - end our table */
     void formatEnd(Document doc) {
+      if ((srcDisplay) && (srcAtEnd || srcTextAtEnd)) writeSourceList(doc, -1, srcAtEnd, srcTextAtEnd);
       // close table
       doc.endTable();
     }
 
   } //Sosa
-
-  /**
+  
+  /** ********************************************************************************
    * A Lineage recursion goes depth first and generates a nested tree of ancestors and their properties
    *
    * 1 root
@@ -564,48 +629,30 @@ public class ReportSosa extends Report {
       
       // dump the indi's name
       doc.nextParagraph("space-after=10pt,space-before=10pt,start-indent="+(gen*20)+"pt");
-      doc.addText(getName(indi, sosa, policy));
+      doc.addText(getName(indi, sosa, policy)+" ", "font-weight=bold");
+      doc.nextParagraph("start-indent="+(gen*20+10)+"pt");
 
       // dump its properties
-      String[] props = getProperties(indi, fam, policy, true, false);
-      String format = "";
-      if (props.length>0) {
-
-        // calculate indent
-        String indent = "start-indent="+(gen*20+10)+"pt";
-
-        if (reportFormat==ONE_LINE) {
-          for (int p=0; p<props.length; p++) {
-            if (p!=0) doc.addText(", ");
-            if (props[p].lastIndexOf(prefixSource) != -1) format = format_one_line;
-            doc.addText(props[p], format);
-            format = "";
-          }
-        } else {
-          doc.startList(indent);
-          for (int p=0; p<props.length; p++) {
-            if ((p!=0) && (props[p].lastIndexOf(prefixSource) == -1)) doc.nextListItem();
-            if (props[p].lastIndexOf(prefixSource) != -1) {
-              format = format_multi_lines;
-              doc.nextParagraph();
-              }
-            doc.addText(props[p],format);
-            format = "";
-          }
-          doc.endList();
-        }
-      }
+      // For each individual, we will store list of events, their descriptions and sources
+      Map eventDesc = new TreeMap();     // Maps event to their descriptions
+      Map eventSources = new TreeMap();  // Maps event to GenJ source list
+      
+      getProperties(indi, fam, policy, true, false, eventDesc, eventSources);
+      if (eventDesc.size()>0) {
+         writeEvents(doc, gen, eventDesc, eventSources, true);
+         }
       // done
     }
 
     /** end formatting */
     void formatEnd(Document doc) {
+      if ((srcDisplay) && (srcAtEnd || srcTextAtEnd)) writeSourceList(doc, -1, srcAtEnd, srcTextAtEnd);
       // noop
     }
 
   } //Lineage
 
-  /**
+  /** ********************************************************************************
    * 1 root
    * 2 father
    * 4 grandfather
@@ -666,49 +713,32 @@ public class ReportSosa extends Report {
         return;
 
       // dump the indi's name
-      doc.nextParagraph("space-after=10pt,space-before=10pt");
-      doc.addText(getName(indi, sosa, policy));
+      doc.nextParagraph("space-after=10pt,space-before=10pt,start-indent="+(gen*20)+"pt");
+      doc.addText(getName(indi, sosa, policy)+" ", "font-weight=bold");
+      doc.nextParagraph("start-indent="+(gen*20+10)+"pt");
 
       // dump its properties
-      String[] props = getProperties(indi, fam, policy, true, false);
-      String format = "";
-      if (props.length>0) {
-
-        // calculate indent
-        String indent = "start-indent=10pt";
-
-        if (reportFormat==ONE_LINE) {
-          for (int p=0; p<props.length; p++) {
-            if (p!=0) doc.addText(", ");
-            if (props[p].lastIndexOf(prefixSource) != -1) format = format_one_line;
-            doc.addText(props[p], format);
-            format = "";
-          }
-        } else {
-          doc.startList(indent);
-          for (int p=0; p<props.length; p++) {
-            if ((p!=0) && (props[p].lastIndexOf(prefixSource) == -1)) doc.nextListItem();
-            if (props[p].lastIndexOf(prefixSource) != -1) {
-              format = format_multi_lines;
-              doc.nextParagraph();
-              }
-            doc.addText(props[p],format);
-            format = "";
-          }
-          doc.endList();
-        }
-      }
+      // For each individual, we will store list of events, their descriptions and sources
+      Map eventDesc = new TreeMap();     // Maps event to their descriptions
+      Map eventSources = new TreeMap();  // Maps event to GenJ source list
+      
+      getProperties(indi, fam, policy, true, false, eventDesc, eventSources);
+      
+      if (eventDesc.size()>0) {
+         writeEvents(doc, gen, eventDesc, eventSources, true);
+         }
       // done
     }
 
     /** end formatting */
     void formatEnd(Document doc) {
+      if ((srcDisplay) && (srcAtEnd || srcTextAtEnd)) writeSourceList(doc, -1, srcAtEnd, srcTextAtEnd);
       // noop
     }
 
   }
 
-  /**
+  /** ********************************************************************************
    * A Sosa Table goes breadth first and generates a sosa-ascending table of properties
    *
    * 1;root;...
@@ -721,29 +751,28 @@ public class ReportSosa extends Report {
    */
   class Table extends BreadthFirst  {
 
-    // number + ";" + name + ";" + birth + ";" + marriage + ";" + death + ";" + occupation + ";" + residence;
-    String[] header = { "Sosa", Gedcom.getName("NAME"), Gedcom.getName("BIRT"), Gedcom.getName("MARR"), Gedcom.getName("DEAT"), Gedcom.getName("OCCU"), Gedcom.getName("RESI") };
+    String[] header = { "#", Gedcom.getName("NAME"), Gedcom.getName("BIRT"), Gedcom.getName("MARR"), Gedcom.getName("DEAT"), Gedcom.getName("OCCU"), Gedcom.getName("RESI") };
+    int[] widths = { 3, 22, 15, 15, 15, 15, 15 };
 
     /** our title - simply the column header values */
     String getTitle(Indi root) {
-      StringBuffer result = new StringBuffer();
-      for (int c=0;c<header.length;c++) {
-        if (c>0) result.append(";");
-        result.append(header[c]);
-      }
-     return result.toString();
+      return translate("title.sosa", root.getName());
     }
 
     /** this is called once at the beginning of the recursion - we add our table around it */
     void formatStart(Indi root, Document doc) {
-      // open table first
-      doc.startTable("genj:csv=true"); // this table is csv compatible
-      // add header
-      doc.nextTableRow();
+      // open CSV compatible table
+      //doc.startTable("border=0.5pt solid black,genj:csv=true,width=100%"); 
+      doc.startTable("genj:csv=true,width=100%"); 
+      // define columns
       for (int i=0;i<header.length;i++) {
-        doc.addTableColumn(""); // define a column
-        if (i>0) doc.nextTableCell();
-        doc.addText(header[i]);
+        doc.addTableColumn("column-width="+widths[i]+"%");
+      }
+      // define header
+      doc.nextTableRow("background-color=#f0f0f0");
+      for (int i=0;i<header.length;i++) {
+        if (i>0) doc.nextTableCell("background-color=#f0f0f0");
+        doc.addText(header[i], "font-weight=bold");
       }
     }
 
@@ -758,22 +787,21 @@ public class ReportSosa extends Report {
       if (gen < reportMinGenerations-1) return;
     
       // grab properties - no prefixes, but all properties empty or not
-      String[] props =  getProperties(indi, fam, policy, false, true);
+      Map eventDesc = new TreeMap();     // Maps event to their descriptions
+      Map eventSources = new TreeMap();  // Maps event to GenJ source list
+      String[] props =  {""};
+      getProperties(indi, fam, policy, false, true, eventDesc, eventSources);
 
       // start with a new row, sosa and name
       doc.nextTableRow();
       doc.addText(""+sosa);
       doc.nextTableCell();
       doc.addText(getName(indi, 0, policy)); //pass in 0 as sosa - don't want it as part of name
-      doc.nextTableCell();
 
-      // loop over props
-      for (int i=0;i<props.length;i++) {
-        if ((i>0) && (props[i].lastIndexOf(prefixSource) == -1)) doc.nextTableCell();
-        if (props[i].lastIndexOf(prefixSource) != -1) doc.nextParagraph();
-          doc.addText(props[i]);
-      }
-
+      if (eventDesc.size()>0) {
+        doc.nextTableCell();
+        writeEvents(doc, gen, eventDesc, eventSources, false);
+        }
       // done for now
     }
 
@@ -781,9 +809,93 @@ public class ReportSosa extends Report {
     void formatEnd(Document doc) {
       // close table
       doc.endTable();
+      if ((srcDisplay) && (srcAtEnd || srcTextAtEnd)) writeSourceList(doc, -1, srcAtEnd, srcTextAtEnd);
     }
 
   } //Table
+
+  /** ********************************************************************************/
+  
+  /** Initialises variables for all displays   */
+  void InitVariables() {
+    // Assign events to consider and their characteristics
+    symbols[0] = OPTIONS.getBirthSymbol();
+    symbols[1] = OPTIONS.getMarriageSymbol(); 
+    symbols[2] = OPTIONS.getDeathSymbol(); 
+    symbols[3] = occuSymbol; 
+    symbols[4] = resiSymbol;  
+
+    // No source should be displayed for events that are not to be displayed
+    dispEv[0] = reportDateOfBirth    || reportPlaceOfBirth;
+    dispEv[1] = reportDateOfMarriage || reportPlaceOfMarriage;
+    dispEv[2] = reportDateOfDeath    || reportPlaceOfDeath;
+    
+    // In case of sosa table, force bullet on and prevent writing at gen level
+    if (reportType == TABLE_REPORT) { 
+       displayBullet = true;
+       if (displaySource == SRC_TITLE_GEN_NO_TEXT) 
+          displaySource = SRC_TITLE_END_NO_TEXT;
+       if (displaySource == SRC_TITLE_TEXT_GEN) 
+          displaySource = SRC_TITLE_TEXT_END;
+       if (displaySource == SRC_TITLE_GEN_TEXT_GEN) 
+          displaySource = SRC_TITLE_END_TEXT_END;
+       }
+    
+    // What to display where depending on user's choice
+    srcLinkSrc    = false;   // true if link to source '0-srcId'
+    srcLinkGenSrc = false;   // true if link to source 'gen nb-srcId'
+    srcTitle      = false;   // true if source title to display with event
+    srcAtGen      = false;   // true if source title to display at end of generation
+    srcAtEnd      = false;   // true if source title to display at end of report
+    srcTextAtGen  = false;   // true if text title to display at end of generation
+    srcTextAtEnd  = false;   // true if text title to display at end of report
+    srcDisplay    = false;   // true if a source information is to be displayed
+    switch (displaySource) {
+      case SRC_NO:
+        break;
+      case SRC_TITLE_NO_TEXT:
+        srcTitle      = true;
+        srcDisplay    = true;
+        break;
+      case SRC_TITLE_GEN_NO_TEXT:
+        srcLinkGenSrc = true;
+        srcAtGen      = true;
+        srcDisplay    = true;
+        break;
+      case SRC_TITLE_TEXT_GEN:
+        srcLinkGenSrc = true;
+        srcTitle      = true;
+        srcTextAtGen  = true;
+        srcDisplay    = true;
+        break;
+      case SRC_TITLE_GEN_TEXT_GEN:
+        srcLinkGenSrc = true;
+        srcAtGen      = true;
+        srcTextAtGen  = true;
+        srcDisplay    = true;
+        break;
+      case SRC_TITLE_END_NO_TEXT:
+        srcLinkSrc    = true;
+        srcAtEnd      = true;
+        srcDisplay    = true;
+        break;
+      case SRC_TITLE_TEXT_END:
+        srcLinkSrc    = true;
+        srcTitle      = true;
+        srcTextAtEnd  = true;
+        srcDisplay    = true;
+        break;
+      case SRC_TITLE_END_TEXT_END:
+        srcLinkSrc    = true;
+        srcAtEnd      = true;
+        srcTextAtEnd  = true;
+        srcDisplay    = true;
+        break;
+      default:
+        ;
+    }
+    
+  }
 
   /** Assign format of colors  */
   void assignColor(int srcColor) {
@@ -815,4 +927,227 @@ public class ReportSosa extends Report {
   format_one_line = "font-style=italic,color="+cs;
   format_multi_lines = "margin-left=0px,font-style=italic,color="+cs;
   }
+
+  /** Display functions */
+  
+  void writeEvents(Document doc, int gen, Map eventDesc, Map eventSources, boolean isIndented) {
+    // Calculate indent if any
+    String indent = "";
+    if (isIndented) indent = "start-indent="+(gen*20+10)+"pt";
+    
+    // Display the events of an individual for all types of sosa report 
+    // (sosa, linage, etc)
+    if ((reportFormat==ONE_EVT_PER_LINE) && (displayBullet) && (reportType != TABLE_REPORT)) doc.startList(indent);
+    for (int ev = 0; ev < events.length; ev++) {
+       String evStr = events[ev];
+       String description = (String)eventDesc.get(evStr);
+       if (description == null) description = "";   
+       List sources = (List)eventSources.get(evStr);
+       boolean noSrc = false;
+       if ((sources == null) || (sources.size() == 0)) noSrc = true;
+       String preSrc = " ";
+       if ((prefixEvent) && (symbols[ev].trim().length() > 0))
+          preSrc = " ("+symbols[ev]+") ";
+          
+       // Go to next line or column if after 1 event
+       if (ev!=0) 
+          writeStartNextItem(doc, reportFormat, displayBullet, description.length() != 0, indent);
+       // Write event description
+       writeDescription(doc, description);
+       // Display source if any and required
+       if (!noSrc && srcDisplay) {
+          for (Iterator s = sources.iterator(); s.hasNext(); ) {
+             Source source = (Source)s.next();
+             String sId = source.getId();
+             if (srcTitle) {
+                if (!isValidText(source)) sId = "none";
+                writeStartNextParagraph(doc, reportFormat, indent);
+                writeSourceWithEvent(doc, reportFormat, noSrc, prefixSource, preSrc+source.getTitle()+" ("+source.getId()+")", gen, sId);
+                }
+             else {
+                writeSourceWithEvent(doc, reportFormat, noSrc, " ( "+prefixSource+preSrc+" "+source.getId()+" )", "", gen, sId);
+                }
+             }
+          }
+       // Display noSource if no source found, source required, display when empty and event sources are to be displayed
+       if (noSrc && srcDisplay && displayEmpty && dispEv[ev]) {
+          if ((displayBullet) && (description.length() == 0) && (reportType != TABLE_REPORT))
+             writeStartNextItem(doc, reportFormat, displayBullet, true, indent);
+          else if (displayBullet)
+             writeStartNextParagraph(doc, reportFormat, "");
+          else
+             writeStartNextParagraph(doc, reportFormat, indent);
+          writeSourceWithEvent(doc, reportFormat, noSrc, prefixSource, preSrc+translate("noSource"), 0, "");
+          }
+       } // end of for loop
+    if ((reportFormat==ONE_EVT_PER_LINE) && (displayBullet) && (reportType != TABLE_REPORT)) doc.endList();
+  
+    return;
+  }
+  
+  
+  void writeStartNextItem(Document doc, int format, boolean bullet, boolean isDescription, String style) {
+    if (reportType == TABLE_REPORT) {
+       doc.nextTableCell();
+       return;
+       }
+    if (!isDescription) return;
+    if (format == ONE_EVT_PER_LINE) {
+       if (bullet) doc.nextListItem();
+       else doc.nextParagraph(style); 
+       }
+    else 
+       doc.addText(", ");  
+    return;
+  }
+  
+  void writeStartNextParagraph(Document doc, int format, String style) {
+    if (format == ONE_EVT_PER_LINE) 
+       doc.nextParagraph(style);
+    else 
+       doc.addText(", ");  
+    return;
+  }
+  
+  void writeDescription(Document doc, String text) {
+    if (text.length() != 0)
+       doc.addText(text);
+    return;
+  }
+    
+  void writeSourceWithEvent(Document doc, int format, boolean noSrcFound, String link, String source, int gen, String id) {
+    String formatText = "";
+    if (format == ONE_EVT_PER_LINE) formatText = format_multi_lines;
+    else                            formatText = format_one_line;
+    
+    if (noSrcFound) {
+       // display no source with event in case no source found   
+       doc.addText(link+source, formatText);
+       return;   
+       }
+    // if there is a source, add link to end of report...
+    if (srcLinkSrc) {
+       //doc.nextParagraph(formatText);
+       doc.addLink(link, "0-"+id);
+       }
+    // ...or to end of generation
+    else if (srcLinkGenSrc) {   
+       //doc.nextParagraph(formatText);
+       doc.addLink(link, (gen+1)+"-"+id);
+       }
+    // ...or else simply display the link as text,...
+    else doc.addText(link, formatText);
+    // ... and the source title if required.
+    if (srcTitle) 
+       doc.addText(source, formatText);   
+    return;
+  }
+  
+  boolean isValidText(Source source) {
+    // Text associated with source is valid if corresponding list is not empty
+    List listOfNotes = (List)globalSrcNotes.get(source);
+    return (!listOfNotes.isEmpty());
+  }
+
+  boolean isAlreadyIn(List listOfStr, String strNote) {
+    for (Iterator n = listOfStr.iterator(); n.hasNext(); ) {
+       String str = (String)n.next();
+       if (str.indexOf(strNote) != -1) 
+          return true;
+       }
+    return false;
+  }
+
+  void writeSourceNotes(Document doc, Source source, String format) {
+    List listOfNotes = (List)globalSrcNotes.get(source);
+    format +=",margin-left=8px,font-style=italic";
+    for (Iterator n = listOfNotes.iterator(); n.hasNext(); ) {
+       String strNote = (String)n.next();
+       doc.nextParagraph(format);
+       doc.addText(strNote);
+       }
+    return;
+  }
+    
+  void writeSourceList(Document doc, int gen, boolean isTitle, boolean isText) {
+     
+     // This function writes all sources from the global source list and then clears the list
+     // The logic is to display first all sources that have valid text and then the list of source ids that have no text associated to them
+     // (if title is to be displayed, given there is always a valid one, the list is the normal one; it is only in the case of displaying text only that the invalid list needs to be displayed).
+     
+     // Return if nothing to display
+     if (globalSrcList.size() == 0) return;
+  
+     // Will hold string ids of sources with nothing to display
+     List noTextSources = new ArrayList();
+     
+     // The start depends on the reportType (whether there is a table or not)
+     String format = "space-after=8pt";
+     if (reportType == SOSA_REPORT) {
+        if (gen == -1) doc.nextPage();
+        doc.nextTableRow();
+        doc.nextTableCell("margin-left=0px,number-columns-spanned=2,text-decoration=underline");
+        doc.nextParagraph("space-before=20pt");
+        if (gen == -1) {
+           doc.addText("________________________________________________");
+           doc.nextParagraph();
+           }
+        doc.addText(translate("sourceList"));
+        doc.nextTableRow();
+        doc.nextTableCell("margin-left=10px,number-columns-spanned=2");
+        }
+     if ((reportType == LINEAGE_REPORT) || (reportType == AGNATIC_REPORT) || (reportType == TABLE_REPORT)) {
+        doc.nextPage();
+        doc.nextParagraph("space-before=10pt");
+        doc.addText("________________________________________________");
+        doc.nextParagraph("space-after=10pt,space-before=10pt,text-decoration=underline");
+        doc.addText(translate("sourceList"));
+        doc.nextParagraph(format);
+        }
+     
+     // Display sources, storing the "invalid" ones along the way
+     for (Iterator s = globalSrcList.iterator(); s.hasNext(); ) {
+        Source source = (Source)s.next();
+        String sId = source.getId();
+        String sTitle = source.getTitle();
+        if (isTitle) {
+           doc.nextParagraph(format);
+           doc.addAnchor((gen+1)+"-"+sId);
+           doc.addText("("+sId+") "+sTitle);
+           if (isText)  {
+              if (isValidText(source)) {
+                 writeSourceNotes(doc, source, format);
+                 }
+              }
+           }
+        else if (isText) {
+           if (isValidText(source)) {
+              doc.nextParagraph(format);
+              doc.addAnchor((gen+1)+"-"+sId);
+              doc.addText("("+sId+") ");
+              writeSourceNotes(doc, source, format);
+              }
+           else { // this is a source with nothing to display, store its id
+              noTextSources.add(sId);
+              }
+           }
+        } // end of for loop
+
+     // Display list of empty source ids if any   
+     if (noTextSources.size() > 0) {
+        doc.nextParagraph("space-after=0pt");
+        doc.addAnchor((gen+1)+"-none");
+        for (Iterator n = noTextSources.iterator(); n.hasNext(); ) {
+           doc.addText("("+(String)n.next()+") ");
+           }
+        doc.nextParagraph(format);
+        doc.addText(translate("noText"));
+        doc.nextParagraph(format);
+        }
+     
+     globalSrcList.clear();
+     globalSrcNotes.clear();
+     return;
+  }
+  
 }

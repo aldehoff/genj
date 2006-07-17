@@ -660,16 +660,17 @@ public class ReportFlashList extends Report {
       default:
         throw new IllegalArgumentException("no such report type");
     }
-    
-    // apply filters
-    if ((FilterKey1 != "*") && (ps.toUpperCase().indexOf(FilterKey1.toUpperCase()) == -1))
-       return; // there is a filter and it does not match, hence do a return
-    if ((FilterKey2 != "*") && (ss.toUpperCase().indexOf(FilterKey2.toUpperCase()) == -1))
+
+    // apply filters (if there is a filter and it does not match, return)
+    if ((FilterKey1.trim().compareTo("*") != 0) && (ps.toUpperCase().indexOf(FilterKey1.toUpperCase()) == -1))
        return; 
-    if ((FilterKey3 != "*") && (ts.toUpperCase().indexOf(FilterKey3.toUpperCase()) == -1))
+    if ((FilterKey2.trim().compareTo("*") != 0) && (ss.toUpperCase().indexOf(FilterKey2.toUpperCase()) == -1))
        return; 
-    
+    if ((FilterKey3.trim().compareTo("*") != 0) && (ts.toUpperCase().indexOf(FilterKey3.toUpperCase()) == -1))
+       return; 
+           
     // remember
+    if (!existPLACTag) { ts = ""; }
     Map secondary = (Map)lookup(primary, ps, TreeMap.class);
     Map tertiary  = (Map)lookup(secondary, ss, TreeMap.class);
     Range range = (Range)lookup(tertiary, ts, Range.class);
