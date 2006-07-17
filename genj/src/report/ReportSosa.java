@@ -1060,7 +1060,7 @@ public class ReportSosa extends Report {
 
   void writeSourceNotes(Document doc, Source source, String format) {
     List listOfNotes = (List)globalSrcNotes.get(source);
-    format +=",margin-left=8px,font-style=italic";
+    format +=",margin-left=8px,font-style=italic,color=#707070";
     for (Iterator n = listOfNotes.iterator(); n.hasNext(); ) {
        String strNote = (String)n.next();
        doc.nextParagraph(format);
@@ -1113,7 +1113,7 @@ public class ReportSosa extends Report {
         if (isTitle) {
            doc.nextParagraph(format);
            doc.addAnchor((gen+1)+"-"+sId);
-           doc.addText("("+sId+") "+sTitle);
+           doc.addText("("+sId+") "+sTitle, "color=#303030");
            if (isText)  {
               if (isValidText(source)) {
                  writeSourceNotes(doc, source, format);
