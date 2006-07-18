@@ -61,6 +61,8 @@ public class ReportSosa extends Report {
   /** option - Events to display */
   public boolean reportPlaceOfBirth = true;
   public boolean reportDateOfBirth = true;
+  public boolean reportPlaceOfBaptism = true;
+  public boolean reportDateOfBaptism = true;
   public boolean reportPlaceOfMarriage = true;
   public boolean reportDateOfMarriage = true;
   public boolean reportPlaceOfDeath = true;
@@ -144,9 +146,10 @@ public class ReportSosa extends Report {
   private static SortedSet globalSrcList  = new TreeSet();  // list of source
   private static Map       globalSrcNotes = new TreeMap();  // map of sources to a list of strings
 
-  String[] events = { "BIRT", "MARR", "DEAT", "OCCU", "RESI" };
-  boolean[] dispEv = { true, true, true, false, false };
-  String[] symbols = new String[5];
+  // Events (BIRT and BAPM will be lumped together in terms of options to display)
+  String[] events = { "BIRT", "BAPM", "MARR", "DEAT", "OCCU", "RESI" };
+  boolean[] dispEv = { true, true, true, true, false, false };
+  String[] symbols = new String[6];
   private boolean 
      srcLinkSrc    = false,
      srcLinkGenSrc = false,
@@ -156,7 +159,8 @@ public class ReportSosa extends Report {
      srcTextAtGen  = false,
      srcTextAtEnd  = false,
      srcDisplay    = false;
-  private static String NOTE  = ".:NOTE";       // Notes tag in Sources
+  private static String NOTE  = ".:NOTE";       // Notes tag in Sources (SOUR and INDI)
+  private static String DATA  = ".:DATA:TEXT";  // Data tag in Sources (INDI)
 
   /**
    * Main for argument individual
@@ -277,6 +281,12 @@ public class ReportSosa extends Report {
              if ((strNote != null) && (strNote.trim().length() > 0) && (!isAlreadyIn(listOfNotes, strNote))) {
                 listOfNotes.add(entity.getId()+": "+prefix+strNote);
                 }
+             strNote = "";
+             sProp2 = propSrc.getPropertyByPath(DATA);
+             if (sProp2 != null) strNote = sProp2.toString();
+             if ((strNote != null) && (strNote.trim().length() > 0) && (!isAlreadyIn(listOfNotes, strNote))) {
+                listOfNotes.add(entity.getId()+": "+prefix+strNote);
+                }
              }
           }
        return src;
@@ -303,33 +313,51 @@ public class ReportSosa extends Report {
       String event = "";
       String description = "";
       List sources = new ArrayList();
+      int ev = 0;
     
       // birth?
-      if (reportDateOfBirth || reportPlaceOfBirth) {
-         event = "BIRT";
-         description = getProperty(indi, event, usePrefixes ? symbols[0] : "", reportDateOfBirth, reportPlaceOfBirth, privacy);
+      ev = 0;
+      event = "BIRT";
+      if (dispEv[ev]) {
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBirth, reportPlaceOfBirth, privacy);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
          if (srcDisplay) {
-           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[0] : "");
+           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
+           if (displayEmpty||sources.size() > 0)
+             eSrc.put(event, sources);
+           }
+        }
+
+      // baptism?
+      ev = 1;
+      event = "BAPM";
+      if (dispEv[ev]) {
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBirth, reportPlaceOfBirth, privacy);
+         if (returnEmpties||description.length()>0)
+           eDesc.put(event, description);
+
+         if (srcDisplay) {
+           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
            if (displayEmpty||sources.size() > 0)
              eSrc.put(event, sources);
            }
         }
 
       // marriage?
-      if (reportDateOfMarriage || reportPlaceOfMarriage) {
-         event = "MARR";
+      ev = 2;
+      event = "MARR";
+      if (dispEv[ev]) {
          if (fam!=null) {
            String prefix = "";
            if (usePrefixes)
-             prefix = symbols[1] + (fam.getOtherSpouse(indi) != null ? " " + fam.getOtherSpouse(indi).getName() : "");
+             prefix = symbols[ev] + (fam.getOtherSpouse(indi) != null ? " " + fam.getOtherSpouse(indi).getName() : "");
            description = getProperty(fam, event, prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
            if (returnEmpties||description.length()>0)
              eDesc.put(event, description);
            if (srcDisplay) {
-              sources = getSources(fam, "FAM:"+event+":SOUR", usePrefixes ? symbols[1] : "");
+              sources = getSources(fam, "FAM:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
               if (sources.size() > 0)
                 eSrc.put(event, sources);
              }
@@ -337,42 +365,45 @@ public class ReportSosa extends Report {
         }
  
       // death?
-      if (reportDateOfDeath || reportPlaceOfDeath) {
-         event = "DEAT";
-         description = getProperty(indi, event, usePrefixes ? symbols[2] : "", reportDateOfDeath, reportPlaceOfDeath, privacy);
+      ev = 3;
+      event = "DEAT";
+      if (dispEv[ev]) {
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfDeath, reportPlaceOfDeath, privacy);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
          if (srcDisplay && (reportDateOfDeath || reportPlaceOfDeath)) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[2] : "");
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
         }
 
       // occupation?
+      ev = 4;
+      event = "OCCU";
       if (reportOccu) {
-         event = "OCCU";
-         description = getProperty(indi, event, (usePrefixes ? symbols[3] : "")+"{ $V} ", reportDateOfOccu, reportPlaceOfOccu, privacy);
+         description = getProperty(indi, event, (usePrefixes ? symbols[ev] : "")+"{ $V} ", reportDateOfOccu, reportPlaceOfOccu, privacy);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
    
          if (srcDisplay) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[3] : "");
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
         }
 
       // residence?
-      if (reportOccu) {
-         event = "RESI";
-         description = getProperty(indi, event, (usePrefixes ? symbols[4] : "")+"{ $V} ", reportDateOfResi, reportPlaceOfResi, privacy);
+      ev = 5;
+      event = "RESI";
+      if (reportResi) {
+         description = getProperty(indi, event, (usePrefixes ? symbols[ev] : "")+"{ $V} ", reportDateOfResi, reportPlaceOfResi, privacy);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
          if (srcDisplay) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[4] : "");
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
@@ -751,8 +782,8 @@ public class ReportSosa extends Report {
    */
   class Table extends BreadthFirst  {
 
-    String[] header = { "#", Gedcom.getName("NAME"), Gedcom.getName("BIRT"), Gedcom.getName("MARR"), Gedcom.getName("DEAT"), Gedcom.getName("OCCU"), Gedcom.getName("RESI") };
-    int[] widths = { 3, 22, 15, 15, 15, 15, 15 };
+    String[] header = { "#", Gedcom.getName("NAME"), Gedcom.getName("BIRT"), Gedcom.getName("BAPM"), Gedcom.getName("MARR"), Gedcom.getName("DEAT"), Gedcom.getName("OCCU"), Gedcom.getName("RESI") };
+    int[] widths = { 3, 22, 12, 12, 12, 12, 12, 12 };
 
     /** our title - simply the column header values */
     String getTitle(Indi root) {
@@ -820,15 +851,19 @@ public class ReportSosa extends Report {
   void InitVariables() {
     // Assign events to consider and their characteristics
     symbols[0] = OPTIONS.getBirthSymbol();
-    symbols[1] = OPTIONS.getMarriageSymbol(); 
-    symbols[2] = OPTIONS.getDeathSymbol(); 
-    symbols[3] = occuSymbol; 
-    symbols[4] = resiSymbol;  
+    symbols[1] = OPTIONS.getBaptismSymbol(); 
+    symbols[2] = OPTIONS.getMarriageSymbol(); 
+    symbols[3] = OPTIONS.getDeathSymbol(); 
+    symbols[4] = occuSymbol; 
+    symbols[5] = resiSymbol;  
 
     // No source should be displayed for events that are not to be displayed
     dispEv[0] = reportDateOfBirth    || reportPlaceOfBirth;
-    dispEv[1] = reportDateOfMarriage || reportPlaceOfMarriage;
-    dispEv[2] = reportDateOfDeath    || reportPlaceOfDeath;
+    dispEv[1] = reportDateOfBaptism  || reportPlaceOfBaptism;
+    dispEv[2] = reportDateOfMarriage || reportPlaceOfMarriage;
+    dispEv[3] = reportDateOfDeath    || reportPlaceOfDeath;
+    //dispEv[4] = reportOccu;
+    //dispEv[5] = reportResi;
     
     // In case of sosa table, force bullet on and prevent writing at gen level
     if (reportType == TABLE_REPORT) { 
