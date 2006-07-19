@@ -245,9 +245,11 @@ public class ReportSosa extends Report {
      /**
       * Get source information about an entity's event
       */
-     List getSources(Entity entity, String tagPath, String prefix) {
+     List getSources(Entity entity, String tagPath, String prefix, String description) {
+       String descStr = entity.toString();
        List src = new ArrayList();
-       if (prefix.length() != 0) prefix = "("+prefix+") ";
+       // if (prefix.length() != 0) prefix = "("+prefix") ";
+       if (description.length() != 0) descStr+=" "+description+" : ";
        Property prop[] = entity.getProperties(new TagPath(tagPath));
        for (int p=0; p<prop.length; p++) {
           if ((prop[p] != null) && (prop[p].toString().trim().length() != 0)) {
@@ -279,13 +281,13 @@ public class ReportSosa extends Report {
              Property sProp2 = propSrc.getPropertyByPath(NOTE);
              if (sProp2 != null) strNote = sProp2.toString();
              if ((strNote != null) && (strNote.trim().length() > 0) && (!isAlreadyIn(listOfNotes, strNote))) {
-                listOfNotes.add(entity.getId()+": "+prefix+strNote);
+                listOfNotes.add(descStr+strNote);
                 }
              strNote = "";
              sProp2 = propSrc.getPropertyByPath(DATA);
              if (sProp2 != null) strNote = sProp2.toString();
              if ((strNote != null) && (strNote.trim().length() > 0) && (!isAlreadyIn(listOfNotes, strNote))) {
-                listOfNotes.add(entity.getId()+": "+prefix+strNote);
+                listOfNotes.add(descStr+strNote);
                 }
              }
           }
@@ -324,7 +326,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
 
          if (srcDisplay) {
-           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
+           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
            if (displayEmpty||sources.size() > 0)
              eSrc.put(event, sources);
            }
@@ -334,12 +336,12 @@ public class ReportSosa extends Report {
       ev = 1;
       event = "BAPM";
       if (dispEv[ev]) {
-         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBirth, reportPlaceOfBirth, privacy);
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBaptism, reportPlaceOfBaptism, privacy);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
          if (srcDisplay) {
-           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
+           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
            if (displayEmpty||sources.size() > 0)
              eSrc.put(event, sources);
            }
@@ -357,7 +359,7 @@ public class ReportSosa extends Report {
            if (returnEmpties||description.length()>0)
              eDesc.put(event, description);
            if (srcDisplay) {
-              sources = getSources(fam, "FAM:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
+              sources = getSources(fam, "FAM:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
               if (sources.size() > 0)
                 eSrc.put(event, sources);
              }
@@ -373,7 +375,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
 
          if (srcDisplay && (reportDateOfDeath || reportPlaceOfDeath)) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
@@ -388,7 +390,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
    
          if (srcDisplay) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
@@ -403,7 +405,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
 
          if (srcDisplay) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "");
+            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
