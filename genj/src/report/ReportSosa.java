@@ -245,11 +245,10 @@ public class ReportSosa extends Report {
      /**
       * Get source information about an entity's event
       */
-     List getSources(Entity entity, String tagPath, String prefix, String description) {
+     List getSources(Entity entity, String tagPath, String description) {
        String descStr = entity.toString();
        List src = new ArrayList();
-       // if (prefix.length() != 0) prefix = "("+prefix") ";
-       if (description.length() != 0) descStr+=" "+description+" : ";
+       if (description.length() != 0) descStr+=" "+description+" :$#@ ";
        Property prop[] = entity.getProperties(new TagPath(tagPath));
        for (int p=0; p<prop.length; p++) {
           if ((prop[p] != null) && (prop[p].toString().trim().length() != 0)) {
@@ -326,7 +325,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
 
          if (srcDisplay) {
-           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
+           sources = getSources(indi, "INDI:"+event+":SOUR", description);
            if (displayEmpty||sources.size() > 0)
              eSrc.put(event, sources);
            }
@@ -341,7 +340,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
 
          if (srcDisplay) {
-           sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
+           sources = getSources(indi, "INDI:"+event+":SOUR", description);
            if (displayEmpty||sources.size() > 0)
              eSrc.put(event, sources);
            }
@@ -353,13 +352,13 @@ public class ReportSosa extends Report {
       if (dispEv[ev]) {
          if (fam!=null) {
            String prefix = "";
+           description = getProperty(fam, event, prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
            if (usePrefixes)
              prefix = symbols[ev] + (fam.getOtherSpouse(indi) != null ? " " + fam.getOtherSpouse(indi).getName() : "");
-           description = getProperty(fam, event, prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
            if (returnEmpties||description.length()>0)
-             eDesc.put(event, description);
+             eDesc.put(event, prefix+" "+description);
            if (srcDisplay) {
-              sources = getSources(fam, "FAM:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
+              sources = getSources(fam, "FAM:"+event+":SOUR", (usePrefixes ? symbols[ev] : "")+" "+description);
               if (sources.size() > 0)
                 eSrc.put(event, sources);
              }
@@ -375,7 +374,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
 
          if (srcDisplay && (reportDateOfDeath || reportPlaceOfDeath)) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
+            sources = getSources(indi, "INDI:"+event+":SOUR", description);
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
@@ -390,7 +389,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
    
          if (srcDisplay) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
+            sources = getSources(indi, "INDI:"+event+":SOUR", description);
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
@@ -405,7 +404,7 @@ public class ReportSosa extends Report {
            eDesc.put(event, description);
 
          if (srcDisplay) {
-            sources = getSources(indi, "INDI:"+event+":SOUR", usePrefixes ? symbols[ev] : "", description);
+            sources = getSources(indi, "INDI:"+event+":SOUR", description);
             if (sources.size() > 0)
               eSrc.put(event, sources);
            }
@@ -1101,7 +1100,17 @@ public class ReportSosa extends Report {
     for (Iterator n = listOfNotes.iterator(); n.hasNext(); ) {
        String strNote = (String)n.next();
        doc.nextParagraph(format);
-       doc.addText(strNote);
+       // Write straight before $#@ mark, italic afterwards
+       int i = strNote.indexOf("$#@");
+       if (i != -1) { // found
+          String beg = strNote.substring(0, i);
+          String end = strNote.substring(i+3);
+          doc.addText(beg, "font-style=normal");
+          doc.addText(end, "font-style=italic");
+          }
+       else {
+          doc.addText(strNote);
+          }
        }
     return;
   }
