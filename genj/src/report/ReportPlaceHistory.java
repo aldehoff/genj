@@ -69,7 +69,7 @@ public class ReportPlaceHistory extends Report {
     int jurisdiction = 0;
     String format  = gedcom.getPlaceFormat();
     if (format.length()>0) {
-      String [] jurisdictions = new DirectAccessTokenizer(format,PropertyPlace.JURISDICTION_SEPARATOR).getTokens();
+      String [] jurisdictions = new DirectAccessTokenizer(format,PropertyPlace.JURISDICTION_SEPARATOR).getTokens(true);
       if (jurisdictions.length>0) {
         Object choice = getValueFromUser(translate("jurisdiction"), jurisdictions, jurisdictions[0]);
         if (choice==null) return;
@@ -127,8 +127,10 @@ public class ReportPlaceHistory extends Report {
       // try to add it to series
       try {
 	      int year = ((PropertyDate)date).getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
-	      if (year!=PointInTime.UNKNOWN)
+	      if (year!=PointInTime.UNKNOWN) {
 	        series.inc( year/resolution*resolution );
+            System.out.println(year);
+          }
       } catch (GedcomException e) {
         // ignore dates where we can't get a GREGORIAN time
       }
