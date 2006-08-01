@@ -70,14 +70,14 @@ public class EnvironmentChecker {
    * Check for Mac
    */
   public static boolean isMac() {
-    return System.getProperty("mrj.version")!=null;
+    return getProperty(EnvironmentChecker.class, "mrj.version", null, "isMac()")!=null;
   }
   
   /**
    * Check for Windows
    */
   public static boolean isWindows() {
-    return System.getProperty("os.name").indexOf("Windows")>-1;
+    return getProperty(EnvironmentChecker.class, "os.name", "", "isWindows()").indexOf("Windows")>-1;
   }
   
   private static String getDatePattern(int format) {
@@ -93,21 +93,22 @@ public class EnvironmentChecker {
    */
   public static void log() {
     
-    try {
-      // Go through system properties
-      for (int i=0; i<SYSTEM_PROPERTIES.length; i++) {
-        LOG.info(SYSTEM_PROPERTIES[i] + " = "+System.getProperty(SYSTEM_PROPERTIES[i]));
-      }
-      
-      // check locale specific stuff
-      LOG.info("Locale = "+Locale.getDefault());
-      LOG.info("DateFormat (short) = "+getDatePattern(DateFormat.SHORT));
-      LOG.info("DateFormat (medium) = "+getDatePattern(DateFormat.MEDIUM));
-      LOG.info("DateFormat (long) = "+getDatePattern(DateFormat.LONG));
-      LOG.info("DateFormat (full) = "+getDatePattern(DateFormat.FULL));
+    // Go through system properties
+    for (int i=0; i<SYSTEM_PROPERTIES.length; i++) {
+      LOG.info(SYSTEM_PROPERTIES[i] + " = "+getProperty(EnvironmentChecker.class, SYSTEM_PROPERTIES[i], "", "check system props"));
+    }
+    
+    // check locale specific stuff
+    LOG.info("Locale = "+Locale.getDefault());
+    LOG.info("DateFormat (short) = "+getDatePattern(DateFormat.SHORT));
+    LOG.info("DateFormat (medium) = "+getDatePattern(DateFormat.MEDIUM));
+    LOG.info("DateFormat (long) = "+getDatePattern(DateFormat.LONG));
+    LOG.info("DateFormat (full) = "+getDatePattern(DateFormat.FULL));
 
+      try {
+        
       // check classpath
-      String cpath = System.getProperty("java.class.path");
+      String cpath = getProperty(EnvironmentChecker.class, "java.class.path", "", "check classpath");
       StringTokenizer tokens = new StringTokenizer(cpath,System.getProperty("path.separator"),false);
       while (tokens.hasMoreTokens()) {
         String entry = tokens.nextToken();
@@ -132,7 +133,7 @@ public class EnvironmentChecker {
 
       // DONE
     } catch (Throwable t) {
-      LOG.log(Level.WARNING, "Couldn't test for system properties", t);
+      LOG.log(Level.WARNING, "unexpected exception in log()", t);
     }
   }
 
@@ -178,11 +179,11 @@ public class EnvironmentChecker {
         }
       }
     } catch (Throwable t) {
-      LOG.log(Level.WARNING, "Couldn't access system properties", t);
+      LOG.log(Level.WARNING, "Couldn't access system property "+key, t);
     }
     // fallback
     if (fallback!=null)
-      LOG.info("Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
+      LOG.fine("Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
     return fallback;
   }
 
