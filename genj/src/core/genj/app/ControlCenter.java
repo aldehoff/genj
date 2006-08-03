@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
 import genj.io.Filter;
+import genj.io.GedcomEncodingException;
 import genj.io.GedcomEncryptionException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
@@ -235,7 +236,7 @@ public class ControlCenter extends JPanel {
     Action2 
       actionNew = new ActionNew(),
       actionOpen = new ActionOpen(),
-      actionSave = new ActionSave(false, true);
+      actionSave = new ActionSave(false, false);
     actionNew.setText(null);
     actionOpen.setText(null);
     actionSave.setText(null);
@@ -1005,8 +1006,15 @@ public class ControlCenter extends JPanel {
         gedWriter.setFilters(filters);
         gedWriter.setPassword(password);
         
+        // don't think we have to catch GedcomEncodingException here
+        
       } catch (IOException ex) {
-        windowManager.openDialog(null,gedcom.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.save.open_error", result.getAbsolutePath()),Action2.okOnly(),ControlCenter.this);
+          
+          windowManager.openDialog(null,gedcom.getName(),
+                      WindowManager.ERROR_MESSAGE,
+                      resources.getString("cc.save.open_error", result.getAbsolutePath()),
+                      Action2.okOnly(),
+                      ControlCenter.this);
         return false;
       }
 
@@ -1069,9 +1077,23 @@ public class ControlCenter extends JPanel {
       // close progress
       windowManager.close(progress);
       
-      // problem encountered?      
+      // problem encountered?
       if (ioex!=null) {
-        windowManager.openDialog(null,gedcom.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.save.write_error", "" + ioex.getLine()) + ":\n" + ioex.getMessage(),Action2.okOnly(),ControlCenter.this);
+          if( ioex instanceof GedcomEncodingException)  {
+              windowManager.openDialog(null,
+                      gedcom.getName(),
+                      WindowManager.ERROR_MESSAGE,
+                      resources.getString("cc.save.write_encoding_error", ioex.getMessage() ), 
+                      Action2.okOnly(),ControlCenter.this);
+          }
+          else {
+              windowManager.openDialog(null,
+                      gedcom.getName(),
+                      WindowManager.ERROR_MESSAGE,
+                      resources.getString("cc.save.write_error", "" + ioex.getLine()) + ":\n" + ioex.getMessage(),
+                      Action2.okOnly(),ControlCenter.this);
+              
+          }
       } else {
         // .. open new
         if (newOrigin != null) {

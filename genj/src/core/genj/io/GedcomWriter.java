@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.UnmappableCharacterException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -86,7 +89,9 @@ public class GedcomWriter implements Trackable {
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
-    out = new BufferedWriter(new OutputStreamWriter(stream, getCharset(encoding)));
+    CharsetEncoder encoder = getCharset(encoding).newEncoder();
+    encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+    out = new BufferedWriter(new OutputStreamWriter(stream, encoder));
     
     // Done
   }
@@ -189,7 +194,12 @@ public class GedcomWriter implements Trackable {
       // Close Output
       out.close();
 
-    } catch (Exception ex) {
+    } 
+    catch( GedcomIOException ioe )
+    {
+        throw ioe;
+    }
+    catch (Exception ex) {
       throw new GedcomIOException("Error while writing / "+ex.getMessage(), line);
     }
 
@@ -247,7 +257,13 @@ public class GedcomWriter implements Trackable {
       if (cancel) throw new GedcomIOException("Operation cancelled", line);
       // .. writing it and its subs
       Entity e = (Entity)it.next();
-      line += new EntityWriter().write(0, e);
+      
+      try {
+        line += new EntityWriter().write(0, e);
+      } catch(UnmappableCharacterException unme) {
+        throw new GedcomEncodingException(e, gedcom.getEncoding());
+      }
+
       // .. track it
       entity++;
     }
@@ -273,7 +289,7 @@ public class GedcomWriter implements Trackable {
     EntityWriter() {
       super(out, false);
     }
-    
+
     /** intercept prop decoding to check filters */
     protected void writeProperty(int level, Property prop) throws IOException {
       
@@ -291,9 +307,9 @@ public class GedcomWriter implements Trackable {
           if (filters[f].accept(target) == false)
             return;
       }
-      
-      // continue
-      super.writeProperty(level, prop);
+
+      // cont
+        super.writeProperty(level, prop);
     }
      
     /** intercept value decoding to facilitate encryption */

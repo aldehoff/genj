@@ -31,7 +31,8 @@ import java.nio.charset.CoderResult;
  */
 /*package*/ class AnselCharset extends Charset {
   
-  /**
+
+/**
    * Constructor
    */
   public AnselCharset() {
@@ -65,7 +66,6 @@ import java.nio.charset.CoderResult;
    * Encoder
    */
   private static class Encoder extends CharsetEncoder {
-
     /**
      * Constructor
      */
@@ -80,6 +80,13 @@ import java.nio.charset.CoderResult;
       return true;
     }
 
+    public boolean canEncode( char c )
+    {
+       if( c < 128)
+           return true;  //more or less...
+       return unicode2ansel(c) >-1;
+    }
+    
     /**
      * callback - encode
      */
@@ -103,8 +110,20 @@ import java.nio.charset.CoderResult;
           out.put((byte)c);
           
         } else {
-          
           int ansel = unicode2ansel(c);
+          if( ansel == -1 )  {
+              //character out of ANSEL gamut.  let the caller know (so that they can abort).
+
+              // note that the API docs are a bit unclear here,  indicating that somehow it's the 
+              // thrower's job to rewind the input for a retry.  It seems so much better to just be able
+              // to pass back the suspect character, but there's no room in the API for it.
+//            in.position(in.position()-1);  //need a check that it's nonnegative
+              System.err.println(getClass().getName()+" encoder rejecting character [+"
+                      +Integer.toHexString(c).toUpperCase()
+                      +"] in Char block: "+Character.UnicodeBlock.of(c));
+              rc = CoderResult.unmappableForLength(1); //sadly, there's no way to communicate the above information in CoderResult.
+              break;
+          }
           if (ansel < 256) {
             if (out.remaining()<1) {
               rc = CoderResult.OVERFLOW;
@@ -119,7 +138,7 @@ import java.nio.charset.CoderResult;
             out.put((byte)(ansel >>8));
             out.put((byte)(ansel&255));
           }
-        }
+          }
         
         // next
       }
@@ -133,6 +152,8 @@ import java.nio.charset.CoderResult;
 
     /**
      * convert
+     * @return -1 if the unicode code point is not mappable, otherwise a big-endian
+     * int with the ANSEL encoding of the unicode point.
      */
     private int unicode2ansel(int unicode) {
       switch (unicode) {
@@ -503,7 +524,9 @@ import java.nio.charset.CoderResult;
         case 0xFE22: return 0xFA;  //  double tilde left half
         case 0xFE23: return 0xFB;  //  double tilde right half
 
-        default: return 0xC5;     // if no match, use inverted '?'
+        
+        
+        default: return -1;
       }
     }
 
@@ -1344,5 +1367,5 @@ import java.nio.charset.CoderResult;
     }
     
   } //Decoder
-  
+
 } //AnselCharset
