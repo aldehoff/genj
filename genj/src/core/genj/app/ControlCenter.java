@@ -252,8 +252,6 @@ public class ControlCenter extends JPanel {
     
     result.addSeparator();
 
-    // buttons for views
-    int maxButtonWidth = 0;
     ViewFactory[] factories = viewManager.getFactories();
     for (int i = 0; i < factories.length; i++) {
       ActionView action = new ActionView(-1, factories[i]);
