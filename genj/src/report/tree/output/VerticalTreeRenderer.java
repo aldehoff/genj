@@ -50,8 +50,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 	private void drawTree(IndiBox indibox, int baseX, int baseY, int gen) {
 		baseX += indibox.x;
 		baseY += indibox.y;
-        elements.drawIndiBox(indibox, baseX, getYCoord(baseY), gen);
-
+        
         int midX = baseX;
         if (indibox.spouse == null)
             midX += indibox.width / 2;
@@ -60,6 +59,35 @@ public class VerticalTreeRenderer extends TreeRendererBase {
         else
             midX += (indibox.spouse.x + indibox.spouse.width) / 2;
 
+        // Lines (draw lines first so that boxes hide line ends)
+        if (indibox.hasChildren() || indibox.getDir() == Direction.PARENT) {
+            int midY = getYCoord(baseY) + indiboxHeight;
+            if (indibox.spouse != null)
+                midY -= indiboxHeight / 2;
+
+            if (displayFambox && indibox.family != null & indibox.spouse != null)
+                midY = getYCoord(baseY) + indiboxHeight + famboxHeight;
+
+            elements.drawLine(midX, midY, midX, getYCoord(baseY + 1) - verticalGap / 2);
+
+            SortedSet xSet = new TreeSet();
+            xSet.add(new Integer(midX));
+            if (indibox.getDir() == Direction.PARENT)
+                xSet.add(new Integer(baseX - indibox.x + indibox.prev.width / 2));
+            if (indibox.hasChildren())
+                for (int i = 0; i < indibox.children.length; i++)
+                    xSet.add(new Integer(baseX + indibox.children[i].x + indibox.children[i].width / 2));
+            int x1 = ((Integer)xSet.first()).intValue();
+            int x2 = ((Integer)xSet.last()).intValue();
+
+            elements.drawLine(x1, getYCoord(baseY + 1) - verticalGap / 2,
+                    x2, getYCoord(baseY + 1) - verticalGap / 2);
+        }
+        
+        // The individual
+        elements.drawIndiBox(indibox, baseX, getYCoord(baseY), gen);
+
+        // Family box
         // TODO: Should family boxes be displayed when there's no spouse?
         if (displayFambox && indibox.family != null && indibox.spouse != null)
             elements.drawFamBox(indibox.family, midX - famboxWidth / 2,
@@ -71,55 +99,30 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 
 		// Parent
 		if (indibox.parent != null) {
-			drawTree(indibox.parent, baseX, baseY, gen - 1);
             elements.drawLine(baseX + indibox.width / 2, getYCoord(baseY),
                 baseX + indibox.width / 2, getYCoord(baseY + indibox.parent.y + 1) -
 			    verticalGap / 2);
+            drawTree(indibox.parent, baseX, baseY, gen - 1);
 		}
 
 		// Children
 		if (indibox.hasChildren())
 			for (int i = 0; i < indibox.children.length; i++) {
-				drawTree(indibox.children[i], baseX, baseY, gen + 1);
                 int x = baseX + indibox.children[i].x + indibox.children[i].width / 2;
                 elements.drawLine(x, getYCoord(baseY + indibox.children[i].y),
 						x, getYCoord(baseY + 1) - verticalGap / 2);
+                drawTree(indibox.children[i], baseX, baseY, gen + 1);
 			}
-
-		// Lines
-		if (indibox.hasChildren() || indibox.getDir() == Direction.PARENT) {
-			int midY = getYCoord(baseY) + indiboxHeight;
-			if (indibox.spouse != null)
-				midY -= indiboxHeight / 2;
-
-            if (displayFambox && indibox.family != null & indibox.spouse != null)
-                midY = getYCoord(baseY) + indiboxHeight + famboxHeight;
-
-            elements.drawLine(midX, midY, midX, getYCoord(baseY + 1) - verticalGap / 2);
-
-			SortedSet xSet = new TreeSet();
-			xSet.add(new Integer(midX));
-			if (indibox.getDir() == Direction.PARENT)
-				xSet.add(new Integer(baseX - indibox.x + indibox.prev.width / 2));
-			if (indibox.hasChildren())
-				for (int i = 0; i < indibox.children.length; i++)
-					xSet.add(new Integer(baseX + indibox.children[i].x + indibox.children[i].width / 2));
-			int x1 = ((Integer)xSet.first()).intValue();
-			int x2 = ((Integer)xSet.last()).intValue();
-
-            elements.drawLine(x1, getYCoord(baseY + 1) - verticalGap / 2,
-					x2, getYCoord(baseY + 1) - verticalGap / 2);
-		}
 
 		// Next marriage
 		if (indibox.nextMarriage != null) {
-			drawTree(indibox.nextMarriage, baseX, baseY, gen);
 			if (indibox.nextMarriage.x > 0)
                 elements.drawDashedLine(baseX + indibox.width, getYCoord(baseY) + indiboxHeight / 2,
 				        baseX + indibox.nextMarriage.x, getYCoord(baseY) + indiboxHeight / 2);
 			else
                 elements.drawDashedLine(baseX, getYCoord(baseY) + indiboxHeight / 2,
 				        baseX + indibox.nextMarriage.x + indibox.nextMarriage.width, getYCoord(baseY) + indiboxHeight / 2);
+            drawTree(indibox.nextMarriage, baseX, baseY, gen);
 		}
 	}
 
