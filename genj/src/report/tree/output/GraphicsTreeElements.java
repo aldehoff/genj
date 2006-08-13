@@ -184,8 +184,8 @@ public class GraphicsTreeElements implements TreeElements {
                 icon = file.getValueAsIcon();
                 if (icon != null) {                
                     imageWidth = icon.getIconWidth() * indibox.height / icon.getIconHeight();
-                    if (imageWidth > indibox.width) {
-                        imageWidth = indibox.width;
+                    if (imageWidth > maxImageWidth) {
+                        imageWidth = maxImageWidth;
                         imageHeight = icon.getIconHeight() * imageWidth / icon.getIconWidth();
                     }
                 }                
