@@ -10,6 +10,7 @@ package tree;
 
 import genj.gedcom.PropertyFile;
 import genj.gedcom.TagPath;
+import genj.util.swing.ImageIcon;
 
 /**
  * Determines the width and height of individual boxes.
@@ -20,12 +21,12 @@ public class DetermineBoxSize implements TreeFilter {
 
     int defaultHeight;
     int defaultWidth;
-    int imageWidth;
+    int maxImageWidth;
 
-    public DetermineBoxSize(int defaultHeight, int defaultWidth, int imageWidth) {
+    public DetermineBoxSize(int defaultHeight, int defaultWidth, int maxImageWidth) {
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
-        this.imageWidth = imageWidth;
+        this.maxImageWidth = maxImageWidth;
     }
 
     public void filter(IndiBox indibox) {
@@ -47,10 +48,20 @@ public class DetermineBoxSize implements TreeFilter {
         indibox.width = defaultWidth;
 
         // Image
-        if (imageWidth > 0) {
+        if(maxImageWidth > 0)
+        {
             PropertyFile file = (PropertyFile)indibox.individual.getProperty(new TagPath("INDI:OBJE:FILE"));
-            if (file != null && file.getValueAsIcon() != null)
-                indibox.width += imageWidth;
+            if(file != null)
+            {
+                ImageIcon icon = file.getValueAsIcon();
+                if(icon != null) {
+                    int newWidth = icon.getIconWidth() * defaultHeight / icon.getIconHeight();                    
+                    if (newWidth < maxImageWidth)
+                        indibox.width += newWidth;
+                    else
+                        indibox.width += maxImageWidth;
+                }
+            }
         }
     }
 }

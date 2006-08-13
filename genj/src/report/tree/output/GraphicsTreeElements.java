@@ -116,7 +116,7 @@ public class GraphicsTreeElements implements TreeElements {
     private int famboxWidth;
     private int famboxHeight;
 
-    private int imageWidth;
+    private int maxImageWidth;
 
     /**
      * Whether to draw the sex symbol.
@@ -154,7 +154,7 @@ public class GraphicsTreeElements implements TreeElements {
         drawFamIds = properties.get("drawFamIds", false);
         maxNames = properties.get("maxNames", -1);
         useColors = properties.get("useColors", true);
-        imageWidth = properties.get("imageWidth", 0);
+        maxImageWidth = properties.get("maxImageWidth", 0);
     }
 
     /**
@@ -173,13 +173,25 @@ public class GraphicsTreeElements implements TreeElements {
      */
 	public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
         Indi i = indibox.individual;
-        int dataWidth = indibox.width;
-        PropertyFile file = null;
-        if (imageWidth > 0) {
-            file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
-            if (file != null && file.getValueAsIcon() != null)
-                dataWidth -= imageWidth;
-        }
+
+        // Determine photo size
+        int imageWidth = 0;
+        int imageHeight = indibox.height;
+        ImageIcon icon = null;
+        if (maxImageWidth > 0) {
+            PropertyFile file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
+            if (file != null) {
+                icon = file.getValueAsIcon();
+                if (icon != null) {                
+                    imageWidth = icon.getIconWidth() * indibox.height / icon.getIconHeight();
+                    if (imageWidth > indibox.width) {
+                        imageWidth = indibox.width;
+                        imageHeight = icon.getIconHeight() * imageWidth / icon.getIconWidth();
+                    }
+                }                
+            }
+        }      
+        int dataWidth = indibox.width - imageWidth;
 
         Color color = getBoxColor(gen);
         Shape box = new RoundRectangle2D.Double(x, y, indibox.width, indibox.height, 15, 15);
@@ -190,20 +202,24 @@ public class GraphicsTreeElements implements TreeElements {
         Shape oldClip = graphics.getClip();
         graphics.clip(box);
 
+        // Name
         graphics.setFont(NAME_FONT);
         centerString(graphics, getFirstNames(i), x + dataWidth/2, y + 14);
         centerString(graphics, i.getLastName(), x + dataWidth/2, y + 26);
 
+        // Date of birth
         graphics.setFont(DETAILS_FONT);
         if (i.getBirthDate() != null && i.getBirthDate().isValid()) {
             centerString(graphics, Options.getInstance().getBirthSymbol(), x + 7, y + 38);
             graphics.drawString(""+i.getBirthDate(), x + 13, y + 38);
         }
+        // Date of death
         if (i.getDeathDate() != null) {
             centerString(graphics, Options.getInstance().getDeathSymbol(), x + 7, y + 48);
             graphics.drawString(""+i.getDeathDate(), x + 13, y + 48);
         }
 
+        // Sex symbol
         if (drawSexSymbols) {
             int symbolX = x + dataWidth  - 14;
             int symbolY = y + indibox.height - 5;
@@ -211,17 +227,15 @@ public class GraphicsTreeElements implements TreeElements {
             graphics.drawString(getSexSymbol(i.getSex()), symbolX, symbolY);
         }
 
+        // Id
         if (drawIndiIds) {
             graphics.setFont(ID_FONT);
             graphics.drawString(i.getId(), x + 8, y + indibox.height - 4);
         }
 
-        if (imageWidth > 0 && file != null) {
-            ImageIcon icon = file.getValueAsIcon();
-            if (icon != null)
-                graphics.drawImage(icon.getImage(), x + dataWidth, y,
-                        imageWidth, indibox.height, null);
-        }
+        // Photo
+        if(imageWidth > 0)
+            graphics.drawImage(icon.getImage(), x + dataWidth, y, imageWidth, imageHeight, null);
 
         graphics.setClip(oldClip);
         graphics.draw(box);
@@ -241,11 +255,13 @@ public class GraphicsTreeElements implements TreeElements {
         graphics.setColor(Color.BLACK);
         graphics.drawRoundRect(x, y, famboxWidth, famboxHeight, 5, 5);
 
+        // Date of marriage
         graphics.setFont(DETAILS_FONT);
         if (f.getMarriageDate() != null)
             graphics.drawString(Options.getInstance().getMarriageSymbol() + " " +
                     f.getMarriageDate(), x + 4, y + 12);
 
+        // Id
         if (drawFamIds) {
             graphics.setFont(ID_FONT);
             graphics.drawString(f.getId(), x + 8, y + famboxHeight - 4);

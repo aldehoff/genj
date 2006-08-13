@@ -40,37 +40,37 @@ public class ReportGraphicalTree extends Report {
     /**
      * Indibox width in pixels.
      */
-    private final int INDIBOX_WIDTH = 110;
+    private static final int INDIBOX_WIDTH = 110;
 
     /**
      * Indibox height in pixels.
      */
-    private final int INDIBOX_HEIGHT = 64;
+    private static final int INDIBOX_HEIGHT = 64;
 
     /**
      * Minimal vertical gap between boxes.
      */
-    private final int VERTICAL_GAP = 16;
+    private static final int VERTICAL_GAP = 16;
 
     /**
      * Minimal horizontal gap between boxes.
      */
-    private final int HORIZONTAL_GAP = 10;
+    private static final int HORIZONTAL_GAP = 10;
 
     /**
      * Family box width in pixels.
      */
-    private final int FAMBOX_WIDTH = 100;
+    private static final int FAMBOX_WIDTH = 100;
 
     /**
      * Family box height in pixels.
      */
-    private final int FAMBOX_HEIGHT = 27;
+    private static final int FAMBOX_HEIGHT = 27;
 
     /**
      * Width of the image inside an individual box.
      */
-    private final int IMAGE_WIDTH = 50;
+    private static final int MAX_IMAGE_WIDTH = 50;
 
     /**
      * Output type.
@@ -188,7 +188,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("drawSexSymbols", draw_sex_symbols);
         properties.put("drawIndiIds", draw_indi_ids);
         properties.put("drawFamIds", draw_fam_ids);
-        properties.put("imageWidth", draw_images ? IMAGE_WIDTH : 0);
+        properties.put("maxImageWidth", draw_images ? MAX_IMAGE_WIDTH : 0);
 
         // Build the tree
         TreeBuilder builder = new BasicTreeBuilder(properties);
@@ -196,7 +196,7 @@ public class ReportGraphicalTree extends Report {
         if (!show_spouses)
             new NoSpouseFilter().filter(indibox);
 
-        new DetermineBoxSize(INDIBOX_HEIGHT, INDIBOX_WIDTH, draw_images ? IMAGE_WIDTH : 0).filter(indibox);
+        new DetermineBoxSize(INDIBOX_HEIGHT, INDIBOX_WIDTH, draw_images ? MAX_IMAGE_WIDTH : 0).filter(indibox);
 
         // Arrange the tree boxes
         TreeFilter arranger;
