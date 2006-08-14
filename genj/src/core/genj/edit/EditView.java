@@ -421,6 +421,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     /** constructor */
     private ContextMenu() {
       setIcon(Gedcom.getImage());
+      setToolTipText(resources.getString( "action.context.tip" ));
     }
     
     /** override - popup creation */
