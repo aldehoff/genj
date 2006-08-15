@@ -21,6 +21,7 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.time.PointInTime;
 import genj.io.FileAssociation;
 import genj.option.OptionsWidget;
 import genj.util.GridBagHelper;
@@ -629,11 +630,24 @@ public class ReportView extends JPanel implements ToolBarSupport {
       } else {
         lFile    .setText(report.getFilename());
         lAuthor  .setText(report.getAuthor());
-        lVersion .setText(report.getVersion());
+        lVersion .setText(getReportVersion(report));
         tpInfo   .setText(report.getInfo().replaceAll("\n", "<br>"));
         tpInfo   .setCaretPosition(0);
         owOptions.setOptions(report.getOptions());
       }
+    }
+
+    /**
+     * Returns the report version with last update date
+     * @param report the report
+     * @return version information
+     */
+    private String getReportVersion(Report report) {
+      String version = report.getVersion();
+      PointInTime date = report.getUpdatedDate();
+      if (date != null)
+        version += " - " + RESOURCES.getString("report.updated") + ": " + date;
+      return version;
     }
 
     /**

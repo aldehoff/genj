@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.112 $ $Author: nmeier $ $Date: 2006-06-30 14:52:36 $
+ * $Revision: 1.113 $ $Author: pewu $ $Date: 2006-08-15 23:17:41 $
  */
 package genj.report;
 
@@ -29,6 +29,7 @@ import genj.fo.Format;
 import genj.fo.FormatOptionsWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.time.PointInTime;
 import genj.io.FileAssociation;
 import genj.option.Option;
 import genj.option.OptionsWidget;
@@ -865,7 +866,22 @@ public abstract class Report implements Cloneable {
    * @return version of report
    */
   public String getVersion() {
-     return translate("version");
+    return translate("version");
+  }
+  
+  /**
+   * Returns the date of last update of a report - this by default is the value of key "date"
+   * in the file [ReportName].properties. A report has to override this method
+   * to provide the date if that file doesn't exist.
+   * @return date of last update of the report
+   */
+  public PointInTime getUpdatedDate() {
+    String date = translate("updated");
+    if (date == null || date.equals("updated"))
+      return null;
+    PointInTime pit = new PointInTime();
+    pit.set(date);
+    return pit;        
   }
 
   /**
