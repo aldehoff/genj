@@ -559,8 +559,6 @@ public class ReportSosa extends Report {
          }
        }
 
-println("indi="+indi.toString());
-println("fam="+fam.toString());
        // let implementation handle individual
        formatIndi(indi, fam, gen, sosa, gen < privateGen ? PrivacyPolicy.PRIVATE : policy, doc);
      } // end of scanning generations
