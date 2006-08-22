@@ -503,42 +503,47 @@ public class ReportFlashList extends Report {
     boolean isSosa = indi.isAncestorOf(indiDeCujus);
     if (indi == indiDeCujus) isSosa = true;
      
-    // loop over all dates in indi
-    for (Iterator dates = indi.getProperties(PropertyDate.class).iterator(); dates.hasNext(); ) {
-      // consider valid dates only
-      PropertyDate date = (PropertyDate)dates.next();
-      if (!date.isValid()) continue;
-      // compute first and last year
-      int start = date.getStart().getYear();
-      int end = date.isRange() ? date.getEnd().getYear() : start;
-      if (start>end) continue;
-      // find all places for it
-      analyzePlaces(name, start, end, date.getParent(), primary, isSosa);
-      // find all cities for it
-      analyzeCities(name, start, end, date.getParent(), primary, isSosa);
+    try {
+       // loop over all dates in indi
+       for (Iterator dates = indi.getProperties(PropertyDate.class).iterator(); dates.hasNext(); ) {
+         // consider valid dates only
+         PropertyDate date = (PropertyDate)dates.next();
+         if (!date.isValid()) continue;
+         // compute first and last year
+         int start = 0;
+         start = date.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+         int end = date.isRange() ? date.getEnd().getPointInTime(PointInTime.GREGORIAN).getYear() : start;
+         if (start>end) continue;
+         // find all places for it
+         analyzePlaces(name, start, end, date.getParent(), primary, isSosa);
+         // find all cities for it
+         analyzeCities(name, start, end, date.getParent(), primary, isSosa);
 
-      // next date
+         // next date
+       }
+
+       // loop over all dates in family of indi
+       for (Iterator families = Arrays.asList(indi.getFamiliesWhereSpouse()).iterator();
+       families.hasNext(); ) {
+         Fam family = (Fam)families.next();
+            for (Iterator dates = family.getProperties(PropertyDate.class).iterator(); dates.hasNext(); ) {
+           // consider valid dates only
+           PropertyDate date = (PropertyDate)dates.next();
+           if (!date.isValid()) continue;
+           // compute first and last year
+           int start = date.getStart().getPointInTime(PointInTime.GREGORIAN).getYear();
+           int end = date.isRange() ? date.getEnd().getPointInTime(PointInTime.GREGORIAN).getYear() : start;
+           if (start>end) continue;
+           // find all places for it
+           analyzePlaces(name, start, end, date.getParent(), primary, isSosa);
+           // find all cities for it
+           analyzeCities(name, start, end, date.getParent(), primary, isSosa);
+         } // next date
+       } // next family
+
+    } catch (Throwable t) {
+      t.printStackTrace();
     }
-
-    // loop over all dates in family of indi
-    for (Iterator families = Arrays.asList(indi.getFamiliesWhereSpouse()).iterator();
-    families.hasNext(); ) {
-      Fam family = (Fam)families.next();
-      for (Iterator dates = family.getProperties(PropertyDate.class).iterator(); dates.hasNext(); ) {
-        // consider valid dates only
-        PropertyDate date = (PropertyDate)dates.next();
-        if (!date.isValid()) continue;
-        // compute first and last year
-        int start = date.getStart().getYear();
-        int end = date.isRange() ? date.getEnd().getYear() : start;
-        if (start>end) continue;
-        // find all places for it
-        analyzePlaces(name, start, end, date.getParent(), primary, isSosa);
-        // find all cities for it
-        analyzeCities(name, start, end, date.getParent(), primary, isSosa);
-      } // next date
-    } // next family
-
     
     // done
   }
