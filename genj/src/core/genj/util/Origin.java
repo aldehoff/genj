@@ -107,6 +107,8 @@ public abstract class Origin {
 
     // Absolute file specification?
     if ((name.charAt(0)==FSLASH) || (name.indexOf(":")>0) ) {
+      
+      LOG.fine("Trying to open "+name+" as absolute path (origin is "+this+")");
 
       URLConnection uc;
       try {
@@ -126,6 +128,8 @@ public abstract class Origin {
     }
 
     // relative file
+    LOG.fine("Trying to open "+name+" as relative path (origin is "+this+")");
+    
     return openImpl(name);
   }
   
