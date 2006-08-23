@@ -68,6 +68,12 @@ public class App {
       // prepare some basic logging for now
       Formatter formatter = new LogFormatter();
       Logger root = Logger.getLogger("");
+      
+      try {
+        root.setLevel(Level.parse(System.getProperty("genj.debug.level")));
+      } catch (Throwable t) {
+      }
+      
       Handler[] handlers = root.getHandlers();
       for (int i=0;i<handlers.length;i++) root.removeHandler(handlers[i]);
       root.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
