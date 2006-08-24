@@ -106,7 +106,7 @@ public abstract class Origin {
     name = back2forwardslash(name);
 
     // Absolute file specification?
-    if ((name.charAt(0)==FSLASH) || (name.indexOf(":")>0) ) {
+    if (ABSOLUTE.matcher(name).matches()) {
       
       LOG.fine("Trying to open "+name+" as absolute path (origin is "+this+")");
 
