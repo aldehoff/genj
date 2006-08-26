@@ -25,8 +25,8 @@ import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.report.Report;
 
-import java.util.StringTokenizer;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
@@ -216,27 +216,29 @@ public class ReportToDo extends Report {
     doc.nextTableRow(FORMAT_HEADER2);
     doc.addText( Gedcom.getName("HUSB"));
     doc.nextTableCell("number-columns-spanned=5");
-    doc.addText( tempIndi.getName() );
+    doc.addText( tempIndi.getName() ); 
 
     outputEventRow(tempIndi, "BIRT", todos, doc);
     outputEventRow(tempIndi, "BAPM", todos, doc);
     outputEventRow(tempIndi, "DEAT", todos, doc);
     outputEventRow(tempIndi, "BURI", todos, doc);
 
-    tempFam = (tempIndi == null) ? null : tempIndi .getFamilyWhereBiologicalChild();
-    if (tempFam != null) {
-      doc.nextTableRow();
-      doc.nextTableCell(FORMAT_HEADER3);
-      doc.addText( translate("father") + ":" );
-      doc.nextTableCell("number-columns-spanned=5");
-      addIndiString(tempFam.getHusband(), doc);
-      doc.nextTableRow();
-      doc.nextTableCell(FORMAT_HEADER3);
-      doc.addText( translate("mother") + ":" );
-      doc.nextTableCell("number-columns-spanned=5");
-      addIndiString(tempFam.getWife(), doc);
+    if (tempIndi!=null) {
+      tempFam = tempIndi .getFamilyWhereBiologicalChild();
+      if (tempFam != null) {
+        doc.nextTableRow();
+        doc.nextTableCell(FORMAT_HEADER3);
+        doc.addText( translate("father") + ":" );
+        doc.nextTableCell("number-columns-spanned=5");
+        addIndiString(tempFam.getHusband(), doc);
+        doc.nextTableRow();
+        doc.nextTableCell(FORMAT_HEADER3);
+        doc.addText( translate("mother") + ":" );
+        doc.nextTableCell("number-columns-spanned=5");
+        addIndiString(tempFam.getWife(), doc);
+      }
     }
-
+    
     // //// Epouse
     tempIndi = fam.getWife();
     doc.nextTableRow(FORMAT_HEADER2);
@@ -249,18 +251,20 @@ public class ReportToDo extends Report {
     outputEventRow(tempIndi, "DEAT", todos, doc);
     outputEventRow(tempIndi, "BURI", todos, doc);
 
-    tempFam = (tempIndi == null) ? null : tempIndi .getFamilyWhereBiologicalChild();
-    if (tempFam != null) {
-      doc.nextTableRow();
-      doc.nextTableCell(FORMAT_HEADER3);
-      doc.addText( translate("father") );
-      doc.nextTableCell("number-columns-spanned=5");
-      addIndiString(tempFam.getHusband(), doc) ;
-      doc.nextTableRow();
-      doc.nextTableCell(FORMAT_HEADER3);
-      doc.addText( translate("mother") + ":" );
-      doc.nextTableCell("number-columns-spanned=5");
-      addIndiString(tempFam.getWife(), doc) ;
+    if (tempIndi!=null) {
+      tempFam = tempIndi .getFamilyWhereBiologicalChild();
+      if (tempFam != null) {
+        doc.nextTableRow();
+        doc.nextTableCell(FORMAT_HEADER3);
+        doc.addText( translate("father") );
+        doc.nextTableCell("number-columns-spanned=5");
+        addIndiString(tempFam.getHusband(), doc) ;
+        doc.nextTableRow();
+        doc.nextTableCell(FORMAT_HEADER3);
+        doc.addText( translate("mother") + ":" );
+        doc.nextTableCell("number-columns-spanned=5");
+        addIndiString(tempFam.getWife(), doc) ;
+      }
     }
     outputEventRow(fam, "MARR", todos, doc);
 

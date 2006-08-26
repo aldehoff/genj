@@ -6,27 +6,23 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.fo.Document;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Fam;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
-import genj.window.WindowManager;
-import genj.util.swing.Action2;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.text.DecimalFormat;
 
 import javax.swing.ImageIcon;
 
@@ -265,11 +261,6 @@ public class ReportFlashList extends Report {
        displayHeader(doc, true);
        doc.endTable();
        }
-
-    // Define totals which will map Country_State_Place (key) to ranges (vol + geo)
-    // as Group By lastname on primary/seconday/tertiary keys, and then adding the 
-    // geo coordinates
-    Map totals = new TreeMap();
 
     // loop on 3 main maps to perform a couple of operations:
     // - write the main file

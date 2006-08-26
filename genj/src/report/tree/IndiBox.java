@@ -22,11 +22,11 @@ public class IndiBox {
      * Direction of the previous connected IndiBox.
      */
     public static class Direction {
-        public static int NONE = 0;
-        public static int SPOUSE = 1;
-        public static int PARENT = 2;
-        public static int CHILD = 3;
-        public static int NEXTMARRIAGE = 4;
+        public static final int NONE = 0;
+        public static final int SPOUSE = 1;
+        public static final int PARENT = 2;
+        public static final int CHILD = 3;
+        public static final int NEXTMARRIAGE = 4;
     }
     /* This will wait for Java 5.0 compatibility
     static enum Direction {

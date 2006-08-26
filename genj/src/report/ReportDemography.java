@@ -58,7 +58,7 @@ public class ReportDemography extends Report {
     int max = 100/ageGroupSize*ageGroupSize;
     categories[0] = max+"+";
     for (int i=1;i<categories.length;i++) {
-      if (ageGroupSize<5 && i%Math.ceil(5/ageGroupSize)!=0)
+      if (ageGroupSize<5 && i%Math.ceil(5F/ageGroupSize)!=0)
         categories[i] = "";
       else
         categories[i] = (max - (i*ageGroupSize)) + "+";

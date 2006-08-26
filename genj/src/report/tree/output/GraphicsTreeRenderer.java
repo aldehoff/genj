@@ -10,7 +10,6 @@ package tree.output;
 
 import genj.util.Registry;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 
 import tree.IndiBox;
