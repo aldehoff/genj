@@ -29,7 +29,7 @@ final public class Images {
   private static Images instance = new Images();
 
   public static ImageIcon
-    imgHelp, imgClose, imgNew, imgOpen, imgExit, imgSave, imgAbout, imgChoiceEditor;
+    imgHelp, imgClose, imgNew, imgOpen, imgExit, imgSave, imgAbout;
 
   /**
    * Constructor which pre-loads all images

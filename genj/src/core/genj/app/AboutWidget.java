@@ -97,7 +97,7 @@ public class AboutWidget extends JPanel{
       ta.read(in,null);
       fin.close();
     }
-    catch (Exception e) {
+    catch (Throwable t) {
       ta.setText(fallback);
     }
   }

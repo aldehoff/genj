@@ -52,7 +52,7 @@ public class Document {
   private final static Resources RESOURCES = Resources.get(Document.class);
   
   /** matching a=b,c-d=e,f:g=h,x=y(m,n,o),z=1 */
-  protected static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]*(\\(.*?\\))?)");
+  protected final static Pattern REGEX_ATTR = Pattern.compile("([^,]+)=([^,\\(]*(\\(.*?\\))?)");
   
   /** xsl fo namespace URI */
   private final static String 

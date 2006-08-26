@@ -383,9 +383,9 @@ public class Almanac {
     // 19700525\Births\Nils Meier
     private Pattern REGEX_LINE = Pattern.compile("(.*?)\\\\(.*?)\\\\(.*)");
     
-    private final String DIR = "./contrib/wikipedia";
+    private String DIR = "./contrib/wikipedia";
     
-    private final String SUFFIX = ".wikipedia.zip";
+    private String SUFFIX = ".wikipedia.zip";
     
     private String file;
     

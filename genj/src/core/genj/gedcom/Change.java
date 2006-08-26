@@ -77,6 +77,10 @@ public abstract class Change {
       PropertyValue that = (PropertyValue)o;
       return this.changed==that.changed && this.old.equals(that.old);
     }
+    
+    public int hashCode() {
+      return changed.hashCode() + old.hashCode();
+    }
   } //PropertyModified
   
   /**
@@ -128,6 +132,10 @@ public abstract class Change {
       return this.root==that.root && this.pos==that.pos && this.added==that.added;
     }
     
+    public int hashCode() {
+      return root.hashCode()+pos+added.hashCode();
+    }
+    
   } //PropertyAdded
   
   /**
@@ -159,6 +167,10 @@ public abstract class Change {
     
     public String toString() {
       return "Removed "+removed.getTag()+" from "+root.getPath()+" (pos: "+pos+")";
+    }
+    
+    public int hashCode() {
+      return root.hashCode()+pos+removed.hashCode();
     }
   } //PropertyRemoved
   

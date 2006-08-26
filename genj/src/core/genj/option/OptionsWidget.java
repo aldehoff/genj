@@ -310,7 +310,6 @@ public class OptionsWidget extends JPanel {
       cat2options.clear();
       categories.clear();
       
-      HashMap categories = new HashMap();
       for (int i = 0; i < set.size(); i++) {
         Option option = (Option)set.get(i);
         getCategory(option.getCategory()).add(option);

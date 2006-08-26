@@ -51,7 +51,7 @@ public abstract class Format {
   private static Format[] formats;
   
   /** default formats */
-  public static Format DEFAULT = new HTMLFormat();
+  public static final Format DEFAULT = new HTMLFormat();
 
   /** this format */
   private String format;

@@ -962,7 +962,7 @@ public class ControlCenter extends JPanel {
         filters = options.getFilters();
         if (gedcom.hasPassword())
           password = options.getPassword();
-        encoding = options.getEncoding().toString();
+        encoding = options.getEncoding();
 
         // .. create new origin
         try {
