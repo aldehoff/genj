@@ -204,6 +204,7 @@ public class FileAssociation {
       try {
         while (cmds.hasMoreTokens()) {
           String cmd = cmds.nextToken();
+          LOG.fine("Running string command: "+cmd);
           int rc = Runtime.getRuntime().exec(cmd).waitFor(); 
           if (rc!=0) 
             LOG.log(Level.INFO, "External application "+cmd+" returned "+rc);
