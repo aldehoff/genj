@@ -336,7 +336,7 @@ public abstract class Origin {
       if (file.length()<1) return null;
       
       // Absolute file specification?
-      if (file.charAt(0)==FSLASH || file.indexOf(COLON)>0 ) 
+      if (ABSOLUTE.matcher(file).matches()) 
         return new File(file);
       
       // should be in parent directory
