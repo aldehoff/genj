@@ -154,56 +154,50 @@ public class FileAssociation {
    * Execute
    */
   public void execute(URL url) {
-    // check simple % placeholders in cmd
-    String cmd = getExecutable();
-    if (cmd.indexOf('%')<0) 
-      cmd += " " + url;
-    else
-      cmd = cmd.replaceAll("%", url.toString());
-    // go
-    new Thread(new Sequence(cmd)).start();
+    new Thread(new Sequence(url.toString())).start();
   }
   
   /**
    * Execute
    */
   public void execute(File file) {
-    // no placeholders at all in cmd?
-    String cmd = getExecutable();
-    if (cmd.indexOf('%')<0) {
-      cmd += " \"" + file.getAbsolutePath() + "\"";
-    } else {
-      // example - the forward slash is meant to be a backward slash here
-      // file = c:/documents and settings/user/foo.ps
-      // path = c://documents and settings//user//foo.ps
-      // suffix = ps
-      // nosuffix = c://documents and settings//user//foo
-      String path = file.getAbsolutePath().replaceAll("\\\\","\\\\\\\\");
-      String suffix = getSuffix(file);
-      String nosuffix = path.substring(0, path.length()-suffix.length()-1);
-      
-      // replace file placeholders %.suffix first
-      cmd = Pattern.compile("%(\\.[a-zA-Z]*)").matcher(cmd).replaceAll(nosuffix+"$1");
-      // replace file placholders % next
-      cmd = Pattern.compile("%").matcher(cmd).replaceAll(path);
-    }
-    
-    // Log it
-    LOG.fine("Running executable "+getExecutable()+" on "+file.getAbsolutePath()+" as: "+cmd);
-    
     // go
-    new Thread(new Sequence(cmd)).start();
+    new Thread(new Sequence(file.getAbsolutePath())).start();
   }
   
   private class Sequence implements Runnable {
+    private String file;
     private StringTokenizer cmds;
-    Sequence(String cmd) {
-      cmds =  new StringTokenizer(cmd, "&");
+    Sequence(String file) {
+      this.file = file;
+      this.cmds =  new StringTokenizer(getExecutable(), "&");
     }
     public void run() {
       try {
+        // loop over commands
         while (cmds.hasMoreTokens()) {
+          // assemble next
           String cmd = cmds.nextToken();
+          // .. no placeholders at all in cmd?
+          if (cmd.indexOf('%')<0) {
+            cmd += " \"" + file + "\"";
+          } else {
+            // example - the forward slash is meant to be a backward slash here
+            // file = c:/documents and settings/user/foo.ps
+            // path = c://documents and settings//user//foo.ps
+            // suffix = ps
+            // nosuffix = c://documents and settings//user//foo
+            String path = file.replaceAll("\\\\","\\\\\\\\");
+            String suffix = getSuffix(file);
+            String nosuffix = path.substring(0, path.length()-suffix.length()-1);
+            
+            // replace file placeholders %.suffix first
+            cmd = Pattern.compile("%(\\.[a-zA-Z]*)").matcher(cmd).replaceAll(nosuffix+"$1");
+            // replace file placholders % next
+            cmd = Pattern.compile("%").matcher(cmd).replaceAll(path);
+          }
+          
+          // run it
           LOG.fine("Running string command: "+cmd);
           int rc = Runtime.getRuntime().exec(cmd).waitFor(); 
           if (rc!=0) 
@@ -239,9 +233,13 @@ public class FileAssociation {
    * Get the file suffix for given file
    */
   public static String getSuffix(File file) {
+    return getSuffix(file.getName());
+  }
+  
+  public static String getSuffix(String file) {
     
     // grab extension
-    Matcher m = Pattern.compile(".*\\.(.*)$").matcher(file.getName());
+    Matcher m = Pattern.compile(".*\\.(.*)$").matcher(file);
     
     // done
     return m.matches() ? m.group(1) : "";
