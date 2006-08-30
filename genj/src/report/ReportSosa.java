@@ -6,18 +6,24 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.fo.Document;
-import genj.report.*;
-import genj.gedcom.*;
+import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.PrivacyPolicy;
+import genj.gedcom.Property;
+import genj.gedcom.PropertySource;
+import genj.gedcom.Source;
+import genj.gedcom.TagPath;
+import genj.report.Report;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Iterator;
-import java.util.Collection;
-import java.awt.*;
 
 /**
  * GenJ - ReportSosa
