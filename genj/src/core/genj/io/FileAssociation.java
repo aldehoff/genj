@@ -167,47 +167,81 @@ public class FileAssociation {
   
   private class Sequence implements Runnable {
     private String file;
-    private StringTokenizer cmds;
     Sequence(String file) {
       this.file = file;
-      this.cmds =  new StringTokenizer(getExecutable(), "&");
     }
     public void run() {
-      try {
-        // loop over commands
-        while (cmds.hasMoreTokens()) {
-          // assemble next
-          String cmd = cmds.nextToken();
-          // .. no placeholders at all in cmd?
-          if (cmd.indexOf('%')<0) {
-            cmd += " \"" + file + "\"";
-          } else {
-            // example - the forward slash is meant to be a backward slash here
-            // file = c:/documents and settings/user/foo.ps
-            // path = c://documents and settings//user//foo.ps
-            // suffix = ps
-            // nosuffix = c://documents and settings//user//foo
-            String path = file.replaceAll("\\\\","\\\\\\\\");
-            String suffix = getSuffix(file);
-            String nosuffix = path.substring(0, path.length()-suffix.length()-1);
-            
-            // replace file placeholders %.suffix first
-            cmd = Pattern.compile("%(\\.[a-zA-Z]*)").matcher(cmd).replaceAll(nosuffix+"$1");
-            // replace file placholders % next
-            cmd = Pattern.compile("%").matcher(cmd).replaceAll(path);
-          }
-          
-          // run it
-          LOG.fine("Running string command: "+cmd);
-          int rc = Runtime.getRuntime().exec(cmd).waitFor(); 
-          if (rc!=0) 
-            LOG.log(Level.INFO, "External application "+cmd+" returned "+rc);
-        }
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "Couldn't start all external applications in "+cmds, t);
-      }
+      runCommands();
     }
-  }
+    
+    private void runCommands() {
+      // loop over commands
+      StringTokenizer cmds =  new StringTokenizer(getExecutable(), "&");
+      while (cmds.hasMoreTokens()) 
+        runCommand(cmds.nextToken());
+    }      
+    
+    private String[] toTokens(String cmd) {
+      StringTokenizer tokens = new StringTokenizer(cmd, " ");
+      String[] result = new String[tokens.countTokens()];
+      for (int i=0;i<result.length;i++)
+        result[i] = tokens.nextToken();
+      return result;
+    }
+    
+    private void runCommand(String cmd) {
+      
+      // break it down in command and arguments
+      String[] tokens = toTokens(cmd);
+      if (tokens.length==0) {
+        LOG.warning("Empty command for file association "+getName());
+        return;
+      }
+      
+      // just one?
+      if (tokens.length==1) {
+        runCommand(new String[]{ tokens[0], "\"" + file + "\""});
+        return;
+      }
+      
+      // look for % replacements
+      // example - the forward slash is meant to be a backward slash here
+      // file = c:/documents and settings/user/foo.ps
+      // path = c://documents and settings//user//foo.ps
+      // suffix = ps
+      // nosuffix = c://documents and settings//user//foo
+      String suffix = getSuffix(file);
+      String pathRegEx = file.replaceAll("\\\\","\\\\\\\\");
+      String pathNoSuffixRegEx = pathRegEx.substring(0, pathRegEx.length()-suffix.length()-1);
+      
+      for (int i=1; i<tokens.length; i++) {
+        // replace file placeholders %.suffix first
+        tokens[i ]= Pattern.compile("%(\\.[a-zA-Z]*)").matcher(tokens[i]).replaceAll(pathNoSuffixRegEx+"$1");
+        // replace file placholders % next
+        tokens[i] = Pattern.compile("%").matcher(tokens[i]).replaceAll(pathRegEx);
+      }
+
+      // ready
+      runCommand(tokens);
+    }
+    
+    private void runCommand(String[] cmdnargs) {
+      // run it
+      LOG.fine("Running command: "+cmdnargs[0]);
+      for (int i=1;i<cmdnargs.length;i++)
+        LOG.fine("Argument:"+cmdnargs[i]);
+      
+      try {
+        int rc = Runtime.getRuntime().exec(cmdnargs).waitFor(); 
+        if (rc!=0) 
+          LOG.log(Level.INFO, "External returned "+rc);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "External threw "+t.getMessage(), t);
+      }
+      
+    }
+    
+  } // Sequence of Commands run sequentially
   
   /**
    * Gets all
