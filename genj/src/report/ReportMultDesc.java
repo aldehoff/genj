@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 
-/**
+/*
  * GenJ - ReportMultDesc
  * TODO Daniel titles statistics (nb pers distinctes, nbpers vivantes, nb fam, ...)
  * TODO Daniel: Remove bullet with possibly replacement with d'abboville number
@@ -243,7 +243,7 @@ public class ReportMultDesc extends Report {
     String birt = output.format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
     String marr = fam!=null ? output.format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "";
     String deat = output.format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, policy);
-    String occu = output.format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu, policy);
+    String occu = output.format(indi, "OCCU", "{$T}", reportDateOfOccu, reportPlaceOfOccu, policy);
     String resi = output.format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi, policy);
     PropertyMultilineValue addr = reportMailingAddress ? indi.getAddress() : null;
     if (addr != null && policy.isPrivate(addr)) addr = null;
@@ -259,9 +259,11 @@ public class ReportMultDesc extends Report {
 	if (addr != null) {
 		output.addressPrefix(doc);
 		String[] lines = addr.getLines();
+		output.startEvents(doc);
 		for (int i = 0; i < lines.length; i++) {
 			output.event(lines[i],doc);
 		}
+	    output.endEvents(doc);
 	}
     output.endEvents(doc);
     // done
@@ -383,7 +385,11 @@ public class ReportMultDesc extends Report {
 	      isFirstEvent = false;
 	  }
 	  void addressPrefix(Document doc){
-	      doc.addText(translate("AddressPrefix"));
+	      // dump the information
+	      if (!isFirstEvent) {
+	    	  if (reportFormat==ONE_LINE)  doc.addText(", ");
+	    	  else doc.nextListItem();
+	      }
 	  }
   }
 
