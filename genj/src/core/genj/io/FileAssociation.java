@@ -178,32 +178,15 @@ public class FileAssociation {
       // loop over commands
       StringTokenizer cmds =  new StringTokenizer(getExecutable(), "&");
       while (cmds.hasMoreTokens()) 
-        runCommand(cmds.nextToken());
+        runCommand(cmds.nextToken().trim());
     }      
-    
-    private String[] toTokens(String cmd) {
-      StringTokenizer tokens = new StringTokenizer(cmd, " ");
-      String[] result = new String[tokens.countTokens()];
-      for (int i=0;i<result.length;i++)
-        result[i] = tokens.nextToken();
-      return result;
-    }
     
     private void runCommand(String cmd) {
       
-      // break it down in command and arguments
-      String[] tokens = toTokens(cmd);
-      if (tokens.length==0) {
-        LOG.warning("Empty command for file association "+getName());
-        return;
-      }
-      
-      // just one?
-      if (tokens.length==1) {
-        runCommand(new String[]{ tokens[0], "\"" + file + "\""});
-        return;
-      }
-      
+      // never applied file argument?
+      if (cmd.indexOf('%')<0) 
+        cmd = cmd + " \"%\"";
+
       // look for % replacements
       // example - the forward slash is meant to be a backward slash here
       // file = c:/documents and settings/user/foo.ps
@@ -214,25 +197,16 @@ public class FileAssociation {
       String pathRegEx = file.replaceAll("\\\\","\\\\\\\\");
       String pathNoSuffixRegEx = pathRegEx.substring(0, pathRegEx.length()-suffix.length()-1);
       
-      for (int i=1; i<tokens.length; i++) {
-        // replace file placeholders %.suffix first
-        tokens[i ]= Pattern.compile("%(\\.[a-zA-Z]*)").matcher(tokens[i]).replaceAll(pathNoSuffixRegEx+"$1");
-        // replace file placholders % next
-        tokens[i] = Pattern.compile("%").matcher(tokens[i]).replaceAll(pathRegEx);
-      }
-
-      // ready
-      runCommand(tokens);
-    }
-    
-    private void runCommand(String[] cmdnargs) {
+      // replace file placeholders %.suffix first
+      cmd = Pattern.compile("%(\\.[a-zA-Z]*)").matcher(cmd).replaceAll(pathNoSuffixRegEx+"$1");
+      // replace file placholders % next
+      cmd = Pattern.compile("%").matcher(cmd).replaceAll(pathRegEx);
+      
       // run it
-      LOG.fine("Running command: "+cmdnargs[0]);
-      for (int i=1;i<cmdnargs.length;i++)
-        LOG.fine("Argument:"+cmdnargs[i]);
+      LOG.fine("Running command: "+cmd);
       
       try {
-        int rc = Runtime.getRuntime().exec(cmdnargs).waitFor(); 
+        int rc = Runtime.getRuntime().exec(cmd).waitFor(); 
         if (rc!=0) 
           LOG.log(Level.INFO, "External returned "+rc);
       } catch (Throwable t) {
