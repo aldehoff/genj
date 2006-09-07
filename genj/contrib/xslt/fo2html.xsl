@@ -125,10 +125,7 @@
 <!-- =============================================================== -->
 
 <xsl:template match="fo:block">
-  <!-- NM20060219 ignore empty blocks since swing's html viewer doesn't -->
-  <xsl:if test=".!=''">
    &anchor;<div>&add-style;<xsl:apply-templates mode="check-for-pre"/></div>
-  </xsl:if>
 </xsl:template>
 
 <!-- =============================================================== -->
