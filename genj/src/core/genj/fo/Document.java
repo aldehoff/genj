@@ -41,7 +41,6 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 /**
  * An abstract layer above docbook handling and transformations
@@ -64,7 +63,7 @@ public class Document {
   private String title;
   private boolean needsTOC = false;
   private Map file2elements = new HashMap();
-  private List sections = new ArrayList();
+  private List toc = new ArrayList();
   private String formatSection = "font-size=larger,font-weight=bold,space-before=0.5cm,space-after=0.2cm,keep-with-next.within-page=always";
   private Map index2primary2secondary2elements = new TreeMap();
   private int idSequence = 0;
@@ -179,6 +178,20 @@ public class Document {
   }
   
   /**
+   * Add a Table of Content entry for current cursor position
+   */
+  public Document addTOCEntry(String title) {
+    addTOC();
+    // add anchor
+    String id = "toc"+toc.size();
+    addAnchor(id);
+    // remember entry
+    toc.add(new TOCEntry(id, title));
+    // done
+    return this;
+  }
+  
+  /**
    * Add section
    */
   public Document startSection(String title, String id) {
@@ -193,13 +206,13 @@ public class Document {
     
     // generate an id if necessary
     if (id==null||id.length()==0)
-      id = "section"+sections.size();
+      id = "toc"+toc.size();
       
     // start a new block
     pop().push("block", formatSection + ",id="+id);
     
     // remember
-    sections.add(cursor);
+    toc.add(new TOCEntry(id, title));
     
     // add the title
     addText(title);
@@ -802,7 +815,7 @@ public class Document {
   private Document toc() {
     
     // anything to do?
-    if (sections.isEmpty())
+    if (toc.isEmpty())
       return this;
     Element old = cursor;
     
@@ -826,14 +839,12 @@ public class Document {
     pop();
 
     // add toc entries
-    for (int i=0;i<sections.size();i++) {
+    for (Iterator it = toc.iterator(); it.hasNext(); ) {
       push("block", "start-indent=1cm,end-indent=1cm,text-indent=0cm,text-align-last=justify,text-align=justify");
-      Element section = (Element)sections.get(i);
-      String id = section.getAttribute("id");
-      String txt = ((Text)section.getFirstChild()).getData();
-      addLink(txt, id);
+      TOCEntry entry = (TOCEntry)it.next();
+      addLink(entry.text, entry.id);
       push("leader", "leader-pattern=dots").pop();
-      push("page-number-citation", "ref-id="+id).pop();
+      push("page-number-citation", "ref-id="+entry.id).pop();
 
       pop();
     }
@@ -953,7 +964,22 @@ public class Document {
     }
     throw new IllegalArgumentException(error);
   }
- 
+
+  /**
+   * A table of content entry
+   */
+  private class TOCEntry {
+    String id;
+    String text;
+    private TOCEntry(String id, String text) {
+      this.id = id;
+      this.text = text;
+    }
+  }
+  
+  /**
+   * A test main
+   */
   public static void main(String[] args) {
     
     try {
@@ -980,12 +1006,12 @@ public class Document {
       doc.nextListItem();
       doc.addText("A normal bullet");
 
-//      doc.addTOC();
-//      doc.startSection("Section 1");
-//      doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
-//      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
-//      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
-//      
+      doc.addTOC();
+      doc.startSection("Section 1");
+      doc.addText("here comes a ").addText("table", "font-weight=bold, color=rgb(255,0,0)").addText(" for you:");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/Java/Workspace/GenJ/gedcom/meiern.jpg"), "vertical-align=middle");
+      doc.addImage(new File("C:/Documents and Settings/Nils/My Documents/My Pictures/usamap.gif"), "vertical-align=middle");
+      
 //      doc.startTable("width=100%,border=0.5pt solid black,genj:csv=true");
 //      doc.addTableColumn("column-width=10%");
 //      doc.addTableColumn("column-width=10%");
@@ -1032,12 +1058,14 @@ public class Document {
 //      doc.endList();
 //      doc.addText("Text");
 //  
-//      doc.startSection("Section 2");
-//      doc.addText("Text and a page break");
+      doc.startSection("Section 2");
+      doc.addText("Text and a page break");
 //      doc.nextPage();
-//      
-//      doc.startSection("Section 2");
-//      doc.addText("Text");
+      
+      doc.addTOCEntry("Foo");
+      
+      doc.startSection("Section 3");
+      doc.addText("Text");
 
       Format format;
       if (args.length>0)
