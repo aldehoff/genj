@@ -78,85 +78,104 @@ public abstract class AbstractArranger implements TreeFilter {
 		if (indibox.spouse != null) {
 			indibox.spouse.wPlus = indibox.spouse.width;
 			arrangeSpouse(indibox, indibox.spouse);
-			if (indibox.spouse.x > 0)
-				indibox.wPlus = indibox.spouse.width + indibox.spouse.x;
-			else
-				indibox.wMinus = -indibox.spouse.x;
+			updateSpouse(indibox);
 		}
 
 		// 1. Arrange children
 		if (indibox.hasChildren()) {
 			arrangeChildren(indibox);
-
-			for (int i = 0; i < indibox.children.length; i++) {
-				IndiBox child = indibox.children[i];
-				if (child.y + child.hPlus > indibox.hPlus)
-					indibox.hPlus = child.y + child.hPlus;
-				if (child.x + child.wPlus > indibox.wPlus)
-					indibox.wPlus = child.x + child.wPlus;
-				if (-child.x + child.wMinus > indibox.wMinus)
-					indibox.wMinus = -child.x + child.wMinus;
-			}
+			updateChildren(indibox);
 		}
 
 		// 2. Arrange next marriages
 		if (indibox.spouse != null && indibox.spouse.nextMarriage != null) {
-			IndiBox next = indibox.spouse.nextMarriage;
-
-			arrangeNextMarriages(indibox, next);
-
-			if (next.hPlus > indibox.hPlus)
-				indibox.hPlus = next.hPlus;
-            if (indibox.spouse.wMinus < next.wMinus - next.x)
-                indibox.spouse.wMinus = next.wMinus - next.x;
-            if (indibox.spouse.wPlus < next.wPlus + next.x)
-                indibox.spouse.wPlus = next.wPlus + next.x;
-			if (indibox.wMinus < indibox.spouse.wMinus - indibox.spouse.x)
-				indibox.wMinus = indibox.spouse.wMinus - indibox.spouse.x;
-			if (indibox.wPlus < indibox.spouse.wPlus + indibox.spouse.x)
-				indibox.wPlus = indibox.spouse.wPlus + indibox.spouse.x;
+            arrangeNextMarriages(indibox, indibox.spouse.nextMarriage);
+			updateSpouseNextMarriage(indibox);
 		}
         if (indibox.nextMarriage != null) {
-            IndiBox next = indibox.nextMarriage;
-
-            arrangeNextMarriages(indibox, next);
-
-            if (next.hPlus > indibox.hPlus)
-                indibox.hPlus = next.hPlus;
-            if (indibox.wMinus < next.wMinus - next.x)
-                indibox.wMinus = next.wMinus - next.x;
-            if (indibox.wPlus < next.wPlus + next.x)
-                indibox.wPlus = next.wPlus + next.x;
+            arrangeNextMarriages(indibox, indibox.nextMarriage);
+            updateNextMarriage(indibox);
         }
 
 		// 3. Arrange parents
-		if (indibox.spouse != null && indibox.spouse.parent != null) {
-			IndiBox parent = indibox.spouse.parent;
-
-			arrangeSpouseParent(indibox, parent);
-
-			indibox.spouse.hMinus = parent.hPlus + parent.hMinus;
-			indibox.hMinus = indibox.spouse.hMinus;
-			if (parent.wPlus + parent.x > indibox.spouse.wPlus)
-				indibox.spouse.wPlus = parent.wPlus + parent.x;
-			if (indibox.spouse.wPlus + indibox.spouse.x > indibox.wPlus)
-				indibox.wPlus = indibox.spouse.wPlus + indibox.spouse.x;
-			if (parent.wMinus - parent.x > indibox.spouse.wMinus)
-				indibox.spouse.wMinus = parent.wMinus - parent.x;
-			if (indibox.spouse.wMinus - indibox.spouse.x > indibox.wMinus)
-				indibox.wMinus = indibox.spouse.wMinus - indibox.spouse.x;
-		}
-		if (indibox.parent != null) {
-			IndiBox parent = indibox.parent;
-
-			arrangeParent(indibox, parent);
-
-			if (-parent.y + parent.hMinus > indibox.hMinus)
-				indibox.hMinus = -parent.y + parent.hMinus;
-			if (parent.wPlus + parent.x > indibox.wPlus)
-				indibox.wPlus = parent.wPlus + parent.x;
-			if (parent.wMinus - parent.x > indibox.wMinus)
-				indibox.wMinus = parent.wMinus - parent.x;
-		}
+        if (indibox.spouse != null && indibox.spouse.parent != null) {
+            arrangeSpouseParent(indibox, indibox.spouse.parent);
+            updateSpouseParent(indibox);
+        }
+        if (indibox.parent != null) {
+            arrangeParent(indibox, indibox.parent);
+            updateParent(indibox);
+        }
 	}
+
+    protected void updateSpouse(IndiBox indibox) {
+        if (indibox.spouse.x > 0)
+        	indibox.wPlus = indibox.spouse.width + indibox.spouse.x;
+        else
+        	indibox.wMinus = -indibox.spouse.x;
+    }
+
+    protected void updateChildren(IndiBox indibox) {
+        for (int i = 0; i < indibox.children.length; i++) {
+        	IndiBox child = indibox.children[i];
+        	if (child.y + child.hPlus > indibox.hPlus)
+        		indibox.hPlus = child.y + child.hPlus;
+        	if (child.x + child.wPlus > indibox.wPlus)
+        		indibox.wPlus = child.x + child.wPlus;
+        	if (-child.x + child.wMinus > indibox.wMinus)
+        		indibox.wMinus = -child.x + child.wMinus;
+        }
+    }
+
+    protected void updateSpouseNextMarriage(IndiBox indibox) {
+        IndiBox next = indibox.spouse.nextMarriage;
+
+        if (next.hPlus > indibox.hPlus)
+        	indibox.hPlus = next.hPlus;
+        if (indibox.spouse.wMinus < next.wMinus - next.x)
+            indibox.spouse.wMinus = next.wMinus - next.x;
+        if (indibox.spouse.wPlus < next.wPlus + next.x)
+            indibox.spouse.wPlus = next.wPlus + next.x;
+        if (indibox.wMinus < indibox.spouse.wMinus - indibox.spouse.x)
+        	indibox.wMinus = indibox.spouse.wMinus - indibox.spouse.x;
+        if (indibox.wPlus < indibox.spouse.wPlus + indibox.spouse.x)
+        	indibox.wPlus = indibox.spouse.wPlus + indibox.spouse.x;
+    }
+
+    protected void updateNextMarriage(IndiBox indibox) {
+        IndiBox next = indibox.nextMarriage;
+
+        if (next.hPlus > indibox.hPlus)
+            indibox.hPlus = next.hPlus;
+        if (indibox.wMinus < next.wMinus - next.x)
+            indibox.wMinus = next.wMinus - next.x;
+        if (indibox.wPlus < next.wPlus + next.x)
+            indibox.wPlus = next.wPlus + next.x;
+    }
+
+    protected void updateSpouseParent(IndiBox indibox) {
+        IndiBox parent = indibox.spouse.parent;
+
+        indibox.spouse.hMinus = parent.hPlus + parent.hMinus;
+        indibox.hMinus = indibox.spouse.hMinus;
+        if (parent.wPlus + parent.x > indibox.spouse.wPlus)
+        	indibox.spouse.wPlus = parent.wPlus + parent.x;
+        if (indibox.spouse.wPlus + indibox.spouse.x > indibox.wPlus)
+        	indibox.wPlus = indibox.spouse.wPlus + indibox.spouse.x;
+        if (parent.wMinus - parent.x > indibox.spouse.wMinus)
+        	indibox.spouse.wMinus = parent.wMinus - parent.x;
+        if (indibox.spouse.wMinus - indibox.spouse.x > indibox.wMinus)
+        	indibox.wMinus = indibox.spouse.wMinus - indibox.spouse.x;
+    }
+
+    protected void updateParent(IndiBox indibox) {
+        IndiBox parent = indibox.parent;
+
+        if (-parent.y + parent.hMinus > indibox.hMinus)
+        	indibox.hMinus = -parent.y + parent.hMinus;
+        if (parent.wPlus + parent.x > indibox.wPlus)
+        	indibox.wPlus = parent.wPlus + parent.x;
+        if (parent.wMinus - parent.x > indibox.wMinus)
+        	indibox.wMinus = parent.wMinus - parent.x;
+    }
 }
