@@ -10,10 +10,13 @@ package tree.output;
 
 import genj.util.Registry;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import tree.IndiBox;
+import tree.TreeFilterBase;
 import tree.IndiBox.Direction;
 
 /**
@@ -24,20 +27,48 @@ import tree.IndiBox.Direction;
 public class VerticalTreeRenderer extends TreeRendererBase {
 
     /**
+     * Smallest level number.
+     */
+    private int levelMin = 0;
+
+    /**
+     * Largest level number.
+     */
+    private int levelMax = 0;
+
+    /**
+     * Heights of levels.
+     */
+    private Map levelHeight = new HashMap();
+
+    /**
+     * Y coordinates of levels.
+     */
+    private Map levelCoord = new HashMap();
+
+    /**
      * Constructs the object.
      */
 	public VerticalTreeRenderer(TreeElements elements, IndiBox firstIndi, Registry properties) {
         super(elements, firstIndi, properties);
-		verticalUnit = indiboxHeight + verticalGap;
-        if (displayFambox)
-            verticalUnit += famboxHeight;
+
+        new SameHeightSpouses().filter(firstIndi);
+
+        // Determine height of levels
+        new DetermineLevelHeight().filter(firstIndi);
+        int yCoord = VERTICAL_MARGIN;
+        for (int i = levelMin; i <= levelMax; i++) {
+            levelCoord.put(new Integer(i), new Integer(yCoord));
+            yCoord += ((Integer)levelHeight.get(new Integer(i))).intValue();
+        }
+        levelCoord.put(new Integer(levelMax + 1), new Integer(yCoord));
 	}
 
     /**
      * Outputs the family tree starting from the given IndiBox.
      */
 	protected void drawTree() {
-        drawTree(firstIndi, firstIndi.wMinus + HORIZONTAL_MARGIN, firstIndi.hMinus, 0);
+        drawTree(firstIndi, firstIndi.wMinus + HORIZONTAL_MARGIN, 0, 0);
 	}
 
     /**
@@ -50,7 +81,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 	private void drawTree(IndiBox indibox, int baseX, int baseY, int gen) {
 		baseX += indibox.x;
 		baseY += indibox.y;
-        
+
         int midX = baseX;
         if (indibox.spouse == null)
             midX += indibox.width / 2;
@@ -83,7 +114,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
             elements.drawLine(x1, getYCoord(baseY + 1) - verticalGap / 2,
                     x2, getYCoord(baseY + 1) - verticalGap / 2);
         }
-        
+
         // The individual
         elements.drawIndiBox(indibox, baseX, getYCoord(baseY), gen);
 
@@ -91,7 +122,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
         // TODO: Should family boxes be displayed when there's no spouse?
         if (displayFambox && indibox.family != null && indibox.spouse != null)
             elements.drawFamBox(indibox.family, midX - famboxWidth / 2,
-                    getYCoord(baseY) + indiboxHeight, gen);
+                    getYCoord(baseY) + indibox.height, gen);
 
 		// Spouse
 		if (indibox.spouse != null)
@@ -137,13 +168,71 @@ public class VerticalTreeRenderer extends TreeRendererBase {
      * Returns the image height (in pixels, including margins)
      */
     public int getImageHeight() {
-        return (firstIndi.hMinus + firstIndi.hPlus) * verticalUnit - verticalGap + 2 * VERTICAL_MARGIN;
+        return getYCoord(levelMax + 1) + VERTICAL_MARGIN - verticalGap;
     }
 
     /**
      * Converts the generation level number to image Y coordinate.
      */
     private int getYCoord(int level) {
-        return level * verticalUnit + VERTICAL_MARGIN;
+        return ((Integer)levelCoord.get(new Integer(level))).intValue();
+    }
+
+    /**
+     * Determines line heights. The height of a line is the maximum height of a box
+     * in this line.
+     */
+    private class DetermineLevelHeight extends TreeFilterBase {
+
+        /**
+         * Current level.
+         */
+        private int level = 0;
+
+        private int additionalHeight;
+
+        public DetermineLevelHeight() {
+            additionalHeight = verticalGap;
+            if (displayFambox)
+                additionalHeight += famboxHeight;
+        }
+
+        protected void preFilter(IndiBox indibox) {
+            if (indibox.prev != null)
+                level += indibox.y;
+
+            if (level > levelMax)
+                levelMax = level;
+            if (level < levelMin)
+                levelMin = level;
+
+            Integer lev = new Integer(level);
+            Integer height = (Integer)levelHeight.get(lev);
+            int heightInt = 0;
+            if (height != null)
+                heightInt = height.intValue();
+            int newHeight = indibox.height + additionalHeight;
+            if (newHeight > heightInt)
+                levelHeight.put(lev, new Integer(newHeight));
+        }
+
+        protected void postFilter(IndiBox indibox) {
+            if (indibox.prev != null)
+                level -= indibox.y;
+        }
+    }
+
+    /**
+     * Expands spouses' box sizes to make them equal height.
+     */
+    private static class SameHeightSpouses extends TreeFilterBase {
+        protected void preFilter(IndiBox indibox) {
+            if (indibox.spouse != null) {
+                if (indibox.spouse.height > indibox.height)
+                    indibox.height = indibox.spouse.height;
+                else
+                    indibox.spouse.height = indibox.height;
+            }
+        }
     }
 }

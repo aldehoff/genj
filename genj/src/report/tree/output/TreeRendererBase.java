@@ -30,7 +30,6 @@ public abstract class TreeRendererBase {
 
     protected int indiboxHeight;
     protected int verticalGap;
-    protected int verticalUnit;
     protected int famboxWidth;
     protected int famboxHeight;
     protected boolean displayFambox;
@@ -57,9 +56,6 @@ public abstract class TreeRendererBase {
         famboxWidth = properties.get("famboxWidth", 0);
         famboxHeight = properties.get("famboxHeight", 0);
         displayFambox = properties.get("displayFambox", true);
-		verticalUnit = indiboxHeight + verticalGap;
-        if (displayFambox)
-            verticalUnit += famboxHeight;
 	}
 
     /**
