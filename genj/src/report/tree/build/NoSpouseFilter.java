@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import tree.IndiBox;
-import tree.TreeFilter;
+import tree.TreeFilterBase;
 
 /**
  * Filters out all spouses (except ancestors).
@@ -22,14 +22,12 @@ import tree.TreeFilter;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class NoSpouseFilter implements TreeFilter {
+public class NoSpouseFilter extends TreeFilterBase {
 
     /**
-     * Runs the filter starting from the given individual.
+     * Runs the filter on the given individual.
      */
-    public void filter(IndiBox indibox) {
-        if (indibox == null)
-            return;
+    protected void preFilter(IndiBox indibox) {
 
         if (indibox.getDir() != IndiBox.Direction.PARENT &&
             indibox.getDir() != IndiBox.Direction.SPOUSE)
@@ -37,13 +35,6 @@ public class NoSpouseFilter implements TreeFilter {
             indibox.children = getChildren(indibox);
             indibox.spouse = null;
         }
-
-        filter(indibox.parent);
-        filter(indibox.spouse);
-        filter(indibox.nextMarriage);
-        if (indibox.hasChildren())
-            for (int i = 0; i < indibox.children.length; i++)
-                filter(indibox.children[i]);
     }
 
     /**

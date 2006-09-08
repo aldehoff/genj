@@ -17,7 +17,7 @@ import genj.util.swing.ImageIcon;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class DetermineBoxSize implements TreeFilter {
+public class DetermineBoxSize extends TreeFilterBase {
 
     int defaultHeight;
     int defaultWidth;
@@ -29,21 +29,7 @@ public class DetermineBoxSize implements TreeFilter {
         this.maxImageWidth = maxImageWidth;
     }
 
-    public void filter(IndiBox indibox) {
-        if (indibox == null)
-            return;
-
-        determineSize(indibox);
-
-        filter(indibox.parent);
-        filter(indibox.spouse);
-        filter(indibox.nextMarriage);
-        if (indibox.hasChildren())
-            for (int i = 0; i < indibox.children.length; i++)
-                filter(indibox.children[i]);
-    }
-
-    public void determineSize(IndiBox indibox) {
+    public void preFilter(IndiBox indibox) {
         indibox.height = defaultHeight;
         indibox.width = defaultWidth;
 
@@ -55,7 +41,7 @@ public class DetermineBoxSize implements TreeFilter {
             {
                 ImageIcon icon = file.getValueAsIcon();
                 if(icon != null) {
-                    int newWidth = icon.getIconWidth() * defaultHeight / icon.getIconHeight();                    
+                    int newWidth = icon.getIconWidth() * defaultHeight / icon.getIconHeight();
                     if (newWidth < maxImageWidth)
                         indibox.width += newWidth;
                     else
