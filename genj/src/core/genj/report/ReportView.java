@@ -75,7 +75,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.html.HTMLEditorKit;
 
 /**
  * Component for running reports on genealogic data
@@ -108,6 +107,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private JTabbedPane tabbedPane;
   private AbstractButton bStart,bStop,bClose,bSave,bReload,bGroup;
   private OptionsWidget owOptions;
+
+  private HTMLEditorKit editorKit;
 
   /** registry for settings */
   private Registry registry;
@@ -207,10 +208,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
     gh.add(new JLabel(RESOURCES.getString("report.version")),2,2);
     gh.add(lVersion,3,2);
 
+    editorKit = new HTMLEditorKit(this.getClass());
     // ... Report's infos
     tpInfo = new JTextPane();
     tpInfo.setEditable(false);
-    tpInfo.setEditorKit(new HTMLEditorKit());
+    tpInfo.setEditorKit(editorKit);
     tpInfo.setFont(new JTextField().getFont()); //don't use standard clunky text area font
     tpInfo.addHyperlinkListener(new FollowHyperlink(tpInfo));
     JScrollPane spInfo = new JScrollPane(tpInfo);
@@ -628,6 +630,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         tpInfo   .setText("");
         owOptions.setOptions(Collections.EMPTY_LIST);
       } else {
+        editorKit.setFrom(report.getClass());
         lFile    .setText(report.getFilename());
         lAuthor  .setText(report.getAuthor());
         lVersion .setText(getReportVersion(report));
