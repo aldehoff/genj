@@ -28,10 +28,10 @@ public abstract class TreeRendererBase {
      */
 	protected static final int HORIZONTAL_MARGIN = 10;
 
-    protected int indiboxHeight;
     protected int verticalGap;
     protected int famboxWidth;
     protected int famboxHeight;
+    protected int defaultIndiboxHeight;
     protected boolean displayFambox;
 
     protected IndiBox firstIndi;
@@ -43,18 +43,15 @@ public abstract class TreeRendererBase {
 
     /**
      * Constructs the object.
-     * @param indiboxWidth  width of the individual box in pixels
-     * @param indiboxHeight height of the individual box in pixels
-     * @param verticalGap minimal vertical gap between individual boxes
      */
 	public TreeRendererBase(TreeElements elements, IndiBox firstIndi, Registry properties) {
         this.elements = elements;
         this.firstIndi = firstIndi;
 
-		indiboxHeight = properties.get("indiboxHeight", 0);
 		verticalGap = properties.get("verticalGap", 0);
         famboxWidth = properties.get("famboxWidth", 0);
         famboxHeight = properties.get("famboxHeight", 0);
+        defaultIndiboxHeight = properties.get("defaultIndiboxHeight", 0);
         displayFambox = properties.get("displayFambox", true);
 	}
 

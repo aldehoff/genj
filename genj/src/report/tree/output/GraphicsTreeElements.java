@@ -10,6 +10,8 @@ package tree.output;
 
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
@@ -35,23 +37,28 @@ import tree.IndiBox;
  */
 public class GraphicsTreeElements implements TreeElements {
 
+    private static final int LINE_HEIGHT = 10;
+    private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
+    private static final TagPath PATH_INDIDEATPLAC = new TagPath("INDI:DEAT:PLAC");
+    private static final TagPath PATH_INDIOCCU = new TagPath("INDI:OCCU");
+
     /**
      * Box background colors.
      */
     private static final Color[] BOX_COLORS = {
-        new Color(0xff, 0xff, 0xff), // -5
-        new Color(0xff, 0xff, 0xff), // -4
-        new Color(0xdd, 0xdd, 0xff), // -3
-        new Color(0xff, 0xdd, 0xff), // -2
-        new Color(0xff, 0xdd, 0xdd), // -1
+            new Color(0xff, 0xff, 0xff), // -5
+            new Color(0xff, 0xff, 0xff), // -4
+            new Color(0xdd, 0xdd, 0xff), // -3
+            new Color(0xff, 0xdd, 0xff), // -2
+            new Color(0xff, 0xdd, 0xdd), // -1
 
-        new Color(0xff, 0xff, 0xdd), //  0
+            new Color(0xff, 0xff, 0xdd), // 0
 
-        new Color(0xdd, 0xff, 0xdd), //  1
-        new Color(0xdd, 0xff, 0xff), //  2
-        new Color(0xdd, 0xdd, 0xff), //  3
-        new Color(0xff, 0xff, 0xff), //  4
-        new Color(0xff, 0xff, 0xff)  //  5
+            new Color(0xdd, 0xff, 0xdd), // 1
+            new Color(0xdd, 0xff, 0xff), // 2
+            new Color(0xdd, 0xdd, 0xff), // 3
+            new Color(0xff, 0xff, 0xff), // 4
+            new Color(0xff, 0xff, 0xff) // 5
     };
 
     public static final float STROKE_WIDTH = 2.0f;
@@ -99,21 +106,20 @@ public class GraphicsTreeElements implements TreeElements {
     private static Font sexSymbolFont = null;
     static {
         // Find a font with the MALE_SYMBOL in it
-        String[] candidateFontNames = {"sansserif", "apple symbol", "symbol"};
-        for (int i = 0; i < candidateFontNames.length; i++)
-        {
+        String[] candidateFontNames = { "sansserif", "apple symbol", "symbol" };
+        for (int i = 0; i < candidateFontNames.length; i++) {
             Font candidateFont = new Font(candidateFontNames[i], Font.PLAIN, 10);
-            if(candidateFont.canDisplay(MALE_SYMBOL.charAt(0)))
-            {
+            if (candidateFont.canDisplay(MALE_SYMBOL.charAt(0))) {
                 sexSymbolFont = candidateFont;
                 break;
             }
         }
         if (sexSymbolFont == null)
-            sexSymbolFont = new Font("SansSerif", Font.PLAIN,10);
+            sexSymbolFont = new Font("SansSerif", Font.PLAIN, 10);
     }
 
     private int famboxWidth;
+
     private int famboxHeight;
 
     private int maxImageWidth;
@@ -134,17 +140,22 @@ public class GraphicsTreeElements implements TreeElements {
     private boolean drawFamIds;
 
     private int maxNames;
+
     private boolean useColors;
+
+    private boolean drawPlaces;
+
+    private boolean drawOccupation;
 
     /**
      * The graphics object to paint on.
      */
-	private Graphics2D graphics = null;
+    private Graphics2D graphics = null;
 
     /**
      * Constructs the object.
      */
-	public GraphicsTreeElements(Graphics2D graphics, Registry properties) {
+    public GraphicsTreeElements(Graphics2D graphics, Registry properties) {
         this.graphics = graphics;
 
         famboxWidth = properties.get("famboxWidth", 0);
@@ -155,6 +166,8 @@ public class GraphicsTreeElements implements TreeElements {
         maxNames = properties.get("maxNames", -1);
         useColors = properties.get("useColors", true);
         maxImageWidth = properties.get("maxImageWidth", 0);
+        drawPlaces = properties.get("drawPlaces", true);
+        drawOccupation = properties.get("drawOccupation", true);
     }
 
     /**
@@ -171,7 +184,7 @@ public class GraphicsTreeElements implements TreeElements {
      * @param y  y coordinate
      * @param gen generation number
      */
-	public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
+public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
         Indi i = indibox.individual;
 
         // Determine photo size
@@ -182,15 +195,15 @@ public class GraphicsTreeElements implements TreeElements {
             PropertyFile file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
             if (file != null) {
                 icon = file.getValueAsIcon();
-                if (icon != null) {                
+                if (icon != null) {
                     imageWidth = icon.getIconWidth() * indibox.height / icon.getIconHeight();
                     if (imageWidth > maxImageWidth) {
                         imageWidth = maxImageWidth;
                         imageHeight = icon.getIconHeight() * imageWidth / icon.getIconWidth();
                     }
-                }                
+                }
             }
-        }      
+        }
         int dataWidth = indibox.width - imageWidth;
 
         Color color = getBoxColor(gen);
@@ -207,17 +220,70 @@ public class GraphicsTreeElements implements TreeElements {
         centerString(graphics, getFirstNames(i), x + dataWidth/2, y + 14);
         centerString(graphics, i.getLastName(), x + dataWidth/2, y + 26);
 
-        // Date of birth
+        int currentY = y + 38;
+
         graphics.setFont(DETAILS_FONT);
-        if (i.getBirthDate() != null && i.getBirthDate().isValid()) {
-            centerString(graphics, Options.getInstance().getBirthSymbol(), x + 7, y + 38);
-            graphics.drawString(""+i.getBirthDate(), x + 13, y + 38);
+
+        Property birthDate = null;
+        Property deathDate = null;
+        Property birthPlace = null;
+        Property deathPlace = null;
+        Property occupation = null;
+
+
+        birthDate = i.getBirthDate();
+        if (birthDate != null && !birthDate.isValid())
+            birthDate = null;
+        deathDate = i.getDeathDate();
+        if (deathDate != null && !deathDate.isValid())
+            deathDate = null;
+
+        if (drawPlaces) {
+            birthPlace = i.getProperty(PATH_INDIBIRTPLAC);
+            if (birthPlace != null && birthPlace.toString().equals(""))
+                birthPlace = null;
+            deathPlace = i.getProperty(PATH_INDIDEATPLAC);
+            if (deathPlace != null && deathPlace.toString().equals(""))
+                deathPlace = null;
         }
-        // Date of death
+
+        if (drawOccupation)
+            occupation = i.getProperty(PATH_INDIOCCU);
+
+        // Date and place of birth
+        if (birthDate != null || birthPlace != null) {
+            centerString(graphics, Options.getInstance().getBirthSymbol(), x + 7, currentY);
+            if (birthDate != null) {
+                graphics.drawString(birthDate.toString(), x + 13, currentY);
+                currentY += LINE_HEIGHT;
+            }
+            if (birthPlace != null) {
+                graphics.drawString(birthPlace.toString(), x + 13, currentY);
+                currentY += LINE_HEIGHT;
+            }
+        }
+
+        // Date and place of death
         if (i.getDeathDate() != null) {
-            centerString(graphics, Options.getInstance().getDeathSymbol(), x + 7, y + 48);
-            graphics.drawString(""+i.getDeathDate(), x + 13, y + 48);
+            centerString(graphics, Options.getInstance().getDeathSymbol(), x + 7, currentY);
+            if (deathDate != null) {
+                graphics.drawString(deathDate.toString(), x + 13, currentY);
+                currentY += LINE_HEIGHT;
+            }
+            if (deathPlace != null) {
+                graphics.drawString(deathPlace.toString(), x + 13, currentY);
+                currentY += LINE_HEIGHT;
+            }
+            if (deathDate == null && deathPlace == null)
+                currentY += LINE_HEIGHT;
         }
+
+        // Occupation
+        if (occupation != null) {
+            graphics.drawString(occupation.toString(), x + 6, currentY);
+        }
+
+
 
         // Sex symbol
         if (drawSexSymbols) {
@@ -240,7 +306,6 @@ public class GraphicsTreeElements implements TreeElements {
         graphics.setClip(oldClip);
         graphics.draw(box);
 	}
-
     /**
      * Outputs a family box.
      * @param i  individual
@@ -275,9 +340,9 @@ public class GraphicsTreeElements implements TreeElements {
      * @param x2 end x
      * @param y2 end y
      */
-	public void drawLine(int x1, int y1, int x2, int y2) {
+    public void drawLine(int x1, int y1, int x2, int y2) {
         graphics.drawLine(x1, y1, x2, y2);
-	}
+    }
 
     /**
      * Outputs a dashed line.
@@ -300,13 +365,13 @@ public class GraphicsTreeElements implements TreeElements {
         graphics.setStroke(new BasicStroke(STROKE_WIDTH));
         graphics.setBackground(Color.WHITE);
         graphics.clearRect(0, 0, width, height);
-	}
+    }
 
     /**
      * Does nothing.
      */
     public void footer() {
-	}
+    }
 
     /**
      * Outputs a string centered.
@@ -314,8 +379,8 @@ public class GraphicsTreeElements implements TreeElements {
     private void centerString(Graphics2D graphics, String text, int x, int y) {
         Rectangle2D rect = graphics.getFont().getStringBounds(text,
                 graphics.getFontRenderContext());
-        int width = (int)rect.getWidth();
-        graphics.drawString(text, x - width/2, y);
+        int width = (int) rect.getWidth();
+        graphics.drawString(text, x - width / 2, y);
     }
 
     private String getSexSymbol(int sex) {

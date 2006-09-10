@@ -92,12 +92,12 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 
         // Lines (draw lines first so that boxes hide line ends)
         if (indibox.hasChildren() || indibox.getDir() == Direction.PARENT) {
-            int midY = getYCoord(baseY) + indiboxHeight;
+            int midY = getYCoord(baseY) + indibox.height;
             if (indibox.spouse != null)
-                midY -= indiboxHeight / 2;
+                midY -= indibox.height / 2;
 
             if (displayFambox && indibox.family != null & indibox.spouse != null)
-                midY = getYCoord(baseY) + indiboxHeight + famboxHeight;
+                midY = getYCoord(baseY) + indibox.height + famboxHeight;
 
             elements.drawLine(midX, midY, midX, getYCoord(baseY + 1) - verticalGap / 2);
 
@@ -148,11 +148,11 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 		// Next marriage
 		if (indibox.nextMarriage != null) {
 			if (indibox.nextMarriage.x > 0)
-                elements.drawDashedLine(baseX + indibox.width, getYCoord(baseY) + indiboxHeight / 2,
-				        baseX + indibox.nextMarriage.x, getYCoord(baseY) + indiboxHeight / 2);
+                elements.drawDashedLine(baseX + indibox.width, getYCoord(baseY) + defaultIndiboxHeight / 2,
+				        baseX + indibox.nextMarriage.x, getYCoord(baseY) + defaultIndiboxHeight / 2);
 			else
-                elements.drawDashedLine(baseX, getYCoord(baseY) + indiboxHeight / 2,
-				        baseX + indibox.nextMarriage.x + indibox.nextMarriage.width, getYCoord(baseY) + indiboxHeight / 2);
+                elements.drawDashedLine(baseX, getYCoord(baseY) + defaultIndiboxHeight / 2,
+				        baseX + indibox.nextMarriage.x + indibox.nextMarriage.width, getYCoord(baseY) + defaultIndiboxHeight / 2);
             drawTree(indibox.nextMarriage, baseX, baseY, gen);
 		}
 	}

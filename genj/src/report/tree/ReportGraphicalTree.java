@@ -33,19 +33,19 @@ import tree.output.TreeOutput;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.13
+ * @version 0.15
  */
 public class ReportGraphicalTree extends Report {
 
     /**
      * Indibox width in pixels.
      */
-    private static final int INDIBOX_WIDTH = 110;
+    private static final int DEFAULT_INDIBOX_WIDTH = 110;
 
     /**
      * Indibox height in pixels.
      */
-    private static final int INDIBOX_HEIGHT = 64;
+    private static final int DEFAULT_INDIBOX_HEIGHT = 64;
 
     /**
      * Minimal vertical gap between boxes.
@@ -112,6 +112,16 @@ public class ReportGraphicalTree extends Report {
     public String[] max_namess = { translate("nolimit"), "1", "2", "3" };
 
     /**
+     * Whether to display places of birth and death.
+     */
+    public boolean draw_places = true;
+
+    /**
+     * Whether to display occupations.
+     */
+    public boolean draw_occupation = true;
+
+    /**
      * Whether to display images.
      */
     public boolean draw_images = true;
@@ -176,7 +186,8 @@ public class ReportGraphicalTree extends Report {
         properties.put("genAncestorDescendants", gen_ancestor_descendants - 1);
         properties.put("genDescendants", gen_descendants - 1);
         properties.put("maxNames", max_names);
-        properties.put("indiboxHeight", INDIBOX_HEIGHT);
+        properties.put("defaultIndiboxHeight", DEFAULT_INDIBOX_HEIGHT);
+        properties.put("defaultIndiboxWidth", DEFAULT_INDIBOX_WIDTH);
         properties.put("verticalGap", VERTICAL_GAP);
         properties.put("horizontalGap", HORIZONTAL_GAP);
         properties.put("famboxWidth", FAMBOX_WIDTH);
@@ -189,6 +200,8 @@ public class ReportGraphicalTree extends Report {
         properties.put("drawIndiIds", draw_indi_ids);
         properties.put("drawFamIds", draw_fam_ids);
         properties.put("maxImageWidth", draw_images ? MAX_IMAGE_WIDTH : 0);
+        properties.put("drawPlaces", draw_places);
+        properties.put("drawOccupation", draw_occupation);
 
         // Build the tree
         TreeBuilder builder = new BasicTreeBuilder(properties);
@@ -196,7 +209,7 @@ public class ReportGraphicalTree extends Report {
         if (!show_spouses)
             new NoSpouseFilter().filter(indibox);
 
-        new DetermineBoxSize(INDIBOX_HEIGHT, INDIBOX_WIDTH, draw_images ? MAX_IMAGE_WIDTH : 0).filter(indibox);
+        new DetermineBoxSize(properties).filter(indibox);
 
         // Arrange the tree boxes
         TreeFilter arranger;
