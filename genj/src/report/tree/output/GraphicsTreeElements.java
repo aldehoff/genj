@@ -11,7 +11,6 @@ package tree.output;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
