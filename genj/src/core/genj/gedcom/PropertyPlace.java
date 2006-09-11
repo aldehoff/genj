@@ -30,52 +30,52 @@ import java.util.Set;
  * PLAC a choice value with brains for understanding sub-property FORM
  */
 public class PropertyPlace extends PropertyChoiceValue {
-  
+
   private final static boolean USE_SPACES = Options.getInstance().isUseSpacedPlaces;
 
   public final static ImageIcon
     IMAGE = Grammar.getMeta(new TagPath("INDI:BIRT:PLAC")).getImage();
-  
+
   public final static String
     JURISDICTION_SEPARATOR = ",";
-  
-  private final static String 
+
+  private final static String
     JURISDICTION_RESOURCE_PREFIX = "prop.plac.jurisdiction.";
-  
-  public final static String 
+
+  public final static String
     TAG = "PLAC",
     FORM = "FORM";
-  
+
   /**
    * Overridden - special trim
    */
   protected String trim(String value) {
-    
+
     /*
      20051212 at some point we switched to trimming values on places
      here, making sure that the separator only is between jurisdictions.
      Peter asked me to add spaces as well for readability:
        2 PLAC Hamburg, Schleswig Holstein, Deutschland
-     instead of 
+     instead of
        2 PLAC Hamburg,Schleswig Holstein,Deutschland
 
      But Francois reminded me that we didn't want to have spaces in
      the Gedcom file - the spec doesn't explicitly disallow it but especially
-     in Francois' way of keeping place information 
+     in Francois' way of keeping place information
        2 PLAC ,Allanche,,Cantal,Auvergne,
      adding spaces doesn't look good
-       2 PLAC , Allanche, , Cantal, Auvergne, 
+       2 PLAC , Allanche, , Cantal, Auvergne,
 
      We played with the idea of using space-comma in getDisplayValue()
      and comma-only in getValue()/trim() - problem is that it takes mem
      to cache or runtime performance to calculate that. It's also problematic
      that the display value would be different from the choices remembered
      (one with space the other without)
-     
+
      So finally we decided to put in a global option that lets the user
      make the choice - internally getValue()-wize we handle this uniformly then
     */
-    
+
     // trim each jurisdiction separately
     StringBuffer buf = new StringBuffer(value.length());
     DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(value, JURISDICTION_SEPARATOR);
@@ -92,15 +92,15 @@ public class PropertyPlace extends PropertyChoiceValue {
   }
 
   /**
-   * Remember a jurisdiction's vlaue
+   * Remember a jurisdiction's value
    */
   protected boolean remember( String theOld, String theNew) {
-    
+
     // let super do its stuff
     if (!super.remember(theOld, theNew))
       return false;
     Gedcom gedcom = getGedcom();
-    
+
     // forget old jurisdictions
     DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer(theOld, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
@@ -111,18 +111,18 @@ public class PropertyPlace extends PropertyChoiceValue {
         gedcom.getReferenceSet(TAG+"."+i).remove(jurisdiction, this);
       // next
     }
-    
+
     // remember new jurisdictions
     jurisdictions = new DirectAccessTokenizer(theNew, JURISDICTION_SEPARATOR);
     for (int i=0;;i++) {
       String jurisdiction = jurisdictions.get(i, true);
       if (jurisdiction==null) break;
       // remember PLAC.n
-      if (jurisdiction.length()>0) 
+      if (jurisdiction.length()>0)
         gedcom.getReferenceSet(TAG+"."+i).add(jurisdiction.intern(), this);
       // next
     }
-    
+
     // done
     return true;
   }
@@ -134,7 +134,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     // look it up
     String result = "";
     Property pformat = getProperty(FORM);
-    if (pformat!=null) 
+    if (pformat!=null)
       result = pformat.getValue();
     else {
       Gedcom ged = getGedcom();
@@ -144,7 +144,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     // done
     return result;
   }
-  
+
   /**
    * Accessor - the hierarchy of this place's value (non localized)
    */
@@ -156,7 +156,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     // mark changed
     propagateChange(getValue());
   }
-  
+
   /**
    * Accessor - all places with the same jurisdiction for given hierarchy level
    */
@@ -167,7 +167,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     Collection places = getGedcom().getReferenceSet(TAG+"."+hierarchyLevel).getReferences(jurisdiction);
     return (PropertyPlace[])places.toArray(new PropertyPlace[places.size()]);
   }
-  
+
   /**
    * Accessor - all jurisdictions of given level in same gedcom file
    */
@@ -177,7 +177,7 @@ public class PropertyPlace extends PropertyChoiceValue {
       return new String[0];
     return getAllJurisdictions(gedcom, hierarchyLevel, sort);
   }
-  
+
   /**
    * Accessor - all jurisdictions of given level in gedcom
    * @param hierarchyLevel either a zero-based level or -1 for whole place values
@@ -187,9 +187,9 @@ public class PropertyPlace extends PropertyChoiceValue {
     Collection jurisdictions = refset.getKeys(sort ? gedcom.getCollator() : null);
     return (String[])jurisdictions.toArray(new String[jurisdictions.size()]);
   }
-  
+
   /**
-   * Accessor - first non-empty jurisdiction  
+   * Accessor - first non-empty jurisdiction
    * @return jurisdiction of zero+ length
    */
   public String getFirstAvailableJurisdiction() {
@@ -210,7 +210,7 @@ public class PropertyPlace extends PropertyChoiceValue {
   public String getJurisdiction(int hierarchyLevel) {
     return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(hierarchyLevel, true);
   }
-  
+
   /**
    * Accessor - jurisdictions that is the city
    */
@@ -219,9 +219,9 @@ public class PropertyPlace extends PropertyChoiceValue {
     if (cityIndex<0)
       return getFirstAvailableJurisdiction();
     String city = new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(cityIndex, true);
-    return city!=null ? city : ""; 
+    return city!=null ? city : "";
   }
-  
+
   /**
    * Accessor - all jurisdictions starting with city
    */
@@ -235,9 +235,9 @@ public class PropertyPlace extends PropertyChoiceValue {
     // grab sub
     return new DirectAccessTokenizer(result, JURISDICTION_SEPARATOR).getSubstring(cityIndex);
   }
-  
+
   /**
-   * Derive index of city value in the list of jurisdictions in this place 
+   * Derive index of city value in the list of jurisdictions in this place
    * @return zero based index or -1 if not determined
    */
   private int getCityIndex() {
@@ -246,17 +246,17 @@ public class PropertyPlace extends PropertyChoiceValue {
     String hierarchy = getHierarchy();
     if (hierarchy.length()==0)
       return -1;
-    
+
     // look for a city key in the hierarchy
     Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
     DirectAccessTokenizer hs = new DirectAccessTokenizer(hierarchy, ",");
     for (int index=0; hs.get(index)!=null ;index++) {
-      if (cityKeys.contains(hs.get(index, true).toLowerCase())) 
+      if (cityKeys.contains(hs.get(index, true).toLowerCase()))
         return index;
     }
-    
+
     // don't know
     return -1;
   }
-  
+
 } //PropertyPlace
