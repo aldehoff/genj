@@ -259,7 +259,7 @@ public class ReportSosa extends Report {
        if (description.length() != 0) descStr+=" "+description+" :$#@ ";
        Property prop[] = entity.getProperties(new TagPath(tagPath));
        for (int p=0; p<prop.length; p++) {
-          if ((prop[p] != null) && (prop[p].toString().trim().length() != 0)) {
+          if ((prop[p] != null) && (prop[p].toString().trim().length() != 0) && (prop[p] instanceof PropertySource)) {
              PropertySource propSrc = (PropertySource)prop[p];
              Source source = (Source)(propSrc.getTargetEntity());
              src.add(source);
