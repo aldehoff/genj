@@ -120,7 +120,7 @@ public class PropertyName extends Property {
    * Returns localized label for last name
    */
   static public String getLabelForSuffix() {
-    return "Suffix";
+    return Gedcom.getResources().getString("prop.name.suffix");
   }
 
   /**
