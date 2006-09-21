@@ -1112,6 +1112,22 @@ public abstract class Property implements Comparable {
     // got anything at all?
     return matches>0 ? result.toString() : "";
   }
+
+  /**
+   * Calculates an appropriate date that puts this property into a time context
+   */
+  public PropertyDate getWhen() {
+    Property cursor = this;
+    while (cursor!=null) {
+      if (this instanceof PropertyDate)
+        return (PropertyDate)this;
+      if (this instanceof PropertyEvent)
+        return ((PropertyEvent)this).getDate();
+      cursor = cursor.getParent();
+    }
+    // none
+    return null;
+  }
   
 } //Property
 
