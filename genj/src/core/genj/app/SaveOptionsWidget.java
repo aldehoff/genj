@@ -21,11 +21,15 @@ package genj.app;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.PointInTime;
 import genj.io.Filter;
 import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
+import genj.util.swing.DateWidget;
 import genj.util.swing.TextFieldWidget;
 import genj.view.FilterSupport;
 import genj.view.ViewManager;
@@ -56,6 +60,7 @@ import javax.swing.JTextField;
   private TextFieldWidget textPassword;
   private JComboBox   comboEncodings;
   private Resources resources = Resources.get(this);
+  private DateWidget dateEventsAfter, dateBirthsAfter;
   
   /** filters */
   private FilterSupport[] filterViews;
@@ -92,7 +97,13 @@ import javax.swing.JTextField;
     props.add(new JLabel(resources.getString("save.options.exclude.values")));
     textValues = new TextFieldWidget(resources.getString("save.options.exclude.values.eg"), 10).setTemplate(true);
     props.add(textValues);
-    
+    props.add(new JLabel(resources.getString("save.options.exclude.events")));
+    dateEventsAfter = new DateWidget(manager.getWindowManager());
+    props.add(dateEventsAfter);
+    props.add(new JLabel(resources.getString("save.options.exclude.indis")));
+    dateBirthsAfter = new DateWidget(manager.getWindowManager());
+    props.add(dateBirthsAfter);
+        
     // others filter
     Box others = new Box(BoxLayout.Y_AXIS);
     filterViews = (FilterSupport[])manager.getViews(FilterSupport.class, gedcom);
@@ -141,6 +152,16 @@ import javax.swing.JTextField;
     FilterProperties fp = FilterProperties.get(textTags.getText(), textValues.getText());
     if (fp!=null) result.add(fp);
     
+    // create one for events
+    PointInTime eventsAfter = dateEventsAfter.getValue();
+    if (eventsAfter!=null&&eventsAfter.isValid())
+      result.add(new FilterEventsAfter(eventsAfter));
+    
+    // create one for births
+    PointInTime birthsAfter = dateBirthsAfter.getValue();
+    if (birthsAfter!=null&&birthsAfter.isValid())
+      result.add(new FilterIndividualsBornAfter(birthsAfter));
+    
     // create one for every other
     for (int f=0; f<filterViews.length; f++) {
       if (checkViews[f].isSelected())
@@ -149,6 +170,50 @@ import javax.swing.JTextField;
     
     // done
     return (Filter[])result.toArray(new Filter[result.size()]);
+  }
+  
+  /**
+   * Filter individuals if born after pit
+   */
+  private static class FilterIndividualsBornAfter implements Filter {
+    
+    private PointInTime after;
+    
+    /** constructor */
+    private FilterIndividualsBornAfter(PointInTime after) {
+      this.after = after;
+    }
+    
+    /** callback */
+    public boolean accept(Property property) {
+      if (property instanceof Indi) {
+        Indi indi = (Indi)property;
+        PropertyDate birth = indi.getBirthDate();
+        if (birth!=null) return birth.getStart().compareTo(after)<0;
+      }
+        
+      // fine
+      return true;
+    }
+  }
+  
+  /**
+   * Filter properties if concerning events after pit
+   */
+  private static class FilterEventsAfter implements Filter {
+    
+    private PointInTime after;
+    
+    /** constructor */
+    private FilterEventsAfter(PointInTime after) {
+      this.after = after;
+    }
+    
+    /** callback */
+    public boolean accept(Property property) {
+      PropertyDate when = property.getWhen();
+      return when==null || when.getStart().compareTo(after)<0;
+    }
   }
   
   /**
