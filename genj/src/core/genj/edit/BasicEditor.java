@@ -745,7 +745,7 @@ import javax.swing.event.ChangeListener;
       
       // create all tabs
       Set skippedTags = new HashSet();
-      props: for (int i=0, j=currentEntity.getNoOfProperties(); i<j; i++) {
+      for (int i=0, j=currentEntity.getNoOfProperties(); i<j; i++) {
         Property prop = currentEntity.getProperty(i);
         // check tag - skipped or covered already?
         String tag = prop.getTag();
