@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JRadioButton;
@@ -61,8 +60,9 @@ public class BlueprintList extends JSplitPane {
   /** tree of blueprints */
   private JTree treeBlueprints;
   
-  /** our buttons */
-  private AbstractButton bAdd, bDel;
+  /** our actions */
+  private Add add = new Add();
+  private Del del = new Del();
   
   /** resources */
   private final static Resources resources = Resources.get(BlueprintEditor.class);
@@ -105,8 +105,8 @@ public class BlueprintList extends JSplitPane {
     left.add(scroll);
     
     ButtonHelper bh = new ButtonHelper().setContainer(left);
-    bAdd = bh.create(new Add());
-    bDel = bh.create(new Del());
+    bh.create(add);
+    bh.create(del);
     
     // children
     setLeftComponent(left);
@@ -298,21 +298,21 @@ public class BlueprintList extends JSplitPane {
           // .. gotta repaint for old
           treeBlueprints.repaint();
           // .. buttons
-          bAdd.setEnabled(true);
-          bDel.setEnabled(!bp.isReadOnly());
+          add.setEnabled(true);
+          del.setEnabled(!bp.isReadOnly());
           // .. editor
           editor.set(gedcom, bp, !bp.isReadOnly());
           return;
         }
       
         // different type section selected 
-        bAdd.setEnabled(true);
-        bDel.setEnabled(false);
+        add.setEnabled(true);
+        del.setEnabled(false);
 
       } else {
 
-        bAdd.setEnabled(false);
-        bDel.setEnabled(false);
+        add.setEnabled(false);
+        del.setEnabled(false);
         
       }
             
