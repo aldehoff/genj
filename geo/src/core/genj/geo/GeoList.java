@@ -24,7 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
@@ -144,7 +144,7 @@ import swingx.tree.AbstractTreeModel;
   /**
    * Selection access
    */
-  public void setSelectedContext(Context context) {
+  public void setSelectedContext(ViewContext context) {
     
     if (ignoreSelectionChanges)
       return;
@@ -287,8 +287,8 @@ import swingx.tree.AbstractTreeModel;
     /**
      * callback - context needed
      */
-    public Context getContext() {
-      Context result = new Context(model.getGedcom());
+    public ViewContext getContext() {
+      ViewContext result = new ViewContext(model.getGedcom());
       TreePath[] selections = getSelectionPaths();
       for (int i = 0; i < selections.length; i++) {
         Object selection = selections[i].getLastPathComponent();
@@ -326,8 +326,8 @@ import swingx.tree.AbstractTreeModel;
         
         // propagate context
         if (!props.isEmpty()) {
-          Context context = new Context(model.getGedcom());
-          context.addProperties(props);
+          ViewContext context = new ViewContext(model.getGedcom());
+          context.addProperties(Property.toArray(props));
           viewManager.fireContextSelected(context);
         }
       } finally {
