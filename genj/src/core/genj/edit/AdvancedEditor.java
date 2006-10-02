@@ -37,7 +37,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -181,7 +181,7 @@ import javax.swing.tree.TreePath;
   /**
    * Provider current context 
    */
-  public Context getContext() {
+  public ViewContext getContext() {
     return tree.getContext();
   }
   
@@ -200,7 +200,7 @@ import javax.swing.tree.TreePath;
    * Accessor - current context 
    * @param context context to switch to
    */
-  public void setContext(Context context) {
+  public void setContext(ViewContext context) {
     
     // ignore?
     if (ignoreSelection)
@@ -681,9 +681,9 @@ import javax.swing.tree.TreePath;
       editPane.repaint();
       
       // can show bean if single selection
-      List selection = tree.getSelection();
-      if (selection.size()==1) {
-        Property prop = (Property)selection.get(0);
+      Property[] selection = Property.toArray(tree.getSelection());
+      if (selection.length==1) {
+        Property prop = selection[0];
         try {
   
           // get a bean for property
@@ -719,9 +719,9 @@ import javax.swing.tree.TreePath;
       }
       
       // tell to view
-      if (!selection.isEmpty()) try {
+      if (selection.length>0) try {
         ignoreSelection = true;
-        Context context = new Context(gedcom);
+        ViewContext context = new ViewContext(gedcom);
         context.addProperties(selection);
         editView.setContext(context, true);
       } finally {
@@ -785,10 +785,10 @@ import javax.swing.tree.TreePath;
     }
 
     /** provide context */
-    public Context getContext() {
+    public ViewContext getContext() {
       
       // check selection
-      Context result = super.getContext();
+      ViewContext result = super.getContext();
       Property[] props = result.getProperties();
       if (props.length==0)
         return result;

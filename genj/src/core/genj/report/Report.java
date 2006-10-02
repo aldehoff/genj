@@ -17,12 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.113 $ $Author: pewu $ $Date: 2006-08-15 23:17:41 $
+ * $Revision: 1.114 $ $Author: nmeier $ $Date: 2006-10-02 16:59:57 $
  */
 package genj.report;
 
 import genj.chart.Chart;
-import genj.common.AnnotationListWidget;
+import genj.common.ContextListWidget;
 import genj.common.SelectEntityWidget;
 import genj.fo.Document;
 import genj.fo.Format;
@@ -492,7 +492,7 @@ public abstract class Report implements Cloneable {
     // prepare content
     JPanel content = new JPanel(new BorderLayout());
     content.add(BorderLayout.NORTH, new JLabel(msg));
-    content.add(BorderLayout.CENTER, new JScrollPane(new AnnotationListWidget(viewManager, gedcom, annotations)));
+    content.add(BorderLayout.CENTER, new JScrollPane(new ContextListWidget(viewManager, gedcom, annotations)));
 
     // open a non-modal dialog
     viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#items",getName(),WindowManager.INFORMATION_MESSAGE,content,Action2.okOnly(),owner);

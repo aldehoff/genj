@@ -32,7 +32,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
@@ -126,8 +126,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   /**
    * ContextProvider callback 
    */
-  public Context getContext() {
-    return new Context(gedcom);
+  public ViewContext getContext() {
+    return new ViewContext(gedcom);
   }
   
   /**

@@ -35,7 +35,7 @@ import genj.util.swing.HeadlessLabel;
 import genj.util.swing.LinkWidget;
 import genj.util.swing.SortableTableHeader;
 import genj.util.swing.SortableTableHeader.SortableTableModel;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewManager;
@@ -197,7 +197,7 @@ public class PropertyTableWidget extends JPanel {
       table.ignoreSelection = true;
       
       // loop over selected properties
-      Context context = event.getContext();
+      ViewContext context = event.getContext();
       Property[] props = context.getProperties();
       
       ListSelectionModel rows = table.getSelectionModel();
@@ -339,7 +339,7 @@ public class PropertyTableWidget extends JPanel {
       if (ignoreSelection||e.getValueIsAdjusting())
         return;
 
-      Context context = null;
+      ViewContext context = null;
       ListSelectionModel rows = getSelectionModel();
       ListSelectionModel cols  = getColumnModel().getSelectionModel();
       TableModel model = getModel();
@@ -356,7 +356,7 @@ public class PropertyTableWidget extends JPanel {
           if (prop==null)
             prop = ((Model)getModel()).getProperty(r);
           // keep it
-          if (context==null) context = new Context(prop);
+          if (context==null) context = new ViewContext(prop);
           else context.addProperty(prop);
         }
       }
@@ -372,7 +372,7 @@ public class PropertyTableWidget extends JPanel {
     /**
      * ContextProvider - callback 
      */
-    public Context getContext() {
+    public ViewContext getContext() {
       
       // check gedcom first
       Model model = (Model)getModel();
@@ -381,7 +381,7 @@ public class PropertyTableWidget extends JPanel {
         return null;
       
       // prepare result
-      Context result = new Context(ged);
+      ViewContext result = new ViewContext(ged);
       
       // one row one col?
       int[] rows = getSelectedRows();
@@ -520,22 +520,22 @@ public class PropertyTableWidget extends JPanel {
     }
     
     /** context */
-    private Context getContextAt(int row, int col) {
+    private ViewContext getContextAt(int row, int col) {
       // nothing to do?
       if (model==null)
         return null;
       // selected property?
       Property prop = getPropertyAt(row, col);
       if (prop!=null)
-        return new Context(prop);
+        return new ViewContext(prop);
       
       // selected row at least?
       Property root = model.getProperty(row2row[row]);
       if (root!=null)
-        return new Context(root.getEntity());
+        return new ViewContext(root.getEntity());
 
       // fallback
-      return new Context(model.getGedcom());
+      return new ViewContext(model.getGedcom());
     }
     
     /** property */

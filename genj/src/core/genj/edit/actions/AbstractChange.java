@@ -28,7 +28,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -145,7 +145,7 @@ import javax.swing.JTextArea;
     gedcom.endTransaction();
     // set focus?
     if (focus!=null) 
-      manager.fireContextSelected(new Context(focus));
+      manager.fireContextSelected(new ViewContext(focus));
     // done
   }
   

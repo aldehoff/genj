@@ -7,7 +7,6 @@
  */
 package validate;
 
-import genj.gedcom.Annotation;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
@@ -15,6 +14,7 @@ import genj.gedcom.TagPath;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.WordBuffer;
+import genj.view.ViewContext;
 
 import java.util.List;
 
@@ -126,7 +126,7 @@ public class TestAge extends Test {
       words.append("-");
       words.append(report.translate(explanation));
 
-      issues.add(new Annotation(words.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop));
+      issues.add(new ViewContext(prop).setText(words.toString()).setImage(prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false)));
     }
     
     // done

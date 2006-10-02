@@ -5,10 +5,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Annotation;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
+import genj.view.ViewContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,9 +75,9 @@ public class ReportCommonAncestor extends Report {
 
     // show the result
     List list = new ArrayList();
-    list.add(new Annotation(translate("result.first", indi), indi));
-    list.add(new Annotation(translate("result.second", other), other));
-    list.add(new Annotation(translate("result.ancestor", ancestor), ancestor));
+    list.add(new ViewContext(indi).setText(translate("result.first", indi)));
+    list.add(new ViewContext(other).setText(translate("result.second", other)));
+    list.add(new ViewContext(ancestor).setText(translate("result.ancestor", ancestor)));
 
     showAnnotationsToUser(indi.getGedcom(), getName(), list);
 

@@ -36,7 +36,7 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
@@ -673,9 +673,9 @@ public class SearchView extends JPanel implements ToolBarSupport {
     /**
      * ContextProvider - callback
      */
-    public Context getContext() {
+    public ViewContext getContext() {
       
-      Context result = new Context(gedcom);
+      ViewContext result = new ViewContext(gedcom);
       
       Object[] selection = getSelectedValues();
       for (int i = 0; i < selection.length; i++) {
@@ -708,7 +708,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
     public void valueChanged(ListSelectionEvent e) {
       int row = listResults.getSelectedIndex();
       if (row>=0)
-        manager.fireContextSelected(new Context(results.getHit(row).getProperty()));
+        manager.fireContextSelected(new ViewContext(results.getHit(row).getProperty()));
     }
 
     

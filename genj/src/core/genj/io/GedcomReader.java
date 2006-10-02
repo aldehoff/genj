@@ -20,7 +20,7 @@
 package genj.io;
 
 import genj.crypto.Enigma;
-import genj.gedcom.Annotation;
+import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -250,7 +250,7 @@ public class GedcomReader implements Trackable {
         Submitter sub = (Submitter)gedcom.getEntity(Gedcom.SUBM, tempSubmitter.replace('@',' ').trim());
         gedcom.setSubmitter(sub);
       } catch (IllegalArgumentException t) {
-        warnings.add(new Warning(0, RESOURCES.getString("read.warn.setsubmitter", tempSubmitter), null));
+        warnings.add(new Warning(0, RESOURCES.getString("read.warn.setsubmitter", tempSubmitter), gedcom));
       }
     }
 
@@ -320,12 +320,12 @@ public class GedcomReader implements Trackable {
     // check 1 SUBM
     tempSubmitter = header.getPropertyValue("SUBM");
     if (tempSubmitter.length()==0)
-      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosubmitter"), null));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosubmitter"), gedcom));
 
     // check 1 SOUR
     String source = header.getPropertyValue("SOUR");
     if (source.length()==0)
-      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosourceid"), null));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosourceid"), gedcom));
 
     // check for 
     // 1 GEDC 
@@ -333,7 +333,7 @@ public class GedcomReader implements Trackable {
     // 2 FORMat
     Property gedc = header.getProperty("GEDC");
     if (gedc==null||gedc.getProperty("VERS")==null||gedc.getProperty("FORM")==null)
-      warnings.add(new Warning(0, RESOURCES.getString("read.warn.badgedc"), null));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.badgedc"), gedcom));
         
     // check 1 LANG
     String lang = header.getPropertyValue("LANG");
@@ -344,7 +344,7 @@ public class GedcomReader implements Trackable {
       
     // check 1 CHAR
     if (header.getPropertyValue("CHAR").equals("ASCII"))
-      warnings.add(new Warning(0, RESOURCES.getString("read.warn.ascii"), null));
+      warnings.add(new Warning(0, RESOURCES.getString("read.warn.ascii"), gedcom));
       
     // check 
     // 1 PLAC
@@ -622,19 +622,27 @@ public class GedcomReader implements Trackable {
   /**
    * A generated warning 
    */
-  private static class Warning extends Annotation implements Comparable {
+  private static class Warning extends Context implements Comparable {
     
     private int lineNumber;
     
     /** constructor */
     private Warning(int lineNumber, Property property) {
-      super("", property);
+      super(property);
+      this.lineNumber = lineNumber;
+    }
+    
+    /** constructor */
+    private Warning(int lineNumber, String text, Gedcom gedcom) {
+      super(gedcom);
+      super.setText(RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), text }));
       this.lineNumber = lineNumber;
     }
 
     /** constructor */
     private Warning(int lineNumber, String text, Property property) {
-      super(RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), text }), property);
+      super(property);
+      super.setText(RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), text }));
       this.lineNumber = lineNumber;
     }
 
@@ -649,8 +657,9 @@ public class GedcomReader implements Trackable {
     /**
      * @see Annotation#setText(String)
      */
-    public void setText(String text) {
+    public Context setText(String text) {
       super.setText(RESOURCES.getString("read.warn", new Object[] { Integer.toString(lineNumber), text }));
+      return this;
     }
     
   } //Warning

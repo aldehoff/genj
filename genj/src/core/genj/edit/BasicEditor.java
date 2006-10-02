@@ -37,7 +37,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
@@ -165,22 +165,22 @@ import javax.swing.event.ChangeListener;
   /**
    * Callback - our current context
    */
-  public Context getContext() {
+  public ViewContext getContext() {
     // try to find a bean with focus
     PropertyBean bean = getFocus();
     if (bean!=null&&bean.getContext()!=null) 
       return bean.getContext();
     // currently edited?
     if (currentEntity!=null)
-      return new Context(currentEntity);
+      return new ViewContext(currentEntity);
     // gedcom at least
-    return new Context(gedcom);
+    return new ViewContext(gedcom);
   }
 
   /**
    * Callback - set current context
    */
-  public void setContext(Context context) {
+  public void setContext(ViewContext context) {
     
     // a different entity to look at?
     if (currentEntity != context.getEntity()) {
@@ -730,7 +730,7 @@ import javax.swing.event.ChangeListener;
       // 'create' tab panel
       tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
       tabs.putClientProperty(ContextProvider.class, new ContextProvider() {
-        public Context getContext() {
+        public ViewContext getContext() {
           // check if tab for property
           Component selection = tabs.getSelectedComponent();
           if (!(selection instanceof JComponent))
@@ -739,7 +739,7 @@ import javax.swing.event.ChangeListener;
           if (prop==null)
             return null;
           // provide a context with delete
-          return new Context(prop).addAction(new DelTab(prop));
+          return new ViewContext(prop).addAction(new DelTab(prop));
         }
       });
       

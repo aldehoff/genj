@@ -28,7 +28,7 @@ import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
@@ -101,7 +101,7 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
     isAntialiasing  = registry.get("antial"  , false);
     
     // set first entity
-    Context context = manager.getLastSelectedContext(gedcom); 
+    ViewContext context = manager.getLastSelectedContext(gedcom); 
     if (context!=null) 
       setEntity(context.getEntity());
     
@@ -111,8 +111,8 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   /**
    * ContextProvider - callback
    */
-  public Context getContext() {
-    return entity==null ? new Context(gedcom) : new Context(entity);
+  public ViewContext getContext() {
+    return entity==null ? new ViewContext(gedcom) : new ViewContext(entity);
   }
 
   /**

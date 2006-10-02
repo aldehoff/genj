@@ -7,7 +7,6 @@
  */
 package validate;
 
-import genj.gedcom.Annotation;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
@@ -15,6 +14,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
+import genj.view.ViewContext;
 
 import java.util.List;
 
@@ -71,7 +71,7 @@ import java.util.List;
       indi.toString()
     };
     
-    issues.add(new Annotation(report.translate("err.spouse."+role, format), xref));
+    issues.add(new ViewContext(xref).setText(report.translate("err.spouse."+role, format)));
   }
 
 } //TestHusbandGender

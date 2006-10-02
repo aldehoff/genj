@@ -30,7 +30,7 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
@@ -672,7 +672,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         // propagate to other views through manager
         Entity entity = gedcom.getEntity(id);
         if (entity!=null)
-          manager.fireContextSelected(new Context(entity), e.getClickCount()>1, null);
+          manager.fireContextSelected(new ViewContext(entity), e.getClickCount()>1, null);
       }
     }
 

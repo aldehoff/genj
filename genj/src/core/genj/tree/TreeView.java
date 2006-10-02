@@ -41,7 +41,7 @@ import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ActionProvider;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
@@ -296,8 +296,8 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   /**
    * ContextProvider callback
    */
-  public Context getContext() {
-    return new Context(model.getGedcom());
+  public ViewContext getContext() {
+    return new ViewContext(model.getGedcom());
   }
   
   /**
@@ -418,7 +418,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   public void handleContextSelectionEvent(ContextSelectionEvent event) {
     
     // need to get entity and no property
-    Context context = event.getContext();
+    ViewContext context = event.getContext();
     Entity entity = context.getEntity();
     Property prop = context.getProperty();
     if (entity==null )
@@ -787,13 +787,13 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     /**
      * ContextProvider - callback
      */
-    public Context getContext() {
-      Context result;
+    public ViewContext getContext() {
+      ViewContext result;
       if (currentEntity==null) {
-        result = new Context(model.getGedcom());
+        result = new ViewContext(model.getGedcom());
         result.addAction(new ActionChooseRoot());
       } else {
-        result = new Context(currentEntity);
+        result = new ViewContext(currentEntity);
         result.addAction(new ActionBookmark(currentEntity, true));
       }
       return result;
@@ -879,7 +879,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
         repaint();
         overview.repaint();
         // propagate it
-        manager.fireContextSelected(new Context(currentEntity));
+        manager.fireContextSelected(new ViewContext(currentEntity));
         return;
       }
       // runnable?

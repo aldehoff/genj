@@ -30,7 +30,7 @@ import genj.util.WordBuffer;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
@@ -356,7 +356,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
    */
   public void handleContextSelectionEvent(ContextSelectionEvent e) {
     // try to scroll to first event
-    Context context = e.getContext();
+    ViewContext context = e.getContext();
     Model.Event event = model.getEvent(context.getProperty());
     if (event==null) event = model.getEvent(context.getEntity());
     if (event!=null) makeVisible(event);
@@ -525,7 +525,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     /**
      * ContextProvider - callback
      */
-    public Context getContext() {
+    public ViewContext getContext() {
       return manager.getLastSelectedContext(model.gedcom); 
     }
     
@@ -545,7 +545,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     protected void paintComponent(Graphics g) {
       
       // find selection
-      Context ctx = manager.getLastSelectedContext(model.gedcom);
+      ViewContext ctx = manager.getLastSelectedContext(model.gedcom);
       Property selection = ctx.getProperty();
       if (selection==null)
         selection = ctx.getEntity();
@@ -590,9 +590,9 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       Model.Event event = getEventAt(e.getPoint());
 
       // tell about it
-      Context context = null;
+      ViewContext context = null;
       if (event!=null) 
-        manager.fireContextSelected(new Context(event.pd));
+        manager.fireContextSelected(new ViewContext(event.pd));
     }
   } //Content
   

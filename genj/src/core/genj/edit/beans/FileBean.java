@@ -27,7 +27,7 @@ import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -202,8 +202,8 @@ public class FileBean extends PropertyBean {
   /**
    * ContextProvider callback 
    */
-  public Context getContext() {
-    Context result = super.getContext();
+  public ViewContext getContext() {
+    ViewContext result = super.getContext();
     if (result!=null) {
       result.addAction(new ActionZoom( 10));
       result.addAction(new ActionZoom( 25));

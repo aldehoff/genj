@@ -5,13 +5,13 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Annotation;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyName;
 import genj.report.Report;
+import genj.view.ViewContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,7 +97,7 @@ public class ReportSameValues extends Report {
         txt = parent.getPropertyName() + " | " +prop.getEntity();
 
       // one annotation for each
-      items.add(new Annotation(txt, prop));
+      items.add(new ViewContext(prop).setText(txt));
     }
 
     // sort 'em

@@ -21,7 +21,7 @@ package genj.edit.beans;
 
 import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -53,7 +53,7 @@ public class XRefBean extends PropertyBean {
         if (property==null)
           return;
         // tell about it
-        viewManager.fireContextSelected(new Context(property), true, XRefBean.this);
+        viewManager.fireContextSelected(new ViewContext(property), true, XRefBean.this);
       }
     });
   }

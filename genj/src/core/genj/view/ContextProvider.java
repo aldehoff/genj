@@ -28,6 +28,6 @@ public interface ContextProvider {
   /**
    * Get context
    */
-  public Context getContext();
+  public ViewContext getContext();
 
 } //ContextProvider

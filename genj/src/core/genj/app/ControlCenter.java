@@ -19,7 +19,7 @@
  */
 package genj.app;
 
-import genj.common.AnnotationListWidget;
+import genj.common.ContextListWidget;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Transaction;
@@ -47,7 +47,7 @@ import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ProgressWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewFactory;
@@ -122,8 +122,8 @@ public class ControlCenter extends JPanel {
     
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget(viewManager, registry) {
-      public Context getContext() {
-        Context result = super.getContext();
+      public ViewContext getContext() {
+        ViewContext result = super.getContext();
         if (result!=null) {
           result.addAction(new ActionSave(false, true));
           result.addAction(new ActionClose(true));
@@ -717,7 +717,7 @@ public class ControlCenter extends JPanel {
             null,
             resources.getString("cc.open.warnings", gedcom.getName()),
             WindowManager.WARNING_MESSAGE,
-            new JScrollPane(new AnnotationListWidget(viewManager, gedcom, warnings)),
+            new JScrollPane(new ContextListWidget(viewManager, gedcom, warnings)),
             Action2.okOnly(),
             ControlCenter.this
           );

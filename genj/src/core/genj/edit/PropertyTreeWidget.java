@@ -32,7 +32,7 @@ import genj.io.PropertyReader;
 import genj.io.PropertyTransferable;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextProvider;
 
 import java.awt.Component;
@@ -104,17 +104,17 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
    * Accessor - current context 
    * @return Gedcom tree's root and selection 
    */
-  public Context getContext() {
+  public ViewContext getContext() {
     // no root - it's the gedcom itself
     Entity root = (Entity)getRoot();
     if (root==null) 
-      return new Context(lazyGedcom);
+      return new ViewContext(lazyGedcom);
     // no selection - it's the root
-    List selection = getSelection();
-    if (selection.isEmpty())
-      return new Context(root);
+    Property[] selection = Property.toArray(getSelection());
+    if (selection.length==0)
+      return new ViewContext(root);
     // we can be specific now
-    Context result = new Context(lazyGedcom);
+    ViewContext result = new ViewContext(lazyGedcom);
     result.addProperties(selection);
     return result;
   }

@@ -7,10 +7,10 @@
  */
 package validate;
 
-import genj.gedcom.Annotation;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.TagPath;
+import genj.view.ViewContext;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public class TestFile extends Test {
     
     // check it
     if (file.getFile()==null) 
-      issues.add(new Annotation(report.translate("err.nofile"), prop));
+      issues.add(new ViewContext(prop).setText(report.translate("err.nofile")));
 
   }
 

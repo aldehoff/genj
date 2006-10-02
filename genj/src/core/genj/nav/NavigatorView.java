@@ -31,7 +31,7 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewManager;
@@ -408,7 +408,7 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
       // follow immediately
       setCurrentEntity(target);
       // propagate to others
-      manager.fireContextSelected(new Context(target));
+      manager.fireContextSelected(new ViewContext(target));
     }
   } //Jump
 

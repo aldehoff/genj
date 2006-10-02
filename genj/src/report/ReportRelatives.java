@@ -5,13 +5,13 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Annotation;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Report;
+import genj.view.ViewContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,7 +116,7 @@ public class ReportRelatives extends Report {
       for (int j=0;j<result.size();j++) {
         Indi found = (Indi)result.get(j);
         String name = translate(relative.key) + ": " + found;
-        items.add(new Annotation(name, found));
+        items.add(new ViewContext(found).setText(name));
       }
     }
 

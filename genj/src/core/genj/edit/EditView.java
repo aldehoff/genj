@@ -31,7 +31,7 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.PopupWidget;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
@@ -135,10 +135,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   private void setEditor(Editor set) {
 
     // preserve old context and reset current editor to force commit changes
-    Context old = null;
+    ViewContext old = null;
     if (editor!=null) {
       old = editor.getContext();
-      editor.setContext(new Context(gedcom));
+      editor.setContext(new ViewContext(gedcom));
     }
     
     // remove old editor 
@@ -172,9 +172,9 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     instances.add(this);
     
     // Check if we can preset something to edit
-    Context context = manager.getLastSelectedContext(gedcom);
+    ViewContext context = manager.getLastSelectedContext(gedcom);
     try { 
-      context = new Context(gedcom.getEntity(registry.get("sticky",(String)null))); 
+      context = new ViewContext(gedcom.getEntity(registry.get("sticky",(String)null))); 
       isSticky = true;
     } catch (Throwable t) {
     }
@@ -288,7 +288,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   /**
    * ContextProvider callback
    */
-  public Context getContext() {
+  public ViewContext getContext() {
     return editor.getContext();
   }
 
@@ -302,7 +302,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       return;
     
     // coming from some other view or from us?
-    Context context = event.getContext();
+    ViewContext context = event.getContext();
     ContextProvider provider = event.getProvider();
     if (provider==null || !SwingUtilities.isDescendingFrom( (Component)provider, this)) {
       
@@ -321,7 +321,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       if (xref instanceof PropertyXRef) {
         xref  = ((PropertyXRef)xref).getTarget();
         if (xref!=null)
-          context = new Context(xref);
+          context = new ViewContext(xref);
       }
     }
       
@@ -329,13 +329,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
      setContext(context, false);
   }
   
-  public void setContext(Context context, boolean tellOthers) {
+  public void setContext(ViewContext context, boolean tellOthers) {
     
     // tell to others view (non EditViews)
     if (tellOthers)  fireContextSelected(context);
     
     // check current editor's context
-    Context current = editor.getContext();
+    ViewContext current = editor.getContext();
     if (current.getEntity()!=context.getEntity())
       back.push(current);
     
@@ -346,7 +346,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     ignoreContextSelection = false;
   }
   
-  /**package*/ void fireContextSelected(Context context) {
+  /**package*/ void fireContextSelected(ViewContext context) {
     
     // already in process?
     if (ignoreContextSelection)
@@ -465,7 +465,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
         return;
       // pop first valid on stack
       while (!stack.isEmpty()) {
-        Context context = (Context)stack.pop();
+        ViewContext context = (ViewContext)stack.pop();
         if (context.getEntity()!=null) {
           ignorePush = true;
           setContext(context, true);
@@ -475,7 +475,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
       }
     }
     /** push another on stack */
-    protected void push(Context context) {
+    protected void push(ViewContext context) {
       // ignore it?
       if (ignorePush)
         return;

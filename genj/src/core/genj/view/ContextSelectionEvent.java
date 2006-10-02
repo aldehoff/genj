@@ -25,13 +25,13 @@ package genj.view;
 public class ContextSelectionEvent {
   
   private ContextProvider provider;
-  private Context context;
+  private ViewContext context;
   private boolean isActionPerformed = false;
   
   /**
    * Constructor
    */
-  public ContextSelectionEvent(Context context, ContextProvider provider) {
+  public ContextSelectionEvent(ViewContext context, ContextProvider provider) {
     this.context = context;
     this.provider = provider;
   }
@@ -39,7 +39,7 @@ public class ContextSelectionEvent {
   /**
    * Constructor
    */
-  public ContextSelectionEvent(Context context, ContextProvider provider, boolean isActionPerformed) {
+  public ContextSelectionEvent(ViewContext context, ContextProvider provider, boolean isActionPerformed) {
     this(context, provider);
     this.isActionPerformed = isActionPerformed;
   }
@@ -54,7 +54,7 @@ public class ContextSelectionEvent {
   /**
    * Read-Only Accessor
    */
-  public Context getContext() {
+  public ViewContext getContext() {
     return context;
   }
 

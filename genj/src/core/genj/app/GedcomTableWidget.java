@@ -25,7 +25,7 @@ import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SortableTableHeader;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ViewManager;
 
@@ -101,9 +101,9 @@ import javax.swing.table.TableColumnModel;
   /**
    * ContextProvider - callback
    */
-  public Context getContext() {
+  public ViewContext getContext() {
     int row = getSelectedRow();
-    return row<0 ? null : new Context(model.getGedcom(row));
+    return row<0 ? null : new ViewContext(model.getGedcom(row));
   }
   
   /**

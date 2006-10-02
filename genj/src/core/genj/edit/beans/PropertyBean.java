@@ -25,7 +25,7 @@ import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ViewManager;
 
@@ -121,14 +121,14 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * ContextProvider callback 
    */
-  public Context getContext() {
+  public ViewContext getContext() {
     // ok, this is tricky since some beans might not
     // want to expose a property (is null) and the one
     // we're looking at might actually not be part of 
     // an entity yet - no context in those cases
     // (otherwise other code that relies on properties being
     // part of an entity might break)
-    return property==null||property.getEntity()==null ? null : new Context(property);
+    return property==null||property.getEntity()==null ? null : new ViewContext(property);
   }
   
   /**

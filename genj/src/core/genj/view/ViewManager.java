@@ -197,15 +197,15 @@ public class ViewManager {
    * Returns the last set context for given gedcom
    * @return the context
    */
-  public Context getLastSelectedContext(Gedcom gedcom) {
+  public ViewContext getLastSelectedContext(Gedcom gedcom) {
     
     // grab one from map
-    Context result = (Context)gedcom2context.get(gedcom);
+    ViewContext result = (ViewContext)gedcom2context.get(gedcom);
     
     // fallback to last stored?
     if (result==null) {
       try {
-        result = new Context(gedcom.getEntity(getRegistry(gedcom).get("lastEntity", (String)null)));
+        result = new ViewContext(gedcom.getEntity(getRegistry(gedcom).get("lastEntity", (String)null)));
       } catch (Throwable t) {
       }
     }
@@ -213,7 +213,7 @@ public class ViewManager {
     // fallback to first indi or gedcom 
     if (result==null) {
       Entity e = gedcom.getFirstEntity(Gedcom.INDI);
-      result = e!=null ? new Context(e) : new Context(gedcom);
+      result = e!=null ? new ViewContext(e) : new ViewContext(gedcom);
     }
 
     // remember
@@ -226,13 +226,13 @@ public class ViewManager {
   /**
    * Sets the current context
    */
-  public void fireContextSelected(Context context) {
+  public void fireContextSelected(ViewContext context) {
     fireContextSelected(context, null);
   }
-  public void fireContextSelected(Context context, ContextProvider provider) {
+  public void fireContextSelected(ViewContext context, ContextProvider provider) {
     fireContextSelected(context, false, provider);
   }
-  public void fireContextSelected(Context context, boolean actionPerformed, ContextProvider provider) {
+  public void fireContextSelected(ViewContext context, boolean actionPerformed, ContextProvider provider) {
     
     // ignoring context?
     if (ignoreSetContext)
@@ -561,7 +561,7 @@ public class ViewManager {
   /**
    * Get a context menu
    */
-  public JPopupMenu getContextMenu(Context context, JComponent target) {
+  public JPopupMenu getContextMenu(ViewContext context, JComponent target) {
     
     // make sure context is valid
     if (context==null)
@@ -704,7 +704,7 @@ public class ViewManager {
       // look for ContextProvider and show menu if appropriate
       ContextProvider provider = getProvider(focus);
       if (provider!=null) {
-        Context context = provider.getContext();
+        ViewContext context = provider.getContext();
         if (context!=null) {
           JPopupMenu popup = getContextMenu(context, focus);
           if (popup!=null)
@@ -759,7 +759,7 @@ public class ViewManager {
       final ContextProvider provider = getProvider(component);
       if (provider==null)
         return;
-      Context context = provider.getContext();
+      ViewContext context = provider.getContext();
       if (context==null) 
         return;
 

@@ -7,7 +7,6 @@
  */
 package validate;
 
-import genj.gedcom.Annotation;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
@@ -16,6 +15,7 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
 import genj.util.WordBuffer;
+import genj.view.ViewContext;
 
 import java.util.List;
 
@@ -119,7 +119,7 @@ import java.util.List;
       if (entity instanceof Indi)
         buf.append(report.translate("err.date.of", entity.toString()));
 
-      issues.add(new Annotation(buf.toString(), prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), prop));
+      issues.add(new ViewContext(prop).setText(buf.toString()).setImage(prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false)));
     }
 
     // done

@@ -58,7 +58,7 @@ import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.view.ActionProvider;
-import genj.view.Context;
+import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewFactory;
@@ -105,7 +105,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
    * Callback - context change information
    */
   public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    Context context = event.getContext();
+    ViewContext context = event.getContext();
     ViewManager manager = context.getManager();
     // editor needed?
     if (!Options.getInstance().isOpenEditor)
@@ -225,7 +225,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     EditView[] edits = EditView.getInstances(entity.getGedcom());
     if (edits.length==0) {
       result.add(Action2.NOOP);
-      result.add(new OpenForEdit(new Context(entity), manager));
+      result.add(new OpenForEdit(new ViewContext(entity), manager));
     }
     // done
     return result;

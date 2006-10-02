@@ -17,18 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.view;
+package genj.gedcom;
 
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
-import genj.util.swing.Action2;
+import genj.util.swing.ImageIcon;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -38,13 +33,14 @@ import java.util.ListIterator;
  */  
 public class Context {
   
-  private ViewManager manager;
   private Gedcom gedcom;
   private List entities = new ArrayList();
   private List properties = new ArrayList();
   private List actions = new ArrayList();
   private Class entityType = null;
   private Class propertyType = null;
+  private ImageIcon  img = null;
+  private String txt = null;
   
   /**
    * Constructor
@@ -80,6 +76,21 @@ public class Context {
   }
   
   /**
+   * Add entities
+   */
+  public void addEntities(Entity[] es) {
+    for (int i = 0; i < es.length; i++) 
+      addEntity(es[i]);
+  }
+  
+  /**
+   * Remove entities
+   */
+  public void removeEntities(Collection rem) {
+    entities.removeAll(rem);
+  }
+  
+  /**
    * Add a property
    */
   public void addProperty(Property p) {
@@ -107,40 +118,16 @@ public class Context {
   /**
    * Add properties
    */
-  public void addProperties(Collection ps) {
-    for (Iterator it = ps.iterator();it.hasNext();) {
-      addProperty((Property)it.next());
-    }
+  public void addProperties(Property[] ps) {
+    for (int i = 0; i < ps.length; i++) 
+      addProperty(ps[i]);
   }
   
   /**
-   * Add an action
+   * Remove properties
    */
-  public Context addAction(Action2 action) {
-    actions.add(action);
-    return this;
-  }
-  
-  /**
-   * Add actions
-   */
-  public Context addActions(Action2.Group group) {
-    actions.add(group);
-    return this;
-  }
-  
-  /**
-   * Access to actions
-   */
-  public List getActions() {
-    return Collections.unmodifiableList(actions);
-  }
-  
-  /**
-   * Connect to manager
-   */
-  /*package*/ void setManager(ViewManager set) {
-    manager = set;
+  public void removeProperties(Collection rem) {
+    properties.removeAll(rem);
   }
   
   /**
@@ -202,11 +189,54 @@ public class Context {
     return result;
   }
 
-  /**
+  /** 
+   * Accessor 
+   */
+  public String getText() {
+    return txt;
+  }
+  
+  /** 
    * Accessor
    */
-  public ViewManager getManager() {
-    return manager;
+  public Context setText(String text) {
+    txt = text;
+    return this;
+  }
+  
+  /** 
+   * Accessor
+   */
+  public ImageIcon getImage() {
+    // an override?
+    if (img!=null)
+      return img;
+    // check prop
+    if (properties.size()==1)
+      return ((Property)properties.get(0)).getImage(false);
+    // check entity
+    if (entities.size()==1)
+      return ((Entity)entities.get(0)).getImage(false);
+    // fallback
+    return Gedcom.getImage();
+  }
+  
+  /** 
+   * Accessor
+   */
+  public Context setImage(ImageIcon set) {
+    img = set;
+    return this;
+  }
+
+  /**
+   * Add given context to this context
+   */
+  public void addContext(Context context) {
+    if (context.getGedcom()!=getGedcom())
+      throw new IllegalArgumentException();
+    addProperties(context.getProperties());
+    addEntities(context.getEntities());
   }
   
 } //Context

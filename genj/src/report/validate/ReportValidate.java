@@ -7,7 +7,6 @@
  */
 package validate;
 
-import genj.gedcom.Annotation;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
@@ -15,6 +14,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.report.Report;
+import genj.view.ViewContext;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -135,7 +135,7 @@ public class ReportValidate extends Report {
 
     // test if there's a submitter
     if (gedcom.getSubmitter()==null)
-      issues.add(new Annotation(translate("err.nosubmitter", gedcom.getName()), Gedcom.getImage(), null));
+      issues.add(new ViewContext(gedcom).setText(translate("err.nosubmitter", gedcom.getName())).setImage(Gedcom.getImage()));
 
     // Loop through entities and test 'em
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
@@ -198,7 +198,7 @@ public class ReportValidate extends Report {
       // check if Gedcom grammar allows it
       if (!meta.allows(ctag)) {
         String msg = translate("err.notgedcom", new String[]{ctag,path.toString()});
-        issues.add(new Annotation(msg, MetaProperty.IMG_ERROR, child));
+        issues.add(new ViewContext(child).setText(msg).setImage(MetaProperty.IMG_ERROR));
         continue;
       }
       // dive into
