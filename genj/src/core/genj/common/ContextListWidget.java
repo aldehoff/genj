@@ -76,12 +76,21 @@ public class ContextListWidget extends JList implements ContextProvider {
    * Provides a 'current' context
    */
   public ViewContext getContext() {
-    ViewContext result = new ViewContext(ged);
+    
     Object[] selection = getSelectedValues();
+    
+    // one selected?
+    if (selection.length==1&&selection[0] instanceof ViewContext)
+      return (ViewContext)selection[0];
+    
+    // merge
+    ViewContext result = new ViewContext(ged);
     for (int i = 0; i < selection.length; i++) {
       Context context = (Context)selection[i];
       result.addContext(context);
     }
+    
+    // done
     return result;
   }
   

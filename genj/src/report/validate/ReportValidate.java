@@ -9,11 +9,15 @@ package validate;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.Submitter;
 import genj.gedcom.TagPath;
 import genj.report.Report;
+import genj.util.EnvironmentChecker;
+import genj.util.swing.Action2;
 import genj.view.ViewContext;
 
 import java.util.ArrayList;
@@ -127,15 +131,31 @@ public class ReportValidate extends Report {
   /**
    * Start for argument gedcom
    */
-  public void start(Gedcom gedcom) {
+  public void start(final Gedcom gedcom) {
 
     // prepare tests
     List tests = createTests();
     List issues = new ArrayList();
 
     // test if there's a submitter
-    if (gedcom.getSubmitter()==null)
-      issues.add(new ViewContext(gedcom).setText(translate("err.nosubmitter", gedcom.getName())).setImage(Gedcom.getImage()));
+    if (gedcom.getSubmitter()==null) {
+      final ViewContext ctx = new ViewContext(gedcom);
+      ctx.setText(translate("err.nosubmitter", gedcom.getName())).setImage(Gedcom.getImage());
+      ctx.addAction(new Action2(translate("fix")) {
+        protected void execute() {
+          try {
+            setEnabled(false);
+            gedcom.startTransaction();
+            Submitter sub = (Submitter)gedcom.createEntity(Gedcom.SUBM);
+            sub.setName(EnvironmentChecker.getProperty(ReportValidate.this, "user.name", "?", "using user.name for fixing missing submitter"));
+          } catch (GedcomException e) {
+          } finally {
+            gedcom.endTransaction();
+          }
+        }
+      });
+      issues.add(ctx);
+    }
 
     // Loop through entities and test 'em
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
