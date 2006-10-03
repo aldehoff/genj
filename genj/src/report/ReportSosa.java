@@ -59,6 +59,8 @@ public class ReportSosa extends Report {
 
   public boolean displayBullet = true;
   
+  public int startSosa=1;
+
   /** option - number of generations from root considered to be private and to display */
   public int privateGen = 0;
   public int reportMinGenerations = 1;
@@ -455,7 +457,7 @@ public class ReportSosa extends Report {
       else {
          fam = null;
          }
-      recursion(indi, fam, 0, 1, policy, doc);
+      recursion(indi, fam, 0, startSosa, policy, doc);
       formatEnd(doc);
     }
 
@@ -509,7 +511,7 @@ public class ReportSosa extends Report {
     void start(Indi indi, PrivacyPolicy policy, Document doc) {
       formatStart(indi, doc);
       List list = new ArrayList(3);
-      list.add(new Integer(1));
+      list.add(new Integer(startSosa));
       list.add(indi);
       Fam[] fams = indi.getFamiliesWhereSpouse();
       if ((fams != null) && (fams.length > 0)) {
