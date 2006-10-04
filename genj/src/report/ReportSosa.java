@@ -181,7 +181,8 @@ public class ReportSosa extends Report {
     PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
     InitVariables();
     assignColor(srcColor);
-
+    if (!getOptionsFromUser(translate("name"), this)) return;
+    
     // check recursion type
     Recursion recursion;
     switch (reportType) {
