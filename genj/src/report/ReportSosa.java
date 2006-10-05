@@ -60,6 +60,7 @@ public class ReportSosa extends Report {
   public boolean displayBullet = true;
   
   public int startSosa=1;
+  public String sosaTag="_SOSA";
 
   /** option - number of generations from root considered to be private and to display */
   public int privateGen = 0;
@@ -182,7 +183,15 @@ public class ReportSosa extends Report {
     InitVariables();
     assignColor(srcColor);
     if (!getOptionsFromUser(translate("name"), this)) return;
-    
+    if (startSosa == 0){
+    	Property sosaProp = indi.getProperty(sosaTag);
+    	if (sosaProp != null){
+    		startSosa = Integer.decode(sosaProp.getValue()).intValue();
+    	}
+    }
+    if (startSosa == 0){
+    	startSosa = 1;
+    }
     // check recursion type
     Recursion recursion;
     switch (reportType) {
