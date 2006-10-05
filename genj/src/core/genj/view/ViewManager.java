@@ -657,12 +657,16 @@ public class ViewManager {
     
     /** constructor */
     private ContextHook() {
-      AccessController.doPrivileged(new PrivilegedAction() {
-        public Object run() {
-          Toolkit.getDefaultToolkit().addAWTEventListener(ContextHook.this, AWTEvent.MOUSE_EVENT_MASK);
-          return null;
-        }
-      });
+      try {
+        AccessController.doPrivileged(new PrivilegedAction() {
+          public Object run() {
+            Toolkit.getDefaultToolkit().addAWTEventListener(ContextHook.this, AWTEvent.MOUSE_EVENT_MASK);
+            return null;
+          }
+        });
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Cannot install ContextHook", t);
+      }
     }
     
     /**
