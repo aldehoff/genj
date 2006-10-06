@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.27 $ $Author: nmeier $ $Date: 2006-04-06 20:46:05 $
+ * $Revision: 1.28 $ $Author: nmeier $ $Date: 2006-10-06 13:37:32 $
  */
 package genj.util;
 
@@ -151,6 +151,13 @@ public class Registry {
     this.parent     = registry;
 
     // Done
+  }
+  
+  /**
+   * Set registry content by other
+   */
+  public void set(Registry registry) {
+    this.properties = (Properties)registry.properties.clone();
   }
   
   /**
