@@ -31,11 +31,11 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.PopupWidget;
-import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -49,12 +49,15 @@ import java.util.List;
 import java.util.Stack;
 import java.util.logging.Logger;
 
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /**
@@ -125,9 +128,18 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     // run mode switch if applicable
     if (registry.get("advanced", false))
       mode.trigger();
+    
+    // add keybindings
+    InputMap imap = getInputMap(WHEN_IN_FOCUSED_WINDOW);
+    ActionMap amap = getActionMap();
+    imap.put(KeyStroke.getKeyStroke("alt LEFT"), back);
+    amap.put(back, back);
 
     // Done
   }
+  
+  
+
   
   /**
    * Set editor to use
