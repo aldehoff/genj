@@ -30,18 +30,19 @@ import genj.gedcom.time.PointInTime;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
 import genj.util.Dimension2d;
-import genj.util.GridBagHelper;
+import genj.util.swing.Action2;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.LinkWidget;
 import genj.util.swing.SortableTableHeader;
 import genj.util.swing.SortableTableHeader.SortableTableModel;
-import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -58,11 +59,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.ActionMap;
+import javax.swing.BoxLayout;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -278,24 +283,6 @@ public class PropertyTableWidget extends JPanel {
     return propertyModel;
   }
   
-  /**
-   * Find applicable ShortcutGenerator for property representative
-   */
-  private ShortcutGenerator getShortcutGenerator(Property prop) {
-
-    // type is key
-    Class key = prop.getClass();
-    while (key!=null) {
-      ShortcutGenerator sg = (ShortcutGenerator)type2generator.get(key);
-      if (sg!=null) 
-        return sg;
-      key = key.getSuperclass();
-    }
-    
-    // not found
-    return null;
-  }
-
   /**
    * Table Content
    */
@@ -812,39 +799,19 @@ public class PropertyTableWidget extends JPanel {
   
   
   /**
-   * A shortcut to jump to
-   */
-  private class Shortcut extends LinkWidget {
-    private Property prop;
-    private Shortcut(Property prop) {
-      super(prop.getDisplayValue(), null);
-      this.prop = prop;
-      setHorizontalAlignment(SwingConstants.CENTER);
-      setAlignmentX(0.5F);
-      setBorder(new EmptyBorder(0,1,0,1));
-    }
-    protected void fireActionPerformed() {
-      // ask model
-      Model model = (Model)table.getModel();
-      int row = model.getRowToInsert(prop);
-      if (row<0)
-        return;
-      int col = Math.abs(model.sortColumn)-1;
-      // 20050518 removed the selection change 
-      // scroll to visible
-      Rectangle rect = table.getCellRect(row,col,true);
-      rect.height = table.getParent().getHeight();
-      table.scrollRectToVisible(rect);
-      // done
-    }
-  } //Letter
-
-  /**
    * A generator for shortcuts to rows in ascending order
    */
   private abstract class ShortcutGenerator {
-    abstract void generate(int col, Model model, List shortcuts);
-  }
+    /** populate index */
+    abstract void generate(int col, Model model, JComponent container);
+    /** create a shortcut */
+    protected void add(Property prop, Container container) {
+      LinkWidget link = new LinkWidget(new Shortcut(prop));
+      link.setAlignmentX(0.5F);
+      link.setBorder(new EmptyBorder(0,1,0,1));
+      container.add(link);
+    }
+  } // ShortcutGenerator
   
   /**
    * A generator for shortcuts to simple text values
@@ -852,7 +819,7 @@ public class PropertyTableWidget extends JPanel {
   private class ValueSG extends ShortcutGenerator {
 
     /** collect first letters of values */
-    Set getLetters(int col, Model model) {
+    Set keys(int col, Model model) {
       
       // check first letter of lastnames
       Set letters = new TreeSet();
@@ -873,29 +840,37 @@ public class PropertyTableWidget extends JPanel {
     }
     
     /** generate */
-    void generate(int col, Model model, List shortcuts) {
+    void generate(int col, Model model, JComponent container) {
       
-      // grab properties comprising index
-      List index = properties(col, model, shortcuts);
-      if (index.isEmpty())
+      // grab all properties comprising index
+      List all = new ArrayList();
+      Set letters = keys(col, model);
+      for (Iterator it = letters.iterator(); it.hasNext(); ) 
+        all.add(prop(it.next().toString()));
+      if (all.isEmpty())
         return;
       
-      float step = Math.max(1, (float)index.size() / (getHeight() / new LinkWidget("9999",null).getPreferredSize().height - 1));
+      // keep just enough for the container to fit
+      float step = Math.max(1, (float)all.size() / (getHeight() / new LinkWidget("9999",null).getPreferredSize().height - 1));
+      for (float i=0; i<all.size(); i+=step)  {
+        add((Property)all.get((int)i), container);
+      }
       
-      // create a shortcut for each property
-      for (float i=0; i<index.size(); i+=step) 
-        shortcuts.add(new Shortcut((Property)index.get((int)i)));
+      // create a-z key bindings
+      InputMap imap = container.getInputMap(WHEN_IN_FOCUSED_WINDOW);
+      ActionMap amap = container.getActionMap();
+      for (char c='a'; c<='z'; c++) {
+        Shortcut shortcut = new Shortcut(prop(Character.toString(c)));
+        imap.put(KeyStroke.getKeyStroke(c), shortcut);
+        amap.put(shortcut, shortcut);
+      }
       
       // done
     }
     
-    /** collect index properties */
-    List properties(int col, Model model, List shortcuts) {
-      List result = new ArrayList();
-      Set letters = getLetters(col, model);
-      for (Iterator it = letters.iterator(); it.hasNext(); ) 
-        result.add(new PropertySimpleValue("", it.next().toString()));
-      return result;
+    /** create item */
+    protected Property prop(String key) {
+      return new PropertySimpleValue("", key);
     }
   } //SimpleShortcutGenerator
   
@@ -905,7 +880,7 @@ public class PropertyTableWidget extends JPanel {
   private class NameSG extends ValueSG {
 
     /** collect first letters of names */
-    Set getLetters(Model model) {
+    Set keys(int col, Model model) {
       
       // check first letter of lastnames
       Set letters = new TreeSet();
@@ -921,17 +896,10 @@ public class PropertyTableWidget extends JPanel {
       return letters;
     }
     
-    /** collect index properties */
-    List properties(int col, Model model, List shortcuts) {
-      List result = new ArrayList();
-      // create a shortcut for each letter
-      Set letters = getLetters(model);
-      for (Iterator it = letters.iterator(); it.hasNext(); ) 
-        result.add(new PropertyName("", it.next().toString()));
-      // done
-      return result;
+    /** create item */
+    protected Property prop(String key) {
+      return new PropertyName("", key);
     }
-    
   } //NameShortcutGenerator
   
   /**
@@ -939,7 +907,7 @@ public class PropertyTableWidget extends JPanel {
    */
   private class DateSG extends ShortcutGenerator {
     /** generate */
-    void generate(int col, Model model, List shortcuts) {
+    void generate(int col, Model model, JComponent container) {
       
       // how many text lines fit on screen?
       int visibleRows = Math.max(0, getHeight() / new LinkWidget("9999",null).getPreferredSize().height);
@@ -963,15 +931,34 @@ public class PropertyTableWidget extends JPanel {
         for (int y=0; y<visibleRows; y++) {
           int index = y<visibleRows-1  ?   (int)( y * ys.length / visibleRows)  : ys.length-1;
           int year = ((Integer)ys[index]).intValue();
-          shortcuts.add(new Shortcut(new PropertyDate(year)));
+          add(new PropertyDate(year), container);
         }
 
       } catch (Throwable t) {
       }
+      
       // done
     }
   } //DateShortcutGenerator
-  
+
+  /*
+   for (int i=0;i<index.size();i++) {
+    Property prop = (Property)index.get(i);
+    Shortcut shortcut = new Shortcut(prop);
+    LinkWidget link = new LinkWidget(shortcut);
+    link.setAlignmentX(0.5F);
+    link.setBorder(new EmptyBorder(0,1,0,1));
+ 
+    // install mnemonic if applicable
+    char c = Character.toLowerCase(shortcut.getText().charAt(0));
+    inputMap.put(KeyStroke.getKeyStroke(Character.toLowerCase(c)), shortcut);
+    actionMap.put(shortcut, shortcut);
+    
+    // add to layout
+    panelShortcuts.add(link);
+  }
+*/  
+
   /**
    * object for installing shortcuts
    */
@@ -989,37 +976,70 @@ public class PropertyTableWidget extends JPanel {
      */
     public void run() {
 
-      // remove old
+      // remove old shortcuts
       panelShortcuts.removeAll();
-      GridBagHelper gh = new GridBagHelper(panelShortcuts);
+      panelShortcuts.setLayout(new BoxLayout(panelShortcuts, BoxLayout.Y_AXIS));
       panelShortcuts.revalidate();
-      
+      panelShortcuts.getInputMap(WHEN_IN_FOCUSED_WINDOW).clear();
+      panelShortcuts.getActionMap().clear();
+
       // anything we can offer? need ascending sorted column and at least 10 rows
       Model model = (Model)table.getModel();
       if (model.getSortedColumn()<=0||model.getSortedColumn()>model.getColumnCount()||model.getRowCount()<10)
         return;
-      
-      // find a suitable non-null value representative
+
+      // loop over rows
       int col = model.getSortedColumn()-1;
       for (int row=model.getRowCount()-1;row>0;row--) {
+        
+        // check prop in row
         Property prop = model.getPropertyAt(row, col);
         if (prop!=null) {
-          ShortcutGenerator sg = getShortcutGenerator(prop);
-          if (sg!=null) {
-            List shortcuts = new ArrayList();
-            sg.generate(col, model, shortcuts);
-            for (int i=0;i<shortcuts.size();i++)
-              gh.add((Shortcut)shortcuts.get(i), 0, i, 1, 1, GridBagHelper.FILL_HORIZONTAL);
-            gh.addFiller(0, shortcuts.size());
+          
+          // type is key
+          Class key = prop.getClass();
+          while (key!=null) {
+            ShortcutGenerator sg = (ShortcutGenerator)type2generator.get(key);
+            if (sg!=null)  {
+              sg.generate(col, model, panelShortcuts);
+              return;
+            }
+            key = key.getSuperclass();
           }
-          break;
         }
       }
 
       // done
     }
     
+  }
+  
+  private class Shortcut extends Action2 {
     
+    private Property prop;
+  
+    /** constructor */
+    Shortcut(Property prop) {
+      this.prop = prop;
+      setText(prop.getDisplayValue());
+      // done
+    }
+
+    /** run */
+    protected void execute() {
+      // ask model
+      Model model = (Model)table.getModel();
+      int row = model.getRowToInsert(prop);
+      if (row<0)
+        return;
+      int col = Math.abs(model.sortColumn)-1;
+      // 20050518 removed the selection change 
+      // scroll to visible
+      Rectangle rect = table.getCellRect(row,col,true);
+      rect.height = table.getParent().getHeight();
+      table.scrollRectToVisible(rect);
+      // done
+    }
   }
   
 } //PropertyTableWidget
