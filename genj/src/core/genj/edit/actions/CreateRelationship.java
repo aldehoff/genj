@@ -150,7 +150,7 @@ public abstract class CreateRelationship extends AbstractChange {
     
     // preselect something (for anything but indi and fam)?
     if (!(targetType.equals(Gedcom.INDI)||targetType.equals(Gedcom.FAM)))
-      select.setSelection(gedcom.getEntity(manager.getRegistry(gedcom).get("select."+targetType, (String)null)));
+      select.setSelection(gedcom.getEntity(ViewManager.getRegistry(gedcom).get("select."+targetType, (String)null)));
     
     // done
     return result;
@@ -180,7 +180,7 @@ public abstract class CreateRelationship extends AbstractChange {
       focus = change(existing, false);
     }
     // remember selection
-    manager.getRegistry(gedcom).put("select."+targetType, existing.getId());
+    ViewManager.getRegistry(gedcom).put("select."+targetType, existing.getId());
     // done
   }
   

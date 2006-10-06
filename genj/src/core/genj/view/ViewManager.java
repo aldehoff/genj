@@ -344,7 +344,7 @@ public class ViewManager {
   /**
    * Helper that returns registry for gedcom
    */
-  public Registry getRegistry(Gedcom gedcom) {
+  public static Registry getRegistry(Gedcom gedcom) {
     Origin origin = gedcom.getOrigin();
     String name = origin.getFileName();
     return Registry.lookup(name, origin);
