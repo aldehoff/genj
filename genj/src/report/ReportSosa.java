@@ -182,7 +182,7 @@ public class ReportSosa extends Report {
     PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
     InitVariables();
     assignColor(srcColor);
-    if (!getOptionsFromUser(translate("name"), this)) return;
+//TODO: a reactiver plus tard    if (!getOptionsFromUser(translate("name"), this)) return;
     if (startSosa == 0){
     	Property sosaProp = indi.getProperty(sosaTag);
     	if (sosaProp != null){
