@@ -135,6 +135,7 @@ public class SelectEntityWidget extends JPanel {
 
     // prepare list widget    
     listWidget = new JComboBox();
+    listWidget.setMaximumRowCount(16); // 20061020 as suggested by Daniel - show more
     listWidget.setEditable(false);
     listWidget.setRenderer(new Renderer());
     
