@@ -142,14 +142,15 @@ public class PlaceBean extends PropertyBean {
     String value = place.isSecret() ? "" : place.getValue();
    
     // either a simple value or broken down into comma separated jurisdictions
-    if (!Options.getInstance().isSplitJurisdictions || place.getHierarchy().length()==0) {
-      createChoice(null, value, place.getAllJurisdictions(-1,true));
+    String hierarchy = place.getHierarchy();
+    if (!Options.getInstance().isSplitJurisdictions || hierarchy.length()==0) {
+      createChoice(null, value, place.getAllJurisdictions(-1,true), hierarchy);
     } else {
-      DirectAccessTokenizer format = new DirectAccessTokenizer(place.getHierarchy(), ",");
+      DirectAccessTokenizer format = new DirectAccessTokenizer(hierarchy, ",");
       DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( value, ",");
       for (int i=0;;i++) {
         if (format.get(i)==null&&jurisdictions.get(i)==null) break;
-        createChoice(format.get(i, true), jurisdictions.get(i, true), place.getAllJurisdictions(i, true));
+        createChoice(format.get(i, true), jurisdictions.get(i, true), place.getAllJurisdictions(i, true), null);
       }
     }
 
@@ -164,7 +165,7 @@ public class PlaceBean extends PropertyBean {
     // Done
   }
   
-  private void createChoice(String label, String value, String[] values) {
+  private void createChoice(String label, String value, String[] values, String tip) {
     // next row
     rows++;
     // add a label for the jurisdiction name?
@@ -177,6 +178,8 @@ public class PlaceBean extends PropertyBean {
     choice.setValues(values);
     choice.setText(value);
     choice.addChangeListener(changeSupport);
+    if (tip!=null&&tip.length()>0)
+      choice.setToolTipText(tip);
     gh.add(choice, 1, rows, 1, 1, GridBagHelper.GROWFILL_HORIZONTAL);
     // set default focus if not done yet
     if (defaultFocus==null) defaultFocus = choice;
