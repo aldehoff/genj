@@ -7,6 +7,7 @@
  */
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 import genj.util.swing.Action2;
 
@@ -46,6 +47,21 @@ public class ReportLinesFan extends Report {
      */
     private PrintWriter getWriter(OutputStream out) {
 	return new PrintWriter(new OutputStreamWriter(out, CHARSET));
+    }
+
+    /**
+     * getupdated date
+     */
+    public PointInTime getUpdatedDate(){
+  	  String updated = "$Date: 2006-11-07 17:47:49 $";
+  	    try {
+  	    	return new PointInTime(updated.substring(7, 11)+
+  	    			updated.substring(12, 14)+
+  	    			updated.substring(15, 17));
+  	        
+  	      } catch (Exception e) {
+  	        return super.getUpdatedDate();
+  	      }
     }
 
     /**

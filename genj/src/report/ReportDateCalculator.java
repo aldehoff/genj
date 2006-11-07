@@ -22,7 +22,22 @@ import javax.swing.JLabel;
  */
 public class ReportDateCalculator extends Report {
 
-    public String accepts(Object context) {
+	/**
+	   * getupdated date
+	   */
+	  public PointInTime getUpdatedDate(){
+		  String updated = "$Date: 2006-11-07 17:47:49 $";
+		    try {
+		    	return new PointInTime(updated.substring(7, 11)+
+		    			updated.substring(12, 14)+
+		    			updated.substring(15, 17));
+		        
+		      } catch (Exception e) {
+		        return super.getUpdatedDate();
+		      }
+	  }
+
+	  public String accepts(Object context) {
 
 	// accepting all PropertyChoices and PropertyNames
 	String val = null;

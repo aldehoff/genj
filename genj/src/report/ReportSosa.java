@@ -9,12 +9,14 @@ import genj.fo.Document;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.PrivacyPolicy;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySource;
 import genj.gedcom.Source;
 import genj.gedcom.TagPath;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 import java.util.ArrayList;
@@ -173,6 +175,20 @@ public class ReportSosa extends Report {
   private static String NOTE  = ".:NOTE";       // Notes tag in Sources (SOUR and INDI)
   private static String DATA  = ".:DATA:TEXT";  // Data tag in Sources (INDI)
 
+  /**
+   * getupdated date
+   */
+  public PointInTime getUpdatedDate(){
+	  String updated = "$Date: 2006-11-07 17:47:49 $";
+	    try {
+	    	return new PointInTime(updated.substring(7, 11)+
+	    			updated.substring(12, 14)+
+	    			updated.substring(15, 17));
+	        
+	      } catch (Exception e) {
+	        return super.getUpdatedDate();
+	      }
+  }
   /**
    * Main for argument individual
    */
