@@ -186,7 +186,10 @@ public class ReportSosa extends Report {
     if (startSosa == 0){
     	Property sosaProp = indi.getProperty(sosaTag);
     	if (sosaProp != null){
-    		startSosa = Integer.decode(sosaProp.getValue()).intValue();
+    		try {
+    			startSosa = Integer.parseInt(sosaProp.getValue(),10);
+    		} catch (NumberFormatException e){
+    		}
     	}
     }
     if (startSosa == 0){
