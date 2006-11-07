@@ -13,6 +13,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.PrivacyPolicy;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyMultilineValue;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 import java.util.HashMap;
@@ -82,6 +83,20 @@ public class ReportMultDesc extends Report {
 
   // Privacy
   public int publicGen = 0;
+
+  /**
+   * getupdated date
+   */
+  public PointInTime getUpdatedDate(){
+	  String updated = "$Date: 2006-11-07 14:54:32 $";
+	    try {
+	    	return new PointInTime(updated.substring(7, 11)+
+	    			updated.substring(12, 14)+
+	    			updated.substring(15, 17));
+	      } catch (Exception e) {
+	        return super.getUpdatedDate();
+	      }
+  }
 
   /**
    * don't need stdout
