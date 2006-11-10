@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.114 $ $Author: nmeier $ $Date: 2006-10-02 16:59:57 $
+ * $Revision: 1.115 $ $Author: daniel-andre $ $Date: 2006-11-10 13:38:47 $
  */
 package genj.report;
 
@@ -876,12 +876,36 @@ public abstract class Report implements Cloneable {
    * @return date of last update of the report
    */
   public PointInTime getUpdatedDate() {
-    String date = translate("updated");
-    if (date == null || date.equals("updated"))
-      return null;
-    PointInTime pit = new PointInTime();
-    pit.set(date);
-    return pit;        
+	  String cvsDate = getCvsDate();
+      PointInTime pit = null;
+      if (cvsDate != null){
+    	  try {
+    		  pit = new PointInTime(cvsDate.substring(7, 11)+
+    				  cvsDate.substring(12, 14)+
+    				  cvsDate.substring(15, 17));
+    	  } catch (Exception e) {
+    	  }
+      }
+      if (pit != null){
+    	  return pit;
+      }
+	  
+	  String date = translate("updated");
+	  if (date == null || date.equals("updated"))
+		  return null;
+	  pit = new PointInTime();
+	  pit.set(date);
+	  return pit;        
+  }
+  
+  /**
+   * Returns the date of last update of a report in cvs format - 
+   * It is intended to provide alternate way to report designers to the update property. 
+   * It should return a string formated as cvs Date keyword. By default it returns null.
+   * @return cvs Date keyword string
+   */
+  public String getCvsDate(){
+	  return null;
   }
 
   /**
