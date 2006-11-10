@@ -38,9 +38,14 @@ import tree.output.TreeOutput;
 public class ReportGraphicalTree extends Report {
 
     /**
-     * Indibox width in pixels.
+     * Minimal indibox width in pixels.
      */
     private static final int DEFAULT_INDIBOX_WIDTH = 110;
+
+    /**
+     * Minimal indibox width in pixels when "shrink mode" is enabled..
+     */
+    private static final int SHRINKED_INDIBOX_WIDTH = 50;
 
     /**
      * Indibox height in pixels.
@@ -157,6 +162,11 @@ public class ReportGraphicalTree extends Report {
     public boolean display_fambox = true;
 
     /**
+     * Whether to shrink boxes when possible.
+     */
+    public boolean shrink_boxes = false;
+
+    /**
      * Whether to use colors (or only black and white).
      */
     public boolean use_colors = true;
@@ -187,7 +197,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("genDescendants", gen_descendants - 1);
         properties.put("maxNames", max_names);
         properties.put("defaultIndiboxHeight", DEFAULT_INDIBOX_HEIGHT);
-        properties.put("defaultIndiboxWidth", DEFAULT_INDIBOX_WIDTH);
+        properties.put("defaultIndiboxWidth", shrink_boxes ? SHRINKED_INDIBOX_WIDTH : DEFAULT_INDIBOX_WIDTH);
         properties.put("verticalGap", VERTICAL_GAP);
         properties.put("horizontalGap", HORIZONTAL_GAP);
         properties.put("famboxWidth", FAMBOX_WIDTH);
