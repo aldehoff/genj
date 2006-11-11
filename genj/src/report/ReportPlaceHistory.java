@@ -61,6 +61,13 @@ public class ReportPlaceHistory extends Report {
   }
 
   /**
+   * getcvsupdated date
+   */
+  public String getCvsDate(){
+	  return "$Date: 2006-11-11 17:00:27 $";
+  }
+
+  /**
    * Report's main
    */
   public void start(Gedcom gedcom) {
