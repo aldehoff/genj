@@ -61,10 +61,17 @@ public class ReportPlaceHistory extends Report {
   }
 
   /**
-   * getcvsupdated date
+   * getupdated date
    */
-  public String getCvsDate(){
-	  return "$Date: 2006-11-11 17:00:27 $";
+  public PointInTime getUpdatedDate(){
+	  String updated = "$Date: 2006-11-12 14:42:07 $";
+	    try {
+	    	return new PointInTime(updated.substring(7, 11)+
+	    			updated.substring(12, 14)+
+	    			updated.substring(15, 17));
+	      } catch (Exception e) {
+	        return super.getUpdatedDate();
+	      }
   }
 
   /**
