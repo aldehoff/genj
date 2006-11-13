@@ -17,8 +17,11 @@ import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -27,6 +30,19 @@ import javax.swing.JTabbedPane;
  * A report that shows pie charts with events by months
  */
 public class ReportEventsByMonths extends Report {
+
+  /** whether we give a Chart for births - default is true */
+  public boolean BirthsChart = true;
+  /** whether we give a Chart for baptisms - default is false */
+  public boolean BaptismsChart = false;
+  /** whether we give a Chart for adoptions - default is false  */
+  public boolean AdoptionsChart = false;
+  /** whether we give a Chart for deaths - default is true */
+  public boolean DeathsChart = true;
+  /** whether we give a Chart for marriages - default is true */
+  public boolean MarriagesChart = true;
+  /** whether we give a Chart for divorces - default is true */
+  public boolean DivorcesChart = true;
 
   /** calendar we use */
   private int calendar;
@@ -65,7 +81,7 @@ public class ReportEventsByMonths extends Report {
    * getupdated date
    */
   public PointInTime getUpdatedDate(){
-	  String updated = "$Date: 2006-11-13 07:57:00 $";
+	  String updated = "$Date: 2006-11-13 21:00:44 $";
 	    try {
 	    	return new PointInTime(updated.substring(7, 11)+
 	    			updated.substring(12, 14)+
@@ -81,19 +97,34 @@ public class ReportEventsByMonths extends Report {
   public void start(Gedcom gedcom) {
 
     // look for events we consider
-    IndexedSeries[] series = {
-      analyze(gedcom.getEntities("INDI"), "BIRT"),
-      analyze(gedcom.getEntities("INDI"), "DEAT"),
-      analyze(gedcom.getEntities("FAM" ), "MARR")
-    };
+    List series = new ArrayList();
+    if (BirthsChart) {
+    series.add(analyze(gedcom.getEntities("INDI"), "BIRT"));
+    }
+    if (BaptismsChart) {
+    series.add(analyze(gedcom.getEntities("INDI"), "BAPM"));
+    }
+    if (AdoptionsChart) {
+    series.add(analyze(gedcom.getEntities("INDI"), "ADOP"));
+    }
+    if (DeathsChart) {
+    series.add(analyze(gedcom.getEntities("INDI"), "DEAT"));
+    }
+    if (MarriagesChart) {
+    series.add(analyze(gedcom.getEntities("FAM" ), "MARR"));
+    }
+    if (DivorcesChart) {
+    series.add(analyze(gedcom.getEntities("FAM" ), "DIV"));
+    }
 
     // show it in a chart per series
     String[] categories = CALENDARS[calendar].getMonths(true);
 
     JTabbedPane charts = new JTabbedPane();
-    for (int i=0;i<series.length;i++) {
-      String label = Gedcom.getName(series[i].getName());
-      Chart chart = new Chart(null, series[i], categories, false);
+    for (Iterator it=series.iterator(); it.hasNext(); ) {
+      IndexedSeries is = (IndexedSeries)it.next();
+      String label = Gedcom.getName(is.getName());
+      Chart chart = new Chart(null, is, categories, false);
       charts.addTab(label, chart);
     }
     JPanel panel = new JPanel(new BorderLayout());
