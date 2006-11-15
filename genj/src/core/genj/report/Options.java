@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.13 $ $Author: nmeier $ $Date: 2006-02-16 18:48:59 $
+ * $Revision: 1.14 $ $Author: daniel-andre $ $Date: 2006-11-15 20:33:49 $
  */
 package genj.report;
 
@@ -61,6 +61,12 @@ public class Options extends OptionProvider {
     
     /** burial symbol in reports */
     private String burialSymbol = "[]";
+    
+    /** occupation symbol in reports */
+    private String  occuSymbol = "=";
+
+    /** residence symbol in reports */
+    private String  resiSymbol = "^";
     
     /** child of symbol in reports */
     private String childOfSymbol = "/";
@@ -167,7 +173,29 @@ public class Options extends OptionProvider {
             burialSymbol = "[]";
     }
     
-    public String getChildOfSymbol() {
+    public String getOccuSymbol() {
+		return occuSymbol;
+	}
+
+	public void setOccuSymbol(String set) {
+        if (set!=null&&set.trim().length()>0)
+        	occuSymbol = set;
+        else
+        	occuSymbol = "=";
+	}
+
+	public String getResiSymbol() {
+		return resiSymbol;
+	}
+
+	public void setResiSymbol(String set) {
+        if (set!=null&&set.trim().length()>0)
+        	resiSymbol = set;
+        else
+        	resiSymbol = "^";
+	}
+
+	public String getChildOfSymbol() {
         return childOfSymbol;
     }
     
