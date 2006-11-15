@@ -23,7 +23,7 @@ import java.awt.font.FontRenderContext;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class DetermineBoxSize extends TreeFilterBase {
+public class DetermineIndiboxSize extends TreeFilterBase {
 
     private static final int DEFAULT_LINES = 2;
     private static final int LINE_HEIGHT = 10;
@@ -51,7 +51,7 @@ public class DetermineBoxSize extends TreeFilterBase {
     private int maxNames;
 
 
-    public DetermineBoxSize(Registry properties) {
+    public DetermineIndiboxSize(Registry properties) {
         defaultHeight = properties.get("defaultIndiboxHeight", 0);
         defaultWidth = properties.get("defaultIndiboxWidth", 0);
         maxImageWidth = properties.get("maxImageWidth", 0);

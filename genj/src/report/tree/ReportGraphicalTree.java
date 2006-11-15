@@ -26,9 +26,9 @@ import tree.output.TreeOutput;
  * GenJ - ReportGraphicalTree.
  * The report works in 3 phases:
  * <ol>
- *   <li> Choose people to display and build the target tree structure</li>
- *   <li> Arrange the individual boxes - assign (x, y) coordinates to all boxes</li>
- *   <li> Output the final tree to a file or to the screen and display the result</li>
+ * <li> Choose people to display and build the target tree structure</li>
+ * <li> Arrange the individual boxes - assign (x, y) coordinates to all boxes</li>
+ * <li> Output the final tree to a file or to the screen and display the result</li>
  * </ol>
  * Each of these steps can be separately customized.
  *
@@ -63,14 +63,14 @@ public class ReportGraphicalTree extends Report {
     private static final int HORIZONTAL_GAP = 10;
 
     /**
-     * Family box width in pixels.
+     * Minimal family box width in pixels.
      */
-    private static final int FAMBOX_WIDTH = 100;
+    private static final int DEFAULT_FAMBOX_WIDTH = 100;
 
     /**
-     * Family box height in pixels.
+     * Minimal family box height in pixels.
      */
-    private static final int FAMBOX_HEIGHT = 27;
+    private static final int DEFAULT_FAMBOX_HEIGHT = 27;
 
     /**
      * Width of the image inside an individual box.
@@ -83,7 +83,7 @@ public class ReportGraphicalTree extends Report {
     public int output_type = 0;
 
     public String[] output_types = { translate("output_type.svg"),
-            translate("output_type.pdf"), translate("output_type.screen")};
+            translate("output_type.pdf"), translate("output_type.screen") };
 
     /**
      * Number of generations of ancestors.
@@ -200,8 +200,8 @@ public class ReportGraphicalTree extends Report {
         properties.put("defaultIndiboxWidth", shrink_boxes ? SHRINKED_INDIBOX_WIDTH : DEFAULT_INDIBOX_WIDTH);
         properties.put("verticalGap", VERTICAL_GAP);
         properties.put("horizontalGap", HORIZONTAL_GAP);
-        properties.put("famboxWidth", FAMBOX_WIDTH);
-        properties.put("famboxHeight", FAMBOX_HEIGHT);
+        properties.put("defaultFamboxWidth", DEFAULT_FAMBOX_WIDTH);
+        properties.put("defaultFamboxHeight", DEFAULT_FAMBOX_HEIGHT);
         properties.put("displayFambox", display_fambox);
         properties.put("useColors", use_colors);
         properties.put("otherMarriages", other_marriages);
@@ -219,7 +219,8 @@ public class ReportGraphicalTree extends Report {
         if (!show_spouses)
             new NoSpouseFilter().filter(indibox);
 
-        new DetermineBoxSize(properties).filter(indibox);
+        new DetermineIndiboxSize(properties).filter(indibox);
+        new DetermineFamboxSize(properties).filter(indibox);
 
         // Arrange the tree boxes
         TreeFilter arranger;

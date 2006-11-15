@@ -29,9 +29,6 @@ public abstract class TreeRendererBase {
 	protected static final int HORIZONTAL_MARGIN = 10;
 
     protected int verticalGap;
-    protected int famboxWidth;
-    protected int famboxHeight;
-    protected int defaultIndiboxHeight;
     protected boolean displayFambox;
 
     protected IndiBox firstIndi;
@@ -49,9 +46,6 @@ public abstract class TreeRendererBase {
         this.firstIndi = firstIndi;
 
 		verticalGap = properties.get("verticalGap", 0);
-        famboxWidth = properties.get("famboxWidth", 0);
-        famboxHeight = properties.get("famboxHeight", 0);
-        defaultIndiboxHeight = properties.get("defaultIndiboxHeight", 0);
         displayFambox = properties.get("displayFambox", true);
 	}
 

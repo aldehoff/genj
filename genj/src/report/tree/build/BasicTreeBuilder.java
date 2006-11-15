@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import tree.FamBox;
 import tree.IndiBox;
 import tree.IndiBox.Direction;
 
@@ -49,20 +50,24 @@ public class BasicTreeBuilder implements TreeBuilder {
 		// get all families where spouse
 		List families = new ArrayList(Arrays.asList(indibox.individual.getFamiliesWhereSpouse()));
 
+        Fam indiboxFamily = null;
+        
 		if (!families.isEmpty()) {
 			// if (dir == DIR_PARENT) get all families where spouse is spouse
-			indibox.family = (Fam)families.get(0);
+			indiboxFamily = (Fam)families.get(0);
 			Indi spouse = null;
 			if (dir == Direction.PARENT) {
-				indibox.family = indibox.prev.individual.getFamiliesWhereChild()[0];
-				spouse = indibox.family.getOtherSpouse(indibox.individual);
+				indiboxFamily = indibox.prev.individual.getFamiliesWhereChild()[0];
+				spouse = indiboxFamily.getOtherSpouse(indibox.individual);
 				if (spouse != null)
 					families.addAll(Arrays.asList(spouse.getFamiliesWhereSpouse()));
-				while(families.remove(indibox.family));
-				families.add(0, indibox.family);
+				while(families.remove(indiboxFamily));
+				families.add(0, indiboxFamily);
 			} else
-				spouse = indibox.family.getOtherSpouse(indibox.individual);
+				spouse = indiboxFamily.getOtherSpouse(indibox.individual);
 
+            indibox.family = new FamBox(indiboxFamily);
+            
 			if (spouse != null)
 				indibox.spouse = new IndiBox(spouse, indibox);
 
@@ -80,7 +85,7 @@ public class BasicTreeBuilder implements TreeBuilder {
     				if (indibox.individual != f.getHusband() && indibox.individual != f.getWife())
     					indi = spouse;
     				IndiBox box = new IndiBox(indi, last);
-    				box.family = f;
+    				box.family = new FamBox(f);
                     if (f.getOtherSpouse(indi) != null)
                         box.spouse = new IndiBox(f.getOtherSpouse(indi), box);
     				last.nextMarriage = box;
@@ -100,7 +105,7 @@ public class BasicTreeBuilder implements TreeBuilder {
     			    //   for (all children)-prev buildTree(child, DIR_CHILD)
     			    // else
     			    //   for all children buildTree(child, DIR_CHILD)
-    				List children = new ArrayList(Arrays.asList(last.family.getChildren()));
+    				List children = new ArrayList(Arrays.asList(last.getFamily().getChildren()));
     				if (last == indibox && dir == Direction.PARENT)
     					children.remove(indibox.prev.individual);
     				last.children = new IndiBox[children.size()];

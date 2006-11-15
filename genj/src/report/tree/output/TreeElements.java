@@ -8,8 +8,8 @@
 
 package tree.output;
 
+import tree.FamBox;
 import tree.IndiBox;
-import genj.gedcom.Fam;
 
 /**
  * Interface for classes rendering tree elements.
@@ -33,7 +33,7 @@ public interface TreeElements {
      * @param y  y coordinate
      * @param gen generation number
      */
-    public void drawFamBox(Fam f, int x, int y, int gen);
+    public void drawFamBox(FamBox fambox, int x, int y, int gen);
 
     /**
      * Outputs a line.

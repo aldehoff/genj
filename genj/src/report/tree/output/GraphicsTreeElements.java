@@ -27,6 +27,7 @@ import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 
+import tree.FamBox;
 import tree.IndiBox;
 
 /**
@@ -40,6 +41,8 @@ public class GraphicsTreeElements implements TreeElements {
     private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
     private static final TagPath PATH_INDIDEATPLAC = new TagPath("INDI:DEAT:PLAC");
     private static final TagPath PATH_INDIOCCU = new TagPath("INDI:OCCU");
+    private static final TagPath PATH_FAMMARRPLAC = new TagPath("INDI:MARR:PLAC");
+    private static final TagPath PATH_FAMDIVPLAC = new TagPath("INDI:DIV:PLAC");
 
     /**
      * Box background colors.
@@ -117,10 +120,6 @@ public class GraphicsTreeElements implements TreeElements {
             sexSymbolFont = new Font("SansSerif", Font.PLAIN, 10);
     }
 
-    private int famboxWidth;
-
-    private int famboxHeight;
-
     private int maxImageWidth;
 
     /**
@@ -157,8 +156,6 @@ public class GraphicsTreeElements implements TreeElements {
     public GraphicsTreeElements(Graphics2D graphics, Registry properties) {
         this.graphics = graphics;
 
-        famboxWidth = properties.get("famboxWidth", 0);
-        famboxHeight = properties.get("famboxHeight", 0);
         drawSexSymbols = properties.get("drawSexSymbols", true);
         drawIndiIds = properties.get("drawIndiIds", false);
         drawFamIds = properties.get("drawFamIds", false);
@@ -312,24 +309,81 @@ public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
      * @param y  y coordinate
      * @param gen generation number
      */
-    public void drawFamBox(Fam f, int x, int y, int gen) {
-        Color color = getBoxColor(gen);
-        graphics.setColor(color);
-        graphics.fillRoundRect(x, y, famboxWidth, famboxHeight, 5, 5);
-        graphics.setColor(Color.BLACK);
-        graphics.drawRoundRect(x, y, famboxWidth, famboxHeight, 5, 5);
+    public void drawFamBox(FamBox fambox, int x, int y, int gen) {
+        Fam f = fambox.family;
 
-        // Date of marriage
+        Color color = getBoxColor(gen);
+        Shape box = new RoundRectangle2D.Double(x, y, fambox.width, fambox.height, 5, 5);
+        graphics.setColor(color);
+        graphics.fill(box);
+        graphics.setColor(Color.BLACK);
+
+        Shape oldClip = graphics.getClip();
+        graphics.clip(box);
+
+        int currentY = y + 12;
+
         graphics.setFont(DETAILS_FONT);
-        if (f.getMarriageDate() != null)
-            graphics.drawString(Options.getInstance().getMarriageSymbol() + " " +
-                    f.getMarriageDate(), x + 4, y + 12);
+
+        Property marriageDate = null;
+        Property divorceDate = null;
+        Property marriagePlace = null;
+        Property divorcePlace = null;
+
+        marriageDate = f.getMarriageDate();
+        if (marriageDate != null && !marriageDate.isValid())
+            marriageDate = null;
+        divorceDate = f.getDivorceDate();
+        if (divorceDate != null && !divorceDate.isValid())
+            divorceDate = null;
+
+        if (drawPlaces) {
+            marriagePlace = f.getProperty(PATH_FAMMARRPLAC);
+            if (marriagePlace != null && marriagePlace.toString().equals(""))
+                marriagePlace = null;
+            divorcePlace = f.getProperty(PATH_FAMDIVPLAC);
+            if (divorcePlace != null && divorcePlace.toString().equals(""))
+                divorcePlace = null;
+        }
+
+        // Date and place of marriage
+        if (f.getMarriageDate() != null) {
+            centerString(graphics, Options.getInstance().getMarriageSymbol(), x + 13, currentY);
+            if (marriageDate != null) {
+                graphics.drawString(marriageDate.toString(), x + 25, currentY);
+                currentY += LINE_HEIGHT;
+            }
+            if (marriagePlace != null) {
+                graphics.drawString(marriagePlace.toString(), x + 25, currentY);
+                currentY += LINE_HEIGHT;
+            }
+            if (marriageDate == null && marriagePlace == null)
+                currentY += LINE_HEIGHT;
+        }
+
+        // Date and place of divorce
+        if (f.getDivorceDate() != null) {
+            centerString(graphics, Options.getInstance().getDivorceSymbol(), x + 13, currentY);
+            if (divorceDate != null) {
+                graphics.drawString(divorceDate.toString(), x + 25, currentY);
+                currentY += LINE_HEIGHT;
+            }
+            if (divorcePlace != null) {
+                graphics.drawString(divorcePlace.toString(), x + 25, currentY);
+                currentY += LINE_HEIGHT;
+            }
+            if (divorceDate == null && divorcePlace == null)
+                currentY += LINE_HEIGHT;
+        }
 
         // Id
         if (drawFamIds) {
             graphics.setFont(ID_FONT);
-            graphics.drawString(f.getId(), x + 8, y + famboxHeight - 4);
+            graphics.drawString(f.getId(), x + 8, y + fambox.height - 4);
         }
+
+        graphics.setClip(oldClip);
+        graphics.draw(box);
     }
 
     /**

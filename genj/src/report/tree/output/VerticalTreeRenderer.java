@@ -97,7 +97,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
                 midY -= indibox.height / 2;
 
             if (displayFambox && indibox.family != null & indibox.spouse != null)
-                midY = getYCoord(baseY) + indibox.height + famboxHeight;
+                midY = getYCoord(baseY) + indibox.height + indibox.family.height;
 
             elements.drawLine(midX, midY, midX, getYCoord(baseY + 1) - verticalGap / 2);
 
@@ -121,7 +121,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
         // Family box
         // TODO: Should family boxes be displayed when there's no spouse?
         if (displayFambox && indibox.family != null && indibox.spouse != null)
-            elements.drawFamBox(indibox.family, midX - famboxWidth / 2,
+            elements.drawFamBox(indibox.family, midX - indibox.family.width / 2,
                     getYCoord(baseY) + indibox.height, gen);
 
 		// Spouse
@@ -147,12 +147,15 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 
 		// Next marriage
 		if (indibox.nextMarriage != null) {
+            int lineY = indibox.height / 2;
+            if (indibox.nextMarriage.height < indibox.height)
+                lineY = indibox.nextMarriage.height / 2;
 			if (indibox.nextMarriage.x > 0)
-                elements.drawDashedLine(baseX + indibox.width, getYCoord(baseY) + defaultIndiboxHeight / 2,
-				        baseX + indibox.nextMarriage.x, getYCoord(baseY) + defaultIndiboxHeight / 2);
+                elements.drawDashedLine(baseX + indibox.width, getYCoord(baseY) + lineY,
+				        baseX + indibox.nextMarriage.x, getYCoord(baseY) + lineY);
 			else
-                elements.drawDashedLine(baseX, getYCoord(baseY) + defaultIndiboxHeight / 2,
-				        baseX + indibox.nextMarriage.x + indibox.nextMarriage.width, getYCoord(baseY) + defaultIndiboxHeight / 2);
+                elements.drawDashedLine(baseX, getYCoord(baseY) + lineY,
+				        baseX + indibox.nextMarriage.x + indibox.nextMarriage.width, getYCoord(baseY) + lineY);
             drawTree(indibox.nextMarriage, baseX, baseY, gen);
 		}
 	}
@@ -189,12 +192,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
          */
         private int level = 0;
 
-        private int additionalHeight;
-
         public DetermineLevelHeight() {
-            additionalHeight = verticalGap;
-            if (displayFambox)
-                additionalHeight += famboxHeight;
         }
 
         protected void preFilter(IndiBox indibox) {
@@ -211,7 +209,9 @@ public class VerticalTreeRenderer extends TreeRendererBase {
             int heightInt = 0;
             if (height != null)
                 heightInt = height.intValue();
-            int newHeight = indibox.height + additionalHeight;
+            int newHeight = indibox.height + verticalGap;
+            if (indibox.family != null)
+                newHeight += indibox.family.height;
             if (newHeight > heightInt)
                 levelHeight.put(lev, new Integer(newHeight));
         }

@@ -98,7 +98,7 @@ public class IndiBox {
     /**
      * Family where spouse.
      */
-    public Fam family;
+    public FamBox family;
 
     /**
      * Constructs the object.
@@ -138,5 +138,11 @@ public class IndiBox {
      */
     public boolean hasChildren() {
         return (children != null && children.length > 0);
+    }
+    
+    public Fam getFamily() {
+        if (family == null)
+            return null;
+        return family.family;
     }
 }
