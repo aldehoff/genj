@@ -270,21 +270,6 @@ public abstract class AbstractWindowManager implements WindowManager {
   }
   
   /**
-   * An action listener that closes windows
-    */
-  private class Close implements ActionListener {
-    
-    private String key;
-    
-    private Close(String key) {
-      this.key = key;
-    }
-    public void actionPerformed(ActionEvent e) {
-      close(key);
-    }
-  } //Close
-  
-  /**
    * A patched up JOptionPane
    */
   protected class Content extends JOptionPane {
@@ -342,6 +327,7 @@ public abstract class AbstractWindowManager implements WindowManager {
       
       /** trigger */
       public void actionPerformed(ActionEvent e) {
+        // this will actually force the dialog to hide - JOptionPane listens to property changes
         setValue(getAction());
       }
       

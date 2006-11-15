@@ -20,7 +20,6 @@
 package genj.window;
 
 import genj.util.Registry;
-import genj.util.swing.Action2;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -148,7 +147,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
       }
     }
 
-    // hook up to the dialog being hidden by the optionpane
+    // hook up to the dialog being hidden by the optionpane - that's what is being called after the user selected a button (setValue())
     dlg.addComponentListener(new ComponentAdapter() {
       public void componentHidden(ComponentEvent e) {
         closeNotify(key, dlg.getBounds(), false);
@@ -253,23 +252,5 @@ public class DefaultWindowManager extends AbstractWindowManager {
       return (Window)c;
     return getWindowForComponent(c.getParent());
   }
-  
-  /**
-   * An named action closing a dialog
-   */
-  private class Close extends Action2 {
-    private JDialog dlg;
-    private JOptionPane op;
-    private Close(JDialog dlg, JOptionPane op, String action) {
-      this.dlg = dlg;
-      this.op = op;
-      setText(action);
-    }
-    protected void execute() {
-      op.setInputValue(getText());
-      dlg.dispose();
-    }
-  } //Close
-  
   
 } //DefaultWindowManager
