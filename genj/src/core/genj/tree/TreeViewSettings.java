@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -82,8 +81,10 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   ;
   
   /** buttons */
-  private AbstractButton 
-    bUp, bDown, bDelete;
+  private Action2 
+    bookmarkUp = new ActionMove(-1), 
+    bookmarkDown = new ActionMove( 1), 
+    bookmarkDelete =  new ActionDelete(); 
   
   /** font chooser */
   private FontChooser fontChooser = new FontChooser();
@@ -142,9 +143,9 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     
     JPanel bookmarkActions = new JPanel();
     ButtonHelper bh = new ButtonHelper().setContainer(bookmarkActions);
-    bUp     = bh.create(new ActionMove(-1));
-    bDown   = bh.create(new ActionMove( 1));
-    bDelete = bh.create(new ActionDelete());
+    bh.create(bookmarkUp);
+    bh.create(bookmarkDown);
+    bh.create(bookmarkDelete);
     bookmarkList.addListSelectionListener(new ListSelectionListener() {
       /** update buttons */
       public void valueChanged(ListSelectionEvent e) {
@@ -152,9 +153,9 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
           i = bookmarkList.getSelectedIndex(),
           n = bookmarkList.getModel().getSize();
       
-        bUp.setEnabled(i>0);
-        bDown.setEnabled(i>=0&&i<n-1);
-        bDelete.setEnabled(i>=0);
+        bookmarkUp.setEnabled(i>0);
+        bookmarkDown.setEnabled(i>=0&&i<n-1);
+        bookmarkDelete.setEnabled(i>=0);
       }
     });
     bookmarks.add(bookmarkActions);
