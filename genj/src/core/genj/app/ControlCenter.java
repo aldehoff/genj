@@ -335,8 +335,9 @@ public class ControlCenter extends JPanel {
     //   http://lists.apple.com/archives/java-dev/2005/Aug/msg00060.html
     // the offending thing might be a non-menu-item (glue) added to the menu
     // as we did here previously - so let's remove that for Macs for now
-    if (!EnvironmentChecker.isMac())
-      result.add(Box.createHorizontalGlue());
+    // 20061116 remove the glue in all situations - we don't have to hide help on the right
+    //    if (!EnvironmentChecker.isMac())
+    //      result.add(Box.createHorizontalGlue());
 
     mh.popMenu().createMenu(resources.getString("cc.menu.help"));
 
