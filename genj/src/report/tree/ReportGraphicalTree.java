@@ -162,6 +162,11 @@ public class ReportGraphicalTree extends Report {
     public boolean display_fambox = true;
 
     /**
+     * Whether to display divorce information.
+     */
+    public boolean draw_divorce = true;
+
+    /**
      * Whether to shrink boxes when possible.
      */
     public boolean shrink_boxes = false;
@@ -212,6 +217,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("maxImageWidth", draw_images ? MAX_IMAGE_WIDTH : 0);
         properties.put("drawPlaces", draw_places);
         properties.put("drawOccupation", draw_occupation);
+        properties.put("drawDivorce", draw_divorce);
 
         // Build the tree
         TreeBuilder builder = new BasicTreeBuilder(properties);

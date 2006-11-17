@@ -38,11 +38,13 @@ public class DetermineFamboxSize extends TreeFilterBase {
     private int defaultHeight;
     private int defaultWidth;
     private boolean drawPlaces;
+    private boolean drawDivorce;
 
     public DetermineFamboxSize(Registry properties) {
         defaultHeight = properties.get("defaultFamboxHeight", 0);
         defaultWidth = properties.get("defaultFamboxWidth", 0);
         drawPlaces = properties.get("drawPlaces", true);
+        drawDivorce = properties.get("drawDivorce", true);
     }
 
     public void preFilter(IndiBox indibox) {
@@ -63,7 +65,7 @@ public class DetermineFamboxSize extends TreeFilterBase {
                 lines++;
         }
         Property divorcePlace = f.getProperty(PATH_FAMDIVPLAC);
-        if (f.getDivorceDate() != null) {
+        if (drawDivorce && f.getDivorceDate() != null) {
             lines++;
             if (drawPlaces && f.getDivorceDate().isValid() && divorcePlace != null && !divorcePlace.toString().equals(""))
                 lines++;
@@ -78,7 +80,7 @@ public class DetermineFamboxSize extends TreeFilterBase {
             if (width + 25+TEXT_MARGIN > fambox.width)
                 fambox.width = width + 25+TEXT_MARGIN;
         }
-        if (f.getDivorceDate() != null) {
+        if (drawDivorce && f.getDivorceDate() != null) {
             int width = getTextWidth(f.getDivorceDate().toString(), DETAILS_FONT);
             if (width + 25+TEXT_MARGIN > fambox.width)
                 fambox.width = width + 25+TEXT_MARGIN;
@@ -90,7 +92,7 @@ public class DetermineFamboxSize extends TreeFilterBase {
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }
-            if (divorcePlace != null) {
+            if (drawDivorce && divorcePlace != null) {
                 int width = getTextWidth(divorcePlace.toString(), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;

@@ -145,6 +145,8 @@ public class GraphicsTreeElements implements TreeElements {
 
     private boolean drawOccupation;
 
+    private boolean drawDivorce;
+
     /**
      * The graphics object to paint on.
      */
@@ -164,6 +166,7 @@ public class GraphicsTreeElements implements TreeElements {
         maxImageWidth = properties.get("maxImageWidth", 0);
         drawPlaces = properties.get("drawPlaces", true);
         drawOccupation = properties.get("drawOccupation", true);
+        drawDivorce = properties.get("drawDivorce", true);
     }
 
     /**
@@ -362,7 +365,7 @@ public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
         }
 
         // Date and place of divorce
-        if (f.getDivorceDate() != null) {
+        if (drawDivorce && f.getDivorceDate() != null) {
             centerString(graphics, Options.getInstance().getDivorceSymbol(), x + 13, currentY);
             if (divorceDate != null) {
                 graphics.drawString(divorceDate.toString(), x + 25, currentY);
