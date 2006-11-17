@@ -49,6 +49,9 @@ public class Options extends OptionProvider {
   
   /** option - whether to convert last names to uppercase */
   public boolean isUpperCaseNames = false;
+  
+  /** option - wether to set wife lastname when indi is created */
+  public boolean setWifeLastname = true;
 
   /** option - maximum image files size to be loaded */  
   private int maxImageFileSizeKB = 128;
