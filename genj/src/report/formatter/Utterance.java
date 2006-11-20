@@ -200,7 +200,7 @@ public class Utterance {
     s = forTemplate(null, "Geboren wurde [SUBJECT][OPTIONAL_PP_PLACE][OPTIONAL_PP_DATE].");
     s.set("SUBJECT", "sie");
     System.out.println(s);
-    s.set("OPTIONAL_PP_PLACE", "in Düsseldorf");
+    s.set("OPTIONAL_PP_PLACE", "in Duesseldorf");
     System.out.println(s);
 
     Utterance pp = forTemplate(null, "in [CITY]");
