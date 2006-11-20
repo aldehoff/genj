@@ -111,7 +111,6 @@ public class ReportNarrative extends Report {
 
     println("indi = " + indi.getName());
 
-    Utterance.setReportProperties(new ReportProperties(this));
     nameIndexTitle = withNameIndex ? translate("index.names") : null;
     placeIndexTitle = withPlaceIndex ? translate("index.places") : null;
     sourceIndexTitle = withBibliography ? translate("bibliography") : null;
@@ -120,7 +119,7 @@ public class ReportNarrative extends Report {
 
     // 2nd pass - fill document content
     String title = getUtterance(ancestors ? "doc.ancestors.title" : "doc.descendants.title",
-                                new String[] { getIndiName(indi) }).toString();
+                                new String[] { new IndiWriter(indi, null).getName(indi) }).toString();
     Document doc = new Document(title);
 
     // todo bk: used to set style inline if no .css given.  Can of course also
@@ -173,11 +172,6 @@ public class ReportNarrative extends Report {
     println(translate("log.finished"));
   }
 
-  private String getIndiName(Indi person) {
-    return IndiWriter.getName(person);
-  }
-
-
 //  private void printUtterance(String key) {
 //    printUtterance(key, new String[0]);
 //  }
@@ -206,7 +200,7 @@ public class ReportNarrative extends Report {
     String template1 = translate(key);
     if (template1 == null) template1 = key;
     System.err.println("getUtteranceForTag: key=" + key + " => " + template1);
-    return Utterance.forTemplate(template1, params);
+    return Utterance.forTemplate(getResources(), template1, params);
 //    for (int i = 0; i < params.length; i++) {
 //      result.set(Integer.toString()) params[i];
 //
@@ -226,9 +220,7 @@ public class ReportNarrative extends Report {
     for (Iterator i = gen0.iterator(); i.hasNext();) {
 
       Indi indi = (Indi) i.next();
-      IndiWriter writer = new IndiWriter(indi, doc, showIds, showRefns,
-          placeIndexTitle, nameIndexTitle, sourceIndexTitle);
-      writer.setReportProperties(new ReportProperties(this));
+      IndiWriter writer = new IndiWriter(indi, doc);
 
       String sectionTitle = indi.getName();
       Property title = indi.getProperty("TITL");
@@ -288,40 +280,23 @@ public class ReportNarrative extends Report {
   /**
    * IndiWriter writes information about an individual to a Formatter.
    */
-  public static class IndiWriter {
+  public class IndiWriter {
 
     private Indi indi;
     private Document doc;
-    private final boolean showIds;
-    private final boolean showRefns;
-    private ReportProperties reportProperties;
-    private boolean alignImages = true; // todo bk should come from report
 
     /** Symbolic constant for {@link #writePersonalPronoun} */
-    private static boolean AS_SUBJECT = true;
+    private boolean AS_SUBJECT = true;
 
-    private final String placeIndexTitle;
-    private final String nameIndexTitle;
-    private final String sourceIndexTitle;
-
-    public IndiWriter(Indi indi, Document doc, boolean showIds, boolean showRefns,
-                      String placeIndexTitle, String nameIndexTitle, String sourceIndexTitle) {
+    /** constructor */
+    public IndiWriter(Indi indi, Document doc) {
       this.indi = indi;
       this.doc = doc;
-      this.showIds = showIds;
-      this.showRefns = showRefns;
-      this.placeIndexTitle = placeIndexTitle;
-      this.nameIndexTitle = nameIndexTitle;
-      this.sourceIndexTitle = sourceIndexTitle;
-    }
-
-    public void setReportProperties(ReportProperties reportProperties) {
-      this.reportProperties = reportProperties;
     }
 
     // From definition of INDIVIDUAL_ATTRIBUTE_STRUCTURE in Gedcom 5.5 spec
     // at http://homepages.rootsweb.com/~pmcbride/gedcom/55gcch2.htm
-    private static final Set INDIVIDUAL_ATTRIBUTES = new HashSet(Arrays.asList(
+    private final Set INDIVIDUAL_ATTRIBUTES = new HashSet(Arrays.asList(
         new String[] {
         "CAST", // <CASTE_NAME>   {1:1}
         "DSCR", // <PHYSICAL_DESCRIPTION>   {1:1}
@@ -370,14 +345,14 @@ public class ReportNarrative extends Report {
      * @param i
      * @return
      */
-    public static String getName(Indi i) {
+    public String getName(Indi i) {
       StringBuffer name = new StringBuffer(i.getFirstName());
       appendName(name, i.getLastName());
       appendName(name, i.getNameSuffix());
       return name.toString();
     }
 
-    private static void appendName(StringBuffer name, String element) {
+    private void appendName(StringBuffer name, String element) {
       if (element != null && element.length() > 0) {
         name.append(' ');
         name.append(element);
@@ -460,14 +435,14 @@ public class ReportNarrative extends Report {
 
             Utterance parenPhrase = null;
             if (indi.getBiologicalFather() != null && indi.getBiologicalMother() != null) {
-              parenPhrase = Utterance.forProperty("phrase.childof.parents",
+              parenPhrase = Utterance.forProperty(getResources(), "phrase.childof.parents",
                 new String[] { getName(indi.getBiologicalFather()), getName(indi.getBiologicalMother()) },
                   new Entity[] { indi.getBiologicalFather(), indi.getBiologicalMother() });
               // TODO: how manage links to parents within the phrase
             } else {
               Indi parent = indi.getBiologicalFather() != null ? indi.getBiologicalFather()
                                  : indi.getBiologicalMother();
-              parenPhrase = Utterance.forProperty("phrase.childof.parent",
+              parenPhrase = Utterance.forProperty(getResources(), "phrase.childof.parent",
                   new String[] { getName(parent) },
                   new Entity[] { parent } );
             }
@@ -491,7 +466,7 @@ public class ReportNarrative extends Report {
               ? fam.getProperty(new TagPath("FAM:HUSB:AGE"))
               : fam.getProperty(new TagPath("FAM:WIFE:AGE"));
             if (age != null) {
-               doc.addText(Utterance.forProperty("phrase.at_age", new String[] { age.getValue() }).toString());
+               doc.addText(Utterance.forProperty(getResources(), "phrase.at_age", new String[] { age.getValue() }).toString());
             }
             Indi spouse = fam.getOtherSpouse(indi);
             if (spouse == null) {
@@ -557,7 +532,7 @@ public class ReportNarrative extends Report {
 //                doc.addText(prop.getValue()); // TODO: decapitalize (not in German)
 //                doc.addText(".");
 
-                Utterance u = Utterance.forProperty("sentence.OCCU",
+                Utterance u = Utterance.forProperty(getResources(), "sentence.OCCU",
                       new String[] { prop.getValue() } );
                 // TODO English a/an
                 u.setSubject(indi);
@@ -602,8 +577,7 @@ public class ReportNarrative extends Report {
               for (int i = 0; i < children.length; i++) {
                 doc.nextListItem();
                 Indi child = children[i];
-                IndiWriter w = new IndiWriter(child, doc, showIds, showRefns, placeIndexTitle, nameIndexTitle, sourceIndexTitle);
-                w.setReportProperties(reportProperties);
+                IndiWriter w = new IndiWriter(child, doc);
                 // Parents clear from the context, don't print them.
                 w.writeEntry(/*withChildren*/ false, DETAIL_DATES,
                     /*withParents*/ multipleFamilies, /*linkToIndi*/ true, false);
@@ -623,15 +597,15 @@ public class ReportNarrative extends Report {
     }
 
     private void addUtterance(String key) {
-      doc.addText(Utterance.forProperty(key).toString());
+      doc.addText(Utterance.forProperty(getResources(), key).toString());
     }
 
     private void addUtterance(String key, String value1) {
-      doc.addText(Utterance.forProperty(key, new String[] { value1 } ).toString());
+      doc.addText(Utterance.forProperty(getResources(), key, new String[] { value1 } ).toString());
     }
 
     private void addUtterance(String key, String[] values) {
-      doc.addText(Utterance.forProperty(key, values).toString());
+      doc.addText(Utterance.forProperty(getResources(), key, values).toString());
     }
 
     /* Get date in nicely formatted, localized, human-readable form. */
@@ -753,7 +727,7 @@ public class ReportNarrative extends Report {
         addOptionalParam(u, prop, tags[i]);
       }
       if (prop.getProperty("PAGE") != null) {
-        u.set("OPTIONAL_PAGE", ", " + Utterance.forProperty("abbrev.page") + " " + prop.getProperty("PAGE").getValue());
+        u.set("OPTIONAL_PAGE", ", " + Utterance.forProperty(getResources(), "abbrev.page") + " " + prop.getProperty("PAGE").getValue());
       }
       String date = getDatePhrase(prop);
       if (date.length() > 0) {
@@ -832,8 +806,8 @@ public class ReportNarrative extends Report {
       // Look for report property for this attribute of the source.
       String phraseKey = "phrase." + prop.getTag() + "." + tag;
       String value;
-      if (reportProperties.getProp(phraseKey) != null) {
-        Utterance phrase = Utterance.forTemplate(reportProperties.getProp(phraseKey),
+      if (getResources().getString(phraseKey) != null) {
+        Utterance phrase = Utterance.forTemplate(getResources(), getResources().getString(phraseKey),
             new String[] { prop.getProperty(tag).getValue() } );
         value = phrase.toString();
       } else {
@@ -1012,13 +986,13 @@ public class ReportNarrative extends Report {
         } else if (propDate != null && propDate.getStart().getDay() == PointInTime.UNKNOWN) {
           Utterance phrase;
           if (propDate.getStart().getMonth() == PointInTime.UNKNOWN) {
-            phrase = Utterance.forProperty("phrase.date.year", new String[] { date });
+            phrase = Utterance.forProperty(getResources(), "phrase.date.year", new String[] { date });
           } else {
-            phrase = Utterance.forProperty("phrase.date.month", new String[] { date });
+            phrase = Utterance.forProperty(getResources(), "phrase.date.month", new String[] { date });
           }
           date = phrase.toString();
         } else {
-          Utterance phrase = Utterance.forProperty("phrase.date.day", new String[] { date });
+          Utterance phrase = Utterance.forProperty(getResources(), "phrase.date.day", new String[] { date });
           date = phrase.toString();
         }
       }
@@ -1033,7 +1007,7 @@ public class ReportNarrative extends Report {
       if (place.length() > 0) s.set("OPTIONAL_PP_PLACE", place);
       if (prop.getProperty("AGNC") != null) {
         // Default agency phrase if none for tag?
-        Utterance agency = Utterance.forProperty("phrase." + prop.getTag()+ ".AGENCY");
+        Utterance agency = Utterance.forProperty(getResources(), "phrase." + prop.getTag()+ ".AGENCY");
         s.set("OPTIONAL_AGENCY", agency.toString());
       }
       String date = "";
@@ -1049,10 +1023,10 @@ public class ReportNarrative extends Report {
     }
 
     private Utterance getSentenceForTag(String tag, String[] params) {
-      String template1 = reportProperties == null ? null : reportProperties.getProp("sentence." + tag);
+      String template1 = getResources().getString("sentence." + tag);
       if (template1 == null) template1 = "{SUBJECT} " + tag + "{OPTIONAL_AGENCY}{OPTIONAL_PP_PLACE}{OPTIONAL_PP_DATE}.";
       System.err.println("getSentenceForTag: tag=" + tag + " => " + template1);
-      Utterance u = Utterance.forTemplate(template1, params);
+      Utterance u = Utterance.forTemplate(getResources(), template1, params);
       u.setSubject(indi);
       return u;
       // TODO: should also check config for cases, etc and set in Utterance
@@ -1131,7 +1105,7 @@ public class ReportNarrative extends Report {
       if (preposition == null) {
         String key = "prep.in_city";
         if (Character.isDigit(result.charAt(0))) key = "prep.at_street_address"; // likely street address (crude heuristic)
-        preposition = reportProperties.getProp(key);
+        preposition = getResources().getString(key);
       }
       return " " + preposition + " " + result;
     }
@@ -1162,13 +1136,13 @@ public class ReportNarrative extends Report {
     private String getPersonalPronoun(boolean asSubject) {
       String pronoun;
       if (asSubject) {
-        if (indi.getSex() == PropertySex.MALE) pronoun = reportProperties.getProp("pronoun.nom.male");
-        else pronoun = reportProperties.getProp("pronoun.nom.female");
+        if (indi.getSex() == PropertySex.MALE) pronoun = getResources().getString("pronoun.nom.male");
+        else pronoun = getResources().getString("pronoun.nom.female");
         pronoun = Character.toUpperCase(pronoun.charAt(0)) + pronoun.substring(1); // capitalize
       } else {
         // need more complex logic for languages with more cases // TODO handle case
-        if (indi.getSex() == PropertySex.MALE) pronoun = reportProperties.getProp("pronoun.acc.male");
-        else pronoun = reportProperties.getProp("pronoun.acc.female");
+        if (indi.getSex() == PropertySex.MALE) pronoun = getResources().getString("pronoun.acc.male");
+        else pronoun = getResources().getString("pronoun.acc.female");
       }
       return pronoun;
     }

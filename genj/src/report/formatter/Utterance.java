@@ -11,6 +11,7 @@ package formatter;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertySex;
 import genj.gedcom.Entity;
+import genj.util.Resources;
 import genj.fo.Document;
 
 import java.util.HashMap;
@@ -27,12 +28,13 @@ public class Utterance {
   private final String template;
   private final Map props = new HashMap(); // key/value; "1" for 1st positional property
   private final ArrayList linkedEntities = new ArrayList();
-  private static ReportProperties reportProperties;
+  private Resources resources;
   private int gender = 0; // PropertySex.MALE, PropertySex.FEMALE
 
   private static final String SUBJECT = "SUBJECT";
 
-  private Utterance(String template) {
+  private Utterance(Resources resources, String template) {
+    this.resources = resources;
     this.template = template;
     props.put("LBRACKET", "[");
     props.put("RBRACKET", "]");
@@ -40,24 +42,24 @@ public class Utterance {
     props.put("RBRACE", "}");
   }
 
-  public static Utterance forProperty(String property) {
-    return forTemplate(reportProperties.getProp(property));
+  public static Utterance forProperty(Resources resources, String property) {
+    return forTemplate(resources, resources.getString(property));
   }
 
-  public static Utterance forProperty(String property, String[] params, Entity[] linkedEntities) {
-    return forTemplate(reportProperties.getProp(property), params, linkedEntities);
+  public static Utterance forProperty(Resources resources, String property, String[] params, Entity[] linkedEntities) {
+    return forTemplate(resources, resources.getString(property), params, linkedEntities);
   }
 
-  public static Utterance forProperty(String property, String[] params) {
-    return forTemplate(reportProperties.getProp(property), params);
+  public static Utterance forProperty(Resources resources, String property, String[] params) {
+    return forTemplate(resources, resources.getString(property), params);
   }
 
-  public static Utterance forTemplate(String template) {
-    return new Utterance(template);
+  public static Utterance forTemplate(Resources resources, String template) {
+    return new Utterance(resources, template);
   }
 
-  public static Utterance forTemplate(String template, String[] params, Entity[] linkedEntities) {
-    Utterance result = forTemplate(template, params);
+  public static Utterance forTemplate(Resources resources, String template, String[] params, Entity[] linkedEntities) {
+    Utterance result = forTemplate(resources, template, params);
     for (int i = 0; i < linkedEntities.length; i++) {
       Entity entity = linkedEntities[i];
       result.linkedEntities.add(entity);
@@ -65,11 +67,35 @@ public class Utterance {
     return result;
   }
 
-  public static Utterance forTemplate(String template, String[] params) {
-    Utterance result = new Utterance(template);
+  public static Utterance forTemplate(Resources resources, String template, String[] params) {
+    Utterance result = new Utterance(resources, template);
     for (int i=0; i < params.length; i++) {
       result.set(Integer.toString(i+1), params[i]);
     }
+    return result;
+  }
+
+  /**
+   * Look up a string value in resources - this one patches leading/trailing spaces marked with _
+   */
+  private String getString(String key) {
+    // do we have resources?
+    if (resources==null)
+      return key;
+    // look it up
+    String result = resources.getString(key);
+    if (result.equals(key)) 
+      return null; // second-guess Report's default mechanism (todo better way to tell if configured or not)
+    
+    // todo How get leading/trailing blanks in properties?
+    if (result.startsWith("_")) {
+      result = " " + result.substring(1);
+    }
+    if (result.endsWith("_")) {
+      result = result.substring(0, result.length()-1) + " ";
+    }
+    
+    System.err.println("Key " + key + " -> " + result);
     return result;
   }
 
@@ -83,13 +109,9 @@ public class Utterance {
     }
   }
 
-  public static void setReportProperties(ReportProperties value) {
-    reportProperties = value;
-  }
-
   public void setSubject(Indi indi) {
     gender = indi.getSex();
-    props.put(SUBJECT, reportProperties.getProp("pronoun.nom" + getGenderKeySuffix()));
+    props.put(SUBJECT, getString("pronoun.nom" + getGenderKeySuffix()));
   }
 
   private static final Pattern argPattern = Pattern.compile("\\[[^\\[\\]]*\\]");
@@ -117,9 +139,9 @@ public class Utterance {
           value = "";
         } else {
           if (key.startsWith("ending.")) {
-            value = reportProperties.getProp(key + getGenderKeySuffix());
+            value = getString(key + getGenderKeySuffix());
           } else if (key.startsWith("SUBJECT.")) {
-            value = reportProperties.getProp("pronoun." + key.substring(8) + getGenderKeySuffix());
+            value = getString("pronoun." + key.substring(8) + getGenderKeySuffix());
           }
           if (value == null) {
             value = key;
@@ -169,18 +191,19 @@ public class Utterance {
   }
 
   public static void main(String[] args) {
-    Utterance s = forTemplate("[SUBJECT] wurde geboren[OPTIONAL_PP_PLACE][OPTIONAL_PP_DATE].");
+    // NM where do we get the resources in this main case from?
+    Utterance s = forTemplate(null, "[SUBJECT] wurde geboren[OPTIONAL_PP_PLACE][OPTIONAL_PP_DATE].");
     s.set("SUBJECT", "er");
     System.out.println(s);
     s.set("OPTIONAL_PP_PLACE", "in Frankfurt");
     System.out.println(s);
-    s = forTemplate("Geboren wurde [SUBJECT][OPTIONAL_PP_PLACE][OPTIONAL_PP_DATE].");
+    s = forTemplate(null, "Geboren wurde [SUBJECT][OPTIONAL_PP_PLACE][OPTIONAL_PP_DATE].");
     s.set("SUBJECT", "sie");
     System.out.println(s);
     s.set("OPTIONAL_PP_PLACE", "in Düsseldorf");
     System.out.println(s);
 
-    Utterance pp = forTemplate("in [CITY]");
+    Utterance pp = forTemplate(null, "in [CITY]");
     pp.set("CITY", "Frankfurt");
     s.set("OPTIONAL_PP_PLACE", pp.toString());
     System.out.println(s);
