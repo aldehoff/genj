@@ -89,7 +89,7 @@ import genj.util.swing.ImageIcon;
    * The expected referenced type
    */
   public String getTargetType() {
-    throw new RuntimeException("getTargetType is not support by ForeignXRefs");
+    throw new IllegalArgumentException("getTargetType is not support by ForeignXRefs");
   }
 
   /**
