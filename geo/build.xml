@@ -1,35 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="GenJ" default="dist" basedir=".">
+<project name="Geo" default="dist" basedir=".">
 
   <property file="build.properties"/>
-  <property prefix="genj" file="${dir.genj}/build.properties"/>
-  	
-  <property name="dir.build" value="build"/>
-  <property name="dir.lib" value="${dir.build}/lib"/>
-  <property name="dir.dist" value="${dir.build}/dist"/>
+  <property file="${dir.app}/build.properties"/>
 
   <path id="project.class.path">
     <pathelement path="contrib/jump/jump.jar"/>
-    <pathelement path="${dir.build}/classes/core"/>
-    <pathelement path="${dir.genj}/build/classes/core"/>
-    <pathelement path="${dir.genj}/build/classes/contrib"/>
+    <pathelement path="${dir.app}/build/classes/core"/>
+    <pathelement path="${dir.app}/build/classes/contrib"/>
+    <pathelement path="./build/classes/core"/>
   </path>
 
   <!--
    Initialization
    -->
   <target name="init">
-  	
-  	<fail unless="genj.app.version" message="Couldn't find GenJ files in ${dir.genj} - please update ./build.properties"/>
 
+    <fail unless="dir.app" message="Please specify dir.app in build.properties"/>
+    <echo>Calling GenJ Application build in ${dir.app} (version=${version})</echo>
+    <ant dir="${dir.app}" target="compile"/>
+  	
     <echo level="info">Creating output directories</echo>
-    <mkdir dir="${dir.build}"/>
-    <mkdir dir="${dir.lib}"/>
-    <mkdir dir="${dir.dist}"/>
-    
-    <echo level="info">Compiling GenJ</echo>
-    <ant dir="${dir.genj}" target="compile"/>
-    <echo level="info">GenJ is compiled</echo>
+    <mkdir dir="./build"/>
+    <mkdir dir="./build/lib"/>
+    <mkdir dir="./build/dist"/>
     
   </target>
 
@@ -37,16 +31,19 @@
    Compilation
    -->
   <target name="compile" depends="init">
-    <mkdir dir="${dir.build}/classes/core"/>
-    <javac srcdir="src/core" destdir="${dir.build}/classes/core"
+
+    <mkdir dir="./build/classes/core"/>
+    <javac srcdir="src/core" destdir="./build/classes/core"
            debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
-    <mkdir dir="${dir.build}/classes/report"/>
-    <javac srcdir="src/report" destdir="${dir.build}/classes/report"
+
+    <mkdir dir="./build/classes/report"/>
+    <javac srcdir="src/report" destdir="./build/classes/report"
            debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
       <classpath refid="project.class.path"/>
     </javac>
+
   </target>
 
   <!--
@@ -54,8 +51,7 @@
    -->
   <target name="clean">
     <echo level="info">Cleaning output directories</echo>
-    <delete dir="${dir.build}"/>
-    <delete dir="${dir.dist}"/>
+    <delete dir="./build"/>
   </target>
 
   <!--
@@ -64,9 +60,9 @@
   <target name="dist" depends="compile">
 
    <!-- create geo.jar -->
-   <delete file="${dir.lib}/geo.jar"/>
-   <jar jarfile="${dir.lib}/geo.jar" update="True">
-     <fileset dir="${dir.build}/classes/core" includes="**/*.class"/>
+   <delete file="./build/lib/geo.jar"/>
+   <jar jarfile="./build/lib/geo.jar" update="True">
+     <fileset dir="./build/classes/core" includes="**/*.class"/>
      <fileset dir="./images"/>
      <fileset dir="./language/en"/>
      <fileset dir="./language/fr"/>
@@ -75,23 +71,18 @@
    </jar>
     
    <!-- copy contrib libraries -->
-   <copy file="./contrib/jump/jump.jar" todir="${dir.lib}"/>
+   <copy file="./contrib/jump/jump.jar" todir="./build/lib"/>
 
    <!-- create genj_geo-xyz.zip -->
-   <zip zipfile="${dir.dist}/genj_geo-${genj.app.version}.zip" update="True">
-     <zipfileset dir="${dir.build}" includes="lib/geo.jar"/>
-     <zipfileset dir="${dir.build}" includes="lib/jump.jar"/>
+   <zip zipfile="./build/dist/genj_geo-${version}.zip" update="True">
+     <zipfileset dir="./build" includes="lib/geo.jar"/>
+     <zipfileset dir="./build" includes="lib/jump.jar"/>
      <zipfileset dir="./contrib" includes="geo/**"/>
      <zipfileset dir="." includes="gedcom/*"/>
-     <zipfileset dir="${dir.build}/classes" includes="report/**/*.class"/>
+     <zipfileset dir="./build/classes" includes="report/**/*.class"/>
      <zipfileset dir="./src" includes="report/**"/>
    </zip>
   	
-   <!-- copy it to genj's dist directory -->
-   <copy file="${dir.dist}/genj_geo-${genj.app.version}.zip" todir="${dir.genj}/${genj.dir.build}/dist"/>
-  	
-   <!-- report -->
-   <echo level="info">You can find genj_geo-${genj.app.version}.zip in ${dir.dist} and a copy in ${dir.genj}/${genj.dir.build}/dist</echo>
   </target>
 
 </project>
