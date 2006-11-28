@@ -789,10 +789,15 @@ import javax.swing.event.ChangeListener;
      
      // show simple xref bean for PropertyXRef
      if (prop instanceof PropertyXRef) {
-       // don't create tabs for family relationships
-       String tt = ((PropertyXRef)prop).getTargetType();
-       if (tt.equals(Gedcom.INDI)||tt.equals(Gedcom.FAM))
+       // don't create tabs for individuals and families
+       try {
+         String tt = ((PropertyXRef)prop).getTargetType();
+         if (tt.equals(Gedcom.INDI)||tt.equals(Gedcom.FAM))
+           return;
+       } catch (IllegalArgumentException e) {
+         // huh? non target type? (like in case of a foreign xref) ... ignore this prop
          return;
+       }
        // add a tab for anything else
        tabs.insertTab(prop.getPropertyName(), prop.getImage(false), view.getBeanFactory().get(prop), prop.getPropertyInfo(), 0);
        return;
