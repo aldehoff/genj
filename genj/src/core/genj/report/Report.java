@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.115 $ $Author: daniel-andre $ $Date: 2006-11-10 13:38:47 $
+ * $Revision: 1.116 $ $Author: nmeier $ $Date: 2006-11-28 17:56:19 $
  */
 package genj.report;
 
@@ -715,6 +715,8 @@ public abstract class Report implements Cloneable {
   public final String translate(String key, Object[] values) {
 
     Resources resources = getResources();
+    if (resources==null)
+      return key;
 
     // look it up in language
     String result = null;
@@ -755,6 +757,7 @@ public abstract class Report implements Cloneable {
         resources = new Resources(getClass().getResourceAsStream(getTypeName()+".properties"));
       } catch (Throwable t) {
         ReportView.LOG.info("Couldn't read properties for "+this);
+        resources = Resources.get(this);
       }
     }
     return resources;
@@ -845,7 +848,7 @@ public abstract class Report implements Cloneable {
    */
   public String getName() {
     String name =  translate("name");
-    if (name.length()==0) name = getTypeName();
+    if (name.length()==0||name.equals("name")) name = getTypeName();
     return name;
   }
 
