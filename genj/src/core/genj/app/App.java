@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.logging.FileHandler;
@@ -256,29 +258,20 @@ public class App {
         result.append(record.getMessage());
       else 
         result.append(MessageFormat.format(msg, parms));
-      result.append(":");
-      Throwable t =record.getThrown();
-      if (t!=null)  {
-        result.append(t);
-        result.append(" in ");
-        
-        StackTraceElement trace[] = t.getStackTrace();
-        if (trace.length>0) {
-          result.append(trace[0].getClassName());
-          result.append(".");
-          result.append(trace[0].getMethodName());
-          if (t.getMessage()!=null) {
-            result.append(", message=");
-            result.append(t.getMessage());
-          }
-          if (trace[0].getLineNumber()>0) {
-            result.append(", line=");
-            result.append(trace[0].getLineNumber());
-          }
-        }
-      }
-      result.append(":");
       result.append(System.getProperty("line.separator"));
+
+      if (record.getThrown()!= null) {
+        
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        try {
+            record.getThrown().printStackTrace(pw);
+        } catch (Throwable t) {
+        }
+        pw.close();
+        result.append(sw.toString());
+      }      
+      
       return result.toString();
     }
   }
