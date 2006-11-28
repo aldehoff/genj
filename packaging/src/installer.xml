@@ -1,0 +1,77 @@
+<installation version="1.0">
+
+ <info>
+  <appname>GenealogyJ</appname>
+  <appversion>@version@</appversion>
+  <url>http://genj.sourceforge.net/</url>
+  <authors>
+   <author name="Nils Meier" email="nmeier@users.sourceforge.net"/>
+   <author name="and" email=""/>
+   <author name="many" email=""/>
+   <author name="other" email=""/>
+   <author name="individual" email=""/>
+   <author name="contributors" email=""/>
+  </authors>
+  <javaversion>1.4</javaversion>
+  </info>
+  
+  
+  <guiprefs resizable="yes" width="800" height="480"/>
+
+ <locale> 
+  <langpack iso3="eng"/>
+  <langpack iso3="fra"/>
+  <langpack iso3="deu"/>
+  <langpack iso3="spa"/>
+ </locale>
+ 
+ <native type="izpack" name="ShellLink.dll"/>
+
+ <resources>
+  <res id="LicencePanel.licence" src="./app/doc/gpl.txt"/>
+  <res id="shortcutSpec.xml" src="./src/installer/shortcuts.xml" />
+  <res id="Installer.image" src="./src/installer/GenJ.png" />
+ </resources> 
+
+ <panels>
+  <panel classname="HelloPanel"/>
+  <panel classname="LicencePanel"/>
+  <panel classname="TargetPanel"/>
+  <panel classname="ShortcutPanel"/>
+  <panel classname="PacksPanel"/>
+  <panel classname="InstallPanel"/>
+  <panel classname="FinishPanel"/>
+ </panels>
+
+ <packs>
+
+  <pack name="Application" required="yes">
+    <description>The minimum required for running GenealogyJ</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_app-@version@.zip" unpack="true"/>
+    <file targetdir="$INSTALL_PATH" src="src/installer/genj.ico"/>
+   </pack>
+
+  <pack name="Geography View" required="no">
+    <description>A view extension that shows events geographically</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_geo-@version@.zip" unpack="true"/>
+   </pack>
+   
+  <pack name="English" required="no">
+   <description>English Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_en-@version@.zip" unpack="true"/>
+   </pack>
+   
+  <pack name="French" required="no">
+   <description>French Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_fr-@version@.zip" unpack="true"/>
+   </pack>
+   
+  <pack name="German" required="no">
+   <description>German Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_de-@version@.zip" unpack="true"/>
+   </pack>
+   
+   
+  </packs>
+
+</installation>

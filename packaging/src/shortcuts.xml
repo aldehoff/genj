@@ -1,0 +1,10 @@
+<shortcuts>
+  <programGroup defaultName="GenealogyJ" location="applications"/>
+  
+  <shortcut name="Genealogy J" target="$INSTALL_PATH\run.jar" commandLine="" workingDirectory="$INSTALL_PATH"
+    description="This starts the GenealogyJ Application" iconFile="$INSTALL_PATH\genj.ico" iconIndex="0"
+    initialState="normal" programGroup="yes" desktop="yes" applications="no" startMenu="no" startup="no">
+   <createForPack name="Application"/>
+  </shortcut> 
+  
+</shortcuts>
