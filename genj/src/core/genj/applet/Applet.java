@@ -103,13 +103,12 @@ public class Applet extends java.applet.Applet {
       log(RESOURCES.getString("applet.missing"));
       return;
     }
-    if (gedcom.indexOf(':')<0) {
-      String base = getDocumentBase().toString();
-      gedcom = base.substring(0, base.lastIndexOf('/')+1)+gedcom;
-    } 
+    
     URL url;
     try {
-      url = new URL(gedcom);
+      log("document base="+getDocumentBase());
+      log("gedcom="+gedcom);
+      url = new URL(getDocumentBase(), gedcom);
     } catch (MalformedURLException e) {
       log(RESOURCES.getString("applet.missing"));
       return;
