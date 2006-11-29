@@ -5,9 +5,11 @@
   <property name="dir.build" value="./build"/>
 
   <path id="classpath">
+    <pathelement path="${dir.build}/classes/tst"/>
+    <pathelement path="${dir.build}/classes/layouts"/>
     <pathelement path="${dir.build}/classes/core"/>
     <pathelement path="${dir.build}/classes/shell"/>
-    <pathelement path="${java.class.path}"/>
+    <pathelement path="./src/shell"/>
   </path>
 
   <property name="classpath" refid="classpath"/>
@@ -31,6 +33,17 @@
   </target>
 
   <!--
+   Layouts Compilation
+   -->
+  <target name="compile.layouts" depends="init">
+    <mkdir dir="${dir.build}/classes/layouts"/>
+    <javac srcdir="src/layouts" destdir="${dir.build}/classes/layouts"
+           debug="on" optimize="off" deprecation="off" fork="true">
+      <classpath refid="classpath"/>
+    </javac>
+  </target>
+
+  <!--
    Shell Compilation
    -->
   <target name="compile.shell" depends="init">
@@ -47,7 +60,7 @@
   <!--
    Compilation
    -->
-  <target name="compile" depends="compile.core, compile.shell">
+  <target name="compile" depends="compile.core, compile.layouts, compile.shell">
   </target>
 
   <!--
