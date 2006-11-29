@@ -57,7 +57,7 @@
       <filterset><filter token="version" value="${version}"/></filterset>
     </copy>
  	
-    <izpack input="./build/installer.xml" output="./build/dist/genj-setup-${version}.jar" installerType="standard" basedir="." izpackdir="./contrib/izpack"/>
+    <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="./contrib/izpack"/>
   </target>
   	
   <!--
