@@ -31,9 +31,9 @@
    -->  
   <target name="dist.app" depends="init">
   	<ant dir="./app" inheritall="false" target="dist"/>
-  	<copy todir="./build/dist">
+  	<move todir="./build/dist">
   		<fileset dir="./app/build/dist/"/>
-  	</copy>
+  	</move>
   </target>
   
   <!--
@@ -43,9 +43,9 @@
     <ant dir="./geo" inheritall="false" target="dist">
       <property name="dir.app" value="../app"/>
     </ant>
-    <copy todir="./build/dist">
+    <move todir="./build/dist">
       <fileset dir="./geo/build/dist/"/>
-    </copy>
+    </move>
   </target>
   
   <!--
