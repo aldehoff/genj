@@ -90,7 +90,7 @@ import java.util.Stack;
     path.push(node);
     
     // recurse into neighbours traversing via arcs
-    Iterator neighbours = graph.getNeighbours(node).iterator();
+    Iterator<?> neighbours = graph.getNeighbours(node).iterator();
     while (neighbours.hasNext()) {
       Object neighbour = neighbours.next();
       // don't go back
@@ -109,7 +109,7 @@ import java.util.Stack;
   /**
    * Accessor - the circles
    */
-  /*package*/ Collection getCircles() {
+  /*package*/ Collection<Circle> getCircles() {
     return circles;
   }
   
@@ -154,7 +154,7 @@ import java.util.Stack;
      * Folds all elements in path down to stop into this
      * circle. Folded nodes' circles are merged.
      */
-    void fold(Stack path, Object stop) {
+    void fold(Stack<?> path, Object stop) {
       
       // Loop through stack elements
       for (int i=path.size()-1;;i--) {

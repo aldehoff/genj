@@ -25,7 +25,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -118,10 +117,9 @@ public class Vertex extends Element {
    * Reset edges
    */
   /*package*/ void resetEdges() {
-    
-    Iterator it = edges.iterator();
-    while (it.hasNext()) 
-      ((Edge)it.next()).setShape(null);
+
+    for (Edge edge : edges) 
+      edge.setShape(null);
   }
   
   /**

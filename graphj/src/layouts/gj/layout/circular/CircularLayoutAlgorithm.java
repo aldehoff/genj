@@ -91,7 +91,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
     CircularGraph cgraph = new CircularGraph(graph, isSingleCircle);
     
     // analyze the circle(s)
-    Iterator it = cgraph.getCircles().iterator();
+    Iterator<CircularGraph.Circle> it = cgraph.getCircles().iterator();
     double x=0,y=0;
     while (it.hasNext()) {
       

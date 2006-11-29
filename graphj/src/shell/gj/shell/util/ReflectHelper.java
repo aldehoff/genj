@@ -200,7 +200,7 @@ public class ReflectHelper {
       return instance;
     // try to use the one-argument constructor
     try {
-      Constructor constructor = target.getConstructor(new Class[]{ instance.getClass() } );
+      Constructor<?> constructor = target.getConstructor(new Class[]{ instance.getClass() } );
       return constructor.newInstance(new Object[]{instance});
     } catch (Throwable t) {
       throw new IllegalArgumentException("Couldn't wrap "+instance.getClass()+" in an instance of "+target);
@@ -213,7 +213,7 @@ public class ReflectHelper {
    */
   public static Object getInstance(String type, Class<?> target) {
     try {
-      Class c = Class.forName(type);
+      Class<?> c = Class.forName(type);
       if (!target.isAssignableFrom(c)) return null;
       return c.newInstance();
     } catch (Throwable t) {
@@ -224,7 +224,7 @@ public class ReflectHelper {
   /**
    * A wrapper for a Property
    */
-  public static class Property implements Comparable {
+  public static class Property implements Comparable<Property> {
     /** instance */
     private Object instance;
     /** the name of the property */
@@ -245,7 +245,7 @@ public class ReflectHelper {
       return name;
     }
     /** type */
-    public Class getType() {
+    public Class<?> getType() {
       return getter.getReturnType();
     }
     /** get */
@@ -270,16 +270,15 @@ public class ReflectHelper {
     /** hierarchy = # superclasses of declared class */
     protected int getHierarchy() {
       int result = 0;
-      Class type = getter.getDeclaringClass();
+      Class<?> type = getter.getDeclaringClass();
       for (;type!=null;result++) type=type.getSuperclass();
       return result;
     }
     /** @see java.lang.Comparable#compareTo(Object) */
-    public int compareTo(Object o) {
-      Property other = (Property)o;
+    public int compareTo(Property other) {
       
       int i = other.getHierarchy()-getHierarchy();
-      if (i==0) i = name.compareTo(((Property)o).name);
+      if (i==0) i = name.compareTo(other.name);
       return i;
     }
 

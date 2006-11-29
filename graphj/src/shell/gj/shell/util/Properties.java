@@ -25,9 +25,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Properties - better java.util.Properties
@@ -36,9 +34,6 @@ public class Properties {
 
   /** the contained original java.util.Properties */
   private java.util.Properties content;
-
-  /** all Properties objects */
-  private static Map all = new HashMap();
 
   /**
    * Constructor - simple
@@ -81,7 +76,7 @@ public class Properties {
   /**
    * Constructor - read from class-local resource
    */
-  public Properties(Class type, String name) {
+  public Properties(Class<?> type, String name) {
     this();
     
     // Load settings
@@ -146,7 +141,7 @@ public class Properties {
       return def;
     
     // The target type
-    Class target = def.getClass().getComponentType();  
+    Class<?> target = def.getClass().getComponentType();  
     
     // Loop
     List<Object> result = new ArrayList<Object>();

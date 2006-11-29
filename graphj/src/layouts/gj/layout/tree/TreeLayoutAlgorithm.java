@@ -154,6 +154,22 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   }
   
   /**
+   * Setter - which orientation to use
+   * @param orientation value between 0 and 360 degree
+   */
+  public void setOrientation(double orientation) {
+    this.orientation = orientation;
+  }
+  
+  /**
+   * Getter - which orientation to use
+   * @return value between 0 and 360 degree
+   */
+  public double getOrientation() {
+    return orientation;
+  }
+  
+  /**
    * Layout a layout capable graph
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
@@ -180,7 +196,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private Branch layout(Tree tree, Layout2D layout, Object parent, Object root) {
     
     // check children
-    Set children = tree.getNeighbours(root);
+    Set<?> children = tree.getNeighbours(root);
     children.remove(parent);
 
     // a leaf is easy
@@ -189,7 +205,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     // create a branch for each child
     Branch[] branches = new Branch[children.size()];
-    Iterator it = children.iterator();
+    Iterator<?> it = children.iterator();
     Point2D.Double pos = new Point2D.Double();
     for (int b=0;b<branches.length;b++) {
       Object child = it.next();

@@ -137,7 +137,7 @@ import java.util.List;
       animate(moves,1D);
     // restore edges
     // FIXME edges *AND* shapes???
-    Iterator it = edgesAndShapes.iterator();
+    Iterator<?> it = edgesAndShapes.iterator();
     while (it.hasNext()) {
       ((Edge)it.next()).setShape((Shape)it.next());
     }

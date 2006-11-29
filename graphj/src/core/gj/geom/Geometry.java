@@ -45,7 +45,7 @@ public class Geometry {
   /**
    * Calculates the closest point from a list of points
    */
-  public static Point2D getClosest(Point2D point, List points) {
+  public static Point2D getClosest(Point2D point, List<Point2D> points) {
     if (points.size()==0)
       throw new IllegalArgumentException();
     // assume first

@@ -185,7 +185,7 @@ public class Graph implements DirectedGraph {
   public Vertex getVertex(Point2D point) {
 
     // look through nodes
-    Iterator it = vertices.iterator();
+    Iterator<?> it = vertices.iterator();
     while (it.hasNext()) {
       
       // check a node
@@ -301,7 +301,7 @@ public class Graph implements DirectedGraph {
   private void renderEdges(Graphics2D graphics) {
     
     // Loop through the graph's arcs
-    Iterator it = edges.iterator();
+    Iterator<?> it = edges.iterator();
     while (it.hasNext()) 
       renderEdge((Edge)it.next(), graphics);
   

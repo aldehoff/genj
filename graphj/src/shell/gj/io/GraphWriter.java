@@ -250,10 +250,10 @@ public class GraphWriter implements PathIteratorKnowHow {
       list.add(val);
     }    
     public void append(StringBuffer b) {
-      Iterator it = list.iterator();
+      Iterator<String> it = list.iterator();
       while (it.hasNext()) {
-        String key = it.next().toString();
-        String val = it.next().toString();
+        String key = it.next();
+        String val = it.next();
         b.append(' ').append(key).append("=\"").append(val).append("\"");
       }
     }

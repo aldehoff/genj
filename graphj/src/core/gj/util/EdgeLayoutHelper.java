@@ -41,11 +41,11 @@ public class EdgeLayoutHelper {
    */
   public static void setShapes(Graph graph, Layout2D layout) {
     // loop over vertices
-    Iterator vertices = graph.getVertices().iterator();
+    Iterator<?> vertices = graph.getVertices().iterator();
     HashSet<Object> done = new HashSet<Object>();
     while (vertices.hasNext()) {
       Object vertex = vertices.next();
-      Iterator neighbours = graph.getNeighbours(vertex).iterator();
+      Iterator<?> neighbours = graph.getNeighbours(vertex).iterator();
       while (neighbours.hasNext()) {
         Object neighbour = neighbours.next();
         if (!done.contains(neighbour)) {

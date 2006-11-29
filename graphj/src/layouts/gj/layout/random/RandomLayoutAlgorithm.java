@@ -101,7 +101,7 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     Random random = new Random(seed++);
 
     // place the nodes    
-    Iterator nodes = graph.getVertices().iterator();
+    Iterator<?> nodes = graph.getVertices().iterator();
     while (nodes.hasNext()) {
       
       Object node = nodes.next();

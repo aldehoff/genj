@@ -54,8 +54,8 @@ public class ModelHelper {
    * Checks whether given Node n is neighbour of any of the given nodes. 
    * That is  E node(i), E arc(i,j) where node = node(j)
    */
-  public static boolean isNeighbour(Graph graph, Object node, List nodes) {
-    Iterator neighbours = graph.getNeighbours(node).iterator();
+  public static boolean isNeighbour(Graph graph, Object node, List<?> nodes) {
+    Iterator<?> neighbours = graph.getNeighbours(node).iterator();
     while (neighbours.hasNext()) {
       if (nodes.contains(neighbours.next()))
         return true;
@@ -72,7 +72,7 @@ public class ModelHelper {
       return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;
-    Iterator it = graph.getVertices().iterator();
+    Iterator<?> it = graph.getVertices().iterator();
     while (it.hasNext()) {
       Object node = it.next();
       Point2D p = layout.getPositionOfVertex(node);
