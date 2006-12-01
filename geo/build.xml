@@ -17,7 +17,7 @@
   <target name="init">
 
     <fail unless="dir.app" message="Please specify dir.app in build.properties"/>
-    <echo>Calling GenJ Application build in ${dir.app} (version=${version})</echo>
+    <echo level="info">Calling GenJ Application build in ${dir.app} (version=${version})</echo>
     <ant dir="${dir.app}" target="compile"/>
   	
     <echo level="info">Creating output directories</echo>
