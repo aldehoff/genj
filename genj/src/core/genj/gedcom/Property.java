@@ -279,6 +279,17 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Removes all properties with given tag
+   */
+  public void delProperties(String tag) {
+    Property[] cs = (Property[])children.toArray(new Property[children.size()]);
+    for (int c = 0; c < cs.length; c++) {
+      if (cs[c].getTag().equals(tag))
+        delProperty(cs[c]);
+    }
+  }
+  
+  /**
    * Removes a property by looking in the property's properties
    */
   public void delProperty(Property deletee) {
