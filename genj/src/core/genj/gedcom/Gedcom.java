@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.110 $ $Author: nmeier $ $Date: 2006-12-05 05:18:30 $
+ * $Revision: 1.111 $ $Author: nmeier $ $Date: 2006-12-05 05:24:20 $
  */
 package genj.gedcom;
 
@@ -682,6 +682,19 @@ public class Gedcom implements Comparable {
     }
     // done
     return id2entity;
+  }
+  
+  /**
+   * Returns all properties for given path
+   */
+  public Property[] getProperties(TagPath path) {
+    ArrayList result = new ArrayList(100);
+    for (Iterator it=getEntities(path.getFirst()).iterator(); it.hasNext(); ) {
+      Entity ent = (Entity)it.next();
+      Property[] props = ent.getProperties(path);
+      for (int i = 0; i < props.length; i++) result.add(props[i]);
+    }
+    return Property.toArray(result);
   }
   
   /**
