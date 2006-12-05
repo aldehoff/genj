@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.109 $ $Author: nmeier $ $Date: 2006-12-05 05:09:41 $
+ * $Revision: 1.110 $ $Author: nmeier $ $Date: 2006-12-05 05:18:30 $
  */
 package genj.gedcom;
 
@@ -306,7 +306,8 @@ public class Gedcom implements Comparable {
    */
   protected void propagateXRefLinked(final PropertyXRef property1, final PropertyXRef property2) {
     
-    LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" linked");
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" linked");
     
     // keep undo
     if (undos!=null) undos.add(new Undo() {
@@ -334,7 +335,8 @@ public class Gedcom implements Comparable {
    */
   protected void propagateXRefUnlinked(final PropertyXRef property1, final PropertyXRef property2) {
     
-    LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" unlinked");
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" unlinked");
     
     // keep undo
     if (undos!=null) undos.add(new Undo() {
@@ -362,7 +364,8 @@ public class Gedcom implements Comparable {
    */
   protected void propagateEntityAdded(final Entity entity) {
     
-    LOG.finer("Entity "+entity.getId()+" added");
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Entity "+entity.getId()+" added");
     
     // keep undo
     if (undos!=null) undos.add(new Undo() {
@@ -389,7 +392,8 @@ public class Gedcom implements Comparable {
    */
   protected void propagateEntityDeleted(final Entity entity) {
     
-    LOG.finer("Entity "+entity.getId()+" deleted");
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Entity "+entity.getId()+" deleted");
     
     // keep undo
     if (undos!=null) undos.add(new Undo() {
@@ -888,10 +892,12 @@ public class Gedcom implements Comparable {
     synchronized (writeSemaphore) {
 
       // keep undos (within limits)
-      undoHistory.add(undos);
-      while (undoHistory.size()>Options.getInstance().getNumberOfUndos())
-        undoHistory.remove(0);
-
+      if (!undos.isEmpty()) {
+        undoHistory.add(undos);
+        while (undoHistory.size()>Options.getInstance().getNumberOfUndos())
+          undoHistory.remove(0);
+      }
+      
       // release
       undos = null;
       
