@@ -105,9 +105,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private JEditorPane taOutput;
   private ReportList  listOfReports;
   private JTabbedPane tabbedPane;
-  private Action2 
-    actionStart = new ActionStart(),
-    actionStop = new ActionStop(actionStart);
+  private ActionStart actionStart = new ActionStart();
+  private ActionStop actionStop = new ActionStop(actionStart);
   private OptionsWidget owOptions;
 
   private HTMLEditorKit editorKit;
@@ -278,6 +277,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
     manager.showView(this);
     // start it
     listOfReports.setSelection(report);
+    // FIXME this is a hack - I want to pass the context over but also use the same ActionStart instance
+    actionStart.setContext(context);
     actionStart.trigger();
   }
 
@@ -360,7 +361,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private class ActionStart extends Action2 {
 
     /** context to run on */
-    private Object context, preset;
+    private Object context;
 
     /** the running report */
     private Report instance;
@@ -370,18 +371,15 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
     /** constructor */
     protected ActionStart() {
-      this(null);
-    }
-
-    /** constructor */
-    protected ActionStart(Object preset) {
-      // remember preset context
-      this.preset = preset;
       // setup async
       setAsync(ASYNC_SAME_INSTANCE);
       // show
       setImage(imgStart);
       setTip(RESOURCES, "report.start.tip");
+    }
+    
+    protected void setContext(Object context) {
+      this.context = context;
     }
 
     /**
@@ -403,26 +401,30 @@ public class ReportView extends JPanel implements ToolBarSupport {
       instance = report.getInstance(manager, ReportView.this, out);
 
       // either use preset context, gedcom file or ask for entity
-      context = preset;
-      if (context==null) {
+      Object useContext = context;
+      context = null;
+      
+      if (useContext==null) {
         if (instance.getStartMethod(gedcom)!=null)
-          context = gedcom;
+          useContext = gedcom;
         else  for (int i=0;i<Gedcom.ENTITIES.length;i++) {
           String tag = Gedcom.ENTITIES[i];
           Entity sample = gedcom.getFirstEntity(tag);
           if (instance.getStartMethod(sample)!=null) {
-            context = instance.getEntityFromUser(Gedcom.getName(tag), gedcom, tag);
-            if (context==null) return false;
+            useContext = instance.getEntityFromUser(Gedcom.getName(tag), gedcom, tag);
+            if (useContext==null) 
+              return false;
             break;
           }
         }
       }
 
       // check if appropriate
-      if (context==null||report.accepts(context)==null) {
+      if (useContext==null||report.accepts(useContext)==null) {
         manager.getWindowManager().openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,RESOURCES.getString("report.noaccept"),Action2.okOnly(),ReportView.this);
         return false;
       }
+      context = useContext;
 
       // commit options
       owOptions.stopEditing();
@@ -463,6 +465,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * post execute
      */
     protected void postExecute(boolean preExecuteResult) {
+      
+      context = null;
 
       // stop run
       setRunning(false);
