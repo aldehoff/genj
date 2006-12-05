@@ -68,50 +68,26 @@ public abstract class Property implements Comparable {
   private MetaProperty meta = null;
 
   /**
-   * Lifecycle - callback when being added to parent.
-   * This is called by the parent of the property after
-   * it has been added.
+   * Lifecycle - callback after being added to parent.
    */
   /*package*/ void addNotify(Property parent) {
-
+    
     // remember parent
     this.parent=parent;
-
-    // propage to still active children
-    Property[] props = getProperties();
-    for (int i=0,j=props.length;i<j;i++) {
-      Property child = (Property)props[i];
-      child.addNotify(this);
-    }
-
-    // remember being added
-    Transaction tx = getTransaction();
-    if (tx!=null)
-      tx.get(Transaction.PROPERTIES_ADDED).add(this);
 
   }
 
   /**
-   * Lifecycle - callback when being removed from parent.
-   * This is called by the parent of the property after
-   * it has been removed.
+   * Lifecycle - callback before being removed from parent
    */
   /*package*/ void delNotify(Property oldParent) {
   
     // reset meta
     meta = null;
     
-    // tell children first (they might have to do some cleanup themselves)
-    Property[] props = getProperties();
-    for (int i=props.length-1;i>=0;i--) {
-      props[i].delNotify(this);
-    }
+    // delete children
+    delProperties();
     
-    // remember being deleted
-    Transaction tx = getTransaction();
-    if (tx!=null)
-      tx.get(Transaction.PROPERTIES_DELETED).add(this);
-      
     // reset parent
     parent = null;
     
@@ -119,39 +95,43 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * This called by the property in process of being
-   * changed after the value has changed.
+   * Propagate a change to the containing hierarchy
    */
-  /*package*/ void propagateChange(String old) {
-    
-    // remember being modified
-    Transaction tx = getTransaction();
-    if (tx!=null) {
-      Change change = new Change.PropertyValue(this, old);
-      tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
-      tx.addChange(change);
-      
-      // propagate change
-      propagateChange(change);
-    }
-    
-  }
-  
-  /**
-   * Propagate something has changed to the
-   * parent hierarchy
-   */
-  /*package*/ void propagateChange(Change change) {
-    // tell it to parent
+  /*package*/ void propagateXRefLinked(PropertyXRef property1, PropertyXRef property2) {
     if (parent!=null)
-      parent.propagateChange(change);
+      parent.propagateXRefLinked(property1, property2);
   }
   
   /**
-   * get current transaction
+   * Propagate a change to the containing hierarchy
    */
-  /*package*/ Transaction getTransaction() {
-    return parent==null ? null : parent.getTransaction();
+  /*package*/ void propagateXRefUnlinked(PropertyXRef property1, PropertyXRef property2) {
+    if (parent!=null)
+      parent.propagateXRefUnlinked(property1, property2);
+  }
+  
+  /**
+   * Propagate a change to the containing hierarchy
+   */
+  /*package*/ void propagatePropertyAdded(Property container, int pos, Property added) {
+    if (parent!=null)
+      parent.propagatePropertyAdded(container, pos, added);
+  }
+  
+  /**
+   * Propagate a change to the containing hierarchy
+   */
+  /*package*/ void propagatePropertyDeleted(Property container, int pos, Property deleted) {
+    if (parent!=null)
+      parent.propagatePropertyDeleted(container, pos, deleted);
+  }
+  
+  /**
+   * Propagate a change to the containing hierarchy
+   */
+  /*package*/ void propagatePropertyChanged(Property property, String oldValue) {
+    if (parent!=null)
+      parent.propagatePropertyChanged(property, oldValue);
   }
   
   /**
@@ -239,31 +219,27 @@ public abstract class Property implements Comparable {
    * Adds another property to this property
    */
   /*package*/ Property addProperty(Property child, int pos) {
-
+    
+    // check child
+    if (child.getParent()!=null||child.getNoOfProperties()>0)
+      throw new IllegalArgumentException("Can't add a property that is already contained or contains properties");
+    
     // position valid?
-    if (pos>=0&&pos<children.size())
-      children.add(pos, child);
-    else {
-      children.add(child);
-      pos = children.size()-1;
-    }
-
+    if (pos<0)
+      pos = 0;
+   if (pos>children.size())
+      pos = children.size();
+    
+    // keep child now
+    children.add(pos, child);
+    
 	  // tell to added
 	  child.addNotify(this);
     if (isTransient) child.isTransient = true;
 	
-	  // remember change
-	  Transaction tx = getTransaction();
-	  if (tx!=null) {
-	    Change change = new Change.PropertyAdd(this, pos, child);
-	    tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
-	    tx.addChange(change);
-	    
-			// propagate
-			propagateChange(change);
-
-	  }
-	
+    // propagate
+    propagatePropertyAdded(this, pos, child);
+    
     // Done
     return child;
   }
@@ -314,25 +290,18 @@ public abstract class Property implements Comparable {
     // range check
     if (pos<0||pos>=children.size())
       throw new IndexOutOfBoundsException();
+    Property removed = (Property)children.get(pos);
 
-    // remove   
-    Property removed = (Property)children.remove(pos);
+    // tell to removed before removing it
+    removed.delNotify(this);
+  
+    // remove it now
+    children.remove(pos);
 
-	  // tell to removed
-	  removed.delNotify(this);
-	
-	  // remember change
-	  Transaction tx = getTransaction();
-	  if (tx!=null) {
-	    Change change = new Change.PropertyDel(this, pos, removed);
-	    tx.get(Transaction.PROPERTIES_MODIFIED).add(this);
-	    tx.addChange(change);
-	    
-			// tell it to parent
-			propagateChange(change);
-	  
-	  }
-	
+	  // propagate change
+    propagatePropertyDeleted(this, pos, removed);
+
+    // done
   }
   
   /**
@@ -975,7 +944,7 @@ public abstract class Property implements Comparable {
     isPrivate = set;
     
     // bookkeeping
-    propagateChange(getValue());
+    propagatePropertyChanged(this, getValue());
     
     // done
   }

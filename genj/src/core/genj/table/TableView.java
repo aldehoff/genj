@@ -27,16 +27,15 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.Options;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
-import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -311,7 +310,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   /** 
    * A PropertyTableModelWrapper
    */
-  private class Model extends AbstractPropertyTableModel {
+  private class Model extends AbstractPropertyTableModel implements GedcomListener {
 
     /** mode */
     private Mode mode;
@@ -322,28 +321,50 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     /** constructor */
     private Model(Mode set) {
       mode = set;
-      handleChange(null);
     }
     
-    /**
-     * Gedcom callback
-     */
-    public void handleChange(Transaction tx) {
+    /** our fine grained gedcom listener */
+    protected GedcomListener getGedcomListener() {
+      return this;
+    }
+    
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+      reset();
+    }
 
-      // no drastic change?
-      if (tx!=null&&tx.get(Transaction.ENTITIES_ADDED).isEmpty()&&tx.get(Transaction.ENTITIES_DELETED).isEmpty()) { 
-        fireContentChanged();
-        return;
-      }
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      reset();
+    }
+
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      gedcomPropertyChanged(gedcom, added);
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
       
+      // look for row
+      Entity entity = property.getEntity();
+      for (int i=0;i<rows.length;i++) {
+        if (rows[i]==entity) {
+          fireRowsChanged(i, i);
+          break;
+        }
+      }
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+      gedcomPropertyChanged(gedcom, property);
+    }
+    
+    /** reset rows */
+    private void reset() {
       // cache entities
       Collection es = gedcom.getEntities(mode.getTag());
       rows = (Entity[])es.toArray(new Entity[es.size()]);
-      
       // continue
-      fireRowsChanged();
+      fireStructureChanged();
     }
-
+    
     /** gedcom */
     public Gedcom getGedcom() {
       return gedcom;
@@ -366,6 +387,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
 
     /** property for row */
     public Property getProperty(int row) {
+      if (rows==null)
+        reset();
       return rows[row];
     }
     

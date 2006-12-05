@@ -33,13 +33,6 @@ public class PropertyFamilyChild extends PropertyXRef {
   public PropertyFamilyChild() {
   }
   
-  /**
-   * Constructor with reference
-   */
-  protected PropertyFamilyChild(PropertyXRef target) {
-    super(target);
-  }
-  
   static int 
     NOT_BIOLOGICAL = 0,
     MAYBE_BIOLOGICAL = 1,
@@ -130,16 +123,15 @@ public class PropertyFamilyChild extends PropertyXRef {
     for (int i=0,j=childs.size();i<j;i++) {
       PropertyChild prop = (PropertyChild)childs.get(i);
       if (prop.isCandidate(indi)) {
-        prop.setTarget(this);
-        setTarget(prop);
+        link(prop);
         return;
       }
     }
 
     // .. new back referencing property
-    PropertyXRef xref = new PropertyChild(this);
+    PropertyXRef xref = new PropertyChild();
     fam.addProperty(xref);
-    setTarget(xref);
+    link(xref);
 
     // Done
   }

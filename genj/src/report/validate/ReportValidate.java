@@ -9,12 +9,12 @@ package validate;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.Submitter;
 import genj.gedcom.TagPath;
+import genj.gedcom.UnitOfWork;
 import genj.report.Report;
 import genj.util.EnvironmentChecker;
 import genj.util.swing.Action2;
@@ -143,15 +143,13 @@ public class ReportValidate extends Report {
       ctx.setText(translate("err.nosubmitter", gedcom.getName())).setImage(Gedcom.getImage());
       ctx.addAction(new Action2(translate("fix")) {
         protected void execute() {
-          try {
-            setEnabled(false);
-            gedcom.startTransaction();
-            Submitter sub = (Submitter)gedcom.createEntity(Gedcom.SUBM);
-            sub.setName(EnvironmentChecker.getProperty(ReportValidate.this, "user.name", "?", "using user.name for fixing missing submitter"));
-          } catch (GedcomException e) {
-          } finally {
-            gedcom.endTransaction();
-          }
+          setEnabled(false);
+          gedcom.doUnitOfWork(new UnitOfWork() {
+            public void perform(Gedcom gedcom) throws Throwable {
+              Submitter sub = (Submitter)gedcom.createEntity(Gedcom.SUBM);
+              sub.setName(EnvironmentChecker.getProperty(ReportValidate.this, "user.name", "?", "using user.name for fixing missing submitter"));
+            }
+          });
         }
       });
       issues.add(ctx);

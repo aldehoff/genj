@@ -35,13 +35,6 @@ import genj.util.swing.ImageIcon;
   }
   
   /**
-   * Constructor with reference
-   */
-  protected PropertyForeignXRef(PropertyXRef target) {
-    super(target);
-  }
-
-  /**
    * getTag method comment.
    */
   public String getTag() {

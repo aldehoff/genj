@@ -102,7 +102,7 @@ public class PropertyAge extends Property {
     else
       ageAsString = newValue;
     // notify
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     // Done
   }
 

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.116 $ $Author: nmeier $ $Date: 2006-11-28 17:56:19 $
+ * $Revision: 1.117 $ $Author: nmeier $ $Date: 2006-12-05 05:09:42 $
  */
 package genj.report;
 
@@ -305,7 +305,7 @@ public abstract class Report implements Cloneable {
       return;
     // Our hook into checking for Interrupt
     if (Thread.interrupted())
-      throw new ReportCancelledException();
+      throw new RuntimeException(new InterruptedException());
     // Append it
     log(o.toString());
     // Done
@@ -926,18 +926,14 @@ public abstract class Report implements Cloneable {
    * @param context normally an instance of type Gedcom but depending on
    *    accepts() could also be of type Entity or Property
    */
-  public void start(Object context) {
+  public void start(Object context) throws Throwable {
     try {
       getStartMethod(context).invoke(this, new Object[]{ context });
     } catch (Throwable t) {
       String msg = "can't run report on input";
-      if (t instanceof InvocationTargetException) {
-        t = ((InvocationTargetException)t).getTargetException();
-        msg = "report failed";
-      }
-      if (t instanceof Error) throw (Error)t;
-      if (t instanceof RuntimeException) throw (RuntimeException)t;
-      throw new RuntimeException(msg, t);
+      if (t instanceof InvocationTargetException) 
+        throw ((InvocationTargetException)t).getTargetException();
+      throw t;
     }
   }
 

@@ -248,8 +248,6 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
-    // make sure our model is not connecting to gedcom model anymore
-    model.setGedcom(null);
     // settings
     registry.put("overview", overview.isVisible());
     registry.put("overview", overview.getSize());
@@ -715,8 +713,21 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     private Overview(JScrollPane scroll) {
       super(scroll.getViewport());
       super.setSize(new Dimension(TreeView.this.getWidth()/4,TreeView.this.getHeight()/4));
+    }
+    
+    public void addNotify() {
+      // cont
+      super.addNotify();
+      // listen to model events
       model.addListener(this);
     }
+    
+    public void removeNotify() {
+      model.removeListener(this);
+      // cont
+      super.removeNotify();
+    }
+    
     /**
      * @see java.awt.Component#setSize(int, int)
      */
@@ -780,8 +791,19 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     private Content() {
       // listen to mouse events
       addMouseListener(this);
+    }
+    
+    public void addNotify() {
+      // cont
+      super.addNotify();
       // listen to model events
       model.addListener(this);
+    }
+    
+    public void removeNotify() {
+      model.removeListener(this);
+      // cont
+      super.removeNotify();
     }
     
     /**

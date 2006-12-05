@@ -54,7 +54,7 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
   public void setValue(String setValue) {
     String old = getValue();
     lines = setValue;
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
   }
   
   /**

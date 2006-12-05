@@ -20,7 +20,6 @@
 package genj.renderer;
 
 import genj.common.PathTreeWidget;
-import genj.gedcom.Change;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
@@ -316,11 +315,6 @@ public class BlueprintEditor extends JSplitPane {
       return meta.create(value.toString());
     }
     
-    /**
-     * no gedcom - override and ignore
-     */
-    protected void propagateChange(Change change) {
-    }
   } //ExampleIndi
   
 } //RenderingSchemeEditor

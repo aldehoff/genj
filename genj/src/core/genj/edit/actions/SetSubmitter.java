@@ -43,16 +43,9 @@ public class SetSubmitter extends AbstractChange {
     }
 
     /**
-     * no confirmation message needed
-     */    
-    protected String getConfirmMessage() {
-      return null;
-    }
-
-    /**
      * set the submitter
      */
-    protected void change() throws GedcomException {
+    public void perform(Gedcom gedcom) throws GedcomException {
       submitter.getGedcom().setSubmitter(submitter);
     }
 

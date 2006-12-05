@@ -159,7 +159,7 @@ public abstract class CreateRelationship extends AbstractChange {
   /**
    * @see genj.edit.EditViewFactory.Change#change()
    */
-  protected void change() throws GedcomException {
+  public void perform(Gedcom gedcom) throws GedcomException {
     // create the entity if necessary
     if (existing==null) {
       // check id

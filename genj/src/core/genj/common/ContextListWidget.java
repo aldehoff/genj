@@ -20,18 +20,19 @@
 package genj.common;
 
 import genj.gedcom.Context;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Transaction;
+import genj.gedcom.Property;
 import genj.view.ContextProvider;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.AbstractListModel;
@@ -41,6 +42,8 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import spin.Spin;
 
 /**
  * A widget for rendering a list of contexts
@@ -101,7 +104,7 @@ public class ContextListWidget extends JList implements ContextProvider {
     // let super do its thing
     super.addNotify();
     // listen to gedcom 
-    ged.addGedcomListener((Model)getModel());
+    ged.addGedcomListener((GedcomListener)Spin.over(getModel()));
   }
   
   /**
@@ -109,7 +112,7 @@ public class ContextListWidget extends JList implements ContextProvider {
    */
   public void removeNotify() {
     // disconnect from gedcom
-    ged.removeGedcomListener((Model)getModel());
+    ged.removeGedcomListener((GedcomListener)Spin.over(getModel()));
     // let super continue
     super.removeNotify();
   }
@@ -173,28 +176,35 @@ public class ContextListWidget extends JList implements ContextProvider {
       return list.get(index);
     }
     
-    /** follow changes in gedcom */
-    public void handleChange(Transaction tx) {
-      
-      if (list.size()==0)
-        return;
-      
-      Set propsDeleted = tx.get(Transaction.PROPERTIES_DELETED);
-      Set entsDeleted = tx.get(Transaction.ENTITIES_DELETED);
-      
-      for (Iterator it=list.iterator(); it.hasNext(); ) {
-        Context context = (Context)it.next();
-        context.removeProperties(propsDeleted);
-      }
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+      // ignore
+    }
 
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
       for (Iterator it=list.iterator(); it.hasNext(); ) {
         Context context = (Context)it.next();
-        context.removeEntities(entsDeleted);
+        context.removeEntities(Collections.singletonList(entity));
       }
-      
+      // FIXME this could be less coarse grained
       fireContentsChanged(this, 0, list.size());
+    }
 
-      // done
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      // ignore
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
+      // FIXME this could be less coarse grained
+      fireContentsChanged(this, 0, list.size());
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+      for (Iterator it=list.iterator(); it.hasNext(); ) {
+        Context context = (Context)it.next();
+        context.removeProperties(Collections.singletonList(property));
+      }
+      // FIXME this could be less coarse grained
+      fireContentsChanged(this, 0, list.size());
     }
     
   } //Model

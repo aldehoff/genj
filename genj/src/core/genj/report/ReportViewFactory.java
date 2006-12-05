@@ -22,6 +22,7 @@ package genj.report;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.UnitOfWork;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -126,12 +127,12 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
     /** view mgr */
     private ViewManager manager;
     /** constructor */
-    private ActionRun(String txt, Object coNtext, Gedcom geDcom, Report rePort, ViewManager maNager) {
+    private ActionRun(String txt, Object context, Gedcom gedcom, Report report, ViewManager manager) {
       // remember
-      context = coNtext;
-      gedcom = geDcom;
-      report = rePort;
-      manager = maNager;
+      this.context = context;
+      this.gedcom = gedcom;
+      this.report = report;
+      this.manager = manager;
       // show
       setImage(report.getImage());
       setText(txt);
@@ -154,28 +155,34 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
         // we're done ourselves - don't go into execute()
         return false;
       }
-      // start transaction
-      if (!report.isReadOnly()) try {
-        gedcom.startTransaction();
-      } catch (IllegalStateException e) {
-        // tx didn't start - don't go into execute()
-        return false; 
-      }
       // go ahead into async execute
       return true;
     }
     /** callback */
     protected void execute() {
-      // run right here (should only be for non-uses-stdout
-      report.getInstance(manager, getTarget(), null).start(context);
-      // done
+      
+      final Report instance = report.getInstance(manager, getTarget(), null);
+      
+      try{
+        
+        if (instance.isReadOnly())
+          instance.start(context);
+        else
+          gedcom.doUnitOfWork(new UnitOfWork() {
+            public void perform(Gedcom gedcom) throws Throwable {
+              instance.start(context);
+            }
+          });
+      
+      } catch (Throwable t) {
+        Throwable cause = t.getCause();
+        if (t instanceof InterruptedException || cause instanceof InterruptedException)
+          instance.println("***cancelled");
+        else
+          ReportView.LOG.log(Level.WARNING, "encountered throwable in "+instance.getClass().getName()+".start()", t);
+      }
     }
-    /** callback (edt sync) **/
-    protected void postExecute(boolean preExecuteResult) {
-      // tx to end? IF the preExecute was ok
-      if (preExecuteResult==true&&!report.isReadOnly())
-        gedcom.endTransaction();
-    }
+    
   } //ActionRun
 
 } //ReportViewFactory

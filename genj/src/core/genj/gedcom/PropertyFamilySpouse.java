@@ -36,13 +36,6 @@ public class PropertyFamilySpouse extends PropertyXRef {
   }
   
   /**
-   * Constructor with reference
-   */
-  protected PropertyFamilySpouse(PropertyXRef target) {
-    super(target);
-  }
-
-  /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
    * @return warning as <code>String</code>, <code>null</code> when no warning
@@ -120,8 +113,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     for (int i=0;i<husbands.length;i++) {
       PropertyHusband ph = (PropertyHusband)husbands[i];
       if (ph.isCandidate(indi)) {
-        ph.setTarget(this);
-        setTarget(ph);
+        link(ph);
         return;
       }
     }
@@ -129,8 +121,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     for (int i=0;i<wifes.length;i++) {
       PropertyWife pw = (PropertyWife)wifes[i];
       if (pw.isCandidate(indi)) {
-        pw.setTarget(this);
-        setTarget(pw);
+        link(pw);
         return;
       }
     }
@@ -141,17 +132,17 @@ public class PropertyFamilySpouse extends PropertyXRef {
       if (husband!=null)
         fam.swapSpouses();
       // create new back ref
-      PropertyXRef backref = new PropertyHusband(this);
+      PropertyXRef backref = new PropertyHusband();
       fam.addProperty(backref);
-      setTarget(backref);
+      link(backref);
     } else {
       // swap if necessary
       if (wife!=null)
         fam.swapSpouses();
       // create new back ref
-      PropertyXRef backref = new PropertyWife(this);
+      PropertyXRef backref = new PropertyWife();
       fam.addProperty(backref);
-      setTarget(backref);
+      link(backref);
     }
 
     // Done

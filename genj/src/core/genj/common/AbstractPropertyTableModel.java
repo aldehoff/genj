@@ -21,19 +21,34 @@ package genj.common;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Transaction;
+import genj.gedcom.GedcomListenerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import spin.Spin;
+
 /**
  * A default base-type for property models
  */
-public abstract class AbstractPropertyTableModel implements PropertyTableModel, GedcomListener {
+public abstract class AbstractPropertyTableModel implements PropertyTableModel {
   
   private List listeners = new ArrayList(3);
   private Gedcom gedcom = null;
-
+  private GedcomListener callback;
+  
+  /**
+   * the gedcom listener to use
+   */
+  protected GedcomListener getGedcomListener() {
+    return new GedcomListenerAdapter() {
+      public void gedcomWriteLockReleased(Gedcom gedcom) {
+        // FIXME this callback could be less coarse grained
+        fireStructureChanged();
+      }
+    };
+  }
+  
   /** 
    * Add listener
    */
@@ -42,8 +57,10 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
     if (listeners.size()==1) {
       // cache gedcom now
       if (gedcom==null) gedcom=getGedcom();
-      // and start listening
-      gedcom.addGedcomListener(this);
+      // and start listening (make sure events are spin over to the EDT)
+      if (callback==null)
+        callback = (GedcomListener)Spin.over(getGedcomListener());
+      gedcom.addGedcomListener(callback);
     }
   }
   
@@ -54,7 +71,7 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
     listeners.remove(listener);
     // stop listening
     if (listeners.isEmpty())
-      gedcom.removeGedcomListener(this);
+      gedcom.removeGedcomListener(callback);
   }
   
   /**
@@ -64,28 +81,20 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
     return getPath(col).getName();    
   }
   
-  
   /**
    * Structure change
    */
-  protected void fireRowsChanged() {
+  protected void fireRowsChanged(int start, int end) {
     for (int i=0;i<listeners.size();i++)
-      ((PropertyTableModelListener)listeners.get(i)).handleRowsChange(this);
+      ((PropertyTableModelListener)listeners.get(i)).handleRowsChanged(this, start, end);
   }
   
   /**
    * Structure change
    */
-  protected void fireContentChanged() {
+  protected void fireStructureChanged() {
     for (int i=0;i<listeners.size();i++)
-      ((PropertyTableModelListener)listeners.get(i)).handleContentChange(this);
+      ((PropertyTableModelListener)listeners.get(i)).handleStructureChanged(this);
   }
 
-  /**
-   * Gedcom callback
-   */
-  public void handleChange(Transaction tx) {
-    fireRowsChanged();
-  }
-  
 }

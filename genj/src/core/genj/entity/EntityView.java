@@ -22,17 +22,17 @@ package genj.entity;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Transaction;
+import genj.gedcom.GedcomListenerAdapter;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.Color;
@@ -47,11 +47,13 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import spin.Spin;
+
 /**
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JPanel implements ContextListener, ToolBarSupport, GedcomListener, ContextProvider {
+public class EntityView extends JPanel implements ContextListener, ToolBarSupport, ContextProvider {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = Resources.get(EntityView.class);
@@ -77,6 +79,15 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   /** whether we do antialiasing */
   private boolean isAntialiasing = false;
   
+  private GedcomListener callback = new GedcomListenerAdapter() {
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      if (EntityView.this.entity == entity) {
+        setEntity(gedcom.getFirstEntity(Gedcom.INDI));
+      }
+      repaint();
+    }
+  };
+  
   /** the view manager */
   /*package*/ ViewManager viewManager;
   
@@ -88,9 +99,6 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
     viewManager = manager;
     registry = reg;
     gedcom = ged;
-
-    // listen to gedcom
-    gedcom.addGedcomListener(this);
 
     // grab data from registry
     BlueprintManager bpm = viewManager.getBlueprintManager();
@@ -121,6 +129,13 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   public Dimension getPreferredSize() {
     return new Dimension(256,160);
   }
+  
+  public void addNotify() {
+    // cont
+    super.addNotify();
+    // listen to gedcom
+    gedcom.addGedcomListener((GedcomListener)Spin.over(callback));
+  }
 
   /**
    * @see javax.swing.JComponent#removeNotify()
@@ -130,7 +145,7 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
     super.removeNotify();
 
     // stop listening to Gedcom    
-    gedcom.removeGedcomListener(this);
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(callback));
     
     // store settings in registry
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
@@ -231,16 +246,6 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
    */
   public boolean isAntialiasing() {
     return isAntialiasing;
-  }
-
-  /**  
-   * @see genj.gedcom.GedcomListener#handleChange(Transaction)
-   */
-  public void handleChange(Transaction tx) {
-    if (tx.get(Transaction.ENTITIES_DELETED).contains(entity)) {
-      setEntity(null);
-    }
-    repaint();
   }
 
 } //EntityView

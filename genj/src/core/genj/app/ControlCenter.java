@@ -20,9 +20,11 @@
 package genj.app;
 
 import genj.common.ContextListWidget;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Transaction;
+import genj.gedcom.GedcomMetaListener;
+import genj.gedcom.Property;
 import genj.io.Filter;
 import genj.io.GedcomEncodingException;
 import genj.io.GedcomEncryptionException;
@@ -47,9 +49,9 @@ import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ProgressWidget;
-import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
+import genj.view.ViewContext;
 import genj.view.ViewFactory;
 import genj.view.ViewHandle;
 import genj.view.ViewManager;
@@ -84,6 +86,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import spin.Spin;
 
 /**
  * The central component of the GenJ application
@@ -173,7 +177,7 @@ public class ControlCenter extends JPanel {
    */
   /*package*/ void addGedcom(Gedcom gedcom) {
     tGedcoms.addGedcom(gedcom);
-    gedcom.addGedcomListener(stats);
+    gedcom.addGedcomListener((GedcomListener)Spin.over(stats));
   }
 
   /**
@@ -186,7 +190,7 @@ public class ControlCenter extends JPanel {
 
     // forget about it
     tGedcoms.removeGedcom(gedcom);
-    gedcom.removeGedcomListener(stats);
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(stats));
   }
   
   /**
@@ -1236,7 +1240,7 @@ public class ControlCenter extends JPanel {
   /**
    * a little status tracker
    */
-  private class Stats extends JLabel implements GedcomListener {
+  private class Stats extends JLabel implements GedcomMetaListener {
     
     private int commits;
     private int read,written;
@@ -1245,7 +1249,7 @@ public class ControlCenter extends JPanel {
       setHorizontalAlignment(SwingConstants.LEFT);
     }
 
-    public void handleChange(Transaction tx) {
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
       commits++;
       update();
     }
@@ -1269,6 +1273,27 @@ public class ControlCenter extends JPanel {
       if (written>0)
         buf.append(resources.getString("stat.lines.written", new Integer(written)));
       setText(buf.toString());
+    }
+
+    public void gedcomHeaderChanged(Gedcom gedcom) {
+    }
+
+    public void gedcomWriteLockAcquired(Gedcom gedcom) {
+    }
+
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    }
+
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+    }
+
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
     }
     
   } //Stats

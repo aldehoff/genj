@@ -28,7 +28,6 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyName;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 
@@ -42,6 +41,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+
+import spin.Spin;
 
 /**
  * A model that wraps the Gedcom information in a timeline fashion
@@ -86,27 +87,9 @@ import java.util.Set;
     setPathsInternally(Arrays.asList(paths));
     
     // keep gedcom
-    setGedcom(ged);
-    
-    // done
-  }
-  
-  /**
-   * Gedcom to work on 
-   */
-  /*package*/ void setGedcom(Gedcom ged) {
-    // old?
-    if (gedcom!=null) {
-      gedcom.removeGedcomListener(this);
-      gedcom = null;
-    }
-    // new ?
-    if (ged!=null) {
-      gedcom = ged;
-      gedcom.addGedcomListener(this);
-    }
-    // new events
+    gedcom = ged;
     createEvents();
+    
     // done
   }
   
@@ -115,6 +98,10 @@ import java.util.Set;
    */
   /*package*/ void addListener(Listener listener) {
     listeners.add(listener);
+    
+    // first?
+    if (listeners.size()==1)
+      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
   }
   
   /**
@@ -122,6 +109,10 @@ import java.util.Set;
    */
   /*package*/ void removeListener(Listener listener) {
     listeners.remove(listener);
+    
+    // none?
+    if (listeners.isEmpty())
+      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
   }
   
   /**
@@ -298,41 +289,6 @@ import java.util.Set;
     // done
   }
   
-  /**
-   * @see genj.gedcom.GedcomListener#handleChange(Change)
-   */
-  public void handleChange(Transaction tx) {
-    // deleted or added entities/properties -> recreate
-    if (!(tx.get(Transaction.ENTITIES_DELETED).isEmpty()
-        &&tx.get(Transaction.ENTITIES_ADDED).isEmpty()
-        &&tx.get(Transaction.PROPERTIES_ADDED).isEmpty()
-        &&tx.get(Transaction.PROPERTIES_DELETED).isEmpty())) {
-      createEvents();
-      return;
-    }
-    // changed properties -> scan for dates or names
-    boolean changed = false;
-    if (!tx.get(Transaction.PROPERTIES_MODIFIED).isEmpty()) {
-      Iterator ps = tx.get(Transaction.PROPERTIES_MODIFIED).iterator();
-      while (ps.hasNext()) {
-        Property p = (Property)ps.next();
-        // a date -> lets recreate everything
-        if (p instanceof PropertyDate) {
-          createEvents();
-          return;
-        }
-        // a name -> let's update all it's entities' events
-        if (p instanceof PropertyName) {
-          contentEvents(p.getEntity());
-          changed = true;
-        }
-      }
-    }
-    // still here and a change has happened?
-    if (changed) fireDataChanged();
-    // done
-  }
-
   /**
    * Trigger callback - our structure has changed
    */
@@ -568,5 +524,30 @@ import java.util.Set;
      */
     public void structureChanged();
   } //ModelListener
+
+  public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    createEvents();
+  }
+
+  public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+    createEvents();
+  }
+
+  public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+    gedcomPropertyDeleted(gedcom, added, -1, added);
+  }
+
+  public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+    gedcomPropertyDeleted(gedcom, property, -1, property);
+  }
+
+  public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+    if (deleted instanceof PropertyDate) {
+      createEvents();
+    } else if (deleted instanceof PropertyName) {
+      contentEvents(property.getEntity());
+      fireDataChanged();
+    }
+  }
   
 } //TimelineModel 

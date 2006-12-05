@@ -23,6 +23,7 @@ import genj.edit.Images;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
+import genj.gedcom.UnitOfWork;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
@@ -41,7 +42,7 @@ import javax.swing.JTextArea;
 /**
  * ActionChange - change the gedcom information
  */
-/*package*/ abstract class AbstractChange extends Action2 {
+public abstract class AbstractChange extends Action2 implements UnitOfWork {
   
   /** resources */
   /*package*/ final static Resources resources = Resources.get(AbstractChange.class);
@@ -63,7 +64,7 @@ import javax.swing.JTextArea;
   /**
    * Constructor
    */
-  /*package*/ AbstractChange(Gedcom ged, ImageIcon img, String text, ViewManager mgr) {
+  public AbstractChange(Gedcom ged, ImageIcon img, String text, ViewManager mgr) {
     gedcom = ged;
     manager = mgr;
     super.setImage(img);
@@ -83,7 +84,9 @@ import javax.swing.JTextArea;
   /** 
    * Returns the confirmation message - null if none
    */
-  protected abstract String getConfirmMessage();
+  protected String getConfirmMessage() {
+    return null;
+  }
   
   /**
    * Return the dialog content to show to the user   */
@@ -133,26 +136,24 @@ import javax.swing.JTextArea;
         return;
     }
         
-    // lock gedcom
-    gedcom.startTransaction();
-    // let sub-class handle create
+    // do the change
     try {
-      change();
+      gedcom.doUnitOfWork(this);
     } catch (Throwable t) {
       manager.getWindowManager().openDialog(getClass().getName(), null, WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), getTarget());
     }
-    // unlock gedcom
-    gedcom.endTransaction();
+    
     // set focus?
     if (focus!=null) 
       manager.fireContextSelected(new ViewContext(focus));
+    
     // done
   }
   
   /**
    * perform the actual change
    */
-  protected abstract void change() throws GedcomException;
+  public abstract void perform(Gedcom gedcom) throws GedcomException;
   
 } //Change
 

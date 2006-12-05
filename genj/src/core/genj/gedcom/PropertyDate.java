@@ -177,7 +177,7 @@ public class PropertyDate extends Property {
     }
     
     // remember as modified      
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
 
     // Done
   }
@@ -202,7 +202,7 @@ public class PropertyDate extends Property {
     }
     
     // remember as modified      
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
 
     // Done
   }
@@ -239,7 +239,7 @@ public class PropertyDate extends Property {
     }
 
     // remember as modified      
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
 
     // done
   }
@@ -330,7 +330,7 @@ public class PropertyDate extends Property {
         // set it
         super.set(d,m,y);
         // notify about change 
-        propagateChange(old);
+        propagatePropertyChanged(PropertyDate.this, old);
       }
       
       // done

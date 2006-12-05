@@ -118,7 +118,7 @@ public class PropertyEvent extends Property {
   public void setKnownToHaveHappened(boolean set) {
     String old = getValue();
     knownToHaveHappened = set;
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
   }
 
 // Could do an automatic 'y' here but that would pollute

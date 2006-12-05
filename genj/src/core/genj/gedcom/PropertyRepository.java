@@ -45,11 +45,11 @@ public class PropertyRepository extends PropertyXRef {
     Repository repository = (Repository)getCandidate();
 
     // Create Backlink
-    PropertyForeignXRef fxref = new PropertyForeignXRef(this);
+    PropertyForeignXRef fxref = new PropertyForeignXRef();
     repository.addProperty(fxref);
 
     // ... and point
-    setTarget(fxref);
+    link(fxref);
 
     // don't delete anything because we may have children, like PAGE
   }

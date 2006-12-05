@@ -51,14 +51,6 @@ public class PropertyChild extends PropertyXRef {
   }
   
   /**
-   * Constructor with reference
-   * @param target referenced PropertyXRef
-   */
-  protected PropertyChild(PropertyXRef target) {
-    super(target);
-  }
-
-  /**
    * Returns the child
    * @return referenced child
    */
@@ -132,17 +124,16 @@ public class PropertyChild extends PropertyXRef {
       
       PropertyFamilyChild pfc = (PropertyFamilyChild)famcs.get(i);
       if (pfc.isCandidate(fam)) {
-        pfc.setTarget(this);
-        setTarget(pfc);
+        link(pfc);
         return;
       }        
       
     }
 
     // .. new back referencing property
-    PropertyFamilyChild pfc = new PropertyFamilyChild(this);
+    PropertyFamilyChild pfc = new PropertyFamilyChild();
     child.addProperty(pfc);
-    setTarget(pfc);
+    link(pfc);
 
     // Done
   }

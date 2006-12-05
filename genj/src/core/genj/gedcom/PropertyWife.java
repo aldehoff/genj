@@ -47,13 +47,6 @@ public class PropertyWife extends PropertyXRef {
   }
 
   /**
-   * Constructor with reference
-   */
-  protected PropertyWife(PropertyXRef target) {
-    super(target);
-  }
-
-  /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
    * @return warning as <code>String</code>, <code>null</code> when no warning
@@ -120,16 +113,15 @@ public class PropertyWife extends PropertyXRef {
     for (int i=0;i<ps.length;i++) {
       pfs = (PropertyFamilySpouse)ps[i];
       if (pfs.isCandidate(fam)) {
-        pfs.setTarget(this);
-        setTarget(pfs);
+        link(pfs);
         return;
       }
     }
 
     // .. new back referencing property
-    pfs = new PropertyFamilySpouse(this);
+    pfs = new PropertyFamilySpouse();
     wife.addProperty(pfs);
-    setTarget(pfs);
+    link(pfs);
 
     // Done
   }

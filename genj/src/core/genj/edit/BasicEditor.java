@@ -24,12 +24,13 @@ import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyVisitor;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
+import genj.gedcom.UnitOfWork;
 import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
@@ -37,10 +38,10 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
-import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
+import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -71,10 +72,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import spin.Spin;
+
 /**
  * The basic version of an editor for a entity. Tries to hide Gedcom complexity from the user while being flexible in what it offers to edit information pertaining to an entity.
  */
-/* package */class BasicEditor extends Editor implements GedcomListener, ContextProvider {
+/* package */class BasicEditor extends Editor implements ContextProvider {
 
   /** keep a cache of descriptors */
   private static Map FILE2DESCRIPTOR = new HashMap();
@@ -97,6 +100,27 @@ import javax.swing.event.ChangeListener;
   /** current panels */
   private BeanPanel beanPanel;
   private JPanel buttonPanel;
+  
+  private GedcomListener callback = new GedcomListenerAdapter() {
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      if (entity==currentEntity)
+        setEntity(gedcom.getFirstEntity(currentEntity.getTag()), currentEntity);
+      // dont' commit anything anymore
+      ok.setEnabled(false);
+    }
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      if (property.getEntity()==currentEntity)
+        setEntity(currentEntity, added);
+    }
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+      if (property.getEntity()==currentEntity)
+        setEntity(currentEntity, null);
+    }
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+      if (property.getEntity()==currentEntity)
+        setEntity(currentEntity, property);
+    }
+  };
 
   /**
    * Callback - init for edit
@@ -128,7 +152,7 @@ import javax.swing.event.ChangeListener;
     // let super continue
     super.addNotify();
     // listen to gedcom events
-    gedcom.addGedcomListener(this);
+    gedcom.addGedcomListener((GedcomListener)Spin.over(callback));
     // done
   }
 
@@ -141,25 +165,7 @@ import javax.swing.event.ChangeListener;
     // let super continue
     super.removeNotify();
     // stop listening to gedcom events
-    gedcom.removeGedcomListener(this);
-  }
-
-  /**
-   * Interpret gedcom changes
-   */
-  public void handleChange(Transaction tx) {
-    // are we looking at something?
-    if (currentEntity == null)
-      return;
-    // dont' commit anything anymore
-    ok.setEnabled(false);
-    // entity affected?
-    if (tx.get(Transaction.ENTITIES_DELETED).contains(currentEntity)) {
-      setEntity(gedcom.getFirstEntity(currentEntity.getTag()), currentEntity);
-    } else if (tx.get(Transaction.ENTITIES_MODIFIED).contains(currentEntity)) {
-      setEntity(currentEntity, null);
-    }
-    // done
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(callback));
   }
 
   /**
@@ -205,7 +211,7 @@ import javax.swing.event.ChangeListener;
   public void setEntity(Entity set, Property focus) {
     
     // commit what needs to be committed
-    if (!gedcom.isTransaction()&&currentEntity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
+    if (!gedcom.isWriteLocked()&&currentEntity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
       ok.trigger();
 
     // remember
@@ -409,21 +415,15 @@ import javax.swing.event.ChangeListener;
         return;
       
       // commit changes
-      Transaction tx = gedcom.startTransaction();
-
-      // commit bean changes
-      try {
-        beanPanel.commit();
-      } catch (Throwable t) {
-        EditView.LOG.log(Level.SEVERE, "problem comitting bean panel", t);
-      }
+      gedcom.doUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) throws Throwable {
+          beanPanel.commit();
+        }
+      });
 
       // lookup current focus now (any temporary props are committed now)
       PropertyBean focussedBean = getFocus();
       Property focus = focussedBean !=null ? focussedBean.getProperty() : null;
-      
-      // end transaction - this will refresh our view as well
-      gedcom.endTransaction();
       
       // set selection
       beanPanel.select(focus);
@@ -843,26 +843,20 @@ import javax.swing.event.ChangeListener;
       if (currentEntity==null)
         return;
       
-      // start tx
-      Transaction tx = gedcom.startTransaction();
-      
-      // commit bean changes
-      if (ok.isEnabled()&&view.isCommitChanges()) 
-        try {
-          beanPanel.commit();
-        } catch (Throwable t) {
-          EditView.LOG.log(Level.SEVERE, "problem comitting bean panel", t);
+      gedcom.doUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
+          
+          // commit bean changes
+          if (ok.isEnabled()&&view.isCommitChanges()) 
+            beanPanel.commit();
+          
+          // add property for tab
+          Property tab = currentEntity.addProperty(meta.getTag(), "");
+          // find panel for our new property
+          if (beanPanel!=null)
+            beanPanel.select(tab);
         }
-        
-      // add property for tab
-      final Property tab = currentEntity.addProperty(meta.getTag(), "");
-
-      // end transaction - this will refresh our view as well
-      gedcom.endTransaction();
-
-      // find panel for our new property
-      if (beanPanel!=null)
-        beanPanel.select(tab);
+      });
       
       // done
     }
@@ -885,22 +879,19 @@ import javax.swing.event.ChangeListener;
      if (currentEntity==null)
        return;
      
-     // start tx
-     Transaction tx = gedcom.startTransaction();
-     
-     // commit bean changes
-     if (ok.isEnabled()&&view.isCommitChanges()) 
-       try {
-         beanPanel.commit();
-       } catch (Throwable t) {
-         EditView.LOG.log(Level.SEVERE, "problem comitting bean panel", t);
+     gedcom.doUnitOfWork(new UnitOfWork() {
+       public void perform(Gedcom gedcom) {
+         
+         // commit bean changes
+         if (ok.isEnabled()&&view.isCommitChanges()) 
+           beanPanel.commit();
+         
+         // delete property
+         prop.getParent().delProperty(prop);
+         
        }
-       
-     // delete property
-     prop.getParent().delProperty(prop);
-       
-     // end transaction - this will refresh our view as well
-     gedcom.endTransaction();
+     });
+     
 
      // done
    }

@@ -6,7 +6,9 @@ package genj.gedcom;
 import genj.gedcom.time.PointInTime;
 import genj.util.Origin;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -51,42 +53,99 @@ public class PropertyTest extends TestCase {
   /**
    * Test adding properties
    */
-  public void testAdd() {     
+  public void testAdd() throws GedcomException {     
 
     // create a new indi
-    Indi indi = createIndi();
+    final Indi indi = createIndi();
     Property[] before = indi.getProperties();
     
     // add property
-    PropertyName name = new PropertyName();
-    int pos = 1;
+    final PropertyName name = new PropertyName();
+    final int pos = 1;
+
+    Tracker tracker = new Tracker();
+    gedcom.addGedcomListener(tracker);
     
-    gedcom.startTransaction();
-    indi.addProperty(name, pos);
-    Transaction tx = gedcom.endTransaction();
+    gedcom.doUnitOfWork(new UnitOfWork() {
+      public void perform(Gedcom gedcom) throws GedcomException {
+        indi.addProperty(name, pos);
+        indi.delProperty(indi.addProperty("FOO", "bar"));
+      }
+    });
     
     // check result
-    Property[] after = indi.getProperties();
+    Property[] afterEdit = indi.getProperties();
     
     // .. should have certain set of changes
-    Change[] changes = tx.getChanges();
-    assertEquals("wrong # of changes", 2, changes.length);
-    assertEquals("expected change add/NAME", changes[0], new Change.PropertyAdd(indi, pos, name));
-    assertEquals("expected change add/CHAN", changes[1], new Change.PropertyAdd(indi, after.length-1, after[after.length-1]));
+    // added NAME
+    // added FOO
+    // added CHAN
+    assertEquals("wrong # of changes", 4, tracker.changes);
+    assertEquals("expected change add/NAME", indi.getProperty(1), tracker.propertiesAdded.get(0));
+    assertEquals("expected change add/CHAN", "CHAN", indi.getProperty(indi.getNoOfProperties()-1).getTag());
     
     // .. we should have additional NAME and CHAN now
-    assertEquals("wrong # of properties", before.length+2, after.length);
-    assertEquals("expected NAME/"+pos, after[pos], name);
-    assertEquals("expected CHAN/"+pos, after[after.length-1].getTag(), "CHAN");
+    assertEquals("wrong # of properties", before.length+2, afterEdit.length);
+    assertEquals("expected NAME/"+pos, afterEdit[pos], name);
+    assertEquals("expected CHAN/"+pos, afterEdit[afterEdit.length-1].getTag(), "CHAN");
     
     // undo it
-    gedcom.undo();
-    
-    // check result
-    after = indi.getProperties();
+    gedcom.undoUnitOfWork();
     
     // .. we should have the same set of properties now
-    assertEquals("undo didn't restore add", Arrays.asList(after), Arrays.asList(before));
+    Property[] afterUndo = indi.getProperties();
+    assertEquals("undo didn't revert edits", Arrays.asList(afterUndo), Arrays.asList(before));
+    
+    // and redo it again
+    gedcom.redoUnitOfWork();
+    
+    // .. we should have the same set of properties now
+    Property[] afterRedo = indi.getProperties();
+    assertEquals("redo  didn't restore undo", Arrays.asList(afterRedo), Arrays.asList(afterEdit));
+    
+    // and a final undo
+    gedcom.undoUnitOfWork();
+    
+    // .. we should have the same set of properties now
+    afterUndo = indi.getProperties();
+    assertEquals("undo didn't restore redo", Arrays.asList(afterUndo), Arrays.asList(before));
+    
+    // done
+  }
+  
+  private class Tracker implements GedcomListener {
+    
+    int changes = 0;
+    List entitiesAdded = new ArrayList();
+    List entitiesDeleted = new ArrayList();
+    List propertiesAdded = new ArrayList();
+    List propertiesDeleted = new ArrayList();
+    List propertiesChanged = new ArrayList();
+
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+      changes++;
+      entitiesAdded.add(entity);
+    }
+
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      changes++;
+      entitiesDeleted.add(entity);
+    }
+
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      changes++;
+      propertiesAdded.add(added);
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+      changes++;
+      propertiesChanged.add(property);
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+      changes++;
+      propertiesDeleted.add(removed);
+    }
     
   }
   

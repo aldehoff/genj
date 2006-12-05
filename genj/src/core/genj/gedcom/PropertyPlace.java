@@ -154,7 +154,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     // propagate
     getGedcom().setPlaceFormat(format);
     // mark changed
-    propagateChange(getValue());
+    propagatePropertyChanged(this, getValue());
   }
 
   /**

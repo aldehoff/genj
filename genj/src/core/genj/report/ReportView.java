@@ -21,6 +21,7 @@ package genj.report;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.UnitOfWork;
 import genj.gedcom.time.PointInTime;
 import genj.io.FileAssociation;
 import genj.option.OptionsWidget;
@@ -30,8 +31,8 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
-import genj.view.ViewContext;
 import genj.view.ToolBarSupport;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -56,7 +57,6 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
@@ -105,7 +105,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private JEditorPane taOutput;
   private ReportList  listOfReports;
   private JTabbedPane tabbedPane;
-  private AbstractButton bStart,bStop,bClose,bSave,bReload,bGroup;
+  private Action2 
+    actionStart = new ActionStart(),
+    actionStop = new ActionStop(actionStart);
   private OptionsWidget owOptions;
 
   private HTMLEditorKit editorKit;
@@ -270,12 +272,13 @@ public class ReportView extends JPanel implements ToolBarSupport {
    */
   /*package*/ void run(Report report, Object context) {
     // not if running
-    if (!bStart.isEnabled()) return;
+    if (!actionStart.isEnabled()) 
+      return;
     // to front
     manager.showView(this);
     // start it
     listOfReports.setSelection(report);
-    new ActionStart(context).trigger();
+    actionStart.trigger();
   }
 
   /**
@@ -284,11 +287,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
   private boolean setRunning(boolean on) {
 
     // Show it on buttons
-    bStart.setEnabled(!on);
-    bStop .setEnabled(on);
-    if (bClose!=null) {
-      bClose.setEnabled(!on);
-    }
+    actionStart.setEnabled(!on);
+    actionStop .setEnabled(on);
 
     taOutput.setCursor(Cursor.getPredefinedCursor(
       on?Cursor.WAIT_CURSOR:Cursor.DEFAULT_CURSOR
@@ -306,12 +306,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
     // Buttons at bottom
     ButtonHelper bh = new ButtonHelper().setContainer(bar);
 
-    ActionStart astart = new ActionStart();
-    bStart = bh.create(astart);
-    bStop  = bh.create(new ActionStop(astart));
-    bSave  = bh.create(new ActionSave());
-    bReload= bh.create(new ActionReload());
-    bGroup = bh.create(new ActionGroup());
+    bh.create(actionStart);
+    bh.create(actionStop);
+    bh.create(new ActionSave());
+    bh.create(new ActionReload());
+    bh.create(new ActionGroup());
 
     // done
   }
@@ -343,8 +342,8 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Action: STOP
    */
   private class ActionStop extends Action2 {
-    private ActionStart start;
-    protected ActionStop(ActionStart start) {
+    private Action2 start;
+    protected ActionStop(Action2 start) {
       setImage(imgStop);
       setTip(RESOURCES, "report.stop.tip");
       setEnabled(false);
@@ -432,13 +431,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
       taOutput.setContentType("text/plain");
       taOutput.setText("");
 
-      // start transaction
-      if (!report.isReadOnly()) try {
-        gedcom.startTransaction();
-      } catch (IllegalStateException e) {
-        return false;
-      }
-
       // done
       return true;
     }
@@ -446,12 +438,24 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * execute
      */
     protected void execute() {
-      try {
-        instance.start(context);
-      } catch (ReportCancelledException ex) {
+
+      try{
+        
+        if (instance.isReadOnly())
+          instance.start(context);
+        else
+          gedcom.doUnitOfWork(new UnitOfWork() {
+            public void perform(Gedcom gedcom) throws Throwable {
+              instance.start(context);
+            }
+          });
+      
       } catch (Throwable t) {
-        // Running report failed
-        instance.println(t);
+        Throwable cause = t.getCause();
+        if (t instanceof InterruptedException || cause instanceof InterruptedException)
+          instance.println("***cancelled");
+        else
+          instance.println(cause);
       }
     }
 
@@ -472,10 +476,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
       // no more cleanup to do?
       if (!preExecuteResult)
         return;
-
-      // close tx?
-      if (!instance.isReadOnly())
-        gedcom.endTransaction();
 
       // check last line for url
       URL url = null;

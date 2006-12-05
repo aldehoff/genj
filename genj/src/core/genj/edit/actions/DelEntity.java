@@ -54,7 +54,7 @@ public class DelEntity extends AbstractChange {
   /**
    * @see genj.edit.EditViewFactory.Change#change()
    */
-  protected void change() throws GedcomException {
+  public void perform(Gedcom gedcom) throws GedcomException {
     candidate.getGedcom().deleteEntity(candidate);
   }
   

@@ -35,13 +35,6 @@ public class PropertyAlias extends PropertyXRef {
   }
 
   /**
-   * Constructor with reference
-   */
-  /*package*/ PropertyAlias(PropertyXRef target) {
-    super(target);
-  }
-  
-  /**
    * Returns the Gedcom-Tag of this property
    */
   public String getTag() {
@@ -63,22 +56,21 @@ public class PropertyAlias extends PropertyXRef {
     for (int i=0, j=aliass.size(); i<j; i++) {
       PropertyAlias alias = (PropertyAlias)aliass.get(i);
       if (alias.isCandidate(indi)) {
-        alias.setTarget(this);
-        setTarget(alias);
+        link(alias);
         return;
       }        
     }
     
 
     // Create Backlink using ALIAs
-    PropertyAlias alias = new PropertyAlias(this);
+    PropertyAlias alias = new PropertyAlias();
     try {
       ent.addProperty(alias);
     } catch (Throwable t) {
     }
 
     // ... and point
-    setTarget(alias);
+    link(alias);
 
     // Done
   }

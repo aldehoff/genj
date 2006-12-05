@@ -22,18 +22,18 @@ package genj.nav;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertySex;
-import genj.gedcom.Transaction;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -54,10 +54,12 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
+import spin.Spin;
+
 /**
  * A navigator with buttons to easily navigate through Gedcom data
  */
-public class NavigatorView extends JPanel implements ContextListener, GedcomListener {
+public class NavigatorView extends JPanel implements ContextListener {
   
   private static Resources resources = Resources.get(NavigatorView.class);
 
@@ -79,6 +81,16 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     imgFPartner  = Indi.IMG_FEMALE;
 
 
+  private GedcomListener callback = new GedcomListenerAdapter() {
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      if (current == entity) {
+        setCurrentEntity(gedcom.getFirstEntity(Gedcom.INDI));
+      } else {
+        setCurrentEntity(current);
+      }
+    }
+  };
+  
   /** the label holding information about the current individual */
   private JLabel labelCurrent, labelSelf;
   
@@ -114,9 +126,6 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
     add(labelCurrent,BorderLayout.NORTH);
     add(new JScrollPane(createPopupPanel()),BorderLayout.CENTER);
     
-    // listen
-    gedcom.addGedcomListener(this);
-
     // init
     Entity entity = manager.getLastSelectedContext(gedcom).getEntity();
     if (entity instanceof Indi)
@@ -161,28 +170,24 @@ public class NavigatorView extends JPanel implements ContextListener, GedcomList
 //      getPopup(relative).doClick();
 //    }
 //  } //Shortcut
+
+  public void addNotify() {
+    // continue
+    super.addNotify();
+    // listen
+    gedcom.addGedcomListener((GedcomListener)Spin.over(callback));
+  }
   
   /**
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
     // stop listening
-    gedcom.removeGedcomListener(this);
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(callback));
     // continue
     super.removeNotify();
   }
 
-
-  /**
-   * update from Gedcom
-   * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
-   */
-  public void handleChange(Transaction tx) {
-    if (tx.get(Transaction.ENTITIES_DELETED).contains(current)) 
-      setCurrentEntity(gedcom.getFirstEntity(Gedcom.INDI));
-    else setCurrentEntity(current);
-  }
-  
   /**
    * @see javax.swing.JComponent#getPreferredSize()
    */

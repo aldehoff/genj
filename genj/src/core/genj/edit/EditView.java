@@ -24,6 +24,7 @@ import genj.edit.actions.Undo;
 import genj.edit.beans.BeanFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
@@ -59,6 +60,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+
+import spin.Spin;
 
 /**
  * Component for editing genealogic entity properties
@@ -193,8 +196,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     setContext(context, false);
 
     // listen for available undos/removes
-    gedcom.addGedcomListener(undo);
-    gedcom.addGedcomListener(redo);
+    gedcom.addGedcomListener((GedcomListener)Spin.over(undo));
+    gedcom.addGedcomListener((GedcomListener)Spin.over(redo));
 
   }
 
@@ -213,8 +216,8 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     registry.put("advanced", mode.advanced);
 
     // dont listen for available undos
-    gedcom.removeGedcomListener(undo);
-    gedcom.removeGedcomListener(redo);
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(undo));
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(redo));
 
     // forget this instance
     instances.remove(this);

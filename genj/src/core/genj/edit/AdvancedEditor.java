@@ -23,12 +23,13 @@ import genj.common.SelectEntityWidget;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
+import genj.gedcom.UnitOfWork;
 import genj.io.PropertyReader;
 import genj.io.PropertyTransferable;
 import genj.util.Registry;
@@ -50,8 +51,12 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -203,7 +208,7 @@ import javax.swing.tree.TreePath;
   public void setContext(ViewContext context) {
     
     // ignore?
-    if (ignoreSelection)
+    if (ignoreSelection||context.getEntities().length==0)
       return;
 
     // clear current selection
@@ -233,6 +238,7 @@ import javax.swing.tree.TreePath;
     private Entity entity;
     private List properties;
     private String what;
+    
     /** constructor */
     private Propagate(List selection) {
       // remember
@@ -265,7 +271,7 @@ import javax.swing.tree.TreePath;
         }
       });
       
-      JCheckBox check = new JCheckBox(resources.getString("action.propagate.value"));
+      final JCheckBox check = new JCheckBox(resources.getString("action.propagate.value"));
       
       JPanel panel = new JPanel(new NestedBlockLayout("<col><select wx=\"1\"/><note wx=\"1\" wy=\"1\"/><check wx=\"1\"/></col>"));
       panel.add(select);
@@ -280,32 +286,24 @@ import javax.swing.tree.TreePath;
       if (cancel)
         return;
 
-      Entity to = select.getSelection();
+      final Entity selection = select.getSelection();
       
       // remember selection
-      registry.put("select."+entity.getTag(), to!=null ? to.getId() : null);
+      registry.put("select."+entity.getTag(), selection!=null ? selection.getId() : null);
       
       // change it
-      try {
-        gedcom.startTransaction();
-      } catch (IllegalStateException ise) {
-        return;
-      }
-        
-      try {
-        if (to!=null)
-          execute(properties, entity, to, check.isSelected());
-        else for (Iterator it = gedcom.getEntities(entity.getTag()).iterator(); it.hasNext(); ) 
-          execute(properties, entity, (Entity)it.next(), check.isSelected());
-      } finally {
-        gedcom.endTransaction();
-      }
+      gedcom.doUnitOfWork(new UnitOfWork() {        
+        public void perform(Gedcom gedcom) {
+          Collection to = selection!=null ? Collections.singletonList(selection) : gedcom.getEntities(entity.getTag());
+          for (Iterator it = to.iterator(); it.hasNext(); ) 
+            Propagate.this.copy(properties, entity, (Entity)it.next(), check.isSelected());
+        }
+      });
 
       // done
     }
     
-    /** apply the template to an entity */
-    private void execute(List selection, Entity from, Entity to, boolean values) {
+    private void copy(List selection, Entity from, Entity to, boolean values) {
       // make sure we're not propagating to self
       if (from==to)
         return;
@@ -361,15 +359,15 @@ import javax.swing.tree.TreePath;
     protected void execute() {
       
       // available
-      List selection = presetSelection;
-      if (selection==null)
-        selection = Property.normalize(tree.getSelection());
+      final List selection = presetSelection!=null ? presetSelection : Property.normalize(tree.getSelection());
       if (selection.isEmpty())
         return;
       
       // contains entity?
-      if (selection.contains(tree.getRoot()))
-        selection = Arrays.asList(tree.getRoot().getProperties());
+      if (selection.contains(tree.getRoot())) {
+        selection.clear();
+        selection.addAll(Arrays.asList(tree.getRoot().getProperties()));
+      }
       
       // warn about cut
       String veto = getVeto(selection);
@@ -388,16 +386,18 @@ import javax.swing.tree.TreePath;
       }
       
       // now cut
-      gedcom.startTransaction();
-      for (ListIterator props = selection.listIterator(); props.hasNext(); )  {
-        Property p = (Property)props.next();
-        p.getParent().delProperty(p);
-      }
-      gedcom.endTransaction();
+      gedcom.doUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
+          for (ListIterator props = selection.listIterator(); props.hasNext(); )  {
+            Property p = (Property)props.next();
+            p.getParent().delProperty(p);
+          }
+        }
+      });
       
       // done
     }
-
+    
     /** assemble a list of vetos for cutting properties */
     private String getVeto(List properties) {
       
@@ -483,43 +483,37 @@ import javax.swing.tree.TreePath;
     protected void execute() {
 
       // grab the clipboard content now
-      String content;
+      final String content;
       try {
         content = clipboard.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
       } catch (Throwable t) {
         EditView.LOG.log(Level.WARNING, "Accessing system clipboard as stringFlavor failed", t);
         return;
       }
-      Property parent = presetParent;
       
-      // got a parent already?
-      if (parent==null) {
-        List selection = tree.getSelection();
-        if (selection.size()!=1)
-          return;
-        parent = (Property)selection.get(0);
-      }
+      // select
+      final Property parent;
+      if (presetParent!=null) 
+        parent = presetParent;
+      else if (tree.getSelectionCount()==1)
+        parent = (Property)tree.getSelection().get(0);
+      else 
+        return;
       
-      // start a transaction and grab from clipboard
-      gedcom.startTransaction();
-      try {
-        new PropertyReader(new StringReader(content), null, true) {
-          /** intercept add so we can add/merge */
-          protected Property addProperty(Property prop, String tag, String value, int pos) {
-            // reuse prop's existing child with same tag if singleton
-            Property child = prop.getProperty(tag, false);
-            if (child!=null&&prop.getMetaProperty().getNested(tag, false).isSingleton()&&!(child instanceof PropertyXRef)) {
-              child.setValue(value);
-              return child;
-            }
-            return super.addProperty(prop, tag, value, pos);
+      // grab from clipboard
+      gedcom.doUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) throws GedcomException {
+          PropertyReader reader = new PropertyReader(new StringReader(content), null, true);
+          reader.setMerge(true);
+          try {
+            reader.read(parent);
+          } catch (IOException e) {
+            throw new GedcomException("IO during read()");
           }
-        }.read(parent);
-      } catch (Throwable t) {
-        EditView.LOG.log(Level.WARNING, "Couldn't paste clipboard content", t);
-      }
-      gedcom.endTransaction();
-  
+        }
+      });
+
+      // done
     }
   
   } //Paste
@@ -572,18 +566,19 @@ import javax.swing.tree.TreePath;
       tree.clearSelection();
   
       // .. add properties
-      gedcom.startTransaction();
-      Property newProp = null;
-      try {
-        for (int i=0;i<tags.length;i++) {
-          newProp = parent.addProperty(tags[i], "");
-          if (addDefaults) newProp.addDefaultProperties();
-        } 
-      } finally {
-        gedcom.endTransaction();
-      }
-         
+      final List newProps = new ArrayList();
+      gedcom.doUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
+          for (int i=0;i<tags.length;i++) {
+            Property prop = parent.addProperty(tags[i], "");
+            newProps.add(prop);
+            if (addDefaults) prop.addDefaultProperties();
+          } 
+        };
+      });
+    
       // .. select added
+      Property newProp = newProps.isEmpty() ? null : (Property)newProps.get(0);
       if (newProp instanceof PropertyEvent) {
         Property pdate = ((PropertyEvent)newProp).getDate(false);
         if (pdate!=null) newProp = pdate;
@@ -617,13 +612,14 @@ import javax.swing.tree.TreePath;
         return;
       Gedcom gedcom = root.getGedcom();
   
-      if (bean!=null) try {
-        Transaction tx = gedcom.startTransaction();
-        bean.commit();
-      } finally {
-        gedcom.endTransaction();
+      if (bean!=null) {
+        gedcom.doUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) throws GedcomException {
+            bean.commit();
+          }
+        });
       }
-        
+
       ok.setEnabled(false);
       cancel.setEnabled(false);
     }
@@ -668,7 +664,7 @@ import javax.swing.tree.TreePath;
       if (root!=null) {
         Gedcom gedcom = root.getGedcom();
         // ask user for commit if
-        if (!gedcom.isTransaction()&&bean!=null&&ok.isEnabled()&&editView.isCommitChanges()) 
+        if (!gedcom.isWriteLocked()&&bean!=null&&ok.isEnabled()&&editView.isCommitChanges()) 
           ok.trigger();
       }
 

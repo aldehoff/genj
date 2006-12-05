@@ -335,6 +335,17 @@ public class GeoLocation extends Point implements Feature, Comparable {
   }
   
   /**
+   * Remove properties for given entity
+   */
+  public void removeEntity(Entity entity) {
+    for (ListIterator it = properties.listIterator(); it.hasNext(); ) {
+      Property prop = (Property)it.next();
+      if (entity == prop.getEntity())
+        it.remove();
+    }
+  }
+  
+  /**
    * How many matches this location had
    */
   public int getMatches() {

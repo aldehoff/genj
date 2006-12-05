@@ -42,6 +42,7 @@ public class PropertyReader {
   protected int lines = 0;
   private String line = null;
   private Collection collectXRefs;
+  private boolean isMerge = false;
   
   /** variables read line by line */
   protected int level;
@@ -96,6 +97,13 @@ public class PropertyReader {
       in.reset();
     }
     // done
+  }
+  
+  /**
+   * Whether to merge properties encountered during read
+   */
+  public void setMerge(boolean set) {
+    isMerge = set;
   }
   
   /**
@@ -169,6 +177,14 @@ public class PropertyReader {
 
   /** add a child property **/
   protected Property addProperty(Property prop, String tag, String value, int pos) {
+    if (isMerge) {
+      // reuse prop's existing child with same tag if singleton
+      Property child = prop.getProperty(tag, false);
+      if (child!=null&&prop.getMetaProperty().getNested(tag, false).isSingleton()&&!(child instanceof PropertyXRef)) {
+        child.setValue(value);
+        return child;
+      }
+    }
     return pos<0 ? prop.addProperty(tag, value, true) : prop.addProperty(tag, value, pos);
   }
   

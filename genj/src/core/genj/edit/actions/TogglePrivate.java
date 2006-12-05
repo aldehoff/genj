@@ -58,11 +58,7 @@ public class TogglePrivate extends AbstractChange {
     setText(resources.getString(makePrivate?"private":"public"));
   }
   
-  protected String getConfirmMessage() {
-    return null;
-  }
-  
-  protected void change() throws GedcomException {
+  public void perform(Gedcom gedcom) throws GedcomException {
     
     // check if that's something we can do
     String pwd = gedcom.getPassword();

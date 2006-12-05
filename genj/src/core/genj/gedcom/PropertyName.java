@@ -263,7 +263,7 @@ public class PropertyName extends Property {
     suffix    = suff;
 
     // tell about it 
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     
     // Done
     return this;

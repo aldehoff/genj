@@ -22,16 +22,12 @@ package genj.gedcom;
 /**
  * Interface for Listeners of changes in gedcom data
  */
-public interface GedcomListener {
-  
-  public void gedcomEntityAdded(Gedcom gedcom, Entity entity);
+public interface GedcomMetaListener extends GedcomListener {
 
-  public void gedcomEntityDeleted(Gedcom gedcom, Entity entity);
+  public void gedcomHeaderChanged(Gedcom gedcom);
   
-  public void gedcomPropertyChanged(Gedcom gedcom, Property property);
+  public void gedcomWriteLockAcquired(Gedcom gedcom);
   
-  public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added);
+  public void gedcomWriteLockReleased(Gedcom gedcom);
   
-  public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted);
-  
-} //GedcomListener
+}

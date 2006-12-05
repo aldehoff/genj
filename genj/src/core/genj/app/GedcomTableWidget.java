@@ -19,14 +19,16 @@
  */
 package genj.app;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Transaction;
+import genj.gedcom.GedcomMetaListener;
+import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SortableTableHeader;
-import genj.view.ViewContext;
 import genj.view.ContextProvider;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.Point;
@@ -40,6 +42,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+
+import spin.Spin;
 
 /**
  * A component displaying a list of Gedcoms
@@ -183,7 +187,7 @@ import javax.swing.table.TableColumnModel;
   /**
    * A model keeping track of a bunch of Gedcoms
    */
-  private class Model extends AbstractTableModel implements GedcomListener {
+  private class Model extends AbstractTableModel implements GedcomMetaListener {
     
     /** the Gedcoms we know about */
     private List gedcoms = new ArrayList(10);
@@ -217,7 +221,7 @@ import javax.swing.table.TableColumnModel;
     public void addGedcom(Gedcom gedcom) {
       gedcoms.add(gedcom);
       Collections.sort(gedcoms);
-      gedcom.addGedcomListener(this);
+      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
       fireTableDataChanged();
     }
 
@@ -226,7 +230,7 @@ import javax.swing.table.TableColumnModel;
      */
     public void removeGedcom(Gedcom gedcom) {
       gedcoms.remove(gedcom);
-      gedcom.removeGedcomListener(this);
+      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
       fireTableDataChanged();
     }
     
@@ -267,12 +271,29 @@ import javax.swing.table.TableColumnModel;
       return col==0 ? String.class : Integer.class;
     }
 
-  
-    /**
-     * @see genj.gedcom.GedcomListener#handleChange(Change)
-     */
-    public void handleChange(Transaction tx) {
-      int i = getRowFor(tx.getGedcom());
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    }
+
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+    }
+
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+    }
+
+    public void gedcomHeaderChanged(Gedcom gedcom) {
+    }
+
+    public void gedcomWriteLockAcquired(Gedcom gedcom) {
+    }
+
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
+      int i = getRowFor(gedcom);
       if (i>=0) fireTableRowsUpdated(i,i);
     }
 

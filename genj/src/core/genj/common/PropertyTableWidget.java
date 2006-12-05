@@ -426,7 +426,7 @@ public class PropertyTableWidget extends JPanel {
       model = set;
       
       if (model!=null)
-        handleRowsChange(model);
+        handleRowsChanged(model, 0, model.getNumRows()-1);
       // done
     }
     
@@ -434,38 +434,29 @@ public class PropertyTableWidget extends JPanel {
       return model!=null ? model.getGedcom() : null;
     }
     
-    public void handleContentChange(PropertyTableModel model) {
+    public void handleStructureChanged(PropertyTableModel model) {
       
       // setup cell state
       int 
         rows = model.getNumRows(), 
         cols = model.getNumCols();
       cells = new Property[rows][cols];
+      
+      // init default non-sorted
+      row2row = new int[rows];
+      for (int i=0;i<row2row.length;i++)
+        row2row[i]=i;
       
       // sort again
       sort(Integer.MAX_VALUE);
 
       // tell about it
-      fireTableRowsUpdated(0, cells.length);
+      fireTableDataChanged();
     }
     
-    public void handleRowsChange(PropertyTableModel model) {
-      // setup cell state
-      int 
-        rows = model.getNumRows(), 
-        cols = model.getNumCols();
-      cells = new Property[rows][cols];
-      row2row = new int[rows];
-      
-      // init default non-sorted
-      for (int i=0;i<row2row.length;i++)
-        row2row[i]=i;
-      
-      // sort now
-      sort(Integer.MAX_VALUE);
-
-      // done
-      fireTableDataChanged();
+    public void handleRowsChanged(PropertyTableModel model, int start, int end) {
+      // FIXME this could be faster if we take the affected rows out and insert them appropriately instead of throwing away all cached data
+      handleStructureChanged(model);
     }
     
     /** someone interested in us */

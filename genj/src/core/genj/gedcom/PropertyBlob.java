@@ -170,7 +170,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     isIconChecked = false;
 
     // Remember changed property
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
 
     // Done
   }
@@ -206,7 +206,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     }
     
     // Remember changed property
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     
     // check
     Property media = getParent();

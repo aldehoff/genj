@@ -17,10 +17,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.report;
+package genj.gedcom;
 
 /**
- * Exception wrapping a state of a cancelled report
+ * A unit of work performed all or none 
  */
-public class ReportCancelledException extends RuntimeException {
+public interface UnitOfWork {
+  
+  public void perform(Gedcom gedcom) throws Throwable;
+
 }

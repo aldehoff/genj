@@ -164,7 +164,7 @@ public class PropertySex extends Property {
     String old = getValue();
     sexAsString = null;
     sex = newSex;
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     // Done
   }
 
@@ -203,7 +203,7 @@ public class PropertySex extends Property {
 	    }
     }
     // notify
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     // done
   }
 

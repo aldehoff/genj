@@ -94,7 +94,7 @@ public class CreateEntity extends AbstractChange {
   /**
    * @see genj.edit.EditViewFactory.Change#change()
    */
-  protected void change() throws GedcomException {
+  public void perform(Gedcom gedcom) throws GedcomException {
     // check id
     String id = null;
     if (requestID.isEditable()) {

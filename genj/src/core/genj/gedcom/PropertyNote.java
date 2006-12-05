@@ -77,11 +77,11 @@ public class PropertyNote extends PropertyXRef {
     Note enote = (Note)getCandidate();
 
     // Create Backlink
-    PropertyForeignXRef fxref = new PropertyForeignXRef(this);
+    PropertyForeignXRef fxref = new PropertyForeignXRef();
     enote.addProperty(fxref);
 
     // ... and point
-    setTarget(fxref);
+    link(fxref);
 
     // Done
   }

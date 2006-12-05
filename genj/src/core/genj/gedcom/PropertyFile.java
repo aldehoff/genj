@@ -180,7 +180,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
     // will be prompted in ProxyFile
     
     // Remember the change
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     
     // done    
   }

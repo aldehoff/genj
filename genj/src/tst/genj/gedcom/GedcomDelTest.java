@@ -37,19 +37,23 @@ public class GedcomDelTest extends TestCase {
     private Fam createTestFamily() throws GedcomException, GedcomIOException
     {
         Gedcom gedcom = new Gedcom();
-        gedcom.startTransaction();
-        Indi husband = (Indi) gedcom.createEntity(Gedcom.INDI, "Ihusband");
-        Indi wife = (Indi) gedcom.createEntity(Gedcom.INDI, "Iwife");
-        Indi child = (Indi) gedcom.createEntity(Gedcom.INDI, "Ikid");
-        Fam family = (Fam) gedcom.createEntity(Gedcom.FAM,"F1");
-        family.setHusband(husband);
-        family.setWife(wife);
-        family.addChild(child);
-        gedcom.endTransaction();
+        
+        gedcom.doUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) throws GedcomException {
+            Indi husband = (Indi) gedcom.createEntity(Gedcom.INDI, "Ihusband");
+            Indi wife = (Indi) gedcom.createEntity(Gedcom.INDI, "Iwife");
+            Indi child = (Indi) gedcom.createEntity(Gedcom.INDI, "Ikid");
+            Fam family = (Fam) gedcom.createEntity(Gedcom.FAM,"F1");
+            family.setHusband(husband);
+            family.setWife(wife);
+            family.addChild(child);
+          }
+        });
         
         /* baseline*/
         validate(gedcom);
-        return family;
+        
+        return (Fam)gedcom.getEntity("F1");
     }
     
     /*

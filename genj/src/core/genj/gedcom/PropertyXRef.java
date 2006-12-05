@@ -45,66 +45,22 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
-   * Constructor with reference
-   * @param target reference of property this property links to
-   */
-  protected PropertyXRef(PropertyXRef target) {
-    setTarget(target);
-  }
-  
-  /**
-   * Method for notification of being added to parent
-   */
-  void addNotify(Property parent) {
-    // let super do its thing
-    super.addNotify(parent);
-    
-    // is this an undo?
-    Transaction tx = parent.getTransaction();
-    if (tx!=null&&tx.isRollback()) {
-      
-      // 20060312  make sure the target looks at us - again @see delNotify()
-      target.setValue("");
-      target.target = this;
-
-    }
-    
-    // done
-  }
-
-  /**
    * Method for notifying being removed from another parent
    */
   /*package*/ void delNotify(Property oldParent) {
 
+    // are we referencing something that points back?
+    if (target!=null) {
+      PropertyXRef old = target;
+      unlink();
+      
+      // delete target unless it has children
+      if (old.getNoOfProperties()==0)
+        old.getParent().delProperty(old);
+    }
+
     // Let it through
     super.delNotify(oldParent);
-    
-    // are we referencing something that points back?
-    if (target==null)
-      return;
-
-    // is it still owned by a parent? (not if we were called after the fact of our target getting a delNotify)
-    if (target.getParent()==null)
-      return;
-      
-    // ... delete back referencing property unless this is a rollback.
-    // We have to use oldParent for transaction resolution since 
-    // parent is already set to null by super
-    Transaction tx = oldParent.getTransaction();
-    if (tx==null||!tx.isRollback()) {
-      
-      // 20060312 don't delete target if it has children since we don't want
-      // to loose that information. In case of undo this' addNotify() will make
-      // sure we're hooked up again
-      if (target.getNoOfProperties()>0) {
-        target.target = null;
-        target.setValue("");
-      } else {
-        target.getParent().delProperty(target);
-      }
-      
-    }
     
     // done
   }
@@ -166,6 +122,32 @@ public abstract class PropertyXRef extends Property {
    * @exception GedcomException when processing link would result in inconsistent state
    */
   public abstract void link() throws GedcomException;
+  
+  /**
+   * links to other xref
+   */
+  protected void link(PropertyXRef target) {
+    if (this.target!=null)
+      throw new IllegalArgumentException("can't link while target!=null");
+    if (target==null)
+      throw new IllegalArgumentException("can't link to targe null");
+    this.target = target;
+    target.target = this;
+    propagateXRefLinked(this, target);
+  }
+  
+  
+  /**
+   * Unlinks from other xref
+   */
+  public void unlink() {
+    if (target==null)
+      throw new IllegalArgumentException("can't unlink without target");
+    PropertyXRef old = target;
+    target.target = null;
+    target = null;
+    propagateXRefUnlinked(this, old);
+  }
 
   /**
    * @see genj.gedcom.Property#getDisplayValue()
@@ -191,22 +173,6 @@ public abstract class PropertyXRef extends Property {
     return resources.getString("foreign.xref", by);
   }
   
-  /**
-   * Sets the entity's property this reference points to
-   * @param target referenced entity's property
-   */
-  protected void setTarget(PropertyXRef target) {
-
-    // Do it
-    this.target=target;
-
-    // propagate as changed
-    propagateChange(value);
-
-    // Done
-  }
-  
-
   /**
    * Returns this reference's target
    * @return target or null
@@ -239,7 +205,7 @@ public abstract class PropertyXRef extends Property {
     value = set.replace('@',' ').trim();
 
     // remember change
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     
     // done
   }

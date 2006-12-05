@@ -20,15 +20,16 @@
 package genj.edit.actions;
 
 import genj.edit.Images;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomListener;
-import genj.gedcom.Transaction;
+import genj.gedcom.GedcomMetaListener;
+import genj.gedcom.Property;
 import genj.util.swing.Action2;
 
 /**
  * Redo on Gedcom
  */  
-public class Undo extends Action2 implements GedcomListener {
+public class Undo extends Action2 implements GedcomMetaListener {
   
   /** the gedcom */
   private Gedcom gedcom;
@@ -56,15 +57,39 @@ public class Undo extends Action2 implements GedcomListener {
    */
   protected void execute() {
     if (gedcom.canUndo())
-      gedcom.undo();
+      gedcom.undoUnitOfWork();
   }
   
-  /**
-   * Callback for gedcom events
-   */
-  public void handleChange(Transaction tx) {
+  public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    // ignored
+  }
+
+  public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+    // ignored
+  }
+
+  public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+    // ignored
+  }
+
+  public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
+    // ignored
+  }
+
+  public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+    // ignored
+  }
+
+  public void gedcomHeaderChanged(Gedcom gedcom) {
+    // ignored
+  }
+
+  public void gedcomWriteLockAcquired(Gedcom gedcom) {
+    // ignored
+  }
+
+  public void gedcomWriteLockReleased(Gedcom gedcom) {
     setEnabled(gedcom.canUndo());
   }
-  
 } //Undo
 

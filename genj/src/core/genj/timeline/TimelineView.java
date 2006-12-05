@@ -140,6 +140,8 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   
   /** the view manager */
   private ViewManager manager;
+  
+  private ModelListener callback = new ModelListener();
     
   /**
    * Constructor
@@ -179,7 +181,6 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     // create/keep our sub-parts
     model = new Model(gedcom, regstry.get("filter", (String[])null));
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
-    model.addListener(new ModelListener());
     content = new Content();
     ruler = new Ruler();
     
@@ -203,13 +204,19 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     // done
   }
 
-
+  public void addNotify() {
+    // let super do its thing
+    super.addNotify();
+    // connect to model
+    model.addListener(callback);
+  }
+  
   /**
    * @see javax.swing.JComponent#removeNotify()
    */
   public void removeNotify() {
-    // make sure model disconnects from gedcom
-    model.setGedcom(null);
+    // disconnect from model
+    model.removeListener(callback);
     // store stuff in registry
     regstry.put("cmperyear"  , (float)Math.rint(cmPerYear*10)/10);
     regstry.put("cmbefevent" , (float)cmBefEvent);

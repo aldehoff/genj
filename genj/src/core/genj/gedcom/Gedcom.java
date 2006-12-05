@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.108 $ $Author: nmeier $ $Date: 2006-07-14 20:31:59 $
+ * $Revision: 1.109 $ $Author: nmeier $ $Date: 2006-12-05 05:09:41 $
  */
 package genj.gedcom;
 
@@ -151,14 +151,17 @@ public class Gedcom implements Comparable {
   private LinkedList allEntities = new LinkedList();
   private Map tag2id2entity = new HashMap();
   
-  /** transaction support */
-  private Transaction transaction = null;
-  private boolean hasUnsavedChanges;
+  /** currently collected undos and redos */
+  private List 
+    undoHistory = new ArrayList(),
+    redoHistory = new ArrayList();
 
-  private ArrayList 
-    undos = new ArrayList(),
-    redos = new ArrayList();
-
+  /** a semaphore we're using for syncing */
+  private Object writeSemaphore = new Object();
+  
+  /** current set of undos */
+  private List undos = null;
+  
   /** listeners */
   private List listeners = new ArrayList(10);
   
@@ -240,13 +243,23 @@ public class Gedcom implements Comparable {
    * Sets the submitter of this gedcom
    */
   public void setSubmitter(Submitter set) {
-    if (!getEntityMap(SUBM).containsValue(set))
+    
+    // change it
+    if (set!=null&&!getEntityMap(SUBM).containsValue(set))
       throw new IllegalArgumentException("Submitter is not part of this gedcom");
+
+    // flip it
+    final Submitter old = submitter;
     submitter = set;
     
-    // propagate modified on submitter
-    submitter.propagateChange(submitter.getValue());
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+        void undo() {
+            setSubmitter(old);
+        }
+      });
 
+    // done
   }
   
   /**
@@ -259,38 +272,256 @@ public class Gedcom implements Comparable {
   /**
    * Adds a Listener which will be notified when data changes
    */
-  public void addGedcomListener(GedcomListener which) {
-    if (which==null)
+  public void addGedcomListener(GedcomListener listener) {
+    if (listener==null)
       throw new IllegalArgumentException("listener can't be null");
     synchronized (listeners) {
-      listeners.add(which);
+      if (!listeners.add(listener))
+        throw new IllegalArgumentException("can't add gedcom listener "+listener+"twice");
     }
+    LOG.log(Level.FINER, "addGedcomListener() from "+new Throwable().getStackTrace()[1]);
+    
   }
 
   /**
    * Removes a Listener from receiving notifications
    */
-  public void removeGedcomListener(GedcomListener which) {
+  public void removeGedcomListener(GedcomListener listener) {
     synchronized (listeners) {
-      listeners.remove(which);
+      if (!listeners.remove(listener))
+        throw new IllegalArgumentException("can't remove gedcom listener "+listener);
     }
+    LOG.log(Level.FINER, "removeGedcomListener() from "+new Throwable().getStackTrace()[1]);
   }
   
   /**
-   * Notify Listeners of possible changes through given transaction
+   * the current undo set
    */
-  private void notifyGedcomListeners(Transaction tx) {
-    // send message to all listeners
+  private List getCurrentUndoSet() {
+    return (List)undoHistory.get(undoHistory.size()-1);
+  }
+  
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagateXRefLinked(final PropertyXRef property1, final PropertyXRef property2) {
+    
+    LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" linked");
+    
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+      void undo() {
+        property1.unlink();
+      }
+    });
+    
+    // let listeners know
     GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
     for (int l=0;l<gls.length;l++) {
       try {
-        gls[l].handleChange(tx);
+        gls[l].gedcomPropertyChanged(this, property1);
+        gls[l].gedcomPropertyChanged(this, property2);
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
       }
     }
+
     // done
   }
+  
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagateXRefUnlinked(final PropertyXRef property1, final PropertyXRef property2) {
+    
+    LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" unlinked");
+    
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+        void undo() {
+          property1.link(property2);
+        }
+      });
+    
+    // let listeners know
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].gedcomPropertyChanged(this, property1);
+        gls[l].gedcomPropertyChanged(this, property2);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+
+    // done
+  }
+
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagateEntityAdded(final Entity entity) {
+    
+    LOG.finer("Entity "+entity.getId()+" added");
+    
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+        void undo() {
+          deleteEntity(entity);
+        }
+      });
+    
+    // let listeners know
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].gedcomEntityAdded(this, entity);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+
+    // done
+  }
+  
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagateEntityDeleted(final Entity entity) {
+    
+    LOG.finer("Entity "+entity.getId()+" deleted");
+    
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+        void undo() throws GedcomException  {
+          addEntity(entity);
+        }
+      });
+    
+    // let listeners know
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].gedcomEntityDeleted(this, entity);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+
+    // done
+  }
+  
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagatePropertyAdded(Entity entity, final Property container, final int pos, Property added) {
+    
+    LOG.finer("Property "+added.getTag()+" added to "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
+    
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+        void undo() {
+          container.delProperty(pos);
+        }
+      });
+    
+    // let listeners know
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].gedcomPropertyAdded(this, container, pos, added);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+
+    // done
+  }
+  
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagatePropertyDeleted(Entity entity, final Property container, final int pos, final Property deleted) {
+    
+    LOG.finer("Property "+deleted.getTag()+" deleted from "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
+    
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+        void undo() {
+          container.addProperty(deleted, pos);
+        }
+      });
+    
+    // let listeners know
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].gedcomPropertyDeleted(this, container, pos, deleted);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+    
+    // done
+  }
+  
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagatePropertyChanged(Entity entity, final Property property, final String oldValue) {
+    
+    LOG.finer("Property "+property.getTag()+" changed in (entity "+entity.getId()+")");
+    
+    // keep undo
+    if (undos!=null) undos.add(new Undo() {
+        void undo() {
+          property.setValue(oldValue);
+        }
+      });
+    
+    // notify
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].gedcomPropertyChanged(this, property);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+
+    // done
+  }
+
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagateWriteLockAqcuired() {
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      GedcomListener gl = (GedcomListener)gls[l];
+      if (gl instanceof GedcomMetaListener) try {
+        ((GedcomMetaListener)gl).gedcomWriteLockAcquired(this);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+  }
+  
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagateWriteLockReleased() {
+    
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      GedcomListener gl = (GedcomListener)gls[l];
+      if (gl instanceof GedcomMetaListener) try {
+        ((GedcomMetaListener)gl).gedcomWriteLockReleased(this);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+  }  
   
   /**
    * An ID change is in progress
@@ -325,7 +556,7 @@ public class Gedcom implements Comparable {
   /**
    * Add entity 
    */
-  /*package*/ void addEntity(Entity entity) throws GedcomException {
+  private void addEntity(Entity entity) throws GedcomException {
     
     String id = entity.getId();
     
@@ -345,6 +576,9 @@ public class Gedcom implements Comparable {
     
     // notify
     entity.addNotify(this);
+    
+    // tell others
+    propagateEntityAdded(entity);
 
   }
 
@@ -426,6 +660,9 @@ public class Gedcom implements Comparable {
     // was it the submitter?    
     if (submitter==which) submitter = null;
 
+    // tell others
+    propagateEntityDeleted(which);
+    
     // Done
   }
 
@@ -574,7 +811,7 @@ public class Gedcom implements Comparable {
    * Has the gedcom unsaved changes ?
    */
   public boolean hasUnsavedChanges() {
-    return hasUnsavedChanges;
+    return !undoHistory.isEmpty();
   }
 
   /**
@@ -582,169 +819,196 @@ public class Gedcom implements Comparable {
    */
   public void setUnchanged() {
     
-    // not allowed if there's a pending transaction
-    if (transaction!=null)
-      throw new IllegalStateException("setUnchanged() n/a while transaction is active");
+    // grab undos
+    synchronized (writeSemaphore) {
+      if (undos!=null)
+        throw new IllegalStateException("setUnchanged() n/a with active writeLock");
     
-    // remember
-    hasUnsavedChanges=false;
-    
-    // fake a transaction
-    notifyGedcomListeners(new Transaction(this));
+      // remember
+      undoHistory.clear();
+      
+      // let listeners know
+      GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+      for (int l=0;l<gls.length;l++) {
+        GedcomListener gl = (GedcomListener)gls[l];
+        if (gl instanceof GedcomMetaListener) try {
+          ((GedcomMetaListener)gl).gedcomHeaderChanged(this);
+        } catch (Throwable t) {
+          LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        }
+      }
+
+    }
+    // done
+  }
+  
+  /**
+   * Test for write lock
+   */
+  public boolean isWriteLocked() {
+    return undos!=null;
   }
   
   /**
    * Starts a transaction
    */
-  public synchronized Transaction startTransaction() throws IllegalStateException {
-
-    // Is there a transaction running?
-    if (transaction!=null)
-      throw new IllegalStateException("Cannot start transaction for changes while concurrent transaction is active");
-
-    // start one
-    transaction = new Transaction(this);
-
-    // done
-    return transaction;
-  }
-  
-  /**
-   * Test for transaction going on
-   */
-  public synchronized boolean isTransaction() {
-    return transaction!=null;
-  }
-  
-  /**
-   * Access current transaction
-   */
-  public synchronized Transaction getTransaction() {
-    // check for no transaction while listeners present
-    if (transaction==null&&!listeners.isEmpty())
-      throw new IllegalStateException("No active transaction but listeners present");
-    // return it
-    return transaction;
-  }
-
-  /**
-   * Ends Transaction
-   */
-  public synchronized Transaction endTransaction() {
-
-    // any changes?
-    if (transaction!=null&&transaction.hasChanges()) {
-
-      // remember change
-      hasUnsavedChanges = true;
-
-      // keep it for undo
-      undos.add(transaction);
-      redos.clear();
-      
-      // check number of undos
-      while (undos.size()>Options.getInstance().getNumberOfUndos())
-        undos.remove(0);
+  public void doUnitOfWork(UnitOfWork uow) throws IllegalStateException, RuntimeException {
     
-      // let everyone know
-      notifyGedcomListeners(transaction);
+    PropertyChange.Monitor updater;
+    
+    // grab undos
+    synchronized (writeSemaphore) {
+      
+      if (undos!=null)
+        throw new IllegalStateException("Cannot obtain write lock");
 
+      // hook up updater for changes
+      updater = new PropertyChange.Monitor();
+      addGedcomListener(updater);
+
+      // reset redos
+      redoHistory.clear();
+
+      // start undos
+      undos = new ArrayList();
+      
+    }
+
+    // let listeners know
+    propagateWriteLockAqcuired();
+    
+    // run the runnable
+    Throwable rethrow = null;
+    try {
+      uow.perform(this);
+    } catch (Throwable t) {
+      rethrow = t;
     }
     
-    // forget current
-    Transaction result = transaction;
-    transaction = null;
-    
+    synchronized (writeSemaphore) {
+
+      // keep undos (within limits)
+      undoHistory.add(undos);
+      while (undoHistory.size()>Options.getInstance().getNumberOfUndos())
+        undoHistory.remove(0);
+
+      // release
+      undos = null;
+      
+      // unhook updater for changes
+      removeGedcomListener(updater);
+    }
+
+    // let listeners know
+    propagateWriteLockReleased();
+      
     // done
-    return result;
+    if (rethrow!=null)
+      throw new RuntimeException(rethrow);
   }
 
   /**
    * Test for undo
    */
   public boolean canUndo() {
-    return !undos.isEmpty();
+    return !undoHistory.isEmpty();
   }
   
   /**
    * Performs an undo
    */
-  public synchronized void undo() {
+  public void undoUnitOfWork() {
     
     // there?
-    if (undos.isEmpty())
-      throw new IllegalArgumentException("undo not possible");
+    if (undoHistory.isEmpty())
+      throw new IllegalArgumentException("undo n/a");
 
-    // Is there a transaction running?
-    if (transaction!=null)
-      throw new IllegalStateException("Cannot undo while concurrent transaction is active");
+    synchronized (writeSemaphore) {
 
-    Transaction undo = (Transaction)undos.remove(undos.size()-1);
-
-    // start one
-    transaction = new Transaction(this);
-    transaction.setRollback(true);
-
-    // rollback changes of last transaction
-    Change[] changes = undo.getChanges();
-    for (int i=changes.length-1;i>=0;i--)
-      changes[i].undo();
-
-    // reset change status
-    hasUnsavedChanges = undo.hasUnsavedChangesBefore;
-
-    // keep undos as redo
-    redos.add(transaction);
+      // grab undos
+      if (undos!=null)
+        throw new IllegalStateException("Cannot obtain write lock for undo");
+      undos = new ArrayList();
+  
+    }
     
-    // let everyone know
-    notifyGedcomListeners(transaction);
-
+    // let listeners know
+    propagateWriteLockAqcuired();
+    
+    // run through undos
+    List todo = (List)undoHistory.remove(undoHistory.size()-1);
+    for (int i=todo.size()-1;i>=0;i--) {
+      Undo undo = (Undo)todo.remove(i);
+      try {
+        undo.undo();
+      } catch (Throwable t) {
+        LOG.log(Level.SEVERE, "Unexpected throwable during undo()", t);
+      }
+    }
+    
+    // keep redos
+    redoHistory.add(undos);
+    
+    synchronized (writeSemaphore) {
+      // release
+      undos = null;
+    }
+    
+    // let listeners know
+    propagateWriteLockReleased();
+    
     // done
-    transaction = null;
-
   }
     
   /**
    * Test for redo
    */
   public boolean canRedo() {
-    return !redos.isEmpty();
+    return !redoHistory.isEmpty();
   }
   
   /**
    * Performs a redo
    */
-  public synchronized void redo() {
+  public void redoUnitOfWork() {
 
     // there?
-    if (redos.isEmpty())
-      throw new IllegalArgumentException("redo not possible");
-    Transaction redo = (Transaction)redos.remove(redos.size()-1);
+    if (redoHistory.isEmpty())
+      throw new IllegalArgumentException("redo n/a");
 
-    // Is there a transaction running?
-    if (transaction!=null)
-      throw new IllegalStateException("Cannot redo while concurrent transaction is active");
-
-    // start one
-    transaction = new Transaction(this);
-    transaction.setRollback(true);
-
-    // rollback changes of last undo (reverse order again)
-    Change[] changes = redo.getChanges();
-    for (int i=changes.length-1;i>=0;i--)
-      changes[i].undo();
-
-    // keep change status
-    hasUnsavedChanges = changes.length>0;
-
-    // keep transaction as undo
-    undos.add(transaction);
+    // grab undos
+    synchronized (writeSemaphore) {
+      if (undos!=null)
+        throw new IllegalStateException("Cannot obtain write lock for redo");
+      undos = new ArrayList();
+    }
     
-    // let everyone know
-    notifyGedcomListeners(transaction);
+    // let listeners know
+    propagateWriteLockAqcuired();
+    
+    // run the redos
+    List todo = (List)redoHistory.remove(redoHistory.size()-1);
+    for (int i=todo.size()-1;i>=0;i--) {
+      Undo undo = (Undo)todo.remove(i);
+      try {
+        undo.undo();
+      } catch (Throwable t) {
+        LOG.log(Level.SEVERE, "Unexpected throwable during undo()", t);
+      }
+    }
+    
+    // keep undos
+    undoHistory.add(undos);
+ 
+    // release
+    synchronized (writeSemaphore) {
+      undos = null;
+    }
 
+    // let listeners know
+    propagateWriteLockReleased();
+    
     // done
-    transaction = null;
     
   }
   
@@ -968,5 +1232,12 @@ public class Gedcom implements Comparable {
     Gedcom that = (Gedcom)other;
     return getName().compareTo(that.getName());
   };
+  
+  /**
+   * Undo
+   */
+  private abstract class Undo {
+    abstract void undo() throws GedcomException;
+  }
   
 } //Gedcom

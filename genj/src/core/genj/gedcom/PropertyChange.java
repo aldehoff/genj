@@ -22,6 +22,8 @@ package genj.gedcom;
 import genj.gedcom.time.PointInTime;
 
 import java.text.DecimalFormat;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -40,7 +42,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
 
   private final static DecimalFormat decimal = new DecimalFormat("00");
   
-  private final static String
+  public final static String
    CHAN = "CHAN",
    TIME = "TIME",
    DATE = "DATE";
@@ -99,42 +101,6 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
 
   /**
-   * Static update
-   */
-  /*package*/ static void update(Entity entity, Transaction tx, Change change) {
-
-    // tx isn't rollback?
-    if (tx.isRollback())
-      return;
-
-    // change itself?
-    if (change instanceof Change.PropertyAdd && ((Change.PropertyAdd)change).getAdded() instanceof PropertyChange)
-      return;
-    if (change instanceof Change.PropertyDel && ((Change.PropertyDel)change).getRemoved() instanceof PropertyChange)
-      return;
-    if (change instanceof Change.PropertyValue && ((Change.PropertyValue)change).getChanged() instanceof PropertyChange)
-      return;
-  
-    // is allowed?
-    MetaProperty meta = entity.getMetaProperty();
-    if (!meta.allows(CHAN))
-      return;
-      
-    // update values (tx time is UTC time!)
-    PropertyChange prop = (PropertyChange)entity.getProperty(CHAN);
-    if (prop==null) {
-      prop = (PropertyChange)meta.getNested(CHAN, true).create("");
-      prop.setValue(tx.getTime());
-      entity.addProperty(prop, Integer.MAX_VALUE);
-    } else {
-      prop.setValue(tx.getTime());
-    }
-    
-  
-    // done
-  }
-  
-  /**
    * @see genj.gedcom.MultiLineProperty#getLineCollector()()
    */
   public Collector getLineCollector() {
@@ -163,7 +129,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     time = set;
     
     // notify
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     
     // done
   }
@@ -201,7 +167,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     }
     
     // notify
-    propagateChange(old);
+    propagatePropertyChanged(this, old);
     
     // done
   }
@@ -329,5 +295,65 @@ public class PropertyChange extends Property implements MultiLineProperty {
     
   } //Lines
 
+  /**
+   * A gedcom listener that will update CHANs
+   */
+  /*package*/ static class Monitor implements GedcomMetaListener {
+    
+    private Set updated = new HashSet();
+
+    /** update entity for given property */ 
+    private void update(Property where) {
+      
+      Entity entity = where.getEntity();
+      if (updated.contains(entity))
+        return;
+      
+      // ignore if something happened below PropertyChange
+      while (where!=null) {
+        if (where instanceof PropertyChange)
+          return;
+        where = where.getParent();
+      }
+      
+      // update it
+      Gedcom.LOG.finer("updating CHAN for "+entity.getId());
+      entity.setChanged();
+      updated.add(entity);
+    }
+    
+    public void gedcomHeaderChanged(Gedcom gedcom) {
+      // ignored
+    }
+    
+    public void gedcomWriteLockAcquired(Gedcom gedcom) {
+    }
+    
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
+      // ignored
+    }
+    
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+      update(entity);
+    }
+
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      updated.remove(entity);
+    }
+
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      update(added);
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+      update(property);
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+      if (!(deleted instanceof PropertyChange))
+        update(property);
+    } 
+    
+  } //Tracker
   
 } //PropertyChange

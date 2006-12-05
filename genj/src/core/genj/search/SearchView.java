@@ -26,7 +26,6 @@ import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.gedcom.Transaction;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -36,9 +35,9 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ToolBarSupport;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -71,6 +70,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import spin.Spin;
 
 /**
  * View for searching
@@ -212,7 +213,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
    */
   public void addNotify() {
     // start listening
-    gedcom.addGedcomListener(results);
+    gedcom.addGedcomListener((GedcomListener)Spin.over(results));
     // continue
     super.addNotify();
     // set focus
@@ -224,7 +225,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
    */
   public void removeNotify() {
     // stop listening
-    gedcom.removeGedcomListener(results);
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(results));
     // keep old
     registry.put("regexp"    , checkRegExp.isSelected());
     registry.put("old.values", oldValues);
@@ -609,14 +610,6 @@ public class SearchView extends JPanel implements ToolBarSupport {
     }
     
     /**
-     * @see genj.gedcom.GedcomListener#handleChange(genj.gedcom.Change)
-     */
-    public void handleChange(Transaction tx) {
-      if (!tx.get(Transaction.PROPERTIES_DELETED).isEmpty())
-        clear();
-    }
-    
-    /**
      * @see javax.swing.ListModel#getElementAt(int)
      */
     public Object getElementAt(int index) {
@@ -635,6 +628,38 @@ public class SearchView extends JPanel implements ToolBarSupport {
      */
     private Hit getHit(int i) {
       return (Hit)hits.get(i);
+    }
+
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+      // FIXME could do a re-search here
+    }
+
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      // ignored
+    }
+
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      // FIXME could do a re-search here
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
+      for (int i=0;i<hits.size();i++) {
+        Hit hit = (Hit)hits.get(i);
+        if (hit.getProperty()==prop) 
+          fireContentsChanged(this, i, i);
+      }
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+      for (int i=0;i<hits.size();) {
+        Hit hit = (Hit)hits.get(i);
+        if (hit.getProperty()==removed) {
+          hits.remove(i);
+          fireIntervalRemoved(this, i, i);
+        } else {
+          i++;
+        }
+      }
     }
 
   } //Results

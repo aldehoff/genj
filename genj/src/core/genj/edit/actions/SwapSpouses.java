@@ -20,6 +20,7 @@
 package genj.edit.actions;
 
 import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.view.ViewManager;
 
@@ -40,16 +41,9 @@ public class SwapSpouses extends AbstractChange {
   }
   
   /**
-   * No confirm message necessary
-   */
-  protected String getConfirmMessage() {
-    return null;
-  }
-
-  /**
    * @see genj.edit.actions.AbstractChange#change()
    */
-  protected void change() throws GedcomException {
+  public void perform(Gedcom gedcom) throws GedcomException {
     fam.swapSpouses();
   }
 
