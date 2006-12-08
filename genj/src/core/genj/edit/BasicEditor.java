@@ -229,11 +229,6 @@ import spin.Spin;
     // remove all we've setup to this point
     if (beanPanel!=null) {
       removeAll();
-      try { 
-        beanPanel.destructor(); 
-      } catch (Throwable t) {
-        EditView.LOG.log(Level.SEVERE, "problem cleaning up bean panel", t);
-      }
       beanPanel=null;
     }
 
@@ -494,7 +489,7 @@ import spin.Spin;
     private JTabbedPane tabs;
     
     /** constructor */
-    public BeanPanel() {
+    BeanPanel() {
       
       // grab a descriptor
       NestedBlockLayout descriptor = getSharedDescriptor(currentEntity.getMetaProperty()).copy();
@@ -506,12 +501,38 @@ import spin.Spin;
     }
     
     /**
+     * destructor - call when panel isn't needed anymore 
+     */
+    public void removeNotify() {
+      
+      super.removeNotify();
+      
+      // get rid of all beans
+      removeAll();
+      
+      // recycle beans
+      BeanFactory factory = view.getBeanFactory();
+      for (Iterator it=beans.iterator(); it.hasNext(); ) {
+        PropertyBean bean = (PropertyBean)it.next();
+        try {
+          bean.removeChangeListener(this);
+          factory.recycle(bean);
+        } catch (Throwable t) {
+          EditView.LOG.log(Level.WARNING, "Problem cleaning up bean "+bean, t);
+        }
+      }
+      beans.clear();
+      
+      // done
+    }
+    
+    /**
      * commit beans - transaction has to be running already
      */
-    public void commit() {
+    void commit() {
       
-      // loop over beans
-      for (Iterator it = beans.iterator(); it.hasNext();) {
+      // loop over beans (the beans are changed on gedcom changes and selection - make a copy)
+      for (Iterator it = new ArrayList(beans).iterator(); it.hasNext();) {
         // check next
         PropertyBean bean = (PropertyBean)it.next();
         if (bean.hasChanged()&&bean.getProperty()!=null) {
@@ -528,29 +549,9 @@ import spin.Spin;
     }
     
     /**
-     * destructor - call when panel isn't needed anymore 
-     */
-    public void destructor() {
-      
-      // remove all components
-      super.removeAll();
-      
-      // recycle beans
-      BeanFactory factory = view.getBeanFactory();
-      for (Iterator it=beans.iterator(); it.hasNext(); ) {
-        PropertyBean bean = (PropertyBean)it.next();
-        bean.removeChangeListener(this);
-        factory.recycle(bean);
-      }
-      beans.clear();
-      
-      // done
-    }
-    
-    /**
      * Select a property's bean
      */
-    public void select(Property prop) {
+    void select(Property prop) {
       if (prop==null||beans.isEmpty())
         return;
       
