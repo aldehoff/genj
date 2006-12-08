@@ -29,7 +29,6 @@ import genj.util.Registry;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 /**
  * A complex bean displaying children of a family
@@ -52,7 +51,6 @@ public class ChildrenBean extends PropertyBean {
     
     // a table for the families
     table = new PropertyTableWidget(viewManager);
-    table.setPreferredSize(new Dimension(64,64));
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);

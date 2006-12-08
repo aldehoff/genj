@@ -356,6 +356,15 @@ public class PropertyTableWidget extends JPanel {
       // done
     }
     
+    /** 
+     * The Scollpane we're using asks this JTable's preferred srollable viewport size (via ViewportLayout) which strangely is
+     * hardcoded to something around 400 - we want to use the preferred size though since it is caculated by JTable's
+     * tablelayout depending on the number of rows. We're restricting this to 128 pixels height though.
+     */ 
+    public Dimension getPreferredScrollableViewportSize() {
+      return getPreferredSize();
+    }
+    
     /**
      * ContextProvider - callback 
      */
