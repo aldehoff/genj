@@ -58,6 +58,12 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
   public boolean hasChanged() {
     return hasChanged;
   }
+  
+  public void setChanged(boolean set) {
+    hasChanged = set;
+    if (set)
+      fireChangeEvent();
+  }
 
   /**
    * add listener
