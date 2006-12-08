@@ -250,7 +250,7 @@
   
   	 <!-- what we exclude - would be great to derive that automatically :( -->
      <property name="exclude" value="
-      genj/app/**, genj/lnf/**, genj/report/**, **/*ViewPrinter*.class, **/*ViewSettings*.class
+      genj/app/**, genj/fo/**, genj/chart/**, genj/lnf/**, genj/report/**, **/*ViewPrinter*.class, **/*ViewSettings*.class
      "/>
 
      <!-- applet sub -->
