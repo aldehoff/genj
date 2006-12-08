@@ -93,6 +93,8 @@ import spin.Spin;
 
   /** edit */
   private EditView view;
+  
+  private boolean disableSetEntity = false;
 
   /** actions */
   private Action2 ok = new OK(), cancel = new Cancel();
@@ -103,10 +105,11 @@ import spin.Spin;
   
   private GedcomListener callback = new GedcomListenerAdapter() {
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-      if (entity==currentEntity)
+      if (entity==currentEntity) {
         setEntity(gedcom.getFirstEntity(currentEntity.getTag()), currentEntity);
-      // dont' commit anything anymore
-      ok.setEnabled(false);
+        // dont' commit anything anymore
+        ok.setEnabled(false);
+      }
     }
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
       if (property.getEntity()==currentEntity)
@@ -209,6 +212,9 @@ import spin.Spin;
    * Set current entity
    */
   public void setEntity(Entity set, Property focus) {
+    
+    if (disableSetEntity)
+      return;
     
     // commit what needs to be committed
     if (!gedcom.isWriteLocked()&&currentEntity!=null&&ok.isEnabled()&&view.isCommitChanges()) 
@@ -531,21 +537,30 @@ import spin.Spin;
      */
     void commit() {
       
-      // loop over beans (the beans are changed on gedcom changes and selection - make a copy)
-      for (Iterator it = new ArrayList(beans).iterator(); it.hasNext();) {
-        // check next
-        PropertyBean bean = (PropertyBean)it.next();
-        if (bean.hasChanged()&&bean.getProperty()!=null) {
-          Property prop = bean.getProperty();
-          // proxied?
-          PropertyProxy proxy = (PropertyProxy)prop.getContaining(PropertyProxy.class);
-          if (proxy!=null) 
-            prop = proxy.getProxied().setValue(prop.getPathToContaining(proxy), "");
-          // commit its changes
-          bean.commit(prop);
-        }
-      }
+      // stop listening
+      disableSetEntity = true;
       
+      // loop over beans 
+      try{
+        for (Iterator it = beans.iterator(); it.hasNext();) {
+          // check next
+          PropertyBean bean = (PropertyBean)it.next();
+          if (bean.hasChanged()&&bean.getProperty()!=null) {
+            Property prop = bean.getProperty();
+            // proxied?
+            PropertyProxy proxy = (PropertyProxy)prop.getContaining(PropertyProxy.class);
+            if (proxy!=null) 
+              prop = proxy.getProxied().setValue(prop.getPathToContaining(proxy), "");
+            // commit its changes
+            bean.commit(prop);
+            // next
+          }
+        }
+      } finally {
+        disableSetEntity = false;
+        ok.setEnabled(false);
+      }
+      // done
     }
     
     /**

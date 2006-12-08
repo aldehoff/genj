@@ -172,6 +172,8 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   public void commit(Property property) {
     // remember property
     this.property = property;
+    // clear changed
+    changeSupport.setChanged(false);
     // nothing more
   }
   
