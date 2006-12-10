@@ -696,8 +696,8 @@ import javax.swing.tree.TreePath;
           if (bean.isEditable()) {
             JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
             ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons);
-            bh.create(ok);
-            bh.create(cancel);
+            bh.create(ok).setFocusable(false);
+            bh.create(cancel).setFocusable(false);
             editPane.add(buttons, BorderLayout.SOUTH);
           }
           
