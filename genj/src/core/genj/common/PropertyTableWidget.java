@@ -435,7 +435,7 @@ public class PropertyTableWidget extends JPanel {
       model = set;
       
       if (model!=null)
-        handleRowsChanged(model, 0, model.getNumRows()-1);
+        handleStructureChanged(model);
       // done
     }
     
@@ -464,8 +464,15 @@ public class PropertyTableWidget extends JPanel {
     }
     
     public void handleRowsChanged(PropertyTableModel model, int start, int end) {
-      // FIXME this could be faster if we take the affected rows out and insert them appropriately instead of throwing away all cached data
-      handleStructureChanged(model);
+      
+      // keep selection
+//      table.getSelectionModel().
+      
+      // sort again
+      sort(Integer.MAX_VALUE);
+      
+      // tell about it
+      fireTableRowsUpdated(0, row2row.length);
     }
     
     /** someone interested in us */

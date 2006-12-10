@@ -19,6 +19,7 @@
  */
 package genj.common;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomListenerAdapter;
@@ -39,8 +40,26 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel {
   private GedcomListener callback;
   
   private class Callback extends GedcomListenerAdapter implements GedcomMetaListener {
+    
+    private boolean bigChange = false;
+    
+    public void gedcomEntityAdded(Gedcom gedcom, genj.gedcom.Entity entity) {
+      bigChange = true;
+    }
+    
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      bigChange = true;
+    }
+    
+    public void gedcomWriteLockAcquired(Gedcom gedcom) {
+      bigChange = false;
+    }
+    
     public void gedcomWriteLockReleased(Gedcom gedcom) {
-      fireStructureChanged();
+      if (bigChange)
+        fireStructureChanged();
+      else
+        fireRowsChanged(0, getNumRows());
     }
   }
   
