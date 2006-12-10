@@ -310,7 +310,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   /** 
    * A PropertyTableModelWrapper
    */
-  private class Model extends AbstractPropertyTableModel implements GedcomListener {
+  private class Model extends AbstractPropertyTableModel {
 
     /** mode */
     private Mode mode;
@@ -323,46 +323,13 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       mode = set;
     }
     
-    /** our fine grained gedcom listener */
-    protected GedcomListener getGedcomListener() {
-      return this;
-    }
-    
-    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
-      reset();
-    }
-
-    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-      reset();
-    }
-
-    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-      gedcomPropertyChanged(gedcom, added);
-    }
-
-    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
-      
-      // look for row
-      Entity entity = property.getEntity();
-      for (int i=0;i<rows.length;i++) {
-        if (rows[i]==entity) {
-          fireRowsChanged(i, i);
-          break;
-        }
-      }
-    }
-
-    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
-      gedcomPropertyChanged(gedcom, property);
-    }
-    
-    /** reset rows */
-    private void reset() {
+    /** tell about major restructuring change */
+    protected void fireStructureChanged() {
       // cache entities
       Collection es = gedcom.getEntities(mode.getTag());
       rows = (Entity[])es.toArray(new Entity[es.size()]);
       // continue
-      fireStructureChanged();
+      super.fireStructureChanged();
     }
     
     /** gedcom */
@@ -388,8 +355,17 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     /** property for row */
     public Property getProperty(int row) {
       if (rows==null)
-        reset();
-      return rows[row];
+        fireStructureChanged();
+      Property result = rows[row];
+      if (result==null)
+        return result;
+      // since we do a lazy update after a gedcom write lock we check if cached properties are still good 
+      if (result.getEntity()==null) {
+        result = null;
+        rows[row] = null;
+      }
+      // done
+      return result;
     }
     
   } //Model

@@ -22,6 +22,7 @@ package genj.common;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomListenerAdapter;
+import genj.gedcom.GedcomMetaListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,16 +38,17 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel {
   private Gedcom gedcom = null;
   private GedcomListener callback;
   
+  private class Callback extends GedcomListenerAdapter implements GedcomMetaListener {
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
+      fireStructureChanged();
+    }
+  }
+  
   /**
    * the gedcom listener to use
    */
   protected GedcomListener getGedcomListener() {
-    return new GedcomListenerAdapter() {
-      public void gedcomWriteLockReleased(Gedcom gedcom) {
-        // FIXME this callback could be less coarse grained
-        fireStructureChanged();
-      }
-    };
+    return new Callback();
   }
   
   /** 
