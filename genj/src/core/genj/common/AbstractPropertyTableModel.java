@@ -22,8 +22,7 @@ package genj.common;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.GedcomListenerAdapter;
-import genj.gedcom.GedcomMetaListener;
+import genj.gedcom.Property;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,42 +32,11 @@ import spin.Spin;
 /**
  * A default base-type for property models
  */
-public abstract class AbstractPropertyTableModel implements PropertyTableModel {
+public abstract class AbstractPropertyTableModel implements PropertyTableModel, GedcomListener {
   
   private List listeners = new ArrayList(3);
   private Gedcom gedcom = null;
   private GedcomListener callback;
-  
-  private class Callback extends GedcomListenerAdapter implements GedcomMetaListener {
-    
-    private boolean bigChange = false;
-    
-    public void gedcomEntityAdded(Gedcom gedcom, genj.gedcom.Entity entity) {
-      bigChange = true;
-    }
-    
-    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-      bigChange = true;
-    }
-    
-    public void gedcomWriteLockAcquired(Gedcom gedcom) {
-      bigChange = false;
-    }
-    
-    public void gedcomWriteLockReleased(Gedcom gedcom) {
-      if (bigChange)
-        fireStructureChanged();
-      else
-        fireRowsChanged(0, getNumRows());
-    }
-  }
-  
-  /**
-   * the gedcom listener to use
-   */
-  protected GedcomListener getGedcomListener() {
-    return new Callback();
-  }
   
   /** 
    * Add listener
@@ -79,9 +47,7 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel {
       // cache gedcom now
       if (gedcom==null) gedcom=getGedcom();
       // and start listening (make sure events are spin over to the EDT)
-      if (callback==null)
-        callback = (GedcomListener)Spin.over(getGedcomListener());
-      gedcom.addGedcomListener(callback);
+      gedcom.addGedcomListener((GedcomListener)Spin.over((GedcomListener)this));
     }
   }
   
@@ -92,7 +58,7 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel {
     listeners.remove(listener);
     // stop listening
     if (listeners.isEmpty())
-      gedcom.removeGedcomListener(callback);
+      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
   }
   
   /**
@@ -105,17 +71,60 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel {
   /**
    * Structure change
    */
-  protected void fireRowsChanged(int start, int end) {
+  protected void fireRowsChanged(int rowStart, int rowEnd, int col) {
     for (int i=0;i<listeners.size();i++)
-      ((PropertyTableModelListener)listeners.get(i)).handleRowsChanged(this, start, end);
+      ((PropertyTableModelListener)listeners.get(i)).handleRowsChanged(this, rowStart, rowEnd, col);
   }
   
   /**
    * Structure change
    */
-  protected void fireStructureChanged() {
+  protected void fireRowsAdded(int rowStart, int rowEnd) {
     for (int i=0;i<listeners.size();i++)
-      ((PropertyTableModelListener)listeners.get(i)).handleStructureChanged(this);
+      ((PropertyTableModelListener)listeners.get(i)).handleRowsAdded(this, rowStart, rowEnd);
+  }
+
+  /**
+   * Structure change
+   */
+  protected void fireRowsDeleted(int rowStart, int rowEnd) {
+    for (int i=0;i<listeners.size();i++)
+      ((PropertyTableModelListener)listeners.get(i)).handleRowsDeleted(this, rowStart, rowEnd);
+  }
+
+  /**
+   * Gedcom callback
+   */
+  public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    // ignored
+  }
+
+  /**
+   * Gedcom callback
+   */
+  public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+    // ignored
+  }
+
+  /**
+   * Gedcom callback
+   */
+  public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+    // ignored
+  }
+
+  /**
+   * Gedcom callback
+   */
+  public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+    // ignored
+  }
+
+  /**
+   * Gedcom callback
+   */
+  public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+    // ignored
   }
 
 }

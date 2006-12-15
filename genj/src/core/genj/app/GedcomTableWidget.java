@@ -26,7 +26,7 @@ import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.SortableTableHeader;
+import genj.util.swing.SortableTableModel;
 import genj.view.ContextProvider;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
@@ -66,9 +66,6 @@ import spin.Spin;
    */
   public GedcomTableWidget(ViewManager mgr, Registry reGistry) {
 
-    // change the header to ours    
-    setTableHeader(new SortableTableHeader());
-    
     // Prepare a model
     model = new Model();
     registry = reGistry;
@@ -85,7 +82,7 @@ import spin.Spin;
       col.setPreferredWidth(defaultWidths[h]);
       cm.addColumn(col);
     }
-    setModel(model);
+    setModel(new SortableTableModel(model, getTableHeader()));
     setColumnModel(cm);
 
     // change looks    

@@ -41,21 +41,26 @@ import genj.view.ViewManager;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.table.TableModel;
 
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
 public class TableView extends JPanel implements ToolBarSupport, ContextListener, ContextProvider {
+  
+  private final static Logger LOG = Logger.getLogger("genj.table");
 
   /** a static set of resources */
   private Resources resources = Resources.get(this);
@@ -120,6 +125,10 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     new NextMode(false).install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
     
     // done
+  }
+  
+  /*package*/ TableModel getModel() {
+    return propertyTable.getTableModel();
   }
   
   /**
@@ -316,20 +325,11 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     private Mode mode;
     
     /** our cached rows */
-    private Entity[] rows;
+    private List rows;
     
     /** constructor */
     private Model(Mode set) {
       mode = set;
-    }
-    
-    /** tell about major restructuring change */
-    protected void fireStructureChanged() {
-      // cache entities
-      Collection es = gedcom.getEntities(mode.getTag());
-      rows = (Entity[])es.toArray(new Entity[es.size()]);
-      // continue
-      super.fireStructureChanged();
     }
     
     /** gedcom */
@@ -344,7 +344,11 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     
     /** # rows */
     public int getNumRows() {
-      return gedcom.getEntities(mode.getTag()).size();
+      // cache entities if not there yet
+      if (rows==null) 
+        rows = new ArrayList(gedcom.getEntities(mode.getTag()));
+      // ready 
+      return rows.size();
     }
     
     /** path for colum */
@@ -354,20 +358,90 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
 
     /** property for row */
     public Property getProperty(int row) {
-      if (rows==null)
-        fireStructureChanged();
-      Property result = rows[row];
+      
+      // init rows
+      getNumRows();
+
+      // and look it up
+      Property result = (Property)rows.get(row);
       if (result==null)
         return result;
+      
       // since we do a lazy update after a gedcom write lock we check if cached properties are still good 
       if (result.getEntity()==null) {
         result = null;
-        rows[row] = null;
+        rows.set(row, null);
       }
+      
       // done
       return result;
     }
     
+    /** gedcom callback */
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+      // an entity we're not looking at?
+      if (!mode.getTag().equals(entity.getTag())) 
+        return;
+      // add it
+      rows.add(entity);
+      // tell about it
+      fireRowsAdded(rows.size()-1, rows.size()-1);
+      // done
+    }
+
+    /** gedcom callback */
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      // an entity we're not looking at?
+      if (!mode.getTag().equals(entity.getTag())) 
+        return;
+      // delete it
+      for (int i=0;i<rows.size();i++) {
+        if (rows.get(i)==entity) {
+          rows.remove(i);
+          // tell about it
+          fireRowsDeleted(i, i);
+          // done
+          return;
+        }
+      }
+      // hmm, strange
+      LOG.warning("got notified that entity "+entity.getId()+" was deleted but it wasn't in rows in the first place");
+    }
+
+    /** gedcom callback */
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      invalidate(gedcom, property.getEntity(), property.getPath());
+    }
+
+    /** gedcom callback */
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+      invalidate(gedcom, property.getEntity(), property.getPath());
+    }
+
+    /** gedcom callback */
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+      invalidate(gedcom, property.getEntity(), new TagPath(property.getPath(), deleted.getTag()));
+    }
+    
+    private void invalidate(Gedcom gedcom, Entity entity, TagPath path) {
+      // an entity we're not looking at?
+      if (!mode.getTag().equals(entity.getTag())) 
+        return;
+      // a path we're interested in?
+      TagPath[] paths = mode.getPaths();
+      for (int i=0;i<paths.length;i++) {
+        if (paths[i].equals(path)) {
+          for (int j=0;j<rows.size();j++) {
+            if (rows.get(j)==entity) {
+                fireRowsChanged(j,j,i);
+                return;
+            }
+          }      
+        }
+      }
+      // done
+    }
+
   } //Model
 
   /**

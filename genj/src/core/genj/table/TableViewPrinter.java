@@ -19,10 +19,8 @@
  */
 package genj.table;
 
-import genj.common.PropertyTableModel;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySimpleValue;
-import genj.gedcom.TagPath;
 import genj.print.Printer;
 import genj.renderer.PropertyRenderer;
 
@@ -37,6 +35,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.Dimension2D;
 
 import javax.swing.JComponent;
+import javax.swing.table.TableModel;
 
 /**
  * A print renderer for table */
@@ -91,16 +90,20 @@ public class TableViewPrinter implements Printer {
    */
   public Dimension calcSize(Dimension2D pageSizeInInches, Point dpi) {
 
+    TableModel model = table.getModel();
+    
     // prepare data
     pageWidth = (int)Math.ceil(pageSizeInInches.getWidth()*dpi.x);
     pageHeight = (int)Math.ceil(pageSizeInInches.getHeight()*dpi.y);
     headerHeight = 0;
-    rowHeights = new int[table.propertyTable.getModel().getNumRows()];
-    colWidths = new int[table.propertyTable.getModel().getNumCols()];
+    
+    
+    rowHeights = new int[model.getRowCount()];
+    colWidths = new int[model.getColumnCount()];
     
     // calculate header parameters
     for (int col=0;col<colWidths.length;col++) {
-      header.setValue(table.propertyTable.getModel().getPath(col).getName());
+      header.setValue(model.getColumnName(col));
       calcSize(-1, col, header, dpi);
     }
     
@@ -109,8 +112,7 @@ public class TableViewPrinter implements Printer {
       // analyze all columns
       for (int col=0;col<colWidths.length;col++) {
         // add cell
-        TagPath colPath = table.propertyTable.getModel().getPath(col);
-        calcSize(row, col, (Property)table.propertyTable.getModel().getProperty(row).getProperty(colPath), dpi);
+        calcSize(row, col, (Property)model.getValueAt(row,col), dpi);
       }
       // next row
     }
@@ -190,7 +192,7 @@ public class TableViewPrinter implements Printer {
     g.setFont(font);
 
     // grab model
-    PropertyTableModel model = table.propertyTable.getModel();
+    TableModel model = table.getModel();
     
     // identify column/row for this page
     int scol=0, cols=0;
@@ -207,7 +209,7 @@ public class TableViewPrinter implements Printer {
     for (int col=0,x=0;col<cols;col++) {
       // render in given space
       Rectangle r = new Rectangle(x, 0, colWidths[scol+col], headerHeight); 
-      header.setValue(model.getPath(scol+col).getName());
+      header.setValue(model.getColumnName(scol+col));
       render(g, r, header, dpi);
       // increase current horizontal position
       x += r.getWidth() + pad;
@@ -223,8 +225,7 @@ public class TableViewPrinter implements Printer {
       for (int col=0,x=0;col<cols;col++) {
         // render in given space
         Rectangle r = new Rectangle(x, y, colWidths[scol+col], rowHeights[srow+row]);
-        TagPath colPath = model.getPath(scol+col);
-        render(g, r, (Property)model.getProperty(srow+row).getProperty(colPath), dpi);
+        render(g, r, (Property)model.getValueAt(srow+row, scol+col), dpi);
         // increase current horizontal position
         x += colWidths[scol+col] + pad;
       }
