@@ -185,26 +185,34 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for a font
    */
-  private class FontUI implements OptionUI {
+  private static class FontUI implements OptionUI {
     
     /** widgets */
     private FontChooser chooser = new FontChooser();
+    
+    /** option */
+    private PropertyOption option;
+    
+    /** constructor */
+    FontUI(PropertyOption option) {
+      this.option = option;
+    }
       
     /** callback - text representation = none */
     public String getTextRepresentation() {
-      Font font = (Font)getValue();
+      Font font = (Font)option.getValue();
       return font==null ? "..." : font.getFamily() + "," + font.getSize();
     }
     
     /** callback - component representation */
     public JComponent getComponentRepresentation() {
-      chooser.setSelectedFont((Font)getValue());
+      chooser.setSelectedFont((Font)option.getValue());
       return chooser;
     }
 
     /** commit - noop */    
     public void endRepresentation() {
-      setValue(chooser.getSelectedFont());
+      option.setValue(chooser.getSelectedFont());
     }
     
   } //FontUI
@@ -212,14 +220,18 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for a file
    */
-  private class FileUI implements OptionUI {
+  private static class FileUI implements OptionUI {
     
     /** file chooser */
     private FileChooserWidget chooser = new FileChooserWidget();
     
+    /** option */
+    private PropertyOption option;
+    
     /** constructor */
-    private FileUI() {
-      chooser.setFile((File)getValue());
+    FileUI(PropertyOption option) {
+      this.option = option;
+      chooser.setFile((File)option.getValue());
     }
     
     /** text is file name */
@@ -234,7 +246,7 @@ public abstract class PropertyOption extends Option {
 
     /** end and commit change */
     public void endRepresentation() {
-      setValue(chooser.getFile());
+      option.setValue(chooser.getFile());
     }
 
   } //FileUI
@@ -242,12 +254,16 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for a boolean 
    */
-  private class BooleanUI extends JCheckBox implements OptionUI {
+  private static class BooleanUI extends JCheckBox implements OptionUI {
+    /** option */
+    private PropertyOption option;
+    
     /** constructor */
-    private BooleanUI() {
+    BooleanUI(PropertyOption option) {
+      this.option = option;
       setOpaque(false);
       setHorizontalAlignment(JCheckBox.LEFT);
-      Boolean value = (Boolean)getValue();
+      Boolean value = (Boolean)option.getValue();
       if (value.booleanValue())
         setSelected(true);
     }
@@ -261,17 +277,21 @@ public abstract class PropertyOption extends Option {
     }
     /** commit */
     public void endRepresentation() {
-      setValue(isSelected()?Boolean.TRUE : Boolean.FALSE);
+      option.setValue(isSelected()?Boolean.TRUE : Boolean.FALSE);
     }
   } //BooleanUI
 
   /**
    * A UI for text, numbers, etc.
    */
-  private class SimpleUI extends TextFieldWidget implements OptionUI {
+  private static class SimpleUI extends TextFieldWidget implements OptionUI {
+    /** option */
+    private PropertyOption option;
+    
     /** constructor */
-    private SimpleUI() {
-      Object value = getValue();
+    SimpleUI(PropertyOption option) {
+      this.option = option;
+      Object value = option.getValue();
       setText(value!=null?value.toString():"");
       setSelectAllOnFocus(true);
       setColumns(12);
@@ -286,7 +306,7 @@ public abstract class PropertyOption extends Option {
     }
     /** commit */
     public void endRepresentation() {
-      setValue(getText());
+      option.setValue(getText());
     }
   } //BooleanUI
   
@@ -365,15 +385,15 @@ public abstract class PropertyOption extends Option {
       // FIXME Options - hardcoded UI 
       // a font?
       if (Font.class.isAssignableFrom(type))
-        return new FontUI();
+        return new FontUI(this);
       // a boolean?
       if (type==Boolean.TYPE)
-        return new BooleanUI();
+        return new BooleanUI(this);
       // a file?
       if (type==File.class)
-        return new FileUI();
+        return new FileUI(this);
       // all else
-      return new SimpleUI();
+      return new SimpleUI(this);
     }
   
     /**
