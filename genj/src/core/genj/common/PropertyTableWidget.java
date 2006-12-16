@@ -20,9 +20,8 @@
 package genj.common;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.Grammar;
-import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.TagPath;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
@@ -47,6 +46,7 @@ import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.font.FontRenderContext;
+import java.text.Collator;
 import java.util.logging.Logger;
 
 import javax.swing.ActionMap;
@@ -292,11 +292,11 @@ public class PropertyTableWidget extends JPanel {
     }
     
     /** create a shortcut */
-    Action2 createShortcut(String txt, final Rectangle rect, Container container) {
+    Action2 createShortcut(String txt, final int y, final Container container) {
       
-      Action2 shortcut = new Action2(txt) {
+      Action2 shortcut = new Action2(txt.toUpperCase()) {
         protected void execute() {
-          table.scrollRectToVisible(rect);
+          table.scrollRectToVisible(new Rectangle(0, y, 1, getParent().getHeight()));
         }
       };
       
@@ -311,31 +311,33 @@ public class PropertyTableWidget extends JPanel {
     /** generate */
     void createShortcuts(int col, JComponent container) {
       
-      TableModel model = table.getModel();
-      
+      TableModel model = getModel();
+      Collator collator = propertyModel.getGedcom().getCollator();
+
       // loop over rows
-      char cursor = (char)0;
+      String cursor = "";
       for (int r=0;r<model.getRowCount();r++) {
-        
         Property prop = (Property)model.getValueAt(r, col);
+        if (prop instanceof PropertyDate)
+          break;
         if (prop==null)
           continue;
         
-        String value = prop.getDisplayValue(); 
+        String value = prop.getDisplayValue().trim(); 
         if (value.length()==0)
           continue;
+        value = value.substring(0,1).toLowerCase();
         
-        char c = Character.toLowerCase(value.charAt(0));
-        if (c==' '||c<=cursor)
+        if (collator.compare(cursor, value)>=0)
           continue;
-        cursor = c;
+        cursor = value;
         
-        Action2 shortcut = createShortcut(""+Character.toUpperCase(c), table.getCellRect(r, col, true), container);
+        Action2 shortcut = createShortcut(value, table.getCellRect(r, col, true).y, container);
       
         // create key binding
         InputMap imap = container.getInputMap(WHEN_IN_FOCUSED_WINDOW);
         ActionMap amap = container.getActionMap();
-        imap.put(KeyStroke.getKeyStroke(c), shortcut);
+        imap.put(KeyStroke.getKeyStroke(value.charAt(0)), shortcut);
         amap.put(shortcut, shortcut);
       }
       
@@ -362,12 +364,7 @@ public class PropertyTableWidget extends JPanel {
       if (directive.getDirection()<=0)
         return;
       
-      // check meta for the column we're sorting
-      int col = directive.getColumn();
-      TagPath path = propertyModel.getPath(col);
-      MetaProperty meta = Grammar.getMeta(path, false);
-
-      createShortcuts(col, panelShortcuts);
+      createShortcuts(directive.getColumn(), panelShortcuts);
 
       // done
     }
