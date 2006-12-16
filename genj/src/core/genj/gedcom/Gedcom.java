@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.111 $ $Author: nmeier $ $Date: 2006-12-05 05:24:20 $
+ * $Revision: 1.112 $ $Author: nmeier $ $Date: 2006-12-16 01:50:52 $
  */
 package genj.gedcom;
 
@@ -159,8 +159,8 @@ public class Gedcom implements Comparable {
   /** a semaphore we're using for syncing */
   private Object writeSemaphore = new Object();
   
-  /** current set of undos */
-  private List undos = null;
+  /** current lock */
+  private Lock lock = null;
   
   /** listeners */
   private List listeners = new ArrayList(10);
@@ -252,13 +252,28 @@ public class Gedcom implements Comparable {
     final Submitter old = submitter;
     submitter = set;
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
-        void undo() {
-            setSubmitter(old);
-        }
-      });
-
+    lock.addChange(new Undo() {
+      void undo() {
+          setSubmitter(old);
+      }
+    });
+    
+    // let listeners know
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      GedcomListener gl = (GedcomListener)gls[l];
+      if (gl instanceof GedcomMetaListener) try {
+        ((GedcomMetaListener)gl).gedcomHeaderChanged(this);
+      } catch (Throwable t) {
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+    
     // done
   }
   
@@ -309,8 +324,12 @@ public class Gedcom implements Comparable {
     if (LOG.isLoggable(Level.FINER))
       LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" linked");
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
+    lock.addChange(new Undo() {
       void undo() {
         property1.unlink();
       }
@@ -323,7 +342,7 @@ public class Gedcom implements Comparable {
         gls[l].gedcomPropertyChanged(this, property1);
         gls[l].gedcomPropertyChanged(this, property2);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
 
@@ -338,8 +357,12 @@ public class Gedcom implements Comparable {
     if (LOG.isLoggable(Level.FINER))
       LOG.finer("Property "+property1.getTag()+" and "+property2.getTag()+" unlinked");
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
+    lock.addChange(new Undo() {
         void undo() {
           property1.link(property2);
         }
@@ -352,7 +375,7 @@ public class Gedcom implements Comparable {
         gls[l].gedcomPropertyChanged(this, property1);
         gls[l].gedcomPropertyChanged(this, property2);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
 
@@ -367,12 +390,16 @@ public class Gedcom implements Comparable {
     if (LOG.isLoggable(Level.FINER))
       LOG.finer("Entity "+entity.getId()+" added");
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
-        void undo() {
-          deleteEntity(entity);
-        }
-      });
+    lock.addChange(new Undo() {
+      void undo() {
+        deleteEntity(entity);
+      }
+    });
     
     // let listeners know
     GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
@@ -380,7 +407,7 @@ public class Gedcom implements Comparable {
       try {
         gls[l].gedcomEntityAdded(this, entity);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
 
@@ -395,8 +422,12 @@ public class Gedcom implements Comparable {
     if (LOG.isLoggable(Level.FINER))
       LOG.finer("Entity "+entity.getId()+" deleted");
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+    
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
+    lock.addChange(new Undo() {
         void undo() throws GedcomException  {
           addEntity(entity);
         }
@@ -408,7 +439,7 @@ public class Gedcom implements Comparable {
       try {
         gls[l].gedcomEntityDeleted(this, entity);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
 
@@ -422,8 +453,12 @@ public class Gedcom implements Comparable {
     
     LOG.finer("Property "+added.getTag()+" added to "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
+    lock.addChange(new Undo() {
         void undo() {
           container.delProperty(pos);
         }
@@ -435,7 +470,7 @@ public class Gedcom implements Comparable {
       try {
         gls[l].gedcomPropertyAdded(this, container, pos, added);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
 
@@ -449,8 +484,12 @@ public class Gedcom implements Comparable {
     
     LOG.finer("Property "+deleted.getTag()+" deleted from "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
+    lock.addChange(new Undo() {
         void undo() {
           container.addProperty(deleted, pos);
         }
@@ -462,7 +501,7 @@ public class Gedcom implements Comparable {
       try {
         gls[l].gedcomPropertyDeleted(this, container, pos, deleted);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
     
@@ -476,8 +515,12 @@ public class Gedcom implements Comparable {
     
     LOG.finer("Property "+property.getTag()+" changed in (entity "+entity.getId()+")");
     
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
     // keep undo
-    if (undos!=null) undos.add(new Undo() {
+    lock.addChange(new Undo() {
         void undo() {
           property.setValue(oldValue);
         }
@@ -489,7 +532,7 @@ public class Gedcom implements Comparable {
       try {
         gls[l].gedcomPropertyChanged(this, property);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
 
@@ -522,7 +565,7 @@ public class Gedcom implements Comparable {
       if (gl instanceof GedcomMetaListener) try {
         ((GedcomMetaListener)gl).gedcomWriteLockReleased(this);
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
       }
     }
   }  
@@ -836,26 +879,24 @@ public class Gedcom implements Comparable {
    */
   public void setUnchanged() {
     
-    // grab undos
-    synchronized (writeSemaphore) {
-      if (undos!=null)
-        throw new IllegalStateException("setUnchanged() n/a with active writeLock");
+    // do it
+    undoHistory.clear();
     
-      // remember
-      undoHistory.clear();
-      
-      // let listeners know
-      GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-      for (int l=0;l<gls.length;l++) {
-        GedcomListener gl = (GedcomListener)gls[l];
-        if (gl instanceof GedcomMetaListener) try {
-          ((GedcomMetaListener)gl).gedcomHeaderChanged(this);
-        } catch (Throwable t) {
-          LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
-        }
+    // no lock? we're done
+    if (lock==null)
+      return;
+    
+    // let listeners know
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      GedcomListener gl = (GedcomListener)gls[l];
+      if (gl instanceof GedcomMetaListener) try {
+        ((GedcomMetaListener)gl).gedcomHeaderChanged(this);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
       }
-
     }
+
     // done
   }
   
@@ -863,7 +904,7 @@ public class Gedcom implements Comparable {
    * Test for write lock
    */
   public boolean isWriteLocked() {
-    return undos!=null;
+    return lock!=null;
   }
   
   /**
@@ -873,11 +914,12 @@ public class Gedcom implements Comparable {
     
     PropertyChange.Monitor updater;
     
-    // grab undos
+    // grab lock
     synchronized (writeSemaphore) {
       
-      if (undos!=null)
+      if (lock!=null)
         throw new IllegalStateException("Cannot obtain write lock");
+      lock = new Lock(uow);
 
       // hook up updater for changes
       updater = new PropertyChange.Monitor();
@@ -885,9 +927,6 @@ public class Gedcom implements Comparable {
 
       // reset redos
       redoHistory.clear();
-
-      // start undos
-      undos = new ArrayList();
       
     }
 
@@ -904,23 +943,23 @@ public class Gedcom implements Comparable {
     
     synchronized (writeSemaphore) {
 
+      // let listeners know
+      propagateWriteLockReleased();
+        
       // keep undos (within limits)
-      if (!undos.isEmpty()) {
-        undoHistory.add(undos);
+      if (!lock.undos.isEmpty()) {
+        undoHistory.add(lock.undos);
         while (undoHistory.size()>Options.getInstance().getNumberOfUndos())
           undoHistory.remove(0);
       }
       
       // release
-      undos = null;
+      lock = null;
       
       // unhook updater for changes
       removeGedcomListener(updater);
     }
 
-    // let listeners know
-    propagateWriteLockReleased();
-      
     // done
     if (rethrow!=null)
       throw new RuntimeException(rethrow);
@@ -943,11 +982,10 @@ public class Gedcom implements Comparable {
       throw new IllegalArgumentException("undo n/a");
 
     synchronized (writeSemaphore) {
-
-      // grab undos
-      if (undos!=null)
-        throw new IllegalStateException("Cannot obtain write lock for undo");
-      undos = new ArrayList();
+      
+      if (lock!=null)
+        throw new IllegalStateException("Cannot obtain write lock");
+      lock = new Lock();
   
     }
     
@@ -965,16 +1003,17 @@ public class Gedcom implements Comparable {
       }
     }
     
-    // keep redos
-    redoHistory.add(undos);
-    
     synchronized (writeSemaphore) {
+
+      // let listeners know
+      propagateWriteLockReleased();
+      
+      // keep redos
+      redoHistory.add(lock.undos);
+      
       // release
-      undos = null;
+      lock = null;
     }
-    
-    // let listeners know
-    propagateWriteLockReleased();
     
     // done
   }
@@ -990,16 +1029,17 @@ public class Gedcom implements Comparable {
    * Performs a redo
    */
   public void redoUnitOfWork() {
-
+    
     // there?
     if (redoHistory.isEmpty())
       throw new IllegalArgumentException("redo n/a");
 
-    // grab undos
     synchronized (writeSemaphore) {
-      if (undos!=null)
-        throw new IllegalStateException("Cannot obtain write lock for redo");
-      undos = new ArrayList();
+      
+      if (lock!=null)
+        throw new IllegalStateException("Cannot obtain write lock");
+      lock = new Lock();
+  
     }
     
     // let listeners know
@@ -1016,17 +1056,19 @@ public class Gedcom implements Comparable {
       }
     }
     
-    // keep undos
-    undoHistory.add(undos);
- 
     // release
     synchronized (writeSemaphore) {
-      undos = null;
+      
+      // let listeners know
+      propagateWriteLockReleased();
+      
+      // keep undos
+      undoHistory.add(lock.undos);
+
+      // clear
+      lock = null;
     }
 
-    // let listeners know
-    propagateWriteLockReleased();
-    
     // done
     
   }
@@ -1257,6 +1299,31 @@ public class Gedcom implements Comparable {
    */
   private abstract class Undo {
     abstract void undo() throws GedcomException;
+  }
+  
+  /**
+   * Our locking mechanism is based on one writer at a time
+   */
+  private class Lock implements UnitOfWork {
+    UnitOfWork uow;
+    List undos = new ArrayList();
+    
+    Lock() {
+      this.uow = this;
+    }
+    
+    Lock(UnitOfWork uow) {
+      this.uow = uow;
+    }
+    
+    public void perform(Gedcom gedcom) throws Throwable {
+      // it's just a fake UOW for undo/redos
+    }
+    
+    void addChange(Undo run) {
+      undos.add(run);
+    }
+    
   }
   
 } //Gedcom
