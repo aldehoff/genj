@@ -457,7 +457,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         if (t instanceof InterruptedException || cause instanceof InterruptedException)
           instance.println("***cancelled");
         else
-          instance.println(cause);
+          instance.println(t);
       }
     }
 
