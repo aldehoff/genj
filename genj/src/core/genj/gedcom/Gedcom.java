@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.112 $ $Author: nmeier $ $Date: 2006-12-16 01:50:52 $
+ * $Revision: 1.113 $ $Author: nmeier $ $Date: 2007-01-01 22:54:09 $
  */
 package genj.gedcom;
 
@@ -303,8 +303,10 @@ public class Gedcom implements Comparable {
    */
   public void removeGedcomListener(GedcomListener listener) {
     synchronized (listeners) {
-      if (!listeners.remove(listener))
-        throw new IllegalArgumentException("can't remove gedcom listener "+listener);
+      // 20060101 apparently window lifecycle mgmt including removeNotify() can be called multiple times (for windows
+      // owning windows for example) .. so down the line the same listener might unregister twice - we'll just ignore that
+      // for now
+      listeners.remove(listener);
     }
     LOG.log(Level.FINER, "removeGedcomListener() from "+new Throwable().getStackTrace()[1]);
   }
