@@ -215,6 +215,10 @@ public abstract class PropertyXRef extends Property {
    */
   /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
     meta.assertTag(getTag());
+    // 20070104 since values are not trimmed by loaders we do this here - a value of '@..@ ' (note
+    // the trailing space) should be accepted
+    value = value.trim();
+    // check format
     if (!(value.startsWith("@")&&value.endsWith("@")))
       throw new GedcomException("xref value should be @..@ but is "+value);
     return super.init(meta, value);
