@@ -48,22 +48,23 @@
     </move>
   </target>
   
-  <!--
-   Installer
-   -->  
-  <target name="dist.installer" depends="dist.app, dist.geo">
-
+	<!-- 
+	izpack packaging
+	-->
+	<target name="dist.installer">
+		
     <copy tofile="./build/installer.xml" file="./src/installer/installer.xml">
       <filterset><filter token="version" value="${version}"/></filterset>
     </copy>
  	
     <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="./contrib/izpack"/>
-  </target>
-  	
+		
+	</target>
+	
   <!--
    Distribution
    -->
-  <target name="dist" depends="dist.installer">
+  <target name="dist" depends="dist.app, dist.geo, dist.installer">
 
   </target>
 
