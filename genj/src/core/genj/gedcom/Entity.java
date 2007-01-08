@@ -106,6 +106,25 @@ public class Entity extends Property {
   }
 
   /**
+   * Changes an entity's ID
+   */
+  public void setId(String set) throws GedcomException {
+    
+    // change it
+    String old = id;
+    id = set;
+    
+    // tell Gedcom about it
+    if (gedcom!=null) try {
+      gedcom.propagateEntityIDChanged(this, old);
+    } catch (Throwable t) {
+      id = old;
+    }
+
+    // done
+  }
+  
+  /**
    * Returns entity's id
    * @return id
    */

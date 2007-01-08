@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.113 $ $Author: nmeier $ $Date: 2007-01-01 22:54:09 $
+ * $Revision: 1.114 $ $Author: nmeier $ $Date: 2007-01-08 15:26:18 $
  */
 package genj.gedcom;
 
@@ -575,30 +575,54 @@ public class Gedcom implements Comparable {
   /**
    * An ID change is in progress
    */
-  /*package*/ void handleChangeOfID(Entity entity, String id) throws GedcomException {
+  protected void propagateEntityIDChanged(final Entity entity, final String old) throws GedcomException {
     
     // known?
     if (getEntity(entity.getId())!=entity)
       throw new GedcomException("Can't change ID of entity not part of this Gedcom instance");
     
     // valid prefix/id?
-    if (id==null||id.length()<2)
+    if (old==null||old.length()<2)
       throw new GedcomException("Need valid ID length");
-    if (!id.startsWith(getEntityPrefix(entity.getTag())))
+    if (!old.startsWith(getEntityPrefix(entity.getTag())))
       throw new GedcomException("Need applicable ID prefix");
     
     // dup?
-    if (getEntity(id)!=null)
-      throw new GedcomException("Duplicate ID is not acceptable");
+    if (getEntity(old)!=null)
+      throw new GedcomException("Duplicate ID is not allowed");
 
     // do the housekeeping
     Map id2entity = getEntityMap(entity.getTag());
     id2entity.remove(entity.getId());
-    id2entity.put(id, entity);
+    id2entity.put(old, entity);
     
     // remember maximum ID length
-    maxIDLength = Math.max(id.length(), maxIDLength);
+    maxIDLength = Math.max(old.length(), maxIDLength);
     
+    // log it
+    LOG.finer("Entity's ID changed from  "+old+" to "+entity.getId());
+    
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
+    // keep undo
+    lock.addChange(new Undo() {
+        void undo() throws GedcomException {
+          entity.setId(old);
+        }
+      });
+    
+    // notify
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+        gls[l].gedcomPropertyChanged(this, entity);
+      } catch (Throwable t) {
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+
     // done
   }
 
