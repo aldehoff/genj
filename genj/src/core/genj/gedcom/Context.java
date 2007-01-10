@@ -31,7 +31,7 @@ import java.util.ListIterator;
  * A context represents a 'current context in Gedcom terms', a gedcom
  * an entity and a property
  */  
-public class Context {
+public class Context implements Comparable {
   
   private Gedcom gedcom;
   private List entities = new ArrayList();
@@ -237,6 +237,16 @@ public class Context {
       throw new IllegalArgumentException();
     addProperties(context.getProperties());
     addEntities(context.getEntities());
+  }
+  
+  /** comparison  */
+  public int compareTo(Object o) {
+    Context that = (Context)o;
+    if (this.txt==null)
+      return -1;
+    if (that.txt==null)
+      return 1;
+    return this.txt.compareTo(that.txt);
   }
   
 } //Context
