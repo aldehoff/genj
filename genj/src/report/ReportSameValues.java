@@ -91,7 +91,7 @@ public class ReportSameValues extends Report {
       Property parent = prop.getParent();
 
       String txt;
-      if (parent==null||parent instanceof Entity)
+      if (parent instanceof Entity)
         txt = prop.getEntity().toString();
       else
         txt = parent.getPropertyName() + " | " +prop.getEntity();
