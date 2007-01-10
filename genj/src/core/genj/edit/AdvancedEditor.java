@@ -27,7 +27,6 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
 import genj.io.PropertyReader;
@@ -314,22 +313,7 @@ import javax.swing.tree.TreePath;
         Property root = to.getProperty(path);
         if (root==null)
           root = to.setValue(path, "");
-        copy(property, root, values);
-      }
-      // done
-    }
-    private void copy(Property prop,  Property to, boolean values) {
-      // check to for child
-      Property copy = to.getProperty(prop.getTag(), false);
-      if (copy==null)
-        copy = to.addProperty(prop.getTag(), values ? prop.getValue() : "");
-      // loop over children of prop
-      for (int i=0, j=prop.getNoOfProperties(); i<j; i++) {
-        Property child = prop.getProperty(i);
-        // apply to non-xrefs, non-transient, non-existent 
-        if ( !(child instanceof PropertyXRef) && !child.isTransient() && to.getProperty(child.getTag(), false)==null) 
-          copy(child, copy, values);
-        // next
+        root.copyProperties(property, values);
       }
       // done
     }

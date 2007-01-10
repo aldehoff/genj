@@ -1109,5 +1109,24 @@ public abstract class Property implements Comparable {
     return null;
   }
   
+  /**
+   * Copy a property and all its sub-properties
+   */
+  public void copyProperties(Property root, boolean useValues) {
+    // create copy for prop?
+    Property copy = getProperty(root.getTag(), false);
+    if (copy==null)
+      copy = addProperty(root.getTag(), useValues ? root.getValue() : "");
+    // loop over children of prop
+    for (int i=0, j=root.getNoOfProperties(); i<j; i++) {
+      Property child = root.getProperty(i);
+      // apply to non-xrefs, non-transient, non-existent 
+      if ( !(child instanceof PropertyXRef) && !child.isTransient()) 
+        copy.copyProperties(child, useValues);
+      // next
+    }
+    // done
+  }
+  
 } //Property
 
