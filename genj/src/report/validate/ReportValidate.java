@@ -244,6 +244,8 @@ public class ReportValidate extends Report {
     // non existing files
     if (!isFileNotFoundValid)
       result.add(new TestFile());
+    
+    result.add(new TestFamilyClone());
 
     // ****************** DATE COMPARISON TESTS *****************************
 
