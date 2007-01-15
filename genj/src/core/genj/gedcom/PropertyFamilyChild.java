@@ -109,15 +109,21 @@ public class PropertyFamilyChild extends PropertyXRef {
     
     // Look for family
     Fam fam = (Fam)getCandidate();
+    Indi father = fam.getHusband();
+    Indi mother = fam.getWife();
 
-    // Enclosing individual is Husband/Wife in family ?
-    if ((fam.getHusband()==indi)||(fam.getWife()==indi))
-      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ indi.toString(), fam.toString() }));
-
-    // Family is descendant of indi ?
+    // Make sure the child is not ancestor of the family (father,grandfather,grandgrandfather,...)
+    // .. that would introduce a circle
     if (indi.isAncestorOf(fam))
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ indi.toString(), fam.toString() }));
-
+    
+    // Make sure we're not child already - no need for duplicates here
+    Indi children[] = fam.getChildren();
+    for (int i=0;i<children.length;i++) {
+      if ( children[i] == indi) 
+        throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), fam.toString()}));
+    }
+    
     // Connect back from family (maybe using invalid back reference) 
     List childs = fam.getProperties(PropertyChild.class);
     for (int i=0,j=childs.size();i<j;i++) {

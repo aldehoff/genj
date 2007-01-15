@@ -93,13 +93,14 @@ public class PropertyHusband extends PropertyXRef {
     // Look for husband (not-existing -> Gedcom throws Exception)
     Indi husband = (Indi)getCandidate();
 
-    // Enclosing family has indi as descendant or wife ?
+    // make sure wife isn't also husband
     if (fam.getWife()==husband)
       throw new GedcomException(resources.getString("error.already.spouse", new String[]{ husband.toString(), fam.toString()}));
 
+    // make sure the husband isn't descendant of family
     if (husband.isDescendantOf(fam))
       throw new GedcomException(resources.getString("error.already.descendant", new String[]{ husband.toString(), fam.toString()}));
-
+    
     // Connect back from husband (maybe using invalid back reference)
     ps = husband.getProperties(new TagPath("INDI:FAMS"));
     PropertyFamilySpouse pfs;

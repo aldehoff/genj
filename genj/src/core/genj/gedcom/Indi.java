@@ -26,7 +26,9 @@ import genj.util.swing.ImageIcon;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class for encapsulating a person
@@ -394,26 +396,46 @@ public class Indi extends Entity {
    * Check wether this person is ancestor of given person
    */
   public boolean isAncestorOf(Indi indi) {
-    
-    // check indi's parents
-    Fam fam = indi.getFamilyWhereBiologicalChild();
-    if (fam==null)
+    // 20070115 while we make sure that no circle exists in our gedcom data (invariants) there are cases where sub-trees of a tree occur multiple times
+    // (e.g. cousin marrying cousin, ancestor marrying descendant, cloned families pointing to identical ancestors, ...)
+    // So we're carrying a set of visited indis to abbreviate the ancestor check by looking for revisits.
+    return recursiveIsAncestorOf(indi, new HashSet());
+  }
+  
+  private boolean recursiveIsAncestorOf(Indi indi, Set visited) {
+
+    // if we've visited the individual already then there's obviously no need to check twice 
+    if (visited.contains(indi)) 
       return false;
+    visited.add(indi);
     
-    // check his mom/dad
-    Indi father = fam.getHusband();
-    if (father!=null) {
-      if (father==this)
-        return true;
-      if (isAncestorOf(father))
-        return true;
-    }
-    Indi mother = fam.getWife();
-    if (mother!=null) {
-      if (mother==this)
-        return true;
-      if (isAncestorOf(mother))
-        return true;
+    // check all possible of indi's parents
+    List famcs = indi.getProperties(PropertyFamilyChild.class);
+    for (int i=0; i<famcs.size(); i++) {
+      
+      PropertyFamilyChild famc = (PropertyFamilyChild)famcs.get(i);
+      
+      // not valid or not biological- not interesting
+      if (!famc.isValid()||famc.isBiological()==PropertyFamilyChild.NOT_BIOLOGICAL) continue;
+      
+      Fam fam = famc.getFamily();
+        
+      // check his mom/dad
+      Indi father = fam.getHusband();
+      if (father!=null) {
+        if (father==this)
+          return true;
+        if (recursiveIsAncestorOf(father, visited))
+          return true;
+      }
+      Indi mother = fam.getWife();
+      if (mother!=null) {
+        if (mother==this)
+          return true;
+        if (recursiveIsAncestorOf(mother, visited))
+          return true;
+      }
+        
     }
     
     // nope
@@ -429,7 +451,10 @@ public class Indi extends Entity {
     // check the family's children
     Indi[] children = fam.getChildren();
     for (int i = 0; i < children.length; i++) {
-      if (children[i].isAncestorOf(this))
+      Indi child = children[i];
+      if (child==this)
+        return true;
+      if (child.isAncestorOf(this))
         return true;
     }
     

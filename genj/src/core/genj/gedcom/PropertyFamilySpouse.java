@@ -100,10 +100,10 @@ public class PropertyFamilySpouse extends PropertyXRef {
         throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), fam.toString()}));
     }
     
-    // Enclosing individual is descendant of family
+    // Make sure indi isn't already descendant of family 
     if (indi.isDescendantOf(fam)) 
       throw new GedcomException(resources.getString("error.already.descendant", new String[]{ indi.toString(), fam.toString()}));
-
+    
     // place as husband or wife according to gender
     if (indi.getSex()==PropertySex.UNKNOWN) 
       indi.setSex(husband==null ? PropertySex.MALE : PropertySex.FEMALE);
