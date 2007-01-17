@@ -32,10 +32,10 @@ import genj.util.Resources;
 import genj.util.Trackable;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,7 +63,6 @@ public class GedcomReader implements Trackable {
 
   /** lots of state we keep during reading */
   private Gedcom              gedcom;
-  private BufferedReader      in;
   
   private int progress;
   private int entity = 0;
@@ -104,15 +103,12 @@ public class GedcomReader implements Trackable {
    */
   private void init(Gedcom ged, InputStream oin) throws IOException {
     
-    // prepare sniffer
-    SniffedInputStream sin = new SniffedInputStream(oin);
-    
     // init some data
-    in = new BufferedReader(new InputStreamReader(sin, sin.getCharset()));
+    SniffedInputStream sin = new SniffedInputStream(oin);
     length = oin.available();
     gedcom = ged;
     gedcom.setEncoding(sin.getEncoding());
-    reader = new EntityReader();
+    reader = new EntityReader(new InputStreamReader(sin, sin.getCharset()));
 
     // Done
   }
@@ -210,7 +206,7 @@ public class GedcomReader implements Trackable {
       throw new GedcomIOException(t.toString(), reader.getLines());
     } finally  {
       // close in
-      try { in.close(); } catch (Throwable t) {};
+      try { reader.in.close(); } catch (Throwable t) {};
       // forget working thread
       synchronized (lock) {
         worker=null;
@@ -499,7 +495,7 @@ public class GedcomReader implements Trackable {
     private boolean warnedAboutPassword = false;
     
     /** constructor */
-    EntityReader() {
+    EntityReader(Reader in) {
       super(in, null, false);
     }
 
@@ -610,6 +606,11 @@ public class GedcomReader implements Trackable {
     protected void link(PropertyXRef xref, int line) {
       // keep as warning
       lazyLinks.add(new Warning(line, null, xref));
+    }
+    
+    /** keep track of empty lines */
+    protected void trackEmptyLine() {
+      warnings.add(new Warning(getLines(), RESOURCES.getString("read.error.emptyline"), gedcom));
     }
     
     /** keep track of bad levels */

@@ -36,13 +36,13 @@ import java.util.StringTokenizer;
  */
 public class PropertyReader {
 
-  private final static Resources RESOURCES = Resources.get("genj.io");
+  protected final static Resources RESOURCES = Resources.get("genj.io");
 
-  private boolean useIndents = false;
+  protected boolean useIndents = false;
   protected int lines = 0;
-  private String line = null;
-  private Collection collectXRefs;
-  private boolean isMerge = false;
+  protected String line = null;
+  protected Collection collectXRefs;
+  protected boolean isMerge = false;
   
   /** variables read line by line */
   protected int level;
@@ -51,7 +51,7 @@ public class PropertyReader {
   protected String value;
   
   /** input */
-  private BufferedReader in;
+  protected BufferedReader in;
   
   /** 
    * Constructor 
@@ -199,12 +199,18 @@ public class PropertyReader {
       // mark current position in reader
       in.mark(256);
       
-      // grab it
-      line = in.readLine();
-      if (line==null)
-        return false;
-      lines ++;
-    
+      // grab it ignoring empty lines
+      while (line==null) {
+        line = in.readLine();
+        if (line==null) 
+          return false;
+        lines ++;
+        if (line.trim().length()==0) {
+          trackEmptyLine();
+          line = null;
+        }
+      }
+      
       // 20040322 use space and also \t for delim in case someone used tabs in file
       StringTokenizer tokens = new StringTokenizer(line," \t");
   
@@ -293,6 +299,10 @@ public class PropertyReader {
     } catch (Throwable t) {
       // ignored
     }
+  }
+  
+  /** track an empty line - default noop */
+  protected void trackEmptyLine() {
   }
   
   /** track a bad level - default noop */
