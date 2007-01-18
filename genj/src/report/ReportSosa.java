@@ -80,12 +80,10 @@ public class ReportSosa extends Report {
   public boolean reportDateOfDeath = true;
   public boolean reportPlaceOfBurial = true;
   public boolean reportDateOfBurial = true;
-  public boolean reportOccu = true;
-  public String  occuSymbol = "=";
+  public boolean reportOccu = true; 
   public boolean reportPlaceOfOccu = true;
   public boolean reportDateOfOccu = true;
-  public boolean reportResi = true;
-  public String  resiSymbol = "^";
+  public boolean reportResi = true; 
   public boolean reportPlaceOfResi = true;
   public boolean reportDateOfResi = true;
 
@@ -179,7 +177,7 @@ public class ReportSosa extends Report {
    * getcvsupdated date
    */
   public String getCvsDate(){
-	  return "$Date: 2006-11-10 21:30:23 $";
+	  return "$Date: 2007-01-18 11:18:40 $";
   }
   
 /**
@@ -916,8 +914,8 @@ public class ReportSosa extends Report {
     symbols[2] = OPTIONS.getMarriageSymbol(); 
     symbols[3] = OPTIONS.getDeathSymbol(); 
     symbols[4] = OPTIONS.getBurialSymbol(); 
-    symbols[5] = occuSymbol; 
-    symbols[6] = resiSymbol;  
+    symbols[5] = OPTIONS.getOccuSymbol();   
+    symbols[6] = OPTIONS.getResiSymbol();    
 
     // No source should be displayed for events that are not to be displayed
     dispEv[0] = reportDateOfBirth    || reportPlaceOfBirth;
