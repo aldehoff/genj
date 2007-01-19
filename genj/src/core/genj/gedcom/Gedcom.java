@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.114 $ $Author: nmeier $ $Date: 2007-01-08 15:26:18 $
+ * $Revision: 1.115 $ $Author: nmeier $ $Date: 2007-01-19 13:42:09 $
  */
 package genj.gedcom;
 
@@ -577,27 +577,27 @@ public class Gedcom implements Comparable {
    */
   protected void propagateEntityIDChanged(final Entity entity, final String old) throws GedcomException {
     
+    Map id2entity = getEntityMap(entity.getTag());
+    
     // known?
-    if (getEntity(entity.getId())!=entity)
+    if (!id2entity.containsValue(entity))
       throw new GedcomException("Can't change ID of entity not part of this Gedcom instance");
     
     // valid prefix/id?
-    if (old==null||old.length()<2)
+    String id = entity.getId();
+    if (id==null||id.length()==0)
       throw new GedcomException("Need valid ID length");
-    if (!old.startsWith(getEntityPrefix(entity.getTag())))
-      throw new GedcomException("Need applicable ID prefix");
     
     // dup?
-    if (getEntity(old)!=null)
+    if (getEntity(id)!=null)
       throw new GedcomException("Duplicate ID is not allowed");
 
     // do the housekeeping
-    Map id2entity = getEntityMap(entity.getTag());
-    id2entity.remove(entity.getId());
-    id2entity.put(old, entity);
+    id2entity.remove(old);
+    id2entity.put(entity.getId(), entity);
     
     // remember maximum ID length
-    maxIDLength = Math.max(old.length(), maxIDLength);
+    maxIDLength = Math.max(id.length(), maxIDLength);
     
     // log it
     LOG.finer("Entity's ID changed from  "+old+" to "+entity.getId());
