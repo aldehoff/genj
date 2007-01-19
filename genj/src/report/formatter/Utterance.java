@@ -17,6 +17,7 @@ import genj.fo.Document;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -43,15 +44,15 @@ public class Utterance {
   }
 
   public static Utterance forProperty(Resources resources, String property) {
-    return forTemplate(resources, resources.getString(property));
+    return forTemplate(resources, translate(property, resources));
   }
 
   public static Utterance forProperty(Resources resources, String property, String[] params, Entity[] linkedEntities) {
-    return forTemplate(resources, resources.getString(property), params, linkedEntities);
+    return forTemplate(resources, translate(property, resources), params, linkedEntities);
   }
 
   public static Utterance forProperty(Resources resources, String property, String[] params) {
-    return forTemplate(resources, resources.getString(property), params);
+    return forTemplate(resources, translate(property, resources), params);
   }
 
   public static Utterance forTemplate(Resources resources, String template) {
@@ -75,18 +76,37 @@ public class Utterance {
     return result;
   }
 
+  /** language we're trying to use */
+  private final static String lang = Locale.getDefault().getLanguage(); // todo bk don't duplicate the stuff in Report!
+
   /**
    * Look up a string value in resources - this one patches leading/trailing spaces marked with _
    */
-  private String getString(String key) {
+  private String translate(String key) {
+    return translate(key, resources);
+  }
+
+  /**
+   * Look up a string value in resources - this one patches leading/trailing spaces marked with _
+   */
+  private static String translate(String key, Resources resources) {
     // do we have resources?
     if (resources==null)
       return key;
+
+
+    // look it up in language
+    String result = null;
+    if (lang!=null)
+      result = resources.getString(key+'.'+lang);
+    if (result != null) return result;
+
+    // fallback if necessary
     // look it up
-    String result = resources.getString(key);
-    if (result.equals(key)) 
+    result = resources.getString(key);
+    if (result.equals(key))
       return null; // second-guess Report's default mechanism (todo better way to tell if configured or not)
-    
+
     // todo How get leading/trailing blanks in properties?
     if (result.startsWith("_")) {
       result = " " + result.substring(1);
@@ -94,7 +114,7 @@ public class Utterance {
     if (result.endsWith("_")) {
       result = result.substring(0, result.length()-1) + " ";
     }
-    
+
     System.err.println("Key " + key + " -> " + result);
     return result;
   }
@@ -111,7 +131,7 @@ public class Utterance {
 
   public void setSubject(Indi indi) {
     gender = indi.getSex();
-    props.put(SUBJECT, getString("pronoun.nom" + getGenderKeySuffix()));
+    props.put(SUBJECT, translate("pronoun.nom" + getGenderKeySuffix()));
   }
 
   private static final Pattern argPattern = Pattern.compile("\\[[^\\[\\]]*\\]");
@@ -134,14 +154,14 @@ public class Utterance {
       key = key.substring(1, key.length()-1);
       String value = (String) props.get(key);
       if (value == null) {
-        System.err.println("No value for key " + key + " in sentence template " + template);
         if (key.startsWith("OPTIONAL_")) {
           value = "";
         } else {
+          System.err.println("No value for key " + key + " in sentence template " + template);
           if (key.startsWith("ending.")) {
-            value = getString(key + getGenderKeySuffix());
+            value = translate(key + getGenderKeySuffix());
           } else if (key.startsWith("SUBJECT.")) {
-            value = getString("pronoun." + key.substring(8) + getGenderKeySuffix());
+            value = translate("pronoun." + key.substring(8) + getGenderKeySuffix());
           }
           if (value == null) {
             value = key;

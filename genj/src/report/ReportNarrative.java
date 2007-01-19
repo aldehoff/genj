@@ -23,13 +23,7 @@ import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.io.File;
 
 import javax.swing.ImageIcon;
@@ -46,11 +40,13 @@ import formatter.*;
  */
 public class ReportNarrative extends Report {
 /* TODO priorities:
+    _ in text
+   Umlaute in PDF - eingeäschtert is a # in PDF.
+   Formatting: Numbered list, proper title & page numbers
    Images - from URLs; why do I get Wm Wyse twice!?
    Title in report (unique to HTML)
    CSS for fonts, etc.
-   German version.
-   Italian version
+
    Numbered list for children
 */
   public static final int DETAIL_NO_SHOW  = 0;
@@ -59,6 +55,7 @@ public class ReportNarrative extends Report {
   public static final int DETAIL_DATES = 3;
   public static final int DETAIL_BRIEF_WITH_DATES = 2;
   public static final int DETAIL_FULL = 5;
+  public static final int DETAIL_EVERYTHING = 6;
 
   public boolean ancestors = true;
   public boolean showIds = false;
@@ -67,6 +64,8 @@ public class ReportNarrative extends Report {
   public boolean withPlaceIndex = true;
   private boolean withBibliography = false; // todo make public when implemented
   public boolean showImages = true;
+  public boolean includePersonalTags = false;
+  public boolean includeUnknownTags = false;
 
   public String htmlStylesheet = null;
   private boolean alignImages = true; // TODO: option - in formatter.DocumentWriter or doc-wide options; make public when implemented
@@ -121,6 +120,7 @@ public class ReportNarrative extends Report {
     String title = getUtterance(ancestors ? "doc.ancestors.title" : "doc.descendants.title",
                                 new String[] { new IndiWriter(indi, null).getName(indi) }).toString();
     Document doc = new Document(title);
+    doc.startSection(title);
 
     // todo bk: used to set style inline if no .css given.  Can of course also
     // put it into a defualt .css.  The text was
@@ -134,7 +134,11 @@ public class ReportNarrative extends Report {
       // e.g. This report was generated on GenealogyJ.
       // Text is split into 2 parts, since need to call addLink() in between.
       Utterance ad = getUtterance("doc.ad.1");
-      ad.set("DATE", new Date().toString());
+
+      PropertyDate dateFormatter = new PropertyDate();
+      dateFormatter.setValue(PropertyDate.DATE, PointInTime.getPointInTime(System.currentTimeMillis()), (PointInTime) null, "");
+      // dateFormatter.setValue(PropertyDate.DATE, PointInTime.getNow(), (PointInTime) null, "");
+      ad.set("DATE", dateFormatter.getDisplayValue());
       doc.addText(ad.toString());
       doc.addText(" ");
       doc.addLink("GenealogyJ", "http://genj.sourceforge.net");
@@ -209,7 +213,12 @@ public class ReportNarrative extends Report {
 
   private Set printGenerations(Document doc, int n, Set gen0, Set printed) {
 
-    println(gen0.size() + " individuals in generation #" + n);
+    Utterance generations = getUtterance("individuals.in.generation",
+        new String[] {
+          Integer.toString(gen0.size()),
+          Integer.toString(n)
+        });
+    println(generations.toString());
 
     Set nextGen = new LinkedHashSet(); // important: LinkedHashSet preserves insertion order
 
@@ -249,7 +258,11 @@ public class ReportNarrative extends Report {
       printed.add(indi); // printed in pass 2
     }
 
-    println("ReportNarrative.printGenerations - " + nextGen.size() + " indis in next generation");
+//    Utterance nextGeneration = getUtterance("individuals.in.next.generation",
+//        new String[] {
+//          Integer.toString(nextGen.size())
+//        });
+//    println(nextGeneration.toString());
 
     return nextGen;
   }
@@ -372,6 +385,7 @@ public class ReportNarrative extends Report {
         if (showImages && alignImages && detailLevel >= DETAIL_FULL) {
           insertImages();
         }
+        // TODO bk: other kinds of objects...e.g. mp3, wav...
 
         if (linkToIndi)
           doc.addLink(getNamePlusIdAndReference(indi), indi);
@@ -495,7 +509,8 @@ public class ReportNarrative extends Report {
           Set tagsProcessed = new HashSet(Arrays.asList(new String[] {
             "REFN", "CHAN", "SEX", "BIRT", "DEAT", "FAMC", "FAMS",
             "NAME", // TODO: print alternative forms
-            "OBJE"
+            "OBJE",
+            "ASSO", // exclude until implemented
           }));
           // TODO: details from FAMS - div, divf, ...
           if (detailLevel >= DETAIL_FULL) {
@@ -516,7 +531,7 @@ public class ReportNarrative extends Report {
                 writeEvent(prop);
               } else if (prop.getTag().equals("RESI") || prop.getTag().equals("ADDR")) {
                 writeEvent(prop);
-              } else if (prop.getTag().equals("OCCU")) {
+              } else if (prop.getTag().equals("OCCU") && prop.getValue().length() > 0) {
                 doc.addText(" ");
 //                writePersonalPronoun(AS_SUBJECT);
                 boolean past = true;
@@ -556,11 +571,16 @@ public class ReportNarrative extends Report {
                 }
               } else if (prop.getTag().equals("SOUR") && prop instanceof PropertySource) {
                 writeSource((Source) ((PropertySource) prop).getTargetEntity());
-                // formatter.printText("[Source: " + prop.getValue() + "]");
               } else if (prop.getTag().equals("SOUR")) {
                 // One can also record a text description of the source directly
                 addUtterance("phrase.source", prop.getValue());
+              } else if (prop.getTag().startsWith("_")) {
+                  if (detailLevel >= DETAIL_EVERYTHING) {
+                    // Including personal tags too
+                    addUtterance("phrase.property", prop.getValue()); // todo bk look up language-specific
+                  }
               } else {
+                // Unknown tag...might be interesting to put it in
                 addUtterance("phrase.property", prop.getValue());
               }
             }
@@ -617,10 +637,10 @@ public class ReportNarrative extends Report {
 
     private void insertImages() {
       // Get images from OBJE tags...align options work in HTML best if the images
-    // are printed before the text, but this may vary with other formatter.Formatter
+      // are printed before the text, but this may vary with other formatter.Formatter
       // implementations, should allow them to give a hint.
       // Should also have option where to put the images; even in HTML
-      // if could be preferable to
+      // if could be preferable to override the placement.
       // GEDCOM Example:
       //1 OBJE
       //2 TITL Pilot Error
@@ -806,8 +826,8 @@ public class ReportNarrative extends Report {
       // Look for report property for this attribute of the source.
       String phraseKey = "phrase." + prop.getTag() + "." + tag;
       String value;
-      if (getResources().getString(phraseKey) != null) {
-        Utterance phrase = Utterance.forTemplate(getResources(), getResources().getString(phraseKey),
+      if (translate(phraseKey) != null) {
+        Utterance phrase = Utterance.forTemplate(getResources(), translate(phraseKey),
             new String[] { prop.getProperty(tag).getValue() } );
         value = phrase.toString();
       } else {
@@ -1000,7 +1020,7 @@ public class ReportNarrative extends Report {
     }
 
     private void printEventUtterance(Property prop) {
-      System.err.print("Printing event utterance for " + prop.getTag());
+      System.err.println("Printing event utterance for " + prop.getTag());
       Utterance s = getSentenceForTag(prop.getTag(), new String[] { prop.getValue() } );
       s.setSubject(indi);
       String place = getPlaceString(prop, null);
@@ -1023,7 +1043,7 @@ public class ReportNarrative extends Report {
     }
 
     private Utterance getSentenceForTag(String tag, String[] params) {
-      String template1 = getResources().getString("sentence." + tag);
+      String template1 = translate("sentence." + tag);
       if (template1 == null) template1 = "{SUBJECT} " + tag + "{OPTIONAL_AGENCY}{OPTIONAL_PP_PLACE}{OPTIONAL_PP_DATE}.";
       System.err.println("getSentenceForTag: tag=" + tag + " => " + template1);
       Utterance u = Utterance.forTemplate(getResources(), template1, params);
@@ -1105,7 +1125,7 @@ public class ReportNarrative extends Report {
       if (preposition == null) {
         String key = "prep.in_city";
         if (Character.isDigit(result.charAt(0))) key = "prep.at_street_address"; // likely street address (crude heuristic)
-        preposition = getResources().getString(key);
+        preposition = translate(key);
       }
       return " " + preposition + " " + result;
     }
@@ -1136,13 +1156,13 @@ public class ReportNarrative extends Report {
     private String getPersonalPronoun(boolean asSubject) {
       String pronoun;
       if (asSubject) {
-        if (indi.getSex() == PropertySex.MALE) pronoun = getResources().getString("pronoun.nom.male");
-        else pronoun = getResources().getString("pronoun.nom.female");
+        if (indi.getSex() == PropertySex.MALE) pronoun = translate("pronoun.nom.male");
+        else pronoun = translate("pronoun.nom.female");
         pronoun = Character.toUpperCase(pronoun.charAt(0)) + pronoun.substring(1); // capitalize
       } else {
         // need more complex logic for languages with more cases // TODO handle case
-        if (indi.getSex() == PropertySex.MALE) pronoun = getResources().getString("pronoun.acc.male");
-        else pronoun = getResources().getString("pronoun.acc.female");
+        if (indi.getSex() == PropertySex.MALE) pronoun = translate("pronoun.acc.male");
+        else pronoun = translate("pronoun.acc.female");
       }
       return pronoun;
     }
