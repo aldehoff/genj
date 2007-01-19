@@ -47,17 +47,17 @@ public class TestFamilyClone extends Test {
     Indi wife = fam.getWife();
 
     if (husband!=null)
-      test(fam, husband, wife, husband.getFamiliesWhereSpouse(), issues, report);
+      test(fam, husband.getFamiliesWhereSpouse(), issues, report);
     else if (wife!=null)
-      test(fam, husband, wife, wife.getFamiliesWhereSpouse(), issues, report);
+      test(fam, wife.getFamiliesWhereSpouse(), issues, report);
   }
   
-  private void test(Fam fam, Indi husband, Indi wife, Fam[] others, List issues, ReportValidate report) {
+  private void test(Fam fam, Fam[] others, List issues, ReportValidate report) {
 
     for (int i = 0; i < others.length; i++) {
       Fam other = others[i];
       if (fam==other) continue;
-      if (other.getHusband()==husband&&other.getWife()==wife) {
+      if (isClone(fam, other)) {
         if (!reportedFams.contains(fam)) {
           issues.add(new ViewContext(fam).setText(report.translate("warn.fam.cloned", fam.getId() )));
           reportedFams.add(fam);
@@ -67,6 +67,19 @@ public class TestFamilyClone extends Test {
       }
     }
 
+  }
+  
+  private boolean isClone(Fam fam, Fam other) {
+    // differenthusband or wife?
+    if (fam.getHusband()!=other.getHusband())
+      return false;
+    if (fam.getWife()!=other.getWife())
+      return false;
+    // divorce in there?
+    if (fam.getProperty("DIV")!=null||other.getProperty("DIV")!=null)
+      return false;
+    // yeah, looks like one
+    return true;
   }
 
 } //TestFiles
