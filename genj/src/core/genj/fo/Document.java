@@ -43,8 +43,21 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
- * An abstract layer above docbook handling and transformations
+ * An abstract layer above docbook handling and transformations.
  *
+ * <p>Some methods have an attributes parameter that allows additional control
+ * over the formatting.  The attributes refer to the underlying XSL Format
+ * representation, from which various formats of document can be generated,
+ * such as PDF and HTML.  Using them effectively require knowledge of XSL FO
+ * (see below) and the internals of the method.
+ *
+ * <p>Some useful resources about XSL FO and the Apache FOP we use to process it
+ * are:
+ * <ul>
+ * <li><a href="http://www.w3.org/TR/xsl11/">The W3C specification of XSL FO</a>
+ * <li><a href="http://xmlgraphics.apache.org/fop/resources.html">The Apache FOP Resources page</a>
+ * <li><a ref="http://www.renderx.com/demos/src_examples.html">Samples at renderx.com</a>
+ * </ul>
  */
 public class Document {
   
@@ -90,6 +103,7 @@ public class Document {
     //   <layout-master-set>
     //    <simple-page-master>
     //     <region-body/>
+    //     <region-end/>
     //    </simple-page-master>
     //   </layout-master-set>
     //   <page-sequence>
@@ -101,15 +115,24 @@ public class Document {
     cursor = (Element)doc.appendChild(doc.createElementNS(NS_XSLFO, "root")); 
     cursor.setAttribute("xmlns", NS_XSLFO);
     cursor.setAttribute("xmlns:genj", NS_GENJ);
-    
+
     // FOP crashes when a title element is present so we use an extension to pass it to our fo2html stylesheet
     // @see http://issues.apache.org/bugzilla/show_bug.cgi?id=38710
     cursor.setAttributeNS(NS_GENJ, "genj:title", title);
     
     push("layout-master-set");
+    // Tip: see also http://www.dpawson.co.uk/xsl/sect3/N8565.html for a minimal page master.
     push("simple-page-master", "master-name=master,margin-top=1cm,margin-bottom=1cm,margin-left=1cm,margin-right=1cm");
-    push("region-body");
-    pop().pop().pop().push("page-sequence","master-reference=master");
+    push("region-body", "margin-bottom=1cm").pop();
+    push("region-after", "extent=0.8cm").pop();
+    pop().pop().push("page-sequence","master-reference=master");
+
+    push("static-content", "flow-name=xsl-region-after");
+    push("block", "text-align=center");
+    // text("p. ", ""); // todo bk better w/o text, to avoid language-dependency, but with title
+    push("page-number").pop();
+    pop(); // </block>
+    pop(); // </static-content>
 
     // don't use title - see above
     // push("title").text(getTitle(), "").pop();
@@ -323,8 +346,8 @@ public class Document {
   }
   
   /**
-   * Add text with given CSS styling
-   * @see http://www.w3.org/TR/REC-CSS2/fonts.html#font-styling
+   * Add text with given CSS styling.
+   * See <a href="http://www.w3.org/TR/REC-CSS2/fonts.html#font-styling">http://www.w3.org/TR/REC-CSS2/fonts.html#font-styling</a>
    */
   public Document addText(String text, String atts) {
     text(text, atts);
@@ -713,7 +736,20 @@ public class Document {
   public Document addAnchor(Entity entity) {
     return addAnchor(entity.getTag()+"_"+entity.getId());
   }
-  
+
+  /**
+   * Add a link
+   */
+  public Document addExternalLink(String text, String id) {
+
+    // <basic-link external-destination="...">text</basic-link>
+    push("basic-link", "external-destination="+id);
+    text(text, "");
+    pop();
+    // done
+    return this;
+  }
+
   /**
    * Add a link
    */

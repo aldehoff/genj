@@ -40,10 +40,10 @@ import formatter.*;
  */
 public class ReportNarrative extends Report {
 /* TODO priorities:
-    _ in text
-   Umlaute in PDF - eingeäschtert is a # in PDF.
+   _ in text
+   Full text instead of abbreviations (Francois)
    Formatting: Numbered list, proper title & page numbers
-   Images - from URLs; why do I get Wm Wyse twice!?
+   Combined repetitive tags into lists, if text is not too complex.
    Title in report (unique to HTML)
    CSS for fonts, etc.
 
@@ -136,12 +136,12 @@ public class ReportNarrative extends Report {
       Utterance ad = getUtterance("doc.ad.1");
 
       PropertyDate dateFormatter = new PropertyDate();
-      dateFormatter.setValue(PropertyDate.DATE, PointInTime.getPointInTime(System.currentTimeMillis()), (PointInTime) null, "");
+      dateFormatter.setValue(PropertyDate.DATE, PointInTime.getPointInTime(System.currentTimeMillis()), null, "");
       // dateFormatter.setValue(PropertyDate.DATE, PointInTime.getNow(), (PointInTime) null, "");
       ad.set("DATE", dateFormatter.getDisplayValue());
       doc.addText(ad.toString());
       doc.addText(" ");
-      doc.addLink("GenealogyJ", "http://genj.sourceforge.net");
+      doc.addExternalLink("GenealogyJ", "http://genj.sourceforge.net");
       ad = getUtterance("doc.ad.2");
       ad.set("DATE", new Date().toString());
       doc.addText(ad.toString());
@@ -297,9 +297,6 @@ public class ReportNarrative extends Report {
 
     private Indi indi;
     private Document doc;
-
-    /** Symbolic constant for {@link #writePersonalPronoun} */
-    private boolean AS_SUBJECT = true;
 
     /** constructor */
     public IndiWriter(Indi indi, Document doc) {
@@ -523,6 +520,17 @@ public class ReportNarrative extends Report {
                 continue;
               }
 
+              // Allow for sentences grouping multiple properties of the
+              // same type.
+//              int numberOfLikeProperties = 0;
+//              for (int j = i+1; j < props.length; j++) {
+//                  if (props[j].getPropertyName().equals(props[i].getPropertyName())) {
+//                    numberOfLikeProperties++;
+//                  }
+//              }
+              // todo bk use numberOfLikeProperties, build list of properties,
+              // pass to writer, get return value telling how many where used.
+
               doc.addText(" ");
 
               if (prop instanceof PropertyEvent) {
@@ -533,7 +541,6 @@ public class ReportNarrative extends Report {
                 writeEvent(prop);
               } else if (prop.getTag().equals("OCCU") && prop.getValue().length() > 0) {
                 doc.addText(" ");
-//                writePersonalPronoun(AS_SUBJECT);
                 boolean past = true;
                 if (indi.getDeathDate() == null) {
                   Delta age = indi.getAge(PointInTime.getPointInTime(System.currentTimeMillis()));
@@ -590,19 +597,38 @@ public class ReportNarrative extends Report {
         }
 
         if (withChildren ) {
-          boolean multipleFamilies = indi.getNoOfFams() > 1;
+          // todo bk better to number the families if there's more than one
+          // than to print the full details with every child.
           Indi[] children = indi.getChildren();
           if (children.length > 0) {
-            doc.startList();
-              for (int i = 0; i < children.length; i++) {
-                doc.nextListItem();
-                Indi child = children[i];
+            Fam[] families = indi.getFamiliesWhereSpouse();
+            if (families.length > 1) {
+              doc.startList();
+            }
+            for (int i = 0; i < families.length; i++) {
+              Fam family = families[i];
+              if (families.length > 1) {
+                doc.nextListItem("genj:label="+(i+1)+".");
+                doc.addText(
+                  Utterance.forProperty(getResources(), "phrase.children.of.parents",
+                    new String[] { getName(family.getHusband()), getName(family.getWife()) },
+                      new Entity[] { family.getHusband(), family.getWife() }).toString());
+              }
+              children = family.getChildren();
+              doc.startList();
+              for (int j = 0; j < children.length; j++) {
+                doc.nextListItem("genj:label="+(j+1)+".");
+                Indi child = children[j];
                 IndiWriter w = new IndiWriter(child, doc);
                 // Parents clear from the context, don't print them.
                 w.writeEntry(/*withChildren*/ false, DETAIL_DATES,
-                    /*withParents*/ multipleFamilies, /*linkToIndi*/ true, false);
+                    /*withParents*/ false, /*linkToIndi*/ true, false);
               }
-            doc.endList();
+              doc.endList();
+            }
+            if (families.length > 1) {
+              doc.endList();
+            }
           }
         }
       } catch (Exception e) {
@@ -1027,7 +1053,8 @@ public class ReportNarrative extends Report {
       if (place.length() > 0) s.set("OPTIONAL_PP_PLACE", place);
       if (prop.getProperty("AGNC") != null) {
         // Default agency phrase if none for tag?
-        Utterance agency = Utterance.forProperty(getResources(), "phrase." + prop.getTag()+ ".AGENCY");
+        Utterance agency = Utterance.forProperty(getResources(), "phrase." + prop.getTag()+ ".AGENCY",
+            new String[] { prop.getProperty("AGNC").getValue() });
         s.set("OPTIONAL_AGENCY", agency.toString());
       }
       String date = "";
@@ -1147,10 +1174,6 @@ public class ReportNarrative extends Report {
         if (result.length() > 0) result.append(", ");
         result.append(prop.getValue());
       }
-    }
-
-    private void writePersonalPronoun(boolean asSubject) {
-      doc.addText(getPersonalPronoun(asSubject));
     }
 
     private String getPersonalPronoun(boolean asSubject) {

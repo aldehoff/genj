@@ -97,7 +97,7 @@ public class Utterance {
 
     // look it up in language
     String result = null;
-    if (lang!=null)
+    if (lang!=null  && !lang.equals("en"))
       result = resources.getString(key+'.'+lang);
     if (result != null) return result;
 
