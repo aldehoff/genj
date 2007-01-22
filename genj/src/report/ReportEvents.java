@@ -18,9 +18,7 @@ import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 /**
@@ -52,30 +50,16 @@ public class ReportEvents extends Report {
     public boolean reportDeath = true;
 
     public int sex = 3;
-    public String[] sexs = {PropertySex.TXT_MALE, PropertySex.TXT_FEMALE, PropertySex.TXT_UNKNOWN, translate("criteria.ignore")};
+    public String[] sexs = {PropertySex.TXT_MALE, PropertySex.TXT_FEMALE, PropertySex.TXT_UNKNOWN, ""};
 
     /** day of the date limit */
-    public int day = new GregorianCalendar().get(Calendar.DAY_OF_MONTH);
-    public String[] days = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31" };
+    public String day = "";
 
     /** month of the date limit */
-    public int month = new GregorianCalendar().get(Calendar.MONTH) + 1;
-    public String[] months = PointInTime.GREGORIAN.getMonths(true);
+    public String month = "";
 
     /** year of the date limit */
-    public int year = new GregorianCalendar().get(Calendar.YEAR);
-
-    /** how the day should be handled */
-    public int handleDay = 3;
-    public String[] handleDays = { translate("criteria.min"), translate("criteria.max"), translate("criteria.fix"), translate("criteria.ignore")};
-
-    /** how the day should be handled */
-    public int handleMonth = 3;
-    public String[] handleMonths = handleDays;
-
-    /** how the day should be handled */
-    public int handleYear = 3;
-    public String[] handleYears = handleDays;
+    public String year = "";
 
     /** the marriage symbol */
     private final static String TXT_MARR_SYMBOL = genj.gedcom.Options.getInstance().getTxtMarriageSymbol();
@@ -109,9 +93,9 @@ public class ReportEvents extends Report {
 
         // output results
         println(PropertySex.TXT_SEX + ": " + sexs[sex]);
-        println(translate("dateLimit", new String[] { Delta.TXT_DAY, Integer.toString(day+1), handleDays[handleDay] } ));
-        println(translate("dateLimit", new String[] { Delta.TXT_MONTH, Integer.toString(month+1), handleMonths[handleMonth] } ));
-        println(translate("dateLimit", new String[] { Delta.TXT_YEAR, Integer.toString(year), handleYears[handleYear] } ));
+        println(Delta.TXT_DAY + ": " + day);
+        println(Delta.TXT_MONTH + ": " + month);
+        println(Delta.TXT_YEAR + ": " +year);
         println();
 
         if (reportBirth&&!births.isEmpty()) {
@@ -317,38 +301,32 @@ public class ReportEvents extends Report {
         PointInTime start = date.getStart();
         if (start.getCalendar()!=PointInTime.GREGORIAN)
             return false;
+        
+        if (checkValue(start.getDay()+1, day) && checkValue(start.getMonth()+1, month) && checkValue(start.getYear(), year))
+          return true;
 
-        // check criteria
-        boolean d = false, m = false, y = false;
-
-        if ((handleDay == 0) && (day <= start.getDay())) // day = minimum
-            d = true;
-        else if ((handleDay == 1) && (day >= start.getDay())) // day = maximum
-            d = true;
-        else if ((handleDay == 2) && (day == start.getDay())) // day = fix
-            d = true;
-        else if (handleDay == 3) // day = ignore
-            d = true;
-
-        if ((handleMonth == 0) && (month <= start.getMonth())) // month = minimum
-            m = true;
-        else if ((handleMonth == 1) && (month >= start.getMonth())) // month = maximum
-            m = true;
-        else if ((handleMonth == 2) && (month == start.getMonth())) // month = fix
-            m = true;
-        else if (handleMonth == 3) // month = ignore
-            m = true;
-
-        if ((handleYear == 0) && (year <= start.getYear())) // year = minimum
-            y = true;
-        else if ((handleYear == 1) && (year >= start.getYear())) // year = maximum
-            y = true;
-        else if ((handleYear == 2) && (year == start.getYear())) // year = fix
-            y = true;
-        else if (handleYear == 3) // year = ignore
-            y = true;
-
-        return d&m&y;
+        return false; 
+    }
+    
+    private boolean checkValue(int value, String filter) {
+      // no filter - matched!
+      if (filter.length()==0)
+        return true;
+      // parse filter
+      try {
+        // filter '>'
+        if (filter.startsWith(">"))
+          return Integer.parseInt(filter.substring(1)) < value;
+        // filter '<'
+        if (filter.charAt(0)=='<')
+          return Integer.parseInt(filter.substring(1)) > value;
+        // filter '='
+        if (filter.charAt(0)=='=')
+          return Integer.parseInt(filter.substring(1)) == value;
+        return Integer.parseInt(filter) == value;
+      } catch (NumberFormatException e) {
+        return false;
+      }
     }
 
     /**
