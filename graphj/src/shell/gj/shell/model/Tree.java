@@ -20,8 +20,11 @@
 package gj.shell.model;
 
 import java.awt.BasicStroke;
+import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.Point2D;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -43,6 +46,40 @@ public class Tree extends Graph implements gj.model.Tree {
     super(graph);    
     validate();
     // done
+  }
+  
+  /**
+   * Override addEdge to enforce tree invariants
+   */
+  @Override
+  public Edge addEdge(Vertex from, Vertex to, Shape shape) {
+    // TODO enfore no circles
+    return super.addEdge(from, to, shape);
+  }
+  
+  /**
+   * Override adding vertex to enforce tree invariants
+   */
+  @Override
+  public Vertex addVertex(Point2D position, Shape shape, Object content) {
+    // TODO enforce spanning
+    return super.addVertex(position, shape, content);
+  }
+  
+  /**
+   * Provide children of a parent
+   */
+  public List<?> getChildren(Object parent) {
+    // TODO calculate children
+    throw new UnsupportedOperationException("getChildren not implemented");
+  }
+  
+  /**
+   * Provide parent of a child
+   */
+  public Object getParent(Object child) {
+    // TODO calculate parent
+    throw new UnsupportedOperationException("getParent not implemented");
   }
   
   /**

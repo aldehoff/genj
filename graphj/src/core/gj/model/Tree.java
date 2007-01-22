@@ -19,6 +19,8 @@
  */
 package gj.model;
 
+import java.util.List;
+
 
 /**
  * A Tree like a Graph contains Nodes and Arcs. A Tree also
@@ -36,6 +38,17 @@ public interface Tree extends Graph {
    * Access to the root of a tree
    */
   public Object getRoot();
+  
+  /**
+   * Access to the parent of a node
+   */
+  public Object getParent(Object child);
+  
+  /**
+   * Access to the (ordered list of) children of a node
+   */
+  public List<?> getChildren(Object parent);
+  
   
 } //Tree
  

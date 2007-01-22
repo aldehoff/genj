@@ -22,6 +22,7 @@ package gj.shell;
 import gj.geom.Geometry;
 import gj.layout.LayoutAlgorithm;
 import gj.shell.model.Edge;
+import gj.shell.model.Element;
 import gj.shell.model.Graph;
 import gj.shell.model.Layout;
 import gj.shell.model.Vertex;
@@ -249,8 +250,8 @@ public class GraphWidget extends JPanel {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      Object oldSelection = graph.getSelection();
-      Object newSelection = graph.getObject(content.getPoint(e.getPoint()));
+      Element oldSelection = graph.getSelection();
+      Element newSelection = graph.getElement(content.getPoint(e.getPoint()));
       graph.setSelection(newSelection);
       // popup?
       if (e.isPopupTrigger()) {

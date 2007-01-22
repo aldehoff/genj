@@ -47,7 +47,7 @@ import org.w3c.dom.Node;
 public class Graph implements DirectedGraph {
   
   /** current selection - either edge or vertex*/
-  private Object selection;
+  private Element selection;
   
   /** the contained nodes */
   protected Set<Vertex> vertices = new HashSet<Vertex>(10);
@@ -65,8 +65,8 @@ public class Graph implements DirectedGraph {
    * Constructor
    */
   public Graph(Graph other) {
-    this.vertices = other.vertices;
-    this.edges = other.edges;
+    this.vertices.addAll(other.vertices);
+    this.edges.addAll(other.edges);
   }
   
   /**
@@ -127,25 +127,24 @@ public class Graph implements DirectedGraph {
   /**
    * Access - current selection
    */
-  public void setSelection(Object set) {
+  public void setSelection(Element set) {
     selection = set;
   }
   
   /**
    * Access - current selection
    */
-  // FIXME why not an Element type?
-  public Object getSelection() {
+  public Element getSelection() {
     return selection;
   }
   
   /**
    * find a vertex or edge by position
    */
-  public Object getObject(Point2D point) {
+  public Element getElement(Point2D point) {
     
     // look through vertices
-    Object result = getVertex(point);
+    Element result = getVertex(point);
     if (result!=null)
       return result;
 
