@@ -97,25 +97,25 @@ public class ReportEvents extends Report {
 
 
         // collect evens for all individuals/families
-        Map tag2event = new HashMap();
-        if (reportBirth) tag2event.put("BIRT", new ArrayList());
+        Map tag2events = new HashMap();
+        if (reportBirth) tag2events.put("BIRT", new ArrayList());
         if (reportBaptism) {
           List baptisms = new ArrayList();
-          tag2event.put("BAPM", baptisms);
-          tag2event.put("BAPL", baptisms);
-          tag2event.put("CHR", baptisms);
-          tag2event.put("CHRA", baptisms);
+          tag2events.put("BAPM", baptisms);
+          tag2events.put("BAPL", baptisms);
+          tag2events.put("CHR", baptisms);
+          tag2events.put("CHRA", baptisms);
         }
-        if (reportMarriage) tag2event.put("MARR", new ArrayList());
-        if (reportDivorce) tag2event.put("DIV", new ArrayList());
-        if (reportEmigration) tag2event.put("EMI", new ArrayList());
-        if (reportImmigration) tag2event.put("IMMI", new ArrayList());
-        if (reportNaturalization) tag2event.put("NATU", new ArrayList());
-        if (reportDeath) tag2event.put("DEAT", new ArrayList());
+        if (reportMarriage) tag2events.put("MARR", new ArrayList());
+        if (reportDivorce) tag2events.put("DIV", new ArrayList());
+        if (reportEmigration) tag2events.put("EMI", new ArrayList());
+        if (reportImmigration) tag2events.put("IMMI", new ArrayList());
+        if (reportNaturalization) tag2events.put("NATU", new ArrayList());
+        if (reportDeath) tag2events.put("DEAT", new ArrayList());
 
         // loop individuals
         for (Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator(); indis.hasNext(); ) {
-            analyze((Indi)indis.next(), tag2event);
+            analyze((Indi)indis.next(), tag2events);
         }
         
         // output header
@@ -133,9 +133,9 @@ public class ReportEvents extends Report {
         }
         
         // ... output events type by type
-        for (Iterator tags=tag2event.keySet().iterator(); tags.hasNext(); ) {
+        for (Iterator tags=tag2events.keySet().iterator(); tags.hasNext(); ) {
           String tag = (String)tags.next();
-          List events = (List)tag2event.get(tag);
+          List events = (List)tag2events.get(tag);
           if (!events.isEmpty()) {
             
             Collections.sort(events);
@@ -148,6 +148,8 @@ public class ReportEvents extends Report {
             
             if (!isOutputICal) 
               println();
+            
+            events.clear();
           }
         }
         
