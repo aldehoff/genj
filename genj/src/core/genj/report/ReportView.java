@@ -46,13 +46,16 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -534,9 +537,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
       }
 
       // .. open file
-      final FileWriter writer;
+      final OutputStreamWriter out;
       try {
-        writer = new FileWriter(file);
+        out = new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF8"));
       } catch (IOException ex) {
         manager.getWindowManager().openDialog(null,title,WindowManager.ERROR_MESSAGE,"Error while saving to\n"+file.getAbsolutePath(),Action2.okOnly(),ReportView.this);
         return;
@@ -544,13 +547,18 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // .. save data
       try {
-
-        BufferedWriter out = new BufferedWriter(writer);
-        String data = taOutput.getText();
-        out.write(data,0,data.length());
+        Document doc = taOutput.getDocument();
+        BufferedReader in = new BufferedReader(new StringReader(doc.getText(0, doc.getLength())));
+        while (true) {
+          String line = in.readLine();
+          if (line==null) break;
+          out.write(line);
+          out.write("\n");
+        }
+        in.close();
         out.close();
 
-      } catch (IOException ex) {
+      } catch (Exception ex) {
       }
 
       // .. done
