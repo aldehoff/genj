@@ -9,20 +9,26 @@
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
+import genj.util.WordBuffer;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * GenJ - Report
@@ -30,7 +36,7 @@ import java.util.Map;
  * @author Carsten Muessig carsten.muessig@gmx.net
  */
 public class ReportEvents extends Report {
-
+  
     /** whether we sort by day-of-month or date */
     public boolean isSortDay = true;
     /** wether dead persons' events should be considered */
@@ -51,6 +57,8 @@ public class ReportEvents extends Report {
     public boolean reportNaturalization = true;
     /** whether deaths should be reported */
     public boolean reportDeath = true;
+    /** whether the output should be in icalendar format */
+    public boolean isOutputICal = false;
 
     public int sex = 3;
     public String[] sexs = {PropertySex.TXT_MALE, PropertySex.TXT_FEMALE, PropertySex.TXT_UNKNOWN, ""};
@@ -66,15 +74,27 @@ public class ReportEvents extends Report {
 
     /** the marriage symbol */
     private final static String TXT_MARR_SYMBOL = genj.gedcom.Options.getInstance().getTxtMarriageSymbol();
+    
+    /** time reporting variables */
+    private String timestamp;
+    private final static SimpleDateFormat 
+      yyyymmddhhmmss = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'"),
+      yyyymmdd = new SimpleDateFormat("yyyyMMdd");
+
 
     /**
      * Main for argument Gedcom
      */
-    public void start(Gedcom gedcom) {
+    public void start(Gedcom gedcom) throws GedcomException {
 
         // check that something is selected
         if ((!reportBirth) && (!reportBaptism) && (!reportDeath) && (!reportMarriage) && (!reportDivorce) && (!reportEmigration) && (!reportImmigration) && (!reportNaturalization))
             return;
+        
+        // initialize timestamp
+        timestamp = toISO(System.currentTimeMillis(), true);
+        yyyymmdd.setTimeZone(TimeZone.getTimeZone("GMT"));
+
 
         // collect evens for all individuals/families
         Map tag2event = new HashMap();
@@ -97,23 +117,43 @@ public class ReportEvents extends Report {
         for (Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator(); indis.hasNext(); ) {
             analyze((Indi)indis.next(), tag2event);
         }
-
-        // output results
-        println(PropertySex.TXT_SEX + ": " + sexs[sex]);
-        println(Delta.TXT_DAY + ": " + day);
-        println(Delta.TXT_MONTH + ": " + month);
-        println(Delta.TXT_YEAR + ": " +year);
-        println();
-
-        // loop over event types
+        
+        // output header
+        if (isOutputICal) {
+          println("BEGIN:VCALENDAR");
+          println("PRODID:-//Genealogy//ReportEvents/EN");
+          println("VERSION:2.0");
+          println("METHOD:PUBLISH");
+        } else {
+          println(PropertySex.TXT_SEX + ": " + (sex==3?"*":sexs[sex]));
+          println(Delta.TXT_DAY + ": " + (day.length()==0?"*":day));
+          println(Delta.TXT_MONTH + ": " + (month.length()==0?"*":month));
+          println(Delta.TXT_YEAR + ": " + (year.length()==0?"*":year));
+          println();
+        }
+        
+        // ... output events type by type
         for (Iterator tags=tag2event.keySet().iterator(); tags.hasNext(); ) {
           String tag = (String)tags.next();
           List events = (List)tag2event.get(tag);
           if (!events.isEmpty()) {
-            println(getIndent(2) + Gedcom.getName(tag));
-            report(events);
-            println();
+            
+            Collections.sort(events);
+            
+            if (!isOutputICal) 
+              println(getIndent(2) + Gedcom.getName(tag));
+
+            for (Iterator it=events.iterator();it.hasNext();) 
+              println(it.next());
+            
+            if (!isOutputICal) 
+              println();
           }
+        }
+        
+        // output footer
+        if (isOutputICal) {
+          println("END:VCALENDAR");
         }
 
         // done
@@ -149,33 +189,20 @@ public class ReportEvents extends Report {
       for (Iterator tags = tag2events.keySet().iterator(); tags.hasNext(); ) {
         String tag = (String)tags.next();
         List events = (List)tag2events.get(tag);
-        Property event = entity.getProperty(tag);
-        if (event!=null) {
-          Property date = event.getProperty("DATE");
-          if (date instanceof PropertyDate) {
-            Hit hit = new Hit((PropertyDate)date, entity);
-            if(checkDate((PropertyDate)date)&&!events.contains(hit)) events.add(hit); 
+        
+        Property[] props = entity.getProperties(tag);
+        for (int i = 0; i < props.length; i++) {
+          Property event = props[i];
+          if (event instanceof PropertyEvent) {
+            Property date = event.getProperty("DATE");
+            if (date instanceof PropertyDate) {
+              Hit hit = new Hit(entity, (PropertyEvent)event, i, (PropertyDate)date);
+              if(checkDate((PropertyDate)date)&&!events.contains(hit)) events.add(hit); 
+            }
           }
         }
       }
       
-    }
-
-    /**
-     * Output a list of hits
-     */
-    private void report(List hits) {
-
-        // sort the hits either by
-        //  year/month/day or
-        //  month/day
-        Collections.sort(hits);
-
-        // print 'em
-        for (Iterator it=hits.iterator();it.hasNext();) {
-            println(it.next());
-        }
-
     }
 
     /** checks if the sex of an indi matches the user choice
@@ -251,45 +278,77 @@ public class ReportEvents extends Report {
         return false;
       }
     }
+    
+    private String toISO(long timeMillis, boolean time) {
+      Date date = new Date(timeMillis);
+      return time ? yyyymmddhhmmss.format(date) : yyyymmdd.format(date);
+    }        
 
     /**
      * Wrapping an Event hit
      */
     private class Hit implements Comparable {
       
-        PropertyDate date;
-        PointInTime when;
-        Entity who;
-        PointInTime compare;
+      Entity who;
+      int num;
+      Property event;
+      PropertyDate date;
+      PointInTime compare;
         
-        /** Constructor*/
-        Hit(PropertyDate date, Entity entity) {
-          this.date = date;
-          this.who = entity;
-          this.when = date.getStart();
-          if (isSortDay)
-            // blocking out year (to a Gregorian LEAP 4 - don't want to make it invalid) so that month and day count
-            compare = new PointInTime(when.getDay(), when.getMonth(), 4, when.getCalendar());
-          else
-            compare = when;
+      /** Constructor*/
+      Hit(Entity entity, PropertyEvent event, int num, PropertyDate date) {
+        this.who = entity;
+        this.event = event;
+        this.num = num;
+        this.date = date;
+        PointInTime when = date.getStart();
+        if (isSortDay)
+          // blocking out year (to a Gregorian LEAP 4 - don't want to make it invalid) so that month and day count
+          compare = new PointInTime(when.getDay(), when.getMonth(), 4, when.getCalendar());
+        else
+          compare = when;
+      }
+      // comparison
+      public int compareTo(Object object) {
+          return compare.compareTo(((Hit)object).compare);
+      }
+      // equals
+      public boolean equals(Object that) {
+        return event==((Hit)that).event;
+      }
+      // toString
+      public String toString() {
+        try {
+          if (isOutputICal) {
+            WordBuffer result = new WordBuffer("\n");
+            result.append("BEGIN:VEVENT");
+            result.append("DTSTART:"+toISO(date.getStart().getTimeMillis(), false));
+            result.append("UID:"+who.getGedcom().getName()+"|"+who.getId()+"|"+event.getTag()+"|"+num);
+            result.append("DTSTAMP:"+timestamp);
+            result.append("SUMMARY:"+Gedcom.getName(event.getTag())+" "+icalescape(who.toString()));
+            Property where  = event.getProperty("PLAC");
+            if (where!=null)
+              result.append("LOCATION:"+icalescape(where.getDisplayValue()));
+            if (event.getTag().equals("BIRT"))
+              result.append("RRULE:FREQ=YEARLY");
+            result.append("DESCRIPTION:");
+            result.append("END:VEVENT");
+            return result.toString();
+          } else {
+            StringBuffer result = new StringBuffer();
+            result.append(getIndent(3));
+            result.append(date);
+            result.append(" ");
+            result.append(who);
+            return result.toString();
+          }
+        } catch (Throwable t) {
+          throw new RuntimeException();
         }
-        // comparison
-        public int compareTo(Object object) {
-            return compare.compareTo(((Hit)object).compare);
-        }
-        // equals
-        public boolean equals(Object that) {
-          return date==((Hit)that).date;
-        }
-        // toString
-        public String toString() {
-          StringBuffer result = new StringBuffer();
-          result.append(getIndent(3));
-          result.append(when);
-          result.append(" ");
-          result.append(who.toString());
-          return result.toString();
-        }
+      }
+      private String icalescape(String string) {
+        return string.replaceAll(",", "\\\\,");
+      }
     } //Hit
 
 } //ReportEvents
