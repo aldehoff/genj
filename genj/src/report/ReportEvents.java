@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 /**
@@ -99,13 +100,7 @@ public class ReportEvents extends Report {
         // collect evens for all individuals/families
         Map tag2events = new HashMap();
         if (reportBirth) tag2events.put("BIRT", new ArrayList());
-        if (reportBaptism) {
-          List baptisms = new ArrayList();
-          tag2events.put("BAPM", baptisms);
-          tag2events.put("BAPL", baptisms);
-          tag2events.put("CHR", baptisms);
-          tag2events.put("CHRA", baptisms);
-        }
+        if (reportBaptism) tag2events.put("BAPM|BAPL|CHR|CHRA",  new ArrayList());
         if (reportMarriage) tag2events.put("MARR", new ArrayList());
         if (reportDivorce) tag2events.put("DIV", new ArrayList());
         if (reportEmigration) tag2events.put("EMI", new ArrayList());
@@ -141,7 +136,7 @@ public class ReportEvents extends Report {
             Collections.sort(events);
             
             if (!isOutputICal) 
-              println(getIndent(2) + Gedcom.getName(tag));
+              println(getIndent(2) + Gedcom.getName(new StringTokenizer(tag, "|").nextToken()));
 
             for (Iterator it=events.iterator();it.hasNext();) 
               println(it.next());
@@ -192,7 +187,7 @@ public class ReportEvents extends Report {
         String tag = (String)tags.next();
         List events = (List)tag2events.get(tag);
         
-        Property[] props = entity.getProperties(tag);
+        Property[] props = getProperties(entity, tag);
         for (int i = 0; i < props.length; i++) {
           Property event = props[i];
           if (event instanceof PropertyEvent) {
@@ -205,6 +200,16 @@ public class ReportEvents extends Report {
         }
       }
       
+    }
+    
+    private Property[] getProperties(Entity entity, String tag) {
+      ArrayList result = new ArrayList();
+      for (int i=0, j = entity.getNoOfProperties(); i<j ; i++) {
+        Property prop = entity.getProperty(i);
+        if (prop.getTag().matches(tag))
+          result.add(prop);
+      }
+      return Property.toArray(result);
     }
 
     /** checks if the sex of an indi matches the user choice
