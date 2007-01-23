@@ -387,6 +387,9 @@ public class ReportView extends JPanel implements ToolBarSupport {
      */
     protected boolean preExecute() {
 
+      // commit options
+      owOptions.stopEditing();
+
       // .. change buttons
       setRunning(true);
 
@@ -425,9 +428,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
         return false;
       }
       context = useContext;
-
-      // commit options
-      owOptions.stopEditing();
 
       // clear the current output
       taOutput.setContentType("text/plain");
