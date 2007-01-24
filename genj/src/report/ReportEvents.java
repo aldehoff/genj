@@ -79,8 +79,8 @@ public class ReportEvents extends Report {
     /** time reporting variables */
     private String timestamp;
     private final static SimpleDateFormat 
-      yyyymmddhhmmss = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'"),
-      yyyymmdd = new SimpleDateFormat("yyyyMMdd");
+      formatDTSTAMP = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'"),
+      formatDTSTART = new SimpleDateFormat("yyyyMMdd");
 
 
     /**
@@ -94,8 +94,8 @@ public class ReportEvents extends Report {
         
         // initialize timestamp
         timestamp = toISO(System.currentTimeMillis(), true);
-        yyyymmdd.setTimeZone(TimeZone.getTimeZone("GMT"));
-
+        formatDTSTART.setTimeZone(TimeZone.getTimeZone("GMT")); // make sure all event timestamps are considered to be GMT
+        formatDTSTAMP.setTimeZone(TimeZone.getDefault()); // apply local timezone to dtstamp formatting (it's considered Z)
 
         // collect evens for all individuals/families
         Map tag2events = new HashMap();
@@ -288,7 +288,7 @@ public class ReportEvents extends Report {
     
     private String toISO(long timeMillis, boolean time) {
       Date date = new Date(timeMillis);
-      return time ? yyyymmddhhmmss.format(date) : yyyymmdd.format(date);
+      return time ? formatDTSTAMP.format(date) : formatDTSTART.format(date);
     }        
 
     /**
