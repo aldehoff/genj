@@ -515,6 +515,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
       setTip(RESOURCES, "report.save.tip");
     }
     protected void execute() {
+      
+      if (true) {
+        taOutput.getText();
+        return;
+      }
 
       // .. choose file
       JFileChooser chooser = new JFileChooser(".");
@@ -813,8 +818,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
      * @see java.io.Writer#write(char[], int, int)
      */
     public void write(char[] cbuf, int off, int len) throws IOException {
-      // append to buffer
-      buffer.append(cbuf, off, len);
+      // append to buffer - strip any \r from \r\n
+      for (int i=0;i<len;i++) {
+        char c = cbuf[off+i];
+        if (c!='\r') buffer.append(c);
+      }
       // check flush
       if (System.currentTimeMillis()-lastFlush > FLUSH_WAIT)
         flush();
