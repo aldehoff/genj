@@ -585,28 +585,17 @@ public class ViewManager {
     // find ActionSupport implementors
     ActionProvider[] as = (ActionProvider[])getViews(ActionProvider.class, context.getGedcom());
     
-    // items for set of properties?
+    // items for set or single property?
     if (properties.length>1) {
-      // calculate a name for selection of properties
-      Class propTypes = properties.getClass().getComponentType();
-      String text;
-      if (propTypes==Entity.class||propTypes==Property.class) {
-        text = "'"+Property.getPropertyNames(properties, 5)+"' ("+properties.length+")";
-      } else {
-        text = "'"+Gedcom.getName(properties[0].getTag())+"' ("+properties.length+")";
-      }
-      mh.createMenu(text);
+      mh.createMenu(Property.getPropertyNames(properties, 5)+"' ("+properties.length+")");
       for (int i = 0; i < as.length; i++) try {
         mh.createSeparator();
         mh.createItems(as[i].createActions(properties, this));
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "Action Provider threw "+t.getClass()+" on createActions(Entity[])", t);
+        LOG.log(Level.WARNING, "Action Provider threw "+t.getClass()+" on createActions(Property[])", t);
       }
       mh.popMenu();
-      
     }
-
-    // items for single property
     if (properties.length==1) {
       Property property = properties[0];
       while (property!=null&&!(property instanceof Entity)&&!property.isTransient()) {
@@ -623,7 +612,17 @@ public class ViewManager {
       }
     }
         
-    // items for single entity
+    // items for set or single entity
+    if (entities.length>1) {
+      mh.createMenu(Gedcom.getName(entities[0].getTag())+"' ("+entities.length+")");
+      for (int i = 0; i < as.length; i++) try {
+        mh.createSeparator();
+        mh.createItems(as[i].createActions(entities, this));
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Action Provider threw "+t.getClass()+" on createActions(Entity[])", t);
+      }
+      mh.popMenu();
+    }
     if (entities.length==1) {
       Entity entity = entities[0];
       String title = Gedcom.getName(entity.getTag(),false)+" '"+entity.getId()+'\'';

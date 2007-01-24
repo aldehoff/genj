@@ -71,8 +71,16 @@ public class Context implements Comparable {
    * Add an entity
    */
   public void addEntity(Entity e) {
-    // keep as property 
-    addProperty(e);
+    // check gedcom
+    if (e.getGedcom()!=gedcom)
+      throw new IllegalArgumentException("entity's gedcom can't be different");
+    // keep track of entity/types we contain
+    entities.remove(e);
+    if (entityType!=null&&entityType!=e.getClass())
+      entityType = Entity.class;
+    else 
+      entityType = e.getClass();
+    entities.add(e);
   }
   
   /**
@@ -94,17 +102,13 @@ public class Context implements Comparable {
    * Add a property
    */
   public void addProperty(Property p) {
+    // keep entity
+    addEntity(p.getEntity());
+    if (p instanceof Entity)
+      return;
     // check gedcom
     if (p.getGedcom()!=gedcom)
-      throw new IllegalArgumentException("properties' gedcom can't be different");
-    // keep track of entity/types we contain
-    Entity e = p.getEntity();
-    entities.remove(e);
-    if (entityType!=null&&entityType!=e.getClass())
-      entityType = Entity.class;
-    else 
-      entityType = e.getClass();
-    entities.add(e);
+      throw new IllegalArgumentException("property's gedcom can't be different");
     // keep track of property types we contain
     properties.remove(p);
     if (propertyType!=null&&propertyType!=p.getClass())

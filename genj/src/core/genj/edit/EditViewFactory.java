@@ -29,6 +29,7 @@ import genj.edit.actions.CreateSibling;
 import genj.edit.actions.CreateSpouse;
 import genj.edit.actions.CreateXReference;
 import genj.edit.actions.DelEntity;
+import genj.edit.actions.DelProperty;
 import genj.edit.actions.OpenForEdit;
 import genj.edit.actions.Redo;
 import genj.edit.actions.RunExternal;
@@ -130,10 +131,14 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
    */
   public List createActions(Property[] properties, ViewManager manager) {
     List result = new ArrayList();
+    // not accepting any entities here
+    for (int i = 0; i < properties.length; i++) 
+      if (properties[i] instanceof Entity) return result;
     // Toggle "Private"
     if (Enigma.isAvailable())
       result.add(new TogglePrivate(properties[0].getGedcom(), Arrays.asList(properties), manager));
-    
+    // Delete
+    result.add(new DelProperty(properties, manager));
     // done
     return result;
   }
@@ -180,6 +185,10 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
     // Toggle "Private"
     if (Enigma.isAvailable())
       result.add(new TogglePrivate(property.getGedcom(), Collections.singletonList(property), manager));
+    
+    // Delete
+    if (!property.isTransient()) 
+      result.add(new DelProperty(property, manager));
 
     // done
     return result;

@@ -770,20 +770,19 @@ import javax.swing.tree.TreePath;
       // check selection
       ViewContext result = super.getContext();
       Property[] props = result.getProperties();
-      if (props.length==0)
-        return result;
       List selection = tree.getSelection();
 
       // cut copy paste
-      result.addAction(new Cut(selection));
-      result.addAction(new Copy(selection));
-      if (props.length==1)
-        result.addAction(new Paste(props[0]));
-
-      // add
-      result.addAction(Action2.NOOP);
-      if (props.length==1) {
-        Property prop = props[0];
+      if (props.length>0) {
+        result.addAction(new Cut(selection));
+        result.addAction(new Copy(selection));
+      }
+      if (selection.size()==1) {
+        result.addAction(new Paste((Property)selection.get(0)));
+        
+        // add
+        result.addAction(Action2.NOOP);
+        Property prop = (Property)selection.get(0);
         if (!prop.isTransient()) {
           result.addAction(new Add(prop));
           Action2.Group group = new Action2.Group(resources.getString("action.add"));
@@ -797,9 +796,8 @@ import javax.swing.tree.TreePath;
         }
       }
       
-      // propagate
-      if (!selection.contains(tree.getRoot()))
-        result.addAction(new Propagate(selection));
+      if (!selection.isEmpty()&&!selection.contains(tree.getRoot()))
+          result.addAction(new Propagate(selection));
 
       // done
       return result;
