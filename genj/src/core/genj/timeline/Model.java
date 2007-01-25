@@ -252,8 +252,9 @@ import spin.Spin;
   public void setPaths(Collection set) {
     
     // defaults?
-    if (set.isEmpty()) 
-      set = Arrays.asList(DEFAULT_PATHS);
+// 20070125 let's allow for empty path set    
+//    if (set.isEmpty()) 
+//      set = Arrays.asList(DEFAULT_PATHS);
       
     // do it internally - this has been an endless loop
     // from 2005/05/11 to 2005/11/05 without anyone
