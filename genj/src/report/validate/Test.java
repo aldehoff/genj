@@ -53,7 +53,7 @@ import java.util.List;
       return false;
     }
     // and type
-    return typeTrigger.isAssignableFrom(prop.getClass());
+    return typeTrigger==null||typeTrigger.isAssignableFrom(prop.getClass());
   }
   
   /**

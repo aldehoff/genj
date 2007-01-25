@@ -275,6 +275,7 @@ public class ReportValidate extends Report {
     if (!isExtramaritalValid) {
 	    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.BEFORE ,"FAM:MARR:DATE"));
 	    result.add(new TestDate("FAM:CHIL"      ,"*:..:BIRT:DATE", TestDate.AFTER  ,"FAM:DIV:DATE"));
+      result.add(new TestExists("FAM:CHIL", ".", "..:MARR"));
     }
 
     // ************************* AGE TESTS **********************************
