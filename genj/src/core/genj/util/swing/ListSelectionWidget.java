@@ -41,7 +41,8 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 /**
- * A component that shows a list of elements the user can choose
+ * A component that shows a list of elements the user can choose - based on whether an initial 
+ * selection is provided selections are shown with checkboxes, otherwise only the elements themselves are rendered.
  */
 public class ListSelectionWidget extends JComponent {
 
@@ -130,6 +131,7 @@ public class ListSelectionWidget extends JComponent {
    */
   public void setSelection(Set set) {
     selection = new HashSet(set);
+    selection.retainAll(choices);
   }
   
   /**
