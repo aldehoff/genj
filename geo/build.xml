@@ -51,7 +51,9 @@
    -->
   <target name="clean">
     <echo level="info">Cleaning output directories</echo>
-    <delete dir="./build"/>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="./build" excludes="eclipse/**"/>
+   	</delete>
   </target>
 
   <!--

@@ -19,7 +19,7 @@
    -->
   <target name="clean">
     <echo level="info">Cleaning output directories</echo>
-    <delete includeemptydirs="true">
+    <delete includeemptydirs="true" failonerror="false">
       <fileset dir="./build" excludes="eclipse/*"/>
     </delete>
     <ant dir="./geo" inheritall="false" target="clean"/>

@@ -110,8 +110,8 @@
    -->
   <target name="clean">
     <echo level="info">Cleaning output directories</echo>
-    <delete includeemptydirs="true">
-      <fileset dir="./build" excludes="eclipse/*"/>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="./build" excludes="eclipse/**"/>
    	</delete>
   </target>
 
