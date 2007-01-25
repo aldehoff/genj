@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.115 $ $Author: nmeier $ $Date: 2007-01-19 13:42:09 $
+ * $Revision: 1.116 $ $Author: nmeier $ $Date: 2007-01-25 22:59:12 $
  */
 package genj.gedcom;
 
@@ -969,9 +969,6 @@ public class Gedcom implements Comparable {
     
     synchronized (writeSemaphore) {
 
-      // let listeners know
-      propagateWriteLockReleased();
-        
       // keep undos (within limits)
       if (!lock.undos.isEmpty()) {
         undoHistory.add(lock.undos);
@@ -979,6 +976,9 @@ public class Gedcom implements Comparable {
           undoHistory.remove(0);
       }
       
+      // let listeners know
+      propagateWriteLockReleased();
+        
       // release
       lock = null;
       
