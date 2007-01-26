@@ -25,6 +25,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
 import genj.renderer.BlueprintManager;
+import genj.util.EnvironmentChecker;
 import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -740,7 +741,7 @@ public class ViewManager {
       JComponent jcomponent = (JComponent)component;
       
       // fake a normal click event so that popup trigger does a selection as well as non-popup trigger
-      if (!me.isControlDown() && !me.isShiftDown() && me.getButton()!=MouseEvent.BUTTON1) {
+      if (!EnvironmentChecker.isMac()&&!me.isControlDown() && !me.isShiftDown() && me.getButton()!=MouseEvent.BUTTON1) {
         MouseListener[] ms = me.getComponent().getMouseListeners();
         MouseEvent fake = new MouseEvent(me.getComponent(), me.getID(), me.getWhen(), 0, me.getX(), me.getY(), me.getClickCount(), false, MouseEvent.BUTTON1);
         for (int m = 0; m < ms.length; m++)  {
