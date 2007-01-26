@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.117 $ $Author: nmeier $ $Date: 2007-01-26 01:31:51 $
+ * $Revision: 1.118 $ $Author: nmeier $ $Date: 2007-01-26 02:22:00 $
  */
 package genj.gedcom;
 
@@ -934,9 +934,20 @@ public class Gedcom implements Comparable {
   }
   
   /**
+   * Perform a unit of work - don't throw any exception as they can't be handled
+   */
+  public void doMuteUnitOfWork(UnitOfWork uow) {
+    try {
+      doUnitOfWork(uow);
+    } catch (GedcomException e) {
+      LOG.log(Level.WARNING, "Unexpected gedcom exception", e);
+    }
+  }
+  
+  /**
    * Starts a transaction
    */
-  public void doUnitOfWork(UnitOfWork uow) throws IllegalStateException, RuntimeException {
+  public void doUnitOfWork(UnitOfWork uow) throws GedcomException {
     
     PropertyChange.Monitor updater;
     
@@ -944,7 +955,7 @@ public class Gedcom implements Comparable {
     synchronized (writeSemaphore) {
       
       if (lock!=null)
-        throw new IllegalStateException("Cannot obtain write lock");
+        throw new GedcomException("Cannot obtain write lock");
       lock = new Lock(uow);
 
       // hook up updater for changes
@@ -987,8 +998,11 @@ public class Gedcom implements Comparable {
     }
 
     // done
-    if (rethrow!=null)
+    if (rethrow!=null) {
+      if (rethrow instanceof GedcomException)
+        throw (GedcomException)rethrow;
       throw new RuntimeException(rethrow);
+    }
   }
 
   /**
@@ -1342,7 +1356,7 @@ public class Gedcom implements Comparable {
       this.uow = uow;
     }
     
-    public void perform(Gedcom gedcom) throws Throwable {
+    public void perform(Gedcom gedcom) {
       // it's just a fake UOW for undo/redos
     }
     

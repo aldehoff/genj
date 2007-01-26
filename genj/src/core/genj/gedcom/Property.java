@@ -1112,16 +1112,22 @@ public abstract class Property implements Comparable {
   /**
    * Copy a property and all its sub-properties
    */
-  public void copyProperties(Property root, boolean useValues) {
+  public void copyProperties(Property root, boolean useValues) throws GedcomException {
     // create copy for prop?
     Property copy = getProperty(root.getTag(), false);
-    if (copy==null)
+    if (copy==null) {
       copy = addProperty(root.getTag(), useValues ? root.getValue() : "");
+      if (useValues&&copy instanceof PropertyXRef) try {
+        ((PropertyXRef)copy).link();
+      } catch (GedcomException e) {
+        throw new GedcomException("Can't copy '"+root.getTag()+" "+root.getDisplayValue()+"' to "+this.getPath()+": "+e.getMessage());
+      }
+    }
     // loop over children of prop
     for (int i=0, j=root.getNoOfProperties(); i<j; i++) {
       Property child = root.getProperty(i);
-      // apply to non-xrefs, non-transient, non-existent 
-      if ( !(child instanceof PropertyXRef) && !child.isTransient()) 
+      // apply to non-transient
+      if (!child.isTransient()) 
         copy.copyProperties(child, useValues);
       // next
     }

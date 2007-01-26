@@ -169,17 +169,21 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
           instance.start(context);
         else
           gedcom.doUnitOfWork(new UnitOfWork() {
-            public void perform(Gedcom gedcom) throws Throwable {
-              instance.start(context);
+            public void perform(Gedcom gedcom) {
+              try {
+                instance.start(context);
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
             }
           });
       
       } catch (Throwable t) {
         Throwable cause = t.getCause();
-        if (t instanceof InterruptedException || cause instanceof InterruptedException)
+        if (cause instanceof InterruptedException)
           instance.println("***cancelled");
         else
-          ReportView.LOG.log(Level.WARNING, "encountered throwable in "+instance.getClass().getName()+".start()", t);
+          ReportView.LOG.log(Level.WARNING, "encountered throwable in "+instance.getClass().getName()+".start()", cause!=null?cause:t);
       }
     }
     

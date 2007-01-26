@@ -9,6 +9,7 @@ package validate;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
@@ -144,8 +145,8 @@ public class ReportValidate extends Report {
       ctx.addAction(new Action2(translate("fix")) {
         protected void execute() {
           setEnabled(false);
-          gedcom.doUnitOfWork(new UnitOfWork() {
-            public void perform(Gedcom gedcom) throws Throwable {
+          gedcom.doMuteUnitOfWork(new UnitOfWork() {
+            public void perform(Gedcom gedcom) throws GedcomException {
               Submitter sub = (Submitter)gedcom.createEntity(Gedcom.SUBM);
               sub.setName(EnvironmentChecker.getProperty(ReportValidate.this, "user.name", "?", "using user.name for fixing missing submitter"));
             }

@@ -21,6 +21,7 @@ package genj.edit;
  
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
@@ -418,13 +419,14 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       // an in-vm drag?
       if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
         
-        ged.doUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) throws Throwable {
+        ged.doMuteUnitOfWork(new IOUnitOfWork() {
+          protected void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException {
             
+            // keep track of transferred xrefs
+            List xrefs = new ArrayList();
             String string = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
             
             // paste text keep track of xrefs
-            List xrefs = new ArrayList();
             new PropertyReader(new StringReader(string), xrefs, true).read(pparent, index);
             
             // delete children for MOVE within same gedcom (drag won't do it)
@@ -449,8 +451,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       // a list of files (apparently only on windows)?
       if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
         
-        ged.doUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) throws Throwable {
+        ged.doMuteUnitOfWork(new IOUnitOfWork() {
+          protected void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException {
             for (Iterator files=((List)transferable.getTransferData(DataFlavor.javaFileListFlavor)).iterator(); files.hasNext(); ) 
               pparent.addFile((File)files.next());
           }
@@ -469,8 +471,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       
       // a file drop? apparently a file drop is a simple text starting with file: on linux (kde/gnome)
       if (string.startsWith(UNIX_DND_FILE_PREFIX)) {
-        ged.doUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) throws Throwable {
+        ged.doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) {
             for (StringTokenizer files = new StringTokenizer(string, "\n"); files.hasMoreTokens(); ) {
               String file = files.nextToken().trim();
               if (file.startsWith(UNIX_DND_FILE_PREFIX)) 
@@ -483,8 +485,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       
       // still some text we can paste into new parent?
       EditView.LOG.fine("reading dropped text '"+string+"'");
-      ged.doUnitOfWork(new UnitOfWork() {
-        public void perform(Gedcom gedcom) throws Throwable {
+      ged.doMuteUnitOfWork(new IOUnitOfWork() {
+        protected void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException {
           new PropertyReader(new StringReader(string), null, true).read(pparent, index);
         }
       });
@@ -505,8 +507,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       // drag out children if it's a move to a different gedcom
       if (action==MOVE &&draggingFrom!=ged) {
         
-        ged.doUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) throws Throwable {
+        ged.doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) {
             for (int i=0;i<children.size();i++) {
               Property child = (Property)children.get(i);
               child.getParent().delProperty(child);
@@ -693,5 +695,16 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     }
     
   } //Renderer
+  
+  private abstract class IOUnitOfWork implements UnitOfWork {
+    public final void perform(Gedcom gedcom) throws GedcomException {
+      try {
+        performIO(gedcom);
+      } catch (Throwable t) {
+        throw new RuntimeException(t);
+      }
+    }
+    protected abstract void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException;
+  }
     
 } //PropertyTree

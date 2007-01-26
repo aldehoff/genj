@@ -243,8 +243,6 @@ import javax.swing.tree.TreePath;
       // remember
       this.entity = (Entity)tree.getRoot();
       properties = Property.normalize(selection);
-      if (properties.contains(entity))
-        properties = Arrays.asList(entity.getProperties());
       // something there?
       if (properties.isEmpty()) {
         setText(resources.getString("action.propagate", ""));
@@ -291,18 +289,22 @@ import javax.swing.tree.TreePath;
       registry.put("select."+entity.getTag(), selection!=null ? selection.getId() : null);
       
       // change it
-      gedcom.doUnitOfWork(new UnitOfWork() {        
-        public void perform(Gedcom gedcom) {
-          Collection to = selection!=null ? Collections.singletonList(selection) : gedcom.getEntities(entity.getTag());
-          for (Iterator it = to.iterator(); it.hasNext(); ) 
-            Propagate.this.copy(properties, entity, (Entity)it.next(), check.isSelected());
-        }
-      });
+      try {
+        gedcom.doUnitOfWork(new UnitOfWork() {        
+          public void perform(Gedcom gedcom) throws GedcomException {
+            Collection to = selection!=null ? Collections.singletonList(selection) : gedcom.getEntities(entity.getTag());
+            for (Iterator it = to.iterator(); it.hasNext(); ) 
+              Propagate.this.copy(properties, entity, (Entity)it.next(), check.isSelected());
+          }
+        });
+      } catch (GedcomException e) {
+        editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(), AdvancedEditor.this);
+      }
 
       // done
     }
     
-    private void copy(List selection, Entity from, Entity to, boolean values) {
+    private void copy(List selection, Entity from, Entity to, boolean values)  throws GedcomException {
       // make sure we're not propagating to self
       if (from==to)
         return;
@@ -370,7 +372,7 @@ import javax.swing.tree.TreePath;
       }
       
       // now cut
-      gedcom.doUnitOfWork(new UnitOfWork() {
+      gedcom.doMuteUnitOfWork(new UnitOfWork() {
         public void perform(Gedcom gedcom) {
           for (ListIterator props = selection.listIterator(); props.hasNext(); )  {
             Property p = (Property)props.next();
@@ -378,7 +380,6 @@ import javax.swing.tree.TreePath;
           }
         }
       });
-      
       // done
     }
     
@@ -485,7 +486,7 @@ import javax.swing.tree.TreePath;
         return;
       
       // grab from clipboard
-      gedcom.doUnitOfWork(new UnitOfWork() {
+      gedcom.doMuteUnitOfWork(new UnitOfWork() {
         public void perform(Gedcom gedcom) throws GedcomException {
           PropertyReader reader = new PropertyReader(new StringReader(content), null, true);
           reader.setMerge(true);
@@ -551,7 +552,7 @@ import javax.swing.tree.TreePath;
   
       // .. add properties
       final List newProps = new ArrayList();
-      gedcom.doUnitOfWork(new UnitOfWork() {
+      gedcom.doMuteUnitOfWork(new UnitOfWork() {
         public void perform(Gedcom gedcom) {
           for (int i=0;i<tags.length;i++) {
             Property prop = parent.addProperty(tags[i], "");
@@ -596,13 +597,12 @@ import javax.swing.tree.TreePath;
         return;
       Gedcom gedcom = root.getGedcom();
   
-      if (bean!=null) {
-        gedcom.doUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) throws GedcomException {
+      if (bean!=null) 
+        gedcom.doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) {
             bean.commit();
           }
         });
-      }
 
       ok.setEnabled(false);
       cancel.setEnabled(false);

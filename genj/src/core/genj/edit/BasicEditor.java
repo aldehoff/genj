@@ -416,8 +416,8 @@ import spin.Spin;
         return;
       
       // commit changes
-      gedcom.doUnitOfWork(new UnitOfWork() {
-        public void perform(Gedcom gedcom) throws Throwable {
+      gedcom.doMuteUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
           beanPanel.commit();
         }
       });
@@ -859,7 +859,7 @@ import spin.Spin;
       if (currentEntity==null)
         return;
       
-      gedcom.doUnitOfWork(new UnitOfWork() {
+      gedcom.doMuteUnitOfWork(new UnitOfWork() {
         public void perform(Gedcom gedcom) {
           
           // commit bean changes
@@ -895,7 +895,7 @@ import spin.Spin;
      if (currentEntity==null)
        return;
      
-     gedcom.doUnitOfWork(new UnitOfWork() {
+     gedcom.doMuteUnitOfWork(new UnitOfWork() {
        public void perform(Gedcom gedcom) {
          
          // commit bean changes

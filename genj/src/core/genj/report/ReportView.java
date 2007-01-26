@@ -450,17 +450,21 @@ public class ReportView extends JPanel implements ToolBarSupport {
           instance.start(context);
         else
           gedcom.doUnitOfWork(new UnitOfWork() {
-            public void perform(Gedcom gedcom) throws Throwable {
-              instance.start(context);
+            public void perform(Gedcom gedcom) {
+              try {
+                instance.start(context);
+              } catch (Throwable t) {
+                throw new RuntimeException(t);
+              }
             }
           });
       
       } catch (Throwable t) {
         Throwable cause = t.getCause();
-        if (t instanceof InterruptedException || cause instanceof InterruptedException)
+        if (cause instanceof InterruptedException)
           instance.println("***cancelled");
         else
-          instance.println(t);
+          instance.println(cause!=null?cause:t);
       }
     }
 
