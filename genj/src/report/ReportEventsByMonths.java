@@ -18,7 +18,6 @@ import genj.report.Report;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -81,7 +80,7 @@ public class ReportEventsByMonths extends Report {
    * getupdated date
    */
   public PointInTime getUpdatedDate(){
-	  String updated = "$Date: 2006-11-13 21:00:44 $";
+	  String updated = "$Date: 2007-01-26 01:33:14 $";
 	    try {
 	    	return new PointInTime(updated.substring(7, 11)+
 	    			updated.substring(12, 14)+
