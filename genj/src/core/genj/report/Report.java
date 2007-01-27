@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.118 $ $Author: nmeier $ $Date: 2007-01-27 00:21:24 $
+ * $Revision: 1.119 $ $Author: nmeier $ $Date: 2007-01-27 04:32:29 $
  */
 package genj.report;
 
@@ -29,7 +29,6 @@ import genj.fo.Format;
 import genj.fo.FormatOptionsWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.time.PointInTime;
 import genj.io.FileAssociation;
 import genj.option.Option;
 import genj.option.OptionsWidget;
@@ -60,6 +59,8 @@ import java.util.Locale;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -882,45 +883,25 @@ public abstract class Report implements Cloneable {
     return translate("version");
   }
   
-  /**
-   * Returns the date of last update of a report - this by default is the value of key "date"
-   * in the file [ReportName].properties. A report has to override this method
-   * to provide the date if that file doesn't exist.
-   * @return date of last update of the report
-   */
-  public PointInTime getUpdatedDate() {
-	  String cvsDate = getCvsDate();
-      PointInTime pit = null;
-      if (cvsDate != null){
-    	  try {
-    		  pit = new PointInTime(cvsDate.substring(7, 11)+
-    				  cvsDate.substring(12, 14)+
-    				  cvsDate.substring(15, 17));
-    	  } catch (Exception e) {
-    	  }
-      }
-      if (pit != null){
-    	  return pit;
-      }
-	  
-	  String date = translate("updated");
-	  if (date == null || date.equals("updated"))
-		  return null;
-	  pit = new PointInTime();
-	  pit.set(date);
-	  return pit;        
-  }
+  private final static Pattern PATTERN_CVS_DATE  = Pattern.compile("\\$Date: 2007-01-27 04:32:29 $");
   
   /**
-   * Returns the date of last update of a report in cvs format - 
-   * It is intended to provide alternate way to report designers to the update property. 
-   * It should return a string formated as cvs Date keyword. By default it returns null.
-   * @return cvs Date keyword string
+   * Returns the last update tag  - this by default is the value of key "date"
+   * in the file [ReportName].properties. 
    */
-  public String getCvsDate(){
-	  return null;
+  public String getLastUpdate() {
+    // check for updated key
+    String result = translate("updated");
+	  if ("updated".equals(result))
+      return null;
+    // look for cvs date - grab date and time
+    Matcher cvsdata = PATTERN_CVS_DATE.matcher(result);
+    if (cvsdata.matches())
+      result = cvsdata.group(1);
+    // done - either whatever was found or beautified cvs keyword value
+    return result;
   }
-
+  
   /**
    * Returns information about a report - this by default is the value of key "info"
    * in the file [ReportName].properties. A report has to override this method
