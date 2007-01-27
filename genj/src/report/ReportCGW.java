@@ -9,7 +9,6 @@
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyPlace;
-import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 import genj.util.swing.Action2;
 
@@ -44,21 +43,6 @@ public class ReportCGW extends Report {
     public int cityPos = 1;
     /** option - Meaningfull length for the Department Juridiction field to keep */
     public int depLen = 0;
-
-    /**
-     * getupdated date
-     */
-    public PointInTime getUpdatedDate(){
-  	  String updated = "$Date: 2006-11-07 17:47:48 $";
-  	    try {
-  	    	return new PointInTime(updated.substring(7, 11)+
-  	    			updated.substring(12, 14)+
-  	    			updated.substring(15, 17));
-  	        
-  	      } catch (Exception e) {
-  	        return super.getUpdatedDate();
-  	      }
-    }
 
     /**
      * Overriden image - we're using the provided FO image

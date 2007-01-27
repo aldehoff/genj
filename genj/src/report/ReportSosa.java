@@ -9,14 +9,12 @@ import genj.fo.Document;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.PrivacyPolicy;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySource;
 import genj.gedcom.Source;
 import genj.gedcom.TagPath;
-import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 import java.util.ArrayList;
@@ -173,13 +171,6 @@ public class ReportSosa extends Report {
   private static String NOTE  = ".:NOTE";       // Notes tag in Sources (SOUR and INDI)
   private static String DATA  = ".:DATA:TEXT";  // Data tag in Sources (INDI)
 
-  /**
-   * getcvsupdated date
-   */
-  public String getCvsDate(){
-	  return "$Date: 2007-01-18 11:18:40 $";
-  }
-  
 /**
    * Main for argument individual
    */

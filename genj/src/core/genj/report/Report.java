@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.119 $ $Author: nmeier $ $Date: 2007-01-27 04:32:29 $
+ * $Revision: 1.120 $ $Author: nmeier $ $Date: 2007-01-27 04:37:18 $
  */
 package genj.report;
 
@@ -883,7 +883,7 @@ public abstract class Report implements Cloneable {
     return translate("version");
   }
   
-  private final static Pattern PATTERN_CVS_DATE  = Pattern.compile("\\$Date: 2007-01-27 04:32:29 $");
+  private final static Pattern PATTERN_CVS_DATE  = Pattern.compile("\\$"+"Date: (\\d\\d\\d\\d/\\d\\d/\\d\\d \\d\\d:\\d\\d:\\d\\d) *\\$"); // don't user [dollar]Date to avoid keywords substitution here :)
   
   /**
    * Returns the last update tag  - this by default is the value of key "date"

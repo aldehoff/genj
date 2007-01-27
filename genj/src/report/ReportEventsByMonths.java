@@ -77,20 +77,6 @@ public class ReportEventsByMonths extends Report {
   }
 
   /**
-   * getupdated date
-   */
-  public PointInTime getUpdatedDate(){
-	  String updated = "$Date: 2007-01-26 01:33:14 $";
-	    try {
-	    	return new PointInTime(updated.substring(7, 11)+
-	    			updated.substring(12, 14)+
-	    			updated.substring(15, 17));
-	      } catch (Exception e) {
-	        return super.getUpdatedDate();
-	      }
-  }
-
-  /**
    * Report's main
    */
   public void start(Gedcom gedcom) {
