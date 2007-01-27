@@ -56,7 +56,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     try {
       content = Base64.decode(content.toString());
     } catch (IllegalArgumentException e) {
-      content = "";
+      content = new byte[0];
     }
 
     return (byte[])content;
