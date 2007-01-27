@@ -6,7 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package formatter;
+package narrative;
 
 import genj.gedcom.Indi;
 import genj.gedcom.PropertySex;
