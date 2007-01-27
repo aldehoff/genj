@@ -20,9 +20,7 @@ import genj.report.Report;
  *
  * @author Daniel P. Kionka
  * @author Carsten Muessig <carsten.muessig@gmx.net>
- * @version 1.4
  */
-
 public class ReportAges extends Report {
 
     public boolean reportBaptismAge = true;
@@ -38,19 +36,6 @@ public class ReportAges extends Report {
 
     /** localized strings */
     private final static String AGE = Gedcom.getName("AGE");
-
-
-    private String familyToString(Fam f) {
-        Indi husband = f.getHusband(), wife = f.getWife();
-        String str = f.getId()+" ";
-        if(husband!=null)
-            str = str + translate("entity", new String[] {f.getHusband().getId(), f.getHusband().getName()} );
-            if(husband!=null && wife!=null)
-                str=str+" + ";
-            if(wife!=null)
-                str = str + translate("entity", new String[] {f.getWife().getId(), f.getWife().getName()} );
-                return str;
-    }
 
     /**
      * Main for argument Indi
@@ -94,7 +79,7 @@ public class ReportAges extends Report {
 
         Delta age = null;
 
-        println(translate("entity", new String[] {indi.getId(), indi.getName()} ));
+        println(indi);
 
         // print birth date (give up if none)
         PropertyDate birth = indi.getBirthDate();
@@ -122,7 +107,7 @@ public class ReportAges extends Report {
                 for (int i = 0; i < fams.length; i++) {
                     Fam fam = fams[i];
                     String text = getIndent(3) + OPTIONS.getMarriageSymbol() +
-                        " " + familyToString(fam) + ": ";
+                        " " + fam + ": ";
                     if (fam.getMarriageDate() == null)
                         println(text + translate("noData"));
                     else {
@@ -147,7 +132,7 @@ public class ReportAges extends Report {
                             found = true;
                         }
                         println(getIndent(3) + OPTIONS.getDivorceSymbol() +
-                                " " + familyToString(fam) + ": " + fam.getDivorceDate());
+                                " " + fam + ": " + fam.getDivorceDate());
                         age = indi.getAge(fam.getDivorceDate().getStart());
                         printAge(age,4);
                     }
@@ -163,7 +148,7 @@ public class ReportAges extends Report {
                 println(getIndent(2) + translate("childBirths") + ":");
                 for (int i = 0; i < children.length; i++) {
                     Indi child = children[i];
-                    String text = getIndent(3) + OPTIONS.getBirthSymbol()+" "+translate("entity", new String[] {child.getId(), children[i].getName()})+": ";
+                    String text = getIndent(3) + OPTIONS.getBirthSymbol()+" "+child+": ";
                     PropertyDate cbirth = child.getBirthDate();
                     if (cbirth == null)
                         println(text + translate("noData"));
@@ -218,3 +203,122 @@ public class ReportAges extends Report {
     }
 
 } //ReportAges
+
+
+/*********************************************************************************************************************
+author               = Daniel P. Kionka, Carsten Müssig <carsten.muessig@gmx.net>
+version              = 1.4
+category             = Analysis
+
+name                 = Ages
+name.de              = Alter
+name.fr              = Ages
+name.es              = Edad
+name.pl              = Wiek osoby
+
+info = This report prints out the age of an individual at different events. Use the options to turn these events on/off.
+info.de = Alter einer Person zu verschiedenen Zeitpunkten ausgeben. Die Zeitpunkte können in den Optionen gewählt werden.
+info.fr = <h1><center>Les Ages au cours de la vie</center></h1><br>Aprés avoir choisi la personne sur laquelle vous voulez 
+ lancer ce script, vous obtiendrez l'âge d'une personne à différentes époques de sa vie.<br><br>Ainsi on trouvera :<br>
+ <ul>
+  <li>La date de sa naissance,</li>
+  <li>L'âge à son baptême,</li>
+  <li>L'âge à son mariage,</li>
+  <li>L'âge à son divorce,</li>
+  <li>L'âge à la naissance de chacun de ses enfants,</li>
+  <li>L'âge lors de son emigration,</li>
+  <li>L'âge lors de son immigration,</li>
+  <li>L'âge lors de sa naturalisation,</li>
+  <li>L'âge qu'elle avait à son décès,</li>
+  <li>Le temps écoulé depuis sa naissance.</li>
+ </ul>
+ Utilisez les options pour visualiser tel ou tel
+ évènement (actif : oui/non).<br>
+ Bien sûr si tel ou tel évènement ne s'est pas
+ produit, ou si une date n'est pas renseignée,
+ l'information correspondante ne sera pas
+ affichée.
+info.es = Este informe imprime la edad de un individuo en diferentes momentos.
+ Use las opciones para incluir o no esos momentos
+info.pl = Ten raport wyświetla wiek osoby podczas różnych wydarzeń.
+ Zdarzenia te można wybrać na zakładce ustawień.
+
+reportMarriageAge    = Report age at marriage
+reportMarriageAge.de = Alter bei Heirat ausgeben
+reportMarriageAge.fr = Indication de l'âge lors du mariage
+reportMarriageAge.es = Informe de la edad del matrimonio
+reportMarriageAge.pl = Wyświetl wiek podczas małżeństwa
+
+reportAgeAtDeath    = Report age at death
+reportAgeAtDeath.de = Alter bei Tod ausgeben
+reportAgeAtDeath.fr = Indication de l'âge lors du décès
+reportAgeAtDeath.es = Informe de la edad de la muerte
+reportAgeAtDeath.pl = Wyświetl wiek podczas śmierci
+
+reportBaptismAge    = Report age at baptism
+reportBaptismAge.de = Alter bei Taufe ausgeben
+reportBaptismAge.fr = Indication de l'âge lors du baptême
+reportBaptismAge.es = Informe de la edad del bautismo
+reportBaptismAge.pl = Wyświetl wiek podczas chrztu
+
+reportConfirmationAge    = Report age at confirmation
+reportConfirmationAge.de = Alter bei Konfirmation ausgeben
+reportConfirmationAge.fr = Indication de l'âge lors de la confirmation
+reportConfirmationAge.es = Informe de la edad de la confirmación
+reportConfirmationAge.pl = Wyświetl wiek podczas bierzmowania
+
+reportAgeAtEmigration    = Report age at emigration
+reportAgeAtEmigration.de = Alter bei Auswanderung ausgeben
+reportAgeAtEmigration.fr = Indication de l'âge lors de l'emigration
+reportAgeAtEmigration.es = Informe de la edad de la emigración
+reportAgeAtEmigration.pl = Wyświetl wiek podczas emigracji
+
+reportAgeAtImmigration    = Report age at imigration
+reportAgeAtImmigration.de = Alter bei Einwanderung ausgeben
+reportAgeAtImmigration.fr = Indication de l'âge lors de l'immigration
+reportAgeAtImmigration.es = Informe de la edad de la inmigración
+reportAgeAtImmigration.pl = Wyświetl wiek podczas imigracji
+
+reportAgeAtNaturalization    = Report age at naturalization
+reportAgeAtNaturalization.de = Alter bein Einbürgerung ausgeben
+reportAgeAtNaturalization.fr = Indication de l'âge lors de la naturalisation
+reportAgeAtNaturalization.es = Informe de la edad de la naturalización
+reportAgeAtNaturalization.pl = Wyświetl wiek podczas naturalizacji
+
+reportAgeAtDivorce    = Report age at divorce
+reportAgeAtDivorce.de = Alter bei Scheidung ausgeben
+reportAgeAtDivorce.fr = Indication de l'âge lors du divorce
+reportAgeAtDivorce.es = Informe de la edad del divorcio
+reportAgeAtDivorce.pl = Wyświetl wiek podczas rozwodu
+
+reportAgeAtChildBirth    = Report age at birth of children
+reportAgeAtChildBirth.de = Alter bei Geburt der Kinder ausgeben
+reportAgeAtChildBirth.fr = Indication de l'âge lors de la naissance des enfants
+reportAgeAtChildBirth.es = Informe de la edad en el nacimiento de los hijos
+reportAgeAtChildBirth.pl = Wyświetl wiek podczas narodzin dzieci
+
+childBirths           = Child birth(s)
+childBirths.de        = Geburt der Kinder
+childBirths.fr        = Naissance(s) des enfants
+childBirths.es        = Nacimiento de los hijos
+childBirths.pl        = Narodziny dzieci
+
+reportAgeSinceBirth    = Report age since birth (until now)
+reportAgeSinceBirth.de = Alter seit Geburt (bis heute) ausgeben
+reportAgeSinceBirth.fr = Indication de l'âge depuis la naissance (jusqu'à maintenant)
+reportAgeSinceBirth.es = Informe de la edad desde el nacimiento hasta ahora
+reportAgeSinceBirth.pl = Wyświetl wiek od urodzenia (do teraz)
+
+sinceBirth    = Since birth (until now {0})
+sinceBirth.de = Seit Geburt (bis heute {0})
+sinceBirth.fr = Depuis la naissance (jusqu'à maintenant {0})
+sinceBirth.es = Desde el nacimiento (hasta ahora {0})
+sinceBirth.pl = Od urodzenia (do teraz {0})
+
+noData    = no data
+noData.de = keine Daten
+noData.fr = aucune donnée
+noData.es = sin datos
+noData.pl = brak danych
+
+*********************************************************************************************************************/

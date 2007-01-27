@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.117 $ $Author: nmeier $ $Date: 2006-12-05 05:09:42 $
+ * $Revision: 1.118 $ $Author: nmeier $ $Date: 2007-01-27 00:21:24 $
  */
 package genj.report;
 
@@ -45,6 +45,8 @@ import genj.window.WindowManager;
 import java.awt.BorderLayout;
 import java.io.CharArrayWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -753,11 +755,19 @@ public abstract class Report implements Cloneable {
    */
   protected Resources getResources() {
     if (resources==null) {
+      // initialize resources with old way of pulling from .properties file
+      resources = new Resources(getClass().getResourceAsStream(getTypeName()+".properties"));
+      // check if new style resources are available from .java src
       try {
-        resources = new Resources(getClass().getResourceAsStream(getTypeName()+".properties"));
-      } catch (Throwable t) {
-        ReportView.LOG.info("Couldn't read properties for "+this);
-        resources = Resources.get(this);
+        // ... checking filesystem in developer mode, resource otherwise
+        File reports = new File("./src/report"); 
+        String src = getClass().getName().replace('.', '/')+".java";
+        InputStream in = (reports.exists()&&reports.isDirectory()) ? 
+            new FileInputStream(new File(reports, src)) :
+            getClass().getResourceAsStream(src);
+        resources.load(in);
+      } catch (IOException e) {
+        // ignore
       }
     }
     return resources;

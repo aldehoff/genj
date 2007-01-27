@@ -39,11 +39,14 @@ import java.util.WeakHashMap;
  *  <li>reside in directory relative to class being used in e.g. ./genj/app
  *  <li>are names resources[_xy[_ab]].properties
  *  <li>are UTF-8 encoded
- *  <li>contain comment lines starting with '#'
- *  <li>contain content lines "key = value"
- *  <li>value can contain \n for newline
- *  <li>contain content continuation starting with '+'
+ *  <li>contain comment lines starting with # or // or /* 
+ *  <li>contain content lines "key = value" (key cannot contain spaces)
+ *  <li>*values continue in the next line if the following line.trim() starts with a + (which is replaced with \n)
+ *  <li>*values continue in the next line if the following line.trim() starts with a & (which is trimmed)
+ *  <li>values continue in the next line if the following line starts with a space (which is trimmed)
+ *  <li>newline escapes \n are transformed into newline characters
  * </il>
+ * (*legacy)
  */
 public class Resources {
   
@@ -69,7 +72,7 @@ public class Resources {
     keys = new ArrayList(1000);
     
     try {
-      load(in, keys, key2string);
+      load(in);
     } catch (IOException e) {
       // swallow
     }
@@ -134,9 +137,20 @@ public class Resources {
   }
   
   /**
+   * Load more resources from stream
+   */
+  public void load(InputStream in) throws IOException {
+    load(in, keys, key2string);
+  }
+  
+  /**
    * Loads key/value pairs from inputstream with unicode content
    */
   private static void load(InputStream in, List keys, Map key2string) throws IOException {
+    
+    if (in==null)
+      throw new IOException("can't load resources from null");
+    
     try {
       BufferedReader lines = new BufferedReader(new InputStreamReader(in, "UTF-8"));
       // loop over all lines
@@ -146,37 +160,63 @@ public class Resources {
         String line = lines.readLine();
         if (line==null) 
           break;
-        // trim and check
-        line = line.trim();
-        // .. nothing?
-        if (line.length()==0)
+        String trimmed = line.trim();
+        if (trimmed.length()==0)
           continue;
-        // .. comment?
-        char c = line.charAt(0); 
-        if (c=='#') 
+        // .. continuation as follows:
+        if (last!=null) {
+          // +... -> newline....
+          if (trimmed.charAt(0)=='+') {
+            key2string.put(last, key2string.get(last)+"\n"+breakify(trimmed.substring(1)));
+            continue;
+          }
+          // &... -> ....
+          if (trimmed.charAt(0)=='&') {
+            key2string.put(last, key2string.get(last)+breakify(trimmed.substring(1)));
+            continue;
+          }
+          // \s... -> ....
+          if (line.charAt(0)==' ') {
+            key2string.put(last, key2string.get(last)+breakify(line.substring(1)));
+            continue;
+          }
+        } 
+          
+        // .. java instruction or java/resources comment?
+        if (trimmed.startsWith("/*")||trimmed.startsWith("//")||trimmed.endsWith("*/")||trimmed.startsWith("#")||trimmed.endsWith(";"))
           continue;
-        // .. continuation or key=value
-        if (last!=null&&(c=='+'||c=='&')) {
-          key = last;
-          val = (String)key2string.get(key);
-          if (c=='+') val += '\n';
-          val += line.substring(1);
-        } else {
-          int i = line.indexOf('=');
-          if (i<0) continue;
-          key = line.substring(0, i).trim();
-          val = line.substring(i+1).trim();
-          keys.add(key);
-          key = key.toLowerCase();
-        }
-        // remember
-        key2string.put(key, val);
+        
+        // break down key and value
+        int i = trimmed.indexOf('=');
+        if (i<0) 
+          continue;
+        key = trimmed.substring(0, i).trim();
+        if (key.indexOf(' ')>0)
+          continue;
+        val = trimmed.substring(i+1).trim();
+        keys.add(key);
+        
+        // remember (we keep lowercase keys in map)
+        key = key.toLowerCase();
+        key2string.put(key, breakify(val));
+        
         // next
         last = key;
+        
       }
+
     } catch (UnsupportedEncodingException e) {
       throw new IOException(e.getMessage());
     }
+  }
+
+  private static String breakify(String string) {
+    while (true) {
+      int i = string.indexOf("\\n");
+      if (i<0) break;
+      string = string.substring(0,i) + '\n' + string.substring(i+2);
+    }
+    return string;
   }
   
   /**
