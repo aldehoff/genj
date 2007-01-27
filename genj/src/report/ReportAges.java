@@ -1,9 +1,8 @@
 /**
  * Reports are Freeware Code Snippets
  *
- * This report is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * This report is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even 
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -15,11 +14,7 @@ import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 /**
- * GenJ - ReportAges
- * (based on ReportDescendants and ReportGedcomStatistics)
- *
- * @author Daniel P. Kionka
- * @author Carsten Muessig <carsten.muessig@gmx.net>
+ * GenJ - ReportAges (based on ReportDescendants and ReportGedcomStatistics)
  */
 public class ReportAges extends Report {
 
@@ -209,6 +204,7 @@ public class ReportAges extends Report {
 author               = Daniel P. Kionka, Carsten Müssig <carsten.muessig@gmx.net>
 version              = 1.4
 category             = Analysis
+updated             = $Date: 2007-01-27 03:55:55 $
 
 name                 = Ages
 name.de              = Alter
