@@ -121,10 +121,7 @@
   <target name="version" depends="init">
     <echo level="info">Generating version number</echo>
     <mkdir dir="./build/version/genj"/>
-    <echo file="./build/version/genj/resources.properties">
-      version=${version}
-      build=${app.build}
-    </echo>
+    <echo file="./build/version/genj/resources.properties">version=${version}${line.separator}build=${app.build}</echo>
   </target>
 
   <!--
@@ -369,7 +366,7 @@
   <!--
    Run
    -->
-  <target name="run" depends="compile">
+  <target name="run" depends="compile, version">
 
     <echo level="info">Generating and running GenJ test-run</echo>
 
