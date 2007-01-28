@@ -25,6 +25,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
 import genj.util.Origin;
@@ -569,9 +570,15 @@ public class GedcomReader implements Trackable {
      */
     private void decryptLazy(Property prop) throws GedcomEncryptionException {
 
-      String value = prop.getValue();
+      // 20060128 an xref is never crypted and getValue() is expensive so we try to avoid this
+      if (prop instanceof PropertyXRef)
+        return;
+      // 20060128 a valid date can't need decryption and getValue() is expensive so we try to avoid this
+      if ((prop instanceof PropertyDate)&&prop.isValid())
+        return;
       
       // no need to do anything if not encrypted value 
+      String value = prop.getValue();
       if (!Enigma.isEncrypted(value))
         return;
         

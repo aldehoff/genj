@@ -449,7 +449,8 @@ public class Indi extends Entity {
   public boolean isDescendantOf(Fam fam) {
     
     // check the family's children
-    Indi[] children = fam.getChildren();
+    // NM 20070128 don't sort for existance check only - that's expensive
+    Indi[] children = fam.getChildren(false);
     for (int i = 0; i < children.length; i++) {
       Indi child = children[i];
       if (child==this)

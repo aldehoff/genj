@@ -199,13 +199,14 @@ public abstract class PropertyXRef extends Property {
     if (target!=null)
       return;
       
-    String old = getValue();
+    // 20070128 don't bother with calculating old if this is happening in init()
+    String old = getParent()==null?null:getValue();
 
     // remember value
     value = set.replace('@',' ').trim();
 
     // remember change
-    propagatePropertyChanged(this, old);
+    if (old!=null) propagatePropertyChanged(this, old);
     
     // done
   }

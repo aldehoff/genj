@@ -485,6 +485,13 @@ public abstract class Origin {
     public int read() throws IOException {
       return in.read();
     }
+    
+    /**
+     * @see java.io.InputStream#read(byte[], int, int)
+     */
+    public int read(byte[] b, int off, int len) throws IOException {
+      return in.read(b, off, len);
+    }
 
     /**
      * @see java.io.InputStream#available()

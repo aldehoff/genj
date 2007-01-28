@@ -47,7 +47,8 @@ public abstract class Property implements Comparable {
   private Property parent=null;
   
   /** children of this property */
-  private List children = new ArrayList();
+  // 20070128 made this a lazy list so we're not wasting the space for all those leaf nodes out there
+  private List children = null;
   
   /** images */
   protected ImageIcon image, imageErr;
@@ -227,10 +228,12 @@ public abstract class Property implements Comparable {
     // position valid?
     if (pos<0)
       pos = 0;
-   if (pos>children.size())
-      pos = children.size();
+    if (pos>getNoOfProperties())
+      pos = getNoOfProperties();
     
     // keep child now
+    if (children==null)
+      children = new ArrayList();
     children.add(pos, child);
     
 	  // tell to added
@@ -248,9 +251,12 @@ public abstract class Property implements Comparable {
    * Removes all properties
    */
   public void delProperties() {
-    Property[] cs = (Property[])children.toArray(new Property[children.size()]);
-    for (int c = 0; c < cs.length; c++) {
-      delProperty(cs[c]);
+    if (children!=null) {
+      Property[] cs = (Property[])children.toArray(new Property[children.size()]);
+      for (int c = 0; c < cs.length; c++) {
+        delProperty(cs[c]);
+      }
+      if (children.isEmpty()) children = null;
     }
   }
   
@@ -258,10 +264,13 @@ public abstract class Property implements Comparable {
    * Removes all properties with given tag
    */
   public void delProperties(String tag) {
-    Property[] cs = (Property[])children.toArray(new Property[children.size()]);
-    for (int c = 0; c < cs.length; c++) {
-      if (cs[c].getTag().equals(tag))
-        delProperty(cs[c]);
+    if (children!=null) {
+      Property[] cs = (Property[])children.toArray(new Property[children.size()]);
+      for (int c = 0; c < cs.length; c++) {
+        if (cs[c].getTag().equals(tag))
+          delProperty(cs[c]);
+      }
+      if (children.isEmpty()) children = null;
     }
   }
   
@@ -269,6 +278,9 @@ public abstract class Property implements Comparable {
    * Removes a property by looking in the property's properties
    */
   public void delProperty(Property deletee) {
+    
+    if (children==null)
+      throw new IndexOutOfBoundsException("no such child");
 
     // find position (throw outofbounds if n/a)
     int pos = 0;
@@ -288,7 +300,7 @@ public abstract class Property implements Comparable {
   public void delProperty(int pos) {
 
     // range check
-    if (pos<0||pos>=children.size())
+    if (children==null||pos<0||pos>=children.size())
       throw new IndexOutOfBoundsException();
     Property removed = (Property)children.get(pos);
 
@@ -350,7 +362,7 @@ public abstract class Property implements Comparable {
    * Calculates the number of properties this property has.
    */
   public int getNoOfProperties() {
-    return children.size();
+    return children==null?0:children.size();
   }
 
   /**
@@ -433,6 +445,8 @@ public abstract class Property implements Comparable {
    * Test for (recursive) containment
    */
   public boolean contains(Property prop) {
+    if (children==null)
+      return false;
     for (int c = 0; c < children.size(); c++) {
       Property child = (Property)children.get(c);
       if (child==prop||child.contains(prop))
@@ -454,14 +468,14 @@ public abstract class Property implements Comparable {
    * Test properties
    */
   public boolean isProperties(List props) {
-    return children.containsAll(props);
+    return children==null ? false : children.containsAll(props);
   }
   
   /**
    * Returns this property's properties (all children)
    */
   public Property[] getProperties() {
-    return toArray(children);
+    return children==null ? new Property[0] : toArray(children);
   }
   
   /**
@@ -539,11 +553,13 @@ public abstract class Property implements Comparable {
    * Returns a sub-property position
    */
   public int getPropertyPosition(Property prop) {
+    if (children==null)
+      throw new IllegalArgumentException("no such property");
     for (int i=0;i<children.size();i++) {
       if (children.get(i)==prop)
         return i;
     }
-    throw new IllegalArgumentException();
+    throw new IllegalArgumentException("no such property");
   }
 
   /**
@@ -556,6 +572,8 @@ public abstract class Property implements Comparable {
    * correct parameter
    */
   public Property getProperty(int n) {
+    if (children==null)
+      throw new IndexOutOfBoundsException("no property "+n);
     return (Property)children.get(n);
   }
 
@@ -574,11 +592,14 @@ public abstract class Property implements Comparable {
     // safety check
     if (tag.indexOf(':')>0) throw new IllegalArgumentException("Path not allowed");
     // loop children
-    for (int c=0;c<getNoOfProperties();c++) {
-      Property child = getProperty(c);
-      if (!child.getTag().equals(tag)) continue;
-      if (validOnly&&!child.isValid()) continue;
-      return child;
+    // NM 20070128 use direct field access - it's less expensive
+    if (children!=null) {
+      for (int i=0, j=children.size();i<j;i++) {
+        Property child = (Property)children.get(i);
+        if (!child.getTag().equals(tag)) continue;
+        if (validOnly&&!child.isValid()) continue;
+        return child;
+      }
     }
     // not found
     return null;

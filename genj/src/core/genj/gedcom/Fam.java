@@ -59,6 +59,13 @@ public class Fam extends Entity {
    * Returns children
    */
   public Indi[] getChildren() {
+    return getChildren(true);
+  }
+  
+  /**
+   * Returns children
+   */
+  public Indi[] getChildren(boolean sorted) {
     
     ArrayList children = new ArrayList(getNoOfProperties());
     
@@ -71,7 +78,7 @@ public class Fam extends Entity {
     
     // convert to array & sort
     Indi[] result = Indi.toIndiArray(children);
-    Arrays.sort(result, SORT_SIBLINGS);
+    if (sorted) Arrays.sort(result, SORT_SIBLINGS);
     
     // done
     return result;

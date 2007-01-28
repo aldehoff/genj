@@ -110,7 +110,7 @@ public class PropertyChild extends PropertyXRef {
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ child.toString(), fam.toString()}));
 
     // Make sure the child is not child already - no need for duplicates here
-    Indi children[] = fam.getChildren();
+    Indi children[] = fam.getChildren(false);
     for (int i=0;i<children.length;i++) {
       if ( children[i] == child ) 
         throw new GedcomException(resources.getString("error.already.child", new String[]{ child.toString(), fam.toString()}));

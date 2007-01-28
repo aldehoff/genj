@@ -227,8 +227,9 @@ public class PropertyName extends Property {
    */
   public PropertyName setName(String first, String last, String suff, boolean replaceAllLastNames) {
 
-    String old = getValue();
-    
+    // 20070128 don't bother with calculating old if this is happening in init()
+    String old = getParent()==null?null:getValue();
+
     // check for uppercase lastname
     if (Options.getInstance().isUpperCaseNames)
       last = last.toUpperCase();
@@ -263,7 +264,7 @@ public class PropertyName extends Property {
     suffix    = suff;
 
     // tell about it 
-    propagatePropertyChanged(this, old);
+    if (old!=null) propagatePropertyChanged(this, old);
     
     // Done
     return this;

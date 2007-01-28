@@ -212,7 +212,8 @@ public class PropertyDate extends Property {
    */
   public void setValue(String newValue) {
 
-    String old = getValue();
+    // 20070128 don't bother with calculating old if this is happening in init()
+    String old = getParent()==null ? null : getValue();
 
     // do an atomic change
     isAdjusting = true;
@@ -239,7 +240,7 @@ public class PropertyDate extends Property {
     }
 
     // remember as modified      
-    propagatePropertyChanged(this, old);
+    if (old!=null) propagatePropertyChanged(this, old);
 
     // done
   }

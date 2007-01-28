@@ -38,6 +38,7 @@ public abstract class Calendar {
   protected String name;
   protected ImageIcon image;
   protected String[] months;
+  protected String[] monthsLowerCase;
   protected String[] weekDays, localizedWeekDays;
   protected Map
     localizedMonthNames = new HashMap(),
@@ -57,6 +58,8 @@ public abstract class Calendar {
     
     // initialize members
     months = mOnths;
+    monthsLowerCase = new String[months.length];
+    for (int i = 0; i < months.length; i++) monthsLowerCase[i] = months[i].toLowerCase();
     escape = esc;
     name = resources.getString("cal."+key);
     image = new ImageIcon(Gedcom.class, img);
@@ -120,8 +123,10 @@ public abstract class Calendar {
    * Parse month
    */
   protected int parseMonth(String mmm) throws NumberFormatException {
+    // 20070128 compare lowercase'd values to avoid having to do the lowercase for calendar's months every time
+    String mmmLowerCase = mmm.toLowerCase();
     for (int i=0;i<months.length;i++) {
-      if (months[i].equalsIgnoreCase(mmm)) return i;
+      if (monthsLowerCase[i].equals(mmmLowerCase)) return i;
     }
     throw new NumberFormatException();
   }
