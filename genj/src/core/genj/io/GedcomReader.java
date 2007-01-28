@@ -67,7 +67,7 @@ public class GedcomReader implements Trackable {
   private int progress;
   private int entity = 0;
   private int state;
-  private long length;
+  private int length;
   private String gedcomLine;
   private ArrayList lazyLinks = new ArrayList();
   private String tempSubmitter;
@@ -75,6 +75,7 @@ public class GedcomReader implements Trackable {
   private Thread worker;
   private Object lock = new Object();
   private EntityReader reader;
+  private MeteredInputStream meter;
   
   /** encryption */
   private Enigma enigma;
@@ -101,14 +102,21 @@ public class GedcomReader implements Trackable {
   /**
    * initializer
    */
-  private void init(Gedcom ged, InputStream oin) throws IOException {
+  private void init(Gedcom ged, InputStream in) throws IOException {
+    SniffedInputStream sniffer = new SniffedInputStream(in);
+    init(ged, sniffer, sniffer.getCharset(), sniffer.getEncoding());
+  }
+  
+  private void init(Gedcom ged, InputStream in, Charset charset, String encoding) throws IOException {
     
     // init some data
-    SniffedInputStream sin = new SniffedInputStream(oin);
-    length = oin.available();
+    length = in.available();
+    
     gedcom = ged;
-    gedcom.setEncoding(sin.getEncoding());
-    reader = new EntityReader(new InputStreamReader(sin, sin.getCharset()));
+    gedcom.setEncoding(encoding);
+    
+    meter = new MeteredInputStream(in);
+    reader = new EntityReader(new InputStreamReader(meter, charset));
 
     // Done
   }
@@ -149,6 +157,11 @@ public class GedcomReader implements Trackable {
    * @return percent as 0 to 100
    */
   public int getProgress() {
+    // reading right now?
+    if (state==READENTITIES&&length>0) 
+        progress = (int)Math.min(100, meter.getCount()*100/length);
+      
+    // done
     return progress;
   }
 
@@ -188,7 +201,7 @@ public class GedcomReader implements Trackable {
    * @exception GedcomEncryptionException encountered encrypted property and password didn't match
    */
   public Gedcom read() throws GedcomIOException, GedcomFormatException {
-
+    
     // Remember working thread
     synchronized (lock) {
       worker=Thread.currentThread();
@@ -222,11 +235,12 @@ public class GedcomReader implements Trackable {
    */
   private void readGedcom() throws IOException {
 
+    long start = System.currentTimeMillis();
+
     // Read the Header
     readHeader();
-
-    // Next state
     state++;
+    long header =System.currentTimeMillis(); 
 
     // Read records after the other
     while (true) {
@@ -236,6 +250,7 @@ public class GedcomReader implements Trackable {
         break;
       }
     }
+    long records = System.currentTimeMillis();
 
     // Next state
     state++;
@@ -252,10 +267,13 @@ public class GedcomReader implements Trackable {
 
     // Link references
     linkReferences();
+    long linking = System.currentTimeMillis();
     
     // sort warnings
     Collections.sort(warnings);
     
+    long total = System.currentTimeMillis();
+    LOG.log(Level.FINE, gedcom.getName()+" loaded in "+(total-start)/1000+"s (header "+(header-start)/1000+"s, records "+(records-header)/1000+"s, linking "+(linking-records)/1000+"s)");
 
     // Done
   }
@@ -267,15 +285,13 @@ public class GedcomReader implements Trackable {
 
     // loop over kept references
     for (int i=0,n=lazyLinks.size(); i<n; i++) {
-      Warning lazyLink = (Warning)lazyLinks.get(i);
-      PropertyXRef xref = (PropertyXRef)lazyLink.getProperty();
+      LazyLink lazyLink = (LazyLink)lazyLinks.get(i);
       try {
-        if (xref.getTarget()==null)
-          xref.link();
+        if (lazyLink.xref.getTarget()==null)
+          lazyLink.xref.link();
         progress = Math.min(100,(int)(i*(100*2)/n));  // 100*2 because Links are probably backref'd
       } catch (GedcomException ex) {
-        lazyLink.setText(ex.getMessage());
-        warnings.add(lazyLink);
+        warnings.add(new Warning(lazyLink.line, ex.getMessage(), lazyLink.xref));
       }
     }
 
@@ -533,15 +549,6 @@ public class GedcomReader implements Trackable {
       return result;
     }
     
-    /** override readline to track lines read */
-    protected boolean readLine(boolean consume) throws IOException {
-      // track progress
-      if (length>0)
-        progress = Math.min(100,(int)(lines*32*100/length));
-      // continue with super
-      return super.readLine(consume);
-    }
-    
     /** override read to get a chance to decrypt values */
     protected void readProperties(Property prop, int currentLevel, int pos) throws IOException {
       // let super do its thing
@@ -605,7 +612,7 @@ public class GedcomReader implements Trackable {
     /** keep track of xrefs - we're going to link them lazily afterwards */
     protected void link(PropertyXRef xref, int line) {
       // keep as warning
-      lazyLinks.add(new Warning(line, null, xref));
+      lazyLinks.add(new LazyLink(xref, line));
     }
     
     /** keep track of empty lines */
@@ -619,6 +626,20 @@ public class GedcomReader implements Trackable {
     }
     
   } //EntityReader
+  
+  /**
+   * A lazy link
+   */
+  private static class LazyLink {
+    
+    private PropertyXRef xref;
+    private int line;
+    
+    LazyLink(PropertyXRef xref, int line) {
+      this.xref = xref;
+      this.line = line;
+    }
+  }
   
   /**
    * A generated warning 
@@ -664,5 +685,71 @@ public class GedcomReader implements Trackable {
     }
     
   } //Warning
+  
+  /**
+   * A metered input stream
+   */
+  private static class MeteredInputStream extends InputStream {
+    
+    private long meter = 0;
+    private long marked = -1;
+    private InputStream in;
+    
+    MeteredInputStream(InputStream in) {
+      this.in = in;
+    }
+    
+    public long getCount() {
+      return meter;
+    }
+
+    public int available() throws IOException {
+      return in.available();
+    }
+
+    public void close() throws IOException {
+      in.close();
+    }
+
+    public synchronized void mark(int readlimit) {
+      in.mark(readlimit);
+      marked = meter;
+    }
+
+    public boolean markSupported() {
+      return in.markSupported();
+    }
+
+    public int read() throws IOException {
+      meter++;
+      return in.read();
+    }
+
+    public int read(byte[] b, int off, int len) throws IOException {
+      int read = in.read(b, off, len);
+      meter+=read;
+      return read;
+    }
+
+    public int read(byte[] b) throws IOException {
+      int read = in.read(b);
+      meter+=read;
+      return read;
+    }
+
+    public synchronized void reset() throws IOException {
+      if (marked<0)
+        throw new IOException("reset() without mark()");
+      in.reset();
+      meter = marked;
+    }
+
+    public long skip(long n) throws IOException {
+      int skipped = (int)super.skip(n);
+      meter+=skipped;
+      return skipped;
+    }
+    
+  } //MeteredInputStream
   
 } //GedcomReader

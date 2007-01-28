@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.118 $ $Author: nmeier $ $Date: 2007-01-26 02:22:00 $
+ * $Revision: 1.119 $ $Author: nmeier $ $Date: 2007-01-28 08:12:50 $
  */
 package genj.gedcom;
 
@@ -453,7 +453,8 @@ public class Gedcom implements Comparable {
    */
   protected void propagatePropertyAdded(Entity entity, final Property container, final int pos, Property added) {
     
-    LOG.finer("Property "+added.getTag()+" added to "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Property "+added.getTag()+" added to "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
     
     // no lock? we're done
     if (lock==null) 
@@ -484,7 +485,8 @@ public class Gedcom implements Comparable {
    */
   protected void propagatePropertyDeleted(Entity entity, final Property container, final int pos, final Property deleted) {
     
-    LOG.finer("Property "+deleted.getTag()+" deleted from "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Property "+deleted.getTag()+" deleted from "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
     
     // no lock? we're done
     if (lock==null) 
@@ -515,7 +517,8 @@ public class Gedcom implements Comparable {
    */
   protected void propagatePropertyChanged(Entity entity, final Property property, final String oldValue) {
     
-    LOG.finer("Property "+property.getTag()+" changed in (entity "+entity.getId()+")");
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Property "+property.getTag()+" changed in (entity "+entity.getId()+")");
     
     // no lock? we're done
     if (lock==null) 
@@ -600,7 +603,8 @@ public class Gedcom implements Comparable {
     maxIDLength = Math.max(id.length(), maxIDLength);
     
     // log it
-    LOG.finer("Entity's ID changed from  "+old+" to "+entity.getId());
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Entity's ID changed from  "+old+" to "+entity.getId());
     
     // no lock? we're done
     if (lock==null) 
