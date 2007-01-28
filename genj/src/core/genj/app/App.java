@@ -72,7 +72,11 @@ public class App {
       Logger root = Logger.getLogger("");
       
       try {
-        root.setLevel(Level.parse(System.getProperty("genj.debug.level")));
+        // allow command line override of debug level - set non-genj level a tad higher
+        Level level = Level.parse(System.getProperty("genj.debug.level"));
+        LOG.setLevel(level);
+        if (Integer.MAX_VALUE!=level.intValue())
+          root.setLevel(new Level("genj.debug.level+1", level.intValue()+1) {} );
       } catch (Throwable t) {
       }
       
