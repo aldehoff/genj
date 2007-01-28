@@ -180,6 +180,10 @@ public class GedcomWriter implements Trackable {
    */
   public void write() throws GedcomIOException {
 
+    // check state - we pass gedcom only once!
+    if (gedcom==null)
+      throw new IllegalStateException("can't call write() twice");
+    
     Collection ents = gedcom.getEntities(); 
     total = ents.size();
 
@@ -194,13 +198,12 @@ public class GedcomWriter implements Trackable {
       // Close Output
       out.close();
 
-    } 
-    catch( GedcomIOException ioe )
-    {
-        throw ioe;
-    }
-    catch (Exception ex) {
+    } catch( GedcomIOException ioe ) {
+      throw ioe;
+    } catch (Exception ex) {
       throw new GedcomIOException("Error while writing / "+ex.getMessage(), line);
+    } finally {
+      gedcom = null;
     }
 
     // Done

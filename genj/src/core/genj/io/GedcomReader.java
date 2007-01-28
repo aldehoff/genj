@@ -202,6 +202,10 @@ public class GedcomReader implements Trackable {
    */
   public Gedcom read() throws GedcomIOException, GedcomFormatException {
     
+    // check state - we pass gedcom only once!
+    if (gedcom==null)
+      throw new IllegalStateException("can't call read() twice");
+    
     // Remember working thread
     synchronized (lock) {
       worker=Thread.currentThread();
@@ -224,6 +228,9 @@ public class GedcomReader implements Trackable {
       synchronized (lock) {
         worker=null;
       }
+      // allow gc to collect gedcom
+      gedcom  = null;
+      lazyLinks.clear();
     }
 
     // nothing happening here
