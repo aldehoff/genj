@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.120 $ $Author: nmeier $ $Date: 2007-01-27 04:37:18 $
+ * $Revision: 1.121 $ $Author: nmeier $ $Date: 2007-01-28 08:31:20 $
  */
 package genj.report;
 
@@ -29,6 +29,8 @@ import genj.fo.Format;
 import genj.fo.FormatOptionsWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
+import genj.gedcom.time.PointInTime;
 import genj.io.FileAssociation;
 import genj.option.Option;
 import genj.option.OptionsWidget;
@@ -883,7 +885,7 @@ public abstract class Report implements Cloneable {
     return translate("version");
   }
   
-  private final static Pattern PATTERN_CVS_DATE  = Pattern.compile("\\$"+"Date: (\\d\\d\\d\\d/\\d\\d/\\d\\d \\d\\d:\\d\\d:\\d\\d) *\\$"); // don't user [dollar]Date to avoid keywords substitution here :)
+  private final static Pattern PATTERN_CVS_DATE  = Pattern.compile("\\$"+"Date: (\\d\\d\\d\\d)/(\\d\\d)/(\\d\\d)( \\d\\d:\\d\\d:\\d\\d) *\\$"); // don't user [dollar]Date to avoid keywords substitution here :)
   
   /**
    * Returns the last update tag  - this by default is the value of key "date"
@@ -896,8 +898,11 @@ public abstract class Report implements Cloneable {
       return null;
     // look for cvs date - grab date and time
     Matcher cvsdata = PATTERN_CVS_DATE.matcher(result);
-    if (cvsdata.matches())
-      result = cvsdata.group(1);
+    if (cvsdata.matches()) try {
+      // we've got a "yyyy/mm/dd hh:mm:ss"
+      result = new PointInTime(cvsdata.group(1)+cvsdata.group(2)+cvsdata.group(3)) + cvsdata.group(4);
+    } catch (GedcomException e) {
+    }
     // done - either whatever was found or beautified cvs keyword value
     return result;
   }
