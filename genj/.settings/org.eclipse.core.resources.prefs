@@ -1,4 +1,4 @@
-#Fri Jan 26 20:42:47 EST 2007
+#Sun Jan 28 20:57:51 EST 2007
 eclipse.preferences.version=1
 encoding//language/cs/genj/almanac/resources_cs.properties=UTF-8
 encoding//language/cs/genj/app/resources_cs.properties=UTF-8
@@ -234,6 +234,7 @@ encoding//src/report/ReportMultDesc.properties=UTF-8
 encoding//src/report/ReportNameHistory.properties=UTF-8
 encoding//src/report/ReportPhonetics.properties=UTF-8
 encoding//src/report/ReportPlaceHistory.properties=UTF-8
+encoding//src/report/ReportRecompile.java=UTF-8
 encoding//src/report/ReportRelatives.properties=UTF-8
 encoding//src/report/ReportSameValues.properties=UTF-8
 encoding//src/report/ReportSosa.properties=UTF-8

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.121 $ $Author: nmeier $ $Date: 2007-01-28 08:31:20 $
+ * $Revision: 1.122 $ $Author: nmeier $ $Date: 2007-01-29 02:03:34 $
  */
 package genj.report;
 
@@ -126,7 +126,7 @@ public abstract class Report implements Cloneable {
   private Resources resources;
 
   /** out */
-  private PrintWriter out;
+  protected PrintWriter out;
 
   /** a view manager */
   private ViewManager viewManager;
