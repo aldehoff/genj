@@ -50,7 +50,13 @@ public class ReportRecompile extends Report {
     }
     
     // do the compile
-    int rc =Main.compile((String[])args.toArray(new String[args.size()]), out);
+    int rc;
+    try {
+      rc =Main.compile((String[])args.toArray(new String[args.size()]), out);
+    } catch (NoClassDefFoundError e) {
+      println(translate("javac.jre", System.getProperty("java.home")));
+      return;
+    }
     
     // done
     if (rc==0)
@@ -88,13 +94,19 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-01-29 04:51:54 $
+updated              = $Date: 2007-01-29 05:39:06 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 
 
-info = This report recompiles all reports in ./report. After restart of GenJ or by pressing the reload button in ReportView they are reloaded into GenJ.
-info.de = Dieser Report kompiliert alle Reports in ./report. Nach Neustart von GenJ oder einem Klick auf den Schalter fuer 'Neu Einladen' in ReportView werden sie neu eingeladen.
+info = This report recompiles all reports in GenJ's report directory (./report). After a restart of GenJ 
+ or by pressing the reload button in ReportView recompiled reports can be reloaded into GenJ.\n\n
+ For the compilation to succeed GenJ needs to be run inside a JDK's Java Virtual Machine, not in 
+ a JRE's Java Virtual Machine.
+ 
+info.de = Dieser Report kompiliert alle Reports im GenJ Reportverzeichnis (./report). Nach Neustart von 
+ GenJ oder einem Klick auf den Schalter 'Neu Einladen' in ReportView können kompilierte Reports neu eingeladen werden.\n\n
+ Die Kompilierung funktioniert nur, wenn GenJ in einer JDK Java Virtual Machine, nicht in einer JRE JVM, läuft.
 
 nosources = No sources in {0}
 nosources.de = Keine Quelldateien in {0}
@@ -104,5 +116,8 @@ javac.success.de = {0} Quelldateien (*.java) kompiliert nach {1} - zum Aktiviere
 
 javac.error = Compilation failed - check compiler output above
 javac.error.de = Kompilierung fehlgeschlagen - bitte Fehlermeldung(en) oben konsultieren
+
+javac.jre = Reports can't be recompiled - make sure GenJ is run inside a JDK's Java Virtual Machine (java.home={0}) 
+javac.jre.de = Reports können nicht kompiliert werden - GenJ muß in einer JDK Java Virtual Machine ablaufen (java.home={0}) 
 
 *********************************************************************************************************************/
