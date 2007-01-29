@@ -73,13 +73,16 @@ public class Run {
       Manifest mf = getManifest();
       
       // prepare classpath
-      URL[] classpath = getClasspath(mf);
+      String[] classpath = getClasspath(mf);
+      
+      // tell everyone about it
+      setClasspath(classpath);
       
       // prepare classloader
-      ClassLoader cl  = new URLClassLoader(classpath);
-      Thread.currentThread().setContextClassLoader(cl);
+      ClassLoader cl  = getClassLoader(classpath);
 
       // instantiate class and run main
+      Thread.currentThread().setContextClassLoader(cl);
       Class clazz = cl.loadClass(getClass(mf));
       Method method = clazz.getMethod("main", new Class[]{String[].class});
       method.invoke(null, new Object[]{args});
@@ -153,19 +156,46 @@ public class Run {
   }  
   
   /**
+   * create classloader
+   */
+  private static ClassLoader getClassLoader(String[] classpath) throws MalformedURLException {
+    
+    URL[] urls = new URL[classpath.length];
+    for (int i = 0; i < urls.length; i++) {
+      urls[i] = new File(classpath[i]).toURL();
+    }
+    
+    return new URLClassLoader(urls);
+  }
+  
+  /**
+   * Set java.class.path
+   */
+  private static void setClasspath(String[] classpath) {
+    
+    String separator = System.getProperty("path.separator");
+    
+    StringBuffer value = new StringBuffer();
+    for (int i = 0; i < classpath.length; i++) {
+      if (i>0) value.append(separator);
+      value.append(classpath[i]);
+    }
+    
+    System.setProperty("java.class.path", value.toString());
+  }
+  
+  /**
    * Assemble classpath from manifest file information (optional)
    */
-  private static URL[] getClasspath(Manifest mf) throws MalformedURLException {
+  private static String[] getClasspath(Manifest mf) throws MalformedURLException {
 
-    String classpath = mf.getMainAttributes().getValue(CLASSPATH);
-    if (classpath==null)
-      classpath = "";
+    String classpath = expandSystemProperties(mf.getMainAttributes().getValue(CLASSPATH));
+    List result = new ArrayList();
     
     // collect a list of classloader URLs
     StringTokenizer tokens = new StringTokenizer(classpath, ",", false);
-    List result = new ArrayList();
     while (tokens.hasMoreTokens()) {
-      String token = expandSystemProperties(tokens.nextToken().trim());
+      String token = tokens.nextToken().trim();
       File file = new File(token).getAbsoluteFile();
       if (!file.exists()) 
         continue;
@@ -174,14 +204,14 @@ public class Run {
     }
 
     // done
-    return (URL[])result.toArray(new URL[result.size()]);
+    return (String[])result.toArray(new String[result.size()]);
   }
   
   private static void buildClasspath(File file, List result) throws MalformedURLException {
     
     // a simple file?
     if (!file.isDirectory() && file.getName().endsWith(".jar")) {
-      result.add(file.toURL());
+      result.add(file.getAbsolutePath());
       return;
     }
     
