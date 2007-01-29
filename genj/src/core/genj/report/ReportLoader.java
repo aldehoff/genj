@@ -35,7 +35,7 @@ import java.util.logging.Level;
 /**
  * ClassLoad for Reports
  */
-/*package*/ class ReportLoader {
+public class ReportLoader {
 
   /** reports we have */
   private List instances = new ArrayList(10);
@@ -79,19 +79,25 @@ import java.util.logging.Level;
   }
   
   /**
-   * Constructor
+   * dir resolver
    */
-  private ReportLoader() {
-
+  public static File getReportDirectory() {
+    
     // where are the reports 
-    String dir = EnvironmentChecker.getProperty(
+    return new File(EnvironmentChecker.getProperty(
       ReportLoader.class,
       new String[]{ "genj.report.dir", "user.dir/report"},
       "./report",
       "find report class-files"
-    );
-    File base = new File(dir);
-    
+    ));
+  }
+  
+  /**
+   * Constructor
+   */
+  private ReportLoader() {
+
+    File base = getReportDirectory();
     ReportView.LOG.info("Reading reports from "+base);
       
     // parse report directory

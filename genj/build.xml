@@ -312,7 +312,7 @@
        <fileset dir="./build/classes/run" includes="**"/>
        <manifest>
          <attribute name="Main-Class" value="Run"/>
-      	 <attribute name="Run-Classpath" value="./lib, ./contrib"/>
+      	 <attribute name="Run-Classpath" value="./lib, ./contrib, $${java.home}/lib/tools.jar, $${java.home}/../lib/tools.jar"/>
        	 <attribute name="Run-Class" value="genj.app.App"/>
        </manifest>
      </jar>
@@ -327,7 +327,7 @@
        <zipfileset dir="." includes="lib/graphj.jar"/>
        
        <!-- stuff for reports (classes, sources, scripts)-->
-       <zipfileset dir="./build/classes" includes="report/**/*.class"/>
+       <zipfileset dir="./build/classes" includes="report/**/*.class" excludes="report/_*/**"/>
       <zipfileset dir="./src" includes="report/**"/>
        
        <!-- sample gedcom file -->

@@ -6,6 +6,7 @@
  */
 import genj.gedcom.Gedcom;
 import genj.report.Report;
+import genj.report.ReportLoader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,18 +19,17 @@ import com.sun.tools.javac.Main;
  */
 public class ReportRecompile extends Report {
 
-  private final static String REPORTS = "./report";
-  
   private final static String[] OPTIONS = {
       "-g", 
       "-nowarn",
       "-source", "1.4", 
       "-target", "1.4",
       "-encoding", "utf8",
-      "-d", REPORTS
   };
-
   
+  /**
+   * main entry to the reports
+   */
   public void start(Gedcom gedcom) {
     
     // prepare args
@@ -37,11 +37,15 @@ public class ReportRecompile extends Report {
     
     for (int i = 0; i < OPTIONS.length; i++) 
       args.add(OPTIONS[i]);
+
+    File reports = ReportLoader.getReportDirectory();
+    args.add("-d");
+    args.add(reports.getAbsolutePath());
     
     // collect all .java files
-    int sources = findSources(new File(REPORTS), args);
+    int sources = findSources(reports, args);
     if (sources==0) {
-      println(translate("nosources", REPORTS));
+      println(translate("nosources", reports));
       return;
     }
     
@@ -50,7 +54,7 @@ public class ReportRecompile extends Report {
     
     // done
     if (rc==0)
-      println(translate("javac.success", new String[]{ Integer.toString(sources), REPORTS}));
+      println(translate("javac.success", new Object[]{ ""+sources, reports}));
     else {
       println("---");
       println(translate("javac.error"));
@@ -68,9 +72,9 @@ public class ReportRecompile extends Report {
     int found = 0;
     for (int i = 0; i < files.length; i++) {
       File file = files[i];
-      if (file.isDirectory())
+      if (file.isDirectory()) {
         found += findSources(file, args);
-      else if (file.getName().endsWith(".java")) {
+      } else if (file.getName().endsWith(".java")) {
         args.add(file.toString());
         found++;
       }
@@ -84,7 +88,7 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-01-29 02:03:33 $
+updated              = $Date: 2007-01-29 04:51:54 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 
