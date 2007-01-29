@@ -9,10 +9,9 @@ import genj.report.Report;
 import genj.report.ReportLoader;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.sun.tools.javac.Main;
 
 /**
  * GenJ - ReportRecompile - recompile all reports
@@ -50,16 +49,18 @@ public class ReportRecompile extends Report {
     }
     
     // do the compile
-    int rc;
+    Object rc = null;
     try {
-      rc =Main.compile((String[])args.toArray(new String[args.size()]), out);
-    } catch (NoClassDefFoundError e) {
+      Object javac = Class.forName("com.sun.tools.javac.Main").newInstance();
+      rc = javac.getClass().getMethod("compile", new Class[]{ new String[0].getClass(), PrintWriter.class } )
+            .invoke(javac, new Object[]{ args.toArray(new String[args.size()]), out });
+    } catch (Exception e) {
       println(translate("javac.jre", System.getProperty("java.home")));
       return;
     }
     
     // done
-    if (rc==0)
+    if (new Integer(0).equals(rc))
       println(translate("javac.success", new Object[]{ ""+sources, reports}));
     else {
       println("---");
@@ -94,7 +95,7 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-01-29 08:35:33 $
+updated              = $Date: 2007-01-29 15:58:54 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 
@@ -130,23 +131,23 @@ info.fr =  <h1><center>Outils de Compilation des Rapports</center></h1><br>
  </div>
  <br>
 
-nosources    = No sources in {0}
+nosources = No sources in {0}
 nosources.de = Keine Quelldateien in {0}
 nosources.fr = Il n'y a pas de fichier Source dans {0}
 
-javac.success    = {0} Sources (*.java) compiled into {1} - to activate press 'Reload report classes'
+javac.success = {0} Sources (*.java) compiled into {1} - to activate press 'Reload report classes'
 javac.success.de = {0} Quelldateien (*.java) kompiliert nach {1} - zum Aktivieren 'Neu Einladen' klicken 
 javac.success.fr = {0} Les Sources (*.java) ont été compilées dans 
  le répertoire {1} - Pour que cette compilation soit prise en 
  considération, veuillez cliquer sur le bouton 'Recharger les Scripts de 
  lancement des Rapports' (en bas de la fenêtre, le 4ème à partir de la gauche)
 
-javac.error    = Compilation failed - check compiler output above
+javac.error = Compilation failed - check compiler output above
 javac.error.de = Kompilierung fehlgeschlagen - bitte Fehlermeldung(en) oben konsultieren
 javac.error.fr = La compilation a échouée - Vérifiez les messages de 
  sortie du compilateur ci-dessus.
 
-javac.jre    = Reports can't be recompiled - make sure GenJ is run inside a JDK's Java Virtual Machine (java.home={0}) 
+javac.jre = Reports can't be recompiled - make sure GenJ is run inside a JDK's Java Virtual Machine (java.home={0}) 
 javac.jre.de = Reports können nicht kompiliert werden - GenJ muß in einer JDK Java Virtual Machine ablaufen (java.home={0}) 
 javac.jre.fr = \nLes Rapports n'ont pas pu etre compilés.\n
  Assurez-vous que GenJ est lancé par l'intermédiaire de la machine 
