@@ -21,8 +21,6 @@ public class ReportRecompile extends Report {
   private final static String[] OPTIONS = {
       "-g", 
       "-nowarn",
-      "-source", "1.4", 
-      "-target", "1.4",
       "-encoding", "utf8",
   };
   
@@ -95,7 +93,7 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-01-29 15:58:54 $
+updated              = $Date: 2007-01-29 16:59:23 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 
