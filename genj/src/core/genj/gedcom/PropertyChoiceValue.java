@@ -38,6 +38,8 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     if (isTransient||gedcom==null)
       return false;
     ReferenceSet refSet = gedcom.getReferenceSet(getTag());
+    // intern newValue - we expect the remembered values to be shared so we share the string instances for an upfront cost
+    newValue = newValue.intern();
     // check for secret values
     if (Enigma.isEncrypted(oldValue)) oldValue = "";
     if (Enigma.isEncrypted(newValue)) newValue = ""; 
