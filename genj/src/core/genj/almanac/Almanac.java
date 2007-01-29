@@ -21,6 +21,7 @@ package genj.almanac;
 
 import genj.gedcom.GedcomException;
 import genj.gedcom.time.PointInTime;
+import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 
 import java.io.BufferedReader;
@@ -284,7 +285,11 @@ public class Almanac {
     }
     /** look into ./contrib/almanac */
     protected File getDirectory() {
-      return new File("./contrib/almanac");
+      return new File(EnvironmentChecker.getProperty(this,
+          new String[]{ "genj.almanac.dir", "user.dir/contrib/almanac"},
+          "contrib/almanac",
+          "find almanac files"
+        ));
     }
     /**
      * get buffered reader from file
@@ -383,8 +388,6 @@ public class Almanac {
     // 19700525\Births\Nils Meier
     private Pattern REGEX_LINE = Pattern.compile("(.*?)\\\\(.*?)\\\\(.*)");
     
-    private String DIR = "./contrib/wikipedia";
-    
     private String SUFFIX = ".wikipedia.zip";
     
     private String file;
@@ -393,7 +396,10 @@ public class Almanac {
     protected File getDirectory() {
       
       // we know were those are
-      File result = new File(DIR);
+      File result = new File(EnvironmentChecker.getProperty(this,
+          new String[]{ "genj.wikipedia.dir", "user.dir/contrib/wikipedia"}, "contrib/wikipedia",
+          "find wikipedia files"
+        ));
       
       // look for applicable one (language)
       String lang = Locale.getDefault().getLanguage();

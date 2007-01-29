@@ -312,7 +312,7 @@
        <fileset dir="./build/classes/run" includes="**"/>
        <manifest>
          <attribute name="Main-Class" value="Run"/>
-      	 <attribute name="Run-Classpath" value="./lib, ./contrib, $${java.home}/lib/tools.jar, $${java.home}/../lib/tools.jar"/>
+      	 <attribute name="Run-Classpath" value="lib, contrib, $${java.home}/lib/tools.jar, $${java.home}/../lib/tools.jar"/>
        	 <attribute name="Run-Class" value="genj.app.App"/>
        </manifest>
      </jar>
