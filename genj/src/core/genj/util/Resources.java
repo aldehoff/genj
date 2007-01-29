@@ -143,6 +143,15 @@ public class Resources {
     load(in, keys, key2string);
   }
   
+  private static String trimLeft(String s) {
+    int pos = 0;
+    for (int len=s.length(); pos<len; pos++) {
+      if (!Character.isWhitespace(s.charAt(pos)))
+        break;
+    }
+    return pos==0 ? s : s.substring(pos);
+  }
+  
   /**
    * Loads key/value pairs from inputstream with unicode content
    */
@@ -160,7 +169,7 @@ public class Resources {
         String line = lines.readLine();
         if (line==null) 
           break;
-        String trimmed = line.trim();
+        String trimmed = trimLeft(line);
         if (trimmed.length()==0)
           continue;
         // .. continuation as follows:
@@ -193,7 +202,7 @@ public class Resources {
         key = trimmed.substring(0, i).trim();
         if (key.indexOf(' ')>0)
           continue;
-        val = trimmed.substring(i+1).trim();
+        val = trimLeft(trimmed.substring(i+1));
         keys.add(key);
         
         // remember (we keep lowercase keys in map)
