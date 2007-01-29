@@ -519,11 +519,6 @@ public class ReportView extends JPanel implements ToolBarSupport {
     }
     protected void execute() {
       
-      if (true) {
-        taOutput.getText();
-        return;
-      }
-
       // .. choose file
       JFileChooser chooser = new JFileChooser(".");
       chooser.setDialogTitle("Save Output");
