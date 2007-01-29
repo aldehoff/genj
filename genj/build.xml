@@ -328,7 +328,7 @@
        
        <!-- stuff for reports (classes, sources, scripts)-->
        <zipfileset dir="./build/classes" includes="report/**/*.class" excludes="report/_*/**"/>
-      <zipfileset dir="./src" includes="report/**"/>
+       <zipfileset dir="./src" includes="report/**" excludes="report/_*/**"/>
        
        <!-- sample gedcom file -->
        <zipfileset dir="." includes="gedcom/**"/>
