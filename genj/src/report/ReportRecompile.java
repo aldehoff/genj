@@ -94,10 +94,11 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-01-29 05:39:06 $
+updated              = $Date: 2007-01-29 08:35:33 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 
+name.fr              = Compilation des Rapports
 
 info = This report recompiles all reports in GenJ's report directory (./report). After a restart of GenJ 
  or by pressing the reload button in ReportView recompiled reports can be reloaded into GenJ.\n\n
@@ -108,16 +109,47 @@ info.de = Dieser Report kompiliert alle Reports im GenJ Reportverzeichnis (./rep
  GenJ oder einem Klick auf den Schalter 'Neu Einladen' in ReportView können kompilierte Reports neu eingeladen werden.\n\n
  Die Kompilierung funktioniert nur, wenn GenJ in einer JDK Java Virtual Machine, nicht in einer JRE JVM, läuft.
 
-nosources = No sources in {0}
+info.fr =  <h1><center>Outils de Compilation des Rapports</center></h1><br>
+ <div style="margin-left: 5px; text-align:justify; 
+ margin-right: 10px; font-style: normal; color: #000000">
+ Ce rapport vous sert à recompiler tous les rapports qui se trouvent 
+ dans le répertoire des rapports de GenJ (./report).<br>
+ Aprés un redémarrage de GenJ ou aprés avoir cliqué sur le bouton de 
+ rechargement des Scripts, tous les rapports nouvellement compilés 
+ pourront être utilisés par GenJ.<br>
+ <br>
+ Pour que cela fonctionne, il vous faut cependant que GenJ tourne 
+ à l'intérieur du Machine Virtuelle Java JDK, et non une Machine 
+ Virtuelle Java JRE. Pour faire simple, il faut que le programme 
+ Java que vous avez téléchargé sur le site de Sun commence par "jdk", 
+ et non par "jre". C'est tout.<br>
+ <br>
+ Vous pouvez trouver tout ce qu'il vous faut ici, sauf si le lien 
+ a changé&nbsp;:<br>
+ <a href="http://java.sun.com/javase/downloads/index.jsp" target="_blank">Site de Sun</a>.
+ </div>
+ <br>
+
+nosources    = No sources in {0}
 nosources.de = Keine Quelldateien in {0}
+nosources.fr = Il n'y a pas de fichier Source dans {0}
 
-javac.success = {0} Sources (*.java) compiled into {1} - to activate press 'Reload report classes'
+javac.success    = {0} Sources (*.java) compiled into {1} - to activate press 'Reload report classes'
 javac.success.de = {0} Quelldateien (*.java) kompiliert nach {1} - zum Aktivieren 'Neu Einladen' klicken 
+javac.success.fr = {0} Les Sources (*.java) ont été compilées dans 
+ le répertoire {1} - Pour que cette compilation soit prise en 
+ considération, veuillez cliquer sur le bouton 'Recharger les Scripts de 
+ lancement des Rapports' (en bas de la fenêtre, le 4ème à partir de la gauche)
 
-javac.error = Compilation failed - check compiler output above
+javac.error    = Compilation failed - check compiler output above
 javac.error.de = Kompilierung fehlgeschlagen - bitte Fehlermeldung(en) oben konsultieren
+javac.error.fr = La compilation a échouée - Vérifiez les messages de 
+ sortie du compilateur ci-dessus.
 
-javac.jre = Reports can't be recompiled - make sure GenJ is run inside a JDK's Java Virtual Machine (java.home={0}) 
+javac.jre    = Reports can't be recompiled - make sure GenJ is run inside a JDK's Java Virtual Machine (java.home={0}) 
 javac.jre.de = Reports können nicht kompiliert werden - GenJ muß in einer JDK Java Virtual Machine ablaufen (java.home={0}) 
+javac.jre.fr = \nLes Rapports n'ont pas pu etre compilés.\n
+ Assurez-vous que GenJ est lancé par l'intermédiaire de la machine 
+ virtuelle Java JDK (JDK et non JRE).\n\n     Pour information : (java.home={0}) 
 
 *********************************************************************************************************************/
