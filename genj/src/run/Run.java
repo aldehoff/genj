@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A program starter that reads a classpath and runnable type from manifest-file. The
@@ -59,8 +59,6 @@ public class Run {
     CLASSPATH = "Run-Classpath",
     MAIN_CLASS = "Run-Class";
   
-  private static Logger logger = Logger.getLogger(Run.class.getName());
-
   /**
    * Startup runnable with dynamically constructed classpath
    */
@@ -118,13 +116,14 @@ public class Run {
       System.setProperty("user.dir", jarDir.getAbsolutePath());
 
       // done
-      logger.log(Level.FINE, "cd'd into "+jarDir+" with jar containing "+clazz);
       return true;
       
     } catch (Exception ex) {
 
       // didn't work
-      logger.log(Level.WARNING, "Couldn't cd into directory with jar containing "+clazz, ex);
+      System.err.println("Couldn't cd into directory with jar containing "+clazz);
+      ex.printStackTrace(System.err);
+      
       return false;
     }
 
@@ -166,12 +165,10 @@ public class Run {
     StringTokenizer tokens = new StringTokenizer(classpath, ",", false);
     List result = new ArrayList();
     while (tokens.hasMoreTokens()) {
-      String token = tokens.nextToken().trim();
+      String token = expandSystemProperties(tokens.nextToken().trim());
       File file = new File(token).getAbsoluteFile();
-      if (!file.exists()) {
-        logger.log(Level.WARNING, CLASSPATH+" contains "+token+" but file/directory "+file.getAbsolutePath()+" doesn't exist");
+      if (!file.exists()) 
         continue;
-      }
       buildClasspath(file, result);
       // next token
     }
@@ -223,6 +220,31 @@ public class Run {
       
     // not found
     throw new Error("No "+MANIFEST+" with "+MAIN_CLASS+" found");
+  }
+
+  /**
+   * A helper for resolving system properties in form of ${key} in a string. The pattern
+   * we're looking for is ${[.\w]*}
+   */
+  private static final Pattern PATTERN_KEY = Pattern.compile("\\$\\{[\\.\\w]*\\}");
+  private static String expandSystemProperties(String string) {
+
+    StringBuffer result = new StringBuffer();
+    Matcher m = PATTERN_KEY.matcher(string);
+
+    int pos = 0;
+    while (m.find()) {
+      String prefix = string.substring(pos, m.start());
+      String key = string.substring(m.start()+2, m.end()-1);
+      
+      result.append(prefix);
+      result.append(System.getProperty(key));
+      
+      pos = m.end();
+    }
+    result.append(string.substring(pos));
+
+    return result.toString();
   }
 
 } //Run
