@@ -93,7 +93,7 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-01-29 16:59:23 $
+updated              = $Date: 2007-01-29 17:20:36 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 
@@ -135,10 +135,12 @@ nosources.fr = Il n'y a pas de fichier Source dans {0}
 
 javac.success = {0} Sources (*.java) compiled into {1} - to activate press 'Reload report classes'
 javac.success.de = {0} Quelldateien (*.java) kompiliert nach {1} - zum Aktivieren 'Neu Einladen' klicken 
-javac.success.fr = {0} Les Sources (*.java) ont été compilées dans 
- le répertoire {1} - Pour que cette compilation soit prise en 
- considération, veuillez cliquer sur le bouton 'Recharger les Scripts de 
- lancement des Rapports' (en bas de la fenêtre, le 4ème à partir de la gauche)
+javac.success.fr = \n\n{0} Fichiers Sources (*.java) ont été compilées 
+ dans le répertoire :\n     {1}\n\n
+ ATTENTION : Pour que cette compilation soit prise en considération,\n
+             Veuillez cliquer sur le bouton :\n
+             'Recharger les scripts de lancement des Rapports' \n
+             (en bas de la fenêtre, le 4ème à partir de la gauche).
 
 javac.error = Compilation failed - check compiler output above
 javac.error.de = Kompilierung fehlgeschlagen - bitte Fehlermeldung(en) oben konsultieren
