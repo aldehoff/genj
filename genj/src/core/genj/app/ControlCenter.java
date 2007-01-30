@@ -869,6 +869,12 @@ public class ControlCenter extends JPanel {
       for (Iterator it = files.iterator(); it.hasNext(); ) {
         String restore = it.next().toString();
         try {
+          
+          // check if it's a local file
+          File local  = new File(restore);
+          if (local.exists())
+            restore = local.toURL().toString();
+          
           ActionOpen open = new ActionOpen(restore);
           open.trigger();
         } catch (Throwable t) {
