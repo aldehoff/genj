@@ -191,8 +191,8 @@ public class Resources {
           }
         } 
           
-        // .. java instruction or java/resources comment?
-        if (trimmed.startsWith("/*")||trimmed.startsWith("//")||trimmed.endsWith("*/")||trimmed.startsWith("#")||trimmed.endsWith(";"))
+        // has to start with non-space
+        if (!Character.isLetter(line.charAt(0)))
           continue;
         
         // break down key and value
