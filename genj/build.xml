@@ -46,11 +46,11 @@
   </target>
 
   <!--
-   Run Compilation
+   Launcher Compilation
    -->
-  <target name="compile.run" depends="init">
-    <mkdir dir="./build/classes/run"/>
-    <javac srcdir="src/run" destdir="./build/classes/run"
+  <target name="compile.launcher" depends="init">
+    <mkdir dir="./build/classes/launcher"/>
+    <javac srcdir="src/launcher" destdir="./build/classes/launcher"
       debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
     </javac>
   </target>
@@ -102,7 +102,7 @@
   <!--
    Compilation
    -->
-  <target name="compile" depends="compile.contrib, compile.core, compile.report, compile.run">
+  <target name="compile" depends="compile.contrib, compile.core, compile.report, compile.launcher">
   </target>
 
   <!--
@@ -309,11 +309,12 @@
      <!-- create run.jar -->
      <delete file="./build/lib/run.jar"/>
      <jar jarfile="./build/lib/run.jar" update="True">
-       <fileset dir="./build/classes/run" includes="**"/>
+       <fileset dir="./build/classes/launcher" includes="**"/>
        <manifest>
-         <attribute name="Main-Class" value="Run"/>
-      	 <attribute name="Run-Classpath" value="lib, contrib, $${java.home}/lib/tools.jar, $${java.home}/../lib/tools.jar"/>
-       	 <attribute name="Run-Class" value="genj.app.App"/>
+         <attribute name="Main-Class" value="launcher.Launcher"/>
+      	 <attribute name="Launch-Classpath" value="lib, contrib, $${java.home}/lib/tools.jar, $${java.home}/../lib/tools.jar"/>
+       	 <attribute name="Launch-Class" value="genj.app.App"/>
+     <!-- 	 <attribute name="Launch-Port" value="2505"/> -->
        </manifest>
      </jar>
      

@@ -36,6 +36,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -59,6 +60,12 @@ public class App {
    * GenJ Main Method
    */
   public static void main(java.lang.String[] args) {
+    
+    // we're ready to be run twice
+    if (LOG!=null) {
+      LOG.info("GenJ.main() being called a second time with arguments "+Arrays.asList(args));
+      return;
+    }
 
     // Catch anything that might happen
     try {

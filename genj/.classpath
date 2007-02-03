@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry output="build/eclipse/core" kind="src" path="src/core"/>
-	<classpathentry output="build/eclipse/run" kind="src" path="src/run"/>
-	<classpathentry output="build/eclipse/report" kind="src" path="src/report"/>
-	<classpathentry output="build/eclipse/contrib" kind="src" path="src/contrib"/>
-	<classpathentry output="build/eclipse/tst" kind="src" path="src/tst"/>
+	<classpathentry kind="src" output="build/eclipse/core" path="src/core"/>
+	<classpathentry kind="src" output="build/eclipse/run" path="src/launcher"/>
+	<classpathentry kind="src" output="build/eclipse/report" path="src/report"/>
+	<classpathentry kind="src" output="build/eclipse/contrib" path="src/contrib"/>
+	<classpathentry kind="src" output="build/eclipse/tst" path="src/tst"/>
 	<classpathentry exported="true" kind="lib" path="images"/>
 	<classpathentry exported="true" kind="lib" path="lib/jhbasic.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/graphj.jar"/>
