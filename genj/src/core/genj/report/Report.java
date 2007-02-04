@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.123 $ $Author: pewu $ $Date: 2007-02-04 12:41:05 $
+ * $Revision: 1.124 $ $Author: pewu $ $Date: 2007-02-04 13:33:37 $
  */
 package genj.report;
 
@@ -71,7 +71,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileFilter;
 
 
 /**
@@ -362,7 +362,7 @@ public abstract class Report implements Cloneable {
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setDialogTitle(title);
     if (extension != null)
-    	chooser.setFileFilter(new FileNameExtensionFilter(extension.toUpperCase() + " files", extension));
+    	chooser.setFileFilter(new FileExtensionFilter(extension));
 
     int rc = chooser.showDialog(owner,button);
 
@@ -1032,4 +1032,32 @@ public abstract class Report implements Cloneable {
             put(category.getName(), category);
         }
     }
+
+    /**
+     * Filters files using a specified extension.
+     */
+    private class FileExtensionFilter extends FileFilter {
+
+    	private String extension;
+
+        public FileExtensionFilter(String extension) {
+            this.extension = extension.toLowerCase();
+        }
+
+        /**
+         * Returns true if file name has the right extension.
+         */
+        public boolean accept(File f) {
+        	if (f == null)
+        		return false;
+            if (f.isDirectory())
+                return true;
+            return f.getName().toLowerCase().endsWith("." + extension);
+        }
+
+        public String getDescription() {
+            return extension.toUpperCase() + " files";
+        }
+    }
+
 } //Report
