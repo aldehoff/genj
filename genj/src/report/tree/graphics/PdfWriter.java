@@ -34,4 +34,8 @@ public class PdfWriter implements GraphicsWriter
         renderer.render(pdfGraphics);
         pdfGraphics.finish();
 	}
+
+	public String getFileExtension() {
+		return "pdf";
+	}
 }

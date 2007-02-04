@@ -27,4 +27,10 @@ public interface GraphicsWriter {
      */
     public void write(OutputStream out, GraphicsRenderer renderer)
         throws IOException;
+    
+    /**
+     * Returns the file extension for this file type.
+     * @return File extension without leading dot
+     */
+    public String getFileExtension();
 }

@@ -44,4 +44,8 @@ public class SvgWriter implements GraphicsWriter
         Writer writer = new OutputStreamWriter(out, "UTF-8");
         svgGraphics.stream(writer, false);
 	}
+
+	public String getFileExtension() {
+		return "svg";
+	}
 }
