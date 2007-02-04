@@ -9,9 +9,10 @@ The people behind GenJ (alphabetically):
 
     Reports:
       . Daniel Andre
-      . Jan C.Hardenbergh
+      . Jan C. Hardenbergh
       . Thierry Hardy
       . Jerome Hettich
+      . Frederic Lapeyre
       . Daniel P. Kionka
       . Przemek Wiech
       
