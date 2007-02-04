@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.122 $ $Author: nmeier $ $Date: 2007-01-29 02:03:34 $
+ * $Revision: 1.123 $ $Author: pewu $ $Date: 2007-02-04 12:41:05 $
  */
 package genj.report;
 
@@ -71,6 +71,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 /**
@@ -340,6 +341,18 @@ public abstract class Report implements Cloneable {
    * An implementation of Report can ask the user for a file with this method.
    */
   public File getFileFromUser(String title, String button, boolean askForOverwrite) {
+	  return getFileFromUser(title, button, askForOverwrite, null);
+  }
+
+  /**
+   * An implementation of Report can ask the user for a file with this method.
+   *
+   * @param title  file dialog title
+   * @param button  file dialog OK button text
+   * @param askForOverwrite  whether to confirm overwriting files
+   * @param extension  extension of files to display
+   */
+  public File getFileFromUser(String title, String button, boolean askForOverwrite, String extension) {
 
     String key = getClass().getName()+".file";
 
@@ -348,6 +361,9 @@ public abstract class Report implements Cloneable {
     JFileChooser chooser = new JFileChooser(dir);
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setDialogTitle(title);
+    if (extension != null)
+    	chooser.setFileFilter(new FileNameExtensionFilter(extension.toUpperCase() + " files", extension));
+
     int rc = chooser.showDialog(owner,button);
 
     // check result
@@ -551,7 +567,7 @@ public abstract class Report implements Cloneable {
 //    int rc = viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, new JComponent[]{options}, Action2.okCancel(), owner);
 //    return rc==0;
 //  }
-  
+
   /**
    * A sub-class can query the user for a selection of given choices with this method
    */
@@ -613,48 +629,48 @@ public abstract class Report implements Cloneable {
 
     // grab options by introspection
     List os = PropertyOption.introspect(options);
-    
+
     // calculate a logical prefix for this options object (strip packages and enclosing type info)
     String prefix = options.getClass().getName();
-    
+
     int i = prefix.lastIndexOf('.');
-    if (i>0) prefix = prefix.substring(i+1); 
-    
+    if (i>0) prefix = prefix.substring(i+1);
+
     i = prefix.lastIndexOf('$');
-    if (i>0) prefix = prefix.substring(i+1); 
-    
+    if (i>0) prefix = prefix.substring(i+1);
+
     // restore parameters
     Registry r = new Registry(registry, prefix);
     Iterator it = os.iterator();
     while (it.hasNext()) {
       PropertyOption option  = (PropertyOption)it.next();
       option.restore(r);
-      
-      // translate the options as a courtesy now - while options do try 
-      // to localize the name they base that on a properties file in the 
-      // same package as the instance - problem is that this won't work 
-      // with our special way of resolving i18n in reports 
+
+      // translate the options as a courtesy now - while options do try
+      // to localize the name they base that on a properties file in the
+      // same package as the instance - problem is that this won't work
+      // with our special way of resolving i18n in reports
       String oname = translate(prefix+"."+option.getName());
-      if (oname.length()>0) option.setName(oname);    
-      
+      if (oname.length()>0) option.setName(oname);
+
     }
-    
+
     // show to user and check for non-ok
     OptionsWidget widget = new OptionsWidget(title, viewManager.getWindowManager(), os);
     int rc = viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, widget, Action2.okCancel(), owner);
     if (rc!=0)
       return false;
-    
+
     // save parameters
     widget.stopEditing();
     it = os.iterator();
     while (it.hasNext())
       ((Option)it.next()).persist(r);
-    
+
     // done
     return true;
   }
-  
+
   /**
    * A sub-class can query the user for a simple yes/no selection with
    * this method.
@@ -763,9 +779,9 @@ public abstract class Report implements Cloneable {
       // check if new style resources are available from .java src
       try {
         // ... checking filesystem in developer mode, resource otherwise
-        File reports = new File("./src/report"); 
+        File reports = new File("./src/report");
         String src = getClass().getName().replace('.', '/')+".java";
-        InputStream in = (reports.exists()&&reports.isDirectory()) ? 
+        InputStream in = (reports.exists()&&reports.isDirectory()) ?
             new FileInputStream(new File(reports, src)) :
             getClass().getResourceAsStream(src);
         resources.load(in);
@@ -884,12 +900,12 @@ public abstract class Report implements Cloneable {
   public String getVersion() {
     return translate("version");
   }
-  
+
   private final static Pattern PATTERN_CVS_DATE  = Pattern.compile("\\$"+"Date: (\\d\\d\\d\\d)/(\\d\\d)/(\\d\\d)( \\d\\d:\\d\\d:\\d\\d) *\\$"); // don't user [dollar]Date to avoid keywords substitution here :)
-  
+
   /**
    * Returns the last update tag  - this by default is the value of key "date"
-   * in the file [ReportName].properties. 
+   * in the file [ReportName].properties.
    */
   public String getLastUpdate() {
     // check for updated key
@@ -906,7 +922,7 @@ public abstract class Report implements Cloneable {
     // done - either whatever was found or beautified cvs keyword value
     return result;
   }
-  
+
   /**
    * Returns information about a report - this by default is the value of key "info"
    * in the file [ReportName].properties. A report has to override this method
@@ -927,7 +943,7 @@ public abstract class Report implements Cloneable {
       getStartMethod(context).invoke(this, new Object[]{ context });
     } catch (Throwable t) {
       String msg = "can't run report on input";
-      if (t instanceof InvocationTargetException) 
+      if (t instanceof InvocationTargetException)
         throw ((InvocationTargetException)t).getTargetException();
       throw t;
     }

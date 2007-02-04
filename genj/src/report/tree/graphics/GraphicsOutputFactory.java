@@ -46,8 +46,8 @@ public class GraphicsOutputFactory {
     public GraphicsOutput createOutput(int type) {
     	if (type == SCREEN_OUTPUT)
     		return new ScreenOutput();
-    	
-    	GraphicsWriter writer;    	
+
+    	GraphicsWriter writer;
     	if (type == SVG_OUTPUT)
     		writer = new SvgWriter();
     	else if (type == PDF_OUTPUT)
@@ -57,15 +57,15 @@ public class GraphicsOutputFactory {
 
     	// Get filename from users
         File file = report.getFileFromUser(report.translate("output.file"),
-                    Action2.TXT_OK, true);
+                    Action2.TXT_OK, true, writer.getFileExtension());
         if (file == null)
             return null;
-        
+
         // Add appropriate file extension
         String suffix = "." + writer.getFileExtension();
         if (!file.getPath().endsWith(suffix))
         	file = new File(file.getPath() + suffix);
-        
+
         return new GraphicsFileOutput(file, writer);
     }
 }
