@@ -43,12 +43,19 @@ public class DetermineIndiboxSize extends TreeFilterBase {
      */
     private static final Font NAME_FONT = new Font("verdana", Font.BOLD, 12);
 
+    /**
+     * Font for individual and family ID.
+     */
+    private static final Font ID_FONT = new Font("verdana", Font.ITALIC, 10);
+
     private int defaultHeight;
     private int defaultWidth;
     private int maxImageWidth;
     private boolean drawPlaces;
     private boolean drawOccupation;
     private int maxNames;
+    private boolean drawSexSymbols;
+    private boolean drawIndiIds;
 
 
     public DetermineIndiboxSize(Registry properties) {
@@ -58,6 +65,8 @@ public class DetermineIndiboxSize extends TreeFilterBase {
         drawPlaces = properties.get("drawPlaces", true);
         drawOccupation = properties.get("drawOccupation", true);
         maxNames = properties.get("maxNames", -1);
+        drawSexSymbols = properties.get("drawSexSymbols", true);
+        drawIndiIds = properties.get("drawIndiIds", false);
     }
 
     public void preFilter(IndiBox indibox) {
@@ -121,6 +130,14 @@ public class DetermineIndiboxSize extends TreeFilterBase {
             width = getTextWidth(i.getProperty(PATH_INDIOCCU).toString(), DETAILS_FONT);
             if (width + 7+TEXT_MARGIN > indibox.width)
                 indibox.width = width + 7+TEXT_MARGIN;
+        }
+
+        if (drawIndiIds) {
+        	width = getTextWidth(i.getId(), ID_FONT);
+        	if (drawSexSymbols)
+        		width += 14;
+            if (width + 8+TEXT_MARGIN > indibox.width)
+                indibox.width = width + 8+TEXT_MARGIN;
         }
 
         // Image
