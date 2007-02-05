@@ -3,11 +3,17 @@
 <intAttribute key="org.eclipse.jdt.launching.APPLET_WIDTH" value="200"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="genj.applet.Applet"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_INSTALL_TYPE_ID" value="org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="4"/>
+</listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="GenJ"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_INSTALL_NAME" value="j2sdk1.4.2_08"/>
 <mapAttribute key="org.eclipse.jdt.launching.APPLET_PARAMETERS">
 <mapEntry key="gedcom" value="./gedcom/example.ged"/>
 </mapAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/GenJ"/>
+</listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.APPLET_NAME" value=""/>
 <intAttribute key="org.eclipse.jdt.launching.APPLET_HEIGHT" value="200"/>
 <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:GenJ}"/>
