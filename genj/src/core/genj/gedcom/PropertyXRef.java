@@ -51,12 +51,12 @@ public abstract class PropertyXRef extends Property {
 
     // are we referencing something that points back?
     if (target!=null) {
-      PropertyXRef old = target;
+      PropertyXRef other = target;
+      Property parent = other.getParent();
       unlink();
       
-      // delete target unless it has children
-      if (old.getNoOfProperties()==0)
-        old.getParent().delProperty(old);
+      // delete target as well
+      parent.delProperty(other);
     }
 
     // Let it through
