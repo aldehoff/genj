@@ -51,6 +51,81 @@ public class PropertyTest extends TestCase {
   }
   
   /**
+   * Test moving properties
+   */
+  public void testMove() throws GedcomException {
+    
+    final Indi indi = createIndi();
+    
+    // prepare indi with 1 to 10 props
+    indi.delProperties();
+    final List list = new ArrayList();
+    for (int i=0; i<10; i++) {
+      list.add(indi.addProperty("foo", ""+i));
+    }
+    
+    gedcom.doUnitOfWork(new UnitOfWork() {
+      public void perform(Gedcom gedcom) throws GedcomException {
+        
+        // shuffle front to back
+        for (int i=0;i<10;i++) 
+          indi.moveProperty(0, 10-i);
+        assertProperties(indi, new int[]{ 9,8,7,6,5,4,3,2,1,0 });
+
+        // shuffle back to front
+        for (int i=0;i<10;i++) 
+          indi.moveProperty(9, i);
+        assertProperties(indi, new int[]{ 0,1,2,3,4,5,6,7,8,9});
+        
+        // shuffle block backwards
+        indi.moveProperties(list.subList(0, 5), 10);
+        assertProperties(indi, new int[]{ 5,6,7,8,9,0,1,2,3,4});
+        
+        // shuffle block forwards
+        indi.moveProperties(list.subList(0, 5), 0);
+        assertProperties(indi, new int[]{ 0,1,2,3,4,5,6,7,8,9});
+        
+      }
+    });
+
+    // undo
+    gedcom.undoUnitOfWork();
+    assertProperties(indi, new int[]{ 0,1,2,3,4,5,6,7,8,9});
+    
+    // do the simple 0->1
+    gedcom.doUnitOfWork(new UnitOfWork() {
+      public void perform(Gedcom gedcom) throws GedcomException {
+        indi.moveProperty(0, 2);
+        assertProperties(indi, new int[]{ 1,0,2,3,4,5,6,7,8,9});
+      }
+    });
+    
+    // undo
+    gedcom.undoUnitOfWork();
+    assertProperties(indi, new int[]{ 0,1,2,3,4,5,6,7,8,9});
+    
+    // do the tricky 1->0
+    gedcom.doUnitOfWork(new UnitOfWork() {
+      public void perform(Gedcom gedcom) throws GedcomException {
+        indi.moveProperty(1, 0);
+        assertProperties(indi, new int[]{ 1,0,2,3,4,5,6,7,8,9});
+      }
+    });
+    
+    // undo
+    gedcom.undoUnitOfWork();
+    assertProperties(indi, new int[]{ 0,1,2,3,4,5,6,7,8,9});
+  }
+  
+  private void assertProperties(Property parent, int[] children) {
+    parent.delProperties("CHAN");
+    assertTrue(parent.getNoOfProperties()==children.length);
+    for (int i = 0; i < children.length; i++) {
+      assertEquals(Integer.parseInt(parent.getProperty(i).getValue()), children[i]);
+    }
+  }
+  
+  /**
    * Test adding properties
    */
   public void testAdd() throws GedcomException {     

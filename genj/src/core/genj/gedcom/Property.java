@@ -136,6 +136,14 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Propagate a change to the containing hierarchy
+   */
+  /*package*/ void propagatePropertyMoved(Property property, Property moved, int from, int to) {
+    if (parent!=null)
+      parent.propagatePropertyMoved(property, moved, from, to);
+  }
+  
+  /**
    * Associates a file with this property
    * @return success or not
    */
@@ -317,6 +325,39 @@ public abstract class Property implements Comparable {
   }
   
   /**
+   * Move contained properties
+   */
+  public void moveProperties(List properties, int pos) {
+    
+    // move children around
+    for (int i = 0; i < properties.size(); i++) {
+      Property prop = (Property)properties.get(i);
+      pos = moveProperty(prop, pos);
+    }
+    
+  }
+
+  /**
+   * Move a property
+   */
+  public int moveProperty(Property prop, int to) {
+    return moveProperty(children.indexOf(prop), to);
+  }
+  
+  /**
+   * Move a property
+   */
+  public int moveProperty(int from, int to) {
+    Property prop = (Property)children.remove(from);
+    if (from<to) to--;
+    children.add(to, prop);
+    // propagate moved
+    propagatePropertyMoved(this, prop, from, to);
+    // return next position
+    return to+1;
+  }
+  
+  /**
    * Returns a warning string that describes what happens when this
    * property would be deleted
    * @return warning as <code>String</code>, <code>null</code> when no warning
@@ -467,7 +508,7 @@ public abstract class Property implements Comparable {
   /**
    * Test properties
    */
-  public boolean isProperties(List props) {
+  public boolean hasProperties(List props) {
     return children==null ? false : children.containsAll(props);
   }
   

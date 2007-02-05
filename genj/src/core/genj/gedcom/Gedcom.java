@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.119 $ $Author: nmeier $ $Date: 2007-01-28 08:12:50 $
+ * $Revision: 1.120 $ $Author: nmeier $ $Date: 2007-02-05 21:15:39 $
  */
 package genj.gedcom;
 
@@ -544,6 +544,39 @@ public class Gedcom implements Comparable {
     // done
   }
 
+  /**
+   * Propagate a change to listeners
+   */
+  protected void propagatePropertyMoved(final Property property, final Property moved, final int from, final int to) {
+    
+    if (LOG.isLoggable(Level.FINER))
+      LOG.finer("Property "+property.getTag()+" moved from "+from+" to "+to+" (entity "+property.getEntity().getId()+")");
+    
+    // no lock? we're done
+    if (lock==null) 
+      return;
+      
+    // keep undo
+    lock.addChange(new Undo() {
+        void undo() {
+          property.moveProperty(moved, from<to ? from : from+1);
+        }
+      });
+    
+    // notify
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      try {
+          gls[l].gedcomPropertyDeleted(this, property, from, moved);
+          gls[l].gedcomPropertyAdded(this, property, to, moved);
+      } catch (Throwable t) {
+        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+
+    // done
+  }
+  
   /**
    * Propagate a change to listeners
    */

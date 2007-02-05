@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -418,7 +419,19 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
 
       // an in-vm drag?
       if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
+
+        // dragging children for reordeing in place?
+        final List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+        if (action==MOVE&&pparent.hasProperties(children)) {
+          ged.doMuteUnitOfWork(new UnitOfWork() {
+            public void perform(Gedcom gedcom) throws GedcomException {
+              pparent.moveProperties(children, index);
+            }
+          });
+          return;
+        }
         
+        // do a cut&paste
         ged.doMuteUnitOfWork(new IOUnitOfWork() {
           protected void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException {
             
@@ -431,7 +444,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
             
             // delete children for MOVE within same gedcom (drag won't do it)
             if (action==MOVE&&draggingFrom==gedcom) {
-              List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
               for (int i=0;i<children.size();i++) {
                 Property child = (Property)children.get(i);
                 child.getParent().delProperty(child);
@@ -440,7 +452,9 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
             
             // link xrefs now that already existing props have been deleted
             for (int i=0;i<xrefs.size();i++) {
-              try { ((PropertyXRef)xrefs.get(i)).link(); } catch (Throwable t) {}
+              try { ((PropertyXRef)xrefs.get(i)).link(); } catch (Throwable t) {
+                EditView.LOG.log(Level.WARNING, "caught exception during dnd trying to link xrefs", t);
+              }
             }
           }
         });
@@ -592,7 +606,10 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       if (root!=property.getEntity())
         return;
       // update
-      fireTreeNodesInserted(this, getPathFor(property), new int[] { pos }, new Property[]{ added });
+      Object[] path = getPathFor(property);
+      fireTreeNodesInserted(this, path, new int[] { pos }, new Property[]{ added });
+      // expand all rows
+      expandAllRows();
       // selection (but no CHAN)
       if (!(added instanceof PropertyChange))
         setSelection(Collections.singletonList(added));

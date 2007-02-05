@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+
 /**
  * Abstract base type for all Entities - don't make abstract since we actually
  * instantiate this for entities we don't know 
@@ -247,4 +248,8 @@ public class Entity extends Property {
       gedcom.propagatePropertyChanged(this, property, oldValue);
   }
 
+  void propagatePropertyMoved(Property property, Property moved, int from, int to) {
+    if (gedcom!=null)
+      gedcom.propagatePropertyMoved(property, moved, from, to);
+  }
 } //Entity
