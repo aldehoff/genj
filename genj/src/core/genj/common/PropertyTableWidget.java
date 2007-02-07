@@ -26,6 +26,7 @@ import genj.gedcom.TagPath;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
 import genj.util.Dimension2d;
+import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.LinkWidget;
@@ -47,6 +48,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.font.FontRenderContext;
 import java.text.Collator;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.swing.ActionMap;
@@ -202,44 +205,85 @@ public class PropertyTableWidget extends JPanel {
   }
   
   /**
-   * Return column widths
+   * Return column layout - a string that can be used to return column widths and sorting
    */
-  public int[] getColumnWidths() {
+  public String getColumnLayout() {
+    
+    // e.g. 4, 40, 60, 70, 48, 0, -1, 1, 1 
+    // for a table with 4 columns and two sort directives
+    
+    SortableTableModel model = (SortableTableModel)table.getModel();
     TableColumnModel columns = table.getColumnModel();
-    int[] result = new int[columns.getColumnCount()];
-    for (int c=0; c<result.length; c++) {
-      result[c] = columns.getColumn(c).getWidth();
+    List directives = model.getDirectives();
+
+    WordBuffer result = new WordBuffer(",");
+    result.append(model.getColumnCount());
+    
+    for (int c=0; c<model.getColumnCount(); c++) 
+      result.append(columns.getColumn(c).getWidth());
+    
+    for (int d=0;d<directives.size();d++) {
+      SortableTableModel.Directive dir = (SortableTableModel.Directive)directives.get(d);
+      result.append(dir.getColumn());
+      result.append(dir.getDirection());
+    }
+    
+    return result.toString();
+  }
+  
+  /**
+   * Set column layout
+   */
+  public void setColumnLayout(String layout) {
+    
+    SortableTableModel model = (SortableTableModel)table.getModel();
+    TableColumnModel columns = table.getColumnModel();
+
+    try {
+      StringTokenizer tokens = new StringTokenizer(layout, ",");
+      int n = Integer.parseInt(tokens.nextToken());
+      if (n!=model.getColumnCount())
+        return;
+  
+      for (int i=0;i<n;i++) {
+        TableColumn col = columns.getColumn(i);
+        int w = Integer.parseInt(tokens.nextToken());
+        col.setWidth(w);
+        col.setPreferredWidth(w);
+      }
+      
+      model.cancelSorting();
+      while (tokens.hasMoreTokens()) {
+        int c = Integer.parseInt(tokens.nextToken());
+        int d = Integer.parseInt(tokens.nextToken());
+        model.setSortingStatus(c, d);
+      }
+
+    } catch (Throwable t) {
+      // ignore
+    }
+  }
+  
+  /**
+   * Return current sort status
+   */
+  public int[] getColumnDirections() {
+    SortableTableModel model = (SortableTableModel)table.getModel();
+    int[] result = new int[model.getColumnCount()];
+    for (int i = 0; i < result.length; i++) {
+      result[i] = model.getSortingStatus(i);
     }
     return result;
   }
-  
-  /**
-   * Set column widths
-   */
-  public void setColumnWidths(int[] widths) {
-    TableColumnModel columns = table.getColumnModel();
-    for (int i=0, j=columns.getColumnCount(); i<widths.length&&i<j; i++) {
-      TableColumn col = columns.getColumn(i);
-      col.setWidth(widths[i]);
-      col.setPreferredWidth(widths[i]);
-    }
-  }
-  
-  /**
-   * Get sorted column
-   */
-  public int getSortedColumn() {
-// FIXME sorting    
-    return -1;
-//    return ((Model)table.getModel()).getSortedColumn();
-  }
 
   /**
-   * Set sorted column
+   * Set sorted columns
    */
-  public void setSortedColumn(int set) {
-//  FIXME sorting    
-//    ((Model)table.getModel()).setSortedColumn(set);
+  public void setColumnDirections(int[] set) {
+    SortableTableModel model = (SortableTableModel)table.getModel();
+    for (int i = 0; i<set.length && i<model.getColumnCount(); i++) {
+      model.setSortingStatus(i, set[i]);
+    }
   }
   
   /**

@@ -200,10 +200,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     currentMode = set;
     // tell to table
     propertyTable.setModel(new Model(currentMode));
-    // update its columns
-    propertyTable.setColumnWidths(currentMode.getWidths());
-    // and sorting
-    propertyTable.setSortedColumn(currentMode.sort);
+    // update its layout
+    propertyTable.setColumnLayout(currentMode.layout);
   }
   
   /**
@@ -453,8 +451,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     private String tag;
     private String[] defaults;
     private TagPath[] paths;
-    private int[] widths;
-    private int sort = 0;
+    private String layout;
     
     /** constructor */
     private Mode(String t, String[] d) {
@@ -462,7 +459,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       tag      = t;
       defaults = d;
       paths    = TagPath.toArray(defaults);
-      widths   = new int[paths.length];
     }
     
     /** load properties from registry */
@@ -471,16 +467,8 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       String[] ps = r.get(tag+".paths" , (String[])null);
       if (ps!=null) 
         paths = TagPath.toArray(ps);
-      
-      int[] ws = r.get(tag+".widths", (int[])null);
-      if (ws!=null) {
-        widths = ws;
-      } else {
-        widths = new int[paths.length];
-        for (int i=0;i<widths.length;i++)  widths[i]=64;
-      }
 
-      sort = registry.get(tag+".sort", 0);
+      layout = r.get(tag+".layout", (String)null);
       
     }
     
@@ -496,28 +484,15 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
       return paths;
     }
     
-    /** get column widths */
-    private int[] getWidths() {
-      return widths;
-    }
-
-    /** set column widths */
-    private void setWidths(int[] set) {
-      widths = set;
-    }
-
     /** save properties from registry */
     private void save(Registry r) {
       
       // grab current column widths & sort column
-      if (currentMode==this) {
-        widths = propertyTable.getColumnWidths();
-        sort = propertyTable.getSortedColumn();
-      }
+      if (currentMode==this) 
+        layout = propertyTable.getColumnLayout();
 
 	    registry.put(tag+".paths" , paths);
-	    registry.put(tag+".widths", widths);
-	    registry.put(tag+".sort"  , sort);
+	    registry.put(tag+".layout", layout);
     }
     
     /** tag */

@@ -70,18 +70,14 @@ public class FamiliesBean extends PropertyBean {
     // let super continue
     super.addNotify();
     // set widths
-    int[] widths = registry.get(COLS_KEY, (int[])null);
-    if (widths!=null)
-      table.setColumnWidths(widths);
+    table.setColumnLayout(registry.get(COLS_KEY, (String)null));
   }
   
   /**
    * on remove - keep column widths
    */
   public void removeNotify() {
-    registry.put(COLS_KEY, table.getColumnWidths());
-    // let super continue
-    super.removeNotify();
+    registry.put(COLS_KEY, table.getColumnLayout());
   }
   
   /**
