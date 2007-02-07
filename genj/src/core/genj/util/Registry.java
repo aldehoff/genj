@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.28 $ $Author: nmeier $ $Date: 2006-10-06 13:37:32 $
+ * $Revision: 1.29 $ $Author: nmeier $ $Date: 2007-02-07 20:31:16 $
  */
 package genj.util;
 
@@ -259,7 +259,7 @@ public class Registry {
 
     // Get size of array
     int size = get(key,-1);
-    if (size==-1)
+    if (size<0)
       return def;
 
     // Gather array
