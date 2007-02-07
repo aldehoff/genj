@@ -57,31 +57,45 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
   
   /**
-   * Get the last change date
+   * Get the last change display value - the date/time localized
    */
-  public String getDateAsString() {
-    return time<0 ? "" : PointInTime.getPointInTime(time).toString().toString();    
+  public String getDisplayValue() {
+    return time<0 ? "" : getDateDisplayValue() +','+getTimeDisplayValue();
   }
   
   /**
-   * Get the last change time
+   * Get the last change display date
    */
-  public String getTimeAsString() {
-    if (time<=0)
-      return "";
-
+  public String getDateDisplayValue() {
+    return time<0 ? "" : PointInTime.getPointInTime(toLocal(time)).toString().toString();    
+  }
+  
+  /**
+   * Get the last change display time (local time)
+   */
+  public String getTimeDisplayValue() {
+    return time<=0 ? "" : toString(toLocal(time));
+  }
+  
+  private long toLocal(long utc) {
+    java.util.Calendar c = java.util.Calendar.getInstance();
+    return utc + c.get(java.util.Calendar.ZONE_OFFSET) + c.get(java.util.Calendar.DST_OFFSET);
+  }
+  
+  private String toString(long time) {
+    
     long
       sec = (time/1000)%60,
       min = (time/1000/60)%60,
       hr  = (time/1000/60/60)%24;
-      
+    
     StringBuffer buffer = new StringBuffer();
     buffer.append(decimal.format(hr));
     buffer.append(':');
     buffer.append(decimal.format(min));
     buffer.append(':');
     buffer.append(decimal.format(sec));
-    
+  
     return buffer.toString();
   }
   
@@ -135,6 +149,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
   
   /**
+   * Interpret a gedcom value as "date, UTF" as passed in by DateTimeCollector
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
   public void setValue(String value) {
@@ -176,14 +191,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * Gedcom value - this is an intermittend value only that won't be saved (it's not Gedcom compliant but contains a valid gedcom date)
    */
   public String getValue() {
-    return time<0 ? "" : PointInTime.getPointInTime(time).getValue() +','+getTimeAsString();
-  }
-  
-  /**
-   * A display value - the date/time localized
-   */
-  public String getDisplayValue() {
-    return time<0 ? "" : getDateAsString() +','+getTimeAsString();
+    return time<0 ? "" : PointInTime.getPointInTime(time).getValue() +','+toString(time);
   }
   
   /**
@@ -257,7 +265,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     /** lines */
     private String[] 
       tags = { CHAN, DATE, TIME  },
-      values = { "", PointInTime.getPointInTime(time).getValue(), getTimeAsString() };
+      values = { "", PointInTime.getPointInTime(time).getValue(), PropertyChange.this.toString(time) };
       
     /**
      * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)
@@ -290,7 +298,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
      * @see genj.gedcom.MultiLineSupport.Line#next()
      */
     public boolean next() {
-      return ++i!=tags.length;
+      return time>=0 && ++i!=tags.length;
     }
     
   } //Lines
@@ -318,7 +326,20 @@ public class PropertyChange extends Property implements MultiLineProperty {
       
       // update it
       Gedcom.LOG.finer("updating CHAN for "+entity.getId());
-      entity.setChanged();
+      
+      // is allowed?
+      MetaProperty meta = entity.getMetaProperty();
+      if (!meta.allows(PropertyChange.CHAN))
+        return;
+        
+      // update values (tx time is UTC time!)
+      long now = System.currentTimeMillis();
+      PropertyChange prop = (PropertyChange)entity.getProperty(PropertyChange.CHAN);
+      if (prop==null) 
+        prop = (PropertyChange)entity.addProperty("CHAN", "");
+      prop.setValue(now);
+      
+      // remember
       updated.add(entity);
     }
     

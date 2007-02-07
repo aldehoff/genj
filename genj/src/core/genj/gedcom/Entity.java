@@ -62,29 +62,6 @@ public class Entity extends Property {
   }
   
   /**
-   * update CHANged
-   */
-  public void setChanged() {
-    
-    // is allowed?
-    MetaProperty meta = getMetaProperty();
-    if (!meta.allows(PropertyChange.CHAN))
-      return;
-    
-    // update values (tx time is UTC time!)
-    long now = System.currentTimeMillis();
-    PropertyChange prop = (PropertyChange)getProperty(PropertyChange.CHAN);
-    if (prop==null) {
-      prop = (PropertyChange)meta.getNested(PropertyChange.CHAN, true).create("");
-      prop.setValue(now);
-      addProperty(prop);
-    } else {
-      prop.setValue(now);
-    }
-    // done
-  }
-    
-  /**
    * Return the last change of this entity (might be null)
    */
   public PropertyChange getLastChange() {
