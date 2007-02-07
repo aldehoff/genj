@@ -169,7 +169,11 @@ public class Utterance {
         }
       }
       if (where == 0) {
-        value = Character.toUpperCase(value.charAt(0)) + value.substring(1);
+        if (value.length() == 0) {
+          System.err.println("Empty string for key " + key);
+        } else {
+          value = Character.toUpperCase(value.charAt(0)) + value.substring(1);
+        }
       }
       // Insert space between words unless we're inserting an ending
       if (where > 0 && value.length() > 0 && !key.startsWith("ending.") &&

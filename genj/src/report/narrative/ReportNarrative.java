@@ -24,7 +24,6 @@ import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -32,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.io.File;
 
 import javax.swing.ImageIcon;
 
@@ -47,12 +47,11 @@ public class ReportNarrative extends Report {
 /* TODO priorities:
    _ in text
    Full text instead of abbreviations (Francois)
-   Formatting: Numbered list, proper title & page numbers
-   Combined repetitive tags into lists, if text is not too complex.
+   Formatting: page title; page break before index start
    Title in report (unique to HTML)
    CSS for fonts, etc.
-
-   Numbered list for children
+   Bibliography!
+   More options for which individuals...also limit on number of generations (user wish)
 */
   public static final int DETAIL_NO_SHOW  = 0;
   public static final int DETAIL_NAME = 1;
@@ -71,6 +70,7 @@ public class ReportNarrative extends Report {
   public boolean showImages = true;
   public boolean includePersonalTags = false;
   public boolean includeUnknownTags = false;
+  public boolean useAbbrevations = false;
 
   public String htmlStylesheet = null;
   private boolean alignImages = true; // TODO: option - in formatter.DocumentWriter or doc-wide options; make public when implemented
@@ -427,7 +427,11 @@ public class ReportNarrative extends Report {
           String date = getDateString(indi.getBirthDate());
           if (date.length() > 0) {
             doc.addText(", ");
-            addUtterance("abbrev.born", date);
+            if (!useAbbrevations) {
+              addUtterance(genderSpecificKey("phrase.born", indi.getSex()), date);
+            } else {
+              addUtterance("abbrev.born", date); // phrase w gender, later case
+            }
           }
 
           // (child of X and Y)
@@ -474,7 +478,11 @@ public class ReportNarrative extends Report {
             Fam fam = fams[i];
             PropertyDate marriage = fam.getMarriageDate();
             doc.addText(", ");
-            addUtterance("abbrev.married");
+            if (!useAbbrevations) {
+              addUtterance(genderSpecificKey("phrase.married", indi.getSex()), date);
+            } else {
+              addUtterance("abbrev.married");
+            }
             doc.addText(" ");
             if (fams.length > 1) doc.addText("(" + (i+1) + ") ");
             if (marriage != null) doc.addText(getDateString(marriage));
@@ -500,7 +508,11 @@ public class ReportNarrative extends Report {
           date = getDateString(indi.getDeathDate());
           if (date.length() > 0) {
             doc.addText(", ");
-            addUtterance("abbrev.died", date);
+            if (!useAbbrevations) {
+              addUtterance(genderSpecificKey("phrase.died", indi.getSex()), date);
+            } else {
+              addUtterance("abbrev.died", date);
+            }
           }
           // Would be nice to include either recorded or computed age.
 //        if (age != null) {
@@ -527,46 +539,59 @@ public class ReportNarrative extends Report {
 
               // Allow for sentences grouping multiple properties of the
               // same type.
-//              int numberOfLikeProperties = 0;
-//              for (int j = i+1; j < props.length; j++) {
-//                  if (props[j].getPropertyName().equals(props[i].getPropertyName())) {
-//                    numberOfLikeProperties++;
-//                  }
-//              }
-              // todo bk use numberOfLikeProperties, build list of properties,
-              // pass to writer, get return value telling how many where used.
+              int numberOfLikeProperties = 0;
+              for (int j = i+1; j < props.length; j++) {
+                  if (props[j].getPropertyName().equals(props[i].getPropertyName())) {
+                    numberOfLikeProperties++;
+                  } else {
+                    break;
+                  }
+              }
+              Property[] likeProps = new Property[numberOfLikeProperties+1];
+              numberOfLikeProperties = 0;
+              for (int j = i; j < props.length; j++) {
+                  if (props[j].getPropertyName().equals(props[i].getPropertyName())) {
+                    likeProps[numberOfLikeProperties] = props[j];
+                    numberOfLikeProperties++;
+                  } else {
+                    break;
+                  }
+              }
 
               doc.addText(" ");
 
+              // Increment i by n-1 if n (> 1) events were processed below.
               if (prop instanceof PropertyEvent) {
-                writeEvent(prop);
+                i += (writeEvents(likeProps) -1);
               } else if (INDIVIDUAL_ATTRIBUTES.contains(prop.getTag())) {
-                writeEvent(prop);
+                i += (writeEvents(likeProps) -1);
               } else if (prop.getTag().equals("RESI") || prop.getTag().equals("ADDR")) {
-                writeEvent(prop);
-              } else if (prop.getTag().equals("OCCU") && prop.getValue().length() > 0) {
-                doc.addText(" ");
-                boolean past = true;
-                if (indi.getDeathDate() == null) {
-                  Delta age = indi.getAge(PointInTime.getPointInTime(System.currentTimeMillis()));
-                  if (age != null && age.getYears() < 65) past = false;
+                i += (writeEvents(likeProps) -1);
+              } else if (prop.getTag().equals("OCCU")) {
+                if (prop.getValue().length() > 0) {
+                  doc.addText(" ");
+                  boolean past = true;
+                  if (indi.getDeathDate() == null) {
+                    Delta age = indi.getAge(PointInTime.getPointInTime(System.currentTimeMillis()));
+                    if (age != null && age.getYears() < 65) past = false;
+                  }
+  //                if (past) {
+  //                  addUtterance("phrase.was_a_occupation");
+  //                } else {
+  //                  addUtterance("phrase.is_a_occupation");
+  //                }
+  //                doc.addText(prop.getValue()); // TODO: decapitalize (not in German)
+  //                doc.addText(".");
+
+                  Utterance u = Utterance.forProperty(getResources(), "sentence.OCCU",
+                        new String[] { prop.getValue() } );
+                  // TODO English a/an
+                  u.setSubject(indi);
+                  u.set("tense", past ? "past" : "present"); // todo: distinguish past/present for living individuals
+                  doc.addText(u.toString());
+
+                  writeNodeSource(prop);
                 }
-//                if (past) {
-//                  addUtterance("phrase.was_a_occupation");
-//                } else {
-//                  addUtterance("phrase.is_a_occupation");
-//                }
-//                doc.addText(prop.getValue()); // TODO: decapitalize (not in German)
-//                doc.addText(".");
-
-                Utterance u = Utterance.forProperty(getResources(), "sentence.OCCU",
-                      new String[] { prop.getValue() } );
-                // TODO English a/an
-                u.setSubject(indi);
-                u.set("tense", past ? "past" : "present"); // todo: distinguish past/present for living individuals
-                doc.addText(u.toString());
-
-                writeNodeSource(prop);
               } else if (prop.getTag().equals("NOTE")) {
                 if (prop instanceof PropertyXRef) {
                   Entity ref = ((PropertyXRef)prop).getTargetEntity();
@@ -894,8 +919,8 @@ public class ReportNarrative extends Report {
       }
     }
 
-    private void writeEvent(Property prop) {
-      printEventUtterance(prop);
+    private int writeEvents(Property[] likeProps) {
+      return printEventUtterance(likeProps);
 
       /* Old non-configurable version:
       String verb = prop.getTag(); // useful as fallback
@@ -1050,10 +1075,124 @@ public class ReportNarrative extends Report {
       return date;
     }
 
+    private boolean propertyDefined(String key) {
+        return !translate(key).equals(key);
+    }
+
+    private boolean propertyDefined(String key, int gender) {
+      String suffix = gender == PropertySex.MALE ? ".male"
+        : gender == PropertySex.FEMALE ? ".female"
+        : ".genderUnknown";
+      if (propertyDefined(key + suffix)) {
+        return true;
+      }
+      return propertyDefined(key); // non-gender-specific, if ok in this language
+    }
+
+    private String genderSpecificKey(String key, int gender) {
+      String suffix = gender == PropertySex.MALE ? ".male"
+        : gender == PropertySex.FEMALE ? ".female"
+        : ".genderUnknown";
+      if (propertyDefined(key + suffix)) {
+        return key + suffix;
+      }
+      return key;
+   }
+
+    private int printEventUtterance(Property[] props) {
+      System.err.println("Printing event utterance for " + props[0].getTag());
+      String seriesKey = "listFirst." + props[0].getTag();
+      String itemKey = "listItem." + props[0].getTag();
+      if (props.length == 1 ||
+          (!propertyDefined(seriesKey) && !propertyDefined(itemKey))) {
+        printEventUtterance(props[0]);
+        return 1;
+      }
+
+      String list = getListUtterance(props); // todo 1 (bk) ooops, need int return too
+
+      // Here we add the list to the sentence...is that a good idea?
+      Property prop = props[0];
+      Utterance s = getSentenceForTag(prop.getTag(), new String[] { list } );
+      s.setSubject(indi);
+//      String place = getPlaceString(prop, null);
+//      if (place.length() > 0) s.set("OPTIONAL_PP_PLACE", place);
+//      if (prop.getProperty("AGNC") != null) {
+//        // Default agency phrase if none for tag?
+//        Utterance agency = Utterance.forProperty(getResources(), "phrase." + prop.getTag()+ ".AGENCY",
+//            new String[] { prop.getProperty("AGNC").getValue() });
+//        s.set("OPTIONAL_AGENCY", agency.toString());
+//      }
+//      String date = "";
+//      if (prop instanceof PropertyEvent) {
+//        date = getDateString(prop.getProperty("DATE"));
+//      }
+//      if (date.length() > 0) s.set("OPTIONAL_PP_DATE", date); // TODO: still needs prep
+      doc.addText(" " + s.toString());
+
+      return props.length; // right most of the time
+    }
+
+    /**
+     * Generate utterance for a list of properties.
+     * If resource listItem.PROP is defined, uses the standard list format for this
+     * language: [listFirst][listNext][listNext]...[listLast]
+     * for instance, for English:
+     * <pre>
+     * listFirst.RESI=He resided [1]
+     * listNext=, [1]
+     * listLast=\ and [1]
+     * </pre>
+     * and filling into listItem.PROP for [1] in each case.
+     * @param props
+     * @return
+     */
+    private String getListUtterance(Property[] props) {
+      StringBuffer result = new StringBuffer(100);
+      Property prop = props[0];
+
+      // In many languages we can use the same list construct, just varying the case.
+      String listFirst = "listFirst." + prop.getTag();
+      if (translate(listFirst).equals(listFirst)) listFirst = "listFirst";
+      String listNextKey = "listNext." + prop.getTag();
+      if (translate(listNextKey).equals(listNextKey)) listNextKey = "listNext";
+      String listLastKey = "listLast." + prop.getTag();
+      if (translate(listLastKey).equals(listLastKey)) listLastKey = "listLast";
+
+      Utterance item = getListItemUtterance(prop);
+      result.append(Utterance.forTemplate(getResources(), translate(listFirst),
+            new String[] { item.toString() }));
+
+      for (int i = 1; i < props.length-1; i++) {
+        prop = props[i];
+        item = getListItemUtterance(prop);
+        result.append(Utterance.forTemplate(getResources(), translate(listNextKey),
+            new String[] { item.toString() }));
+      }
+
+      prop = props[props.length-1];
+      item = getListItemUtterance(prop);
+      result.append(Utterance.forTemplate(getResources(), translate(listLastKey),
+          new String[] { item.toString() }));
+
+      return result.toString();
+   }
+
+   private Utterance getListItemUtterance(Property prop) {
+     String listItemKey = "listItem." + prop.getTag();
+     Utterance s = Utterance.forTemplate(getResources(), translate(listItemKey), new String[] { prop.getValue() });
+     completeEventUtterance(s, prop);
+     return s;
+   }
+
     private void printEventUtterance(Property prop) {
-      System.err.println("Printing event utterance for " + prop.getTag());
       Utterance s = getSentenceForTag(prop.getTag(), new String[] { prop.getValue() } );
       s.setSubject(indi);
+      completeEventUtterance(s, prop);
+      doc.addText(" " + s.toString());
+    }
+
+    private void completeEventUtterance(Utterance s, Property prop) {
       String place = getPlaceString(prop, null);
       if (place.length() > 0) s.set("OPTIONAL_PP_PLACE", place);
       if (prop.getProperty("AGNC") != null) {
@@ -1067,7 +1206,6 @@ public class ReportNarrative extends Report {
         date = getDateString(prop.getProperty("DATE"));
       }
       if (date.length() > 0) s.set("OPTIONAL_PP_DATE", date); // TODO: still needs prep
-      doc.addText(" " + s.toString());
     }
 
     private Utterance getSentenceForTag(String tag) {
@@ -1084,6 +1222,13 @@ public class ReportNarrative extends Report {
       // TODO: should also check config for cases, etc and set in Utterance
     }
 
+    private Utterance getPhraseForTag(String tag, String[] params) {
+      String template1 = translate("phrase." + tag);
+      if (template1 == null) template1 = tag + "{OPTIONAL_AGENCY}{OPTIONAL_PP_PLACE}{OPTIONAL_PP_DATE}.";
+      System.err.println("getPhraseForTag: tag=" + tag + " => " + template1);
+      Utterance u = Utterance.forTemplate(getResources(), template1, params);
+      return u;
+    }
 
     /**
      * Write a placename in a natural form for humans.
