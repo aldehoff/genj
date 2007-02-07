@@ -19,7 +19,7 @@
  */
 package genj.tree;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Listener for model
@@ -29,7 +29,7 @@ public interface ModelListener {
   /**
    * Notification that nodes have changed
    */
-  public void nodesChanged(Model model, List nodes);
+  public void nodesChanged(Model model, Collection nodes);
   
   /**
    * Notification that the structure of the graph has changed

@@ -41,12 +41,12 @@ import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ActionProvider;
-import genj.view.ViewContext;
 import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.FilterSupport;
 import genj.view.ToolBarSupport;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -62,6 +62,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -141,7 +142,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
   
   /** current centered position */
   private Point2D.Double center = new Point2D.Double(0,0);
-
+  
   /**
    * Constructor
    */
@@ -769,7 +770,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     /**
      * @see genj.tree.ModelListener#nodesChanged(genj.tree.Model, java.util.List)
      */
-    public void nodesChanged(Model arg0, List arg1) {
+    public void nodesChanged(Model arg0, Collection arg1) {
       repaint();
     }
     /**
@@ -841,7 +842,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     /**
      * @see genj.tree.ModelListener#nodesChanged(Model, List)
      */
-    public void nodesChanged(Model model, List nodes) {
+    public void nodesChanged(Model model, Collection nodes) {
       repaint();
     }
     

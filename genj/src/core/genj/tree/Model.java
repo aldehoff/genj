@@ -23,6 +23,8 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.GedcomListenerAdapter;
+import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -49,7 +51,10 @@ import spin.Spin;
 /**
  * Model of our tree
  */
-/*package*/ class Model implements GedcomListener {
+/*package*/ class Model {
+  
+  /** our gedcom callback */
+  private Callback callback = new Callback();
   
   /** listeners */
   private List listeners = new ArrayList(3);
@@ -242,7 +247,7 @@ import spin.Spin;
     
     // first?
     if (listeners.size()==1)
-      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
+      gedcom.addGedcomListener((GedcomListener)Spin.over((GedcomListener)callback));
   }
   
   /**
@@ -253,7 +258,7 @@ import spin.Spin;
     
     // last?
     if (listeners.isEmpty())
-      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
+      gedcom.removeGedcomListener((GedcomListener)Spin.over((GedcomListener)callback));
  }
   
   /**
@@ -542,7 +547,7 @@ import spin.Spin;
   /**
    * Fire event
    */
-  private void fireNodesChanged(List nodes) {
+  private void fireNodesChanged(Collection nodes) {
     for (int l=listeners.size()-1; l>=0; l--) {
       ((ModelListener)listeners.get(l)).nodesChanged(this, nodes);
     }
@@ -600,55 +605,83 @@ import spin.Spin;
     }
   } //FoldUnfold
 
-  public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
-    // we're without root?
-    if (root==null&&(entity instanceof Fam || entity instanceof Indi)) 
-      setRoot(entity);
-  }
-
-  public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+  /**
+   * Our gedcom Callbacks 
+   */
+  private class Callback extends GedcomListenerAdapter implements GedcomMetaListener {
     
-    // root has to change?
-    if (entity == root) 
-      root = gedcom.getFirstEntity(Gedcom.INDI);
+    private Set repaint = new HashSet();
+    private Entity added;
     
-    // bookmarks?
-    ListIterator it = bookmarks.listIterator();
-    while (it.hasNext()) {
-      Bookmark b = (Bookmark)it.next();
-      if (entity == b.getEntity()) it.remove();
+    public void gedcomWriteLockAcquired(Gedcom gedcom) {
+      added = null;
+      repaint.clear();
     }
     
-    // indi2fam?
-    indi2fam.keySet().remove(entity);
-    
-    // parse now
-    update();
-    
-    // done
-    return;
-  }
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
+        
+      // we're without root we could set now?
+      if (root==null) {
+        if (added==null||!gedcom.contains(added))
+          added = gedcom.getFirstEntity(Gedcom.INDI);
+        root = added;
+        update();
+        return;
+      }
 
-  public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-    gedcomPropertyChanged(gedcom, added);
-  }
-
-  public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
-    // a reference update?
-    if (property instanceof PropertyXRef) {
-      update();
-      return;
+      // signal repaint 
+      if (!repaint.isEmpty()) 
+        fireNodesChanged(repaint);
+   
     }
-    // something visible?
-    Node node = getNode(property.getEntity());
-    if (node!=null) 
-      fireNodesChanged(Collections.singletonList(node));
-  }
-
-  public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
-    // a reference update?
-    if (deleted instanceof PropertyXRef) 
-      update();
-  }
+    
+    public void gedcomEntityAdded(Gedcom gedcom, Entity added) {
+      if (added instanceof Fam || added instanceof Indi) {
+        if ( !(this.added instanceof Indi) || added instanceof Indi)
+          this.added = added;
+      }
+    }
   
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      // clear root?
+      if (entity == root) 
+        root = null;
+      
+      // clear bookmarks?
+      ListIterator it = bookmarks.listIterator();
+      while (it.hasNext()) {
+        Bookmark b = (Bookmark)it.next();
+        if (entity == b.getEntity()) it.remove();
+      }
+      
+      // clear indi2fam?
+      indi2fam.keySet().remove(entity);
+      
+    }
+  
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      gedcomPropertyChanged(gedcom, added);
+    }
+  
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+      // a reference update?
+      if (property instanceof PropertyXRef) {
+        root = null;
+        return;
+      }
+      // something visible?
+      Node node = getNode(property.getEntity());
+      if (node!=null) 
+        fireNodesChanged(Collections.singletonList(node));
+    }
+  
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+      // a reference update?
+      if (deleted instanceof PropertyXRef)
+        root = null;
+      // repaint still makes sense?
+      if (root!=null)
+        repaint.add(getNode(property.getEntity()));
+    }
+  } // Callback
 } //Model
