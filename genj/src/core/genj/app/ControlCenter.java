@@ -22,9 +22,11 @@ package genj.app;
 import genj.common.ContextListWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
+import genj.gedcom.UnitOfWork;
 import genj.io.Filter;
 import genj.io.GedcomEncodingException;
 import genj.io.GedcomEncryptionException;
@@ -1069,8 +1071,11 @@ public class ControlCenter extends JPanel {
           throw new GedcomIOException("Couldn't move temporary "+temp.getName()+" to "+result.getName(), -1);
        
         // .. note changes are saved now
-        if (newOrigin == null) 
-          gedcomBeingSaved.setUnchanged();
+        if (newOrigin == null) gedcomBeingSaved.doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) throws GedcomException {
+            gedcomBeingSaved.setUnchanged();
+          }
+        });
 
       } catch (GedcomIOException ex) {
         ioex = ex;
