@@ -56,9 +56,24 @@
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_geo-@version@.zip" unpack="true"/>
    </pack>
    
+  <pack name="Czech" required="no">
+   <description>Czech Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_cs-@version@.zip" unpack="true"/>
+   </pack>
+   
+  <pack name="Dutch" required="no">
+   <description>Dutch Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_nl-@version@.zip" unpack="true"/>
+   </pack>
+   
   <pack name="English" required="no">
-   <description>English Resources and Help</description> 
+   <description>English Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_en-@version@.zip" unpack="true"/>
+   </pack>
+   
+  <pack name="Finnish" required="no">
+   <description>Finnish Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_fi-@version@.zip" unpack="true"/>
    </pack>
    
   <pack name="French" required="no">
@@ -71,7 +86,31 @@
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_de-@version@.zip" unpack="true"/>
    </pack>
    
+  <pack name="Hungarian" required="no">
+   <description>Hungarian Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_hu-@version@.zip" unpack="true"/>
+   </pack>
    
+  <pack name="Polish" required="no">
+   <description>Polish Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_pl-@version@.zip" unpack="true"/>
+   </pack>
+   
+  <pack name="Portuguese (Brazilian)" required="no">
+   <description>Portuguese (Brazilian) Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_pt_BR-@version@.zip" unpack="true"/>
+   </pack>
+  
+  <pack name="Russian" required="no">
+   <description>Russian Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_ru-@version@.zip" unpack="true"/>
+   </pack>
+   
+  <pack name="Spanish" required="no">
+   <description>Spanish Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_es-@version@.zip" unpack="true"/>
+   </pack>
+      
   </packs>
 
 </installation>
