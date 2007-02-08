@@ -19,6 +19,7 @@
  */
 package genj.io;
 
+import genj.gedcom.GedcomException;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -159,7 +160,7 @@ public class PropertyReader {
       int lineNoForChild = lines;
 
       // add sub property
-      Property child = addProperty(prop, tag, value, pos<0 ? -1 : pos++);
+      Property child = addProperty(prop, tag, value, pos);
       
       // first recurse into child(ren)
       readProperties(child, currentLevel+1, 0);
@@ -170,6 +171,7 @@ public class PropertyReader {
         link((PropertyXRef)child, lineNoForChild);
         
       // next line
+      if (pos>=0) pos++;
     }
     
     // done
@@ -185,7 +187,15 @@ public class PropertyReader {
         return child;
       }
     }
-    return pos<0 ? prop.addProperty(tag, value, true) : prop.addProperty(tag, value, pos);
+    
+    try {
+      return prop.addProperty(tag, value, pos);
+    } catch (GedcomException e) {
+      Property fallback = prop.addSimpleProperty(tag, value, pos);
+      trackBadProperty(fallback, e.getMessage());
+      return fallback;
+    }
+    
   }
   
   /**
@@ -307,6 +317,10 @@ public class PropertyReader {
   
   /** track a bad level - default noop */
   protected void trackBadLevel(int level, Property parent) {
+  }
+  
+  /** track a bad property - default noop */
+  protected void trackBadProperty(Property property, String message) {
   }
   
 } //PropertyDecoder

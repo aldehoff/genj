@@ -172,21 +172,26 @@ public abstract class Property implements Comparable {
    * Adds a sub-property to this property 
    */
   public Property addProperty(String tag, String value) {
-    return addProperty(tag, value, true);
+    try {
+      return addProperty(tag, value, -1);
+    } catch (GedcomException e) {
+      // ugh, use a simple value here
+      return addProperty(new PropertySimpleReadOnly(tag, value), -1);
+    }
   }
   
   /**
    * Adds a sub-property to this property
    */
-  public Property addProperty(String tag, String value, boolean place) {
-    return addProperty(getMetaProperty().getNested(tag, true).create(value), place);
-  }
-  
-  /**
-   * Adds a sub-property to this property
-   */
-  public Property addProperty(String tag, String value, int pos) {
+  public Property addProperty(String tag, String value, int pos) throws GedcomException {
     return addProperty(getMetaProperty().getNested(tag, true).create(value), pos);
+  }
+  
+  /**
+   * Adds a sub-property to this property
+   */
+  public Property addSimpleProperty(String tag, String value, int pos) {
+    return addProperty(new PropertySimpleValue(tag, value), pos);
   }
   
   /**
@@ -194,38 +199,13 @@ public abstract class Property implements Comparable {
    * @param prop new property to add
    */
   /*package*/ Property addProperty(Property prop) {
-    return addProperty(prop, true);
+    return addProperty(prop, -1);
   }
 
   /**
    * Adds another property to this property
-   * @param prop new property to add
-   * @param place whether to place the sub-property according to grammar
-   */
-  /*package*/ Property addProperty(Property prop, boolean place) {
-
-    // check grammar for placement if applicable
-    int pos = -1;
-    
-    if (place&&getNoOfProperties()>0&&getEntity()!=null) {
-
-      MetaProperty meta = getMetaProperty();
-      
-      pos = 0;
-      int index = meta.getNestedIndex(prop.getTag());
-      for (;pos<getNoOfProperties();pos++) {
-        if (meta.getNestedIndex(getProperty(pos).getTag())>index)
-          break;
-      }
-    }
-    
-    // add property
-    return addProperty(prop, pos);
-    
-  }
-  
-  /**
-   * Adds another property to this property
+   * @param child the property to add
+   * @param pos, 0-n for position, -1 for placement
    */
   /*package*/ Property addProperty(Property child, int pos) {
     
@@ -233,11 +213,20 @@ public abstract class Property implements Comparable {
     if (child.getParent()!=null||child.getNoOfProperties()>0)
       throw new IllegalArgumentException("Can't add a property that is already contained or contains properties");
     
-    // position valid?
-    if (pos<0)
+    // check grammar for placement if applicable
+    if (pos<0) {
+      MetaProperty meta = getMetaProperty();
       pos = 0;
-    if (pos>getNoOfProperties())
-      pos = getNoOfProperties();
+      int index = meta.getNestedIndex(child.getTag());
+      for (;pos<getNoOfProperties();pos++) {
+        if (meta.getNestedIndex(getProperty(pos).getTag())>index)
+          break;
+      }
+    } else {
+      // patch to end of properties if appropriate
+      if (pos>getNoOfProperties())
+        pos = getNoOfProperties();
+    }
     
     // keep child now
     if (children==null)
@@ -946,7 +935,7 @@ public abstract class Property implements Comparable {
     MetaProperty[] subs = getNestedMetaProperties(MetaProperty.FILTER_DEFAULT); 
     for (int s=0; s<subs.length; s++) {
       if (getProperty(subs[s].getTag())==null)
-        addProperty(subs[s].create("")).addDefaultProperties();
+        addProperty(subs[s].getTag(), "").addDefaultProperties();
     }
 
     // done    

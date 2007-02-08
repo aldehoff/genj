@@ -22,9 +22,11 @@ package genj.renderer;
 import genj.common.PathTreeWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertySimpleReadOnly;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.util.Resources;
@@ -312,7 +314,11 @@ public class BlueprintEditor extends JSplitPane {
       MetaProperty meta = Grammar.getMeta(path, false);
       if (PropertyXRef.class.isAssignableFrom(meta.getType()))
         value = "@...@";
-      return meta.create(value.toString());
+      try {
+        return meta.create(value.toString());
+      } catch (GedcomException e) {
+        return new PropertySimpleReadOnly(path.getLast(), value.toString());
+      }
     }
     
   } //ExampleIndi

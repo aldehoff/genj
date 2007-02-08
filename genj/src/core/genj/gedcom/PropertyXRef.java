@@ -221,7 +221,7 @@ public abstract class PropertyXRef extends Property {
     value = value.trim();
     // check format
     if (!(value.startsWith("@")&&value.endsWith("@")))
-      throw new GedcomException("xref value should be @..@ but is "+value);
+      throw new GedcomException(resources.getString("error.norefvalue", new String[]{ value, Gedcom.getName(getTag()) }));
     return super.init(meta, value);
   }
 

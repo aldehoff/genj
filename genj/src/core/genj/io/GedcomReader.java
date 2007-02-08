@@ -639,6 +639,11 @@ public class GedcomReader implements Trackable {
       warnings.add(new Warning(getLines(), RESOURCES.getString("read.warn.badlevel", ""+level), parent));
     }
     
+    /** keep track of bad properties */
+    protected void trackBadProperty(Property property, String message) {
+      warnings.add(new Warning(getLines(), message, property));
+    }
+    
   } //EntityReader
   
   /**

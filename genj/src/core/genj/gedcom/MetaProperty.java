@@ -231,7 +231,7 @@ public class MetaProperty implements Comparable {
   /**
    * Create an instance
    */
-  public Property create(String value) {
+  public Property create(String value) throws GedcomException {
 
     // let's try to instantiate    
     Property result;
@@ -239,10 +239,12 @@ public class MetaProperty implements Comparable {
     try {
       result = (Property)getType().newInstance();
       result = result.init(this, value);
+    } catch (GedcomException e) {
+      throw e;
     } catch (Exception e) {
       // 20030530 catch exceptions only - during load
       // an outofmemoryerrror could happen here
-      Gedcom.LOG.log(Level.WARNING, "Couldn't instantiate property "+getType()+" with value '"+value+"': "+e);
+      Gedcom.LOG.log(Level.WARNING, "Couldn't instantiate property "+getType()+" with value '"+value, e);
       result = new PropertySimpleValue(); 
       ((PropertySimpleValue)result).init(this, value);
     }

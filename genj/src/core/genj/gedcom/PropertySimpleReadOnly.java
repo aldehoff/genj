@@ -38,6 +38,13 @@ public class PropertySimpleReadOnly extends PropertySimpleValue {
   }
   
   /**
+   * Constructor with tag & value
+   */
+  public PropertySimpleReadOnly(String tag, String value) {
+    super(tag, value);
+  }
+
+  /**
    * @see genj.gedcom.PropertySimpleValue#isReadOnly()
    */
   public boolean isReadOnly() {
