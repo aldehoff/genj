@@ -111,7 +111,10 @@ public class PropertyChange extends Property implements MultiLineProperty {
    */
   Property init(MetaProperty meta, String value) throws GedcomException {
     meta.assertTag(CHAN);
-    return super.init(meta,value);
+    super.init(meta,value);
+    if (value.length()==0)
+      setValue(System.currentTimeMillis());
+    return this;
   }
 
   /**
@@ -333,11 +336,11 @@ public class PropertyChange extends Property implements MultiLineProperty {
         return;
         
       // update values (tx time is UTC time!)
-      long now = System.currentTimeMillis();
       PropertyChange prop = (PropertyChange)entity.getProperty(PropertyChange.CHAN);
       if (prop==null) 
         prop = (PropertyChange)entity.addProperty("CHAN", "");
-      prop.setValue(now);
+      else
+        prop.setValue(System.currentTimeMillis());
       
       // remember
       updated.add(entity);
