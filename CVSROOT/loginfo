@@ -26,4 +26,3 @@
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
 #
 ^dev.* /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} genj-commits@lists.sourceforge.net
-ALL /usr/bin/perl $CVSROOT/CVSROOT/ciabot_cvs.pl %{,,,s} $USER
