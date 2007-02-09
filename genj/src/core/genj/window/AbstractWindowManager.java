@@ -35,6 +35,7 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.BoxLayout;
@@ -60,6 +61,9 @@ public abstract class AbstractWindowManager implements WindowManager {
 
   /** a mapping between key to framedlg */
   private Map key2framedlg = new HashMap();
+  
+  /** a log */
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.window");
   
   /** 
    * Constructor

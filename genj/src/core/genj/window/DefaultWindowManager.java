@@ -35,6 +35,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -109,6 +110,7 @@ public class DefaultWindowManager extends AbstractWindowManager {
       frame.pack();
       Dimension dim = frame.getSize();
       bounds = new Rectangle(screen.width/2-dim.width/2, screen.height/2-dim.height/2,dim.width,dim.height);
+      LOG.log(Level.FINE, "Sizing window "+key+" to "+bounds+" after pack()");
     }
     frame.setBounds(bounds.intersection(screen));
     
