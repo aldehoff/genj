@@ -249,7 +249,7 @@ public class PropertyReader {
         }
           
         // .. xref ?
-        if (tag.startsWith("@")) {
+        if (level==0&&tag.startsWith("@")) {
   
           // .. valid ?
           if (!tag.endsWith("@")||tag.length()<=2)
