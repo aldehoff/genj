@@ -215,7 +215,7 @@ public class Options extends OptionProvider {
    * Getter - language
    */
   public int getLanguage() {
-    return Math.max(0,language);
+    return language;
   }
   
   /**
