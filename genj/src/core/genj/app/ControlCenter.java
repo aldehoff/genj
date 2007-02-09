@@ -467,18 +467,21 @@ public class ControlCenter extends JPanel {
           // no - skip it
         }
         // remember as being open, password and open views
-        StringBuffer restore = new StringBuffer();
-        restore.append(gedcom.getOrigin());
-        restore.append(",");
-        if (gedcom.hasPassword())
-          restore.append(gedcom.getPassword());
-        restore.append(",");
-        ViewHandle[] views = viewManager.getViews(gedcom);
-        for (int i=0, j=0;i<views.length;i++) {
-          if (j++>0) restore.append(",");
-          restore.append(views[i].persist());
+        File file =gedcom.getOrigin().getFile(); 
+        if (file==null||file.exists()) { 
+          StringBuffer restore = new StringBuffer();
+          restore.append(gedcom.getOrigin());
+          restore.append(",");
+          if (gedcom.hasPassword())
+            restore.append(gedcom.getPassword());
+          restore.append(",");
+          ViewHandle[] views = viewManager.getViews(gedcom);
+          for (int i=0, j=0;i<views.length;i++) {
+            if (j++>0) restore.append(",");
+            restore.append(views[i].persist());
+          }
+          save.add(restore);
         }
-        save.add(restore);
         // next gedcom
       }
       registry.put("open", save);
@@ -909,7 +912,7 @@ public class ControlCenter extends JPanel {
     /** exception we might encounter */
     private GedcomIOException ioex = null;
     /** temporary and target file */
-    private File temp, result;
+    private File temp, file;
     /** password used */
     private String password;
     
@@ -961,17 +964,17 @@ public class ControlCenter extends JPanel {
       String encoding = gedcomBeingSaved.getEncoding();
       password = gedcomBeingSaved.getPassword();
       
-      if (ask || origin==null || !origin.isFile()) {
+      if (ask || origin==null || origin.getFile()==null) {
 
         // .. choose file
         SaveOptionsWidget options = new SaveOptionsWidget(gedcomBeingSaved, viewManager);
-        result = chooseFile(resources.getString("cc.save.title"), resources.getString("cc.save.action"), options);
-        if (result==null)
+        file = chooseFile(resources.getString("cc.save.title"), resources.getString("cc.save.action"), options);
+        if (file==null)
           return false;
 
         // .. take choosen one & filters
-        if (!result.getName().endsWith(".ged"))
-          result = new File(result.getAbsolutePath()+".ged");
+        if (!file.getName().endsWith(".ged"))
+          file = new File(file.getAbsolutePath()+".ged");
         filters = options.getFilters();
         if (gedcomBeingSaved.hasPassword())
           password = options.getPassword();
@@ -979,9 +982,7 @@ public class ControlCenter extends JPanel {
 
         // .. create new origin
         try {
-          newOrigin =
-            Origin.create(new URL("file", "", result.getAbsolutePath()));
-          
+          newOrigin = Origin.create(new URL("file", "", file.getAbsolutePath()));
         } catch (Throwable t) {
         }
         
@@ -989,14 +990,14 @@ public class ControlCenter extends JPanel {
       } else {
 
         // .. form File from URL
-        result = origin.getFile();
+        file = origin.getFile();
 
       }
 
       // Need confirmation if File exists?
-      if (result.exists()&&ask) {
+      if (file.exists()&&ask) {
 
-        int rc = windowManager.openDialog(null,resources.getString("cc.save.title"),WindowManager.WARNING_MESSAGE,resources.getString("cc.open.file_exists", result.getName()),Action2.yesNo(),ControlCenter.this);
+        int rc = windowManager.openDialog(null,resources.getString("cc.save.title"),WindowManager.WARNING_MESSAGE,resources.getString("cc.open.file_exists", file.getName()),Action2.yesNo(),ControlCenter.this);
         if (rc!=0) {
           newOrigin = null;
           //20030221 no need to go for newOrigin in postExecute()
@@ -1009,11 +1010,11 @@ public class ControlCenter extends JPanel {
       try {
         
         // .. create a temporary output
-        temp = File.createTempFile("genj", ".ged", result.getParentFile());
+        temp = File.createTempFile("genj", ".ged", file.getParentFile());
 
         // .. create writer
         gedWriter =
-          new GedcomWriter(gedcomBeingSaved, result.getName(), encoding, new FileOutputStream(temp));
+          new GedcomWriter(gedcomBeingSaved, file.getName(), encoding, new FileOutputStream(temp));
           
         // .. set options
         gedWriter.setFilters(filters);
@@ -1025,7 +1026,7 @@ public class ControlCenter extends JPanel {
           
           windowManager.openDialog(null,gedcomBeingSaved.getName(),
                       WindowManager.ERROR_MESSAGE,
-                      resources.getString("cc.save.open_error", result.getAbsolutePath()),
+                      resources.getString("cc.save.open_error", file.getAbsolutePath()),
                       Action2.okOnly(),
                       ControlCenter.this);
         return false;
@@ -1034,7 +1035,7 @@ public class ControlCenter extends JPanel {
       // .. open progress dialog
       progress = windowManager.openNonModalDialog(
         null,
-        resources.getString("cc.save.saving", result.getName()),
+        resources.getString("cc.save.saving", file.getName()),
         WindowManager.INFORMATION_MESSAGE,
         new ProgressWidget(gedWriter, getThread()),
         Action2.cancelOnly(),
@@ -1059,16 +1060,16 @@ public class ControlCenter extends JPanel {
         gedWriter.write();
 
         // .. make backup
-        if (result.exists()) {
-          File bak = new File(result.getAbsolutePath()+"~");
+        if (file.exists()) {
+          File bak = new File(file.getAbsolutePath()+"~");
           if (bak.exists()) 
             bak.delete();
-          result.renameTo(bak);
+          file.renameTo(bak);
         }
         
         // .. and now !finally! move from temp to result
-        if (!temp.renameTo(result))
-          throw new GedcomIOException("Couldn't move temporary "+temp.getName()+" to "+result.getName(), -1);
+        if (!temp.renameTo(file))
+          throw new GedcomIOException("Couldn't move temporary "+temp.getName()+" to "+file.getName(), -1);
        
         // .. note changes are saved now
         if (newOrigin == null) gedcomBeingSaved.doMuteUnitOfWork(new UnitOfWork() {

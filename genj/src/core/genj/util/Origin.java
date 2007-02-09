@@ -146,11 +146,6 @@ public abstract class Origin {
   }
 
   /**
-   * Whether it is possible to save to the Origin's file
-   */
-  public abstract boolean isFile();
-
-  /**
    * Tries to calculate a relative path for given file
    * @param file the file that might be relative to this origin
    * @return relative path or null if not applicable
@@ -198,9 +193,7 @@ public abstract class Origin {
   public abstract String[] list() throws IOException ;
   
   /**
-   * Returns the Origin as a File. For remote origins
-   * this will be a local representation of the file.
-   * [new File(file://d:/gedcom/example.ged)]
+   * Returns the Origin as a File or null if no local gedcom file can be named
    */
   public abstract File getFile();
   
@@ -305,26 +298,19 @@ public abstract class Origin {
      * list directory of origin if file
      */
     public String[] list() {
-      if (!isFile()) 
-        throw new IllegalArgumentException("list() not supported by url protocol");
       File dir = getFile();
+      if (dir==null) 
+        throw new IllegalArgumentException("list() not supported by url protocol");
       if (!dir.isDirectory())
         dir = dir.getParentFile();
       return dir.list();
     }
     
     /**
-     * @see genj.util.Origin#isFile()
-     */
-    public boolean isFile() {
-      return url.getProtocol().equals("file");
-    }
-    
-    /**
      * @see genj.util.Origin#getFile()
      */
     public File getFile() {
-      return new File(url.getFile());
+      return "file".equals(url.getProtocol()) ? new File(url.getFile()) : null;
     }
 
     /**
@@ -429,17 +415,10 @@ public abstract class Origin {
     }
 
     /**
-     * @see genj.util.Origin#isFile()
-     */
-    public boolean isFile() {
-      return false;
-    }
-
-    /**
      * @see genj.util.Origin#getFile()
      */
     public File getFile() {
-      throw new IllegalArgumentException("ZipOrigin doesn support getFile()");
+      return null;
     }
 
     /**

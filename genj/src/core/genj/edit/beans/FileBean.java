@@ -123,7 +123,7 @@ public class FileBean extends PropertyBean {
     
     // calc directory
     Origin origin = property.getGedcom().getOrigin();
-    String dir = origin.isFile() ? origin.getFile().getParent() : null;
+    String dir = origin.getFile()!=null ? origin.getFile().getParent() : null;
     
     // check if showing file chooser makes sense
     if (dir!=null) try {
