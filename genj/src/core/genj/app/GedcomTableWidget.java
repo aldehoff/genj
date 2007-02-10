@@ -31,6 +31,7 @@ import genj.view.ContextProvider;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,7 +79,8 @@ import spin.Spin;
         col.setHeaderValue(Resources.get(this).getString("cc.column_header.name"));
       else
         col.setHeaderValue(Gedcom.getEntityImage(Gedcom.ENTITIES[h-1]));
-      
+
+      col.setWidth(defaultWidths[h]);
       col.setPreferredWidth(defaultWidths[h]);
       cm.addColumn(col);
     }
@@ -93,10 +95,16 @@ import spin.Spin;
     // grab the preferred columns
     int[] widths = registry.get("columns",new int[0]);
     for (int c=0, max=getColumnModel().getColumnCount(); c<widths.length&&c<max; c++) {
-      getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
+      TableColumn col = getColumnModel().getColumn(c);
+      col.setPreferredWidth(widths[c]);
+      col.setWidth(widths[c]);
     }    
 
     // done
+  }
+  
+  public Dimension getPreferredScrollableViewportSize() {
+    return new Dimension(Math.max(128, getColumnModel().getTotalColumnWidth()), Math.max(4, getModel().getRowCount())*getRowHeight());
   }
   
   /**

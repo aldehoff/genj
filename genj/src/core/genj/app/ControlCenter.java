@@ -60,7 +60,6 @@ import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -167,12 +166,12 @@ public class ControlCenter extends JPanel {
     // Done
   }
   
-  /**
-   * @see javax.swing.JComponent#getPreferredSize()
-   */
-  public Dimension getPreferredSize() {
-    return new Dimension(280,180);
-  }
+//  /**
+//   * @see javax.swing.JComponent#getPreferredSize()
+//   */
+//  public Dimension getPreferredSize() {
+//    return new Dimension(280,180);
+//  }
 
   /**
    * Adds another Gedcom to the list of Gedcoms
