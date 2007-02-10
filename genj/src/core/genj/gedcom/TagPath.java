@@ -264,8 +264,9 @@ public class TagPath {
       name = Gedcom.getName(tag);
       
       // date or place?
-      if (i>1&&(tag.equals("DATE")||tag.equals("PLAC"))) 
-        name = Gedcom.getName(get(i-1)) + " - " + name;
+      //if (i>1&&(tag.equals("DATE")||tag.equals("PLAC"))) 
+      if (i>1) 
+        name = name + " - " + Gedcom.getName(get(i-1));
     }
     return name;
   }
