@@ -217,9 +217,9 @@ public class PropertyTableWidget extends JPanel {
     List directives = model.getDirectives();
 
     WordBuffer result = new WordBuffer(",");
-    result.append(model.getColumnCount());
+    result.append(columns.getColumnCount());
     
-    for (int c=0; c<model.getColumnCount(); c++) 
+    for (int c=0; c<columns.getColumnCount(); c++) 
       result.append(columns.getColumn(c).getWidth());
     
     for (int d=0;d<directives.size();d++) {
