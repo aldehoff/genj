@@ -59,7 +59,7 @@ public class GeoService {
   final static URL URL = createQueryURL();
   
   /** our work directory */
-  private static final String GEO_DIR = "./geo";
+  private static final String GEO_DIR = "geo";
 
   /** singleton */
   private static GeoService instance;
