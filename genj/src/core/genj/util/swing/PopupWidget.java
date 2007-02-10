@@ -168,7 +168,7 @@ public class PopupWidget extends JButton {
     JPopupMenu popup = new JPopupMenu();
     // NM 20051108 don't let this get too big
     if (as.size()>16)
-      popup.setLayout(new GridLayout(16,0));
+      popup.setLayout(new GridLayout(0,(int)Math.ceil(as.size()/16F)));
     MenuHelper mh = new MenuHelper();
     mh.pushMenu(popup);
     mh.createItems(as);
