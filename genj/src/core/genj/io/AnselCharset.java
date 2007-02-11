@@ -25,11 +25,14 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.util.logging.Logger;
 
 /**
  * Charset for Ansel character encoding
  */
 /*package*/ class AnselCharset extends Charset {
+  
+  private final static Logger LOG = Logger.getLogger("genj.io");
   
 
 /**
@@ -112,15 +115,12 @@ import java.nio.charset.CoderResult;
         } else {
           int ansel = unicode2ansel(c);
           if( ansel == -1 )  {
-              //character out of ANSEL gamut.  let the caller know (so that they can abort).
+            //character out of ANSEL gamut.  let the caller know (so that they can abort).
 
-              // note that the API docs are a bit unclear here,  indicating that somehow it's the 
-              // thrower's job to rewind the input for a retry.  It seems so much better to just be able
-              // to pass back the suspect character, but there's no room in the API for it.
-//            in.position(in.position()-1);  //need a check that it's nonnegative
-              System.err.println(getClass().getName()+" encoder rejecting character [+"
-                      +Integer.toHexString(c).toUpperCase()
-                      +"] in Char block: "+Character.UnicodeBlock.of(c));
+            // note that the API docs are a bit unclear here,  indicating that somehow it's the 
+            // thrower's job to rewind the input for a retry.  It seems so much better to just be able
+            // to pass back the suspect character, but there's no room in the API for it.
+            LOG.warning("Can't encode character  '+"+Integer.toHexString(c).toUpperCase() +"' in Ansel charset. Position "+pos+" in: \""+in.toString()+"\"");
               rc = CoderResult.unmappableForLength(1); //sadly, there's no way to communicate the above information in CoderResult.
               break;
           }
