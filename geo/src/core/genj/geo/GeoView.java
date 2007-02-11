@@ -59,7 +59,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
