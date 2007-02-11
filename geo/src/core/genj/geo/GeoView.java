@@ -205,8 +205,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
     // get maps
     GeoMap[] maps = GeoService.getInstance().getMaps();
     List actions = new ArrayList(maps.length);
-    for (int i=0;i<maps.length;i++) 
+    for (int i=0;i<maps.length;i++) {
       actions.add(new ChooseMap(maps[i]));
+    }
 
     // add a popup for them
     PopupWidget chooseMap = new PopupWidget(null, IMG_MAP, actions);
@@ -367,6 +368,9 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
       } catch (IOException e) {
         e.printStackTrace();
       }
+    }
+    public boolean isEnabled() {
+      return currentMap!=map;
     }
   }//ChooseMap
  
