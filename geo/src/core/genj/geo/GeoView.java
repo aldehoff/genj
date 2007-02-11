@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -58,6 +59,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -369,8 +371,8 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
         e.printStackTrace();
       }
     }
-    public boolean isEnabled() {
-      return currentMap!=map;
+    public Icon getImage() {
+      return currentMap!=map ? null : IMG_MAP;
     }
   }//ChooseMap
  
