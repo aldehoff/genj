@@ -183,7 +183,11 @@ public class TableViewPrinter implements Printer {
    * @see genj.print.PrintRenderer#renderPage(java.awt.Point, gj.ui.UnitGraphics)
    */
   public void renderPage(Graphics2D g, Point page, Dimension2D pageSizeInInches, Point dpi, boolean preview) {
-
+    
+    // no columns no content
+    if (colsOnPage[page.x]==0)
+      return;
+    
     // scale to 1/72 inch space
     g.scale(dpi.x/72F, dpi.y/72F);
 
@@ -200,11 +204,6 @@ public class TableViewPrinter implements Printer {
       scol += colsOnPage[c];
     cols = colsOnPage[page.x];
     
-    int srow=0, rows=0;
-    for (int r=0;r<page.y;r++)
-      srow += rowsOnPage[r];
-    rows = rowsOnPage[page.y];
-    
     // draw header
     for (int col=0,x=0;col<cols;col++) {
       // render in given space
@@ -219,22 +218,29 @@ public class TableViewPrinter implements Printer {
     }
     g.drawLine(0, headerHeight + pad/2, pageWidth, headerHeight + pad/2);
     
-    // draw rows
-    for (int row=0,y=headerHeight+pad;row<rows;row++) {
-      // draw cols
-      for (int col=0,x=0;col<cols;col++) {
-        // render in given space
-        Rectangle r = new Rectangle(x, y, colWidths[scol+col], rowHeights[srow+row]);
-        render(g, r, (Property)model.getValueAt(srow+row, scol+col), dpi);
-        // increase current horizontal position
-        x += colWidths[scol+col] + pad;
+    // draw rows - there might be no rows on current page - only header!
+    if (rowsOnPage.length>0) {
+      int rows = rowsOnPage[page.y];
+      int srow=0;
+      for (int r=0;r<page.y;r++)
+        srow += rowsOnPage[r];
+      
+      for (int row=0,y=headerHeight+pad;row<rows;row++) {
+        // draw cols
+        for (int col=0,x=0;col<cols;col++) {
+          // render in given space
+          Rectangle r = new Rectangle(x, y, colWidths[scol+col], rowHeights[srow+row]);
+          render(g, r, (Property)model.getValueAt(srow+row, scol+col), dpi);
+          // increase current horizontal position
+          x += colWidths[scol+col] + pad;
+        }
+        // increase current vertical position
+        y += rowHeights[srow+row] + pad;
+        // draw line between rows
+        if (row<rows-1)
+          g.drawLine(0, y - pad/2, pageWidth, y - pad/2);
+        // next row
       }
-      // increase current vertical position
-      y += rowHeights[srow+row] + pad;
-      // draw line between rows
-      if (row<rows-1)
-        g.drawLine(0, y - pad/2, pageWidth, y - pad/2);
-      // next row
     }
     
     // done
