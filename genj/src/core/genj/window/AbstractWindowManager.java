@@ -125,7 +125,7 @@ public abstract class AbstractWindowManager implements WindowManager {
     text.setText(txt);
     text.setEditable(false);    
     text.setCaretPosition(0);
-    text.setFocusable(false);
+    text.setRequestFocusEnabled(false);
 
     // wrap in reasonable sized scroll
     JScrollPane content = new JScrollPane(text);
