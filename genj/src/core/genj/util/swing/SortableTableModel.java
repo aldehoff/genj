@@ -372,18 +372,20 @@ public class SortableTableModel extends AbstractTableModel {
             JTableHeader h = (JTableHeader) e.getSource();
             TableColumnModel columnModel = h.getColumnModel();
             int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+            if (viewColumn<0)
+              return;
             int column = columnModel.getColumn(viewColumn).getModelIndex();
-            if (column != -1) {
-                int status = getSortingStatus(column);
-                if (!e.isControlDown()) 
-                  sortingColumns.clear();
-                
-                // Cycle the sorting states through {NOT_SORTED, ASCENDING, DESCENDING} or 
-                // {NOT_SORTED, DESCENDING, ASCENDING} depending on whether shift is pressed. 
-                status = status + (e.isShiftDown() ? -1 : 1);
-                status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
-                setSortingStatus(column, status);
-            }
+            if (column<0) 
+              return;
+              int status = getSortingStatus(column);
+              if (!e.isControlDown()) 
+                sortingColumns.clear();
+              
+              // Cycle the sorting states through {NOT_SORTED, ASCENDING, DESCENDING} or 
+              // {NOT_SORTED, DESCENDING, ASCENDING} depending on whether shift is pressed. 
+              status = status + (e.isShiftDown() ? -1 : 1);
+              status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
+              setSortingStatus(column, status);
         }
     }
 
