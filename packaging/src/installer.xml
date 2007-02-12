@@ -51,62 +51,62 @@
     <file targetdir="$INSTALL_PATH" src="src/installer/genj.ico"/>
    </pack>
 
-  <pack name="Geography View" required="no">
+  <pack name="Geography View" required="no" preselected="yes">
     <description>A view extension that shows events geographically</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_geo-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="Czech" required="no">
+  <pack name="Czech" required="no" preselected="no">
    <description>Czech Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_cs-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="Dutch" required="no">
+  <pack name="Dutch" required="no" preselected="no">
    <description>Dutch Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_nl-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="English" required="no">
+  <pack name="English" required="no" preselected="yes">
    <description>English Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_en-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="Finnish" required="no">
+  <pack name="Finnish" required="no" preselected="no">
    <description>Finnish Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_fi-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="French" required="no">
+  <pack name="French" required="no" preselected="no">
    <description>French Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_fr-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="German" required="no">
+  <pack name="German" required="no" preselected="no">
    <description>German Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_de-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="Hungarian" required="no">
+  <pack name="Hungarian" required="no" preselected="no">
    <description>Hungarian Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_hu-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="Polish" required="no">
+  <pack name="Polish" required="no" preselected="no">
    <description>Polish Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_pl-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="Portuguese (Brazilian)" required="no">
+  <pack name="Portuguese (Brazilian)" required="no" preselected="no">
    <description>Portuguese (Brazilian) Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_pt_BR-@version@.zip" unpack="true"/>
    </pack>
   
-  <pack name="Russian" required="no">
+  <pack name="Russian" required="no" preselected="no">
    <description>Russian Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_ru-@version@.zip" unpack="true"/>
    </pack>
    
-  <pack name="Spanish" required="no">
+  <pack name="Spanish" required="no" preselected="no">
    <description>Spanish Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_es-@version@.zip" unpack="true"/>
    </pack>
