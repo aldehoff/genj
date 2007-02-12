@@ -59,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
@@ -340,7 +341,9 @@ public class PropertyTableWidget extends JPanel {
       
       Action2 shortcut = new Action2(txt.toUpperCase()) {
         protected void execute() {
-          table.scrollRectToVisible(new Rectangle(0, y, 1, getParent().getHeight()));
+          int x = 0;
+          try { x = ((JViewport)table.getParent()).getViewPosition().x; } catch (Throwable t) {};
+          table.scrollRectToVisible(new Rectangle(x, y, 1, getParent().getHeight()));
         }
       };
       
