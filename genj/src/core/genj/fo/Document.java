@@ -127,6 +127,51 @@ public class Document {
     push("region-after", "extent=0.8cm").pop();
     pop().pop().push("page-sequence","master-reference=master");
 
+    /*
+      Paul Grosso offers this suggestion for left-center-right header formatting
+      at http://www.dpawson.co.uk/xsl/sect3/headers.html#d13432e123:
+
+      <fo:static-content flow-name="xsl-region-before">
+    <!-- header-width is the width of the full header in picas -->
+    <xsl:variable name="header-width" select="36"/>
+    <xsl:variable name="header-field-width">
+    <xsl:value-of
+select="$header-width * 0.3333"/><xsl:text>pc</xsl:text>
+    </xsl:variable>
+    <fo:list-block font-size="8pt" provisional-label-separation="0pt">
+        <xsl:attribute name="provisional-distance-between-starts">
+            <xsl:value-of select="$header-field-width"/>
+        </xsl:attribute>
+        <fo:list-item>
+            <fo:list-item-label end-indent="label-end()">
+                <fo:block text-align="left">
+                    <xsl:text>The left header field</xsl:text>
+                </fo:block>
+            </fo:list-item-label>
+            <fo:list-item-body start-indent="body-start()">
+                <fo:list-block provisional-label-separation="0pt">
+                    <xsl:attribute
+                 name="provisional-distance-between-starts">
+                        <xsl:value-of select="$header-field-width"/>
+                    </xsl:attribute>
+                    <fo:list-item>
+                        <fo:list-item-label end-indent="label-end()">
+                            <fo:block text-align="center">
+                                <fo:page-number/>
+                            </fo:block>
+                        </fo:list-item-label>
+                        <fo:list-item-body start-indent="body-start()">
+                            <fo:block text-align="right">
+                    <xsl:text>The right header field</xsl:text>
+                            </fo:block>
+                        </fo:list-item-body>
+                    </fo:list-item>
+                </fo:list-block>
+            </fo:list-item-body>
+        </fo:list-item>
+    </fo:list-block>
+</fo:static-content>
+    */
     push("static-content", "flow-name=xsl-region-after");
     push("block", "text-align=center");
     // text("p. ", ""); // todo bk better w/o text, to avoid language-dependency, but with title
@@ -136,13 +181,13 @@ public class Document {
 
     // don't use title - see above
     // push("title").text(getTitle(), "").pop();
-    
+
     push("flow", "flow-name=xsl-region-body");
     push("block");
-    
+
     // done - cursor points to first block
   }
-  
+
   /**
    * Check if there's any CSV in this document
    */
@@ -790,6 +835,7 @@ public class Document {
       Map primary2secondary2elements = (Map)index2primary2secondary2elements.get(index);
       
       // add section
+      nextPage();
       startSection(index);
       push("block", "start-indent=1cm");
       
