@@ -86,10 +86,14 @@ public class Utterance {
     return translate(key, resources);
   }
 
+  public static boolean isTranslatable(String key, Resources resources) {
+      return translate(key, resources) != null;
+  }
+
   /**
    * Look up a string value in resources - this one patches leading/trailing spaces marked with _
    */
-  private static String translate(String key, Resources resources) {
+  public static String translate(String key, Resources resources) {
     // do we have resources?
     if (resources==null)
       return key;
@@ -115,7 +119,7 @@ public class Utterance {
       result = result.substring(0, result.length()-1) + " ";
     }
 
-    System.err.println("Key " + key + " -> " + result);
+//    System.err.println("Key " + key + " -> " + result);
     return result;
   }
 
@@ -144,9 +148,6 @@ public class Utterance {
   public String toString() {
     Matcher matcher = argPattern.matcher(template);
     String result = template;
-    if (template.indexOf("OPTIONAL_OWNR") != -1) {
-      System.err.println("Breakpoint");
-    }
     int start = 0;
     while (matcher.find(start)) {
       int where = matcher.start();
