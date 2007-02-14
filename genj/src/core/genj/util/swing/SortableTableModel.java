@@ -381,10 +381,13 @@ public class SortableTableModel extends AbstractTableModel {
               if (!e.isControlDown()) 
                 sortingColumns.clear();
               
-              // Cycle the sorting states through {NOT_SORTED, ASCENDING, DESCENDING} or 
-              // {NOT_SORTED, DESCENDING, ASCENDING} depending on whether shift is pressed. 
-              status = status + (e.isShiftDown() ? -1 : 1);
-              status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
+              if (e.isShiftDown()) 
+                // for shift we cycle forward {NOT_SORTED, ASCENDING, DESCENDING}
+                status = (status +1 + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
+              else 
+                // for non-shift we invert the sort
+                status = status==0 ? 1 : status*-1;
+              
               setSortingStatus(column, status);
         }
     }
