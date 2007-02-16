@@ -58,14 +58,14 @@ public class ReportRelatives extends Report {
     new Relative("farmor"     , "father+mother"),
     new Relative("morfar"     , "mother+father"),
     new Relative("mormor"     , "mother+mother"),
-    new Relative("father"     , "INDI:FAMC:*:..:HUSB:*:.."   ),
-    new Relative("mother"     , "INDI:FAMC:*:..:WIFE:*:.."   ),
-    new Relative("husband"    , "INDI:FAMS:*:..:HUSB:*:.."   ),
-    new Relative("wife"       , "INDI:FAMS:*:..:WIFE:*:.."   ),
-    new Relative("daughter"   , "INDI:FAMS:*:..:CHIL:*:.."   , FEMALE),
-    new Relative("son"        , "INDI:FAMS:*:..:CHIL:*:.."   , MALE),
-    new Relative("brother"    , "INDI:FAMC:*:..:CHIL:*:.."   , MALE),
-    new Relative("sister"     , "INDI:FAMC:*:..:CHIL:*:.."   , FEMALE),
+    new Relative("father"     , "INDI:FAMC:*:..:HUSB:*"   ),
+    new Relative("mother"     , "INDI:FAMC:*:..:WIFE:*"   ),
+    new Relative("husband"    , "INDI:FAMS:*:..:HUSB:*"   ),
+    new Relative("wife"       , "INDI:FAMS:*:..:WIFE:*"   ),
+    new Relative("daughter"   , "INDI:FAMS:*:..:CHIL:*"   , FEMALE),
+    new Relative("son"        , "INDI:FAMS:*:..:CHIL:*"   , MALE),
+    new Relative("brother"    , "INDI:FAMC:*:..:CHIL:*"   , MALE),
+    new Relative("sister"     , "INDI:FAMC:*:..:CHIL:*"   , FEMALE),
 
     new Relative("grandson"     , "son+son|daughter+son"          , MALE),
     new Relative("granddaughter", "son+daughter|daughter+daughter", FEMALE),
@@ -178,10 +178,10 @@ public class ReportRelatives extends Report {
     List result = new ArrayList();
     Property[] found = root.getProperties(new TagPath(expression));
     for (int i = 0; i < found.length; i++) {
-      if (found[i]!=root) {
-        Indi indi = (Indi)found[i];
+      Indi indi = (Indi)found[i].getEntity();
+      if (indi!=root) {
         if (sex==UNKNOWN||indi.getSex()==sex)
-          result.add(found[i]);
+          result.add(indi);
       }
     }
 
