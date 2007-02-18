@@ -280,16 +280,17 @@ public class NavigatorView extends JPanel implements ContextListener {
   private void setJumps(String key, Indi[] is) {
     // lookup popup
     PopupWidget popup = getPopup(key);
-    // no jumps?
-    popup.setEnabled(is.length>0);
-    // loop jumps
     ArrayList jumps = new ArrayList();
-    for (int i=0;i<is.length;i++) {
-      jumps.add(new Jump(is[i]));
+    // no jumps?
+    if (is==null||is.length==0) {
+      popup.setEnabled(false);
+    } else {
+      popup.setEnabled(true);
+      for (int i=0;i<is.length;i++) 
+        jumps.add(new Jump(is[i]));
     }
-    popup.setActions(jumps);
-    
     // done
+    popup.setActions(jumps);
   }
     
   /**
