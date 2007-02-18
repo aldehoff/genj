@@ -358,7 +358,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     editor.setContext(context);
     
     // done
-    ignoreContextSelection = false;
   }
   
   /**package*/ void fireContextSelected(ViewContext context) {
@@ -366,12 +365,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     // already in process?
     if (ignoreContextSelection)
       return;
-    ignoreContextSelection = true;
     
-    manager.fireContextSelected(context);
-    
-    ignoreContextSelection = false;
-    
+    try {
+      ignoreContextSelection = true;
+      manager.fireContextSelected(context);
+    } finally { 
+      ignoreContextSelection = false;
+    }
     
   }
 
