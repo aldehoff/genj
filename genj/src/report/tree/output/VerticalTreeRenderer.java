@@ -96,7 +96,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
             if (indibox.spouse != null)
                 midY -= indibox.height / 2;
 
-            if (displayFambox && indibox.family != null & indibox.spouse != null)
+            if (displayFambox && indibox.family != null && indibox.spouse != null)
                 midY = getYCoord(baseY) + indibox.height + indibox.family.height;
 
             elements.drawLine(midX, midY, midX, getYCoord(baseY + 1) - verticalGap / 2);
