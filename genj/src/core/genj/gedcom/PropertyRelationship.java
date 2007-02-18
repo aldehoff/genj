@@ -58,9 +58,15 @@ public class PropertyRelationship extends PropertyChoiceValue {
     // parse anchor if one is still needed
     int i = value.lastIndexOf('@');
     if (i>=0) {
-      if (getTarget()==null) try {
+      try {
         anchor = new TagPath(value.substring(i+1));
-      } catch (IllegalArgumentException e) {
+        // relink association if anchor is still different (means, we're linked)
+        if (!getAnchor().equals(anchor)) {
+            PropertyAssociation asso = (PropertyAssociation)getParent();
+            asso.unlink();
+            asso.link();
+        }
+      } catch (Throwable t) {
       }
       value = value.substring(0,i);
     }
