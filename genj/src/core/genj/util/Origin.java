@@ -235,14 +235,14 @@ public abstract class Origin {
    * Object Comparison
    */
   public boolean equals(Object other) {
-    return other instanceof Origin && ((Origin)other).url.equals(url);
+    return other instanceof Origin && ((Origin)other).url.toString().equals(url.toString());
   }
   
   /**
    * Object hash
    */
   public int hashCode() {
-    return url.hashCode();
+    return url.toString().hashCode();
   }
   
   /**
