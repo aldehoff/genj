@@ -47,7 +47,8 @@ public class TreeMetrics {
    */
   public boolean equals(Object o) {
     // check
-    if (o==null||!(o instanceof TreeMetrics)) return false;
+    if (!(o instanceof TreeMetrics)) 
+      return false;
     // compare
     TreeMetrics other = (TreeMetrics)o;
     return 
@@ -56,6 +57,13 @@ public class TreeMetrics {
       wFams  == other.wFams &&
       hFams  == other.hFams &&
       pad    == other.pad   ;
+  }
+
+  /**
+   * @see java.lang.Object#equals(Object)
+   */
+  public int hashCode() {
+    return wIndis+hIndis+wFams+hFams+pad;
   }
 
   /**
