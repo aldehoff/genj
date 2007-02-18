@@ -92,6 +92,9 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * @see genj.gedcom.PropertySimpleValue#setValue(java.lang.String)
    */
   public void setValue(String value) {
+    // TUNING: for choices we expect a lot of repeating values so
+    // we build the intern representation of value here - this makes
+    // us share string instances for an upfront cost
     setValueInternal(value.intern());
   }
   
@@ -100,10 +103,8 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    */
   public void setValue(String value, boolean global) {
     
-    // TUNING: for choices we expect a lot of repeating values so
-    // we build the intern representation of value here - this makes
-    // us share string instances for an upfront cost
-    value = value.intern();
+    // change me
+    setValue(value);
     
     // more?
     if (global) {
@@ -112,13 +113,10 @@ public class PropertyChoiceValue extends PropertySimpleValue {
       for (int i=0;i<others.length;i++) {
         Property other = others[i];
         if (other instanceof PropertyChoiceValue&&other!=this) 
-          ((PropertyChoiceValue)other).setValueInternal(value);
+          ((PropertyChoiceValue)other).setValue(value);
       }
     }    
       
-    // change me
-    setValueInternal(value);
-    
     // done
   }
 
