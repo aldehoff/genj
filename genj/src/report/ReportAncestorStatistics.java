@@ -261,12 +261,12 @@ public class ReportAncestorStatistics extends Report {
             info.iDiffCumul = iDiffCumul;
 
             // Compute coverage
-            info.dCoverage = Math.round(10000 * info.iKnownCount / info.iPossibleCount) / 100d;
-            info.dCoverageCumul = Math.round(10000 * info.iKnownCumul / info.iPossibleCumul) / 100d;
+            info.dCoverage = (10000 * info.iKnownCount / info.iPossibleCount) / 100d;
+            info.dCoverageCumul = (10000 * info.iKnownCumul / info.iPossibleCumul) / 100d;
 
             // Compute implex
             if (iKnownCumul != 0) {
-                info.dImplex = Math.round(10000 * (info.iKnownCumul - info.iDiffCumul) / info.iKnownCumul) / 100d;
+                info.dImplex = (10000 * (info.iKnownCumul - info.iDiffCumul) / info.iKnownCumul) / 100d;
                 dImplexFactor = info.dImplex;
             }
         }
