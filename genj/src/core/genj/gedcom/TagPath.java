@@ -308,63 +308,57 @@ public class TagPath {
    * Iterate a properties nodes corresponding to this path
    */
   public void iterate(Property root, PropertyVisitor visitor) {
-    iterate(0, root, visitor, get(0));
+    iterate(0, root, visitor);
   }
-
-  private boolean iterate(int pos, Property prop, PropertyVisitor visitor, String unconfirmedTag) {
+  
+  private boolean iterate(int pos, Property prop, PropertyVisitor visitor) {
     
-    // traversed path?
-    if (pos==length())
-      return visitor.leaf(prop);
-    
-    // a '..'?
-    if (get(pos).equals("..")) {
-      Property parent = prop.getParent();
-      // no parent?
-      if (parent==null)
-        return false;
-      // continue with parent
-      return iterate(pos+1, parent, visitor, null);
-    }
-    
-    // a '.'?
-    if (get(pos).equals( ".")) {
-      // continue with self
-      return iterate(pos+1, prop, visitor, null);
-    }
-
-    // a '*'?
-    if (get(pos).equals( "*")) {
-      // check out target
-      if (!(prop instanceof PropertyXRef))
-        return false;
-      prop = ((PropertyXRef)prop).getTarget();
-      if (prop==null)
-        return false;
-      // continue with target
-      return iterate(pos+1, prop, visitor, null);
-    }
-
-    // still have to confirm a tag?
-    if (unconfirmedTag!=null) {
-      if (!get(pos).equals(unconfirmedTag))
-        return true;
-      // go with prop then
-      return iterate(pos+1, prop, visitor, null);
+    // follow as far as we can without recursing into children
+    String tag;
+    for (int i=0;;i++,pos++) {
+      
+      // walked the path?
+      if (pos==length()) 
+        return visitor.leaf(prop);
+      
+      tag = get(pos);
+       // up?
+      if (tag.equals("..")) {
+        prop=prop.getParent();
+        if (prop==null)
+          return false;
+        continue;
+      }
+      // stay?
+      if (tag.equals( "."))
+        continue;
+      // follow?
+      if (tag.equals( "*")) {
+        // check out target
+        if (!(prop instanceof PropertyXRef)||((PropertyXRef)prop).getTarget()==null)
+          return false;
+        prop = ((PropertyXRef)prop).getTarget();
+        continue;
+      }
+      // match?
+      if (i==0) {
+        if (!tag.equals(prop.getTag()))
+          return false;
+        continue;
+      }
+      // looks like we have a child at hand
+      break;
     }
     
     // let visitor know that we're recursing now
-    if (!visitor.recursion(prop, get(pos)))
+    if (!visitor.recursion(prop, tag))
       return false;
     
-    // recurse into each appropriate child
+    // recurse into children
     for (int i=0;i<prop.getNoOfProperties();i++) {
-
-      Property ith = prop.getProperty(i);
-
-      // tag is good?
-      if (get(pos).equals(ith.getTag())) {
-        if (!iterate(pos+1, ith, visitor, null))
+      Property child = prop.getProperty(i);
+      if (tag.equals(child.getTag())) {
+        if (!iterate(pos, child, visitor))
           return false;
       }
     }
