@@ -96,7 +96,7 @@ public class PropertyRelationship extends PropertyChoiceValue {
     if (target!=null) {
       Property panchor = target.getParent();
       if (panchor!=null)
-        return panchor.getPath();
+        return panchor.getPath(true);
     }
     
     // fallback to current cached anchor

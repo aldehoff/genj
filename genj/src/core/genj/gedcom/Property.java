@@ -444,27 +444,45 @@ public abstract class Property implements Comparable {
   }
   
   /**
-   * Returns the path to this property
+   * Returns the path to this property. This is a sequence of tags leading to this property from its containing entity.
    */
   public TagPath getPath() {
+    return getPath(false);
+  }
+  
+  /**
+   * Returns the path to this property. This is a sequence of tags leading to this property from its containing entity.
+   * @param unique whether tags should be unqiue, e.g. INDI:BIRT#0:DATE and INDI:BIRT#1:DATE vs INDI:BIRT:DATE
+   */
+  public TagPath getPath(boolean unique) {
 
     Stack stack = new Stack();
 
-    // build path start with this
-    String tag = getTag();
-    if (tag==null)
-      throw new IllegalArgumentException("encountered getTag()==null");
-    stack.push(tag);
-    
     // loop through parents
+    String tag = getTag();
     Property parent = getParent();
     while (parent!=null) {
+      
+      // check qualifier?
+      if (unique) {
+        int qualifier = 0;
+        for (int i=0, j=parent.getNoOfProperties(); i<j; i++) {
+          Property sibling = parent.getProperty(i);
+          if (sibling==this) break;
+          if (sibling.getTag().equals(tag)) qualifier++;
+        }
+        stack.push(tag + "#" + qualifier);
+      } else {
+        stack.push(tag);
+      }
+
+      // next up
       tag = parent.getTag();
-      if (tag==null)
-        throw new IllegalArgumentException("encountered getTag()==null");
-      stack.push(tag);
       parent = parent.getParent();
     }
+    
+    // add last
+    stack.push(tag);
 
     // done
     return new TagPath(stack);

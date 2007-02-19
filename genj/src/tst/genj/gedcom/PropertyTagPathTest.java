@@ -59,7 +59,6 @@ public class PropertyTagPathTest extends TestCase {
     assertProperty(husband, ".."                               ,null);
     assertProperty(husband, "."                                , husband);
     assertProperty(husband, "INDI:BIRT:DATE:..:..:BIRT:DATE", husband.getProperty(new TagPath("INDI:BIRT:DATE")));
-    assertProperty(husband, "INDI:FAMS:*:..:WIFE:*:..", wife1);
 
     final Set wifes = new HashSet();
     new TagPath("INDI:FAMS:*:..:WIFE:*:..").iterate(husband, new PropertyVisitor() { 
@@ -70,6 +69,21 @@ public class PropertyTagPathTest extends TestCase {
     });
     
     assertEquals("should reach two wifes", wifes.size(), 2);
+    
+    assertProperty(husband, "INDI:FAMS:*:..:WIFE:*:..", wife1);
+    assertProperty(husband, "INDI:FAMS#0:*:..:WIFE:*:..", wife1);
+    assertProperty(husband, "INDI:FAMS#1:*:..:WIFE:*:..", wife2);
+    
+    assertPath(husband, "INDI:FAMS#0");
+    assertPath(husband, "INDI:FAMS#1");
+    
+    
+  }
+  
+  private void assertPath(Property root, String path) {
+    TagPath result = root.getProperty(new TagPath(path)).getPath(true);
+    assertEquals(result, new TagPath(path));
+    assertEquals(result.toString(), path);
   }
 
   /**
