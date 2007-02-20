@@ -116,6 +116,7 @@ import javax.swing.SwingConstants;
 
     // add our buttons     
     ButtonHelper bh = new ButtonHelper().setContainer(bar);
+    bh.setInsets(0);
 
     // .. a button for editing the View's settings
     if (SettingsWidget.hasSettings(view))
