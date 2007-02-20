@@ -56,7 +56,7 @@ public class CreateAssociation extends CreateRelationship {
     PropertyXRef asso = (PropertyXRef)indi.addProperty("ASSO", '@'+target.getEntity().getId()+'@');
     
     // setup anchor through RELA if applicable
-    TagPath anchor = target.getPath();
+    TagPath anchor = target.getPath(true);
     Property rela = asso.addProperty("RELA", anchor==null ? "" : '@'+anchor.toString() );
 
     // link it
