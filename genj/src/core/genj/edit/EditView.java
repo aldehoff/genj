@@ -25,7 +25,6 @@ import genj.edit.beans.BeanFactory;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -316,32 +315,29 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     if (ignoreContextSelection)
       return;
     
-    // coming from some other view or from us?
     ViewContext context = event.getContext();
     ContextProvider provider = event.getProvider();
+    
+    // coming from some other view?
     if (provider==null || !SwingUtilities.isDescendingFrom( (Component)provider, this)) {
       
-      // sticky?
-      if (isSticky)
-        return;
-      
-    } else {
-      
-      // .. actionPerformed???
-      if (!event.isActionPerformed())
-        return;
-      
-      // gotta check if it's action on reference
-      Property xref = context.getProperty();
-      if (xref instanceof PropertyXRef) {
-        xref  = ((PropertyXRef)xref).getTarget();
-        if (xref!=null)
-          context = new ViewContext(xref);
-      }
+      // take it if not sticky
+      if (!isSticky) setContext(context, false);
+
+      // done
+      return;
     }
-      
-    // go for it
-     setContext(context, false);
+    
+    // came from us - a double click on an xref??
+    if (event.isActionPerformed()&&(context.getProperty() instanceof PropertyXRef)) {
+
+      PropertyXRef xref = (PropertyXRef)context.getProperty();
+      xref = xref.getTarget();
+      if (xref!=null) 
+        setContext(new ViewContext(xref), false);
+    }
+    
+    // done
   }
   
   public void setContext(ViewContext context, boolean tellOthers) {
