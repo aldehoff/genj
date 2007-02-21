@@ -347,6 +347,7 @@ public class ControlCenter extends JPanel {
     mh.popMenu().createMenu(resources.getString("cc.menu.help"));
 
     mh.createItem(new ActionHelp());
+    mh.createItem(new ActionFeedBack());
     mh.createItem(new ActionAbout());
 
     // Done
@@ -392,6 +393,23 @@ public class ControlCenter extends JPanel {
       // done      
     }
   } //ActionAbout
+
+  /**
+   * Action - feedback
+   */
+  private class ActionFeedBack extends Action2 {
+    /** constructor */
+    protected ActionFeedBack() {
+      setText(resources, "cc.menu.feedback");
+      setImage(Images.imgHelp); //TODO: changer l'image
+    }
+    /** run */
+    protected void execute() {
+      if (windowManager.show("feedback"))
+        return;
+      windowManager.openWindow("feedback",resources.getString("fb.title.genjlog"),Images.imgHelp,new FeedbackDialog(viewManager),null,null);
+    }
+  } //ActionFeedBack
 
   /**
    * Action - help
