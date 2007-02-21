@@ -308,7 +308,6 @@ select="$header-width * 0.3333"/><xsl:text>pc</xsl:text>
   private String getFontSize(int sectionDepth) {
     int i = maxSectionFontSize + 1 - sectionDepth;
     if (i < minSectionFontSize) i=minSectionFontSize;
-    System.err.println("getFontSize("+sectionDepth+") -> "+i+" = "+fontSizes[i]);
     return fontSizes[i];
   }
 
