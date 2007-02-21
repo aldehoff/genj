@@ -289,7 +289,7 @@ public class FileAssociation {
     chooser.setDialogTitle(Resources.get(FileAssociation.class).getString("assocation.choose", suffixes));
     int rc = chooser.showOpenDialog(owner);
     File file = chooser.getSelectedFile(); 
-    if (rc!=JFileChooser.APPROVE_OPTION||file==null)
+    if (rc!=JFileChooser.APPROVE_OPTION||file==null||!file.exists())
       return null;
     // keep it
     FileAssociation association = new FileAssociation(suffixes, name, file.getAbsolutePath());
