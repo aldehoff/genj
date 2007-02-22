@@ -183,9 +183,14 @@ public class FileAssociation {
     
     private void runCommand(String cmd) {
       
-      // never applied file argument?
-      if (cmd.indexOf('%')<0) 
-        cmd = cmd + " \"%\"";
+      // make sure ther's at least a file argument somewhere!
+      if (cmd.indexOf('%')<0) {
+        // 20070222 using the quotes in case of a non-space file argument on a unix system doesn't seem to work - so let's not quote if avoidable  
+        // use % if there's no space in the filename, "%" otherwise 
+        String placeholder = file.indexOf(' ')<0 ?  "%" : "\"%\""; 
+        // append argument
+        cmd = cmd + " " + placeholder;
+      }
 
       // look for % replacements
       // example - the forward slash is meant to be a backward slash here
@@ -291,8 +296,11 @@ public class FileAssociation {
     File file = chooser.getSelectedFile(); 
     if (rc!=JFileChooser.APPROVE_OPTION||file==null||!file.exists())
       return null;
+    // find out path
+    String executable =  file.getAbsolutePath();
+    if (executable.indexOf(' ')>=0) executable = "\"" +executable + "\"";
     // keep it
-    FileAssociation association = new FileAssociation(suffixes, name, file.getAbsolutePath());
+    FileAssociation association = new FileAssociation(suffixes, name, executable);
     add(association);
     // done
     return association;
