@@ -24,6 +24,7 @@ import genj.util.Resources;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -183,13 +184,9 @@ public class FileAssociation {
     
     private void runCommand(String cmd) {
       
-      // make sure ther's at least a file argument somewhere!
+      // make sure there's at least one file argument somewhere - quote if necessary
       if (cmd.indexOf('%')<0) {
-        // 20070222 using the quotes in case of a non-space file argument on a unix system doesn't seem to work - so let's not quote if avoidable  
-        // use % if there's no space in the filename, "%" otherwise 
-        String placeholder = file.indexOf(' ')<0 ?  "%" : "\"%\""; 
-        // append argument
-        cmd = cmd + " " + placeholder;
+        cmd = cmd + " " + (file.indexOf(' ')<0 ?  "%" : "\"%\"");
       }
 
       // look for % replacements
@@ -207,11 +204,14 @@ public class FileAssociation {
       // replace file placholders % next
       cmd = Pattern.compile("%").matcher(cmd).replaceAll(pathRegEx);
       
+      // parse it
+      String[] cmdarray = parse(cmd);
+      
       // run it
-      LOG.fine("Running command: "+cmd);
+      LOG.info("Running command: "+Arrays.asList(cmdarray));
       
       try {
-        int rc = Runtime.getRuntime().exec(cmd).waitFor(); 
+        int rc = Runtime.getRuntime().exec(cmdarray).waitFor(); 
         if (rc!=0) 
           LOG.log(Level.INFO, "External returned "+rc);
       } catch (Throwable t) {
@@ -221,6 +221,54 @@ public class FileAssociation {
     }
     
   } // Sequence of Commands run sequentially
+
+  /**
+   * Our own parse cmd into tokens - the Java implementation breaks down the cmd into
+   * strings not minding quotes. The string is re-assembled fine in the windows implementation
+   * but fails to assemble nicely on Linux. This leads to no-quotes and therefore no-spaces
+   * on Linux otherwise.
+   */
+  public static String[] parse(String cmd) {
+    
+    List tokens = new ArrayList();
+    StringBuffer token = new StringBuffer(32);
+    boolean quoted=false;
+    for (int i=0;i<cmd.length();i++) {
+      char c = cmd.charAt(i);
+      switch (c) {
+        case ' ': 
+        case '\t':
+          if (quoted) {
+            token.append(c);
+          } else {
+            if (token.length()>0) tokens.add(token.toString());
+            token.setLength(0);
+          }
+          break;
+        case '\"':
+          if (quoted) {
+            tokens.add(token.toString());
+            token.setLength(0);
+            quoted = false;
+          } else {
+            if (token.length()>0) tokens.add(token.toString());
+            token.setLength(0);
+            quoted = true;
+          }
+          break;
+        default:
+          token.append(c);
+      }
+    }
+    if (quoted) {
+      LOG.warning("Umatched quotes in "+cmd);
+    }
+    if (token.length()>0) tokens.add(token.toString());
+    
+    // done 
+    return (String[])tokens.toArray(new String[tokens.size()]);
+    
+  }
   
   /**
    * Gets all
