@@ -522,7 +522,7 @@ public class TreeView extends JPanel implements ContextProvider, ContextListener
     bar.add(sliderZoom);
     
     // overview
-    ButtonHelper bh = new ButtonHelper().setContainer(bar);
+    ButtonHelper bh = new ButtonHelper().setContainer(bar).setInsets(0);
     bh.create(new ActionOverview(), null, overview.isVisible());
     
     // gap

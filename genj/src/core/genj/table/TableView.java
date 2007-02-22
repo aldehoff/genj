@@ -216,7 +216,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
    */
   public void populate(JToolBar bar) {
     // create buttons for mode switch
-    ButtonHelper bh = new ButtonHelper();
+    ButtonHelper bh = new ButtonHelper().setInsets(0);
     
     InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     
