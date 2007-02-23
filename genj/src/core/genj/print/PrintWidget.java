@@ -27,7 +27,6 @@ import genj.renderer.Options;
 import genj.util.Dimension2d;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.UnitGraphics;
@@ -44,6 +43,7 @@ import java.util.List;
 
 import javax.print.PrintService;
 import javax.print.ServiceUI;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -111,7 +111,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     page.add("printers", services);
 
     // settings
-    page.add("settings", new ButtonHelper().create(new Settings()));
+    page.add("settings", new JButton(new Settings()));
     
     // 'preview'
     page.add("lpreview", new JLabel(resources.getString("preview")));
@@ -236,6 +236,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     /** constructor */
     private Settings() {
       super.setText(resources.getString("settings"));
+      super.setTarget(PrintWidget.this);
     }
 
     /** run */

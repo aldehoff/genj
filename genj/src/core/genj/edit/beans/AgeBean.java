@@ -24,10 +24,10 @@ import genj.gedcom.PropertyAge;
 import genj.gedcom.time.Delta;
 import genj.util.Registry;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 
 /**
@@ -61,7 +61,7 @@ public class AgeBean extends PropertyBean {
     add(new JLabel(TEMPLATE));
     
     update =  new ActionUpdate();
-    add(new ButtonHelper().create(update));
+    add(new JButton(update));
     
   }
   

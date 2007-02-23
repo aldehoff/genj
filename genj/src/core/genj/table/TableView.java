@@ -198,7 +198,7 @@ public class TableView extends JPanel implements ToolBarSupport  {
    */
   public void populate(JToolBar bar) {
     // create buttons for mode switch
-    ButtonHelper bh = new ButtonHelper().setInsets(0);
+    ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(bar);
     
     InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     
@@ -207,7 +207,7 @@ public class TableView extends JPanel implements ToolBarSupport  {
       // don't offer OBJEct button unless there are some of those already or the option to create them is selected
       if (!tag.equals("OBJE")||!gedcom.getEntities(tag).isEmpty()||Options.getInstance().isAllowNewOBJEctEntities) {
         SwitchMode change = new SwitchMode(getMode(tag));
-        bar.add(bh.create(change));
+        bh.create(change);
       }
     }
     

@@ -31,7 +31,6 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -47,6 +46,7 @@ import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -102,8 +102,7 @@ public class BlueprintEditor extends JSplitPane {
       JScrollPane scroll = new JScrollPane(html);
       scroll.setBorder(BorderFactory.createTitledBorder("HTML"));
       // buttons
-      ButtonHelper helper = new ButtonHelper();
-      bInsert = helper.create(new ActionInsert());
+      bInsert = new JButton(new ActionInsert());
     edit.setMinimumSize(new Dimension(0,0));
     edit.add(scroll, BorderLayout.CENTER);
     edit.add(bInsert, BorderLayout.SOUTH);
@@ -231,6 +230,7 @@ public class BlueprintEditor extends JSplitPane {
     private ActionInsert() {
       super.setText(resources.getString("prop.insert"));
       super.setTip(resources.getString("prop.insert.tip"));
+      super.setTarget(BlueprintEditor.this);
     }
     /** @see genj.util.swing.Action2#execute() */
     protected void execute() {

@@ -28,7 +28,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
@@ -41,8 +40,8 @@ public class FileChooserWidget extends JPanel {
   /** text field  */
   private TextFieldWidget text = new TextFieldWidget("", 12);
   
-  /** button */
-  private AbstractButton button;
+  /** choose action */
+  private Choose choose = new Choose();
   
   /** file extensions */
   private String extensions;
@@ -78,7 +77,7 @@ public class FileChooserWidget extends JPanel {
    */
   public void setEnabled(boolean set) {
     super.setEnabled(set);
-    button.setEnabled(set);
+    choose.setEnabled(set);
     text.setEnabled(set);
   }
   
@@ -89,10 +88,8 @@ public class FileChooserWidget extends JPanel {
   public FileChooserWidget(String extensions) {
     super(new BorderLayout());
     
-    button = new ButtonHelper().setInsets(0).create(new Choose());
-    
     add(BorderLayout.CENTER, text );
-    add(BorderLayout.EAST  , button);      
+    add(BorderLayout.EAST  , new ButtonHelper().setInsets(0).create(choose));
     this.extensions = extensions;
   }
   
@@ -162,14 +159,6 @@ public class FileChooserWidget extends JPanel {
   }
   
   /**
-   * Sets an image to use
-   */
-  public void setImage(ImageIcon image) {
-    button.setIcon(image);
-    button.setText(null);
-  }
-  
-  /**
    * Makes current text in chooser a template
    */
   public void setTemplate(boolean set) {
@@ -222,6 +211,7 @@ public class FileChooserWidget extends JPanel {
     /** constructor */
     private Choose() {
       setText("...");
+      setTarget(FileChooserWidget.this);
     }
 
     /** choose file */    

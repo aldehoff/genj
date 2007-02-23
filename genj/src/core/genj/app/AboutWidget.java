@@ -33,7 +33,6 @@ import genj.io.FileAssociation;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -43,6 +42,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -235,7 +235,7 @@ public class AboutWidget extends JPanel{
     
       // looks
       add(text, BorderLayout.CENTER);
-      add(new ButtonHelper().create(new Log()), BorderLayout.SOUTH);
+      add(new JButton(new Log()), BorderLayout.SOUTH);
       
     }
     
