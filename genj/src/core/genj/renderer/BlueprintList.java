@@ -70,9 +70,6 @@ public class BlueprintList extends JSplitPane {
   /** the current Gedcom */
   private Gedcom gedcom; 
   
-  /** a reference to the BlueprintManager */
-  private BlueprintManager blueprintManager;
-  
   /** model used for tree on left */
   private Model model = new Model();
   
@@ -162,7 +159,7 @@ public class BlueprintList extends JSplitPane {
       String html = node instanceof Blueprint ? ((Blueprint)node).getHTML() : "";
       // add it
       try {
-        Blueprint blueprint = blueprintManager.addBlueprint(new Blueprint(
+        Blueprint blueprint = BlueprintManager.getInstance().addBlueprint(new Blueprint(
           node instanceof Blueprint ? ((Blueprint)node).getTag() : (String)node,
           name, html, false
         ));
@@ -209,7 +206,7 @@ public class BlueprintList extends JSplitPane {
       selection.remove(blueprint.getTag());
       // delete it
       try {
-        blueprintManager.delBlueprint(blueprint);
+        BlueprintManager.getInstance().delBlueprint(blueprint);
       } catch (IOException e) {
         // TODO show a warning dialog
       }
@@ -344,7 +341,7 @@ public class BlueprintList extends JSplitPane {
       // child one of the blueprints?
       if (child instanceof Blueprint) {
         Blueprint bp = (Blueprint)child;
-        return blueprintManager.getBlueprints(bp.getTag()).indexOf(bp);
+        return BlueprintManager.getInstance().getBlueprints(bp.getTag()).indexOf(bp);
       }
   
       // must be tag
@@ -380,7 +377,7 @@ public class BlueprintList extends JSplitPane {
         return Gedcom.ENTITIES[index];
       // has to be entity tag
       String tag = (String)parent;
-      return blueprintManager.getBlueprints(tag).get(index);
+      return BlueprintManager.getInstance().getBlueprints(tag).get(index);
     }
 
     /**
@@ -395,7 +392,7 @@ public class BlueprintList extends JSplitPane {
         return 0;
       // entity tag
       String tag = (String)parent;
-      return blueprintManager.getBlueprints(tag).size();
+      return BlueprintManager.getInstance().getBlueprints(tag).size();
     }
 
     /**
