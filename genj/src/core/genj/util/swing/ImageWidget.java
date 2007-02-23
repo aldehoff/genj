@@ -231,7 +231,7 @@ public class ImageWidget extends JPanel {
       Graphics2D g2d = (Graphics2D)g;
       
       // zoom==0 means 1:1
-      // FIXME ImageWidget - do the dpi math
+      // TODO ImageWidget - do the dpi math
       if (zoom>0)
         g2d.scale(zoom, zoom);
       
@@ -252,7 +252,7 @@ public class ImageWidget extends JPanel {
       
       // zoom of 0 means 1:1
       if (zoom>0) {
-        // FIXME ImageWidget - do the dpi math
+        // TODO ImageWidget - do the dpi math
         dim.width *= zoom;
         dim.height *= zoom;
       }

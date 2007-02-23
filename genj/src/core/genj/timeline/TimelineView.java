@@ -22,20 +22,22 @@ package genj.timeline;
 import genj.almanac.Almanac;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
+import genj.renderer.Options;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.WordBuffer;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
-import genj.view.ViewContext;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
+import genj.window.WindowBroadcastEvent;
+import genj.window.WindowBroadcastListener;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -70,7 +72,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for showing entities' events in a timeline view
  */
-public class TimelineView extends JPanel implements ContextListener, ToolBarSupport {
+public class TimelineView extends JPanel implements WindowBroadcastListener, ToolBarSupport {
 
   /** the units we use */
   private final Point DPI;
@@ -87,6 +89,9 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   
   /** our content */
   private Content content;
+  
+  /** our current selection */
+  private Set selectedEvents = new HashSet();
   
   /** our ruler */
   private Ruler ruler;
@@ -150,7 +155,7 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     
     // remember
     manager = mgr;
-    DPI = mgr.getDPI();
+    DPI = Options.getInstance().getDPI();
     DPC = new Point2D.Float(
       DPI.x / 2.54F,
       DPI.y / 2.54F
@@ -361,14 +366,18 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
   /**
    * callback - context event
    */
-  public void handleContextSelectionEvent(ContextSelectionEvent e) {
-    // try to scroll to first event
-    ViewContext context = e.getContext();
-    Model.Event event = model.getEvent(context.getProperty());
-    if (event==null) event = model.getEvent(context.getEntity());
-    if (event!=null) makeVisible(event);
-    // do a repaint, too
-    content.repaint();
+  public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
+    ContextSelectionEvent contextEvent = ContextSelectionEvent.narrow(event, model.gedcom);
+    if (contextEvent!=null) {
+      // try to scroll to first event
+      ViewContext context = contextEvent.getContext();
+      Model.Event modelEvent = model.getEvent(context.getProperty());
+      if (modelEvent==null) modelEvent = model.getEvent(context.getEntity());
+      if (modelEvent!=null) makeVisible(modelEvent);
+      // do a repaint, too
+      content.repaint();
+    }
+    return false;
   }
 
   /**
@@ -533,7 +542,13 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
      * ContextProvider - callback
      */
     public ViewContext getContext() {
-      return manager.getLastSelectedContext(model.gedcom); 
+      ViewContext ctx = new ViewContext(model.gedcom);
+      for (Iterator events = selectedEvents.iterator(); events.hasNext();) {
+        Model.Event event = (Model.Event) events.next();
+        ctx.addProperty(event.pe);
+        //ctx.addProperty(event.pd);
+      }
+      return ctx;
     }
     
     /**
@@ -551,12 +566,8 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
      */
     protected void paintComponent(Graphics g) {
       
-      // find selection
-      ViewContext ctx = manager.getLastSelectedContext(model.gedcom);
-      Property selection = ctx.getProperty();
-      if (selection==null)
-        selection = ctx.getEntity();
       // let the renderer do its work
+      contentRenderer.selection = selectedEvents;
       contentRenderer.cBackground = (Color)colors.get("background" );
       contentRenderer.cText       = (Color)colors.get("text"    );
       contentRenderer.cDate       = (Color)colors.get("date"    );
@@ -564,7 +575,6 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
       contentRenderer.cTimespan   = (Color)colors.get("timespan");
       contentRenderer.cGrid       = (Color)colors.get("grid"    );
       contentRenderer.cSelected   = (Color)colors.get("selected");
-      contentRenderer.selection   = selection;
       contentRenderer.paintDates = isPaintDates;
       contentRenderer.paintGrid = isPaintGrid;
       contentRenderer.paintTags = isPaintTags;
@@ -584,6 +594,22 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     }
     
     public void mouseClicked(MouseEvent e) {
+      
+      // selection?
+      if (e.getButton()!=MouseEvent.BUTTON1)
+        return;
+      
+      if (!e.isShiftDown())
+        selectedEvents.clear();
+      
+      // find context click to select and tell about
+      Model.Event hit = getEventAt(e.getPoint());
+      if (hit!=null) {
+        selectedEvents.add(hit);
+        
+        // tell about it
+        WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(getContext(), this));
+      }
     }
     public void mouseEntered(MouseEvent e) {
     }
@@ -592,14 +618,6 @@ public class TimelineView extends JPanel implements ContextListener, ToolBarSupp
     public void mouseReleased(MouseEvent e) {
     }
     public void mousePressed(MouseEvent e) {
-      
-      // find context click
-      Model.Event event = getEventAt(e.getPoint());
-
-      // tell about it
-      ViewContext context = null;
-      if (event!=null) 
-        manager.fireContextSelected(new ViewContext(event.pd));
     }
   } //Content
   

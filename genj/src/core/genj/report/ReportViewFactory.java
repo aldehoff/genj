@@ -161,7 +161,7 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
     /** callback */
     protected void execute() {
       
-      final Report instance = report.getInstance(manager, getTarget(), null);
+      final Report instance = report.getInstance(getTarget(), null);
       
       try{
         

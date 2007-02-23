@@ -601,7 +601,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     }
 
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-      // FIXME we should check if added belongs to a property one of our xrefs is pointing to
+      // TODO we should check if added belongs to a property one of our xrefs is pointing to
       // us?
       if (root!=property.getEntity())
         return;

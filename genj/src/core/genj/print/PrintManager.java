@@ -46,8 +46,7 @@ public class PrintManager {
   
   /**
    * Constructor   */
-  public PrintManager(WindowManager winManager) {
-    winMgr = winManager;
+  public PrintManager() {
   }
   
   /**

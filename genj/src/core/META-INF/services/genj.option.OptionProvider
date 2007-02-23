@@ -1,6 +1,5 @@
 genj.app.Options
 genj.gedcom.Options
 genj.edit.Options
-genj.view.Options
 genj.report.Options
 genj.renderer.Options

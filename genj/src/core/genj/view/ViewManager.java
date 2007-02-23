@@ -24,8 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.print.PrintManager;
-import genj.renderer.BlueprintManager;
-import genj.util.EnvironmentChecker;
 import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -41,7 +39,6 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.lang.reflect.Array;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -88,20 +85,11 @@ public class ViewManager {
   private Map gedcom2factory2handles = new HashMap();
   private LinkedList allHandles = new LinkedList();
   
-  /** the currently valid context */
-  private Map gedcom2context = new HashMap();
-  
   /** a print manager */
   private PrintManager printManager = null;
 
   /** a window manager */
   private WindowManager windowManager = null;
-  
-  /** context listeners */
-  private List contextListeners = new LinkedList();
-  
-  /** ignore flag */
-  private boolean ignoreSetContext = false;
   
   /**
    * Constructor
@@ -169,9 +157,6 @@ public class ViewManager {
     // loop over factories, grab keyboard shortcuts and sign up context listeners
     for (int f=0;f<factories.length;f++) {    
       ViewFactory factory = factories[f];
-      // a context listener?
-      if (factory instanceof ContextListener)
-        addContextListener((ContextListener)factory);
       // check shortcut
       String keystroke = "ctrl "+new MnemonicAndText(factory.getTitle(false)).getMnemonic();
       if (!keyStrokes2factories.containsKey(keystroke)) {
@@ -195,110 +180,6 @@ public class ViewManager {
   }
   
   /**
-   * Returns the last set context for given gedcom
-   * @return the context
-   */
-  public ViewContext getLastSelectedContext(Gedcom gedcom) {
-    
-    // grab one from map
-    ViewContext result = (ViewContext)gedcom2context.get(gedcom);
-    
-    // fallback to last stored?
-    if (result==null) {
-      try {
-        result = new ViewContext(gedcom.getEntity(getRegistry(gedcom).get("lastEntity", (String)null)));
-      } catch (Throwable t) {
-      }
-    }
-    
-    // fallback to first indi or gedcom 
-    if (result==null) {
-      Entity e = gedcom.getFirstEntity(Gedcom.INDI);
-      result = e!=null ? new ViewContext(e) : new ViewContext(gedcom);
-    }
-
-    // remember
-    gedcom2context.put(gedcom, result);
-    
-    // done here
-    return result;
-  }
-
-  /**
-   * Sets the current context
-   */
-  public void fireContextSelected(ViewContext context) {
-    fireContextSelected(context, null);
-  }
-  public void fireContextSelected(ViewContext context, ContextProvider provider) {
-    fireContextSelected(context, false, provider);
-  }
-  public void fireContextSelected(ViewContext context, boolean actionPerformed, ContextProvider provider) {
-    
-    // ignoring context?
-    if (ignoreSetContext)
-      return;
-    ignoreSetContext = true;
-    
-    // create event
-    ContextSelectionEvent e = new ContextSelectionEvent(context, provider, actionPerformed);
-
-    // remember context
-    Gedcom gedcom = context.getGedcom();
-    gedcom2context.put(gedcom, context);
-    
-    // keep last selected entity around
-    Entity[] es = context.getEntities();
-    if (es.length>0)
-      getRegistry(gedcom).put("lastEntity", es[es.length-1].getId());
-    
-    // clear any menu selections if different from last context
-    if (!context.equals(getLastSelectedContext(gedcom)))
-      MenuSelectionManager.defaultManager().clearSelectedPath();
-
-    // connect to us
-    context.setManager(ViewManager.this);
-    
-    // loop and tell to views 
-    Map factory2handles = (Map)gedcom2factory2handles.get(gedcom);
-    if (factory2handles!=null) for (Iterator lists = factory2handles.values().iterator(); lists.hasNext() ;) {
-      List list = (List)lists.next();
-      for(Iterator handles = list.iterator(); handles.hasNext(); ) {
-        ViewHandle handle = (ViewHandle)handles.next();
-        // empty ?
-        if (handle==null) continue;
-        // and context supported
-        if (handle.getView() instanceof ContextListener) try {
-          ((ContextListener)handle.getView()).handleContextSelectionEvent(e);
-        } catch (Throwable t) {
-          LOG.log(Level.WARNING, "ContextListener threw throwable", t);
-        }
-        // next viewhandle
-      }
-      // next list
-    }
-    
-    // loop and tell to context listeners
-    ContextListener[] ls = (ContextListener[])contextListeners.toArray(new ContextListener[contextListeners.size()]);
-    for (int l=0;l<ls.length;l++)
-      try {      
-        ls[l].handleContextSelectionEvent(e);
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "ContextListener threw throwable", t);
-      }
-    
-    // done
-    ignoreSetContext = false;
-  }
-
-  /** 
-   * Accessor - DPI
-   */  
-  public Point getDPI() {
-    return Options.getInstance().getDPI();
-  }
-  
-  /**
    * The print manager
    */
   public PrintManager getPrintManager() {
@@ -310,13 +191,6 @@ public class ViewManager {
    */
   public WindowManager getWindowManager() {
     return windowManager;
-  }
-  
-  /**
-   * The blueprint manager
-   */
-  public BlueprintManager getBlueprintManager() {
-    return BlueprintManager.getInstance();
   }
   
   /**
@@ -499,9 +373,6 @@ public class ViewManager {
         closeView(handles[i]);
     }
     
-    // remove its key from gedcom2current
-    gedcom2context.remove(gedcom);
-
     // done
   }
   
@@ -546,20 +417,6 @@ public class ViewManager {
   }
   
   /**
-   * Register a listener
-   */
-  public void addContextListener(ContextListener listener) {
-    contextListeners.add(listener);
-  }
-  
-  /**
-   * Deregister a listener
-   */
-  public void removeContextListener(ContextListener listener) {
-    contextListeners.remove(listener);
-  }
-  
-  /**
    * Get a context menu
    */
   public JPopupMenu getContextMenu(ViewContext context, JComponent target) {
@@ -588,7 +445,7 @@ public class ViewManager {
     
     // items for set or single property?
     if (properties.length>1) {
-      mh.createMenu(Property.getPropertyNames(properties, 5)+"' ("+properties.length+")");
+      mh.createMenu("'"+Property.getPropertyNames(properties, 5)+"' ("+properties.length+")");
       for (int i = 0; i < as.length; i++) try {
         mh.createSeparator();
         mh.createItems(as[i].createActions(properties, this));
@@ -615,7 +472,7 @@ public class ViewManager {
         
     // items for set or single entity
     if (entities.length>1) {
-      mh.createMenu(Gedcom.getName(entities[0].getTag())+"' ("+entities.length+")");
+      mh.createMenu("'"+Property.getPropertyNames(entities,5)+"' ("+entities.length+")");
       for (int i = 0; i < as.length; i++) try {
         mh.createSeparator();
         mh.createItems(as[i].createActions(entities, this));
@@ -758,7 +615,7 @@ public class ViewManager {
         
         // at least double click on provider itself?
         if (isDoubleClick&&provider==me.getComponent()) {
-          fireContextSelected(context, true, provider);
+          windowManager.broadcast(new ContextSelectionEvent(context, component, true));
         }
         
         return;

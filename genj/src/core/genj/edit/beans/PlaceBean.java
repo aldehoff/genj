@@ -27,7 +27,6 @@ import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
-import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.Component;
@@ -53,8 +52,8 @@ public class PlaceBean extends PropertyBean {
   private Property[] sameChoices = new Property[0];
 
 
-  void initialize(ViewManager setViewManager, Registry setRegistry) {
-    super.initialize(setViewManager, setRegistry);
+  void initialize(Registry setRegistry) {
+    super.initialize(setRegistry);
     // nothing much we can do - hook up to change events and show changeAll on change 
     changeSupport.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
@@ -66,8 +65,9 @@ public class PlaceBean extends PropertyBean {
     // listen to selection of global and ask for confirmation
     global.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        if (global.isSelected()) {
-          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, getGlobalConfirmMessage(),Action2.yesNo(), PlaceBean.this);
+        WindowManager wm = WindowManager.getInstance(PlaceBean.this);
+        if (wm!=null&&global.isSelected()) {
+          int rc = wm.openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, getGlobalConfirmMessage(),Action2.yesNo(), PlaceBean.this);
           global.setSelected(rc==0);
         }        
       }

@@ -31,8 +31,6 @@ import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.DateWidget;
 import genj.util.swing.TextFieldWidget;
-import genj.view.FilterSupport;
-import genj.view.ViewManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,7 +53,7 @@ import javax.swing.JTextField;
   
   /** components */
   private JCheckBox[] checkEntities = new JCheckBox[Gedcom.ENTITIES.length];
-  private JCheckBox[] checkViews;
+  private JCheckBox[] checkFilters;
   private JTextField  textTags, textValues;
   private TextFieldWidget textPassword;
   private JComboBox   comboEncodings;
@@ -63,12 +61,12 @@ import javax.swing.JTextField;
   private DateWidget dateEventsAfter, dateBirthsAfter;
   
   /** filters */
-  private FilterSupport[] filterViews;
+  private Filter[] filters;
 
   /**
    * Constructor
    */    
-  /*package*/ SaveOptionsWidget(Gedcom gedcom, ViewManager manager) {
+  /*package*/ SaveOptionsWidget(Gedcom gedcom, Filter[] filters) {
     
     // Options
     Box options = new Box(BoxLayout.Y_AXIS);
@@ -98,19 +96,19 @@ import javax.swing.JTextField;
     textValues = new TextFieldWidget(resources.getString("save.options.exclude.values.eg"), 10).setTemplate(true);
     props.add(textValues);
     props.add(new JLabel(resources.getString("save.options.exclude.events")));
-    dateEventsAfter = new DateWidget(manager.getWindowManager());
+    dateEventsAfter = new DateWidget();
     props.add(dateEventsAfter);
     props.add(new JLabel(resources.getString("save.options.exclude.indis")));
-    dateBirthsAfter = new DateWidget(manager.getWindowManager());
+    dateBirthsAfter = new DateWidget();
     props.add(dateBirthsAfter);
         
     // others filter
     Box others = new Box(BoxLayout.Y_AXIS);
-    filterViews = (FilterSupport[])manager.getViews(FilterSupport.class, gedcom);
-    checkViews = new JCheckBox[filterViews.length];
-    for (int i=0; i<checkViews.length; i++) {
-      checkViews[i] = new JCheckBox(filterViews[i].getFilterName(), false);
-      others.add(checkViews[i]);
+    this.filters = filters;
+    this.checkFilters = new JCheckBox[filters.length];
+    for (int i=0; i<checkFilters.length; i++) {
+      checkFilters[i] = new JCheckBox(filters[i].getFilterName(), false);
+      others.add(checkFilters[i]);
     }
     
     // layout
@@ -163,9 +161,9 @@ import javax.swing.JTextField;
       result.add(new FilterIndividualsBornAfter(birthsAfter));
     
     // create one for every other
-    for (int f=0; f<filterViews.length; f++) {
-      if (checkViews[f].isSelected())
-    	 result.add(filterViews[f].getFilter());
+    for (int f=0; f<filters.length; f++) {
+      if (checkFilters[f].isSelected())
+    	 result.add(filters[f]);
     }
     
     // done
@@ -185,7 +183,7 @@ import javax.swing.JTextField;
     }
     
     /** callback */
-    public boolean accept(Property property) {
+    public boolean checkFilter(Property property) {
       if (property instanceof Indi) {
         Indi indi = (Indi)property;
         PropertyDate birth = indi.getBirthDate();
@@ -194,6 +192,10 @@ import javax.swing.JTextField;
         
       // fine
       return true;
+    }
+    
+    public String getFilterName() {
+      return toString();
     }
   }
   
@@ -210,9 +212,12 @@ import javax.swing.JTextField;
     }
     
     /** callback */
-    public boolean accept(Property property) {
+    public boolean checkFilter(Property property) {
       PropertyDate when = property.getWhen();
       return when==null || when.getStart().compareTo(after)<0;
+    }
+    public String getFilterName() {
+      return toString();
     }
   }
   
@@ -275,7 +280,7 @@ import javax.swing.JTextField;
     /**
      * @see genj.io.Filter#accept(genj.gedcom.Property)
      */
-    public boolean accept(Property property) {
+    public boolean checkFilter(Property property) {
       // allow all entities
       if (property instanceof Entity)
         return true;
@@ -298,6 +303,9 @@ import javax.swing.JTextField;
       return true;
     }
 
+    public String getFilterName() {
+      return toString();
+    }
   } //FilterProperty
   
   /**
@@ -325,10 +333,13 @@ import javax.swing.JTextField;
      * accepting all properties, limit to entities of parameterized types
      * @see genj.io.Filter#accept(genj.gedcom.Property)
      */
-    public boolean accept(Property property) {
+    public boolean checkFilter(Property property) {
       if (property instanceof Entity && !types.contains(property.getTag()))
           return false;
       return true;
+    }
+    public String getFilterName() {
+      return toString();
     }
   } //FilterByType
 

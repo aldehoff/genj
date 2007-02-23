@@ -29,7 +29,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
-import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import javax.swing.JCheckBox;
@@ -64,8 +63,8 @@ public class NameBean extends PropertyBean {
     return resources.getString("choice.global.confirm", new String[]{ ""+sameLastNames.length, ((PropertyName)getProperty()).getLastName(), cLast.getText()});
   }
   
-  void initialize(ViewManager setViewManager, Registry setRegistry) {
-    super.initialize(setViewManager, setRegistry);
+  void initialize(Registry setRegistry) {
+    super.initialize(setRegistry);
     
     setLayout(LAYOUT.copy());
 
@@ -106,8 +105,9 @@ public class NameBean extends PropertyBean {
     cAll.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         String msg = getReplaceAllMsg();
-        if (msg!=null&&cAll.isSelected()) {
-          int rc = viewManager.getWindowManager().openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, msg, Action2.yesNo(), NameBean.this);
+        WindowManager wm = WindowManager.getInstance(NameBean.this);
+        if (wm!=null&&msg!=null&&cAll.isSelected()) {
+          int rc = wm.openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, msg, Action2.yesNo(), NameBean.this);
           cAll.setSelected(rc==0);
         }        
       }

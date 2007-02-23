@@ -55,9 +55,6 @@ public class BeanFactory {
   /** registry used for all beans */
   private Registry registry;
   
-  /** manager reference */
-  private ViewManager viewManager;
-  
   /** cached instances */
   private final static Map property2cached= new HashMap();
   
@@ -68,7 +65,6 @@ public class BeanFactory {
    * Constructor
    */
   public BeanFactory(ViewManager viewManager, Registry registry) {
-    this.viewManager = viewManager;
     this.registry = registry;
   }
 
@@ -110,7 +106,7 @@ public class BeanFactory {
     try {
       // create new instance
       PropertyBean bean = (PropertyBean)Class.forName(type).newInstance();
-      bean.initialize(viewManager, registry);
+      bean.initialize(registry);
       // done
       return bean;
       
@@ -120,7 +116,7 @@ public class BeanFactory {
     
     // fallback with new instance
     PropertyBean bean = (PropertyBean)new SimpleValueBean();
-    bean.initialize(viewManager, registry);
+    bean.initialize(registry);
     return bean;
   }
   
@@ -137,7 +133,7 @@ public class BeanFactory {
       for (int i=0;i<beanTypes.length;i++) {
         PropertyBean bean = (PropertyBean)beanTypes[i].newInstance();
         if (bean.accepts(prop)) {
-          bean.initialize(viewManager, registry);
+          bean.initialize(registry);
           return bean;
         }
       }

@@ -73,22 +73,15 @@ public class BlueprintList extends JSplitPane {
   /** a reference to the BlueprintManager */
   private BlueprintManager blueprintManager;
   
-  /** the window manager */
-  private WindowManager windowManager;
-  
   /** model used for tree on left */
   private Model model = new Model();
   
   /**
    * Constructor   */
-  public BlueprintList(BlueprintManager bpMgr, WindowManager winMgr) {
-    
-    // remember
-    blueprintManager = bpMgr;
-    windowManager = winMgr;
+  public BlueprintList(BlueprintManager bpMgr) {
     
     // create editor
-    editor = new BlueprintEditor(bpMgr, windowManager);
+    editor = new BlueprintEditor(bpMgr);
     
     // prepare tree
     treeBlueprints = new JTree(model);
@@ -155,7 +148,7 @@ public class BlueprintList extends JSplitPane {
         return;
       Object node = path.getLastPathComponent();
       // get name
-      String name = windowManager.openDialog(
+      String name = WindowManager.getInstance(BlueprintList.this).openDialog(
         null,
         null,
         WindowManager.QUESTION_MESSAGE,
@@ -179,7 +172,7 @@ public class BlueprintList extends JSplitPane {
         treeBlueprints.setSelectionPath(new TreePath(model.getPathToRoot(blueprint)));
         editor.setHTMLVisible(true);
       } catch (IOException e) {
-        // FIXME add user dialog 
+        // TODO add user dialog 
       }
       // done
     }
@@ -209,7 +202,7 @@ public class BlueprintList extends JSplitPane {
         return;
       // confirm
       Blueprint blueprint = (Blueprint)node;
-      int rc = windowManager.openDialog(null,null,WindowManager.QUESTION_MESSAGE,resources.getString("blueprint.del.confirm", blueprint.getName()),Action2.okCancel(),BlueprintList.this); 
+      int rc = WindowManager.getInstance(BlueprintList.this).openDialog(null,null,WindowManager.QUESTION_MESSAGE,resources.getString("blueprint.del.confirm", blueprint.getName()),Action2.okCancel(),BlueprintList.this); 
       if (rc!=0) 
         return;
       // remove selection
@@ -218,7 +211,7 @@ public class BlueprintList extends JSplitPane {
       try {
         blueprintManager.delBlueprint(blueprint);
       } catch (IOException e) {
-        // FIXME show a warning dialog
+        // TODO show a warning dialog
       }
       // show it
       model.fireStructureChanged();

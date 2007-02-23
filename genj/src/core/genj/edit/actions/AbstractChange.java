@@ -29,6 +29,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
@@ -78,7 +79,11 @@ public abstract class AbstractChange extends Action2 implements UnitOfWork {
     // for a NPE I've seen a null message - better convert that to string here
     String message = ""+t.getMessage();
     // show it
-    manager.getWindowManager().openDialog("err", "Error", WindowManager.ERROR_MESSAGE, message, Action2.okOnly(), getTarget());
+    getWindowManager().openDialog("err", "Error", WindowManager.ERROR_MESSAGE, message, Action2.okOnly(), getTarget());
+  }
+  
+  protected WindowManager getWindowManager() {
+    return WindowManager.getInstance(getTarget());    
   }
   
   /** 
@@ -131,7 +136,7 @@ public abstract class AbstractChange extends Action2 implements UnitOfWork {
       };
       
       // Recheck with the user
-      int rc = manager.getWindowManager().openDialog(getClass().getName(), getText(), WindowManager.QUESTION_MESSAGE, getDialogContent(), actions, getTarget() );
+      int rc = getWindowManager().openDialog(getClass().getName(), getText(), WindowManager.QUESTION_MESSAGE, getDialogContent(), actions, getTarget() );
       if (rc!=0)
         return;
     }
@@ -140,12 +145,12 @@ public abstract class AbstractChange extends Action2 implements UnitOfWork {
     try {
       gedcom.doUnitOfWork(this);
     } catch (Throwable t) {
-      manager.getWindowManager().openDialog(getClass().getName(), null, WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), getTarget());
+      getWindowManager().openDialog(getClass().getName(), null, WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), getTarget());
     }
     
     // set focus?
-    if (focus!=null) 
-      manager.fireContextSelected(new ViewContext(focus));
+    if (focus!=null)  
+      WindowManager.getInstance(getTarget()).broadcast(new ContextSelectionEvent(new ViewContext(focus), getTarget()));
     
     // done
   }

@@ -22,7 +22,6 @@ package genj.edit.beans;
 import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.util.swing.TextFieldWidget;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 
@@ -35,8 +34,8 @@ public class SimpleValueBean extends PropertyBean {
   /** members */
   private TextFieldWidget tfield;
 
-  void initialize(ViewManager setViewManager, Registry setRegistry) {
-    super.initialize(setViewManager, setRegistry);
+  void initialize(Registry setRegistry) {
+    super.initialize(setRegistry);
     
     tfield = new TextFieldWidget("", 8);
     tfield.addChangeListener(changeSupport);

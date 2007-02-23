@@ -83,18 +83,14 @@ public class BlueprintEditor extends JSplitPane {
   /** whether we've changed */
   private boolean isChanged = false;
   
-  /** the window manager */
-  private WindowManager windowManager;
-
   /** the blueprint manager */
   private BlueprintManager blueprintManager;
     
   /**
    * Constructor   */
-  public BlueprintEditor(BlueprintManager bpMgr, WindowManager winMgr) { 
+  public BlueprintEditor(BlueprintManager bpMgr) { 
     // remember
     blueprintManager = bpMgr;
-    windowManager = winMgr;
     // preview
     preview = new Preview();
     preview.setBorder(BorderFactory.createTitledBorder(resources.getString("blueprint.preview")));
@@ -168,7 +164,7 @@ public class BlueprintEditor extends JSplitPane {
         // mark unchanged
         isChanged = false;
       } catch (IOException e) {
-        // FIXME add a user warning
+        // TODO add a user warning
       }
     }
   }
@@ -245,7 +241,7 @@ public class BlueprintEditor extends JSplitPane {
       TagPath[] paths = Grammar.getAllPaths(blueprint.getTag(), Property.class);
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
-      int option =  windowManager.openDialog(null,resources.getString("prop.insert.tip"),WindowManager.QUESTION_MESSAGE,tree,Action2.okCancel(),BlueprintEditor.this);        
+      int option =  WindowManager.getInstance(getTarget()).openDialog(null,resources.getString("prop.insert.tip"),WindowManager.QUESTION_MESSAGE,tree,Action2.okCancel(),BlueprintEditor.this);        
       // .. OK?
       if (option!=0) return;
       // add those properties

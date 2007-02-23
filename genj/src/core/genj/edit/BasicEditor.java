@@ -38,9 +38,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
-import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
@@ -483,7 +481,7 @@ import spin.Spin;
   /**
    * A panel containing all the beans for editing
    */
-  private class BeanPanel extends JPanel implements ContextListener, ChangeListener {
+  private class BeanPanel extends JPanel implements ChangeListener {
 
     /** top level tags */
     private Set topLevelTags = new HashSet();
@@ -601,16 +599,6 @@ import spin.Spin;
     public void stateChanged(ChangeEvent e) {
       ok.setEnabled(true);
       cancel.setEnabled(true);
-    }
-    
-    /**
-     * ContextListener callback - a bean tells us about a possible context change
-     */
-    public void handleContextSelectionEvent(ContextSelectionEvent event) {
-      if (event.isActionPerformed())
-        view.setContext(event.getContext(), true);
-      else
-        view.fireContextSelected(event.getContext());
     }
     
     /**

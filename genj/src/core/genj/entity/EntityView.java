@@ -28,12 +28,12 @@ import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
+import genj.window.WindowBroadcastListener;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -53,7 +53,7 @@ import spin.Spin;
  * A rendering component showing the currently selected entity
  * via html
  */
-public class EntityView extends JPanel implements ContextListener, ToolBarSupport, ContextProvider {
+public class EntityView extends JPanel implements WindowBroadcastListener, ToolBarSupport, ContextProvider {
 
   /** language resources we use */  
   /*package*/ final static Resources resources = Resources.get(EntityView.class);
@@ -101,17 +101,18 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
     gedcom = ged;
 
     // grab data from registry
-    BlueprintManager bpm = viewManager.getBlueprintManager();
+    BlueprintManager bpm = BlueprintManager.getInstance();
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       String tag = Gedcom.ENTITIES[t];
       type2blueprint.put(tag, bpm.getBlueprint(ged.getOrigin(), tag, registry.get("blueprint."+tag, "")));
     }
     isAntialiasing  = registry.get("antial"  , false);
     
-    // set first entity
-    ViewContext context = manager.getLastSelectedContext(gedcom); 
-    if (context!=null) 
-      setEntity(context.getEntity());
+    // Check if we can preset something to show
+    Entity entity = gedcom.getEntity(registry.get("entity", (String)null));
+    if (entity==null) entity = gedcom.getFirstEntity(Gedcom.INDI);
+    if (entity!=null) 
+      setEntity(entity);
     
     // done    
   }
@@ -153,6 +154,8 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
       registry.put("blueprint."+tag, getBlueprint(tag).getName()); 
     }
     registry.put("antial"  , isAntialiasing );
+    if (entity!=null)
+      registry.put("entity", entity.getId());
     
     // done
   }
@@ -162,11 +165,15 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
    * @see javax.swing.JComponent#paintComponent(Graphics)
    */
   protected void paintComponent(Graphics g) {
+    
     Rectangle bounds = getBounds();
     g.setColor(Color.white);
     g.fillRect(0,0,bounds.width,bounds.height);
     g.setColor(Color.black);
 
+    if (renderer==null)
+      return;
+    
       ((Graphics2D)g).setRenderingHint(
         RenderingHints.KEY_ANTIALIASING,
         isAntialiasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
@@ -187,7 +194,7 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   /*package*/ Blueprint getBlueprint(String tag) {
     Blueprint result = (Blueprint)type2blueprint.get(tag);
     if (result==null) {
-      result = viewManager.getBlueprintManager().getBlueprint(gedcom.getOrigin(),tag, "");
+      result = BlueprintManager.getInstance().getBlueprint(gedcom.getOrigin(),tag, "");
       type2blueprint.put(tag, result);
     }
     return result;
@@ -212,10 +219,14 @@ public class EntityView extends JPanel implements ContextListener, ToolBarSuppor
   /**
    * view callback
    */
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    Entity e = event.getContext().getEntity();
-    if (e!=null)
-      setEntity(e);
+  public boolean handleBroadcastEvent(genj.window.WindowBroadcastEvent event) {
+    ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
+    if (cse!=null) {
+      Entity e = cse.getContext().getEntity();
+      if (e!=null)
+        setEntity(e);
+    }
+    return true;
   }
   
   /**

@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
 import genj.view.ContextProvider;
 import genj.view.ViewManager;
@@ -219,7 +220,7 @@ import swingx.tree.AbstractTreeModel;
       GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
       final QueryWidget query = new QueryWidget(location, view);
       //GeoLocation selection = query.getSelectedLocation();
-      int rc = viewManager.getWindowManager().openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
+      int rc = WindowManager.getInstance(GeoList.this).openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
       // check if he wants to change the location
       if (rc==0) 
         model.setCoordinates(location, query.getGeoLocation().getCoordinate());
@@ -328,7 +329,7 @@ import swingx.tree.AbstractTreeModel;
         if (!props.isEmpty()) {
           ViewContext context = new ViewContext(model.getGedcom());
           context.addProperties(Property.toArray(props));
-          viewManager.fireContextSelected(context);
+          WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(context, this));
         }
       } finally {
         ignoreSelectionChanges = false;        

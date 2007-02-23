@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2007 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,23 +17,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.view;
-
-import genj.io.Filter;
+package genj.window;
 
 /**
- * Filter Support makes filtering Gedcom information possible
+ * A listener to window broadcasts
  */
-public interface FilterSupport {
+public interface WindowBroadcastListener {
 
   /**
-   * Return a filter
+   * Handle a broadcast event
+   * @return whether to continue with the event into component sub-hierarchy
    */
-  public Filter getFilter();
+  public boolean handleBroadcastEvent(WindowBroadcastEvent event);
   
-  /**
-   * Returns the name of the filter
-   */
-  public String getFilterName();
-
-} //FilterSupport
+}

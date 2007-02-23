@@ -36,6 +36,7 @@ import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.ContextProvider;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
@@ -440,7 +441,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
         matcher = getMatcher(value, checkRegExp.isSelected());
         tagPath = path.length()>0 ? new TagPath(path) : null;
       } catch (IllegalArgumentException e) {
-        manager.getWindowManager().openDialog(null,value,WindowManager.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(),SearchView.this);
+        WindowManager.getInstance(getTarget()).openDialog(null,value,WindowManager.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(),SearchView.this);
         return false;
       }
       // remember
@@ -468,7 +469,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
      * @see genj.util.swing.Action2#handleThrowable(java.lang.String, java.lang.Throwable)
      */
     protected void handleThrowable(String phase, Throwable t) {
-      manager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,t.getMessage() ,Action2.okOnly(),SearchView.this);
+      WindowManager.getInstance(getTarget()).openDialog(null,null,WindowManager.INFORMATION_MESSAGE,t.getMessage() ,Action2.okOnly(),SearchView.this);
     }
 
     /**
@@ -631,7 +632,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
     }
 
     public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
-      // FIXME could do a re-search here
+      // TODO could do a re-search here
     }
 
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
@@ -639,7 +640,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
     }
 
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-      // FIXME could do a re-search here
+      // TODO could do a re-search here
     }
 
     public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
@@ -733,7 +734,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
     public void valueChanged(ListSelectionEvent e) {
       int row = listResults.getSelectedIndex();
       if (row>=0)
-        manager.fireContextSelected(new ViewContext(results.getHit(row).getProperty()));
+        WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(new ViewContext(results.getHit(row).getProperty()), this));
     }
 
     

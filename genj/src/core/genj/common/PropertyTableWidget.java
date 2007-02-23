@@ -19,6 +19,8 @@
  */
 package genj.common;
 
+import genj.gedcom.Context;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
@@ -34,7 +36,9 @@ import genj.util.swing.SortableTableModel;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
-import genj.view.ViewManager;
+import genj.window.WindowBroadcastEvent;
+import genj.window.WindowBroadcastListener;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -48,6 +52,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.font.FontRenderContext;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -76,12 +81,9 @@ import javax.swing.table.TableModel;
 /**
  * A widget that shows entities in rows and columns
  */
-public class PropertyTableWidget extends JPanel {
+public class PropertyTableWidget extends JPanel implements WindowBroadcastListener {
   
   private final static Logger LOG = Logger.getLogger("genj.common");
-  
-  /** a reference to the view manager */
-  private ViewManager viewManager;
   
   /** table component */
   private Table table;
@@ -92,16 +94,14 @@ public class PropertyTableWidget extends JPanel {
   /**
    * Constructor
    */
-  public PropertyTableWidget(ViewManager manager) {
-    this(null, manager);
+  public PropertyTableWidget() {
+    this(null);
   }
   
   /**
    * Constructor
    */
-  public PropertyTableWidget(PropertyTableModel propertyModel, ViewManager manager) {
-    
-    this.viewManager = manager;
+  public PropertyTableWidget(PropertyTableModel propertyModel) {
     
     // create table comp
     table = new Table();
@@ -159,18 +159,35 @@ public class PropertyTableWidget extends JPanel {
   /**
    * Select a cell
    */
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
+  public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
     
     // a message from ourselves?
-    if (event.getProvider()==table)
-      return;
+    if (event.getSource()==table)
+      return true;
 
+    // a meaningful event for us?
+    ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, table.propertyModel.getGedcom());
+    if (!(event instanceof ContextSelectionEvent))
+      return true;
+
+    // set selection
     try {
       table.ignoreSelection = true;
       
       // loop over selected properties
-      ViewContext context = event.getContext();
+      Context context = cse.getContext();
       Property[] props = context.getProperties();
+      
+      // use all of selected entities properties if there are no property selections
+      if (props.length==0) {
+        List all = new ArrayList();
+        Entity[] ents = context.getEntities();
+        for (int i = 0; i < ents.length; i++) {
+          all.addAll(ents[i].getProperties(Property.class));
+          all.add(ents[i]);
+        }
+        props = Property.toArray(all);
+      }
       
       ListSelectionModel rows = table.getSelectionModel();
       ListSelectionModel cols = table.getColumnModel().getSelectionModel();
@@ -202,7 +219,9 @@ public class PropertyTableWidget extends JPanel {
     } finally {
       table.ignoreSelection = false;
     }
-    // done
+    
+    // we're done
+    return false;
   }
   
   /**
@@ -493,7 +512,7 @@ public class PropertyTableWidget extends JPanel {
       
       // tell about it
       if (context!=null)
-        viewManager.fireContextSelected(context, this);
+        WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(context, this));
 
       
       // done
@@ -646,22 +665,22 @@ public class PropertyTableWidget extends JPanel {
       }
       
       /** context */
-      private ViewContext getContextAt(int row, int col) {
+      private Context getContextAt(int row, int col) {
         // nothing to do?
         if (model==null)
           return null;
         // selected property?
         Property prop = getPropertyAt(row, col);
         if (prop!=null)
-          return new ViewContext(prop);
+          return new Context(prop);
         
         // selected row at least?
         Property root = model.getProperty(row);
         if (root!=null)
-          return new ViewContext(root.getEntity());
+          return new Context(root.getEntity());
 
         // fallback
-        return new ViewContext(model.getGedcom());
+        return new Context(model.getGedcom());
       }
       
       /** property */
@@ -735,7 +754,7 @@ public class PropertyTableWidget extends JPanel {
       public Dimension getPreferredSize() {
         if (curProp==null)
           return new Dimension(0,0);
-        return Dimension2d.getDimension(PropertyRenderer.get(curProp).getSize(getFont(), new FontRenderContext(null, false, false), curProp, RENDERER_PREFERENCE, viewManager.getDPI()));
+        return Dimension2d.getDimension(PropertyRenderer.get(curProp).getSize(getFont(), new FontRenderContext(null, false, false), curProp, RENDERER_PREFERENCE, Options.getInstance().getDPI()));
       }
       
       /**
@@ -765,7 +784,7 @@ public class PropertyTableWidget extends JPanel {
         bounds.x += 1;
         bounds.width -= 2;
         // let it render
-        proxy.render(graphics, bounds, curProp, RENDERER_PREFERENCE, viewManager.getDPI());
+        proxy.render(graphics, bounds, curProp, RENDERER_PREFERENCE, Options.getInstance().getDPI());
         // done
       }
       

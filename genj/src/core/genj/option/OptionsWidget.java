@@ -58,9 +58,6 @@ public class OptionsWidget extends JPanel {
   /** tree we're using */
   private JTree tree;
   
-  /** reference to window manager */
-  private WindowManager manager;
-  
   /** tree model */
   private Model model = new Model();
   
@@ -73,17 +70,16 @@ public class OptionsWidget extends JPanel {
   /**
    * Constructor
    */
-  public OptionsWidget(String title, WindowManager manager) {
-    this(title, manager, null);
+  public OptionsWidget(String title) {
+    this(title, null);
   }
   
   /**
    * Constructor
    */
-  public OptionsWidget(String title, WindowManager manager, List options) {
+  public OptionsWidget(String title, List options) {
 
     this.title = title;
-    this.manager = manager;
         
     // setup
     tree = new JTree(model) {
@@ -169,7 +165,7 @@ public class OptionsWidget extends JPanel {
    * Access to window manager
    */  
   public WindowManager getWindowManager() {
-    return manager;
+    return WindowManager.getInstance(this);
   } 
   
   /**

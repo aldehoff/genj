@@ -31,16 +31,15 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextListener;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
+import genj.window.WindowBroadcastListener;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -65,7 +64,7 @@ import spin.Spin;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends JPanel implements ToolBarSupport, ContextListener, ContextProvider  {
+public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastListener, ContextProvider  {
   
   /*package*/ final static Logger LOG = Logger.getLogger("genj.edit");
   
@@ -186,14 +185,13 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     instances.add(this);
     
     // Check if we can preset something to edit
-    ViewContext context = manager.getLastSelectedContext(gedcom);
-    try { 
-      context = new ViewContext(gedcom.getEntity(registry.get("sticky",(String)null))); 
-      isSticky = true;
-    } catch (Throwable t) {
+    Entity entity = gedcom.getEntity(registry.get("entity", (String)null));
+    if (entity==null) entity = gedcom.getFirstEntity(Gedcom.INDI);
+    if (entity!=null) {
+      isSticky = registry.get("sticky", false);
+      setContext(new ViewContext(entity), false);
     }
-    setContext(context, false);
-
+    
     // listen for available undos/removes
     gedcom.addGedcomListener((GedcomListener)Spin.over(undo));
     gedcom.addGedcomListener((GedcomListener)Spin.over(redo));
@@ -206,10 +204,10 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   public void removeNotify() {
     
     // remember context
-    Entity e = null;
-    if (isSticky) 
-      e = editor.getContext().getEntity();
-    registry.put("sticky", e!=null?e.getId():"");
+    registry.put("sticky", isSticky);
+    Entity entity = editor.getContext().getEntity();
+    if (entity!=null)
+      registry.put("entity", entity.getId());
 
     // remember mode
     registry.put("advanced", mode.advanced);
@@ -235,20 +233,6 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   }
   
   /**
-   * WindowManager
-   */
-  /*package*/ WindowManager getWindowManager() {
-    return manager.getWindowManager();
-  }
-  
-  /**
-   * ViewManager
-   */
-  /*package*/ ViewManager getViewManager() {
-    return manager;
-  }
-  
-  /**
    * Ask the user whether he wants to commit changes 
    */
   /*package*/ boolean isCommitChanges() {
@@ -266,7 +250,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     JCheckBox auto = new JCheckBox(resources.getString("confirm.autocomit"));
     auto.setFocusable(false);
     
-    int rc = manager.getWindowManager().openDialog(null, 
+    int rc = WindowManager.getInstance(this).openDialog(null, 
         resources.getString("confirm.keep.changes"), WindowManager.QUESTION_MESSAGE, 
         new JComponent[] {
           new JLabel(resources.getString("confirm.keep.changes")),
@@ -309,35 +293,45 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
   /**
    * Context listener callback
    */
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
+  public boolean handleBroadcastEvent(genj.window.WindowBroadcastEvent event) {
     
     // ignore it?
     if (ignoreContextSelection)
-      return;
+      return false;
     
-    ViewContext context = event.getContext();
-    ContextProvider provider = event.getProvider();
+    ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
+    if (cse==null)
+      return false;
+    
+    ViewContext context = cse.getContext();
     
     // coming from some other view?
-    if (provider==null || !SwingUtilities.isDescendingFrom( (Component)provider, this)) {
+    if (cse.getSource()==null || !SwingUtilities.isDescendingFrom( cse.getSource(), this)) {
       
       // take it if not sticky
       if (!isSticky) setContext(context, false);
-
+      
       // done
-      return;
+      return false;
     }
+      
+    // came from us - needs to be a double click
+    if (!cse.isActionPerformed())
+      return false;
     
-    // came from us - a double click on an xref??
-    if (event.isActionPerformed()&&(context.getProperty() instanceof PropertyXRef)) {
-
+    if (context.getProperty() instanceof PropertyXRef) {
+      
       PropertyXRef xref = (PropertyXRef)context.getProperty();
       xref = xref.getTarget();
-      if (xref!=null) 
-        setContext(new ViewContext(xref), false);
+      if (xref!=null)
+        context = new ViewContext(xref);
     }
     
+    // change context
+    setContext(context, false);
+      
     // done
+    return false;
   }
   
   public void setContext(ViewContext context, boolean tellOthers) {
@@ -364,7 +358,7 @@ public class EditView extends JPanel implements ToolBarSupport, ContextListener,
     
     try {
       ignoreContextSelection = true;
-      manager.fireContextSelected(context);
+      WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(context, this));
     } finally { 
       ignoreContextSelection = false;
     }

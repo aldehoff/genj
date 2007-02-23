@@ -19,36 +19,33 @@
  */
 package genj.view;
 
+import genj.gedcom.Gedcom;
+import genj.window.WindowBroadcastEvent;
+
+import java.awt.Component;
+
 /**
  * A class wrapping the event of a context selection 
  */
-public class ContextSelectionEvent {
+public class ContextSelectionEvent extends WindowBroadcastEvent {
   
-  private ContextProvider provider;
   private ViewContext context;
   private boolean isActionPerformed = false;
   
   /**
    * Constructor
    */
-  public ContextSelectionEvent(ViewContext context, ContextProvider provider) {
+  public ContextSelectionEvent(ViewContext context, Component source) {
+    super(source);
     this.context = context;
-    this.provider = provider;
   }
   
   /**
    * Constructor
    */
-  public ContextSelectionEvent(ViewContext context, ContextProvider provider, boolean isActionPerformed) {
-    this(context, provider);
+  public ContextSelectionEvent(ViewContext context, Component source, boolean isActionPerformed) {
+    this(context, source);
     this.isActionPerformed = isActionPerformed;
-  }
-  
-  /**
-   * Read-Only Accessor
-   */
-  public ContextProvider getProvider() {
-    return provider;
   }
   
   /**
@@ -64,5 +61,19 @@ public class ContextSelectionEvent {
   public boolean isActionPerformed() {
     return isActionPerformed;
   }
+  
+  /**
+   * auto converter and check
+   */
+  public static ContextSelectionEvent narrow(WindowBroadcastEvent event, Gedcom gedcom) {
+    ContextSelectionEvent cse = narrow(event);
+    return cse==null || cse.getContext().getGedcom()!=gedcom ? null : cse;
+  }
 
+  /**
+   * auto converter and check
+   */
+  public static ContextSelectionEvent narrow(WindowBroadcastEvent event) {
+    return event instanceof ContextSelectionEvent ? (ContextSelectionEvent)event : null;
+  }
 }

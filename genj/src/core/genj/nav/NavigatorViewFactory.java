@@ -39,7 +39,7 @@ public class NavigatorViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#createView(String, Gedcom, Registry, ViewManager)
    */
   public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
-    return new NavigatorView(title,gedcom,registry,manager);
+    return new NavigatorView(title,gedcom,registry);
   }
   
   /**

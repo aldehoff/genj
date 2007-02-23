@@ -31,11 +31,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
-import genj.view.ContextListener;
-import genj.view.ContextProvider;
-import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
-import genj.view.ViewContext;
 import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
@@ -58,7 +54,7 @@ import javax.swing.table.TableModel;
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport, ContextListener, ContextProvider {
+public class TableView extends JPanel implements ToolBarSupport  {
   
   private final static Logger LOG = Logger.getLogger("genj.table");
 
@@ -113,7 +109,7 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     loadProperties();
     
     // create our table
-    propertyTable = new PropertyTableWidget(null, manager);
+    propertyTable = new PropertyTableWidget(null);
     propertyTable.setAutoResize(false);
 
     // lay it out
@@ -129,13 +125,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
   
   /*package*/ TableModel getModel() {
     return propertyTable.getTableModel();
-  }
-  
-  /**
-   * ContextProvider callback 
-   */
-  public ViewContext getContext() {
-    return new ViewContext(gedcom);
   }
   
   /**
@@ -204,13 +193,6 @@ public class TableView extends JPanel implements ToolBarSupport, ContextListener
     propertyTable.setColumnLayout(currentMode.layout);
   }
   
-  /**
-   * callback - context changed
-   */
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    propertyTable.handleContextSelectionEvent(event);
-  }
-
   /**
    * @see genj.view.ToolBarSupport#populate(JToolBar)
    */

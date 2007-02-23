@@ -23,6 +23,7 @@ import genj.option.Option;
 import genj.option.OptionListener;
 import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
+import genj.renderer.Options;
 import genj.util.Dimension2d;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -30,7 +31,6 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.UnitGraphics;
-import genj.view.Options;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -129,7 +129,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     List options = PropertyOption.introspect(task.getRenderer());
     for (int i = 0; i < options.size(); i++) 
       ((Option)options.get(i)).addOptionListener(this);
-    return new OptionsWidget(resources.getString("printer"), task.getPrintManager().getWindowManager(), options);
+    return new OptionsWidget(resources.getString("printer"), options);
   }
   
   /**

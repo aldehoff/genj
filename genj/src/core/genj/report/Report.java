@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.125 $ $Author: nmeier $ $Date: 2007-02-18 04:33:29 $
+ * $Revision: 1.126 $ $Author: nmeier $ $Date: 2007-02-23 12:59:49 $
  */
 package genj.report;
 
@@ -40,7 +40,6 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
-import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -129,8 +128,8 @@ public abstract class Report implements Cloneable {
   /** out */
   protected PrintWriter out;
 
-  /** a view manager */
-  private ViewManager viewManager;
+  /** a window  manager */
+  private WindowManager windowManager;
 
   /** owning component */
   private JComponent owner;
@@ -151,7 +150,7 @@ public abstract class Report implements Cloneable {
   /**
    * integration - private instance for a run
    */
-  /*package*/ Report getInstance(ViewManager viewManager, JComponent owner, PrintWriter out) {
+  /*package*/ Report getInstance(JComponent owner, PrintWriter out) {
 
     try {
 
@@ -162,7 +161,7 @@ public abstract class Report implements Cloneable {
       Report result = (Report)clone();
 
       // remember context for result
-      result.viewManager = viewManager;
+      result.windowManager = WindowManager.getInstance(owner);
       result.out = out;
       result.owner = owner;
 
@@ -371,7 +370,7 @@ public abstract class Report implements Cloneable {
 
     // choose an existing file?
     if (result.exists()&&askForOverwrite) {
-      rc = viewManager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, ReportView.RESOURCES.getString("report.file.overwrite"), Action2.yesNo(), owner);
+      rc = windowManager.openDialog(null, title, WindowManager.WARNING_MESSAGE, ReportView.RESOURCES.getString("report.file.overwrite"), Action2.yesNo(), owner);
       if (rc!=0)
         return null;
     }
@@ -418,7 +417,7 @@ public abstract class Report implements Cloneable {
     Action[] actions = Action2.okCancel();
     FormatOptionsWidget output = new FormatOptionsWidget(doc, foRegistry);
     output.connect(actions[0]);
-    int rc = viewManager.getWindowManager().openDialog("reportdoc", title, WindowManager.QUESTION_MESSAGE, output, actions, owner);
+    int rc = windowManager.openDialog("reportdoc", title, WindowManager.QUESTION_MESSAGE, output, actions, owner);
 
     // cancel?
     if (rc!=0)
@@ -437,7 +436,7 @@ public abstract class Report implements Cloneable {
       file.getParentFile().mkdirs();
 
       // show a progress dialog
-      progress = viewManager.getWindowManager().openNonModalDialog(
+      progress = windowManager.openNonModalDialog(
           null, title, WindowManager.INFORMATION_MESSAGE, new JLabel("Writing Document to file "+file+" ..."), Action2.okOnly(), owner);
 
     }
@@ -450,13 +449,13 @@ public abstract class Report implements Cloneable {
       formatter.format(doc, file);
     } catch (Throwable t) {
       LOG.log(Level.WARNING, "formatting "+doc+" failed", t);
-      viewManager.getWindowManager().openDialog(null, "Formatting "+doc+" failed", WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), owner);
+      windowManager.openDialog(null, "Formatting "+doc+" failed", WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), owner);
       file = null;
     }
 
     // close progress dialog
     if (progress!=null)
-      viewManager.getWindowManager().close(progress);
+      windowManager.close(progress);
 
     // open document
     if (file!=null) {
@@ -498,7 +497,7 @@ public abstract class Report implements Cloneable {
   public final void showComponentToUser(JComponent component) {
 
     // open a non-modal dialog
-    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#component",getName(), WindowManager.INFORMATION_MESSAGE,component,Action2.okOnly(),owner);
+    windowManager.openNonModalDialog(getClass().getName()+"#component",getName(), WindowManager.INFORMATION_MESSAGE,component,Action2.okOnly(),owner);
 
     // done
   }
@@ -511,10 +510,10 @@ public abstract class Report implements Cloneable {
     // prepare content
     JPanel content = new JPanel(new BorderLayout());
     content.add(BorderLayout.NORTH, new JLabel(msg));
-    content.add(BorderLayout.CENTER, new JScrollPane(new ContextListWidget(viewManager, gedcom, annotations)));
+    content.add(BorderLayout.CENTER, new JScrollPane(new ContextListWidget(gedcom, annotations)));
 
     // open a non-modal dialog
-    viewManager.getWindowManager().openNonModalDialog(getClass().getName()+"#items",getName(),WindowManager.INFORMATION_MESSAGE,content,Action2.okOnly(),owner);
+    windowManager.openNonModalDialog(getClass().getName()+"#items",getName(),WindowManager.INFORMATION_MESSAGE,content,Action2.okOnly(),owner);
 
     // done
   }
@@ -542,7 +541,7 @@ public abstract class Report implements Cloneable {
       select.setSelection(entity);
 
     // show it
-    int rc = viewManager.getWindowManager().openDialog("select."+tag,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),select},Action2.okCancel(),owner);
+    int rc = windowManager.openDialog("select."+tag,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),select},Action2.okCancel(),owner);
     if (rc!=0)
       return null;
 
@@ -562,7 +561,7 @@ public abstract class Report implements Cloneable {
 //   * A sub-class can query the user to choose a value that is somehow represented by given component
 //   */
 //  public final boolean getValueFromUser(JComponent options) {
-//    int rc = viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, new JComponent[]{options}, Action2.okCancel(), owner);
+//    int rc = windowManager.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, new JComponent[]{options}, Action2.okCancel(), owner);
 //    return rc==0;
 //  }
 
@@ -574,7 +573,7 @@ public abstract class Report implements Cloneable {
     ChoiceWidget choice = new ChoiceWidget(choices, selected);
     choice.setEditable(false);
 
-    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),choice},Action2.okCancel(),owner);
+    int rc = windowManager.openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),choice},Action2.okCancel(),owner);
 
     return rc==0 ? choice.getSelectedItem() : null;
   }
@@ -603,7 +602,7 @@ public abstract class Report implements Cloneable {
 
     // show 'em
     ChoiceWidget choice = new ChoiceWidget(defaultChoices, defaultChoices.length>0 ? defaultChoices[0] : "");
-    int rc = viewManager.getWindowManager().openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),choice},Action2.okCancel(),owner);
+    int rc = windowManager.openDialog(null,getName(),WindowManager.QUESTION_MESSAGE,new JComponent[]{new JLabel(msg),choice},Action2.okCancel(),owner);
     String result = rc==0 ? choice.getText() : null;
 
     // Remember?
@@ -654,8 +653,8 @@ public abstract class Report implements Cloneable {
     }
 
     // show to user and check for non-ok
-    OptionsWidget widget = new OptionsWidget(title, viewManager.getWindowManager(), os);
-    int rc = viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, widget, Action2.okCancel(), owner);
+    OptionsWidget widget = new OptionsWidget(title, os);
+    int rc = windowManager.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, widget, Action2.okCancel(), owner);
     if (rc!=0)
       return false;
 
@@ -688,7 +687,7 @@ public abstract class Report implements Cloneable {
     for (int i=0;i<as.length;i++)
       as[i]  = new Action2(actions[i]);
 
-    return viewManager.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, msg, as, owner);
+    return windowManager.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, msg, as, owner);
 
   }
 

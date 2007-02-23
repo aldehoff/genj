@@ -19,9 +19,7 @@
  */
 package genj.timeline;
 
-import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyEvent;
 import genj.renderer.Options;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.UnitGraphics;
@@ -31,8 +29,10 @@ import java.awt.FontMetrics;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A renderer knowing how to render a ruler for the timeline
@@ -54,8 +54,8 @@ public class ContentRenderer {
   /** whether we paint a grid or not */
   /*package*/ boolean paintGrid = false;
   
-  /** a property that we consider selected */
-  /*package*/ Property selection = null;
+  /** current selection */
+  /*package*/ Set selection = new HashSet();
   
   /** background color */
   /*package*/ Color cBackground = null;
@@ -82,9 +82,6 @@ public class ContentRenderer {
    * Renders the model
    */
   public void render(UnitGraphics graphics, Model model) {
-    // check selection once more
-    if (selection!=null&&!(selection instanceof PropertyEvent))
-      selection = selection.getEntity();
     // calculate parameters
     init(graphics);
     // render background
@@ -172,7 +169,7 @@ public class ContentRenderer {
   private final void renderEvent(UnitGraphics g, Model model, Model.Event event, Model.Event next, int level) {
 
     // calculate some parameters
-    boolean em  = event.pe == selection || event.pe.getEntity() == selection; 
+    boolean em  = selection.contains(event); 
     FontMetrics fm = g.getFontMetrics();
        
     // draw it's extend

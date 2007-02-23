@@ -24,7 +24,6 @@ import genj.gedcom.PropertySex;
 import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
-import genj.view.ViewManager;
 
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
@@ -50,8 +49,8 @@ public class SexBean extends PropertyBean {
     sex.setSex(getSex());
   }
   
-  void initialize(ViewManager setViewManager, Registry setRegistry) {
-    super.initialize(setViewManager, setRegistry);
+  void initialize(Registry setRegistry) {
+    super.initialize(setRegistry);
     
     // use our layout
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));

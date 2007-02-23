@@ -19,10 +19,18 @@
  */
 package genj.renderer;
 
+import genj.option.CustomOption;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
+import genj.util.Registry;
+import genj.util.Resources;
+import genj.util.swing.Action2;
+import genj.util.swing.ScreenResolutionScale;
+import genj.window.WindowManager;
 
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.util.List;
 
 /**
@@ -30,11 +38,19 @@ import java.util.List;
  */
 public class Options extends OptionProvider {
   
+  private final static Resources RESOURCES = Resources.get(Options.class);
+  
   /** singleton */
   private final static Options instance = new Options();
   
   /** the default font */
   private Font defaultFont = new Font("SansSerif", 0, 11);
+  
+  /** the current screen resolution */
+  private Point dpi = new Point( 
+    Toolkit.getDefaultToolkit().getScreenResolution(),
+    Toolkit.getDefaultToolkit().getScreenResolution()
+  );
   
   /**
    * singleton access
@@ -61,7 +77,48 @@ public class Options extends OptionProvider {
    * Access to our options (one)
    */
   public List getOptions() {
-    return PropertyOption.introspect(getInstance());
+    List result = PropertyOption.introspect(getInstance());
+    result.add(new ScreenResolutionOption());
+    return result;
   }
   
+  /** 
+   * Accessor - DPI
+   */
+  public Point getDPI() {
+    return dpi;
+  }
+
+  /** 
+   * Option for Screen Resolution
+   */
+  private class ScreenResolutionOption extends CustomOption {
+
+    /** callback - user readble name */
+    public String getName() {
+      return RESOURCES.getString("option.screenresolution");
+    }
+
+    /** callback - persist */
+    public void persist(Registry registry) {
+      registry.put("dpi", dpi);
+    }
+
+    /** callback - restore */
+    public void restore(Registry registry) {
+      Point set = registry.get("dpi", (Point)null);
+      if (set!=null)
+        dpi = set;
+    }
+
+    /** callback - edit option */
+    protected void edit() {
+      ScreenResolutionScale scale = new ScreenResolutionScale(dpi);
+      int rc = widget.getWindowManager().openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, scale, Action2.okCancel(), widget);
+      if (rc==0)
+        dpi = scale.getDPI();
+    }
+
+  } //ScreenResolutionOption
+
 } //Options

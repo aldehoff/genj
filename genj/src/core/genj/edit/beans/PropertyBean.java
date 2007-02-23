@@ -21,13 +21,13 @@ package genj.edit.beans;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Property;
+import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.view.ViewContext;
 import genj.view.ContextProvider;
-import genj.view.ViewManager;
+import genj.view.ViewContext;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -57,9 +57,6 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /** the property to edit */
   protected Property property;
   
-  /** the current view manager */
-  protected ViewManager viewManager;
-  
   /** current registry */
   protected Registry registry;
   
@@ -72,9 +69,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Initialize (happens once)
    */
-  /*package*/ void initialize(ViewManager setViewManager, Registry setRegistry) {
-    // our state
-    viewManager = setViewManager;
+  /*package*/ void initialize(Registry setRegistry) {
     registry = setRegistry;
   }
   
@@ -259,7 +254,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     protected void setEntity(Entity ent) {
       entity = ent;
       if (entity!=null)
-        renderer = new EntityRenderer(viewManager.getBlueprintManager().getBlueprint(entity.getGedcom().getOrigin(), entity.getTag(), ""));
+        renderer = new EntityRenderer(BlueprintManager.getInstance().getBlueprint(entity.getGedcom().getOrigin(), entity.getTag(), ""));
       repaint();
     }
   } //Preview

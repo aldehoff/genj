@@ -28,7 +28,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageWidget;
 import genj.view.ViewContext;
-import genj.view.ViewManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
@@ -61,8 +60,8 @@ public class FileBean extends PropertyBean {
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
   
-  void initialize(ViewManager setViewManager, Registry setRegistry) {
-    super.initialize(setViewManager, setRegistry);
+  void initialize(Registry setRegistry) {
+    super.initialize(setRegistry);
     
     setLayout(new BorderLayout());
     
@@ -76,7 +75,8 @@ public class FileBean extends PropertyBean {
         preview.setSource(new ImageWidget.FileSource(file));
 
         // warn about size
-        if (file.exists()&&file.length()>PropertyFile.getMaxValueAsIconSize(false)) {
+        WindowManager wm = WindowManager.getInstance(FileBean.this);
+        if (wm!=null&&file.exists()&&file.length()>PropertyFile.getMaxValueAsIconSize(false)) {
         
           String txt = resources.getString("file.max", new String[]{
             file.getName(),
@@ -84,7 +84,7 @@ public class FileBean extends PropertyBean {
             String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
           }); 
         
-          viewManager.getWindowManager().openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,Action2.okOnly(), FileBean.this);
+          wm.openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,Action2.okOnly(), FileBean.this);
         }
 
         // done

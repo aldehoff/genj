@@ -37,6 +37,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
 import genj.window.WindowManager;
 
@@ -279,7 +280,7 @@ import javax.swing.tree.TreePath;
       select.setSelection(gedcom.getEntity(registry.get("select."+entity.getTag(), (String)null)));
 
       // show it
-      boolean cancel = 0!=editView.getWindowManager().openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, Action2.okCancel(), AdvancedEditor.this);
+      boolean cancel = 0!=WindowManager.getInstance(AdvancedEditor.this).openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, Action2.okCancel(), AdvancedEditor.this);
       if (cancel)
         return;
 
@@ -298,7 +299,7 @@ import javax.swing.tree.TreePath;
           }
         });
       } catch (GedcomException e) {
-        editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(), AdvancedEditor.this);
+        WindowManager.getInstance(AdvancedEditor.this).openDialog(null,null,WindowManager.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(), AdvancedEditor.this);
       }
 
       // done
@@ -358,7 +359,7 @@ import javax.swing.tree.TreePath;
       // warn about cut
       String veto = getVeto(selection);
       if (veto.length()>0) {
-        int rc = editView.getWindowManager().openDialog("cut.warning", resources.getString("action.cut"), WindowManager.WARNING_MESSAGE, veto, new Action[]{ new Action2(resources.getString("action.cut")), Action2.cancel() }, AdvancedEditor.this );
+        int rc = WindowManager.getInstance(AdvancedEditor.this).openDialog("cut.warning", resources.getString("action.cut"), WindowManager.WARNING_MESSAGE, veto, new Action[]{ new Action2(resources.getString("action.cut")), Action2.cancel() }, AdvancedEditor.this );
         if (rc!=0)
           return;
       }
@@ -535,14 +536,14 @@ import javax.swing.tree.TreePath;
         JLabel label = new JLabel(resources.getString("add.choose"));
         ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
         JCheckBox check = new JCheckBox(resources.getString("add.default_too"),addDefaults);
-        int option = editView.getWindowManager().openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(), AdvancedEditor.this); 
+        int option = WindowManager.getInstance(AdvancedEditor.this).openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(), AdvancedEditor.this); 
         if (option!=0)
           return;
         // .. calculate chosen tags
         tags = choose.getSelectedTags();
         addDefaults = check.isSelected();
         if (tags.length==0)  {
-          editView.getWindowManager().openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),Action2.okOnly(), AdvancedEditor.this);
+          WindowManager.getInstance(AdvancedEditor.this).openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),Action2.okOnly(), AdvancedEditor.this);
           return;
         }
       }
@@ -698,12 +699,12 @@ import javax.swing.tree.TreePath;
 
       }
       
-      // tell to view
+      // tell to others
       if (selection.length>0) try {
         ignoreSelection = true;
         ViewContext context = new ViewContext(gedcom);
         context.addProperties(selection);
-        editView.setContext(context, true);
+        WindowManager.getInstance(AdvancedEditor.this).broadcast(new ContextSelectionEvent(context, AdvancedEditor.this));
       } finally {
         ignoreSelection = false;
       }

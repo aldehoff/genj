@@ -27,7 +27,6 @@ import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
 import genj.util.swing.NestedBlockLayout;
-import genj.view.ViewManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -47,8 +46,8 @@ public class EventBean extends PropertyBean {
   private JLabel lAgeAt;
   private JTextField tAge;
   
-  void initialize(ViewManager setViewManager, Registry setRegistry) {
-    super.initialize(setViewManager, setRegistry);
+  void initialize(Registry setRegistry) {
+    super.initialize(setRegistry);
     
     setLayout(LAYOUT.copy());
     

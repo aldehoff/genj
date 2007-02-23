@@ -304,10 +304,10 @@ public class GedcomWriter implements Trackable {
           target = p.getEntity();
       }
       for (int f = 0; f < filters.length; f++) {
-        if (filters[f].accept(prop) == false)
+        if (filters[f].checkFilter(prop) == false)
           return;
         if (target != null)
-          if (filters[f].accept(target) == false)
+          if (filters[f].checkFilter(target) == false)
             return;
       }
 

@@ -41,7 +41,7 @@ public class GeoViewFactory implements ViewFactory {
    * Need a view
    */
   public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
-    return new GeoView(title, gedcom, registry, manager);
+    return new GeoView(title, gedcom, registry);
   }
 
   /**

@@ -27,7 +27,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
-import genj.view.ViewManager;
 
 import javax.swing.JLabel;
 
@@ -51,8 +50,8 @@ public class AgeBean extends PropertyBean {
     property.setValue(tfield.getText());
   }
   
-  void initialize(ViewManager setViewManager, Registry setRegistry) {
-    super.initialize(setViewManager, setRegistry);
+  void initialize(Registry setRegistry) {
+    super.initialize(setRegistry);
     
     tfield = new TextFieldWidget("", TEMPLATE.length());
     tfield.addChangeListener(changeSupport);

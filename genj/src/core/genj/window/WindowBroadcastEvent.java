@@ -17,16 +17,45 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.view;
+package genj.window;
+
+import java.awt.Component;
 
 /**
- * Support for a popup menu on entities
+ * An event broadcasted within the window managers known components
  */
-public interface ContextListener {
+public abstract class WindowBroadcastEvent {
+
+  private WindowManager manager;
+  private Component source;
   
   /**
-   * Callback - a context has been selected
+   * constructor
    */
-  public void handleContextSelectionEvent(ContextSelectionEvent event);
+  protected WindowBroadcastEvent(Component source) {
+    this.source = source;
+  }
+  
+  /**
+   * the source manager
+   */
+  public Component getSource() {
+    return source;
+  }
+  
+  /**
+   * the window manager
+   */
+  public WindowManager getWindowManager() {
+    if (manager==null) throw new IllegalStateException("event not initialized by window manager");
+    return manager;
+  }
+  
+  /**
+   * setter
+   */
+  /*package*/ void setWindowManager(WindowManager manager) {
+    this.manager = manager;
+  }
 
 }

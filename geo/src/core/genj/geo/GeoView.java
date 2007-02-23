@@ -26,11 +26,11 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewManager;
-import genj.window.WindowManager;
+import genj.window.WindowBroadcastEvent;
+import genj.window.WindowBroadcastListener;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -82,7 +82,7 @@ import com.vividsolutions.jump.workbench.ui.zoom.ZoomTool;
 /**
  * The view showing gedcom data in geographic context
  */
-public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
+public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarSupport {
   
   /*package*/ final static Logger LOG = Logger.getLogger("genj.geo");
   
@@ -130,11 +130,10 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Constructor
    */
-  public GeoView(String title, Gedcom gedcom, Registry registry, ViewManager viewManager) {
+  public GeoView(String title, Gedcom gedcom, Registry registry) {
     
     // state to remember
     this.registry = registry;
-    this.viewManager = viewManager;
     this.gedcom = gedcom;
     
     // create our model 
@@ -194,8 +193,11 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
   /**
    * Callback for context changes
    */
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    locationList.setSelectedContext(event.getContext());
+  public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
+    ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
+    if (cse!=null)
+      locationList.setSelectedContext(cse.getContext());
+    return false;
   }
   
   /**
@@ -242,13 +244,6 @@ public class GeoView extends JPanel implements ContextListener, ToolBarSupport {
    */
   public void setSelection(Collection locations) {
     selectionLayer.setLocations(locations);
-  }
-  
-  /**
-   * Access to window manager
-   */
-  public WindowManager getWindowManager() {
-    return viewManager.getWindowManager();
   }
   
   /**

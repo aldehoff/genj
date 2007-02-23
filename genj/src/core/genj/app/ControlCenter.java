@@ -51,8 +51,6 @@ import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ProgressWidget;
-import genj.view.ContextListener;
-import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
 import genj.view.ViewFactory;
 import genj.view.ViewHandle;
@@ -122,7 +120,7 @@ public class ControlCenter extends JPanel {
     // Initialize data
     registry = new Registry(setRegistry, "cc");
     windowManager = winManager;
-    printManager = new PrintManager(windowManager);
+    printManager = new PrintManager();
     viewManager = new ViewManager(printManager, windowManager);
     
     // Table of Gedcoms
@@ -142,12 +140,6 @@ public class ControlCenter extends JPanel {
       public void valueChanged(ListSelectionEvent e) {
         for (int i=0;i<gedcomActions.size();i++)
           ((Action2)gedcomActions.get(i)).setEnabled(tGedcoms.getSelectedGedcom() != null);
-      }
-    });
-    
-    viewManager.addContextListener(new ContextListener() {
-      public void handleContextSelectionEvent(ContextSelectionEvent event) {
-        tGedcoms.setSelection(event.getContext().getGedcom());
       }
     });
     
@@ -726,7 +718,7 @@ public class ControlCenter extends JPanel {
             null,
             resources.getString("cc.open.warnings", gedcomBeingLoaded.getName()),
             WindowManager.WARNING_MESSAGE,
-            new JScrollPane(new ContextListWidget(viewManager, gedcomBeingLoaded, warnings)),
+            new JScrollPane(new ContextListWidget(gedcomBeingLoaded, warnings)),
             Action2.okOnly(),
             ControlCenter.this
           );
@@ -966,7 +958,7 @@ public class ControlCenter extends JPanel {
       if (ask || origin==null || origin.getFile()==null) {
 
         // .. choose file
-        SaveOptionsWidget options = new SaveOptionsWidget(gedcomBeingSaved, viewManager);
+        SaveOptionsWidget options = new SaveOptionsWidget(gedcomBeingSaved, (Filter[])viewManager.getViews(Filter.class, gedcomBeingSaved));
         file = chooseFile(resources.getString("cc.save.title"), resources.getString("cc.save.action"), options);
         if (file==null)
           return false;
@@ -1240,7 +1232,7 @@ public class ControlCenter extends JPanel {
       // tell options about window manager - curtesy only
       Options.getInstance().setWindowManager(windowManager);
       // create widget for options
-      OptionsWidget widget = new OptionsWidget(getText(), windowManager);
+      OptionsWidget widget = new OptionsWidget(getText());
       widget.setOptions(OptionProvider.getAllOptions());
       // open dialog
       windowManager.openDialog("options", getText(), WindowManager.INFORMATION_MESSAGE, widget, Action2.okOnly(), ControlCenter.this);

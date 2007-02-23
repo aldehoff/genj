@@ -60,8 +60,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.view.ActionProvider;
 import genj.view.ViewContext;
-import genj.view.ContextListener;
-import genj.view.ContextSelectionEvent;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
 
@@ -76,7 +74,7 @@ import javax.swing.JComponent;
 /**
  * The factory for the TableView
  */
-public class EditViewFactory implements ViewFactory, ActionProvider, ContextListener {
+public class EditViewFactory implements ViewFactory, ActionProvider {
     
   /** a noop is used for separators in returning actions */  
   private final static Action2 aNOOP = Action2.NOOP;
@@ -101,30 +99,31 @@ public class EditViewFactory implements ViewFactory, ActionProvider, ContextList
   public String getTitle(boolean abbreviate) {
     return EditView.resources.getString("title" + (abbreviate?".short":""));
   }
-  
-  /**
-   * Callback - context change information
-   */
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    ViewContext context = event.getContext();
-    ViewManager manager = context.getManager();
-    // editor needed?
-    if (!Options.getInstance().isOpenEditor)
-      return;
-    // what's the entity
-    Entity[] entities = context.getEntities();
-    if (entities.length!=1)
-      return;
-    Entity entity = entities[0];
-    // noop if EditView non-sticky or current is open
-    EditView[] edits = EditView.getInstances(context.getGedcom());
-    for (int i=0;i<edits.length;i++) {
-      if (!edits[i].isSticky()||edits[i].getEntity()==entity) 
-        return;
-    }
-    // open
-    new OpenForEdit(context, manager).trigger();
-  }
+
+// FIXME need to provide for auto-open edit on selection
+//  /**
+//   * Callback - context change information
+//   */
+//  public void handleContextSelectionEvent(ContextSelectionEvent event) {
+//    ViewContext context = event.getContext();
+//    ViewManager manager = context.getManager();
+//    // editor needed?
+//    if (!Options.getInstance().isOpenEditor)
+//      return;
+//    // what's the entity
+//    Entity[] entities = context.getEntities();
+//    if (entities.length!=1)
+//      return;
+//    Entity entity = entities[0];
+//    // noop if EditView non-sticky or current is open
+//    EditView[] edits = EditView.getInstances(context.getGedcom());
+//    for (int i=0;i<edits.length;i++) {
+//      if (!edits[i].isSticky()||edits[i].getEntity()==entity) 
+//        return;
+//    }
+//    // open
+//    new OpenForEdit(context, manager).trigger();
+//  }
   
   /**
    * @see genj.view.ActionProvider#createActions(Entity[], ViewManager)

@@ -31,10 +31,11 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextListener;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
-import genj.view.ViewManager;
+import genj.window.WindowBroadcastEvent;
+import genj.window.WindowBroadcastListener;
+import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -59,7 +60,7 @@ import spin.Spin;
 /**
  * A navigator with buttons to easily navigate through Gedcom data
  */
-public class NavigatorView extends JPanel implements ContextListener {
+public class NavigatorView extends JPanel implements WindowBroadcastListener {
   
   private static Resources resources = Resources.get(NavigatorView.class);
 
@@ -106,17 +107,16 @@ public class NavigatorView extends JPanel implements ContextListener {
   /** the gedcom */
   private Gedcom gedcom;
   
-  /** the view manager */
-  private ViewManager manager;
-
+  private Registry registry;
+  
   /**
    * Constructor
    */
-  public NavigatorView(String title, Gedcom useGedcom, Registry useRegistry, ViewManager useManager) {
+  public NavigatorView(String title, Gedcom gedcom, Registry registry) {
     
     // remember
-    manager = useManager;
-    gedcom = useGedcom;
+    this.gedcom = gedcom;
+    this.registry = registry;
     
     // layout    
     setLayout(new BorderLayout());
@@ -126,9 +126,10 @@ public class NavigatorView extends JPanel implements ContextListener {
     add(labelCurrent,BorderLayout.NORTH);
     add(new JScrollPane(createPopupPanel()),BorderLayout.CENTER);
     
-    // init
-    Entity entity = manager.getLastSelectedContext(gedcom).getEntity();
-    if (entity instanceof Indi)
+    // Check if we can preset something to show
+    Entity entity = gedcom.getEntity(registry.get("entity", (String)null));
+    if (entity==null) entity = gedcom.getFirstEntity(Gedcom.INDI);
+    if (entity!=null) 
       setCurrentEntity(entity);
     
 //    // setup key bindings
@@ -184,6 +185,10 @@ public class NavigatorView extends JPanel implements ContextListener {
   public void removeNotify() {
     // stop listening
     gedcom.removeGedcomListener((GedcomListener)Spin.over(callback));
+    // remember
+    if (current!=null)
+      registry.put("entity", current.getId());
+    
     // continue
     super.removeNotify();
   }
@@ -198,10 +203,11 @@ public class NavigatorView extends JPanel implements ContextListener {
   /**
    * Context listener callback
    */  
-  public void handleContextSelectionEvent(ContextSelectionEvent event) {
-    setCurrentEntity(event.getContext().getEntity());
+  public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
+    ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
+    setCurrentEntity(cse.getContext().getEntity());
+    return true;
   }
-
   
   /**
    * Set the current entity
@@ -414,7 +420,7 @@ public class NavigatorView extends JPanel implements ContextListener {
       // follow immediately
       setCurrentEntity(target);
       // propagate to others
-      manager.fireContextSelected(new ViewContext(target));
+      WindowManager.getInstance(NavigatorView.this).broadcast(new ContextSelectionEvent(new ViewContext(target), NavigatorView.this));
     }
   } //Jump
 

@@ -20,6 +20,7 @@
 package genj.tree;
 
 import genj.renderer.BlueprintList;
+import genj.renderer.BlueprintManager;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
@@ -133,7 +134,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     colorWidget = new ColorsWidget();
     
     // blueprint options
-    blueprintList = new BlueprintList(manager.getBlueprintManager(), manager.getWindowManager());
+    blueprintList = new BlueprintList(BlueprintManager.getInstance());
     
     // bookmarks
     Box bookmarks = new Box(BoxLayout.Y_AXIS);

@@ -48,7 +48,7 @@ import javax.swing.JOptionPane;
 /**
  * The default 'heavyweight' window manager
  */
-public class DefaultWindowManager extends AbstractWindowManager {
+public class DefaultWindowManager extends WindowManager {
 
   /** screen we're dealing with */
   private Rectangle screen = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());

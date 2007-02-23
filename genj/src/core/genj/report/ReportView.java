@@ -30,6 +30,7 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
+import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
 import genj.view.ViewContext;
 import genj.view.ViewManager;
@@ -250,7 +251,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
    * Create the tab content for report options
    */
   private JComponent createReportOptions() {
-    owOptions = new OptionsWidget(getName(), manager.getWindowManager());
+    owOptions = new OptionsWidget(getName());
     return owOptions;
   }
 
@@ -279,7 +280,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
     manager.showView(this);
     // start it
     listOfReports.setSelection(report);
-    // FIXME this is a hack - I want to pass the context over but also use the same ActionStart instance
+    // TODO this is a hack - I want to pass the context over but also use the same ActionStart instance
     actionStart.setContext(context);
     actionStart.trigger();
   }
@@ -403,7 +404,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       out = new PrintWriter(new OutputWriter());
 
       // create our own private instance
-      instance = report.getInstance(manager, ReportView.this, out);
+      instance = report.getInstance(ReportView.this, out);
 
       // either use preset context, gedcom file or ask for entity
       Object useContext = context;
@@ -426,7 +427,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // check if appropriate
       if (useContext==null||report.accepts(useContext)==null) {
-        manager.getWindowManager().openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,RESOURCES.getString("report.noaccept"),Action2.okOnly(),ReportView.this);
+        WindowManager.getInstance(getTarget()).openDialog(null,report.getName(),WindowManager.ERROR_MESSAGE,RESOURCES.getString("report.noaccept"),Action2.okOnly(),ReportView.this);
         return false;
       }
       context = useContext;
@@ -533,7 +534,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
       // .. exits ?
       if (file.exists()) {
-        int rc = manager.getWindowManager().openDialog(null, title, WindowManager.WARNING_MESSAGE, "File exists. Overwrite?", Action2.yesNo(), ReportView.this);
+        int rc = WindowManager.getInstance(getTarget()).openDialog(null, title, WindowManager.WARNING_MESSAGE, "File exists. Overwrite?", Action2.yesNo(), ReportView.this);
         if (rc!=0) {
           return;
         }
@@ -544,7 +545,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       try {
         out = new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF8"));
       } catch (IOException ex) {
-        manager.getWindowManager().openDialog(null,title,WindowManager.ERROR_MESSAGE,"Error while saving to\n"+file.getAbsolutePath(),Action2.okOnly(),ReportView.this);
+        WindowManager.getInstance(getTarget()).openDialog(null,title,WindowManager.ERROR_MESSAGE,"Error while saving to\n"+file.getAbsolutePath(),Action2.okOnly(),ReportView.this);
         return;
       }
 
@@ -684,10 +685,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
      */
     public void mouseClicked(MouseEvent e) {
       if (id!=null) {
-        // propagate to other views through manager
         Entity entity = gedcom.getEntity(id);
         if (entity!=null)
-          manager.fireContextSelected(new ViewContext(entity), e.getClickCount()>1, null);
+          WindowManager.getInstance(ReportView.this).broadcast(
+              new ContextSelectionEvent(new ViewContext(entity), ReportView.this, e.getClickCount()>1)
+          );
       }
     }
 
