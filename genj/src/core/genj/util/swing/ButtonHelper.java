@@ -28,6 +28,7 @@ import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -106,6 +107,8 @@ public class ButtonHelper {
       group.add(result);
     }
     if (container!=null) {
+      if (action instanceof Action2&&container instanceof JComponent)
+        ((Action2)action).setTarget((JComponent)container);
       container.add(result);
       if (container instanceof JToolBar) result.setMaximumSize(new Dimension(128,128));
     }
