@@ -365,7 +365,18 @@ public class ChoiceWidget extends JComboBox {
       
       // show where we're at in case of a partial match
       if (match.length()>=prefix.length()) {
-        showPopup();
+        
+        // NM 20070224 make sure we're not calling showPopup() if not showing (was reported by JPJ) 
+        //  java.awt.IllegalComponentStateException: component must be showing on the screen to determine its location
+        //  at java.awt.Component.getLocationOnScreen_NoTreeLock(Unknown Source)
+        //  at java.awt.Component.getLocationOnScreen(Unknown Source)
+        //  at javax.swing.JPopupMenu.show(Unknown Source)
+        //  at javax.swing.JComboBox.setPopupVisible(Unknown Source)
+        //  at genj.util.swing.ChoiceWidget.setPopupVisible(ChoiceWidget.java:208)
+        //  at javax.swing.JComboBox.showPopup(Unknown Source)
+        //  at genj.util.swing.ChoiceWidget$AutoCompleteSupport.actionPerformed(ChoiceWidget.java:368)      
+        if (isShowing())
+          showPopup();
       } 
       
       // done      
