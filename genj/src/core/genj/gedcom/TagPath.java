@@ -152,6 +152,7 @@ public class TagPath {
     System.arraycopy(other.qualifiers, 0, qualifiers, 0, other.len);
     
     tags[len-1] = tag;
+    qualifiers[len-1] = -1;
     
     // prepare our hash
     hash = other.hash + tag.hashCode();
