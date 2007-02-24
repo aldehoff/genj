@@ -217,7 +217,10 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
   protected Thread getThread() {
     if (async!=ASYNC_SAME_INSTANCE) return null;
     synchronized (threadLock) {
-      if (thread==null) thread = new Thread(new CallAsyncExecute());
+      if (thread==null) {
+        thread = new Thread(new CallAsyncExecute());
+        thread.setPriority(Thread.NORM_PRIORITY);
+      }
       return thread;
     }
   }
