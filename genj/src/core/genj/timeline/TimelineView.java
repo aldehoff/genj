@@ -92,6 +92,7 @@ public class TimelineView extends JPanel implements WindowBroadcastListener, Too
   
   /** our current selection */
   private Set selectedEvents = new HashSet();
+  private boolean ignoreSetContext = false;
   
   /** our ruler */
   private Ruler ruler;
@@ -367,16 +368,18 @@ public class TimelineView extends JPanel implements WindowBroadcastListener, Too
    * callback - context event
    */
   public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
+    
     ContextSelectionEvent contextEvent = ContextSelectionEvent.narrow(event, model.gedcom);
-    if (contextEvent!=null) {
-      // try to scroll to first event
-      ViewContext context = contextEvent.getContext();
-      Model.Event modelEvent = model.getEvent(context.getProperty());
-      if (modelEvent==null) modelEvent = model.getEvent(context.getEntity());
-      if (modelEvent!=null) makeVisible(modelEvent);
-      // do a repaint, too
-      content.repaint();
-    }
+    if (contextEvent==null||ignoreSetContext) 
+      return false;
+      
+    // assemble selection
+    selectedEvents = model.getEvents(contextEvent.getContext());
+    
+    // do a repaint, too
+    content.repaint();
+      
+    // done
     return false;
   }
 
@@ -608,8 +611,16 @@ public class TimelineView extends JPanel implements WindowBroadcastListener, Too
         selectedEvents.add(hit);
         
         // tell about it
-        WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(getContext(), this));
+        try {
+          ignoreSetContext = true;
+          WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(getContext(), this));
+        } finally {
+          ignoreSetContext = false;
+        }
       }
+      
+      // show
+      repaint();
     }
     public void mouseEntered(MouseEvent e) {
     }
