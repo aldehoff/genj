@@ -41,8 +41,8 @@ public class GraphicsTreeElements implements TreeElements {
     private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
     private static final TagPath PATH_INDIDEATPLAC = new TagPath("INDI:DEAT:PLAC");
     private static final TagPath PATH_INDIOCCU = new TagPath("INDI:OCCU");
-    private static final TagPath PATH_FAMMARRPLAC = new TagPath("INDI:MARR:PLAC");
-    private static final TagPath PATH_FAMDIVPLAC = new TagPath("INDI:DIV:PLAC");
+    private static final TagPath PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC");
+    private static final TagPath PATH_FAMDIVPLAC = new TagPath("FAM:DIV:PLAC");
 
     /**
      * Box background colors.

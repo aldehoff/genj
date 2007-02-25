@@ -25,8 +25,8 @@ public class DetermineFamboxSize extends TreeFilterBase {
 
     private static final int DEFAULT_LINES = 1;
     private static final int LINE_HEIGHT = 10;
-    private static final TagPath PATH_FAMMARRPLAC = new TagPath("INDI:MARR:PLAC");
-    private static final TagPath PATH_FAMDIVPLAC = new TagPath("INDI:DIV:PLAC");
+    private static final TagPath PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC");
+    private static final TagPath PATH_FAMDIVPLAC = new TagPath("FAM:DIV:PLAC");
 
     private static final int TEXT_MARGIN = 5;
 
