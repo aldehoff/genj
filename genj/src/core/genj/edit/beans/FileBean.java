@@ -60,6 +60,33 @@ public class FileBean extends PropertyBean {
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
   
+  private ActionListener doPreview = new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+      registry.put("bean.file.dir", chooser.getDirectory());
+      File file = getProperty().getGedcom().getOrigin().getFile(chooser.getFile().toString());
+      preview.setSource(new ImageWidget.FileSource(file));
+      
+      String relative = getProperty().getGedcom().getOrigin().calcRelativeLocation(file.getAbsolutePath());
+      if (relative!=null)
+        chooser.setFile(relative);
+
+      // warn about size
+      WindowManager wm = WindowManager.getInstance(FileBean.this);
+      if (wm!=null&&file.exists()&&file.length()>PropertyFile.getMaxValueAsIconSize(false)) {
+      
+        String txt = resources.getString("file.max", new String[]{
+          file.getName(),
+          String.valueOf(file.length()/1024+1),
+          String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
+        }); 
+      
+        wm.openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,Action2.okOnly(), FileBean.this);
+      }
+
+      // done
+    }
+  };
+  
   void initialize(Registry setRegistry) {
     super.initialize(setRegistry);
     
@@ -68,28 +95,7 @@ public class FileBean extends PropertyBean {
     // setup chooser
     chooser.setAccessory(updateFormatAndTitle);
     chooser.addChangeListener(changeSupport);
-    chooser.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        registry.put("bean.file.dir", chooser.getDirectory());
-        File file = getProperty().getGedcom().getOrigin().getFile(chooser.getFile().toString());
-        preview.setSource(new ImageWidget.FileSource(file));
-
-        // warn about size
-        WindowManager wm = WindowManager.getInstance(FileBean.this);
-        if (wm!=null&&file.exists()&&file.length()>PropertyFile.getMaxValueAsIconSize(false)) {
-        
-          String txt = resources.getString("file.max", new String[]{
-            file.getName(),
-            String.valueOf(file.length()/1024+1),
-            String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
-          }); 
-        
-          wm.openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,Action2.okOnly(), FileBean.this);
-        }
-
-        // done
-      }
-    });
+    chooser.addActionListener(doPreview);
 
     add(chooser, BorderLayout.NORTH);      
     
@@ -194,7 +200,7 @@ public class FileBean extends PropertyBean {
       ((PropertyBlob)property).load(file, updateFormatAndTitle.isSelected());
 
     // update chooser
-    chooser.setFile(property.getValue());
+    doPreview.actionPerformed(null);
 
     // done
   }
