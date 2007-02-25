@@ -465,7 +465,8 @@ public class ImageWidget extends JPanel {
     /** constructor */
     Worker() {
       Thread t = new Thread(this);
-      //t.setPriority(Thread.NORM_PRIORITY-1);
+      // 20070225 use normal priority so we don't inherit a UI thread priority
+      t.setPriority(Thread.NORM_PRIORITY);
       t.setDaemon(true);
       t.start();
     }
