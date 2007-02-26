@@ -100,7 +100,7 @@ public class ReportRelatives extends Report {
 
     Gedcom gedcom = indi.getGedcom();
     String title = translate("title", indi);
-
+    
     // prepare map of relationships
     Map key2relative = new HashMap();
     for (int i=0; i<RELATIVES.length;i++) {
@@ -110,6 +110,7 @@ public class ReportRelatives extends Report {
 
     // Loop over relative descriptions
     List items= new ArrayList();
+    items.add(new ViewContext(indi));
     for (int i=0; i<RELATIVES.length; i++) {
       Relative relative = RELATIVES[i];
       List result = find(indi, relative.expression, relative.sex, key2relative);
