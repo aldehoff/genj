@@ -180,6 +180,8 @@ public class Context implements Comparable {
    * Accessor - all entities
    */
   public Entity[] getEntities() {
+    if (entityType==null)
+      return new Entity[0];
     return (Entity[])entities.toArray((Entity[])Array.newInstance(entityType, entities.size()));
   }
 
@@ -187,6 +189,8 @@ public class Context implements Comparable {
    * Accessor - properties
    */
   public Property[] getProperties() {
+    if (propertyType==null)
+      return new Property[0];
     return (Property[])properties.toArray((Property[])Array.newInstance(propertyType, properties.size()));
   }
 
