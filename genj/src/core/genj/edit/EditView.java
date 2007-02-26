@@ -66,6 +66,8 @@ import spin.Spin;
  */
 public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastListener, ContextProvider  {
   
+  // FIXME need backwards and forwards and back to last in case of delete entity
+  
   /*package*/ final static Logger LOG = Logger.getLogger("genj.edit");
   
   /** instances */
@@ -187,10 +189,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     // Check if we can preset something to edit
     Entity entity = gedcom.getEntity(registry.get("entity", (String)null));
     if (entity==null) entity = gedcom.getFirstEntity(Gedcom.INDI);
-    if (entity!=null) {
-      isSticky = registry.get("sticky", false);
-      setContext(new ViewContext(entity), false);
-    }
+    isSticky = entity==null ? false : registry.get("sticky", false);
+    if (entity!=null) setContext(new ViewContext(entity), false);
     
     // listen for available undos/removes
     gedcom.addGedcomListener((GedcomListener)Spin.over(undo));

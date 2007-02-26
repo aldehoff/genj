@@ -594,10 +594,9 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     }
 
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-      // us?
-      if (root!=entity)
-        return;
-      setRoot(gedcom.getFirstEntity(Gedcom.INDI));
+      // can't serve anymore?
+      if (root==entity)
+        setRoot(null);
     }
 
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
