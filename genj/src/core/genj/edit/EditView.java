@@ -22,9 +22,12 @@ package genj.edit;
 import genj.edit.actions.Redo;
 import genj.edit.actions.Undo;
 import genj.edit.beans.BeanFactory;
+import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.GedcomMetaListener;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -41,6 +44,7 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -90,9 +94,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
 
   /** actions we offer */
   private Sticky   sticky = new Sticky();
-  private Back     back   = new Back(); 
-  private Undo     undo;
-  private Redo     redo;
+  private Back     back = new Back();
+  private Forward forward = new Forward();
   private Mode     mode;
   private ContextMenu contextMenu = new ContextMenu();
   
@@ -101,9 +104,6 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
 
   /** current editor */
   private Editor editor;
-  
-  /** whether all context selection should be ignored */
-  private static boolean ignoreContextSelection = false;
   
   /**
    * Constructor
@@ -118,14 +118,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     manager  = setManager;
     beanFactory = new BeanFactory(manager, registry);
 
-    // prepare undo/redo actions
-    undo = new Undo(gedcom);
-    redo = new Redo(gedcom);
-    
-    undo.setText(null);
-    redo.setText(null);
-    
-    // prepare mode action
+    // prepare action
     mode = new Mode();
     
     // run mode switch if applicable
@@ -137,6 +130,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     ActionMap amap = getActionMap();
     imap.put(KeyStroke.getKeyStroke("alt LEFT"), back);
     amap.put(back, back);
+    imap.put(KeyStroke.getKeyStroke("alt RIGHT"), forward);
+    amap.put(forward, forward);
 
     // Done
   }
@@ -190,12 +185,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     Entity entity = gedcom.getEntity(registry.get("entity", (String)null));
     if (entity==null) entity = gedcom.getFirstEntity(Gedcom.INDI);
     isSticky = entity==null ? false : registry.get("sticky", false);
-    if (entity!=null) setContext(new ViewContext(entity), false);
+    if (entity!=null) setContext(new ViewContext(entity));
     
-    // listen for available undos/removes
-    gedcom.addGedcomListener((GedcomListener)Spin.over(undo));
-    gedcom.addGedcomListener((GedcomListener)Spin.over(redo));
-
   }
 
   /**
@@ -211,10 +202,6 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
 
     // remember mode
     registry.put("advanced", mode.advanced);
-
-    // dont listen for available undos
-    gedcom.removeGedcomListener((GedcomListener)Spin.over(undo));
-    gedcom.removeGedcomListener((GedcomListener)Spin.over(redo));
 
     // forget this instance
     instances.remove(this);
@@ -295,10 +282,6 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
    */
   public boolean handleBroadcastEvent(genj.window.WindowBroadcastEvent event) {
     
-    // ignore it?
-    if (ignoreContextSelection)
-      return false;
-    
     ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
     if (cse==null)
       return false;
@@ -309,7 +292,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     if (cse.getSource()==null || !SwingUtilities.isDescendingFrom( cse.getSource(), this)) {
       
       // take it if not sticky
-      if (!isSticky) setContext(context, false);
+      if (!isSticky) setContext(context);
       
       // done
       return false;
@@ -328,16 +311,13 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     }
     
     // change context
-    setContext(context, false);
+    setContext(context);
       
     // done
     return false;
   }
   
-  public void setContext(ViewContext context, boolean tellOthers) {
-    
-    // tell to others view (non EditViews)
-    if (tellOthers)  fireContextSelected(context);
+  public void setContext(ViewContext context) {
     
     // check current editor's context
     ViewContext current = editor.getContext();
@@ -350,21 +330,6 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     // done
   }
   
-  /**package*/ void fireContextSelected(ViewContext context) {
-    
-    // already in process?
-    if (ignoreContextSelection)
-      return;
-    
-    try {
-      ignoreContextSelection = true;
-      WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(context, this));
-    } finally { 
-      ignoreContextSelection = false;
-    }
-    
-  }
-
   /**
    * @see genj.view.ToolBarSupport#populate(JToolBar)
    */
@@ -377,15 +342,14 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
 
     // return in history
     bh.create(back);
+    bh.create(forward);
     
     // toggle sticky
     bh.create(sticky, Images.imgStickOn, isSticky);
     
     // add undo/redo
-    bh.create(undo);
-    bh.create(redo);
-    undo.setText(null);
-    redo.setText(null);
+    bh.create(new Undo(gedcom).setText(null));
+    bh.create(new Redo(gedcom).setText(null));
     
     // add actions
     bar.add(contextMenu);
@@ -452,45 +416,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     protected void execute() {
       isSticky = !isSticky;
     }
-  } //ActionBack
-
-  /**
-   * Action - back
-   */
-  private class Back extends Action2 {
-    private boolean ignorePush = false;
-    private Stack stack = new Stack();
-    /** constructor */
-    protected Back() {
-      super.setImage(Images.imgReturn).setTip(resources, "action.return.tip");
-    }
-    /** run */
-    protected void execute() {
-      if (stack.size()==0)
-        return;
-      // pop first valid on stack
-      while (!stack.isEmpty()) {
-        ViewContext context = (ViewContext)stack.pop();
-        if (context.getEntity()!=null) {
-          ignorePush = true;
-          setContext(context, true);
-          ignorePush = false;
-          return;
-        }
-      }
-    }
-    /** push another on stack */
-    protected void push(ViewContext context) {
-      // ignore it?
-      if (ignorePush)
-        return;
-      // keep it
-      stack.push(context);
-      // trim stack - arbitrarily chosen size :)
-      while (stack.size()>32)
-        stack.remove(0);
-    }
-  } //Back
+  } //Sticky
   
   /**
    * Action - advanced or basic
@@ -507,5 +433,184 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       setEditor(advanced ? (Editor)new AdvancedEditor() : new BasicEditor());
     }
   } //Advanced
+
+  /**
+   * Forward to a previous context
+   */  
+  private class Forward extends Back {
+    
+    /**
+     * Constructor
+     */
+    public Forward() {
+      
+      // patch looks
+      setImage(Images.imgForward);
+      setTip(Resources.get(this).getString("action.forward.tip"));
+      
+    }
+    
+    /**
+     * go forward
+     */
+    protected void execute() {
+      
+      if (stack.size()==0)
+        return;
+      
+      // push current on back
+      Context old = editor.getContext();
+      if (old.getEntities().length>0) {
+        back.stack.push(editor.getContext());
+        back.setEnabled(true);
+      }
+      
+      // go forward
+      ViewContext context = new ViewContext((Context)stack.pop());
+      
+      // let others know (this won't change us)
+      WindowManager.getInstance(EditView.this).broadcast(new ContextSelectionEvent(context, EditView.this));
+      
+      // set us
+      editor.setContext(context);
+
+      // reflect state
+      setEnabled(stack.size()>0);
+    }
+    
+  } //Forward
   
+  /**
+   * Return to a previous context
+   */  
+  private class Back extends Action2 implements GedcomMetaListener {
+    
+    /** stack of where to go back to  */
+    protected Stack stack = new Stack();
+    
+    protected boolean ignorePush = false;
+    
+    /**
+     * Constructor
+     */
+    public Back() {
+      
+      // setup looks
+      setImage(Images.imgBack);
+      setTip(Resources.get(this).getString("action.return.tip"));
+      setEnabled(false);
+      
+    }
+
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+      super.addPropertyChangeListener(listener);
+      // hook up to events
+      if (getPropertyChangeListeners().length==1) {
+        gedcom.addGedcomListener((GedcomListener)Spin.over(this));
+        stack.clear();
+        setEnabled(false);
+      }
+    }
+    
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+      super.removePropertyChangeListener(listener);
+      // unhook from events
+      if (getPropertyChangeListeners().length==0)
+        gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
+    }
+
+    /**
+     * go back
+     */
+    protected void execute() {
+      if (stack.size()==0)
+        return;
+      
+      // push current on forward
+      Context old = editor.getContext();
+      if (old.getEntities().length>0) {
+        forward.stack.push(editor.getContext());
+        forward.setEnabled(true);
+      }
+      
+      // return to last
+      ViewContext context = new ViewContext((Context)stack.pop());
+      
+      // let others know (this won't change us)
+      WindowManager.getInstance(EditView.this).broadcast(new ContextSelectionEvent(context, EditView.this));
+      
+      // set us
+      editor.setContext(context);
+
+      // reflect state
+      setEnabled(stack.size()>0);
+    }
+    
+    /** 
+     * push another on stack 
+     */
+    public void push(Context context) {
+      if (ignorePush)
+        return;
+      // clear forward
+      forward.clear();
+      // keep it
+      stack.push(new Context(context));
+      // trim stack - arbitrarily chosen size
+      while (stack.size()>32)
+        stack.remove(0);
+      // we're good
+      setEnabled(true);
+    }
+    
+    /**
+     * clear stack
+     */
+    protected void clear() {
+      stack.clear();
+      setEnabled(false);
+    }
+    
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    }
+
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      // parse stack
+      for (Iterator it = stack.listIterator(); it.hasNext(); ) {
+        Context ctx = (Context)it.next();
+        Entity[] ents = ctx.getEntities();
+        for (int i = 0; i < ents.length; i++) {
+          if (ents[i]==entity) {
+            it.remove();
+            break;
+          }
+        }
+      }
+      // update status
+      setEnabled(!stack.isEmpty());
+    }
+
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+    }
+
+    public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
+    }
+
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+    }
+
+    public void gedcomHeaderChanged(Gedcom gedcom) {
+    }
+
+    public void gedcomWriteLockAcquired(Gedcom gedcom) {
+    }
+
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
+      // check if we can go back to one
+      if (editor.getContext().getEntities().length==0) {
+        if (!stack.isEmpty()) execute();
+      }
+    }
+  } //Back
+
 } //EditView

@@ -59,7 +59,7 @@ public class OpenForEdit extends Action2 {
     }
     
     // make sure the context change follows through
-    ((EditView)handle.getView()).setContext(context, false);
+    ((EditView)handle.getView()).setContext(context);
   }
   
 } //OpenForEdit

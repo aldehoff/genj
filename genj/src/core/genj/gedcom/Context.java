@@ -36,11 +36,23 @@ public class Context implements Comparable {
   private Gedcom gedcom;
   private List entities = new ArrayList();
   private List properties = new ArrayList();
-  private List actions = new ArrayList();
   private Class entityType = null;
   private Class propertyType = null;
   private ImageIcon  img = null;
   private String txt = null;
+  
+  /**
+   * Constructor
+   */
+  public Context(Context context) {
+    this.gedcom = context.gedcom;
+    this.entities.addAll(context.entities);
+    this.properties.addAll(context.properties);
+    this.entityType = context.entityType;
+    this.propertyType = context.propertyType;
+    this.img = context.img;
+    this.txt = context.txt;
+  }
   
   /**
    * Constructor
@@ -164,11 +176,6 @@ public class Context implements Comparable {
     // nothing there?
     if (entities.isEmpty())
       return new Entity[0];
-    // check for still valid entities
-    for (ListIterator it = entities.listIterator(); it.hasNext(); ) {
-      if (!gedcom.contains((Entity)it.next()))
-        it.remove();
-    }
     Entity[] result = (Entity[])Array.newInstance(entityType, entities.size());
     entities.toArray(result);
     return result;
@@ -181,13 +188,6 @@ public class Context implements Comparable {
     // nothing there?
     if (properties.isEmpty())
       return new Property[0];
-    // check for still valid properties
-    for (ListIterator it = properties.listIterator(); it.hasNext(); ) {
-      Property p = (Property)it.next();
-      Entity e = p.getEntity();
-      if (e==null||!gedcom.contains(e))
-        it.remove();
-    }
     Property[] result = (Property[])Array.newInstance(propertyType, properties.size());
     properties.toArray(result);
     return result;

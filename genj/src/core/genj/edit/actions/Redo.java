@@ -22,9 +22,14 @@ package genj.edit.actions;
 import genj.edit.Images;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
 import genj.util.swing.Action2;
+
+import java.beans.PropertyChangeListener;
+
+import spin.Spin;
 
 /**
  * Undo on Gedcom
@@ -45,11 +50,32 @@ public class Redo extends Action2 implements GedcomMetaListener {
    * Constructor
    */
   public Redo(Gedcom gedcom, boolean enabled) {
+    
+    // setup looks
     setImage(Images.imgRedo);
     setText(AbstractChange.resources.getString("redo"));    
     setTip(getText());
     setEnabled(enabled);
+    
+    // remember
     this.gedcom = gedcom;
+    
+  }
+  
+  public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    super.addPropertyChangeListener(listener);
+    // hook up to events
+    if (getPropertyChangeListeners().length==1) {
+      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
+      setEnabled(gedcom.canRedo());
+    }
+  }
+  
+  public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    super.removePropertyChangeListener(listener);
+    // unhook from events
+    if (getPropertyChangeListeners().length==0)
+      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
   }
 
   /**

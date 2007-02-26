@@ -35,7 +35,8 @@ final public class Images {
     
     imgStickOn,
     imgStickOff,
-    imgReturn,
+    imgBack,
+    imgForward,
     
     imgUndo,
     imgRedo,
@@ -59,7 +60,8 @@ final public class Images {
 
     imgStickOn   = new ImageIcon(this,"images/StickOn.gif");
     imgStickOff  = new ImageIcon(this,"images/StickOff.gif");
-    imgReturn    = new ImageIcon(this,"images/Return.gif");
+    imgBack    = new ImageIcon(this,"images/Return.gif");
+    imgForward  = new ImageIcon(this,"images/Forward.gif");
 
     imgUndo      = new ImageIcon(this,"images/Undo.gif");
     imgRedo      = new ImageIcon(this,"images/Redo.gif");
