@@ -97,7 +97,7 @@ public class PropertyRelationship extends PropertyChoiceValue {
     Property target = getTarget();
     if (target!=null) {
       Property panchor = target.getParent();
-      if (panchor!=null) {
+      if (!(panchor instanceof Entity)&&panchor!=null) {
         // try non-unique path first - this is the simplest case e.g. INDI:BIRT:DATE
         TagPath result = panchor.getPath(false);
         // .. fallback to unique path if necessary INDI:BIRT#2:DATE
