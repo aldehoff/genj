@@ -79,6 +79,8 @@ public abstract class WindowManager {
   /** broadcast listeners */
   private List listeners = new ArrayList();
   
+  private boolean ignoreBroadcasts = false;
+  
   /** a log */
   /*package*/ final static Logger LOG = Logger.getLogger("genj.window");
   
@@ -108,23 +110,35 @@ public abstract class WindowManager {
    */
   public void broadcast(WindowBroadcastEvent event) {
     
+    // not allowing broadcasts to trigger broadcasts
+    // TODO we should allow for a different event type to be broadcast
+    if (ignoreBroadcasts)
+      return;
+    
     // initialize it
     event.setWindowManager(this);
     
-    // tell listeners
-    for (Iterator ls = listeners.iterator(); ls.hasNext();) {
-      WindowBroadcastListener l = (WindowBroadcastListener) ls.next();
-      try {
-        l.handleBroadcastEvent(event);
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "broadcast listener threw throwable", t);
+    try {
+      ignoreBroadcasts = true;
+      
+      // tell listeners
+      for (Iterator ls = listeners.iterator(); ls.hasNext();) {
+        WindowBroadcastListener l = (WindowBroadcastListener) ls.next();
+        try {
+          l.handleBroadcastEvent(event);
+        } catch (Throwable t) {
+          LOG.log(Level.WARNING, "broadcast listener threw throwable", t);
+        }
       }
-    }
-    
-    // tell components
-    String[] keys = recallKeys();
-    for (int i = 0; i < keys.length; i++) {
-      broadcast(event, getContent(keys[i]));
+      
+      // tell components
+      String[] keys = recallKeys();
+      for (int i = 0; i < keys.length; i++) {
+        broadcast(event, getContent(keys[i]));
+      }
+      
+    } finally {
+      ignoreBroadcasts = false;
     }
     
     // done
