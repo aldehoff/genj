@@ -21,9 +21,11 @@ package genj.print;
 
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
+import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.ProgressWidget;
 import genj.util.swing.UnitGraphics;
 import genj.window.WindowManager;
@@ -39,6 +41,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.File;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.print.DocFlavor;
 import javax.print.PrintException;
@@ -62,14 +65,14 @@ import javax.swing.JComponent;
 /**
  * Our own task for printing
  */
-/* package */class PrintTask extends Action2 implements Printable, Trackable {
+public class PrintTask extends Action2 implements Printable, Trackable {
 
   /** our flavor */
   /*package*/ final static DocFlavor FLAVOR = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
   
-  /** the manager */
-  private PrintManager manager;
-
+  /*package*/ final static Resources RESOURCES = Resources.get(PrintTask.class);
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.print");
+  
   /** the owning component */
   private JComponent owner;
 
@@ -103,13 +106,15 @@ import javax.swing.JComponent;
   /**
    * Constructor
    */
-  /*package*/ PrintTask(PrintManager setManager, Printer setRenderer, String setTitle, JComponent setOwner, PrintRegistry setRegistry) throws PrintException {
+  public PrintTask(Printer setRenderer, String setTitle, JComponent setOwner, PrintRegistry setRegistry) throws PrintException {
+    
+    // looks
+    setImage(new ImageIcon(this,"images/Print.gif"));
 
     // remember 
     renderer = setRenderer;
-    manager = setManager;
     owner = setOwner;
-    title = manager.resources.getString("title", setTitle);
+    title = RESOURCES.getString("title", setTitle);
     registry = setRegistry;
 
     // setup async
@@ -170,13 +175,6 @@ import javax.swing.JComponent;
     return owner;
   }
 
-  /**
-   * Manager access
-   */
-  /*package*/ PrintManager getPrintManager() {
-    return manager;
-  }
-  
   /**
    * Invalidate current state (in case parameters/options/service has changed)
    */
@@ -347,7 +345,7 @@ import javax.swing.JComponent;
 	      result = ((Object[])result)[0];
 	    } else {
 	      result = null;
-        PrintManager.LOG.warning( "No default "+category+" with "+toString(attributes));
+        LOG.warning( "No default "+category+" with "+toString(attributes));
 	    }
     }
     // remember
@@ -363,16 +361,16 @@ import javax.swing.JComponent;
   protected boolean preExecute() {
 
     // show dialog
-    PrintWidget widget = new PrintWidget(this, manager.resources);
+    PrintWidget widget = new PrintWidget(this);
 
     // prepare actions
     Action[] actions = { 
-        new Action2(manager.resources, "print"),
+        new Action2(RESOURCES, "print"),
         Action2.cancel() 
     };
 
     // show it in dialog
-    int choice = manager.getWindowManager().openDialog("print", title, WindowManager.QUESTION_MESSAGE, widget, actions, owner);
+    int choice = WindowManager.getInstance(owner).openDialog("print", title, WindowManager.QUESTION_MESSAGE, widget, actions, owner);
 
     // keep settings
     registry.put(attributes);
@@ -387,7 +385,7 @@ import javax.swing.JComponent;
       attributes.add(new Destination(new File(file).toURI()));
     
     // setup progress dlg
-    progress = manager.getWindowManager().openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), Action2.cancelOnly(), owner);
+    progress = WindowManager.getInstance(owner).openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), Action2.cancelOnly(), owner);
 
     // continue
     return true;
@@ -409,10 +407,10 @@ import javax.swing.JComponent;
    */
   protected void postExecute(boolean preExecuteResult) {
     // close progress
-    manager.getWindowManager().close(progress);
+    WindowManager.getInstance(owner).close(progress);
     // something we should know about?
     if (throwable != null) 
-      PrintManager.LOG.log(Level.WARNING, "print() threw error", throwable);
+      LOG.log(Level.WARNING, "print() threw error", throwable);
     // finished
   }
 
@@ -434,7 +432,7 @@ import javax.swing.JComponent;
    * @see genj.util.Trackable#getState()
    */
   public String getState() {
-    return this.manager.resources.getString("progress", new String[] { "" + (page + 1), "" + (getPages().width * getPages().height) });
+    return RESOURCES.getString("progress", new String[] { "" + (page + 1), "" + (getPages().width * getPages().height) });
   }
 
   /**

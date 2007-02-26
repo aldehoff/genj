@@ -23,7 +23,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.print.PrintManager;
 import genj.util.MnemonicAndText;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -85,16 +84,13 @@ public class ViewManager {
   private Map gedcom2factory2handles = new HashMap();
   private LinkedList allHandles = new LinkedList();
   
-  /** a print manager */
-  private PrintManager printManager = null;
-
   /** a window manager */
   private WindowManager windowManager = null;
   
   /**
    * Constructor
    */
-  public ViewManager(PrintManager printManager, WindowManager windowManager) {
+  public ViewManager(WindowManager windowManager) {
 
     // lookup all factories dynamically
     List factories = new ArrayList();
@@ -103,13 +99,13 @@ public class ViewManager {
       factories.add(it.next());
 
     // continue with init
-    init(printManager, windowManager, factories);
+    init(windowManager, factories);
   }
   
   /**
    * Constructor
    */
-  public ViewManager(PrintManager printManager, WindowManager windowManager, String[] factoryTypes) {
+  public ViewManager(WindowManager windowManager, String[] factoryTypes) {
     
     // instantiate factories
     List factories = new ArrayList();
@@ -122,7 +118,7 @@ public class ViewManager {
     }
     
     // continue with init
-    init(printManager, windowManager, factories);
+    init(windowManager, factories);
   }
   
   /**
@@ -145,10 +141,9 @@ public class ViewManager {
   /**
    * Initialization
    */
-  private void init(PrintManager setPrintManager, WindowManager setWindowManager, List setFactories) {
+  private void init(WindowManager setWindowManager, List setFactories) {
     
     // remember
-    printManager = setPrintManager;
     windowManager = setWindowManager;
     
     // keep factories
@@ -177,20 +172,6 @@ public class ViewManager {
    */
   public ViewFactory[] getFactories() {
     return factories;
-  }
-  
-  /**
-   * The print manager
-   */
-  public PrintManager getPrintManager() {
-    return printManager;
-  }
-  
-  /**
-   * The window manager
-   */
-  public WindowManager getWindowManager() {
-    return windowManager;
   }
   
   /**

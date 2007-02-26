@@ -30,7 +30,6 @@ final public class Images {
 
   public static ImageIcon
     imgSettings,
-    imgPrint,
     imgClose;
 
   /**
@@ -39,7 +38,6 @@ final public class Images {
   private Images() {
 
     imgSettings  = new ImageIcon(this,"images/Settings.gif");
-    imgPrint     = new ImageIcon(this,"images/Print.gif");
     imgClose     = new ImageIcon(this,"images/Close.gif");
   }
   

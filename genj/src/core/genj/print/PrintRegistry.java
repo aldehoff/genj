@@ -96,7 +96,7 @@ public class PrintRegistry extends Registry {
       try {
         set.add(get(Class.forName(attribute), null));
       } catch (Throwable t) {
-        PrintManager.LOG.log(Level.INFO, "Couldn't restore print attribute "+attribute, t);
+        PrintTask.LOG.log(Level.INFO, "Couldn't restore print attribute "+attribute, t);
       }
     }
     

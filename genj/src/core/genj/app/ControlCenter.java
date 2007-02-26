@@ -35,7 +35,6 @@ import genj.io.GedcomReader;
 import genj.io.GedcomWriter;
 import genj.option.OptionProvider;
 import genj.option.OptionsWidget;
-import genj.print.PrintManager;
 import genj.util.DirectAccessTokenizer;
 import genj.util.EnvironmentChecker;
 import genj.util.MnemonicAndText;
@@ -106,7 +105,6 @@ public class ControlCenter extends JPanel {
   private Resources resources = Resources.get(this);
   private WindowManager windowManager;
   private ViewManager viewManager;
-  private PrintManager printManager;
   private List gedcomActions = new ArrayList();
   private List toolbarActions = new ArrayList();
   private Stats stats = new Stats();
@@ -120,8 +118,7 @@ public class ControlCenter extends JPanel {
     // Initialize data
     registry = new Registry(setRegistry, "cc");
     windowManager = winManager;
-    printManager = new PrintManager();
-    viewManager = new ViewManager(printManager, windowManager);
+    viewManager = new ViewManager(windowManager);
     
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget(viewManager, registry) {

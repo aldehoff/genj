@@ -25,7 +25,6 @@ import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
 import genj.renderer.Options;
 import genj.util.Dimension2d;
-import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
@@ -59,9 +58,6 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
   /** task */
   private PrintTask task;
   
-  /** resources */
-  private Resources resources;
-
   /** services to choose from */
   private ChoiceWidget services;
 
@@ -70,14 +66,13 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
 
   /**
    * Constructor   */
-  public PrintWidget(PrintTask tAsk, Resources reSources) {
+  public PrintWidget(PrintTask task) {
     
     // remember 
-    task = tAsk;
-    resources = reSources;
+    this.task = task;
 
-    add(resources.getString("printer" ), createFirstPage());
-    add(resources.getString("settings"), createSecondPage());
+    add(PrintTask.RESOURCES.getString("printer" ), createFirstPage());
+    add(PrintTask.RESOURCES.getString("settings"), createSecondPage());
     
     // done    
   }
@@ -95,7 +90,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     JPanel page = new JPanel(new NestedBlockLayout(LAYOUT_TEMPLATE));
     
     // 'printer'
-    page.add("lprinter", new JLabel(resources.getString("printer")));
+    page.add("lprinter", new JLabel(PrintTask.RESOURCES.getString("printer")));
     
     // choose service
     services = new ChoiceWidget(task.getServices(), task.getService());
@@ -114,7 +109,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     page.add("settings", new JButton(new Settings()));
     
     // 'preview'
-    page.add("lpreview", new JLabel(resources.getString("preview")));
+    page.add("lpreview", new JLabel(PrintTask.RESOURCES.getString("preview")));
     
     // the actual preview
     preview = new Preview();
@@ -129,7 +124,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     List options = PropertyOption.introspect(task.getRenderer());
     for (int i = 0; i < options.size(); i++) 
       ((Option)options.get(i)).addOptionListener(this);
-    return new OptionsWidget(resources.getString("printer"), options);
+    return new OptionsWidget(PrintTask.RESOURCES.getString("printer"), options);
   }
   
   /**
@@ -235,7 +230,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
 
     /** constructor */
     private Settings() {
-      super.setText(resources.getString("settings"));
+      super.setText(PrintTask.RESOURCES.getString("settings"));
       super.setTarget(PrintWidget.this);
     }
 
