@@ -197,7 +197,19 @@ public class Context implements Comparable {
    * Accessor 
    */
   public String getText() {
-    return txt;
+    if (txt!=null)
+      return txt;
+    if (properties.size()==1) {
+      Property prop = (Property)properties.get(0);
+      return Gedcom.getName(prop.getTag()) + "/" + prop.getEntity();
+    }
+    if (!properties.isEmpty())
+      return Property.getPropertyNames(Property.toArray(properties), 5);
+    if (entities.size()==1) 
+      return entities.get(0).toString();
+    if (!entities.isEmpty())
+      return Entity.getPropertyNames(Property.toArray(entities), 5);
+    return gedcom.getName();
   }
   
   /** 
