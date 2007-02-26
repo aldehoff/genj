@@ -107,7 +107,16 @@ public class Context implements Comparable {
    * Remove entities
    */
   public void removeEntities(Collection rem) {
+    
+    // easy for entities
     entities.removeAll(rem);
+    
+    // do properties to
+    for (ListIterator iterator = properties.listIterator(); iterator.hasNext();) {
+      Property prop = (Property) iterator.next();
+      if (rem.contains(prop.getEntity()))
+        iterator.remove();
+    }
   }
   
   /**
@@ -157,59 +166,50 @@ public class Context implements Comparable {
    * Accessor - last entity selected
    */
   public Entity getEntity() {
-    Entity[] es = getEntities();
-    return es.length>0 ? es[es.length-1] : null;
+    return entities.isEmpty() ? null : (Entity)entities.get(0);
   }
   
   /**
    * Accessor - last property selected
    */
   public Property getProperty() {
-    Property[] ps = getProperties();
-    return ps.length>0 ? ps[ps.length-1] : null;
+    return properties.isEmpty() ? null : (Property)properties.get(0);
   }
   
   /**
    * Accessor - all entities
    */
   public Entity[] getEntities() {
-    // nothing there?
-    if (entities.isEmpty())
-      return new Entity[0];
-    Entity[] result = (Entity[])Array.newInstance(entityType, entities.size());
-    entities.toArray(result);
-    return result;
+    return (Entity[])entities.toArray((Entity[])Array.newInstance(entityType, entities.size()));
   }
 
   /**
    * Accessor - properties
    */
   public Property[] getProperties() {
-    // nothing there?
-    if (properties.isEmpty())
-      return new Property[0];
-    Property[] result = (Property[])Array.newInstance(propertyType, properties.size());
-    properties.toArray(result);
-    return result;
+    return (Property[])properties.toArray((Property[])Array.newInstance(propertyType, properties.size()));
   }
 
   /** 
    * Accessor 
    */
   public String getText() {
+    
     if (txt!=null)
       return txt;
+    
     if (properties.size()==1) {
       Property prop = (Property)properties.get(0);
-      return Gedcom.getName(prop.getTag()) + "/" + prop.getEntity();
-    }
-    if (!properties.isEmpty())
-      return Property.getPropertyNames(Property.toArray(properties), 5);
-    if (entities.size()==1) 
-      return entities.get(0).toString();
-    if (!entities.isEmpty())
-      return Entity.getPropertyNames(Property.toArray(entities), 5);
-    return gedcom.getName();
+      txt = Gedcom.getName(prop.getTag()) + "/" + prop.getEntity();
+    } else if (!properties.isEmpty())
+      txt = Property.getPropertyNames(Property.toArray(properties), 5);
+    else  if (entities.size()==1) 
+      txt = entities.get(0).toString();
+    else if (!entities.isEmpty())
+      txt = Entity.getPropertyNames(Property.toArray(entities), 5);
+    else txt = gedcom.getName();
+    
+    return txt;
   }
   
   /** 
@@ -227,14 +227,13 @@ public class Context implements Comparable {
     // an override?
     if (img!=null)
       return img;
-    // check prop
+    // check prop/entity/gedcom
     if (properties.size()==1)
-      return ((Property)properties.get(0)).getImage(false);
-    // check entity
-    if (entities.size()==1)
-      return ((Entity)entities.get(0)).getImage(false);
-    // fallback
-    return Gedcom.getImage();
+      img = ((Property)properties.get(0)).getImage(false);
+    else if (entities.size()==1)
+      img = ((Entity)entities.get(0)).getImage(false);
+    else img = Gedcom.getImage();
+    return img;
   }
   
   /** 

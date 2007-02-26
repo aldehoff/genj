@@ -70,8 +70,6 @@ import spin.Spin;
  */
 public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastListener, ContextProvider  {
   
-  // FIXME need backwards and forwards and back to last in case of delete entity
-  
   /*package*/ final static Logger LOG = Logger.getLogger("genj.edit");
   
   /** instances */
@@ -287,6 +285,10 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       return false;
     
     ViewContext context = cse.getContext();
+    
+    // ignore if no entity info in it
+    if (context.getEntity()==null)
+      return false;
     
     // coming from some other view?
     if (cse.getSource()==null || !SwingUtilities.isDescendingFrom( cse.getSource(), this)) {

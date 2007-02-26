@@ -200,7 +200,7 @@ public class ContextListWidget extends JList implements ContextProvider {
     public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
       for (Iterator it=list.iterator(); it.hasNext(); ) {
         Context context = (Context)it.next();
-        context.removeProperties(Collections.singletonList(property));
+        context.removeProperties(Collections.singletonList(removed));
       }
       // TODO this could be less coarse grained
       fireContentsChanged(this, 0, list.size());
@@ -230,6 +230,7 @@ public class ContextListWidget extends JList implements ContextProvider {
       Context ctx = (Context)value;
       setIcon(ctx.getImage());
       setText(ctx.getText());
+      setEnabled(ctx.getProperty()!=null||ctx.getEntity()!=null);
       // done
       return this;
     }
