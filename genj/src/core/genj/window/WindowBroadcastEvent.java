@@ -37,10 +37,23 @@ public abstract class WindowBroadcastEvent {
   }
   
   /**
-   * the source manager
+   * the originating source (if any)
    */
   public Component getSource() {
     return source;
+  }
+  
+  /**
+   * check for source
+   */
+  public boolean isOriginatingWithin(Component component) {
+    Component cursor = source;
+    while (cursor!=null) {
+      if (cursor==component)
+        return true;
+      cursor = cursor.getParent();
+    }
+    return false;
   }
   
   /**

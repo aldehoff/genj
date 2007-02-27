@@ -46,6 +46,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +62,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 import spin.Spin;
 
@@ -290,17 +290,13 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     if (context.getEntity()==null)
       return false;
     
-    // coming from some other view?
-    if (cse.getSource()==null || !SwingUtilities.isDescendingFrom( cse.getSource(), this)) {
-      
-      // take it if not sticky
-      if (!isSticky) setContext(context);
-      
-      // done
+    // follow context if if coming from some other view!
+    if (!cse.isOriginatingWithin(this)) {
+      if (!isSticky) setContext(context); // unless sticky
       return false;
     }
       
-    // came from us - needs to be a double click
+    // came from component withing editor - don't do anything unless it's a double-click
     if (!cse.isActionPerformed())
       return false;
     
@@ -538,8 +534,10 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       // return to last
       ViewContext context = new ViewContext((Context)stack.pop());
       
-      // let others know (this won't change us)
-      WindowManager.getInstance(EditView.this).broadcast(new ContextSelectionEvent(context, EditView.this));
+      // let others know while saving the stack
+      ignorePush = true;
+      WindowManager.getInstance(EditView.this).broadcast(new ContextSelectionEvent(context, getTarget()));
+      ignorePush = false;
       
       // set us
       editor.setContext(context);
@@ -599,6 +597,12 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     }
 
     public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+      List list = Collections.singletonList(removed);
+      // parse stack
+      for (Iterator it = stack.listIterator(); it.hasNext(); ) {
+        Context ctx = (Context)it.next();
+        ctx.removeProperties(list);
+      }
     }
 
     public void gedcomHeaderChanged(Gedcom gedcom) {

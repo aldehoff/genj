@@ -220,7 +220,10 @@ import javax.swing.tree.TreePath;
       tree.setRoot(entity);
 
     // set selection
-    tree.setSelection(Arrays.asList(context.getProperties()));
+    Property[] props = context.getProperties();
+    if (props.length==0&&entity.getNoOfProperties()>0) 
+      props = new Property[]{ entity.getProperty(0) }; 
+    tree.setSelection(Arrays.asList(props));
     
     // 20060301 set focus since selection change won't do that anymore
     if (bean!=null)
