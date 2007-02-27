@@ -50,6 +50,8 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -339,6 +341,23 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
       // 20050721 we want the same focus forward/backwards keys as everyone else
       setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
       setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+      
+      // patch selecting
+      addMouseListener(new MouseAdapter() {
+        public void mousePressed(MouseEvent e) {
+          // make sure something is selected but don't screw current multi-selection
+          int row = rowAtPoint(e.getPoint());
+          int col = columnAtPoint(e.getPoint());
+          if (row<0||col<0)
+            clearSelection();
+          else {
+            if (!isCellSelected(row, col)) {
+              getSelectionModel().setSelectionInterval(row, row);
+              getColumnModel().getSelectionModel().setSelectionInterval(col, col);
+            }
+          }
+        }
+      });
       
       // listen to changes for generating shortcuts
       sortableModel.addTableModelListener(new TableModelListener() {

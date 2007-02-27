@@ -41,6 +41,7 @@ import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +95,18 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     setCellRenderer(new Renderer());
     getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
     setToggleClickCount(Integer.MAX_VALUE);
+    addMouseListener(new MouseAdapter() {
+      public void mousePressed(MouseEvent e) {
+        // make sure something is selected but don't screw current multi-selection
+        TreePath path = getPathForLocation(e.getX(), e.getY());
+        if (path!=null&&getSelection().contains(path.getLastPathComponent()))
+          return;
+        if (path==null)
+          clearSelection();
+        else
+          setSelection(Collections.singletonList(path.getLastPathComponent()));
+      }
+    });
 
     setExpandsSelectedPaths(true);
     ToolTipManager.sharedInstance().registerComponent(this);
