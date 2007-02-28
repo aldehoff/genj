@@ -219,7 +219,7 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
     bar.add(chooseMap);
     
     // add zoom
-    ButtonHelper bh = new ButtonHelper();
+    ButtonHelper bh = new ButtonHelper().setInsets(0);
     bh.setContainer(bar);
     bh.create(new ZoomExtent());
     bh.setButtonType(JToggleButton.class).create(new ZoomOnOff());
