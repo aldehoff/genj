@@ -217,7 +217,10 @@ import swingx.tree.AbstractTreeModel;
     protected void execute() {
       // show query widget to user
       Action[] actions = new Action[]{ new Action2(GeoView.RESOURCES, "query.remember"), Action2.cancel()  };
-      GeoLocation location = (GeoLocation)tree.getSelectionPath().getLastPathComponent();
+      TreePath selection = tree.getSelectionPath();
+      if (selection==null)
+        return;
+      GeoLocation location = (GeoLocation)selection.getLastPathComponent();
       final QueryWidget query = new QueryWidget(location, view);
       //GeoLocation selection = query.getSelectedLocation();
       int rc = WindowManager.getInstance(GeoList.this).openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
