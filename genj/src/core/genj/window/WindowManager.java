@@ -148,8 +148,10 @@ public abstract class WindowManager {
       }
       
       // we're done without a window manager
-      if (manager==null)
+      if (manager==null) {
+        LOG.log(Level.WARNING, "broadcast event "+event.getClass().getName()+" for "+event.getSource()+" didn't reach WindowManager");
         return;
+      }
       
       // switch to inbound
       event.setInbound();

@@ -163,8 +163,8 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
    */
   public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
     
-    // a message from ourselves?
-    if (event.getSource()==table)
+    // let flow through if it's a message from ourselves
+    if (event.isOutbound())
       return true;
 
     // a meaningful event for us?
@@ -222,8 +222,8 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
       table.ignoreSelection = false;
     }
     
-    // we're done
-    return false;
+    // don't think anyone cares but we'll let it through
+    return true;
   }
   
   /**

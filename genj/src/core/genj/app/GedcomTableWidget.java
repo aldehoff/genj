@@ -130,7 +130,7 @@ import spin.Spin;
         getSelectionModel().setSelectionInterval(row,row);
     }
     
-    return false;
+    return true;
   }
 
   /**

@@ -282,13 +282,13 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     
     ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
     if (cse==null)
-      return false;
+      return true;
     
     ViewContext context = cse.getContext();
     
     // ignore if no entity info in it
     if (context.getEntity()==null)
-      return false;
+      return true;
     
     // an inbound message ?
     if (cse.isInbound()) {

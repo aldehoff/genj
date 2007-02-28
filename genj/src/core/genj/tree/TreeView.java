@@ -427,9 +427,10 @@ public class TreeView extends JPanel implements ContextProvider, WindowBroadcast
     if (prop instanceof Entity)
       prop = null;
     
-    // change root (only the originating TreeView if any)?
+    // change root on action performed
     if (cse.isActionPerformed()&&prop==null) {
-      if (!(cse.getSource() instanceof Content)||cse.getSource()==content)  {
+      // .. only if coming from ourselves (outbound) or inbound from a !TreeView 
+      if (cse.isOutbound() || !(cse.getSource() instanceof Content))  {
         setRoot(entity);
         return true;
       }
