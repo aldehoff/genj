@@ -93,6 +93,8 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     } catch (Throwable t) {
       throw new RuntimeException("unexpected throwable in "+getClass().getName()+".setProperty("+prop.getClass().getName());
     }
+    
+    changeSupport.setChanged(false);
   }
   
   private Method getSetter(Property prop) {

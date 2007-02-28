@@ -84,6 +84,9 @@ public class SimpleValueBean extends PropertyBean {
     tfield.setVisible(!property.isReadOnly()||txt.length()>0);
     
     defaultFocus = tfield.isEditable() ? tfield : null;
+    
+    // not change
+    changeSupport.setChanged(false);
   }
   
 }
