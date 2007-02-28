@@ -219,7 +219,7 @@ public class ContextListWidget extends JList implements ContextProvider {
         return;
       ViewContext context = getContext();
       if (context!=null)
-        WindowManager.getInstance(ContextListWidget.this).broadcast(new ContextSelectionEvent(context, ContextListWidget.this));
+        WindowManager.broadcast(new ContextSelectionEvent(context, ContextListWidget.this));
     }
     
     /** our patched rendering */

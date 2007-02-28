@@ -707,7 +707,7 @@ import javax.swing.tree.TreePath;
         ignoreSelection = true;
         ViewContext context = new ViewContext(gedcom);
         context.addProperties(selection);
-        WindowManager.getInstance(AdvancedEditor.this).broadcast(new ContextSelectionEvent(context, AdvancedEditor.this));
+        WindowManager.broadcast(new ContextSelectionEvent(context, AdvancedEditor.this));
       } finally {
         ignoreSelection = false;
       }

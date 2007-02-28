@@ -290,29 +290,32 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     if (context.getEntity()==null)
       return false;
     
-    // follow context if if coming from some other view!
-    if (!cse.isOriginatingWithin(this)) {
-      if (!isSticky) setContext(context); // unless sticky
+    // an inbound message ?
+    if (cse.isInbound()) {
+      // set context unless sticky
+      if (!isSticky) setContext(context); 
+      // don't continue inbound
       return false;
     }
       
-    // came from component withing editor - don't do anything unless it's a double-click
-    if (!cse.isActionPerformed())
-      return false;
-    
-    if (context.getProperty() instanceof PropertyXRef) {
+    // an outbound message coming from a contained component - we listen for double clicks ourselves
+    if (cse.isActionPerformed()) {
       
-      PropertyXRef xref = (PropertyXRef)context.getProperty();
-      xref = xref.getTarget();
-      if (xref!=null)
-        context = new ViewContext(xref);
+      if (context.getProperty() instanceof PropertyXRef) {
+        
+        PropertyXRef xref = (PropertyXRef)context.getProperty();
+        xref = xref.getTarget();
+        if (xref!=null)
+          context = new ViewContext(xref);
+      }
+      
+      // follow
+      setContext(context);
+      
     }
-    
-    // change context
-    setContext(context);
       
-    // done
-    return false;
+    // let it bubble up outbound
+    return true;
   }
   
   public void setContext(ViewContext context) {
@@ -467,7 +470,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       ViewContext context = new ViewContext((Context)stack.pop());
       
       // let others know (this won't change us)
-      WindowManager.getInstance(EditView.this).broadcast(new ContextSelectionEvent(context, EditView.this));
+      WindowManager.broadcast(new ContextSelectionEvent(context, EditView.this));
       
       // set us
       editor.setContext(context);
@@ -536,7 +539,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       
       // let others know while saving the stack
       ignorePush = true;
-      WindowManager.getInstance(EditView.this).broadcast(new ContextSelectionEvent(context, getTarget()));
+      WindowManager.broadcast(new ContextSelectionEvent(context, getTarget()));
       ignorePush = false;
       
       // set us

@@ -150,7 +150,7 @@ public abstract class AbstractChange extends Action2 implements UnitOfWork {
     
     // set focus?
     if (focus!=null)  
-      WindowManager.getInstance(getTarget()).broadcast(new ContextSelectionEvent(new ViewContext(focus), getTarget(), true));
+      WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(focus), getTarget(), true));
     
     // done
   }

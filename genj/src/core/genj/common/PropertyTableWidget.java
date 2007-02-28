@@ -531,7 +531,7 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
       
       // tell about it
       if (context!=null)
-        WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(context, this));
+        WindowManager.broadcast(new ContextSelectionEvent(context, this));
 
       
       // done

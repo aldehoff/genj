@@ -687,9 +687,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
       if (id!=null) {
         Entity entity = gedcom.getEntity(id);
         if (entity!=null)
-          WindowManager.getInstance(ReportView.this).broadcast(
-              new ContextSelectionEvent(new ViewContext(entity), ReportView.this, e.getClickCount()>1)
-          );
+          WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(entity), ReportView.this, e.getClickCount()>1));
       }
     }
 

@@ -596,7 +596,7 @@ public class ViewManager {
         
         // at least double click on provider itself?
         if (isDoubleClick&&provider==me.getComponent()) {
-          windowManager.broadcast(new ContextSelectionEvent(context, component, true));
+          WindowManager.broadcast(new ContextSelectionEvent(context, component, true));
         }
         
         return;

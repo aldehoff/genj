@@ -613,7 +613,7 @@ public class TimelineView extends JPanel implements WindowBroadcastListener, Too
         // tell about it
         try {
           ignoreSetContext = true;
-          WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(getContext(), this));
+          WindowManager.broadcast(new ContextSelectionEvent(getContext(), this));
         } finally {
           ignoreSetContext = false;
         }

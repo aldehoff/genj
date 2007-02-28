@@ -79,8 +79,6 @@ public abstract class WindowManager {
   /** broadcast listeners */
   private List listeners = new ArrayList();
   
-  private boolean ignoreBroadcasts = false;
-  
   /** a log */
   /*package*/ final static Logger LOG = Logger.getLogger("genj.window");
   
@@ -104,47 +102,83 @@ public abstract class WindowManager {
   public void removeBroadcastListener(WindowBroadcastListener listener) {
     listeners.remove(listener);
   }
+
+  private static boolean mute = false;
   
   /**
    * Broadcast an event to all components that implement BroadcastListener 
    */
-  public void broadcast(WindowBroadcastEvent event) {
+  public static void broadcast(WindowBroadcastEvent event) {
     
-    // not allowing broadcasts to trigger broadcasts
-    // TODO we should allow for a different event type to be broadcast
-    if (ignoreBroadcasts)
+    if (mute)
       return;
-    
-    // initialize it
-    event.setWindowManager(this);
-    
+
     try {
-      ignoreBroadcasts = true;
+      mute = true;
+     
+      // bubble up "outbound"
+      WindowManager manager = null;
+      Component cursor = event.getSource();
+      while (cursor!=null) {
+        
+        // still looking for window manager?
+        if (cursor instanceof JComponent) {
+          Object object = ((JComponent)cursor).getClientProperty(WINDOW_MANAGER_KEY);
+          if (object instanceof WindowManager) {
+            manager = (WindowManager)object;
+            break;
+          }
+        }
+        
+        // move up
+        cursor = cursor.getParent();
+        
+        // a listener that cares? chance to stop this from bubbling outbound even more
+        if (cursor instanceof WindowBroadcastListener) {
+          try {
+            if (!((WindowBroadcastListener)cursor).handleBroadcastEvent(event))
+              return;
+          } catch (Throwable t) {
+            LOG.log(Level.WARNING, "broadcast listener threw throwable - cancelling broadcast", t);
+            return;
+          }
+        }
+        
+        // next
+      }
       
-      // tell listeners
-      for (Iterator ls = listeners.iterator(); ls.hasNext();) {
+      // we're done without a window manager
+      if (manager==null)
+        return;
+      
+      // switch to inbound
+      event.setInbound();
+      
+      // tell listeners of manager
+      for (Iterator ls = manager.listeners.iterator(); ls.hasNext();) {
         WindowBroadcastListener l = (WindowBroadcastListener) ls.next();
         try {
           l.handleBroadcastEvent(event);
         } catch (Throwable t) {
-          LOG.log(Level.WARNING, "broadcast listener threw throwable", t);
+          LOG.log(Level.WARNING, "broadcast listener threw throwable - continuing broadcast", t);
         }
       }
       
-      // tell components
-      String[] keys = recallKeys();
+      // tell components (but not the originating one)
+      String[] keys = manager.recallKeys();
       for (int i = 0; i < keys.length; i++) {
-        broadcast(event, getContent(keys[i]));
+        JComponent content = manager.getContent(keys[i]);
+        if (content!=cursor)
+          broadcast(event, content);
       }
       
     } finally {
-      ignoreBroadcasts = false;
+      mute = false;
     }
-    
     // done
   }
   
-  private void broadcast(WindowBroadcastEvent event, Component component) {
+  private static void broadcast(WindowBroadcastEvent event, Component component) {
     
     // .. to component
     if (component instanceof WindowBroadcastListener) {
@@ -152,7 +186,8 @@ public abstract class WindowManager {
         if (!((WindowBroadcastListener)component).handleBroadcastEvent(event))
           return;
       } catch (Throwable t) {
-        LOG.log(Level.WARNING, "broadcast listener threw throwable", t);
+        LOG.log(Level.WARNING, "broadcast listener threw throwable - not recursing broadcast", t);
+        return;
       }
     }
     

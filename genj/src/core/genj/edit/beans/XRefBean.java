@@ -54,7 +54,7 @@ public class XRefBean extends PropertyBean {
         if (property==null)
           return;
         // tell about it
-        WindowManager.getInstance(preview).broadcast(new ContextSelectionEvent(new ViewContext(property), preview, true));
+        WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(property), preview, true));
       }
     });
   }

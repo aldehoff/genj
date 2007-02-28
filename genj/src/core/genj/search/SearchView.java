@@ -734,7 +734,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
     public void valueChanged(ListSelectionEvent e) {
       int row = listResults.getSelectedIndex();
       if (row>=0)
-        WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(new ViewContext(results.getHit(row).getProperty()), this));
+        WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(results.getHit(row).getProperty()), this));
     }
 
     

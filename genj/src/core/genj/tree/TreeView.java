@@ -876,7 +876,7 @@ public class TreeView extends JPanel implements ContextProvider, WindowBroadcast
         repaint();
         overview.repaint();
         // propagate it
-        WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(new ViewContext(currentEntity), this));
+        WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(currentEntity), this));
         return;
       }
       // runnable?

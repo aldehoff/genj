@@ -26,8 +26,8 @@ import java.awt.Component;
  */
 public abstract class WindowBroadcastEvent {
 
-  private WindowManager manager;
   private Component source;
+  private boolean isOutbound = true;
   
   /**
    * constructor
@@ -44,31 +44,24 @@ public abstract class WindowBroadcastEvent {
   }
   
   /**
-   * check for source
+   * Whether this event is flowing from a sub-component up its containment hierarchy
    */
-  public boolean isOriginatingWithin(Component component) {
-    Component cursor = source;
-    while (cursor!=null) {
-      if (cursor==component)
-        return true;
-      cursor = cursor.getParent();
-    }
-    return false;
+  public boolean isOutbound() {
+    return isOutbound;
   }
   
   /**
-   * the window manager
+   * Whether this event is flowing a container into its contained sub-components
    */
-  public WindowManager getWindowManager() {
-    if (manager==null) throw new IllegalStateException("event not initialized by window manager");
-    return manager;
+  public boolean isInbound() {
+    return !isOutbound;
   }
   
   /**
-   * setter
+   * Set to outbound
    */
-  /*package*/ void setWindowManager(WindowManager manager) {
-    this.manager = manager;
+  /*package*/ void setInbound() {
+    isOutbound = false;
   }
-
+  
 }
