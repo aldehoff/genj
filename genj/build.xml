@@ -37,15 +37,6 @@
   </target>
     	
   <!--
-   Run Compilation
-   -->
-  <target name="keyfile" depends="init">
-    <!-- generate a key -->
-    <delete file="./build/keyfile"/>    
-    <genkey alias="genj" storepass="password" dname="CN=Nils Meier, OU=Unknown, O=genj.sourceforge.net, C=CA" keystore="./build/keyfile"/>    
-  </target>
-
-  <!--
    Launcher Compilation
    -->
   <target name="compile.launcher" depends="init">
@@ -243,7 +234,7 @@
   <!--
    Distribution - Applet
    -->
-  <target name="dist.applet" depends="init,keyfile,compile,version">
+  <target name="dist.applet" depends="init,compile,version">
   
   	 <!-- what we exclude - would be great to derive that automatically :( -->
      <property name="exclude" value="
@@ -277,11 +268,6 @@
       <fileset dir="./gedcom"/>
 	  </copy> 	
   	
-  	 <!-- sign em -->
-     <signjar keystore="./build/keyfile" alias="genj" storepass="password">
-      <fileset dir="./build/applet" includes="*.jar"/>
-     </signjar>	
-
      <!-- create genj_applet_xyz.jar -->
      <zip zipfile="./build/dist/genj_applet-${version}.zip" update="True">
        <fileset dir="./build" includes="applet/*"/>

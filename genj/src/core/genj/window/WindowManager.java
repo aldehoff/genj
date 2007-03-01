@@ -28,10 +28,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,6 +55,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 /**
  * Abstract base type for WindowManagers
@@ -79,6 +84,12 @@ public abstract class WindowManager {
   /** broadcast listeners */
   private List listeners = new ArrayList();
   
+  /** glasspane mouse hook*/
+  private MouseListener mouseHook;
+  
+  /** whether we're muting broadcasts atm */
+  private boolean muteBroadcasts = false;
+  
   /** a log */
   /*package*/ final static Logger LOG = Logger.getLogger("genj.window");
   
@@ -87,6 +98,13 @@ public abstract class WindowManager {
    */
   protected WindowManager(Registry regiStry) {
     registry = regiStry;
+  }
+  
+  /**
+   * Set popup factory
+   */
+  public void setGlasspaneHook(MouseListener mouseHook) {
+    this.mouseHook = mouseHook;
   }
   
   /**
@@ -103,35 +121,39 @@ public abstract class WindowManager {
     listeners.remove(listener);
   }
 
-  private static boolean mute = false;
-  
   /**
    * Broadcast an event to all components that implement BroadcastListener 
    */
   public static void broadcast(WindowBroadcastEvent event) {
     
-    if (mute)
+    // Find applicable window manager
+    WindowManager instance = WindowManager.getInstance(event.getSource());
+    if (instance==null) {
+      LOG.log(Level.WARNING, "received broadcast event without associated manager - cancelling broadcast");
+      return;
+    }
+    
+    // let it do the work
+    instance.broadcastImpl(event);
+  }
+  
+  private void broadcastImpl(WindowBroadcastEvent event) {
+    
+    // are we muted atm?
+    if (muteBroadcasts)
       return;
 
     try {
-      mute = true;
+      muteBroadcasts = true;
      
       // bubble up "outbound"
-      WindowManager manager = null;
       Component cursor = event.getSource();
       while (cursor!=null) {
         
-        // still looking for window manager?
-        if (cursor instanceof JComponent) {
-          Object object = ((JComponent)cursor).getClientProperty(WINDOW_MANAGER_KEY);
-          if (object instanceof WindowManager) {
-            manager = (WindowManager)object;
-            break;
-          }
-        }
-        
-        // move up
+        // move up to window manager
         cursor = cursor.getParent();
+        if (cursor instanceof JComponent && ((JComponent)cursor).getClientProperty(WINDOW_MANAGER_KEY)==this)
+          break;
         
         // a listener that cares? chance to stop this from bubbling outbound even more
         if (cursor instanceof WindowBroadcastListener) {
@@ -147,17 +169,11 @@ public abstract class WindowManager {
         // next
       }
       
-      // we're done without a window manager
-      if (manager==null) {
-        LOG.log(Level.WARNING, "broadcast event "+event.getClass().getName()+" for "+event.getSource()+" didn't reach WindowManager");
-        return;
-      }
-      
       // switch to inbound
       event.setInbound();
       
       // tell listeners of manager
-      for (Iterator ls = manager.listeners.iterator(); ls.hasNext();) {
+      for (Iterator ls = listeners.iterator(); ls.hasNext();) {
         WindowBroadcastListener l = (WindowBroadcastListener) ls.next();
         try {
           l.handleBroadcastEvent(event);
@@ -167,20 +183,20 @@ public abstract class WindowManager {
       }
       
       // tell components (but not the originating one)
-      String[] keys = manager.recallKeys();
+      String[] keys = recallKeys();
       for (int i = 0; i < keys.length; i++) {
-        JComponent content = manager.getContent(keys[i]);
+        JComponent content = getContent(keys[i]);
         if (content!=cursor)
-          broadcast(event, content);
+          broadcastImpl(event, content);
       }
       
     } finally {
-      mute = false;
+      muteBroadcasts = false;
     }
     // done
   }
   
-  private static void broadcast(WindowBroadcastEvent event, Component component) {
+  private static void broadcastImpl(WindowBroadcastEvent event, Component component) {
     
     // .. to component
     if (component instanceof WindowBroadcastListener) {
@@ -197,7 +213,7 @@ public abstract class WindowManager {
     if (component instanceof Container) {
       Component[] cs = (((Container)component).getComponents());
       for (int j = 0; j < cs.length; j++) {
-        broadcast(event, cs[j]);
+        broadcastImpl(event, cs[j]);
       }
     }
     
@@ -232,7 +248,7 @@ public abstract class WindowManager {
    * Returns an appropriate WindowManager instance for given component
    * @return manager or null if no appropriate manager could be found
    */
-  public static WindowManager getInstance(JComponent component) {
+  public static WindowManager getInstance(Component component) {
     Component cursor = component;
     while (cursor!=null) {
       if (cursor instanceof JComponent) {
@@ -451,6 +467,73 @@ public abstract class WindowManager {
     }
     
     // done
+  }
+  
+  /**
+   * Our default window manager glasspane
+   */
+  protected class Glasspane extends JComponent implements MouseListener, MouseMotionListener {
+    
+    private Container contentPane;
+    
+    /** constructor */
+    protected Glasspane(Container contentPane) {
+      this.contentPane = contentPane;
+      addMouseListener(this);
+      addMouseMotionListener(this);
+    }
+    public void mouseDragged(MouseEvent e) {
+      if ((e=narrow(e))==null) return;
+      if (mouseHook instanceof MouseMotionListener) ((MouseMotionListener)mouseHook).mouseDragged(e);
+      dispatch(e);
+    }
+    public void mouseMoved(MouseEvent e) {
+      if ((e=narrow(e))==null) return;
+      if (mouseHook instanceof MouseMotionListener) ((MouseMotionListener)mouseHook).mouseMoved(e);
+      dispatch(e);
+    }
+    public void mouseClicked(MouseEvent e) {
+      if ((e=narrow(e))==null) return;
+      if (mouseHook!=null) mouseHook.mouseClicked(e);
+      dispatch(e);
+    }
+    public void mouseEntered(MouseEvent e) {
+      if ((e=narrow(e))==null) return;
+      if (mouseHook!=null) mouseHook.mouseEntered(e);
+      dispatch(e);
+    }
+    public void mouseExited(MouseEvent e) {
+      if ((e=narrow(e))==null) return;
+      if (mouseHook!=null) mouseHook.mouseExited(e);
+      dispatch(e);
+    }
+    public void mousePressed(MouseEvent e) {
+      if ((e=narrow(e))==null) return;
+      if (mouseHook!=null) mouseHook.mousePressed(e);
+      dispatch(e);
+    }
+    public void mouseReleased(MouseEvent e) {
+      if ((e=narrow(e))==null) return;
+      if (mouseHook!=null) mouseHook.mouseReleased(e);
+      dispatch(e);
+    }
+    private MouseEvent narrow(MouseEvent e) {
+      // get the mouse click point relative to the content pane
+      Point containerPoint = SwingUtilities.convertPoint(this, e.getPoint(), contentPane);
+      // find the component that under this point
+      Component component = SwingUtilities.getDeepestComponentAt(contentPane,containerPoint.x,containerPoint.y);
+      // return if nothing was found
+      if (component == null) 
+          return null;
+      // convert point relative to the target component
+      Point componentPoint = SwingUtilities.convertPoint(this,e.getPoint(),component);
+      // here it is
+      return new MouseEvent(component,e.getID(),e.getWhen(),e.getModifiers(),componentPoint.x,componentPoint.y,
+          e.getClickCount(),e.isPopupTrigger());
+    }
+    private void dispatch(MouseEvent e) {
+      if (!e.isConsumed()) e.getComponent().dispatchEvent(e);
+    }
   }
   
   /**

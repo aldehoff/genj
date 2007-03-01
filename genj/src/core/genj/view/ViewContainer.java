@@ -32,13 +32,10 @@ import java.awt.Component;
 import java.util.Iterator;
 import java.util.logging.Level;
 
-import javax.swing.Action;
 import javax.swing.Box;
-import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 /**
@@ -71,14 +68,6 @@ import javax.swing.SwingConstants;
     // setup layout
     setLayout(new BorderLayout());
     add(view, BorderLayout.CENTER);
-    
-    // hook-up context menu hook
-    Action hook = mgr.HOOK;
-    InputMap inputs = view.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    inputs.put(KeyStroke.getKeyStroke("shift F10"), hook);
-    inputs.put(KeyStroke.getKeyStroke("ctrl SPACE"), hook);
-    inputs.put(KeyStroke.getKeyStroke("CONTEXT_MENU"), hook); // this only works in Tiger 1.5 on Windows
-    view.getActionMap().put(hook, hook);
     
     // .. factory accelerators
     for (Iterator it = mgr.keyStrokes2factories.keySet().iterator(); it.hasNext();) {
