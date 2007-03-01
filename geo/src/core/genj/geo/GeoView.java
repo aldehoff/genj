@@ -194,10 +194,12 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
    * Callback for context changes
    */
   public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
+    // check for inbound context selection
     ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
-    if (cse!=null)
+    if (event.isInbound() && cse!=null)
       locationList.setSelectedContext(cse.getContext());
-    return false;
+    // continue
+    return true;
   }
   
   /**

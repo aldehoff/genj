@@ -332,7 +332,7 @@ import swingx.tree.AbstractTreeModel;
         if (!props.isEmpty()) {
           ViewContext context = new ViewContext(model.getGedcom());
           context.addProperties(Property.toArray(props));
-          WindowManager.getInstance(this).broadcast(new ContextSelectionEvent(context, this));
+          WindowManager.broadcast(new ContextSelectionEvent(context, this));
         }
       } finally {
         ignoreSelectionChanges = false;        
