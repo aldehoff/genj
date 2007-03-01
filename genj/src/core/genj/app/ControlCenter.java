@@ -25,7 +25,10 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomMetaListener;
+import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertySex;
+import genj.gedcom.Submitter;
 import genj.gedcom.UnitOfWork;
 import genj.io.Filter;
 import genj.io.GedcomEncodingException;
@@ -522,7 +525,19 @@ public class ControlCenter extends JPanel {
         }
         // form the origin
         try {
-          addGedcom(new Gedcom(Origin.create(new URL("file", "", file.getAbsolutePath())), true));
+          Gedcom gedcom  = new Gedcom(Origin.create(new URL("file", "", file.getAbsolutePath())));
+          // create default entities
+          try {
+            Indi adam = (Indi)gedcom.createEntity(Gedcom.INDI);
+            adam.addDefaultProperties();
+            adam.setName("Adam","");
+            adam.setSex(PropertySex.MALE);
+            Submitter submitter = (Submitter)gedcom.createEntity(Gedcom.SUBM);
+            submitter.setName(EnvironmentChecker.getProperty(this, "user.name", "?", "user name used as submitter in new gedcom"));
+          } catch (GedcomException e) {
+          }
+          // remember
+          addGedcom(gedcom);
         } catch (MalformedURLException e) {
         }
 
