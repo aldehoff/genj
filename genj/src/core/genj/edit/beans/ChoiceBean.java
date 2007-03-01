@@ -116,7 +116,14 @@ public class ChoiceBean extends PropertyBean {
     PropertyChoiceValue choice = (PropertyChoiceValue)property;
 
     // change value
-    choice.setValue(choices.getText(), global.isSelected());
+    String text = choices.getText();
+    choice.setValue(text, global.isSelected());
+    
+    // reset
+    choices.setValues(((PropertyChoiceValue)property).getChoices(true));
+    choices.setText(text);
+    global.setEnabled(false);
+    global.setVisible(false);
       
     // Done
   }
