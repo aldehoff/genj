@@ -103,9 +103,6 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    */
   public void setValue(String value, boolean global) {
     
-    // change me
-    setValue(value);
-    
     // more?
     if (global) {
       // change value of all with value
@@ -117,6 +114,9 @@ public class PropertyChoiceValue extends PropertySimpleValue {
       }
     }    
       
+    // change me
+    setValue(value);
+    
     // done
   }
 
