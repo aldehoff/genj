@@ -92,11 +92,6 @@ public class DefaultWindowManager extends WindowManager {
     // add content
     frame.getContentPane().add(content);
 
-    // add glasspane
-    Glasspane glasspane = new Glasspane(frame.getContentPane());
-    frame.setGlassPane(glasspane);
-    glasspane.setVisible(true);
-    
     // DISPOSE_ON_CLOSE?
     if (onClosing==null) {
       frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

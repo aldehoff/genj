@@ -31,10 +31,15 @@ import genj.util.swing.Action2;
 import genj.util.swing.MenuHelper;
 import genj.window.WindowManager;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.lang.reflect.Array;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,6 +58,7 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
 
 import sun.misc.Service;
 
@@ -114,8 +120,23 @@ public class ViewManager {
     
     // continue with init
     init(windowManager, factories);
+  }
+  
+  /**
+   * get all views for given gedcom 
+   */
+  public ViewHandle[] getViews(Gedcom gedcom) {
+    
+    // look for views looking at gedcom    
+    List result = new ArrayList();
+    for (Iterator handles = allHandles.iterator(); handles.hasNext() ; ) {
+      ViewHandle handle = (ViewHandle)handles.next();
+      if (handle.getGedcom()==gedcom)  
+        result.add(handle);
+    }
     
     // done
+    return (ViewHandle[])result.toArray(new ViewHandle[result.size()]);
   }
   
   /**
@@ -139,28 +160,13 @@ public class ViewManager {
       }
     }
     
-    // setup popup
-    windowManager.setGlasspaneHook(contextHook);
-    
     // done
   }
   
   /**
-   * get all views for given gedcom 
+   * Installs global key accelerators for given component
    */
-  public ViewHandle[] getViews(Gedcom gedcom) {
-    
-    // look for views looking at gedcom    
-    List result = new ArrayList();
-    for (Iterator handles = allHandles.iterator(); handles.hasNext() ; ) {
-      ViewHandle handle = (ViewHandle)handles.next();
-      if (handle.getGedcom()==gedcom)  
-        result.add(handle);
-    }
-    
-    // done
-    return (ViewHandle[])result.toArray(new ViewHandle[result.size()]);
-  }
+   
   
   /**
    * Returns all known view factories
@@ -317,7 +323,7 @@ public class ViewManager {
     
     // wrap it into a container
     ViewContainer container = new ViewContainer(handle);
-    
+
     // add context hook for keyboard shortcuts
     InputMap inputs = view.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     inputs.put(KeyStroke.getKeyStroke("shift F10"), contextHook);
@@ -492,7 +498,42 @@ public class ViewManager {
   /**
    * Our hook into keyboard and mouse operated context changes / menues
    */
-  private class ContextHook extends Action2 implements MouseListener {
+  private class ContextHook extends Action2 implements AWTEventListener {
+    
+    /** constructor */
+    private ContextHook() {
+      try {
+        AccessController.doPrivileged(new PrivilegedAction() {
+          public Object run() {
+            Toolkit.getDefaultToolkit().addAWTEventListener(ContextHook.this, AWTEvent.MOUSE_EVENT_MASK);
+            return null;
+          }
+        });
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Cannot install ContextHook ("+t.getMessage()+")");
+      }
+    }
+    
+    /**
+     * Resolve context for given component
+     */
+    private ViewContext getContext(Component component) {
+      ViewContext context;
+      // find context provider in component hierarchy
+      while (component!=null) {
+        // component can provide context?
+        if (component instanceof ContextProvider) {
+          ContextProvider provider = (ContextProvider)component;
+          context = provider.getContext();
+          if (context!=null)
+            return context;
+        }
+        // try parent
+        component = component.getParent();
+      }
+      // not found
+      return null;
+    }
     
     /**
      * A Key press initiation of the context menu
@@ -503,88 +544,59 @@ public class ViewManager {
         return;
       JComponent focus = (JComponent)FocusManager.getCurrentManager().getFocusOwner();
       // look for ContextProvider and show menu if appropriate
-      ContextProvider provider = getContextProvider(focus);
-      if (provider!=null) {
-        ViewContext context = provider.getContext();
-        if (context!=null) {
-          JPopupMenu popup = getContextMenu(context, focus);
-          if (popup!=null)
-            popup.show(focus, 0, 0);
-        }
+      ViewContext context = getContext(focus);
+      if (context!=null) {
+        JPopupMenu popup = getContextMenu(context, focus);
+        if (popup!=null)
+          popup.show(focus, 0, 0);
       }
       // done
     }
     
     /**
-     * Resolve context provider for given 'source'
+     * A mouse click initiation of the context menu
      */
-    private ContextProvider getContextProvider(Component c) {
-      // find context provider in component hierarchy
-      while (c!=null) {
-        // component can provide context?
-        if (c instanceof ContextProvider) {
-          ContextProvider provider = (ContextProvider)c;
-          if (provider.getContext()!=null)
-            return provider;
-        }
-        if (c instanceof JComponent) {
-          ContextProvider provider = (ContextProvider)((JComponent)c).getClientProperty(ContextProvider.class);
-          if (provider!=null&&provider.getContext()!=null) 
-            return provider;
-        }
-        // try parent
-        c = c.getParent();
+    public void eventDispatched(AWTEvent event) {
+      
+      // a mouse event?
+      if (!(event instanceof MouseEvent)) 
+        return;
+      MouseEvent me = (MouseEvent) event;
+      
+      // find deepest component (since components without attached listeners
+      // won't be the source for this event)
+      Component component  = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
+      if (!(component instanceof JComponent))
+        return;
+      Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), component );
+      
+      // try to identify context
+      ViewContext context = getContext(component);
+      if (context==null) 
+        return;
+
+      // a popup?
+      if(me.isPopupTrigger())  {
+        
+        // cancel any menu
+        MenuSelectionManager.defaultManager().clearSelectedPath();
+        
+        // show context menu
+        JPopupMenu popup = getContextMenu(context, (JComponent)component);
+        if (popup!=null)
+          popup.show((JComponent)component, point.x, point.y);
+        
       }
-      // not found
-      return null;
-    }
-    
-    private ViewContext getContext(MouseEvent e) {
-      // find context provider
-      ContextProvider provider = getContextProvider(e.getComponent());
-      if (provider==null)
-        return null;
-      return provider.getContext();
-    }
-    
-    public void mouseClicked(MouseEvent e) {
-      // double-click?
-      if (e.getButton()==MouseEvent.BUTTON1 && e.getClickCount()>1) {
-        ViewContext context = getContext(e);
-        if (context!=null)
-          WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(context), e.getComponent(), true));
+      
+      // a double-click on provider?
+      if (me.getButton()==MouseEvent.BUTTON1&&me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1) {
+        WindowManager.broadcast(new ContextSelectionEvent(context, component, true));
       }
-    }
-    public void mouseEntered(MouseEvent e) {
-      // ignored
-    }
-    public void mouseExited(MouseEvent e) {
-      // ignored
-    }
-    public void mousePressed(MouseEvent e) {
-      mouseReleased(e);
-    }
-    public void mouseReleased(MouseEvent e) {
-      // only interested in popup on a jcomponent
-      if (!(e.isPopupTrigger()&&e.getComponent() instanceof JComponent))
-        return;
-      // find a context
-      ViewContext context = getContext(e);
-      if (context==null)
-        return;
-      // cancel any menu
-      //MenuSelectionManager.defaultManager().clearSelectedPath();
-      // show context menu
-      JPopupMenu popup = getContextMenu(context, (JComponent)e.getComponent()); 
-      if (popup==null)
-        return;
-      // we're consuming this before showing the popup
-      e.consume();
-      popup.setLightWeightPopupEnabled(false); // have to use lightweight in this hook
-      popup.show(e.getComponent(), e.getX(), e.getY());
+        
+      // done
     }
     
-  } //ContextHook
+  } //ContextMenuHook
   
 
 } //ViewManager
