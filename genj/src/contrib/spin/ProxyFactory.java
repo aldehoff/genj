@@ -34,7 +34,8 @@ public abstract class ProxyFactory {
     private static final Method equalsMethod;
     static {
         try {
-            equalsMethod = Object.class.getDeclaredMethod("equals", new Class[]{Object.class});
+          // NM 20070301 use getMethod() since getDeclaredMethod() doesn't work in Applet
+          equalsMethod = Object.class.getMethod("equals", new Class[]{Object.class});
         } catch (Exception ex) {
             throw new Error(ex);
         }
