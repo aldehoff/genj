@@ -230,7 +230,6 @@ public class ContextListWidget extends JList implements ContextProvider {
       Context ctx = (Context)value;
       setIcon(ctx.getImage());
       setText(ctx.getText());
-      setEnabled(ctx.getProperty()!=null||ctx.getEntity()!=null);
       // done
       return this;
     }
