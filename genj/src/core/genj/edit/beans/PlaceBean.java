@@ -115,6 +115,10 @@ public class PlaceBean extends PropertyBean {
     
     // propagate change
     ((PropertyPlace)property).setValue(getCommitValue(), global.isSelected());
+    
+    // reset
+    // TODO this will force a focus change - we should really just reset the choices
+    setProperty(property);
   
   }
 
