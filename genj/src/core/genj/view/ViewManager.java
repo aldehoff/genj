@@ -558,10 +558,12 @@ public class ViewManager {
      */
     public void eventDispatched(AWTEvent event) {
       
-      // a mouse event?
+      // a mouse popup/click event?
       if (!(event instanceof MouseEvent)) 
         return;
       MouseEvent me = (MouseEvent) event;
+      if (!(me.isPopupTrigger()||me.getID()==MouseEvent.MOUSE_CLICKED))
+        return;
       
       // find deepest component (since components without attached listeners
       // won't be the source for this event)
