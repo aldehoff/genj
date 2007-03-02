@@ -294,7 +294,7 @@ import swingx.tree.AbstractTreeModel;
     public ViewContext getContext() {
       ViewContext result = new ViewContext(model.getGedcom());
       TreePath[] selections = getSelectionPaths();
-      for (int i = 0; i < selections.length; i++) {
+      for (int i = 0; selections!=null  && i < selections.length; i++) {
         Object selection = selections[i].getLastPathComponent();
         if (selection instanceof Property) 
           result.addProperty((Property)selection);
