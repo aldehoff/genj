@@ -87,14 +87,6 @@ public class PropertyNote extends PropertyXRef {
   }
   
   /**
-   * A Note's NOTE property
-   */
-  public Property getTargetValueProperty() {
-    Note note = (Note)getTargetEntity();
-    return note!=null ? note.getDelegate() : null;
-  }
-  
-  /**
    * The expected referenced type
    */
   public String getTargetType() {

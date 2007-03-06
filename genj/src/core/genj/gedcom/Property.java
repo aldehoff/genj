@@ -249,10 +249,8 @@ public abstract class Property implements Comparable {
    */
   public void delProperties() {
     if (children!=null) {
-      Property[] cs = (Property[])children.toArray(new Property[children.size()]);
-      for (int c = 0; c < cs.length; c++) {
-        delProperty(cs[c]);
-      }
+      for (int c=children.size()-1; c>=0; c--) 
+        delProperty(c);
       if (children.isEmpty()) children = null;
     }
   }
