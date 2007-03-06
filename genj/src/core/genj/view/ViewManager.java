@@ -407,7 +407,7 @@ public class ViewManager {
   /**
    * Get a context menu
    */
-  public JPopupMenu getContextMenu(ViewContext context, JComponent target) {
+  public JPopupMenu getContextMenu(ViewContext context, Component target) {
     
     // make sure context is valid
     if (context==null)
@@ -419,6 +419,10 @@ public class ViewManager {
 
     // make sure any existing popup is cleared
     MenuSelectionManager.defaultManager().clearSelectedPath();
+    
+    // hook up context menu to toplevel component - child components are more likely to have been 
+    // removed already by the time any of the associated actions are run
+    while (target.getParent()!=null) target = target.getParent();
 
     // create a popup
     MenuHelper mh = new MenuHelper().setTarget(target);
@@ -540,9 +544,9 @@ public class ViewManager {
      */
     protected void execute() {
       // only for jcomponents with focus
-      if (!(FocusManager.getCurrentManager().getFocusOwner() instanceof JComponent))
+      Component focus = FocusManager.getCurrentManager().getFocusOwner();
+      if (!(focus instanceof JComponent))
         return;
-      JComponent focus = (JComponent)FocusManager.getCurrentManager().getFocusOwner();
       // look for ContextProvider and show menu if appropriate
       ViewContext context = getContext(focus);
       if (context!=null) {

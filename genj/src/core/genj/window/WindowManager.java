@@ -116,12 +116,10 @@ public abstract class WindowManager {
    */
   public static void broadcast(WindowBroadcastEvent event) {
     
-    // Find applicable window manager
-    WindowManager instance = WindowManager.getInstance(event.getSource());
-    if (instance==null) {
-      LOG.log(Level.WARNING, "received broadcast event without associated manager - cancelling broadcast");
+    // Find applicable window manager - ignore if none available
+    WindowManager instance = WindowManager.getInstanceImpl(event.getSource());
+    if (instance==null) 
       return;
-    }
 
     // let it do the work
     instance.broadcastImpl(event);
@@ -239,14 +237,18 @@ public abstract class WindowManager {
    * @return manager or null if no appropriate manager could be found
    */
   public static WindowManager getInstance(Component component) {
+    WindowManager result =  getInstanceImpl(component);
+    if (result==null)
+      LOG.warning("Failed to find window manager for "+component);
+    return result;
+  }
+  
+  private static WindowManager getInstanceImpl(Component component) {
     // get topmost container
     Component window = component;
     while (window.getParent()!=null) window = window.getParent();
     // look it up
-    WindowManager mgr = (WindowManager)window2manager.get(window);
-    if (mgr==null)
-      LOG.warning("Failed to find window manager for "+component);
-    return mgr;
+    return (WindowManager)window2manager.get(window);
   }
   
   /**
