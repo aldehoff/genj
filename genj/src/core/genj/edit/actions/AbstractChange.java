@@ -22,15 +22,12 @@ package genj.edit.actions;
 import genj.edit.Images;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.Property;
 import genj.gedcom.UnitOfWork;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
-import genj.view.ContextSelectionEvent;
-import genj.view.ViewContext;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -53,9 +50,6 @@ public abstract class AbstractChange extends Action2 implements UnitOfWork {
   
   /** the manager in the background */
   protected ViewManager manager;
-  
-  /** the focus */
-  protected Property focus = null;
   
   /** image *new* */
   protected final static ImageIcon imgNew = Images.imgNewEntity;
@@ -147,10 +141,6 @@ public abstract class AbstractChange extends Action2 implements UnitOfWork {
     } catch (Throwable t) {
       getWindowManager().openDialog(getClass().getName(), null, WindowManager.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), getTarget());
     }
-    
-    // set focus?
-    if (focus!=null)  
-      WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(focus), getTarget(), true));
     
     // done
   }

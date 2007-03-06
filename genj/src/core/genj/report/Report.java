@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.126 $ $Author: nmeier $ $Date: 2007-02-23 12:59:49 $
+ * $Revision: 1.127 $ $Author: nmeier $ $Date: 2007-03-06 12:34:49 $
  */
 package genj.report;
 
@@ -43,6 +43,7 @@ import genj.util.swing.ChoiceWidget;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -132,7 +133,7 @@ public abstract class Report implements Cloneable {
   private WindowManager windowManager;
 
   /** owning component */
-  private JComponent owner;
+  private Component owner;
 
   /** options */
   private List options;
@@ -150,7 +151,7 @@ public abstract class Report implements Cloneable {
   /**
    * integration - private instance for a run
    */
-  /*package*/ Report getInstance(JComponent owner, PrintWriter out) {
+  /*package*/ Report getInstance(Component owner, PrintWriter out) {
 
     try {
 

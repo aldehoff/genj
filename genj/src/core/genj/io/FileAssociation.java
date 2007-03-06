@@ -21,6 +21,7 @@ package genj.io;
 
 import genj.util.Resources;
 
+import java.awt.Component;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,7 +37,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 
 /**
@@ -309,7 +309,7 @@ public class FileAssociation {
   /**
    * Gets first available association or asks the user for appropriate one
    */
-  public static FileAssociation get(File file, String name, JComponent owner) {
+  public static FileAssociation get(File file, String name, Component owner) {
     String suffix = getSuffix(file);
     if (suffix.length()==0)
       return null;
@@ -319,7 +319,7 @@ public class FileAssociation {
   /**
    * Gets first available association or asks the user for appropriate one for a browser url and executes it
    */
-  public static void open(URL url, JComponent owner) {
+  public static void open(URL url, Component owner) {
     // find browser capable assoc
     FileAssociation association = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
     if (association!=null)  
@@ -329,7 +329,7 @@ public class FileAssociation {
   /**
    * Gets first available association or asks the user for appropriate one
    */
-  public static FileAssociation get(String suffix, String suffixes, String name, JComponent owner) {
+  public static FileAssociation get(String suffix, String suffixes, String name, Component owner) {
     // look for it
     Iterator it = associations.iterator();
     while (it.hasNext()) {

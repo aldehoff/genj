@@ -26,7 +26,10 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.util.WordBuffer;
 import genj.util.swing.NestedBlockLayout;
+import genj.view.ContextSelectionEvent;
+import genj.view.ViewContext;
 import genj.view.ViewManager;
+import genj.window.WindowManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -161,6 +164,7 @@ public abstract class CreateRelationship extends AbstractChange {
    */
   public void perform(Gedcom gedcom) throws GedcomException {
     // create the entity if necessary
+    Property focus;
     if (existing==null) {
       // check id
       String id = null;
@@ -171,8 +175,8 @@ public abstract class CreateRelationship extends AbstractChange {
       }
       // focus always changes to new that we create now
       existing = gedcom.createEntity(targetType, id);
+      existing.addDefaultProperties();
       focus = existing;
-      focus.addDefaultProperties();
       // perform the relationship to new
       change(existing, true);
     } else {
@@ -181,6 +185,8 @@ public abstract class CreateRelationship extends AbstractChange {
     }
     // remember selection
     ViewManager.getRegistry(gedcom).put("select."+targetType, existing.getId());
+    // select
+    WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(focus), getTarget(), true));
     // done
   }
   

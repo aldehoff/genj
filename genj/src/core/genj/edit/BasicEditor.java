@@ -882,22 +882,19 @@ import spin.Spin;
    */
   private class Callback extends GedcomListenerAdapter {
     
-    private Entity setCurrent;
     private Property setFocus;
     
     public void gedcomWriteLockAcquired(Gedcom gedcom) {
-      setCurrent = currentEntity;
       setFocus = null;
     }
     
     public void gedcomWriteLockReleased(Gedcom gedcom) {
-      setEntity(setCurrent, setFocus);
+      setEntity(currentEntity, setFocus);
     }
     
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-      if (entity==currentEntity) {
-        setCurrent = null;
-      }
+      if (currentEntity==entity)
+        currentEntity = null;
     }
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
       if (property.getEntity()==currentEntity) {

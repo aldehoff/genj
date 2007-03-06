@@ -34,10 +34,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,6 +62,8 @@ public abstract class WindowManager {
 
   private final static Object WINDOW_MANAGER_KEY = WindowManager.class;
   
+  private static WeakHashMap window2manager = new WeakHashMap();
+  
   /** message types*/
   public static final int  
     ERROR_MESSAGE = JOptionPane.ERROR_MESSAGE,
@@ -73,8 +78,8 @@ public abstract class WindowManager {
   /** a counter for temporary keys */
   private int temporaryKeyCounter = 0;  
 
-  /** a mapping between key to framedlg */
-  private Map key2framedlg = new HashMap();
+  /** a mapping between key to top level windows */
+  private Map key2window = new HashMap();
   
   /** broadcast listeners */
   private List listeners = new ArrayList();
@@ -132,16 +137,13 @@ public abstract class WindowManager {
       muteBroadcasts = true;
      
       // bubble up "outbound"
+      Set visited = new HashSet();
       Component cursor = event.getSource();
       while (cursor!=null) {
         
-        // move up to window manager
-        cursor = cursor.getParent();
-        if (cursor instanceof JComponent && ((JComponent)cursor).getClientProperty(WINDOW_MANAGER_KEY)==this)
-            break;
-        
         // a listener that cares? chance to stop this from bubbling outbound even more
         if (cursor instanceof WindowBroadcastListener) {
+          visited.add(cursor);
           try {
             if (!((WindowBroadcastListener)cursor).handleBroadcastEvent(event))
               return;
@@ -151,7 +153,8 @@ public abstract class WindowManager {
           }
         }
         
-        // next
+        // move up 
+        cursor = cursor.getParent();
       }
       
       // switch to inbound
@@ -170,9 +173,7 @@ public abstract class WindowManager {
       // tell components (but not the originating one)
       String[] keys = recallKeys();
       for (int i = 0; i < keys.length; i++) {
-        JComponent content = getContent(keys[i]);
-        if (content!=cursor)
-          broadcastImpl(event, content);
+        broadcastImpl(event, recall(keys[i]), visited);
       }
       
     } finally {
@@ -181,7 +182,11 @@ public abstract class WindowManager {
     // done
   }
   
-  private static void broadcastImpl(WindowBroadcastEvent event, Component component) {
+  private static void broadcastImpl(WindowBroadcastEvent event, Component component, Set dontRevisit) {
+    
+    // a stop?
+    if (dontRevisit.contains(component))
+      return;
     
     // .. to component
     if (component instanceof WindowBroadcastListener) {
@@ -198,7 +203,7 @@ public abstract class WindowManager {
     if (component instanceof Container) {
       Component[] cs = (((Container)component).getComponents());
       for (int j = 0; j < cs.length; j++) {
-        broadcastImpl(event, cs[j]);
+        broadcastImpl(event, cs[j], dontRevisit);
       }
     }
     
@@ -234,25 +239,20 @@ public abstract class WindowManager {
    * @return manager or null if no appropriate manager could be found
    */
   public static WindowManager getInstance(Component component) {
-    Component cursor = component;
-    while (cursor!=null) {
-      if (cursor instanceof JComponent) {
-        Object object = ((JComponent)cursor).getClientProperty(WINDOW_MANAGER_KEY);
-        if (object instanceof WindowManager)
-          return (WindowManager)object;
-      }
-      cursor = cursor.getParent();
-    }
-    LOG.warning("Failed to find window manager for "+component);
-    return null;
+    // get topmost container
+    Component window = component;
+    while (window.getParent()!=null) window = window.getParent();
+    // look it up
+    WindowManager mgr = (WindowManager)window2manager.get(window);
+    if (mgr==null)
+      LOG.warning("Failed to find window manager for "+component);
+    return mgr;
   }
   
   /**
    * Setup a new independant window
    */
   public final String openWindow(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Action close) {
-    // set us up
-    content.putClientProperty(WINDOW_MANAGER_KEY, this);
     // create a key?
     if (key==null) 
       key = getTemporaryKey();
@@ -262,9 +262,10 @@ public abstract class WindowManager {
     Rectangle bounds = registry.get(key, (Rectangle)null);
     boolean maximized = registry.get(key+".maximized", false);
     // deal with it in impl
-    Object frame = openWindowImpl(key, title, image, content, menu, bounds, maximized, close);
+    Component window = openWindowImpl(key, title, image, content, menu, bounds, maximized, close);
     // remember it
-    key2framedlg.put(key, frame);
+    window2manager.put(window, this);
+    key2window.put(key, window);
     // done
     return key;
   }
@@ -272,7 +273,7 @@ public abstract class WindowManager {
   /**
    * Implementation for handling an independant window
    */
-  protected abstract Object openWindowImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Action onClosing);
+  protected abstract Component openWindowImpl(String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, Action onClosing);
   
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, String[], javax.swing.JComponent)
@@ -361,13 +362,18 @@ public abstract class WindowManager {
     // grab parameters
     Rectangle bounds = registry.get(key, (Rectangle)null);
     // do it
-    Object result = openDialogImpl(key, title, messageType, content, actions, owner, bounds, true);
+    Object rc = openDialogImpl(key, title, messageType, content, actions, owner, bounds);
     // analyze - check which action was responsible for close
     for (int a=0; a<actions.length; a++) 
-      if (result==actions[a]) return a;
+      if (rc==actions[a]) return a;
     return -1;
   }
   
+  /**
+   * Implementation for core frame handling
+   */
+  protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner, Rectangle bounds);
+
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, javax.swing.JComponent, javax.swing.JComponent)
    */
@@ -384,9 +390,10 @@ public abstract class WindowManager {
     // grab parameters
     Rectangle bounds = registry.get(key, (Rectangle)null);
     // do it
-    Object dialog = openDialogImpl(key, title, messageType, content, actions, owner, bounds, false);
+    Component window = openNonModalDialogImpl(key, title, messageType, content, actions, owner, bounds);
     // remember it
-    key2framedlg.put(key, dialog);
+    window2manager.put(window, this);
+    key2window.put(key, window);
     // done
     return key;
   }
@@ -394,7 +401,7 @@ public abstract class WindowManager {
   /**
    * Implementation for core frame handling
    */
-  protected abstract Object openDialogImpl(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner, Rectangle bounds, boolean modal);
+  protected abstract Component openNonModalDialogImpl(String key, String title,  int messageType, JComponent content, Action[] actions, Component owner, Rectangle bounds);
 
   /**
    * Create a temporary key
@@ -407,18 +414,18 @@ public abstract class WindowManager {
    * Recall Keys
    */
   protected String[] recallKeys() {
-    return (String[])key2framedlg.keySet().toArray(new String[0]);
+    return (String[])key2window.keySet().toArray(new String[0]);
   }
 
   /**
    * Recall frame/dialog
    */
-  protected Object recall(String key) {
+  protected Component recall(String key) {
     // no key - no result
     if (key==null) 
       return null;
     // look it up
-    return key2framedlg.get(key);
+    return (Component)key2window.get(key);
   }
 
   /**
@@ -429,7 +436,7 @@ public abstract class WindowManager {
     if (key==null) 
       return;
     // forget frame/dialog
-    key2framedlg.remove(key);
+    key2window.remove(key);
     // temporary key? nothing to stash away
     if (key.startsWith("_")) 
       return;

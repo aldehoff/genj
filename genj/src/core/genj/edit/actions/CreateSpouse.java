@@ -60,7 +60,7 @@ public class CreateSpouse extends CreateRelationship {
     // lookup family for spouse
     Fam[] fams = spouse.getFamiliesWhereSpouse();
     Fam fam = null;
-    if (spouse.getNoOfFams()>0)
+    if (fams.length>0)
       fam = fams[0];
     if (fam==null||fam.getNoOfSpouses()>=2) {
       fam = (Fam)spouse.getGedcom().createEntity(Gedcom.FAM).addDefaultProperties();

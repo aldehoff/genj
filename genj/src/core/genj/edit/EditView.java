@@ -469,12 +469,10 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       // go forward
       ViewContext context = new ViewContext((Context)stack.pop());
       
-      // let others know (this won't change us)
+      // let others know (we'll ignore the outgoing never receiving the incoming)
       WindowManager.broadcast(new ContextSelectionEvent(context, EditView.this));
-      
-      // set us
       editor.setContext(context);
-
+      
       // reflect state
       setEnabled(stack.size()>0);
     }
@@ -488,8 +486,6 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     
     /** stack of where to go back to  */
     protected Stack stack = new Stack();
-    
-    protected boolean ignorePush = false;
     
     /**
      * Constructor
@@ -516,8 +512,11 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
       super.removePropertyChangeListener(listener);
       // unhook from events
-      if (getPropertyChangeListeners().length==0)
+      if (getPropertyChangeListeners().length==0) {
         gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
+        stack.clear();
+        setEnabled(false);
+      }
     }
 
     /**
@@ -537,14 +536,10 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       // return to last
       ViewContext context = new ViewContext((Context)stack.pop());
       
-      // let others know while saving the stack
-      ignorePush = true;
-      WindowManager.broadcast(new ContextSelectionEvent(context, getTarget()));
-      ignorePush = false;
-      
-      // set us
+      // let others know (we'll ignore the outgoing never receiving the incoming)
+      WindowManager.broadcast(new ContextSelectionEvent(context, EditView.this));
       editor.setContext(context);
-
+      
       // reflect state
       setEnabled(stack.size()>0);
     }
@@ -553,8 +548,6 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
      * push another on stack 
      */
     public void push(Context context) {
-      if (ignorePush)
-        return;
       // clear forward
       forward.clear();
       // keep it

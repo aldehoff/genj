@@ -23,6 +23,7 @@ package genj.util.swing;
 import genj.util.MnemonicAndText;
 import genj.util.Resources;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -64,7 +65,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
     ASYNC_NEW_INSTANCE   = 2;
   
   /** attributes */
-  private JComponent target;
+  private Component target;
   private KeyStroke accelerator;
   
   /** whether we're async or not */
@@ -291,9 +292,10 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
   }
   
   /**
-   * accessor - target component
+   * accessor - topmost target component
    */
-  public Action2 setTarget(JComponent t) {
+  public Action2 setTarget(Component t) {
+    // remember
     target = t;
     return this;
   }
@@ -301,7 +303,7 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
   /**
    * accessor - target component
    */
-  public JComponent getTarget() {
+  public Component getTarget() {
     return target;
   }
   

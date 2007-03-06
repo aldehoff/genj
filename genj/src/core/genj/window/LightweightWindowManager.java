@@ -21,6 +21,7 @@ package genj.window;
 
 import genj.util.Registry;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -95,7 +96,7 @@ public class LightweightWindowManager extends DefaultWindowManager {
   /**
    * Our implementation for opening a frame
    */
-  protected Object openWindowImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Action onClosing) {
+  protected Component openWindowImpl(final String key, String title, ImageIcon image, JComponent content, JMenuBar menu, Rectangle bounds, boolean maximized, final Action onClosing) {
     
     // Create a frame
     final JInternalFrame frame = new JInternalFrame(title, true, true, true, true) {
