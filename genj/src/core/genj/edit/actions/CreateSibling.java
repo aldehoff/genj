@@ -27,6 +27,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Options;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
+import genj.gedcom.PropertyXRef;
 import genj.view.ViewManager;
 
 /**
@@ -63,22 +64,24 @@ public class CreateSibling extends CreateRelationship {
   protected Property change(Entity target, boolean targetIsNew) throws GedcomException {
     
     // try to add target to sibling's family or vice versa
+    PropertyXRef CHIL;
+    
     Fam[] fams = sibling.getFamiliesWhereChild();
     if (fams.length>0) {
-      fams[0].addChild((Indi)target);
+      CHIL = fams[0].addChild((Indi)target);
     } else {
       
       // try to add sibling to target's family
       fams = ((Indi)target).getFamiliesWhereChild();
       if (fams.length>0) {
-        fams[0].addChild(sibling);
+        CHIL = fams[0].addChild(sibling);
       } else {
 
         // both indis are not children yet - create a new family
         Gedcom ged = sibling.getGedcom();
         Fam fam = (Fam)ged.createEntity(Gedcom.FAM);
         try {
-          fam.addChild((Indi)target);
+          CHIL = fam.addChild((Indi)target);
         } catch (GedcomException e) {
           ged.deleteEntity(fam);
           throw e;
@@ -107,7 +110,7 @@ public class CreateSibling extends CreateRelationship {
     }    
     
     // focus stays with sibling
-    return sibling;
+    return CHIL.getTarget();
   }
 
 }

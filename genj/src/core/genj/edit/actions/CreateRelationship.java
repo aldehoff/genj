@@ -164,8 +164,10 @@ public abstract class CreateRelationship extends AbstractChange {
    */
   public void perform(Gedcom gedcom) throws GedcomException {
     // create the entity if necessary
-    Property focus;
-    if (existing==null) {
+    Entity change;
+    if (existing!=null) {
+      change = existing;
+    } else {
       // check id
       String id = null;
       if (requestID.isEditable()) {
@@ -174,19 +176,19 @@ public abstract class CreateRelationship extends AbstractChange {
           throw new GedcomException(resources.getString("assign_id_error", id));
       }
       // focus always changes to new that we create now
-      existing = gedcom.createEntity(targetType, id);
-      existing.addDefaultProperties();
-      focus = existing;
-      // perform the relationship to new
-      change(existing, true);
-    } else {
-      // perform the relationship to existing
-      focus = change(existing, false);
+      change = gedcom.createEntity(targetType, id);
+      change .addDefaultProperties();
     }
+    
+    // perform the change
+    Property focus = change(change, change!=existing);
+    
     // remember selection
-    ViewManager.getRegistry(gedcom).put("select."+targetType, existing.getId());
+    ViewManager.getRegistry(gedcom).put("select."+targetType, change.getId());
+    
     // select
-    WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(focus), getTarget(), true));
+    WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(focus), getTarget(), false));
+    
     // done
   }
   

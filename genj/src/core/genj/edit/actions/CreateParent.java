@@ -28,6 +28,7 @@ import genj.gedcom.Options;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChild;
 import genj.gedcom.PropertySex;
+import genj.gedcom.PropertyXRef;
 import genj.view.ViewManager;
 
 /**
@@ -93,16 +94,14 @@ public class CreateParent extends CreateRelationship {
     
     String lastname;
     Gedcom ged = parent.getGedcom();
+    PropertyXRef FAMS;
     
     // know the family already?
     if (family!=null) {
 
-      family.setSpouse((Indi)parent);
+      FAMS = family.setSpouse((Indi)parent).getTarget();
       Indi other = family.getOtherSpouse((Indi)parent);
       lastname = other!=null ? other.getLastName() : "";
-      
-      // focus stays with family
-      return family;
       
     } else { // need new family
 
@@ -115,26 +114,26 @@ public class CreateParent extends CreateRelationship {
       family.addDefaultProperties();
       
       // set spouse
-      family.setSpouse((Indi)parent);
+      FAMS = family.setSpouse((Indi)parent).getTarget();
       
       // 20040619 adding missing spouse automatically now
       // 20050405 whether we created a new family or the family didn't have all parents
       if (family.getNoOfSpouses()<2) {
         Indi spouse = (Indi)ged.createEntity(Gedcom.INDI);
         spouse.addDefaultProperties();
-        if ( Options.getInstance().setWifeLastname || spouse.getSex() == PropertySex.MALE)  
-        	spouse.setName("", lastname);
         family.setSpouse(spouse);
+        if ( Options.getInstance().setWifeLastname || spouse.getSex() == PropertySex.MALE)  
+        spouse.setName("", lastname);
       }
       
     }
     
     // set name of parent if new
-    if ((parentIsNew) && (Options.getInstance().setWifeLastname ||((Indi)parent).getSex() == PropertySex.MALE)) 
+    if (parentIsNew && (((Indi)parent).getSex() == PropertySex.MALE||Options.getInstance().setWifeLastname)) 
       ((Indi)parent).setName("", lastname);
 
     // focus goes to new parent
-    return parent;      
+    return FAMS;      
   }
 
 }

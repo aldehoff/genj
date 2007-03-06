@@ -67,11 +67,8 @@ public class CreateSpouse extends CreateRelationship {
       fam.setSpouse(spouse);
     }
 
-    // set its spouse
-    fam.setSpouse((Indi)target);
-    
-    // focus stays with spouse
-    return spouse;
+    // done
+    return fam.setSpouse((Indi)target).getTarget();
   }
   
 

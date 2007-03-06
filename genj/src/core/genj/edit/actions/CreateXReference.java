@@ -66,7 +66,7 @@ public class CreateXReference extends CreateRelationship {
     }
     
     //  focus stays with owner
-    return source;
+    return targetIsNew ? xref.getTarget() : xref;
     
   }
 

@@ -44,7 +44,6 @@ import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -96,6 +95,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
   private Forward forward = new Forward();
   private Mode     mode;
   private ContextMenu contextMenu = new ContextMenu();
+  private Callback callback = new Callback();
   
   /** whether we're sticky */
   private  boolean isSticky = false;
@@ -185,6 +185,9 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     isSticky = entity==null ? false : registry.get("sticky", false);
     if (entity!=null) setContext(new ViewContext(entity));
     
+    // listen to gedcom
+    callback.enable();
+    
   }
 
   /**
@@ -203,6 +206,9 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
 
     // forget this instance
     instances.remove(this);
+    
+    // don't listen to gedcom
+    callback.disable();
     
     // Continue
     super.removeNotify();
@@ -482,7 +488,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
   /**
    * Return to a previous context
    */  
-  private class Back extends Action2 implements GedcomMetaListener {
+  private class Back extends Action2 {
     
     /** stack of where to go back to  */
     protected Stack stack = new Stack();
@@ -497,26 +503,6 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       setTip(Resources.get(this).getString("action.return.tip"));
       setEnabled(false);
       
-    }
-
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-      super.addPropertyChangeListener(listener);
-      // hook up to events
-      if (getPropertyChangeListeners().length==1) {
-        gedcom.addGedcomListener((GedcomListener)Spin.over(this));
-        stack.clear();
-        setEnabled(false);
-      }
-    }
-    
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-      super.removePropertyChangeListener(listener);
-      // unhook from events
-      if (getPropertyChangeListeners().length==0) {
-        gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
-        stack.clear();
-        setEnabled(false);
-      }
     }
 
     /**
@@ -559,18 +545,12 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       setEnabled(true);
     }
     
-    /**
-     * clear stack
-     */
-    protected void clear() {
+    void clear() {
       stack.clear();
       setEnabled(false);
     }
     
-    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
-    }
-
-    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+    void remove(Entity entity) {
       // parse stack
       for (Iterator it = stack.listIterator(); it.hasNext(); ) {
         Context ctx = (Context)it.next();
@@ -585,6 +565,42 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       // update status
       setEnabled(!stack.isEmpty());
     }
+    
+    void remove(Property prop) {
+      List list = Collections.singletonList(prop);
+      // parse stack
+      for (Iterator it = stack.listIterator(); it.hasNext(); ) {
+        Context ctx = (Context)it.next();
+        ctx.removeProperties(list);
+      }
+      
+    }
+  } //Back
+
+  /**
+   * Gedcom callback
+   */  
+  private class Callback implements GedcomMetaListener {
+    
+    void enable() {
+      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
+      back.clear();
+      forward.clear();
+    }
+    
+    void disable() {
+      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
+      back.clear();
+      forward.clear();
+    }
+    
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    }
+
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      back.remove(entity);
+      forward.remove(entity);
+    }
 
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
     }
@@ -593,12 +609,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     }
 
     public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
-      List list = Collections.singletonList(removed);
-      // parse stack
-      for (Iterator it = stack.listIterator(); it.hasNext(); ) {
-        Context ctx = (Context)it.next();
-        ctx.removeProperties(list);
-      }
+      back.remove(removed);
+      forward.remove(removed);
     }
 
     public void gedcomHeaderChanged(Gedcom gedcom) {
@@ -608,11 +620,11 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     }
 
     public void gedcomWriteLockReleased(Gedcom gedcom) {
-      // check if we can go back to one
+      // check if we should go back to one
       if (editor.getContext().getEntities().length==0) {
-        if (!stack.isEmpty()) execute();
+        if (back.isEnabled()) back.execute();
       }
     }
   } //Back
-
+  
 } //EditView
