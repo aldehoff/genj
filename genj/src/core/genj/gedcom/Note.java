@@ -38,6 +38,9 @@ public class Note extends Entity implements MultiLineProperty {
    */
   /*package*/ void addNotify(Gedcom ged) {
     
+    // continue
+    super.addNotify(ged);
+
     // create a delegate we're using for storing the 
     // note's multiline value
     if (delegate==null) {
@@ -45,9 +48,6 @@ public class Note extends Entity implements MultiLineProperty {
       delegate.isTransient = true;
     }
     
-    // continue
-    super.addNotify(ged);
-
     // done
   }
 
@@ -74,6 +74,16 @@ public class Note extends Entity implements MultiLineProperty {
     delegate.setValue(newValue);
   }
   
+  /**
+   * @see genj.gedcom.Property#delProperty(genj.gedcom.Property)
+   */
+  public void delProperty(Property which) {
+    // ignore request unless not delegate
+    if (which!=delegate) 
+      super.delProperty(which);
+  }
+
+    
   /**
    * @see genj.gedcom.Property#getValue()
    */

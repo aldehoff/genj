@@ -233,13 +233,13 @@ public abstract class Property implements Comparable {
       children = new ArrayList();
     children.add(pos, child);
     
+    // propagate
+    propagatePropertyAdded(this, pos, child);
+    
 	  // tell to added
 	  child.addNotify(this);
     if (isTransient) child.isTransient = true;
 	
-    // propagate
-    propagatePropertyAdded(this, pos, child);
-    
     // Done
     return child;
   }
@@ -249,8 +249,10 @@ public abstract class Property implements Comparable {
    */
   public void delProperties() {
     if (children!=null) {
-      for (int c=children.size()-1; c>=0; c--) 
-        delProperty(c);
+      // grab list of children once - subsequent dels might lead to changes to the array
+      Property[] cs = (Property[])children.toArray(new Property[children.size()]);
+      for (int c = cs.length-1; c>=0; c--) 
+        delProperty(cs[c]);
       if (children.isEmpty()) children = null;
     }
   }
@@ -296,7 +298,7 @@ public abstract class Property implements Comparable {
 
     // range check
     if (children==null||pos<0||pos>=children.size())
-      throw new IndexOutOfBoundsException();
+      throw new IndexOutOfBoundsException("No property "+pos);
     Property removed = (Property)children.get(pos);
 
     // tell to removed before removing it
