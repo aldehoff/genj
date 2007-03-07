@@ -249,7 +249,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
       g.setColor(Color.WHITE); 
       g.fillRect(box.x, box.y, box.width, box.height);
       // render entity
-      if (renderer!=null) 
+      if (renderer!=null&&entity!=null) 
         renderer.render(g, entity, box);
       // done
     }
