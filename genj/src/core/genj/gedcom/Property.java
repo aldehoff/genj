@@ -71,26 +71,63 @@ public abstract class Property implements Comparable {
   /**
    * Lifecycle - callback after being added to parent.
    */
-  /*package*/ void addNotify(Property parent) {
+  /*package*/ void addNotify(Property parent, int pos) {
+    
+    // NM 20070307 ok, so why does propagation of the add happen here now? Previously
+    // the sequence was
+    //
+    // Property.addProperty(added)
+    //   added.addNotify()
+    //   propagateAdded(this.added)
+    //
+    // If addNotify() requires some adjustments in a Property subtype then
+    // the order of change propagations would break like so
+    //
+    // Property.addProperty(added)
+    //   added.addNotify()
+    //    subtype.addNotify()
+    //      super.addNotify()
+    //      ...
+    //      propagate...(...) #1
+    //   propagateAdded(this.added) #2
+    //
+    // What we want is this
+    //
+    // Property.addProperty(added)
+    //   added.addNotify()
+    //    subtype.addNotify()
+    //      super.addNotify()
+    //        propagateAdded(this.added) #1
+    //      ...
+    //      propagate...(...) #2
+    //
+    // A subtype can now successfully intercept addNotify(), let that initialize and
+    // propagate completely (#1) before other changes are made (#2)
     
     // remember parent
     this.parent=parent;
 
+    // propagate
+    propagatePropertyAdded(parent, pos, this);
+    
   }
 
   /**
    * Lifecycle - callback before being removed from parent
    */
-  /*package*/ void delNotify(Property oldParent) {
-  
-    // reset meta
-    meta = null;
+  /*package*/ void delNotify(Property parent, int pos) {
     
     // delete children
     delProperties();
     
+    // propagate change (see addNotify() for motivation why propagate is here)
+    parent.propagatePropertyDeleted(parent, pos, this);
+
     // reset parent
-    parent = null;
+    this.parent = null;
+  
+    // reset meta
+    meta = null;
     
     // continue
   }
@@ -233,13 +270,11 @@ public abstract class Property implements Comparable {
       children = new ArrayList();
     children.add(pos, child);
     
-    // propagate
-    propagatePropertyAdded(this, pos, child);
-    
-	  // tell to added
-	  child.addNotify(this);
     if (isTransient) child.isTransient = true;
-	
+    
+    // tell to added
+    child.addNotify(this, pos);
+    
     // Done
     return child;
   }
@@ -301,14 +336,11 @@ public abstract class Property implements Comparable {
       throw new IndexOutOfBoundsException("No property "+pos);
     Property removed = (Property)children.get(pos);
 
-    // tell to removed before removing it
-    removed.delNotify(this);
+    // tell to removed next
+    removed.delNotify(this, pos);
   
     // remove it now
     children.remove(pos);
-
-	  // propagate change
-    propagatePropertyDeleted(this, pos, removed);
 
     // done
   }

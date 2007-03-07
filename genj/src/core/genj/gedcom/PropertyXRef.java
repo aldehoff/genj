@@ -47,20 +47,20 @@ public abstract class PropertyXRef extends Property {
   /**
    * Method for notifying being removed from another parent
    */
-  /*package*/ void delNotify(Property oldParent) {
+  /*package*/ void delNotify(Property parent, int pos) {
 
     // are we referencing something that points back?
     if (target!=null) {
       PropertyXRef other = target;
-      Property parent = other.getParent();
+      Property pother = other.getParent();
       unlink();
       
       // delete target as well
-      parent.delProperty(other);
+      pother.delProperty(other);
     }
 
     // Let it through
-    super.delNotify(oldParent);
+    super.delNotify(parent, pos);
     
     // done
   }

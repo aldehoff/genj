@@ -48,9 +48,9 @@ public class PropertyAge extends Property {
   /**
    * @see genj.gedcom.Property#addNotify(genj.gedcom.Property)
    */
-  /*package*/ void addNotify(Property parent) {
+  /*package*/ void addNotify(Property parent, int pos) {
     // continue
-    super.addNotify(parent);
+    super.addNotify(parent, pos);
     // try to update age
     updateAge();
     // done

@@ -276,9 +276,9 @@ public class PropertyName extends Property {
    * 
    * @see genj.gedcom.PropertyName#addNotify(genj.gedcom.Property)
    */
-  /*package*/ void addNotify(Property parent) {
+  /*package*/ void addNotify(Property parent, int pos) {
     // continue
-    super.addNotify(parent);
+    super.addNotify(parent, pos);
     // our change to remember the last name
     remember(firstName, lastName);
     // done
@@ -289,11 +289,11 @@ public class PropertyName extends Property {
    * + Forget last names in reference set
    * @see genj.gedcom.Property#delNotify()
    */
-  /*package*/ void delNotify(Property old) {
+  /*package*/ void delNotify(Property parent, int pos) {
     // forget value
     remember("", "");
     // continue
-    super.delNotify(old);
+    super.delNotify(parent, pos);
     // done
   }
 

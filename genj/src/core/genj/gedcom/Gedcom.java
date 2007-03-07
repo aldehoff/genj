@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.122 $ $Author: nmeier $ $Date: 2007-03-07 01:47:38 $
+ * $Revision: 1.123 $ $Author: nmeier $ $Date: 2007-03-07 21:33:59 $
  */
 package genj.gedcom;
 
@@ -667,9 +667,6 @@ public class Gedcom implements Comparable {
     // remember entity
     allEntities.add(entity);
     
-    // tell others
-    propagateEntityAdded(entity);
-
     // notify
     entity.addNotify(this);
     
@@ -753,9 +750,6 @@ public class Gedcom implements Comparable {
     // was it the submitter?    
     if (submitter==which) submitter = null;
 
-    // tell others
-    propagateEntityDeleted(which);
-    
     // Done
   }
 
