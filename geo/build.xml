@@ -2,7 +2,6 @@
 <project name="Geo" default="dist" basedir=".">
 
   <property file="build.properties"/>
-  <property file="${dir.app}/build.properties"/>
 
   <path id="project.class.path">
     <pathelement path="contrib/jump/jump.jar"/>
@@ -17,9 +16,16 @@
   <target name="init">
 
     <fail unless="dir.app" message="Please specify dir.app in build.properties"/>
-    <echo level="info">Calling GenJ Application build in ${dir.app} (version=${version})</echo>
+    <echo level="info">Calling GenJ Application build in ${dir.app}</echo>
+    <echo level="info">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</echo>
     <ant dir="${dir.app}" target="compile"/>
-  	
+    <echo level="info">&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</echo>
+
+  	<echo level="info">Initializing version information</echo>
+  	<property file="${dir.app}/build/version.properties"/>
+  	<echo level="info">Version = ${version}</echo>
+  	<fail unless="version" message="no version information available"/>
+
     <echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>
     <mkdir dir="./build/lib"/>

@@ -3,8 +3,6 @@
 
   <taskdef name="izpack" classpath="./contrib/izpack/lib/standalone-compiler.jar" classname="com.izforge.izpack.ant.IzPackTask"/>
 
-  <property file="./app/build.properties"/>
-
   <!--
    Initialization
    -->
@@ -34,12 +32,16 @@
   	<move todir="./build/dist">
   		<fileset dir="./app/build/dist/"/>
   	</move>
+  	<echo level="info">Initializing version information</echo>
+  	<property file="./app/build/version.properties"/>
+  	<echo level="info">Version = ${version}</echo>
+  	<fail unless="version" message="no version information available"/>
   </target>
   
   <!--
    Nested Project - Geo
    -->  
-  <target name="dist.geo" depends="init">
+  <target name="dist.geo" depends="dist.app">
     <ant dir="./geo" inheritall="false" target="dist">
       <property name="dir.app" value="../app"/>
     </ant>
@@ -51,7 +53,7 @@
 	<!-- 
 	izpack packaging
 	-->
-	<target name="dist.installer">
+	<target name="dist.installer" depends="dist.app, dist.geo">
 		
     <copy tofile="./build/installer.xml" file="./src/installer/installer.xml">
       <filterset><filter token="version" value="${version}"/></filterset>
@@ -64,7 +66,7 @@
   <!--
    Distribution
    -->
-  <target name="dist" depends="dist.app, dist.geo, dist.installer">
+  <target name="dist" depends="dist.installer">
 
   </target>
 

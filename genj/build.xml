@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="GenJ" default="dist" basedir=".">
   
-  <property file="./build.properties"/>
-
+  <loadproperties srcfile="./build.properties">
+  	<filterchain>
+      <replaceregex pattern="\$Name:[\s]*([^\s]*)[\s]*\$" replace="\1"/>
+  	</filterchain>
+  </loadproperties>
+  	
   <path id="project.class.path">
     <pathelement path ="./build/version"/>
     <pathelement path ="./build/classes/contrib"/>
@@ -27,12 +31,15 @@
     <mkdir dir="./build/run"/>
     <mkdir dir="./build/dist"/>
     <mkdir dir="./build/lib"/>
-  	
+
     <tstamp>
       <format property="now" pattern="yyyy/MM/dd HH:mm:ss"/>
     </tstamp>
-    
     <property name="app.build" value="${version} ${now} ${user.name}"/>
+  	
+  	<echo level="info">Initializing version information</echo>
+  	<echo file="./build/version.properties">version = ${version}</echo>
+    <echo level="info">build = ${app.build}</echo>
   	
   </target>
     	
