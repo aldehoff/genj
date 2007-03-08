@@ -3,7 +3,9 @@
   
   <loadproperties srcfile="./build.properties">
   	<filterchain>
-      <replaceregex pattern="\$Name:[\s]*([^\s]*)[\s]*\$" replace="\1"/>
+      <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]+([^\s]*)[\s]*\$$" replace="version=\1"/>
+      <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]*\$$" replace="version=HEAD"/>
+      <replaceregex pattern="^version[\s]*=[\s]*$" replace=""/>
   	</filterchain>
   </loadproperties>
   	
@@ -32,6 +34,8 @@
     <mkdir dir="./build/dist"/>
     <mkdir dir="./build/lib"/>
 
+  	<fail unless="version" message="no version information available"/>
+  		
     <tstamp>
       <format property="now" pattern="yyyy/MM/dd HH:mm:ss"/>
     </tstamp>
@@ -39,6 +43,7 @@
   	
   	<echo level="info">Initializing version information</echo>
   	<echo file="./build/version.properties">version = ${version}</echo>
+    <echo level="info">version = ${version}</echo>
     <echo level="info">build = ${app.build}</echo>
   	
   </target>
