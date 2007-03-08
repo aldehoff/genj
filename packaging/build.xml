@@ -7,7 +7,21 @@
    Initialization
    -->
   <target name="init">
-    <echo level="info">Creating output directories</echo>
+
+    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
+  	
+    <loadproperties srcfile="./build.properties">
+    	<filterchain>
+          <replaceregex pattern="^version[\s]*=[\s]*\$Name: not supported by cvs2svn $$" replace="version=\1-${now.short}" flags="i" byline="true"/>
+          <replaceregex pattern="^version[\s]*=[\s]*\$Name: not supported by cvs2svn $$" replace="version=HEAD-${now.short}" flags="i" byline="true"/>
+          <replaceregex pattern="^version[\s]*=[\s]*$" replace="" flags="i"/>
+    	</filterchain>
+    </loadproperties>
+  	  	
+  	<fail unless="version" message="no version information available - check build.properties"/>
+  	<echo level="info">version = ${version}</echo>
+  		
+  	<echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>
     <mkdir dir="./build/dist"/>
   </target>
@@ -15,7 +29,7 @@
   <!--
    Initialization
    -->
-  <target name="clean">
+  <target name="clean" depends="init">
     <echo level="info">Cleaning output directories</echo>
     <delete includeemptydirs="true" failonerror="false">
       <fileset dir="./build" excludes="eclipse/*"/>
@@ -28,14 +42,12 @@
    Nested Project - App
    -->  
   <target name="dist.app" depends="init">
-  	<ant dir="./app" inheritall="false" target="dist"/>
+  	<ant dir="./app" inheritall="false" target="dist">
+      <property name="version" value="${version}"/>
+    </ant>
   	<move todir="./build/dist">
   		<fileset dir="./app/build/dist/"/>
   	</move>
-  	<echo level="info">Initializing version information</echo>
-  	<property file="./app/build/version.properties"/>
-  	<echo level="info">Version = ${version}</echo>
-  	<fail unless="version" message="no version information available"/>
   </target>
   
   <!--
@@ -43,6 +55,7 @@
    -->  
   <target name="dist.geo" depends="dist.app">
     <ant dir="./geo" inheritall="false" target="dist">
+      <property name="version" value="${version}"/>
       <property name="dir.app" value="../app"/>
     </ant>
     <move todir="./build/dist">

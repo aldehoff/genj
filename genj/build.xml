@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="GenJ" default="dist" basedir=".">
   
-  <loadproperties srcfile="./build.properties">
-  	<filterchain>
-      <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]+([^\s]*)[\s]*\$$" replace="version=\1"/>
-      <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]*\$$" replace="version=HEAD"/>
-      <replaceregex pattern="^version[\s]*=[\s]*$" replace=""/>
-  	</filterchain>
-  </loadproperties>
-  	
   <path id="project.class.path">
     <pathelement path ="./build/version"/>
     <pathelement path ="./build/classes/contrib"/>
@@ -34,17 +26,13 @@
     <mkdir dir="./build/dist"/>
     <mkdir dir="./build/lib"/>
 
-  	<fail unless="version" message="no version information available"/>
-  		
-    <tstamp>
-      <format property="now" pattern="yyyy/MM/dd HH:mm:ss"/>
-    </tstamp>
-    <property name="app.build" value="${version} ${now} ${user.name}"/>
+    <tstamp><format property="now.long" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
+    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
+  	<property name="version" value="${now.short}"/>
+    <property name="build" value="${version} ${now.long} ${user.name}"/>
   	
-  	<echo level="info">Initializing version information</echo>
-  	<echo file="./build/version.properties">version = ${version}</echo>
     <echo level="info">version = ${version}</echo>
-    <echo level="info">build = ${app.build}</echo>
+    <echo level="info">build = ${build}</echo>
   	
   </target>
     	
@@ -124,7 +112,7 @@
   <target name="version" depends="init">
     <echo level="info">Generating version number</echo>
     <mkdir dir="./build/version/genj"/>
-    <echo file="./build/version/genj/resources.properties">version=${version}${line.separator}build=${app.build}</echo>
+    <echo file="./build/version/genj/resources.properties">version=${version}${line.separator}build=${build}</echo>
   </target>
 
   <!--

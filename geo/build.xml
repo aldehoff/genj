@@ -17,14 +17,11 @@
 
     <fail unless="dir.app" message="Please specify dir.app in build.properties"/>
     <echo level="info">Calling GenJ Application build in ${dir.app}</echo>
-    <echo level="info">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</echo>
     <ant dir="${dir.app}" target="compile"/>
-    <echo level="info">&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</echo>
 
-  	<echo level="info">Initializing version information</echo>
-  	<property file="${dir.app}/build/version.properties"/>
-  	<echo level="info">Version = ${version}</echo>
-  	<fail unless="version" message="no version information available"/>
+    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
+  	<property name="version" value="${now.short}"/>
+  	<echo level="info">version = ${version}</echo>
 
     <echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>
