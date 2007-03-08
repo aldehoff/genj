@@ -1,15 +1,19 @@
 <project name="lnf" default="dist" basedir=".">
 
   <property file="./build.properties"/>
-  <property file="${dir.app}/build.properties"/>
 	
   <!--
    Initialization
    -->
   <target name="init">
-    <fail unless="dir.app" message="Please specify the GenJ application source directory via dir.app in build.properties"/>
+  	
   	<mkdir dir="./build/dist"/>
- 	</target>
+  	
+    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
+  	<property name="version" value="${now.short}"/>
+  	<echo level="info">version = ${version}</echo>
+  	
+  </target>
   	
   <target name="dist" depends="init">
   

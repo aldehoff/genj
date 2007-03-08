@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.10 2006-11-29 15:31:31 nmeier Exp $ -->
+<!-- $Header: /cygdrive/c/temp/cvs/genj/sandbox/console/build.xml,v 1.11 2007-03-08 21:51:44 nmeier Exp $ -->
 <!-- This is the ant buildfile for GenJ:Textmode -->
 
 <project name="GenJ" default="dist" basedir=".">
+	
   <property file="build.properties"/>
-  <property file="${dir.app}/build.properties"/>
   	
   <path id="project.class.path">
     <pathelement path="./build/classes/core"/>
@@ -19,6 +19,10 @@
   	
     <fail unless="dir.app" message="Please specify dir.app in build.properties"/>
 
+    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
+  	<property name="version" value="${now.short}"/>
+  	<echo level="info">version = ${version}</echo>
+  	
     <echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>
     <mkdir dir="./build/lib"/>
