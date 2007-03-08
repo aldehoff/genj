@@ -12,8 +12,8 @@
   	
     <loadproperties srcfile="./build.properties">
     	<filterchain>
-          <replaceregex pattern="^version[\s]*=[\s]*\$Name: not supported by cvs2svn $$" replace="version=\1-${now.short}" flags="i" byline="true"/>
-          <replaceregex pattern="^version[\s]*=[\s]*\$Name: not supported by cvs2svn $$" replace="version=HEAD-${now.short}" flags="i" byline="true"/>
+          <replaceregex pattern="^version[\s]*=[\s]*\$[N][a][m][e]:[\s]+([^\s]+)[\s]*\$$" replace="version=\1-${now.short}" flags="i" byline="true"/>
+          <replaceregex pattern="^version[\s]*=[\s]*\$[N][a][m][e]:[\s]*\$$" replace="version=HEAD-${now.short}" flags="i" byline="true"/>
           <replaceregex pattern="^version[\s]*=[\s]*$" replace="" flags="i"/>
     	</filterchain>
     </loadproperties>
