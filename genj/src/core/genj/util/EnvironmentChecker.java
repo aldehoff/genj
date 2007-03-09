@@ -21,12 +21,17 @@ package genj.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -185,6 +190,35 @@ public class EnvironmentChecker {
     if (fallback!=null)
       LOG.fine("Using fallback for system-property "+key+'='+fallback+" ("+msg+')');
     return fallback;
+  }
+  
+  /**
+   * Load system properties from file
+   */
+  public static void loadSystemProperties(InputStream in) throws IOException {
+    try {
+      Properties props = new Properties();
+      props.load(in);
+      for (Iterator keys = props.keySet().iterator(); keys.hasNext(); ) {
+        String key = keys.next().toString();
+        if (System.getProperty(key)==null)
+          System.setProperty(key, props.getProperty(key));
+      }
+    } catch (Throwable t) {
+      if (t instanceof IOException)
+        throw (IOException)t;
+      throw new IOException("unexpected throwable "+t.getMessage());
+    }
+  }
+  
+  /**
+   * read system properties from file
+   */
+  static {
+    try {
+      EnvironmentChecker.loadSystemProperties(new FileInputStream(new File("system.properties")));
+    } catch (IOException e) {
+    }
   }
 
   /**

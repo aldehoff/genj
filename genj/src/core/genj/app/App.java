@@ -72,6 +72,13 @@ public class App {
     // Catch anything that might happen
     try {
       
+      // create our home directory
+      File home = new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", null, "determining home directory"));
+      home.mkdirs();
+      if (!home.exists()||!home.isDirectory()) 
+        throw new IOException("Can't initialize home directoy "+home);
+      
+      
       // prepare our master log and own LogManager for GenJ
       System.setProperty("java.util.logging.manager", "genj.app.App$PatchedLogManager");
       LOG = Logger.getLogger("genj");
@@ -94,12 +101,6 @@ public class App {
       root.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
       System.setOut(new PrintStream(new LogOutputStream(Level.INFO, "System", "out")));
       System.setErr(new PrintStream(new LogOutputStream(Level.WARNING, "System", "err")));
-      
-      // create our home directory
-      File home = new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", null, "determining home directory"));
-      home.mkdirs();
-      if (!home.exists()||!home.isDirectory()) 
-        throw new IOException("Can't initialize home directoy "+home);
       
       // init our data
       Registry registry = new Registry("genj");
