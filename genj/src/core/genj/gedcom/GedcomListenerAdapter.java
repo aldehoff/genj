@@ -33,6 +33,12 @@ public class GedcomListenerAdapter implements GedcomListener, GedcomMetaListener
   public void gedcomWriteLockReleased(Gedcom gedcom) {
   }
   
+  public void gedcomBeforeUnitOfWork(Gedcom gedcom) {
+  }
+  
+  public void gedcomAfterUnitOfWork(Gedcom gedcom) {
+  }
+
   public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
   }
 

@@ -306,6 +306,12 @@ import spin.Spin;
     public void gedcomWriteLockAcquired(Gedcom gedcom) {
     }
 
+    public void gedcomBeforeUnitOfWork(Gedcom gedcom) {
+    }
+    
+    public void gedcomAfterUnitOfWork(Gedcom gedcom) {
+    }
+
     public void gedcomWriteLockReleased(Gedcom gedcom) {
       int i = getRowFor(gedcom);
       if (i>=0) fireTableRowsUpdated(i,i);

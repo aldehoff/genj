@@ -309,7 +309,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
   /**
    * A gedcom listener that will update CHANs
    */
-  /*package*/ static class Monitor implements GedcomMetaListener {
+  /*package*/ static class Monitor extends GedcomListenerAdapter {
     
     private Set updated = new HashSet();
 
@@ -344,17 +344,6 @@ public class PropertyChange extends Property implements MultiLineProperty {
       
       // remember
       updated.add(entity);
-    }
-    
-    public void gedcomHeaderChanged(Gedcom gedcom) {
-      // ignored
-    }
-    
-    public void gedcomWriteLockAcquired(Gedcom gedcom) {
-    }
-    
-    public void gedcomWriteLockReleased(Gedcom gedcom) {
-      // ignored
     }
     
     public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {

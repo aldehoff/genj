@@ -28,6 +28,10 @@ public interface GedcomMetaListener extends GedcomListener {
   
   public void gedcomWriteLockAcquired(Gedcom gedcom);
   
+  public void gedcomBeforeUnitOfWork(Gedcom gedcom);
+  
+  public void gedcomAfterUnitOfWork(Gedcom gedcom);
+  
   public void gedcomWriteLockReleased(Gedcom gedcom);
   
 }

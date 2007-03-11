@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.123 $ $Author: nmeier $ $Date: 2007-03-07 21:33:59 $
+ * $Revision: 1.124 $ $Author: nmeier $ $Date: 2007-03-11 14:40:45 $
  */
 package genj.gedcom;
 
@@ -302,7 +302,7 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagateXRefLinked(final PropertyXRef property1, final PropertyXRef property2) {
     
@@ -335,7 +335,7 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagateXRefUnlinked(final PropertyXRef property1, final PropertyXRef property2) {
     
@@ -368,7 +368,7 @@ public class Gedcom implements Comparable {
   }
 
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagateEntityAdded(final Entity entity) {
     
@@ -400,7 +400,7 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagateEntityDeleted(final Entity entity) {
     
@@ -432,7 +432,7 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagatePropertyAdded(Entity entity, final Property container, final int pos, Property added) {
     
@@ -464,7 +464,7 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagatePropertyDeleted(Entity entity, final Property container, final int pos, final Property deleted) {
     
@@ -496,7 +496,7 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagatePropertyChanged(Entity entity, final Property property, final String oldValue) {
     
@@ -528,7 +528,7 @@ public class Gedcom implements Comparable {
   }
 
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagatePropertyMoved(final Property property, final Property moved, final int from, final int to) {
     
@@ -561,7 +561,7 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
    */
   protected void propagateWriteLockAqcuired() {
     GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
@@ -576,7 +576,37 @@ public class Gedcom implements Comparable {
   }
   
   /**
-   * Propagate a change to listeners
+   * Final destination for a change propagation
+   */
+  protected void propagateBeforeUnitOfWork() {
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      GedcomListener gl = (GedcomListener)gls[l];
+      if (gl instanceof GedcomMetaListener) try {
+        ((GedcomMetaListener)gl).gedcomBeforeUnitOfWork(this);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+  }
+  
+  /**
+   * Final destination for a change propagation
+   */
+  protected void propagateAfterUnitOfWork() {
+    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
+    for (int l=0;l<gls.length;l++) {
+      GedcomListener gl = (GedcomListener)gls[l];
+      if (gl instanceof GedcomMetaListener) try {
+        ((GedcomMetaListener)gl).gedcomAfterUnitOfWork(this);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
+      }
+    }
+  }
+  
+  /**
+   * Final destination for a change propagation
    */
   protected void propagateWriteLockReleased() {
     
@@ -592,7 +622,7 @@ public class Gedcom implements Comparable {
   }  
   
   /**
-   * An ID change is in progress
+   * Final destination for a change propagation
    */
   protected void propagateEntityIDChanged(final Entity entity, final String old) throws GedcomException {
     

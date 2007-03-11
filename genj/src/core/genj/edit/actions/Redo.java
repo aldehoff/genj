@@ -110,6 +110,14 @@ public class Redo extends Action2 implements GedcomMetaListener {
     // ignored
   }
 
+  public void gedcomBeforeUnitOfWork(Gedcom gedcom) {
+    // ignored
+  }
+  
+  public void gedcomAfterUnitOfWork(Gedcom gedcom) {
+    // ignored
+  }
+
   public void gedcomWriteLockAcquired(Gedcom gedcom) {
     // ignored
   }
