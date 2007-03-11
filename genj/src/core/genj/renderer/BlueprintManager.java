@@ -266,7 +266,7 @@ public class BlueprintManager {
     try {
       return loadBlueprint(origin.open(local), tag, name, true);
     } catch (IOException e) {
-      LOG.log(Level.WARNING, "Failed to load blueprint "+local+" from "+origin, e);
+      LOG.log(Level.FINE, "Failed to load blueprint "+local+" from "+origin+" ("+e.getMessage()+")");
     }
     // fallback try first
     return (Blueprint)bps.get(0);
