@@ -25,4 +25,4 @@
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
 #
-^dev.* /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} genj-commits@lists.sourceforge.net
+^.* /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} genj-commits@lists.sourceforge.net
