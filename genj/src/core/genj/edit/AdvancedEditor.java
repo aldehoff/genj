@@ -476,7 +476,7 @@ import javax.swing.tree.TreePath;
       try {
         content = clipboard.getContents(this).getTransferData(DataFlavor.stringFlavor).toString();
       } catch (Throwable t) {
-        EditView.LOG.log(Level.WARNING, "Accessing system clipboard as stringFlavor failed", t);
+        EditView.LOG.log(Level.INFO, "Accessing system clipboard as stringFlavor failed ("+t.getMessage()+")");
         return;
       }
       
