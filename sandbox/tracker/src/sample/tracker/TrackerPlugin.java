@@ -8,13 +8,22 @@ package sample.tracker;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomLifecycleEvent;
+import genj.gedcom.GedcomLifecycleListener;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.plugin.Plugin;
-import genj.plugin.PluginEvent;
-import genj.plugin.GedcomLifecycleEvent;
 import genj.plugin.PluginManager;
+import genj.util.swing.ImageIcon;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -22,11 +31,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 /**
- * A sample plugin that tracks all changes to all gedcom files
+ * A sample plugin that tracks all changes to all gedcom files and adds an update counter to each changed entity
  */
-public class TrackerPlugin implements Plugin, GedcomMetaListener {
+public class TrackerPlugin implements Plugin {
   
   private JTextArea text = new JTextArea(40,10);
+  private Map gedcom2tracker = new HashMap();
   
   /**
    * our constructor plugin-wise
@@ -34,118 +44,32 @@ public class TrackerPlugin implements Plugin, GedcomMetaListener {
    */
   public void initPlugin(PluginManager manager) {
     text.setEditable(false);
-    manager.getWindowManager().openWindow("tracker", "Tracker", null, new JScrollPane(text), null, null);
+    manager.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(text), null, null);
   }
   
   /**
-   * event for us
+   * A new/loaded gedcom file to consider
+   * @see genj.plugin.Plugin#registerGedcom(genj.gedcom.Gedcom)
    */
-  public void handlePluginEvent(PluginEvent event) {
-    if (event instanceof GedcomLifecycleEvent)
-      handlePluginGedcomEvent((GedcomLifecycleEvent)event);
+  public void registerGedcom(Gedcom gedcom) {
+    // attach to gedcom
+    GedcomTracker tracker = new GedcomTracker();
+    gedcom.addLifecycleListener(tracker);
+    gedcom.addGedcomListener(tracker);
+    gedcom2tracker.put(gedcom, tracker);
+    log("Tracker attached to "+gedcom.getName());
   }
 
   /**
-   * event for us
+   * The gedcom file we have to detach from
+   * @see genj.plugin.Plugin#unregisterGedcom(genj.gedcom.Gedcom)
    */
-  public void handlePluginGedcomEvent(GedcomLifecycleEvent event) {
-    Gedcom gedcom = event.getGedcom();
-    switch (event.getId()) {
-    case GedcomLifecycleEvent.AFTER_GEDCOM_LOADED:
-      // attach to gedcom
-      gedcom.addGedcomListener(this);
-      log("Tracker attached to "+gedcom.getName());
-      break;
-    case GedcomLifecycleEvent.BEFORE_GEDCOM_CLOSED:
-    case GedcomLifecycleEvent.BEFORE_GEDCOM_SAVED:
-      // could do some stuff to the gedcom object before it's gone
-      break;
-    case GedcomLifecycleEvent.AFTER_GEDCOM_CLOSED:
-      // detach from gedcom
-      gedcom.removeGedcomListener(this);
-      log("Tracker detached from "+gedcom.getName());
-      break;
-    }
-  }
-
-  /** 
-   * notification that a gedcom unit of work is going to start
-   * @see GedcomMetaListener#gedcomBeforeUnitOfWork(Gedcom)
-   */
-  public void gedcomBeforeUnitOfWork(Gedcom gedcom) {
-    // probably not too interesting
-  }
-
-  /** 
-   * notification that a gedcom unit of work has finished 
-   * @see GedcomMetaListener#gedcomAfterUnitOfWork(Gedcom)
-   */
-  public void gedcomAfterUnitOfWork(Gedcom gedcom) {      
-    // we could do some after unit of work adjustments at this point if we like - e.g. update a sosa index
-  }
-
-  /** 
-   * notification that the gedcom header has changed 
-   * @see GedcomMetaListener#gedcomHeaderChanged(Gedcom)
-   */
-  public void gedcomHeaderChanged(Gedcom gedcom) {
-    // just for info
-  }
-
-  /** 
-   * notification that a gedcom write lock has been acquired 
-   * @see GedcomMetaListener#gedcomWriteLockAcquired(Gedcom)
-   */
-  public void gedcomWriteLockAcquired(Gedcom gedcom) {
-    // just for info
-  }
-
-  /** 
-   * notification that a gedcom write lock has been released
-   * @see GedcomMetaListener#gedcomWriteLockReleased(Gedcom)
-   */
-  public void gedcomWriteLockReleased(Gedcom gedcom) {
-    // just for info
-  }
-
-  /** 
-   * notification that an entity has been added 
-   * @see GedcomListener#gedcomEntityAdded(Gedcom, Entity)
-   */
-  public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
-    log("Entity "+entity+" added to "+gedcom.getName());
-  }
-
-  /** 
-   * notification that an entity has been deleted
-   * @see GedcomListener#gedcomEntityDeleted(Gedcom, Entity)
-   */
-  public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-    log("Entity "+entity+" deleted from "+gedcom.getName());
-  }
-
-  /** 
-   * notification that a property has been added 
-   * @see GedcomListener#gedcomPropertyAdded(Gedcom, Property, int, Property)
-   */
-  public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-    log("Property "+added.getTag()+" added to "+property.getEntity()+" in "+gedcom.getName());
-  }
-
-  /** 
-   * notification that a property has been changed
-   * @see GedcomListener#gedcomPropertyChanged(Gedcom, Property)
-   */
-  public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
-    log("Property "+property.getTag()+" changed to "+property.getDisplayValue()+" in "+property.getEntity()+" in "+gedcom.getName());
-  }
-
-  /** 
-   * notification that a property has been deleted
-   * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
-   */
-  public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
-    log("Property "+deleted.getTag()+" deleted from "+property.getEntity()+" in "+gedcom.getName());
+  public void unregisterGedcom(Gedcom gedcom) {
+    // detach from gedcom
+    GedcomTracker tracker = (GedcomTracker)gedcom2tracker.get(gedcom);
+    gedcom.removeLifecycleListener(tracker);
+    gedcom.removeGedcomListener(tracker);
+    log("Tracker detached from "+gedcom.getName());
   }
   
   /** helper for logging text */ 
@@ -160,4 +84,92 @@ public class TrackerPlugin implements Plugin, GedcomMetaListener {
     }
   }
     
+  /**
+   * Our gedcom listener
+   */
+  private class GedcomTracker implements GedcomListener, GedcomLifecycleListener { 
+
+    private TagPath PATH = new TagPath(".:TRAC");
+    private Set touchedEntities = new HashSet();
+
+    public void handleLifecycleEvent(GedcomLifecycleEvent event) {
+      
+      // we'll update a counter for all touched entities after the unit of work has done its part 
+      // but before the write lock is released piggy backing on the editor's unit of work
+      // (this would be a good place to update some other (e.g. sosa) indexing scheme
+      // The result should look like this
+      // 0 @..@ INDI
+      // 1 TRAC n
+      //
+      if (event.getId()==GedcomLifecycleEvent.AFTER_UNIT_OF_WORK) {
+        
+        List list = new ArrayList(touchedEntities);
+        for (Iterator it = list.iterator(); it.hasNext();) {
+          Entity entity = (Entity) it.next();
+          int value;
+          try {
+            value = Integer.parseInt(entity.getValue(PATH, "0"))+1;
+          } catch (NumberFormatException e) {
+            value = 1;
+          }
+          entity.setValue(PATH, Integer.toString(value));
+        }
+      }
+      
+      
+      // we reset our tracking state after the write lock has been released
+      if (event.getId()==GedcomLifecycleEvent.WRITE_LOCK_RELEASED) {
+        touchedEntities.clear();
+      }
+      
+      // done
+    }
+  
+    /** 
+     * notification that an entity has been added 
+     * @see GedcomListener#gedcomEntityAdded(Gedcom, Entity)
+     */
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+      log("Entity "+entity+" added to "+gedcom.getName());
+      touchedEntities.add(entity);
+    }
+  
+    /** 
+     * notification that an entity has been deleted
+     * @see GedcomListener#gedcomEntityDeleted(Gedcom, Entity)
+     */
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      log("Entity "+entity+" deleted from "+gedcom.getName());
+      touchedEntities.remove(entity);
+    }
+  
+    /** 
+     * notification that a property has been added 
+     * @see GedcomListener#gedcomPropertyAdded(Gedcom, Property, int, Property)
+     */
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      log("Property "+added.getTag()+" added to "+property.getEntity()+" in "+gedcom.getName());
+      touchedEntities.add(property.getEntity());
+    }
+  
+    /** 
+     * notification that a property has been changed
+     * @see GedcomListener#gedcomPropertyChanged(Gedcom, Property)
+     */
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+      log("Property "+property.getTag()+" changed to "+property.getDisplayValue()+" in "+property.getEntity()+" in "+gedcom.getName());
+      touchedEntities.add(property.getEntity());
+    }
+  
+    /** 
+     * notification that a property has been deleted
+     * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
+     */
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+      log("Property "+deleted.getTag()+" deleted from "+property.getEntity()+" in "+gedcom.getName());
+      touchedEntities.add(property.getEntity());
+    }
+
+  } //GedcomTracker
+  
 } //TrackerPlugin
