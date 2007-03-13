@@ -6,6 +6,8 @@
  */
 package sample.tracker;
 
+import genj.app.AfterCloseGedcom;
+import genj.app.AfterOpenGedcom;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomLifecycleEvent;
@@ -13,9 +15,13 @@ import genj.gedcom.GedcomLifecycleListener;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.plugin.ExtensionPoint;
 import genj.plugin.Plugin;
 import genj.plugin.PluginManager;
+import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
+import genj.view.BeforeShowContext;
+import genj.window.WindowManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +41,7 @@ import javax.swing.text.Document;
  */
 public class TrackerPlugin implements Plugin {
   
+  private PluginManager manager;
   private JTextArea text = new JTextArea(40,10);
   private Map gedcom2tracker = new HashMap();
   
@@ -43,35 +50,46 @@ public class TrackerPlugin implements Plugin {
    * @see Plugin#initPlugin(PluginManager)
    */
   public void initPlugin(PluginManager manager) {
+    this.manager = manager;
     text.setEditable(false);
     manager.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(text), null, null);
   }
   
+  
   /**
-   * A new/loaded gedcom file to consider
-   * @see genj.plugin.Plugin#registerGedcom(genj.gedcom.Gedcom)
+   * Our change to enrich an extension point
+   * @see genj.plugin.Plugin#extend(genj.plugin.ExtensionPoint)
    */
-  public void registerGedcom(Gedcom gedcom) {
-    // attach to gedcom
-    GedcomTracker tracker = new GedcomTracker();
-    gedcom.addLifecycleListener(tracker);
-    gedcom.addGedcomListener(tracker);
-    gedcom2tracker.put(gedcom, tracker);
-    log("Tracker attached to "+gedcom.getName());
+  public void extend(ExtensionPoint ep) {
+    
+    if (ep instanceof AfterOpenGedcom) {
+      // attach to gedcom
+      Gedcom gedcom = ((AfterOpenGedcom)ep).getGedcom();
+      GedcomTracker tracker = new GedcomTracker();
+      gedcom.addLifecycleListener(tracker);
+      gedcom.addGedcomListener(tracker);
+      gedcom2tracker.put(gedcom, tracker);
+      log("Tracker attached to "+gedcom.getName());
+      // done
+      return;
+    }
+
+    if (ep instanceof AfterCloseGedcom) {
+      // detach from gedcom
+      Gedcom gedcom = ((AfterCloseGedcom)ep).getGedcom();
+      GedcomTracker tracker = (GedcomTracker)gedcom2tracker.get(gedcom);
+      gedcom.removeLifecycleListener(tracker);
+      gedcom.removeGedcomListener(tracker);
+      log("Tracker detached from "+gedcom.getName());
+    }
+    
+    if (ep instanceof BeforeShowContext) {
+      ((BeforeShowContext)ep).getContext().addAction("Tracker", new About());
+      
+    }
+    
   }
 
-  /**
-   * The gedcom file we have to detach from
-   * @see genj.plugin.Plugin#unregisterGedcom(genj.gedcom.Gedcom)
-   */
-  public void unregisterGedcom(Gedcom gedcom) {
-    // detach from gedcom
-    GedcomTracker tracker = (GedcomTracker)gedcom2tracker.get(gedcom);
-    gedcom.removeLifecycleListener(tracker);
-    gedcom.removeGedcomListener(tracker);
-    log("Tracker detached from "+gedcom.getName());
-  }
-  
   /** helper for logging text */ 
   private void log(String msg) {
     // log a text message to our output area
@@ -83,6 +101,18 @@ public class TrackerPlugin implements Plugin {
       // can't happen
     }
   }
+  
+  /**
+   * Our little about dialog action
+   */
+  private class About extends Action2 {
+    About() {
+      setText("About");
+    }
+    protected void execute() {
+      manager.getWindowManager().openDialog("tracker.about", "Tracker", WindowManager.INFORMATION_MESSAGE, "Tracker 1.0", Action2.okOnly(), null);
+    }
+  } //About
     
   /**
    * Our gedcom listener
