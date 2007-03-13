@@ -61,6 +61,7 @@
    <jar jarfile="./build/lib/tracker.jar" update="True">
      <fileset dir="./build/classes" includes="**/*.class"/>
      <fileset dir="./src" includes="META-INF/**"/>
+     <fileset dir="./images" includes="**"/>
    </jar>
     
    <!-- create tracker-xyz.zip -->
