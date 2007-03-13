@@ -498,8 +498,8 @@ import spin.Spin;
       BeanFactory factory = view.getBeanFactory();
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
+        bean.removeChangeListener(this);
         try {
-          bean.removeChangeListener(this);
           factory.recycle(bean);
         } catch (Throwable t) {
           EditView.LOG.log(Level.WARNING, "Problem cleaning up bean "+bean, t);

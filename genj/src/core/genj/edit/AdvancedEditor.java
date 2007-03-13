@@ -657,8 +657,10 @@ import javax.swing.tree.TreePath;
       }
 
       // Clean up
-      if (bean!=null)
+      if (bean!=null) {
+        bean.removeChangeListener(this);
         editView.getBeanFactory().recycle(bean);
+      }
       bean = null;
       editPane.removeAll();
       editPane.revalidate();
