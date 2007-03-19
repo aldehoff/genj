@@ -224,7 +224,7 @@ public class DateWidget extends JPanel {
       } catch (NumberFormatException e) {
         String[] months = calendar.getMonths(true);
         for (m=0;m<months.length;m++)
-          if (month.equals(months[m])) break;
+          if (month.equalsIgnoreCase(months[m])) break;
         if (m==months.length) 
           return null;
       }
