@@ -6,8 +6,9 @@
  */
 package sample.tracker;
 
-import genj.app.AfterCloseGedcom;
-import genj.app.AfterOpenGedcom;
+import genj.app.ExtendGedcomClosed;
+import genj.app.ExtendGedcomOpened;
+import genj.app.ExtendMenubar;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomLifecycleEvent;
@@ -20,7 +21,7 @@ import genj.plugin.Plugin;
 import genj.plugin.PluginManager;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
-import genj.view.BeforeShowContext;
+import genj.view.ExtendContextMenu;
 import genj.window.WindowManager;
 
 import java.util.ArrayList;
@@ -41,9 +42,12 @@ import javax.swing.text.Document;
  */
 public class TrackerPlugin implements Plugin {
   
+  private final static ImageIcon IMG = new ImageIcon(TrackerPlugin.class, "/Tracker.gif");
+  
   private PluginManager manager;
   private JTextArea text = new JTextArea(40,10);
   private Map gedcom2tracker = new HashMap();
+  private boolean active = true;
   
   /**
    * our constructor plugin-wise
@@ -62,9 +66,9 @@ public class TrackerPlugin implements Plugin {
    */
   public void extend(ExtensionPoint ep) {
     
-    if (ep instanceof AfterOpenGedcom) {
+    if (ep instanceof ExtendGedcomOpened) {
       // attach to gedcom
-      Gedcom gedcom = ((AfterOpenGedcom)ep).getGedcom();
+      Gedcom gedcom = ((ExtendGedcomOpened)ep).getGedcom();
       GedcomTracker tracker = new GedcomTracker();
       gedcom.addLifecycleListener(tracker);
       gedcom.addGedcomListener(tracker);
@@ -74,18 +78,24 @@ public class TrackerPlugin implements Plugin {
       return;
     }
 
-    if (ep instanceof AfterCloseGedcom) {
+    if (ep instanceof ExtendGedcomClosed) {
       // detach from gedcom
-      Gedcom gedcom = ((AfterCloseGedcom)ep).getGedcom();
+      Gedcom gedcom = ((ExtendGedcomClosed)ep).getGedcom();
       GedcomTracker tracker = (GedcomTracker)gedcom2tracker.get(gedcom);
       gedcom.removeLifecycleListener(tracker);
       gedcom.removeGedcomListener(tracker);
       log("Tracker detached from "+gedcom.getName());
     }
     
-    if (ep instanceof BeforeShowContext) {
-      ((BeforeShowContext)ep).getContext().addAction("Tracker", new About());
-      
+    if (ep instanceof ExtendContextMenu) {
+      // show a context related tracker action
+      ((ExtendContextMenu)ep).getContext().addAction("**Tracker**", new Action2("Remove TRACs", false));
+    }
+    
+    if (ep instanceof ExtendMenubar) {
+      // add a Tracker main menu
+      ((ExtendMenubar)ep).addAction("**Tracker**", new About());
+      ((ExtendMenubar)ep).addAction("**Tracker**", new EnableDisable());
     }
     
   }
@@ -103,6 +113,20 @@ public class TrackerPlugin implements Plugin {
   }
   
   /**
+   * Enable/Disable
+   */
+  private class EnableDisable extends Action2 {
+    public EnableDisable() {
+      setText(active ? "Disable" : "Enable");
+    }
+    protected void execute() {
+      active = !active;
+      setText(active ? "Disable" : "Enable");
+      log("Writing TRAcs is "+(active?"enabled":"disabled"));
+    }
+  }
+  
+  /**
    * Our little about dialog action
    */
   private class About extends Action2 {
@@ -110,7 +134,8 @@ public class TrackerPlugin implements Plugin {
       setText("About");
     }
     protected void execute() {
-      manager.getWindowManager().openDialog("tracker.about", "Tracker", WindowManager.INFORMATION_MESSAGE, "Tracker 1.0", Action2.okOnly(), null);
+      String text = "Tracker 1.0 ("+(active?"active":"not active")+")";
+      manager.getWindowManager().openDialog("tracker.about", "Tracker", WindowManager.INFORMATION_MESSAGE, text, Action2.okOnly(), getTarget());
     }
   } //About
     
@@ -131,6 +156,7 @@ public class TrackerPlugin implements Plugin {
       // 0 @..@ INDI
       // 1 TRAC n
       //
+      if (active)
       if (event.getId()==GedcomLifecycleEvent.AFTER_UNIT_OF_WORK) {
         
         List list = new ArrayList(touchedEntities);
@@ -144,6 +170,11 @@ public class TrackerPlugin implements Plugin {
           }
           entity.setValue(PATH, Integer.toString(value));
         }
+        
+        // make sure we're visible
+        if (!manager.getWindowManager().show("tracker"))
+            manager.getWindowManager().openWindow("tracker", "Tracker", IMG, new JScrollPane(text), null, null);
+        
       }
       
       
