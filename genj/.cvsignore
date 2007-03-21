@@ -4,3 +4,4 @@ build
 java.policy.applet
 .fbprefs
 .fbwarnings
+.project
