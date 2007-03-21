@@ -22,6 +22,9 @@ import genj.plugin.PluginManager;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.view.ExtendContextMenu;
+import genj.window.WindowBroadcastEvent;
+import genj.window.WindowBroadcastListener;
+import genj.window.WindowClosingEvent;
 import genj.window.WindowManager;
 
 import java.util.ArrayList;
@@ -45,7 +48,7 @@ public class TrackerPlugin implements Plugin {
   private final static ImageIcon IMG = new ImageIcon(TrackerPlugin.class, "/Tracker.gif");
   
   private PluginManager manager;
-  private JTextArea text = new JTextArea(40,10);
+  private Log log = new Log();
   private Map gedcom2tracker = new HashMap();
   private boolean active = true;
   
@@ -55,8 +58,25 @@ public class TrackerPlugin implements Plugin {
    */
   public void initPlugin(PluginManager manager) {
     this.manager = manager;
-    text.setEditable(false);
-    manager.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(text), null, null);
+    
+    // show our log
+    manager.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log), null);
+  }
+  
+  /**
+   * our log output
+   */
+  private class Log extends JTextArea implements WindowBroadcastListener {
+    private Log() {
+      super(40,10);
+      setEditable(false);
+    }
+    public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
+      // intercept and cancel closing
+      if (event instanceof WindowClosingEvent)
+        ((WindowClosingEvent)event).cancel();
+      return true;
+    }
   }
   
   
@@ -104,7 +124,7 @@ public class TrackerPlugin implements Plugin {
   private void log(String msg) {
     // log a text message to our output area
     try {
-      Document doc = text.getDocument();
+      Document doc = log.getDocument();
       doc.insertString(doc.getLength(), msg, null);
       doc.insertString(doc.getLength(), "\n", null);
     } catch (BadLocationException e) {
@@ -170,13 +190,7 @@ public class TrackerPlugin implements Plugin {
           }
           entity.setValue(PATH, Integer.toString(value));
         }
-        
-        // make sure we're visible
-        if (!manager.getWindowManager().show("tracker"))
-            manager.getWindowManager().openWindow("tracker", "Tracker", IMG, new JScrollPane(text), null, null);
-        
       }
-      
       
       // we reset our tracking state after the write lock has been released
       if (event.getId()==GedcomLifecycleEvent.WRITE_LOCK_RELEASED) {
