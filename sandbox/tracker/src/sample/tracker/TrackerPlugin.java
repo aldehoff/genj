@@ -60,7 +60,7 @@ public class TrackerPlugin implements Plugin {
     this.manager = manager;
     
     // show our log
-    manager.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log), null);
+    manager.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log));
   }
   
   /**
