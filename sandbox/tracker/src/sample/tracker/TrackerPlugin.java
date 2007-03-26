@@ -18,7 +18,6 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.plugin.ExtensionPoint;
 import genj.plugin.Plugin;
-import genj.plugin.PluginManager;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.view.ExtendContextMenu;
@@ -47,21 +46,9 @@ public class TrackerPlugin implements Plugin {
   
   private final static ImageIcon IMG = new ImageIcon(TrackerPlugin.class, "/Tracker.gif");
   
-  private PluginManager manager;
   private Log log = new Log();
   private Map gedcom2tracker = new HashMap();
   private boolean active = true;
-  
-  /**
-   * our constructor plugin-wise
-   * @see Plugin#initPlugin(PluginManager)
-   */
-  public void initPlugin(PluginManager manager) {
-    this.manager = manager;
-    
-    // show our log
-    manager.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log));
-  }
   
   /**
    * our log output
@@ -113,9 +100,12 @@ public class TrackerPlugin implements Plugin {
     }
     
     if (ep instanceof ExtendMenubar) {
+      ExtendMenubar em = (ExtendMenubar)ep;
+      // show our log
+      em.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log));
       // add a Tracker main menu
-      ((ExtendMenubar)ep).addAction("**Tracker**", new About());
-      ((ExtendMenubar)ep).addAction("**Tracker**", new EnableDisable());
+      em.addAction("**Tracker**", new About());
+      em.addAction("**Tracker**", new EnableDisable());
     }
     
   }
@@ -155,7 +145,7 @@ public class TrackerPlugin implements Plugin {
     }
     protected void execute() {
       String text = "Tracker 1.0 ("+(active?"active":"not active")+")";
-      manager.getWindowManager().openDialog("tracker.about", "Tracker", WindowManager.INFORMATION_MESSAGE, text, Action2.okOnly(), getTarget());
+      WindowManager.getInstance(getTarget()).openDialog("tracker.about", "Tracker", WindowManager.INFORMATION_MESSAGE, text, Action2.okOnly(), getTarget());
     }
   } //About
     
