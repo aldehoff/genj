@@ -62,6 +62,7 @@
      <fileset dir="./build/classes" includes="**/*.class"/>
      <fileset dir="./src" includes="META-INF/**"/>
      <fileset dir="./images" includes="**"/>
+     <fileset dir="./language/en" includes="**"/>
    </jar>
     
    <!-- create tracker-xyz.zip -->

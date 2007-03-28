@@ -18,6 +18,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.plugin.ExtensionPoint;
 import genj.plugin.Plugin;
+import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.view.ExtendContextMenu;
@@ -44,7 +45,9 @@ import javax.swing.text.Document;
  */
 public class TrackerPlugin implements Plugin {
   
-  private final static ImageIcon IMG = new ImageIcon(TrackerPlugin.class, "/Tracker.gif");
+  private final ImageIcon IMG = new ImageIcon(this, "/Tracker.gif");
+  
+  private final Resources RESOURCES = Resources.get(this);
   
   private Log log = new Log();
   private Map gedcom2tracker = new HashMap();
@@ -80,7 +83,7 @@ public class TrackerPlugin implements Plugin {
       gedcom.addLifecycleListener(tracker);
       gedcom.addGedcomListener(tracker);
       gedcom2tracker.put(gedcom, tracker);
-      log("Tracker attached to "+gedcom.getName());
+      log(RESOURCES.getString("log.attached", gedcom.getName()));
       // done
       return;
     }
@@ -91,12 +94,13 @@ public class TrackerPlugin implements Plugin {
       GedcomTracker tracker = (GedcomTracker)gedcom2tracker.get(gedcom);
       gedcom.removeLifecycleListener(tracker);
       gedcom.removeGedcomListener(tracker);
-      log("Tracker detached from "+gedcom.getName());
+      log(RESOURCES.getString("log.detached", gedcom.getName()));
     }
     
     if (ep instanceof ExtendContextMenu) {
       // show a context related tracker action
-      ((ExtendContextMenu)ep).getContext().addAction("**Tracker**", new Action2("Remove TRACs", false));
+      ((ExtendContextMenu)ep).getContext().addAction("**Tracker**", 
+          new Action2(RESOURCES.getString("action.remove"), false));
     }
     
     if (ep instanceof ExtendMenubar) {
@@ -131,7 +135,7 @@ public class TrackerPlugin implements Plugin {
     }
     protected void execute() {
       active = !active;
-      setText(active ? "Disable" : "Enable");
+      setText(RESOURCES.getString(active ? "action.disable" : "action.enable"));
       log("Writing TRAcs is "+(active?"enabled":"disabled"));
     }
   }
@@ -141,10 +145,10 @@ public class TrackerPlugin implements Plugin {
    */
   private class About extends Action2 {
     About() {
-      setText("About");
+      setText(RESOURCES.getString("action.about"));
     }
     protected void execute() {
-      String text = "Tracker 1.0 ("+(active?"active":"not active")+")";
+      String text = RESOURCES.getString("info.txt", RESOURCES.getString((active?"info.active":"info.inactive")));
       WindowManager.getInstance(getTarget()).openDialog("tracker.about", "Tracker", WindowManager.INFORMATION_MESSAGE, text, Action2.okOnly(), getTarget());
     }
   } //About
