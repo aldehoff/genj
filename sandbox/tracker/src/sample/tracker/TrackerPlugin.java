@@ -106,10 +106,11 @@ public class TrackerPlugin implements Plugin {
     if (ep instanceof ExtendMenubar) {
       ExtendMenubar em = (ExtendMenubar)ep;
       // show our log
-      em.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log));
-      // add a Tracker main menu
-      em.addAction("**Tracker**", new About());
-      em.addAction("**Tracker**", new EnableDisable());
+      if (!em.getWindowManager().show("tracker"))
+        em.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log));
+      // add a Tracker tools items 
+      em.addAction(ExtendMenubar.TOOLS_MENU, new EnableDisable());
+      em.addAction(ExtendMenubar.HELP_MENU, new About());
     }
     
   }
@@ -131,12 +132,15 @@ public class TrackerPlugin implements Plugin {
    */
   private class EnableDisable extends Action2 {
     public EnableDisable() {
-      setText(active ? "Disable" : "Enable");
+      setText();
     }
     protected void execute() {
       active = !active;
-      setText(RESOURCES.getString(active ? "action.disable" : "action.enable"));
+      setText();
       log("Writing TRAcs is "+(active?"enabled":"disabled"));
+    }
+    private void setText() {
+      setText(RESOURCES.getString(active ? "action.disable" : "action.enable"));
     }
   }
   
