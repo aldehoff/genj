@@ -221,7 +221,7 @@ public class TrackerPlugin implements Plugin {
      * @see GedcomListener#gedcomPropertyAdded(Gedcom, Property, int, Property)
      */
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-      log("Property "+added.getTag()+" added to "+property.getEntity()+" in "+gedcom.getName());
+      log("Property "+added.getTag()+" (value "+added.getDisplayValue()+") added to "+property.getEntity()+" in "+gedcom.getName());
       touchedEntities.add(property.getEntity());
     }
   
