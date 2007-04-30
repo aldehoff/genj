@@ -38,6 +38,8 @@ import java.util.Locale;
 public class ReportGoogleMap extends Report {
 
   private final static DecimalFormat FORMAT = new DecimalFormat("##0.###", new DecimalFormatSymbols(Locale.US));
+  
+  public int maxEventsPerLocation = 3;
 
   /**
    * we're not a stdout report
@@ -173,7 +175,8 @@ public class ReportGoogleMap extends Report {
         // place
         out.write(location.toString());
         // add first property's info
-        for (int p=0;p<3&&p<location.getNumProperties();p++) {
+        int max = maxEventsPerLocation<=0 ? Integer.MAX_VALUE : maxEventsPerLocation;
+        for (int p=0;p<max&&p<location.getNumProperties();p++) {
           out.write(";");
           Property prop = location.getProperty(p);
           Property date = prop.getProperty("DATE", true);
