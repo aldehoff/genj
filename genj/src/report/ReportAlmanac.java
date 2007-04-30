@@ -90,7 +90,9 @@ public class ReportAlmanac extends Report {
       println(" + "+events.next());
       num++;
     }
+    println("\n");
     println(translate("found", new Integer(num)));
+    println("           -:-:-:-:-:-:-:-:-:-");
 
     // done
   }
@@ -112,7 +114,9 @@ public class ReportAlmanac extends Report {
     if (!from.isValid()||!to.isValid())
       return null;
 
+    println("--------------------------------------------------------");
     println(translate("header", new Object[]{ gedcom, from, to}));
+    println("--------------------------------------------------------");
 
     return getAlmanac().getEvents(from, to, null);
   }
