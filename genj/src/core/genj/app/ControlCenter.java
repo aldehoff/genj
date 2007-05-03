@@ -1012,6 +1012,9 @@ public class ControlCenter extends JPanel {
       // .. open io 
       try {
         
+        // .. resolve to canonical file now to make sure we're writing to the file being pointed to by a sym link
+        file = file.getCanonicalFile();
+
         // .. create a temporary output
         temp = File.createTempFile("genj", ".ged", file.getParentFile());
 
