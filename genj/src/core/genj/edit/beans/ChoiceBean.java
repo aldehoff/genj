@@ -122,7 +122,7 @@ public class ChoiceBean extends PropertyBean {
     // reset
     choices.setValues(((PropertyChoiceValue)property).getChoices(true));
     choices.setText(text);
-    global.setEnabled(false);
+    global.setSelected(false);
     global.setVisible(false);
       
     // Done
