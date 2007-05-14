@@ -10,10 +10,13 @@ package geo;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.time.PointInTime;
 import genj.geo.GeoLocation;
 import genj.geo.GeoService;
 import genj.geo.GeoServiceException;
 import genj.io.FileAssociation;
+import genj.io.Filter;
 import genj.report.Report;
 
 import java.io.BufferedReader;
@@ -40,6 +43,9 @@ public class ReportGoogleMap extends Report {
   private final static DecimalFormat FORMAT = new DecimalFormat("##0.###", new DecimalFormatSymbols(Locale.US));
   
   public int maxEventsPerLocation = 3;
+
+  /** a filter on years of events e.g. <1970, >1920 or [=]2000 */
+  public String yearFilter = "";
 
   /**
    * we're not a stdout report
@@ -74,8 +80,10 @@ public class ReportGoogleMap extends Report {
    */
   private void operate(Gedcom ged, Collection indis) {
 
+    // find locations
+    Collection locations = GeoLocation.parseEntities(indis, new YearFilter());
+    
     // match locations
-    Collection locations = GeoLocation.parseEntities(indis);
     try {
       GeoService.getInstance().match(ged, locations, true);
     } catch (GeoServiceException e) {
@@ -115,7 +123,7 @@ public class ReportGoogleMap extends Report {
 
     // done
   }
-
+  
   /**
    * write the html file
    */
@@ -202,4 +210,68 @@ public class ReportGoogleMap extends Report {
     return true;
   }
 
+  /**
+   * our filtering of events by years upper&lower
+   */
+  private class YearFilter implements Filter {
+    
+    int 
+      lower = Integer.MIN_VALUE, 
+      upper = Integer.MAX_VALUE;
+  
+    private YearFilter() {
+    
+      if (yearFilter.length()==0)
+        return;
+      
+      char c = yearFilter.charAt(0);
+      int y = 0;
+      if (Character.isDigit(c))
+        c = '=';
+      else y++;
+      
+      int year;
+      
+      try {
+        year = Integer.parseInt(yearFilter.substring(y));
+      } catch (NumberFormatException e) {
+        return;
+      }
+        
+      switch (c) {
+        case '=': 
+          lower = year;
+          upper = year;
+          return;
+        case '<':
+          upper = year;
+          return;
+        case '>':
+          lower = year;
+          return;
+      }
+      
+      // done
+    }
+    
+    public String getFilterName() {
+      return "Filter by Years";
+    }
+    
+    public boolean checkFilter(Property property) {
+      Property prop = property.getProperty("DATE");
+      if (prop instanceof PropertyDate) {
+        PropertyDate date = (PropertyDate)prop;
+        PointInTime start = date.getStart(); 
+        if (start.getYear()>upper)
+          return false;
+        PointInTime end = date.isRange() ? date.getEnd() : start; 
+        if (end.getYear()<lower)
+          return false;
+      }
+      return true;
+    }
+    
+  } //YearFilter
+  
 } //ReportGoogleMap

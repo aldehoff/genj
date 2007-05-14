@@ -24,6 +24,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyPlace;
+import genj.io.Filter;
 import genj.util.DirectAccessTokenizer;
 import genj.util.WordBuffer;
 
@@ -166,6 +167,15 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * @return set of GeoLocations
    */
   public static Set parseEntities(Collection entities) {
+    return parseEntities(entities, null);
+  }
+  
+  /**
+   * Create locations for all properties contained in given entities
+   * @param entitie entities to consider
+   * @return set of GeoLocations
+   */
+  public static Set parseEntities(Collection entities, Filter filter) {
     
     // loop over entities
     List props = new ArrayList(100);
@@ -173,8 +183,9 @@ public class GeoLocation extends Point implements Feature, Comparable {
       Entity entity = (Entity)it.next();
       for (int p=0; p<entity.getNoOfProperties(); p++) {
         Property prop = entity.getProperty(p);
-        if (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) 
-          props.add(prop);
+        if (filter==null||filter.checkFilter(prop))
+          if (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) 
+            props.add(prop);
       }
     }
     
