@@ -7,6 +7,7 @@
  */
 package geo;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
@@ -244,10 +245,10 @@ public class ReportGoogleMap extends Report {
           upper = year;
           return;
         case '<':
-          upper = year;
+          upper = year-1;
           return;
         case '>':
-          lower = year;
+          lower = year+1;
           return;
       }
       
@@ -259,17 +260,31 @@ public class ReportGoogleMap extends Report {
     }
     
     public boolean checkFilter(Property property) {
-      Property prop = property.getProperty("DATE");
-      if (prop instanceof PropertyDate) {
-        PropertyDate date = (PropertyDate)prop;
-        PointInTime start = date.getStart(); 
-        if (start.getYear()>upper)
+      
+      // check for a local date
+      if (isOut(property.getProperty("DATE")))
           return false;
-        PointInTime end = date.isRange() ? date.getEnd() : start; 
-        if (end.getYear()<lower)
-          return false;
-      }
+
+      // try individual's birth
+      Entity ent = property.getEntity();
+      if ( (ent instanceof Indi) && isOut(((Indi)ent).getBirthDate()))
+        return false;
+      
+      // let it through
       return true;
+    }
+    
+    private boolean isOut(Property prop) {
+      if (!(prop instanceof PropertyDate)||!prop.isValid())
+        return false;
+      PropertyDate date = (PropertyDate)prop;
+      PointInTime start = date.getStart(); 
+      if (start.getYear()>upper)
+        return true;
+      PointInTime end = date.isRange() ? date.getEnd() : start; 
+      if (end.getYear()<lower)
+        return true;
+      return false;
     }
     
   } //YearFilter
