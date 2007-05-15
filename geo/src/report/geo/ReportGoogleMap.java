@@ -234,7 +234,7 @@ public class ReportGoogleMap extends Report {
       int year;
       
       try {
-        year = Integer.parseInt(yearFilter.substring(y));
+        year = Integer.parseInt(yearFilter.substring(y).trim());
       } catch (NumberFormatException e) {
         return;
       }
