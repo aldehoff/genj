@@ -82,7 +82,7 @@ public class ReportGoogleMap extends Report {
   private void operate(Gedcom ged, Collection indis) {
 
     // find locations
-    Collection locations = GeoLocation.parseEntities(indis, new YearFilter());
+    Collection locations = GeoLocation.parseEntities(indis, yearFilter.length()==0 ? null : new YearFilter());
     
     // match locations
     try {
@@ -262,29 +262,29 @@ public class ReportGoogleMap extends Report {
     public boolean checkFilter(Property property) {
       
       // check for a local date
-      if (isOut(property.getProperty("DATE")))
-          return false;
+      if (isIn(property.getProperty("DATE")))
+          return true;
 
       // try individual's birth
       Entity ent = property.getEntity();
-      if ( (ent instanceof Indi) && isOut(((Indi)ent).getBirthDate()))
-        return false;
+      if ( (ent instanceof Indi) && isIn(((Indi)ent).getBirthDate()))
+        return true;
       
-      // let it through
-      return true;
+      // don't let it through
+      return false;
     }
     
-    private boolean isOut(Property prop) {
+    private boolean isIn(Property prop) {
       if (!(prop instanceof PropertyDate)||!prop.isValid())
         return false;
       PropertyDate date = (PropertyDate)prop;
       PointInTime start = date.getStart(); 
       if (start.getYear()>upper)
-        return true;
+        return false;
       PointInTime end = date.isRange() ? date.getEnd() : start; 
       if (end.getYear()<lower)
-        return true;
-      return false;
+        return false;
+      return true;
     }
     
   } //YearFilter
