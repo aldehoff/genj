@@ -225,33 +225,45 @@ public class ReportGoogleMap extends Report {
       if (yearFilter.length()==0)
         return;
       
-      char c = yearFilter.charAt(0);
-      int y = 0;
-      if (Character.isDigit(c))
-        c = '=';
-      else y++;
-      
+      // grab operator <=>
+      StringBuffer buf = new StringBuffer();
+      while (!Character.isDigit(yearFilter.charAt(buf.length())))
+        buf.append(yearFilter.charAt(buf.length()));
+      String op = buf.toString().trim();
+
+      // convert year
       int year;
-      
       try {
-        year = Integer.parseInt(yearFilter.substring(y).trim());
+        year = Integer.parseInt(yearFilter.substring(op.length()).trim());
       } catch (NumberFormatException e) {
+        println("Can't parse year in filter "+yearFilter);
         return;
       }
-        
-      switch (c) {
-        case '=': 
-          lower = year;
-          upper = year;
-          return;
-        case '<':
-          upper = year-1;
-          return;
-        case '>':
-          lower = year+1;
-          return;
+
+      // assemble comparison
+      if (op.equals("")||op.equals("=")) {
+        lower = year;
+        upper = year;
+        return;
+      }
+      if (op.equals("<")) {
+        upper = year-1;
+        return;
+      }
+      if (op.equals("<=")) {
+        upper = year;
+        return;
+      }
+      if (op.equals(">")) {
+        lower = year+1;
+        return;
+      }
+      if (op.equals(">=")) {
+        lower = year;
+        return;
       }
       
+      println("Can't find operator in filter "+yearFilter);
       // done
     }
     
@@ -262,8 +274,9 @@ public class ReportGoogleMap extends Report {
     public boolean checkFilter(Property property) {
       
       // check for a local date
-      if (isIn(property.getProperty("DATE")))
-          return true;
+      Property date = property.getProperty("DATE"); 
+      if (date instanceof PropertyDate&&date.isValid()&&!isIn((PropertyDate)date))
+          return false;
 
       // try individual's birth
       Entity ent = property.getEntity();
@@ -274,10 +287,9 @@ public class ReportGoogleMap extends Report {
       return false;
     }
     
-    private boolean isIn(Property prop) {
-      if (!(prop instanceof PropertyDate)||!prop.isValid())
+    private boolean isIn(PropertyDate date) {
+      if (date==null)
         return false;
-      PropertyDate date = (PropertyDate)prop;
       PointInTime start = date.getStart(); 
       if (start.getYear()>upper)
         return false;
