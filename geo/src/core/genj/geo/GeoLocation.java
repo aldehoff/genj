@@ -183,9 +183,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
       Entity entity = (Entity)it.next();
       for (int p=0; p<entity.getNoOfProperties(); p++) {
         Property prop = entity.getProperty(p);
-        if (filter==null||filter.checkFilter(prop))
-          if (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) 
-            props.add(prop);
+        if ( (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) && (filter==null||filter.checkFilter(prop))) 
+          props.add(prop);
       }
     }
     
