@@ -48,19 +48,35 @@ public class GraphicsTreeElements implements TreeElements {
      * Box background colors.
      */
     private static final Color[] BOX_COLORS = {
-            new Color(0xff, 0xff, 0xff), // -5
-            new Color(0xff, 0xff, 0xff), // -4
-            new Color(0xdd, 0xdd, 0xff), // -3
-            new Color(0xff, 0xdd, 0xff), // -2
-            new Color(0xff, 0xdd, 0xdd), // -1
+            new Color(0xff, 0xff, 0xff), // -13
+            new Color(0xce, 0xb6, 0xbd), // -12
+            new Color(0xde, 0x55, 0xff), // -11
+            new Color(0x84, 0x82, 0xff), // -10
+            new Color(0xad, 0xae, 0xef), // -9
+            new Color(0xad, 0xcf, 0xff), // -8
+            new Color(0xe7, 0xdb, 0xe7), // -7
+            new Color(0xd6, 0x5d, 0x5a), // -6
+            new Color(0xff, 0x82, 0xb5), // -5
+            new Color(0xef, 0xae, 0xc6), // -4
+            new Color(0xff, 0xdd, 0xdd), // -3
+            new Color(0xce, 0xaa, 0x31), // -2
+            new Color(0xff, 0xdd, 0x00), // -1
 
-            new Color(0xff, 0xff, 0xdd), // 0
+            new Color(0xff, 0xff, 0x33), // 0
 
-            new Color(0xdd, 0xff, 0xdd), // 1
-            new Color(0xdd, 0xff, 0xff), // 2
-            new Color(0xdd, 0xdd, 0xff), // 3
-            new Color(0xff, 0xff, 0xff), // 4
-            new Color(0xff, 0xff, 0xff) // 5
+            new Color(0xff, 0xff, 0xdd), // 1
+            new Color(0xde, 0xff, 0xde), // 2
+            new Color(0x82, 0xff, 0x82), // 3
+            new Color(0x1a, 0xe1, 0x1a), // 4
+            new Color(0xa9, 0xd0, 0xa9), // 5
+            new Color(0xa9, 0xd0, 0xbf), // 6
+            new Color(0xbb, 0xbb, 0xbb), // 7
+            new Color(0xaa, 0x95, 0x95), // 8
+            new Color(0x9e, 0xa3, 0xb2), // 9
+            new Color(0xcd, 0xd3, 0xe9), // 10
+            new Color(0xdf, 0xe2, 0xe2), // 11
+            new Color(0xfa, 0xfa, 0xfa), // 12
+            new Color(0xff, 0xff, 0xff) // 13
     };
 
     public static final float STROKE_WIDTH = 2.0f;
@@ -453,8 +469,8 @@ public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
     private Color getBoxColor(int gen) {
         if (!useColors)
             return Color.WHITE;
-        if (gen + 5 < BOX_COLORS.length && gen + 5 >= 0)
-            return BOX_COLORS[gen + 5];
+        if (gen + 13 < BOX_COLORS.length && gen + 13 >= 0)
+            return BOX_COLORS[gen + 13];
         return BOX_COLORS[0];
     }
 
