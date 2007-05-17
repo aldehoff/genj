@@ -47,6 +47,9 @@ public class ReportGoogleMap extends Report {
 
   /** a filter on years of events e.g. <1970, >1920 or [=]2000 */
   public String yearFilter = "";
+  
+  /** the output map height */
+  public int mapHeight = 400;
 
   /**
    * we're not a stdout report
@@ -130,8 +133,8 @@ public class ReportGoogleMap extends Report {
    */
   private boolean writeHTML(Gedcom ged, GeoLocation center, File html, File xml, String key) {
 
-    String[] match = { "MAPGED", "MAPLAT", "MAPLON", "MAPXML", "MAPKEY" };
-    String[] replace = { ged.getName(), FORMAT.format(center.getY()), FORMAT.format(center.getX()), xml.getName(), key };
+    String[] match = { "MAPGED", "MAPLAT", "MAPLON", "MAPXML", "MAPKEY", "MAPHEIGHT" };
+    String[] replace = { ged.getName(), FORMAT.format(center.getY()), FORMAT.format(center.getX()), xml.getName(), key, Integer.toString(Math.max(128, mapHeight)) };
 
     // copy template
     try {
