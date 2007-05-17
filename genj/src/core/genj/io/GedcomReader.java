@@ -251,13 +251,8 @@ public class GedcomReader implements Trackable {
     long header =System.currentTimeMillis(); 
 
     // Read records after the other
-    while (true) {
-      Entity record = reader.readEntity();
-      if (record.getTag().equals("TRLR")) {
-        gedcom.deleteEntity(record);
-        break;
-      }
-    }
+    while (reader.readEntity()!=null);
+    
     long records = System.currentTimeMillis();
 
     // Next state
@@ -314,7 +309,7 @@ public class GedcomReader implements Trackable {
   private boolean readHeader() throws IOException {
 
     Entity header = reader.readEntity();
-    if (!header.getTag().equals("HEAD"))
+    if (header==null||!header.getTag().equals("HEAD"))
       throw new GedcomFormatException(RESOURCES.getString("read.error.noheader"),0);
     
     //  0 HEAD
@@ -531,6 +526,10 @@ public class GedcomReader implements Trackable {
 
       if (level!=0) 
         throw new GedcomFormatException(RESOURCES.getString("read.error.nonumber"), lines);
+
+      // Trailer? we're done
+      if (tag.equals("TRLR")) 
+        return null;
       
       // Create entity and read its properties
       Entity result;
@@ -551,6 +550,9 @@ public class GedcomReader implements Trackable {
       } catch (GedcomException ex) {
         throw new GedcomIOException(ex.getMessage(), lines);
       }
+      
+      // the trailer?
+      if (tag.equals("TRLR"))
 
       // Done
       entity++;
