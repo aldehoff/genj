@@ -93,7 +93,7 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-01-29 17:20:36 $
+updated              = $Date: 2007-05-17 13:03:48 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 
@@ -108,7 +108,7 @@ info.de = Dieser Report kompiliert alle Reports im GenJ Reportverzeichnis (./rep
  GenJ oder einem Klick auf den Schalter 'Neu Einladen' in ReportView können kompilierte Reports neu eingeladen werden.\n\n
  Die Kompilierung funktioniert nur, wenn GenJ in einer JDK Java Virtual Machine, nicht in einer JRE JVM, läuft.
 
-info.fr =  <h1><center>Outils de Compilation des Rapports</center></h1><br>
+info.fr =  <h1><center>Outil de Compilation des Rapports</center></h1><br>
  <div style="margin-left: 5px; text-align:justify; 
  margin-right: 10px; font-style: normal; color: #000000">
  Ce rapport vous sert à recompiler tous les rapports qui se trouvent 
@@ -118,14 +118,35 @@ info.fr =  <h1><center>Outils de Compilation des Rapports</center></h1><br>
  pourront être utilisés par GenJ.<br>
  <br>
  Pour que cela fonctionne, il vous faut cependant que GenJ tourne 
- à l'intérieur du Machine Virtuelle Java JDK, et non une Machine 
+ à l'intérieur d'une Machine Virtuelle Java JDK, et non une Machine 
  Virtuelle Java JRE. Pour faire simple, il faut que le programme 
  Java que vous avez téléchargé sur le site de Sun commence par "jdk", 
  et non par "jre". C'est tout.<br>
  <br>
  Vous pouvez trouver tout ce qu'il vous faut ici, sauf si le lien 
  a changé&nbsp;:<br>
- <a href="http://java.sun.com/javase/downloads/index.jsp" target="_blank">Site de Sun</a>.
+ <a href="http://java.sun.com/javase/downloads/index.jsp" 
+ target="_blank">Site de Sun</a>.<br>
+ <br>
+ <br><table border="1"><tr bgcolor="#c6ffc6"><td>
+ Vous pourrez voir que tout à bien fonctionné si l'écran de la fenêtre 
+ Résultat ressemble à ça&nbsp;:<br>
+ <br>
+ <div style="margin-left: 25px; text-align:justify; 
+ margin-right: 10px; font-style: normal; color: #00aaaa">
+ <i>Note: Some input files use unchecked or unsafe operations.<br>
+ Note: Recompile with -Xlint:unchecked for details.<br>
+ <br>
+ 91 Fichiers Sources (*.java) ont été compilées dans le 
+ répertoire&nbsp;:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#47;home&#47;moi&#47;genj&#47;report<br>
+ <br>
+ ATTENTION : Pour que cette compilation soit prise en considération, 
+ etc....</i><br>
+ </div>
+ <br>
+ Bien sûr le nombre de rapports compilés peut être différent, et suivant 
+ le système d'exploitation (windows, linux, ...) que vous utilisez, le 
+ répertoire de compilation sera tout autre.<br></td></tr></table>
  </div>
  <br>
 
