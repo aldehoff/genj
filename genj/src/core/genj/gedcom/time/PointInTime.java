@@ -354,7 +354,7 @@ public class PointInTime implements Comparable {
    * Checks for completeness - DD MMM YYYY
    */
   public boolean isComplete() {
-    return isValid() && year!=UNKNOWN && month!=UNKNOWN && day!=UNKNOWN;
+    return year!=UNKNOWN && month!=UNKNOWN && day!=UNKNOWN;
   }
 
   /**
@@ -484,6 +484,12 @@ public class PointInTime implements Comparable {
       
       // fallback to short
       format = FORMAT_SHORT;
+    }
+    
+    // has to be valid
+    if (!isValid()) {
+      buffer.append("?");
+      return buffer;
     }
         
     // non-gregorian, Gedcom, short or long
