@@ -36,12 +36,12 @@ public class ReportEventsByMonths extends Report {
   public boolean BaptismsChart = false;
   /** whether we give a Chart for adoptions - default is false  */
   public boolean AdoptionsChart = false;
-  /** whether we give a Chart for deaths - default is true */
-  public boolean DeathsChart = true;
   /** whether we give a Chart for marriages - default is true */
   public boolean MarriagesChart = true;
   /** whether we give a Chart for divorces - default is true */
   public boolean DivorcesChart = true;
+  /** whether we give a Chart for deaths - default is true */
+  public boolean DeathsChart = true;
 
   /** calendar we use */
   private int calendar;
@@ -92,14 +92,14 @@ public class ReportEventsByMonths extends Report {
     if (AdoptionsChart) {
     series.add(analyze(gedcom.getEntities("INDI"), "ADOP"));
     }
-    if (DeathsChart) {
-    series.add(analyze(gedcom.getEntities("INDI"), "DEAT"));
-    }
     if (MarriagesChart) {
     series.add(analyze(gedcom.getEntities("FAM" ), "MARR"));
     }
     if (DivorcesChart) {
     series.add(analyze(gedcom.getEntities("FAM" ), "DIV"));
+    }
+    if (DeathsChart) {
+    series.add(analyze(gedcom.getEntities("INDI"), "DEAT"));
     }
 
     // show it in a chart per series
