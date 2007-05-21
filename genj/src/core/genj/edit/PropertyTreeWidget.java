@@ -621,10 +621,15 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       Object[] path = getPathFor(property);
       fireTreeNodesInserted(this, path, new int[] { pos }, new Property[]{ added });
       // expand all rows
-      expandAllRows();
-      // selection (but no CHAN)
-      if (!(added instanceof PropertyChange))
-        setSelection(Collections.singletonList(added));
+     expandAllRows();
+     
+     // NM 20070520 - used to follow selection here but
+     // a) this is not good as the selection gets propagated to listeners who haven't received the new property yet
+     // b) a selection change happens anyways (the action for adding a property does so)
+     // ... removing for now
+//      // selection (but no CHAN)
+//      if (!(added instanceof PropertyChange))
+//        setSelection(Collections.singletonList(added));
       // done
     }
 
