@@ -254,7 +254,9 @@ public class ReportNarrative extends Report {
       if (printed.contains(indi)) {
         doc.addLink("Refer to entry via different lineage", indi);
       } else {
-        doc.addIndexTerm(nameIndexTitle, indi.getLastName(), indi.getFirstName());
+        if (withNameIndex) {
+          doc.addIndexTerm(nameIndexTitle, indi.getLastName(), indi.getFirstName());
+        }
         writer.writeEntry(showKids, DETAIL_FULL, true, /*linkToIndi*/ false, showImages);
       }
 
@@ -382,7 +384,9 @@ public class ReportNarrative extends Report {
 
         // FIXME
         // System.err.println("formatter.IndiWriter.writeEntry - " + indi.getName());
-        doc.addIndexTerm(nameIndexTitle, indi.getLastName(), indi.getFirstName());
+        if (withNameIndex) {
+          doc.addIndexTerm(nameIndexTitle, indi.getLastName(), indi.getFirstName());
+        }
 
         // TODO: option for image positioning
         if (showImages && alignImages && detailLevel >= DETAIL_FULL) {
