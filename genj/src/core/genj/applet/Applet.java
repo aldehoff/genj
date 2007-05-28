@@ -79,6 +79,13 @@ public class Applet extends java.applet.Applet {
     return "GenealogyJ "+Version.getInstance().getBuildString();
   }
 
+  private final static String[] S404FIX = {
+    "javax.xml.parsers.SAXParserFactory", "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+    "javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl",
+    "javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl",
+    "com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager", "com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager"    
+  };
+
   /**
    * @see java.applet.Applet#init()
    */
@@ -88,7 +95,15 @@ public class Applet extends java.applet.Applet {
     if (isInitialized)
       return;
     isInitialized = true;
-
+    
+    // Workaround for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6506467
+    // "Applets downloaded from web server with custom 404 HTML file can fail to run"
+    if (getParameter("404FIX")!=null) try {
+      for (int i=0;i<S404FIX.length;)  System.setProperty(S404FIX[i++], S404FIX[i++]);
+    } catch (Throwable t) {
+      LOG.log(Level.WARNING, "Couldn't apply 404FIX", t);
+    }
+    
     // disclaimer
     LOG.info(getAppletInfo());
 
