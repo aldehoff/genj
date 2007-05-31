@@ -37,6 +37,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -62,6 +64,8 @@ import org.xml.sax.helpers.DefaultHandler;
 public class NestedBlockLayout implements LayoutManager2, Cloneable {
   
   private final static SAXException DONE = new SAXException("");
+  
+  private final static Logger LOG = Logger.getLogger("genj.util");
 
   /** whether we've been invalidated recently */
   private boolean invalidated = true;
@@ -133,6 +137,19 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   private class DescriptorHandler extends DefaultHandler {
     
     private Stack stack = new Stack();
+    
+    public InputSource resolveEntity(String publicId, String systemId) throws IOException, SAXException {
+      // 20060531 let's not try to resolve any external entities - in case of GenJ running as an applet and a 
+      // webserver returning a custom 404 with a resolve-entity going on (don't know why 
+      // that would happen in the first place as our layout xml doesn't contain any entities)
+      // there seems to be a failure parsing the webserver's response:
+      // "SAXParseException : White spaces are required between publicId and systemId."
+      LOG.log(Level.INFO, "Request for resolveEntity "+publicId+"/"+systemId, new Throwable());
+      InputSource result = new InputSource(new StringReader(""));
+      result.setPublicId(publicId);
+      result.setSystemId(systemId);
+      return result;
+    }
     
     public void startElement(java.lang.String uri, java.lang.String localName, java.lang.String qName, Attributes attributes) throws org.xml.sax.SAXException {
       // new block!
