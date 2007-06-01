@@ -281,8 +281,11 @@ import spin.Spin;
         in = BasicEditor.class.getResourceAsStream("descriptors/properties/"+meta.getType().getName().substring("genj.gedcom.".length())+".xml");
       if (in!=null) try {
         descriptor = new NestedBlockLayout(in);
+      } catch (IllegalArgumentException e) {
+        // 20060601 don't let iae go through - a custom server 404 might return an invalid in
+        EditView.LOG.log(Level.WARNING, "problem reading descriptor "+file, e);
       } catch (IOException e) {
-        EditView.LOG.log(Level.SEVERE, "problem reading descriptor "+file, e);
+        EditView.LOG.log(Level.WARNING, "problem reading descriptor "+file, e);
       }
 
       // cache it
