@@ -22,6 +22,7 @@ package genj.edit.beans;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.NestedBlockLayout;
@@ -76,7 +77,7 @@ public class AgeBean extends PropertyBean {
     // update components
     tfield.setText(age.getValue());
 
-    Delta delta = Delta.get(age.getEarlier(), age.getLater());
+    Delta delta = Delta.get(age.getEarlier(), age.getLater(), PointInTime.GREGORIAN);
     newAge = delta==null ? null : delta.getValue();
     update.setEnabled(newAge!=null);
     

@@ -116,24 +116,18 @@ public class Delta implements Comparable {
   }
 
   /**
-   * Calculate the delta between two points in time. Both earlier and later have to be in the same calendar and
-   * valid for this calculation to return a non-null value.
+   * Calculate the delta between two points in time in given calendar
    * @return Delta or null if n/a
    */
-  public static Delta get(PointInTime earlier, PointInTime later) {
+  public static Delta get(PointInTime earlier, PointInTime later, Calendar calendar) {
 
-    // null check
-    if (earlier==null||later==null)
+    // convert
+    try {
+      earlier = earlier.getPointInTime(calendar);
+      later = later.getPointInTime(calendar);
+    } catch (Throwable t) {
       return null;
-
-    // valid?
-    if (!earlier.isValid()||!later.isValid())
-      return null;
-
-    // same calendar?
-    Calendar calendar = earlier.getCalendar();
-    if (calendar!=later.getCalendar())
-      return null;
+    }
 
     // ordering?
     if (earlier.compareTo(later)>0) {
@@ -141,7 +135,7 @@ public class Delta implements Comparable {
       earlier = later;
       later = p;
     }
-
+    
     // grab earlier values
     int
       yearlier =  earlier.getYear (),
@@ -194,6 +188,31 @@ public class Delta implements Comparable {
     }
     // done
     return new Delta(days, months, years, calendar);
+  }
+  
+  
+  /**
+   * Calculate the delta between two points in time. Both earlier and later have to be in the same calendar and
+   * valid for this calculation to return a non-null value.
+   * @return Delta or null if n/a
+   */
+  public static Delta get(PointInTime earlier, PointInTime later) {
+
+    // null check
+    if (earlier==null||later==null)
+      return null;
+
+    // valid?
+    if (!earlier.isValid()||!later.isValid())
+      return null;
+
+    // same calendar?
+    Calendar calendar = earlier.getCalendar();
+    if (calendar!=later.getCalendar())
+      return null;
+    
+    return get(earlier, later, calendar);
+
   }
 
   /**
