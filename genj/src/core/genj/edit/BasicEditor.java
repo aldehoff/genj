@@ -283,9 +283,9 @@ import spin.Spin;
         descriptor = new NestedBlockLayout(in);
       } catch (IllegalArgumentException e) {
         // 20060601 don't let iae go through - a custom server 404 might return an invalid in
-        EditView.LOG.log(Level.WARNING, "problem reading descriptor "+file, e);
+        EditView.LOG.log(Level.WARNING, "problem parsing descriptor "+file+" ("+e.getMessage()+")");
       } catch (IOException e) {
-        EditView.LOG.log(Level.WARNING, "problem reading descriptor "+file, e);
+        EditView.LOG.log(Level.WARNING, "problem reading descriptor "+file+" ("+e.getMessage()+")");
       }
 
       // cache it
