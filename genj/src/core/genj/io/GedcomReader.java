@@ -424,36 +424,36 @@ public class GedcomReader implements Trackable {
       }
       
       // sniff gedcom header
-      String header = new String(super.buf, super.pos, super.count);
+      String header = new String(super.buf, super.pos, super.count).trim();
       
       // tests
-      if (matchHeader(header,Gedcom.UNICODE)) {
-        LOG.info("Found "+Gedcom.UNICODE+" - trying encoding UTF-8");
+      if (matchHeader(header,Gedcom.UNICODE)||matchHeader(header, "UTF8")||matchHeader(header, "UTF-8")) {
+        LOG.info("Found "+header+" - trying encoding UTF-8");
         charset = Charset.forName("UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       } 
       if (matchHeader(header,Gedcom.ASCII)) {
         // ASCII - 20050705 using Latin1 (ISO-8859-1) from now on to preserve extended ASCII characters
-        LOG.info("Found "+Gedcom.ASCII+" - trying encoding ISO-8859-1");
+        LOG.info("Found "+header+" - trying encoding ISO-8859-1");
         charset = Charset.forName("ISO-8859-1"); // was ASCII
         encoding = Gedcom.ASCII; 
         return;
       } 
       if (matchHeader(header,Gedcom.ANSEL)) {
-        LOG.info("Found "+Gedcom.ANSEL+" - trying encoding ANSEL");
+        LOG.info("Found "+header+" - trying encoding ANSEL");
         charset = new AnselCharset();
         encoding = Gedcom.ANSEL;
         return;
       } 
       if (matchHeader(header,Gedcom.ANSI)) {
-        LOG.info("Found "+Gedcom.ANSI+" - trying encoding Windows-1252");
+        LOG.info("Found "+header+" - trying encoding Windows-1252");
         charset = Charset.forName("Windows-1252");
         encoding = Gedcom.ANSI;
         return;
       } 
       if (matchHeader(header,Gedcom.LATIN1)||matchHeader(header,"IBMPC")) { // legacy - old style ISO-8859-1/latin1
-        LOG.info("Found "+Gedcom.LATIN1+" or IBMPC - trying encoding ISO-8859-1");
+        LOG.info("Found "+header+" - trying encoding ISO-8859-1");
         charset = Charset.forName("ISO-8859-1");
         encoding = Gedcom.LATIN1;
         return;
@@ -469,7 +469,7 @@ public class GedcomReader implements Trackable {
      * Match a header encoding
      */
     private boolean matchHeader(String header, String encoding) {
-      return header.indexOf("1 CHAR "+encoding)>0;
+      return header.equalsIgnoreCase("1 CHAR "+encoding);
     }
     
     /**
