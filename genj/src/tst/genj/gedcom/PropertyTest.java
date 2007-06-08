@@ -292,7 +292,7 @@ public class PropertyTest extends TestCase {
     assertFormatted(indi, "OCCU", ""      , null         , "Ottawa"            , "Occupation: {$V}", "");
     assertFormatted(indi, "IMMI", ""      , null           , "Vancouver"       , "Immigration{ in $p (landed)}{ on $D}", "Immigration in Vancouver (landed)");
     
-    assertFormatted(indi, "BIRT", "", "25 MAY 1970", "Rendsburg, SH", "{$T}{ $D}{ in $p}", "Birth 25 MAY 1970 in Rendsburg");
+    assertFormatted(indi, "BIRT", "", "25 MAY 1970", "Rendsburg, SH", "{$T}{ $D}{ in $p}", Gedcom.getName("BIRT")+" 25 MAY 1970 in Rendsburg");
     assertFormatted(indi, "BIRT", "", ""                     , "Rendsburg, SH", "{$t}{ $D}{ $P}"    , "BIRT Rendsburg, SH");
     assertFormatted(indi, "BIRT", "", ""                     , ""                        , "{$T}{ $D}{ in $p}", "");
   }
