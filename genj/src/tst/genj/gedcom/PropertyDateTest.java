@@ -39,7 +39,7 @@ public class PropertyDateTest extends TestCase {
     
     testFormat("25 JAN 1970", FORMAT_GEDCOM, "25 JAN 1970");
     testFormat("25 JAN 1970", FORMAT_SHORT, "25 Jan 1970");
-    testFormat("25 JAN 1970", FORMAT_LONG, "25 January 1970");
+    testFormat("25 JAN 1970", FORMAT_LONG, "25 "+PointInTime.GREGORIAN.getDisplayMonth(0, false)+" 1970");
     
     Locale.setDefault(Locale.ENGLISH);
     PointInTime.localeChangedNotify();
