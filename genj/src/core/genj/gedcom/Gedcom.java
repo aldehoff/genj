@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.124 $ $Author: nmeier $ $Date: 2007-03-11 14:40:45 $
+ * $Revision: 1.125 $ $Author: nmeier $ $Date: 2007-06-12 12:16:05 $
  */
 package genj.gedcom;
 
@@ -59,13 +59,14 @@ public class Gedcom implements Comparable {
     UNICODE  = "UNICODE", 
     ASCII    = "ASCII",      // we're using ISO-8859-1 actually to make extended characters possible - the spec is grayish on that one
     ANSEL    = "ANSEL",
+    UTF8     = "UTF-8", // since 5.5.1
    // non-standard encodings
     LATIN1   = "LATIN1",     // a.k.a ISO-8859-1
     ANSI     = "ANSI";       // a.k.a. Windows-1252 (@see http://www.hclrss.demon.co.uk/demos/ansi.html)
   
   /** encodings including the non Gedcom-standard encodings LATIN1 and ANSI */  
   public static final String[] ENCODINGS = { 
-    ANSEL, UNICODE, ASCII, LATIN1, ANSI 
+    ANSEL, UTF8, LATIN1, ANSI , UNICODE, ASCII
   };
 
   /** languages as defined by the Gedcom standard */  

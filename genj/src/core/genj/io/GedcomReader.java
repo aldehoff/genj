@@ -28,6 +28,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
+import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.Trackable;
@@ -104,8 +105,23 @@ public class GedcomReader implements Trackable {
    * initializer
    */
   private void init(Gedcom ged, InputStream in) throws IOException {
+
     SniffedInputStream sniffer = new SniffedInputStream(in);
-    init(ged, sniffer, sniffer.getCharset(), sniffer.getEncoding());
+    Charset charset = sniffer.getCharset();
+    String encoding = sniffer.getEncoding();
+    
+    String charsetName = EnvironmentChecker.getProperty(this, "genj.gedcom.charset", null, "checking for forced charset for read of "+ged.getName());
+    if (charsetName!=null) {
+      try {
+        charset = Charset.forName(charsetName);
+        encoding = Gedcom.UTF8;
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "Can't force charset "+charset, t);
+      }
+    }
+    
+    // cont
+    init(ged, sniffer, charset, encoding);
   }
   
   private void init(Gedcom ged, InputStream in, Charset charset, String encoding) throws IOException {
@@ -407,7 +423,7 @@ public class GedcomReader implements Trackable {
       if (matchPrefix(BOM_UTF8)) {
         LOG.info("Found BOM_UTF8 - trying encoding UTF-8");
         charset = Charset.forName("UTF-8");
-        encoding = Gedcom.UNICODE;
+        encoding = Gedcom.UTF8;
         return;
       }
       if (matchPrefix(BOM_UTF16BE)) {
@@ -424,36 +440,42 @@ public class GedcomReader implements Trackable {
       }
       
       // sniff gedcom header
-      String header = new String(super.buf, super.pos, super.count).trim();
+      String header = new String(super.buf, super.pos, super.count);
       
       // tests
-      if (matchHeader(header,Gedcom.UNICODE)||matchHeader(header, "UTF8")||matchHeader(header, "UTF-8")) {
-        LOG.info("Found "+header+" - trying encoding UTF-8");
+      if (matchHeader(header,Gedcom.UTF8)||matchHeader(header, "UTF8")) {
+        LOG.info("Found "+Gedcom.UTF8+" - trying encoding UTF-8");
+        charset = Charset.forName("UTF-8");
+        encoding = Gedcom.UTF8;
+        return;
+      } 
+      if (matchHeader(header,Gedcom.UNICODE)) {
+        LOG.info("Found "+Gedcom.UNICODE+" without BOM encoding - trying encoding UTF-8");
         charset = Charset.forName("UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       } 
       if (matchHeader(header,Gedcom.ASCII)) {
         // ASCII - 20050705 using Latin1 (ISO-8859-1) from now on to preserve extended ASCII characters
-        LOG.info("Found "+header+" - trying encoding ISO-8859-1");
+        LOG.info("Found "+Gedcom.ASCII+" - trying encoding ISO-8859-1");
         charset = Charset.forName("ISO-8859-1"); // was ASCII
         encoding = Gedcom.ASCII; 
         return;
       } 
       if (matchHeader(header,Gedcom.ANSEL)) {
-        LOG.info("Found "+header+" - trying encoding ANSEL");
+        LOG.info("Found "+Gedcom.ANSEL+" - trying encoding ANSEL");
         charset = new AnselCharset();
         encoding = Gedcom.ANSEL;
         return;
       } 
       if (matchHeader(header,Gedcom.ANSI)) {
-        LOG.info("Found "+header+" - trying encoding Windows-1252");
+        LOG.info("Found "+Gedcom.ANSI+" - trying encoding Windows-1252");
         charset = Charset.forName("Windows-1252");
         encoding = Gedcom.ANSI;
         return;
       } 
       if (matchHeader(header,Gedcom.LATIN1)||matchHeader(header,"IBMPC")) { // legacy - old style ISO-8859-1/latin1
-        LOG.info("Found "+header+" - trying encoding ISO-8859-1");
+        LOG.info("Found "+Gedcom.LATIN1+" or IBMPC - trying encoding ISO-8859-1");
         charset = Charset.forName("ISO-8859-1");
         encoding = Gedcom.LATIN1;
         return;
@@ -469,7 +491,7 @@ public class GedcomReader implements Trackable {
      * Match a header encoding
      */
     private boolean matchHeader(String header, String encoding) {
-      return header.equalsIgnoreCase("1 CHAR "+encoding);
+      return header.indexOf("1 CHAR "+encoding)>0;
     }
     
     /**
