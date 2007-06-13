@@ -44,28 +44,36 @@ public class GraphicsOutputFactory {
      * @param type  output type
      */
     public GraphicsOutput createOutput(int type) {
-    	if (type == SCREEN_OUTPUT)
-    		return new ScreenOutput();
 
-    	GraphicsWriter writer;
-    	if (type == SVG_OUTPUT)
-    		writer = new SvgWriter();
+    	GraphicsOutput output = null;
+
+    	if (type == SCREEN_OUTPUT)
+    		output = new ScreenOutput();
+    	else if (type == SVG_OUTPUT)
+    		output = new SvgWriter();
     	else if (type == PDF_OUTPUT)
-    		writer = new PdfWriter();
-    	else
+    		output = new PdfWriter();
+
+    	if (output == null)
     		return null;
 
-    	// Get filename from users
-        File file = report.getFileFromUser(report.translate("output.file"),
-                    Action2.TXT_OK, true, writer.getFileExtension());
-        if (file == null)
-            return null;
+    	if (output instanceof GraphicsFileOutput) {
+    		GraphicsFileOutput fileOutput = (GraphicsFileOutput)output;
+    		String extension = fileOutput.getFileExtension();
 
-        // Add appropriate file extension
-        String suffix = "." + writer.getFileExtension();
-        if (!file.getPath().endsWith(suffix))
-        	file = new File(file.getPath() + suffix);
+        	// Get filename from users
+            File file = report.getFileFromUser(report.translate("output.file"),
+                        Action2.TXT_OK, true, extension);
+            if (file == null)
+                return null;
 
-        return new GraphicsFileOutput(file, writer);
+            // Add appropriate file extension
+            String suffix = "." + extension;
+            if (!file.getPath().endsWith(suffix))
+            	file = new File(file.getPath() + suffix);
+            fileOutput.setFile(file);
+    	}
+
+        return output;
     }
 }

@@ -25,9 +25,9 @@ import org.w3c.dom.Document;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class SvgWriter implements GraphicsWriter
+public class SvgWriter extends GraphicsFileOutput
 {
-    /**
+	/**
      * Writes the drawing to the output stream.
      * @param out  destination output stream
      * @param renderer this object renders the drawing

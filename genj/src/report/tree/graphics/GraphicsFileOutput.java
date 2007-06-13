@@ -21,7 +21,7 @@ import java.io.OutputStream;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class GraphicsFileOutput implements GraphicsOutput {
+public abstract class GraphicsFileOutput implements GraphicsOutput {
 
     /**
      * Destination file.
@@ -29,16 +29,10 @@ public class GraphicsFileOutput implements GraphicsOutput {
     private File file;
 
     /**
-     * Writes the rendered image to a file.
+     * Sets the file to write to.
      */
-    private GraphicsWriter writer;
-
-    /**
-     * Creates the object
-     */
-    public GraphicsFileOutput(File file, GraphicsWriter writer) {
+    public void setFile(File file) {
         this.file = file;
-        this.writer = writer;
     }
 
     /**
@@ -46,7 +40,7 @@ public class GraphicsFileOutput implements GraphicsOutput {
      */
     public void output(GraphicsRenderer renderer) throws IOException {
         OutputStream out = new FileOutputStream(file);
-        writer.write(out, renderer);
+        write(out, renderer);
         out.close();
     }
 
@@ -56,4 +50,18 @@ public class GraphicsFileOutput implements GraphicsOutput {
     public void display(Report report) {
         report.showFileToUser(file);
     }
+
+    /**
+     * Writes the drawing to the output stream.
+     * @param out  destination output stream
+     * @param renderer this object renders the drawing
+     */
+	public abstract void write(OutputStream out, GraphicsRenderer renderer) throws IOException;
+
+    /**
+     * Returns the file extension for this file type.
+     * @return File extension without leading dot
+     */
+    public abstract String getFileExtension();
+
 }

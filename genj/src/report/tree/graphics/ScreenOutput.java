@@ -71,4 +71,12 @@ public class ScreenOutput extends JScrollPane implements GraphicsOutput {
     public void display(Report report) {
         report.showComponentToUser(this);
     }
+
+    /**
+     * Return null because no file is produced.
+     */
+	public String getFileExtension()
+	{
+		return null;
+	}
 }

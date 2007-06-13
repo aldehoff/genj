@@ -20,9 +20,9 @@ import org.apache.fop.svg.PDFDocumentGraphics2D;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class PdfWriter implements GraphicsWriter
+public class PdfWriter extends GraphicsFileOutput
 {
-    /**
+	/**
      * Writes the drawing to the output stream.
      * @param out  destination output stream
      * @param renderer this object renders the drawing

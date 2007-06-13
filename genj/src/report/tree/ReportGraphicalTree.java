@@ -19,8 +19,10 @@ import tree.arrange.CenteredArranger;
 import tree.build.BasicTreeBuilder;
 import tree.build.NoSpouseFilter;
 import tree.build.TreeBuilder;
-import tree.output.OutputFactory;
-import tree.output.TreeOutput;
+import tree.graphics.GraphicsOutput;
+import tree.graphics.GraphicsOutputFactory;
+import tree.graphics.GraphicsRenderer;
+import tree.output.VerticalTreeRenderer;
 
 /**
  * GenJ - ReportGraphicalTree.
@@ -237,16 +239,19 @@ public class ReportGraphicalTree extends Report {
         arranger.filter(indibox);
 
         // Render and display the tree
-        OutputFactory outputFactory = new OutputFactory(this, properties);
-        TreeOutput output = outputFactory.createOutput(output_type);
+        GraphicsOutputFactory outputFactory = new GraphicsOutputFactory(this);
+        GraphicsOutput output = outputFactory.createOutput(output_type);
         if (output == null)
-            return;
+            return; // Report cancelled
+
+        GraphicsRenderer renderer = new VerticalTreeRenderer(indibox, properties);
 
         try {
-            output.output(indibox);
-            output.display(this);
+            output.output(renderer);
         } catch (IOException e) {
             println("Error generating output: " + e.getMessage());
+            return;
         }
+        output.display(this);
     }
 }

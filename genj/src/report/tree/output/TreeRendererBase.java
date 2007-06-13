@@ -8,15 +8,18 @@
 
 package tree.output;
 
+import java.awt.Graphics2D;
+
 import genj.util.Registry;
 import tree.IndiBox;
+import tree.graphics.GraphicsRenderer;
 
 /**
  * Common code for family tree rendering classes.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public abstract class TreeRendererBase {
+public abstract class TreeRendererBase implements GraphicsRenderer {
 
     /**
      * Size of left and right image margin.
@@ -36,17 +39,26 @@ public abstract class TreeRendererBase {
     /**
      * Draws tree elements (boxes, lines, ...).
      */
-    protected TreeElements elements;
+    protected GraphicsTreeElements elements;
 
     /**
      * Constructs the object.
      */
-	public TreeRendererBase(TreeElements elements, IndiBox firstIndi, Registry properties) {
-        this.elements = elements;
+	public TreeRendererBase(IndiBox firstIndi, Registry properties) {
         this.firstIndi = firstIndi;
+        elements = new GraphicsTreeElements(null, properties);
 
 		verticalGap = properties.get("verticalGap", 0);
         displayFambox = properties.get("displayFambox", true);
+	}
+
+    /**
+     * Renders the family tree to the given Graphics2D object.
+     */
+	public void render(Graphics2D graphics)
+	{
+        elements.setGraphics(graphics);
+        render();
 	}
 
     /**
@@ -59,18 +71,9 @@ public abstract class TreeRendererBase {
 	}
 
     /**
-     * Returns the image width (in pixels, including margins)
-     */
-    public abstract int getImageWidth();
-
-    /**
-     * Returns the image height (in pixels, including margins)
-     */
-    public abstract int getImageHeight();
-
-    /**
      * Draws the tree.
      *
      */
     protected abstract void drawTree();
+
 }
