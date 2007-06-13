@@ -105,7 +105,7 @@ public class GedcomWriter implements Trackable {
     try {
       // Unicode
       if (Gedcom.UNICODE.equals(encoding))
-        return Charset.forName("UTF-16");
+        return Charset.forName("UTF-16BE");
       // UTF8
       if (Gedcom.UTF8.equals(encoding))
         return Charset.forName("UTF-8");

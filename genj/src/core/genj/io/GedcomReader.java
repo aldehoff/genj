@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -406,6 +407,7 @@ public class GedcomReader implements Trackable {
       
     private String encoding;
     private Charset charset;
+    private String header;
     
     /**
      * Constructor
@@ -439,42 +441,52 @@ public class GedcomReader implements Trackable {
         return;
       }
       
-      // sniff gedcom header
-      String header = new String(super.buf, super.pos, super.count);
-      
-      // tests
-      if (matchHeader(header,Gedcom.UTF8)||matchHeader(header, "UTF8")) {
+      // HEADER's CHAR tests
+      if (matchCHAR(Gedcom.UTF8)||matchCHAR("UTF8")) {
         LOG.info("Found "+Gedcom.UTF8+" - trying encoding UTF-8");
         charset = Charset.forName("UTF-8");
         encoding = Gedcom.UTF8;
         return;
       } 
-      if (matchHeader(header,Gedcom.UNICODE)) {
-        LOG.info("Found "+Gedcom.UNICODE+" without BOM encoding - trying encoding UTF-8");
+      if (matchCHAR(Gedcom.UNICODE)) {
+        LOG.info("Found single byte "+Gedcom.UNICODE+" - trying encoding UTF-8");
         charset = Charset.forName("UTF-8");
         encoding = Gedcom.UNICODE;
         return;
       } 
-      if (matchHeader(header,Gedcom.ASCII)) {
+      
+      if (matchCHAR(Gedcom.UNICODE, "UTF-16BE")) {
+        LOG.info("Found "+Gedcom.UNICODE+"/big endian - trying encoding UTF-16BE");
+        charset = Charset.forName("UTF-16BE");
+        encoding = Gedcom.UNICODE;
+        return;
+      } 
+      if (matchCHAR(Gedcom.UNICODE, "UTF-16LE")) {
+        LOG.info("Found "+Gedcom.UNICODE+"/little endian - trying encoding UTF-16LE");
+        charset = Charset.forName("UTF-16LE");
+        encoding = Gedcom.UNICODE;
+        return;
+      } 
+      if (matchCHAR(Gedcom.ASCII)) {
         // ASCII - 20050705 using Latin1 (ISO-8859-1) from now on to preserve extended ASCII characters
         LOG.info("Found "+Gedcom.ASCII+" - trying encoding ISO-8859-1");
         charset = Charset.forName("ISO-8859-1"); // was ASCII
         encoding = Gedcom.ASCII; 
         return;
       } 
-      if (matchHeader(header,Gedcom.ANSEL)) {
+      if (matchCHAR(Gedcom.ANSEL)) {
         LOG.info("Found "+Gedcom.ANSEL+" - trying encoding ANSEL");
         charset = new AnselCharset();
         encoding = Gedcom.ANSEL;
         return;
       } 
-      if (matchHeader(header,Gedcom.ANSI)) {
+      if (matchCHAR(Gedcom.ANSI)) {
         LOG.info("Found "+Gedcom.ANSI+" - trying encoding Windows-1252");
         charset = Charset.forName("Windows-1252");
         encoding = Gedcom.ANSI;
         return;
       } 
-      if (matchHeader(header,Gedcom.LATIN1)||matchHeader(header,"IBMPC")) { // legacy - old style ISO-8859-1/latin1
+      if (matchCHAR(Gedcom.LATIN1)||matchCHAR("IBMPC")) { // legacy - old style ISO-8859-1/latin1
         LOG.info("Found "+Gedcom.LATIN1+" or IBMPC - trying encoding ISO-8859-1");
         charset = Charset.forName("ISO-8859-1");
         encoding = Gedcom.LATIN1;
@@ -486,19 +498,29 @@ public class GedcomReader implements Trackable {
       charset = new AnselCharset();
       encoding = Gedcom.ANSEL;
     }
+
     
     /**
-     * Match a header encoding
+     * Match a header line 
      */
-    private boolean matchHeader(String header, String encoding) {
-      return header.indexOf("1 CHAR "+encoding)>0;
+    private boolean matchCHAR(String line) {
+      return matchCHAR(line, null);
+    }
+    private boolean matchCHAR(String value, String charset) {
+      try {
+        String header = charset!=null ? new String(super.buf, super.pos, super.count, charset) : new String(super.buf, super.pos, super.count);
+        return header.indexOf("1 CHAR "+value)>=0;
+      } catch (UnsupportedEncodingException e) {
+        LOG.log(Level.WARNING, "Couldn't parse header in charset "+charset, e);
+        return false;
+      }
     }
     
     /**
      * Match a prefix byte sequence
      */
     private boolean matchPrefix(byte[] prefix) throws IOException {
-      // too match to match?
+      // too mutch to match?
       if (super.count<prefix.length)
         return false;
       // try it
