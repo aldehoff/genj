@@ -488,7 +488,9 @@ public class PointInTime implements Comparable {
     
     // has to be valid
     if (!isValid()) {
-      buffer.append("?");
+      // we can generate a ? for rendering something meaningful, but not into a gedcom value
+      if (format!=FORMAT_GEDCOM)
+        buffer.append("?");
       return buffer;
     }
         
