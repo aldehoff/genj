@@ -137,7 +137,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     private Stack stack = new Stack();
     
-    public InputSource resolveEntity(String publicId, String systemId) throws IOException, SAXException {
+    public InputSource resolveEntity(String publicId, String systemId) {
       // 20060601 let's not try to resolve any external entities - in case of GenJ running as an applet and a 
       // webserver returning a custom 404 spmeone might read a layout string from getResourceAsStream()
       // which doesn't return null but returns a custom page that we can't parse
