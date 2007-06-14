@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.125 $ $Author: nmeier $ $Date: 2007-06-12 12:16:05 $
+ * $Revision: 1.126 $ $Author: nmeier $ $Date: 2007-06-14 03:31:02 $
  */
 package genj.gedcom;
 
@@ -66,7 +66,7 @@ public class Gedcom implements Comparable {
   
   /** encodings including the non Gedcom-standard encodings LATIN1 and ANSI */  
   public static final String[] ENCODINGS = { 
-    ANSEL, UTF8, LATIN1, ANSI , UNICODE, ASCII
+    ANSEL, UNICODE, ASCII, LATIN1, ANSI, UTF8 
   };
 
   /** languages as defined by the Gedcom standard */  
