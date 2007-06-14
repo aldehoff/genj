@@ -71,8 +71,8 @@ public class Options extends OptionProvider {
   /** option - private information mask */
   public String maskPrivate = "...";
     
-  /** option - default encoding */
-  public int defaultEncoding = 0;
+  /** option - default encoding is the last one in gedcom's list available */
+  public int defaultEncoding = Gedcom.ENCODINGS.length-1;
   
   public final static String[] defaultEncodings = Gedcom.ENCODINGS;
   
