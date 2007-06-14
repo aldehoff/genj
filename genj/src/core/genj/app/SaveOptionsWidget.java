@@ -57,6 +57,7 @@ import javax.swing.JTextField;
   private JTextField  textTags, textValues;
   private TextFieldWidget textPassword;
   private JComboBox   comboEncodings;
+  private JCheckBox checkFilterEmpties;
   private Resources resources = Resources.get(this);
   private DateWidget dateEventsAfter, dateBirthsAfter;
   
@@ -101,6 +102,8 @@ import javax.swing.JTextField;
     props.add(new JLabel(resources.getString("save.options.exclude.indis")));
     dateBirthsAfter = new DateWidget();
     props.add(dateBirthsAfter);
+    checkFilterEmpties = new JCheckBox(resources.getString("save.options.exclude.empties"));
+    props.add(checkFilterEmpties);
         
     // others filter
     Box others = new Box(BoxLayout.Y_AXIS);
@@ -160,6 +163,10 @@ import javax.swing.JTextField;
     if (birthsAfter!=null&&birthsAfter.isValid())
       result.add(new FilterIndividualsBornAfter(birthsAfter));
     
+    // create one for empties
+    if (checkFilterEmpties.isSelected())
+      result.add(new FilterEmpties());
+    
     // create one for every other
     for (int f=0; f<filters.length; f++) {
       if (checkFilters[f].isSelected())
@@ -170,6 +177,25 @@ import javax.swing.JTextField;
     return (Filter[])result.toArray(new Filter[result.size()]);
   }
   
+  /**
+   * Filtering out empty properties
+   */
+  private static class FilterEmpties implements Filter {
+   
+    public boolean checkFilter(Property property) {
+      for (int i = 0; i < property.getNoOfProperties(); i++) {
+        if (checkFilter(property.getProperty(i)))
+            return true;
+      }
+      return property.getValue().trim().length()>0;
+    }
+    
+    public String getFilterName() {
+      return toString();
+    }
+    
+  }
+
   /**
    * Filter individuals if born after pit
    */
