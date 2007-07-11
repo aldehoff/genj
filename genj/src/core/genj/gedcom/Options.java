@@ -72,7 +72,7 @@ public class Options extends OptionProvider {
   public String maskPrivate = "...";
     
   /** option - default encoding is the last one in gedcom's list available */
-  public int defaultEncoding = Gedcom.ENCODINGS.length-1;
+  protected int defaultEncoding = Gedcom.ENCODINGS.length-1;
   
   public final static String[] defaultEncodings = Gedcom.ENCODINGS;
   
@@ -157,6 +157,21 @@ public class Options extends OptionProvider {
    */
   public List getOptions() {
     return PropertyOption.introspect(instance);
+  }
+
+  /**
+   * accessor - default encoding
+   */
+  public int getDefaultEncoding() {
+    return defaultEncoding;
+  }
+
+  /**
+   * accessor - default encoding
+   */
+  public void setDefaultEncoding(int setEncoding) {
+    if (setEncoding>0&&setEncoding<Gedcom.ENCODINGS.length)
+      defaultEncoding = setEncoding;
   }
 
 } //Options
