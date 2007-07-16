@@ -29,9 +29,11 @@ import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +54,8 @@ public class EnvironmentChecker {
         "browser", "browser.vendor", "browser.version",
         "user.name", "user.dir", "user.home", "all.home", "user.home.genj", "all.home.genj"
   };
+  
+  private final static Set NOOVERRIDE = new HashSet();
   
   /**
    * Check for Java 1.4 and higher
@@ -100,7 +104,11 @@ public class EnvironmentChecker {
     
     // Go through system properties
     for (int i=0; i<SYSTEM_PROPERTIES.length; i++) {
-      LOG.info(SYSTEM_PROPERTIES[i] + " = "+getProperty(EnvironmentChecker.class, SYSTEM_PROPERTIES[i], "", "check system props"));
+      String key = SYSTEM_PROPERTIES[i];
+      String msg = key + " = "+getProperty(EnvironmentChecker.class, SYSTEM_PROPERTIES[i], "", "check system props");
+      if (NOOVERRIDE.contains(key))
+        msg += " (no override)";
+      LOG.info(msg);
     }
     
     // check locale specific stuff
@@ -179,7 +187,7 @@ public class EnvironmentChecker {
         val = System.getProperty(key);
         // found it ?
         if (val!=null) {
-          LOG.fine("Using system-property "+key+'='+val+" ("+msg+')');
+          LOG.finer("Using system-property "+key+'='+val+" ("+msg+')');
           return val+postfix;
         }
       }
@@ -202,12 +210,24 @@ public class EnvironmentChecker {
       for (Iterator keys = props.keySet().iterator(); keys.hasNext(); ) {
         String key = keys.next().toString();
         if (System.getProperty(key)==null)
-          System.setProperty(key, props.getProperty(key));
+          setProperty(key, props.getProperty(key));
       }
     } catch (Throwable t) {
       if (t instanceof IOException)
         throw (IOException)t;
       throw new IOException("unexpected throwable "+t.getMessage());
+    }
+  }
+  
+  /**
+   * Set a system property while not overriding existing values
+   */
+  private static void setProperty(String key, String val) {
+    String old = System.getProperty(key); 
+    if (old==null) {
+      System.setProperty(key, val);
+    } else {
+      NOOVERRIDE.add(key);
     }
   }
   
@@ -242,7 +262,7 @@ public class EnvironmentChecker {
           if (match.matches()) {
             File home = new File(new File(System.getProperty("user.home")).getParent(), match.group(1));
             if (home.isDirectory())
-              System.setProperty("all.home", home.getAbsolutePath());
+              setProperty("all.home", home.getAbsolutePath());
             break;
           }
         }
@@ -268,7 +288,7 @@ public class EnvironmentChecker {
       else
         user_home_genj = new File(appdata, "GenJ");
       
-      System.setProperty("user.home.genj", user_home_genj.getAbsolutePath());
+      setProperty("user.home.genj", user_home_genj.getAbsolutePath());
 
     } catch (Throwable t) {
       // ignore if we can't access system properties
@@ -285,7 +305,7 @@ public class EnvironmentChecker {
       if (isWindows()) {
         File app_data = new File(System.getProperty("all.home"), "Application Data");
         if (app_data.isDirectory())
-          System.setProperty("all.home.genj", new File(app_data, "GenJ").getAbsolutePath());
+          setProperty("all.home.genj", new File(app_data, "GenJ").getAbsolutePath());
       }
     } catch (Throwable t) {
       // ignore if we can't access system properties
