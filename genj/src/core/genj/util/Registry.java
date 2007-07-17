@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.29 $ $Author: nmeier $ $Date: 2007-02-07 20:31:16 $
+ * $Revision: 1.30 $ $Author: nmeier $ $Date: 2007-07-17 13:45:54 $
  */
 package genj.util;
 
@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -117,6 +118,7 @@ public class Registry {
         properties.load(in);
         in.close();
       } catch (Throwable t) {
+        LOG.log(Level.FINE, "Failed to read from existing registry", t);
       }
     }
     
@@ -128,6 +130,7 @@ public class Registry {
       properties.load(in);
       in.close();
     } catch (Throwable t) {
+      LOG.log(Level.FINE, "Failed to read from existing registry", t);
     }
     
     // remember
