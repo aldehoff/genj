@@ -22,6 +22,8 @@ package genj.gedcom;
 import genj.crypto.Enigma;
 import genj.util.ReferenceSet;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -72,6 +74,27 @@ public class PropertyChoiceValue extends PropertySimpleValue {
 
     // done
     return (String[])choices.toArray(new String[choices.size()]);
+    
+  }
+  
+  /**
+   * Returns all properties with given tag that contain the same value
+   */
+  public Property[] getSameChoices(Gedcom gedcom, String tag, boolean sort) {
+    
+    // lookup choices
+    ReferenceSet references = gedcom.getReferenceSet(tag);
+    List choices = references.getKeys(sort ? gedcom.getCollator() : null);
+
+    // grab 'em all
+    List result = new ArrayList(choices.size());
+    for (Iterator it = choices.iterator(); it.hasNext();) {
+      String choice = (String) it.next();
+      result.addAll(references.getReferences(choice));
+    }
+    
+    // done
+    return Property.toArray(result);
     
   }
   
