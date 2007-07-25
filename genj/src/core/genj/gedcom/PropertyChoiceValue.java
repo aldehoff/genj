@@ -80,7 +80,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   /**
    * Returns all properties with given tag that contain the same value
    */
-  public Property[] getSameChoices(Gedcom gedcom, String tag, boolean sort) {
+  public static Property[] getSameChoices(Gedcom gedcom, String tag, boolean sort) {
     
     // lookup choices
     ReferenceSet references = gedcom.getReferenceSet(tag);
