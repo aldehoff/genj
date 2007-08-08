@@ -156,7 +156,7 @@ public abstract class AbstractArranger implements TreeFilter {
     protected void updateSpouseParent(IndiBox indibox) {
         IndiBox parent = indibox.spouse.parent;
 
-        indibox.spouse.hMinus = parent.hPlus + parent.hMinus;
+        indibox.spouse.hMinus = -parent.y + parent.hMinus;
         indibox.hMinus = indibox.spouse.hMinus;
         if (parent.wPlus + parent.x > indibox.spouse.wPlus)
         	indibox.spouse.wPlus = parent.wPlus + parent.x;
