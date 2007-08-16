@@ -35,7 +35,7 @@ import tree.output.VerticalTreeRenderer;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.15
+ * @version 0.17
  */
 public class ReportGraphicalTree extends Report {
 
@@ -85,7 +85,8 @@ public class ReportGraphicalTree extends Report {
     public int output_type = 0;
 
     public String[] output_types = { translate("output_type.svg"),
-            translate("output_type.pdf"), translate("output_type.screen") };
+            translate("output_type.pdf"), translate("output_type.png"),
+            translate("output_type.screen") };
 
     /**
      * Number of generations of ancestors.

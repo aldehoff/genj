@@ -23,7 +23,8 @@ public class GraphicsOutputFactory {
 
     public static final int SVG_OUTPUT = 0;
     public static final int PDF_OUTPUT = 1;
-    public static final int SCREEN_OUTPUT = 2;
+    public static final int PNG_OUTPUT = 2;
+    public static final int SCREEN_OUTPUT = 3;
 
     /**
      * Containing report. Used to show dialogs and translate strings.
@@ -53,6 +54,8 @@ public class GraphicsOutputFactory {
     		output = new SvgWriter();
     	else if (type == PDF_OUTPUT)
     		output = new PdfWriter();
+        else if (type == PNG_OUTPUT)
+            output = new PngWriter();
 
     	if (output == null)
     		return null;
