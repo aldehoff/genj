@@ -448,14 +448,14 @@ public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
     /**
      * Outputs a string centered.
      */
-    private void centerString(Graphics2D graphics, String text, int x, int y) {
+    public static void centerString(Graphics2D graphics, String text, int x, int y) {
         Rectangle2D rect = graphics.getFont().getStringBounds(text,
                 graphics.getFontRenderContext());
         int width = (int) rect.getWidth();
         graphics.drawString(text, x - width / 2, y);
     }
 
-    private String getSexSymbol(int sex) {
+    private static String getSexSymbol(int sex) {
         if (sex == PropertySex.MALE)
             return MALE_SYMBOL;
         if (sex == PropertySex.FEMALE)

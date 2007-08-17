@@ -22,6 +22,7 @@ import tree.build.TreeBuilder;
 import tree.graphics.GraphicsOutput;
 import tree.graphics.GraphicsOutputFactory;
 import tree.graphics.GraphicsRenderer;
+import tree.graphics.TitleRenderer;
 import tree.output.VerticalTreeRenderer;
 
 /**
@@ -184,6 +185,11 @@ public class ReportGraphicalTree extends Report {
      */
     public int arrangement = 0;
 
+	/**
+	 * Image title.
+	 */
+    public String title = "";
+
     public String[] arrangements = { translate("arrangement.center"),
             translate("arrangement.left") };
 
@@ -246,6 +252,8 @@ public class ReportGraphicalTree extends Report {
             return; // Report cancelled
 
         GraphicsRenderer renderer = new VerticalTreeRenderer(indibox, properties);
+        if (!title.equals(""))
+            renderer = new TitleRenderer(renderer, title);
 
         try {
             output.output(renderer);
@@ -253,6 +261,7 @@ public class ReportGraphicalTree extends Report {
             println("Error generating output: " + e.getMessage());
             return;
         }
+
         output.display(this);
     }
 }
