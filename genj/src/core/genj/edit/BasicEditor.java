@@ -711,20 +711,7 @@ import spin.Spin;
         throw new IllegalArgumentException("tabs can't be generated twice");
       
       // 'create' tab panel
-      tabs = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
-      tabs.putClientProperty(ContextProvider.class, new ContextProvider() {
-        public ViewContext getContext() {
-          // check if tab for property
-          Component selection = tabs.getSelectedComponent();
-          if (!(selection instanceof JComponent))
-            return null;
-          Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
-          if (prop==null)
-            return null;
-          // provide a context with delete
-          return new ViewContext(prop).addAction(new DelTab(prop));
-        }
-      });
+      tabs = new ContextTabbedPane();
       
       // create all tabs
       Set skippedTags = new HashSet();
@@ -801,6 +788,21 @@ import spin.Spin;
 
      // done
    }
+   
+   private class ContextTabbedPane extends JTabbedPane implements ContextProvider {
+     private ContextTabbedPane() {
+       super(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
+     }
+     public ViewContext getContext() {
+       // check if tab for property
+       Component selection = tabs.getSelectedComponent();
+       Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
+       if (prop==null)
+         return null;
+       // provide a context with delete
+       return new ViewContext(prop).addAction(new DelTab(prop));
+     }
+   } //ContextTabbedPane
     
   } //BeanPanel
   
