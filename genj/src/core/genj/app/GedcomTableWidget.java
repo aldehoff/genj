@@ -36,6 +36,8 @@ import genj.window.WindowBroadcastListener;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -102,6 +104,15 @@ import spin.Spin;
       col.setPreferredWidth(widths[c]);
       col.setWidth(widths[c]);
     }    
+    
+    // add motion listener for tooltips
+    getTableHeader().addMouseMotionListener(new MouseMotionAdapter() {
+      public void mouseMoved(MouseEvent e) {
+        int col = getColumnModel().getColumnIndexAtX(e.getX());
+        String tip = col<=0||col>Gedcom.ENTITIES.length ? null : Gedcom.getName(Gedcom.ENTITIES[col-1]);
+        getTableHeader().setToolTipText(tip);
+      }
+    });
 
     // done
   }
