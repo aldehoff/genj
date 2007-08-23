@@ -23,7 +23,6 @@ import genj.util.swing.ImageIcon;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -94,24 +93,27 @@ public class MetaProperty implements Comparable {
     this.isGrammar = isGrammar;
     // inherit from super if applicable
     String path = (String)attributes.get("super");
-    if (path!=null) {
-      MetaProperty supr = grammar.getMetaRecursively(new TagPath(path), true);
-      // subs from super
-      for (Iterator nested=supr.nested.iterator(); nested.hasNext(); ) {
-        MetaProperty sub = (MetaProperty)nested.next();
-        if (!"0".equals(sub.attrs.get("inherit"))) {
-          addNested(sub);
-        }
-      }
-      // type & image & singleton from super
-      if (getAttribute("type")==null)
-        attributes.put("type", supr.getAttribute("type"));
-      if (getAttribute("img")==null)
-        attributes.put("img", supr.getAttribute("img"));
-      if (getAttribute("singleton")==null)
-        attributes.put("singleton", supr.getAttribute("singleton"));
-    }
+    if (path!=null) 
+      copyAttributesFrom(grammar.getMetaRecursively(new TagPath(path), true));
     // done
+  }
+  
+  private void copyAttributesFrom(MetaProperty supr) {
+
+    // sub tags from super (if inhert!="0")
+    for (Iterator nested=supr.nested.iterator(); nested.hasNext(); ) {
+      MetaProperty sub = (MetaProperty)nested.next();
+      if (!"0".equals(sub.attrs.get("inherit"))) {
+        addNested(sub);
+      }
+    }
+    // type & image & singleton from super
+    if (getAttribute("type")==null)
+      attrs.put("type", supr.getAttribute("type"));
+    if (getAttribute("img")==null)
+      attrs.put("img", supr.getAttribute("img"));
+    if (getAttribute("singleton")==null)
+      attrs.put("singleton", supr.getAttribute("singleton"));
   }
   
   /**
@@ -124,6 +126,7 @@ public class MetaProperty implements Comparable {
     for (int i=0; i<nested.size(); i++) {
       MetaProperty other = (MetaProperty)nested.get(i);
       if (other.tag.equals(sub.tag)) {
+        sub.copyAttributesFrom(other);
         nested.set(i, sub);
         return;       
       }
@@ -399,7 +402,7 @@ public class MetaProperty implements Comparable {
     // current tag in map?
     MetaProperty result = (MetaProperty)tag2nested.get(tag);
     if (result==null) {
-      result = new MetaProperty(grammar, tag, Collections.EMPTY_MAP, false);
+      result = new MetaProperty(grammar, tag, new HashMap(), false);
       if (persist) addNested(result);
     }
     // done

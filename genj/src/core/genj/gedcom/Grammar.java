@@ -22,7 +22,6 @@ package genj.gedcom;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -161,7 +160,7 @@ public class Grammar {
     
     // something we didn't know about yet?
     if (root==null) {
-      root = new MetaProperty(this, tag, Collections.EMPTY_MAP, false);
+      root = new MetaProperty(this, tag, new HashMap(), false);
       tag2root.put(tag, root);
     }
     

@@ -80,10 +80,13 @@
   <DEAT img="Death.gif" super="INDI:BIRT"/>
   +++++++++++++ Attributes are not events but have event_details +++++++++++++
   <RESI singleton="0" type="PropertySimpleReadOnly" img="Residency.gif" super="INDI:BIRT">
-   <PLAC default="0" super="INDI:BIRT:PLAC"/>
-   <ADDR default="1" super="INDI:BIRT:ADDR"/>
+   <PLAC default="0"/>
+   <ADDR default="1"/>
   </RESI>
-  <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT" singleton="0"/>
+  <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT" singleton="0">
+   <DATE default="0"/>
+   <PLAC default="0"/>
+  </OCCU>
   <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:OCCU"/>
   <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:OCCU"/>
   <EDUC type="PropertyChoiceValue" img="Education.gif" super="INDI:OCCU"/>
@@ -119,7 +122,7 @@
   <WILL img="Will.gif" super="INDI:GRAD"/>
   <RETI img="Retirement.gif" super="INDI:GRAD"/>
   <EVEN img="Event.gif" super="INDI:GRAD">
-   <TYPE default="1" super="INDI:BIRT:TYPE"/>
+   <TYPE default="1"/>
   </EVEN>
   +++++++++++++ Relationships +++++++++++++
   <NOTE super="INDI:NAME:NOTE"/>
