@@ -266,7 +266,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
    * Create actions for Individual
    */
   private void createActions(List result, Indi indi, ViewManager manager) {
-    result.add(new CreateChild(indi, manager));
+    result.add(new CreateChild(indi, manager, true));
+    result.add(new CreateChild(indi, manager, false));
     result.add(new CreateParent(indi, manager));
     result.add(new CreateSpouse(indi, manager));
     result.add(new CreateSibling(indi, manager, true));
@@ -278,7 +279,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
    * Create actions for Families
    */
   private void createActions(List result, Fam fam, ViewManager manager) {
-    result.add(new CreateChild(fam, manager));
+    result.add(new CreateChild(fam, manager, true));
+    result.add(new CreateChild(fam, manager, false));
     if (fam.getNoOfSpouses()<2)
       result.add(new CreateParent(fam, manager));
     if (fam.getNoOfSpouses()!=0)

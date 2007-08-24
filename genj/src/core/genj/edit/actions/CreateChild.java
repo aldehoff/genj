@@ -26,6 +26,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChild;
+import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.view.ViewManager;
 
@@ -37,16 +38,29 @@ public class CreateChild extends CreateRelationship {
   /** the parent  or family we're creating a child for */
   private Entity parentOrFamily;
   
+  private boolean male;
+  
   /** constructor */
-  public CreateChild(Fam family, ViewManager mgr) {
-    super(resources.getString("create.child"), family.getGedcom(), Gedcom.INDI, mgr);
+  public CreateChild(Fam family, ViewManager mgr, boolean male) {
+    super(calcText(male), family.getGedcom(), Gedcom.INDI, mgr);
+    this.male = male;
+    setImage(male ? PropertyChild.IMG_MALE : PropertyChild.IMG_FEMALE);
     this.parentOrFamily = family;
   }
   
   /** constructor */
-  public CreateChild(Indi parent, ViewManager mgr) {
-    super(resources.getString("create.child"), parent.getGedcom(), Gedcom.INDI, mgr);
+  public CreateChild(Indi parent, ViewManager mgr, boolean male) {
+    super(calcText(male), parent.getGedcom(), Gedcom.INDI, mgr);
+    this.male = male;
+    setImage(male ? PropertyChild.IMG_MALE : PropertyChild.IMG_FEMALE);
     this.parentOrFamily = parent;
+  }
+  
+  private static String calcText(boolean male) {
+    String txt = resources.getString("create.child" , false);
+    if (txt!=null)
+      return txt  + " ("+(male?PropertySex.TXT_MALE:PropertySex.TXT_FEMALE)+")";
+    return resources.getString("create." + (male?"son":"daughter"));
   }
 
   /** description of what this'll do */
@@ -116,12 +130,13 @@ public class CreateChild extends CreateRelationship {
     
     }
     
-    // set name of child if it's a new individual
+    // set name+sex of child if it's a new individual
     if (targetIsNew) {
       Indi parent  = family.getHusband();
       if (parent==null) parent = family.getWife();
       if (parent!=null)
         child.setName("", parent.getLastName());
+      child.setSex(male ? PropertySex.MALE : PropertySex.FEMALE);
     }
     
     // focus stays with parent or family
