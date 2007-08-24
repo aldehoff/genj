@@ -21,6 +21,7 @@ import tree.output.GraphicsTreeElements;
  */
 public class TitleRenderer implements GraphicsRenderer
 {
+    public static final int VERTICAL_MARGIN = 10;
     /**
      * The renderer that renders the actual image.
      */
@@ -34,12 +35,7 @@ public class TitleRenderer implements GraphicsRenderer
     /**
      * Title font height.
      */
-    private static final int TITLE_HEIGHT = 24;
-
-    /**
-     * Font for the chart title.
-     */
-    private static final Font TITLE_FONT = new Font("verdana", Font.BOLD, TITLE_HEIGHT);
+    private int titleHeight = 24;
 
     /**
      * Creates the object.
@@ -48,13 +44,28 @@ public class TitleRenderer implements GraphicsRenderer
      */
     public TitleRenderer(GraphicsRenderer renderer, String title)
     {
+        this(renderer, title, -1);
+    }
+
+    /**
+     * Creates the object.
+     * @param renderer  image renderer
+     * @param title     title to display
+     * @param titleHeight  height of the title in pixels (-1 for automatic height)
+     */
+    public TitleRenderer(GraphicsRenderer renderer, String title, int titleHeight)
+    {
         this.renderer = renderer;
         this.title = title;
+        this.titleHeight = titleHeight;
+
+        if (titleHeight <= 0)
+            this.titleHeight = (renderer.getImageHeight() + renderer.getImageWidth()) / 40; // auto-size
     }
 
     public int getImageHeight()
     {
-        return renderer.getImageHeight() + TITLE_HEIGHT + 10;
+        return renderer.getImageHeight() + titleHeight + VERTICAL_MARGIN;
     }
 
     public int getImageWidth()
@@ -71,10 +82,10 @@ public class TitleRenderer implements GraphicsRenderer
         graphics.clearRect(0, 0, getImageWidth(), getImageHeight());
 
         graphics.setColor(Color.BLACK);
-        graphics.setFont(TITLE_FONT);
-        GraphicsTreeElements.centerString(graphics, title, getImageWidth() / 2, TITLE_HEIGHT * 3/4 + 10);
+        graphics.setFont(new Font("verdana", Font.BOLD, titleHeight));
+        GraphicsTreeElements.centerString(graphics, title, getImageWidth() / 2, titleHeight * 3/4 + VERTICAL_MARGIN);
 
-        graphics.translate(0, TITLE_HEIGHT + 10); // Move rendered image below the title
+        graphics.translate(0, titleHeight + VERTICAL_MARGIN); // Move rendered image below the title
         renderer.render(graphics);
     }
 }
