@@ -35,6 +35,7 @@ import genj.window.DefaultWindowManager;
 import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -254,7 +255,8 @@ public class Applet extends java.applet.Applet {
       if (throwable!=null) {
         
         Action[] actions = { new Action2("Retry"),  Action2.cancel() };
-        int rc = winMgr.openDialog(null, "Error", WindowManager.ERROR_MESSAGE, url+"\n"+throwable.getMessage(), actions, Applet.this);        
+        String msg =  RESOURCES.getString( throwable instanceof FileNotFoundException ? "applet.404" :"applet.ioerror", url);
+        int rc = winMgr.openDialog(null, "Error", WindowManager.ERROR_MESSAGE, msg, actions, Applet.this);        
         
         if (rc==0) trigger();
         
