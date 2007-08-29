@@ -659,9 +659,25 @@ public class TreeView extends JPanel implements ContextProvider, WindowBroadcast
       return true;
     Entity ent = (Entity)prop;
     Set ents = model.getEntities();
-    // fam/indi
-    if (Gedcom.INDI.equals(ent.getTag())||(Gedcom.FAM.equals(ent.getTag())&&model.isFamilies()))
+    // indi?
+    if (ent instanceof Indi)
       return ents.contains(ent);
+    // fam?
+    if (ent instanceof Fam) {
+      boolean b = ents.contains(ent);
+      if (model.isFamilies()||b) return b;
+      Fam fam = (Fam)ent;
+      boolean 
+        father = ents.contains(fam.getHusband()),
+        mother = ents.contains(fam.getWife()),
+        child = false;
+      Indi[] children = fam.getChildren();
+      for (int i = 0; child==false && i<children.length; i++) {
+        if (ents.contains(children[i])) child = true;
+      }
+      // father and mother or parent and child
+      return (father&&mother) || (father&&child) || (mother&&child);
+    }
     // let submitter through if it's THE one
     if (model.getGedcom().getSubmitter()==ent)
       return true;
