@@ -87,17 +87,17 @@
    <DATE default="0"/>
    <PLAC default="0"/>
   </OCCU>
-  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:OCCU"/>
-  <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:OCCU"/>
+  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:OCCU" singleton="1"/>
+  <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:OCCU" singleton="1"/>
   <EDUC type="PropertyChoiceValue" img="Education.gif" super="INDI:OCCU"/>
   <IDNO type="PropertySimpleValue" img="IDNumber.gif" super="INDI:OCCU"/>
-  <NATI type="PropertyChoiceValue" img="Nationality.gif" super="INDI:OCCU"/>
-  <NCHI type="PropertySimpleValue" img="NumChildren.gif" super="INDI:OCCU"/>
-  <PROP type="PropertyChoiceValue" img="Property.gif" super="INDI:OCCU"/>
-  <RELI type="PropertyChoiceValue" img="Religion.gif" super="INDI:OCCU"/>
-  <SSN  type="PropertySimpleValue" img="SSN.gif" super="INDI:OCCU"/>
-  <TITL type="PropertyChoiceValue" img="Title.gif" super="INDI:OCCU"/>
-  <NMR  type="PropertySimpleValue" img="Marriage.gif" super="INDI:OCCU"/>
+  <NATI type="PropertyChoiceValue" img="Nationality.gif" super="INDI:OCCU" singleton="1"/>
+  <NCHI type="PropertySimpleValue" img="NumChildren.gif" super="INDI:OCCU" singleton="1"/>
+  <PROP type="PropertyChoiceValue" img="Property.gif" super="INDI:OCCU" singleton="1"/>
+  <RELI type="PropertyChoiceValue" img="Religion.gif" super="INDI:OCCU" singleton="1"/>
+  <SSN  type="PropertySimpleValue" img="SSN.gif" super="INDI:OCCU" singleton="1"/>
+  <TITL type="PropertyChoiceValue" img="Title.gif" super="INDI:OCCU" singleton="1"/>
+  <NMR  type="PropertySimpleValue" img="Marriage.gif" super="INDI:OCCU" singleton="1"/>
   +++++++++++++ More Events +++++++++++++
   <GRAD singleton="0" img="Graduation.gif" super="INDI:BIRT"/>
   <CHR  hide="1" singleton="1" img="Baptism.gif" super="INDI:GRAD">
@@ -252,7 +252,7 @@
   <AUTH default="1" type="PropertyMultilineValue" img="Note.gif"/>
   <TITL default="1" type="PropertyMultilineValue" img="Attribute.gif"/>
   <ABBR type="PropertySimpleValue" img="Note.gif"/>
-  <PUBL type="PropertySimpleValue" img="Note.gif"/>
+  <PUBL type="PropertyMultilineValue" img="Note.gif"/>
   <TEXT default="1" type="PropertyMultilineValue" img="Note.gif"/>
   +++++++++++++ References +++++++++++++
   <OBJE super="INDI:OBJE"/>
