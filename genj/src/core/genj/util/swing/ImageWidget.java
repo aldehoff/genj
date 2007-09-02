@@ -155,13 +155,17 @@ public class ImageWidget extends JPanel {
           throw new IOException("no suitable image reader for "+source);
     
         reader = (ImageReader)iter.next();
-        reader.setInput(iin, true, true);
+        reader.setInput(iin, false, false);
         reader.addIIOReadUpdateListener(this);
           
         reader.read(0, reader.getDefaultReadParam());
         
       } catch (Throwable t) {
         LOG.fine("Loading "+source+" failed with "+t.getMessage());
+        
+        // blank image
+        keepCachedImage(source, null);
+        
       } finally {
         try { in.close(); } catch (Throwable t) {} 
         try { reader.dispose(); } catch (Throwable t) {} 
@@ -313,12 +317,17 @@ public class ImageWidget extends JPanel {
       if (zoom>0)
         g2d.scale(zoom, zoom);
         
-      g2d.drawImage(img, 
-          minX, minY,
-          minX+width, minY+height,
-          minX, minY,
-          minX+width, minY+height,
-          null);
+      try {
+        g2d.drawImage(img, 
+            minX, minY,
+            minX+width, minY+height,
+            minX, minY,
+            minX+width, minY+height,
+            null);
+      } catch (Throwable t) {
+        // This can fail intermittently (case: PNG/interlaced) - don't want to kill the load process though
+      }
+      
       
       // done
     }
