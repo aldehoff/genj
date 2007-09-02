@@ -187,7 +187,7 @@ public class FileBean extends PropertyBean {
 
     }
       
-    new ActionZoom(registry.get("file.zoom", 100)).trigger();
+    preview.setZoom(registry.get("file.zoom", 0)/100F);
     
     // Done
   }
@@ -244,14 +244,14 @@ public class FileBean extends PropertyBean {
      */
     protected ActionZoom(int zOOm) {
       zoom = zOOm;
-      setText(zoom==0?"1:1":zoom+"%");
+      setText(zoom==0?resources.getString("file.zoom.fit"):zoom+"%");
+      setEnabled(zoom != (int)(preview.getZoom()*100));
     }
     /**
      * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
       preview.setZoom(zoom/100F);
-      preview.setToolTipText(zoom==0 ? "1:1" : zoom+"%");
       registry.put("file.zoom", zoom);
     }
   } //ActionZoom

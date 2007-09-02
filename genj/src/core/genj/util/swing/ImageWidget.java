@@ -61,6 +61,7 @@ public class ImageWidget extends JPanel {
   private final static Map source2imgsoftref = new HashMap();
   
   /** content */
+  private JScrollPane scroll = new JScrollPane(); 
   private Content content = new Content();
   
   /** zoom */
@@ -71,7 +72,8 @@ public class ImageWidget extends JPanel {
    */
   public ImageWidget() {
     super(new BorderLayout());
-    add(new JScrollPane(new ViewPortAdapter(content)), BorderLayout.CENTER);
+    scroll = new JScrollPane(new ViewPortAdapter(content));
+    add(scroll, BorderLayout.CENTER);
   }
   
   /**
@@ -96,6 +98,8 @@ public class ImageWidget extends JPanel {
       return;
     this.zoom = zoom;
     content.revalidate();
+    content.setToolTipText(zoom==0 ? null : (int)(zoom*100D)+"%");
+
   }
   
   /**
@@ -234,10 +238,16 @@ public class ImageWidget extends JPanel {
       // show it
       Graphics2D g2d = (Graphics2D)g;
       
-      // zoom==0 means 1:1
       // TODO ImageWidget - do the dpi math
-      if (zoom>0)
-        g2d.scale(zoom, zoom);
+      // zoom==0 means "to fit"
+      double scale;
+      if (zoom==0) {
+        Dimension avail = getSize();
+        scale = avail.width/(double)getCachedImageSize().width;
+      } else {
+        scale = zoom;
+      }
+      g2d.scale(scale, scale);
       
       // here ya go
       g2d.drawImage(img, 0, 0, null);
@@ -251,16 +261,23 @@ public class ImageWidget extends JPanel {
       // anything in here?
       if (source==null)
         return new Dimension(0,0);
-      
       Dimension dim = getCachedImageSize();
+      double scale;
       
-      // zoom of 0 means 1:1
-      if (zoom>0) {
-        // TODO ImageWidget - do the dpi math
-        dim.width *= zoom;
-        dim.height *= zoom;
+      // zoom of 0 means "to fit"
+      // TODO ImageWidget - do the dpi math
+      if (zoom==0)  {
+        Dimension avail = scroll.getSize();
+        double zx = avail.width/(double)dim.width;
+        double zy = avail.height/(double)dim.height;
+        scale = Math.min(zx,zy);
+      } else {
+        scale = zoom;
       }
       
+      // scale now
+      dim.width *= scale;
+      dim.height *= scale;
       return dim;
       
 ////  // check physical size
@@ -313,10 +330,18 @@ public class ImageWidget extends JPanel {
       // show progress
       Graphics2D g2d = (Graphics2D)getGraphics();
       
-      // zoom (==0 means 1:1)
-      if (zoom>0)
-        g2d.scale(zoom, zoom);
-        
+      // zoom (==0 means "to fit")
+      // TODO ImageWidget - do the dpi math
+      // zoom==0 means "to fit"
+      double scale;
+      if (zoom==0) {
+        Dimension avail = getSize();
+        scale = avail.width/(double)getCachedImageSize().width;
+      } else {
+        scale = zoom;
+      }
+      g2d.scale(scale, scale);
+      
       try {
         g2d.drawImage(img, 
             minX, minY,
