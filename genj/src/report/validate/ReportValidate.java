@@ -235,6 +235,9 @@ public class ReportValidate extends Report {
     List result = new ArrayList();
 
     // ******************** SPECIALIZED TESTS *******************************
+    
+    // singleton properties
+    result.add(new TestSingleton());
 
     // non-valid properties
     result.add(new TestValid(this));
