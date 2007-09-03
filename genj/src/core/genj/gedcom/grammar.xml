@@ -23,22 +23,22 @@
    <SURN type="PropertySimpleValue" img="Name.gif"/>
    <NSFX type="PropertySimpleValue" img="Name.gif"/>
    <SOUR type="PropertySource" img="Source.gif">
-    <PAGE xref="1" type="PropertySimpleValue" img="Attribute.gif"/>
-    <EVEN xref="1" type="PropertyChoiceValue" img="Blob.gif">
+    <PAGE xref="1" type="PropertySimpleValue" img="Attribute.gif" singleton="1"/>
+    <EVEN xref="1" type="PropertyChoiceValue" img="Blob.gif" singleton="1">
      <ROLE type="PropertySimpleValue" img="Blob.gif"/>
     </EVEN>
-    <DATA xref="1" type="PropertySimpleReadOnly" img="Blob.gif">
+    <DATA xref="1" type="PropertySimpleReadOnly" img="Blob.gif" singleton="1">
      <DATE type="PropertyDate" img="Date.gif"/>
      <TEXT type="PropertyMultilineValue" img="Blob.gif"/>
     </DATA>
-    <QUAY xref="1" type="PropertySimpleValue" img="Blob.gif"/>
+    <QUAY xref="1" type="PropertySimpleValue" img="Blob.gif" singleton="1"/>
     <OBJE xref="1" type="PropertyMedia" img="Media.gif">
      <TITL default="1" xref="0" singleton="1" type="PropertySimpleValue" img="Attribute.gif"/>
      <FORM default="1" xref="0" singleton="1" type="PropertyChoiceValue" img="Format.gif"/>
      <FILE default="1" xref="0" singleton="1" type="PropertyFile" img="Disk.gif"/>
      <NOTE default="1" xref="0" type="PropertyNote" img="Note.gif"/>
     </OBJE>
-    <TEXT xref="0" type="PropertyMultilineValue" img="Note.gif"/>
+    <TEXT xref="0" type="PropertyMultilineValue" img="Note.gif" singleton="1"/>
     <NOTE type="PropertyNote" img="Note.gif"/>
    </SOUR>
    <NOTE type="PropertyNote" img="Note.gif">
@@ -249,11 +249,11 @@
    <AGNC type="PropertySimpleValue" img="Attribute.gif"/>
    <NOTE super="INDI:NOTE"/>
   </DATA>
-  <AUTH default="1" type="PropertyMultilineValue" img="Note.gif"/>
-  <TITL default="1" type="PropertyMultilineValue" img="Attribute.gif"/>
-  <ABBR type="PropertySimpleValue" img="Note.gif"/>
-  <PUBL type="PropertyMultilineValue" img="Note.gif"/>
-  <TEXT default="1" type="PropertyMultilineValue" img="Note.gif"/>
+  <AUTH default="1" type="PropertyMultilineValue" img="Note.gif" singleton="1"/>
+  <TITL default="1" type="PropertyMultilineValue" img="Attribute.gif" singleton="1"/>
+  <ABBR type="PropertySimpleValue" img="Note.gif" singleton="1"/>
+  <PUBL type="PropertyMultilineValue" img="Note.gif" singleton="1"/>
+  <TEXT default="1" type="PropertyMultilineValue" img="Note.gif" singleton="1"/>
   +++++++++++++ References +++++++++++++
   <OBJE super="INDI:OBJE"/>
   <NOTE super="INDI:NOTE"/>

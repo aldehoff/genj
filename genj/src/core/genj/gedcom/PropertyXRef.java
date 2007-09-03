@@ -265,15 +265,6 @@ public abstract class PropertyXRef extends Property {
   }
 
   /**
-   * overriden to make sure we always look for sub-meta-properties
-   * with FILTER_XREF
-   * @see genj.gedcom.Property#getNestedMetaProperties(int)
-   */
-  public MetaProperty[] getNestedMetaProperties(int filter) {
-    return super.getNestedMetaProperties(MetaProperty.FILTER_XREF|filter);
-  }
-  
-  /**
    * Final impl for image of xrefs
    * @see genj.gedcom.Property#getImage(boolean)
    */

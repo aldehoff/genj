@@ -36,9 +36,9 @@ public class MetaProperty implements Comparable {
 
   /** static - flags */
   public final static int
-    FILTER_NOT_HIDDEN = 1, // only those that are not marked as hidden
-    FILTER_DEFAULT    = 2, // only those that are marked default
-    FILTER_XREF       = 4; // xref && not !xref
+    WHERE_NOT_HIDDEN = 1, // only those that are not marked as hidden
+    WHERE_DEFAULT    = 2, // only those that are marked default
+    WHERE_NOT_DUPE = 4; // only those that are not going to be a dupe of a singleton
   
   /** static - loaded images */    
   private static Map name2images = new HashMap();
@@ -92,9 +92,9 @@ public class MetaProperty implements Comparable {
     this.attrs = attributes;
     this.isGrammar = isGrammar;
     // inherit from super if applicable
-    String path = (String)attributes.get("super");
-    if (path!=null) 
-      copyAttributesFrom(grammar.getMetaRecursively(new TagPath(path), true));
+    MetaProperty spr = getSuper();
+    if (spr!=null) 
+      copyAttributesFrom(spr);
     // done
   }
   
@@ -114,6 +114,14 @@ public class MetaProperty implements Comparable {
       attrs.put("img", supr.getAttribute("img"));
     if (getAttribute("singleton")==null)
       attrs.put("singleton", supr.getAttribute("singleton"));
+  }
+  
+  /**
+   * Super 
+   */
+  public MetaProperty getSuper() {
+    String path = (String)attrs.get("super");
+    return path == null  ? null : grammar.getMetaRecursively(new TagPath(path), false);
   }
   
   /**
@@ -140,7 +148,7 @@ public class MetaProperty implements Comparable {
    * This is package private to make callees go through
    * indvidual properties rather than accessing this directly.
    */
-  /*package*/ MetaProperty[] getAllNested(int filter) {
+  /*package*/ MetaProperty[] getAllNested(Property parent, int filter) {
     
     // Loop over subs
     List result = new ArrayList(nested.size());
@@ -150,24 +158,23 @@ public class MetaProperty implements Comparable {
       MetaProperty sub = (MetaProperty)nested.get(s);
 
       // default only?
-      if ((filter&FILTER_DEFAULT)!=0) {
+      if ((filter&WHERE_DEFAULT)!=0) {
         String isDefault = sub.getAttribute("default");
         if (isDefault==null||"0".equals(isDefault))
         continue;
       }
         
       // hidden at all (a.k.a cardinality == 0)?
-      if ((filter&FILTER_NOT_HIDDEN)!=0&&sub.getAttribute("hide")!=null)
+      if ((filter&WHERE_NOT_HIDDEN)!=0&&sub.getAttribute("hide")!=null)
         continue;
 
-      // xref && not !xref   (FILTER_XREF = 4)
-      if ((filter&FILTER_XREF)!=0) {
-        if ("0".equals(sub.getAttribute("xref")))
-          continue;
-      } else {
-        if ("1".equals(sub.getAttribute("xref")))
-          continue;
-      }
+      // parent is xref or not?
+      if ("0".equals(sub.getAttribute("xref")) && parent instanceof PropertyXRef ) continue;
+      if ("1".equals(sub.getAttribute("xref")) && !(parent instanceof PropertyXRef)) continue; 
+      
+      // blank dupes?
+      if ((filter&WHERE_NOT_DUPE)!=0 && sub.isSingleton() && parent.getProperty(sub.getTag())!=null)
+        continue;
         
       // .. keep
       result.add(sub);
