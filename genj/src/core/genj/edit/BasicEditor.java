@@ -78,7 +78,7 @@ import spin.Spin;
 /* package */class BasicEditor extends Editor implements ContextProvider {
 
   /** keep a cache of descriptors */
-  private static Map FILE2DESCRIPTOR = new HashMap();
+  private static Map META2DESCRIPTOR = new HashMap();
   
   /** our gedcom */
   private Gedcom gedcom = null;
@@ -264,23 +264,26 @@ import spin.Spin;
    */
   private static NestedBlockLayout getSharedDescriptor(MetaProperty meta) {
     
-    // compute appropiate file name for entity or property
-    String file  = "descriptors/" + (meta.isEntity() ? "entities" : "properties") + "/" + meta.getTag()+".xml";
-    
     // got a cached one already?
-    NestedBlockLayout descriptor  = (NestedBlockLayout)FILE2DESCRIPTOR.get(file);
-    if (descriptor==null) {
-      
-      // hmm, already determined we don't have one?
-      if (FILE2DESCRIPTOR.containsKey(file))
-        return null;
+    NestedBlockLayout descriptor  = (NestedBlockLayout)META2DESCRIPTOR.get(meta);
+    if (descriptor!=null) 
+      return descriptor;
 
-      // try to read a descriptor - TAG.xml or Type.xml
+    // hmm, already determined we don't have one?
+    if (META2DESCRIPTOR.containsKey(meta))
+      return null;
+    
+    // try to read a descriptor (looking up the inheritance chain)
+    for (MetaProperty cursor = meta; descriptor==null && cursor!=null ; cursor = cursor.getSuper() ) {
+      
+      String file  = "descriptors/" + (cursor.isEntity() ? "entities" : "properties") + "/" + cursor.getTag()+".xml";
       InputStream in = BasicEditor.class.getResourceAsStream(file);
-      if (in==null) 
-        in = BasicEditor.class.getResourceAsStream("descriptors/properties/"+meta.getType().getName().substring("genj.gedcom.".length())+".xml");
-      if (in!=null) try {
+
+      if (in==null) continue;
+      
+      try {
         descriptor = new NestedBlockLayout(in);
+        in.close();
       } catch (IllegalArgumentException e) {
         // 20060601 don't let iae go through - a custom server 404 might return an invalid in
         EditView.LOG.log(Level.WARNING, "problem parsing descriptor "+file+" ("+e.getMessage()+")");
@@ -288,11 +291,12 @@ import spin.Spin;
         EditView.LOG.log(Level.WARNING, "problem reading descriptor "+file+" ("+e.getMessage()+")");
       }
 
-      // cache it
-      FILE2DESCRIPTOR.put(file, descriptor);
     }
+      
+    // cache it
+    META2DESCRIPTOR.put(meta, descriptor);
 
-    // return private copy
+    // done
     return descriptor;
   }
   
@@ -478,9 +482,6 @@ import spin.Spin;
     /** constructor */
     BeanPanel() {
       
-      // grab a descriptor
-      NestedBlockLayout descriptor = getSharedDescriptor(currentEntity.getMetaProperty()).copy();
-      
       // parse entity descriptor
       parse(this, currentEntity, getSharedDescriptor(currentEntity.getMetaProperty()).copy() );
       
@@ -561,6 +562,16 @@ import spin.Spin;
         PropertyBean bean = (PropertyBean)it.next();
         if (bean.isDisplayable() && bean.getProperty()!=null && bean.getProperty().isContained(prop)) {
           bean.requestFocusInWindow();
+          return;
+        }
+      }
+      
+      // check tabs specifically (there might be no properties yet)
+      Component[] cs  = tabs.getComponents();
+      for (int i = 0; i < cs.length; i++) {
+        JComponent c = (JComponent)cs[i];
+        if (c.getClientProperty(Property.class)==prop) {
+          c.requestFocusInWindow();
           return;
         }
       }
@@ -733,7 +744,7 @@ import spin.Spin;
       tabs.addTab("", Images.imgNew, newTab);
       
       // add buttons for creating sub-properties 
-      MetaProperty[] nested = currentEntity.getNestedMetaProperties(MetaProperty.FILTER_NOT_HIDDEN);
+      MetaProperty[] nested = currentEntity.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
       Arrays.sort(nested);
       for (int i=0;i<nested.length;i++) {
         MetaProperty meta = nested[i];
@@ -810,6 +821,7 @@ import spin.Spin;
   private class AddTab extends Action2 {
     
     private MetaProperty meta;
+    private Property property;
     
     /** constructor */
     private AddTab(MetaProperty meta) {
@@ -836,17 +848,22 @@ import spin.Spin;
             beanPanel.commit();
           
           // add property for tab
-          Property tab = currentEntity.addProperty(meta.getTag(), "");
-          // find panel for our new property
-          if (beanPanel!=null)
-            beanPanel.select(tab);
+          property = currentEntity.addProperty(meta.getTag(), "");
+        }
+      });
+      
+      // select panel for our new property
+      if (beanPanel!=null) SwingUtilities.invokeLater(new Runnable() {
+        // not deferring this won't make the focus switch happen :(
+        public void run() {
+          beanPanel.select(property);
         }
       });
       
       // done
     }
     
-  } //ActionNewTab
+  } //AddTab
   
   /**
    * A remove tab action
