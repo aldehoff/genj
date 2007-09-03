@@ -239,6 +239,9 @@ public class ReportValidate extends Report {
     // singleton properties
     result.add(new TestSingleton());
 
+    // unique IDs
+    result.add(new TestUniqueIDs());
+
     // non-valid properties
     result.add(new TestValid(this));
 
