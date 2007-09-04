@@ -69,7 +69,7 @@ public class ChoosePropertyBean extends JComponent {
     
     // keep parent and calculate possible properties
     parent = pArent;
-    MetaProperty[] defs = parent.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_NOT_DUPE);
+    MetaProperty[] defs = parent.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
     Arrays.sort(defs, callback);
         
     // Layout

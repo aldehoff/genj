@@ -38,7 +38,7 @@ public class MetaProperty implements Comparable {
   public final static int
     WHERE_NOT_HIDDEN = 1, // only those that are not marked as hidden
     WHERE_DEFAULT    = 2, // only those that are marked default
-    WHERE_NOT_DUPE = 4; // only those that are not going to be a dupe of a singleton
+    WHERE_CARDINALITY_ALLOWS = 4; // only those that are still allowed by cardinality
   
   /** static - loaded images */    
   private static Map name2images = new HashMap();
@@ -107,13 +107,13 @@ public class MetaProperty implements Comparable {
         addNested(sub);
       }
     }
-    // type & image & singleton from super
+    // type & image & cardinality from super
     if (getAttribute("type")==null)
       attrs.put("type", supr.getAttribute("type"));
     if (getAttribute("img")==null)
       attrs.put("img", supr.getAttribute("img"));
-    if (getAttribute("singleton")==null)
-      attrs.put("singleton", supr.getAttribute("singleton"));
+    if (getAttribute("cardinality")==null)
+      attrs.put("cardinality", supr.getAttribute("cardinality"));
   }
   
   /**
@@ -173,7 +173,7 @@ public class MetaProperty implements Comparable {
       if ("1".equals(sub.getAttribute("xref")) && !(parent instanceof PropertyXRef)) continue; 
       
       // blank dupes?
-      if ((filter&WHERE_NOT_DUPE)!=0 && sub.isSingleton() && parent.getProperty(sub.getTag())!=null)
+      if ((filter&WHERE_CARDINALITY_ALLOWS)!=0 && sub.isSingleton() && parent.getProperty(sub.getTag())!=null)
         continue;
         
       // .. keep
@@ -205,11 +205,19 @@ public class MetaProperty implements Comparable {
   }
   
   /**
-   * Check if this is a singleton - preferred to be one amongst its siblings
+   * Check if this is a singleton - cardinality *:1
    */
   public boolean isSingleton() {
-    String single = getAttribute("singleton");
-    return single!=null&&"1".equals(single);
+    String c= getAttribute("cardinality");
+    return c!=null && c.endsWith(":1");
+  }
+  
+  /**
+   * Check if this is required - cardinality 1:*
+   */
+  public boolean isRequired() {
+    String c = getAttribute("cardinality");
+    return c!=null && c.startsWith("1:");
   }
   
   /**

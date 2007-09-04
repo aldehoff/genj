@@ -792,7 +792,7 @@ import javax.swing.tree.TreePath;
         if (!prop.isTransient()) {
           result.addAction(new Add(prop));
           Action2.Group group = new Action2.Group(resources.getString("action.add"));
-          MetaProperty[] metas = prop.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_NOT_DUPE);
+          MetaProperty[] metas = prop.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
           Arrays.sort(metas);
           for (int i=0;i<metas.length;i++)
             if (metas[i].isInstantiated())
