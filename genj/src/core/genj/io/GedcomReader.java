@@ -110,6 +110,9 @@ public class GedcomReader implements Trackable {
     SniffedInputStream sniffer = new SniffedInputStream(in);
     Charset charset = sniffer.getCharset();
     String encoding = sniffer.getEncoding();
+
+    if (sniffer.warning!=null)
+      warnings.add(new Warning(0, sniffer.warning, ged));
     
     String charsetName = EnvironmentChecker.getProperty(this, "genj.gedcom.charset", null, "checking for forced charset for read of "+ged.getName());
     if (charsetName!=null) {
@@ -398,7 +401,7 @@ public class GedcomReader implements Trackable {
   /**
    * SniffedInputStream
    */
-  private static class SniffedInputStream extends BufferedInputStream {
+  private class SniffedInputStream extends BufferedInputStream {
     
     private final byte[]
       BOM_UTF8    = { (byte)0xEF, (byte)0xBB, (byte)0xBF },
@@ -408,6 +411,7 @@ public class GedcomReader implements Trackable {
     private String encoding;
     private Charset charset;
     private String header;
+    String warning;
     
     /**
      * Constructor
@@ -494,9 +498,11 @@ public class GedcomReader implements Trackable {
       } 
 
       // no clue - will default to Ansel
+     warning =  RESOURCES.getString("read.warn.nochar");
       LOG.info("Could not sniff encoding - trying ANSEL");
       charset = new AnselCharset();
       encoding = Gedcom.ANSEL;
+      
     }
 
     
