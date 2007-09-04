@@ -26,12 +26,22 @@ package genj.gedcom;
  * refers to a SUBMITTER entity
  */
 public class PropertySubmitter extends PropertyXRef {
+  
+  private String tag;
+
+  /**
+   * constructor
+   */
+  Property init(MetaProperty meta, String value) throws GedcomException {
+    this.tag = meta.getTag();
+    return super.init(meta, value);
+  }
 
   /**
    * Returns the tag of this property
    */
   public String getTag() {
-    return "SUBM";
+    return tag;
   }
 
   /**

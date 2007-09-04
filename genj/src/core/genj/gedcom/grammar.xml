@@ -135,6 +135,8 @@
   </FAMS>
   <OBJE super="INDI:BIRT:OBJE"/>
   <SUBM hide="1" type="PropertySubmitter" img="Submitter.gif"/>
+  <ANCI super="INDI:SUBM"/>
+  <DESI super="INDI:SUBM"/>
   <SOUR super="INDI:NAME:SOUR"/>
   <ASSO hide="1" type="PropertyAssociation" img="Association.gif">
    <TYPE default="1" cardinality="0:1" type="PropertySimpleValue" img="Type.gif"/>

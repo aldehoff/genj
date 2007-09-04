@@ -43,7 +43,10 @@ public class CreateXReference extends CreateRelationship {
   
   /** figoure out our name - done once */
   private static String getName(Property source, String sourceTag) {
-    return resources.getString("create.xref", new String[]{ Gedcom.getName(getTargetType(source, sourceTag)), source.getEntity().toString()});    
+    String targetType = getTargetType(source, sourceTag);
+    if (targetType.equals(sourceTag))
+      return Gedcom.getName(targetType);
+    return Gedcom.getName(targetType) + " (" + Gedcom.getName(sourceTag) + ")";    
   }
   
   /** more about what we do */
