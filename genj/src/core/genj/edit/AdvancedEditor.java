@@ -795,7 +795,8 @@ import javax.swing.tree.TreePath;
           MetaProperty[] metas = prop.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_NOT_DUPE);
           Arrays.sort(metas);
           for (int i=0;i<metas.length;i++)
-            group.add(new Add(prop, metas[i]));
+            if (metas[i].isInstantiated())
+              group.add(new Add(prop, metas[i]));
           result.addActions(group);
         }
       }
