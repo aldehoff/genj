@@ -348,6 +348,13 @@ public class MetaProperty implements Comparable {
   }
   
   /**
+   * Accessor - cardinality
+   */
+  public String getCardinality() {
+    return (String)attrs.get("cardinality");
+  }
+  
+  /**
    * Accessor - some explanationary information about the meta
    */
   public String getName(boolean plural) {

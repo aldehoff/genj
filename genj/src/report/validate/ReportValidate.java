@@ -237,7 +237,7 @@ public class ReportValidate extends Report {
     // ******************** SPECIALIZED TESTS *******************************
     
     // singleton properties
-    result.add(new TestSingleton());
+    result.add(new TestCardinality());
 
     // unique IDs
     result.add(new TestUniqueIDs());
