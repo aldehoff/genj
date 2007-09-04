@@ -25,8 +25,10 @@ import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
 import genj.util.swing.Action2;
+import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
-import genj.util.swing.TextFieldWidget;
+
+import java.util.Arrays;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -39,7 +41,7 @@ public class AgeBean extends PropertyBean {
   private final static String TEMPLATE = "99y 9m 9d";
 
   /** members */
-  private TextFieldWidget tfield;
+  private ChoiceWidget choice;
   private ActionUpdate update;
   private String newAge;
   
@@ -48,17 +50,17 @@ public class AgeBean extends PropertyBean {
    */
   public void commit(Property property) {
     super.commit(property);
-    property.setValue(tfield.getText());
+    property.setValue(choice.getText());
   }
   
   void initialize(Registry setRegistry) {
     super.initialize(setRegistry);
     
-    tfield = new TextFieldWidget("", TEMPLATE.length());
-    tfield.addChangeListener(changeSupport);
+    choice = new ChoiceWidget(Arrays.asList(PropertyAge.PHRASES));
+    choice.addChangeListener(changeSupport);
     
     setLayout(new NestedBlockLayout("<col><row><value/><template/></row><row><action/></row></col>"));
-    add(tfield);
+    add(choice);
     add(new JLabel(TEMPLATE));
     
     update =  new ActionUpdate();
@@ -75,7 +77,7 @@ public class AgeBean extends PropertyBean {
     property = age;
     
     // update components
-    tfield.setText(age.getValue());
+    choice.setText(age.getValue());
 
     Delta delta = Delta.get(age.getEarlier(), age.getLater(), PointInTime.GREGORIAN);
     newAge = delta==null ? null : delta.getValue();
@@ -100,7 +102,7 @@ public class AgeBean extends PropertyBean {
      * @see genj.util.swing.Action2#execute()
      */
     protected void execute() {
-      tfield.setText(newAge);
+      choice.setText(newAge);
     }
   } //ActionUpdate
 

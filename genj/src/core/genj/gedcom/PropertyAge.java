@@ -19,10 +19,12 @@
  */
 package genj.gedcom;
 
-import javax.swing.ImageIcon;
-
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
+
+import java.text.Collator;
+
+import javax.swing.ImageIcon;
 
 /**
  * Gedcom Property : AGE
@@ -34,15 +36,29 @@ public class PropertyAge extends Property {
   
   /** the age */
   private Delta age = new Delta(0, 0, 0);
+  private int younger_exactly_older = 0;
 
   /** as string */
   private String ageAsString;
+  
+  public static String[] PHRASES = {
+    "CHILD", "INFANT", "STILLBORN"
+  };
 
   /**
    * Returns <b>true</b> if this property is valid
    */
   public boolean isValid() {
-    return ageAsString == null;
+    
+    Collator c = getGedcom().getCollator();
+    
+    if (ageAsString == null)
+      return true;
+    for (int i = 0; i < PHRASES.length; i++) 
+      if (c.compare(PHRASES[i], ageAsString)==0)
+        return true;
+    
+    return false;
   }
 
   /**
@@ -88,6 +104,10 @@ public class PropertyAge extends Property {
 
     // since we're expected to return a Gedcom compliant value
     // here we're not localizing the return value (e.g. 1y 2m 3d)       
+    if (younger_exactly_older>0)
+      return ">"+age.getValue();
+    if (younger_exactly_older<0)
+      return "<"+age.getValue();
     return age.getValue();
   }
 
@@ -96,13 +116,24 @@ public class PropertyAge extends Property {
    */
   public void setValue(String newValue) {
     String old = getValue();
+    
     // try to parse
+    if (newValue.startsWith(">")) {
+      newValue = newValue.substring(1);
+      younger_exactly_older = 1;
+    } else if (newValue.startsWith("<")) {
+      newValue = newValue.substring(1);
+      younger_exactly_older = -1;
+    }
+
     if (age.setValue(newValue))
       ageAsString = null;
     else
       ageAsString = newValue;
+    
     // notify
     propagatePropertyChanged(this, old);
+    
     // Done
   }
 
@@ -117,6 +148,7 @@ public class PropertyAge extends Property {
       return false;
       
     age = delta;
+    younger_exactly_older = 0;
     ageAsString = null;
 
     // done
