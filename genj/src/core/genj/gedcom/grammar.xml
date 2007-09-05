@@ -15,7 +15,7 @@
  *************************************
  <INDI type="Indi" img="Indi.gif" img.male="IndiMale.gif" img.female="IndiFemale.gif">
   +++++++++++++ Name and Sex +++++++++++++
-  <NAME default="1" cardinality="0:1" type="PropertyName" img="Name.gif">
+  <NAME default="1" type="PropertyName" img="Name.gif">
    <NPFX type="PropertySimpleValue" img="Name.gif"/>
    <GIVN type="PropertySimpleValue" img="Name.gif"/>
    <NICK type="PropertySimpleValue" img="Name.gif"/>
