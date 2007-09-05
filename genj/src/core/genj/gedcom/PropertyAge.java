@@ -143,7 +143,7 @@ public class PropertyAge extends Property {
   public boolean updateAge() {
 
     // calc delta
-    Delta delta = Delta.get(getEarlier(), getLater());
+    Delta delta = Delta.get(getEarlier(), getLater(), PointInTime.GREGORIAN);
     if (delta == null)
       return false;
       
