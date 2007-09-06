@@ -104,7 +104,7 @@ public class EventBean extends PropertyBean {
       if ("BIRT".equals(event.getTag())) {
         ageat = "even.age.today";
         if (date!=null) {
-          Delta delta = Delta.get(date.getStart(), PointInTime.getNow());
+          Delta delta = Delta.get(date.getStart(), PointInTime.getNow(), PointInTime.GREGORIAN);
           if (delta!=null)
             age = delta.toString();
         }
