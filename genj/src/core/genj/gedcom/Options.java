@@ -168,7 +168,7 @@ public class Options extends OptionProvider {
    * accessor - default encoding
    */
   public void setDefaultEncoding(int setEncoding) {
-    if (setEncoding>0&&setEncoding<Gedcom.ENCODINGS.length)
+    if (setEncoding>=0&&setEncoding<Gedcom.ENCODINGS.length)
       defaultEncoding = setEncoding;
   }
   
