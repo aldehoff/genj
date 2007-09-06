@@ -74,8 +74,6 @@ public class Options extends OptionProvider {
   /** option - default encoding is the last one in gedcom's list available */
   protected int defaultEncoding = Gedcom.ENCODINGS.length-1;
   
-  public final static String[] defaultEncodings = Gedcom.ENCODINGS;
-  
   /** option - how to display dates */
   public int dateFormat = 1;
   
@@ -172,6 +170,10 @@ public class Options extends OptionProvider {
   public void setDefaultEncoding(int setEncoding) {
     if (setEncoding>0&&setEncoding<Gedcom.ENCODINGS.length)
       defaultEncoding = setEncoding;
+  }
+  
+  public static String[] getDefaultEncodings() {
+    return Gedcom.ENCODINGS;
   }
 
 } //Options
