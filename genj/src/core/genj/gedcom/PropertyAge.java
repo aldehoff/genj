@@ -141,6 +141,8 @@ public class PropertyAge extends Property {
    * Update the age
    */
   public boolean updateAge() {
+    
+    String old  = getValue();
 
     // calc delta
     Delta delta = Delta.get(getEarlier(), getLater(), PointInTime.GREGORIAN);
@@ -151,6 +153,9 @@ public class PropertyAge extends Property {
     younger_exactly_older = 0;
     ageAsString = null;
 
+    // notify
+    propagatePropertyChanged(this, old);
+    
     // done
     return true;
   }
