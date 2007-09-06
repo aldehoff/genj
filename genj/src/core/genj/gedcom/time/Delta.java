@@ -192,27 +192,11 @@ public class Delta implements Comparable {
   
   
   /**
-   * Calculate the delta between two points in time. Both earlier and later have to be in the same calendar and
-   * valid for this calculation to return a non-null value.
+   * Calculate the delta between two points in time (in gregorian)
    * @return Delta or null if n/a
    */
   public static Delta get(PointInTime earlier, PointInTime later) {
-
-    // null check
-    if (earlier==null||later==null)
-      return null;
-
-    // valid?
-    if (!earlier.isValid()||!later.isValid())
-      return null;
-
-    // same calendar?
-    Calendar calendar = earlier.getCalendar();
-    if (calendar!=later.getCalendar())
-      return null;
-    
-    return get(earlier, later, calendar);
-
+    return get(earlier, later, PointInTime.GREGORIAN);
   }
 
   /**

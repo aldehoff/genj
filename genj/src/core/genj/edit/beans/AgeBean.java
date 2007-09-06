@@ -22,7 +22,6 @@ package genj.edit.beans;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.time.Delta;
-import genj.gedcom.time.PointInTime;
 import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
@@ -79,7 +78,7 @@ public class AgeBean extends PropertyBean {
     // update components
     choice.setText(age.getValue());
 
-    Delta delta = Delta.get(age.getEarlier(), age.getLater(), PointInTime.GREGORIAN);
+    Delta delta = Delta.get(age.getEarlier(), age.getLater());
     newAge = delta==null ? null : delta.getValue();
     update.setEnabled(newAge!=null);
     

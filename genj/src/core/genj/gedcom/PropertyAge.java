@@ -145,7 +145,7 @@ public class PropertyAge extends Property {
     String old  = getValue();
 
     // calc delta
-    Delta delta = Delta.get(getEarlier(), getLater(), PointInTime.GREGORIAN);
+    Delta delta = Delta.get(getEarlier(), getLater());
     if (delta == null)
       return false;
       
