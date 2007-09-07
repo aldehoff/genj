@@ -78,6 +78,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   /**
    * Constructor
    */
+  private NestedBlockLayout(Block root) {
+    this.root = root;
+  }
+
+  /**
+   * Constructor
+   */
   public NestedBlockLayout(String descriptor) {
     try {
       init(new StringReader(descriptor));
@@ -479,6 +486,9 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** wrapped component */
     private Component component;
     
+    /** nested layout root */
+    private Block nestedRoot;
+    
     /** grow constraints */
     private Point grow = new Point();
     
@@ -531,6 +541,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       this.component = component;
     }
     
+    /** returns nested block layout */
+    public NestedBlockLayout getNestedLayout() {
+      if (nestedRoot==null) 
+        return null;
+      return new NestedBlockLayout(nestedRoot);
+    }
+    
     /** element */
     public String getElement() {
       return element;
@@ -558,7 +575,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** add a sub */
     Block add(Block sub) {
-      throw new IllegalArgumentException("cell can't contain row, column or other cell");
+      if (nestedRoot!=null)
+        throw new IllegalArgumentException("nested layout can only have one root");
+      nestedRoot = sub;
+      return sub;
     }
     
     /** preferred */

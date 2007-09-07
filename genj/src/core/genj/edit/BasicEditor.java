@@ -277,21 +277,20 @@ import spin.Spin;
     for (MetaProperty cursor = meta; descriptor==null && cursor!=null ; cursor = cursor.getSuper() ) {
       
       String file  = "descriptors/" + (cursor.isEntity() ? "entities" : "properties") + "/" + cursor.getTag()+".xml";
-      InputStream in = BasicEditor.class.getResourceAsStream(file);
-
-      if (in==null) continue;
       
       try {
+        InputStream in = BasicEditor.class.getResourceAsStream(file);
+        if (in==null) continue;
         descriptor = new NestedBlockLayout(in);
         in.close();
-      } catch (IllegalArgumentException e) {
-        // 20060601 don't let iae go through - a custom server 404 might return an invalid in
-        EditView.LOG.log(Level.WARNING, "problem parsing descriptor "+file+" ("+e.getMessage()+")");
       } catch (IOException e) {
         EditView.LOG.log(Level.WARNING, "problem reading descriptor "+file+" ("+e.getMessage()+")");
+      } catch (Throwable t) {
+        // 20060601 don't let iae go through - a custom server 404 might return an invalid in
+        EditView.LOG.log(Level.WARNING, "problem parsing descriptor "+file+" ("+t.getMessage()+")");
       }
-
     }
+      
       
     // cache it
     META2DESCRIPTOR.put(meta, descriptor);
@@ -594,7 +593,7 @@ import spin.Spin;
     /**
      * Parse descriptor
      */
-    private void parse(JPanel panel, Property root, NestedBlockLayout descriptor)  {
+    private JPanel parse(JPanel panel, Property root, NestedBlockLayout descriptor)  {
 
       panel.setLayout(descriptor);
       
@@ -617,6 +616,7 @@ import spin.Spin;
       }
       
       // done
+      return panel;
     }
     
     /**
@@ -628,7 +628,7 @@ import spin.Spin;
       
       // tabs?
       if ("tabs".equals(element))
-        return createTabs();
+        return createTabs(cell.getNestedLayout());
       
       // prepare some info and state
       TagPath path = new TagPath(cell.getAttribute("path"));
@@ -715,7 +715,7 @@ import spin.Spin;
     /**
      * Create tabs for top-level properties of root (can only happen once)
      */
-    private JTabbedPane createTabs() {
+    private JTabbedPane createTabs(NestedBlockLayout layoutForFirstTab) {
       
       // already done?
       if (tabs!=null)
@@ -723,6 +723,13 @@ import spin.Spin;
       
       // 'create' tab panel
       tabs = new ContextTabbedPane();
+      
+      // create the explicit first tab
+      if (layoutForFirstTab!=null) {
+        JPanel firstPanel = new JPanel();
+        parse(firstPanel, currentEntity, layoutForFirstTab);
+        tabs.addTab("", currentEntity.getImage(false), firstPanel);
+      }
       
       // create all tabs
       Set skippedTags = new HashSet();
@@ -750,7 +757,7 @@ import spin.Spin;
         MetaProperty meta = nested[i];
         // if there's a descriptor for it
         NestedBlockLayout descriptor = getSharedDescriptor(meta);
-        if (descriptor==null)
+        if (descriptor==null||descriptor.getCells().isEmpty())
           continue;
         // .. and if there's no other already with isSingleton
         if (topLevelTags.contains(meta.getTag())&&meta.isSingleton())

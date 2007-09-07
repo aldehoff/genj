@@ -20,5 +20,16 @@
  <row><bean path="INDI" type="genj.edit.beans.FamiliesBean" wx="1" wy="0.1"/></row>
  <row><label path="INDI:FAMC" plural="1"/></row>
  <row><bean path="INDI" type="genj.edit.beans.ParentsBean" wx="1" wy="0.1"/></row>
- <row><tabs wx="1" wy="1"/></row>
+ <row>
+  <tabs wx="1" wy="1">
+     <col>
+      <row><label path="INDI:OCCU"/><bean wx="1" path="INDI:OCCU"/></row>
+      <row><label path="INDI:TITL"/><bean wx="1" path="INDI:TITL"/></row>
+      <row><label path="INDI:IDNO"/><bean wx="1" path="INDI:TITL"/></row>
+      <row><label path="INDI:NATI"/><bean wx="1" path="INDI:NATI"/></row>
+      <row><label path="INDI:RELI"/><bean wx="1" path="INDI:RELI"/></row>
+      <row><label path="INDI:SSN"/><bean wx="1" path="INDI:SSN"/></row>
+     </col>
+  </tabs>
+ </row>
 </col>
