@@ -476,7 +476,7 @@ import spin.Spin;
     private List beans = new ArrayList(32);
     
     /** tabs */
-    private JTabbedPane tabs;
+    private JTabbedPane tabsPane;
     
     /** constructor */
     BeanPanel() {
@@ -566,7 +566,7 @@ import spin.Spin;
       }
       
       // check tabs specifically (there might be no properties yet)
-      Component[] cs  = tabs.getComponents();
+      Component[] cs  = tabsPane.getComponents();
       for (int i = 0; i < cs.length; i++) {
         JComponent c = (JComponent)cs[i];
         if (c.getClientProperty(Property.class)==prop) {
@@ -593,19 +593,9 @@ import spin.Spin;
     /**
      * Parse descriptor
      */
-    private JPanel parse(JPanel panel, Property root, NestedBlockLayout descriptor)  {
+    private void parse(JPanel panel, Property root, NestedBlockLayout descriptor)  {
 
       panel.setLayout(descriptor);
-      
-      // first look for all top level tags we're creating a bean for
-      for (Iterator cells = descriptor.getCells().iterator(); cells.hasNext(); ) {
-        NestedBlockLayout.Cell cell = (NestedBlockLayout.Cell)cells.next();
-        if (!cell.getElement().equals("bean"))
-          continue;
-        String path = cell.getAttribute("path");
-        if (root instanceof Entity&&path!=null && path.indexOf(TagPath.SEPARATOR)>=0)
-          topLevelTags.add(new TagPath(path).get(1));
-      }
       
       // fill cells with beans
       for (Iterator cells = descriptor.getCells().iterator(); cells.hasNext(); ) {
@@ -616,7 +606,6 @@ import spin.Spin;
       }
       
       // done
-      return panel;
     }
     
     /**
@@ -627,8 +616,20 @@ import spin.Spin;
       String element = cell.getElement();
       
       // tabs?
-      if ("tabs".equals(element))
-        return createTabs(cell.getNestedLayout());
+      if ("tabs".equals(element)) {
+        tabsPane = new ContextTabbedPane();
+        
+        for (Iterator tabs=cell.getNestedLayouts().iterator(); tabs.hasNext();) {
+          NestedBlockLayout tabLayout = (NestedBlockLayout)tabs.next();
+          JPanel tab = new JPanel();
+          parse(tab, root, tabLayout);
+          tabsPane.addTab("", root.getImage(false), tab);
+        }
+        
+        createTabs(tabsPane);
+        
+        return tabsPane;
+      }
       
       // prepare some info and state
       TagPath path = new TagPath(cell.getAttribute("path"));
@@ -656,6 +657,9 @@ import spin.Spin;
         PropertyBean bean = createBean(root, path, meta, cell.getAttribute("type"));
         if (bean==null)
           return null;
+        // track it
+        if (root==currentEntity&&path.length()>1)
+          topLevelTags.add(path.get(1));
         // finally wrap in popup if requested?
         return cell.getAttribute("popup")==null ? bean : (JComponent)new PopupBean(bean);
       }
@@ -713,23 +717,9 @@ import spin.Spin;
     }
     
     /**
-     * Create tabs for top-level properties of root (can only happen once)
+     * Create tabs from introspection
      */
-    private JTabbedPane createTabs(NestedBlockLayout layoutForFirstTab) {
-      
-      // already done?
-      if (tabs!=null)
-        throw new IllegalArgumentException("tabs can't be generated twice");
-      
-      // 'create' tab panel
-      tabs = new ContextTabbedPane();
-      
-      // create the explicit first tab
-      if (layoutForFirstTab!=null) {
-        JPanel firstPanel = new JPanel();
-        parse(firstPanel, currentEntity, layoutForFirstTab);
-        tabs.addTab("", currentEntity.getImage(false), firstPanel);
-      }
+    private void createTabs(JTabbedPane tabs) {
       
       // create all tabs
       Set skippedTags = new HashSet();
@@ -741,7 +731,7 @@ import spin.Spin;
           continue;
         topLevelTags.add(tag);
         // create a tab for it
-        createTab(prop);
+        createTab(prop, tabs);
         // next
       }
       
@@ -767,13 +757,12 @@ import spin.Spin;
       }
     
       // done
-      return tabs;
     }
     
     /**
     * Create a tab
     */
-   private void createTab(Property prop) {
+   private void createTab(Property prop, JTabbedPane tabs) {
      
      // show simple xref bean for PropertyXRef
      if (prop instanceof PropertyXRef) {
@@ -813,7 +802,7 @@ import spin.Spin;
      }
      public ViewContext getContext() {
        // check if tab for property
-       Component selection = tabs.getSelectedComponent();
+       Component selection = tabsPane.getSelectedComponent();
        Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
        if (prop==null)
          return null;
