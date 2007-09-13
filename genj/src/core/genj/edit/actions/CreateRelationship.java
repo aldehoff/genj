@@ -87,9 +87,6 @@ public abstract class CreateRelationship extends AbstractChange {
     // relationship detail
     result.append( resources.getString("confirm.new.related", getDescription()) );
 
-    // Entity comment?
-    result.append( resources.getString("confirm."+targetType) );
-    
     // A warning already?
     String warning = getWarning(existing);
     if (warning!=null) 

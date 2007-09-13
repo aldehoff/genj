@@ -33,9 +33,11 @@
     </DATA>
     <QUAY xref="1" type="PropertySimpleValue" img="Blob.gif" cardinality="0:1"/>
     <OBJE xref="1" type="PropertyMedia" img="Media.gif">
-     <TITL default="1" xref="0" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
-     <FORM default="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
-     <FILE default="1" xref="0" type="PropertyFile" img="Disk.gif" cardinality="0:1"/>
+     <TITL xref="0" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
+     <FORM default="0" hide="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="0:1" gedcom="5.5"/>
+     <FILE default="1" xref="0" type="PropertyFile" img="Disk.gif" cardinality="0:M">
+       <FORM default="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1" gedcom="5.5.1"/>
+     </FILE>
      <NOTE default="1" xref="0" type="PropertyNote" img="Note.gif" cardinality="0:1"/>
     </OBJE>
     <TEXT xref="0" type="PropertyMultilineValue" img="Note.gif" cardinality="0:1"/>
@@ -62,6 +64,10 @@
     <POST default="1" cardinality="0:1" type="PropertyChoiceValue" img="Code.gif"/>
     <STAE default="1" cardinality="0:1" type="PropertyChoiceValue" img="Place.gif"/>
     <CTRY default="1" cardinality="0:1" type="PropertyChoiceValue" img="Place.gif"/>
+    <PHON  cardinality="0:3" type="PropertySimpleValue" img="Phone.gif"/>
+    <EMAIL cardinality="0:3" type="PropertySimpleValue" img="Web.gif"/>
+    <FAX cardinality="0:3" type="PropertySimpleValue" img="Phone.gif"/>
+    <WWW cardinality="0:3" type="PropertySimpleValue" img="Web.gif"/>
    </ADDR>
    <PHON type="PropertySimpleValue" img="Phone.gif"/>
    <AGE type="PropertyAge" img="Time.gif" cardinality="0:1"/>
@@ -213,11 +219,16 @@
  ************    Medias   ************
  *************************************
  <OBJE type="Media" img="Media.gif">
-  <TITL default="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
-  <FORM default="1" type="PropertyChoiceValue" img="Format.gif" cardinality="0:1"/>
-  <BLOB default="1" type="PropertyBlob" img="Blob.gif" cardinality="0:1"/>
+  <TITL default="0" hide="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1" gedcom="5.5"/>
+  <FORM default="0" hide="1" type="PropertyChoiceValue" img="Format.gif" cardinality="0:1" gedcom="5.5"/>
+  <BLOB default="0" hide="1" type="PropertyBlob" img="Blob.gif" cardinality="0:1" gedcom="5.5"/>
+  <FILE default="1" xref="0" type="PropertyFile" img="Disk.gif" cardinality="0:M" gedcom="5.5.1">
+    <FORM default="1" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
+    <TITL default="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
+  </FILE>
   +++++++++++++ References +++++++++++++
   <NOTE super="INDI:NOTE"/>
+  <SOUR super="INDI:SOUR"/>
   <REFN super="INDI:REFN"/>
   <RIN super="INDI:RIN"/>
   +++++++++++++ change +++++++++++++

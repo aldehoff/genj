@@ -55,7 +55,7 @@ public class FileBean extends PropertyBean {
   private ImageWidget preview = new ImageWidget();
   
   /** a checkbox as accessory */
-  private JCheckBox updateFormatAndTitle = new JCheckBox(resources.getString("file.update"), false);
+  private JCheckBox updateMeta = new JCheckBox(resources.getString("file.update"), true);
   
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
@@ -102,7 +102,7 @@ public class FileBean extends PropertyBean {
     setLayout(new BorderLayout());
     
     // setup chooser
-    chooser.setAccessory(updateFormatAndTitle);
+    chooser.setAccessory(updateMeta);
     chooser.addChangeListener(changeSupport);
     chooser.addActionListener(doPreview);
 
@@ -203,10 +203,10 @@ public class FileBean extends PropertyBean {
     String value = chooser.getFile().toString();
     
     if (property instanceof PropertyFile)
-      ((PropertyFile)property).setValue(value, updateFormatAndTitle.isSelected());
+      ((PropertyFile)property).setValue(value, updateMeta.isSelected());
     
     if (property instanceof PropertyBlob) 
-      ((PropertyBlob)property).load(value, updateFormatAndTitle.isSelected());
+      ((PropertyBlob)property).load(value, updateMeta.isSelected());
 
     // update preview
     File file = getProperty().getGedcom().getOrigin().getFile(value);

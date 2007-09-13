@@ -185,7 +185,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   /**
    * Sets this property's value
    */
-  public boolean load(String file, boolean updateSubs) {
+  public boolean load(String file, boolean updateMeta) {
     
     String old = getValue();
 
@@ -210,16 +210,10 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     
     // check
     Property media = getParent();
-    if (!updateSubs||!(media instanceof PropertyMedia||media instanceof Media)) 
+    if (!updateMeta||!(media instanceof PropertyMedia||media instanceof Media)) 
       return true;
       
-    // title?
-    Property title = media.getProperty("TITL");
-    if (title==null) 
-      title = media.addProperty(new PropertySimpleValue());
-    title.setValue(new File(file).getName());
-      
-    // format?
+    // format? this is all gedcom 5.5. style
     Property format = media.getProperty("FORM");
     if (format==null)
       format = media.addProperty(new PropertySimpleValue()); 

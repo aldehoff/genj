@@ -168,7 +168,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
           type==PropertySource.class||
           type==PropertySubmitter.class||
           type==PropertyFamilyChild.class||
-          (type==PropertyMedia.class&&genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities) 
+          type==PropertyMedia.class 
         ) {
         // .. make sure @@ forces a non-substitute!
         result.add(new CreateXReference(property,subs[s].getTag(), manager));
@@ -219,7 +219,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
           type==PropertyRepository.class||
           type==PropertySource.class||
           type==PropertySubmitter.class||
-          (type==PropertyMedia.class&&genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities) 
+          type==PropertyMedia.class
           ) {
         result.add(new CreateXReference(entity,subs[s].getTag(), manager));
       }
@@ -248,8 +248,7 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
     result.add(new CreateEntity(gedcom, Gedcom.INDI, manager));
     result.add(new CreateEntity(gedcom, Gedcom.FAM , manager));
     result.add(new CreateEntity(gedcom, Gedcom.NOTE, manager));
-    if (genj.gedcom.Options.getInstance().isAllowNewOBJEctEntities)
-      result.add(new CreateEntity(gedcom, Gedcom.OBJE, manager));
+    result.add(new CreateEntity(gedcom, Gedcom.OBJE, manager));
     result.add(new CreateEntity(gedcom, Gedcom.REPO, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));

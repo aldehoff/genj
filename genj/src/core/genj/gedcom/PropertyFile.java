@@ -188,26 +188,25 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * Sets this property's value
    */
-  public void setValue(String value, boolean updateSubs) {
+  public void setValue(String value, boolean updateMeta) {
     
     // set value
     setValue(value);
     
     // check
     Property media = getParent();
-    if (!updateSubs||!media.getTag().equals("OBJE")) 
+    if (!updateMeta||!media.getTag().equals("OBJE")) 
       return;
       
-    // title?
-    Property title = media.getProperty("TITL");
-    if (title==null) 
-      title = media.addProperty(new PropertySimpleValue("TITL"));
-    title.setValue(new File(file).getName());
-      
-    // format?
-    Property format = media.getProperty("FORM");
-    if (format==null)
-      format = media.addProperty(new PropertySimpleValue("FORM")); 
+    // format 5.5.1 style?
+    Property format = getProperty("FORM");
+    if (format==null) {
+      // maybe 5.5 style?
+      format = getParent().getProperty("FORM");
+      // fallback to 5.5.1
+      if (format==null)
+        format = addProperty(new PropertySimpleValue("FORM")); 
+    }
     format.setValue(PropertyFile.getSuffix(file));
     
     // done  

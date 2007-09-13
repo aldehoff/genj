@@ -24,7 +24,6 @@ import genj.common.PropertyTableWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Options;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.Registry;
@@ -204,11 +203,8 @@ public class TableView extends JPanel implements ToolBarSupport  {
     
     for (int i=0, j=1;i<Gedcom.ENTITIES.length;i++) {
       String tag = Gedcom.ENTITIES[i];
-      // don't offer OBJEct button unless there are some of those already or the option to create them is selected
-      if (!tag.equals("OBJE")||!gedcom.getEntities(tag).isEmpty()||Options.getInstance().isAllowNewOBJEctEntities) {
-        SwitchMode change = new SwitchMode(getMode(tag));
-        bh.create(change);
-      }
+      SwitchMode change = new SwitchMode(getMode(tag));
+      bh.create(change);
     }
     
     // done
