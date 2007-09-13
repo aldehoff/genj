@@ -45,6 +45,8 @@ public class Grammar {
   /** singleton */
   private static Grammar instance;
   
+  private String version;
+  
   /** meta roots */
   private Map tag2root = new HashMap();
   
@@ -54,6 +56,13 @@ public class Grammar {
    * Singleton Constructor
    */
   private Grammar() {
+  }
+  
+  /**
+   * Version access
+   */
+  public String getVersion() {
+    return version;
   }
   
   /**
@@ -182,6 +191,9 @@ public class Grammar {
       if (stack==null) {
         if (!"GEDCOM".equals(qName)) 
           throw new RuntimeException("expected GEDCOM");
+        version = attributes.getValue("version");
+        if (version==null)
+          throw new RuntimeException("expected GEDCOM version");
         stack = new Stack();
         return;
       }

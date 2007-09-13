@@ -1,4 +1,4 @@
-<GEDCOM>
+<GEDCOM version="5.5.1">
  ELEMENT - gedcom element name
  type - the java type (without package) wrapping that element (defaults to genj.gedcom.PropertySimpleValue)
  img - the image to use for that wrapped property
