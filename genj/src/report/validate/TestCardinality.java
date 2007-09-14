@@ -57,6 +57,8 @@ public class TestCardinality extends Test {
     // check children that are missing
     MetaProperty[] metas = prop.getNestedMetaProperties(0);
     for (int i = 0; i < metas.length; i++) {
+      if (!metas[i].isVersion(report.getGedcomVersion()))
+        continue;
       if (metas[i].isRequired() && seen.get(metas[i].getTag())==null) {
         String txt = report.translate("err.cardinality.min", new String[]{ prop.getTag(), metas[i].getTag(), metas[i].getCardinality() });
         issues.add(new ViewContext(prop).setImage(metas[i].getImage()).setText(txt));

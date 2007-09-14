@@ -213,6 +213,14 @@ public class MetaProperty implements Comparable {
   }
   
   /**
+   * Check gedcom version
+   */
+  public boolean isVersion(String version) {
+    String v = getAttribute("gedcom");
+    return v==null || v.equals(version);
+  }
+  
+  /**
    * Check if this is required - cardinality 1:*
    */
   public boolean isRequired() {

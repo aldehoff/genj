@@ -30,6 +30,10 @@ import java.util.List;
  * anomalies and 'standard' compliancy issues
  */
 public class ReportValidate extends Report {
+  
+  public int gedcomVersion = 0;
+  
+  public final static String[] gedcomVersions = { "5.5", "5.5.1" };
 
   /** whether we consider an empty value to be valid */
   public boolean isEmptyValueValid = true;
@@ -167,6 +171,13 @@ public class ReportValidate extends Report {
 
     // show results
     results(gedcom, issues);
+  }
+  
+  /**
+   * current version
+   */
+  /*package*/ String getGedcomVersion() {
+    return gedcomVersions[gedcomVersion];
   }
 
   /**
