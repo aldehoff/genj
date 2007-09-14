@@ -88,21 +88,21 @@
    <PLAC default="0"/>
    <ADDR default="1"/>
   </RESI>
-  <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT" cardinality="0:M">
+  <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT" cardinality="0:M"/>
+  <RELI type="PropertyChoiceValue" img="Religion.gif" super="INDI:BIRT" cardinality="0:1">
    <DATE default="0"/>
    <PLAC default="0"/>
-  </OCCU>
-  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:OCCU" cardinality="0:1"/>
-  <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:OCCU" cardinality="0:1"/>
-  <EDUC type="PropertyChoiceValue" img="Education.gif" super="INDI:OCCU"/>
-  <IDNO type="PropertySimpleValue" img="IDNumber.gif" super="INDI:OCCU"/>
-  <NATI type="PropertyChoiceValue" img="Nationality.gif" super="INDI:OCCU" cardinality="0:1"/>
-  <NCHI type="PropertySimpleValue" img="NumChildren.gif" super="INDI:OCCU" cardinality="0:1"/>
-  <PROP type="PropertyChoiceValue" img="Property.gif" super="INDI:OCCU" cardinality="0:1"/>
-  <RELI type="PropertyChoiceValue" img="Religion.gif" super="INDI:OCCU" cardinality="0:1"/>
-  <SSN  type="PropertySimpleValue" img="SSN.gif" super="INDI:OCCU" cardinality="0:1"/>
-  <TITL type="PropertyChoiceValue" img="Title.gif" super="INDI:OCCU"/>
-  <NMR  type="PropertySimpleValue" img="Marriage.gif" super="INDI:OCCU" cardinality="0:1"/>
+  </RELI>
+  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:RELI" cardinality="0:1"/>
+  <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:RELI" cardinality="0:1"/>
+  <EDUC type="PropertyChoiceValue" img="Education.gif" super="INDI:RELI"/>
+  <IDNO type="PropertySimpleValue" img="IDNumber.gif" super="INDI:RELI"/>
+  <NATI type="PropertyChoiceValue" img="Nationality.gif" super="INDI:RELI" cardinality="0:1"/>
+  <NCHI type="PropertySimpleValue" img="NumChildren.gif" super="INDI:RELI" cardinality="0:1"/>
+  <PROP type="PropertyChoiceValue" img="Property.gif" super="INDI:RELI" cardinality="0:1"/>
+  <SSN  type="PropertySimpleValue" img="SSN.gif" super="INDI:RELI" cardinality="0:1"/>
+  <TITL type="PropertyChoiceValue" img="Title.gif" super="INDI:RELI"/>
+  <NMR  type="PropertySimpleValue" img="Marriage.gif" super="INDI:RELI" cardinality="0:1"/>
   +++++++++++++ More Events +++++++++++++
   <GRAD cardinality="0:M" img="Graduation.gif" super="INDI:BIRT"/>
   <CHR  hide="1" cardinality="0:1" img="Baptism.gif" super="INDI:GRAD">
