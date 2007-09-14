@@ -21,6 +21,8 @@ package genj.gedcom;
 
 import genj.util.swing.ImageIcon;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -142,26 +144,46 @@ public class PropertyFile extends Property implements IconValueAvailable {
       // Open InputStream
       InputStream in = null;
       try {
-        // try to create an image if smaller than max load
+        
+        // read image - this might be big
         in = getGedcom().getOrigin().open(file);
-        if (in.available()<getMaxValueAsIconSize(false)) {
-           
-          result = new ImageIcon(file, in);
+        long size = in.available();
+        result = new ImageIcon(file, in);
+        
+        // make sure the result makes sense
+        int w = result.getIconWidth();
+        int h = result.getIconHeight();
+        if (w<=0||h<=0)
+          throw new IllegalArgumentException();
           
-          // make sure the result makes sense
-          if (result.getIconWidth()<=0||result.getIconHeight()<=0)
-            result = null;
+        // scale down if too big
+        int max = getMaxValueAsIconSize(false);
+        if (max>0 && size>max) {
+          double factor = Math.sqrt(max / (double)size) / 4; // INT_RGB with 4 bytes per pixel
+          w = (int)Math.max(16, w * (double)factor);
+          h = (int)Math.max(16, h * (double)factor );
+        
+          BufferedImage thumb = new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);
+          Graphics2D g = (Graphics2D)thumb.getGraphics();
+          g.scale(factor, factor);
+          result.paintIcon(g, 0, 0);
+          result = new ImageIcon(thumb);
         }
+        
       } catch (Throwable t) {
+        result = null;
       } finally {
+        // cleanup
         if (in!=null) try { in.close(); } catch (IOException ioe) {};
       }
+      
+      // done
     }
 
     // done
     return result;
   }
-
+  
   /**
    * Sets this property's value
    */

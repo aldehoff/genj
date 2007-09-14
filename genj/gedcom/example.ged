@@ -1,16 +1,16 @@
 0 HEAD
 1 SOUR GENJ
-2 VERS 2.3.x
+2 VERS ?
 2 NAME GenealogyJ
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 7 JUN 2005
-2 TIME 16:51:00
+1 DATE 13 SEP 2007
+2 TIME 18:38:53
 1 SUBM @B1@
 1 FILE example.ged
 1 GEDC
-2 VERS 5.5
+2 VERS 5.5.1
 2 FORM Lineage-Linked
 1 CHAR ANSEL
 1 LANG German
@@ -24,6 +24,13 @@
 2 PLAC Hamburg,HH
 1 OCCU Pilot
 1 FAMS @F1@
+1 OBJE
+2 FILE C:/Documents and Settings/NMeier/My Documents/My Pictures/Factor5.JPG
+3 FORM JPG
+2 NOTE
+1 CHAN
+2 DATE 13 SEP 2007
+3 TIME 22:38:35
 0 @I2@ INDI
 1 NAME Magdalene /Hauschildt/
 1 SEX F

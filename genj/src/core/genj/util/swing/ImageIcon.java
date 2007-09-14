@@ -61,10 +61,8 @@ public class ImageIcon extends javax.swing.ImageIcon {
   /**
    * Private special
    */
-  private ImageIcon(ImageIcon original, Image copy) {
+  public ImageIcon(Image copy) {
     super(copy);
-    dpi = original.dpi;
-    setDescription(original.getDescription());
   }
   
   /** 
@@ -199,7 +197,10 @@ public class ImageIcon extends javax.swing.ImageIcon {
     ImageProducer prod = new FilteredImageSource(getImage().getSource(), filter);
     Image grayImage = Toolkit.getDefaultToolkit().createImage(prod);
     
-    return new ImageIcon(this, grayImage);
+    ImageIcon result = new ImageIcon(grayImage);
+    result.dpi = dpi;
+    result.setDescription(getDescription());
+    return result;
   }
   
   /**
@@ -228,7 +229,9 @@ public class ImageIcon extends javax.swing.ImageIcon {
     g.drawImage(image2, 0, 0, null);
     g.dispose();
 
-    result = new ImageIcon(this, composite);
+    result = new ImageIcon(composite);
+    result.dpi = dpi;
+    result.setDescription(getDescription());
 
     // remember
     overlays.put(overlay, result);

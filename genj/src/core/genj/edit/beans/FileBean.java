@@ -28,7 +28,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageWidget;
 import genj.view.ViewContext;
-import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -79,19 +78,6 @@ public class FileBean extends PropertyBean {
       if (relative!=null)
         chooser.setFile(relative);
       
-      // and warn about size
-      WindowManager wm = WindowManager.getInstance(FileBean.this);
-      if (wm!=null&&file.exists()&&file.length()>PropertyFile.getMaxValueAsIconSize(false)) {
-      
-        String txt = resources.getString("file.max", new String[]{
-          file.getName(),
-          String.valueOf(file.length()/1024+1),
-          String.valueOf(PropertyFile.getMaxValueAsIconSize(true)),
-        }); 
-      
-        wm.openDialog(null,null,WindowManager.INFORMATION_MESSAGE,txt,Action2.okOnly(), FileBean.this);
-      }
-
       // done
     }
   };
