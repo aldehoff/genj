@@ -23,6 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomListenerAdapter;
+import genj.gedcom.Property;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
@@ -85,6 +86,16 @@ public class EntityView extends JPanel implements WindowBroadcastListener, ToolB
         setEntity(gedcom.getFirstEntity(Gedcom.INDI));
       }
       repaint();
+    }
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+      if (property.getEntity()==EntityView.this.entity)
+        repaint();
+    }
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+      gedcomPropertyChanged(gedcom, property);
+    }
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+      gedcomPropertyChanged(gedcom, property);
     }
   };
   
