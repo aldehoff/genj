@@ -270,7 +270,7 @@ public class ImageWidget extends JPanel {
         Dimension avail = scroll.getSize();
         double zx = avail.width/(double)dim.width;
         double zy = avail.height/(double)dim.height;
-        scale = Math.min(zx,zy);
+        scale = Math.min(1, Math.min(zx,zy));
       } else {
         scale = zoom;
       }
