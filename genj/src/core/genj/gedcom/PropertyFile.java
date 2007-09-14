@@ -159,14 +159,16 @@ public class PropertyFile extends Property implements IconValueAvailable {
         // scale down if too big
         int max = getMaxValueAsIconSize(false);
         if (max>0 && size>max) {
-          double factor = Math.sqrt(max / (double)size) / 4; // INT_RGB with 4 bytes per pixel
-          w = (int)Math.max(16, w * (double)factor);
-          h = (int)Math.max(16, h * (double)factor );
-        
+          
+          double ratio = w / (double)h;
+          int maxarea = Math.max(32*32, max/4);
+          
+          w = (int)(Math.sqrt(maxarea * ratio   ));
+          h = (int)(Math.sqrt(maxarea / ratio ));
+            
           BufferedImage thumb = new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);
           Graphics2D g = (Graphics2D)thumb.getGraphics();
-          g.scale(factor, factor);
-          result.paintIcon(g, 0, 0);
+          g.drawImage(result.getImage(), 0, 0, w, h, null);
           result = new ImageIcon(thumb);
         }
         
