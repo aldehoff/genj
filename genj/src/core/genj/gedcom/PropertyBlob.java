@@ -25,6 +25,7 @@ import genj.util.swing.ImageIcon;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 
 /**
  * Gedcom Property : BLOB
@@ -33,11 +34,14 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   
   private final static String TAG = "BLOB";
 
-  /** the content (either base64, raw bytes or an ImageIcon */
+  /** the content (either base64 or raw bytes) */
   private Object content = "";
 
+  /** a soft reference to image icon */
+  private SoftReference icon;
+
   /** whether was checked for image */
-  private boolean isIconChecked;
+  private boolean noIconAvailable;
 
   /**
    * Returns the data of this Blob
@@ -47,10 +51,6 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     // Already present ?
     if (content instanceof byte[])
       return (byte[])content;
-
-    // A decoded image?
-    if (content instanceof ImageIcon)
-      return ((ImageIcon)content).getBytes();
 
     // Decode Base64
     try {
@@ -94,10 +94,6 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     if (content instanceof byte[])
       return ((byte[])content).length+" Raw Bytes";
 
-    // Decoded image?
-    if (content instanceof ImageIcon)
-      return ((ImageIcon)content).getByteSize()+" Image Bytes";
-      
     // gotta be base64 string
     return content.toString().length()+" Base64 Bytes";
   }
@@ -107,30 +103,40 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
    */
   public synchronized ImageIcon getValueAsIcon() {
 
-    // Already image?
-    if (content instanceof ImageIcon)
-      return (ImageIcon)content;
-
-    // Try to decode image only once
-    if (isIconChecked)
+    // was already identified as unavailable?
+    if (noIconAvailable)
       return null;
-    isIconChecked = true;
 
+    // soft ref'd image ?
+    if (icon!=null) {
+      ImageIcon result = (ImageIcon)icon.get();
+      if (result!=null)
+        return result;
+    }
+    
     // Data for Image ?
     byte[] bs = getBlobData();
-    if (bs==null)
+    if (bs==null) {
+      noIconAvailable = true;
       return null;
+    }
 
     // Try to create image
-    ImageIcon result = null;
     try {
-      result = new ImageIcon(getTitle(), bs);
-      content = result;
+      ImageIcon result = new ImageIcon(getTitle(), bs);
+
+      // remember
+      icon = new SoftReference(result);
+      
+      // done
+      return result;
+      
     } catch (Throwable t) {
     }
 
-    // done
-    return result;
+    // fall through
+    noIconAvailable = true;
+    return null;
   }
   
   /**
@@ -150,10 +156,6 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     if (content instanceof byte[])
       return new BlobIterator(Base64.encode((byte[])content));
       
-    // image?
-    if (content instanceof ImageIcon)
-      return new BlobIterator(Base64.encode(((ImageIcon)content).getBytes()));
-
     // string!
     return new BlobIterator(content.toString());
   }
@@ -167,7 +169,8 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
 
     // Successfull new information
     content = value;
-    isIconChecked = false;
+    icon = null;
+    noIconAvailable = false;
 
     // Remember changed property
     propagatePropertyChanged(this, old);
@@ -190,7 +193,8 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     String old = getValue();
 
     // Reset state
-    isIconChecked = false;
+    noIconAvailable = false;
+    icon = null;
     
     // file?
     if (file.length()!=0) {
@@ -216,7 +220,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     // format? this is all gedcom 5.5. style
     Property format = media.getProperty("FORM");
     if (format==null)
-      format = media.addProperty(new PropertySimpleValue()); 
+      format = media.addProperty(new PropertySimpleValue("FORM")); 
     format.setValue(PropertyFile.getSuffix(file));
     
     // done  

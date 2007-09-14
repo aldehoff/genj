@@ -55,9 +55,6 @@ public class ImageIcon extends javax.swing.ImageIcon {
   /** cached overlayed icons */
   private Map overlays = new WeakHashMap();
   
-  /** bytes (if available) */
-  private byte[] bytes;
-  
   /**
    * Private special
    */
@@ -82,7 +79,6 @@ public class ImageIcon extends javax.swing.ImageIcon {
 
     // keep name & bytes
     setDescription(naMe);
-    bytes = data;
 
     // sniff resolution
     String msg;
@@ -145,20 +141,6 @@ public class ImageIcon extends javax.swing.ImageIcon {
       (int)(sizeInInches.getWidth()*dpiTarget.x), 
       (int)(sizeInInches.getHeight()*dpiTarget.y)
     );
-  }
-  
-  /**
-   * Size in bytes (might be unknown -1)
-   */
-  public int getByteSize() {
-    return bytes!=null?bytes.length:-1;
-  }
-  
-  /** 
-   * byes - only non-null if created from byte data
-   */
-  public byte[] getBytes() {
-    return bytes;
   }
   
   /**
