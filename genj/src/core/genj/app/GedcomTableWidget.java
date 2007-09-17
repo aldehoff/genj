@@ -285,7 +285,7 @@ import spin.Spin;
      */
     public Object getValueAt(int row, int col) {
       Gedcom gedcom = getGedcom(row);
-      if (col==0) return gedcom.getName() + (gedcom.hasUnsavedChanges() ? "*" : "" );
+      if (col==0) return gedcom.getName() + (gedcom.hasChanged() ? "*" : "" );
       return new Integer(gedcom.getEntities(Gedcom.ENTITIES[col-1]).size());
     }
     

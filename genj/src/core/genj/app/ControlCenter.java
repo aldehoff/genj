@@ -422,7 +422,7 @@ public class ControlCenter extends JPanel {
         // next gedcom
         Gedcom gedcom = (Gedcom) gedcoms.next();
         // changes need saving?
-        if (gedcom.hasUnsavedChanges()) {
+        if (gedcom.hasChanged()) {
           // close file officially
           int rc = windowManager.openDialog(
               "confirm-exit", null, WindowManager.WARNING_MESSAGE, 
@@ -443,7 +443,7 @@ public class ControlCenter extends JPanel {
                   // super first
                   super.postExecute(preExecuteResult);
                   // stop still unsaved changes that didn't make it through saving
-                  if (gedcomBeingSaved.hasUnsavedChanges()) 
+                  if (gedcomBeingSaved.hasChanged()) 
                     return;
                 } finally {
                   // unblock exit
@@ -1170,7 +1170,7 @@ public class ControlCenter extends JPanel {
         return;
   
       // changes we should care about?      
-      if (gedcom.hasUnsavedChanges()) {
+      if (gedcom.hasChanged()) {
         
         int rc = windowManager.openDialog(null,null,WindowManager.WARNING_MESSAGE,
             resources.getString("cc.savechanges?", gedcom.getName()),
@@ -1188,7 +1188,7 @@ public class ControlCenter extends JPanel {
               // super first
               super.postExecute(preExecuteResult);
               // add back if still changed
-              if (gedcomBeingSaved.hasUnsavedChanges())
+              if (gedcomBeingSaved.hasChanged())
                 addGedcom(gedcomBeingSaved);
             }
           }.trigger();

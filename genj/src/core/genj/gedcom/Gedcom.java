@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.128 $ $Author: nmeier $ $Date: 2007-09-17 04:17:19 $
+ * $Revision: 1.129 $ $Author: nmeier $ $Date: 2007-09-17 04:24:21 $
  */
 package genj.gedcom;
 
@@ -156,6 +156,7 @@ public class Gedcom implements Comparable {
   private Map tag2id2entity = new HashMap();
   
   /** currently collected undos and redos */
+  private boolean isDirty = false;
   private List 
     undoHistory = new ArrayList(),
     redoHistory = new ArrayList();
@@ -958,8 +959,8 @@ public class Gedcom implements Comparable {
   /**
    * Has the gedcom unsaved changes ?
    */
-  public boolean hasUnsavedChanges() {
-    return !undoHistory.isEmpty();
+  public boolean hasChanged() {
+    return isDirty || !undoHistory.isEmpty();
   }
 
   /**
@@ -969,6 +970,7 @@ public class Gedcom implements Comparable {
     
     // do it
     undoHistory.clear();
+    isDirty = false;
     
     // no lock? we're done
     if (lock==null)
@@ -1045,8 +1047,11 @@ public class Gedcom implements Comparable {
       // keep undos (within limits)
       if (!lock.undos.isEmpty()) {
         undoHistory.add(lock.undos);
-        while (undoHistory.size()>Options.getInstance().getNumberOfUndos())
+        
+        while (undoHistory.size()>Options.getInstance().getNumberOfUndos()) {
           undoHistory.remove(0);
+          isDirty = true;
+        }
       }
       
       // let listeners know
