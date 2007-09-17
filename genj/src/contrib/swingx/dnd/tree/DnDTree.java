@@ -386,10 +386,11 @@ public class DnDTree extends JTree implements Autoscroll {
 
             getModel().addTreeModelListener(this);
             try {
+                Object parent = null;
                 if (hasDnDModel() && parentPath != null) {
                     dtde.acceptDrop(action);
                     
-                    Object parent = parentPath.getLastPathComponent();
+                    parent = parentPath.getLastPathComponent();
                     Transferable transferable = dtde.getTransferable();
 
                     if ((getDnDModel().getDropActions(transferable, parent, childIndex) & action) != 0) {
@@ -402,10 +403,12 @@ public class DnDTree extends JTree implements Autoscroll {
     
                 dtde.dropComplete(complete);
                 
-                if (!insertions.isEmpty()) {
+                if (!insertions.isEmpty()&&parent!=null) {
                     getSelectionModel().clearSelection();
                     for (int i = 0; i < insertions.size(); i++) {
-                        getSelectionModel().addSelectionPath((TreePath)insertions.get(i));
+                      TreePath path = (TreePath)insertions.get(i);
+                      if (getModel().getIndexOfChild(parent, path.getLastPathComponent())>=0)
+                        getSelectionModel().addSelectionPath(path);
                     }
                 }
             } catch (Exception ex) {
