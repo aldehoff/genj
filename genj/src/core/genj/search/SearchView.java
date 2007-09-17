@@ -327,7 +327,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
      */
     private ActionPath(String path) {
       tagPath = new TagPath(path);
-      MetaProperty meta = Grammar.getMeta(tagPath);
+      MetaProperty meta = Grammar.V55.getMeta(tagPath);
       setText(meta.getName());
       setImage(meta.getImage());
     }

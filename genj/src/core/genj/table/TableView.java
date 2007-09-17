@@ -61,7 +61,7 @@ public class TableView extends JPanel implements ToolBarSupport  {
   private Resources resources = Resources.get(this);
   
   /** the gedcom we're looking at */
-  private Gedcom gedcom;
+  /*package*/ Gedcom gedcom;
   
   /** the manager around us */
   private ViewManager manager;

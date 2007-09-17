@@ -43,9 +43,9 @@ public class Indi extends Entity {
     PATH_INDIDEATDATE = new TagPath("INDI:DEAT:DATE");
 
   public final static ImageIcon
-    IMG_MALE    = Grammar.getMeta(PATH_INDI).getImage("male"),
-    IMG_FEMALE  = Grammar.getMeta(PATH_INDI).getImage("female"),
-    IMG_UNKNOWN = Grammar.getMeta(PATH_INDI).getImage();
+    IMG_MALE    = Grammar.V55.getMeta(PATH_INDI).getImage("male"),
+    IMG_FEMALE  = Grammar.V55.getMeta(PATH_INDI).getImage("female"),
+    IMG_UNKNOWN = Grammar.V55.getMeta(PATH_INDI).getImage();
     
   /**
    * @return a PropertyDate corresponding to the INDI:BIRT:DATE property.  

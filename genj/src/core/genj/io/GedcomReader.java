@@ -24,6 +24,7 @@ import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
@@ -367,8 +368,22 @@ public class GedcomReader implements Trackable {
     // 2 VERSion and 
     // 2 FORMat
     Property gedc = header.getProperty("GEDC");
-    if (gedc==null||gedc.getProperty("VERS")==null||gedc.getProperty("FORM")==null)
+    Property vers = gedc.getProperty("VERS");
+    if (gedc==null||vers==null||gedc.getProperty("FORM")==null)
       warnings.add(new Warning(0, RESOURCES.getString("read.warn.badgedc"), gedcom));
+    else {
+      String v = vers.getValue();
+      if ("5.5".equals(v))
+        gedcom.setGrammar(Grammar.V55);
+      else if ("5.5.1".equals(v))
+        gedcom.setGrammar(Grammar.V551);
+      else {
+        String s = RESOURCES.getString("read.warn.badversion", new String[] { v, gedcom.getGrammar().getVersion() } );
+        warnings.add(new Warning(0, RESOURCES.getString("read.warn.badversion", new String[] { v, gedcom.getGrammar().getVersion() } ), gedcom));
+        LOG.warning(s);      
+      }
+    }
+    
         
     // check 1 LANG
     String lang = header.getPropertyValue("LANG");

@@ -97,8 +97,8 @@ public class PropertyEvent extends Property {
   /**
    * Returns the list of paths which identify PropertyEvents
    */
-  public static TagPath[] getTagPaths() {
-    return Grammar.getAllPaths(null, PropertyEvent.class);  
+  public static TagPath[] getTagPaths(Gedcom gedcom) {
+    return gedcom.getGrammar().getAllPaths(null, PropertyEvent.class);  
   }
   
   /**

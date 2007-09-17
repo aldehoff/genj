@@ -23,7 +23,6 @@ import genj.Version;
 import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.time.PointInTime;
@@ -240,7 +239,7 @@ public class GedcomWriter implements Trackable {
       writeLine( "1 SUBM @"+gedcom.getSubmitter().getId()+'@');
     writeLine( "1 FILE "+file);
     writeLine( "1 GEDC");
-    writeLine( "2 VERS "+Grammar.getInstance().getVersion());
+    writeLine( "2 VERS "+gedcom.getGrammar().getVersion());
     writeLine( "2 FORM Lineage-Linked");
     writeLine( "1 CHAR "+encoding);
     if (gedcom.getLanguage()!=null)

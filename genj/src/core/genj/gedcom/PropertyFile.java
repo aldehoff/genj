@@ -34,7 +34,7 @@ import java.lang.ref.SoftReference;
 public class PropertyFile extends Property implements IconValueAvailable {
 
   /** standard image */
-  public final static ImageIcon DEFAULT_IMAGE = Grammar.getMeta(new TagPath("INDI:OBJE:FILE")).getImage();
+  public final static ImageIcon DEFAULT_IMAGE = Grammar.V55.getMeta(new TagPath("INDI:OBJE:FILE")).getImage();
 
   /** expected tag */
   private final static String TAG = "FILE";

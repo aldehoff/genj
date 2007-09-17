@@ -163,7 +163,7 @@ public class PathTreeWidget extends JScrollPane {
       if (value instanceof TagPath) {
         TagPath path = (TagPath)value; 
         setText( path.getLast() );
-        setIcon( Grammar.getMeta(path).getImage() );
+        setIcon( Grammar.V55.getMeta(path).getImage() );
         checkbox.setSelected(model.getSelection().contains(value));
         panel.invalidate(); // make sure no preferred side is cached
       }      

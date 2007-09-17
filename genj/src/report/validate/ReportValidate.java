@@ -10,7 +10,6 @@ package validate;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.Submitter;
@@ -31,10 +30,6 @@ import java.util.List;
  */
 public class ReportValidate extends Report {
   
-  public int gedcomVersion = 0;
-  
-  public final static String[] gedcomVersions = { "5.5", "5.5.1" };
-
   /** whether we consider an empty value to be valid */
   public boolean isEmptyValueValid = true;
 
@@ -104,7 +99,7 @@ public class ReportValidate extends Report {
     List issues = new ArrayList();
     for (int i=0;i<props.length;i++) {
       TagPath path = props[i].getPath();
-      test(props[i], path, Grammar.getMeta(path), tests, issues);
+      test(props[i], path, props[i].getGedcom().getGrammar().getMeta(path), tests, issues);
     }
 
     // show results
@@ -126,7 +121,7 @@ public class ReportValidate extends Report {
     List issues = new ArrayList();
     for (int i=0;i<entities.length;i++) {
       TagPath path = new TagPath(entities[i].getTag());
-      test(entities[i], path, Grammar.getMeta(path), tests, issues);
+      test(entities[i], path, entities[i].getGedcom().getGrammar().getMeta(path), tests, issues);
     }
 
     // show results
@@ -165,7 +160,7 @@ public class ReportValidate extends Report {
       for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
         Entity e = (Entity)es.next();
         TagPath path = new TagPath(e.getTag());
-        test(e, path, Grammar.getMeta(path), tests, issues);
+        test(e, path, gedcom.getGrammar().getMeta(path), tests, issues);
       }
     }
 
@@ -173,13 +168,6 @@ public class ReportValidate extends Report {
     results(gedcom, issues);
   }
   
-  /**
-   * current version
-   */
-  /*package*/ String getGedcomVersion() {
-    return gedcomVersions[gedcomVersion];
-  }
-
   /**
    * show validation results
    */
@@ -227,7 +215,7 @@ public class ReportValidate extends Report {
         continue;
       // check if Gedcom grammar allows it
       if (!meta.allows(ctag)) {
-        String msg = translate("err.notgedcom", new String[]{ctag,path.toString()});
+        String msg = translate("err.notgedcom", new String[]{ctag, prop.getGedcom().getGrammar().getVersion(), path.toString()});
         issues.add(new ViewContext(child).setText(msg).setImage(MetaProperty.IMG_ERROR));
         continue;
       }

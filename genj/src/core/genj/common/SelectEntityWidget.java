@@ -271,9 +271,9 @@ public class SelectEntityWidget extends JPanel {
       // image
       MetaProperty meta;
       if (tagPath.length()>1&&tagPath.getLast().equals(PropertyDate.TAG))
-        meta = Grammar.getMeta(new TagPath(tagPath, tagPath.length()-1));
+        meta = Grammar.V55.getMeta(new TagPath(tagPath, tagPath.length()-1));
       else
-        meta = Grammar.getMeta(tagPath);
+        meta = Grammar.V55.getMeta(tagPath);
       setImage(meta.getImage());
       
       // text

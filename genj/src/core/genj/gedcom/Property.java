@@ -997,7 +997,7 @@ public abstract class Property implements Comparable {
    */
   public MetaProperty getMetaProperty() {
     if (meta==null)
-      meta = Grammar.getMeta(getPath());    
+      meta = getGedcom().getGrammar().getMeta(getPath());    
     return meta;
   }
 

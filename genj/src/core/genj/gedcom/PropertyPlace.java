@@ -34,7 +34,7 @@ public class PropertyPlace extends PropertyChoiceValue {
   private final static boolean USE_SPACES = Options.getInstance().isUseSpacedPlaces;
 
   public final static ImageIcon
-    IMAGE = Grammar.getMeta(new TagPath("INDI:BIRT:PLAC")).getImage();
+    IMAGE = Grammar.V55.getMeta(new TagPath("INDI:BIRT:PLAC")).getImage();
 
   public final static String
     JURISDICTION_SEPARATOR = ",";

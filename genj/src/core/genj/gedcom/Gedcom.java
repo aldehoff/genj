@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.127 $ $Author: nmeier $ $Date: 2007-09-05 20:50:50 $
+ * $Revision: 1.128 $ $Author: nmeier $ $Date: 2007-09-17 04:17:19 $
  */
 package genj.gedcom;
 
@@ -141,6 +141,9 @@ public class Gedcom implements Comparable {
   
   /** submitter of this Gedcom */
   private Submitter submitter;
+  
+  /** grammar version */
+  private Grammar grammar = Grammar.V55;
 
   /** origin of this Gedcom */
   private Origin origin;
@@ -212,6 +215,20 @@ public class Gedcom implements Comparable {
    */
   public Origin getOrigin() {
     return origin;
+  }
+  
+  /**
+   * Set grammar
+   */
+  public void setGrammar(Grammar grammar) {
+    this.grammar = grammar;
+  }
+  
+  /**
+   * Return grammar
+   */
+  public Grammar getGrammar() {
+    return grammar;
   }
 
   /**
@@ -1228,7 +1245,7 @@ public class Gedcom implements Comparable {
   public static ImageIcon getEntityImage(String tag) {
     ImageIcon result = (ImageIcon)E2IMAGE.get(tag);
     if (result==null) {
-      result = Grammar.getMeta(new TagPath(tag)).getImage();
+      result = Grammar.V55.getMeta(new TagPath(tag)).getImage();
       E2IMAGE.put(tag, result);
     }
     return result;

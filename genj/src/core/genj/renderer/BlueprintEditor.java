@@ -23,7 +23,6 @@ import genj.common.PathTreeWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySimpleReadOnly;
@@ -238,7 +237,7 @@ public class BlueprintEditor extends JSplitPane {
       if (gedcom==null) return;
       // create a tree of available TagPaths
       PathTreeWidget tree = new PathTreeWidget();
-      TagPath[] paths = Grammar.getAllPaths(blueprint.getTag(), Property.class);
+      TagPath[] paths = gedcom.getGrammar().getAllPaths(blueprint.getTag(), Property.class);
       tree.setPaths(paths, new TagPath[0]);
       // Recheck with the user
       int option =  WindowManager.getInstance(getTarget()).openDialog(null,resources.getString("prop.insert.tip"),WindowManager.QUESTION_MESSAGE,tree,Action2.okCancel(),BlueprintEditor.this);        
@@ -307,7 +306,7 @@ public class BlueprintEditor extends JSplitPane {
       Object value = tag2value.get(path.getLast());
       if (value==null) 
         value = "Something";
-      MetaProperty meta = Grammar.getMeta(path, false);
+      MetaProperty meta = gedcom.getGrammar().getMeta(path, false);
       if (PropertyXRef.class.isAssignableFrom(meta.getType()))
         value = "@...@";
       try {

@@ -32,7 +32,7 @@ import javax.swing.ImageIcon;
 public class PropertyAge extends Property {
 
   public final static String TAG = "AGE";
-  public final static ImageIcon IMG = Grammar.getMeta(new TagPath("INDI:BIRT:AGE")).getImage();
+  public final static ImageIcon IMG = Grammar.V55.getMeta(new TagPath("INDI:BIRT:AGE")).getImage();
   
   /** the age */
   private Delta age = new Delta(0, 0, 0);

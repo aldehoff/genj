@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,8 +44,11 @@ import org.xml.sax.helpers.DefaultHandler;
 public class Grammar {
 
   /** singleton */
-  private static Grammar instance;
+  public final static Grammar 
+    V55 = new Grammar("./contrib/LDS/gedcom-5-5.xml"),
+    V551 = new Grammar("./contrib/LDS/gedcom-5-5-1.xml");
   
+  /** gedcom version */
   private String version;
   
   /** meta roots */
@@ -55,7 +59,17 @@ public class Grammar {
   /**
    * Singleton Constructor
    */
-  private Grammar() {
+  private Grammar(String in) {
+    
+    // parse descriptor (happening once only)
+    try {
+      SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+      parser.parse(new InputSource(new InputStreamReader(new FileInputStream(in))), new Parser());
+    } catch (Throwable t) {
+      Gedcom.LOG.log(Level.SEVERE, "couldn't parse grammar", t);
+      throw new Error(t);
+    }
+    
   }
   
   /**
@@ -66,48 +80,11 @@ public class Grammar {
   }
   
   /**
-   * Singleton access
-   */
-  public static Grammar getInstance() {
-    // already instantiated?
-    if (instance==null) {
-      
-      synchronized (Grammar.class) {
-        // check again
-        if (instance==null) {
-          
-          // instantiate now (a thread-local variable for now)
-          Grammar grammar = new Grammar();
-          
-          // parse descriptor (happening once only)
-          try {
-            SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-            parser.parse(new InputSource(new InputStreamReader(Grammar.class.getResourceAsStream("grammar.xml"))), grammar.new Parser());
-          } catch (Throwable t) {
-            Gedcom.LOG.log(Level.SEVERE, "couldn't parse grammar", t);
-            throw new Error(t);
-          }
-          
-          // now we got it
-          instance = grammar;
-
-        }
-      }
-    }
-    // done
-    return instance;
-  }
-  
-  public static void main(String[] args) {
-   getInstance();
-  }
-  
-  /**
    * All used paths for given type 
    * @param etag tag of entity or null for all
    */
-  public static TagPath[] getAllPaths(String etag, Class property) {
-    return getInstance().getPathsRecursively(etag, property);
+  public TagPath[] getAllPaths(String etag, Class property) {
+    return getPathsRecursively(etag, property);
   }
   
   private TagPath[] getPathsRecursively(String etag, Class property) {
@@ -147,15 +124,15 @@ public class Grammar {
   /**
    * Get a MetaProperty by path
    */
-  public static MetaProperty getMeta(TagPath path) {
+  public MetaProperty getMeta(TagPath path) {
     return getMeta(path, true);
   }
 
   /**
    * Get a MetaProperty by path
    */
-  public static MetaProperty getMeta(TagPath path, boolean persist) {
-    return getInstance().getMetaRecursively(path, persist);
+  public MetaProperty getMeta(TagPath path, boolean persist) {
+    return getMetaRecursively(path, persist);
   }
   
   /**

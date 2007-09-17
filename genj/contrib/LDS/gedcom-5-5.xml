@@ -1,4 +1,4 @@
-<GEDCOM version="5.5.1">
+<GEDCOM version="5.5">
  ELEMENT - gedcom element name
  type - the java type (without package) wrapping that element (defaults to genj.gedcom.PropertySimpleValue)
  img - the image to use for that wrapped property
@@ -34,9 +34,8 @@
     <QUAY xref="1" type="PropertySimpleValue" img="Blob.gif" cardinality="0:1"/>
     <OBJE xref="1" type="PropertyMedia" img="Media.gif">
      <TITL xref="0" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
-     <FORM default="0" hide="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1" gedcom="5.5"/>
+     <FORM default="0" hide="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
      <FILE default="1" xref="0" type="PropertyFile" img="Disk.gif" cardinality="0:M">
-       <FORM default="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1" gedcom="5.5.1"/>
      </FILE>
      <NOTE default="1" xref="0" type="PropertyNote" img="Note.gif" cardinality="0:1"/>
     </OBJE>
@@ -66,9 +65,6 @@
     <CTRY default="1" cardinality="0:1" type="PropertyChoiceValue" img="Place.gif"/>
    </ADDR>
    <PHON type="PropertySimpleValue" img="Phone.gif"/>
-   <EMAIL cardinality="0:3" type="PropertySimpleValue" img="Web.gif" gedcom="5.5.1"/>
-   <FAX cardinality="0:3" type="PropertySimpleValue" img="Phone.gif" gedcom="5.5.1"/>
-   <WWW cardinality="0:3" type="PropertySimpleValue" img="Web.gif" gedcom="5.5.1"/>
    <AGE type="PropertyAge" img="Time.gif" cardinality="0:1"/>
    <AGNC type="PropertySimpleValue" img="Phone.gif"/>
    <CAUS type="PropertyChoiceValue" img="Cause.gif"/>
@@ -218,13 +214,9 @@
  ************    Medias   ************
  *************************************
  <OBJE type="Media" img="Media.gif">
-  <TITL default="0" hide="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="1:1" gedcom="5.5"/>
-  <FORM default="0" hide="1" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1" gedcom="5.5"/>
-  <BLOB default="0" hide="1" type="PropertyBlob" img="Blob.gif" cardinality="1:1" gedcom="5.5"/>
-  <FILE default="1" xref="0" type="PropertyFile" img="Disk.gif" cardinality="0:M" gedcom="5.5.1">
-    <FORM default="1" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
-    <TITL default="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
-  </FILE>
+  <TITL default="0" hide="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="1:1"/>
+  <FORM default="0" hide="1" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
+  <BLOB default="0" hide="1" type="PropertyBlob" img="Blob.gif" cardinality="1:1"/>
   +++++++++++++ References +++++++++++++
   <NOTE super="INDI:NOTE"/>
   <SOUR super="INDI:SOUR"/>

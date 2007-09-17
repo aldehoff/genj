@@ -90,7 +90,7 @@ public class TableViewSettings extends JPanel implements Settings {
     pathList = new ListSelectionWidget() {
       protected ImageIcon getIcon(Object choice) {
 	      TagPath path = (TagPath)choice;
-	      return Grammar.getMeta(path).getImage();
+	      return Grammar.V55.getMeta(path).getImage();
       }
     };
 
@@ -147,7 +147,7 @@ public class TableViewSettings extends JPanel implements Settings {
     String tag = Gedcom.ENTITIES[cTypes.getSelectedIndex()];
     
     TagPath[] selectedPaths = table.getMode(tag).getPaths();
-    TagPath[] usedPaths     = Grammar.getAllPaths(tag, Property.class);
+    TagPath[] usedPaths     = table.gedcom.getGrammar().getAllPaths(tag, Property.class);
 
     pathTree.setPaths(usedPaths, selectedPaths);
     pathList.setChoices(selectedPaths);

@@ -33,9 +33,9 @@ public class PropertyChild extends PropertyXRef {
     PATH_FAMCHIL = new TagPath("FAM:CHIL");
   
   public final static ImageIcon
-    IMG_MALE    = Grammar.getMeta(PATH_FAMCHIL).getImage("male"),
-    IMG_FEMALE  = Grammar.getMeta(PATH_FAMCHIL).getImage("female"),
-    IMG_UNKNOWN = Grammar.getMeta(PATH_FAMCHIL).getImage();
+    IMG_MALE    = Grammar.V55.getMeta(PATH_FAMCHIL).getImage("male"),
+    IMG_FEMALE  = Grammar.V55.getMeta(PATH_FAMCHIL).getImage("female"),
+    IMG_UNKNOWN = Grammar.V55.getMeta(PATH_FAMCHIL).getImage();
 
   /**
    * Empty Constructor
