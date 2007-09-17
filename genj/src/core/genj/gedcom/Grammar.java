@@ -20,6 +20,7 @@
 package genj.gedcom;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,8 +46,8 @@ public class Grammar {
 
   /** singleton */
   public final static Grammar 
-    V55 = new Grammar("./contrib/LDS/gedcom-5-5.xml"),
-    V551 = new Grammar("./contrib/LDS/gedcom-5-5-1.xml");
+    V55 = new Grammar("contrib/LDS/gedcom-5-5.xml"),
+    V551 = new Grammar("contrib/LDS/gedcom-5-5-1.xml");
   
   /** gedcom version */
   private String version;
@@ -59,17 +60,31 @@ public class Grammar {
   /**
    * Singleton Constructor
    */
-  private Grammar(String in) {
+  private Grammar(String descriptor) {
     
-    // parse descriptor (happening once only)
+    SAXParser parser;
+    
     try {
-      SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-      parser.parse(new InputSource(new InputStreamReader(new FileInputStream(in))), new Parser());
+      parser = SAXParserFactory.newInstance().newSAXParser();
+    } catch (Throwable t) {
+      Gedcom.LOG.log(Level.SEVERE, "couldn't setup SAX parser", t);
+      throw new Error(t);
+    }
+
+    try {
+      // try to load through classloader, then disk
+      InputStream in = getClass().getResourceAsStream(descriptor);
+      if (in==null)
+        in = new FileInputStream(descriptor);
+
+      // parse it
+      parser.parse(new InputSource(new InputStreamReader(in)), new Parser());
     } catch (Throwable t) {
       Gedcom.LOG.log(Level.SEVERE, "couldn't parse grammar", t);
       throw new Error(t);
     }
-    
+
+    // done
   }
   
   /**
