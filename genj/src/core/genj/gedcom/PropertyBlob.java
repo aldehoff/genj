@@ -26,6 +26,7 @@ import genj.util.swing.ImageIcon;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
+import java.util.logging.Level;
 
 /**
  * Gedcom Property : BLOB
@@ -56,7 +57,8 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
     try {
       content = Base64.decode(content.toString());
     } catch (IllegalArgumentException e) {
-      content = new byte[0];
+      Gedcom.LOG.log(Level.WARNING, "Cannot convert blob base64 in "+getGedcom().getName()+"/"+getEntity()+"/"+getPath()+" into bytes ("+e.getMessage()+")");
+      return new byte[0];
     }
 
     return (byte[])content;
