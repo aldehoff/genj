@@ -264,6 +264,8 @@ public class PropertyDate extends Property {
    * Returns this date as a localized string for display
    */
   public String getDisplayValue(Calendar calendar) {
+    if (valueAsString!=null)
+      return valueAsString;
     return format.getDisplayValue(this, calendar);
   }
   
