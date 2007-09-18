@@ -48,7 +48,7 @@
   </NAME>
   <SEX default="1" cardinality="0:1" type="PropertySex" img="Sex.gif" img.male="Male.gif" img.female="Female.gif"/>
   +++++++++++++ Events +++++++++++++
-  <BIRT default="1" cardinality="0:1" type="PropertyEvent" img="Birth.gif">
+  <BIRT default="1" type="PropertyEvent" img="Birth.gif">
    <TYPE type="PropertyChoiceValue" img="Type.gif"/>
    <DATE default="1" cardinality="0:1" type="PropertyDate" img="Date.gif"/>
    <PLAC default="1" cardinality="0:1" type="PropertyPlace" img="Place.gif">
@@ -88,23 +88,23 @@
    <ADDR default="1"/>
   </RESI>
   <OCCU type="PropertyChoiceValue" img="Occupation.gif" super="INDI:BIRT" cardinality="0:M"/>
-  <RELI type="PropertyChoiceValue" img="Religion.gif" super="INDI:BIRT" cardinality="0:1">
+  <RELI type="PropertyChoiceValue" img="Religion.gif" super="INDI:BIRT" >
    <DATE default="0"/>
    <PLAC default="0"/>
   </RELI>
-  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:RELI" cardinality="0:1"/>
-  <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:RELI" cardinality="0:1"/>
+  <CAST type="PropertySimpleValue" img="Caste.gif" super="INDI:RELI" />
+  <DSCR type="PropertyChoiceValue" img="Description.gif" super="INDI:RELI" />
   <EDUC type="PropertyChoiceValue" img="Education.gif" super="INDI:RELI"/>
   <IDNO type="PropertySimpleValue" img="IDNumber.gif" super="INDI:RELI"/>
-  <NATI type="PropertyChoiceValue" img="Nationality.gif" super="INDI:RELI" cardinality="0:1"/>
-  <NCHI type="PropertySimpleValue" img="NumChildren.gif" super="INDI:RELI" cardinality="0:1"/>
-  <PROP type="PropertyChoiceValue" img="Property.gif" super="INDI:RELI" cardinality="0:1"/>
-  <SSN  type="PropertySimpleValue" img="SSN.gif" super="INDI:RELI" cardinality="0:1"/>
+  <NATI type="PropertyChoiceValue" img="Nationality.gif" super="INDI:RELI" />
+  <NCHI type="PropertySimpleValue" img="NumChildren.gif" super="INDI:RELI" />
+  <PROP type="PropertyChoiceValue" img="Property.gif" super="INDI:RELI" />
+  <SSN  type="PropertySimpleValue" img="SSN.gif" super="INDI:RELI" />
   <TITL type="PropertyChoiceValue" img="Title.gif" super="INDI:RELI"/>
-  <NMR  type="PropertySimpleValue" img="Marriage.gif" super="INDI:RELI" cardinality="0:1"/>
+  <NMR  type="PropertySimpleValue" img="Marriage.gif" super="INDI:RELI" />
   +++++++++++++ More Events +++++++++++++
   <GRAD cardinality="0:M" img="Graduation.gif" super="INDI:BIRT"/>
-  <CHR  hide="1" cardinality="0:1" img="Baptism.gif" super="INDI:GRAD">
+  <CHR  hide="1"  img="Baptism.gif" super="INDI:GRAD">
    <FAMC inherit="0" hide="1" type="PropertyFamilyChild" img="Fam.gif"/>
   </CHR>
   <BURI img="Burial.gif" super="INDI:BIRT"/>
@@ -155,7 +155,7 @@
   <REFN type="PropertySimpleValue" img="Code.gif">
    <TYPE type="PropertySimpleValue" img="Type.gif"/>
   </REFN>
-  <RIN type="PropertySimpleValue" img="Blob.gif" cardinality="0:1"/>
+  <RIN type="PropertySimpleValue" img="Blob.gif" />
   +++++++++++++ change  - it swallows subs DATE|TIME - no need to declare in grammar +++++++++++++
   <CHAN hide="1" type="PropertyChange" img="Code.gif">
    <NOTE super="INDI:NAME:NOTE"/>
@@ -169,7 +169,7 @@
   <HUSB hide="1" type="PropertyHusband" img="IndiMale.gif"/>
   <WIFE hide="1" type="PropertyWife" img="IndiFemale.gif"/>
   <NCHI img="NumChildren.gif" type="PropertySimpleValue"/>
-  <ENGA img="Engagement.gif" cardinality="0:1" super="INDI:BIRT">
+  <ENGA img="Engagement.gif"  super="INDI:BIRT">
    <HUSB type="PropertySimpleReadOnly" img="IndiMale.gif" cardinality="0:1">
     <AGE default="1" type="PropertyAge" img="Time.gif" cardinality="1:1"/>
    </HUSB>
