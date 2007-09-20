@@ -19,6 +19,9 @@
  */
 package genj.gedcom;
 
+import genj.util.EnvironmentChecker;
+
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -75,7 +78,7 @@ public class Grammar {
       // try to load through classloader, then disk
       InputStream in = getClass().getResourceAsStream(descriptor);
       if (in==null)
-        in = new FileInputStream(descriptor);
+        in = new FileInputStream(new File(EnvironmentChecker.getProperty(this, "user.dir", ".", "current directory for grammar"),descriptor));
 
       // parse it
       parser.parse(new InputSource(new InputStreamReader(in)), new Parser());
