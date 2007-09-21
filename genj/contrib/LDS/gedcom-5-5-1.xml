@@ -187,7 +187,7 @@
    <HUSB type="PropertySimpleReadOnly" img="IndiMale.gif" cardinality="0:1">
     <AGE default="1" type="PropertyAge" img="Time.gif" cardinality="1:1"/>
    </HUSB>
-   <WIFE super="FAM:MARR:HUSB" img="IndiFemale.gif" cardinality="0:1">
+   <WIFE type="PropertySimpleReadOnly" img="IndiFemale.gif" cardinality="0:1">
     <AGE default="1" type="PropertyAge" img="Time.gif" cardinality="1:1"/>
    </WIFE>
   </ENGA>
@@ -204,7 +204,7 @@
   <EVEN super="FAM:ENGA" cardinality="0:M">
    <TYPE default="1" super="INDI:EVEN:TYPE"/>
   </EVEN>
-  <SLGS hide="1" img="Marriga.gif" super="INDI:BAPL"/>
+  <SLGS hide="1" img="Marriage.gif" super="INDI:BAPL"/>
   <OBJE super="INDI:OBJE"/>
   <NOTE super="INDI:NOTE"/>
   <SUBM hide="1" super="INDI:SUBM"/>
