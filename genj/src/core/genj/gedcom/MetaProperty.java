@@ -463,15 +463,20 @@ public class MetaProperty implements Comparable {
     // look up
     ImageIcon result = (ImageIcon)name2images.get(name);
     if (result==null) {
-      // this could potentially be interrupted - we'll have to try again in that case
-      while (true) {
-        try {
-          result = new ImageIcon(name, MetaProperty.class.getResourceAsStream("images/"+name));
-          name2images.put(name, result);
-          break;
-        } catch (IllegalStateException iae) {
-          // retry
+      try {
+        // this could potentially be interrupted - we'll have to try again in that case
+        while (true) {
+          try {
+            result = new ImageIcon(name, MetaProperty.class.getResourceAsStream("images/"+name));
+            name2images.put(name, result);
+            break;
+          } catch (IllegalStateException iae) {
+            // retry
+          }
         }
+      } catch (Throwable t) {
+        Gedcom.LOG.log(Level.WARNING, "Unexpected problem reading "+name, t);
+        return IMG_ERROR;
       }
     }
     // done
