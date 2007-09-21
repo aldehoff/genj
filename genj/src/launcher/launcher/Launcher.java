@@ -235,7 +235,7 @@ public class Launcher {
   }
   
   private static String[] decode(String msg) {
-    StringTokenizer lines = new StringTokenizer(msg);
+    StringTokenizer lines = new StringTokenizer(msg, "\n");
     String[] args = new String[lines.countTokens()];
     for (int i = 0; i < args.length; i++) 
       args[i] = lines.nextToken();
@@ -274,7 +274,9 @@ public class Launcher {
       File jarDir = jarFile.getParentFile();
 
       // cd C:/Program Files/FooMatic/.
+      LOG.info(System.getProperty("user.dir"));
       System.setProperty("user.dir", jarDir.getAbsolutePath());
+      LOG.info(System.getProperty("user.dir"));
 
       // done
       return true;
