@@ -66,11 +66,12 @@
 	<!-- 
 	izpack packaging
 	-->
-	<target name="dist.installer" depends="dist.app, dist.geo">
+	<target name="dist.installer" depends="init, dist.app, dist.geo">
 		
-    <copy tofile="./build/installer.xml" file="./src/installer/installer.xml">
+    <copy tofile="./build/installer.xml" file="./src/installer/installer.xml" overwrite="true">
       <filterset><filter token="version" value="${version}"/></filterset>
     </copy>
+		
  	
     <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="./contrib/izpack"/>
 		
