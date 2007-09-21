@@ -116,7 +116,7 @@ public class ControlCenter extends JPanel {
   /**
    * Constructor
    */
-  public ControlCenter(Registry setRegistry, WindowManager winManager, String[] args) {
+  public ControlCenter(Registry setRegistry, WindowManager winManager) {
 
     // Initialize data
     registry = new Registry(setRegistry, "cc");
@@ -152,19 +152,17 @@ public class ControlCenter extends JPanel {
     // Init menu bar at this point (so it's ready when the first file is loaded)
     menuBar = createMenuBar();
 
-    // Load known gedcoms
-    SwingUtilities.invokeLater(new ActionAutoOpen(args));
-    
     // Done
   }
   
-//  /**
-//   * @see javax.swing.JComponent#getPreferredSize()
-//   */
-//  public Dimension getPreferredSize() {
-//    return new Dimension(280,180);
-//  }
-
+  /**
+   * loads gedcom files
+   */
+  public void load(String[] files) {
+    // Load known gedcoms
+    SwingUtilities.invokeLater(new ActionAutoOpen(files));
+  }
+  
   /**
    * Adds another Gedcom to the list of Gedcoms
    */

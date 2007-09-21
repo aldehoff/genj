@@ -316,7 +316,7 @@
          <attribute name="Main-Class" value="launcher.Launcher"/>
       	 <attribute name="Launch-Classpath" value="lib, contrib, $${java.home}/lib/tools.jar, $${java.home}/../lib/tools.jar"/>
        	 <attribute name="Launch-Class" value="genj.app.App"/>
-     <!-- 	 <attribute name="Launch-Port" value="2505"/> -->
+         <attribute name="Launch-Port" value="2505"/>
        </manifest>
      </jar>
      

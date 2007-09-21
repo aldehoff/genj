@@ -36,7 +36,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -58,94 +57,29 @@ public class App {
   
   /*package*/ static File LOGFILE; 
   
+  private static Startup startup;
+  
   /**
    * GenJ Main Method
    */
-  public static void main(java.lang.String[] args) {
+  public static void main(final String[] args) {
     
     // we're ready to be run twice
-    if (LOG!=null) {
-      LOG.info("GenJ.main() being called a second time with arguments "+Arrays.asList(args));
-      return;
+    synchronized (App.class) {
+      if (startup==null)  {
+        // run startup
+        startup = new Startup();
+        SwingUtilities.invokeLater(startup);
+      }
     }
-
-    // Catch anything that might happen
-    try {
-      
-      // create our home directory
-      File home = new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", null, "determining home directory"));
-      home.mkdirs();
-      if (!home.exists()||!home.isDirectory()) 
-        throw new IOException("Can't initialize home directoy "+home);
-      
-      
-      // prepare our master log and own LogManager for GenJ
-      System.setProperty("java.util.logging.manager", "genj.app.App$PatchedLogManager");
-      LOG = Logger.getLogger("genj");
-      
-      // prepare some basic logging for now
-      Formatter formatter = new LogFormatter();
-      Logger root = Logger.getLogger("");
-      
-      try {
-        // allow command line override of debug level - set non-genj level a tad higher
-        Level level = Level.parse(System.getProperty("genj.debug.level"));
-        LOG.setLevel(level);
-        if (Integer.MAX_VALUE!=level.intValue())
-          root.setLevel(new Level("genj.debug.level+1", level.intValue()+1) {} );
-      } catch (Throwable t) {
+    
+    // load
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        startup.center.load(args);
       }
-      
-      Handler[] handlers = root.getHandlers();
-      for (int i=0;i<handlers.length;i++) root.removeHandler(handlers[i]);
-      root.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
-      System.setOut(new PrintStream(new LogOutputStream(Level.INFO, "System", "out")));
-      System.setErr(new PrintStream(new LogOutputStream(Level.WARNING, "System", "err")));
-      
-      // init our data
-      Registry registry = new Registry("genj");
-      
-      // initialize options first
-      OptionProvider.getAllOptions(registry);
-      
-      // Setup File Logging and check environment
-      LOGFILE = new File(home, "genj.log");
-      Handler handler = new FileHandler(LOGFILE.getAbsolutePath(), Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
-      handler.setLevel(Level.ALL);
-      handler.setFormatter(formatter);
-      LOG.addHandler(handler);
-      
-      // Startup Information
-      LOG.info("version = "+Version.getInstance().getBuildString());
-      LOG.info("date = "+new Date());
-      EnvironmentChecker.log();
-      
-      // patch up GenJ for Mac if applicable
-      if (EnvironmentChecker.isMac()) {
-        LOG.info("Setting up MacOs adjustments");
-        System.setProperty("apple.laf.useScreenMenuBar","true");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name","GenealogyJ");
-      }
-      
-      // check VM version
-      if (!EnvironmentChecker.isJava14(App.class)) {
-        if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
-          LOG.severe("Need Java 1.4 to run GenJ");
-          System.exit(1);
-          return;
-        }
-      }
-      
-      // run startup and hook up shutdown
-      SwingUtilities.invokeLater(new Startup(registry, args));
-      Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(registry)));
-
-      // Done
-      
-    } catch (Throwable t) {
-      LOG.log(Level.SEVERE, "Cannot instantiate App", t);
-      System.exit(1);
-    }
+    } );
+    
   }
   
   /**
@@ -153,47 +87,114 @@ public class App {
    */
   private static class Startup implements Runnable {
     
-    private Registry registry;
-    private String[] args;
-    
-    /**
-     * Constructor
-     */
-    private Startup(Registry registry, String[] args) {
-      this.registry = registry;
-      this.args = args;
-    }
-    
+    ControlCenter center;
+
     /**
      * Constructor
      */
     public void run() {
       
-      LOG.info("Startup");
-      
-      // get app resources now
-      Resources resources = Resources.get(App.class);
+      // Catch anything that might happen
+      try {
+        
+        // create our home directory
+        File home = new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", null, "determining home directory"));
+        home.mkdirs();
+        if (!home.exists()||!home.isDirectory()) 
+          throw new IOException("Can't initialize home directoy "+home);
+        
+        // prepare our master log and own LogManager for GenJ
+        System.setProperty("java.util.logging.manager", "genj.app.App$PatchedLogManager");
+        LOG = Logger.getLogger("genj");
+        
+        // prepare some basic logging for now
+        Formatter formatter = new LogFormatter();
+        Logger root = Logger.getLogger("");
+        
+        try {
+          // allow command line override of debug level - set non-genj level a tad higher
+          Level level = Level.parse(System.getProperty("genj.debug.level"));
+          LOG.setLevel(level);
+          if (Integer.MAX_VALUE!=level.intValue())
+            root.setLevel(new Level("genj.debug.level+1", level.intValue()+1) {} );
+        } catch (Throwable t) {
+        }
+        
+        Handler[] handlers = root.getHandlers();
+        for (int i=0;i<handlers.length;i++) root.removeHandler(handlers[i]);
+        root.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
+        System.setOut(new PrintStream(new LogOutputStream(Level.INFO, "System", "out")));
+        System.setErr(new PrintStream(new LogOutputStream(Level.WARNING, "System", "err")));
 
-      // create window manager
-      WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"), Gedcom.getImage());
+        // Log is up
+        LOG.info("Startup");
+        
+        // init our data
+        Registry registry = new Registry("genj");
+        
+        // initialize options first
+        OptionProvider.getAllOptions(registry);
+        
+        // Setup File Logging and check environment
+        LOGFILE = new File(home, "genj.log");
+        Handler handler = new FileHandler(LOGFILE.getAbsolutePath(), Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
+        handler.setLevel(Level.ALL);
+        handler.setFormatter(formatter);
+        LOG.addHandler(handler);
+        
+        // Startup Information
+        LOG.info("version = "+Version.getInstance().getBuildString());
+        LOG.info("date = "+new Date());
+        EnvironmentChecker.log();
+        
+        // patch up GenJ for Mac if applicable
+        if (EnvironmentChecker.isMac()) {
+          LOG.info("Setting up MacOs adjustments");
+          System.setProperty("apple.laf.useScreenMenuBar","true");
+          System.setProperty("com.apple.mrj.application.apple.menu.about.name","GenealogyJ");
+        }
+        
+        // check VM version
+        if (!EnvironmentChecker.isJava14(App.class)) {
+          if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
+            LOG.severe("Need Java 1.4 to run GenJ");
+            System.exit(1);
+            return;
+          }
+        }
+        
+        // get app resources now
+        Resources resources = Resources.get(App.class);
+  
+        // create window manager
+        WindowManager winMgr = new DefaultWindowManager(new Registry(registry, "window"), Gedcom.getImage());
+        
+        // Disclaimer - check version and registry value
+        String version = Version.getInstance().getVersionString();
+        if (!version.equals(registry.get("disclaimer",""))) {
+          // keep it      
+          registry.put("disclaimer", version);
+          // show disclaimer
+          winMgr.openDialog("disclaimer", "Disclaimer", WindowManager.INFORMATION_MESSAGE, resources.getString("app.disclaimer"), Action2.okOnly(), null);    
+        }
+        
+        // setup control center
+        center = new ControlCenter(registry, winMgr);
+  
+        // show it
+        winMgr.openWindow("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
+  
+        // hookup shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(registry)));
+        
+        // done
+        LOG.info("/Startup");
       
-      // Disclaimer - check version and registry value
-      String version = Version.getInstance().getVersionString();
-      if (!version.equals(registry.get("disclaimer",""))) {
-        // keep it      
-        registry.put("disclaimer", version);
-        // show disclaimer
-        winMgr.openDialog("disclaimer", "Disclaimer", WindowManager.INFORMATION_MESSAGE, resources.getString("app.disclaimer"), Action2.okOnly(), null);    
+      } catch (Throwable t) {
+        LOG.log(Level.SEVERE, "Cannot instantiate App", t);
+        System.exit(1);
+        return;
       }
-      
-      // setup control center
-      ControlCenter center = new ControlCenter(registry, winMgr, args);
-
-      // show it
-      winMgr.openWindow("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
-
-      // done
-      LOG.info("/Startup");
       
     }
     
