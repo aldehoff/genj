@@ -15,6 +15,11 @@
   <javaversion>1.4</javaversion>
   </info>
   
+  <listeners>
+    <listener installer="RegistryInstallerListener" uninstaller="RegistryUninstallerListener" >
+        <os family="windows"/>
+    </listener>
+  </listeners>
   
   <guiprefs resizable="yes" width="800" height="480"/>
 
@@ -25,12 +30,18 @@
   <langpack iso3="spa"/>
  </locale>
  
- <native type="izpack" name="ShellLink.dll"/>
-
+ <native type="izpack" name="ShellLink.dll">
+    <os family="windows"/>
+ </native>
+ <native type="3rdparty" name="COIOSHelper.dll" stage="both">
+    <os family="windows"/>
+ </native>
+ 
  <resources>
   <res id="LicencePanel.licence" src="./app/doc/gpl.txt"/>
   <res id="shortcutSpec.xml" src="./src/installer/shortcuts.xml" />
   <res id="Installer.image" src="./src/installer/GenJ.png" />
+  <res src="./src/installer/registry.xml" id="RegistrySpec.xml"/>
  </resources> 
 
  <panels>
