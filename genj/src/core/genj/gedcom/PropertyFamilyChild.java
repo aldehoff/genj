@@ -116,14 +116,13 @@ public class PropertyFamilyChild extends PropertyXRef {
     // .. that would introduce a circle
     if (indi.isAncestorOf(fam))
       throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ indi.toString(), fam.toString() }));
-    
-    // Make sure we're not child already - no need for duplicates here
-    // NM 20070128 don't sort for checking existance
-    Indi children[] = fam.getChildren(false);
-    for (int i=0;i<children.length;i++) {
-      if ( children[i] == indi) 
-        throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), fam.toString()}));
-    }
+
+    // NM20070921 - since we're handling multiple references to FAMC in getFamiliesWhereChild now e.g.
+    // 0 INDI
+    // 0  FAMC @F@
+    // 0  BIRT
+    // 1   FAMC @F@
+    // we can allow multiple famc pointing at the same family
     
     // Connect back from family (maybe using invalid back reference) 
     List childs = fam.getProperties(PropertyChild.class);

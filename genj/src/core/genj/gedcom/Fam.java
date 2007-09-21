@@ -72,8 +72,9 @@ public class Fam extends Entity {
     List childs = getProperties(PropertyChild.class);
     for (int i=0,j=childs.size();i<j;i++) {
       PropertyChild prop = (PropertyChild)childs.get(i);
-      if (prop.isValid()) 
-        children.add(prop.getChild());
+      Indi child = prop.getChild();
+      if (prop.isValid()&&!children.contains(child)) 
+        children.add(child);
     }
     
     // convert to array & sort

@@ -271,7 +271,7 @@ public class Indi extends Entity {
     List result = new ArrayList(famcs.size());
     for (int i=0; i<famcs.size(); i++) {
       PropertyFamilyChild famc = (PropertyFamilyChild)famcs.get(i);
-      if (famc.isValid())
+      if (famc.isValid()&&!result.contains(famc))
         result.add(famc.getTargetEntity());
     }
     
