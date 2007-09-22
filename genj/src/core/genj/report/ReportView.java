@@ -416,7 +416,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         else  for (int i=0;i<Gedcom.ENTITIES.length;i++) {
           String tag = Gedcom.ENTITIES[i];
           Entity sample = gedcom.getFirstEntity(tag);
-          if (instance.getStartMethod(sample)!=null) {
+          if (instance.accepts(sample)!=null) {
             
             // give the report a chance to name our dialog
             String txt = instance.accepts(sample.getClass());
