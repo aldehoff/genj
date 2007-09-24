@@ -24,9 +24,9 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
+import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
-import genj.view.ContextProvider;
 import genj.view.ViewManager;
 import genj.window.WindowManager;
 
@@ -225,8 +225,11 @@ import swingx.tree.AbstractTreeModel;
       //GeoLocation selection = query.getSelectedLocation();
       int rc = WindowManager.getInstance(GeoList.this).openDialog("query", TXT_CHANGE, WindowManager.QUESTION_MESSAGE, query, actions, GeoList.this);
       // check if he wants to change the location
-      if (rc==0) 
-        model.setCoordinates(location, query.getGeoLocation().getCoordinate());
+      if (rc==0)  {
+        GeoLocation loc = query.getGeoLocation();
+        if (loc!=null)
+          model.setCoordinates(location, loc.getCoordinate());
+      }
       // done
     }
   }
