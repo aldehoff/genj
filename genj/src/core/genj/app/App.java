@@ -73,7 +73,15 @@ public class App {
       }
     }
     
-    // load
+    // wait for startup do be done
+    synchronized (startup) {
+      if (startup.center==null) try {
+        startup.wait();
+      } catch (InterruptedException e) {
+      }
+    }
+
+  // load
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         startup.center.load(args);
@@ -194,6 +202,10 @@ public class App {
         LOG.log(Level.SEVERE, "Cannot instantiate App", t);
         System.exit(1);
         return;
+      }
+      
+      synchronized (this) {
+        notifyAll();
       }
       
     }
