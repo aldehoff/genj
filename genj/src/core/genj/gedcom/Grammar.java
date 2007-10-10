@@ -76,9 +76,12 @@ public class Grammar {
 
     try {
       // try to load through classloader, then disk
-      InputStream in = getClass().getResourceAsStream(descriptor);
-      if (in==null)
+      InputStream in = getClass().getResourceAsStream("/"+descriptor);
+      if (in!=null) {
+        LOG.info("Loading grammar through classloader");
+      } else {
         in = new FileInputStream(new File(EnvironmentChecker.getProperty(this, "user.dir", ".", "current directory for grammar"),descriptor));
+      }
 
       // parse it
       parser.parse(new InputSource(new InputStreamReader(in)), new Parser());
