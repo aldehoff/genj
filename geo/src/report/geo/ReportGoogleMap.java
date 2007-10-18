@@ -113,13 +113,14 @@ public class ReportGoogleMap extends Report {
       html = new File(html.getAbsolutePath()+"."+suffix);
     }
     File xml = new File(html.getAbsolutePath().replaceAll("."+suffix, ".xml"));
+    File kml = new File(html.getAbsolutePath().replaceAll("."+suffix, ".kml"));
 
     // write the html file
     if (!writeHTML(ged, (GeoLocation)locations.iterator().next(), html, xml, key))
       return;
 
     // write the xml file
-    if (!writeXML(locations, xml))
+    if (!writeXML(locations, xml, kml))
       return;
 
     // let the user know
@@ -169,42 +170,54 @@ public class ReportGoogleMap extends Report {
   /**
    * write the xml file
    */
-  private boolean writeXML(Collection locations, File xml) {
+  private boolean writeXML(Collection locations, File xml, File kml) {
 
     // <ls>
     //   <l x="37.441" y="-122.141">foo</l>
     //   <l x="37.322" y="-121.213"/>
     // </ls>
+
+    // <?xml version="1.0" encoding="UTF-8"?>
+    // <kml xmlns="http://earth.google.com/kml/2.2">
+    // <Folder>
+    // <Placemark>
+    //   <name>Simple placemark</name>
+    //   <description>Attached to the ground. Intelligently places itself 
+    //      at the height of the underlying terrain.</description>
+    //   <Point>
+    //     <coordinates>-122.0822035425683,37.42228990140251,0</coordinates>
+    //   </Point>
+    // </Placemark>
+    // </Folder>
+    // </kml>
     try {
-      BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(xml), Charset.forName("UTF8")));
-      out.write("<ls>");
+      BufferedWriter xmlout = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(xml), Charset.forName("UTF8")));
+      xmlout.write("<ls>");
+      
+      BufferedWriter kmlout = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(kml), Charset.forName("UTF8")));
+      kmlout.write("<kml xmlns=\"http://earth.google.com/kml/2.2\">");
+      kmlout.write("<Folder>");
+      
       for (Iterator it=locations.iterator(); it.hasNext(); ) {
+        
         // valid location?
         GeoLocation location = (GeoLocation)it.next();
-        if (!location.isValid()) continue;
-        // start with coordinates
-        out.write("<l x=\"" + FORMAT.format(location.getX()) + "\" y=\"" + FORMAT.format(location.getY()) + "\">");
-        // place
-        out.write(location.toString());
-        // add first property's info
-        int max = maxEventsPerLocation<=0 ? Integer.MAX_VALUE : maxEventsPerLocation;
-        for (int p=0;p<max&&p<location.getNumProperties();p++) {
-          out.write(";");
-          Property prop = location.getProperty(p);
-          Property date = prop.getProperty("DATE", true);
-          if (date!=null) {
-            out.write(date.toString());
-            out.write(" ");
-          }
-          out.write(Gedcom.getName(prop.getTag()));
-          out.write(" ");
-          out.write(prop.getEntity().toString());
-        }
+        if (!location.isValid()) 
+          continue;
+    
+        writeXML(location, xmlout);
+        writeKML(location, kmlout);
+        
         // next
-        out.write("</l>");
       }
-      out.write("</ls>");
-      out.close();
+      
+      xmlout.write("</ls>");
+      xmlout.close();
+      
+      kmlout.write("</Folder>");
+      kmlout.write("</kml>");
+      kmlout.close();
+      
     } catch (IOException e) {
       getOptionFromUser(translate("ioerror", xml), OPTION_OK);
       return false;
@@ -212,6 +225,56 @@ public class ReportGoogleMap extends Report {
 
     // done
     return true;
+  }
+  
+  private void writeKML(GeoLocation location, BufferedWriter out) throws IOException {
+ 
+    out.write("<Placemark>");
+    out.write("<name>");
+    out.write(location.toString());
+    out.write("</name>");
+    out.write("<description>");
+    writeProperties(location, out, "\n");
+    out.write("</description>");
+    out.write("<Point>");
+    out.write("<coordinates>");
+    out.write(FORMAT.format(location.getX()));
+    out.write(",");
+    out.write(FORMAT.format(location.getY()));
+    out.write("</coordinates>");
+    out.write("</Point>");
+    out.write("</Placemark>");
+  }
+  
+  private void writeXML(GeoLocation location, BufferedWriter out) throws IOException {
+    
+    // xml coordinates & place
+    out.write("<l x=\"" + FORMAT.format(location.getX()) + "\" y=\"" + FORMAT.format(location.getY()) + "\">");
+    out.write(location.toString());
+
+    // description (events)
+    writeProperties(location, out, ";");
+    
+    // done
+    out.write("</l>");
+  }
+  
+  private void writeProperties(GeoLocation location, BufferedWriter out, String delim) throws IOException {
+    
+    int max = maxEventsPerLocation<=0 ? Integer.MAX_VALUE : maxEventsPerLocation;
+    for (int p=0;p<max&&p<location.getNumProperties();p++) {
+      out.write(delim);
+      Property prop = location.getProperty(p);
+      Property date = prop.getProperty("DATE", true);
+      if (date!=null) {
+        out.write(date.toString());
+        out.write(" ");
+      }
+      out.write(Gedcom.getName(prop.getTag()));
+      out.write(" ");
+      out.write(prop.getEntity().toString());
+    }
+    
   }
 
   /**
