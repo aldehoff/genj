@@ -222,16 +222,17 @@ public class PropertyFile extends Property implements IconValueAvailable {
     if (!updateMeta||!media.getTag().equals("OBJE")) 
       return;
       
-    // format 5.5.1 style?
-    Property format = getProperty("FORM");
-    if (format==null) {
-      // maybe 5.5 style?
-      format = getParent().getProperty("FORM");
-      // fallback to 5.5.1
-      if (format==null)
-        format = addProperty(new PropertySimpleValue("FORM")); 
+    // look for right place of FORM
+    Property parent = this;
+    if (!getMetaProperty().allows("FORM")) {
+      if (!media.getMetaProperty().allows("FORM"))
+        return;
+      parent = media;
     }
-    format.setValue(PropertyFile.getSuffix(file));
+
+    Property form = parent.getProperty("FORM");
+    if (form==null) parent.addProperty("FORM", PropertyFile.getSuffix(file));
+    else form.setValue(PropertyFile.getSuffix(file));
     
     // done  
   }
