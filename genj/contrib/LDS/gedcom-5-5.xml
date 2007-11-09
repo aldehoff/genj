@@ -34,7 +34,7 @@
     <QUAY xref="1" type="PropertySimpleValue" img="Blob.gif" cardinality="0:1"/>
     <OBJE xref="1" type="PropertyMedia" img="Media.gif">
      <TITL xref="0" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
-     <FORM default="0" hide="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
+     <FORM default="1" hide="1" xref="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
      <FILE default="1" xref="0" type="PropertyFile" img="Disk.gif" cardinality="0:M">
      </FILE>
      <NOTE default="1" xref="0" type="PropertyNote" img="Note.gif" cardinality="0:1"/>
