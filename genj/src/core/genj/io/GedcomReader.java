@@ -367,17 +367,18 @@ public class GedcomReader implements Trackable {
     // 1 GEDC 
     // 2 VERSion and 
     // 2 FORMat
-    Property gedc = header.getProperty("GEDC");
-    Property vers = gedc.getProperty("VERS");
-    if (gedc==null||vers==null||gedc.getProperty("FORM")==null)
+    Property vers = header.getPropertyByPath("HEAD:GEDC:VERS");
+    if (vers==null||header.getPropertyByPath("HEAD:GEDC:FORM")==null)
       warnings.add(new Warning(0, RESOURCES.getString("read.warn.badgedc"), gedcom));
     else {
       String v = vers.getValue();
-      if ("5.5".equals(v))
+      if ("5.5".equals(v)) {
         gedcom.setGrammar(Grammar.V55);
-      else if ("5.5.1".equals(v))
+        LOG.info("Found VERS "+v+" - Gedcom version is 5.5");
+      } else if ("5.5.1".equals(v)) {
         gedcom.setGrammar(Grammar.V551);
-      else {
+        LOG.info("Found VERS "+v+" - Gedcom version is 5.5.1");
+      } else {
         String s = RESOURCES.getString("read.warn.badversion", new String[] { v, gedcom.getGrammar().getVersion() } );
         warnings.add(new Warning(0, RESOURCES.getString("read.warn.badversion", new String[] { v, gedcom.getGrammar().getVersion() } ), gedcom));
         LOG.warning(s);      
