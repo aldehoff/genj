@@ -153,9 +153,9 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   /**
    * @see genj.gedcom.Property#addNotify(genj.gedcom.Property)
    */
-  /*package*/ void addNotify(Property parent, int pos) {
+  /*package*/ void afterAddNotify() {
     // delegate
-    super.addNotify(parent, pos);
+    super.afterAddNotify();
     // a remember wouldn't have worked until now
     remember("", super.getValue());
     // done
@@ -165,11 +165,11 @@ public class PropertyChoiceValue extends PropertySimpleValue {
    * Removing us from the reference set (our value is not used anymore)
    * @see genj.gedcom.PropertyRelationship#delNotify()
    */
-  /*package*/ void delNotify(Property parent, int pos) {
+  /*package*/ void beforeDelNotify() {
     // forget value
     remember(super.getValue(), "");
     // continue
-    super.delNotify(parent, pos);
+    super.beforeDelNotify();
   }
 
 } //PropertyChoiceValue

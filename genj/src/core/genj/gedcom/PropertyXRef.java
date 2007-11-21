@@ -47,7 +47,7 @@ public abstract class PropertyXRef extends Property {
   /**
    * Method for notifying being removed from another parent
    */
-  /*package*/ void delNotify(Property parent, int pos) {
+  /*package*/ void beforeDelNotify() {
 
     // are we referencing something that points back?
     if (target!=null) {
@@ -60,7 +60,7 @@ public abstract class PropertyXRef extends Property {
     }
 
     // Let it through
-    super.delNotify(parent, pos);
+    super.beforeDelNotify();
     
     // done
   }

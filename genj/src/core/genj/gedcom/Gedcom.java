@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.129 $ $Author: nmeier $ $Date: 2007-09-17 04:24:21 $
+ * $Revision: 1.130 $ $Author: nmeier $ $Date: 2007-11-21 21:06:17 $
  */
 package genj.gedcom;
 
@@ -790,8 +790,8 @@ public class Gedcom implements Comparable {
       id2entity.remove(id);
     }
     
-    // Tell it
-    which.delNotify();
+    // Tell it first
+    which.beforeDelNotify();
 
     // Forget it now
     allEntities.remove(which);

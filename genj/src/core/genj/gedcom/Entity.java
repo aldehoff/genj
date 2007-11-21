@@ -52,7 +52,7 @@ public class Entity extends Property {
   /**
    * Lifecycle - callback before being removed from Gedcom
    */
-  /*package*/ void delNotify() {
+  /*package*/ void beforeDelNotify() {
     
     // delete children
     delProperties();
