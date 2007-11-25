@@ -128,6 +128,8 @@ public class MetaProperty implements Comparable {
    * Add a sub
    */
   /*package*/ void addNested(MetaProperty sub) {
+    if (sub==null)
+      throw new IllegalArgumentException("Nested meta can't be null");
     // keep key->sub
     tag2nested.put(sub.tag, sub);
     // keep list (replace existing!)
