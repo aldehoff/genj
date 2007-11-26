@@ -100,8 +100,7 @@ public class MetaProperty implements Comparable {
   
   private void copyAttributesFrom(MetaProperty supr) {
 
-    // sub tags from super (if inhert!="0")
-    for (Iterator nested=supr.nested.iterator(); nested.hasNext(); ) {
+    for (Iterator nested=new ArrayList(supr.nested).iterator(); nested.hasNext(); ) {
       MetaProperty sub = (MetaProperty)nested.next();
       if (!"0".equals(sub.attrs.get("inherit"))) {
         addNested(sub);
@@ -125,9 +124,10 @@ public class MetaProperty implements Comparable {
   }
   
   /**
-   * Add a sub
+   * Add a sub (this can be called by multiple threads as meta properties are added e.g. during load thus
+   * we make this sync'd
    */
-  /*package*/ void addNested(MetaProperty sub) {
+  /*package*/ synchronized void addNested(MetaProperty sub) {
     if (sub==null)
       throw new IllegalArgumentException("Nested meta can't be null");
     // keep key->sub
