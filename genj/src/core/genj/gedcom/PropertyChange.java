@@ -113,7 +113,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     meta.assertTag(CHAN);
     super.init(meta,value);
     if (value.length()==0)
-      setValue(System.currentTimeMillis());
+      setTime(System.currentTimeMillis());
     return this;
   }
 
@@ -132,9 +132,16 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
   
   /**
+   * Gets change time
+   */
+  public long getTime() {
+    return time;
+  }
+  
+  /**
    * Set current value
    */  
-  public void setValue(long set) {
+  public void setTime(long set) {
 
     // known?
     if (time==set)
@@ -340,7 +347,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
       if (prop==null) 
         prop = (PropertyChange)entity.addProperty("CHAN", "");
       else
-        prop.setValue(System.currentTimeMillis());
+        prop.setTime(System.currentTimeMillis());
       
       // remember
       updated.add(entity);
