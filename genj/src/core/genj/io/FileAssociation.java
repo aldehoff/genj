@@ -310,6 +310,9 @@ public class FileAssociation {
    * Gets first available association or asks the user for appropriate one
    */
   public static FileAssociation get(File file, String name, Component owner) {
+    if (file.isDirectory())
+      return get("[dir]", "[dir]", "Directory", owner);
+      
     String suffix = getSuffix(file);
     if (suffix.length()==0)
       return null;
