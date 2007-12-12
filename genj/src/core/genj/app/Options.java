@@ -37,6 +37,7 @@ import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
 import genj.window.WindowManager;
 
+import java.awt.Insets;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,6 +46,7 @@ import java.util.Locale;
 import java.util.TreeSet;
 
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -292,8 +294,59 @@ public class Options extends OptionProvider {
     List result = PropertyOption.introspect(instance);
     // add an option for FileAssociations
     result.add(new FileAssociationOption());
+    // add an otion for user.home.dir
+    result.add(new UserHomeGenJOption());
     // done
     return result;
+  }
+  
+  private static class UserHomeGenJOption extends Option implements OptionUI {
+
+    public String getName() {
+      return getInstance().getResources().getString("option.userhomegenj.name");
+    }
+
+    public OptionUI getUI(OptionsWidget widget) {
+      return this;
+    }
+
+    public void persist(Registry registry) {
+      // we're not storing anything
+    }
+    
+    public void restore(Registry registry) {
+      // no state to restore
+    }
+
+    public void endRepresentation() {
+    }
+
+    public JComponent getComponentRepresentation() {
+      JButton button = new JButton(new Open());
+      // small guy
+      button.setMargin(new Insets(2,2,2,2));
+      // done
+      return button;
+    }
+
+    public String getTextRepresentation() {
+      // none
+      return null;
+    }
+    
+    /**
+     * Action for UI
+     */
+    private class Open extends Action2 { 
+      Open() {
+        setText("...");
+      }
+      protected void execute() {
+        File user_home_genj = new File(EnvironmentChecker.getProperty(UserHomeGenJOption.this, "user.home.genj", null, "trying to open user.home.genj")) ;
+        FileAssociation asso = FileAssociation.get(user_home_genj, "", null);
+        if (asso!=null) asso.execute(user_home_genj);
+      }
+    }
   }
   
   /** 
