@@ -242,6 +242,22 @@ public class TrackerPlugin implements Plugin {
       log("Property "+deleted.getTag()+" deleted from "+property.getEntity()+" in "+gedcom.getName());
       touchedEntities.add(property.getEntity());
     }
+    
+    /** 
+     * notification that properties have been linked
+     * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
+     */
+    public void gedcomPropertyLinked(Gedcom gedcom, Property from, Property to) {
+      log("Property "+from.getTag()+" in "+from.getEntity()+" is now linked with "+to.getTag()+" in "+to.getEntity()+" in "+gedcom.getName());
+      touchedEntities.add(from.getEntity());
+      touchedEntities.add(to.getEntity());
+    }
+    
+    public void gedcomPropertyUnlinked(Gedcom gedcom, Property from, Property to) {
+      log("Property "+from.getTag()+" in "+from.getEntity()+" is no longer linked with "+to.getTag()+" in "+to.getEntity()+" in "+gedcom.getName());
+      touchedEntities.add(from.getEntity());
+      touchedEntities.add(to.getEntity());
+    }
 
   } //GedcomTracker
   
