@@ -167,9 +167,11 @@ public class TrackerPlugin implements Plugin {
 
     public void handleLifecycleEvent(GedcomLifecycleEvent event) {
       
-      // we'll update a counter for all touched entities after the unit of work has done its part 
-      // but before the write lock is released piggy backing on the editor's unit of work
-      // (this would be a good place to update some other (e.g. sosa) indexing scheme
+      // So we were not allowed to make changes to the underlying gedcom information
+      // during the gedcomlistener callbacks - no problem: we kept track of entities
+      // touched and now we'll update a counter for all touched entities ***after the 
+      // unit of work has done its part**  (this is still before the write lock is released)
+      
       // The result should look like this
       // 0 @..@ INDI
       // 1 TRAC n
@@ -199,7 +201,13 @@ public class TrackerPlugin implements Plugin {
     }
   
     /** 
-     * notification that an entity has been added 
+     * notification that an entity has been added
+     * 
+     * NOTE: this is a notification only and it's not allowed to make changes to the 
+     * underlying gedcom structure at this point!
+     * If Gedcom changes require subsequent changes performed by a plugin then this has 
+     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
+     * 
      * @see GedcomListener#gedcomEntityAdded(Gedcom, Entity)
      */
     public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
@@ -209,6 +217,12 @@ public class TrackerPlugin implements Plugin {
   
     /** 
      * notification that an entity has been deleted
+     * 
+     * NOTE: this is a notification only and it's not allowed to make changes to the 
+     * underlying gedcom structure at this point!
+     * If Gedcom changes require subsequent changes performed by a plugin then this has 
+     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
+     * 
      * @see GedcomListener#gedcomEntityDeleted(Gedcom, Entity)
      */
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
@@ -218,6 +232,12 @@ public class TrackerPlugin implements Plugin {
   
     /** 
      * notification that a property has been added 
+     * 
+     * NOTE: this is a notification only and it's not allowed to make changes to the 
+     * underlying gedcom structure at this point!
+     * If Gedcom changes require subsequent changes performed by a plugin then this has 
+     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
+     * 
      * @see GedcomListener#gedcomPropertyAdded(Gedcom, Property, int, Property)
      */
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
@@ -227,6 +247,12 @@ public class TrackerPlugin implements Plugin {
   
     /** 
      * notification that a property has been changed
+     * 
+     * NOTE: this is a notification only and it's not allowed to make changes to the 
+     * underlying gedcom structure at this point!
+     * If Gedcom changes require subsequent changes performed by a plugin then this has 
+     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
+     * 
      * @see GedcomListener#gedcomPropertyChanged(Gedcom, Property)
      */
     public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
@@ -236,6 +262,12 @@ public class TrackerPlugin implements Plugin {
   
     /** 
      * notification that a property has been deleted
+     * 
+     * NOTE: this is a notification only and it's not allowed to make changes to the 
+     * underlying gedcom structure at this point!
+     * If Gedcom changes require subsequent changes performed by a plugin then this has 
+     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
+     * 
      * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
      */
     public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
@@ -245,6 +277,12 @@ public class TrackerPlugin implements Plugin {
     
     /** 
      * notification that properties have been linked
+     * 
+     * NOTE: this is a notification only and it's not allowed to make changes to the 
+     * underlying gedcom structure at this point!
+     * If Gedcom changes require subsequent changes performed by a plugin then this has 
+     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
+     * 
      * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
      */
     public void gedcomPropertyLinked(Gedcom gedcom, Property from, Property to) {
@@ -253,6 +291,16 @@ public class TrackerPlugin implements Plugin {
       touchedEntities.add(to.getEntity());
     }
     
+    /** 
+     * notification that a link between properties has been broken
+     * 
+     * NOTE: this is a notification only and it's not allowed to make changes to the 
+     * underlying gedcom structure at this point!
+     * If Gedcom changes require subsequent changes performed by a plugin then this has 
+     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
+     * 
+     * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
+     */
     public void gedcomPropertyUnlinked(Gedcom gedcom, Property from, Property to) {
       log("Property "+from.getTag()+" in "+from.getEntity()+" is no longer linked with "+to.getTag()+" in "+to.getEntity()+" in "+gedcom.getName());
       touchedEntities.add(from.getEntity());
