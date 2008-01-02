@@ -21,26 +21,33 @@ public class AlignRightArranger extends AbstractArranger {
     /**
      * Constructs the object.
      *
-     * @param horizontalGap minimal horizontal gap between individual boxes
+     * @param spacing minimal gap between boxes and lines
      */
-    public AlignRightArranger(int horizontalGap) {
-        super(horizontalGap);
+    public AlignRightArranger(int spacing) {
+        super(spacing);
+    }
+
+    public void filter(IndiBox indibox) {
+        indibox.wPlus = indibox.width;
+        indibox.hPlus = 1;
+        super.filter(indibox);
     }
 
     protected void arrangeSpouse(IndiBox indibox, IndiBox spouse) {
+        spouse.wPlus = spouse.width;
         spouse.x = -spouse.width;
     }
 
     protected void arrangeChildren(IndiBox indibox) {
         int currentX = indibox.width;
         if (indibox.getDir() == Direction.PARENT)
-            currentX = indibox.prev.width / 2 - indibox.x - horizontalGap;
+            currentX = indibox.prev.width / 2 - indibox.x - spacing;
         for (int i = 0; i < indibox.children.length; i++) {
             IndiBox child = indibox.children[i];
             child.x = currentX - child.width;
             child.y = 1;
             filter(child);
-            currentX -= child.wPlus + child.wMinus + horizontalGap;
+            currentX -= child.wPlus + child.wMinus + spacing;
         }
         if (indibox.children.length == 1) {
             IndiBox child = indibox.children[0];
@@ -53,7 +60,7 @@ public class AlignRightArranger extends AbstractArranger {
     }
 
     protected void arrangeNextMarriages(IndiBox indibox, IndiBox next) {
-        next.x = -indibox.wMinus - next.width - horizontalGap;
+        next.x = -indibox.wMinus - next.width - spacing;
         if (indibox.spouse != null && indibox.spouse.nextMarriage == next)
             next.x -= indibox.spouse.x;
         filter(next);

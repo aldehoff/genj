@@ -86,7 +86,7 @@ public class IndiBox {
 
     public int wMinus = 0;
 
-    public int hPlus = 1;
+    public int hPlus = 0;
 
     public int hMinus = 0;
 
@@ -139,7 +139,7 @@ public class IndiBox {
     public boolean hasChildren() {
         return (children != null && children.length > 0);
     }
-    
+
     public Fam getFamily() {
         if (family == null)
             return null;

@@ -16,64 +16,64 @@ import tree.IndiBox.Direction;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class AlignLeftArranger extends AbstractArranger {
+public class AlignTopArranger extends AbstractArranger {
 
     /**
      * Constructs the object.
      *
      * @param spacing minimal gap between boxes and lines
      */
-	public AlignLeftArranger(int spacing) {
+	public AlignTopArranger(int spacing) {
 		super(spacing);
 	}
 
     public void filter(IndiBox indibox) {
-        indibox.wPlus = indibox.width;
-        indibox.hPlus = 1;
+        indibox.wPlus = 1;
+        indibox.hPlus = indibox.height;
         super.filter(indibox);
     }
 
-    protected void arrangeSpouse(IndiBox indibox, IndiBox spouse) {
-        spouse.wPlus = spouse.width;
-		spouse.x = indibox.width;
+	protected void arrangeSpouse(IndiBox indibox, IndiBox spouse) {
+        spouse.hPlus = spouse.height;
+		spouse.y = indibox.height;
 	}
 
 	protected void arrangeChildren(IndiBox indibox) {
-		int currentX = 0;
+		int currentY = 0;
 		if (indibox.getDir() == Direction.PARENT)
-            currentX = indibox.prev.width / 2 - indibox.x + spacing;
+            currentY = indibox.prev.height / 2 - indibox.y + spacing;
 
 		for (int i = 0; i < indibox.children.length; i++) {
 			IndiBox child = indibox.children[i];
-			child.x = currentX;
-			child.y = 1;
+			child.y = currentY;
+			child.x = 1;
 			filter(child);
-			currentX += child.wPlus + spacing;
+			currentY += child.hPlus + spacing;
 		}
 		if (indibox.children.length == 1) {
             IndiBox child = indibox.children[0];
-            int parentWidth = indibox.wMinus + indibox.wPlus;
-            int childWidth = child.wMinus + child.wPlus;
-            int centerX = (parentWidth - childWidth) / 2 - indibox.wMinus + child.wMinus;
-            if (child.x < centerX)
-                child.x = centerX;
+            int parentHeight = indibox.hMinus + indibox.hPlus;
+            int childHeight = child.hMinus + child.hPlus;
+            int centerY = (parentHeight - childHeight) / 2 - indibox.hMinus + child.hMinus;
+            if (child.y < centerY)
+                child.y = centerY;
         }
 	}
 
 	protected void arrangeNextMarriages(IndiBox indibox, IndiBox next) {
 		filter(next);
-        next.x = indibox.wPlus + next.wMinus + spacing;
+        next.y = indibox.hPlus + next.hMinus + spacing;
         if (indibox.spouse != null && indibox.spouse.nextMarriage == next)
-            next.x -= indibox.spouse.x;
+            next.y -= indibox.spouse.y;
 	}
 
 	protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {
 		filter(parent);
-		parent.y = -parent.hPlus;
+		parent.x = -parent.wPlus;
 	}
 
 	protected void arrangeParent(IndiBox indibox, IndiBox parent) {
 		filter(parent);
-		parent.y = -indibox.hMinus - parent.hPlus;
+		parent.x = -indibox.wMinus - parent.wPlus;
 	}
 }

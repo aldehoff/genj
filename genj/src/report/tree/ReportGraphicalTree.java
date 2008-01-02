@@ -15,6 +15,7 @@ import genj.util.Registry;
 import java.io.IOException;
 
 import tree.arrange.AlignLeftArranger;
+import tree.arrange.AlignTopArranger;
 import tree.arrange.CenteredArranger;
 import tree.build.BasicTreeBuilder;
 import tree.build.NoSpouseFilter;
@@ -23,6 +24,7 @@ import tree.graphics.GraphicsOutput;
 import tree.graphics.GraphicsOutputFactory;
 import tree.graphics.GraphicsRenderer;
 import tree.graphics.TitleRenderer;
+import tree.output.HorizontalTreeRenderer;
 import tree.output.VerticalTreeRenderer;
 
 /**
@@ -36,7 +38,7 @@ import tree.output.VerticalTreeRenderer;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.17
+ * @version 0.18
  */
 public class ReportGraphicalTree extends Report {
 
@@ -56,14 +58,9 @@ public class ReportGraphicalTree extends Report {
     private static final int DEFAULT_INDIBOX_HEIGHT = 64;
 
     /**
-     * Minimal vertical gap between boxes.
+     * Minimal gap between boxes and lines.
      */
-    private static final int VERTICAL_GAP = 16;
-
-    /**
-     * Minimal horizontal gap between boxes.
-     */
-    private static final int HORIZONTAL_GAP = 10;
+    private static final int SPACING = 10;
 
     /**
      * Minimal family box width in pixels.
@@ -79,6 +76,12 @@ public class ReportGraphicalTree extends Report {
      * Width of the image inside an individual box.
      */
     private static final int MAX_IMAGE_WIDTH = 50;
+
+    // Arrangements enum
+    private static final int ARRANGEMENT_CENTER = 0;
+    private static final int ARRANGEMENT_LEFT = 1;
+    private static final int ARRANGEMENT_TOP = 2;
+
 
     /**
      * Output type.
@@ -181,17 +184,24 @@ public class ReportGraphicalTree extends Report {
     public boolean use_colors = true;
 
     /**
+     * Whether to display last name first.
+     * By default first name is in the first line and last name is in the second.
+     */
+    public boolean swap_names = false;
+
+    /**
      * Type of arrangement.
      */
     public int arrangement = 0;
+
+    public String[] arrangements = { translate("arrangement.center"),
+            translate("arrangement.left"), translate("arrangement.top") };
 
 	/**
 	 * Image title.
 	 */
     public String title = "";
 
-    public String[] arrangements = { translate("arrangement.center"),
-            translate("arrangement.left") };
 
     /**
      * The result is stored in files
@@ -212,8 +222,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("maxNames", max_names);
         properties.put("defaultIndiboxHeight", DEFAULT_INDIBOX_HEIGHT);
         properties.put("defaultIndiboxWidth", shrink_boxes ? SHRINKED_INDIBOX_WIDTH : DEFAULT_INDIBOX_WIDTH);
-        properties.put("verticalGap", VERTICAL_GAP);
-        properties.put("horizontalGap", HORIZONTAL_GAP);
+        properties.put("spacing", SPACING);
         properties.put("defaultFamboxWidth", DEFAULT_FAMBOX_WIDTH);
         properties.put("defaultFamboxHeight", DEFAULT_FAMBOX_HEIGHT);
         properties.put("displayFambox", display_fambox);
@@ -227,6 +236,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("drawPlaces", draw_places);
         properties.put("drawOccupation", draw_occupation);
         properties.put("drawDivorce", draw_divorce);
+        properties.put("swapNames", swap_names);
 
         // Build the tree
         TreeBuilder builder = new BasicTreeBuilder(properties);
@@ -238,11 +248,18 @@ public class ReportGraphicalTree extends Report {
         new DetermineFamboxSize(properties).filter(indibox);
 
         // Arrange the tree boxes
-        TreeFilter arranger;
-        if (arrangement == 0)
-            arranger = new CenteredArranger(HORIZONTAL_GAP);
-        else
-            arranger = new AlignLeftArranger(HORIZONTAL_GAP);
+        TreeFilter arranger = null;
+        switch (arrangement) {
+            case ARRANGEMENT_CENTER:
+                arranger = new CenteredArranger(SPACING);
+                break;
+            case ARRANGEMENT_LEFT:
+                arranger = new AlignLeftArranger(SPACING);
+                break;
+            case ARRANGEMENT_TOP:
+                arranger = new AlignTopArranger(SPACING);
+                break;
+        }
         arranger.filter(indibox);
 
         // Render and display the tree
@@ -251,7 +268,17 @@ public class ReportGraphicalTree extends Report {
         if (output == null)
             return; // Report cancelled
 
-        GraphicsRenderer renderer = new VerticalTreeRenderer(indibox, properties);
+        GraphicsRenderer renderer = null;
+        switch (arrangement) {
+            case ARRANGEMENT_CENTER:
+            case ARRANGEMENT_LEFT:
+                renderer = new VerticalTreeRenderer(indibox, properties);
+                break;
+            case ARRANGEMENT_TOP:
+                renderer = new HorizontalTreeRenderer(indibox, properties);
+                break;
+        }
+
         if (!title.equals(""))
             renderer = new TitleRenderer(renderer, title);
 

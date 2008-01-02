@@ -163,6 +163,8 @@ public class GraphicsTreeElements implements TreeElements {
 
     private boolean drawDivorce;
 
+    private boolean swapNames;
+
     /**
      * The graphics object to paint on.
      */
@@ -183,6 +185,7 @@ public class GraphicsTreeElements implements TreeElements {
         drawPlaces = properties.get("drawPlaces", true);
         drawOccupation = properties.get("drawOccupation", true);
         drawDivorce = properties.get("drawDivorce", true);
+        swapNames = properties.get("swapNames", false);
     }
 
     /**
@@ -199,7 +202,7 @@ public class GraphicsTreeElements implements TreeElements {
      * @param y  y coordinate
      * @param gen generation number
      */
-public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
+    public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
         Indi i = indibox.individual;
 
         // Determine photo size
@@ -232,8 +235,15 @@ public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
 
         // Name
         graphics.setFont(NAME_FONT);
-        centerString(graphics, getFirstNames(i), x + dataWidth/2, y + 14);
-        centerString(graphics, i.getLastName(), x + dataWidth/2, y + 26);
+
+        int firstNameY = 14;
+        int lastNameY = 26;
+        if (swapNames) {
+            firstNameY = 26;
+            lastNameY = 14;
+        }
+        centerString(graphics, getFirstNames(i), x + dataWidth/2, y + firstNameY);
+        centerString(graphics, i.getLastName(), x + dataWidth/2, y + lastNameY);
 
         int currentY = y + 38;
 

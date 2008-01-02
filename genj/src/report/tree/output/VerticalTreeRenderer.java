@@ -56,7 +56,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 
         // Determine height of levels
         new DetermineLevelHeight().filter(firstIndi);
-        int yCoord = VERTICAL_MARGIN;
+        int yCoord = PAGE_MARGIN;
         for (int i = levelMin; i <= levelMax; i++) {
             levelCoord.put(new Integer(i), new Integer(yCoord));
             yCoord += ((Integer)levelHeight.get(new Integer(i))).intValue();
@@ -68,7 +68,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
      * Outputs the family tree starting from the given IndiBox.
      */
 	protected void drawTree() {
-        drawTree(firstIndi, firstIndi.wMinus + HORIZONTAL_MARGIN, 0, 0);
+        drawTree(firstIndi, firstIndi.wMinus + PAGE_MARGIN, 0, 0);
 	}
 
     /**
@@ -99,7 +99,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
             if (displayFambox && indibox.family != null && indibox.spouse != null)
                 midY = getYCoord(baseY) + indibox.height + indibox.family.height;
 
-            elements.drawLine(midX, midY, midX, getYCoord(baseY + 1) - verticalGap / 2);
+            elements.drawLine(midX, midY, midX, getYCoord(baseY + 1) - spacing);
 
             SortedSet xSet = new TreeSet();
             xSet.add(new Integer(midX));
@@ -111,8 +111,8 @@ public class VerticalTreeRenderer extends TreeRendererBase {
             int x1 = ((Integer)xSet.first()).intValue();
             int x2 = ((Integer)xSet.last()).intValue();
 
-            elements.drawLine(x1, getYCoord(baseY + 1) - verticalGap / 2,
-                    x2, getYCoord(baseY + 1) - verticalGap / 2);
+            elements.drawLine(x1, getYCoord(baseY + 1) - spacing,
+                    x2, getYCoord(baseY + 1) - spacing);
         }
 
         // The individual
@@ -131,8 +131,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 		// Parent
 		if (indibox.parent != null) {
             elements.drawLine(baseX + indibox.width / 2, getYCoord(baseY),
-                baseX + indibox.width / 2, getYCoord(baseY + indibox.parent.y + 1) -
-			    verticalGap / 2);
+                baseX + indibox.width / 2, getYCoord(baseY + indibox.parent.y + 1) - spacing);
             drawTree(indibox.parent, baseX, baseY, gen - 1);
 		}
 
@@ -141,7 +140,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 			for (int i = 0; i < indibox.children.length; i++) {
                 int x = baseX + indibox.children[i].x + indibox.children[i].width / 2;
                 elements.drawLine(x, getYCoord(baseY + indibox.children[i].y),
-						x, getYCoord(baseY + 1) - verticalGap / 2);
+						x, getYCoord(baseY + 1) - spacing);
                 drawTree(indibox.children[i], baseX, baseY, gen + 1);
 			}
 
@@ -164,14 +163,14 @@ public class VerticalTreeRenderer extends TreeRendererBase {
      * Returns the image width (in pixels, including margins)
      */
     public int getImageWidth() {
-        return firstIndi.wMinus + firstIndi.wPlus + 2 * HORIZONTAL_MARGIN;
+        return firstIndi.wMinus + firstIndi.wPlus + 2 * PAGE_MARGIN;
     }
 
     /**
      * Returns the image height (in pixels, including margins)
      */
     public int getImageHeight() {
-        return getYCoord(levelMax + 1) + VERTICAL_MARGIN - verticalGap;
+        return getYCoord(levelMax + 1) + PAGE_MARGIN - spacing * 2;
     }
 
     /**
@@ -209,7 +208,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
             int heightInt = 0;
             if (height != null)
                 heightInt = height.intValue();
-            int newHeight = indibox.height + verticalGap;
+            int newHeight = indibox.height + spacing * 2;
             if (indibox.family != null)
                 newHeight += indibox.family.height;
             if (newHeight > heightInt)

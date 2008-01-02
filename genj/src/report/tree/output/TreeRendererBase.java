@@ -22,16 +22,11 @@ import tree.graphics.GraphicsRenderer;
 public abstract class TreeRendererBase implements GraphicsRenderer {
 
     /**
-     * Size of left and right image margin.
+     * Size of image margin.
      */
-    protected static final int VERTICAL_MARGIN = 10;
+    protected static final int PAGE_MARGIN = 10;
 
-    /**
-     * Size of top and bottom image margin.
-     */
-	protected static final int HORIZONTAL_MARGIN = 10;
-
-    protected int verticalGap;
+    protected int spacing;
     protected boolean displayFambox;
 
     protected IndiBox firstIndi;
@@ -48,7 +43,7 @@ public abstract class TreeRendererBase implements GraphicsRenderer {
         this.firstIndi = firstIndi;
         elements = new GraphicsTreeElements(null, properties);
 
-		verticalGap = properties.get("verticalGap", 0);
+		spacing = properties.get("spacing", 0);
         displayFambox = properties.get("displayFambox", true);
 	}
 
