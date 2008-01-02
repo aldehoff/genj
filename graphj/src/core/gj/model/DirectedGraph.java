@@ -19,15 +19,27 @@
  */
 package gj.model;
 
+import java.util.Set;
+
 /**
  * A directed graph (or Digraph)
  */
 public interface DirectedGraph extends Graph {
   
   /**
-   * Access direction of edge
-   * @return -1 (b,a), 1 for (a,b), 0 otherwise 
+   * An arc e = (x,y) is considered to be directed from x to y; y is called the head and x is called the 
+   * tail of the arc; y is said to be a direct successor of x, and x is said to be a direct predecessor of y. 
+   * If a path leads from x to y, then y is said to be a successor of x, and x is said to be a predecessor 
+   * of y. The arc (y,x) is called the arc (x,y) inverted. 
    */
-  public int getDirection(Object vertexA, Object VertexB);
+  public Set<?> getDirectPredecessors(Object vertex);
+  
+  /**
+   * An arc e = (x,y) is considered to be directed from x to y; y is called the head and x is called the 
+   * tail of the arc; y is said to be a direct successor of x, and x is said to be a direct predecessor of y. 
+   * If a path leads from x to y, then y is said to be a successor of x, and x is said to be a predecessor 
+   * of y. The arc (y,x) is called the arc (x,y) inverted. 
+   */
+  public Set<?> getDirectSuccessors(Object vertex);
   
 } //DirectedGraph

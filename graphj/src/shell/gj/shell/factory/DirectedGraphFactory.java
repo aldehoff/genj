@@ -111,7 +111,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
   }
   
   /**
-   * @see gj.shell.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
+   * @see gj.shell.factory.AbstractGraphFactory#create(Rectangle2D)
    */
   @Override
   public Graph create(Rectangle2D bounds) {
@@ -198,17 +198,17 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       
       // .. there's a node with deg(n)<minDegree
       Vertex vertex = getMinDegNode(graph, nodes, false);
-      if (graph.getNeighbours(vertex).size()>=minDegree) 
+      if (graph.getAdjacentVertices(vertex).size()>=minDegree) 
         break;
       
       // we don't want to connect to a neighbour
       List<Vertex> others = new LinkedList<Vertex>(nodes);
-      others.removeAll(graph.getNeighbours(vertex));
+      others.removeAll(graph.getAdjacentVertices(vertex));
       
       // find other
       while (true) {
         Vertex other = getRandomNode(others,true);
-        if (graph.getNeighbours(other).size()<minDegree||others.isEmpty()) {
+        if (graph.getAdjacentVertices(other).size()<minDegree||others.isEmpty()) {
           graph.addEdge(vertex, other, null);
           break;
         }

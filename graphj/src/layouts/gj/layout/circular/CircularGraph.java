@@ -90,7 +90,7 @@ import java.util.Stack;
     path.push(node);
     
     // recurse into neighbours traversing via arcs
-    Iterator<?> neighbours = graph.getNeighbours(node).iterator();
+    Iterator<?> neighbours = graph.getAdjacentVertices(node).iterator();
     while (neighbours.hasNext()) {
       Object neighbour = neighbours.next();
       // don't go back

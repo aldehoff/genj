@@ -39,8 +39,9 @@ public class Vertex extends Element {
   /** the position of this vertex */
   private Point2D position;
   
-  /** all neighbours of this vertex */
-  private Set<Vertex> neighbours = new HashSet<Vertex>();
+  /** neighbours of this vertex */
+  private Set<Vertex> successors = new HashSet<Vertex>();
+  private Set<Vertex> predecessors = new HashSet<Vertex>();
   
   /** all edges of this vertex */
   private List<Edge> edges = new ArrayList<Edge>(3);
@@ -60,7 +61,10 @@ public class Vertex extends Element {
    * Returns neighbours
    */
   public Set<Vertex> getNeighbours() {
-    return neighbours;
+    Set<Vertex> result = new HashSet<Vertex>();
+    result.addAll(successors);
+    result.addAll(predecessors);
+    return result;
   }
   
   /**
@@ -69,19 +73,18 @@ public class Vertex extends Element {
   /*package*/ Edge addEdge(Vertex that, Shape shape) {
 
     // don't allow duplicates
-    if (neighbours.contains(that))
+    if (predecessors.contains(that) || successors.contains(that))
       throw new IllegalArgumentException("already exists edge between "+this+" and "+that);
 
     // setup self
     Edge edge = new Edge(this, that, shape);
-    this.neighbours.add(that);
+    this.successors.add(that);
     this.edges.add(edge);
     
     // setup other
-    if (that!=this) {
-      that.neighbours.add(this);
+    that.predecessors.add(this);
+    if (that!=this) 
       that.edges.add(edge);
-    }
     
     // done
     return edge;
@@ -110,7 +113,7 @@ public class Vertex extends Element {
    */
   /*package*/ void removeEdge(Edge edge, Vertex to) {
     edges.remove(edge);
-    neighbours.remove(to);
+    successors.remove(to);
   }
   
   /**

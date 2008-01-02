@@ -72,14 +72,14 @@ public class Edge extends Element {
   }
   
   /**
-   * @see Arc#getStart()
+   * the start of the edge
    */
   public Vertex getStart() {
     return start;
   }
 
   /**
-   * @see Arc#getEnd()
+   * the end of the edge
    */
   public Vertex getEnd() {
     return end;

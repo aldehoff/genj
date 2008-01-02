@@ -45,7 +45,7 @@ public class EdgeLayoutHelper {
     HashSet<Object> done = new HashSet<Object>();
     while (vertices.hasNext()) {
       Object vertex = vertices.next();
-      Iterator<?> neighbours = graph.getNeighbours(vertex).iterator();
+      Iterator<?> neighbours = graph.getAdjacentVertices(vertex).iterator();
       while (neighbours.hasNext()) {
         Object neighbour = neighbours.next();
         if (!done.contains(neighbour)) {
@@ -63,7 +63,7 @@ public class EdgeLayoutHelper {
   public static void setShape(Graph graph, Layout2D layout, Object vertexA, Object vertexB) {
     int direction = 0;
     if (graph instanceof DirectedGraph) 
-      direction = ((DirectedGraph)graph).getDirection(vertexA, vertexB);
+      direction = ((DirectedGraph)graph).getDirectSuccessors(vertexA).contains(vertexB) ? 1 : 0;
     setShape(layout, vertexA, vertexB, direction);
   }
   

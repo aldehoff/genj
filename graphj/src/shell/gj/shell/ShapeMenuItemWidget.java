@@ -45,7 +45,7 @@ public class ShapeMenuItemWidget extends JMenuItem {
   }
 
   /**
-   * @see Component#getPreferredSize()
+   * @see java.awt.Component#getPreferredSize()
    */
   @Override
   public Dimension getPreferredSize() {
@@ -54,7 +54,7 @@ public class ShapeMenuItemWidget extends JMenuItem {
   }
 
   /**
-   * @see Component#paintComponent
+   * @see javax.swing.JComponent#paintComponents(Graphics)
    */
   @Override
   public void paintComponent(Graphics g) {

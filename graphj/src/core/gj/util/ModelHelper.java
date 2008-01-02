@@ -55,7 +55,7 @@ public class ModelHelper {
    * That is  E node(i), E arc(i,j) where node = node(j)
    */
   public static boolean isNeighbour(Graph graph, Object node, List<?> nodes) {
-    Iterator<?> neighbours = graph.getNeighbours(node).iterator();
+    Iterator<?> neighbours = graph.getAdjacentVertices(node).iterator();
     while (neighbours.hasNext()) {
       if (nodes.contains(neighbours.next()))
         return true;

@@ -133,7 +133,6 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
 
   /**
    * Setter 
-   * @see TreeLayout#getBalancedChildren()
    */
   public void setBalanceChildren(boolean set) {
     isBalanceChildren=set;
@@ -196,7 +195,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private Branch layout(Tree tree, Layout2D layout, Object parent, Object root) {
     
     // check children
-    Set<?> children = tree.getNeighbours(root);
+    Set<?> children = tree.getAdjacentVertices(root);
     children.remove(parent);
 
     // a leaf is easy

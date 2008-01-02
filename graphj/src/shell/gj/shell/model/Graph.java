@@ -38,8 +38,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.w3c.dom.Node;
-
 /**
  * A default impl for 
  * @see gj.layout.Layout2D
@@ -114,7 +112,7 @@ public class Graph implements DirectedGraph {
   }
 
   /**
-   * @see MutableGraph#removeVertex(Node)
+   * removes a vertex
    */
   public void removeVertex(Vertex node) {
     
@@ -207,18 +205,34 @@ public class Graph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Set<Vertex> getNeighbours(Object vertex) {
+  public Set<Vertex> getAdjacentVertices(Object vertex) {
     return ((Vertex)vertex).getNeighbours();
   }
   
   /**
    * interface implementation
    */
-  public int getDirection(Object vertexA, Object vertexB) {
-    Edge edge = ((Vertex)vertexA).getEdge((Vertex)vertexB);
-    return edge.getStart()==vertexA ? 1 : -1;
+  public java.util.Set<Vertex> getDirectPredecessors(Object vertex) {
+    Set<Vertex> predecessors = new HashSet<Vertex>();
+    for (Edge edge : ((Vertex)vertex).getEdges()) {
+      if (edge.getEnd() == vertex)
+        predecessors.add(edge.getStart());
+    }  
+    return predecessors;
   }
-
+  
+  /**
+   * interface implementation
+   */
+  public Set<?> getDirectSuccessors(Object vertex) {
+    Set<Vertex> successors = new HashSet<Vertex>();
+    for (Edge edge : ((Vertex)vertex).getEdges()) {
+      if (edge.getStart() == vertex)
+        successors.add(edge.getEnd());
+    }  
+    return successors;
+  }
+  
   /**
    * The rendering functionality
    */

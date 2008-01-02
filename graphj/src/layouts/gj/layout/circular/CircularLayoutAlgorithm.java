@@ -79,7 +79,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
   }
   
   /**
-   * @see gj.layout.LayoutAlgorithm#apply(gj.model.Graph, java.awt.geom.Rectangle2D)
+   * @see gj.layout.LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D)
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
     

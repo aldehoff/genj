@@ -336,7 +336,6 @@ public class Geometry {
    * @param lineStart start of line
    * @param lineEnd end of line
    * @param shape the shape
-   * @return intersections with shape
    */
   public static void getIntersections(Point2D lineStart, Point2D lineEnd, Shape shape, Collection<Point2D> result) {
     new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(null), result);
@@ -348,7 +347,6 @@ public class Geometry {
    * @param lineEnd end of line
    * @param shapePos position of shape
    * @param shape the shape 
-   * @return intersection with shape
    */
   public static void getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape, Collection<Point2D> result) {
     new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())), result);
@@ -398,8 +396,10 @@ public class Geometry {
 
   /**
    * Tests for intersection of two lines (segments of finite length)
-   * @param aStart+aEnd line segment describing line A
-   * @param bStart+bEnd line segement describing line B
+   * @param aStart line segment describing line A
+   * @param aEnd line segment describing line A
+   * @param bStart line segment describing line B
+   * @param bEnd line segment describing line B
    */
   public static boolean testIntersection(Point2D aStart, Point2D aEnd, Point2D bStart, Point2D bEnd) {
     
@@ -443,8 +443,10 @@ public class Geometry {
   
   /**
    * Calculates the intersecting point of two lines
-   * @param aStart+aEnd line segment describing line A
-   * @param bStart+bEnd line segement describing line B
+   * @param aStart line segment describing line A
+   * @param aEnd line segment describing line A
+   * @param bStart line segment describing line B
+   * @param bEnd line segment describing line B
    * @return either intersecting point or null if lines are parallel or line segments don't cross
    */
   public static Point2D getIntersection(Point2D aStart, Point2D aEnd, Point2D bStart, Point2D bEnd) {

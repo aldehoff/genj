@@ -29,7 +29,7 @@ import java.awt.geom.Rectangle2D;
 public class EmptyFactory extends AbstractGraphFactory {
 
   /**
-   * @see gj.shell.factory.AbstractGraphFactory#create(gj.model.Factory, java.awt.geom.Rectangle2D)
+   * @see gj.shell.factory.AbstractGraphFactory#create(Rectangle2D)
    */
   @Override
   public Graph create(Rectangle2D bounds) {

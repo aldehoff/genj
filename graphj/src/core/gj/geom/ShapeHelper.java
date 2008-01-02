@@ -41,8 +41,10 @@ public class ShapeHelper implements PathIteratorKnowHow {
    *  <li>SEG_CLOSE
    * </ul>
    * 
-   * @param x,y offset applied to all coordinates in values
-   * @param sx,sy scaling applied to all coordinates
+   * @param x offset applied to all coordinates in values
+   * @param y offset applied to all coordinates in values
+   * @param sx scaling applied to all coordinates
+   * @param sy scaling applied to all coordinates
    * @param values array describing shape 
    *         (segtype [ [, cx1, xy1 [, cx2, cy2] ] , x, y ])*
    */

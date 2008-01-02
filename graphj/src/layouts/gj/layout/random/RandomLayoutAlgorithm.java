@@ -89,7 +89,7 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   }
 
   /**
-   * @see LayoutAlgorithm#applyTo(Graph)
+   * @see LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D)
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
     

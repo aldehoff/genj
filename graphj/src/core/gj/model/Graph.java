@@ -34,7 +34,7 @@ public interface Graph {
   /**
    * Access to the neighbours of a vertex
    */
-  public Set<?> getNeighbours(Object vertex);
+  public Set<?> getAdjacentVertices(Object vertex);
   
 } //Graph
  
