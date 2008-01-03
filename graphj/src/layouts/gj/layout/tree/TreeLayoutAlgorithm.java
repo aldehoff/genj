@@ -19,6 +19,7 @@
  */
 package gj.layout.tree;
 
+import gj.geom.Geometry;
 import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
@@ -28,6 +29,8 @@ import gj.model.Graph;
 import gj.model.Tree;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
@@ -194,33 +197,42 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
    */
   private Branch layout(Tree tree, Layout2D layout, Object parent, Object root) {
     
+    double axis = orientation/360*Geometry.ONE_RADIAN + Geometry.ONE_RADIAN/4;
+    
     // check children
     Set<?> children = tree.getAdjacentVertices(root);
     children.remove(parent);
 
     // a leaf is easy
     if (children.isEmpty()) 
-      return new Branch(root, layout.getShapeOfVertex(root));
+      return new Branch(root, layout);
     
-    // create a branch for each child
+    // loop over all children - a branch for each
     Branch[] branches = new Branch[children.size()];
     Iterator<?> it = children.iterator();
     Point2D.Double pos = new Point2D.Double();
     for (int b=0;b<branches.length;b++) {
       Object child = it.next();
+      
+      // create the branch
       branches[b] = layout(tree, layout, root, child);
-      if (b==0) {
-        pos.setLocation(layout.getPositionOfVertex(child));
-      } else {
-        // FIXME
+      
+      // position aligned with previous
+      
+      // calculate distance and move beside previous
+      if (b>0) {
+        double distance = Geometry.getDistance(branches[b-1].shape, branches[b].shape, Geometry.ONE_RADIAN/4 );
+        branches[b].move(layout, -Math.sin(axis) * distance, -Math.cos(axis) * distance);
       }
+      
+      // next
     }
     
-    // merge branches
+    // place parent and merge branches
     return new Branch(root, layout.getShapeOfVertex(root), branches);
 
   }
-
+  
   /**
    * A Branch is the recursively worked on part of the tree
    */
@@ -230,17 +242,27 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     private Object root;
 
     /** shape of branch */
-    private Shape shape;
+    private GeneralPath shape;
     
     /** constructor for a leaf */
-    Branch(Object root, Shape shape) {
+    Branch(Object root, Layout2D layout) {
       this.root = root;
-      this.shape = shape;
+      shape = new GeneralPath(layout.getShapeOfVertex(root));
+      Point2D pos = layout.getPositionOfVertex(root);
+      shape.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
     }
 
     /** constructor for a branch of sub-branches */
     Branch(Object root, Shape shape, Branch[] branches) {
       // FIXME
+      this.root = root;
+      this.shape = new GeneralPath(shape);
+    }
+    
+    /** translate a branch */
+    void move(Layout2D layout, double dx, double dy) {
+      TreeLayoutAlgorithm.this.move(layout, root, dx, dy);
+      shape.transform(AffineTransform.getTranslateInstance(dx, dy));
     }
     
   } //Branch

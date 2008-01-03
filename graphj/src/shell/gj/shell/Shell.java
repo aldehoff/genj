@@ -284,8 +284,8 @@ public class Shell {
       // make sure the current graph is valid
       try {
         graph.validate();
-      } finally {
-        graph = new Graph(graph);
+      } catch (Throwable t) {
+        throw new LayoutAlgorithmException("Graph is not valid: "+t.getMessage());
       }
       
       // the algorithm

@@ -37,6 +37,12 @@ public class GeometryTest extends TestCase {
    * Test shape distance calculations
    */
   public void testShapeShapeDistance() {
+    
+    // xxx   
+    // xoxo
+    // xxxo
+    //  ooo
+    tst( -0.5, dist(r(0,0), r(0.5,0), deg(90)));
 
     // ******
     //-*-**-*-
@@ -56,7 +62,7 @@ public class GeometryTest extends TestCase {
     // *|*    
     // ***
     //  |
-    tst( 0, dist(r(0,0), r(0,1), deg(180)));
+    tst( 0, dist(r(0,0), r(0,1), deg(180))); 
 
     //  |
     // ***
@@ -101,11 +107,11 @@ public class GeometryTest extends TestCase {
     //     ***
     tst( hypotenuse(4,4), dist(r(0,0), r(5,5), deg(135)));
 
-    // ***
-    //-****-
-    // ** *
-    //  ***
-    tst( 0.5, dist(r(0,0), r(0.5,0.5), deg(90)));
+    // ooo
+    //-oxxx-
+    // oxox
+    //  xxx
+    tst( -0.5, dist(r(0,0), r(0.5,0.5), deg(90)));
     
     //
     //  *   *

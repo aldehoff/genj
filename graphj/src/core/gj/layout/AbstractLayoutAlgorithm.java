@@ -21,6 +21,8 @@ package gj.layout;
 
 import gj.util.EdgeLayoutHelper;
 
+import java.awt.geom.Point2D;
+
 /**
  * Base for Layouts (optional)
  */
@@ -53,6 +55,15 @@ public abstract class AbstractLayoutAlgorithm implements LayoutAlgorithm {
   public String toString() {
     String s = getClass().getName();
     return s.substring(s.lastIndexOf('.')+1);
+  }
+  
+  /**
+   * Helper to move point by delta
+   */
+  protected void move(Layout2D layout, Object vertex, double dx, double dy) {
+    Point2D pos = layout.getPositionOfVertex(vertex);
+    pos.setLocation(pos.getX() + dx, pos.getY() + dy);
+    layout.setPositionOfVertex(vertex, pos);
   }
 
 } //AbstractLayout

@@ -34,6 +34,8 @@ import java.util.List;
  * Missing mathematical functions from the geom.* stuff
  */
 public class Geometry {
+  
+  public final static double ONE_RADIAN = 2 * Math.PI;
 
   /** 
    * the maximum distance that the line segments used to approximate 
@@ -84,6 +86,7 @@ public class Geometry {
     private double result = Double.POSITIVE_INFINITY;
     
     /** the axis vector we're measuring distance on */
+    private double axis;
     private Point2D vector;
 
     /** the current shape we're intersecting against */
@@ -102,16 +105,18 @@ public class Geometry {
       
       // keep an axis vector
       vector = new Point2D.Double(
-          Math.sin(axis)*span, 
+          Math.sin(axis)*span,
           -Math.cos(axis)*span
       );
       
       // iterate over shape1 intersecting lines along the axis with shape2
       intersectWith = shape2;
+      this.axis = axis;
       ShapeHelper.iterateShape(new FlatteningPathIterator(shape1.getPathIterator(null), DEFAULT_FLATNESS), this);
       
       // iterate over shape2 intersecting lines along the axis with shape1
       intersectWith = shape1;
+      this.axis = axis + Geometry.ONE_RADIAN/2;
       ShapeHelper.iterateShape(new FlatteningPathIterator(shape2.getPathIterator(null), DEFAULT_FLATNESS), this);
       
       // done
@@ -137,16 +142,11 @@ public class Geometry {
 
       // intersect line (a,b) with shape
       ArrayList<Point2D> is = new ArrayList<Point2D>(10);
-      getIntersections(a, b, intersectWith, is);
+      getIntersections(a, b, intersectWith, is );
       
       // calculate smallest distance
-      if (is.size()>0) {
-        Point2D closest = getClosest(end, is);
-        double distance = closest.distance(end);
-        if (distance<result) {
-          result = distance;
-        }
-      }
+      for (Point2D i : is) 
+        result = Math.min(result, Math.sin(axis)*(i.getX()-end.getX()) - Math.cos(axis)*(i.getY()-end.getY()));
       
       // continue
       return true;
