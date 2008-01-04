@@ -19,7 +19,7 @@
  */
 package gj.model;
 
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * A Graph contains Nodes and Arcs
@@ -29,12 +29,12 @@ public interface Graph {
   /**
    * Access to the graph's vertices
    */
-  public Set<?> getVertices();
+  public Collection<?> getVertices();
  
   /**
    * Access to the neighbours of a vertex
    */
-  public Set<?> getAdjacentVertices(Object vertex);
+  public Collection<?> getAdjacentVertices(Object vertex);
   
 } //Graph
  

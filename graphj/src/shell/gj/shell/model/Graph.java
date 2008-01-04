@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -212,8 +213,8 @@ public class Graph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public java.util.Set<Vertex> getDirectPredecessors(Object vertex) {
-    Set<Vertex> predecessors = new HashSet<Vertex>();
+  public java.util.List<Vertex> getDirectPredecessors(Object vertex) {
+    List<Vertex> predecessors = new ArrayList<Vertex>();
     for (Edge edge : ((Vertex)vertex).getEdges()) {
       if (edge.getEnd() == vertex)
         predecessors.add(edge.getStart());
@@ -224,8 +225,8 @@ public class Graph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Set<?> getDirectSuccessors(Object vertex) {
-    Set<Vertex> successors = new HashSet<Vertex>();
+  public List<?> getDirectSuccessors(Object vertex) {
+    List<Vertex> successors = new ArrayList<Vertex>();
     for (Edge edge : ((Vertex)vertex).getEdges()) {
       if (edge.getStart() == vertex)
         successors.add(edge.getEnd());

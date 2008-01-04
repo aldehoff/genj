@@ -366,7 +366,7 @@ public class GraphWidget extends JPanel {
         Object selection = graph.getSelection();
         if (selection instanceof Vertex) {
           Vertex v = (Vertex)selection;
-	        if (from.getNeighbours().contains(v))
+	        if (from.isNeighbour(v))
 	          graph.removeEdge(from.getEdge(v));
 	        new ActionCreateEdge(from, v).trigger();
         }

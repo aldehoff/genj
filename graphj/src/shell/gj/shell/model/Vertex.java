@@ -66,6 +66,13 @@ public class Vertex extends Element {
     result.addAll(predecessors);
     return result;
   }
+
+  /**
+   * Check for neighbour
+   */
+  public boolean isNeighbour(Vertex v) {
+    return successors.contains(v) || predecessors.contains(v);
+  }
   
   /**
    * Adds an edge to given vertex
@@ -187,5 +194,5 @@ public class Vertex extends Element {
       return content.toString();
     }
   }
-  
+
 } //Vertex

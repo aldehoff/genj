@@ -33,8 +33,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * A 'simple' tree layout for Trees
@@ -200,19 +199,22 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     double axis = orientation/360*Geometry.ONE_RADIAN + Geometry.ONE_RADIAN/4;
     
     // check children
-    Set<?> children = tree.getAdjacentVertices(root);
-    children.remove(parent);
+    Collection<?> adjacents = tree.getAdjacentVertices(root);
+    int children = parent!=null ? adjacents.size()-1 : adjacents.size(); 
 
     // a leaf is easy
-    if (children.isEmpty()) 
+    if (children==0) 
       return new Branch(root, layout);
     
     // loop over all children - a branch for each
-    Branch[] branches = new Branch[children.size()];
-    Iterator<?> it = children.iterator();
+    Branch[] branches = new Branch[children];
+    int b = 0;
     Point2D.Double pos = new Point2D.Double();
-    for (int b=0;b<branches.length;b++) {
-      Object child = it.next();
+    for (Object child : adjacents) {
+      
+      // don't return
+      if (child==parent)
+        continue;
       
       // create the branch
       branches[b] = layout(tree, layout, root, child);
@@ -226,6 +228,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       }
       
       // next
+      b++;
     }
     
     // place parent and merge branches
