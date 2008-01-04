@@ -22,6 +22,7 @@ package gj.geom;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import junit.framework.TestCase;
@@ -33,6 +34,42 @@ public class GeometryTest extends TestCase {
   
   private double TwoPi = Math.PI*2;
 
+  /**
+   * Test tangent calculations
+   */
+  public void testTangents() {
+    
+    // -----
+    //  xxx
+    //  x x
+    //  xxx
+    tst(-0.5, Geometry.getOriginOfTangent( r(0,0), deg(0)).getY() );
+    
+    //  xxx
+    //  x x
+    //  xxx
+    // -----
+    tst(0.5, Geometry.getOriginOfTangent( r(0,0), deg(180)).getY() );
+    
+    //  xxx|
+    //  x x|
+    //  xxx|
+    tst(0.5, Geometry.getOriginOfTangent( r(0,0), deg(90)).getX() );
+    
+    //  xxx
+    //  x x
+    //  xxx/
+    //    /
+    assertEquals(new Point2D.Double(.5,.5), Geometry.getOriginOfTangent( r(0,0), deg(90+45)));
+    
+    
+    //    x  |
+    //   x x |
+    //  x   x|
+    //   x x |
+    //    x  |
+  }
+  
   /**
    * Test shape distance calculations
    */

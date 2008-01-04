@@ -67,11 +67,62 @@ public class Geometry {
   }
   
   /**
+   * Calculates the origin of a tangent that touches the given shape that
+   * cannot be translated by direction axis (ray) while staying a tangent 
+   */
+  public static Point2D getOriginOfTangent(Shape shape, double axis) {
+    return new OpOriginOfTangent(shape, axis).getResult();
+  }
+  
+  /**
+   * Operation - calc origin of tangent for given shape and axis 
+   */
+  private static class OpOriginOfTangent extends SegmentConsumer {
+    
+    private double sinaxis, cosaxis; 
+    private double max = Double.NEGATIVE_INFINITY;
+    private Point2D.Double result = new Point2D.Double();
+
+    /**
+     * Constructor
+     */
+    public OpOriginOfTangent(Shape shape, double axis) {
+      sinaxis = Math.sin(axis);
+      cosaxis = Math.cos(axis);
+      
+      ShapeHelper.iterateShape(new FlatteningPathIterator(shape.getPathIterator(null), DEFAULT_FLATNESS), this);
+    }
+
+    /**
+     * Check points of a segment
+     */
+    @Override
+    public boolean consumeLine(Point2D start, Point2D end) {
+      
+      double delta = sinaxis * end.getX() - cosaxis * end.getY();
+      if (delta>max) {
+        max = delta;
+        result.setLocation(end);
+      }
+
+      // continue
+      return true;
+    }
+    
+    /**
+     * the result
+     */
+    Point2D getResult() {
+      return max == Double.NEGATIVE_INFINITY ? (Point2D)null : result;
+    }
+  } //OpOriginOfTangent
+  
+  /**
    * Calculates the distance of two shapes along the given axis. 
    * For non-'parallel' shapes the result is Double.MAX_VALUE.
    * @param shape1 first shape
    * @param shape2 second shape
-   * @param axis angle of axis in bogenmass where zero is up
+   * @param axis radian of axis (zero is north for vertical distance of two shapes)
    * @return distance
    */
   public static double getDistance(Shape shape1, Shape shape2, double axis) {
