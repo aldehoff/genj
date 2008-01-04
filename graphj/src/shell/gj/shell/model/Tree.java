@@ -89,7 +89,7 @@ public class Tree extends Graph implements gj.model.Tree {
   public void validate() {
     
     // empty is fine
-    if (getVertices().isEmpty())
+    if (getNumVertices() == 0)
       return;
 
     // need root
@@ -103,7 +103,7 @@ public class Tree extends Graph implements gj.model.Tree {
     	throw new IllegalArgumentException("graph is not acyclic");
     
     // check spanning
-    if (!visited.containsAll(getVertices()))
+    if (visited.size() != getNumVertices())
       throw new IllegalArgumentException("graph is not a spanning tree");
     
   }

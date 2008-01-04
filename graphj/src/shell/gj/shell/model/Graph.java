@@ -199,21 +199,47 @@ public class Graph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Set<Vertex> getVertices() {
+  public int getNumVertices() {
+    return vertices.size();
+  }
+  
+  /**
+   * interface implementation
+   */
+  public Iterable<Vertex> getVertices() {
     return vertices;
   }
   
   /**
    * interface implementation
    */
-  public Set<Vertex> getAdjacentVertices(Object vertex) {
+  public int getNumAdjacentVertices(Object vertex) {
+    return ((Vertex)vertex).getNumNeighbours();
+  }
+  
+  /**
+   * interface implementation
+   */
+  public Iterable<Vertex> getAdjacentVertices(Object vertex) {
     return ((Vertex)vertex).getNeighbours();
   }
   
   /**
    * interface implementation
    */
-  public java.util.List<Vertex> getDirectPredecessors(Object vertex) {
+  public int getNumDirectPredecessors(Object vertex) {
+    int result = 0;
+    for (Edge edge : ((Vertex)vertex).getEdges()) {
+      if (edge.getEnd() == vertex) result++;
+    }  
+    return result;
+  }
+  
+  /**
+   * interface implementation
+   */
+  public Iterable<Vertex> getDirectPredecessors(Object vertex) {
+    // FIXME this could be in-situ without temporary array
     List<Vertex> predecessors = new ArrayList<Vertex>();
     for (Edge edge : ((Vertex)vertex).getEdges()) {
       if (edge.getEnd() == vertex)
@@ -225,7 +251,19 @@ public class Graph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public List<?> getDirectSuccessors(Object vertex) {
+  public int getNumDirectSuccessors(Object vertex) {
+    int result = 0;
+    for (Edge edge : ((Vertex)vertex).getEdges()) {
+      if (edge.getStart() == vertex) result++;
+    }  
+    return result;
+  }
+  
+  /**
+   * interface implementation
+   */
+  public Iterable<?> getDirectSuccessors(Object vertex) {
+    // FIXME this could be in-situ without temporary array
     List<Vertex> successors = new ArrayList<Vertex>();
     for (Edge edge : ((Vertex)vertex).getEdges()) {
       if (edge.getStart() == vertex)

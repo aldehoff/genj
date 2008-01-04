@@ -58,10 +58,18 @@ public class Vertex extends Element {
   }
   
   /**
+   * Number of neighbours
+   */
+  public int getNumNeighbours() {
+    return successors.size() + predecessors.size();
+  }
+  
+  /**
    * Returns neighbours
    */
-  public Set<Vertex> getNeighbours() {
-    Set<Vertex> result = new HashSet<Vertex>();
+  public List<Vertex> getNeighbours() {
+    // FIXME this could be in-situ without temporary array
+    List<Vertex> result = new ArrayList<Vertex>();
     result.addAll(successors);
     result.addAll(predecessors);
     return result;

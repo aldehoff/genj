@@ -24,6 +24,8 @@ import gj.model.Graph;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -64,11 +66,34 @@ public class ModelHelper {
   }
 
   /**
+   * Calculate a list from given iterable
+   */
+  public static <T> List<T> toList(Iterable<T> ts) {
+    List<T> result = new ArrayList<T>();
+    for (T t : ts)
+      result.add(t);
+    return result;
+  }
+  
+  public static <T> void removeAll(Collection<T> c, Iterable<T> ts) {
+    for (T t : ts) 
+      c.remove(t);
+  }
+  
+  public static boolean contains(Iterable<?> ts, Object t) {
+    for (Object i : ts) {
+      if (i.equals(t))
+        return true;
+    }
+    return false;
+  }
+
+  /**
    * Calculates the dimension of set of nodes
    */
   public static Rectangle2D getBounds(Graph graph, Layout2D layout) {
     // no content?
-    if (graph==null||graph.getVertices().isEmpty()) 
+    if (graph==null||graph.getNumVertices()==0) 
       return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;

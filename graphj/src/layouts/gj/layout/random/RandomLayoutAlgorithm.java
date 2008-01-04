@@ -94,7 +94,7 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
     
     // something to do for me?
-    if (graph.getVertices().isEmpty())
+    if (graph.getNumVertices() == 0)
       return bounds;
     
     // get a seed

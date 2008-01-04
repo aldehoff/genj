@@ -283,7 +283,7 @@ public class GraphWidget extends JPanel {
       
       // quick create?
       if (quickNode) {
-        graph.addVertex(content.getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getVertices().size()+1) );
+        graph.addVertex(content.getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
         repaint();
         return;
       }

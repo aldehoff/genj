@@ -186,7 +186,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   private void ensureMinDegree(Graph graph) {
     
-    List<Vertex> nodes = new ArrayList<Vertex>(graph.getVertices());
+    List<Vertex> nodes = ModelHelper.toList(graph.getVertices());
     
     // validate minDegree - maximum n-1 so that there
     // are always enough nodes to connect to without dups
@@ -198,17 +198,17 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       
       // .. there's a node with deg(n)<minDegree
       Vertex vertex = getMinDegNode(graph, nodes, false);
-      if (graph.getAdjacentVertices(vertex).size()>=minDegree) 
+      if (graph.getNumAdjacentVertices(vertex) >= minDegree) 
         break;
       
       // we don't want to connect to a neighbour
       List<Vertex> others = new LinkedList<Vertex>(nodes);
-      others.removeAll(graph.getAdjacentVertices(vertex));
+      ModelHelper.removeAll(others, graph.getAdjacentVertices(vertex));
       
       // find other
       while (true) {
         Vertex other = getRandomNode(others,true);
-        if (graph.getAdjacentVertices(other).size()<minDegree||others.isEmpty()) {
+        if (graph.getNumAdjacentVertices(other) < minDegree || others.isEmpty()) {
           graph.addEdge(vertex, other, null);
           break;
         }
@@ -233,7 +233,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   protected void ensureConnected(Graph graph) {
     
-    List<Vertex> nodes = new LinkedList<Vertex>(graph.getVertices());
+    List<Vertex> nodes = new LinkedList<Vertex>(ModelHelper.toList(graph.getVertices()));
     
     while (nodes.size()>1) {
       Vertex from = getMinDegNode(graph,nodes,true);

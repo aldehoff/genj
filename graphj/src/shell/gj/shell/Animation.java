@@ -61,14 +61,14 @@ import java.util.List;
   public Animation(Graph graph, Layout layout) {
     
     // something to animate?
-    if (graph.getVertices().isEmpty()) 
+    if (graph.getNumVertices() == 0) 
       return;
 
     // keep some data
     this.graph = graph;
 
     // create movements for vertices ...
-    moves = new Movement[graph.getVertices().size()];
+    moves = new Movement[graph.getNumVertices()];
     Iterator<Vertex> vertices = graph.getVertices().iterator();
     int m=0; for (;vertices.hasNext();m++) 
       moves[m] = new Movement(vertices.next());

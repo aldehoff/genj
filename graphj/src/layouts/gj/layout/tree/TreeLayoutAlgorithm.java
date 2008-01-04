@@ -33,7 +33,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Collection;
 
 /**
  * A 'simple' tree layout for Trees
@@ -181,7 +180,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     Tree tree = (Tree)graph;
 
     // ignore an empty tree
-    if (tree.getVertices().isEmpty())
+    if (tree.getNumVertices()==0)
       return bounds;
     
     // recurse into it
@@ -199,8 +198,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     double axis = orientation/360*Geometry.ONE_RADIAN + Geometry.ONE_RADIAN/4;
     
     // check children
-    Collection<?> adjacents = tree.getAdjacentVertices(root);
-    int children = parent!=null ? adjacents.size()-1 : adjacents.size(); 
+    int children = tree.getNumAdjacentVertices(root) + (parent!=null ? -1 : 0); 
 
     // a leaf is easy
     if (children==0) 
@@ -210,8 +208,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     Branch[] branches = new Branch[children];
     int b = 0;
     Point2D.Double pos = new Point2D.Double();
-    for (Object child : adjacents) {
-      
+    for (Object child : tree.getAdjacentVertices(root) ) {
+
       // don't return
       if (child==parent)
         continue;

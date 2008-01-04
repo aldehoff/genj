@@ -63,7 +63,7 @@ public class EdgeLayoutHelper {
   public static void setShape(Graph graph, Layout2D layout, Object vertexA, Object vertexB) {
     int direction = 0;
     if (graph instanceof DirectedGraph) 
-      direction = ((DirectedGraph)graph).getDirectSuccessors(vertexA).contains(vertexB) ? 1 : 0;
+      direction = ModelHelper.contains( ((DirectedGraph)graph).getDirectSuccessors(vertexA), vertexB) ? 1 : 0;
     setShape(layout, vertexA, vertexB, direction);
   }
   

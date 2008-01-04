@@ -20,6 +20,7 @@
 package gj.layout.circular;
 
 import gj.model.Graph;
+import gj.util.ModelHelper;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -47,21 +48,21 @@ import java.util.Stack;
   /*package*/ CircularGraph(Graph graph, boolean isSingleCircle) {
     
     // anything to do?
-    if (graph.getVertices().isEmpty()) 
+    if (graph.getNumVertices() == 0) 
       return;
     
     // prepare our nodes and their initial circles
     circles = new HashSet<Circle>();
-    node2circle = new HashMap<Object,Circle>(graph.getVertices().size());
+    node2circle = new HashMap<Object,Circle>(graph.getNumVertices());
     
     // simple for isSingleCircle=true
     if (isSingleCircle) {
-      new Circle(graph.getVertices());
+      new Circle(graph);
       return;
     }
     
     // find circles for all
-    Set<Object> unvisited = new HashSet<Object>(graph.getVertices());
+    Set<Object> unvisited = new HashSet<Object>(ModelHelper.toList(graph.getVertices()));
     while (!unvisited.isEmpty()) 
       findCircles(graph, unvisited.iterator().next(), null, new Stack<Object>(), unvisited);
 
@@ -128,6 +129,15 @@ import java.util.Stack;
    */
   /*package*/ class Circle extends HashSet<Object> {
 
+    /**
+     * Creates a new circle
+     */
+    Circle(Graph graph) {
+      for (Object vertex : graph.getVertices())
+        add(vertex);
+      circles.add(this);
+    }
+    
     /**
      * Creates a new circle
      */

@@ -63,11 +63,11 @@ public abstract class AbstractGraphFactory {
     int pos = getRandomIndex(list.size());
 
     Vertex result = list.get(pos);
-    int min = graph.getAdjacentVertices(result).size();
+    int min = graph.getNumAdjacentVertices(result);
     
     for (int i=1;i<list.size();i++) {
       Vertex other = list.get( (pos+i)%list.size() );
-      if (graph.getAdjacentVertices(other).size()<min) 
+      if (graph.getNumAdjacentVertices(other) < min) 
         result=other;
     }
     if (remove) list.remove(result);

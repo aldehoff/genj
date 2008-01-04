@@ -19,7 +19,6 @@
  */
 package gj.model;
 
-import java.util.Collection;
 
 /**
  * A directed graph (or Digraph)
@@ -27,12 +26,9 @@ import java.util.Collection;
 public interface DirectedGraph extends Graph {
   
   /**
-   * An arc e = (x,y) is considered to be directed from x to y; y is called the head and x is called the 
-   * tail of the arc; y is said to be a direct successor of x, and x is said to be a direct predecessor of y. 
-   * If a path leads from x to y, then y is said to be a successor of x, and x is said to be a predecessor 
-   * of y. The arc (y,x) is called the arc (x,y) inverted. 
+   * @see DirectedGraph#getDirectPredecessors(Object)
    */
-  public Collection<?> getDirectPredecessors(Object vertex);
+  int getNumDirectPredecessors(Object vertex);
   
   /**
    * An arc e = (x,y) is considered to be directed from x to y; y is called the head and x is called the 
@@ -40,6 +36,19 @@ public interface DirectedGraph extends Graph {
    * If a path leads from x to y, then y is said to be a successor of x, and x is said to be a predecessor 
    * of y. The arc (y,x) is called the arc (x,y) inverted. 
    */
-  public Collection<?> getDirectSuccessors(Object vertex);
+  public Iterable<?> getDirectPredecessors(Object vertex);
+  
+  /**
+   * @see DirectedGraph#getDirectSuccessors(Object)
+   */
+  int getNumDirectSuccessors(Object vertex);
+  
+  /**
+   * An arc e = (x,y) is considered to be directed from x to y; y is called the head and x is called the 
+   * tail of the arc; y is said to be a direct successor of x, and x is said to be a direct predecessor of y. 
+   * If a path leads from x to y, then y is said to be a successor of x, and x is said to be a predecessor 
+   * of y. The arc (y,x) is called the arc (x,y) inverted. 
+   */
+  public Iterable<?> getDirectSuccessors(Object vertex);
   
 } //DirectedGraph
