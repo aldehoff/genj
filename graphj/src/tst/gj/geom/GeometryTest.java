@@ -35,32 +35,32 @@ public class GeometryTest extends TestCase {
   private double TwoPi = Math.PI*2;
 
   /**
-   * Test tangent calculations
+   * Test maximum of a shape calculations
    */
-  public void testTangents() {
+  public void testShapeMaximum() {
     
     // -----
     //  xxx
     //  x x
     //  xxx
-    tst(-0.5, Geometry.getOriginOfTangent( r(0,0), deg(0)).getY() );
+    tst(-0.5, Geometry.getMax( r(0,0), deg(0)).getY() );
     
     //  xxx
     //  x x
     //  xxx
     // -----
-    tst(0.5, Geometry.getOriginOfTangent( r(0,0), deg(180)).getY() );
+    tst(0.5, Geometry.getMax( r(0,0), deg(180)).getY() );
     
     //  xxx|
     //  x x|
     //  xxx|
-    tst(0.5, Geometry.getOriginOfTangent( r(0,0), deg(90)).getX() );
+    tst(0.5, Geometry.getMax( r(0,0), deg(90)).getX() );
     
     //  xxx
     //  x x
     //  xxx/
     //    /
-    assertEquals(new Point2D.Double(.5,.5), Geometry.getOriginOfTangent( r(0,0), deg(90+45)));
+    assertEquals(new Point2D.Double(.5,.5), Geometry.getMax( r(0,0), deg(90+45)));
     
     
     //    x  |
@@ -84,7 +84,7 @@ public class GeometryTest extends TestCase {
     // ******
     //-*-**-*-
     // ****** 
-    tst( 0, dist(r(0,0), r(1,0), deg(90)));
+    tst( 0, dist(r(0,0), r(1,0), deg(90))); 
     
     // *** ***
     //-*-*-*-*-

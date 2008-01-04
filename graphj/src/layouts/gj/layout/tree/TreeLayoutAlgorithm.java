@@ -27,6 +27,7 @@ import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
 import gj.model.Tree;
+import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -58,7 +59,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private boolean isBendArcs = true;
 
   /** orientation in degrees 0-359 */
-  private double orientation = 0;
+  private double orientation = 180;
 
   /**
    * Getter - distance of nodes in generation
@@ -191,11 +192,16 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   }
   
   /**
+   * Resolve layout axis in radian (0 bottom up, PI top down, ...)
+   */
+  private double getLayoutAxis() {
+    return orientation/360*Geometry.ONE_RADIAN;
+  }
+  
+  /**
    * Layout a branch
    */
   private Branch layout(Tree tree, Layout2D layout, Object parent, Object root) {
-    
-    double axis = orientation/360*Geometry.ONE_RADIAN + Geometry.ONE_RADIAN/4;
     
     // check children
     int children = tree.getNumAdjacentVertices(root) + (parent!=null ? -1 : 0); 
@@ -216,21 +222,17 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       
       // create the branch
       branches[b] = layout(tree, layout, root, child);
-      
-      // position aligned with previous
-      
-      // calculate distance and move beside previous
-      if (b>0) {
-        double distance = Geometry.getDistance(branches[b-1].shape, branches[b].shape, Geometry.ONE_RADIAN/4 );
-        branches[b].move(layout, -Math.sin(axis) * distance, -Math.cos(axis) * distance);
-      }
+
+      // position alongside previous
+      if (b>0) 
+        branches[b].alignWith(layout, branches[b-1]);
       
       // next
       b++;
     }
     
-    // place parent and merge branches
-    return new Branch(root, layout.getShapeOfVertex(root), branches);
+    // create a branch for parent and branches
+    return new Branch(root, layout, branches);
 
   }
   
@@ -254,17 +256,46 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     }
 
     /** constructor for a branch of sub-branches */
-    Branch(Object root, Shape shape, Branch[] branches) {
-      // FIXME
+    Branch(Object root, Layout2D layout, Branch[] branches) {
+      
       this.root = root;
-      this.shape = new GeneralPath(shape);
+
+      // place root above branches
+      double layoutAxis = getLayoutAxis();
+      Geometry.getMax(branches[0].shape, layoutAxis + Geometry.ONE_RADIAN/4);
+      Geometry.getMax(branches[branches.length-1].shape, layoutAxis - Geometry.ONE_RADIAN/4);
+
+      // FIXME
+      this.shape = new GeneralPath(layout.getShapeOfVertex(root));
+      
     }
     
     /** translate a branch */
-    void move(Layout2D layout, double dx, double dy) {
-      TreeLayoutAlgorithm.this.move(layout, root, dx, dy);
-      shape.transform(AffineTransform.getTranslateInstance(dx, dy));
+    void move(Layout2D layout, Point2D delta) {
+      ModelHelper.translate(layout, root, delta);
+      shape.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
+    
+    /** align a branch */
+    void alignWith(Layout2D layout, Branch other) {
+      
+      double layoutAxis = getLayoutAxis();
+      double alignmentAxis = layoutAxis - Geometry.ONE_RADIAN/4;
+
+      // move on top of each other at point of respective maximum in reversed layout direction
+      move(layout, Geometry.sub(
+          Geometry.getMax(shape, layoutAxis - Geometry.ONE_RADIAN/2),
+          Geometry.getMax(other.shape, layoutAxis - Geometry.ONE_RADIAN/2)
+      ));          
+      
+      // calculate distance in alignment axis 
+      double distance = Geometry.getDistance(other.shape, shape, alignmentAxis );
+      
+      // move it
+      move(layout, new Point2D.Double(-Math.sin(alignmentAxis) * distance, -Math.cos(alignmentAxis) * distance));
+      
+    }
+    
     
   } //Branch
   

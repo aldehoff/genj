@@ -67,17 +67,16 @@ public class Geometry {
   }
   
   /**
-   * Calculates the origin of a tangent that touches the given shape that
-   * cannot be translated by direction axis (ray) while staying a tangent 
+   * Calculates the "maximum" that the given shape extends into the given direction
    */
-  public static Point2D getOriginOfTangent(Shape shape, double axis) {
-    return new OpOriginOfTangent(shape, axis).getResult();
+  public static Point2D getMax(Shape shape, double axis) {
+    return new OpGetMax(shape, axis).getResult();
   }
   
   /**
-   * Operation - calc origin of tangent for given shape and axis 
+   * Operation - calc maximum of a shape extending into a direction 
    */
-  private static class OpOriginOfTangent extends SegmentConsumer {
+  private static class OpGetMax extends SegmentConsumer {
     
     private double sinaxis, cosaxis; 
     private double max = Double.NEGATIVE_INFINITY;
@@ -86,7 +85,7 @@ public class Geometry {
     /**
      * Constructor
      */
-    public OpOriginOfTangent(Shape shape, double axis) {
+    public OpGetMax(Shape shape, double axis) {
       sinaxis = Math.sin(axis);
       cosaxis = Math.cos(axis);
       
