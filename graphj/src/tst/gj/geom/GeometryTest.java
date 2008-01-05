@@ -34,6 +34,30 @@ public class GeometryTest extends TestCase {
   
   private double TwoPi = Math.PI*2;
 
+  public void testLineIntersection() {
+    
+    // | |
+    tst( null, Geometry.getLineIntersection(p(0,0), p(0,1), p(1,0), p(1,1)));
+    
+    //tst( null, Geometry.getIntersection(p(0,0), radian(180), p(1,0), radian(180)));
+
+    // X
+    tst( p(0.5,0.5), Geometry.getLineIntersection(p(0,0), p(1,1), p(0,1), p(1,0)));
+    tst( p(0.5,0.5), Geometry.getIntersection(p(0,0), radian(135), p(0,1), radian(225)));
+
+    // +
+    tst( p(0,0), Geometry.getLineIntersection(p(-1,0), p(1,0), p(0,-1), p(0,1)));
+    
+    // /
+    //  \
+    tst( p(0.5,0.5), Geometry.getLineIntersection(p(1,0), p(0,1), p(1,1), p(2,2)));
+
+    // | -
+    tst( p(0,0.5), Geometry.getLineIntersection(p(0,0), p(0,1), p(2,0.5), p(3,0.5)));
+    
+    // 
+  }
+  
   /**
    * Test maximum of a shape calculations
    */
@@ -43,24 +67,24 @@ public class GeometryTest extends TestCase {
     //  xxx
     //  x x
     //  xxx
-    tst(-0.5, Geometry.getMax( r(0,0), deg(0)).getY() );
+    tst(-0.5, Geometry.getMax( r(0,0), radian(0)).getY() );
     
     //  xxx
     //  x x
     //  xxx
     // -----
-    tst(0.5, Geometry.getMax( r(0,0), deg(180)).getY() );
+    tst(0.5, Geometry.getMax( r(0,0), radian(180)).getY() );
     
     //  xxx|
     //  x x|
     //  xxx|
-    tst(0.5, Geometry.getMax( r(0,0), deg(90)).getX() );
+    tst(0.5, Geometry.getMax( r(0,0), radian(90)).getX() );
     
     //  xxx
     //  x x
     //  xxx/
     //    /
-    assertEquals(new Point2D.Double(.5,.5), Geometry.getMax( r(0,0), deg(90+45)));
+    assertEquals(new Point2D.Double(.5,.5), Geometry.getMax( r(0,0), radian(90+45)));
     
     
     //    x  |
@@ -79,17 +103,17 @@ public class GeometryTest extends TestCase {
     // xoxo
     // xxxo
     //  ooo
-    tst( -0.5, dist(r(0,0), r(0.5,0), deg(90)));
+    tst( -0.5, dist(r(0,0), r(0.5,0), radian(90)));
 
     // ******
     //-*-**-*-
     // ****** 
-    tst( 0, dist(r(0,0), r(1,0), deg(90))); 
+    tst( 0, dist(r(0,0), r(1,0), radian(90))); 
     
     // *** ***
     //-*-*-*-*-
     // *** *** 
-    tst( 1, dist(r(0,0), r(2,0), deg(90)));
+    tst( 1, dist(r(0,0), r(2,0), radian(90)));
     
     //  |
     // ***
@@ -99,7 +123,7 @@ public class GeometryTest extends TestCase {
     // *|*    
     // ***
     //  |
-    tst( 0, dist(r(0,0), r(0,1), deg(180))); 
+    tst( 0, dist(r(0,0), r(0,1), radian(180))); 
 
     //  |
     // ***
@@ -110,7 +134,7 @@ public class GeometryTest extends TestCase {
     // *|*    
     // ***    
     //  |
-    tst( 1, dist(r(0,0), r(0,2), deg(180)));
+    tst( 1, dist(r(0,0), r(0,2), radian(180)));
     
     // ***
     //-*-*-
@@ -119,13 +143,13 @@ public class GeometryTest extends TestCase {
     // ***
     //-*-*-   
     // ***    
-    tst( Double.POSITIVE_INFINITY, dist(r(0,0), r(0,2), deg(90)) );
+    tst( Double.POSITIVE_INFINITY, dist(r(0,0), r(0,2), radian(90)) );
     
     // ***
     //-*-*-***-
     // *** * *
     //     ***
-    tst( 4, dist(r(0,0), r(5,0.5), deg(90)));
+    tst( 4, dist(r(0,0), r(5,0.5), radian(90)));
     
     // ***
     // * *    
@@ -133,7 +157,7 @@ public class GeometryTest extends TestCase {
     //    ***
     //    * *
     //    ***
-    tst( 0, dist(r(0,0), r(1,1), deg(135)));
+    tst( 0, dist(r(0,0), r(1,1), radian(135)));
     
     // ***
     // *\*    
@@ -142,23 +166,23 @@ public class GeometryTest extends TestCase {
     //     ***
     //     *\*
     //     ***
-    tst( hypotenuse(4,4), dist(r(0,0), r(5,5), deg(135)));
+    tst( hypotenuse(4,4), dist(r(0,0), r(5,5), radian(135)));
 
     // ooo
     //-oxxx-
     // oxox
     //  xxx
-    tst( -0.5, dist(r(0,0), r(0.5,0.5), deg(90)));
+    tst( -0.5, dist(r(0,0), r(0.5,0.5), radian(90)));
     
     //
     //  *   *
     //-*-*-*-*-
     //  *   *
     GeneralPath s1 = new GeneralPath(r(0,0));
-    s1.transform(AffineTransform.getRotateInstance(deg(45)));
+    s1.transform(AffineTransform.getRotateInstance(radian(45)));
     GeneralPath s2 = new GeneralPath(s1);
     s2.transform(AffineTransform.getTranslateInstance(3,0));
-    tst(3-hypotenuse(1,1), dist(s1,s2,deg(90)));
+    tst(3-hypotenuse(1,1), dist(s1,s2,radian(90)));
     
     //     ***
     // *** * *
@@ -169,11 +193,30 @@ public class GeometryTest extends TestCase {
     s1 = new GeneralPath(r(0,0)); 
     s1.append(r(0.5,0.5), true);
     s2 = new GeneralPath(r(3,-0.5));
-    tst(1.5, dist(s1,s2,deg(90)));
+    tst(1.5, dist(s1,s2,radian(90)));
     s2.transform(AffineTransform.getTranslateInstance(0,-0.1));
-    tst(2, dist(s1,s2,deg(90)));
+    tst(2, dist(s1,s2,radian(90)));
     
     // done
+  }
+  
+  /**
+   * equals test
+   */
+  private void tst(Point2D a, Point2D b) {
+    if (a==b)
+      return;
+    if (a==null) {
+      assertNull("expected null but got "+b,b);
+      return;
+    }
+    if (b==null) {
+      assertNull("expected null but got "+a,a);
+      return;
+    }
+      
+    assertEquals(a.getX(),b.getX(),0.0000001);
+    assertEquals(a.getY(),b.getY(),0.0000001);
   }
   
   /**
@@ -184,9 +227,9 @@ public class GeometryTest extends TestCase {
   }
   
   /**
-   * calculate bogenmass from degree
+   * calculate radian from degree
    */
-  private double deg(double degree) {
+  private double radian(double degree) {
     return TwoPi/360*degree;
   }
   
@@ -217,6 +260,10 @@ public class GeometryTest extends TestCase {
    */
   private Rectangle2D r(double x, double y, double w, double h) {
     return new Rectangle2D.Double(x-w/2,y-h/2,w,h);
+  }
+  
+  private Point2D p(double x, double y) {
+    return new Point2D.Double(x,y);
   }
   
 }

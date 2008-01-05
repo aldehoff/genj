@@ -34,6 +34,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A 'simple' tree layout for Trees
@@ -225,7 +227,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
 
       // position alongside previous
       if (b>0) 
-        branches[b].alignWith(layout, branches[b-1]);
+        branches[b].moveTo(layout, branches[b-1]);
       
       // next
       b++;
@@ -239,17 +241,21 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   /**
    * A Branch is the recursively worked on part of the tree
    */
-  private class Branch {
+  private class Branch extends Geometry {
     
     /** root of branch */
     private Object root;
-
+    
+    /** contained vertices */
+    private List<Object> vertices = new ArrayList<Object>();
+    
     /** shape of branch */
     private GeneralPath shape;
     
     /** constructor for a leaf */
     Branch(Object root, Layout2D layout) {
       this.root = root;
+      vertices.add(root);
       shape = new GeneralPath(layout.getShapeOfVertex(root));
       Point2D pos = layout.getPositionOfVertex(root);
       shape.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
@@ -258,41 +264,76 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     /** constructor for a branch of sub-branches */
     Branch(Object root, Layout2D layout, Branch[] branches) {
       
-      this.root = root;
-
-      // place root above branches
+      // calculate where to place root
+      //  c = center between 1st and nth child
+      //  t = topmost point of children
+      //  ct = topmost point centered between children 
+      //
+      //  m = maximum extend of root shape
+      //  b = bottom of root shape
+      //  d = distance that root needs from ct 
       double layoutAxis = getLayoutAxis();
-      Geometry.getMax(branches[0].shape, layoutAxis + Geometry.ONE_RADIAN/4);
-      Geometry.getMax(branches[branches.length-1].shape, layoutAxis - Geometry.ONE_RADIAN/4);
-
-      // FIXME
-      this.shape = new GeneralPath(layout.getShapeOfVertex(root));
+      Point2D c = getPoint(layout.getPositionOfVertex(branches[0].root), layout.getPositionOfVertex(branches[branches.length-1].root));
+      Point2D t = getMax(branches[0].shape, layoutAxis - HALF_RADIAN);
+      Point2D ct = getIntersection(t, layoutAxis-QUARTER_RADIAN, c, layoutAxis);
       
+      Point2D m = getMax(layout.getShapeOfVertex(root), layoutAxis);
+      Point2D b = getIntersection(m, layoutAxis-QUARTER_RADIAN, new Point2D.Double(), layoutAxis);
+      
+      double d = getLength(b) + distanceBetweenGenerations;
+
+      Point2D r = getPoint(ct, layoutAxis-HALF_RADIAN, d);
+      
+      // set us up
+      this.root = root;
+      vertices.add(root);
+      for (Branch branch : branches) 
+        vertices.addAll(branch.vertices);
+      layout.setPositionOfVertex(root, r);
+      shape = new GeneralPath(layout.getShapeOfVertex(root));
+      shape.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
+
+      
+      // done
+    }
+    
+    /** shape of root */
+    Shape getShapeOfRoot(Layout2D layout) {
+      Point2D pos = layout.getPositionOfVertex(root);
+      GeneralPath shape = new GeneralPath(layout.getShapeOfVertex(root));
+      shape.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
+      return shape;
     }
     
     /** translate a branch */
-    void move(Layout2D layout, Point2D delta) {
-      ModelHelper.translate(layout, root, delta);
+    void moveBy(Layout2D layout, Point2D delta) {
+      for (Object vertice : vertices) 
+        ModelHelper.translate(layout, vertice, delta);
       shape.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
     
-    /** align a branch */
-    void alignWith(Layout2D layout, Branch other) {
+    /** translate a branch */
+    void moveTo(Layout2D layout, Point2D pos) {
+      moveBy(layout, getDelta(layout.getPositionOfVertex(root), pos));
+    }
+    
+    /** move beside other branch */
+    void moveTo(Layout2D layout, Branch other) {
       
       double layoutAxis = getLayoutAxis();
-      double alignmentAxis = layoutAxis - Geometry.ONE_RADIAN/4;
+      double alignmentAxis = layoutAxis - QUARTER_RADIAN;
 
       // move on top of each other at point of respective maximum in reversed layout direction
-      move(layout, Geometry.sub(
-          Geometry.getMax(shape, layoutAxis - Geometry.ONE_RADIAN/2),
-          Geometry.getMax(other.shape, layoutAxis - Geometry.ONE_RADIAN/2)
+      moveBy(layout, getDelta(
+          getMax(shape, layoutAxis - HALF_RADIAN),
+          getMax(other.shape, layoutAxis - HALF_RADIAN)
       ));          
       
-      // calculate distance in alignment axis 
-      double distance = Geometry.getDistance(other.shape, shape, alignmentAxis );
+      // calculate distance in alignment axis + padding
+      double distance = getDistance(other.shape, shape, alignmentAxis ) - distanceInGeneration;
       
       // move it
-      move(layout, new Point2D.Double(-Math.sin(alignmentAxis) * distance, -Math.cos(alignmentAxis) * distance));
+      moveBy(layout, new Point2D.Double(-Math.sin(alignmentAxis) * distance, Math.cos(alignmentAxis) * distance));
       
     }
     

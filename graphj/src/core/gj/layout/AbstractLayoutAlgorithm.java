@@ -28,25 +28,8 @@ import java.awt.geom.Point2D;
  */
 public abstract class AbstractLayoutAlgorithm implements LayoutAlgorithm {
   
-  /** whether we debug or not */
-  private boolean isDebug = false;
-  
   /** an arc layout for convenience */
   protected EdgeLayoutHelper arcLayout = new EdgeLayoutHelper();
-
-  /**
-   * Getter - debug
-   */
-  public boolean isDebug() {
-    return isDebug;
-  }
-  
-  /**
-   * Setter - debug
-   */
-  public void setDebug(boolean set) {
-    isDebug=set;
-  }
 
   /**
    * @see java.lang.Object#toString()

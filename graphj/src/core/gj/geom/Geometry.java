@@ -35,7 +35,10 @@ import java.util.List;
  */
 public class Geometry {
   
-  public final static double ONE_RADIAN = 2 * Math.PI;
+  public final static double 
+    ONE_RADIAN = 2 * Math.PI,
+    QUARTER_RADIAN = ONE_RADIAN/4,
+    HALF_RADIAN = ONE_RADIAN/2;
 
   /** 
    * the maximum distance that the line segments used to approximate 
@@ -350,6 +353,17 @@ public class Geometry {
   public static double getCrossProduct(double vectorAx, double vectorAy, double vectorBx, double vectorBy) {
     return ( vectorAx*vectorBy ) - ( vectorBx*vectorAy );
   }
+
+  /**
+   * Calculate the midpoint between two other points
+   */
+  public static Point2D getPoint(Point2D a, Point2D b) {
+    return new Point2D.Double( (a.getX()+b.getX())/2, (a.getY()+b.getY())/2 );    
+  }
+  
+  public static Point2D getPoint(Point2D origin, double radian, double distance) {
+    return new Point2D.Double( origin.getX() + Math.sin(radian)*distance, origin.getY() - Math.cos(radian) * distance);
+  }
   
   /**
    * substracts a from b
@@ -357,7 +371,7 @@ public class Geometry {
    *   (a1,a2) -> (b1,b2) -> (b1-a1, b2-a2)
    * </pre>
    */
-  public static Point2D sub(Point2D vectorA, Point2D vectorB) {
+  public static Point2D getDelta(Point2D vectorA, Point2D vectorB) {
     return new Point2D.Double(vectorB.getX()-vectorA.getX(), vectorB.getY()-vectorA.getY());
   }
   
@@ -367,7 +381,7 @@ public class Geometry {
    *   (a1,a2) -> (b1,b2) -> (a1+b1, a2+b2)
    * </pre>
    */
-  public static Point2D add(Point2D vectorA, Point2D vectorB) {
+  public static Point2D getSum(Point2D vectorA, Point2D vectorB) {
     return new Point2D.Double(vectorB.getX()+vectorA.getX(), vectorB.getY()+vectorA.getY());
   }
   
@@ -379,6 +393,10 @@ public class Geometry {
    */    
   public static double getLength(double x, double y) {
     return Math.sqrt(x*x + y*y);
+  }
+  
+  public static double getLength(Point2D v) {
+    return getLength(v.getX(), v.getY());
   }
   
   /**
@@ -463,9 +481,9 @@ public class Geometry {
     //       \|         b
     //        |         b 
 
-    Point2D vectorA = sub(aStart, aEnd),   // a-a
-            vector1 = sub(aStart, bStart), // a-b1
-            vector2 = sub(aStart, bEnd);   // a-b2
+    Point2D vectorA = getDelta(aStart, aEnd),   // a-a
+            vector1 = getDelta(aStart, bStart), // a-b1
+            vector2 = getDelta(aStart, bEnd);   // a-b2
 
     // .. cross-product is '-' for 'left' and '+' for right
     // so we hope for xp(aa,ab1) * x(aa,ab2) < 0 because
@@ -479,9 +497,9 @@ public class Geometry {
     }
     
     // The same for the other line
-    Point2D vectorB = sub(bStart, bEnd);   // b-b
-            vector1 = sub(bStart, aStart); // b-a1
-            vector2 = sub(bStart, aEnd);   // b-a2
+    Point2D vectorB = getDelta(bStart, bEnd);   // b-b
+            vector1 = getDelta(bStart, aStart); // b-a1
+            vector2 = getDelta(bStart, aEnd);   // b-a2
         
     if (getCrossProduct(vectorB,vector1) * getCrossProduct(vectorB,vector2) >0) {
       return false;
@@ -559,6 +577,40 @@ public class Geometry {
       aStart.getY()+s*v_ay
     );
     
+  }
+  
+  /**
+   * Calculate the intersection point of two infinite lines defined by respective point and angle
+   */
+  public static Point2D getIntersection(Point2D pointA, double radianA, Point2D pointB, double radianB) {
+    return getLineIntersection(
+        pointA, 
+        new Point2D.Double(pointA.getX() + Math.sin(radianA), pointA.getY() - Math.cos(radianA)),
+        pointB,
+        new Point2D.Double(pointB.getX() + Math.sin(radianB), pointB.getY() - Math.cos(radianB))
+    );
+  }
+  
+  /**
+   * Calculate the intersection point of two infinite lines defined by two points each
+   */
+  public static Point2D getLineIntersection(Point2D aStart, Point2D aEnd, Point2D bStart, Point2D bEnd) {
+    
+    // a1*x + b1*y + c1 = 0 is line 1
+    double a1 = aEnd.getY() - aStart.getY();
+    double b1 = aStart.getX() - aEnd.getX();
+    double c1 = aEnd.getX()*aStart.getY() - aStart.getX()*aEnd.getY();  
+    
+    // a2*x + b2*y + c2 = 0 is line 2 
+    double a2 = bEnd.getY()-bStart.getY();
+    double b2 = bStart.getX()-bEnd.getX();
+    double c2 = bEnd.getX()*bStart.getY() - bStart.getX()*bEnd.getY();
+
+    double denom = a1*b2 - a2*b1;
+    if (denom==0)
+      return null;
+
+    return new Point2D.Double( (b1*c2 - b2*c1)/denom , (a2*c1 - a1*c2)/denom);
   }
 
   /**

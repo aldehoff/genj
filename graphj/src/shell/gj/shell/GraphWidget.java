@@ -323,7 +323,7 @@ public class GraphWidget extends JPanel {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      ModelHelper.translate(layout, graph.getSelection(), Geometry.sub(from, e.getPoint()));
+      ModelHelper.translate(layout, graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();
@@ -426,7 +426,7 @@ public class GraphWidget extends JPanel {
     public void mouseMoved(MouseEvent e) {
 
       // change shape
-      Point2D delta = Geometry.sub(vertex.getPosition(), content.getPoint(e.getPoint()));
+      Point2D delta = Geometry.getDelta(vertex.getPosition(), content.getPoint(e.getPoint()));
       double 
         sx = Math.max(0.1,Math.abs(delta.getX())/dim.width *2),
         sy = Math.max(0.1,Math.abs(delta.getY())/dim.height*2);
