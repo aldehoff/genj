@@ -124,7 +124,7 @@ import javax.swing.SwingConstants;
         bh.create(print);
       } catch (Throwable t) {
         ViewManager.LOG.log(Level.WARNING, "can't setup printing for printer "+printer.getClass().getName());
-        ViewManager.LOG.log(Level.FINER, "throwable while setting up "+printer.getClass().getName(), t);
+        ViewManager.LOG.log(Level.FINE, "throwable while setting up "+printer.getClass().getName(), t);
       }
     } catch (Throwable t) {
     }
