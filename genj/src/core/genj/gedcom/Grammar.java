@@ -47,6 +47,8 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class Grammar {
 
+  private final static Logger LOG = Logger.getLogger("genj.gedcom"); // make sure logger is initialized before other statics
+  
   /** singleton */
   public final static Grammar 
     V55 = new Grammar("contrib/LDS/gedcom-5-5.xml"),
@@ -57,8 +59,6 @@ public class Grammar {
   
   /** meta roots */
   private Map tag2root = new HashMap();
-  
-  private final static Logger LOG = Logger.getLogger("genj.gedcom");
   
   /**
    * Singleton Constructor
@@ -78,7 +78,7 @@ public class Grammar {
       // try to load through classloader, then disk
       InputStream in = getClass().getResourceAsStream("/"+descriptor);
       if (in!=null) {
-        LOG.info("Loading grammar through classloader");
+          LOG.info("Loading grammar through classloader");
       } else {
         in = new FileInputStream(new File(EnvironmentChecker.getProperty(this, "user.dir", ".", "current directory for grammar"),descriptor));
       }
