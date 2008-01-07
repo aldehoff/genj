@@ -17,44 +17,18 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout;
+package gj.ui;
 
-import java.awt.Shape;
-import java.awt.geom.Point2D;
+import gj.layout.Layout2D;
+import gj.model.Graph;
+
+import java.awt.Graphics2D;
 
 /**
- * A layout of a graph
+ * A renderer for graphs
  */
-public interface Layout2D {
+public interface GraphRenderer {
+  
+  public void render(Graph graph, Layout2D layout, Graphics2D graphics);
 
-  /**
-   * Edge's shape
-   */
-  public Shape getShapeOfEdge(Object edge);
-
-  /**
-   * Edge's shape
-   */
-  public void setShapeOfEdge(Object edge, Shape shape);
-
-  /**
-   * Vertex's shape
-   */
-  public Shape getShapeOfVertex(Object vertex);
-
-  /**
-   * Vertex's shape
-   */
-  public void setShapeOfVertex(Object vertex, Shape shape);
-
-  /**
-   * Vertex's position
-   */
-  public Point2D getPositionOfVertex(Object vertex);
-
-  /**
-   * Vertex's position
-   */
-  public void setPositionOfVertex(Object vertex, Point2D pos);
-
-} //Layout2D
+}

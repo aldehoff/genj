@@ -23,63 +23,52 @@ import gj.layout.Layout2D;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Our implementation for a view
  */
-public class Layout implements Layout2D {
-
-  /** a shape */
-  private Shape shape = new Rectangle2D.Float();
+public class EditableLayout implements Layout2D {
 
   /**
    * interface implementation
    */
-  public Shape getShapeOfEdge(Object vertexA, Object vertexB) {
-    return ((Vertex)vertexA).getEdge((Vertex)vertexB).getShape();
+  public Shape getShapeOfEdge(Object edge) {
+    return ((EditableEdge)edge).getShape();
   }
 
   /**
    * interface implementation
    */
-  public void setShapeOfEdge(Object vertexA, Object vertexB, Shape shape) {
-    ((Vertex)vertexA).getEdge((Vertex)vertexB).setShape(shape);
+  public void setShapeOfEdge(Object edge, Shape shape) {
+    ((EditableEdge)edge).setShape(shape);
   }
 
   /**
    * interface implementation
    */
   public Shape getShapeOfVertex(Object node) {
-    return ((Vertex)node).getShape();
+    return ((EditableVertex)node).getShape();
+  }
+
+  /**
+   * interface implementation
+   */
+  public void setShapeOfVertex(Object node, Shape shape) {
+    ((EditableVertex)node).setShape(shape);
   }
 
   /**
    * interface implementation
    */
   public Point2D getPositionOfVertex(Object node) {
-    return ((Vertex)node).getPosition();
+    return ((EditableVertex)node).getPosition();
   }
 
   /**
    * interface implementation
    */
   public void setPositionOfVertex(Object node, Point2D pos) {
-    ((Vertex)node).setPosition(pos);
-  }
-
-  /**
-   * interface implementation
-   */
-  public Shape getShapeOfGraph() {
-    return shape;
-  }
-
-  /**
-   * interface implementation
-   */
-  public void setShapeOfGraph(Shape set) {
-    shape = set;
+    ((EditableVertex)node).setPosition(pos);
   }
 
 } //View

@@ -28,18 +28,18 @@ import java.awt.geom.Point2D;
 /**
  * A default implementation for an Edge
  */
-public class Edge extends Element {
+public class EditableEdge extends EditableElement {
   
   /** starting vertex */
-  private Vertex start;
+  private EditableVertex start;
 
   /** ending vertex */
-  private Vertex end;
+  private EditableVertex end;
   
   /**
    * Constructor
    */
-  /*package*/ Edge(Vertex start, Vertex end, Shape shape) {
+  EditableEdge(EditableVertex start, EditableVertex end, Shape shape) {
     this.start = start;
     this.end = end;
     
@@ -74,14 +74,14 @@ public class Edge extends Element {
   /**
    * the start of the edge
    */
-  public Vertex getStart() {
+  public EditableVertex getStart() {
     return start;
   }
 
   /**
    * the end of the edge
    */
-  public Vertex getEnd() {
+  public EditableVertex getEnd() {
     return end;
   }
 

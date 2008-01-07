@@ -26,8 +26,8 @@ import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.shell.factory.AbstractGraphFactory;
-import gj.shell.model.Graph;
-import gj.shell.model.Layout;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableLayout;
 import gj.shell.swing.Action2;
 import gj.shell.swing.SwingHelper;
 import gj.shell.util.Properties;
@@ -48,6 +48,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -79,16 +80,16 @@ public class Shell {
   private JFrame frame;
   
   /** the graph widget we show */
-  private GraphWidget graphWidget;
+  private EditableGraphWidget graphWidget;
 
   /** the algorithm widget we show */
   private AlgorithmWidget algorithmWidget;
   
   /** the graph we're looking at */
-  private Graph graph;
+  private EditableGraph graph;
   
   /** the view of the graph */
-  private Layout layout = new Layout();
+  private EditableLayout layout = new EditableLayout();
   
   /** whether we perform an animation after layout */
   private boolean isAnimation = true;
@@ -124,7 +125,7 @@ public class Shell {
   private Shell(String preload) {
     
     // Create our widgets
-    graphWidget = new GraphWidget();
+    graphWidget = new EditableGraphWidget();
     
     algorithmWidget = new AlgorithmWidget();
     algorithmWidget.setAlgorithms(algorithms);
@@ -142,7 +143,7 @@ public class Shell {
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     Container container = frame.getContentPane();
     container.setLayout(new BorderLayout());
-    container.add(graphWidget, BorderLayout.CENTER);
+    container.add(new JScrollPane(graphWidget), BorderLayout.CENTER);
     container.add(algorithmWidget, BorderLayout.EAST  );
     
     // Our default button
@@ -204,7 +205,7 @@ public class Shell {
   /**
    * Sets the graph we're looking at
    */
-  private void setGraph(Graph set) {
+  private void setGraph(EditableGraph set) {
     // remember
     graph = set;
     // propagate
@@ -279,7 +280,7 @@ public class Shell {
       return true;
     }
     /** layout */
-    private Layout layout(Rectangle bounds) throws LayoutAlgorithmException {
+    private EditableLayout layout(Rectangle bounds) throws LayoutAlgorithmException {
 
       // make sure the current graph is valid
       try {
@@ -292,13 +293,13 @@ public class Shell {
       LayoutAlgorithm algorithm = algorithmWidget.getSelectedAlgorithm();
       
       // try to layout
-      Layout result = new Layout();
+      EditableLayout result = new EditableLayout();
       try {
         algorithm.apply(graph, layout, bounds);
       } catch (GraphNotSupportedException s) {
         try {
 	        String impl = properties.get("impl."+s.getSupportedGraphType().getName(), (String)null);
-	        graph = (Graph)Class.forName(impl).getConstructor(new Class[]{Graph.class}).newInstance(new Object[]{graph});
+	        graph = (EditableGraph)Class.forName(impl).getConstructor(new Class[]{EditableGraph.class}).newInstance(new Object[]{graph});
         } catch (InvocationTargetException t) {
       	  throw new LayoutAlgorithmException(t.getCause().getMessage());
         } catch (Throwable t) {

@@ -21,25 +21,27 @@ package gj.shell;
 
 import gj.geom.Geometry;
 import gj.layout.LayoutAlgorithm;
-import gj.shell.model.Edge;
-import gj.shell.model.Element;
-import gj.shell.model.Graph;
-import gj.shell.model.Layout;
-import gj.shell.model.Vertex;
+import gj.model.Graph;
+import gj.model.Tree;
+import gj.shell.model.EditableEdge;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableElement;
+import gj.shell.model.EditableLayout;
+import gj.shell.model.EditableVertex;
 import gj.shell.swing.Action2;
 import gj.shell.swing.SwingHelper;
 import gj.shell.util.ReflectHelper;
+import gj.ui.DefaultGraphRenderer;
+import gj.ui.GraphRenderer;
+import gj.ui.GraphWidget;
 import gj.util.ModelHelper;
 
-import java.awt.BorderLayout;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -48,34 +50,21 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.JMenu;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 
 /**
  * Displaying a Graph with user input
  */
-public class GraphWidget extends JPanel {
+public class EditableGraphWidget extends GraphWidget {
   
-  /** the graph we're displaying */
-  private Graph graph;
+  private final static Stroke DASH = new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[]{ 2, 3}, 0.0f);
   
-  /** the layout of it */
-  private Layout layout = new Layout();
-  
-  /** the size of the graph */
-  private Rectangle graphBounds;
-  
-  /** the content for the graph */
-  private Content content = new Content();
+  /** our editable graph */
+  private EditableGraph graph;
   
   /** whether quicknode is enabled */
   private boolean quickNode = false;
-  
-  /** whether antialiasing is on */
-  private boolean isAntialiasing = true;
   
   /** our mouse analyzers */
   private DnD
@@ -87,60 +76,58 @@ public class GraphWidget extends JPanel {
     
   /** a algorithm we know about */
   private LayoutAlgorithm currentAlgorithm;
+
+  /**
+   * our graph renderer
+   */
+  private GraphRenderer renderer = new DefaultGraphRenderer() {
+    /**
+     * Color resolve
+     */
+    @Override
+    protected Color getColor(Object vertexOrEdge) {
+      return vertexOrEdge==graph.getSelection() ? Color.BLUE : Color.BLACK;    
+    }
     
+    /** 
+     * Stroke resolve
+     */
+    @Override
+    protected Stroke getStroke(Object vertexOrEdge) {
+      if (graph instanceof Tree && ((Tree)graph).getRoot()==vertexOrEdge)
+        return DASH;
+      return super.getStroke(vertexOrEdge);
+    }
+
+  };
+  
   /**
    * Constructor
    */
-  public GraphWidget() {
-    
-    // Layout
-    setLayout(new BorderLayout());
-    add(new JScrollPane(content), BorderLayout.CENTER);
-    
-    // Done
+  public EditableGraphWidget() {
+    super(new EditableLayout());
+    setRenderer(renderer);
   }
-  
+    
   /**
    * Accessor - Graph
    */
+  @Override
   public void setGraph(Graph setGraph) {
     
-    // cleanup data
-    graph = setGraph;
-    graphBounds = ModelHelper.getBounds(graph, layout).getBounds();
+    if (!(setGraph instanceof EditableGraph))
+      throw new IllegalArgumentException();
     
-    // make sure that's reflected
-    revalidate();
+    // remember
+    graph = (EditableGraph)setGraph;
+    
+    // let super do its thing
+    super.setGraph(setGraph);
     
     // start fresh with DnD
     dndNoOp.start(null);
     
     // done
-  }
-  
-  /**
-   * Accessor - Antialiasing enabled or not
-   */
-  public boolean isAntialiasing() {
-    return isAntialiasing;
-  }
-
-  /**
-   * Accessor - Antialiasing enabled or not
-   */
-  public void setAntialiasing(boolean set) {
-    isAntialiasing=set;
-    repaint();
-  }
-  
-  /**
-   * @see JComponent#revalidate()
-   */
-  @Override
-  public void revalidate() {
-    if (content!=null) content.revalidate();
-    super.revalidate();
-    repaint();
   }
   
   /** 
@@ -154,16 +141,16 @@ public class GraphWidget extends JPanel {
   /**
    * Returns the popup for edges
    */
-  private JPopupMenu getEdgePopupMenu(Edge e, Point pos) {
+  private JPopupMenu getEdgePopupMenu(EditableEdge e, Point pos) {
 
     // Create the popups
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionDeleteEdge());
 
     // collect public setters(Edge)
-    List<ReflectHelper.Property> props = ReflectHelper.getProperties(graph, false);
+    List<ReflectHelper.Property> props = ReflectHelper.getProperties(getGraph(), false);
     for (int a=0; a<props.size(); a++) { 
-      if (props.get(a).getType()==Edge.class)
+      if (props.get(a).getType()==EditableEdge.class)
         result.add(new ActionGraphProperty(props.get(a)));
     }
     // done
@@ -173,7 +160,7 @@ public class GraphWidget extends JPanel {
   /**
    * Returns the popup for nodes
    */
-  private JPopupMenu getVertexPopupMenu(Vertex v, Point pos) {
+  private JPopupMenu getVertexPopupMenu(EditableVertex v, Point pos) {
 
     // Create the popups
     JPopupMenu result = new JPopupMenu();
@@ -186,9 +173,9 @@ public class GraphWidget extends JPanel {
     result.add(new ActionDeleteVertex());
 
     // collect public setters(Vertex)
-    List<ReflectHelper.Property> props = ReflectHelper.getProperties(graph, false);
+    List<ReflectHelper.Property> props = ReflectHelper.getProperties(getGraph(), false);
     for (int a=0; a<props.size(); a++) { 
-      if (props.get(a).getType()==Vertex.class)
+      if (props.get(a).getType()==EditableVertex.class)
         result.add(new ActionGraphProperty(props.get(a)));
     }
 
@@ -202,7 +189,7 @@ public class GraphWidget extends JPanel {
   private JPopupMenu getCanvasPopupMenu(Point pos) {
     
     JPopupMenu result = new JPopupMenu();
-    result.add(new ActionCreateVertex(content.getPoint(pos)));
+    result.add(new ActionCreateVertex(getPoint(pos)));
     result.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickVertex()));
     return result;
   }
@@ -216,14 +203,14 @@ public class GraphWidget extends JPanel {
       // already someone there?
       if (dndCurrent!=null) {
         dndCurrent.stop();
-        content.removeMouseListener(dndCurrent);
-        content.removeMouseMotionListener(dndCurrent);
+        removeMouseListener(dndCurrent);
+        removeMouseMotionListener(dndCurrent);
       }
       // switch
       dndCurrent = this;
       // start to listen
-      content.addMouseListener(dndCurrent);
-      content.addMouseMotionListener(dndCurrent);
+      addMouseListener(dndCurrent);
+      addMouseMotionListener(dndCurrent);
       // done
     }
     /** stop */
@@ -250,8 +237,8 @@ public class GraphWidget extends JPanel {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      Element oldSelection = graph.getSelection();
-      Element newSelection = graph.getElement(content.getPoint(e.getPoint()));
+      EditableElement oldSelection = graph.getSelection();
+      EditableElement newSelection = graph.getElement(getPoint(e.getPoint()));
       graph.setSelection(newSelection);
       // popup?
       if (e.isPopupTrigger()) {
@@ -260,7 +247,7 @@ public class GraphWidget extends JPanel {
       }
       // start dragging?
       if (e.getButton()==MouseEvent.BUTTON1) {
-        if (newSelection instanceof Vertex) {
+        if (newSelection instanceof EditableVertex) {
 	        if (oldSelection==newSelection)
 	          dndMoveNode.start(e.getPoint());
 	        else
@@ -283,7 +270,7 @@ public class GraphWidget extends JPanel {
       
       // quick create?
       if (quickNode) {
-        graph.addVertex(content.getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
+        graph.addVertex(getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
         repaint();
         return;
       }
@@ -293,13 +280,13 @@ public class GraphWidget extends JPanel {
     private void popup(Point at) {
       Object selection = graph.getSelection();
       JPopupMenu menu = null;
-      if (selection instanceof Vertex) 
-        menu = getVertexPopupMenu((Vertex)selection, at);
-      if (selection instanceof Edge)
-        menu = getEdgePopupMenu((Edge)selection, at);
+      if (selection instanceof EditableVertex) 
+        menu = getVertexPopupMenu((EditableVertex)selection, at);
+      if (selection instanceof EditableEdge)
+        menu = getEdgePopupMenu((EditableEdge)selection, at);
       if (menu==null)
         menu = getCanvasPopupMenu(at);
-      menu.show(content,at.x,at.y);
+      menu.show(EditableGraphWidget.this,at.x,at.y);
     }
   } //DnDIdle
   
@@ -323,7 +310,7 @@ public class GraphWidget extends JPanel {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      ModelHelper.translate(layout, graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
+      ModelHelper.translate(getGraphLayout(), graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();
@@ -335,14 +322,14 @@ public class GraphWidget extends JPanel {
    */
   private class DnDCreateEdge extends DnD{
     /** the from node */
-    private Vertex from;
+    private EditableVertex from;
     /** a dummy to */
-    private Vertex dummy;
+    private EditableVertex dummy;
     /** start */
     @Override
     protected void start(Point at) {
       super.start(at);
-      from = (Vertex)graph.getSelection();
+      from = (EditableVertex)graph.getSelection();
       dummy = null;
       graph.setSelection(null);
     }
@@ -364,8 +351,8 @@ public class GraphWidget extends JPanel {
       // selection made? create arc!
       if (graph.getSelection()!=null) {
         Object selection = graph.getSelection();
-        if (selection instanceof Vertex) {
-          Vertex v = (Vertex)selection;
+        if (selection instanceof EditableVertex) {
+          EditableVertex v = (EditableVertex)selection;
 	        if (from.isNeighbour(v))
 	          graph.removeEdge(from.getEdge(v));
 	        new ActionCreateEdge(from, v).trigger();
@@ -383,14 +370,14 @@ public class GraphWidget extends JPanel {
       // not really dragging yet?
       if (dummy==null) {
         // user has to move mouse outside of shape first (avoid loops)
-        if (graph.getVertex(content.getPoint(e.getPoint()))==from)
+        if (graph.getVertex(getPoint(e.getPoint()))==from)
           return;
         // create dummies
         dummy = graph.addVertex(null, null, null);      
         graph.addEdge(from, dummy, null);
       }
       // place dummy (tip of arc)
-      Point2D pos = content.getPoint(e.getPoint());
+      Point2D pos = getPoint(e.getPoint());
       dummy.setPosition(pos);
       // find target
       graph.setSelection(graph.getVertex(pos));
@@ -404,7 +391,7 @@ public class GraphWidget extends JPanel {
    */
   private class DnDResizeVertex extends DnD {
     /** our status */
-    private Vertex vertex;
+    private EditableVertex vertex;
     private Shape shape;
     private Dimension dim;
     /** start */
@@ -412,7 +399,7 @@ public class GraphWidget extends JPanel {
     protected void start(Point pos) {
       super.start(pos);
       // remember
-      vertex = (Vertex)graph.getSelection();
+      vertex = (EditableVertex)graph.getSelection();
       shape = vertex.getShape();
       dim = shape.getBounds().getSize();
     }
@@ -426,7 +413,7 @@ public class GraphWidget extends JPanel {
     public void mouseMoved(MouseEvent e) {
 
       // change shape
-      Point2D delta = Geometry.getDelta(vertex.getPosition(), content.getPoint(e.getPoint()));
+      Point2D delta = Geometry.getDelta(vertex.getPosition(), getPoint(e.getPoint()));
       double 
         sx = Math.max(0.1,Math.abs(delta.getX())/dim.width *2),
         sy = Math.max(0.1,Math.abs(delta.getY())/dim.height*2);
@@ -447,10 +434,10 @@ public class GraphWidget extends JPanel {
     protected ActionDeleteVertex() { super("Delete Vertex"); }
     @Override
     protected void execute() {
-      Vertex selection = (Vertex)graph.getSelection();
+      EditableVertex selection = (EditableVertex)graph.getSelection();
       if (selection==null)
         return;
-      int i = SwingHelper.showDialog(GraphWidget.this, "Delete Node", "Are you sure?", SwingHelper.DLG_YES_NO);
+      int i = SwingHelper.showDialog(EditableGraphWidget.this, "Delete Node", "Are you sure?", SwingHelper.DLG_YES_NO);
       if (SwingHelper.OPTION_YES!=i) 
         return;
       graph.removeVertex(selection);
@@ -465,10 +452,10 @@ public class GraphWidget extends JPanel {
     protected ActionDeleteEdge() { super("Delete Edge"); }
     @Override
     protected void execute() {
-      Edge selection = (Edge)graph.getSelection();
+      EditableEdge selection = (EditableEdge)graph.getSelection();
       if (selection==null)
         return;
-      int i = SwingHelper.showDialog(GraphWidget.this, "Delete Edge", "Are you sure?", SwingHelper.DLG_YES_NO);
+      int i = SwingHelper.showDialog(EditableGraphWidget.this, "Delete Edge", "Are you sure?", SwingHelper.DLG_YES_NO);
       if (SwingHelper.OPTION_YES!=i) 
         return;
       graph.removeEdge(selection);
@@ -486,7 +473,7 @@ public class GraphWidget extends JPanel {
     }
     @Override
     protected void execute() {
-      Vertex vertex = (Vertex)graph.getSelection();
+      EditableVertex vertex = (EditableVertex)graph.getSelection();
       vertex.setShape(shape);
       repaint();
     }
@@ -499,10 +486,10 @@ public class GraphWidget extends JPanel {
     protected ActionSetVertexContent() { super("Set content"); }
     @Override
     protected void execute() {
-      String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
+      String txt = SwingHelper.showDialog(EditableGraphWidget.this, "Set content", "Please enter text here:");
       if (txt==null) 
         return;
-      Vertex vertex = (Vertex)graph.getSelection();
+      EditableVertex vertex = (EditableVertex)graph.getSelection();
       vertex.setContent(txt);
       repaint();
     }
@@ -521,8 +508,8 @@ public class GraphWidget extends JPanel {
    * How to handle - create an edge
    */
   private class ActionCreateEdge extends Action2 {
-    private Vertex from, to;
-    protected ActionCreateEdge(Vertex v1, Vertex v2) {
+    private EditableVertex from, to;
+    protected ActionCreateEdge(EditableVertex v1, EditableVertex v2) {
       from = v1;
       to = v2;
     }
@@ -543,7 +530,7 @@ public class GraphWidget extends JPanel {
     }
     @Override
     protected void execute() {
-      String txt = SwingHelper.showDialog(GraphWidget.this, "Set content", "Please enter text here:");
+      String txt = SwingHelper.showDialog(EditableGraphWidget.this, "Set content", "Please enter text here:");
       if (txt!=null) 
         graph.addVertex(pos, Shell.shapes[0], txt);
       repaint();
@@ -579,88 +566,5 @@ public class GraphWidget extends JPanel {
       repaint();
     }
   }
-  
-  /**
-   * The content we use for drawing
-   */
-  private class Content extends JComponent {
-
-    /**
-     * Constructor
-     */
-    private Content() {
-    } 
-    
-    /**
-     * Calculate x offset for centered graph
-     */
-    private int getXOffset() {
-      if (graph==null) return 0;
-      return -graphBounds.x+(getWidth()-graphBounds.width)/2;
-    }
-    
-    /**
-     * Calculate y offset for centered graph
-     */
-    private int getYOffset() {
-      if (graph==null) return 0;
-      return -graphBounds.y+(getHeight()-graphBounds.height)/2;
-    }
-    
-    /**
-     * @see java.awt.Component#getPreferredSize()
-     */
-    @Override
-    public Dimension getPreferredSize() {
-      if (graph==null) return new Dimension();
-      return graphBounds.getSize();
-    }
-  
-    /**
-     * @see javax.swing.JComponent#paintComponent(Graphics)
-     */
-    @Override
-    protected void paintComponent(Graphics g) {
-      
-      // clear background
-      g.setColor(Color.white);
-      g.fillRect(0,0,getWidth(),getHeight());
-
-      // graph there?
-      if (graph==null) 
-        return;
-      
-      // cast to 2d
-      Graphics2D graphics = (Graphics2D)g;
-      
-      // switch on antialiasing?
-      graphics.setRenderingHint(
-        RenderingHints.KEY_ANTIALIASING,
-        isAntialiasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
-      );
-      
-      // synchronize on graph and go?
-      synchronized (graph) {
-        // create our working graphics
-        // paint at 0,0
-        graphics.translate(getXOffset(),getYOffset());
-        // let the renderer do its work
-        graph.render(graphics);
-      }
-
-      // done
-    }
-    
-    /**
-     * Convert screen postition to model
-     */
-    private Point getPoint(Point p) {
-      return new Point(
-        p.x - getXOffset(),
-        p.y - getYOffset()
-      );
-    }
-  
-  } //Content
   
 } //GraphWidget

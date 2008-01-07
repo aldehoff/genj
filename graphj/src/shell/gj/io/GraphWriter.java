@@ -20,9 +20,9 @@
 package gj.io;
 
 import gj.geom.PathIteratorKnowHow;
-import gj.shell.model.Edge;
-import gj.shell.model.Graph;
-import gj.shell.model.Vertex;
+import gj.shell.model.EditableEdge;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableVertex;
 
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
@@ -62,7 +62,7 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Write - Graph
    */
-  public void write(Graph g) throws IOException {
+  public void write(EditableGraph g) throws IOException {
     // open the graph
     push("graph",null,false);
     // shapes
@@ -79,12 +79,12 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Write - Edges
    */
-  private void writeEdges(Graph g) throws IOException {
+  private void writeEdges(EditableGraph g) throws IOException {
     
     push("edges",null,false);
     
     // write 'em
-    for (Edge edge : g.getEdges()) 
+    for (EditableEdge edge : g.getEdges()) 
       writeEdge(g, edge);
     
     pop();
@@ -93,7 +93,7 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Write - Edge
    */
-  private void writeEdge(Graph g, Edge edge) throws IOException {
+  private void writeEdge(EditableGraph g, EditableEdge edge) throws IOException {
     
     ElementInfo info = new ElementInfo();
     info.put("id", getId(edge));
@@ -107,11 +107,11 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Write - Shapes
    */
-  private void writeShapes(Graph g) throws IOException {
+  private void writeShapes(EditableGraph g) throws IOException {
     // starting shapes
     push("shapes",null,false);
     // loop through vertices
-    for (Vertex vertex: g.getVertices()) {
+    for (EditableVertex vertex: g.getVertices()) {
       // check known shape
       Shape s = vertex.getShape();
       if (!element2id.containsKey(s))
@@ -158,9 +158,9 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Write - Vertices
    */
-  private void writeVertices(Graph g) throws IOException {
+  private void writeVertices(EditableGraph g) throws IOException {
     push("vertices",null,false);
-    for (Vertex vertex : g.getVertices()) 
+    for (EditableVertex vertex : g.getVertices()) 
       writeVertex(vertex);
     pop();
   }
@@ -168,7 +168,7 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Write - Vertex
    */
-  private void writeVertex(Vertex v) throws IOException {
+  private void writeVertex(EditableVertex v) throws IOException {
     
     // gather element information
     ElementInfo info = new ElementInfo();

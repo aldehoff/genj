@@ -19,6 +19,8 @@
  */
 package gj.model;
 
+import java.util.Collection;
+
 
 /**
  * A Graph contains Nodes and Arcs
@@ -44,6 +46,16 @@ public interface Graph {
    * The number of neighbours of a vertex
    */
   public int getNumAdjacentVertices(Object vertex);
+  
+  /**
+   * the graph's edges
+   */
+  public Iterable<?> getEdges();
+  
+  /**
+   * an edge's nodes
+   */
+  public Collection<?> getVerticesOfEdge(Object edge);
   
 } //Graph
  

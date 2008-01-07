@@ -19,9 +19,7 @@
  */
 package gj.shell.model;
 
-import java.awt.BasicStroke;
 import java.awt.Shape;
-import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.util.HashSet;
 import java.util.List;
@@ -32,17 +30,15 @@ import java.util.Set;
  * Implementation for tree - we wrap a graph and test for cycles
  * and spanning
  */
-public class Tree extends Graph implements gj.model.Tree {
-  
-  private final static Stroke DASH = new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[]{ 2, 3}, 0.0f);
+public class EditableTree extends EditableGraph implements gj.model.Tree {
   
   /** root */
-  private Vertex root;
+  private EditableVertex root;
   
   /**
    * Constructor
    */
-  public Tree(Graph graph) {
+  public EditableTree(EditableGraph graph) {
     super(graph);    
     validate();
     // done
@@ -52,7 +48,7 @@ public class Tree extends Graph implements gj.model.Tree {
    * Override addEdge to enforce tree invariants
    */
   @Override
-  public Edge addEdge(Vertex from, Vertex to, Shape shape) {
+  public EditableEdge addEdge(EditableVertex from, EditableVertex to, Shape shape) {
     // TODO enfore no circles
     return super.addEdge(from, to, shape);
   }
@@ -61,7 +57,7 @@ public class Tree extends Graph implements gj.model.Tree {
    * Override adding vertex to enforce tree invariants
    */
   @Override
-  public Vertex addVertex(Point2D position, Shape shape, Object content) {
+  public EditableVertex addVertex(Point2D position, Shape shape, Object content) {
     // TODO enforce spanning
     return super.addVertex(position, shape, content);
   }
@@ -93,12 +89,12 @@ public class Tree extends Graph implements gj.model.Tree {
       return;
 
     // need root
-    Vertex root = getRootOfTree();
+    EditableVertex root = getRootOfTree();
     if (root==null)
       throw new IllegalArgumentException("graph doesn't contain root of tree");
 
     // look for cycles
-    Set<Vertex> visited = new HashSet<Vertex>();
+    Set<EditableVertex> visited = new HashSet<EditableVertex>();
     if (cycleCheck(null, root, visited))
     	throw new IllegalArgumentException("graph is not acyclic");
     
@@ -111,7 +107,7 @@ public class Tree extends Graph implements gj.model.Tree {
   /**
    * Find cycles
    */
-  private boolean cycleCheck(Vertex from, Vertex to, Set<Vertex> visited) {
+  private boolean cycleCheck(EditableVertex from, EditableVertex to, Set<EditableVertex> visited) {
     
     // to shouldn't have been visited before
     if (visited.contains(to)) 
@@ -121,7 +117,7 @@ public class Tree extends Graph implements gj.model.Tree {
     visited.add(to);
     
     // Recurse into neighbours
-    for (Vertex neighbour : to.getNeighbours()) {
+    for (EditableVertex neighbour : to.getNeighbours()) {
       if (neighbour==from) 
         continue;
       if (cycleCheck(to, neighbour, visited))
@@ -132,36 +128,26 @@ public class Tree extends Graph implements gj.model.Tree {
     return false;
   }
   
-  /** 
-   * overriden - provide special stroke for root vertex
-   */
-  @Override
-  protected Stroke getStroke(Vertex vertex) {
-    if (vertex!=getRootOfTree())
-      return super.getStroke(vertex);
-    return DASH;
-  }
-
   /**
    * implementation
    */
   public Object getRoot() {
     if (root==null&&!vertices.isEmpty())
-      root = (Vertex)vertices.iterator().next();
+      root = (EditableVertex)vertices.iterator().next();
     return root;
   }
   
   /**
    * Accessor - root
    */
-  public Vertex getRootOfTree() {
-    return (Vertex)getRoot();
+  public EditableVertex getRootOfTree() {
+    return (EditableVertex)getRoot();
   }
   
   /**
    * Accessor - root
    */
-  public void setRootOfTree(Vertex vertex) {
+  public void setRootOfTree(EditableVertex vertex) {
     root = vertex;
   }
   

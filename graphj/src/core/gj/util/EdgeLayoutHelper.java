@@ -29,7 +29,6 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -40,45 +39,34 @@ public class EdgeLayoutHelper {
    * Calculate shape of all arcs in graph
    */
   public static void setShapes(Graph graph, Layout2D layout) {
-    // loop over vertices
-    Iterator<?> vertices = graph.getVertices().iterator();
-    HashSet<Object> done = new HashSet<Object>();
-    while (vertices.hasNext()) {
-      Object vertex = vertices.next();
-      Iterator<?> neighbours = graph.getAdjacentVertices(vertex).iterator();
-      while (neighbours.hasNext()) {
-        Object neighbour = neighbours.next();
-        if (!done.contains(neighbour)) {
-          setShape(graph, layout, vertex, neighbour);
-        }
-      }
-      done.add(vertex);
-    }
-    // done
+    for (Object edge : graph.getEdges()) 
+      setShape(graph, layout, edge);
   }
   
   /**
    * Calculate a shape for an arc
    */
-  public static void setShape(Graph graph, Layout2D layout, Object vertexA, Object vertexB) {
-    int direction = 0;
-    if (graph instanceof DirectedGraph) 
-      direction = ModelHelper.contains( ((DirectedGraph)graph).getDirectSuccessors(vertexA), vertexB) ? 1 : 0;
-    setShape(layout, vertexA, vertexB, direction);
+  public static void setShape(Graph graph, Layout2D layout, Object edge) {
+    Iterator<?> vertices = graph.getVerticesOfEdge(edge).iterator();
+    Object
+      from = vertices.next(),
+      to = vertices.next();
+    int direction = (graph instanceof DirectedGraph) ? ((DirectedGraph)graph).getDirectionOfEdge(edge, from) : 0;
+    setShape(graph, layout, edge, from, to, direction);
   }
   
   /**
    * Calculate a shape for an arc
    */
-  public static void setShape(Layout2D layout, Object vertexA, Object vertexB, int direction) {
+  public static void setShape(Graph graph, Layout2D layout, Object edge, Object from, Object to, int direction) {
     Shape
-      sfrom= layout.getShapeOfVertex(vertexA),
-      sto  = layout.getShapeOfVertex(vertexB);
+      sfrom= layout.getShapeOfVertex(from),
+      sto  = layout.getShapeOfVertex(to);
     Point2D
-      pfrom= layout.getPositionOfVertex(vertexA),
-      pto  = layout.getPositionOfVertex(vertexB);
+      pfrom= layout.getPositionOfVertex(from),
+      pto  = layout.getPositionOfVertex(to);
     
-    layout.setShapeOfEdge(vertexA, vertexB, getShape(pfrom,sfrom,pto,sto, direction));
+    layout.setShapeOfEdge(edge, getShape(pfrom,sfrom,pto,sto, direction));
   }
   
   /**

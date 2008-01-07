@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * A default implementation for a vertex
  */
-public class Vertex extends Element {
+public class EditableVertex extends EditableElement {
 
   /** the content of this vertex */
   private Object content;
@@ -40,16 +40,16 @@ public class Vertex extends Element {
   private Point2D position;
   
   /** neighbours of this vertex */
-  private Set<Vertex> successors = new HashSet<Vertex>();
-  private Set<Vertex> predecessors = new HashSet<Vertex>();
+  private Set<EditableVertex> successors = new HashSet<EditableVertex>();
+  private Set<EditableVertex> predecessors = new HashSet<EditableVertex>();
   
   /** all edges of this vertex */
-  private List<Edge> edges = new ArrayList<Edge>(3);
+  private List<EditableEdge> edges = new ArrayList<EditableEdge>(3);
   
   /**
    * Constructor
    */  
-  /*package*/ Vertex(Point2D position, Shape shape, Object content) {
+  EditableVertex(Point2D position, Shape shape, Object content) {
     
     this.position = position!=null ? position : new Point2D.Double();
     this.content = content;
@@ -67,9 +67,9 @@ public class Vertex extends Element {
   /**
    * Returns neighbours
    */
-  public List<Vertex> getNeighbours() {
+  public List<EditableVertex> getNeighbours() {
     // FIXME this could be in-situ without temporary array
-    List<Vertex> result = new ArrayList<Vertex>();
+    List<EditableVertex> result = new ArrayList<EditableVertex>();
     result.addAll(successors);
     result.addAll(predecessors);
     return result;
@@ -78,21 +78,21 @@ public class Vertex extends Element {
   /**
    * Check for neighbour
    */
-  public boolean isNeighbour(Vertex v) {
+  public boolean isNeighbour(EditableVertex v) {
     return successors.contains(v) || predecessors.contains(v);
   }
   
   /**
    * Adds an edge to given vertex
    */
-  /*package*/ Edge addEdge(Vertex that, Shape shape) {
+  /*package*/ EditableEdge addEdge(EditableVertex that, Shape shape) {
 
     // don't allow duplicates
     if (predecessors.contains(that) || successors.contains(that))
       throw new IllegalArgumentException("already exists edge between "+this+" and "+that);
 
     // setup self
-    Edge edge = new Edge(this, that, shape);
+    EditableEdge edge = new EditableEdge(this, that, shape);
     this.successors.add(that);
     this.edges.add(edge);
     
@@ -108,8 +108,8 @@ public class Vertex extends Element {
   /**
    * Retrieves one edge
    */
-  public Edge getEdge(Vertex to) {
-    for (Edge edge : edges) {
+  public EditableEdge getEdge(EditableVertex to) {
+    for (EditableEdge edge : edges) {
       if (edge.getStart()==this&&edge.getEnd()==to||edge.getStart()==to&&edge.getEnd()==this)
         return edge;
     }
@@ -119,14 +119,14 @@ public class Vertex extends Element {
   /**
    * Retrieves all edges
    */
-  /*package*/ Collection<Edge> getEdges() {
+  /*package*/ Collection<EditableEdge> getEdges() {
     return edges;
   }
   
   /**
    * Removes edge from this vertex
    */
-  /*package*/ void removeEdge(Edge edge, Vertex to) {
+  /*package*/ void removeEdge(EditableEdge edge, EditableVertex to) {
     edges.remove(edge);
     successors.remove(to);
   }
@@ -136,7 +136,7 @@ public class Vertex extends Element {
    */
   /*package*/ void resetEdges() {
 
-    for (Edge edge : edges) 
+    for (EditableEdge edge : edges) 
       edge.setShape(null);
   }
   

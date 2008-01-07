@@ -25,7 +25,7 @@ import java.awt.Shape;
 /**
  * Base impl for elements
  */
-public class Element {
+public class EditableElement {
 
   /** the default shape */
   private static final Shape EMPTY_SHAPE = new Rectangle();

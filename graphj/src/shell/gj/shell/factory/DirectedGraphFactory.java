@@ -19,9 +19,9 @@
  */
 package gj.shell.factory;
 
-import gj.shell.model.Edge;
-import gj.shell.model.Graph;
-import gj.shell.model.Vertex;
+import gj.shell.model.EditableEdge;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableVertex;
 import gj.util.ModelHelper;
 
 import java.awt.geom.Point2D;
@@ -114,10 +114,10 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    * @see gj.shell.factory.AbstractGraphFactory#create(Rectangle2D)
    */
   @Override
-  public Graph create(Rectangle2D bounds) {
+  public EditableGraph create(Rectangle2D bounds) {
     
     // create graph
-    Graph graph = new Graph();
+    EditableGraph graph = new EditableGraph();
     
     // create nodes
     createNodes(graph, bounds);
@@ -132,12 +132,12 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
   /**
    * Creates Nodes
    */
-  private void createNodes(Graph graph, Rectangle2D canvas) {
+  private void createNodes(EditableGraph graph, Rectangle2D canvas) {
     
     // loop for nodes
     for (int n=0;n<numNodes;n++) {
       
-      Vertex vertex = graph.addVertex(null, nodeShape, ""+(n+1));
+      EditableVertex vertex = graph.addVertex(null, nodeShape, ""+(n+1));
       Point2D pos = getRandomPosition(canvas,vertex.getShape());
       vertex.setPosition(pos);
      
@@ -149,9 +149,9 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
   /**
    * Creates Arcs
    */
-  private void createArcs(Graph graph) {
+  private void createArcs(EditableGraph graph) {
   
-    List<Vertex> nodes = new ArrayList<Vertex>((Set<Vertex>)graph.getVertices());
+    List<EditableVertex> nodes = new ArrayList<EditableVertex>((Set<EditableVertex>)graph.getVertices());
     
     // No Nodes?
     if (nodes.isEmpty())
@@ -160,13 +160,13 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
     // create num arcs
     for (int i=0;i<minArcs;i++) {
       
-      Vertex from = super.getRandomNode(nodes, false);
-      Vertex to   = super.getRandomNode(nodes, false);
+      EditableVertex from = super.getRandomNode(nodes, false);
+      EditableVertex to   = super.getRandomNode(nodes, false);
       
       if (to==from) 
         to = super.getRandomNode(nodes, false);
       
-      Edge edge = graph.addEdge(from, to, null);
+      EditableEdge edge = graph.addEdge(from, to, null);
     }
     
     // isConnected?
@@ -184,9 +184,9 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    * Creates arcs for given Nodes so that
    *  A n_x <- nodes : deg(n_x) > min
    */
-  private void ensureMinDegree(Graph graph) {
+  private void ensureMinDegree(EditableGraph graph) {
     
-    List<Vertex> nodes = ModelHelper.toList(graph.getVertices());
+    List<EditableVertex> nodes = ModelHelper.toList(graph.getVertices());
     
     // validate minDegree - maximum n-1 so that there
     // are always enough nodes to connect to without dups
@@ -197,17 +197,17 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
     while (true) {
       
       // .. there's a node with deg(n)<minDegree
-      Vertex vertex = getMinDegNode(graph, nodes, false);
+      EditableVertex vertex = getMinDegNode(graph, nodes, false);
       if (graph.getNumAdjacentVertices(vertex) >= minDegree) 
         break;
       
       // we don't want to connect to a neighbour
-      List<Vertex> others = new LinkedList<Vertex>(nodes);
+      List<EditableVertex> others = new LinkedList<EditableVertex>(nodes);
       ModelHelper.removeAll(others, graph.getAdjacentVertices(vertex));
       
       // find other
       while (true) {
-        Vertex other = getRandomNode(others,true);
+        EditableVertex other = getRandomNode(others,true);
         if (graph.getNumAdjacentVertices(other) < minDegree || others.isEmpty()) {
           graph.addEdge(vertex, other, null);
           break;
@@ -231,14 +231,14 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    * @param nodes list of nodes that don't have arcs (mutable)
    * @param graph the graph to creat the arcs in
    */
-  protected void ensureConnected(Graph graph) {
+  protected void ensureConnected(EditableGraph graph) {
     
-    List<Vertex> nodes = new LinkedList<Vertex>(ModelHelper.toList(graph.getVertices()));
+    List<EditableVertex> nodes = new LinkedList<EditableVertex>(ModelHelper.toList(graph.getVertices()));
     
     while (nodes.size()>1) {
-      Vertex from = getMinDegNode(graph,nodes,true);
+      EditableVertex from = getMinDegNode(graph,nodes,true);
       if (!ModelHelper.isNeighbour(graph,from,nodes)) {
-        Vertex to = getMinDegNode(graph, nodes,false);
+        EditableVertex to = getMinDegNode(graph, nodes,false);
         graph.addEdge(from, to, null);
       }
     }

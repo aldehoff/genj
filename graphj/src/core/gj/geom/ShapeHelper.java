@@ -30,6 +30,19 @@ import java.awt.geom.Point2D;
  */
 public class ShapeHelper implements PathIteratorKnowHow {
   
+  public static Shape createShape(Point2D ... points) {
+    if (points.length<2)
+      throw new IllegalArgumentException("Need minimum of 2 points for shape");
+    
+    GeneralPath result = new GeneralPath();
+    result.moveTo( (float)points[0].getX(), (float)points[0].getY());
+    for (int i = 1; i < points.length; i++) {
+      result.lineTo( (float)points[i].getX(), (float)points[i].getY());
+    }
+    
+    return result;
+  }
+  
   /**
    * Creates a shape for given path and offset. The path is
    * constructed according to the array of double-values:

@@ -19,8 +19,8 @@
  */
 package gj.shell.factory;
 
-import gj.shell.model.Graph;
-import gj.shell.model.Vertex;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableVertex;
 
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -112,26 +112,26 @@ public class TreeFactory extends AbstractGraphFactory {
    * @see gj.shell.factory.AbstractGraphFactory#create(Rectangle2D)
    */
   @Override
-  public Graph create(Rectangle2D bounds) {
+  public EditableGraph create(Rectangle2D bounds) {
     
     // create the graph
-    Graph graph = new Graph();
+    EditableGraph graph = new EditableGraph();
     
     // We loop through the sample data
-    Map<String,Vertex> nodes = new HashMap<String,Vertex>(sample.length);
+    Map<String,EditableVertex> nodes = new HashMap<String,EditableVertex>(sample.length);
     for (int s = 0; s < sample.length; s++) {
 
       String key = sample[s][0];
-      Vertex vertex = graph.addVertex(null, nodeShape, key);
+      EditableVertex vertex = graph.addVertex(null, nodeShape, key);
       vertex.setPosition(getRandomPosition(bounds, vertex.getShape()));
       nodes.put(key, vertex);
     }
      
     for (int s = 0; s < sample.length; s++) {
-      Vertex from = nodes.get(sample[s][0]);
+      EditableVertex from = nodes.get(sample[s][0]);
       for (int c = 1; c < sample[s].length; c++) {
         String key = sample[s][c];        
-        Vertex to = nodes.get(key);
+        EditableVertex to = nodes.get(key);
 
         if (Math.random()>0.5) {
           graph.addEdge(from, to, null);

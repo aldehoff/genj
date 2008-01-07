@@ -51,4 +51,9 @@ public interface DirectedGraph extends Graph {
    */
   public Iterable<?> getDirectSuccessors(Object vertex);
   
+  /**
+   * Direction
+   */
+  public int getDirectionOfEdge(Object edge, Object vertex);
+  
 } //DirectedGraph

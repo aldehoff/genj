@@ -21,9 +21,9 @@ package gj.io;
 
 import gj.geom.PathIteratorKnowHow;
 import gj.geom.ShapeHelper;
-import gj.shell.model.Edge;
-import gj.shell.model.Graph;
-import gj.shell.model.Vertex;
+import gj.shell.model.EditableEdge;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableVertex;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -56,11 +56,11 @@ public class GraphReader implements PathIteratorKnowHow  {
   private InputStream in;
   
   /** the graph we're creating */
-  private Graph result;
+  private EditableGraph result;
 
   /** identity support */
-  private Map<String,Vertex> id2vertex = new HashMap<String,Vertex>();
-  private Map<String,Edge>  id2edge = new HashMap<String,Edge>();
+  private Map<String,EditableVertex> id2vertex = new HashMap<String,EditableVertex>();
+  private Map<String,EditableEdge>  id2edge = new HashMap<String,EditableEdge>();
   private Map<String,Shape> id2shape = new HashMap<String,Shape>();
 
   /**
@@ -84,10 +84,10 @@ public class GraphReader implements PathIteratorKnowHow  {
   /**
    * Read - Graph
    */
-  public Graph read() throws IOException {
+  public EditableGraph read() throws IOException {
     
     // create a graph
-    result = new Graph();
+    result = new EditableGraph();
     
     try {
       
@@ -122,8 +122,8 @@ public class GraphReader implements PathIteratorKnowHow  {
    * Handling structure elements - Graph
    */
   private class GraphHandler extends ElementHandler {
-    private Graph graph;
-    protected GraphHandler(Graph grAph) {
+    private EditableGraph graph;
+    protected GraphHandler(EditableGraph grAph) {
       graph = grAph;
     }
     @Override
@@ -139,12 +139,12 @@ public class GraphReader implements PathIteratorKnowHow  {
    * Handling structure elements - Vertex
    */
   private class VertexHandler extends ElementHandler {
-    private Graph graph;
+    private EditableGraph graph;
     private String id = null;
     private Shape shape = null;
     private Point2D pos = null;
     private Object content = null;
-    protected VertexHandler(Graph grAph, Attributes atts) {
+    protected VertexHandler(EditableGraph grAph, Attributes atts) {
       graph = grAph;
       // the id
       id = atts.getValue("id");
@@ -158,7 +158,7 @@ public class GraphReader implements PathIteratorKnowHow  {
       // its content
       content = atts.getValue("c");
       // create the vertex
-      Vertex v = graph.addVertex(pos, shape, content);
+      EditableVertex v = graph.addVertex(pos, shape, content);
       // keep it
       id2vertex.put(id, v);
       // done
@@ -175,9 +175,9 @@ public class GraphReader implements PathIteratorKnowHow  {
    */
   private class EdgeHandler extends ElementHandler {
     private ShapeHandler shapeHandler;
-    private Edge edge;
-    protected EdgeHandler(Graph graph, Attributes atts) {
-      Vertex
+    private EditableEdge edge;
+    protected EdgeHandler(EditableGraph graph, Attributes atts) {
+      EditableVertex
         s = id2vertex.get(atts.getValue("s")),
         e = id2vertex.get(atts.getValue("e"));
       edge = graph.addEdge(s, e, null);

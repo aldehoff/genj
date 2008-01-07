@@ -19,9 +19,9 @@
  */
 package gj.shell.factory;
 
-import gj.shell.model.Edge;
-import gj.shell.model.Graph;
-import gj.shell.model.Vertex;
+import gj.shell.model.EditableEdge;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableVertex;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -46,7 +46,7 @@ public abstract class AbstractGraphFactory {
   /**
    * Create a graph
    */
-  public abstract Graph create(Rectangle2D bounds);
+  public abstract EditableGraph create(Rectangle2D bounds);
 
   /**
    * Helper that returns Point2D for given args
@@ -58,15 +58,15 @@ public abstract class AbstractGraphFactory {
   /**
    * Helper that returns the node with minimum degree from a list
    */
-  protected Vertex getMinDegNode(Graph graph, List<Vertex> list, boolean remove) {
+  protected EditableVertex getMinDegNode(EditableGraph graph, List<EditableVertex> list, boolean remove) {
     
     int pos = getRandomIndex(list.size());
 
-    Vertex result = list.get(pos);
+    EditableVertex result = list.get(pos);
     int min = graph.getNumAdjacentVertices(result);
     
     for (int i=1;i<list.size();i++) {
-      Vertex other = list.get( (pos+i)%list.size() );
+      EditableVertex other = list.get( (pos+i)%list.size() );
       if (graph.getNumAdjacentVertices(other) < min) 
         result=other;
     }
@@ -87,7 +87,7 @@ public abstract class AbstractGraphFactory {
   /**
    * Helper that returns a random DefaultNode from a list
    */
-  protected Vertex getRandomNode(List<Vertex> list, boolean remove) {
+  protected EditableVertex getRandomNode(List<EditableVertex> list, boolean remove) {
     int i = getRandomIndex(list.size());
     return remove ? list.remove(i) : list.get(i);
   }
@@ -95,7 +95,7 @@ public abstract class AbstractGraphFactory {
   /**
    * Helper that returns a random DefaultArc from a list
    */
-  protected Object getRandomArc(List<Edge> list, boolean remove) {
+  protected Object getRandomArc(List<EditableEdge> list, boolean remove) {
     int i = getRandomIndex(list.size());
     return remove ? list.remove(i) : list.get(i);
   }

@@ -19,10 +19,10 @@
  */
 package gj.shell;
 
-import gj.shell.model.Edge;
-import gj.shell.model.Graph;
-import gj.shell.model.Layout;
-import gj.shell.model.Vertex;
+import gj.shell.model.EditableEdge;
+import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableLayout;
+import gj.shell.model.EditableVertex;
 import gj.util.EdgeLayoutHelper;
 
 import java.awt.Shape;
@@ -37,7 +37,7 @@ import java.util.List;
 /*package*/ class Animation {
 
   /** the graph */
-  private Graph graph;
+  private EditableGraph graph;
   
   /** the moves */
   private Movement[] moves;
@@ -58,7 +58,7 @@ import java.util.List;
   /**
    * Constructor (before)
    */
-  public Animation(Graph graph, Layout layout) {
+  public Animation(EditableGraph graph, EditableLayout layout) {
     
     // something to animate?
     if (graph.getNumVertices() == 0) 
@@ -69,7 +69,7 @@ import java.util.List;
 
     // create movements for vertices ...
     moves = new Movement[graph.getNumVertices()];
-    Iterator<Vertex> vertices = graph.getVertices().iterator();
+    Iterator<EditableVertex> vertices = graph.getVertices().iterator();
     int m=0; for (;vertices.hasNext();m++) 
       moves[m] = new Movement(vertices.next());
     
@@ -92,8 +92,8 @@ import java.util.List;
         moves[m].snapshot();
       
       edgesAndShapes = new ArrayList<Object>(graph.getEdges().size());
-      for (Iterator<Edge> edges = graph.getEdges().iterator(); edges.hasNext(); ) {
-        Edge edge = edges.next();
+      for (Iterator<EditableEdge> edges = graph.getEdges().iterator(); edges.hasNext(); ) {
+        EditableEdge edge = edges.next();
         edgesAndShapes.add(edge);
         edgesAndShapes.add(edge.getShape());
       }
@@ -139,7 +139,7 @@ import java.util.List;
     // FIXME edges *AND* shapes???
     Iterator<?> it = edgesAndShapes.iterator();
     while (it.hasNext()) {
-      ((Edge)it.next()).setShape((Shape)it.next());
+      ((EditableEdge)it.next()).setShape((Shape)it.next());
     }
     // stop all moves
     moves=null;
@@ -171,12 +171,12 @@ import java.util.List;
    * A movement of a vertex in the animation
    */
   private class Movement {
-    private Vertex vertex;
+    private EditableVertex vertex;
     private Point2D 
       from = new Point2D.Double(), 
       step = new Point2D.Double(),
       to = new Point2D.Double();
-    Movement(Vertex set) { 
+    Movement(EditableVertex set) { 
       vertex = set; 
       from.setLocation(vertex.getPosition());
     }

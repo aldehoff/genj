@@ -19,7 +19,7 @@
  */
 package gj.shell.factory;
 
-import gj.shell.model.Graph;
+import gj.shell.model.EditableGraph;
 
 import java.awt.geom.Rectangle2D;
 
@@ -32,8 +32,8 @@ public class EmptyFactory extends AbstractGraphFactory {
    * @see gj.shell.factory.AbstractGraphFactory#create(Rectangle2D)
    */
   @Override
-  public Graph create(Rectangle2D bounds) {
-    return new Graph();
+  public EditableGraph create(Rectangle2D bounds) {
+    return new EditableGraph();
   }
 
 } //EmptyFactory
