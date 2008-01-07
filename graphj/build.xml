@@ -4,94 +4,110 @@
 	
   <property name="dir.build" value="./build"/>
 
-  <path id="classpath">
-    <pathelement path="${dir.build}/classes/tst"/>
-    <pathelement path="${dir.build}/classes/layouts"/>
-    <pathelement path="${dir.build}/classes/core"/>
-    <pathelement path="${dir.build}/classes/shell"/>
-    <pathelement path="./src/shell"/>
-  </path>
-
-  <property name="classpath" refid="classpath"/>
-
   <!--
    Initialization
    -->
   <target name="init">
-    <mkdir dir="${dir.build}"/>
+    <mkdir dir="./build"/>
   </target>
 
   <!--
-   Core Compilation
+   Core Compilation & Build
    -->
-  <target name="compile.core" depends="init">
-    <mkdir dir="${dir.build}/classes/core"/>
-    <javac srcdir="src/core" destdir="${dir.build}/classes/core"
-           debug="on" optimize="off" deprecation="off" fork="true">
-      <classpath refid="classpath"/>
-    </javac>
+  <target name="make.core" depends="init">
+  	
+  	<!-- compile -->
+    <mkdir dir="./build/classes/core"/>
+    <javac srcdir="src/core" destdir="./build/classes/core" debug="on" optimize="off" deprecation="off"/>
+  	
+  	<!-- build jar -->
+    <delete file="./build/gj-core.jar"/>
+    <jar jarfile="./build/gj-core.jar" update="True">
+      <fileset dir="./build/classes/core"/>
+    </jar>
+  	
   </target>
 
   <!--
-   Layouts Compilation
+   Layouts Compilation & Build
    -->
-  <target name="compile.layouts" depends="init">
-    <mkdir dir="${dir.build}/classes/layouts"/>
-    <javac srcdir="src/layouts" destdir="${dir.build}/classes/layouts"
-           debug="on" optimize="off" deprecation="off" fork="true">
-      <classpath refid="classpath"/>
+  <target name="make.layouts" depends="init, make.core">
+  	
+  	<!-- compile -->
+    <mkdir dir="./build/classes/layouts"/>
+    <javac srcdir="src/layouts" destdir="./build/classes/layouts" debug="on" optimize="off" deprecation="off">
+      <classpath path="build/gj-core.jar"/>
     </javac>
+  	
+  	<!-- build jar -->
+    <delete file="./build/gj-layouts.jar"/>
+    <jar jarfile="./build/gj-layouts.jar" update="True">
+      <fileset dir="./build/classes/layouts"/>
+    </jar>
+  	
   </target>
+  	
+  <!--
+   UI Compilation & Build
+  -->
+  <target name="make.ui" depends="init, make.core">
+  	
+    <mkdir dir="./build/classes/ui"/>
+    <javac srcdir="src/ui" destdir="./build/classes/ui" debug="on" optimize="off" deprecation="off">
+      <classpath path="build/gj-core.jar"/>
+    </javac>
+  	
+  	<!-- build jar -->
+    <delete file="./build/gj-ui.jar"/>
+    <jar jarfile="./build/gj-ui.jar" update="True">
+      <fileset dir="./build/classes/ui"/>
+    </jar>
+  	
+	</target>
 
   <!--
-   Shell Compilation
+   Shell Compilation & Build
    -->
-  <target name="compile.shell" depends="init">
-    <mkdir dir="${dir.build}/classes/shell"/>
-    <javac srcdir="src/shell" destdir="${dir.build}/classes/shell"
-           debug="on" optimize="off" deprecation="off" fork="true">
-      <classpath refid="classpath"/>
+  <target name="make.shell" depends="init, make.core, make.ui">
+  	
+    <mkdir dir="./build/classes/shell"/>
+    <javac srcdir="src/shell" destdir="./build/classes/shell" debug="on" optimize="off" deprecation="off">
+      <classpath path="build/gj-core.jar:build/gj-ui.jar"/>
     </javac>
-    <copy todir="${dir.build}/classes/shell">
+    <copy todir="./build/classes/shell">
       <fileset dir="./src/shell" includes="**/*.properties"/>
     </copy>
+  	
+  	<!-- build jar -->
+    <delete file="./build/gj-shell.jar"/>
+    <jar jarfile="./build/gj-shell.jar" update="True">
+      <fileset dir="./build/classes/shell"/>
+    </jar>
+  	
   </target>
 
   <!--
    Compilation
    -->
-  <target name="compile" depends="compile.core, compile.layouts, compile.shell">
+  <target name="make" depends="make.core, make.layouts, make.ui, make.shell">
   </target>
 
   <!--
    Cleaning
    -->
   <target name="clean">
-    <delete dir="${dir.build}"/>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="./build" excludes="eclipse/**"/>
+   	</delete>
   </target>
 
   <!--
    Run
    -->
-  <target name="run" depends="compile">
+  <target name="run" depends="make">
     <java classname="gj.shell.Shell" fork="true">
-       <classpath refid="classpath"/>
+       <classpath path="./build/gj-core.jar:./build/gj-layouts.jar:./build/gj-ui.jar:./build/gj-shell.jar"/>
     </java>
-  </target>
-  
-  <!--
-   Dist TreeLayout
-   -->
-  <target name="dist.tree" depends="compile">
-     <delete file="${dir.build}/gj-tree.jar"/>
-     <jar jarfile="${dir.build}/gj-tree.jar" update="True">
-       <fileset dir="${dir.build}/classes/core"
-           includes="gj/geom/*
-                    ,gj/layout/*
-                    ,gj/layout/tree/**
-                    ,gj/model/*
-                    ,gj/util/*"/>
-     </jar>
   </target>
   
 </project>
