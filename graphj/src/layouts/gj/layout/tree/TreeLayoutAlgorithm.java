@@ -38,6 +38,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A 'simple' tree layout for Trees
@@ -212,7 +213,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private Branch layout(Tree tree, Layout2D layout, Object parent, Object root) {
     
     // check children
-    int children = tree.getNeighbours(root).size() + (parent!=null ? -1 : 0); 
+    Set<?> neighbours = tree.getNeighbours(root);
+    int children = neighbours.size() + (parent!=null ? -1 : 0); 
     if (children<0)
       throw new IllegalStateException("tree reported "+root+" child of "+parent+" has no neighbours");
 
@@ -224,10 +226,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     Branch[] branches = new Branch[children];
     int b = 0;
     Point2D.Double pos = new Point2D.Double();
-    for (Object child : tree.getNeighbours(root) ) {
+    for (Object child : neighbours ) {
 
       // don't return
-      if (child==parent)
+      if (child.equals(parent))
         continue;
       
       // create the branch

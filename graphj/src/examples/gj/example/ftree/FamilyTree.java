@@ -29,10 +29,8 @@ import gj.ui.GraphWidget;
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JFrame;
@@ -42,42 +40,46 @@ import javax.swing.JScrollPane;
  * A simple example of using the graph API for showing a family tree
  */
 public class FamilyTree {
-  
+
   /** main method */
   public static void main(String[] args) {
     
     // prepare and layout our family tree
-    final Map<String, Set<String>> relationships = new HashMap<String, Set<String>>();
-    relationships.put("Lars H.", new LinkedHashSet<String>(Arrays.asList("Lars", "Sven", "Nils")));
-    relationships.put("Lars", new LinkedHashSet<String>(Arrays.asList("Yaro")));
-    relationships.put("Sven", new LinkedHashSet<String>(Arrays.asList("Jonas", "Alisa", "Luka")));
+    final String family = 
+      "Lars H.>Lars,"+
+      "Lars H.>Sven,"+
+      "Lars H.>Nils,"+
+      "Lars>Yaro,"+
+      "Sven>Jonas,"+
+      "Sven>Alisa,"+
+      "Sven>Luka";
     
-    Tree family = new Tree() {
+    Tree tree = new Tree() {
 
       public Set<?> getVertices() {
-        Set<String> result = new HashSet<String>();
-        result.addAll(relationships.keySet());
-        for (String father : relationships.keySet()) {
-          result.add(father);
-          result.addAll(relationships.get(father));
-        }
-        return result;
+        return new HashSet<String>(Arrays.asList(family.split(",|>")));
       }
       
       public Set<?> getNeighbours(Object vertex) {
+        
         Set<String> result = new LinkedHashSet<String>();
-        Set<String> children = relationships.get(vertex);
-        if (children!=null)
-          result.addAll(children);
-        for (String father : relationships.keySet()) {
-          if (relationships.get(father).contains(vertex))
+        
+        for (String relationship : family.split(",")) {
+          
+          String father = relationship.split(">")[0];
+          String son = relationship.split(">")[1];
+          
+          if (father.equals(vertex))
+            result.add(son);
+          else if (son.equals(vertex))
             result.add(father);
         }
+        
         return result;
       }
       
       public Object getRoot() {
-        return "Lars H.";
+        return family.split(",")[0].split(">")[0];
       }
 
     };
@@ -85,14 +87,14 @@ public class FamilyTree {
     Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));
     
     try {
-      new TreeLayoutAlgorithm().apply(family, layout, null);
+      new TreeLayoutAlgorithm().apply(tree, layout, null);
     } catch (LayoutAlgorithmException e) {
       throw new RuntimeException("hmm, can't layout my family", e);
     }
     
     // stuff into a graph widget
     GraphWidget widget = new GraphWidget(layout);
-    widget.setGraph(family);
+    widget.setGraph(tree);
  
     // and show
     JFrame frame = new JFrame("Family Tree on GraphJ");
