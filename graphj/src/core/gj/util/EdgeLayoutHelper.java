@@ -27,9 +27,9 @@ import gj.model.Graph;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A simplified layout for arcs */
@@ -39,34 +39,36 @@ public class EdgeLayoutHelper {
    * Calculate shape of all arcs in graph
    */
   public static void setShapes(Graph graph, Layout2D layout) {
-    for (Object edge : graph.getEdges()) 
-      setShape(graph, layout, edge);
-  }
-  
-  /**
-   * Calculate a shape for an arc
-   */
-  public static void setShape(Graph graph, Layout2D layout, Object edge) {
-    Iterator<?> vertices = graph.getVerticesOfEdge(edge).iterator();
-    Object
-      from = vertices.next(),
-      to = vertices.next();
-    int direction = (graph instanceof DirectedGraph) ? ((DirectedGraph)graph).getDirectionOfEdge(edge, from) : 0;
-    setShape(graph, layout, edge, from, to, direction);
-  }
-  
-  /**
-   * Calculate a shape for an arc
-   */
-  public static void setShape(Graph graph, Layout2D layout, Object edge, Object from, Object to, int direction) {
-    Shape
-      sfrom= layout.getShapeOfVertex(from),
-      sto  = layout.getShapeOfVertex(to);
-    Point2D
-      pfrom= layout.getPositionOfVertex(from),
-      pto  = layout.getPositionOfVertex(to);
+    Set<Object> done = new HashSet<Object>();
     
-    layout.setShapeOfEdge(edge, getShape(pfrom,sfrom,pto,sto, direction));
+    for (Object vertex : graph.getVertices()) { 
+      
+      for (Object neighbour : graph.getNeighbours(vertex)) {
+        
+        if (done.contains(neighbour))
+          continue;
+
+        int direction = (graph instanceof DirectedGraph) ? ((DirectedGraph)graph).getDirectionOfEdge(vertex, neighbour) : 0;
+        setShape(graph, layout, vertex, neighbour, direction);
+      }
+      
+      done.add(vertex);
+    }
+    
+  }
+  
+  /**
+   * Calculate a shape for an arc
+   */
+  public static void setShape(Graph graph, Layout2D layout, Object from, Object to, int direction) {
+    Shape
+      sfrom= layout.getShapeOfVertex(graph, from),
+      sto  = layout.getShapeOfVertex(graph, to);
+    Point2D
+      pfrom= layout.getPositionOfVertex(graph, from),
+      pto  = layout.getPositionOfVertex(graph, to);
+    
+    layout.setShapeOfEdge(graph, from, to, getShape(pfrom,sfrom,pto,sto, direction));
   }
   
   /**
@@ -106,24 +108,24 @@ public class EdgeLayoutHelper {
    * @param s2 the shape sitting at p2
    */
   public static Shape getShape(Point2D p1, Shape s1, Point2D p2, Shape s2, int direction) {
-    
-    // A loop for p1==p2
-    if (p1.equals(p2)) {
-      
-      Rectangle2D bounds = s1.getBounds2D();
 
-      double 
-        w = bounds.getMaxX()+bounds.getWidth()/4,
-        h = bounds.getMaxY()+bounds.getHeight()/4;
-
-      Point2D
-        a = p1,
-        b = new Point2D.Double(a.getX()+w, a.getY()  ),
-        c = new Point2D.Double(a.getX()+w, a.getY()+h),
-        d = new Point2D.Double(a.getX()  , a.getY()+h);
-        
-      return getShape(new Point2D[]{a,b,c,d,a}, s1, s1, direction);
-    }
+//    // A loop for p1==p2
+//    if (p1.equals(p2)) {
+//      
+//      Rectangle2D bounds = s1.getBounds2D();
+//
+//      double 
+//        w = bounds.getMaxX()+bounds.getWidth()/4,
+//        h = bounds.getMaxY()+bounds.getHeight()/4;
+//
+//      Point2D
+//        a = p1,
+//        b = new Point2D.Double(a.getX()+w, a.getY()  ),
+//        c = new Point2D.Double(a.getX()+w, a.getY()+h),
+//        d = new Point2D.Double(a.getX()  , a.getY()+h);
+//        
+//      return getShape(new Point2D[]{a,b,c,d,a}, s1, s1, direction);
+//    }
 
     Point2D 
     	a = calcEnd(p2, p1, s1),
@@ -134,7 +136,7 @@ public class EdgeLayoutHelper {
     result.start(direction<0, a);
     result.lineTo(b);
     result.end(direction>0);
-   
+    
     // done
     return result; 
   }

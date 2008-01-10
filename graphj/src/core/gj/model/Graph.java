@@ -19,7 +19,7 @@
  */
 package gj.model;
 
-import java.util.Collection;
+import java.util.Set;
 
 
 /**
@@ -30,32 +30,12 @@ public interface Graph {
   /**
    * The graph's vertices
    */
-  public Iterable<?> getVertices();
+  public Set<?> getVertices();
   
-  /**
-   * The number of contained vertices
-   */
-  public int getNumVertices();
- 
   /**
    * The neighbours of a vertex
    */
-  public Iterable<?> getAdjacentVertices(Object vertex);
-  
-  /**
-   * The number of neighbours of a vertex
-   */
-  public int getNumAdjacentVertices(Object vertex);
-  
-  /**
-   * the graph's edges
-   */
-  public Iterable<?> getEdges();
-  
-  /**
-   * an edge's nodes
-   */
-  public Collection<?> getVerticesOfEdge(Object edge);
+  public Set<?> getNeighbours(Object vertex);
   
 } //Graph
  

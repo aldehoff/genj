@@ -94,7 +94,7 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
     
     // something to do for me?
-    if (graph.getNumVertices() == 0)
+    if (graph.getVertices().isEmpty())
       return bounds;
     
     // get a seed
@@ -105,7 +105,7 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     while (nodes.hasNext()) {
       
       Object node = nodes.next();
-      Rectangle2D nodeCanvas = layout.getShapeOfVertex(node).getBounds2D();
+      Rectangle2D nodeCanvas = layout.getShapeOfVertex(graph, node).getBounds2D();
 
       double 
         x = bounds.getMinX() - nodeCanvas.getMinX(),
@@ -113,12 +113,12 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
         w = bounds.getWidth() - nodeCanvas.getWidth(),
         h = bounds.getHeight() - nodeCanvas.getHeight();
 
-      Point2D pos = layout.getPositionOfVertex(node);
+      Point2D pos = layout.getPositionOfVertex(graph, node);
       pos.setLocation(
         isApplyHorizontally ? x + random.nextDouble()*w : pos.getX(), 
         isApplyVertically ? y + random.nextDouble()*h : pos.getY()
       );
-      layout.setPositionOfVertex(node, pos);
+      layout.setPositionOfVertex(graph, node, pos);
 
     }
     

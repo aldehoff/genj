@@ -85,10 +85,17 @@ public class EditableGraphWidget extends GraphWidget {
      * Color resolve
      */
     @Override
-    protected Color getColor(Object vertexOrEdge) {
-      return vertexOrEdge==graph.getSelection() ? Color.BLUE : Color.BLACK;    
+    protected Color getColor(Object vertex) {
+      return vertex==graph.getSelection() ? Color.BLUE : Color.BLACK;    
     }
     
+    /**
+     * Color resolve
+     */
+    @Override
+    protected Color getColor(Object from, Object to) {
+      return ((EditableVertex)from).getEdge((EditableVertex)to)==graph.getSelection() ? Color.BLUE : Color.BLACK;    
+    }
     /** 
      * Stroke resolve
      */
@@ -310,7 +317,7 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      ModelHelper.translate(getGraphLayout(), graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
+      ModelHelper.translate(graph, getGraphLayout(), graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();
@@ -380,7 +387,9 @@ public class EditableGraphWidget extends GraphWidget {
       Point2D pos = getPoint(e.getPoint());
       dummy.setPosition(pos);
       // find target
-      graph.setSelection(graph.getVertex(pos));
+      EditableVertex selection = graph.getVertex(pos);
+      if (selection!=from)
+        graph.setSelection(graph.getVertex(pos));
       // show
       repaint();
     }

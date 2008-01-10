@@ -185,7 +185,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     Tree tree = (Tree)graph;
 
     // ignore an empty tree
-    if (tree.getNumVertices()==0)
+    if (tree.getVertices().isEmpty())
       return bounds;
     
     // recurse into it
@@ -212,17 +212,19 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private Branch layout(Tree tree, Layout2D layout, Object parent, Object root) {
     
     // check children
-    int children = tree.getNumAdjacentVertices(root) + (parent!=null ? -1 : 0); 
+    int children = tree.getNeighbours(root).size() + (parent!=null ? -1 : 0); 
+    if (children<0)
+      throw new IllegalStateException("tree reported "+root+" child of "+parent+" has no neighbours");
 
     // a leaf is easy
     if (children==0) 
-      return new Branch(root, layout);
+      return new Branch(tree, root, layout);
     
     // loop over all children - a branch for each
     Branch[] branches = new Branch[children];
     int b = 0;
     Point2D.Double pos = new Point2D.Double();
-    for (Object child : tree.getAdjacentVertices(root) ) {
+    for (Object child : tree.getNeighbours(root) ) {
 
       // don't return
       if (child==parent)
@@ -249,6 +251,9 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
    */
   private class Branch extends Geometry {
     
+    /** tree */
+    private Tree tree;
+    
     /** root of branch */
     private Object root;
     
@@ -259,11 +264,11 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     private Area area;
     
     /** constructor for a leaf */
-    Branch(Object root, Layout2D layout) {
+    Branch(Tree tree, Object root, Layout2D layout) {
       this.root = root;
       vertices.add(root);
-      area = new Area(layout.getShapeOfVertex(root));
-      Point2D pos = layout.getPositionOfVertex(root);
+      area = new Area(layout.getShapeOfVertex(tree, root));
+      Point2D pos = layout.getPositionOfVertex(tree, root);
       area.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
     }
 
@@ -285,13 +290,13 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       //  b = bottom of root shape
       //  d = distance that root needs from ct 
       double layoutAxis = getLayoutAxis();
-      Point2D c1 = layout.getPositionOfVertex(branches[0].root);
-      Point2D cN = layout.getPositionOfVertex(branches[branches.length-1].root);
+      Point2D c1 = layout.getPositionOfVertex(tree, branches[0].root);
+      Point2D cN = layout.getPositionOfVertex(tree, branches[branches.length-1].root);
       Point2D c = getPoint(c1, cN);
       Point2D t = getMax(branches[0].area, layoutAxis - HALF_RADIAN);
       Point2D ct = getIntersection(t, layoutAxis-QUARTER_RADIAN, c, layoutAxis);
       
-      Point2D m = getMax(layout.getShapeOfVertex(root), layoutAxis);
+      Point2D m = getMax(layout.getShapeOfVertex(tree, root), layoutAxis);
       Point2D b = getIntersection(m, layoutAxis-QUARTER_RADIAN, new Point2D.Double(), layoutAxis);
       
       double d = getLength(b) + distanceBetweenGenerations;
@@ -299,10 +304,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       Point2D r = getPoint(ct, layoutAxis-HALF_RADIAN, d);
       
       // place root
-      layout.setPositionOfVertex(root, r);
+      layout.setPositionOfVertex(tree, root, r);
       
       // calculate new area with shape of root
-      area = new Area(layout.getShapeOfVertex(root));
+      area = new Area(layout.getShapeOfVertex(tree, root));
       area.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
       
       // .. umbrella between root and first/last child
@@ -321,8 +326,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     /** shape of root */
     Shape getShapeOfRoot(Layout2D layout) {
-      Point2D pos = layout.getPositionOfVertex(root);
-      GeneralPath shape = new GeneralPath(layout.getShapeOfVertex(root));
+      Point2D pos = layout.getPositionOfVertex(tree, root);
+      GeneralPath shape = new GeneralPath(layout.getShapeOfVertex(tree, root));
       shape.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
       return shape;
     }
@@ -330,13 +335,13 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     /** translate a branch */
     void moveBy(Layout2D layout, Point2D delta) {
       for (Object vertice : vertices) 
-        ModelHelper.translate(layout, vertice, delta);
+        ModelHelper.translate(tree, layout, vertice, delta);
       area.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
     
     /** translate a branch */
     void moveTo(Layout2D layout, Point2D pos) {
-      moveBy(layout, getDelta(layout.getPositionOfVertex(root), pos));
+      moveBy(layout, getDelta(layout.getPositionOfVertex(tree, root), pos));
     }
     
     /** move beside other branch */

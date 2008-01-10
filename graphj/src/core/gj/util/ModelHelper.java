@@ -37,19 +37,19 @@ public class ModelHelper {
   /**
    * Sets a node's position
    */
-  public static void setPosition(Layout2D graph, Object node, double x, double y) {
-    Point2D pos = graph.getPositionOfVertex(node);
+  public static void setPosition(Graph graph, Layout2D layout, Object node, double x, double y) {
+    Point2D pos = layout.getPositionOfVertex(graph, node);
     pos.setLocation( x, y);
-    graph.setPositionOfVertex(node, pos);
+    layout.setPositionOfVertex(graph, node, pos);
   }
   
   /**
    * Translates a node's position
    */
-  public static void translate(Layout2D graph, Object node, Point2D delta) {
-    Point2D pos = graph.getPositionOfVertex(node);
+  public static void translate(Graph graph, Layout2D layout, Object node, Point2D delta) {
+    Point2D pos = layout.getPositionOfVertex(graph, node);
     pos.setLocation( pos.getX() + delta.getX(), pos.getY() + delta.getY());
-    graph.setPositionOfVertex(node, pos);
+    layout.setPositionOfVertex(graph, node, pos);
   }
 
   /**
@@ -57,7 +57,7 @@ public class ModelHelper {
    * That is  E node(i), E arc(i,j) where node = node(j)
    */
   public static boolean isNeighbour(Graph graph, Object node, List<?> nodes) {
-    Iterator<?> neighbours = graph.getAdjacentVertices(node).iterator();
+    Iterator<?> neighbours = graph.getNeighbours(node).iterator();
     while (neighbours.hasNext()) {
       if (nodes.contains(neighbours.next()))
         return true;
@@ -93,15 +93,15 @@ public class ModelHelper {
    */
   public static Rectangle2D getBounds(Graph graph, Layout2D layout) {
     // no content?
-    if (graph==null||graph.getNumVertices()==0) 
+    if (graph==null||graph.getVertices().isEmpty()) 
       return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;
     Iterator<?> it = graph.getVertices().iterator();
     while (it.hasNext()) {
       Object node = it.next();
-      Point2D p = layout.getPositionOfVertex(node);
-      Rectangle2D box = layout.getShapeOfVertex(node).getBounds2D();
+      Point2D p = layout.getPositionOfVertex(graph, node);
+      Rectangle2D box = layout.getShapeOfVertex(graph, node).getBounds2D();
       x1 = Math.min(x1,p.getX()+box.getMinX());
       y1 = Math.min(y1,p.getY()+box.getMinY());
       x2 = Math.max(x2,p.getX()+box.getMaxX());

@@ -67,9 +67,9 @@ public class EditableVertex extends EditableElement {
   /**
    * Returns neighbours
    */
-  public List<EditableVertex> getNeighbours() {
+  public Set<EditableVertex> getNeighbours() {
     // FIXME this could be in-situ without temporary array
-    List<EditableVertex> result = new ArrayList<EditableVertex>();
+    Set<EditableVertex> result = new HashSet<EditableVertex>();
     result.addAll(successors);
     result.addAll(predecessors);
     return result;
@@ -126,9 +126,12 @@ public class EditableVertex extends EditableElement {
   /**
    * Removes edge from this vertex
    */
-  /*package*/ void removeEdge(EditableEdge edge, EditableVertex to) {
+  /*package*/ void removeEdge(EditableEdge edge) {
     edges.remove(edge);
-    successors.remove(to);
+    successors.remove(edge.getStart());
+    successors.remove(edge.getEnd());
+    predecessors.remove(edge.getStart());
+    predecessors.remove(edge.getEnd());
   }
   
   /**

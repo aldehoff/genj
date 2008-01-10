@@ -20,6 +20,7 @@
 package gj.shell.model;
 
 import gj.layout.Layout2D;
+import gj.model.Graph;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -32,42 +33,42 @@ public class EditableLayout implements Layout2D {
   /**
    * interface implementation
    */
-  public Shape getShapeOfEdge(Object edge) {
-    return ((EditableEdge)edge).getShape();
+  public Shape getShapeOfEdge(Graph graph, Object start, Object end) {
+    return ((EditableVertex)start).getEdge((EditableVertex)end).getShape();
   }
 
   /**
    * interface implementation
    */
-  public void setShapeOfEdge(Object edge, Shape shape) {
-    ((EditableEdge)edge).setShape(shape);
-  }
+  public void setShapeOfEdge(Graph graph, Object start, Object end, Shape shape) {
+    ((EditableVertex)start).getEdge((EditableVertex)end).setShape(shape);
+ }
 
   /**
    * interface implementation
    */
-  public Shape getShapeOfVertex(Object node) {
+  public Shape getShapeOfVertex(Graph graph, Object node) {
     return ((EditableVertex)node).getShape();
   }
 
   /**
    * interface implementation
    */
-  public void setShapeOfVertex(Object node, Shape shape) {
+  public void setShapeOfVertex(Graph graph, Object node, Shape shape) {
     ((EditableVertex)node).setShape(shape);
   }
 
   /**
    * interface implementation
    */
-  public Point2D getPositionOfVertex(Object node) {
+  public Point2D getPositionOfVertex(Graph graph, Object node) {
     return ((EditableVertex)node).getPosition();
   }
 
   /**
    * interface implementation
    */
-  public void setPositionOfVertex(Object node, Point2D pos) {
+  public void setPositionOfVertex(Graph graph, Object node, Point2D pos) {
     ((EditableVertex)node).setPosition(pos);
   }
 

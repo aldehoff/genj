@@ -22,7 +22,6 @@ package gj.shell.model;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -60,22 +59,6 @@ public class EditableTree extends EditableGraph implements gj.model.Tree {
   public EditableVertex addVertex(Point2D position, Shape shape, Object content) {
     // TODO enforce spanning
     return super.addVertex(position, shape, content);
-  }
-  
-  /**
-   * Provide children of a parent
-   */
-  public List<?> getChildren(Object parent) {
-    // TODO calculate children
-    throw new UnsupportedOperationException("getChildren not implemented");
-  }
-  
-  /**
-   * Provide parent of a child
-   */
-  public Object getParent(Object child) {
-    // TODO calculate parent
-    throw new UnsupportedOperationException("getParent not implemented");
   }
   
   /**

@@ -69,6 +69,8 @@ public class EditableGraph implements DirectedGraph {
    * add an edge
    */
   public EditableEdge addEdge(EditableVertex from, EditableVertex to, Shape shape) {
+    if (from==to)
+      throw new IllegalArgumentException("no edges between self allowed");
     EditableEdge edge = from.addEdge(to, shape);
     edges.add(edge);
     return edge;
@@ -90,8 +92,9 @@ public class EditableGraph implements DirectedGraph {
     EditableVertex
      start = edge.getStart(),
      end   = edge.getEnd();
-    start.removeEdge(edge, end);
-    end  .removeEdge(edge, start);
+    start.removeEdge(edge);
+    end  .removeEdge(edge);
+    edges.remove(edge);
   }
 
   /**
@@ -197,8 +200,8 @@ public class EditableGraph implements DirectedGraph {
   /**
    * 
    */
-  public int getDirectionOfEdge(Object edge, Object vertex) {
-    return ((EditableEdge)edge).getStart()==vertex ? 1 : -1;
+  public int getDirectionOfEdge(Object from, Object to) {
+    return ((EditableVertex)from).getEdge((EditableVertex)to).getStart()==from ? 1 : -1;
   }
   
   /**
@@ -211,7 +214,7 @@ public class EditableGraph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Iterable<EditableVertex> getVertices() {
+  public Set<EditableVertex> getVertices() {
     return vertices;
   }
   
@@ -225,7 +228,7 @@ public class EditableGraph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Iterable<EditableVertex> getAdjacentVertices(Object vertex) {
+  public Set<EditableVertex> getNeighbours(Object vertex) {
     return ((EditableVertex)vertex).getNeighbours();
   }
   

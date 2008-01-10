@@ -84,7 +84,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
     
     // no purpose in empty|1-ary graph
-    if (graph.getNumVertices() < 2) 
+    if (graph.getVertices().size() < 2) 
       return bounds;
     
     // create a CircularGraph
@@ -97,7 +97,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
       
       // look at a circle
       CircularGraph.Circle circle = (CircularGraph.Circle)it.next();
-      layout(layout, circle, x, y);
+      layout(graph, layout, circle, x, y);
       
       // next
       x+=160;
@@ -113,14 +113,14 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
   /**
    * layout a circle
    */
-  private void layout(Layout2D layout, CircularGraph.Circle circle, double cx, double cy) {
+  private void layout(Graph graph, Layout2D layout, CircularGraph.Circle circle, double cx, double cy) {
     
     // nodes
     Object[] nodes = circle.getNodes().toArray();
     
     // one node only?
     if (nodes.length==1) {
-      ModelHelper.setPosition(layout, nodes[0], cx,cy);
+      ModelHelper.setPosition(graph, layout, nodes[0], cx,cy);
       return;
     }
     
@@ -132,7 +132,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
     for (int n=0;n<nodes.length;n++) {
         
       // .. its size - the length of vector (x,y)
-      Rectangle2D bounds = layout.getShapeOfVertex(nodes[n]).getBounds2D();
+      Rectangle2D bounds = layout.getShapeOfVertex(graph, nodes[n]).getBounds2D();
       double size = Geometry.getLength(bounds.getWidth()+padNodes, bounds.getHeight()+padNodes);
         
       // .. keep what we need
@@ -150,7 +150,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
     for (int n=0;n<nodes.length;n++) {
       double x = (int)(cx + Math.sin(radian)*radius);
       double y = (int)(cy + Math.cos(radian)*radius);
-      ModelHelper.setPosition(layout, nodes[n], x, y);
+      ModelHelper.setPosition(graph, layout, nodes[n], x, y);
 
       radian += TWOPI*sizes[n]/circumference;
     }
