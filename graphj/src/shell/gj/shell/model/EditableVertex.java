@@ -24,7 +24,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,8 +40,7 @@ public class EditableVertex extends EditableElement {
   private Point2D position;
   
   /** neighbours of this vertex */
-  private Set<EditableVertex> successors = new HashSet<EditableVertex>();
-  private Set<EditableVertex> predecessors = new HashSet<EditableVertex>();
+  private Set<EditableVertex> neighbours = new LinkedHashSet<EditableVertex>();
   
   /** all edges of this vertex */
   private List<EditableEdge> edges = new ArrayList<EditableEdge>(3);
@@ -61,25 +60,21 @@ public class EditableVertex extends EditableElement {
    * Number of neighbours
    */
   public int getNumNeighbours() {
-    return successors.size() + predecessors.size();
+    return neighbours.size();
   }
   
   /**
    * Returns neighbours
    */
   public Set<EditableVertex> getNeighbours() {
-    // FIXME this could be in-situ without temporary array
-    Set<EditableVertex> result = new HashSet<EditableVertex>();
-    result.addAll(successors);
-    result.addAll(predecessors);
-    return result;
+    return neighbours;
   }
 
   /**
    * Check for neighbour
    */
   public boolean isNeighbour(EditableVertex v) {
-    return successors.contains(v) || predecessors.contains(v);
+    return neighbours.contains(v);
   }
   
   /**
@@ -88,16 +83,18 @@ public class EditableVertex extends EditableElement {
   /*package*/ EditableEdge addEdge(EditableVertex that, Shape shape) {
 
     // don't allow duplicates
-    if (predecessors.contains(that) || successors.contains(that))
+    if (neighbours.contains(that))
       throw new IllegalArgumentException("already exists edge between "+this+" and "+that);
+    if (this.equals(that))
+      throw new IllegalArgumentException("can't have edge between self ("+this+")");
 
     // setup self
     EditableEdge edge = new EditableEdge(this, that, shape);
-    this.successors.add(that);
+    this.neighbours.add(that);
     this.edges.add(edge);
     
     // setup other
-    that.predecessors.add(this);
+    that.neighbours.add(this);
     if (that!=this) 
       that.edges.add(edge);
     
@@ -128,10 +125,8 @@ public class EditableVertex extends EditableElement {
    */
   /*package*/ void removeEdge(EditableEdge edge) {
     edges.remove(edge);
-    successors.remove(edge.getStart());
-    successors.remove(edge.getEnd());
-    predecessors.remove(edge.getStart());
-    predecessors.remove(edge.getEnd());
+    neighbours.remove(edge.getStart());
+    neighbours.remove(edge.getEnd());
   }
   
   /**

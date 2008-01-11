@@ -25,8 +25,8 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,10 +40,10 @@ public class EditableGraph implements DirectedGraph {
   private EditableElement selection;
   
   /** the contained nodes */
-  protected Set<EditableVertex> vertices = new HashSet<EditableVertex>(10);
+  protected Set<EditableVertex> vertices = new LinkedHashSet<EditableVertex>(10);
 
   /** the contained arcs */
-  private Collection<EditableEdge> edges = new HashSet<EditableEdge>(10);
+  private Collection<EditableEdge> edges = new LinkedHashSet<EditableEdge>(10);
   
   /**
    * Constructor
