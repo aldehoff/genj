@@ -222,8 +222,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     if (children==0) 
       return new Branch(tree, root, layout);
     
-    // loop over all children - a branch for each
-    Branch[] branches = new Branch[children];
+    // loop over all siblings - a branch for each
+    Branch[] siblings = new Branch[children];
     int b = 0;
     Point2D.Double pos = new Point2D.Double();
     for (Object child : neighbours ) {
@@ -233,18 +233,18 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
         continue;
       
       // create the branch
-      branches[b] = layout(tree, layout, root, child);
+      siblings[b] = layout(tree, layout, root, child);
 
       // position alongside previous
       if (b>0) 
-        branches[b].moveTo(layout, branches[b-1]);
+        siblings[b].moveTo(layout, siblings, b);
       
       // next
       b++;
     }
     
     // create a branch for parent and branches
-    return new Branch(root, layout, branches);
+    return new Branch(root, layout, siblings);
 
   }
   
@@ -346,20 +346,23 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       moveBy(layout, getDelta(layout.getPositionOfVertex(tree, root), pos));
     }
     
-    /** move beside other branch */
-    void moveTo(Layout2D layout, Branch other) {
+    /** move beside other branches */
+    void moveTo(Layout2D layout, Branch[] siblings, int numSiblings) {
       
       double layoutAxis = getLayoutAxis();
       double alignmentAxis = layoutAxis - QUARTER_RADIAN;
 
-      // move on top of each other at point of respective maximum in reversed layout direction
+      // move top aligned respective to reversed layout direction
       moveBy(layout, getDelta(
           getMax(area, layoutAxis - HALF_RADIAN),
-          getMax(other.area, layoutAxis - HALF_RADIAN)
+          getMax(siblings[numSiblings-1].area, layoutAxis - HALF_RADIAN)
       ));          
       
       // calculate distance in alignment axis + padding
-      double distance = getDistance(other.area, area, alignmentAxis ) - distanceInGeneration;
+      double distance = Double.MAX_VALUE;
+      for (int s=0;s<numSiblings; s++) {
+        distance = Math.min(distance, getDistance(siblings[s].area, area, alignmentAxis ) - distanceInGeneration);
+      }
       
       // move it
       moveBy(layout, new Point2D.Double(-Math.sin(alignmentAxis) * distance, Math.cos(alignmentAxis) * distance));
