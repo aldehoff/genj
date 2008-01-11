@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/core"/>
+	<classpathentry kind="src" path="src/examples"/>
 	<classpathentry kind="src" path="src/ui"/>
 	<classpathentry kind="src" path="src/shell"/>
 	<classpathentry kind="src" path="src/layouts"/>
