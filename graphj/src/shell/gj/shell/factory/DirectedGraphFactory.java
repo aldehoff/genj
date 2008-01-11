@@ -163,8 +163,8 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       EditableVertex from = super.getRandomNode(nodes, false);
       EditableVertex to   = super.getRandomNode(nodes, false);
       
-      if (to==from) 
-        to = super.getRandomNode(nodes, false);
+      if (to.equals(from)) 
+        continue;
       
       EditableEdge edge = graph.addEdge(from, to, null);
     }
@@ -208,7 +208,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       // find other
       while (true) {
         EditableVertex other = getRandomNode(others,true);
-        if (graph.getNumAdjacentVertices(other) < minDegree || others.isEmpty()) {
+        if (!vertex.equals(other)&&graph.getNumAdjacentVertices(other) < minDegree || others.isEmpty()) {
           graph.addEdge(vertex, other, null);
           break;
         }
