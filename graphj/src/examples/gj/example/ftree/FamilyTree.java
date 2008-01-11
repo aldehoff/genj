@@ -40,50 +40,47 @@ import javax.swing.JScrollPane;
  * A simple example of using the graph API for showing a family tree
  */
 public class FamilyTree {
-
+  
   /** main method */
   public static void main(String[] args) {
     
-    // prepare and layout our family tree
+    // prepare our relationships
     final String family = 
-      "Lars H.>Lars,"+
-      "Lars H.>Sven,"+
-      "Lars H.>Nils,"+
-      "Lars>Yaro,"+
-      "Sven>Jonas,"+
-      "Sven>Alisa,"+
-      "Sven>Luka";
+      "L&M>L&A,"+
+      "L&M>S&S,"+
+      "L&M>Nils,"+
+      "L&A>Yaro,"+
+      "S&S>Jonas,"+
+      "S&S>Alisa,"+
+      "S&S>Luka";
     
+    // wrap it in a tree model
     Tree tree = new Tree() {
 
+      /** all vertices */
       public Set<?> getVertices() {
         return new HashSet<String>(Arrays.asList(family.split(",|>")));
       }
-      
+
+      /** neighbours */
       public Set<?> getNeighbours(Object vertex) {
-        
         Set<String> result = new LinkedHashSet<String>();
-        
         for (String relationship : family.split(",")) {
-          
-          String father = relationship.split(">")[0];
-          String son = relationship.split(">")[1];
-          
-          if (father.equals(vertex))
-            result.add(son);
-          else if (son.equals(vertex))
-            result.add(father);
+          String[] parent2child = relationship.split(">");
+          if (parent2child[0].equals(vertex)) result.add(parent2child[1]);
+          if (parent2child[1].equals(vertex)) result.add(parent2child[0]);
         }
-        
         return result;
       }
-      
+
+      /** root */
       public Object getRoot() {
-        return family.split(",")[0].split(">")[0];
+        return family.substring(0, family.indexOf('>'));
       }
 
     };
-    
+ 
+    // apply tree layout
     Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));
     
     try {
@@ -100,10 +97,10 @@ public class FamilyTree {
     JFrame frame = new JFrame("Family Tree on GraphJ");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.getContentPane().add(new JScrollPane(widget));
-    frame.setSize(new Dimension(600,400));
+    frame.setSize(new Dimension(320,250));
     frame.setVisible(true);
     
-    // wait
+    // done
   }
 
 }
