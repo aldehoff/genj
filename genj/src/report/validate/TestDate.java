@@ -116,6 +116,8 @@ import java.util.List;
         buf.append(report.translate("err.date.before", events));
       else
         buf.append(report.translate("err.date.after", events));
+      
+      entity = date2.getEntity();
       if (entity instanceof Indi)
         buf.append(report.translate("err.date.of", entity.toString()));
 
