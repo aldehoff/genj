@@ -20,9 +20,10 @@
 package genj.util.swing;
 
 import genj.util.ChangeSupport;
-import genj.util.EnvironmentChecker;
 
 import java.awt.Dimension;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 
 import javax.swing.JTextField;
@@ -116,15 +117,23 @@ public class TextFieldWidget extends JTextField {
    */
   protected void processFocusEvent(FocusEvent e) {
     
-    // catch focus gained to preselect all for easy overwrite/editing (only on windows though 
-    // since auto-select auto-copies!)
-    if (EnvironmentChecker.isWindows()&&e.getID()==FocusEvent.FOCUS_GAINED) {
+    // catch focus gained to preselect all for easy overwrite/editing
+    // on all platforms now as selectAll() does restore the system selection
+    if (e.getID()==FocusEvent.FOCUS_GAINED) {
       if (isTemplate||isSelectAllOnFocus) 
         selectAll();
     }
     
     // continue
     super.processFocusEvent(e);
+  }
+  
+  private boolean blockSystemSelectionAccessViaToolkit = false;
+  
+  public Toolkit getToolkit() {
+    if (blockSystemSelectionAccessViaToolkit)
+      throw new HeadlessException("no access to system selection atm");
+    return super.getToolkit();
   }
   
   /**
@@ -135,8 +144,21 @@ public class TextFieldWidget extends JTextField {
     // caret is at position 0 after selection - this
     // makes sure the beginning of the text is visible
     if (getDocument() != null) {
+      
+      // position 
       setCaretPosition(getDocument().getLength());
-      moveCaretPosition(0);
+      
+      // moveto
+      try {
+        // block system selection via toolkit if there's one
+        // as we don't want selectAll() to overwrite the 
+        // current clipboard content
+        if (getToolkit().getSystemSelection()!=null)
+          blockSystemSelectionAccessViaToolkit = true;
+        moveCaretPosition(0);
+      } finally {
+        blockSystemSelectionAccessViaToolkit = false;
+      }
     }
   }
     
