@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.31 $ $Author: nmeier $ $Date: 2007-07-20 04:54:47 $
+ * $Revision: 1.32 $ $Author: nmeier $ $Date: 2008-01-14 21:10:16 $
  */
 package genj.util;
 
@@ -118,19 +118,19 @@ public class Registry {
         properties.load(in);
         in.close();
       } catch (Throwable t) {
-        LOG.log(Level.FINER, "Failed to read from existing registry ("+t.getMessage()+")");
+        LOG.log(Level.INFO, "Failed to read registry "+name+" from "+origin+" ("+t.getMessage()+")");
       }
     }
     
     // read all from local registry
+    File file = getFile(name);
     try {
-      File file = getFile(name);
       LOG.fine("Loading registry '"+name+"' from file "+file.getAbsolutePath());
       FileInputStream in = new FileInputStream(file);
       properties.load(in);
       in.close();
     } catch (Throwable t) {
-      LOG.log(Level.FINER, "Failed to read from existing registry ("+t.getMessage()+")");
+      LOG.log(Level.INFO, "Failed to read registry "+name+" from "+file+" ("+t.getMessage()+")");
     }
     
     // remember

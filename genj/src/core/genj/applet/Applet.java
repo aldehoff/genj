@@ -219,6 +219,7 @@ public class Applet extends java.applet.Applet {
           OptionProvider.getAllOptions(registry);
           
         } catch (Throwable t) {
+          LOG.log(Level.INFO, "Couldn't load genj.properties from "+origin+" ("+t.getMessage()+")");
           registry = new Registry();
         }
         
