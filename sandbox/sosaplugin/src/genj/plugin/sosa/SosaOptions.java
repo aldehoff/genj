@@ -39,16 +39,7 @@ public class SosaOptions extends OptionProvider {
 	private static SosaOptions instance = new SosaOptions();
 
 	/** Sosa extension flag */
-	public boolean isExtendSosaIndexation = true;
-
-	// we don't need a method for returning the flag - we make 
-	// it a public attribute for now - if that needs changing we'll 
-	// have to provide a setter setExtendSosaIndexationFlag() 
-	// as well though 
-	// 
-	//   public boolean getExtendSosaIndexationFlag() { 
-	//        return extendSosaIndexationFlag; 
-	//    } 
+	public boolean isExtendSosaIndexation=true;
 
 	/** 
 	 * callback - provide options during system init 
