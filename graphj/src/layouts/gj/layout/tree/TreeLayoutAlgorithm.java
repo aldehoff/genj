@@ -37,6 +37,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -190,63 +192,26 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       return bounds;
     
     // recurse into it
-//Debugging resulting branch shape    
-//layout.setShapeOfVertex(tree.getRoot(), gj.shell.Shell.shapes[0]);    
-    Branch branch = layout(tree, layout, null, tree.getRoot());
-//Point2D p = layout.getPositionOfVertex(tree.getRoot());
-//layout.setShapeOfVertex(tree.getRoot(), branch.area.createTransformedArea(AffineTransform.getTranslateInstance(-p.getX(), -p.getY())));
-    
-    // done
-    return branch.area;
-  }
-  
-  /**
-   * Resolve layout axis in radian (0 bottom up, PI top down, ...)
-   */
-  private double getLayoutAxis() {
-    return orientation/360*Geometry.ONE_RADIAN;
+    return layout(tree, null, tree.getRoot(), layout).area;
   }
   
   /**
    * Layout a branch
    */
-  private Branch layout(Tree tree, Layout2D layout, Object parent, Object root) {
+  private Branch layout(Tree tree, Object backtrack, Object root, Layout2D layout) {
     
-    // check children
+    // check # children in neighbours (we don't count backtrack as child) - leaf?
     Set<?> neighbours = tree.getNeighbours(root);
-    int children = neighbours.size() + (parent!=null ? -1 : 0); 
-    if (children<0)
-      throw new IllegalStateException("tree reported "+root+" child of "+parent+" has no neighbours");
-
-    // a leaf is easy
-    if (children==0) 
+    if (neighbours.size()  + (backtrack!=null ? -1 : 0) == 0)
       return new Branch(tree, root, layout);
     
-    // loop over all siblings - a branch for each
-    Branch[] siblings = new Branch[children];
-    int b = 0;
-    Point2D.Double pos = new Point2D.Double();
-    for (Object child : neighbours ) {
-
-      // don't return
-      if (child.equals(parent))
-        continue;
-      
-      // create the branch
-      siblings[b] = layout(tree, layout, root, child);
-
-      // position alongside previous
-      if (b>0) 
-        siblings[b].moveTo(layout, siblings, b);
-      
-      // next
-      b++;
-    }
-    
-    // create a branch for parent and branches
-    return new Branch(root, layout, siblings);
+    // create a branch for parent and children
+    Set<Object> children = new LinkedHashSet<Object>(neighbours);
+    children.remove(backtrack);
+    return new Branch(tree, root, children, layout);
 
   }
+  
   
   /**
    * A Branch is the recursively worked on part of the tree
@@ -266,23 +231,54 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     private Area area;
     
     /** constructor for a leaf */
-    Branch(Tree tree, Object root, Layout2D layout) {
-      this.root = root;
-      vertices.add(root);
-      area = new Area(layout.getShapeOfVertex(tree, root));
-      Point2D pos = layout.getPositionOfVertex(tree, root);
+    Branch(Tree tree, Object leaf, Layout2D layout) {
+      this.root = leaf;
+      vertices.add(leaf);
+      area = new Area(layout.getShapeOfVertex(tree, leaf));
+      Point2D pos = layout.getPositionOfVertex(tree, leaf);
       area.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
     }
 
-    /** constructor for a branch of sub-branches */
-    Branch(Object root, Layout2D layout, Branch[] branches) {
+    /** constructor for a parent and its children */
+    Branch(Tree tree, Object parent, Set<?> children, Layout2D layout) {
+
+      double layoutAxis = getLayoutAxis();
+      double alignmentAxis = layoutAxis - QUARTER_RADIAN;
       
       // keep track of root and vertices
-      this.root = root;
+      root = parent;
       vertices.add(root);
-      for (Branch branch : branches) 
-        vertices.addAll(branch.vertices);
       
+      // create a branch for each child and place beside siblings
+      LinkedList<Branch> branches = new LinkedList<Branch>();
+      for (Object child : children)  {
+        
+        // another branch
+        Branch next = layout(tree, parent, child, layout) ; 
+        
+        // add its vertices to ours
+        vertices.addAll(next.vertices);
+
+        // place child n+1 beside 1..n
+        if (!branches.isEmpty()) {
+
+          // move top aligned respective to reversed layout direction ("top-aligned")
+          next.moveBy(layout, getDelta( getMax(next.area, layoutAxis - HALF_RADIAN), getMax(branches.getLast().area, layoutAxis - HALF_RADIAN) ));          
+          
+          // calculate distance in alignment axis + padding
+          double distance = Double.MAX_VALUE;
+          for (Branch prev : branches) {
+            distance = Math.min(distance, getDistance(prev.area, next.area, alignmentAxis ) - distanceInGeneration);
+          }
+          
+          // move it
+          next.moveBy(layout, new Point2D.Double(-Math.sin(alignmentAxis) * distance, Math.cos(alignmentAxis) * distance));
+        }
+        
+        // next
+        branches.add(next);
+      }
+
       // calculate where to place root
       //  c = center between 1st and nth child
       //  t = topmost point of children
@@ -291,11 +287,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       //  m = maximum extend of root shape
       //  b = bottom of root shape
       //  d = distance that root needs from ct 
-      double layoutAxis = getLayoutAxis();
-      Point2D c1 = layout.getPositionOfVertex(tree, branches[0].root);
-      Point2D cN = layout.getPositionOfVertex(tree, branches[branches.length-1].root);
+      Point2D c1 = layout.getPositionOfVertex(tree, branches.getFirst().root);
+      Point2D cN = layout.getPositionOfVertex(tree, branches.getLast().root);
       Point2D c = getPoint(c1, cN);
-      Point2D t = getMax(branches[0].area, layoutAxis - HALF_RADIAN);
+      Point2D t = getMax(branches.getFirst().area, layoutAxis - HALF_RADIAN);
       Point2D ct = getIntersection(t, layoutAxis-QUARTER_RADIAN, c, layoutAxis);
       
       Point2D m = getMax(layout.getShapeOfVertex(tree, root), layoutAxis);
@@ -312,14 +307,14 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       area = new Area(layout.getShapeOfVertex(tree, root));
       area.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
       
-      // .. umbrella between root and first/last child
+      // .. an umbrella between root and first/last child
       area.add(new Area(ShapeHelper.createShape(
           r, 
-          getMax(branches[0].getShapeOfRoot(layout), layoutAxis+QUARTER_RADIAN),
-          getMax(branches[branches.length-1].getShapeOfRoot(layout), layoutAxis-QUARTER_RADIAN),
+          getMax(branches.getFirst().getShapeOfRoot(layout), layoutAxis+QUARTER_RADIAN),
+          getMax(branches.getLast().getShapeOfRoot(layout), layoutAxis-QUARTER_RADIAN),
           r)));
 
-      // .. each sub-branch
+      // .. and each sub-branch
       for (Branch branch : branches)
         area.add(branch.area);
       
@@ -346,29 +341,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       moveBy(layout, getDelta(layout.getPositionOfVertex(tree, root), pos));
     }
     
-    /** move beside other branches */
-    void moveTo(Layout2D layout, Branch[] siblings, int numSiblings) {
-      
-      double layoutAxis = getLayoutAxis();
-      double alignmentAxis = layoutAxis - QUARTER_RADIAN;
-
-      // move top aligned respective to reversed layout direction
-      moveBy(layout, getDelta(
-          getMax(area, layoutAxis - HALF_RADIAN),
-          getMax(siblings[numSiblings-1].area, layoutAxis - HALF_RADIAN)
-      ));          
-      
-      // calculate distance in alignment axis + padding
-      double distance = Double.MAX_VALUE;
-      for (int s=0;s<numSiblings; s++) {
-        distance = Math.min(distance, getDistance(siblings[s].area, area, alignmentAxis ) - distanceInGeneration);
-      }
-      
-      // move it
-      moveBy(layout, new Point2D.Double(-Math.sin(alignmentAxis) * distance, Math.cos(alignmentAxis) * distance));
-      
+    /** Resolve layout axis in radian (0 bottom up, PI top down, ...) */
+    double getLayoutAxis() {
+      return orientation/360*Geometry.ONE_RADIAN;
     }
-    
     
   } //Branch
   
