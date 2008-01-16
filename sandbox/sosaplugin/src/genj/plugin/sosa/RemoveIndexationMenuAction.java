@@ -1,5 +1,4 @@
-/**
- * This GenJ SosaIndexation Source is Freeware Code
+/* This GenJ SosaIndexation Source is Freeware Code
  *
  * This source is distributed in the hope that it will be useful for creating custom GenJ plugins, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

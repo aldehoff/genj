@@ -14,7 +14,7 @@ import genj.util.Resources;
 import genj.window.WindowManager;
 import genj.gedcom.Indi;
 import genj.util.swing.ChoiceWidget;
-import genj.common.SelectEntityWidget;
+//import genj.common.SelectEntityWidget;
 /* java imported classes */
 import java.util.logging.Logger;
 
@@ -28,11 +28,11 @@ public class GetIndividualFromSosaIndexMenuAction extends Action2 {
 
 	private Gedcom gedcom;
 
-	private Indi sosaRoot;
+	//private Indi sosaRoot;
 
 	private SosaIndexation sosaIndexation;
 
-	private SosaMenuAction menuItemSETCHANGE;
+	//private SosaMenuAction menuItemSETCHANGE;
 
 	private Logger LOG = Logger.getLogger("genj.plugin.sosa");
 
@@ -76,7 +76,7 @@ public class GetIndividualFromSosaIndexMenuAction extends Action2 {
 		LOG.fine("Passe SOSA_GET");
 		/* we get Sosa index of individual */
 		ChoiceWidget choice = new ChoiceWidget(sosaIndexation.getSosaIndexArray(),sosaIndexation.getSosaIndexArray().length > 0 ? sosaIndexation.getSosaIndexArray()[0]	: "");
-		rc = WindowManager.getInstance(getTarget()).openDialog(null,"Choisir un index", WindowManager.QUESTION_MESSAGE, choice,Action2.okCancel(), getTarget());
+		int rc = WindowManager.getInstance(getTarget()).openDialog(null,"Choisir un index", WindowManager.QUESTION_MESSAGE, choice,Action2.okCancel(), getTarget());
 		String result = rc == 0 ? choice.getText() : null;
 		if (result != null) {
 			LOG.fine("individual is : "	+ sosaIndexation.getSosaMap().get(Integer.parseInt(result)).toString());

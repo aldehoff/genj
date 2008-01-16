@@ -44,6 +44,7 @@ import java.util.logging.Logger;
  */
 public class SosaPlugin implements Plugin, GedcomLifecycleListener, GedcomListener {
 
+	static String SOSA_INFORMATION="Information...";
 	static String SOSA_SET="Set indexation with...";
 	static String SOSA_CHANGE="Change indexation to...";
 	static String SOSA_GET="Get individual from index...";
@@ -62,8 +63,8 @@ public class SosaPlugin implements Plugin, GedcomLifecycleListener, GedcomListen
 
 	private ExtendMenubar menuSosa;
 
-	private SosaMenuAction menuActionSetOrChangeIndexation;
-	private GetIndividualFromIndexMenuAction menuActionGetIndividualFromIndex;
+	private SetOrChangeIndexationMenuAction menuActionSetOrChangeIndexation;
+	private GetIndividualFromSosaIndexMenuAction menuActionGetIndividualFromIndex;
 	private RemoveIndexationMenuAction menuActionRemoveIndexation;
 
 	private Indi sosaRoot;
@@ -137,6 +138,7 @@ public class SosaPlugin implements Plugin, GedcomLifecycleListener, GedcomListen
 	 * 
 	 */
 	public void extend(ExtensionPoint ep) {
+		LOG.fine("ON PASSE ICI");
 
 		if (ep instanceof ExtendGedcomOpened) {
 			LOG.fine("Flag= " + isExtendSosaIndexation());
@@ -157,8 +159,8 @@ public class SosaPlugin implements Plugin, GedcomLifecycleListener, GedcomListen
 				LOG.fine("Première installation : pas d'indexation Sosa");
 				sosaRoot=null;
 				/* we set here a sub-menu = Install Sosa indexation */
-				menuActionSetOrChangeIndexation.setString(SosaMenuAction.myMenuEnum.SOSA_SET.getItem());
-				menuSosa.addAction(SosaMenuAction.SOSA_MENU, menuActionSetOrChangeIndexation);
+				menuActionSetOrChangeIndexation.setString(SOSA_SET);
+				menuSosa.addAction(SetOrChangeIndexationMenuAction.SOSA_MENU, menuActionSetOrChangeIndexation);
 				// done
 			} else {
 				/* we have sosa.root : we check for value recorded */
@@ -172,8 +174,8 @@ public class SosaPlugin implements Plugin, GedcomLifecycleListener, GedcomListen
 					// it may have to be blanked ; to be confirmed
 					LOG.fine("3-a : Pas d'indexation Sosa");
 					/* we set here a sub-menu = "Install indexation" */
-					menuActionSetOrChangeIndexation.setString(SosaMenuAction.myMenuEnum.SOSA_SET.getItem());
-					menuSosa.addAction(SosaMenuAction.SOSA_MENU,menuActionSetOrChangeIndexation);
+					menuActionSetOrChangeIndexation.setString(SOSA_SET);
+					menuSosa.addAction(SetOrChangeIndexationMenuAction.SOSA_MENU,menuActionSetOrChangeIndexation);
 					// done
 				} else {
 					/* there is a sosa.root = DeCujus */
@@ -197,8 +199,8 @@ public class SosaPlugin implements Plugin, GedcomLifecycleListener, GedcomListen
 						setIndexationFlag = true;
 					}
 					/* we set here a sub-menu = "Change indexation" */
-					menuActionSetOrChangeIndexation.setString(SosaMenuAction.myMenuEnum.SOSA_CHANGE.getItem());
-					menuSosa.addAction(SosaMenuAction.SOSA_MENU,menuActionSetOrChangeIndexation);
+					menuActionSetOrChangeIndexation.setString(SOSA_CHANGE);
+					menuSosa.addAction(SetOrChangeIndexationMenuAction.SOSA_MENU,menuActionSetOrChangeIndexation);
 					/* we set sosa indexation */
 					sosaIndexation = new SosaIndexation(sosaRoot, gedcom);
 					/* we set sosa indexation value in menuAction instances */
@@ -261,23 +263,24 @@ public class SosaPlugin implements Plugin, GedcomLifecycleListener, GedcomListen
 			/* we add sub-menu info */
 			LOG.fine("1a : Addition of Info sub-menu");
 			/* we display info */
-			menuSosa.addAction(SosaMenuAction.SOSA_MENU, new Action2(RESOURCES.getString("info"), true));
+			menuSosa.addAction(GetInformationMenuAction.SOSA_MENU, new Action2(RESOURCES.getString("Info"), true));
 			/* we add sub-menu menuActionSetOrChangeIndexation */
 			LOG.fine("Addition of menuActionSetOrChangeIndexation sub-menu");
-			menuActionSetOrChangeIndexation = new SosaMenuAction(SosaMenuAction.myMenuEnum.SOSA_SET.getItem(), sosaIndexation, gedcom);
+			menuActionSetOrChangeIndexation = new SetOrChangeIndexationMenuAction(SOSA_SET, sosaIndexation, gedcom);
+			LOG.fine("**Attention : sosaIndexation et gedcom ne sont pas définis");
 			/* we display menuActionSetOrChangeIndexation */
-			menuSosa.addAction(SosaMenuAction.SOSA_MENU, menuActionSetOrChangeIndexation);
+			menuSosa.addAction(SetOrChangeIndexationMenuAction.SOSA_MENU, menuActionSetOrChangeIndexation);
 			/* we add sub-menu menuActionGetIndividualFromIndex */
 			LOG.fine("1b : Addition of menuActionGetIndividualFromIndex sub-menu");
-			SosaMenuAction menuActionGetIndividualFromIndex = new SosaMenuAction(SosaMenuAction.myMenuEnum.SOSA_GET.getItem(), sosaIndexation, gedcom);
+			GetIndividualFromSosaIndexMenuAction menuActionGetIndividualFromIndex = new GetIndividualFromSosaIndexMenuAction(SOSA_GET, sosaIndexation, gedcom);
 			/* we display menuActionSetOrChangeIndexation */
-			menuSosa.addAction(SosaMenuAction.SOSA_MENU,menuActionGetIndividualFromIndex);
+			menuSosa.addAction(GetIndividualFromSosaIndexMenuAction.SOSA_MENU,menuActionGetIndividualFromIndex);
 			/* we add sub-menu SOSA_REMOVE */
-			LOG.fine("1c : ********Addition of RemoveIndexationMenuAction sub-menu");
+			LOG.fine("1c : =======Addition of RemoveIndexationMenuAction sub-menu");
 			//SosaMenuAction menuActionRemoveAllIndexation = new SosaMenuAction(SosaMenuAction.myMenuEnum.SOSA_REMOVE.getItem(), sosaIndexation, gedcom);
 			RemoveIndexationMenuAction menuActionRemoveAllIndexation = new RemoveIndexationMenuAction(SOSA_REMOVE, sosaIndexation, gedcom);
 			/* we display menuActionSetOrChangeIndexation */
-			menuSosa.addAction(SosaMenuAction.SOSA_MENU, menuActionRemoveAllIndexation);
+			menuSosa.addAction(RemoveIndexationMenuAction.SOSA_MENU, menuActionRemoveAllIndexation);
 
 		}
 

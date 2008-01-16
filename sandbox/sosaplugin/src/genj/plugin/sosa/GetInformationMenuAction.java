@@ -1,5 +1,5 @@
 /**
- * This GenJ GetIndividualFromSosaIndexMenuAction source is Freeware Code
+ * This GenJ SosaIndexation Source is Freeware Code
  *
  * This source is distributed in the hope that it will be useful for creating custom GenJ plugins, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * MenuAction
  */
 
-public class GetIndividualFromSosaIndexMenuAction extends Action2 {
+public class GetInformationMenuAction extends Action2 {
 
 	private String menuItem;
 
@@ -40,11 +40,34 @@ public class GetIndividualFromSosaIndexMenuAction extends Action2 {
 
 	static final String SOSA_MENU = "Sosa indexation";
 
+	public enum myMenuEnum {
+
+		private String item;
+
+		/* constructor */
+		myMenuEnum(String item) {
+			this.item = item;
+		}
+
+		/* method to retrieve constant value */
+		public String getItem() {
+			return item;
+		}
+
+	}
+
+	/**
+	 * Change Sosa Indexation
+	 */
+	public void setSosaIndexationValue(SosaIndexation sosaIndexation) {
+		this.sosaIndexation=sosaIndexation;
+	}
+
 
 	/**
 	 * Menu action constructor
 	 */
-	public GetIndividualFromSosaIndexMenuAction(String menuItem, SosaIndexation  sosaIndexation, Gedcom gedcom) {
+	public GetInformationMenuAction(String menuItem, SosaIndexation  sosaIndexation, Gedcom gedcom) {
 		this.menuItem = menuItem;
 		this.sosaIndexation = sosaIndexation;
 		this.gedcom = gedcom;
@@ -60,26 +83,13 @@ public class GetIndividualFromSosaIndexMenuAction extends Action2 {
 		setText(RESOURCES.getString(menuItem));
 	}
 
-	/**
-	 * Change Sosa Indexation
-	 */
-	public void setSosaIndexationValue(SosaIndexation sosaIndexation) {
-		this.sosaIndexation=sosaIndexation;
-	}
-
 
 	/**
 	 * Execute click on menu item
 	 */
 	protected void execute() {
+		LOG.fine("Click sur menu item = " + menuItem);
 		LOG.fine("Et oui ! = " + menuItem);
-		LOG.fine("Passe SOSA_GET");
-		/* we get Sosa index of individual */
-		ChoiceWidget choice = new ChoiceWidget(sosaIndexation.getSosaIndexArray(),sosaIndexation.getSosaIndexArray().length > 0 ? sosaIndexation.getSosaIndexArray()[0]	: "");
-		rc = WindowManager.getInstance(getTarget()).openDialog(null,"Choisir un index", WindowManager.QUESTION_MESSAGE, choice,Action2.okCancel(), getTarget());
-		String result = rc == 0 ? choice.getText() : null;
-		if (result != null) {
-			LOG.fine("individual is : "	+ sosaIndexation.getSosaMap().get(Integer.parseInt(result)).toString());
-		}
+		/* we check which menu item is displayed */
 	}
 }
