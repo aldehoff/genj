@@ -31,7 +31,7 @@ public class RemoveIndexationMenuAction extends Action2 {
 
 	private SosaIndexation sosaIndexation;
 
-	private SosaMenuAction menuItemSETCHANGE;
+	private SetOrChangeIndexationMenuAction menuItemSetOrChange;
 
 	private Logger LOG = Logger.getLogger("genj.plugin.sosa");
 
@@ -83,6 +83,6 @@ public class RemoveIndexationMenuAction extends Action2 {
 		sosaIndexation.removeSosaIndexationFromAllIndis();
 		/* we set sub-menu to set indexation */
 		LOG.fine("Change menu item = " + SosaPlugin.SOSA_SET);
-		menuItemSETCHANGE.setString(SosaPlugin.SOSA_SET);
+		menuItemSetOrChange.setString(SosaPlugin.SOSA_SET);
 	}
 }

@@ -32,7 +32,7 @@ public class SetOrChangeIndexationMenuAction extends Action2 {
 
 	private SosaIndexation sosaIndexation;
 
-	private SosaMenuAction menuItemSETCHANGE;
+	private SetOrChangeIndexationMenuAction menuItemSetOrChange;
 
 	private Logger LOG = Logger.getLogger("genj.plugin.sosa");
 
@@ -128,10 +128,10 @@ public class SetOrChangeIndexationMenuAction extends Action2 {
 				sosaIndexation.setSosaGedcom(gedcom);
 				/* we build sosa indexation */
 				sosaIndexation.setSosaIndexation(sosaRoot);
-				LOG.fine("Indexation Sosa construite with :"+soosaRoot.toString());
+				LOG.fine("Indexation Sosa construite with :"+sosaRoot.toString());
 				/* we set sub-menu to change indexation */
 				LOG.fine("Change menu item = "+ myMenuEnum.SOSA_CHANGE.getItem());
-				menuItemSETCHANGE.setString(myMenuEnum.SOSA_CHANGE.getItem());
+				menuItemSetOrChange.setString(myMenuEnum.SOSA_CHANGE.getItem());
 			}
 			break;
 		case SOSA_CHANGE:
