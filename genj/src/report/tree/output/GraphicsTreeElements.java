@@ -78,6 +78,8 @@ public class GraphicsTreeElements implements TreeElements {
             new Color(0xfa, 0xfa, 0xfa), // 12
             new Color(0xff, 0xff, 0xff) // 13
     };
+    
+    private static final int COLOR_GENERATIONS = (BOX_COLORS.length - 1) / 2; 
 
     public static final float STROKE_WIDTH = 2.0f;
 
@@ -158,6 +160,8 @@ public class GraphicsTreeElements implements TreeElements {
     private boolean useColors;
 
     private boolean drawPlaces;
+    
+    private boolean drawDates;
 
     private boolean drawOccupation;
 
@@ -183,6 +187,7 @@ public class GraphicsTreeElements implements TreeElements {
         useColors = properties.get("useColors", true);
         maxImageWidth = properties.get("maxImageWidth", 0);
         drawPlaces = properties.get("drawPlaces", true);
+        drawDates = properties.get("drawDates", true);
         drawOccupation = properties.get("drawOccupation", true);
         drawDivorce = properties.get("drawDivorce", true);
         swapNames = properties.get("swapNames", false);
@@ -255,13 +260,14 @@ public class GraphicsTreeElements implements TreeElements {
         Property deathPlace = null;
         Property occupation = null;
 
-
-        birthDate = i.getBirthDate();
-        if (birthDate != null && !birthDate.isValid())
-            birthDate = null;
-        deathDate = i.getDeathDate();
-        if (deathDate != null && !deathDate.isValid())
-            deathDate = null;
+        if (drawDates) {
+	        birthDate = i.getBirthDate();
+        	if (birthDate != null && !birthDate.isValid())
+	            birthDate = null;
+        	deathDate = i.getDeathDate();
+	        if (deathDate != null && !deathDate.isValid())
+        	    deathDate = null;
+        }
 
         if (drawPlaces) {
             birthPlace = i.getProperty(PATH_INDIBIRTPLAC);
@@ -359,12 +365,14 @@ public class GraphicsTreeElements implements TreeElements {
         Property marriagePlace = null;
         Property divorcePlace = null;
 
-        marriageDate = f.getMarriageDate();
-        if (marriageDate != null && !marriageDate.isValid())
-            marriageDate = null;
-        divorceDate = f.getDivorceDate();
-        if (divorceDate != null && !divorceDate.isValid())
-            divorceDate = null;
+        if (drawDates) {
+	        marriageDate = f.getMarriageDate();
+        	if (marriageDate != null && !marriageDate.isValid())
+	            marriageDate = null;
+        	divorceDate = f.getDivorceDate();
+	        if (divorceDate != null && !divorceDate.isValid())
+        	    divorceDate = null;
+        }
 
         if (drawPlaces) {
             marriagePlace = f.getProperty(PATH_FAMMARRPLAC);
@@ -479,11 +487,14 @@ public class GraphicsTreeElements implements TreeElements {
     private Color getBoxColor(int gen) {
         if (!useColors)
             return Color.WHITE;
-        if (gen + 13 < BOX_COLORS.length && gen + 13 >= 0)
-            return BOX_COLORS[gen + 13];
-        return BOX_COLORS[0];
+        if (gen == 0)
+        	return BOX_COLORS[COLOR_GENERATIONS];
+        if (gen < 0)
+        	return BOX_COLORS[-((-gen - 1) % COLOR_GENERATIONS) + COLOR_GENERATIONS - 1];
+        // else (gen > 0)
+        return BOX_COLORS[(gen - 1) % COLOR_GENERATIONS + COLOR_GENERATIONS + 1];
     }
-
+    
     /**
      * Returns a maximum of <code>maxNames</code> given names of the given
      * individual. If <code>maxNames</code> is 0, this method returns all

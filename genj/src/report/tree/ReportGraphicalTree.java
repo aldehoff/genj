@@ -38,7 +38,7 @@ import tree.output.VerticalTreeRenderer;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.18
+ * @version 0.19
  */
 public class ReportGraphicalTree extends Report {
 
@@ -127,6 +127,11 @@ public class ReportGraphicalTree extends Report {
      * Whether to display places of birth and death.
      */
     public boolean draw_places = true;
+
+    /**
+     * Whether to display places of birth and death.
+     */
+    public boolean draw_dates = true;
 
     /**
      * Whether to display occupations.
@@ -234,6 +239,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("drawFamIds", draw_fam_ids);
         properties.put("maxImageWidth", draw_images ? MAX_IMAGE_WIDTH : 0);
         properties.put("drawPlaces", draw_places);
+        properties.put("drawDates", draw_dates);
         properties.put("drawOccupation", draw_occupation);
         properties.put("drawDivorce", draw_divorce);
         properties.put("swapNames", swap_names);

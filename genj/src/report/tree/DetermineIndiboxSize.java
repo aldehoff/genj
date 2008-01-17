@@ -52,6 +52,7 @@ public class DetermineIndiboxSize extends TreeFilterBase {
     private int defaultWidth;
     private int maxImageWidth;
     private boolean drawPlaces;
+    private boolean drawDates;
     private boolean drawOccupation;
     private int maxNames;
     private boolean drawSexSymbols;
@@ -63,6 +64,7 @@ public class DetermineIndiboxSize extends TreeFilterBase {
         defaultWidth = properties.get("defaultIndiboxWidth", 0);
         maxImageWidth = properties.get("maxImageWidth", 0);
         drawPlaces = properties.get("drawPlaces", true);
+        drawDates = properties.get("drawDates", true);
         drawOccupation = properties.get("drawOccupation", true);
         maxNames = properties.get("maxNames", -1);
         drawSexSymbols = properties.get("drawSexSymbols", true);
@@ -77,7 +79,7 @@ public class DetermineIndiboxSize extends TreeFilterBase {
 
         // Number of lines
         int lines = 0;
-        if (i.getBirthDate() != null && i.getBirthDate().isValid())
+        if (drawDates && i.getBirthDate() != null && i.getBirthDate().isValid())
             lines++;
         Property birthPlace = i.getProperty(PATH_INDIBIRTPLAC);
         if (drawPlaces && birthPlace != null && !birthPlace.toString().equals(""))
@@ -86,7 +88,7 @@ public class DetermineIndiboxSize extends TreeFilterBase {
         Property deathPlace = i.getProperty(PATH_INDIDEATPLAC);
         if (i.getDeathDate() != null) {
             lines++;
-            if (drawPlaces && i.getDeathDate().isValid() && deathPlace != null && !deathPlace.toString().equals(""))
+            if (drawDates && drawPlaces && i.getDeathDate().isValid() && deathPlace != null && !deathPlace.toString().equals(""))
                 lines++;
         }
         if (drawOccupation && i.getProperty(PATH_INDIOCCU) != null)

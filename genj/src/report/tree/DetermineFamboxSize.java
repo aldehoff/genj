@@ -38,12 +38,14 @@ public class DetermineFamboxSize extends TreeFilterBase {
     private int defaultHeight;
     private int defaultWidth;
     private boolean drawPlaces;
+    private boolean drawDates;
     private boolean drawDivorce;
 
     public DetermineFamboxSize(Registry properties) {
         defaultHeight = properties.get("defaultFamboxHeight", 0);
         defaultWidth = properties.get("defaultFamboxWidth", 0);
         drawPlaces = properties.get("drawPlaces", true);
+        drawDates = properties.get("drawDates", true);
         drawDivorce = properties.get("drawDivorce", true);
     }
 
@@ -61,13 +63,13 @@ public class DetermineFamboxSize extends TreeFilterBase {
         Property marriagePlace = f.getProperty(PATH_FAMMARRPLAC);
         if (f.getMarriageDate() != null) {
             lines++;
-            if (drawPlaces && f.getMarriageDate().isValid() && marriagePlace != null && !marriagePlace.toString().equals(""))
+            if (drawDates && drawPlaces && f.getMarriageDate().isValid() && marriagePlace != null && !marriagePlace.toString().equals(""))
                 lines++;
         }
         Property divorcePlace = f.getProperty(PATH_FAMDIVPLAC);
         if (drawDivorce && f.getDivorceDate() != null) {
             lines++;
-            if (drawPlaces && f.getDivorceDate().isValid() && divorcePlace != null && !divorcePlace.toString().equals(""))
+            if (drawDates && drawPlaces && f.getDivorceDate().isValid() && divorcePlace != null && !divorcePlace.toString().equals(""))
                 lines++;
         }
 
