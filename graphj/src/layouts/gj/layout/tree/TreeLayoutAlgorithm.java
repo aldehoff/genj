@@ -37,7 +37,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -67,6 +68,12 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
 
   /** orientation in degrees 0-359 */
   private double orientation = 180;
+
+  /** root to start with */
+  private Object rootOfTree;
+
+  /** whether to order by position instead of natural sequence */
+  private boolean isOrderSiblingsByPosition = true;
 
   /**
    * Getter - distance of nodes in generation
@@ -178,6 +185,34 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   }
   
   /**
+   * Getter - root node
+   */
+  public Object getRootOfTree() {
+    return rootOfTree;
+  }
+
+  /**
+   * Getter - root node
+   */
+  public void setRootOfTree(Object root) {
+    this.rootOfTree = root;
+  }
+
+  /**
+   * Setter - whether to order siblings by their current position
+   */
+  public void setOrderSiblingsByPosition(boolean isOrderSiblingsByPosition) {
+    this.isOrderSiblingsByPosition = isOrderSiblingsByPosition;
+  }
+
+  /**
+   * Getter - whether to order siblings by their current position
+   */
+  public boolean isOrderSiblingsByPosition() {
+    return isOrderSiblingsByPosition;
+  }
+
+  /**
    * Layout a layout capable graph
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
@@ -188,11 +223,16 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     Tree tree = (Tree)graph;
 
     // ignore an empty tree
-    if (tree.getVertices().isEmpty())
+    Set<?> verticies = tree.getVertices();
+    if (verticies.isEmpty())
       return bounds;
     
+    // check root
+    if (rootOfTree==null || !verticies.contains(rootOfTree)) 
+      rootOfTree = verticies.iterator().next();
+
     // recurse into it
-    return layout(tree, null, tree.getRoot(), layout).area;
+    return layout(tree, null, rootOfTree, layout).area;
   }
   
   /**
@@ -206,13 +246,43 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       return new Branch(tree, root, layout);
     
     // create a branch for parent and children
-    Set<Object> children = new LinkedHashSet<Object>(neighbours);
+    List<Object> children = new ArrayList<Object>(neighbours);
     children.remove(backtrack);
+    
+    // sort by current position
+    if (isOrderSiblingsByPosition)
+      Collections.sort(children, new ComparePositions(tree, layout));
+    
+    // create merged branch of sub-branches
     return new Branch(tree, root, children, layout);
 
   }
   
-  
+  /**
+   * A comparator for comparing sibling vertices by their position
+   */
+  private class ComparePositions extends Geometry implements Comparator<Object> {
+
+    private Layout2D layout;
+    private Tree tree;
+    
+    ComparePositions(Tree tree, Layout2D layout) {
+      this.tree = tree;
+      this.layout = layout;
+    }
+    
+    public int compare(Object v1,Object v2) {
+      double layoutAxis = getRadian(orientation);
+      Point2D p1 = layout.getPositionOfVertex(tree, v1);
+      Point2D p2 = layout.getPositionOfVertex(tree, v2);
+      
+      double delta =
+        Math.cos(layoutAxis) * (p2.getX()-p1.getX()) + Math.sin(layoutAxis) * (p2.getY()-p1.getY());
+      
+      return (int)(delta);
+    }
+  }
+
   /**
    * A Branch is the recursively worked on part of the tree
    */
@@ -240,9 +310,9 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     }
 
     /** constructor for a parent and its children */
-    Branch(Tree tree, Object parent, Set<?> children, Layout2D layout) {
+    Branch(Tree tree, Object parent, List<?> children, Layout2D layout) {
 
-      double layoutAxis = getLayoutAxis();
+      double layoutAxis = getRadian(orientation);
       double alignmentAxis = layoutAxis - QUARTER_RADIAN;
       
       // keep track of root and vertices
@@ -339,11 +409,6 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     /** translate a branch */
     void moveTo(Layout2D layout, Point2D pos) {
       moveBy(layout, getDelta(layout.getPositionOfVertex(tree, root), pos));
-    }
-    
-    /** Resolve layout axis in radian (0 bottom up, PI top down, ...) */
-    double getLayoutAxis() {
-      return orientation/360*Geometry.ONE_RADIAN;
     }
     
   } //Branch

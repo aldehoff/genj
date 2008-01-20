@@ -329,7 +329,8 @@ public class Shell {
     /** sync post-execute */
     @Override
     protected void postExecute() throws Exception {
-      graphWidget.setGraph(graph);
+      if (graph!=null)
+        graphWidget.setGraph(graph);
       graphWidget.setCurrentAlgorithm(algorithmWidget.getSelectedAlgorithm());
     }
     

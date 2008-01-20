@@ -24,7 +24,6 @@ package gj.model;
 /**
  * A Tree like a Graph contains Nodes and Arcs. A Tree also
  * <il> 
- *  <li>contains a designated root (unless empty)
  *  <li>is acyclic so for a given edge[x,z] there is no 
  *      path{edge[x,a]>edge[a,b]>edge[b,.]>...>edge[.,y]>edge[y,z]}
  *  <li>here is a spanning Tree so for any verteces x,z there is a
@@ -33,10 +32,5 @@ package gj.model;
  */
 public interface Tree extends Graph {
 
-  /**
-   * Access to the root of a tree
-   */
-  public Object getRoot();
-    
 } //Tree
  

@@ -22,10 +22,9 @@ package gj.shell;
 import gj.geom.Geometry;
 import gj.layout.LayoutAlgorithm;
 import gj.model.Graph;
-import gj.model.Tree;
 import gj.shell.model.EditableEdge;
-import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableElement;
+import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableLayout;
 import gj.shell.model.EditableVertex;
 import gj.shell.swing.Action2;
@@ -52,6 +51,8 @@ import java.util.List;
 
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
+
+import sun.security.provider.certpath.Vertex;
 
 /**
  * Displaying a Graph with user input
@@ -101,8 +102,16 @@ public class EditableGraphWidget extends GraphWidget {
      */
     @Override
     protected Stroke getStroke(Object vertexOrEdge) {
-      if (graph instanceof Tree && ((Tree)graph).getRoot()==vertexOrEdge)
-        return DASH;
+      // check layout getters for vertex or edge (TreeLayout's root for example)
+      if (currentAlgorithm!=null) {
+        for (ReflectHelper.Property prop : ReflectHelper.getProperties(currentAlgorithm, false)) {
+          if (prop.getType().isAssignableFrom(Vertex.class)) try {
+            if (prop.getValue().equals(vertexOrEdge))
+              return DASH;
+          } catch (Throwable t) {
+          }
+        }
+      }
       return super.getStroke(vertexOrEdge);
     }
 
@@ -154,12 +163,6 @@ public class EditableGraphWidget extends GraphWidget {
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionDeleteEdge());
 
-    // collect public setters(Edge)
-    List<ReflectHelper.Property> props = ReflectHelper.getProperties(getGraph(), false);
-    for (int a=0; a<props.size(); a++) { 
-      if (props.get(a).getType()==EditableEdge.class)
-        result.add(new ActionGraphProperty(props.get(a)));
-    }
     // done
     return result;
   }
@@ -179,11 +182,11 @@ public class EditableGraphWidget extends GraphWidget {
     result.add(mShape);
     result.add(new ActionDeleteVertex());
 
-    // collect public setters(Vertex)
-    List<ReflectHelper.Property> props = ReflectHelper.getProperties(getGraph(), false);
-    for (int a=0; a<props.size(); a++) { 
-      if (props.get(a).getType()==EditableVertex.class)
-        result.add(new ActionGraphProperty(props.get(a)));
+    // collect public setters(Vertex) on layout
+    List<ReflectHelper.Property> props = ReflectHelper.getProperties(currentAlgorithm, false);
+    for (ReflectHelper.Property prop : props) { 
+      if (prop.getType().isAssignableFrom(Vertex.class))
+        result.add(new ActionSetProperty(prop, v));
     }
 
     // done
@@ -560,16 +563,18 @@ public class EditableGraphWidget extends GraphWidget {
   /**
    * How to handle - Graph property 
    */
-  private class ActionGraphProperty extends Action2 {
+  private class ActionSetProperty extends Action2 {
     private ReflectHelper.Property prop;
-    protected ActionGraphProperty(ReflectHelper.Property prop) { 
-      super.setName("set"+prop.getName()+"()"); 
+    private Object value;
+    protected ActionSetProperty(ReflectHelper.Property prop, Object value) { 
+      super.setName(ReflectHelper.getName(prop.getInstance().getClass())+".set"+prop.getName()+"("+value+")"); 
       this.prop = prop;
+      this.value = value;
     }
     @Override
     protected void execute() { 
       try {
-        prop.setValue(graph.getSelection() );
+        prop.setValue(value);
       } catch (Exception e) {
       }
       repaint();

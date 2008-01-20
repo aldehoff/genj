@@ -30,6 +30,15 @@ import java.util.List;
  * A Helper to access values via reflection
  */
 public class ReflectHelper {
+  
+  /**
+   * Returns the name of a class without package information
+   */
+  public static String getName(Class<?> clazz) {
+    String result = clazz.getName();
+    int dot = result.lastIndexOf('.');
+    return dot<0 ? result : result.substring(dot+1); 
+  }
 
   /**
    * Returns setters of given instance with given argumentType
@@ -247,6 +256,10 @@ public class ReflectHelper {
     /** type */
     public Class<?> getType() {
       return getter.getReturnType();
+    }
+    /** instance */
+    public Object getInstance() {
+      return instance;
     }
     /** get */
     public Object getValue() throws IllegalAccessException, InvocationTargetException {
