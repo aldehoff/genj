@@ -46,6 +46,13 @@ public class Geometry {
    * original curve 
    */
   private static double DEFAULT_FLATNESS = 4;
+  
+  /**
+   * Calculate the radian for given degree
+   */
+  public static double getRadian(double degree) {
+    return degree/360*Geometry.ONE_RADIAN;
+  }
 
   /**
    * Calculates the closest point from a list of points
