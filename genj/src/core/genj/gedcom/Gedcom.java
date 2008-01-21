@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.130 $ $Author: nmeier $ $Date: 2007-11-21 21:06:17 $
+ * $Revision: 1.131 $ $Author: nmeier $ $Date: 2008-01-21 21:35:04 $
  */
 package genj.gedcom;
 
@@ -921,13 +921,14 @@ public class Gedcom implements Comparable {
     Map id2entity = getEntityMap(entity);
     
     // Look for an available ID
+    // 20080121 if there's no entity yet we start with '1' 
     // 20060124 used to start with id2entity.size()+1 for !isFillGapsInIDs since
     // n people already there should optimistically cover 1..n so we can continue
     // with n+1. IF the user started id'ing with 0 then the covered range is 
     // 0..(n-1) though (Philip reported a file like that). So just for that case 
     // let's start at n and let the loop for checking existing IDs move forward
     // once if necessary
-    int id = Options.getInstance().isFillGapsInIDs ? 1 : id2entity.size();
+    int id = Options.getInstance().isFillGapsInIDs ? 1 : (id2entity.isEmpty() ? 1 : id2entity.size());
     
     StringBuffer buf = new StringBuffer(maxIDLength);
     
