@@ -362,12 +362,12 @@ public class Geometry {
   }
 
   /**
-   * Calculate the midpoint between two other points
+   * Calculate a point with given distance of origin
+   * @param origin the original point
+   * @param radian radian of direction
+   * @param distance distance
+   * @return point with distance in direction radian
    */
-  public static Point2D getPoint(Point2D a, Point2D b) {
-    return new Point2D.Double( (a.getX()+b.getX())/2, (a.getY()+b.getY())/2 );    
-  }
-  
   public static Point2D getPoint(Point2D origin, double radian, double distance) {
     return new Point2D.Double( origin.getX() + Math.sin(radian)*distance, origin.getY() - Math.cos(radian) * distance);
   }

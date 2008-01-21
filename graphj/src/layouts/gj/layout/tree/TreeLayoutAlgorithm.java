@@ -57,9 +57,6 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   /** the alignment of parent over its children */
   private double alignmentOfParent = 0.5;
 
-  /** the alignment of a generation */
-  private double alignmentOfGeneration = 0;
-
   /** whether children should be balanced or simply stacked */
   private boolean isBalanceChildren = true;
 
@@ -114,21 +111,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
    * Setter - the alignment of parent over its children
    */
   public void setAlignmentOfParent(double set) {
-    alignmentOfParent = set;
-  }
-
-  /**
-   * Getter - the alignment of a generation
-   */
-  public double getAlignmentOfGeneration() {
-    return alignmentOfGeneration;
-  }
-
-  /**
-   * Setter - the alignment of a generation
-   */
-  public void setAlignmentOfGeneration(double set) {
-    alignmentOfGeneration = set;
+    alignmentOfParent = Math.max(0, Math.min(1,set));
   }
 
   /**
@@ -350,24 +333,29 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       }
 
       // calculate where to place root
-      //  c = center between 1st and nth child
-      //  t = topmost point of children
+      //  f = pos of first child 
+      //  l = pos of last child
+      //  c = pos of parent in generation axis
       //  ct = topmost point centered between children 
       //
-      //  m = maximum extend of root shape
+      //  m = maximum extend of root shape in direction of layout 
       //  b = bottom of root shape
       //  d = distance that root needs from ct 
-      Point2D c1 = layout.getPositionOfVertex(tree, branches.getFirst().root);
-      Point2D cN = layout.getPositionOfVertex(tree, branches.getLast().root);
-      Point2D c = getPoint(c1, cN);
-      Point2D t = getMax(branches.getFirst().area, layoutAxis - HALF_RADIAN);
-      Point2D ct = getIntersection(t, layoutAxis-QUARTER_RADIAN, c, layoutAxis);
+      Point2D f = layout.getPositionOfVertex(tree, branches.getFirst().root);
+      Point2D l = layout.getPositionOfVertex(tree, branches.getLast().root);
+      Point2D c = new Point2D.Double(
+          f.getX() + (l.getX()-f.getX())*alignmentOfParent,
+          f.getY() + (l.getY()-f.getY())*alignmentOfParent
+        );
+      
+      Point2D ct = getIntersection(
+          getMax(branches.getFirst().area, layoutAxis - HALF_RADIAN), layoutAxis-QUARTER_RADIAN, 
+          c, layoutAxis
+        );
       
       Point2D m = getMax(layout.getShapeOfVertex(tree, root), layoutAxis);
       Point2D b = getIntersection(m, layoutAxis-QUARTER_RADIAN, new Point2D.Double(), layoutAxis);
-      
       double d = getLength(b) + distanceBetweenGenerations;
-
       Point2D r = getPoint(ct, layoutAxis-HALF_RADIAN, d);
       
       // place root
