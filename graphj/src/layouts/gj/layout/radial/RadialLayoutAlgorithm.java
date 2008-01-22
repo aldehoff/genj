@@ -45,27 +45,63 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   
   private Object rootOfTree;
   private double distanceOfGeneration = 60;
+  private boolean isAdjustDistances = true;
+  private boolean isFanOut = false; 
 
   /**
-   * Getter - root node
+   * Accessor - root node
    */
   public Object getRootOfTree() {
     return rootOfTree;
   }
 
   /**
-   * Getter - root node
+   * Accessor - root node
    */
   public void setRootOfTree(Object root) {
     this.rootOfTree = root;
   }
   
+  /**
+   * Accessor - distance of generations
+   */
   public void setDistanceOfGeneration(double distanceOfGeneration) {
     this.distanceOfGeneration = distanceOfGeneration;
   }
 
+  /**
+   * Accessor - distance of generations
+   */
   public double getDistanceOfGeneration() {
     return distanceOfGeneration;
+  }
+
+  /**
+   * Accessor - whether to adjust distances to generate space avoiding vertex overlap 
+   */
+  public boolean isAdjustDistances() {
+    return isAdjustDistances;
+  }
+
+  /**
+   * Accessor - whether to adjust distances to generate space avoiding vertex overlap 
+   */
+  public void setAdjustDistances(boolean isAdjustDistances) {
+    this.isAdjustDistances = isAdjustDistances;
+  }
+
+  /**
+   * Accessor - whether to fan out children as much as possible or group them closely
+   */
+  public boolean isFanOut() {
+    return isFanOut;
+  }
+
+  /**
+   * Accessor - whether to fan out children as much as possible or group them closely
+   */
+  public void setFanOut(boolean isFanOut) {
+    this.isFanOut = isFanOut;
   }
 
   /**
@@ -87,67 +123,90 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     if (rootOfTree==null || !verticies.contains(rootOfTree)) 
       rootOfTree = verticies.iterator().next();
     
-    // calculate sub-tree weights
-    Map<Object, Double> vertex2weight = new HashMap<Object, Double>();
-    calcWeight(tree, null, rootOfTree, 1, vertex2weight);
+//    // calculate circumference of generations
+//    double[] generation2circumference = new double[verticies.size()];
+//    calcCircumferences(tree, null, rootOfTree, 0, generation2circumference, layout);
+//    for (int i=1;i<generation2circumference.length;i++)
+//      generation2circumference[i] = Math.max( generation2circumference[i-1] + i*10*Geometry.ONE_RADIAN,generation2circumference[i]);
+    
+    // calculate sub-tree angular share
+    Map<Object, Double> root2share = new HashMap<Object, Double>();
+    calcAngularShare(tree, null, rootOfTree, 0, root2share, layout);
 
     // layout
-    layout(tree, null, rootOfTree, layout.getPositionOfVertex(tree, rootOfTree), 0, Geometry.ONE_RADIAN, 1, vertex2weight, layout);
+    layout(tree, null, rootOfTree, layout.getPositionOfVertex(tree, rootOfTree), 0, Geometry.ONE_RADIAN, 0, root2share, layout);
     
     // done
     return ModelHelper.getBounds(graph, layout);
   }
   
   /**
-   * calculate the weight of sub-trees
+   * calculate the diameter of a node's shape
    */
-  private double calcWeight(Tree tree, Object backtrack, Object root, int generation, Map<Object, Double> vertex2weight) {
+  private double getDiameter(Tree tree, Object vertex, Layout2D layout) {
+    return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(tree, vertex)) * 2;
+  }
 
-    // assemble list of children
+  
+  /**
+   * calculate the anglular share for a root
+   */
+  private double calcAngularShare(Tree tree, Object backtrack, Object root, int generation, Map<Object, Double> root2share, Layout2D layout) {
+
+    // calculate angular share required for children
     Set<?> neighbours = tree.getNeighbours(root);
-    
-    double weightOfChildren = 0;
+    double shareOfChildren = 0;
     for (Object child : neighbours) {
       if (!child.equals(backtrack)) 
-        weightOfChildren += calcWeight(tree, root, child, generation+1, vertex2weight);
+        shareOfChildren += calcAngularShare(tree, root, child, generation+1, root2share, layout);
+    }
+
+    // calculate angular share required for root
+    double shareOfRoot = 0;
+    if (generation!=0) {
+      // radian = diameter / (2PI*r) * 2PI
+      shareOfRoot = getDiameter(tree, root, layout) / (generation*distanceOfGeneration) ;
     }
     
-    double weight = Math.max( 20D / generation , weightOfChildren);
-
-    vertex2weight.put(root, new Double(weight));
-    
-    return weight;
+    // keep and return
+    double result = Math.max( shareOfChildren, shareOfRoot);
+    root2share.put(root, new Double(result));
+    return result;
   }
   
   /**
    * recursive layout call
    */
-  private void layout(Graph tree, Object backtrack, Object root, Point2D center, double fromRadian, double toRadian, double generation, Map<Object, Double> vertex2weight, Layout2D layout) {
+  private void layout(Graph tree, Object backtrack, Object root, Point2D center, double fromRadian, double toRadian, double radius, Map<Object, Double> root2share, Layout2D layout) {
     
     // assemble list of children
     Set<?> neighbours = tree.getNeighbours(root);
     List<Object> children = new ArrayList<Object>(neighbours.size());
-    for (Object child : neighbours) if (!child.equals(backtrack)) children.add(child);
+    for (Object child : neighbours) 
+      if (!child.equals(backtrack)) children.add(child);
     if (children.isEmpty())
       return;
     
-    // calculate variables
-    double unit = (toRadian-fromRadian)/vertex2weight.get(root).doubleValue();
-    Point2D posRoot = layout.getPositionOfVertex(tree, root); 
-    
+    // calculate how much angular each child can get now that we have actual from/to
+    double factor = (toRadian-fromRadian) / root2share.get(root).doubleValue();
+    if (factor<1 && isAdjustDistances) 
+      System.out.println("TODO:adjusting "+root+"'s distance");
+    if (factor>1 && !isFanOut)  
+      factor = 1;
+
     // position and recurse
     for (int c = 0; c<children.size(); c++) {
       
       Object child = children.get(c);
       
-      double share = vertex2weight.get(child).doubleValue() * unit;
+      double share = root2share.get(child).doubleValue() * factor;
       
       layout.setPositionOfVertex(tree, child, new Point2D.Double(
-          center.getX() + Math.sin(fromRadian + share/2) * generation*distanceOfGeneration,
-          center.getY() - Math.cos(fromRadian + share/2) * generation*distanceOfGeneration
+          center.getX() + Math.sin(fromRadian + share/2) * (radius+distanceOfGeneration),
+          center.getY() - Math.cos(fromRadian + share/2) * (radius+distanceOfGeneration)
           ));
       
-      layout(tree, root, child, center, fromRadian, fromRadian+share, generation+1, vertex2weight, layout);
+      layout(tree, root, child, center, fromRadian, fromRadian+share, radius+distanceOfGeneration, root2share, layout);
       
       fromRadian += share;
     }
