@@ -33,7 +33,9 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -84,16 +86,43 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     // check root
     if (rootOfTree==null || !verticies.contains(rootOfTree)) 
       rootOfTree = verticies.iterator().next();
-
-    layout(tree, null, rootOfTree, layout.getPositionOfVertex(tree, rootOfTree), 0, Geometry.ONE_RADIAN, getDistanceOfGeneration(), layout);
     
+    // calculate sub-tree weights
+    Map<Object, Double> vertex2weight = new HashMap<Object, Double>();
+    calcWeight(tree, null, rootOfTree, 1, vertex2weight);
+
+    // layout
+    layout(tree, null, rootOfTree, layout.getPositionOfVertex(tree, rootOfTree), 0, Geometry.ONE_RADIAN, 1, vertex2weight, layout);
+    
+    // done
     return ModelHelper.getBounds(graph, layout);
+  }
+  
+  /**
+   * calculate the weight of sub-trees
+   */
+  private double calcWeight(Tree tree, Object backtrack, Object root, int generation, Map<Object, Double> vertex2weight) {
+
+    // assemble list of children
+    Set<?> neighbours = tree.getNeighbours(root);
+    
+    double weightOfChildren = 0;
+    for (Object child : neighbours) {
+      if (!child.equals(backtrack)) 
+        weightOfChildren += calcWeight(tree, root, child, generation+1, vertex2weight);
+    }
+    
+    double weight = Math.max( 20D / generation , weightOfChildren);
+
+    vertex2weight.put(root, new Double(weight));
+    
+    return weight;
   }
   
   /**
    * recursive layout call
    */
-  private void layout(Graph tree, Object backtrack, Object root, Point2D center, double fromRadian, double toRadian, double radius, Layout2D layout) {
+  private void layout(Graph tree, Object backtrack, Object root, Point2D center, double fromRadian, double toRadian, double generation, Map<Object, Double> vertex2weight, Layout2D layout) {
     
     // assemble list of children
     Set<?> neighbours = tree.getNeighbours(root);
@@ -101,9 +130,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     for (Object child : neighbours) if (!child.equals(backtrack)) children.add(child);
     if (children.isEmpty())
       return;
-
+    
     // calculate variables
-    double share = (toRadian-fromRadian)/children.size();
+    double unit = (toRadian-fromRadian)/vertex2weight.get(root).doubleValue();
     Point2D posRoot = layout.getPositionOfVertex(tree, root); 
     
     // position and recurse
@@ -111,14 +140,16 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       
       Object child = children.get(c);
       
-      double radian = fromRadian + share * c;
+      double share = vertex2weight.get(child).doubleValue() * unit;
       
       layout.setPositionOfVertex(tree, child, new Point2D.Double(
-          center.getX() + Math.sin(radian + share/2) * radius,
-          center.getY() - Math.cos(radian + share/2) * radius
+          center.getX() + Math.sin(fromRadian + share/2) * generation*distanceOfGeneration,
+          center.getY() - Math.cos(fromRadian + share/2) * generation*distanceOfGeneration
           ));
-
-      layout(tree, root, child, center, radian, radian+share, radius+getDistanceOfGeneration(), layout);
+      
+      layout(tree, root, child, center, fromRadian, fromRadian+share, generation+1, vertex2weight, layout);
+      
+      fromRadian += share;
     }
 
     // done
