@@ -160,7 +160,7 @@ public class Geometry {
     protected OpShapeShapeDistance(Shape shape1, Shape shape2, double axis) throws IllegalArgumentException {
 
       // calculate
-      Rectangle2D area = getBounds(shape2, getBounds(shape1, null));
+      Rectangle2D area = getBounds(shape2).createUnion(getBounds(shape1));
       double span = getLength(area.getWidth(), area.getHeight());
       
       // keep an axis vector
@@ -272,24 +272,66 @@ public class Geometry {
   } //OpLineShapeDistance
   
   /**
+   * Calcualte the maximum distance of a point from given line segments in shape
+   */
+  public static double getMaximumDistance(Point2D point, Shape shape) {
+    return new OpPointShapeMaxDistance(point, shape).getResult();
+  }
+  
+  /**
+   * Operation - calculate maximum distance of point from shape
+   */
+  private static class OpPointShapeMaxDistance extends SegmentConsumer {
+    
+    private double result = Double.NEGATIVE_INFINITY;
+    private Point2D point;
+    
+    /**
+     * Constructor
+     */
+    protected OpPointShapeMaxDistance(Point2D point, Shape shape) {
+      this.point = point;
+      ShapeHelper.iterateShape(new FlatteningPathIterator(shape.getPathIterator(null), DEFAULT_FLATNESS), this);
+    }
+    
+    /**
+     * The result
+     */
+    protected double getResult() {
+      return result;
+    }
+    
+    /**
+     * @see gj.geom.SegmentConsumer#consumeLine(java.awt.geom.Point2D, java.awt.geom.Point2D)
+     */
+    @Override
+    public boolean consumeLine(Point2D start, Point2D end) {
+      result = Math.max(result, start.distance(point));
+      result = Math.max(result, end.distance(point));
+      return true;
+    }
+    
+  } //OpPointShapeMaxDistance  
+  
+  /**
    * Calculates the minimum distance of a point and line segments in shape
    * @return distance or 0 for containment
    */
-  public static double getDistance(Point2D point, PathIterator shape) {
-    return new OpPointShapeDistance(point, shape).getResult();
+  public static double getMinimumDistance(Point2D point, PathIterator shape) {
+    return new OpPointShapeMinDistance(point, shape).getResult();
   }
   
   /**
    * Operation - calculate distance of line and shape
    */
-  private static class OpPointShapeDistance extends SegmentConsumer {
+  private static class OpPointShapeMinDistance extends SegmentConsumer {
     private double result = Double.MAX_VALUE;
     private Point2D point;
     
     /**
      * Constructor
      */
-    protected OpPointShapeDistance(Point2D point, PathIterator shape) {
+    protected OpPointShapeMinDistance(Point2D point, PathIterator shape) {
       this.point = point;
       ShapeHelper.iterateShape(new FlatteningPathIterator(shape, DEFAULT_FLATNESS), this);
     }
@@ -312,7 +354,7 @@ public class Geometry {
       return result!=0;
     }
     
-  } //OpPointShapeDistance
+  } //OpPointShapeMinDistance
   
   /**
    * Calculates the angle between two vectors
@@ -623,8 +665,8 @@ public class Geometry {
   /**
    * Calculate the 2D bounds of given iterator
    */
-  public static Rectangle2D getBounds(Shape shape, Rectangle2D result) {
-  	return new OpShapeBounds(shape, result).getResult();
+  public static Rectangle2D getBounds(Shape shape) {
+  	return new OpShapeBounds(shape).getResult();
   }
 
   /**
@@ -637,8 +679,7 @@ public class Geometry {
     /**
      * Constructor
      */
-    protected OpShapeBounds(Shape shape, Rectangle2D result) {
-      this.result = result;
+    protected OpShapeBounds(Shape shape) {
       ShapeHelper.iterateShape(shape.getPathIterator(null), this);
     }
     

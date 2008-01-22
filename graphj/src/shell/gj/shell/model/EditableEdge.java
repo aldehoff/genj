@@ -50,7 +50,7 @@ public class EditableEdge extends EditableElement {
    * Check if a point lies at vertex
    */
   public boolean contains(Point2D point) {
-    return 8>Geometry.getDistance(point, getShape().getPathIterator(null));
+    return 8>Geometry.getMinimumDistance(point, getShape().getPathIterator(null));
   }
   
   /**
