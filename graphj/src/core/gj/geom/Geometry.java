@@ -53,6 +53,19 @@ public class Geometry {
   public static double getRadian(double degree) {
     return degree/360*Geometry.ONE_RADIAN;
   }
+  
+  /**
+   * Calculate radian for given vector
+   */
+  public static double getRadian(Point2D vector) {
+    double dx = vector.getX();
+    double dy = vector.getY();
+    double r = Math.sqrt(dx*dx + dy*dy);
+    double result = dy < 0 ? Math.asin(dx/r) : HALF_RADIAN - Math.asin(dx/r) ;
+    if (result<0)
+      result += ONE_RADIAN;
+    return result;
+  }
 
   /**
    * Calculates the closest point from a list of points

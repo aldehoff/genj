@@ -33,6 +33,19 @@ import junit.framework.TestCase;
 public class GeometryTest extends TestCase {
   
   private double TwoPi = Math.PI*2;
+  
+  public void testRadian() {
+    
+    tst(radian(  0), Geometry.getRadian(p(0,-1000)));
+    tst(radian( 45), Geometry.getRadian(p( 7, -7 )));
+    tst(radian( 90), Geometry.getRadian(p(100,0  )));
+    tst(radian(135), Geometry.getRadian(p( 99,99 )));
+    tst(radian(180), Geometry.getRadian(p(0,10   )));
+    tst(radian(225), Geometry.getRadian(p(-2,2   )));
+    tst(radian(270), Geometry.getRadian(p(-1,0   )));
+    tst(radian(315), Geometry.getRadian(p(-1,-1   )));
+    
+  }
 
   public void testLineIntersection() {
     
