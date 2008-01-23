@@ -37,6 +37,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -198,7 +199,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   /**
    * Layout a layout capable graph
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // check that we got a tree
     if (!(graph instanceof Tree))

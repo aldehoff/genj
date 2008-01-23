@@ -30,6 +30,7 @@ import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -79,9 +80,9 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
   }
   
   /**
-   * @see gj.layout.LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D)
+   * @see gj.layout.LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D, Collection)
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // no purpose in empty|1-ary graph
     if (graph.getVertices().size() < 2) 

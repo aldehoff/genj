@@ -29,6 +29,7 @@ import gj.util.EdgeLayoutHelper;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -89,9 +90,9 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   }
 
   /**
-   * @see LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D)
+   * @see LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D, Collection)
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // something to do for me?
     if (graph.getVertices().isEmpty())

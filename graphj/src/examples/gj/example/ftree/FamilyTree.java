@@ -84,7 +84,7 @@ public class FamilyTree {
     Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));
     
     try {
-      new TreeLayoutAlgorithm().apply(tree, layout, null);
+      new TreeLayoutAlgorithm().apply(tree, layout, null, null);
     } catch (LayoutAlgorithmException e) {
       throw new RuntimeException("hmm, can't layout my family", e);
     }

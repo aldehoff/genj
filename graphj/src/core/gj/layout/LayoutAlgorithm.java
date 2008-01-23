@@ -23,6 +23,7 @@ import gj.model.Graph;
 
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 
 /**
  * What a layout is all about - Implementors provide layout
@@ -34,8 +35,9 @@ public interface LayoutAlgorithm {
    * Applies the layout to a given graph
    * @param graph the graph to layout
    * @param bounds bounds to adhere to if possible (not guaranteed)
+   * @param debugShapes TODO
    * @return resulting bounds 
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds) throws LayoutAlgorithmException;
+  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException;
   
 } //LayoutAlgorithm

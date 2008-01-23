@@ -42,6 +42,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
@@ -87,6 +89,9 @@ public class Shell {
   
   /** the graph we're looking at */
   private EditableGraph graph;
+  
+  /** debug flag */
+  private boolean isDebug = false; 
   
   /** the view of the graph */
   private EditableLayout layout = new EditableLayout();
@@ -191,6 +196,7 @@ public class Shell {
     JMenu mOptions = new JMenu("Options");
     mOptions.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleAntialias()));
     mOptions.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleAnimation()));
+    mOptions.add(SwingHelper.getCheckBoxMenuItem(new ActionDebug()));
     
     // MAIN MAIN MAIN MAIN MAIN MAIN MAIN MAIN MAIN MAIN MAIN 
     JMenuBar result = new JMenuBar();
@@ -239,12 +245,30 @@ public class Shell {
   }
   
   /**
+   * Toggle debug
+   */
+  /*package*/ class ActionDebug extends Action2 {
+    ActionDebug() {
+      super.setName("Debug");
+    }
+    @Override
+    protected void execute() throws Exception {
+      isDebug = !isDebug;
+    }
+    @Override
+    public boolean isSelected() {
+      return isDebug;
+    }
+  }
+  
+  /**
    * How to handle - run an algorithm
    */
   /*package*/ class ActionExecuteLayout extends Action2 {
     
     /** an animation that we're working on */
     private Animation animation;
+    private Collection<Shape> debugShapes;
 
     /**
      * constructor
@@ -282,6 +306,10 @@ public class Shell {
     /** layout */
     private EditableLayout layout(Rectangle bounds) throws LayoutAlgorithmException {
 
+      // reset debug
+      debugShapes = new ArrayList<Shape>();
+      graphWidget.setDebugShapes(null);
+      
       // make sure the current graph is valid
       try {
         graph.validate();
@@ -295,7 +323,7 @@ public class Shell {
       // try to layout
       EditableLayout result = new EditableLayout();
       try {
-        algorithm.apply(graph, layout, bounds);
+        algorithm.apply(graph, layout, bounds, debugShapes);
       } catch (GraphNotSupportedException s) {
         try {
 	        String impl = properties.get("impl."+s.getSupportedGraphType().getName(), (String)null);
@@ -306,7 +334,7 @@ public class Shell {
           throw new LayoutAlgorithmException("couldn't find implementation for "+s.getSupportedGraphType().getName()+" needed for "+algorithm, t);
         }
         // try again
-        algorithm.apply(graph, layout, bounds);
+        algorithm.apply(graph, layout, bounds, null);
       }
 
       // done
@@ -331,6 +359,8 @@ public class Shell {
     protected void postExecute() throws Exception {
       if (graph!=null)
         graphWidget.setGraph(graph);
+      if (isDebug)
+        graphWidget.setDebugShapes(debugShapes);
       graphWidget.setCurrentAlgorithm(algorithmWidget.getSelectedAlgorithm());
     }
     

@@ -20,6 +20,7 @@
 package gj.shell;
 
 import gj.geom.Geometry;
+import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.model.Graph;
 import gj.shell.model.EditableEdge;
@@ -38,6 +39,7 @@ import gj.util.ModelHelper;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -47,6 +49,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.JMenu;
@@ -63,6 +66,7 @@ public class EditableGraphWidget extends GraphWidget {
   
   /** our editable graph */
   private EditableGraph graph;
+  private Collection<Shape> debugShapes;
   
   /** whether quicknode is enabled */
   private boolean quickNode = false;
@@ -114,6 +118,17 @@ public class EditableGraphWidget extends GraphWidget {
       }
       return super.getStroke(vertexOrEdge);
     }
+    
+    @Override
+    public void render(Graph graph, Layout2D layout, Graphics2D graphics) {
+    
+      graphics.setColor(Color.LIGHT_GRAY);
+      if (debugShapes!=null) for (Shape shape : debugShapes) {
+        graphics.draw(shape);
+      }
+      
+      super.render(graph, layout, graphics);
+    }
 
   };
   
@@ -123,6 +138,14 @@ public class EditableGraphWidget extends GraphWidget {
   public EditableGraphWidget() {
     super(new EditableLayout());
     setRenderer(renderer);
+  }
+  
+  /**
+   * set debug shapes
+   */
+  public void setDebugShapes(Collection<Shape> shapes) {
+    debugShapes = shapes;
+    repaint();
   }
     
   /**
