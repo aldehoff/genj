@@ -157,6 +157,9 @@ public class EditableGraphWidget extends GraphWidget {
     if (!(setGraph instanceof EditableGraph))
       throw new IllegalArgumentException();
     
+    // reset debug shapes
+    debugShapes = null;
+    
     // remember
     graph = (EditableGraph)setGraph;
     

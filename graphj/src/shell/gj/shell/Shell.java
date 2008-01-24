@@ -296,10 +296,8 @@ public class Shell {
         throw e;
       }
       // continue into animation?
-      if (!isAnimation) {
-        graphWidget.setGraph(graph);
+      if (!isAnimation) 
         return false;
-      }
       // continue into async
       return true;
     }
@@ -307,8 +305,7 @@ public class Shell {
     private EditableLayout layout(Rectangle bounds) throws LayoutAlgorithmException {
 
       // reset debug
-      debugShapes = new ArrayList<Shape>();
-      graphWidget.setDebugShapes(null);
+      debugShapes = isDebug ? new ArrayList<Shape>() : null;
       
       // make sure the current graph is valid
       try {
@@ -359,8 +356,7 @@ public class Shell {
     protected void postExecute() throws Exception {
       if (graph!=null)
         graphWidget.setGraph(graph);
-      if (isDebug)
-        graphWidget.setDebugShapes(debugShapes);
+      graphWidget.setDebugShapes(debugShapes);
       graphWidget.setCurrentAlgorithm(algorithmWidget.getSelectedAlgorithm());
     }
     
