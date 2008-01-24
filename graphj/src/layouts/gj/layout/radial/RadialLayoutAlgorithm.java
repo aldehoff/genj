@@ -30,6 +30,7 @@ import gj.model.Tree;
 import gj.util.ModelHelper;
 
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -49,7 +50,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   
   private Object rootOfTree;
   private double distanceBetweenGenerations = 60;
-  private boolean isAdjustDistances = true;
+  private boolean isAdjustDistances = false;
   private boolean isFanOut = false; 
   private double distanceInGeneration = 0;
   private boolean isOrderSiblingsByPosition = true;
@@ -157,18 +158,19 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     if (rootOfTree==null || !verticies.contains(rootOfTree)) 
       rootOfTree = verticies.iterator().next();
     
-//    // calculate circumference of generations
-//    double[] generation2circumference = new double[verticies.size()];
-//    calcCircumferences(tree, null, rootOfTree, 0, generation2circumference, layout);
-//    for (int i=1;i<generation2circumference.length;i++)
-//      generation2circumference[i] = Math.max( generation2circumference[i-1] + i*10*Geometry.ONE_RADIAN,generation2circumference[i]);
-    
-    // calculate sub-tree angular share
-    Map<Object, Double> root2share = new HashMap<Object, Double>();
-    calcAngularShare(tree, null, rootOfTree, 0, root2share, layout);
+    // calculate sub-tree sizes
+    Map<Object, Double> root2size = new HashMap<Object, Double>();
+    calcSize(tree, null, rootOfTree, 0, root2size, layout);
 
     // layout
-    layout(tree, null, rootOfTree, layout.getPositionOfVertex(tree, rootOfTree), 0, Geometry.ONE_RADIAN, 0, root2share, layout, debugShapes);
+    Point2D center = layout.getPositionOfVertex(tree, rootOfTree);
+    int depth = layout(tree, null, rootOfTree, center, 0, Geometry.ONE_RADIAN, 0, root2size, layout, debugShapes);
+    
+    // add debug rings
+    if (debugShapes!=null) {
+      for (int i=0;i<=depth;i++) 
+        debugShapes.add(new Ellipse2D.Double(center.getX()-distanceBetweenGenerations*i, center.getY()-distanceBetweenGenerations*i, distanceBetweenGenerations*2*i, distanceBetweenGenerations*2*i));
+    }
     
     // done
     return ModelHelper.getBounds(graph, layout);
@@ -183,35 +185,36 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
 
   
   /**
-   * calculate the anglular share for a root
+   * calculate the size of a sub-tree starting at root
    */
-  private double calcAngularShare(Tree tree, Object backtrack, Object root, int generation, Map<Object, Double> root2share, Layout2D layout) {
+  private double calcSize(Tree tree, Object backtrack, Object root, int generation, Map<Object, Double> root2size, Layout2D layout) {
 
-    // calculate angular share required for children
+    // calculate size for children
     Set<?> neighbours = tree.getNeighbours(root);
-    double shareOfChildren = 0;
+    double sizeOfChildren = 0;
     for (Object child : neighbours) {
-      if (!child.equals(backtrack)) 
-        shareOfChildren += calcAngularShare(tree, root, child, generation+1, root2share, layout);
+      if (!child.equals(backtrack)) {
+        sizeOfChildren +=  calcSize(tree, root, child, generation + 1, root2size, layout) * generation/(generation+1);
+      }
     }
-
-    // calculate angular share required for root
-    double shareOfRoot = 0;
-    if (generation!=0) {
+    
+    // calculate size root
+    double sizeOfRoot = 0;
+    if (backtrack!=null) {
       // radian = diameter / (2PI*r) * 2PI
-      shareOfRoot = (getDiameter(tree, root, layout) + distanceInGeneration) / (generation*distanceBetweenGenerations) ;
+      sizeOfRoot = getDiameter(tree, root, layout) + distanceInGeneration;
     }
     
     // keep and return
-    double result = Math.max( shareOfChildren, shareOfRoot);
-    root2share.put(root, new Double(result));
+    double result = Math.max( sizeOfChildren, sizeOfRoot);
+    root2size.put(root, new Double(result));
     return result;
   }
   
   /**
    * recursive layout call
    */
-  private void layout(Graph tree, Object backtrack, Object root, Point2D center, double fromRadian, double toRadian, double radius, Map<Object, Double> root2share, Layout2D layout, Collection<Shape> debugShapes) {
+  private int layout(Graph tree, Object backtrack, Object root, Point2D center, double fromRadian, double toRadian, double radius, Map<Object, Double> root2share, Layout2D layout, Collection<Shape> debugShapes) {
     
     // assemble list of children
     Set<?> neighbours = tree.getNeighbours(root);
@@ -219,46 +222,50 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     for (Object child : neighbours) 
       if (!child.equals(backtrack)) children.add(child);
     if (children.isEmpty())
-      return;
+      return 1;
     
     // sort children by current position
     if (isOrderSiblingsByPosition) 
       Collections.sort(children, new ComparePositions(tree, center, fromRadian+(toRadian-fromRadian)/2+Geometry.HALF_RADIAN, layout));
     
-    // calculate how much angular each child can get now that we have actual from/to
-    double shareOfChildren = 0;
+    // compare actual space vs allocation
+    double sizeOfChildren = 0;
     for (Object child : children) {
-      shareOfChildren += root2share.get(child).doubleValue();
+      sizeOfChildren += root2share.get(child).doubleValue();
     }
-    double shareFactor = (toRadian-fromRadian) / shareOfChildren;
-    if (shareFactor<0.99 && isAdjustDistances) 
-      System.out.println("TODO:need to adjust "+root+"'s distance ("+shareFactor+")");
-    if (shareFactor>1 && !isFanOut) {  
+    
+    radius += distanceBetweenGenerations;
+    
+    double shareFactor = (toRadian-fromRadian) * radius / sizeOfChildren;
+    
+    if (shareFactor<0.99 && isAdjustDistances) {
+      System.out.println("TODO:adjusting "+root+"'s distance ("+shareFactor);
+    } if (shareFactor>1 && !isFanOut) {  
       if (backtrack!=null)
-        fromRadian += (toRadian-fromRadian-shareOfChildren)/2;
+        fromRadian += (toRadian-fromRadian)/shareFactor/2;
       shareFactor = 1;
     }
     
     // position and recurse
-    radius += distanceBetweenGenerations;
-    
+    int depth = 0;
     for (Object child : children) {
       
-      double share = root2share.get(child).doubleValue() * shareFactor;
+      double radians = root2share.get(child).doubleValue() / radius * shareFactor;
       
-      layout.setPositionOfVertex(tree, child, getPoint(center, fromRadian + share/2, radius));
+      layout.setPositionOfVertex(tree, child, getPoint(center, fromRadian + radians/2, radius));
       
       if (debugShapes!=null) {
         debugShapes.add(new Line2D.Double(getPoint(center, fromRadian, radius), getPoint(center, fromRadian, radius+distanceBetweenGenerations)));
-        debugShapes.add(new Line2D.Double(getPoint(center, fromRadian+share, radius), getPoint(center, fromRadian+share, radius+distanceBetweenGenerations)));
+        debugShapes.add(new Line2D.Double(getPoint(center, fromRadian+radians, radius), getPoint(center, fromRadian+radians, radius+distanceBetweenGenerations)));
       }
       
-      layout(tree, root, child, center, fromRadian, fromRadian+share, radius, root2share, layout, debugShapes);
+      depth = Math.max(depth, layout(tree, root, child, center, fromRadian, fromRadian+radians, radius, root2share, layout, debugShapes));
       
-      fromRadian += share;
+      fromRadian += radians;
     }
 
     // done
+    return depth + 1;
   }
   
   private Point2D getPoint(Point2D center, double radian, double radius) {
