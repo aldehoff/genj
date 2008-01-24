@@ -226,27 +226,34 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       Collections.sort(children, new ComparePositions(tree, center, fromRadian+(toRadian-fromRadian)/2+Geometry.HALF_RADIAN, layout));
     
     // calculate how much angular each child can get now that we have actual from/to
-    double factor = (toRadian-fromRadian) / root2share.get(root).doubleValue();
-    if (factor<0.99 && isAdjustDistances) 
-      System.out.println("TODO:adjusting "+root+"'s distance ("+factor+")");
-    if (factor>1 && !isFanOut)  
-      factor = 1;
+    double shareOfChildren = 0;
+    for (Object child : children) {
+      shareOfChildren += root2share.get(child).doubleValue();
+    }
+    double shareFactor = (toRadian-fromRadian) / shareOfChildren;
+    if (shareFactor<0.99 && isAdjustDistances) 
+      System.out.println("TODO:need to adjust "+root+"'s distance ("+shareFactor+")");
+    if (shareFactor>1 && !isFanOut) {  
+      if (backtrack!=null)
+        fromRadian += (toRadian-fromRadian-shareOfChildren)/2;
+      shareFactor = 1;
+    }
     
     // position and recurse
     radius += distanceBetweenGenerations;
     
     for (Object child : children) {
       
-      double share = root2share.get(child).doubleValue() * factor;
+      double share = root2share.get(child).doubleValue() * shareFactor;
       
       layout.setPositionOfVertex(tree, child, getPoint(center, fromRadian + share/2, radius));
       
       if (debugShapes!=null) {
-        debugShapes.add(new Line2D.Double(center, getPoint(center, fromRadian, radius)));
-        debugShapes.add(new Line2D.Double(center, getPoint(center, fromRadian+share, radius)));
+        debugShapes.add(new Line2D.Double(getPoint(center, fromRadian, radius), getPoint(center, fromRadian, radius+distanceBetweenGenerations)));
+        debugShapes.add(new Line2D.Double(getPoint(center, fromRadian+share, radius), getPoint(center, fromRadian+share, radius+distanceBetweenGenerations)));
       }
       
-      layout(tree, root, child, center, fromRadian, fromRadian+share, radius+distanceBetweenGenerations, root2share, layout, debugShapes);
+      layout(tree, root, child, center, fromRadian, fromRadian+share, radius, root2share, layout, debugShapes);
       
       fromRadian += share;
     }
