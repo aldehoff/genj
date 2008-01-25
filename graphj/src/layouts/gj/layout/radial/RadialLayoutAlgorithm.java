@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 /**
  * A radial layout for Trees
@@ -55,7 +54,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   private boolean isFanOut = false; 
   private double distanceInGeneration = 0;
   private boolean isOrderSiblingsByPosition = true;
-  private Map<Object, Integer> vertex2deomotion = new WeakHashMap<Object, Integer>();
+  private Map<Pair, Integer> edge2distance = new HashMap<Pair, Integer>();
 
   /**
    * Accessor - root node
@@ -72,27 +71,24 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   }
   
   /**
-   * Programmatical promotion of vertex (closer to center)
+   * Accessor - edge distance
    */
-  public void promoteVertex(Object vertex) {
-    Integer demotion = vertex2deomotion.get(vertex);
-    if (demotion==null)
-      return;
-    demotion = new Integer(demotion-1);
-    if (demotion.intValue()==0) {
-      vertex2deomotion.remove(vertex);
-      return;
-    }
-    vertex2deomotion.put(vertex, demotion);
+  public void lengthenEdge(Object vertexA, Object vertexB) {
+    Pair key = new Pair(vertexA, vertexB);
+    Integer distance = edge2distance.get(key);
+    edge2distance.put(key, new Integer(distance !=null ? distance.intValue()+1 : 1));
   }
   
   /**
-   * Programmatical demotion of vertex (farther away from center)
+   * Accessor - edge distance
    */
-  public void demoteVertex(Object vertex) {
-    Integer demotion = vertex2deomotion.get(vertex);
-    demotion = demotion==null ? new Integer(1) : new Integer(demotion.intValue()+1);
-    vertex2deomotion.put(vertex, demotion);
+  public void shortenEdge(Object vertexA, Object vertexB) {
+    Pair key = new Pair(vertexA, vertexB);
+    Integer distance = edge2distance.get(key);
+    if (distance.intValue()==1)
+      edge2distance.remove(key);
+    else
+      edge2distance.put(key, new Integer(distance.intValue()-1));
   }
   
   /**
@@ -187,9 +183,37 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       setRootVertex(root);
     }
     
+    // check distances
+    for (Pair pair : edge2distance.keySet()) {
+      System.out.println(pair+":"+edge2distance.get(pair));
+    }
+    
     // run recursion
     return new Recursion(tree, root, distanceBetweenGenerations,layout, debugShapes).getShape();
     
+  }
+  
+  /**
+   * a pair of verticies
+   */
+  private class Pair {
+    private Object a, b;
+    Pair(Object a, Object b) {
+      this.a = a; this.b = b;
+    }
+    @Override
+    public int hashCode() {
+      return a.hashCode() + b.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+      Pair that = (Pair)obj;
+      return (this.a.equals(that.a) && this.b.equals(that.b)) || (this.a.equals(that.b) && this.b.equals(that.b));
+    }
+    @Override
+    public String toString() {
+      return a+"<>"+b;
+    }
   }
   
   /** 
@@ -262,9 +286,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       double sizeOfChildren = 0;
       for (Object child : neighbours) {
         if (!child.equals(backtrack)) {
-          Integer demotion = vertex2deomotion.get(child);
-          if (demotion!=null)
-            System.out.println("TODO: "+child+" demoted by "+demotion);
           sizeOfChildren +=  getSize(root, child, generation + 1) * factor;
         }
       }

@@ -191,6 +191,14 @@ public class EditableGraphWidget extends GraphWidget {
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionDeleteEdge());
 
+    // collect public .*Edge.*(Vertex, Vertex) on layout
+    if (currentAlgorithm!=null) {
+      EditableVertex a = e.getStart(), b = e.getEnd();
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Edge.*", new Class[] { a.getClass(), b.getClass()} );
+      for (Method method : methods) { 
+        result.add(new ActionInvoke(currentAlgorithm, method, a, b));
+      }
+    }
     // done
     return result;
   }
@@ -210,7 +218,7 @@ public class EditableGraphWidget extends GraphWidget {
     result.add(mShape);
     result.add(new ActionDeleteVertex());
 
-    // collect public setters(Vertex) on layout
+    // collect public .*Vertex.*(Vertex) on layout
     if (currentAlgorithm!=null) {
       List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Vertex.*", new Class[] { v.getClass()} );
       for (Method method : methods) { 
@@ -595,17 +603,23 @@ public class EditableGraphWidget extends GraphWidget {
   private class ActionInvoke extends Action2 {
     private Object target;
     private Method method;
-    private Object value;
+    private Object[]  values;
     protected ActionInvoke(Object target, Method method, Object value) { 
       super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"("+value+")"); 
       this.target = target;
       this.method = method;
-      this.value = value;
+      this.values = new Object[]{ value };
+    }
+    protected ActionInvoke(Object target, Method method, Object value1, Object value2) { 
+      super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"("+value1+","+value2+")"); 
+      this.target = target;
+      this.method = method;
+      this.values = new Object[]{ value1, value2 };
     }
     @Override
     protected void execute() { 
       try {
-        method.invoke(target, value);
+        method.invoke(target, values);
       } catch (Exception e) {
       }
       repaint();
