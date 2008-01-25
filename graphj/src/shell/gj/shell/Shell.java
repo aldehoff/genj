@@ -269,6 +269,7 @@ public class Shell {
     /** an animation that we're working on */
     private Animation animation;
     private Collection<Shape> debugShapes;
+    private Shape shape;
 
     /**
      * constructor
@@ -320,7 +321,7 @@ public class Shell {
       // try to layout
       EditableLayout result = new EditableLayout();
       try {
-        algorithm.apply(graph, layout, bounds, debugShapes);
+        shape = algorithm.apply(graph, layout, bounds, debugShapes);
       } catch (GraphNotSupportedException s) {
         try {
 	        String impl = properties.get("impl."+s.getSupportedGraphType().getName(), (String)null);
@@ -331,7 +332,7 @@ public class Shell {
           throw new LayoutAlgorithmException("couldn't find implementation for "+s.getSupportedGraphType().getName()+" needed for "+algorithm, t);
         }
         // try again
-        algorithm.apply(graph, layout, bounds, null);
+        shape = algorithm.apply(graph, layout, bounds, null);
       }
 
       // done
@@ -345,6 +346,7 @@ public class Shell {
           if (Thread.currentThread().isInterrupted()) break;
           if (animation.animate()) break;
           graphWidget.setGraph(graph);
+          shape = null;
         }
       } catch (InterruptedException e) {
         // ignore
@@ -355,7 +357,7 @@ public class Shell {
     @Override
     protected void postExecute() throws Exception {
       if (graph!=null)
-        graphWidget.setGraph(graph);
+        graphWidget.setGraph(graph, shape!=null?shape.getBounds():null);
       graphWidget.setDebugShapes(debugShapes);
       graphWidget.setCurrentAlgorithm(algorithmWidget.getSelectedAlgorithm());
     }

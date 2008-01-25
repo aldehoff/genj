@@ -83,10 +83,13 @@ public class GraphWidget extends JComponent {
    * Accessor - Graph
    */
   public void setGraph(Graph setGraph) {
+    setGraph(setGraph, null);
+  }
     
+  public void setGraph(Graph setGraph, Rectangle bounds) {
     // cleanup data
     graph = setGraph;
-    graphBounds = ModelHelper.getBounds(graph, layout).getBounds();
+    graphBounds = bounds != null ? bounds : ModelHelper.getBounds(graph, layout).getBounds();
     
     // make sure that's reflected
     revalidate();

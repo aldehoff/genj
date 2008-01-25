@@ -41,6 +41,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
@@ -152,8 +153,8 @@ public class EditableGraphWidget extends GraphWidget {
    * Accessor - Graph
    */
   @Override
-  public void setGraph(Graph setGraph) {
-    
+  public void setGraph(Graph setGraph, Rectangle bounds) {
+
     if (!(setGraph instanceof EditableGraph))
       throw new IllegalArgumentException();
     
@@ -164,7 +165,7 @@ public class EditableGraphWidget extends GraphWidget {
     graph = (EditableGraph)setGraph;
     
     // let super do its thing
-    super.setGraph(setGraph);
+    super.setGraph(setGraph, bounds);
     
     // start fresh with DnD
     dndNoOp.start(null);
