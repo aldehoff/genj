@@ -50,6 +50,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
@@ -210,12 +211,13 @@ public class EditableGraphWidget extends GraphWidget {
     result.add(new ActionDeleteVertex());
 
     // collect public setters(Vertex) on layout
-    List<ReflectHelper.Property> props = ReflectHelper.getProperties(currentAlgorithm, false);
-    for (ReflectHelper.Property prop : props) { 
-      if (prop.getType().isAssignableFrom(Vertex.class))
-        result.add(new ActionSetProperty(prop, v));
+    if (currentAlgorithm!=null) {
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Vertex.*", new Class[] { v.getClass()} );
+      for (Method method : methods) { 
+        result.add(new ActionInvoke(currentAlgorithm, method, v));
+      }
     }
-
+    
     // done
     return result;    
   }
@@ -590,18 +592,20 @@ public class EditableGraphWidget extends GraphWidget {
   /**
    * How to handle - Graph property 
    */
-  private class ActionSetProperty extends Action2 {
-    private ReflectHelper.Property prop;
+  private class ActionInvoke extends Action2 {
+    private Object target;
+    private Method method;
     private Object value;
-    protected ActionSetProperty(ReflectHelper.Property prop, Object value) { 
-      super.setName(ReflectHelper.getName(prop.getInstance().getClass())+".set"+prop.getName()+"("+value+")"); 
-      this.prop = prop;
+    protected ActionInvoke(Object target, Method method, Object value) { 
+      super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"("+value+")"); 
+      this.target = target;
+      this.method = method;
       this.value = value;
     }
     @Override
     protected void execute() { 
       try {
-        prop.setValue(value);
+        method.invoke(target, value);
       } catch (Exception e) {
       }
       repaint();

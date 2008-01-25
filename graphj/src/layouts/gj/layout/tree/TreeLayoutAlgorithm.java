@@ -171,14 +171,14 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   /**
    * Getter - root node
    */
-  public Object getRootOfTree() {
+  public Object getRootVertex() {
     return rootOfTree;
   }
 
   /**
    * Getter - root node
    */
-  public void setRootOfTree(Object root) {
+  public void setRootVertex(Object root) {
     this.rootOfTree = root;
   }
 

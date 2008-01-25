@@ -42,8 +42,9 @@ public class ReflectHelper {
 
   /**
    * Returns setters of given instance with given argumentType
+   * @name regex for matching method-name
    */
-  public static Method[] getMethods(Object instance, String prefix, Class<?>[] arguments) {
+  public static List<Method> getMethods(Object instance, String name, Class<?>[] arguments) {
     
     // loop over methods
     Method[] methods = instance.getClass().getMethods();
@@ -52,7 +53,7 @@ public class ReflectHelper {
       // here's a method
       Method method = methods[m];
       // check prefix
-      if (!method.getName().startsWith(prefix)) continue;
+      if (!method.getName().matches(name)) continue;
       // check public
       if (!Modifier.isPublic(method.getModifiers())) continue;
       // check static
@@ -61,13 +62,13 @@ public class ReflectHelper {
       Class<?>[] ptypes = method.getParameterTypes();
       if (ptypes.length!=arguments.length) continue;
       for (int a=0; a<ptypes.length; a++) {
-        if (!arguments[a].isAssignableFrom(ptypes[a])) continue compliance;
+        if (!ptypes[a].isAssignableFrom(arguments[a])) continue compliance;
       }
       collect.add(method);
     }
     
     // done
-    return collect.toArray(new Method[collect.size()]);
+    return collect;
   }
 
   /**
@@ -81,11 +82,8 @@ public class ReflectHelper {
     List<Property> list = new ArrayList<Property>();
     
     // loop over *public* methods, *no* prefix, *no* argument
-    Method[] methods = getMethods(instance, "", new Class[0]);
-      
-    for (int m=0; m<methods.length; m++) {
-      // here's the method
-      Method getter = methods[m];
+    List<Method> methods = getMethods(instance, ".*", new Class[0]);
+    for (Method getter : methods) {
       // check *primitive* result
       if (primitiveOnly&&!getter.getReturnType().isPrimitive()) continue;
       // check *is* or *get* naming convention
