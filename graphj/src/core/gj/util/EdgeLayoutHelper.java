@@ -62,13 +62,13 @@ public class EdgeLayoutHelper {
    */
   public static void setShape(Graph graph, Layout2D layout, Object from, Object to, int direction) {
     Shape
-      sfrom= layout.getShapeOfVertex(graph, from),
-      sto  = layout.getShapeOfVertex(graph, to);
+      sfrom= layout.getShapeOfVertex(from),
+      sto  = layout.getShapeOfVertex(to);
     Point2D
-      pfrom= layout.getPositionOfVertex(graph, from),
-      pto  = layout.getPositionOfVertex(graph, to);
+      pfrom= layout.getPositionOfVertex(from),
+      pto  = layout.getPositionOfVertex(to);
     
-    layout.setShapeOfEdge(graph, from, to, getShape(pfrom,sfrom,pto,sto, direction));
+    layout.setShapeOfEdge(from, to, getShape(pfrom,sfrom,pto,sto, direction));
   }
   
   /**

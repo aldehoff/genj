@@ -238,7 +238,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       this.root = root;
       this.layout = layout;
       this.debug = debug;
-      this.center = layout.getPositionOfVertex(graph, root);
+      this.center = layout.getPositionOfVertex(root);
       this.distanceBetweenGenerations =  distanceBetweenGenerations;
       
       // calculate sub-tree sizes
@@ -268,7 +268,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
      * calculate the diameter of a node's shape
      */
     double getDiameter(Object vertex) {
-      return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(graph, vertex)) * 2;
+      return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
     }
 
     
@@ -347,7 +347,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
         
         double radians = root2size.get(child).doubleValue() / radius * shareFactor;
         
-        layout.setPositionOfVertex(graph, child, getPoint(center, fromRadian + radians/2, radius));
+        layout.setPositionOfVertex(child, getPoint(center, fromRadian + radians/2, radius));
         
         if (debug!=null) {
           debug.add(new Line2D.Double(getPoint(center, fromRadian, radius - distanceBetweenGenerations/2), getPoint(center, fromRadian, radius+distanceBetweenGenerations/2)));
@@ -365,8 +365,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     /** compare two verticies' current position */
     public int compare(Object v1,Object v2) {
       
-      double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(graph, v1)));
-      double r2 = getRadian(getDelta(center,layout.getPositionOfVertex(graph, v2)));
+      double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(v1)));
+      double r2 = getRadian(getDelta(center,layout.getPositionOfVertex(v2)));
       
       if (r1>currentNorth)
         r1 -= ONE_RADIAN;

@@ -106,7 +106,7 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     while (nodes.hasNext()) {
       
       Object node = nodes.next();
-      Rectangle2D nodeCanvas = layout.getShapeOfVertex(graph, node).getBounds2D();
+      Rectangle2D nodeCanvas = layout.getShapeOfVertex(node).getBounds2D();
 
       double 
         x = bounds.getMinX() - nodeCanvas.getMinX(),
@@ -114,12 +114,12 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
         w = bounds.getWidth() - nodeCanvas.getWidth(),
         h = bounds.getHeight() - nodeCanvas.getHeight();
 
-      Point2D pos = layout.getPositionOfVertex(graph, node);
+      Point2D pos = layout.getPositionOfVertex(node);
       pos.setLocation(
         isApplyHorizontally ? x + random.nextDouble()*w : pos.getX(), 
         isApplyVertically ? y + random.nextDouble()*h : pos.getY()
       );
-      layout.setPositionOfVertex(graph, node, pos);
+      layout.setPositionOfVertex(node, pos);
 
     }
     

@@ -19,8 +19,6 @@
  */
 package gj.layout;
 
-import gj.model.DirectedGraph;
-import gj.model.Graph;
 import gj.util.EdgeLayoutHelper;
 
 import java.awt.Shape;
@@ -44,18 +42,18 @@ public class DefaultLayout implements Layout2D {
     this.defaultShape = defaultShape;
   }
   
-  public Point2D getPositionOfVertex(Graph graph, Object vertex) {
+  public Point2D getPositionOfVertex(Object vertex) {
     Point2D result = vertex2point.get(vertex);
     if (result==null) 
       result = new Point2D.Double();
     return result;
   }
 
-  public void setPositionOfVertex(Graph graph, Object vertex, Point2D pos) {
+  public void setPositionOfVertex(Object vertex, Point2D pos) {
     vertex2point.put(vertex, new Point2D.Double(pos.getX(), pos.getY()));
   }
 
-  public Shape getShapeOfEdge(Graph graph, Object start, Object end) {
+  public Shape getShapeOfEdge(Object start, Object end) {
     
     Set<Object> edge = new HashSet<Object>();
     edge.add(start);
@@ -63,15 +61,13 @@ public class DefaultLayout implements Layout2D {
     
     Shape result = edge2shape.get(edge);
     if (result==null) {
-      int direction = graph instanceof DirectedGraph ? ((DirectedGraph)graph).getDirectionOfEdge(start, end) : 0;
-      
-      result = EdgeLayoutHelper.getShape(getPositionOfVertex(graph, start), getShapeOfVertex(graph, start), 
-          getPositionOfVertex(graph, end), getShapeOfVertex(graph, end), direction);
+      result = EdgeLayoutHelper.getShape(getPositionOfVertex(start), getShapeOfVertex(start), 
+          getPositionOfVertex(end), getShapeOfVertex(end), 1);
     }
     return result;
   }
 
-  public void setShapeOfEdge(Graph graph, Object start, Object end, Shape shape) {
+  public void setShapeOfEdge(Object start, Object end, Shape shape) {
     
     Set<Object> edge = new HashSet<Object>();
     edge.add(start);
@@ -80,14 +76,14 @@ public class DefaultLayout implements Layout2D {
     edge2shape.put(edge, shape);
   }
 
-  public Shape getShapeOfVertex(Graph graph, Object vertex) {
+  public Shape getShapeOfVertex(Object vertex) {
     Shape result = vertex2shape.get(vertex);
     if (result==null)
       result = defaultShape;
     return result;
   }
 
-  public void setShapeOfVertex(Graph graph, Object vertex, Shape shape) {
+  public void setShapeOfVertex(Object vertex, Shape shape) {
     vertex2shape.put(vertex, shape);
   }
 

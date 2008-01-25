@@ -133,7 +133,7 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
     for (int n=0;n<nodes.length;n++) {
         
       // .. its size - the length of vector (x,y)
-      Rectangle2D bounds = layout.getShapeOfVertex(graph, nodes[n]).getBounds2D();
+      Rectangle2D bounds = layout.getShapeOfVertex(nodes[n]).getBounds2D();
       double size = Geometry.getLength(bounds.getWidth()+padNodes, bounds.getHeight()+padNodes);
         
       // .. keep what we need

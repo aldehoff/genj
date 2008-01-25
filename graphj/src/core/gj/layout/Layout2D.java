@@ -19,7 +19,6 @@
  */
 package gj.layout;
 
-import gj.model.Graph;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -31,39 +30,33 @@ public interface Layout2D {
 
   /**
    * Edge's shape
-   * @param graph TODO
    */
-  public Shape getShapeOfEdge(Graph graph, Object start, Object end);
+  public Shape getShapeOfEdge(Object start, Object end);
 
   /**
    * Edge's shape
-   * @param graph TODO
    * @param end TODO
    */
-  public void setShapeOfEdge(Graph graph, Object start, Object end, Shape shape);
+  public void setShapeOfEdge(Object start, Object end, Shape shape);
 
   /**
    * Vertex's shape
-   * @param graph TODO
    */
-  public Shape getShapeOfVertex(Graph graph, Object vertex);
+  public Shape getShapeOfVertex(Object vertex);
 
   /**
    * Vertex's shape
-   * @param graph TODO
    */
-  public void setShapeOfVertex(Graph graph, Object vertex, Shape shape);
+  public void setShapeOfVertex(Object vertex, Shape shape);
 
   /**
    * Vertex's position
-   * @param graph TODO
    */
-  public Point2D getPositionOfVertex(Graph graph, Object vertex);
+  public Point2D getPositionOfVertex(Object vertex);
 
   /**
    * Vertex's position
-   * @param graph TODO
    */
-  public void setPositionOfVertex(Graph graph, Object vertex, Point2D pos);
+  public void setPositionOfVertex(Object vertex, Point2D pos);
 
 } //Layout2D

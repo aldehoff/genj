@@ -38,18 +38,18 @@ public class ModelHelper {
    * Sets a node's position
    */
   public static void setPosition(Graph graph, Layout2D layout, Object node, double x, double y) {
-    Point2D pos = layout.getPositionOfVertex(graph, node);
+    Point2D pos = layout.getPositionOfVertex(node);
     pos.setLocation( x, y);
-    layout.setPositionOfVertex(graph, node, pos);
+    layout.setPositionOfVertex(node, pos);
   }
   
   /**
    * Translates a node's position
    */
   public static void translate(Graph graph, Layout2D layout, Object node, Point2D delta) {
-    Point2D pos = layout.getPositionOfVertex(graph, node);
+    Point2D pos = layout.getPositionOfVertex(node);
     pos.setLocation( pos.getX() + delta.getX(), pos.getY() + delta.getY());
-    layout.setPositionOfVertex(graph, node, pos);
+    layout.setPositionOfVertex(node, pos);
   }
 
   /**
@@ -100,8 +100,8 @@ public class ModelHelper {
     Iterator<?> it = graph.getVertices().iterator();
     while (it.hasNext()) {
       Object node = it.next();
-      Point2D p = layout.getPositionOfVertex(graph, node);
-      Rectangle2D box = layout.getShapeOfVertex(graph, node).getBounds2D();
+      Point2D p = layout.getPositionOfVertex(node);
+      Rectangle2D box = layout.getShapeOfVertex(node).getBounds2D();
       x1 = Math.min(x1,p.getX()+box.getMinX());
       y1 = Math.min(y1,p.getY()+box.getMinY());
       x2 = Math.max(x2,p.getX()+box.getMaxX());

@@ -21,6 +21,7 @@ package gj.ui;
 
 import gj.geom.ShapeHelper;
 import gj.layout.Layout2D;
+import gj.model.DirectedGraph;
 import gj.model.Graph;
 
 import java.awt.BasicStroke;
@@ -75,10 +76,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
     Stroke stroke = getStroke(vertex);
   
     // draw its shape
-    Point2D pos = layout.getPositionOfVertex(graph, vertex);
+    Point2D pos = layout.getPositionOfVertex(vertex);
     graphics.setColor(color);
     graphics.setStroke(stroke);
-    Shape shape = layout.getShapeOfVertex(graph, vertex);
+    Shape shape = layout.getShapeOfVertex(vertex);
     draw(shape, pos, graphics);
   
     // and content    
@@ -154,7 +155,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
     graphics.setColor(getColor(from, to));
     
     // the path's shape
-    graphics.draw(layout.getShapeOfEdge(graph, from, to));
+    if ((graph instanceof DirectedGraph) && ((DirectedGraph)graph).getDirectionOfEdge(from, to)<0)
+      graphics.draw(layout.getShapeOfEdge(to, from));
+    else
+      graphics.draw(layout.getShapeOfEdge(from, to));
     
     // done      
   }
