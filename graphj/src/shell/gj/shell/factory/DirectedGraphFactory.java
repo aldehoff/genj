@@ -29,7 +29,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * GraphFactory - a directed graph creation
@@ -151,7 +150,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   private void createArcs(EditableGraph graph) {
   
-    List<EditableVertex> nodes = new ArrayList<EditableVertex>((Set<EditableVertex>)graph.getVertices());
+    List<EditableVertex> nodes = new ArrayList<EditableVertex>(graph.getEditableVertices());
     
     // No Nodes?
     if (nodes.isEmpty())
@@ -186,7 +185,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   private void ensureMinDegree(EditableGraph graph) {
     
-    List<EditableVertex> nodes = ModelHelper.toList(graph.getVertices());
+    List<EditableVertex> nodes = new ArrayList<EditableVertex>(graph.getEditableVertices());
     
     // validate minDegree - maximum n-1 so that there
     // are always enough nodes to connect to without dups
@@ -233,7 +232,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   protected void ensureConnected(EditableGraph graph) {
     
-    List<EditableVertex> nodes = new LinkedList<EditableVertex>(ModelHelper.toList(graph.getVertices()));
+    List<EditableVertex> nodes = new LinkedList<EditableVertex>(graph.getEditableVertices());
     
     while (nodes.size()>1) {
       EditableVertex from = getMinDegNode(graph,nodes,true);

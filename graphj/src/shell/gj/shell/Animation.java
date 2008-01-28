@@ -69,7 +69,7 @@ import java.util.List;
 
     // create movements for vertices ...
     moves = new Movement[graph.getNumVertices()];
-    Iterator<EditableVertex> vertices = graph.getVertices().iterator();
+    Iterator<EditableVertex> vertices = graph.getEditableVertices().iterator();
     int m=0; for (;vertices.hasNext();m++) 
       moves[m] = new Movement(vertices.next());
     
@@ -92,7 +92,7 @@ import java.util.List;
         moves[m].snapshot();
       
       edgesAndShapes = new ArrayList<Object>(graph.getEdges().size());
-      for (Iterator<EditableEdge> edges = graph.getEdges().iterator(); edges.hasNext(); ) {
+      for (Iterator<EditableEdge> edges = graph.getEditableEdges().iterator(); edges.hasNext(); ) {
         EditableEdge edge = edges.next();
         edgesAndShapes.add(edge);
         edgesAndShapes.add(edge.getShape());

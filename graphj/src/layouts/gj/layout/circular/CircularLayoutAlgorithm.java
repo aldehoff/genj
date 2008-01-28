@@ -25,13 +25,17 @@ import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
+import gj.model.Vertex;
 import gj.util.EdgeLayoutHelper;
 import gj.util.ModelHelper;
 
 import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A Layout that arranges nodes in a circle with the
@@ -117,23 +121,23 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
   private void layout(Graph graph, Layout2D layout, CircularGraph.Circle circle, double cx, double cy) {
     
     // nodes
-    Object[] nodes = circle.getNodes().toArray();
+    List<Vertex> nodes = new ArrayList<Vertex>(circle.getNodes());
     
     // one node only?
-    if (nodes.length==1) {
-      ModelHelper.setPosition(graph, layout, nodes[0], cx,cy);
+    if (nodes.size()==1) {
+      layout.setPositionOfVertex(nodes.get(0), new Point2D.Double(cx,cy));
       return;
     }
     
     // nodes' degrees and global circumference
-    double[] sizes = new double[nodes.length];
+    double[] sizes = new double[nodes.size()];
     double circumference = 0;
     
     // analyze nodes in circle
-    for (int n=0;n<nodes.length;n++) {
+    for (int n=0;n<nodes.size();n++) {
         
       // .. its size - the length of vector (x,y)
-      Rectangle2D bounds = layout.getShapeOfVertex(nodes[n]).getBounds2D();
+      Rectangle2D bounds = layout.getShapeOfVertex(nodes.get(n)).getBounds2D();
       double size = Geometry.getLength(bounds.getWidth()+padNodes, bounds.getHeight()+padNodes);
         
       // .. keep what we need
@@ -148,10 +152,10 @@ public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements 
       
     // put 'em in a circle
     double radian = 0;
-    for (int n=0;n<nodes.length;n++) {
+    for (int n=0;n<nodes.size();n++) {
       double x = (int)(cx + Math.sin(radian)*radius);
       double y = (int)(cy + Math.cos(radian)*radius);
-      ModelHelper.setPosition(graph, layout, nodes[n], x, y);
+      layout.setPositionOfVertex(nodes.get(n), new Point2D.Double(x,y));
 
       radian += TWOPI*sizes[n]/circumference;
     }

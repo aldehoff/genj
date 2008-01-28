@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -303,7 +302,7 @@ public class Shell {
       return true;
     }
     /** layout */
-    private EditableLayout layout(Rectangle bounds) throws LayoutAlgorithmException {
+    private EditableLayout layout(Rectangle bounds) throws GraphNotSupportedException ,LayoutAlgorithmException {
 
       // reset debug
       debugShapes = isDebug ? new ArrayList<Shape>() : null;
@@ -320,20 +319,7 @@ public class Shell {
       
       // try to layout
       EditableLayout result = new EditableLayout();
-      try {
-        shape = algorithm.apply(graph, layout, bounds, debugShapes);
-      } catch (GraphNotSupportedException s) {
-        try {
-	        String impl = properties.get("impl."+s.getSupportedGraphType().getName(), (String)null);
-	        graph = (EditableGraph)Class.forName(impl).getConstructor(new Class[]{EditableGraph.class}).newInstance(new Object[]{graph});
-        } catch (InvocationTargetException t) {
-      	  throw new LayoutAlgorithmException(t.getCause().getMessage());
-        } catch (Throwable t) {
-          throw new LayoutAlgorithmException("couldn't find implementation for "+s.getSupportedGraphType().getName()+" needed for "+algorithm, t);
-        }
-        // try again
-        shape = algorithm.apply(graph, layout, bounds, null);
-      }
+      shape = algorithm.apply(graph, layout, bounds, debugShapes);
 
       // done
       return result;

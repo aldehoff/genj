@@ -22,7 +22,9 @@ package gj.shell;
 import gj.geom.Geometry;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
+import gj.model.Edge;
 import gj.model.Graph;
+import gj.model.Vertex;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableElement;
 import gj.shell.model.EditableGraph;
@@ -57,7 +59,6 @@ import java.util.List;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import sun.security.provider.certpath.Vertex;
 
 /**
  * Displaying a Graph with user input
@@ -92,7 +93,7 @@ public class EditableGraphWidget extends GraphWidget {
      * Color resolve
      */
     @Override
-    protected Color getColor(Object vertex) {
+    protected Color getColor(Vertex vertex) {
       return vertex==graph.getSelection() ? Color.BLUE : Color.BLACK;    
     }
     
@@ -100,14 +101,14 @@ public class EditableGraphWidget extends GraphWidget {
      * Color resolve
      */
     @Override
-    protected Color getColor(Object from, Object to) {
-      return ((EditableVertex)from).getEdge((EditableVertex)to)==graph.getSelection() ? Color.BLUE : Color.BLACK;    
+    protected Color getColor(Edge edge) {
+      return edge==graph.getSelection() ? Color.BLUE : Color.BLACK;    
     }
     /** 
      * Stroke resolve
      */
     @Override
-    protected Stroke getStroke(Object vertexOrEdge) {
+    protected Stroke getStroke(Vertex vertexOrEdge) {
       // check layout getters for vertex or edge (TreeLayout's root for example)
       if (currentAlgorithm!=null) {
         for (ReflectHelper.Property prop : ReflectHelper.getProperties(currentAlgorithm, false)) {
@@ -191,12 +192,11 @@ public class EditableGraphWidget extends GraphWidget {
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionDeleteEdge());
 
-    // collect public .*Edge.*(Vertex, Vertex) on layout
+    // collect public setters(Edge) on layout
     if (currentAlgorithm!=null) {
-      EditableVertex a = e.getStart(), b = e.getEnd();
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Edge.*", new Class[] { a.getClass(), b.getClass()} );
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Edge.*", new Class[] { e.getClass()} );
       for (Method method : methods) { 
-        result.add(new ActionInvoke(currentAlgorithm, method, a, b));
+        result.add(new ActionInvoke(currentAlgorithm, method, e));
       }
     }
     // done
@@ -218,7 +218,7 @@ public class EditableGraphWidget extends GraphWidget {
     result.add(mShape);
     result.add(new ActionDeleteVertex());
 
-    // collect public .*Vertex.*(Vertex) on layout
+    // collect public setters(Vertex) on layout
     if (currentAlgorithm!=null) {
       List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Vertex.*", new Class[] { v.getClass()} );
       for (Method method : methods) { 
@@ -357,7 +357,7 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      ModelHelper.translate(graph, getGraphLayout(), graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
+      ModelHelper.translate(graph, getGraphLayout(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();
@@ -603,23 +603,17 @@ public class EditableGraphWidget extends GraphWidget {
   private class ActionInvoke extends Action2 {
     private Object target;
     private Method method;
-    private Object[]  values;
+    private Object value;
     protected ActionInvoke(Object target, Method method, Object value) { 
       super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"("+value+")"); 
       this.target = target;
       this.method = method;
-      this.values = new Object[]{ value };
-    }
-    protected ActionInvoke(Object target, Method method, Object value1, Object value2) { 
-      super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"("+value1+","+value2+")"); 
-      this.target = target;
-      this.method = method;
-      this.values = new Object[]{ value1, value2 };
+      this.value = value;
     }
     @Override
     protected void execute() { 
       try {
-        method.invoke(target, values);
+        method.invoke(target, value);
       } catch (Exception e) {
       }
       repaint();

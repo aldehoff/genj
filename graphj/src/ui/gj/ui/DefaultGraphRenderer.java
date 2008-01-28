@@ -21,8 +21,9 @@ package gj.ui;
 
 import gj.geom.ShapeHelper;
 import gj.layout.Layout2D;
-import gj.model.DirectedGraph;
+import gj.model.Edge;
 import gj.model.Graph;
+import gj.model.Vertex;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -34,8 +35,6 @@ import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A default implementation for rendering a graph
@@ -62,14 +61,14 @@ public class DefaultGraphRenderer implements GraphRenderer {
   private void renderVertices(Graph graph, Layout2D layout, Graphics2D graphics) {
     
     // Loop through the graph's nodes
-    for (Object vertex : graph.getVertices()) {
+    for (Vertex vertex : graph.getVertices()) {
       renderVertex(graph, vertex, layout, graphics);
     }
     
     // Done
   }
 
-  private void renderVertex(Graph graph, Object vertex, Layout2D layout, Graphics2D graphics) {
+  private void renderVertex(Graph graph, Vertex vertex, Layout2D layout, Graphics2D graphics) {
     
     // figure out its color
     Color color = getColor(vertex);
@@ -96,28 +95,28 @@ public class DefaultGraphRenderer implements GraphRenderer {
     // done
   }
   
-  protected String getContent(Object vertex) {
+  protected String getContent(Vertex vertex) {
     return ""+vertex;
   }
   
   /**
    * Color resolve
    */
-  protected Color getColor(Object vertex) {
+  protected Color getColor(Vertex vertex) {
     return Color.BLACK;    
   }
 
   /**
    * Color resolve
    */
-  protected Color getColor(Object from, Object to) {
+  protected Color getColor(Edge edge) {
     return Color.BLACK;    
   }
 
   /**
    * Stroke resolve
    */
-  protected Stroke getStroke(Object vertex) {
+  protected Stroke getStroke(Vertex vertex) {
     return new BasicStroke();    
   }
 
@@ -126,22 +125,8 @@ public class DefaultGraphRenderer implements GraphRenderer {
    */
   private void renderEdges(Graph graph, Layout2D layout, Graphics2D graphics) {
     
-    Set<Object> visited = new HashSet<Object>();
-    
-    // Loop through the graph's arcs
-    for (Object vertex : graph.getVertices()) {
-      
-      for (Object neighbour : graph.getNeighbours(vertex)) {
-        
-        if (visited.contains(neighbour))
-          continue;
-      
-        renderEdge(graph, vertex, neighbour, layout, graphics);
-      }
-      
-      visited.add(vertex);
-      
-    }
+    for (Edge edge: graph.getEdges()) 
+      renderEdge(graph, edge, layout, graphics);
   
     // Done
   }
@@ -149,16 +134,11 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders an Arc
    */
-  private void renderEdge(Graph graph, Object from, Object to, Layout2D layout, Graphics2D graphics) {
+  private void renderEdge(Graph graph, Edge edge, Layout2D layout, Graphics2D graphics) {
     
     // arbitrary color
-    graphics.setColor(getColor(from, to));
-    
-    // the path's shape
-    if ((graph instanceof DirectedGraph) && ((DirectedGraph)graph).getDirectionOfEdge(from, to)<0)
-      graphics.draw(layout.getShapeOfEdge(to, from));
-    else
-      graphics.draw(layout.getShapeOfEdge(from, to));
+    graphics.setColor(getColor(edge));
+    graphics.draw(layout.getShapeOfEdge(edge));
     
     // done      
   }

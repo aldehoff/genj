@@ -20,6 +20,9 @@
 package gj.layout;
 
 
+import gj.model.Edge;
+import gj.model.Vertex;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 
@@ -31,32 +34,31 @@ public interface Layout2D {
   /**
    * Edge's shape
    */
-  public Shape getShapeOfEdge(Object start, Object end);
+  public Shape getShapeOfEdge(Edge edge);
 
   /**
    * Edge's shape
-   * @param end TODO
    */
-  public void setShapeOfEdge(Object start, Object end, Shape shape);
+  public void setShapeOfEdge(Edge edge, Shape shape);
 
   /**
    * Vertex's shape
    */
-  public Shape getShapeOfVertex(Object vertex);
+  public Shape getShapeOfVertex(Vertex vertex);
 
   /**
    * Vertex's shape
    */
-  public void setShapeOfVertex(Object vertex, Shape shape);
+  public void setShapeOfVertex(Vertex vertex, Shape shape);
 
   /**
    * Vertex's position
    */
-  public Point2D getPositionOfVertex(Object vertex);
+  public Point2D getPositionOfVertex(Vertex vertex);
 
   /**
    * Vertex's position
    */
-  public void setPositionOfVertex(Object vertex, Point2D pos);
+  public void setPositionOfVertex(Vertex vertex, Point2D pos);
 
 } //Layout2D

@@ -19,15 +19,20 @@
  */
 package gj.util;
 
+import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
+import gj.model.Edge;
 import gj.model.Graph;
+import gj.model.Vertex;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Helper for analyzing model.*
@@ -35,31 +40,20 @@ import java.util.List;
 public class ModelHelper {
   
   /**
-   * Sets a node's position
-   */
-  public static void setPosition(Graph graph, Layout2D layout, Object node, double x, double y) {
-    Point2D pos = layout.getPositionOfVertex(node);
-    pos.setLocation( x, y);
-    layout.setPositionOfVertex(node, pos);
-  }
-  
-  /**
    * Translates a node's position
    */
-  public static void translate(Graph graph, Layout2D layout, Object node, Point2D delta) {
-    Point2D pos = layout.getPositionOfVertex(node);
-    pos.setLocation( pos.getX() + delta.getX(), pos.getY() + delta.getY());
-    layout.setPositionOfVertex(node, pos);
+  public static void translate(Graph graph, Layout2D layout, Vertex vertex, Point2D delta) {
+    Point2D pos = layout.getPositionOfVertex(vertex);
+    layout.setPositionOfVertex(vertex, new Point2D.Double( pos.getX() + delta.getX(), pos.getY() + delta.getY() ));
   }
 
   /**
    * Checks whether given Node n is neighbour of any of the given nodes. 
    * That is  E node(i), E arc(i,j) where node = node(j)
    */
-  public static boolean isNeighbour(Graph graph, Object node, List<?> nodes) {
-    Iterator<?> neighbours = graph.getNeighbours(node).iterator();
-    while (neighbours.hasNext()) {
-      if (nodes.contains(neighbours.next()))
+  public static boolean isNeighbour(Graph graph, Vertex vertex, Collection<? extends Vertex> verticies) {
+    for (Edge edge : graph.getEdges(vertex)) {
+      if (verticies.contains(edge.getStart()) || verticies.contains(edge.getEnd()) )
         return true;
     }
     return false;
@@ -97,11 +91,9 @@ public class ModelHelper {
       return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;
-    Iterator<?> it = graph.getVertices().iterator();
-    while (it.hasNext()) {
-      Object node = it.next();
-      Point2D p = layout.getPositionOfVertex(node);
-      Rectangle2D box = layout.getShapeOfVertex(node).getBounds2D();
+    for (Vertex vertex : graph.getVertices()) {
+      Point2D p = layout.getPositionOfVertex(vertex);
+      Rectangle2D box = layout.getShapeOfVertex(vertex).getBounds2D();
       x1 = Math.min(x1,p.getX()+box.getMinX());
       y1 = Math.min(y1,p.getY()+box.getMinY());
       x2 = Math.max(x2,p.getX()+box.getMaxX());
@@ -109,6 +101,65 @@ public class ModelHelper {
     }
     return new Rectangle2D.Double(x1,y1,x2-x1,y2-y1);
   }
-  
+ 
+  /**
+   * Check graph for spanning tree
+   */
+  public static void assertSpanningTree(Graph graph) throws GraphNotSupportedException {
+    
+    Set<? extends Vertex> verticies = graph.getVertices();
+    if (verticies.isEmpty())
+      return;
+    
+    // look for cycles
+    Set<Vertex> visited = new HashSet<Vertex>();
+    if (containsCycle(graph, null, verticies.iterator().next(), visited))
+      throw new GraphNotSupportedException("graph is not acyclic");
+    
+    // check spanning
+    if (visited.size() != verticies.size())
+      throw new GraphNotSupportedException("graph is not a spanning tree");
+    
+  }
 
+  /**
+   * Find cycles
+   */
+  private static boolean containsCycle(Graph graph, Vertex backtrack, Vertex root, Set<Vertex> visited) {
+    
+    // to shouldn't have been visited before
+    if (visited.contains(root)) 
+      return true;
+  
+    // remember it
+    visited.add(root);
+    
+    // Recurse into neighbours
+    for (Vertex neighbour : getNeighbours(graph, root)) {
+      if (neighbour.equals(backtrack)) 
+        continue;
+      if (containsCycle(graph, root, neighbour, visited))
+        return true;
+    }
+    
+    // done
+    return false;
+  }
+  
+  /**
+   * Get neighbouring verticies
+   */
+  public static Set<? extends Vertex> getNeighbours(Graph graph, Vertex vertex) {
+    Set<Vertex> result = new LinkedHashSet<Vertex>();
+    for (Edge edge : graph.getEdges(vertex)) {
+      if (edge.getStart().equals(vertex)) 
+        result.add(edge.getEnd());
+      else 
+        result.add(edge.getStart());
+    }
+    // remove any self-loops
+    result.remove(vertex);
+    return result;
+  }
+  
 } //ModelHelper

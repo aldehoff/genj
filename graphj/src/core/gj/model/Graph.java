@@ -30,12 +30,17 @@ public interface Graph {
   /**
    * The graph's vertices
    */
-  public Set<?> getVertices();
+  public Set<? extends Vertex> getVertices();
   
   /**
-   * The neighbours of a vertex
+   * The graph's edges
    */
-  public Set<?> getNeighbours(Object vertex);
+  public Set<? extends Edge> getEdges();
+  
+  /**
+   * Vertex's edges
+   */
+  public Set<? extends Edge> getEdges(Vertex vertex);
   
 } //Graph
  

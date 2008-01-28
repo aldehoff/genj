@@ -19,18 +19,9 @@
  */
 package gj.model;
 
-
-
 /**
- * A Tree like a Graph contains Nodes and Arcs. A Tree also
- * <il> 
- *  <li>is acyclic so for a given edge[x,z] there is no 
- *      path{edge[x,a]>edge[a,b]>edge[b,.]>...>edge[.,y]>edge[y,z]}
- *  <li>here is a spanning Tree so for any verteces x,z there is a
- *      path{edge[x,a]>edge[a,b]>edge[b,.]>...>edge[.,y]>edge[y,z]}
- * </il>
+ * A vertex in a graph
  */
-public interface Tree extends Graph {
+public interface Vertex {
 
-} //Tree
- 
+}

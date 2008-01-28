@@ -23,13 +23,15 @@ import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
-import gj.model.Tree;
+import gj.model.DefaultEdge;
+import gj.model.DefaultVertex;
+import gj.model.Edge;
+import gj.model.Graph;
+import gj.model.Vertex;
 import gj.ui.GraphWidget;
 
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -55,27 +57,27 @@ public class FamilyTree {
       "S&S>Luka";
     
     // wrap it in a tree model
-    Tree tree = new Tree() {
+    Graph graph = new Graph() {
 
       /** all vertices */
-      public Set<?> getVertices() {
-        return new HashSet<String>(Arrays.asList(family.split(",|>")));
+      public Set<Vertex> getVertices() {
+        return DefaultVertex.wrap(family.split(",|>"));
       }
-
-      /** neighbours */
-      public Set<?> getNeighbours(Object vertex) {
-        Set<String> result = new LinkedHashSet<String>();
-        for (String relationship : family.split(",")) {
-          String[] parent2child = relationship.split(">");
-          if (parent2child[0].equals(vertex)) result.add(parent2child[1]);
-          if (parent2child[1].equals(vertex)) result.add(parent2child[0]);
-        }
+      
+      public Set<Edge> getEdges() {
+        Set<Edge> result = new LinkedHashSet<Edge>();
+        for (String relationship : family.split(",")) 
+          result.add(new DefaultEdge(DefaultVertex.wrap(relationship.split(">"))));
         return result;
       }
-
-      /** root */
-      public Object getRoot() {
-        return family.substring(0, family.indexOf('>'));
+      
+      public Set<Edge> getEdges(Vertex vertex) {
+        Set<Edge> result = new LinkedHashSet<Edge>();
+        for (String relationship : family.split(",")) {
+          Edge edge = new DefaultEdge(DefaultVertex.wrap(relationship.split(">")));
+          if (edge.getStart().equals(vertex)||edge.getEnd().equals(vertex)) result.add(edge);
+        }
+        return result;
       }
 
     };
@@ -84,14 +86,14 @@ public class FamilyTree {
     Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));
     
     try {
-      new TreeLayoutAlgorithm().apply(tree, layout, null, null);
+      new TreeLayoutAlgorithm().apply(graph, layout, null, null);
     } catch (LayoutAlgorithmException e) {
       throw new RuntimeException("hmm, can't layout my family", e);
     }
     
     // stuff into a graph widget
     GraphWidget widget = new GraphWidget(layout);
-    widget.setGraph(tree);
+    widget.setGraph(graph);
  
     // and show
     JFrame frame = new JFrame("Family Tree on GraphJ");

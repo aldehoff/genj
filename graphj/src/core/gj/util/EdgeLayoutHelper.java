@@ -22,14 +22,12 @@ package gj.util;
 import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.layout.Layout2D;
-import gj.model.DirectedGraph;
+import gj.model.Edge;
 import gj.model.Graph;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A simplified layout for arcs */
@@ -39,20 +37,9 @@ public class EdgeLayoutHelper {
    * Calculate shape of all arcs in graph
    */
   public static void setShapes(Graph graph, Layout2D layout) {
-    Set<Object> done = new HashSet<Object>();
     
-    for (Object vertex : graph.getVertices()) { 
-      
-      for (Object neighbour : graph.getNeighbours(vertex)) {
-        
-        if (done.contains(neighbour))
-          continue;
-
-        int direction = (graph instanceof DirectedGraph) ? ((DirectedGraph)graph).getDirectionOfEdge(vertex, neighbour) : 0;
-        setShape(graph, layout, vertex, neighbour, direction);
-      }
-      
-      done.add(vertex);
+    for (Edge edge : graph.getEdges()) { 
+      setShape(edge, layout);
     }
     
   }
@@ -60,15 +47,19 @@ public class EdgeLayoutHelper {
   /**
    * Calculate a shape for an arc
    */
-  public static void setShape(Graph graph, Layout2D layout, Object from, Object to, int direction) {
+  public static void setShape(Edge edge, Layout2D layout) {
+    layout.setShapeOfEdge(edge, getShape(edge, layout));
+  }
+  
+  public static Shape getShape(Edge edge, Layout2D layout) {
     Shape
-      sfrom= layout.getShapeOfVertex(from),
-      sto  = layout.getShapeOfVertex(to);
-    Point2D
-      pfrom= layout.getPositionOfVertex(from),
-      pto  = layout.getPositionOfVertex(to);
-    
-    layout.setShapeOfEdge(from, to, getShape(pfrom,sfrom,pto,sto, direction));
+    sfrom= layout.getShapeOfVertex(edge.getStart()),
+    sto  = layout.getShapeOfVertex(edge.getEnd());
+  Point2D
+    pfrom= layout.getPositionOfVertex(edge.getStart()),
+    pto  = layout.getPositionOfVertex(edge.getEnd());
+  
+    return getShape(pfrom,sfrom,pto,sto,1);
   }
   
   /**

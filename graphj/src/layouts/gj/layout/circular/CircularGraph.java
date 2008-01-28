@@ -20,13 +20,13 @@
 package gj.layout.circular;
 
 import gj.model.Graph;
+import gj.model.Vertex;
 import gj.util.ModelHelper;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -39,8 +39,8 @@ import java.util.Stack;
   /** the circles in a graph */
   private Set<Circle> circles;
   
-  /** the mapping between node and its circle */
-  private Map<Object, Circle> node2circle;
+  /** the mapping between vertex and its circle */
+  private Map<Vertex, Circle> vertex2circle;
   
   /**
    * Constructor
@@ -53,7 +53,7 @@ import java.util.Stack;
     
     // prepare our nodes and their initial circles
     circles = new HashSet<Circle>();
-    node2circle = new HashMap<Object,Circle>(graph.getVertices().size());
+    vertex2circle = new HashMap<Vertex, Circle>(graph.getVertices().size());
     
     // simple for isSingleCircle=true
     if (isSingleCircle) {
@@ -62,46 +62,44 @@ import java.util.Stack;
     }
     
     // find circles for all
-    Set<Object> unvisited = new HashSet<Object>(ModelHelper.toList(graph.getVertices()));
+    Set<Vertex> unvisited = new HashSet<Vertex>(ModelHelper.toList(graph.getVertices()));
     while (!unvisited.isEmpty()) 
-      findCircles(graph, unvisited.iterator().next(), null, new Stack<Object>(), unvisited);
+      findCircles(graph, unvisited.iterator().next(), null, new Stack<Vertex>(), unvisited);
 
     // done    
   }
   
   /**
-   * Find circles starting at given node
+   * Find circles starting at given vertex
    */
-  private void findCircles(Graph graph, Object node, Object parent, Stack<Object> path, Set<Object> unvisited) {
+  private void findCircles(Graph graph, Vertex vertex, Vertex parent, Stack<Vertex> path, Set<Vertex> unvisited) {
     
     // have we been here before?
-    if (path.contains(node)) {
-      Circle circle = getCircle(node);
-      circle.fold(path, node);
+    if (path.contains(vertex)) {
+      Circle circle = getCircle(vertex);
+      circle.fold(path, vertex);
       return;
     }
     
     // now its visited
-    unvisited.remove(node);
+    unvisited.remove(vertex);
     
     // create a circle for it
-    new Circle(Collections.singleton(node));
+    new Circle(Collections.singleton(vertex));
 
-    // add current node to stack
-    path.push(node);
+    // add current vertex to stack
+    path.push(vertex);
     
     // recurse into neighbours traversing via arcs
-    Iterator<?> neighbours = graph.getNeighbours(node).iterator();
-    while (neighbours.hasNext()) {
-      Object neighbour = neighbours.next();
+    for (Vertex neighbour : ModelHelper.getNeighbours(graph, vertex)) {
       // don't go back
-      if (neighbour==node||neighbour==parent)
+      if (neighbour==vertex||neighbour==parent)
         continue;
       // recurse into child
-      findCircles(graph, neighbour, node, path, unvisited);
+      findCircles(graph, neighbour, vertex, path, unvisited);
     }
     
-    // take current node of stack again
+    // take current vertex of stack again
     path.pop();
     
     // done
@@ -117,23 +115,23 @@ import java.util.Stack;
   /**
    * Accessor - a circle
    */
-  /*package*/ Circle getCircle(Object node) {
-    Circle result = node2circle.get(node);
+  /*package*/ Circle getCircle(Vertex vertex) {
+    Circle result = vertex2circle.get(vertex);
     if (result==null)
-      result = new Circle(Collections.singleton(node));
+      result = new Circle(Collections.singleton(vertex));
     return result;
   }
   
   /**
    * The circle in a graph
    */
-  /*package*/ class Circle extends HashSet<Object> {
+  /*package*/ class Circle extends HashSet<Vertex> {
 
     /**
      * Creates a new circle
      */
     Circle(Graph graph) {
-      for (Object vertex : graph.getVertices())
+      for (Vertex vertex : graph.getVertices())
         add(vertex);
       circles.add(this);
     }
@@ -141,21 +139,21 @@ import java.util.Stack;
     /**
      * Creates a new circle
      */
-    Circle(Collection<?> nodes) {
+    Circle(Collection<Vertex> nodes) {
       addAll(nodes);
       circles.add(this);
     }
     
     /**
-     * Add a node
+     * Add a vertex
      */
     @Override
-    public boolean add(Object node) {
+    public boolean add(Vertex vertex) {
       // let super do its thing
-      boolean rc = super.add(node);
-      // remember node->this
+      boolean rc = super.add(vertex);
+      // remember vertex->this
       if (rc)
-        node2circle.put(node, this);
+        vertex2circle.put(vertex, this);
       // done
       return rc;
     }
@@ -164,17 +162,17 @@ import java.util.Stack;
      * Folds all elements in path down to stop into this
      * circle. Folded nodes' circles are merged.
      */
-    void fold(Stack<?> path, Object stop) {
+    void fold(Stack<Vertex> path, Vertex stop) {
       
       // Loop through stack elements
       for (int i=path.size()-1;;i--) {
-        // get next (=previous) the node in the stack
-        Object node = path.get(i);
+        // get next (=previous) the vertex in the stack
+        Vertex vertex = path.get(i);
         // back at the stop?
-        if (node==stop) 
+        if (vertex==stop) 
           break;
         // grab its circle
-        Circle other = getCircle(node);
+        Circle other = getCircle(vertex);
         addAll(other);
         circles.remove(other);
         // next stack element
@@ -186,7 +184,7 @@ import java.util.Stack;
     /**
      * Accessor - the nodes
      */
-    /*package*/ Set<Object> getNodes() {
+    /*package*/ Set<Vertex> getNodes() {
       return this;
     }
     

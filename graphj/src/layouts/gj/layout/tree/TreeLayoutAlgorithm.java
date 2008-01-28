@@ -22,12 +22,11 @@ package gj.layout.tree;
 import gj.geom.Geometry;
 import gj.geom.ShapeHelper;
 import gj.layout.AbstractLayoutAlgorithm;
-import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
-import gj.model.Tree;
+import gj.model.Vertex;
 import gj.util.ModelHelper;
 
 import java.awt.Shape;
@@ -68,7 +67,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private double orientation = 180;
 
   /** root to start with */
-  private Object rootOfTree;
+  private Vertex rootOfTree;
 
   /** whether to order by position instead of natural sequence */
   private boolean isOrderSiblingsByPosition = true;
@@ -171,14 +170,14 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   /**
    * Getter - root node
    */
-  public Object getRootVertex() {
+  public Vertex getRootVertex() {
     return rootOfTree;
   }
 
   /**
    * Getter - root node
    */
-  public void setRootVertex(Object root) {
+  public void setRootVertex(Vertex root) {
     this.rootOfTree = root;
   }
 
@@ -202,12 +201,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // check that we got a tree
-    if (!(graph instanceof Tree))
-      throw new GraphNotSupportedException("only trees allowed", Tree.class);
-    Tree tree = (Tree)graph;
+    ModelHelper.assertSpanningTree(graph);
 
     // ignore an empty tree
-    Set<?> verticies = tree.getVertices();
+    Set<? extends Vertex> verticies = graph.getVertices();
     if (verticies.isEmpty())
       return bounds;
     
@@ -216,46 +213,46 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       rootOfTree = verticies.iterator().next();
 
     // recurse into it
-    return layout(tree, null, rootOfTree, layout).area;
+    return layout(graph, null, rootOfTree, layout).area;
   }
   
   /**
    * Layout a branch
    */
-  private Branch layout(Tree tree, Object backtrack, Object root, Layout2D layout) {
+  private Branch layout(Graph graph, Vertex backtrack, Vertex root, Layout2D layout) {
     
     // check # children in neighbours (we don't count backtrack as child) - leaf?
-    Set<?> neighbours = tree.getNeighbours(root);
+    Set<? extends Vertex> neighbours = ModelHelper.getNeighbours(graph, root);
     if (neighbours.size()  + (backtrack!=null ? -1 : 0) == 0)
-      return new Branch(tree, root, layout);
+      return new Branch(graph, root, layout);
     
     // create a branch for parent and children
-    List<Object> children = new ArrayList<Object>(neighbours);
+    List<Vertex> children = new ArrayList<Vertex>(neighbours);
     children.remove(backtrack);
     
     // sort by current position
     if (isOrderSiblingsByPosition)
-      Collections.sort(children, new ComparePositions(tree, layout));
+      Collections.sort(children, new ComparePositions(graph, layout));
     
     // create merged branch of sub-branches
-    return new Branch(tree, root, children, layout);
+    return new Branch(graph, root, children, layout);
 
   }
   
   /**
    * A comparator for comparing sibling vertices by their position
    */
-  private class ComparePositions extends Geometry implements Comparator<Object> {
+  private class ComparePositions extends Geometry implements Comparator<Vertex> {
 
     private Layout2D layout;
-    private Tree tree;
+    private Graph graph;
     
-    ComparePositions(Tree tree, Layout2D layout) {
-      this.tree = tree;
+    ComparePositions(Graph graph, Layout2D layout) {
+      this.graph = graph;
       this.layout = layout;
     }
     
-    public int compare(Object v1,Object v2) {
+    public int compare(Vertex v1,Vertex v2) {
       double layoutAxis = getRadian(orientation);
       Point2D p1 = layout.getPositionOfVertex(v1);
       Point2D p2 = layout.getPositionOfVertex(v2);
@@ -273,19 +270,19 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private class Branch extends Geometry {
     
     /** tree */
-    private Tree tree;
+    private Graph graph;
     
     /** root of branch */
-    private Object root;
+    private Vertex root;
     
     /** contained vertices */
-    private List<Object> vertices = new ArrayList<Object>();
+    private List<Vertex> vertices = new ArrayList<Vertex>();
     
     /** shape of branch */
     private Area area;
     
     /** constructor for a leaf */
-    Branch(Tree tree, Object leaf, Layout2D layout) {
+    Branch(Graph graph, Vertex leaf, Layout2D layout) {
       this.root = leaf;
       vertices.add(leaf);
       area = new Area(layout.getShapeOfVertex(leaf));
@@ -294,7 +291,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     }
 
     /** constructor for a parent and its children */
-    Branch(Tree tree, Object parent, List<?> children, Layout2D layout) {
+    Branch(Graph graph, Vertex parent, List<? extends Vertex> children, Layout2D layout) {
 
       double layoutAxis = getRadian(orientation);
       double alignmentAxis = layoutAxis - QUARTER_RADIAN;
@@ -305,10 +302,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       
       // create a branch for each child and place beside siblings
       LinkedList<Branch> branches = new LinkedList<Branch>();
-      for (Object child : children)  {
+      for (Vertex child : children)  {
         
         // another branch
-        Branch next = layout(tree, parent, child, layout) ; 
+        Branch next = layout(graph, parent, child, layout) ; 
         
         // add its vertices to ours
         vertices.addAll(next.vertices);
@@ -390,8 +387,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     /** translate a branch */
     void moveBy(Layout2D layout, Point2D delta) {
-      for (Object vertice : vertices) 
-        ModelHelper.translate(tree, layout, vertice, delta);
+      for (Vertex vertice : vertices) 
+        ModelHelper.translate(graph, layout, vertice, delta);
       area.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
     

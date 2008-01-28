@@ -84,7 +84,7 @@ public class GraphWriter implements PathIteratorKnowHow {
     push("edges",null,false);
     
     // write 'em
-    for (EditableEdge edge : g.getEdges()) 
+    for (EditableEdge edge : g.getEditableEdges()) 
       writeEdge(g, edge);
     
     pop();
@@ -111,7 +111,7 @@ public class GraphWriter implements PathIteratorKnowHow {
     // starting shapes
     push("shapes",null,false);
     // loop through vertices
-    for (EditableVertex vertex: g.getVertices()) {
+    for (EditableVertex vertex: g.getEditableVertices()) {
       // check known shape
       Shape s = vertex.getShape();
       if (!element2id.containsKey(s))
@@ -160,7 +160,7 @@ public class GraphWriter implements PathIteratorKnowHow {
    */
   private void writeVertices(EditableGraph g) throws IOException {
     push("vertices",null,false);
-    for (EditableVertex vertex : g.getVertices()) 
+    for (EditableVertex vertex : g.getEditableVertices()) 
       writeVertex(vertex);
     pop();
   }

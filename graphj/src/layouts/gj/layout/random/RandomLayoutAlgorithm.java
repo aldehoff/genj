@@ -24,13 +24,13 @@ import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
+import gj.model.Vertex;
 import gj.util.EdgeLayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Random;
 
 /**
@@ -102,11 +102,9 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     Random random = new Random(seed++);
 
     // place the nodes    
-    Iterator<?> nodes = graph.getVertices().iterator();
-    while (nodes.hasNext()) {
+    for (Vertex vertex : graph.getVertices()) {
       
-      Object node = nodes.next();
-      Rectangle2D nodeCanvas = layout.getShapeOfVertex(node).getBounds2D();
+      Rectangle2D nodeCanvas = layout.getShapeOfVertex(vertex).getBounds2D();
 
       double 
         x = bounds.getMinX() - nodeCanvas.getMinX(),
@@ -114,12 +112,12 @@ public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
         w = bounds.getWidth() - nodeCanvas.getWidth(),
         h = bounds.getHeight() - nodeCanvas.getHeight();
 
-      Point2D pos = layout.getPositionOfVertex(node);
+      Point2D pos = layout.getPositionOfVertex(vertex);
       pos.setLocation(
         isApplyHorizontally ? x + random.nextDouble()*w : pos.getX(), 
         isApplyVertically ? y + random.nextDouble()*h : pos.getY()
       );
-      layout.setPositionOfVertex(node, pos);
+      layout.setPositionOfVertex(vertex, pos);
 
     }
     

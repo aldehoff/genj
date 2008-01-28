@@ -19,29 +19,17 @@
  */
 package gj.layout;
 
-import gj.model.Graph;
 
 /**
  * A layout algorithm exception that explains what type of graph is supported
  */
 public class GraphNotSupportedException extends LayoutAlgorithmException {
   
-  /** the supported type */
-  private Class<? extends Graph> supported;
-
   /**
    * Constructor
    */
-  public GraphNotSupportedException(String message, Class<? extends Graph> supportedGraph) {
+  public GraphNotSupportedException(String message) {
     super(message);
-    supported = supportedGraph;
   }
-  
-  /**
-   * Accessor - supported Graph type
-   */
-  public Class<? extends Graph> getSupportedGraphType() {
-    return supported;
-  }
-  
+    
 } //GraphNotSupportedException

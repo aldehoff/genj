@@ -21,12 +21,13 @@ package gj.layout.radial;
 
 import gj.geom.Geometry;
 import gj.layout.AbstractLayoutAlgorithm;
-import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
+import gj.model.Edge;
 import gj.model.Graph;
-import gj.model.Tree;
+import gj.model.Vertex;
+import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
@@ -48,47 +49,45 @@ import java.util.Set;
  */
 public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements LayoutAlgorithm {
   
-  private WeakReference<?> rootOfTree;
+  private WeakReference<Vertex> rootOfTree;
   private double distanceBetweenGenerations = 60;
   private boolean isAdjustDistances = false;
   private boolean isFanOut = false; 
   private double distanceInGeneration = 0;
   private boolean isOrderSiblingsByPosition = true;
-  private Map<Pair, Integer> edge2distance = new HashMap<Pair, Integer>();
+  private Map<Edge, Integer> edge2distance = new HashMap<Edge, Integer>();
 
   /**
    * Accessor - root node
    */
-  public Object getRootVertex() {
+  public Vertex getRootVertex() {
     return rootOfTree != null ? rootOfTree.get() : null;
   }
 
   /**
    * Accessor - root node
    */
-  public void setRootVertex(Object root) {
-    rootOfTree = new WeakReference<Object>(root);
+  public void setRootVertex(Vertex root) {
+    rootOfTree = new WeakReference<Vertex>(root);
   }
   
   /**
    * Accessor - edge distance
    */
-  public void lengthenEdge(Object vertexA, Object vertexB) {
-    Pair key = new Pair(vertexA, vertexB);
-    Integer distance = edge2distance.get(key);
-    edge2distance.put(key, new Integer(distance !=null ? distance.intValue()+1 : 1));
+  public void lengthenEdge(Edge edge) {
+    Integer distance = edge2distance.get(edge);
+    edge2distance.put(edge, new Integer(distance !=null ? distance.intValue()+1 : 1));
   }
   
   /**
    * Accessor - edge distance
    */
-  public void shortenEdge(Object vertexA, Object vertexB) {
-    Pair key = new Pair(vertexA, vertexB);
-    Integer distance = edge2distance.get(key);
+  public void shortenEdge(Edge edge) {
+    Integer distance = edge2distance.get(edge);
     if (distance.intValue()==1)
-      edge2distance.remove(key);
+      edge2distance.remove(edge);
     else
-      edge2distance.put(key, new Integer(distance.intValue()-1));
+      edge2distance.put(edge, new Integer(distance.intValue()-1));
   }
   
   /**
@@ -167,59 +166,34 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // check that we got a tree
-    if (!(graph instanceof Tree))
-      throw new GraphNotSupportedException("only trees allowed", Tree.class);
-    Tree tree = (Tree)graph;
+    ModelHelper.assertSpanningTree(graph);
     
     // ignore an empty tree
-    Set<?> verticies = tree.getVertices();
+    Set<? extends Vertex> verticies = graph.getVertices();
     if (verticies.isEmpty())
       return bounds;
     
     // check root
-    Object root = getRootVertex();
+    Vertex root = getRootVertex();
     if (root==null || !verticies.contains(root))  {
       root = verticies.iterator().next();
       setRootVertex(root);
     }
     
     // check distances
-    for (Pair pair : edge2distance.keySet()) {
-      System.out.println(pair+":"+edge2distance.get(pair));
+    for (Edge edge : edge2distance.keySet()) {
+      System.out.println(edge+":"+edge2distance.get(edge));
     }
     
     // run recursion
-    return new Recursion(tree, root, distanceBetweenGenerations,layout, debugShapes).getShape();
+    return new Recursion(graph, root, distanceBetweenGenerations,layout, debugShapes).getShape();
     
-  }
-  
-  /**
-   * a pair of verticies
-   */
-  private class Pair {
-    private Object a, b;
-    Pair(Object a, Object b) {
-      this.a = a; this.b = b;
-    }
-    @Override
-    public int hashCode() {
-      return a.hashCode() + b.hashCode();
-    }
-    @Override
-    public boolean equals(Object obj) {
-      Pair that = (Pair)obj;
-      return (this.a.equals(that.a) && this.b.equals(that.b)) || (this.a.equals(that.b) && this.b.equals(that.b));
-    }
-    @Override
-    public String toString() {
-      return a+"<>"+b;
-    }
   }
   
   /** 
    * the recursion
    */
-  private class Recursion extends Geometry implements Comparator<Object> {
+  private class Recursion extends Geometry implements Comparator<Vertex> {
     
     Graph graph;
     Object root;
@@ -231,7 +205,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     double currentNorth;
     double distanceBetweenGenerations;
     
-    Recursion(Graph graph, Object root, double distanceBetweenGenerations, Layout2D layout, Collection<Shape> debug) {
+    Recursion(Graph graph, Vertex root, double distanceBetweenGenerations, Layout2D layout, Collection<Shape> debug) {
       
       // init state
       this.graph = graph;
@@ -267,7 +241,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     /**
      * calculate the diameter of a node's shape
      */
-    double getDiameter(Object vertex) {
+    double getDiameter(Vertex vertex) {
       return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
     }
 
@@ -275,16 +249,16 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     /**
      * calculate the size of a sub-tree starting at root
      */
-    double getSize(Object backtrack, Object root, int generation) {
+    double getSize(Vertex backtrack, Vertex root, int generation) {
       
       // update our depth info
       depth = Math.max(depth, generation+1);
 
       // calculate size for children
       double factor = generation==0 ? 1: (double)generation/(generation+1);
-      Set<?> neighbours = graph.getNeighbours(root);
+      Set<? extends Vertex> neighbours = ModelHelper.getNeighbours(graph, root);
       double sizeOfChildren = 0;
-      for (Object child : neighbours) {
+      for (Vertex child : neighbours) {
         if (!child.equals(backtrack)) {
           sizeOfChildren +=  getSize(root, child, generation + 1) * factor;
         }
@@ -310,12 +284,12 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     /**
      * recursive layout call
      */
-    void layout(Object backtrack, Object root, double fromRadian, double toRadian, double radius) {
+    void layout(Vertex backtrack, Vertex root, double fromRadian, double toRadian, double radius) {
       
       // assemble list of children
-      Set<?> neighbours = graph.getNeighbours(root);
-      List<Object> children = new ArrayList<Object>(neighbours.size());
-      for (Object child : neighbours) 
+      Set<? extends Vertex> neighbours = ModelHelper.getNeighbours(graph, root);
+      List<Vertex> children = new ArrayList<Vertex>(neighbours.size());
+      for (Vertex child : neighbours) 
         if (!child.equals(backtrack)) children.add(child);
       if (children.isEmpty())
         return;
@@ -343,7 +317,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       
       // position children and iterate into their placement recursion
       int depth = 0;
-      for (Object child : children) {
+      for (Vertex child : children) {
         
         double radians = root2size.get(child).doubleValue() / radius * shareFactor;
         
@@ -363,7 +337,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     }
     
     /** compare two verticies' current position */
-    public int compare(Object v1,Object v2) {
+    public int compare(Vertex v1, Vertex v2) {
       
       double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(v1)));
       double r2 = getRadian(getDelta(center,layout.getPositionOfVertex(v2)));

@@ -19,19 +19,18 @@
  */
 package gj.shell.model;
 
+import gj.model.Vertex;
+
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * A default implementation for a vertex
  */
-public class EditableVertex extends EditableElement {
+public class EditableVertex extends EditableElement implements Vertex {
 
   /** the content of this vertex */
   private Object content;
@@ -43,7 +42,7 @@ public class EditableVertex extends EditableElement {
   private Set<EditableVertex> neighbours = new LinkedHashSet<EditableVertex>();
   
   /** all edges of this vertex */
-  private List<EditableEdge> edges = new ArrayList<EditableEdge>(3);
+  private Set<EditableEdge> edges = new LinkedHashSet<EditableEdge>(3);
   
   /**
    * Constructor
@@ -116,7 +115,7 @@ public class EditableVertex extends EditableElement {
   /**
    * Retrieves all edges
    */
-  /*package*/ Collection<EditableEdge> getEdges() {
+  /*package*/ Set<EditableEdge> getEdges() {
     return edges;
   }
   

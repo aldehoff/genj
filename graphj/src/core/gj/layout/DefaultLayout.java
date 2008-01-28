@@ -19,14 +19,14 @@
  */
 package gj.layout;
 
+import gj.model.Edge;
+import gj.model.Vertex;
 import gj.util.EdgeLayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A simple default implementation of a layout
@@ -34,56 +34,47 @@ import java.util.Set;
 public class DefaultLayout implements Layout2D {
   
   private Shape defaultShape;
-  private Map<Object, Point2D> vertex2point = new HashMap<Object, Point2D>();
-  private Map<Object, Shape> vertex2shape = new HashMap<Object, Shape>();
-  private Map< Set<Object>, Shape> edge2shape = new HashMap< Set<Object>, Shape>();
+  private Map<Vertex, Point2D> vertex2point = new HashMap<Vertex, Point2D>();
+  private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
+  private Map<Edge, Shape> edge2shape = new HashMap<Edge, Shape>();
 
   public DefaultLayout(Shape defaultShape) {
     this.defaultShape = defaultShape;
   }
   
-  public Point2D getPositionOfVertex(Object vertex) {
+  public Point2D getPositionOfVertex(Vertex vertex) {
     Point2D result = vertex2point.get(vertex);
     if (result==null) 
       result = new Point2D.Double();
     return result;
   }
 
-  public void setPositionOfVertex(Object vertex, Point2D pos) {
+  public void setPositionOfVertex(Vertex vertex, Point2D pos) {
     vertex2point.put(vertex, new Point2D.Double(pos.getX(), pos.getY()));
   }
 
-  public Shape getShapeOfEdge(Object start, Object end) {
-    
-    Set<Object> edge = new HashSet<Object>();
-    edge.add(start);
-    edge.add(end);
+  public Shape getShapeOfEdge(Edge edge) {
     
     Shape result = edge2shape.get(edge);
     if (result==null) {
-      result = EdgeLayoutHelper.getShape(getPositionOfVertex(start), getShapeOfVertex(start), 
-          getPositionOfVertex(end), getShapeOfVertex(end), 1);
+      result = EdgeLayoutHelper.getShape(edge, this);
+      edge2shape.put(edge, result);
     }
     return result;
   }
 
-  public void setShapeOfEdge(Object start, Object end, Shape shape) {
-    
-    Set<Object> edge = new HashSet<Object>();
-    edge.add(start);
-    edge.add(end);
-    
+  public void setShapeOfEdge(Edge edge, Shape shape) {
     edge2shape.put(edge, shape);
   }
 
-  public Shape getShapeOfVertex(Object vertex) {
+  public Shape getShapeOfVertex(Vertex vertex) {
     Shape result = vertex2shape.get(vertex);
     if (result==null)
       result = defaultShape;
     return result;
   }
 
-  public void setShapeOfVertex(Object vertex, Shape shape) {
+  public void setShapeOfVertex(Vertex vertex, Shape shape) {
     vertex2shape.put(vertex, shape);
   }
 

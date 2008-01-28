@@ -19,7 +19,9 @@
  */
 package gj.shell.model;
 
-import gj.model.DirectedGraph;
+import gj.model.Edge;
+import gj.model.Graph;
+import gj.model.Vertex;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -34,7 +36,7 @@ import java.util.Set;
  * A default impl for 
  * @see gj.layout.Layout2D
  */
-public class EditableGraph implements DirectedGraph {
+public class EditableGraph implements Graph {
   
   /** current selection - either edge or vertex*/
   private EditableElement selection;
@@ -43,7 +45,7 @@ public class EditableGraph implements DirectedGraph {
   protected Set<EditableVertex> vertices = new LinkedHashSet<EditableVertex>(10);
 
   /** the contained arcs */
-  private Collection<EditableEdge> edges = new LinkedHashSet<EditableEdge>(10);
+  private Set<EditableEdge> edges = new LinkedHashSet<EditableEdge>(10);
   
   /**
    * Constructor
@@ -79,8 +81,22 @@ public class EditableGraph implements DirectedGraph {
   /**
    * All Edges
    */
-  public Collection<EditableEdge> getEdges() {
+  public Set<? extends Edge> getEdges() {
     return edges;
+  }
+  
+  /**
+   * All Edges
+   */
+  public Set<EditableEdge> getEditableEdges() {
+    return edges;
+  }
+  
+  /**
+   * Edges for a vertex
+   */
+  public Set<? extends Edge> getEdges(Vertex vertex) {
+    return ((EditableVertex)vertex).getEdges();
   }
   
   /**
@@ -212,30 +228,37 @@ public class EditableGraph implements DirectedGraph {
   }
   
   /**
-   * interface implementation
+   * shell stuff
    */
-  public Set<EditableVertex> getVertices() {
+  public Set<EditableVertex> getEditableVertices() {
     return vertices;
   }
   
   /**
    * interface implementation
    */
-  public int getNumAdjacentVertices(Object vertex) {
+  public Set<? extends Vertex> getVertices() {
+    return vertices;
+  }
+  
+  /**
+   * interface implementation
+   */
+  public int getNumAdjacentVertices(Vertex vertex) {
     return ((EditableVertex)vertex).getNumNeighbours();
   }
   
   /**
    * interface implementation
    */
-  public Set<EditableVertex> getNeighbours(Object vertex) {
+  public Set<EditableVertex> getNeighbours(Vertex vertex) {
     return ((EditableVertex)vertex).getNeighbours();
   }
   
   /**
    * interface implementation
    */
-  public int getNumDirectPredecessors(Object vertex) {
+  public int getNumDirectPredecessors(Vertex vertex) {
     int result = 0;
     for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
       if (edge.getEnd() == vertex) result++;
@@ -246,7 +269,7 @@ public class EditableGraph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Iterable<EditableVertex> getDirectPredecessors(Object vertex) {
+  public Iterable<EditableVertex> getDirectPredecessors(Vertex vertex) {
     // FIXME this could be in-situ without temporary array
     List<EditableVertex> predecessors = new ArrayList<EditableVertex>();
     for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
@@ -259,7 +282,7 @@ public class EditableGraph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public int getNumDirectSuccessors(Object vertex) {
+  public int getNumDirectSuccessors(Vertex vertex) {
     int result = 0;
     for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
       if (edge.getStart() == vertex) result++;
@@ -270,7 +293,7 @@ public class EditableGraph implements DirectedGraph {
   /**
    * interface implementation
    */
-  public Iterable<?> getDirectSuccessors(Object vertex) {
+  public Iterable<EditableVertex> getDirectSuccessors(EditableVertex vertex) {
     // FIXME this could be in-situ without temporary array
     List<EditableVertex> successors = new ArrayList<EditableVertex>();
     for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {

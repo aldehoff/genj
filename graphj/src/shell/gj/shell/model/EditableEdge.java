@@ -20,6 +20,7 @@
 package gj.shell.model;
 
 import gj.geom.Geometry;
+import gj.model.Edge;
 import gj.util.EdgeLayoutHelper;
 
 import java.awt.Shape;
@@ -28,7 +29,7 @@ import java.awt.geom.Point2D;
 /**
  * A default implementation for an Edge
  */
-public class EditableEdge extends EditableElement {
+public class EditableEdge extends EditableElement implements Edge {
   
   /** starting vertex */
   private EditableVertex start;

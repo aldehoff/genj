@@ -19,16 +19,13 @@
  */
 package gj.model;
 
-
 /**
- * A directed graph (or Digraph)
+ * an edge in a graph - by default directed
  */
-public interface DirectedGraph extends Graph {
+public interface Edge {
+
+  Vertex getStart();
   
-  /**
-   * an edge's direction
-   */
-  public int getDirectionOfEdge(Object start, Object end);
+  Vertex getEnd();
   
-  
-} //DirectedGraph
+}
