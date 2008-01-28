@@ -138,7 +138,11 @@ public class DefaultGraphRenderer implements GraphRenderer {
     
     // arbitrary color
     graphics.setColor(getColor(edge));
+    
+    Point2D pos = layout.getPositionOfVertex(edge.getStart());
+    graphics.translate(pos.getX(), pos.getY());
     graphics.draw(layout.getShapeOfEdge(edge));
+    graphics.translate(-pos.getX(), -pos.getY());
     
     // done      
   }

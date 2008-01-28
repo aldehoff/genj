@@ -165,4 +165,8 @@ public class ModelHelper {
     return result;
   }
   
+  public static boolean contains(Edge edge, Vertex vertex) {
+    return edge.getStart().equals(vertex) || edge.getEnd().equals(vertex);
+  }
+  
 } //ModelHelper

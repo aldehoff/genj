@@ -24,12 +24,15 @@ import gj.model.Edge;
 import gj.util.EdgeLayoutHelper;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
  * A default implementation for an Edge
  */
 public class EditableEdge extends EditableElement implements Edge {
+  
+  private long lastEdit = -1;
   
   /** starting vertex */
   private EditableVertex start;
@@ -51,17 +54,27 @@ public class EditableEdge extends EditableElement implements Edge {
    * Check if a point lies at vertex
    */
   public boolean contains(Point2D point) {
-    return 8>Geometry.getMinimumDistance(point, getShape().getPathIterator(null));
+    Point2D origin = start.getPosition();
+    return 8>Geometry.getMinimumDistance(point, getShape().getPathIterator(AffineTransform.getTranslateInstance(origin.getX(), origin.getY())));
   }
   
   /**
    * overriden - create a default edge shape if necessary
    */
   @Override
+  public Shape getShape() {
+    
+    if (lastEdit<getStart().lastEdit || lastEdit<getEnd().lastEdit) {
+      setShape(EdgeLayoutHelper.getShape(start.getPosition(), start.getShape(), end.getPosition(), end.getShape(), 1));
+    }
+    
+    return super.getShape();
+  }
+  
+  @Override
   public void setShape(Shape set) {
-    if (set==null) 
-      set = EdgeLayoutHelper.getShape(start.getPosition(), start.getShape(), end.getPosition(), end.getShape(), 1);
     super.setShape(set);
+    lastEdit = System.currentTimeMillis();
   }
 
   /**

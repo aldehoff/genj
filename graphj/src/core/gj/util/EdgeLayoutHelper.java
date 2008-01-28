@@ -26,6 +26,8 @@ import gj.model.Edge;
 import gj.model.Graph;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
@@ -64,7 +66,7 @@ public class EdgeLayoutHelper {
   
   /**
    * path with a line going through points between two shapes
-   * @param points a sequence of points describing the path
+   * @param points a sequence of points describing the path (first point is the origin of the shape)
    * @param s1 shape positioned at the first point
    * @param s2 shape positioned at the last point
    */  
@@ -81,7 +83,10 @@ public class EdgeLayoutHelper {
     // add the points to this path
     result.start(false, a);
     for (int i=1;i<points.length-1;i++) {
-      result.lineTo(points[i]);
+      result.lineTo( new Point2D.Double( 
+          points[i].getX()  - points[0].getX(), 
+          points[i].getY()  - points[0].getY()
+        ));
     }
     result.lineTo(b);
     
@@ -93,30 +98,12 @@ public class EdgeLayoutHelper {
 
   /**
    * Creates a connection between given points between two shapes
-   * @param p1 the starting point
+   * @param p1 the starting point (origin of shape)
    * @param s1 the shape sitting at p1
    * @param p2 the ending point
    * @param s2 the shape sitting at p2
    */
   public static Shape getShape(Point2D p1, Shape s1, Point2D p2, Shape s2, int direction) {
-
-//    // A loop for p1==p2
-//    if (p1.equals(p2)) {
-//      
-//      Rectangle2D bounds = s1.getBounds2D();
-//
-//      double 
-//        w = bounds.getMaxX()+bounds.getWidth()/4,
-//        h = bounds.getMaxY()+bounds.getHeight()/4;
-//
-//      Point2D
-//        a = p1,
-//        b = new Point2D.Double(a.getX()+w, a.getY()  ),
-//        c = new Point2D.Double(a.getX()+w, a.getY()+h),
-//        d = new Point2D.Double(a.getX()  , a.getY()+h);
-//        
-//      return getShape(new Point2D[]{a,b,c,d,a}, s1, s1, direction);
-//    }
 
     Point2D 
     	a = calcEnd(p2, p1, s1),
@@ -124,8 +111,8 @@ public class EdgeLayoutHelper {
     
     // A simple line
     Path result = new Path();
-    result.start(direction<0, a);
-    result.lineTo(b);
+    result.start(direction<0, new Point2D.Double(a.getX()-p1.getX(), a.getY()-p1.getY()));
+    result.lineTo(new Point2D.Double(b.getX()-p1.getX(), b.getY()-p1.getY()));
     result.end(direction>0);
     
     // done
@@ -139,6 +126,14 @@ public class EdgeLayoutHelper {
     
     return points.isEmpty() ? to : Geometry.getClosest(from, points);
 
+  }
+
+  public static void translate(Edge edge, Point2D delta, Layout2D layout) {
+    
+    GeneralPath gp = new GeneralPath(layout.getShapeOfEdge(edge));
+    gp.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
+    layout.setShapeOfEdge(edge, gp);
+    
   }
 
 } //ArcLayout

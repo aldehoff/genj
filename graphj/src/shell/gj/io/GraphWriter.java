@@ -148,8 +148,9 @@ public class GraphWriter implements PathIteratorKnowHow {
    */
   private void writeSegment(int type, double[] segment) throws IOException {
     ElementInfo info = new ElementInfo();
-    for (int i=0;i<SEG_SIZES[type];i++) {
-      info.put("v"+i, segment[i]);
+    for (int i=0;i<SEG_SIZES[type]/2;i++) {
+      info.put("x"+i, segment[i*2+0]);
+      info.put("y"+i, segment[i*2+1]);
     }
     push(SEG_NAMES[type],info,true);
   }

@@ -25,8 +25,10 @@ import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
+import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.util.EdgeLayoutHelper;
 import gj.util.ModelHelper;
 
 import java.awt.Shape;
@@ -235,7 +237,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     }
     
     // create merged branch of sub-branches
-    return new Branch(graph, root, children, layout);
+    return new Branch(graph, backtrack, root, children, layout);
 
   }
   
@@ -291,7 +293,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     }
 
     /** constructor for a parent and its children */
-    Branch(Graph graph, Vertex parent, Collection<Vertex> children, Layout2D layout) {
+    Branch(Graph graph, Vertex backtrack, Vertex parent, Collection<Vertex> children, Layout2D layout) {
 
       double layoutAxis = getRadian(orientation);
       double alignmentAxis = layoutAxis - QUARTER_RADIAN;
@@ -307,7 +309,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
         // another branch
         Branch next = layout(graph, parent, child, layout) ; 
         
-        // add its vertices to ours
+        // add its elements to ours
         vertices.addAll(next.vertices);
 
         // place child n+1 beside 1..n
@@ -359,20 +361,29 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       // place root
       layout.setPositionOfVertex(root, r);
       
-      // calculate new area with shape of root
+      // calculate new area with shape of root, umbrella between first/last child and sub-branches
       area = new Area(layout.getShapeOfVertex(root));
       area.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
-      
-      // .. an umbrella between root and first/last child
       area.add(new Area(ShapeHelper.createShape(
           r, 
           getMax(branches.getFirst().getShapeOfRoot(layout), layoutAxis+QUARTER_RADIAN),
           getMax(branches.getLast().getShapeOfRoot(layout), layoutAxis-QUARTER_RADIAN),
           r)));
-
-      // .. and each sub-branch
       for (Branch branch : branches)
         area.add(branch.area);
+      
+      // layout edges
+      for (Edge edge : graph.getEdges(root)) {
+        
+        // don't do edge to backtrack
+        if (ModelHelper.contains(edge, backtrack))
+          continue;
+        
+        // calc edge layout
+        EdgeLayoutHelper.setShape(edge, layout);
+        
+      }
+
       
       // done
     }
@@ -387,8 +398,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     /** translate a branch */
     void moveBy(Layout2D layout, Point2D delta) {
+      
       for (Vertex vertice : vertices) 
         ModelHelper.translate(graph, layout, vertice, delta);
+      
       area.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
     

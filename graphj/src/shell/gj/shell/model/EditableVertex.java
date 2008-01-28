@@ -31,6 +31,8 @@ import java.util.Set;
  * A default implementation for a vertex
  */
 public class EditableVertex extends EditableElement implements Vertex {
+  
+  /*package*/ long lastEdit = -1;
 
   /** the content of this vertex */
   private Object content;
@@ -129,15 +131,6 @@ public class EditableVertex extends EditableElement implements Vertex {
   }
   
   /**
-   * Reset edges
-   */
-  /*package*/ void resetEdges() {
-
-    for (EditableEdge edge : edges) 
-      edge.setShape(null);
-  }
-  
-  /**
    * overriden - shape
    */
   @Override
@@ -147,8 +140,8 @@ public class EditableVertex extends EditableElement implements Vertex {
       set = new Rectangle2D.Float();
     // continue
     super.setShape(set);
-    // reset edges
-    resetEdges();
+    // remember
+    lastEdit = System.currentTimeMillis();
   }
   
   /**
@@ -168,10 +161,11 @@ public class EditableVertex extends EditableElement implements Vertex {
    * interface implementation
    */
   public void setPosition(Point2D set) {
+    
     position = set;
     
-    // update edges
-    resetEdges();
+    // remember
+    lastEdit = System.currentTimeMillis();
   }
   
   /**

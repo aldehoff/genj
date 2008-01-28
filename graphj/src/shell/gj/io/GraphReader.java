@@ -130,7 +130,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     protected ElementHandler start(String name, Attributes atts) {
       if ("node".equals(name)||"vertex".equals(name)) return new VertexHandler(graph, atts);
       if ("arc".equals(name)||"edge".equals(name)) return new EdgeHandler(graph, atts);
-      if ("shape".equals(name)) return new ShapeHandler(atts);
+      if ("shape".equals(name)) return new ShapeHandler(new Point2D.Double(), atts);
       return this;
     }
   } //GraphHandler
@@ -186,7 +186,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     @Override
     protected ElementHandler start(String name, Attributes atts) {
       if ("shape".equals(name)) {
-        shapeHandler = new ShapeHandler(atts);
+        shapeHandler = new ShapeHandler(edge.getStart().getPosition(), atts);
         return shapeHandler;
       }
       return this;
@@ -207,20 +207,43 @@ public class GraphReader implements PathIteratorKnowHow  {
     private int size=0;
     private String id;
     private Shape result;
-    protected ShapeHandler(Attributes atts) {
+    private Point2D origin;
+    protected ShapeHandler(Point2D origin, Attributes atts) {
       id = atts.getValue("id");
+      this.origin = origin;
     }
     @Override
     protected ElementHandler start(String name, Attributes atts) {
+      
       for (int i=0;i<SEG_NAMES.length;i++) {
+        
         if (SEG_NAMES[i].equals(name)) {
           values[size++]=i;
-          for (int j=0;j<SEG_SIZES[i];j++) {
-            values[size++]=Double.parseDouble(atts.getValue("v"+j));
+          
+          if (SEG_SIZES[i]>0) {
+            
+            // old style absolute positions
+            if (atts.getValue("v0")!=null) {
+              
+              for (int j=0;j<SEG_SIZES[i]; )  {
+                values[size++] = Double.parseDouble(atts.getValue("v"+j++)) - origin.getX();
+                values[size++] = Double.parseDouble(atts.getValue("v"+j++)) - origin.getY();
+              }
+              
+            } else {
+              
+              // new style relative x,y's
+              for (int j=0;j<SEG_SIZES[i]/2; j++) {
+                  values[size++] = Double.parseDouble(atts.getValue("x"+j));
+                  values[size++] = Double.parseDouble(atts.getValue("y"+j));
+              }
+            }
+            
           }
           break;
         }
       }
+      
       return this;
     }
     @Override
