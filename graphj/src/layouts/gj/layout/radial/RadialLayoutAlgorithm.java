@@ -35,12 +35,10 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -287,17 +285,17 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     void layout(Vertex backtrack, Vertex root, double fromRadian, double toRadian, double radius) {
       
       // assemble list of children
-      Set<? extends Vertex> neighbours = ModelHelper.getNeighbours(graph, root);
-      List<Vertex> children = new ArrayList<Vertex>(neighbours.size());
-      for (Vertex child : neighbours) 
-        if (!child.equals(backtrack)) children.add(child);
+      Collection<Vertex> children = ModelHelper.getNeighbours(graph, root);
+      children.remove(backtrack);
       if (children.isEmpty())
         return;
       
       // sort children by current position
       if (isOrderSiblingsByPosition)  {
         currentNorth = fromRadian+(toRadian-fromRadian)/2+Geometry.HALF_RADIAN;
-        Collections.sort(children, this);
+        Vertex[] tmp = children.toArray(new Vertex[children.size()]);
+        Arrays.sort(tmp, this);
+        children = Arrays.asList(tmp);
       }
       
       // compare actual radians available vs allocation

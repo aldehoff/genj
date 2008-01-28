@@ -147,9 +147,12 @@ public class ModelHelper {
   }
   
   /**
-   * Get neighbouring verticies
+   * Get neighbouring verticies. That's all 
+   * <pre>
+   *   A e E n : e(vertex,n ) || e(n,vertex) e graph && !n==vertex
+   * </pre> 
    */
-  public static Set<? extends Vertex> getNeighbours(Graph graph, Vertex vertex) {
+  public static Set<Vertex> getNeighbours(Graph graph, Vertex vertex) {
     Set<Vertex> result = new LinkedHashSet<Vertex>();
     for (Edge edge : graph.getEdges(vertex)) {
       if (edge.getStart().equals(vertex)) 

@@ -36,8 +36,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -222,17 +222,17 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private Branch layout(Graph graph, Vertex backtrack, Vertex root, Layout2D layout) {
     
     // check # children in neighbours (we don't count backtrack as child) - leaf?
-    Set<? extends Vertex> neighbours = ModelHelper.getNeighbours(graph, root);
-    if (neighbours.size()  + (backtrack!=null ? -1 : 0) == 0)
+    Collection<Vertex> children = ModelHelper.getNeighbours(graph, root);
+    children.remove(backtrack);
+    if (children.isEmpty())
       return new Branch(graph, root, layout);
     
-    // create a branch for parent and children
-    List<Vertex> children = new ArrayList<Vertex>(neighbours);
-    children.remove(backtrack);
-    
     // sort by current position
-    if (isOrderSiblingsByPosition)
-      Collections.sort(children, new ComparePositions(graph, layout));
+    if (isOrderSiblingsByPosition) {
+      Vertex[] tmp = children.toArray(new Vertex[children.size()]);
+      Arrays.sort(tmp, new ComparePositions(graph, layout));
+      children = Arrays.asList(tmp);
+    }
     
     // create merged branch of sub-branches
     return new Branch(graph, root, children, layout);
@@ -291,7 +291,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     }
 
     /** constructor for a parent and its children */
-    Branch(Graph graph, Vertex parent, List<? extends Vertex> children, Layout2D layout) {
+    Branch(Graph graph, Vertex parent, Collection<Vertex> children, Layout2D layout) {
 
       double layoutAxis = getRadian(orientation);
       double alignmentAxis = layoutAxis - QUARTER_RADIAN;
