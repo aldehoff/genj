@@ -80,24 +80,24 @@ public class GeometryTest extends TestCase {
     //  xxx
     //  x x
     //  xxx
-    tst(-0.5, Geometry.getMax( r(0,0), radian(0)).getY() );
+    tst(p(10,9.5), Geometry.getMax( p(10,10), r(0,0), radian(0)) );
     
     //  xxx
     //  x x
     //  xxx
     // -----
-    tst(0.5, Geometry.getMax( r(0,0), radian(180)).getY() );
+    tst(p(0.5, 1.0), Geometry.getMax(  p(0.5,0.5), r(0,0), radian(180)) );
     
     //  xxx|
     //  x x|
     //  xxx|
-    tst(0.5, Geometry.getMax( r(0,0), radian(90)).getX() );
+    tst(p(0.5, 0), Geometry.getMax(  p(0,0), r(0,0), radian(90)) );
     
     //  xxx
     //  x x
     //  xxx/
     //    /
-    assertEquals(new Point2D.Double(.5,.5), Geometry.getMax( r(0,0), radian(90+45)));
+    tst(p(.5,.5), Geometry.getMax(  p(0,0), r(0,0), radian(90+45)));
     
     
     //    x  |
@@ -228,8 +228,8 @@ public class GeometryTest extends TestCase {
       return;
     }
       
-    assertEquals(a.getX(),b.getX(),0.0000001);
-    assertEquals(a.getY(),b.getY(),0.0000001);
+    if ( Math.abs(a.getX()-b.getX()) > 0.0000001 || Math.abs(a.getY()-b.getY())>0.0000001 )
+      fail("expected "+a+" but got "+b);
   }
   
   /**

@@ -90,10 +90,13 @@ public class Geometry {
   }
   
   /**
-   * Calculates the "maximum" that the given shape extends into the given direction
+   * Calculates the "maximum" that the given shape at position extends into the given direction
    */
   public static Point2D getMax(Shape shape, double axis) {
-    return new OpGetMax(shape, axis).getResult();
+    return new OpGetMax(new Point2D.Double(), shape, axis).getResult();
+  }
+  public static Point2D getMax(Point2D pos, Shape shape, double axis) {
+    return new OpGetMax(pos, shape, axis).getResult();
   }
   
   /**
@@ -101,14 +104,19 @@ public class Geometry {
    */
   private static class OpGetMax extends SegmentConsumer {
     
+    private Point2D pos;
+    private double axis;
     private double sinaxis, cosaxis; 
     private double max = Double.NEGATIVE_INFINITY;
-    private Point2D.Double result = new Point2D.Double();
+    private Point2D result;
 
     /**
      * Constructor
      */
-    public OpGetMax(Shape shape, double axis) {
+    public OpGetMax(Point2D pos, Shape shape, double axis) {
+      this.pos = pos;
+      this.axis = axis;
+      
       sinaxis = Math.sin(axis);
       cosaxis = Math.cos(axis);
       
@@ -121,10 +129,10 @@ public class Geometry {
     @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       
-      double delta = sinaxis * end.getX() - cosaxis * end.getY();
+      double delta = sinaxis * (end.getX()) - cosaxis * (end.getY() );
       if (delta>max) {
         max = delta;
-        result.setLocation(end);
+        result = getPoint(pos, axis, delta);
       }
 
       // continue
@@ -135,7 +143,7 @@ public class Geometry {
      * the result
      */
     Point2D getResult() {
-      return max == Double.NEGATIVE_INFINITY ? (Point2D)null : result;
+      return result;
     }
   } //OpOriginOfTangent
   
@@ -425,6 +433,15 @@ public class Geometry {
    */
   public static Point2D getPoint(Point2D origin, double radian, double distance) {
     return new Point2D.Double( origin.getX() + Math.sin(radian)*distance, origin.getY() - Math.cos(radian) * distance);
+  }
+  
+  /**
+   * (x1,y1) -> (x2,y2) -> factor-> (x1 + (x2-x1)*factor, y1 + (y2-y1)*factor )
+   */
+  public static Point2D getPoint(Point2D p1, Point2D p2, double share) {
+    if (share<0||share>1)
+      throw new IllegalArgumentException("0 <= share <= 1");
+    return new Point2D.Double( p1.getX() + (p2.getX()-p1.getX())*share, p1.getY() +  (p2.getY()-p1.getY())*share  );
   }
   
   /**

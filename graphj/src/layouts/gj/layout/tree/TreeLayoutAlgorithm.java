@@ -34,7 +34,6 @@ import gj.util.ModelHelper;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -314,30 +313,32 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       }
 
       // calculate where to place root
-      //  f = pos of first child 
-      //  l = pos of last child
-      //  c = pos of parent in generation axis
-      //  ct = topmost point centered between children 
       //
-      //  m = maximum extend of root shape in direction of layout 
-      //  b = bottom of root shape
-      //  d = distance that root needs from ct 
-      Point2D f = layout.getPositionOfVertex(branches.getFirst().root);
-      Point2D l = layout.getPositionOfVertex(branches.getLast().root);
-      Point2D c = new Point2D.Double(
-          f.getX() + (l.getX()-f.getX())*alignmentOfParent,
-          f.getY() + (l.getY()-f.getY())*alignmentOfParent
-        );
+      //<pre>
+      //        rrr
+      //        r r  
+      //     b  rrr  c
+      //     |   |   |
+      //     |  =f=  |
+      //     |   |   |
+      //   --+---e---+--a
+      //   11|11 | NN|NN    
+      //   1 | 1.d.N | N
+      //   11|11 | NN|NN
+      //    /|\  |  /|\
+      //
+      //</pre>
+      Point2D a = getMax(branches.getFirst().area, layoutAxis - HALF_RADIAN);
+      Point2D b = layout.getPositionOfVertex(branches.getFirst().root);
+      Point2D c = layout.getPositionOfVertex(branches.getLast().root);
+      Point2D d = getPoint(b, c, alignmentOfParent); 
+      Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
+      Point2D f = getPoint(e, layoutAxis-HALF_RADIAN, distanceBetweenGenerations/2);
       
-      Point2D ct = getIntersection(
-          getMax(branches.getFirst().area, layoutAxis - HALF_RADIAN), layoutAxis-QUARTER_RADIAN, 
-          c, layoutAxis
+      Point2D r = getPoint(
+          e, layoutAxis - HALF_RADIAN, 
+          distanceBetweenGenerations + getLength(getMax(shape(root), layoutAxis)) 
         );
-      
-      Point2D m = getMax(layout.getShapeOfVertex(root), layoutAxis);
-      Point2D b = getIntersection(m, layoutAxis-QUARTER_RADIAN, new Point2D.Double(), layoutAxis);
-      double d = getLength(b) + distanceBetweenGenerations;
-      Point2D r = getPoint(ct, layoutAxis-HALF_RADIAN, d);
       
       // place root
       layout.setPositionOfVertex(root, r);
@@ -347,8 +348,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       area.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
       area.add(new Area(ShapeHelper.createShape(
           r, 
-          getMax(branches.getFirst().getShapeOfRoot(layout), layoutAxis+QUARTER_RADIAN),
-          getMax(branches.getLast().getShapeOfRoot(layout), layoutAxis-QUARTER_RADIAN),
+          getMax(pos(branches.getFirst().root), shape(branches.getFirst().root), layoutAxis+QUARTER_RADIAN),
+          getMax(pos(branches.getLast().root), shape(branches.getLast().root), layoutAxis-QUARTER_RADIAN),
           r)));
       for (Branch branch : branches)
         area.add(branch.area);
@@ -360,8 +361,21 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
         if (ModelHelper.contains(edge, backtrack))
           continue;
         
-        // calc edge layout
-        EdgeLayoutHelper.setShape(edge, layout);
+        if (isBendArcs) {
+          // calc edge layout
+          Point2D[] points;
+          if (edge.getStart().equals(parent)) {
+            Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getEnd()), layoutAxis);
+            points = new Point2D[]{ pos(edge.getStart()), f, g, pos(edge.getEnd()) };
+          } else {
+            Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
+            points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
+          }
+          layout.setShapeOfEdge(edge, EdgeLayoutHelper.getShape(points, shape(edge.getStart()), shape(edge.getEnd())));
+          
+        } else {
+          EdgeLayoutHelper.setShape(edge, layout);
+        }
         
       }
 
@@ -369,13 +383,18 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       // done
     }
     
-    /** shape of root */
-    Shape getShapeOfRoot(Layout2D layout) {
-      Point2D pos = layout.getPositionOfVertex(root);
-      GeneralPath shape = new GeneralPath(layout.getShapeOfVertex(root));
-      shape.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
-      return shape;
+    Point2D pos(Vertex vertex) {
+      return layout.getPositionOfVertex(vertex);
     }
+    
+    Shape shape(Vertex vertex) {
+      return layout.getShapeOfVertex(vertex);
+    }
+    
+    Vertex other(Edge edge, Vertex other) {
+      return edge.getStart().equals(other) ? edge.getEnd() : edge.getStart();
+    }
+    
     
     /** translate a branch */
     void moveBy(Layout2D layout, Point2D delta) {
