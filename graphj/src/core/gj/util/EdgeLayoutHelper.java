@@ -61,7 +61,7 @@ public class EdgeLayoutHelper {
     pfrom= layout.getPositionOfVertex(edge.getStart()),
     pto  = layout.getPositionOfVertex(edge.getEnd());
   
-    return getShape(pfrom,sfrom,pto,sto,1);
+    return getShape(pfrom,sfrom,pto,sto);
   }
   
   /**
@@ -70,7 +70,7 @@ public class EdgeLayoutHelper {
    * @param s1 shape positioned at the first point
    * @param s2 shape positioned at the last point
    */  
-  public static Shape getShape(Point2D[] points, Shape s1, Shape s2, int direction) {
+  public static Shape getShape(Point2D[] points, Shape s1, Shape s2) {
     
     // A simple line through points
     Path result = new Path();
@@ -80,15 +80,17 @@ public class EdgeLayoutHelper {
       a = calcEnd(points[1], points[0], s1),
       b = calcEnd(points[points.length-2], points[points.length-1], s2);
     
+    double cx = points[0].getX(), cy = points[0].getY();
+    
     // add the points to this path
-    result.start(false, a);
+    result.start(false, new Point2D.Double( a.getX() - cx, a.getY() - cy));
     for (int i=1;i<points.length-1;i++) {
       result.lineTo( new Point2D.Double( 
-          points[i].getX()  - points[0].getX(), 
-          points[i].getY()  - points[0].getY()
+          points[i].getX() - cx, 
+          points[i].getY() - cy
         ));
     }
-    result.lineTo(b);
+    result.lineTo(new Point2D.Double( b.getX() - cx, b.getY() - cy));
     
     result.end(true);
     
@@ -103,7 +105,7 @@ public class EdgeLayoutHelper {
    * @param p2 the ending point
    * @param s2 the shape sitting at p2
    */
-  public static Shape getShape(Point2D p1, Shape s1, Point2D p2, Shape s2, int direction) {
+  public static Shape getShape(Point2D p1, Shape s1, Point2D p2, Shape s2) {
 
     Point2D 
     	a = calcEnd(p2, p1, s1),
@@ -111,9 +113,9 @@ public class EdgeLayoutHelper {
     
     // A simple line
     Path result = new Path();
-    result.start(direction<0, new Point2D.Double(a.getX()-p1.getX(), a.getY()-p1.getY()));
+    result.start(false, new Point2D.Double(a.getX()-p1.getX(), a.getY()-p1.getY()));
     result.lineTo(new Point2D.Double(b.getX()-p1.getX(), b.getY()-p1.getY()));
-    result.end(direction>0);
+    result.end(true);
     
     // done
     return result; 

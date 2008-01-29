@@ -32,13 +32,13 @@ import java.awt.geom.Point2D;
  */
 public class EditableEdge extends EditableElement implements Edge {
   
-  private long lastEdit = -1;
-  
   /** starting vertex */
   private EditableVertex start;
 
   /** ending vertex */
   private EditableVertex end;
+  
+  private long hash = -1;
   
   /**
    * Constructor
@@ -64,17 +64,29 @@ public class EditableEdge extends EditableElement implements Edge {
   @Override
   public Shape getShape() {
     
-    if (lastEdit<getStart().lastEdit || lastEdit<getEnd().lastEdit) {
-      setShape(EdgeLayoutHelper.getShape(start.getPosition(), start.getShape(), end.getPosition(), end.getShape(), 1));
-    }
+    if (!updateHash())
+      setShape(makeShape());
     
     return super.getShape();
   }
   
+  private Shape makeShape() {
+    return EdgeLayoutHelper.getShape(start.getPosition(), start.getShape(), end.getPosition(), end.getShape());   
+  }
+  
   @Override
   public void setShape(Shape set) {
+    if (set==null)
+      set = makeShape();
     super.setShape(set);
-    lastEdit = System.currentTimeMillis();
+    updateHash();
+  }
+  
+  boolean updateHash() {
+    long oldHash = hash;
+    hash = Geometry.getDelta(getEnd().getPosition(), getStart().getPosition()).hashCode()
+     + getStart().getShape().hashCode() + getEnd().getShape().hashCode();
+    return oldHash==hash;
   }
 
   /**

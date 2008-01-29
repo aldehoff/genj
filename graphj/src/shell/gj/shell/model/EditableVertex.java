@@ -32,8 +32,6 @@ import java.util.Set;
  */
 public class EditableVertex extends EditableElement implements Vertex {
   
-  /*package*/ long lastEdit = -1;
-
   /** the content of this vertex */
   private Object content;
   
@@ -140,8 +138,6 @@ public class EditableVertex extends EditableElement implements Vertex {
       set = new Rectangle2D.Float();
     // continue
     super.setShape(set);
-    // remember
-    lastEdit = System.currentTimeMillis();
   }
   
   /**
@@ -164,8 +160,6 @@ public class EditableVertex extends EditableElement implements Vertex {
     
     position = set;
     
-    // remember
-    lastEdit = System.currentTimeMillis();
   }
   
   /**
