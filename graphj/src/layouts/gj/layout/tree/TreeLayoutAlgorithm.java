@@ -229,50 +229,19 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     if (children.isEmpty())
       return new Branch(graph, root, layout);
     
-    // sort by current position
-    if (isOrderSiblingsByPosition) {
-      Vertex[] tmp = children.toArray(new Vertex[children.size()]);
-      Arrays.sort(tmp, new ComparePositions(graph, layout));
-      children = Arrays.asList(tmp);
-    }
-    
     // create merged branch of sub-branches
     return new Branch(graph, backtrack, root, children, layout);
 
   }
   
   /**
-   * A comparator for comparing sibling vertices by their position
-   */
-  private class ComparePositions extends Geometry implements Comparator<Vertex> {
-
-    private Layout2D layout;
-    private Graph graph;
-    
-    ComparePositions(Graph graph, Layout2D layout) {
-      this.graph = graph;
-      this.layout = layout;
-    }
-    
-    public int compare(Vertex v1,Vertex v2) {
-      double layoutAxis = getRadian(orientation);
-      Point2D p1 = layout.getPositionOfVertex(v1);
-      Point2D p2 = layout.getPositionOfVertex(v2);
-      
-      double delta =
-        Math.cos(layoutAxis) * (p2.getX()-p1.getX()) + Math.sin(layoutAxis) * (p2.getY()-p1.getY());
-      
-      return (int)(delta);
-    }
-  }
-
-  /**
    * A Branch is the recursively worked on part of the tree
    */
-  private class Branch extends Geometry {
+  private class Branch extends Geometry implements Comparator<Vertex> {
     
     /** tree */
     private Graph graph;
+    private Layout2D layout;
     
     /** root of branch */
     private Vertex root;
@@ -285,6 +254,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     /** constructor for a leaf */
     Branch(Graph graph, Vertex leaf, Layout2D layout) {
+      this.graph = graph;
+      this.layout = layout;
       this.root = leaf;
       vertices.add(leaf);
       area = new Area(layout.getShapeOfVertex(leaf));
@@ -295,8 +266,18 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     /** constructor for a parent and its children */
     Branch(Graph graph, Vertex backtrack, Vertex parent, Collection<Vertex> children, Layout2D layout) {
 
+      this.graph = graph;
+      this.layout = layout;
+      
       double layoutAxis = getRadian(orientation);
       double alignmentAxis = layoutAxis - QUARTER_RADIAN;
+      
+      // sort by current position
+      if (isOrderSiblingsByPosition) {
+        Vertex[] tmp = children.toArray(new Vertex[children.size()]);
+        Arrays.sort(tmp, this);
+        children = Arrays.asList(tmp);
+      }
       
       // keep track of root and vertices
       root = parent;
@@ -400,7 +381,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     void moveBy(Layout2D layout, Point2D delta) {
       
       for (Vertex vertice : vertices) 
-        ModelHelper.translate(graph, layout, vertice, delta);
+        ModelHelper.translate(layout, vertice, delta);
       
       area.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
@@ -409,7 +390,19 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     void moveTo(Layout2D layout, Point2D pos) {
       moveBy(layout, getDelta(layout.getPositionOfVertex(root), pos));
     }
-    
+
+    /** compare positions of two verticies */
+    public int compare(Vertex v1,Vertex v2) {
+      
+      double layoutAxis = getRadian(orientation);
+      Point2D p1 = layout.getPositionOfVertex(v1);
+      Point2D p2 = layout.getPositionOfVertex(v2);
+      
+      double delta =
+        Math.cos(layoutAxis) * (p2.getX()-p1.getX()) + Math.sin(layoutAxis) * (p2.getY()-p1.getY());
+      
+      return (int)(delta);
+    }
   } //Branch
   
 } //TreeLayout

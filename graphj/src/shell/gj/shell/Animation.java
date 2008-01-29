@@ -19,15 +19,20 @@
  */
 package gj.shell;
 
+import gj.layout.GraphNotSupportedException;
+import gj.layout.Layout2D;
+import gj.layout.LayoutAlgorithm;
+import gj.layout.LayoutAlgorithmException;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
-import gj.shell.model.EditableLayout;
 import gj.shell.model.EditableVertex;
 import gj.util.EdgeLayoutHelper;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -58,7 +63,7 @@ import java.util.List;
   /**
    * Constructor (before)
    */
-  public Animation(EditableGraph graph, EditableLayout layout) {
+  public Animation(EditableGraph graph, Layout2D layout, Rectangle bounds, LayoutAlgorithm algorithm, Collection<Shape> debugShapes) throws LayoutAlgorithmException, GraphNotSupportedException {
     
     // something to animate?
     if (graph.getNumVertices() == 0) 
@@ -70,9 +75,31 @@ import java.util.List;
     // create movements for vertices ...
     moves = new Movement[graph.getNumVertices()];
     Iterator<EditableVertex> vertices = graph.getEditableVertices().iterator();
-    int m=0; for (;vertices.hasNext();m++) 
+    for (int m=0;vertices.hasNext();m++) 
       moves[m] = new Movement(vertices.next());
+   
+    // run algorithm
+    algorithm.apply(graph, layout, bounds, debugShapes);
     
+    // take a snapshot of what's there right now
+    for (int m=0;m<moves.length;m++) 
+      moves[m].snapshot();
+    
+    edgesAndShapes = new ArrayList<Object>(graph.getEdges().size());
+    for (Iterator<EditableEdge> edges = graph.getEditableEdges().iterator(); edges.hasNext(); ) {
+      EditableEdge edge = edges.next();
+      edgesAndShapes.add(edge);
+      edgesAndShapes.add(edge.getShape());
+    }
+    
+    // move back to start
+    animate(0);
+    
+    // setup start
+    startFrame = System.currentTimeMillis(); 
+
+    
+    // done for now
   }
   
   /**
@@ -85,23 +112,6 @@ import java.util.List;
     if (moves==null)
       return true;
 
-    // first time?
-    if (startFrame==0) {
-      // take a snapshot of what's there right now
-      for (int m=0;m<moves.length;m++) 
-        moves[m].snapshot();
-      
-      edgesAndShapes = new ArrayList<Object>(graph.getEdges().size());
-      for (Iterator<EditableEdge> edges = graph.getEditableEdges().iterator(); edges.hasNext(); ) {
-        EditableEdge edge = edges.next();
-        edgesAndShapes.add(edge);
-        edgesAndShapes.add(edge.getShape());
-      }
-      // setup start
-      startFrame = System.currentTimeMillis(); 
-      // continue
-    }
-
     // check what we're doing now
     long now = System.currentTimeMillis();
       
@@ -110,7 +120,7 @@ import java.util.List;
       stop();
       return true;
     }
-        
+
     // sleep some?
     long sleep = (lastFrame+frameTime)-now;
     if (sleep>0) 
@@ -118,7 +128,7 @@ import java.util.List;
         
     // do the move
     double time = Math.min(1, ((double)now-startFrame)/totalTime);
-    if (animate(moves, time)) 
+    if (animate(time)) 
       stop();
         
     // remember
@@ -134,7 +144,8 @@ import java.util.List;
   public boolean stop() {
     // perform step to final frame
     if (moves!=null) 
-      animate(moves,1D);
+      animate(1D);
+    
     // restore edges
     // FIXME edges *AND* shapes???
     Iterator<?> it = edgesAndShapes.iterator();
@@ -150,7 +161,7 @@ import java.util.List;
   /**
    * Performing one step in the animation
    */
-  private boolean animate(Movement[] moves, double time) {
+  private boolean animate( double time) {
     
     boolean done = true;
 

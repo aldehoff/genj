@@ -62,12 +62,6 @@ public class EditableGraph implements Graph {
   }
   
   /**
-   * Validate - good for subclasses like tree
-   */
-  public void validate() {
-  }
-
-  /**
    * add an edge
    */
   public EditableEdge addEdge(EditableVertex from, EditableVertex to, Shape shape) {

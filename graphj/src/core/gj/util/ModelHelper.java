@@ -42,7 +42,7 @@ public class ModelHelper {
   /**
    * Translates a node's position
    */
-  public static void translate(Graph graph, Layout2D layout, Vertex vertex, Point2D delta) {
+  public static void translate(Layout2D layout, Vertex vertex, Point2D delta) {
     Point2D pos = layout.getPositionOfVertex(vertex);
     layout.setPositionOfVertex(vertex, new Point2D.Double( pos.getX() + delta.getX(), pos.getY() + delta.getY() ));
   }

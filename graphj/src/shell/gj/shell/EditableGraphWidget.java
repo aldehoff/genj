@@ -357,7 +357,7 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      ModelHelper.translate(graph, getGraphLayout(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
+      ModelHelper.translate(getGraphLayout(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();

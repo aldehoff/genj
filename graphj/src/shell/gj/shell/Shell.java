@@ -22,7 +22,6 @@ package gj.shell;
 import gj.geom.ShapeHelper;
 import gj.io.GraphReader;
 import gj.io.GraphWriter;
-import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.shell.factory.AbstractGraphFactory;
@@ -285,44 +284,17 @@ public class Shell {
         return false;
       // something running?
       cancel(true);
-      // create animation (it'll take a snapshot of current configuration)
-      animation = new Animation(graph, layout);
-      // create suggested bounds
+      // run layout
       Rectangle bounds = createGraphBounds();
-      // apply algorithm
-      try {
-        layout(bounds);
-      } catch (LayoutAlgorithmException e) {
-        throw e;
-      }
-      // continue into animation?
-      if (!isAnimation) 
-        return false;
-      // continue into async
-      return true;
-    }
-    /** layout */
-    private EditableLayout layout(Rectangle bounds) throws GraphNotSupportedException ,LayoutAlgorithmException {
-
-      // reset debug
-      debugShapes = isDebug ? new ArrayList<Shape>() : null;
-      
-      // make sure the current graph is valid
-      try {
-        graph.validate();
-      } catch (Throwable t) {
-        throw new LayoutAlgorithmException("Graph is not valid: "+t.getMessage());
-      }
-      
-      // the algorithm
       LayoutAlgorithm algorithm = algorithmWidget.getSelectedAlgorithm();
-      
-      // try to layout
-      EditableLayout result = new EditableLayout();
-      shape = algorithm.apply(graph, layout, bounds, debugShapes);
-
-      // done
-      return result;
+      debugShapes = isDebug ? new ArrayList<Shape>() : null;
+      if (isAnimation) {
+        animation = new Animation(graph, layout, bounds, algorithm, debugShapes);
+        return true;
+      } else {
+        shape = algorithm.apply(graph, layout, bounds, debugShapes);
+        return false;
+      }
     }
     /** async execute */
     @Override
