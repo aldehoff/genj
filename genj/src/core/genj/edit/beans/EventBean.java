@@ -86,11 +86,15 @@ public class EventBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyEvent event) {
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyEvent;
+  }
+  
+  public void setPropertyImpl(Property prop) {
 
-    // remember property
-    property = event;
-    
+    if (prop==null)
+      return;
+    PropertyEvent event = (PropertyEvent)prop;
     PropertyDate date = event.getDate(true);
     
     // show age of individual?

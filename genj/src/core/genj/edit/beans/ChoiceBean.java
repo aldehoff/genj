@@ -131,10 +131,15 @@ public class ChoiceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyChoiceValue choice) {
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyChoiceValue;
+  }
+  
+  public void setPropertyImpl(Property prop) {
     
-    // remember property
-    property = choice;
+    if (prop==null)
+      return;
+    PropertyChoiceValue choice = (PropertyChoiceValue)prop;
 
     // setup choices    
     // Note: we're using getDisplayValue() here because like in PropertyRelationship's 

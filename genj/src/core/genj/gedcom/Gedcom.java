@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.131 $ $Author: nmeier $ $Date: 2008-01-21 21:35:04 $
+ * $Revision: 1.132 $ $Author: nmeier $ $Date: 2008-01-30 04:13:23 $
  */
 package genj.gedcom;
 
@@ -296,7 +296,7 @@ public class Gedcom implements Comparable {
       if (!listeners.add(listener))
         throw new IllegalArgumentException("can't add gedcom listener "+listener+"twice");
     }
-    LOG.log(Level.FINER, "addGedcomListener() from "+new Throwable().getStackTrace()[1]);
+    LOG.log(Level.FINER, "addGedcomListener() from "+new Throwable().getStackTrace()[1]+" (now "+listeners.size()+")");
     
   }
 
@@ -310,7 +310,7 @@ public class Gedcom implements Comparable {
       // for now
       listeners.remove(listener);
     }
-    LOG.log(Level.FINER, "removeGedcomListener() from "+new Throwable().getStackTrace()[1]);
+    LOG.log(Level.FINER, "removeGedcomListener() from "+new Throwable().getStackTrace()[1]+" (now "+listeners.size()+")");
   }
   
   /**

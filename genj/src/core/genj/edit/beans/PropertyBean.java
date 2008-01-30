@@ -34,8 +34,6 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -55,7 +53,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   protected final static Resources resources = Resources.get(PropertyBean.class); 
   
   /** the property to edit */
-  protected Property property;
+  private Property property;
   
   /** current registry */
   protected Registry registry;
@@ -76,44 +74,21 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * test for setter
    */
-  /*package*/ boolean accepts(Property prop) {
-    return getSetter(prop)!=null;
-  }
+  /*package*/ abstract boolean accepts(Property prop);
   
   /**
    * set property to look at
    */
-  public void setProperty(Property prop) {
-    Method m = getSetter(prop);
-    if (m==null)
-      throw new IllegalArgumentException(getClass().getName()+".setProperty("+prop.getClass().getName()+") n/a");
-      
-    try {
-      m.invoke(this, new Object[]{ prop });
-    } catch (Throwable t) {
-      throw new RuntimeException("unexpected throwable in "+getClass().getName()+".setProperty("+prop.getClass().getName(), t);
-    }
+  public final void setProperty(Property prop) {
+    
+    property = prop;
+
+    setPropertyImpl(prop);
     
     changeSupport.setChanged(false);
   }
-  
-  private Method getSetter(Property prop) {
-    
-    try {
-      Method[] ms = getClass().getDeclaredMethods();
-      for (int i=0;i<ms.length;i++) {
-        Method m = ms[i];
-        if ("setProperty".equals(m.getName())&&Modifier.isPublic(m.getModifiers())) {
-          Class[] argTypes = m.getParameterTypes();
-          if (argTypes.length==1&&argTypes[0].isAssignableFrom(prop.getClass()))
-            return m;
-        }
-      }
-    } catch (Throwable t) {
-    }
-    
-    return null;
-  }
+
+  protected abstract void setPropertyImpl(Property prop);
   
   /**
    * ContextProvider callback 

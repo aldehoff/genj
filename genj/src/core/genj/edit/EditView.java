@@ -96,6 +96,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
   private Mode     mode;
   private ContextMenu contextMenu = new ContextMenu();
   private Callback callback = new Callback();
+  private Undo undo;
+  private Redo redo;
   
   /** whether we're sticky */
   private  boolean isSticky = false;
@@ -118,6 +120,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
 
     // prepare action
     mode = new Mode();
+    undo = new Undo(gedcom);
+    redo = new Redo(gedcom);
     
     // run mode switch if applicable
     if (registry.get("advanced", false))
@@ -187,6 +191,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     
     // listen to gedcom
     callback.enable();
+    gedcom.addGedcomListener((GedcomListener)Spin.over(undo));
+    gedcom.addGedcomListener((GedcomListener)Spin.over(redo));
     
   }
 
@@ -209,6 +215,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     
     // don't listen to gedcom
     callback.disable();
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(undo));
+    gedcom.removeGedcomListener((GedcomListener)Spin.over(redo));
     
     // Continue
     super.removeNotify();
@@ -355,8 +363,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     bh.create(sticky, Images.imgStickOn, isSticky);
     
     // add undo/redo
-    bh.create(new Undo(gedcom).setText(null));
-    bh.create(new Redo(gedcom).setText(null));
+    bh.create(undo);
+    bh.create(redo);
     
     // add actions
     bar.add(contextMenu);

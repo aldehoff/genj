@@ -65,10 +65,13 @@ public class MLEBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyMultilineValue property) {
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyMultilineValue;
+  }
+  public void setPropertyImpl(Property property) {
 
-    // remember property
-    this.property = property;
+    if (property==null)
+      return;
     
     // show value
     tarea.setText(property.getValue());

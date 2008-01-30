@@ -72,10 +72,10 @@ public class SimpleValueBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(Property property) {
+  public void setPropertyImpl(Property property) {
 
-    // remember property
-    this.property = property;
+    if (property==null)
+      return;
     
     // show value
     String txt = property.getDisplayValue();

@@ -125,10 +125,13 @@ public class PlaceBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyPlace place) {
-
-    // remember property
-    property = place;
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyPlace;
+  }
+  public void setPropertyImpl(Property prop) {
+    PropertyPlace place = (PropertyPlace)prop;
+    if (place==null)
+      return;
     
     sameChoices = place.getSameChoices();
     

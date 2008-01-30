@@ -67,14 +67,19 @@ public class AgeBean extends PropertyBean {
     
   }
   
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyAge;
+  }
+  
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyAge age) {
-
-    // remember property
-    property = age;
+  public void setPropertyImpl(Property prop) {
     
+    PropertyAge age = (PropertyAge)prop;
+    if (age==null)
+      return;
+
     // update components
     choice.setText(age.getValue());
 

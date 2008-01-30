@@ -77,13 +77,16 @@ public class LinkedByBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(Entity entity) {
+  boolean accepts(Property prop) {
+    return prop instanceof Entity;
+  }
+  public void setPropertyImpl(Property property) {
 
     //  don't propagate property since we're technically not looking at it
     // property = indi;
     
     // connect to current indi
-    table.setModel(new Model(entity));
+    table.setModel(property!=null ? new Model((Entity)property) : null);
     
     // done
   }

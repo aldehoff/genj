@@ -74,12 +74,15 @@ public class SpousesBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(Fam fam) {
+  boolean accepts(Property prop) {
+    return prop instanceof Fam;
+  }
+  public void setPropertyImpl(Property fam) {
 
     //  don't propagate property since we're technically not looking at it
     // property = fam;
     
-    table.setModel(new SpousesInFamily(fam));
+    table.setModel(fam!=null?new SpousesInFamily((Fam)fam):null);
     
   }
   

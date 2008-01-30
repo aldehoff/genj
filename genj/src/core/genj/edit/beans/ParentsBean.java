@@ -77,12 +77,12 @@ public class ParentsBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(Indi indi) {
+  boolean accepts(Property prop) {
+    return prop instanceof Indi;
+  }
+  public void setPropertyImpl(Property indi) {
 
-    // don't propagate property since we're technically not looking at it
-    // property = indi;
-    
-    table.setModel(new ParentsOfChild(indi));
+    table.setModel(indi!=null ? new ParentsOfChild((Indi)indi) : null);
     
     // done
   }

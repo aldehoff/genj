@@ -20,6 +20,7 @@
 package genj.edit.beans;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
 import genj.util.Registry;
 
@@ -57,12 +58,13 @@ public class EntityBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(Entity entity) {
+  boolean accepts(Property prop) {
+    return prop instanceof Entity;
+  }
+  public void setPropertyImpl(Property prop) {
 
-    // remember property
-    property = entity;
-    
     // show it
+    Entity entity = (Entity)prop;
     preview.setEntity(entity);
 
     // add change date/time

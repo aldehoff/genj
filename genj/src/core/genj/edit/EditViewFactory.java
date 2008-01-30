@@ -254,8 +254,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
 
     result.add(Action2.NOOP);
-    result.add(new Undo(gedcom));
-    result.add(new Redo(gedcom));
+    result.add(new Undo(gedcom, gedcom.canUndo()));
+    result.add(new Redo(gedcom, gedcom.canRedo()));
 
     // done
     return result;

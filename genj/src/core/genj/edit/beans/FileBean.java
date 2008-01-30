@@ -109,18 +109,13 @@ public class FileBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyFile file) {
-    set(file);
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyFile || prop instanceof PropertyBlob;
   }
-  
-  public void setProperty(PropertyBlob blob) {
-    set(blob);
-  }
-  
-  private void set(Property property) {
+  public void setPropertyImpl(Property property) {
 
-    // remember property
-    this.property = property;
+    if (property==null)
+      return;
     
     // calc directory
     Origin origin = property.getGedcom().getOrigin();

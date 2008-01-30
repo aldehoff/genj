@@ -77,18 +77,22 @@ public class FamiliesBean extends PropertyBean {
    */
   public void removeNotify() {
     registry.put(COLS_KEY, table.getColumnLayout());
+    // let super continue
+    super.removeNotify();
   }
   
   /**
    * Set context to edit
    */
-  public void setProperty(Indi indi) {
+  boolean accepts(Property prop) {
+    return prop instanceof Indi;
+  }
+  public void setPropertyImpl(Property prop) {
 
-    //  don't propagate property since we're technically not looking at it
-    // property = indi;
+    Indi indi = (Indi)prop;
     
     // connect to current indi
-    table.setModel(new Families(indi));
+    table.setModel(indi!=null?new Families(indi):null);
     
     // done
   }

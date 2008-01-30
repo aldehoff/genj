@@ -75,16 +75,18 @@ public class ChildrenBean extends PropertyBean {
     super.removeNotify();
   }
   
+  boolean accepts(Property prop) {
+    return prop instanceof Fam;
+  }
+  
   /**
    * Set context to edit
    */
-  public void setProperty(Fam fam) {
+  public void setPropertyImpl(Property prop) {
     
-    //  don't propagate property since we're technically not looking at it
-    // property = fam;
     
     // connect to current fam
-    table.setModel(new Children(fam));
+    table.setModel(prop!=null ? new Children((Fam)prop) : null);
     
     // done
   }

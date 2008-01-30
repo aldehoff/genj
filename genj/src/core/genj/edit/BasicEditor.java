@@ -141,10 +141,10 @@ import spin.Spin;
   public void removeNotify() {
     // clean up state
     setEntity(null, null);
-    // let super continue
-    super.removeNotify();
     // stop listening to gedcom events
     gedcom.removeGedcomListener((GedcomListener)Spin.over(callback));
+    // let super continue
+    super.removeNotify();
   }
 
   /**
@@ -492,8 +492,6 @@ import spin.Spin;
      */
     public void removeNotify() {
       
-      super.removeNotify();
-      
       // get rid of all beans
       removeAll();
       
@@ -502,6 +500,7 @@ import spin.Spin;
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
         bean.removeChangeListener(this);
+        bean.setProperty(null);
         try {
           factory.recycle(bean);
         } catch (Throwable t) {
@@ -511,6 +510,8 @@ import spin.Spin;
       beans.clear();
       
       // done
+      super.removeNotify();
+      
     }
     
     /**
@@ -546,7 +547,6 @@ import spin.Spin;
     void select(Property prop) {
       if (prop==null||beans.isEmpty())
         return;
-      
       // look for appropriate bean showing prop
       for (Iterator it=beans.iterator(); it.hasNext(); ) {
         PropertyBean bean = (PropertyBean)it.next();
@@ -915,12 +915,12 @@ import spin.Spin;
         currentEntity = null;
     }
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-      if (property.getEntity()==currentEntity) {
+      if (setFocus==null && property.getEntity()==currentEntity) {
         setFocus = added;
       }
     }
     public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
-      if (property.getEntity()==currentEntity)
+      if (setFocus==null && property.getEntity()==currentEntity)
         setFocus = property;
     }
   };

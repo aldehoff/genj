@@ -144,10 +144,14 @@ public class DateBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyDate date) {
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyDate;
+  }
+  public void setPropertyImpl(Property prop) {
 
-    // remember property
-    property = date;
+    if (prop==null)
+      return;
+    PropertyDate date = (PropertyDate)prop;
     
     // connect
     date1.setValue(date.getStart());

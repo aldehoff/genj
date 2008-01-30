@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
 import genj.view.ContextSelectionEvent;
@@ -36,6 +37,7 @@ import java.awt.event.MouseEvent;
 public class XRefBean extends PropertyBean {
 
   private Preview preview;
+  private PropertyXRef xref;
   
   void initialize(Registry setRegistry) {
     super.initialize(setRegistry);
@@ -51,10 +53,10 @@ public class XRefBean extends PropertyBean {
         if (e.getClickCount()<2)
           return;
         // property good? (should)
-        if (property==null)
+        if (xref==null)
           return;
         // tell about it
-        WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(property), preview, true));
+        WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(xref), preview, true));
       }
     });
   }
@@ -71,11 +73,14 @@ public class XRefBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyXRef xref) {
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyXRef;
+  }
+  public void setPropertyImpl(Property prop) {
     
-    // remember property
-    property = xref;
-
+    PropertyXRef xref = (PropertyXRef)prop;
+    this.xref = xref;
+    
     // set preview
     if (xref!=null&&xref.getTargetEntity()!=null) 
       preview.setEntity(xref.getTargetEntity());

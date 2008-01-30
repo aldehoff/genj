@@ -141,10 +141,13 @@ public class NameBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertyName name) {
-
-    // remember property
-    property = name;
+  boolean accepts(Property prop) {
+    return prop instanceof PropertyName;
+  }
+  public void setPropertyImpl(Property prop) {
+    PropertyName name = (PropertyName)prop;
+    if (name==null)
+      return;
     
     // keep track of who has the same last name
     sameLastNames = name.getSameLastNames();

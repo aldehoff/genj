@@ -84,10 +84,13 @@ public class SexBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  public void setProperty(PropertySex sex) {
-
-    // remember property
-    property = sex;
+  boolean accepts(Property prop) {
+    return prop instanceof PropertySex;
+  }
+  public void setPropertyImpl(Property prop) {
+    PropertySex sex = (PropertySex)prop;
+    if (sex==null)
+      return;
     
     // show it
     buttons[sex.getSex()].setSelected(true);
