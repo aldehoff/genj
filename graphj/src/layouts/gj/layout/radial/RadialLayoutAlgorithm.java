@@ -27,6 +27,7 @@ import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.util.EdgeLayoutHelper;
 import gj.util.ModelHelper;
 
 import java.awt.Shape;
@@ -320,6 +321,11 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
         double radians = root2size.get(child).doubleValue() / radius * shareFactor;
         
         layout.setPositionOfVertex(child, getPoint(center, fromRadian + radians/2, radius));
+        
+        for (Edge edge : graph.getEdges(root)) {
+          if (!ModelHelper.contains(edge, backtrack))
+            EdgeLayoutHelper.setShape(edge, layout);
+        }
         
         if (debug!=null) {
           debug.add(new Line2D.Double(getPoint(center, fromRadian, radius - distanceBetweenGenerations/2), getPoint(center, fromRadian, radius+distanceBetweenGenerations/2)));
