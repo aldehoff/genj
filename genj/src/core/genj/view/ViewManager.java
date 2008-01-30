@@ -565,39 +565,51 @@ public class ViewManager {
       // a mouse popup/click event?
       if (!(event instanceof MouseEvent)) 
         return;
-      MouseEvent me = (MouseEvent) event;
+      final MouseEvent me = (MouseEvent) event;
       if (!(me.isPopupTrigger()||me.getID()==MouseEvent.MOUSE_CLICKED))
         return;
-      
-      // find deepest component (since components without attached listeners
-      // won't be the source for this event)
-      Component component  = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
-      if (!(component instanceof JComponent))
-        return;
-      Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), component );
-      
-      // try to identify context
-      ViewContext context = getContext(component);
-      if (context==null) 
-        return;
 
-      // a popup?
-      if(me.isPopupTrigger())  {
-        
-        // cancel any menu
-        MenuSelectionManager.defaultManager().clearSelectedPath();
-        
-        // show context menu
-        JPopupMenu popup = getContextMenu(context, (JComponent)component);
-        if (popup!=null)
-          popup.show((JComponent)component, point.x, point.y);
-        
-      }
+      // NM 20080130 do the component/context calculation in another event to allow everyone to catch up
+      // Peter reported that the context menu is the wrong one as PropertyTreeWidget
+      // changes the selection on mouse clicks (following right-clicks).
+      // It might be that eventDispatched() is called before the mouse click is propagated to the
+      // component thus calculates the menu before the selection changes.
+      // So I'm trying now to show the popup this in a later event to make sure everyone caught up to the event
       
-      // a double-click on provider?
-      if (me.getButton()==MouseEvent.BUTTON1&&me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1) {
-        WindowManager.broadcast(new ContextSelectionEvent(context, component, true));
-      }
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          // find deepest component (since components without attached listeners
+          // won't be the source for this event)
+          Component component  = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
+          if (!(component instanceof JComponent))
+            return;
+          Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), component );
+          
+          // try to identify context
+          ViewContext context = getContext(component);
+          if (context==null) 
+            return;
+    
+          // a double-click on provider?
+          if (me.getButton()==MouseEvent.BUTTON1&&me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1) {
+            WindowManager.broadcast(new ContextSelectionEvent(context, component, true));
+            return;
+          }
+  
+          // a popup?
+          if(me.isPopupTrigger())  {
+            
+            // cancel any menu
+            MenuSelectionManager.defaultManager().clearSelectedPath();
+            
+            // show context menu
+            JPopupMenu popup = getContextMenu(context, (JComponent)component);
+            if (popup!=null)
+              popup.show((JComponent)component, point.x, point.y);
+            
+          }
+        }
+      });
         
       // done
     }
