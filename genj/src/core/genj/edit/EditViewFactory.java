@@ -54,6 +54,7 @@ import genj.gedcom.PropertyRepository;
 import genj.gedcom.PropertySource;
 import genj.gedcom.PropertySubmitter;
 import genj.gedcom.Submitter;
+import genj.gedcom.TagPath;
 import genj.io.FileAssociation;
 import genj.util.Registry;
 import genj.util.swing.Action2;
@@ -177,8 +178,11 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
       }
     }
     
-    // Add Association to this one (*only* for events in individuals)
-    if (property.getEntity() instanceof Indi && property instanceof PropertyEvent)
+    // Add Association to events if property is contained in individual
+    // or ASSO allows types
+    if ( property instanceof PropertyEvent
+        && ( (property.getEntity() instanceof Indi)
+            || property.getGedcom().getGrammar().getMeta(new TagPath("INDI:ASSO")).allows("TYPE"))  )
       result.add(new CreateAssociation(property, manager));
     
     // Toggle "Private"

@@ -137,6 +137,20 @@ public class PropertyAssociation extends PropertyXRef {
    * The expected referenced type
    */
   public String getTargetType() {
+    // only pointing to individuals?
+    if (!getMetaProperty().allows("TYPE"))
+      return Gedcom.INDI;
+    // check type
+    Property type = getProperty("TYPE");
+    if (type!=null)
+      return type.getValue();
+    // match one up by id we have
+    String prefix = getValue().substring(1,2);
+    for (int i = 0; i < Gedcom.ENTITIES.length; i++) {
+      if (Gedcom.getEntityPrefix(Gedcom.ENTITIES[i]).startsWith(prefix))
+        return Gedcom.ENTITIES[i];
+    }
+    // grrr, too bad
     return Gedcom.INDI;
   }
   
