@@ -156,7 +156,6 @@
   <DESI super="INDI:SUBM"/>
   <SOUR super="INDI:NAME:SOUR"/>
   <ASSO hide="1" type="PropertyAssociation" img="Association.gif">
-   <TYPE default="1" cardinality="0:1" type="PropertySimpleValue" img="Type.gif"/>
    <RELA default="1" cardinality="0:1" type="PropertyRelationship" img="Type.gif"/>
    <SOUR super="INDI:SOUR"/>
    <NOTE super="INDI:NAME:NOTE"/>

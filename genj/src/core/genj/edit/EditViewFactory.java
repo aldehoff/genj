@@ -177,8 +177,8 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
       }
     }
     
-    // Add Association to this one (*only* for events)
-    if (property instanceof PropertyEvent)
+    // Add Association to this one (*only* for events in individuals)
+    if (property.getEntity() instanceof Indi && property instanceof PropertyEvent)
       result.add(new CreateAssociation(property, manager));
     
     // Toggle "Private"
