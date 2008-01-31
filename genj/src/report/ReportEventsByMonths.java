@@ -42,7 +42,11 @@ public class ReportEventsByMonths extends Report {
   public boolean DivorcesChart = true;
   /** whether we give a Chart for deaths - default is true */
   public boolean DeathsChart = true;
-
+  /** the inferior date of the period to take into account*/
+  public int inferiorYearLimit = 0;
+  /** the superior date of the period to take into account*/
+  public int superiorYearLimit = 2100;
+  
   /** calendar we use */
   private int calendar;
 
@@ -140,9 +144,17 @@ public class ReportEventsByMonths extends Report {
       if (date==null)
         continue;
 
-      // inc appropriate month
+      // inc appropriate month if the year belongs to the authorized period
       try {
-        series.inc(date.getStart().getPointInTime(CALENDARS[calendar]).getMonth());
+    	  if(date.getStart().getPointInTime(CALENDARS[calendar]).getYear()<inferiorYearLimit || 
+    			  date.getStart().getPointInTime(CALENDARS[calendar]).getYear()>superiorYearLimit){
+    		 
+    	  }
+    	  else{
+    		  series.inc(date.getStart().getPointInTime(CALENDARS[calendar]).getMonth());
+    	  }
+    	  
+        
       } catch (Throwable t) {
       }
 
