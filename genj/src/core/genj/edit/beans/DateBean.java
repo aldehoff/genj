@@ -176,6 +176,7 @@ public class DateBean extends PropertyBean {
     
     protected void execute() {
       setFormat(formatToSet);
+      date1.requestFocusInWindow();
     }
     
   } //ChangeFormat 
