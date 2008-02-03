@@ -77,13 +77,14 @@ public class SpousesBean extends PropertyBean {
   boolean accepts(Property prop) {
     return prop instanceof Fam;
   }
-  public void setPropertyImpl(Property fam) {
 
-    //  don't propagate property since we're technically not looking at it
-    // property = fam;
-    
+  public void setPropertyImpl(Property fam) {
     table.setModel(fam!=null?new SpousesInFamily((Fam)fam):null);
-    
+  }
+  
+  public Property getProperty() {
+    // we're not really looking at any property to be focussed or committed
+    return null;
   }
   
   private static class SpousesInFamily extends AbstractPropertyTableModel {

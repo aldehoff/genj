@@ -97,6 +97,11 @@ public class FamiliesBean extends PropertyBean {
     // done
   }
   
+  public Property getProperty() {
+    // we're not really looking at any property to be focussed or committed
+    return null;
+  }
+  
   private class Families extends AbstractPropertyTableModel {
     
     private Indi indi;

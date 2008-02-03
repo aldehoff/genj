@@ -83,12 +83,12 @@ public class ChildrenBean extends PropertyBean {
    * Set context to edit
    */
   public void setPropertyImpl(Property prop) {
-    
-    
-    // connect to current fam
     table.setModel(prop!=null ? new Children((Fam)prop) : null);
-    
-    // done
+  }
+  
+  public Property getProperty() {
+    // we're not really looking at any property to be focussed or committed
+    return null;
   }
   
   private class Children extends AbstractPropertyTableModel {

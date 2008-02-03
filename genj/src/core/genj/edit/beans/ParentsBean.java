@@ -80,11 +80,14 @@ public class ParentsBean extends PropertyBean {
   boolean accepts(Property prop) {
     return prop instanceof Indi;
   }
+  
   public void setPropertyImpl(Property indi) {
-
     table.setModel(indi!=null ? new ParentsOfChild((Indi)indi) : null);
-    
-    // done
+  }
+  
+  public Property getProperty() {
+    // we're not really looking at any property to be focussed or committed
+    return null;
   }
   
   private static class ParentsOfChild extends AbstractPropertyTableModel {
