@@ -85,7 +85,7 @@ public class EditableEdge extends EditableElement implements Edge {
   boolean updateHash() {
     long oldHash = hash;
     Point2D delta = Geometry.getDelta(getEnd().getPosition(), getStart().getPosition());
-    hash = (int)(delta.getX() + delta.getY()) + 
+    hash = ((int)delta.getX()) * 31 + ((int)delta.getY()) +  
         + getStart().getShape().hashCode() + getEnd().getShape().hashCode();
     return oldHash==hash;
   }

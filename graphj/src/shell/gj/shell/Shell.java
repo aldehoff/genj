@@ -128,7 +128,12 @@ public class Shell {
   private Shell(String preload) {
     
     // Create our widgets
-    graphWidget = new EditableGraphWidget();
+    graphWidget = new EditableGraphWidget() {
+      @Override
+      protected void algorithmChangeNotify() {
+        new ActionExecuteLayout().trigger();
+      }
+    };
     
     algorithmWidget = new AlgorithmWidget();
     algorithmWidget.setAlgorithms(algorithms);

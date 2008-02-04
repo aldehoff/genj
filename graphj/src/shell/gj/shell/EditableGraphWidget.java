@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 
@@ -186,15 +187,15 @@ public class EditableGraphWidget extends GraphWidget {
   /**
    * Returns the popup for edges
    */
-  private JPopupMenu getEdgePopupMenu(EditableEdge e, Point pos) {
+  protected JPopupMenu getEdgePopupMenu(EditableEdge e, Point pos) {
 
     // Create the popups
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionDeleteEdge());
 
-    // collect public setters(Edge) on layout
+    // collect public setters(Edge,*) on layout
     if (currentAlgorithm!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Edge.*", new Class[] { e.getClass()} );
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { e.getClass(), null } );
       for (Method method : methods) { 
         result.add(new ActionInvoke(currentAlgorithm, method, e));
       }
@@ -206,7 +207,7 @@ public class EditableGraphWidget extends GraphWidget {
   /**
    * Returns the popup for nodes
    */
-  private JPopupMenu getVertexPopupMenu(EditableVertex v, Point pos) {
+  protected JPopupMenu getVertexPopupMenu(EditableVertex v, Point pos) {
 
     // Create the popups
     JPopupMenu result = new JPopupMenu();
@@ -220,7 +221,7 @@ public class EditableGraphWidget extends GraphWidget {
 
     // collect public setters(Vertex) on layout
     if (currentAlgorithm!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, ".*Vertex.*", new Class[] { v.getClass()} );
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { v.getClass()} );
       for (Method method : methods) { 
         result.add(new ActionInvoke(currentAlgorithm, method, v));
       }
@@ -233,12 +234,19 @@ public class EditableGraphWidget extends GraphWidget {
   /**
    * Returns the popup for canvas
    */
-  private JPopupMenu getCanvasPopupMenu(Point pos) {
+  protected JPopupMenu getCanvasPopupMenu(Point pos) {
     
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionCreateVertex(getPoint(pos)));
     result.add(SwingHelper.getCheckBoxMenuItem(new ActionToggleQuickVertex()));
     return result;
+  }
+  
+  /**
+   * Algorithm as been changed
+   */
+  protected void algorithmChangeNotify() {
+    
   }
 
   /**
@@ -613,7 +621,22 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     protected void execute() { 
       try {
-        method.invoke(target, value);
+        Class<?>[] types = method.getParameterTypes();
+        Object[] args = new Object[types.length];
+
+        // value's first argument
+        args[0] = value;
+        
+        // need additional parameter?
+        for (int i=1;i<args.length;i++) 
+          args[i] = ReflectHelper.wrap(JOptionPane.showInputDialog("Provide input for "+getName()), types[i] );
+        
+        // invoke
+        method.invoke(target, args);
+        
+        // notify
+        algorithmChangeNotify();
+        
       } catch (Exception e) {
       }
       repaint();

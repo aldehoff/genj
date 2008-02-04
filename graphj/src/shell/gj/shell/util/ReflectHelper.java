@@ -62,7 +62,7 @@ public class ReflectHelper {
       Class<?>[] ptypes = method.getParameterTypes();
       if (ptypes.length!=arguments.length) continue;
       for (int a=0; a<ptypes.length; a++) {
-        if (!ptypes[a].isAssignableFrom(arguments[a])) continue compliance;
+        if (arguments[a]!=null&&!ptypes[a].isAssignableFrom(arguments[a])) continue compliance;
       }
       collect.add(method);
     }
