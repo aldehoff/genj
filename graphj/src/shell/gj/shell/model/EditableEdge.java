@@ -112,4 +112,17 @@ public class EditableEdge extends EditableElement implements Edge {
     return end;
   }
 
+  @Override
+  public int hashCode() {
+    return start.hashCode() + end.hashCode();
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Edge))
+      return false;
+    Edge that = (Edge)obj;
+    return (this.start.equals(that.getStart()) && this.end.equals(that.getEnd()));
+  }
+  
 }
