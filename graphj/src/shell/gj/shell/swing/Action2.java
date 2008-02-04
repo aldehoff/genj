@@ -174,6 +174,10 @@ public abstract class Action2 extends AbstractAction implements Runnable {
     super.putValue(NAME, name);
   }
   
+  public String getName() {
+    return (String)super.getValue(NAME);
+  }
+  
   /**
    * Sets the icon of the action
    */
