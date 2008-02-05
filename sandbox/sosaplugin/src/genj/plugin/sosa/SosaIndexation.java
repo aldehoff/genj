@@ -98,7 +98,9 @@ import java.util.logging.Logger;
 		public SosaIndexation(Indi mySosaRoot,Gedcom gedcom) {
 			this.mySosaRoot=mySosaRoot;
 			this.gedcom=gedcom;
+			if (mySosaRoot != null) {
 			setSosaIndexation(mySosaRoot);
+			}
 			LOG.fine("Sosa indexation mise dans les données = "+mySosaRoot);
 			LOG.fine("=========Gedcom= "+gedcom);
 		}
@@ -781,9 +783,9 @@ import java.util.logging.Logger;
 		}
 	
 		/**
-		* Sets the Sosa gedom
+		* Sets the Sosa gedcom
 		* <p>
-		* This method set the Sosa root individual used to build Sosa indexation
+		* This method sets the gedcom
 		* 
 		* @param gedcom Sosa gedcom
 		*/
@@ -799,7 +801,8 @@ import java.util.logging.Logger;
 		* @param mySosaRoot Sosa root individual
 		*/
 		public void setSosaRoot(Indi indi) {
-			mySosaRoot=indi;
+			LOG.fine("Sosa indexation mise dans les données = "+indi);
+			this.mySosaRoot=indi;
 		}
 
 		/**

@@ -22,67 +22,39 @@ import java.util.logging.Logger;
  * MenuAction
  */
 
-public class GetInformationMenuAction extends Action2 {
+public class _GetInformationMenuAction extends Action2 {
 
 	private String menuItem;
 
-	private Gedcom gedcom;
+	//private Gedcom gedcom;
 
-	private Indi sosaRoot;
+	//private Indi sosaRoot;
 
-	private SosaIndexation sosaIndexation;
-
-	private SosaMenuAction menuItemSETCHANGE;
+	//private SosaMenuAction menuItemSETCHANGE;
 
 	private Logger LOG = Logger.getLogger("genj.plugin.sosa");
 
 	private final Resources RESOURCES = Resources.get(this);
 
-	static final String SOSA_MENU = "Sosa indexation";
-
-	public enum myMenuEnum {
-
-		private String item;
-
-		/* constructor */
-		myMenuEnum(String item) {
-			this.item = item;
-		}
-
-		/* method to retrieve constant value */
-		public String getItem() {
-			return item;
-		}
-
-	}
-
-	/**
-	 * Change Sosa Indexation
-	 */
-	public void setSosaIndexationValue(SosaIndexation sosaIndexation) {
-		this.sosaIndexation=sosaIndexation;
-	}
-
 
 	/**
 	 * Menu action constructor
 	 */
-	public GetInformationMenuAction(String menuItem, SosaIndexation  sosaIndexation, Gedcom gedcom) {
+	public _GetInformationMenuAction(String menuItem) {
 		this.menuItem = menuItem;
-		this.sosaIndexation = sosaIndexation;
-		this.gedcom = gedcom;
-		LOG.fine("Set menu item = " + menuItem);
+		//this.sosaIndexation = sosaIndexation;
+		//this.gedcom = gedcom;
+		LOG.fine("Pass icic : Set menu item = " + menuItem);
 		setText(RESOURCES.getString(menuItem));
 	}
 
 	/**
-	 * Change label of menu item
+	 * Set Sosa Indexation
 	 */
-	public void setString(String menuItem) {
-		this.menuItem = menuItem;
-		setText(RESOURCES.getString(menuItem));
-	}
-
+	//public void setSosaIndexationValue(SosaIndexation sosaIndexation) {
+	//	this.sosaIndexation=sosaIndexation;
+	//	LOG.fine("sosaIndexation= " + sosaIndexation);
+	//}
 
 	/**
 	 * Execute click on menu item
