@@ -37,6 +37,7 @@ import tree.IndiBox;
  */
 public class GraphicsTreeElements implements TreeElements {
 
+    private static final int NAME_LINE_HEIGHT = 12;
     private static final int LINE_HEIGHT = 10;
     private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
     private static final TagPath PATH_INDIDEATPLAC = new TagPath("INDI:DEAT:PLAC");
@@ -78,8 +79,8 @@ public class GraphicsTreeElements implements TreeElements {
             new Color(0xfa, 0xfa, 0xfa), // 12
             new Color(0xff, 0xff, 0xff) // 13
     };
-    
-    private static final int COLOR_GENERATIONS = (BOX_COLORS.length - 1) / 2; 
+
+    private static final int COLOR_GENERATIONS = (BOX_COLORS.length - 1) / 2;
 
     public static final float STROKE_WIDTH = 2.0f;
 
@@ -157,10 +158,12 @@ public class GraphicsTreeElements implements TreeElements {
 
     private int maxNames;
 
+    private int maxNamesPerLine;
+
     private boolean useColors;
 
     private boolean drawPlaces;
-    
+
     private boolean drawDates;
 
     private boolean drawOccupation;
@@ -184,6 +187,7 @@ public class GraphicsTreeElements implements TreeElements {
         drawIndiIds = properties.get("drawIndiIds", false);
         drawFamIds = properties.get("drawFamIds", false);
         maxNames = properties.get("maxNames", -1);
+		maxNamesPerLine = properties.get("maxNamesPerLine", 2);
         useColors = properties.get("useColors", true);
         maxImageWidth = properties.get("maxImageWidth", 0);
         drawPlaces = properties.get("drawPlaces", true);
@@ -241,16 +245,23 @@ public class GraphicsTreeElements implements TreeElements {
         // Name
         graphics.setFont(NAME_FONT);
 
-        int firstNameY = 14;
-        int lastNameY = 26;
-        if (swapNames) {
-            firstNameY = 26;
-            lastNameY = 14;
-        }
-        centerString(graphics, getFirstNames(i), x + dataWidth/2, y + firstNameY);
-        centerString(graphics, i.getLastName(), x + dataWidth/2, y + lastNameY);
+    	int currentY = y + 14;
+    	String[] firstNames = getFirstNames(i);
 
-        int currentY = y + 38;
+        if (swapNames) { // last name
+            centerString(graphics, i.getLastName(), x + dataWidth/2, currentY);
+            currentY += NAME_LINE_HEIGHT;
+        }
+
+        for (int j = 0; j < firstNames.length; j++) { // first names
+            centerString(graphics, firstNames[j], x + dataWidth/2, currentY);
+            currentY += NAME_LINE_HEIGHT;
+        }
+
+        if (!swapNames) { // last name
+            centerString(graphics, i.getLastName(), x + dataWidth/2, currentY);
+            currentY += NAME_LINE_HEIGHT;
+        }
 
         graphics.setFont(DETAILS_FONT);
 
@@ -494,21 +505,42 @@ public class GraphicsTreeElements implements TreeElements {
         // else (gen > 0)
         return BOX_COLORS[(gen - 1) % COLOR_GENERATIONS + COLOR_GENERATIONS + 1];
     }
-    
+
     /**
      * Returns a maximum of <code>maxNames</code> given names of the given
      * individual. If <code>maxNames</code> is 0, this method returns all
-     * given names.
+     * given names. The names are split into lines, where the maximum number
+     * of names in one line is specified by <code>maxNamesPerLine</code>.
+     * if <code>maxNamesPerLine</code> is 0, only one line is returned.
+     * @return array of lines to display
      */
-    private String getFirstNames(Indi indi) {
+    private String[] getFirstNames(Indi indi) {
         String firstName = indi.getFirstName();
-        if (maxNames <= 0)
-            return firstName;
+        if (maxNames <= 0 && maxNamesPerLine <= 0)
+            return new String[] {firstName};
+        if (firstName.trim().equals(""))
+            return new String[] {""};
 
         String[] names = firstName.split("  *");
-        firstName = "";
-        for (int j = 0; j < maxNames && j < names.length; j++)
-            firstName += names[j] + " ";
-        return firstName.trim();
+        int namesCount = names.length;
+        if (maxNames > 0 && maxNames < namesCount)
+            namesCount = maxNames;
+        int linesCount = 1;
+        if (maxNamesPerLine > 0)
+            linesCount = (namesCount - 1) / maxNamesPerLine + 1;
+        String[] lines = new String[linesCount];
+        int currentName = 0;
+        for (int j = 0; j < linesCount; j++) {
+            StringBuffer sb = new StringBuffer();
+            for (int k = 0; k < maxNamesPerLine; k++) {
+                int n = j * maxNamesPerLine + k;
+                if (n >= namesCount)
+                    break;
+                sb.append(names[n]).append(" ");
+            }
+            lines[j] = sb.substring(0, sb.length() - 1);
+        }
+
+        return lines;
     }
 }

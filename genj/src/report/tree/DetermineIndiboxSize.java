@@ -26,6 +26,7 @@ import java.awt.font.FontRenderContext;
 public class DetermineIndiboxSize extends TreeFilterBase {
 
     private static final int DEFAULT_LINES = 2;
+    private static final int NAME_LINE_HEIGHT = 12;
     private static final int LINE_HEIGHT = 10;
     private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
     private static final TagPath PATH_INDIDEATPLAC = new TagPath("INDI:DEAT:PLAC");
@@ -55,6 +56,7 @@ public class DetermineIndiboxSize extends TreeFilterBase {
     private boolean drawDates;
     private boolean drawOccupation;
     private int maxNames;
+    private int maxNamesPerLine;
     private boolean drawSexSymbols;
     private boolean drawIndiIds;
 
@@ -67,6 +69,7 @@ public class DetermineIndiboxSize extends TreeFilterBase {
         drawDates = properties.get("drawDates", true);
         drawOccupation = properties.get("drawOccupation", true);
         maxNames = properties.get("maxNames", -1);
+        maxNamesPerLine = properties.get("maxNamesPerLine", 2);
         drawSexSymbols = properties.get("drawSexSymbols", true);
         drawIndiIds = properties.get("drawIndiIds", false);
     }
@@ -96,8 +99,18 @@ public class DetermineIndiboxSize extends TreeFilterBase {
         if (lines - DEFAULT_LINES > 0)
             indibox.height += (lines - DEFAULT_LINES) * LINE_HEIGHT;
 
+        // height and width computations for first names
+        int width = 0;
+        String[] firstNames = getFirstNames(i);
+        for (int j = 0; j < firstNames.length; j++) {
+            int w2 = getTextWidth(firstNames[j], NAME_FONT);
+            width = width>w2?width:w2;
+        }
+
+        // Additional first names
+        indibox.height += (firstNames.length - 1) * NAME_LINE_HEIGHT;
+
         // Text data width
-        int width = getTextWidth(getFirstNames(i), NAME_FONT);
         if (width + 2*TEXT_MARGIN > indibox.width)
             indibox.width = width + 2*TEXT_MARGIN;
         width = getTextWidth(i.getLastName(), NAME_FONT);
@@ -169,17 +182,38 @@ public class DetermineIndiboxSize extends TreeFilterBase {
     /**
      * Returns a maximum of <code>maxNames</code> given names of the given
      * individual. If <code>maxNames</code> is 0, this method returns all
-     * given names.
+     * given names. The names are split into lines, where the maximum number
+     * of names in one line is specified by <code>maxNamesPerLine</code>.
+     * if <code>maxNamesPerLine</code> is 0, only one line is returned.
+     * @return array of lines to display
      */
-    private String getFirstNames(Indi indi) {
+    private String[] getFirstNames(Indi indi) {
         String firstName = indi.getFirstName();
-        if (maxNames <= 0)
-            return firstName;
+        if (maxNames <= 0 && maxNamesPerLine <= 0)
+            return new String[] {firstName};
+        if (firstName.trim().equals(""))
+            return new String[] {""};
 
         String[] names = firstName.split("  *");
-        firstName = "";
-        for (int j = 0; j < maxNames && j < names.length; j++)
-            firstName += names[j] + " ";
-        return firstName.trim();
+        int namesCount = names.length;
+        if (maxNames > 0 && maxNames < namesCount)
+            namesCount = maxNames;
+        int linesCount = 1;
+        if (maxNamesPerLine > 0)
+            linesCount = (namesCount - 1) / maxNamesPerLine + 1;
+        String[] lines = new String[linesCount];
+        int currentName = 0;
+        for (int j = 0; j < linesCount; j++) {
+            StringBuffer sb = new StringBuffer();
+            for (int k = 0; k < maxNamesPerLine; k++) {
+                int n = j * maxNamesPerLine + k;
+                if (n >= namesCount)
+                    break;
+                sb.append(names[n]).append(" ");
+            }
+            lines[j] = sb.substring(0, sb.length() - 1);
+        }
+
+        return lines;
     }
 }

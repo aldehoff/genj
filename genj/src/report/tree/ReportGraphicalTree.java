@@ -38,7 +38,7 @@ import tree.output.VerticalTreeRenderer;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.19
+ * @version 0.20
  */
 public class ReportGraphicalTree extends Report {
 
@@ -122,6 +122,13 @@ public class ReportGraphicalTree extends Report {
     public int max_names = 0;
 
     public String[] max_namess = { translate("nolimit"), "1", "2", "3" };
+
+    /**
+     * Maximal number of first names per line.
+     */
+    public int max_names_per_line = 2;
+
+    public String[] max_names_per_lines = { translate("nolimit"), "1", "2", "3" };
 
     /**
      * Whether to display places of birth and death.
@@ -225,6 +232,7 @@ public class ReportGraphicalTree extends Report {
         properties.put("genAncestorDescendants", gen_ancestor_descendants - 1);
         properties.put("genDescendants", gen_descendants - 1);
         properties.put("maxNames", max_names);
+        properties.put("maxNamesPerLine", max_names_per_line);
         properties.put("defaultIndiboxHeight", DEFAULT_INDIBOX_HEIGHT);
         properties.put("defaultIndiboxWidth", shrink_boxes ? SHRINKED_INDIBOX_WIDTH : DEFAULT_INDIBOX_WIDTH);
         properties.put("spacing", SPACING);
