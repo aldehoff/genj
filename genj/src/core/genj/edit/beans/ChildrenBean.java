@@ -28,6 +28,7 @@ import genj.gedcom.TagPath;
 import genj.util.Registry;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 
 /**
  * A complex bean displaying children of a family
@@ -50,6 +51,7 @@ public class ChildrenBean extends PropertyBean {
     
     // a table for the families
     table = new PropertyTableWidget();
+    table.setPreferredSize(new Dimension(64,64));
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
