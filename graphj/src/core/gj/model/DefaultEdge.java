@@ -43,11 +43,11 @@ public class DefaultEdge implements Edge {
   }
 
   public Vertex getEnd() {
-    return from;
+    return to;
   }
 
   public Vertex getStart() {
-    return to;
+    return from;
   }
 
   @Override
