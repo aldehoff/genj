@@ -29,15 +29,19 @@ import java.util.Set;
  */
 public class DefaultVertex implements Vertex {
   
-  private Object wrapped;
+  private Object content;
   
-  public DefaultVertex(Object wrapped) {
-    this.wrapped = wrapped;
+  public DefaultVertex(Object content) {
+    this.content = content;
+  }
+  
+  public Object getContent() {
+    return content;
   }
   
   @Override
   public int hashCode() {
-    return wrapped.hashCode();
+    return content.hashCode();
   }
   
   @Override
@@ -45,12 +49,12 @@ public class DefaultVertex implements Vertex {
     if (!(obj instanceof DefaultVertex))
       return false;
     DefaultVertex that = (DefaultVertex)obj;
-    return this.wrapped.equals(that.wrapped);
+    return this.content.equals(that.content);
   }
   
   @Override
   public String toString() {
-    return wrapped.toString();
+    return content.toString();
   }
 
   public static Set<Vertex> wrap(Object[] verticies) {
