@@ -40,9 +40,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
 
 /**
  * A 'simple' tree layout for Trees
@@ -214,7 +214,12 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       rootOfTree = verticies.iterator().next();
 
     // recurse into it
-    return layout(graph, null, rootOfTree, layout).area;
+    Area result = layout(graph, null, rootOfTree, layout).area;
+    if (debugShapes!=null)
+      debugShapes.add(result);
+    
+    // done
+    return result;
   }
   
   /**
@@ -229,7 +234,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       return new Branch(graph, root, layout);
     
     // create merged branch of sub-branches
-    return new Branch(graph, backtrack, root, children, layout);
+    return new Branch(graph, backtrack, root, children.toArray(new Vertex[children.size()]), layout);
 
   }
   
@@ -249,6 +254,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     private List<Vertex> vertices = new ArrayList<Vertex>();
     
     /** shape of branch */
+    private Point2D top;
     private Area area;
     
     /** constructor for a leaf */
@@ -263,58 +269,78 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     }
 
     /** constructor for a parent and its children */
-    Branch(Graph graph, Vertex backtrack, Vertex parent, Collection<Vertex> children, Layout2D layout) {
+    Branch(Graph graph, Vertex backtrack, Vertex parent, Vertex[] children, Layout2D layout) {
 
       this.graph = graph;
       this.layout = layout;
       
       double layoutAxis = getRadian(orientation);
-      double alignmentAxis = layoutAxis - QUARTER_RADIAN;
       
       // sort by current position
-      if (isOrderSiblingsByPosition) {
-        Vertex[] tmp = children.toArray(new Vertex[children.size()]);
-        Arrays.sort(tmp, this);
-        children = Arrays.asList(tmp);
-      }
+      if (isOrderSiblingsByPosition) 
+        Arrays.sort(children, this);
       
       // keep track of root and vertices
       root = parent;
       vertices.add(root);
       
-      // create a branch for each child and place beside siblings
-      LinkedList<Branch> branches = new LinkedList<Branch>();
-      for (Vertex child : children)  {
+      // recurse into children and take over descendants
+      Branch[] branches = new Branch[children.length];
+      for (int i=0;i<children.length;i++) {
         
-        // another branch
-        Branch next = layout(graph, parent, child, layout) ; 
+        branches[i] = layout(graph, parent, children[i], layout);
         
-        // add its elements to ours
-        vertices.addAll(next.vertices);
+        vertices.addAll(branches[i].vertices);
 
-        // place child n+1 beside 1..n
-        if (!branches.isEmpty()) {
-
-          // move top aligned respective to reversed layout direction ("top-aligned")
-          next.moveBy(layout, getDelta( getMax(next.area, layoutAxis - HALF_RADIAN), getMax(branches.getLast().area, layoutAxis - HALF_RADIAN) ));          
-          
-          // calculate distance in alignment axis + padding
-          double distance = Double.MAX_VALUE;
-          for (Branch prev : branches) {
-            distance = Math.min(distance, getDistance(prev.area, next.area, alignmentAxis ) - distanceInGeneration);
-          }
-          
-          // move it
-          next.moveBy(layout, new Point2D.Double(-Math.sin(alignmentAxis) * distance, Math.cos(alignmentAxis) * distance));
-        }
-        
-        // next
-        branches.add(next);
       }
+      
+      // Calculate deltas of children left-aligned
+      double lrAlignment = layoutAxis - QUARTER_RADIAN;
+      Point2D[] lrDeltas  = new Point2D[children.length];
+      lrDeltas[0] = new Point2D.Double();
+      for (int i=1;i<children.length;i++) {
+        // calculate delta from top alignment position
+        lrDeltas[i] = getDelta(branches[i].top(), branches[0].top());
+        // calculate distance from all previous siblings
+        double distance = Double.MAX_VALUE;
+        for (int j=0;j<i;j++) {
+          distance = Math.min(distance, getDistance(getTranslated(branches[j].area, lrDeltas[j]), getTranslated(branches[i].area, lrDeltas[i]), lrAlignment) - distanceInGeneration);
+        }
+        // calculate delta from top aligned position with correct distance
+        lrDeltas[i] = getPoint(lrDeltas[i], lrAlignment, -distance);
+      }
+      
+      // place last child
+      branches[branches.length-1].moveBy(lrDeltas[lrDeltas.length-1]);
 
-      // calculate where to place root
+      // Calculate deltas of children right-aligned
+      Point2D[] rlDeltas  = lrDeltas;
+      if (children.length>2 && isBalanceChildren) {
+        rlDeltas = new Point2D[children.length];
+        double rlAlignment = layoutAxis + QUARTER_RADIAN;
+        rlDeltas [rlDeltas.length-1] = new Point2D.Double();
+        for (int i=rlDeltas.length-2;i>=0;i--) {
+          // calculate delta from top alignment position
+          rlDeltas[i] = getDelta(branches[i].top(), branches[branches.length-1].top());
+          // calculate distance from all previous siblings
+          double distance = Double.MAX_VALUE;
+          for (int j=rlDeltas.length-1;j>i;j--) {
+            distance = Math.min(distance, getDistance(getTranslated(branches[j].area, rlDeltas[j]), getTranslated(branches[i].area, rlDeltas[i]), rlAlignment) - distanceInGeneration);
+          }
+          assert distance != Double.MAX_VALUE;
+          // calculate delta from top aligned position with correct distance
+          rlDeltas[i] = getPoint(rlDeltas[i], rlAlignment, -distance);
+        }
+      }
+      
+      // place all children in between
+      for (int i=1; i<children.length-1; i++) {
+        branches[i].moveBy(getMid(lrDeltas[i], rlDeltas[i]));
+      }
+      
+      
+      // Place Root
       //
-      //<pre>
       //        rrr
       //        r r  
       //     b  rrr  c
@@ -327,10 +353,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       //   11|11 | NN|NN
       //    /|\  |  /|\
       //
-      //</pre>
-      Point2D a = getMax(branches.getFirst().area, layoutAxis - HALF_RADIAN);
-      Point2D b = layout.getPositionOfVertex(branches.getFirst().root);
-      Point2D c = layout.getPositionOfVertex(branches.getLast().root);
+      //
+      Point2D a = branches[0].top();
+      Point2D b = layout.getPositionOfVertex(branches[0].root);
+      Point2D c = layout.getPositionOfVertex(branches[branches.length-1].root);
       Point2D d = getPoint(b, c, alignmentOfParent); 
       Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
       Point2D f = getPoint(e, layoutAxis-HALF_RADIAN, distanceBetweenGenerations/2);
@@ -340,7 +366,6 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
           distanceBetweenGenerations + getLength(getMax(shape(root), layoutAxis)) 
         );
       
-      // place root
       layout.setPositionOfVertex(root, r);
       
       // calculate new area with shape of root, umbrella between first/last child and sub-branches
@@ -348,8 +373,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       area.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
       area.add(new Area(ShapeHelper.createShape(
           r, 
-          getMax(pos(branches.getFirst().root), shape(branches.getFirst().root), layoutAxis+QUARTER_RADIAN),
-          getMax(pos(branches.getLast().root), shape(branches.getLast().root), layoutAxis-QUARTER_RADIAN),
+          getMax(pos(branches[0].root), shape(branches[0].root), layoutAxis+QUARTER_RADIAN),
+          getMax(pos(branches[branches.length-1].root), shape(branches[branches.length-1].root), layoutAxis-QUARTER_RADIAN),
           r)));
       for (Branch branch : branches)
         area.add(branch.area);
@@ -360,7 +385,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
         // don't do edge to backtrack
         if (ModelHelper.contains(edge, backtrack))
           continue;
-        
+
+        Shape shape;
         if (isBendArcs) {
           // calc edge layout
           Point2D[] points;
@@ -371,16 +397,26 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          layout.setShapeOfEdge(edge, EdgeLayoutHelper.getShape(points, shape(edge.getStart()), shape(edge.getEnd())));
+          shape = EdgeLayoutHelper.getShape(points, shape(edge.getStart()), shape(edge.getEnd()));
           
         } else {
-          EdgeLayoutHelper.setShape(edge, layout);
+          shape = EdgeLayoutHelper.getShape(edge, layout);
         }
-        
+        layout.setShapeOfEdge(edge, shape);
       }
 
-      
       // done
+    }
+    
+    Point2D top() {
+      if (top==null)
+        top= getMax(area, getRadian(orientation) - HALF_RADIAN);
+      return top;
+      
+    }
+    
+    Point2D pos() {
+      return pos(root);
     }
     
     Point2D pos(Vertex vertex) {
@@ -397,17 +433,19 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     
     /** translate a branch */
-    void moveBy(Layout2D layout, Point2D delta) {
+    void moveBy(Point2D delta) {
       
       for (Vertex vertice : vertices) 
         ModelHelper.translate(layout, vertice, delta);
+      
+      top = null;
       
       area.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
     
     /** translate a branch */
-    void moveTo(Layout2D layout, Point2D pos) {
-      moveBy(layout, getDelta(layout.getPositionOfVertex(root), pos));
+    void moveTo(Point2D pos) {
+      moveBy(getDelta(layout.getPositionOfVertex(root), pos));
     }
 
     /** compare positions of two verticies */

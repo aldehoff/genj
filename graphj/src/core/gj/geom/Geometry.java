@@ -22,6 +22,7 @@ package gj.geom;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.FlatteningPathIterator;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -454,6 +455,10 @@ public class Geometry {
     return new Point2D.Double(vectorB.getX()-vectorA.getX(), vectorB.getY()-vectorA.getY());
   }
   
+  public static Point2D getMid(Point2D a, Point2D b) {
+    return new Point2D.Double( (a.getX()+b.getX())/2, (a.getY()+b.getY())/2); 
+  }
+  
   /**
    * adds a to b
    * <pre>
@@ -476,6 +481,12 @@ public class Geometry {
   
   public static double getLength(Point2D v) {
     return getLength(v.getX(), v.getY());
+  }
+  
+  public static Shape getTranslated(Shape s, Point2D d) {
+    GeneralPath result = new GeneralPath(s);
+    result.transform(AffineTransform.getTranslateInstance(d.getX(), d.getY()));
+    return result;
   }
   
   /**
