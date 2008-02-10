@@ -25,9 +25,9 @@ import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
 import gj.model.Graph;
 import gj.model.Tree;
-import gj.model.impl.DefaultVertex;
-import gj.model.impl.TreeGraphAdapter;
 import gj.ui.GraphWidget;
+import gj.util.DefaultVertex;
+import gj.util.TreeGraphAdapter;
 
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;

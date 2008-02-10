@@ -27,10 +27,10 @@ import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Tree;
 import gj.model.Vertex;
-import gj.model.impl.DefaultVertex;
-import gj.model.impl.TreeGraphAdapter;
 import gj.ui.GraphRenderer;
 import gj.ui.GraphWidget;
+import gj.util.DefaultVertex;
+import gj.util.TreeGraphAdapter;
 
 import java.awt.Color;
 import java.awt.Component;

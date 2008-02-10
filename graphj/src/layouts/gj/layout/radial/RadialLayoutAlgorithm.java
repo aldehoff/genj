@@ -27,7 +27,7 @@ import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.model.impl.DefaultEdge;
+import gj.util.DefaultEdge;
 import gj.util.EdgeLayoutHelper;
 import gj.util.ModelHelper;
 
