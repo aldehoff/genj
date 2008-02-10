@@ -591,7 +591,7 @@ public class ViewManager {
             return;
     
           // a double-click on provider?
-          if (me.getButton()==MouseEvent.BUTTON1&&me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()>1) {
+          if (me.getButton()==MouseEvent.BUTTON1&&me.getID()==MouseEvent.MOUSE_CLICKED&&me.getClickCount()==2) {
             WindowManager.broadcast(new ContextSelectionEvent(context, component, true));
             return;
           }
