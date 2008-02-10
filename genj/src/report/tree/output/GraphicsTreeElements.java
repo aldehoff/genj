@@ -24,7 +24,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.geom.Rectangle2D;
+import java.awt.font.FontRenderContext;
 import java.awt.geom.RoundRectangle2D;
 
 import tree.FamBox;
@@ -37,6 +37,9 @@ import tree.IndiBox;
  */
 public class GraphicsTreeElements implements TreeElements {
 
+    private static final int DEFAULT_INDIBOX_LINES = 2;
+    private static final int DEFAULT_FAMBOX_LINES = 1;
+    private static final int TEXT_MARGIN = 5;
     private static final int NAME_LINE_HEIGHT = 12;
     private static final int LINE_HEIGHT = 10;
     private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
@@ -44,6 +47,11 @@ public class GraphicsTreeElements implements TreeElements {
     private static final TagPath PATH_INDIOCCU = new TagPath("INDI:OCCU");
     private static final TagPath PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC");
     private static final TagPath PATH_FAMDIVPLAC = new TagPath("FAM:DIV:PLAC");
+
+    /**
+     * Used to determine text width.
+     */
+    private static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, false, false);
 
     /**
      * Box background colors.
@@ -172,6 +180,14 @@ public class GraphicsTreeElements implements TreeElements {
 
     private boolean swapNames;
 
+    private int defaultIndiboxWidth;
+
+    private int defaultIndiboxHeight;
+
+    private int defaultFamboxWidth;
+
+    private int defaultFamboxHeight;
+
     /**
      * The graphics object to paint on.
      */
@@ -187,7 +203,7 @@ public class GraphicsTreeElements implements TreeElements {
         drawIndiIds = properties.get("drawIndiIds", false);
         drawFamIds = properties.get("drawFamIds", false);
         maxNames = properties.get("maxNames", -1);
-		maxNamesPerLine = properties.get("maxNamesPerLine", 2);
+        maxNamesPerLine = properties.get("maxNamesPerLine", 2);
         useColors = properties.get("useColors", true);
         maxImageWidth = properties.get("maxImageWidth", 0);
         drawPlaces = properties.get("drawPlaces", true);
@@ -195,6 +211,15 @@ public class GraphicsTreeElements implements TreeElements {
         drawOccupation = properties.get("drawOccupation", true);
         drawDivorce = properties.get("drawDivorce", true);
         swapNames = properties.get("swapNames", false);
+        defaultIndiboxWidth = properties.get("defaultIndiboxWidth", 0);
+        defaultIndiboxHeight = properties.get("defaultIndiboxHeight", 0);
+        defaultFamboxHeight = properties.get("defaultFamboxHeight", 0);
+        defaultFamboxWidth = properties.get("defaultFamboxWidth", 0);
+    }
+
+    public GraphicsTreeElements(Registry properties)
+    {
+        this(null, properties);
     }
 
     /**
@@ -245,8 +270,8 @@ public class GraphicsTreeElements implements TreeElements {
         // Name
         graphics.setFont(NAME_FONT);
 
-    	int currentY = y + 14;
-    	String[] firstNames = getFirstNames(i);
+        int currentY = y + 14;
+        String[] firstNames = getFirstNames(i);
 
         if (swapNames) { // last name
             centerString(graphics, i.getLastName(), x + dataWidth/2, currentY);
@@ -272,12 +297,12 @@ public class GraphicsTreeElements implements TreeElements {
         Property occupation = null;
 
         if (drawDates) {
-	        birthDate = i.getBirthDate();
-        	if (birthDate != null && !birthDate.isValid())
-	            birthDate = null;
-        	deathDate = i.getDeathDate();
-	        if (deathDate != null && !deathDate.isValid())
-        	    deathDate = null;
+            birthDate = i.getBirthDate();
+            if (birthDate != null && !birthDate.isValid())
+                birthDate = null;
+            deathDate = i.getDeathDate();
+            if (deathDate != null && !deathDate.isValid())
+                deathDate = null;
         }
 
         if (drawPlaces) {
@@ -347,7 +372,7 @@ public class GraphicsTreeElements implements TreeElements {
 
         graphics.setClip(oldClip);
         graphics.draw(box);
-	}
+    }
     /**
      * Outputs a family box.
      * @param i  individual
@@ -377,12 +402,12 @@ public class GraphicsTreeElements implements TreeElements {
         Property divorcePlace = null;
 
         if (drawDates) {
-	        marriageDate = f.getMarriageDate();
-        	if (marriageDate != null && !marriageDate.isValid())
-	            marriageDate = null;
-        	divorceDate = f.getDivorceDate();
-	        if (divorceDate != null && !divorceDate.isValid())
-        	    divorceDate = null;
+            marriageDate = f.getMarriageDate();
+            if (marriageDate != null && !marriageDate.isValid())
+                marriageDate = null;
+            divorceDate = f.getDivorceDate();
+            if (divorceDate != null && !divorceDate.isValid())
+                divorceDate = null;
         }
 
         if (drawPlaces) {
@@ -478,10 +503,19 @@ public class GraphicsTreeElements implements TreeElements {
      * Outputs a string centered.
      */
     public static void centerString(Graphics2D graphics, String text, int x, int y) {
-        Rectangle2D rect = graphics.getFont().getStringBounds(text,
-                graphics.getFontRenderContext());
-        int width = (int) rect.getWidth();
+        int width = getTextWidth(text, graphics.getFont(), graphics);
         graphics.drawString(text, x - width / 2, y);
+    }
+
+    private static int getTextWidth(String text, Font font, Graphics2D graphics) {
+        FontRenderContext fontRenderContext = FONT_RENDER_CONTEXT;
+        if (graphics != null)
+            fontRenderContext = graphics.getFontRenderContext();
+        return (int)font.getStringBounds(text, fontRenderContext).getWidth();
+    }
+
+    private static int getTextWidth(String text, Font font) {
+        return getTextWidth(text, font, null);
     }
 
     private static String getSexSymbol(int sex) {
@@ -499,9 +533,9 @@ public class GraphicsTreeElements implements TreeElements {
         if (!useColors)
             return Color.WHITE;
         if (gen == 0)
-        	return BOX_COLORS[COLOR_GENERATIONS];
+            return BOX_COLORS[COLOR_GENERATIONS];
         if (gen < 0)
-        	return BOX_COLORS[-((-gen - 1) % COLOR_GENERATIONS) + COLOR_GENERATIONS - 1];
+            return BOX_COLORS[-((-gen - 1) % COLOR_GENERATIONS) + COLOR_GENERATIONS - 1];
         // else (gen > 0)
         return BOX_COLORS[(gen - 1) % COLOR_GENERATIONS + COLOR_GENERATIONS + 1];
     }
@@ -542,5 +576,156 @@ public class GraphicsTreeElements implements TreeElements {
         }
 
         return lines;
+    }
+
+    public void getIndiBoxSize(IndiBox indibox)
+    {
+        Indi i = indibox.individual;
+        indibox.height = defaultIndiboxHeight;
+        indibox.width = defaultIndiboxWidth;
+
+        // Number of lines
+        int lines = 0;
+        if (drawDates && i.getBirthDate() != null && i.getBirthDate().isValid())
+            lines++;
+        Property birthPlace = i.getProperty(PATH_INDIBIRTPLAC);
+        if (drawPlaces && birthPlace != null && !birthPlace.toString().equals(""))
+            lines++;
+
+        Property deathPlace = i.getProperty(PATH_INDIDEATPLAC);
+        if (deathPlace != null && deathPlace.toString().equals(""))
+            deathPlace = null;
+        if (i.getDeathDate() != null || deathPlace != null) {
+            lines++;
+            if (drawDates && drawPlaces && i.getDeathDate() != null && i.getDeathDate().isValid() && deathPlace != null)
+                lines++;
+        }
+        if (drawOccupation && i.getProperty(PATH_INDIOCCU) != null)
+            lines++;
+        if (lines - DEFAULT_INDIBOX_LINES > 0)
+            indibox.height += (lines - DEFAULT_INDIBOX_LINES) * LINE_HEIGHT;
+
+        // height and width computations for first names
+        int width = 0;
+        String[] firstNames = getFirstNames(i);
+        for (int j = 0; j < firstNames.length; j++) {
+            int w2 = getTextWidth(firstNames[j], NAME_FONT);
+            width = width>w2?width:w2;
+        }
+
+        // Additional first names
+        indibox.height += (firstNames.length - 1) * NAME_LINE_HEIGHT;
+
+        // Text data width
+        if (width + 2*TEXT_MARGIN > indibox.width)
+            indibox.width = width + 2*TEXT_MARGIN;
+        width = getTextWidth(i.getLastName(), NAME_FONT);
+        if (width + 2*TEXT_MARGIN > indibox.width)
+            indibox.width = width + 2*TEXT_MARGIN;
+
+        if (i.getBirthDate() != null) {
+            width = getTextWidth(i.getBirthDate().toString(), DETAILS_FONT);
+            if (width + 13+TEXT_MARGIN > indibox.width)
+                indibox.width = width + 13+TEXT_MARGIN;
+        }
+        if (i.getDeathDate() != null) {
+            width = getTextWidth(i.getDeathDate().toString(), DETAILS_FONT);
+            if (width + 13+TEXT_MARGIN > indibox.width)
+                indibox.width = width + 13+TEXT_MARGIN;
+        }
+
+        if (drawPlaces) {
+            if (birthPlace != null) {
+                width = getTextWidth(birthPlace.toString(), DETAILS_FONT);
+                if (width + 13+TEXT_MARGIN > indibox.width)
+                    indibox.width = width + 13+TEXT_MARGIN;
+            }
+            if (deathPlace != null) {
+                width = getTextWidth(deathPlace.toString(), DETAILS_FONT);
+                if (width + 13+TEXT_MARGIN > indibox.width)
+                    indibox.width = width + 13+TEXT_MARGIN;
+            }
+        }
+
+        if (drawOccupation && i.getProperty(PATH_INDIOCCU) != null) {
+            width = getTextWidth(i.getProperty(PATH_INDIOCCU).toString(), DETAILS_FONT);
+            if (width + 7+TEXT_MARGIN > indibox.width)
+                indibox.width = width + 7+TEXT_MARGIN;
+        }
+
+        if (drawIndiIds) {
+            width = getTextWidth(i.getId(), ID_FONT);
+            if (drawSexSymbols)
+                width += 14;
+            if (width + 8+TEXT_MARGIN > indibox.width)
+                indibox.width = width + 8+TEXT_MARGIN;
+        }
+
+        // Image
+        if(maxImageWidth > 0)
+        {
+            PropertyFile file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
+            if(file != null)
+            {
+                ImageIcon icon = file.getValueAsIcon();
+                if(icon != null) {
+                    int newWidth = icon.getIconWidth() * defaultIndiboxHeight / icon.getIconHeight();
+                    if (newWidth < maxImageWidth)
+                        indibox.width += newWidth;
+                    else
+                        indibox.width += maxImageWidth;
+                }
+            }
+        }
+    }
+
+    public void getFamBoxSize(FamBox fambox)
+    {
+        Fam f = fambox.family;
+        fambox.width = defaultFamboxWidth;
+        fambox.height = defaultFamboxHeight;
+
+        // Number of lines
+        int lines = 0;
+        Property marriagePlace = f.getProperty(PATH_FAMMARRPLAC);
+        if (f.getMarriageDate() != null) {
+            lines++;
+            if (drawDates && drawPlaces && f.getMarriageDate().isValid() && marriagePlace != null && !marriagePlace.toString().equals(""))
+                lines++;
+        }
+        Property divorcePlace = f.getProperty(PATH_FAMDIVPLAC);
+        if (drawDivorce && f.getDivorceDate() != null) {
+            lines++;
+            if (drawDates && drawPlaces && f.getDivorceDate().isValid() && divorcePlace != null && !divorcePlace.toString().equals(""))
+                lines++;
+        }
+
+        if (lines - DEFAULT_FAMBOX_LINES > 0)
+            fambox.height += (lines - DEFAULT_FAMBOX_LINES) * LINE_HEIGHT;
+
+        // Text data width
+        if (f.getMarriageDate() != null) {
+            int width = getTextWidth(f.getMarriageDate().toString(), DETAILS_FONT);
+            if (width + 25+TEXT_MARGIN > fambox.width)
+                fambox.width = width + 25+TEXT_MARGIN;
+        }
+        if (drawDivorce && f.getDivorceDate() != null) {
+            int width = getTextWidth(f.getDivorceDate().toString(), DETAILS_FONT);
+            if (width + 25+TEXT_MARGIN > fambox.width)
+                fambox.width = width + 25+TEXT_MARGIN;
+        }
+
+        if (drawPlaces) {
+            if (marriagePlace != null) {
+                int width = getTextWidth(marriagePlace.toString(), DETAILS_FONT);
+                if (width + 25+TEXT_MARGIN > fambox.width)
+                    fambox.width = width + 25+TEXT_MARGIN;
+            }
+            if (drawDivorce && divorcePlace != null) {
+                int width = getTextWidth(divorcePlace.toString(), DETAILS_FONT);
+                if (width + 25+TEXT_MARGIN > fambox.width)
+                    fambox.width = width + 25+TEXT_MARGIN;
+            }
+        }
     }
 }

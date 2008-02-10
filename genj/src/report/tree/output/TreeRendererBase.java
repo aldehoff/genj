@@ -34,14 +34,14 @@ public abstract class TreeRendererBase implements GraphicsRenderer {
     /**
      * Draws tree elements (boxes, lines, ...).
      */
-    protected GraphicsTreeElements elements;
+    protected TreeElements elements;
 
     /**
      * Constructs the object.
      */
-	public TreeRendererBase(IndiBox firstIndi, Registry properties) {
+    public TreeRendererBase(IndiBox firstIndi, TreeElements elements, Registry properties) {
         this.firstIndi = firstIndi;
-        elements = new GraphicsTreeElements(null, properties);
+        this.elements = elements;
 
 		spacing = properties.get("spacing", 0);
         displayFambox = properties.get("displayFambox", true);

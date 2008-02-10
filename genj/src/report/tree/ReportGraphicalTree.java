@@ -24,7 +24,9 @@ import tree.graphics.GraphicsOutput;
 import tree.graphics.GraphicsOutputFactory;
 import tree.graphics.GraphicsRenderer;
 import tree.graphics.TitleRenderer;
+import tree.output.GraphicsTreeElements;
 import tree.output.HorizontalTreeRenderer;
+import tree.output.TreeElements;
 import tree.output.VerticalTreeRenderer;
 
 /**
@@ -258,8 +260,8 @@ public class ReportGraphicalTree extends Report {
         if (!show_spouses)
             new NoSpouseFilter().filter(indibox);
 
-        new DetermineIndiboxSize(properties).filter(indibox);
-        new DetermineFamboxSize(properties).filter(indibox);
+        TreeElements elements = new GraphicsTreeElements(properties);
+        new DetermineBoxSizes(elements).filter(indibox);
 
         // Arrange the tree boxes
         TreeFilter arranger = null;
@@ -276,25 +278,27 @@ public class ReportGraphicalTree extends Report {
         }
         arranger.filter(indibox);
 
+        // Create renderer
+        GraphicsRenderer renderer = null;
+        switch (arrangement) {
+            case ARRANGEMENT_CENTER:
+            case ARRANGEMENT_LEFT:
+                renderer = new VerticalTreeRenderer(indibox, elements, properties);
+                break;
+            case ARRANGEMENT_TOP:
+                renderer = new HorizontalTreeRenderer(indibox, elements, properties);
+                break;
+        }
+
+        // Add title renderer
+        if (!title.equals(""))
+            renderer = new TitleRenderer(renderer, title);
+
         // Render and display the tree
         GraphicsOutputFactory outputFactory = new GraphicsOutputFactory(this);
         GraphicsOutput output = outputFactory.createOutput(output_type);
         if (output == null)
             return; // Report cancelled
-
-        GraphicsRenderer renderer = null;
-        switch (arrangement) {
-            case ARRANGEMENT_CENTER:
-            case ARRANGEMENT_LEFT:
-                renderer = new VerticalTreeRenderer(indibox, properties);
-                break;
-            case ARRANGEMENT_TOP:
-                renderer = new HorizontalTreeRenderer(indibox, properties);
-                break;
-        }
-
-        if (!title.equals(""))
-            renderer = new TitleRenderer(renderer, title);
 
         try {
             output.output(renderer);

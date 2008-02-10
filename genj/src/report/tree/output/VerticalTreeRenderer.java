@@ -49,8 +49,8 @@ public class VerticalTreeRenderer extends TreeRendererBase {
     /**
      * Constructs the object.
      */
-	public VerticalTreeRenderer(IndiBox firstIndi, Registry properties) {
-        super(firstIndi, properties);
+    public VerticalTreeRenderer(IndiBox firstIndi, TreeElements elements, Registry properties) {
+        super(firstIndi, elements, properties);
 
         new SameHeightSpouses().filter(firstIndi);
 

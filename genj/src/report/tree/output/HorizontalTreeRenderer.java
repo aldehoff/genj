@@ -49,8 +49,8 @@ public class HorizontalTreeRenderer extends TreeRendererBase {
     /**
      * Constructs the object.
      */
-	public HorizontalTreeRenderer(IndiBox firstIndi, Registry properties) {
-        super(firstIndi, properties);
+    public HorizontalTreeRenderer(IndiBox firstIndi, TreeElements elements, Registry properties) {
+        super(firstIndi, elements, properties);
 
         new SameWidthSpouses().filter(firstIndi);
 

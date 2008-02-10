@@ -8,6 +8,8 @@
 
 package tree.output;
 
+import java.awt.Graphics2D;
+
 import tree.FamBox;
 import tree.IndiBox;
 
@@ -19,7 +21,7 @@ import tree.IndiBox;
 public interface TreeElements {
     /**
      * Outputs an individual box.
-     * @param i  individual
+     * @param indibox  individual box
      * @param x  x coordinate
      * @param y  y coordinate
      * @param gen generation number
@@ -28,7 +30,7 @@ public interface TreeElements {
 
     /**
      * Outputs a family box.
-     * @param i  individual
+     * @param fambox  family box
      * @param x  x coordinate
      * @param y  y coordinate
      * @param gen generation number
@@ -65,4 +67,21 @@ public interface TreeElements {
      */
     public void footer();
 
+    /**
+     * Calculates the individual box size.
+     * @param indibox  individual box
+     */
+    public void getIndiBoxSize(IndiBox indibox);
+
+    /**
+     * Calculates the family box size.
+     * @param fambox  family box
+     */
+    public void getFamBoxSize(FamBox fambox);
+
+    /**
+     * Sets the graphics object, which is used for rendering.
+     * @param graphics
+     */
+    public void setGraphics(Graphics2D graphics);
 }
