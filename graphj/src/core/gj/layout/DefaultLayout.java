@@ -23,6 +23,7 @@ import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.EdgeLayoutHelper;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
@@ -38,6 +39,10 @@ public class DefaultLayout implements Layout2D {
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
   private Map<Edge, Shape> edge2shape = new HashMap<Edge, Shape>();
 
+  public DefaultLayout() {
+    defaultShape = new Rectangle();
+  }
+  
   public DefaultLayout(Shape defaultShape) {
     this.defaultShape = defaultShape;
   }

@@ -24,10 +24,10 @@ import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
-import gj.model.DefaultEdge;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.model.impl.DefaultEdge;
 import gj.util.EdgeLayoutHelper;
 import gj.util.ModelHelper;
 

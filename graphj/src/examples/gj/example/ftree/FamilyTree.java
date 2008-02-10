@@ -23,17 +23,16 @@ import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
-import gj.model.DefaultEdge;
-import gj.model.DefaultVertex;
-import gj.model.Edge;
 import gj.model.Graph;
-import gj.model.Vertex;
+import gj.model.Tree;
+import gj.model.impl.DefaultVertex;
+import gj.model.impl.TreeGraphAdapter;
 import gj.ui.GraphWidget;
 
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -56,31 +55,28 @@ public class FamilyTree {
       "S&S>Alisa,"+
       "S&S>Luka";
     
-    // wrap it in a tree model
-    Graph graph = new Graph() {
-
-      /** all vertices */
-      public Set<Vertex> getVertices() {
-        return DefaultVertex.wrap(family.split(",|>"));
-      }
-      
-      public Set<Edge> getEdges() {
-        Set<Edge> result = new LinkedHashSet<Edge>();
-        for (String relationship : family.split(",")) 
-          result.add(new DefaultEdge(DefaultVertex.wrap(relationship.split(">"))));
-        return result;
-      }
-      
-      public Set<Edge> getEdges(Vertex vertex) {
-        Set<Edge> result = new LinkedHashSet<Edge>();
+    Tree<DefaultVertex<String>> tree = new Tree<DefaultVertex<String>>() {
+      public List<DefaultVertex<String>> getChildren(DefaultVertex<String> parent) {
+        List<DefaultVertex<String>> result = new ArrayList<DefaultVertex<String>>();
         for (String relationship : family.split(",")) {
-          Edge edge = new DefaultEdge(DefaultVertex.wrap(relationship.split(">")));
-          if (edge.getStart().equals(vertex)||edge.getEnd().equals(vertex)) result.add(edge);
+          if (relationship.startsWith(parent.getContent()+">"))
+            result.add(new DefaultVertex<String>(relationship.substring(parent.getContent().length()+1)));
         }
         return result;
       }
-
+      public DefaultVertex<String> getParent(DefaultVertex<String> child) {
+        for (String relationship : family.split(",")) {
+          if (relationship.endsWith(">"+child.getContent()))
+            return new DefaultVertex<String>(relationship.substring(0, relationship.length()-child.getContent().length()-1));
+        }
+        return null;
+      }
+      public DefaultVertex<String> getRoot() {
+        return new DefaultVertex<String>(family.substring(0, family.indexOf('>')));
+      }
     };
+
+    Graph graph = new TreeGraphAdapter<DefaultVertex<String>>(tree);
  
     // apply tree layout
     Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));
@@ -96,7 +92,7 @@ public class FamilyTree {
     widget.setGraph(graph);
  
     // and show
-    JFrame frame = new JFrame("Family Tree on GraphJ");
+    JFrame frame = new JFrame("Family Tree in GraphJ");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.getContentPane().add(new JScrollPane(widget));
     frame.setSize(new Dimension(320,250));

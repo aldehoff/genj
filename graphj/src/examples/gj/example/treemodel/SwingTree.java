@@ -23,11 +23,12 @@ import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
-import gj.model.AbstractTree;
-import gj.model.DefaultVertex;
 import gj.model.Edge;
 import gj.model.Graph;
+import gj.model.Tree;
 import gj.model.Vertex;
+import gj.model.impl.DefaultVertex;
+import gj.model.impl.TreeGraphAdapter;
 import gj.ui.GraphRenderer;
 import gj.ui.GraphWidget;
 
@@ -37,8 +38,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,19 +63,16 @@ public class SwingTree {
       treeWidget.expandRow(i); 
     
     // create a graph representation of JTree's default model
-    Graph graph = new AbstractTree<DefaultVertex<TreeNode>>() {
+    Tree<DefaultVertex<TreeNode>> tree = new Tree<DefaultVertex<TreeNode>>() {
 
-      @Override
       public DefaultVertex<TreeNode> getRoot() {
         return new DefaultVertex<TreeNode>((TreeNode)treeWidget.getModel().getRoot());
       }
       
-      @Override
       public DefaultVertex<TreeNode> getParent(DefaultVertex<TreeNode> child) {
         return new DefaultVertex<TreeNode>( child.getContent().getParent() );
       }
       
-      @Override
       public List<DefaultVertex<TreeNode>> getChildren(DefaultVertex<TreeNode> parent) {
         List<DefaultVertex<TreeNode>> result = new ArrayList<DefaultVertex<TreeNode>>();
         for (int i=parent.getContent().getChildCount(); i>0; i--)
@@ -84,13 +82,21 @@ public class SwingTree {
       
     };
     
+    final Graph graph = new TreeGraphAdapter<DefaultVertex<TreeNode>>(tree);
     
     // apply tree layout
-    Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-40,-8,80,16));
+    Layout2D layout = new DefaultLayout() {
+      @Override
+      public Shape getShapeOfVertex(Vertex v) {
+        boolean leaf = graph.getEdges(v).size() == 1;
+        Dimension dim = treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false).getPreferredSize();
+        return new Rectangle(-dim.width/2, -dim.height/2, dim.width, dim.height);
+      }
+    };
     
     try {
       TreeLayoutAlgorithm algorithm = new TreeLayoutAlgorithm();
-      algorithm.setDistanceBetweenGenerations(20);
+      algorithm.setDistanceBetweenGenerations(16);
       algorithm.setDistanceInGeneration(8);
       algorithm.setOrientation(90);
       algorithm.setAlignmentOfParent(1);
@@ -132,7 +138,7 @@ public class SwingTree {
     content.add(new JScrollPane(graphWidget));
     content.add(new JScrollPane(treeWidget));
     
-    JFrame frame = new JFrame("SwingTree on GraphJ");
+    JFrame frame = new JFrame("SwingTree in GraphJ");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.getContentPane().add(content);
     frame.setSize(new Dimension(640,480));

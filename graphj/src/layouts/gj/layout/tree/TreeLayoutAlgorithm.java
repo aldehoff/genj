@@ -62,7 +62,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private boolean isBalanceChildren = true;
 
   /** whether arcs are direct or bended */
-  private boolean isBendArcs = true;
+  private boolean isBendArcs = false;
 
   /** orientation in degrees 0-359 */
   private double orientation = 180;
