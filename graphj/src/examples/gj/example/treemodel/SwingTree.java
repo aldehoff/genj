@@ -23,19 +23,24 @@ import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
-import gj.model.DefaultEdge;
+import gj.model.AbstractTree;
 import gj.model.DefaultVertex;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.ui.GraphRenderer;
 import gj.ui.GraphWidget;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -56,51 +61,37 @@ public class SwingTree {
     for (int i=0;i<treeWidget.getRowCount();i++)
       treeWidget.expandRow(i); 
     
-    // create a graph representation of JTree's silly default model
-    Graph graph = new Graph() {
+    // create a graph representation of JTree's default model
+    Graph graph = new AbstractTree<DefaultVertex<TreeNode>>() {
 
-      public Set<? extends Vertex> getVertices() {
-        return _getVertices((TreeNode)treeWidget.getModel().getRoot(), new LinkedHashSet<Vertex>());
+      @Override
+      public DefaultVertex<TreeNode> getRoot() {
+        return new DefaultVertex<TreeNode>((TreeNode)treeWidget.getModel().getRoot());
       }
       
-      private Set<Vertex> _getVertices(TreeNode node, Set<Vertex> result) {
-        result.add(new DefaultVertex(node));
-        for (int i=0;i<node.getChildCount();i++) 
-          _getVertices(node.getChildAt(i), result);
-        return result;
-      }
-
-      public Set<? extends Edge> getEdges() {
-        return _getEdges((TreeNode)treeWidget.getModel().getRoot(), new HashSet<Edge>());
+      @Override
+      public DefaultVertex<TreeNode> getParent(DefaultVertex<TreeNode> child) {
+        return new DefaultVertex<TreeNode>( child.getContent().getParent() );
       }
       
-      public Set<Edge> _getEdges(TreeNode node, Set<Edge> result) {
-        for (int i=0;i<node.getChildCount();i++) {
-          TreeNode child = node.getChildAt(i);
-          result.add(new DefaultEdge(new DefaultVertex(node), new DefaultVertex(child)));
-          _getEdges(child, result);
-        }
+      @Override
+      public List<DefaultVertex<TreeNode>> getChildren(DefaultVertex<TreeNode> parent) {
+        List<DefaultVertex<TreeNode>> result = new ArrayList<DefaultVertex<TreeNode>>();
+        for (int i=parent.getContent().getChildCount(); i>0; i--)
+          result.add(new DefaultVertex<TreeNode>(parent.getContent().getChildAt(i-1)));
         return result;
       }
-        
-      public Set<? extends Edge> getEdges(Vertex vertex) {
-        Set<Edge> result = new LinkedHashSet<Edge>();
-        TreeNode node = (TreeNode)((DefaultVertex)vertex).getContent();
-        if (node.getParent()!=null) result.add(new DefaultEdge(new DefaultVertex(node.getParent()), new DefaultVertex(node)));
-        for (int i=node.getChildCount()-1;i>=0;i--) {
-          result.add(new DefaultEdge(vertex, new DefaultVertex(node.getChildAt(i))));
-        }
-        return result;
-      }
-
+      
     };
     
     
     // apply tree layout
-    Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-30,-8,60,16));
+    Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-40,-8,80,16));
     
     try {
       TreeLayoutAlgorithm algorithm = new TreeLayoutAlgorithm();
+      algorithm.setDistanceBetweenGenerations(20);
+      algorithm.setDistanceInGeneration(8);
       algorithm.setOrientation(90);
       algorithm.setAlignmentOfParent(1);
       algorithm.setBendArcs(true);
@@ -113,6 +104,28 @@ public class SwingTree {
     // stuff into a graph widget
     GraphWidget graphWidget = new GraphWidget(layout);
     graphWidget.setGraph(graph);
+    graphWidget.setRenderer(new GraphRenderer() {
+      public void render(Graph graph, Layout2D layout, Graphics2D graphics) {
+        // render verticies
+        for (Vertex v : graph.getVertices()) {
+          Point2D p = layout.getPositionOfVertex(v);
+          Rectangle r = layout.getShapeOfVertex(v).getBounds();
+          r.translate((int)p.getX(), (int)p.getY());
+          boolean leaf = graph.getEdges(v).size() == 1;
+          Component c =treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false);
+          c.setSize(r.getSize());
+          c.paint(graphics.create(r.x, r.y, r.width, r.height ));
+        }
+        // render edges
+        graphics.setColor(Color.LIGHT_GRAY);
+        for (Edge edge : graph.getEdges()) {
+          Point2D pos = layout.getPositionOfVertex(edge.getStart());
+          graphics.translate(pos.getX(), pos.getY());
+          graphics.draw(layout.getShapeOfEdge(edge));
+          graphics.translate(-pos.getX(), -pos.getY());
+        }
+      }
+    });
  
     // and show
     JPanel content = new JPanel(new GridLayout(1,2));

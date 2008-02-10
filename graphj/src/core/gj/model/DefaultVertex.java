@@ -27,15 +27,15 @@ import java.util.Set;
 /**
  * A vertex implementation - suitable for on-the-fly/lazy generation
  */
-public class DefaultVertex implements Vertex {
+public class DefaultVertex<T> implements Vertex {
   
-  private Object content;
+  private T content;
   
-  public DefaultVertex(Object content) {
+  public DefaultVertex(T content) {
     this.content = content;
   }
   
-  public Object getContent() {
+  public T getContent() {
     return content;
   }
   
@@ -48,7 +48,7 @@ public class DefaultVertex implements Vertex {
   public boolean equals(Object obj) {
     if (!(obj instanceof DefaultVertex))
       return false;
-    DefaultVertex that = (DefaultVertex)obj;
+    DefaultVertex<?> that = (DefaultVertex<?>)obj;
     return this.content.equals(that.content);
   }
   
@@ -60,14 +60,14 @@ public class DefaultVertex implements Vertex {
   public static Set<Vertex> wrap(Object[] verticies) {
     Set<Vertex> result = new LinkedHashSet<Vertex>();
     for (Object vertex : verticies)
-      result.add(new DefaultVertex(vertex));
+      result.add(new DefaultVertex<Object>(vertex));
     return result;
   }
   
-  public static Set<Vertex> wrap(Collection<?> verticies) {
+  public static Set<Vertex> wrap(Collection<Object> verticies) {
     Set<Vertex> result = new LinkedHashSet<Vertex>();
     for (Object vertex : verticies)
-      result.add(new DefaultVertex(vertex));
+      result.add(new DefaultVertex<Object>(vertex));
     return result;
   }
   
