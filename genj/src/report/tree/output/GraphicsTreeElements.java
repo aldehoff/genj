@@ -306,7 +306,7 @@ public class GraphicsTreeElements implements TreeElements {
         }
 
         // Date and place of death
-        if (i.getDeathDate() != null) {
+        if (i.getDeathDate() != null || i.getProperty(PATH_INDIDEATPLAC) != null) {
             centerString(graphics, Options.getInstance().getDeathSymbol(), x + 7, currentY);
             if (deathDate != null) {
                 graphics.drawString(deathDate.toString(), x + 13, currentY);

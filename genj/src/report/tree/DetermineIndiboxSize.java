@@ -89,9 +89,11 @@ public class DetermineIndiboxSize extends TreeFilterBase {
             lines++;
 
         Property deathPlace = i.getProperty(PATH_INDIDEATPLAC);
-        if (i.getDeathDate() != null) {
+        if (deathPlace != null && deathPlace.toString().equals(""))
+            deathPlace = null;
+        if (i.getDeathDate() != null || deathPlace != null) {
             lines++;
-            if (drawDates && drawPlaces && i.getDeathDate().isValid() && deathPlace != null && !deathPlace.toString().equals(""))
+            if (drawDates && drawPlaces && i.getDeathDate() != null && i.getDeathDate().isValid() && deathPlace != null)
                 lines++;
         }
         if (drawOccupation && i.getProperty(PATH_INDIOCCU) != null)
