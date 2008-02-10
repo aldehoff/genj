@@ -12,6 +12,11 @@ import genj.report.Report;
 import genj.util.swing.Action2;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Creates classes that write report output. This can be
@@ -21,50 +26,48 @@ import java.io.File;
  */
 public class GraphicsOutputFactory {
 
-    public static final int SVG_OUTPUT = 0;
-    public static final int PDF_OUTPUT = 1;
-    public static final int PNG_OUTPUT = 2;
-    public static final int SCREEN_OUTPUT = 3;
+    private static final String PREFIX = "output_type.";
 
-    /**
-     * Containing report. Used to show dialogs and translate strings.
-     */
-    private Report report;
+    private Map/*<String, Class>*/ outputs = new LinkedHashMap();
+    private List/*<Class>*/ outputList = new ArrayList();
+
+    private static GraphicsOutputFactory instance = null;
 
     /**
      * Creates the object
      * @param report  containing report object
-     * @param properties  report properties
      */
-    public GraphicsOutputFactory(Report report) {
-        this.report = report;
+    protected GraphicsOutputFactory() {
+        add("svg", SvgWriter.class);
+        add("pdf", PdfWriter.class);
+        add("png", PngWriter.class);
+        add("screen", ScreenOutput.class);
+    }
+
+    public static GraphicsOutputFactory getInstance()
+    {
+        if (instance == null)
+            instance = new GraphicsOutputFactory();
+        return instance;
     }
 
     /**
      * Creates the output class for the given type.
      * @param type  output type
+     * @param report  Containing report. Used to show dialogs and translate strings.
      */
-    public GraphicsOutput createOutput(int type) {
+    public GraphicsOutput createOutput(int type, Report report) {
 
-    	GraphicsOutput output = null;
+        GraphicsOutput output = createOutput((Class)outputList.get(type));
 
-    	if (type == SCREEN_OUTPUT)
-    		output = new ScreenOutput();
-    	else if (type == SVG_OUTPUT)
-    		output = new SvgWriter();
-    	else if (type == PDF_OUTPUT)
-    		output = new PdfWriter();
-        else if (type == PNG_OUTPUT)
-            output = new PngWriter();
+        if (output == null)
+            return null;
 
-    	if (output == null)
-    		return null;
+        if (output instanceof GraphicsFileOutput) {
+            GraphicsFileOutput fileOutput = (GraphicsFileOutput)output;
+            String extension = fileOutput.getFileExtension();
 
-    	if (output instanceof GraphicsFileOutput) {
-    		GraphicsFileOutput fileOutput = (GraphicsFileOutput)output;
-    		String extension = fileOutput.getFileExtension();
-
-        	// Get filename from users
+            // Get filename from users
             File file = report.getFileFromUser(report.translate("output.file"),
                         Action2.TXT_OK, true, extension);
             if (file == null)
@@ -73,10 +76,45 @@ public class GraphicsOutputFactory {
             // Add appropriate file extension
             String suffix = "." + extension;
             if (!file.getPath().endsWith(suffix))
-            	file = new File(file.getPath() + suffix);
+                file = new File(file.getPath() + suffix);
             fileOutput.setFile(file);
-    	}
+        }
 
         return output;
+    }
+
+    public void add(String name, Class clazz)
+    {
+        outputs.put(name, clazz);
+        outputList.add(clazz);
+    }
+
+    public String[] getChoices(Report report)
+    {
+        Iterator iter = outputs.keySet().iterator();
+        String[] choices = new String[outputs.size()];
+        int i = 0;
+        while (iter.hasNext()) {
+            choices[i] = report.translate(PREFIX + (String)iter.next());
+            i++;
+        }
+        return choices;
+    }
+
+    private GraphicsOutput createOutput(Class clazz) {
+        try
+        {
+            return (GraphicsOutput)clazz.newInstance();
+        }
+        catch (InstantiationException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+        catch (IllegalAccessException e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

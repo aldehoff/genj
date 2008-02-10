@@ -90,9 +90,7 @@ public class ReportGraphicalTree extends Report {
      */
     public int output_type = 0;
 
-    public String[] output_types = { translate("output_type.svg"),
-            translate("output_type.pdf"), translate("output_type.png"),
-            translate("output_type.screen") };
+    public String[] output_types = null;
 
     /**
      * Number of generations of ancestors.
@@ -211,11 +209,15 @@ public class ReportGraphicalTree extends Report {
     public String[] arrangements = { translate("arrangement.center"),
             translate("arrangement.left"), translate("arrangement.top") };
 
-	/**
-	 * Image title.
-	 */
+    /**
+     * Image title.
+     */
     public String title = "";
 
+    public ReportGraphicalTree()
+    {
+        output_types = GraphicsOutputFactory.getInstance().getChoices(this);
+    }
 
     /**
      * The result is stored in files
@@ -295,8 +297,7 @@ public class ReportGraphicalTree extends Report {
             renderer = new TitleRenderer(renderer, title);
 
         // Render and display the tree
-        GraphicsOutputFactory outputFactory = new GraphicsOutputFactory(this);
-        GraphicsOutput output = outputFactory.createOutput(output_type);
+        GraphicsOutput output = GraphicsOutputFactory.getInstance().createOutput(output_type, this);
         if (output == null)
             return; // Report cancelled
 
