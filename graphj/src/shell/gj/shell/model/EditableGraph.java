@@ -39,7 +39,7 @@ import java.util.Set;
 public class EditableGraph implements Graph {
   
   /** current selection - either edge or vertex*/
-  private EditableElement selection;
+  private Object selection;
   
   /** the contained nodes */
   protected Set<EditableVertex> vertices = new LinkedHashSet<EditableVertex>(10);
@@ -64,10 +64,10 @@ public class EditableGraph implements Graph {
   /**
    * add an edge
    */
-  public EditableEdge addEdge(EditableVertex from, EditableVertex to, Shape shape) {
+  public EditableEdge addEdge(EditableVertex from, EditableVertex to) {
     if (from==to)
       throw new IllegalArgumentException("no edges between self allowed");
-    EditableEdge edge = from.addEdge(to, shape);
+    EditableEdge edge = from.addEdge(to);
     edges.add(edge);
     return edge;
   }
@@ -130,24 +130,24 @@ public class EditableGraph implements Graph {
   /**
    * Access - current selection
    */
-  public void setSelection(EditableElement set) {
+  public void setSelection(Object set) {
     selection = set;
   }
   
   /**
    * Access - current selection
    */
-  public EditableElement getSelection() {
+  public Object getSelection() {
     return selection;
   }
   
   /**
    * find a vertex or edge by position
    */
-  public EditableElement getElement(Point2D point) {
+  public Object getElement(Point2D point) {
     
     // look through vertices
-    EditableElement result = getVertex(point);
+    Object result = getVertex(point);
     if (result!=null)
       return result;
 

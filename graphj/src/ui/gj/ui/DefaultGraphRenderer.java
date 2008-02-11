@@ -19,6 +19,7 @@
  */
 package gj.ui;
 
+import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Layout2D;
 import gj.model.Edge;
@@ -40,6 +41,14 @@ import java.awt.geom.Rectangle2D;
  * A default implementation for rendering a graph
  */
 public class DefaultGraphRenderer implements GraphRenderer {
+
+  /** an arrow-head pointing upwards */
+  private final static Shape ARROW_HEAD = ShapeHelper.createShape(0,0,1,1,new double[]{
+      ShapeHelper.SEG_MOVETO, 0, 0, 
+      ShapeHelper.SEG_LINETO, -5, -7, 
+      ShapeHelper.SEG_MOVETO,  5, -7, 
+      ShapeHelper.SEG_LINETO, 0, 0
+  });
 
   /**
    * The rendering functionality
@@ -136,15 +145,25 @@ public class DefaultGraphRenderer implements GraphRenderer {
    */
   private void renderEdge(Graph graph, Edge edge, Layout2D layout, Graphics2D graphics) {
     
+    AffineTransform old = graphics.getTransform();
+    
     // arbitrary color
     graphics.setColor(getColor(edge));
     
+    // draw path from start
     Point2D pos = layout.getPositionOfVertex(edge.getStart());
+    Path path = layout.getPathOfEdge(edge);
     graphics.translate(pos.getX(), pos.getY());
-    graphics.draw(layout.getShapeOfEdge(edge));
-    graphics.translate(-pos.getX(), -pos.getY());
+    graphics.draw(layout.getPathOfEdge(edge));
+    
+    // draw arrow
+    pos = path.getLastPoint();
+    graphics.translate(pos.getX(), pos.getY());
+    graphics.rotate(path.getLastAngle());
+    graphics.draw(ARROW_HEAD);
     
     // done      
+    graphics.setTransform(old);
   }
 
   /**

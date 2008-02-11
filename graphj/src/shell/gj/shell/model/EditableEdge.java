@@ -20,6 +20,7 @@
 package gj.shell.model;
 
 import gj.geom.Geometry;
+import gj.geom.Path;
 import gj.model.Edge;
 import gj.util.EdgeLayoutHelper;
 
@@ -30,7 +31,7 @@ import java.awt.geom.Point2D;
 /**
  * A default implementation for an Edge
  */
-public class EditableEdge extends EditableElement implements Edge {
+public class EditableEdge implements Edge {
   
   /** starting vertex */
   private EditableVertex start;
@@ -38,16 +39,16 @@ public class EditableEdge extends EditableElement implements Edge {
   /** ending vertex */
   private EditableVertex end;
   
+  private Path path;
+  
   private long hash = -1;
   
   /**
    * Constructor
    */
-  EditableEdge(EditableVertex start, EditableVertex end, Shape shape) {
+  EditableEdge(EditableVertex start, EditableVertex end) {
     this.start = start;
     this.end = end;
-    
-    setShape(shape);
   }
   
   /**
@@ -55,30 +56,38 @@ public class EditableEdge extends EditableElement implements Edge {
    */
   public boolean contains(Point2D point) {
     Point2D origin = start.getPosition();
-    return 8>Geometry.getMinimumDistance(point, getShape().getPathIterator(AffineTransform.getTranslateInstance(origin.getX(), origin.getY())));
+    return 8>Geometry.getMinimumDistance(point, getPath().getPathIterator(AffineTransform.getTranslateInstance(origin.getX(), origin.getY())));
   }
   
   /**
    * overriden - create a default edge shape if necessary
    */
-  @Override
-  public Shape getShape() {
+  public Path getPath() {
     
     if (!updateHash()) 
-      setShape(makeShape());
+      setPath(makeShape());
     
-    return super.getShape();
+    return path;
   }
   
-  private Shape makeShape() {
+  private Path makeShape() {
     return EdgeLayoutHelper.getShape(start.getPosition(), start.getShape(), end.getPosition(), end.getShape());   
   }
   
-  @Override
   public void setShape(Shape set) {
+    if (set==null) {
+      setPath(null);
+      return;
+    }
+
+    setPath(new Path(set));
+    
+  }
+  
+  public void setPath(Path set) {
     if (set==null)
       set = makeShape();
-    super.setShape(set);
+    path = set;
     updateHash();
   }
   

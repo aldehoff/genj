@@ -19,6 +19,7 @@
  */
 package gj.shell;
 
+import gj.geom.Path;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
@@ -89,7 +90,7 @@ import java.util.List;
     for (Iterator<EditableEdge> edges = graph.getEditableEdges().iterator(); edges.hasNext(); ) {
       EditableEdge edge = edges.next();
       edgesAndShapes.add(edge);
-      edgesAndShapes.add(edge.getShape());
+      edgesAndShapes.add(edge.getPath());
     }
     
     // move back to start
@@ -150,7 +151,7 @@ import java.util.List;
     // FIXME edges *AND* shapes???
     Iterator<?> it = edgesAndShapes.iterator();
     while (it.hasNext()) {
-      ((EditableEdge)it.next()).setShape((Shape)it.next());
+      ((EditableEdge)it.next()).setPath((Path)it.next());
     }
     // stop all moves
     moves=null;

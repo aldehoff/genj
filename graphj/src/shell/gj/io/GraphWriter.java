@@ -100,7 +100,7 @@ public class GraphWriter implements PathIteratorKnowHow {
     info.put("s", getId(edge.getStart()));
     info.put("e", getId(edge.getEnd()));
     push("edge",info,false);
-      writeShape(edge.getShape(),-1);
+      writeShape("path", edge.getPath(),-1);
     pop();
   }
 
@@ -115,7 +115,7 @@ public class GraphWriter implements PathIteratorKnowHow {
       // check known shape
       Shape s = vertex.getShape();
       if (!element2id.containsKey(s))
-        writeShape(s, element2id.size()+1);
+        writeShape("shape",s, element2id.size()+1);
       // next
     }
     // done
@@ -125,14 +125,14 @@ public class GraphWriter implements PathIteratorKnowHow {
   /**
    * Write - Shape
    */
-  private void writeShape(Shape shape, int sid) throws IOException {
+  private void writeShape(String element, Shape shape, int sid) throws IOException {
 
     ElementInfo info = new ElementInfo();
     if (sid>=0) {
       info.put("id", sid);
       element2id.put(shape,new Integer(sid));
     }
-    push("shape",info,false);
+    push(element,info,false);
     PathIterator it = shape.getPathIterator(null);
     double[] segment = new double[6];
     while (!it.isDone()) {

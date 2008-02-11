@@ -20,6 +20,7 @@
 package gj.layout;
 
 
+import gj.geom.Path;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -34,12 +35,12 @@ public interface Layout2D {
   /**
    * Edge's shape
    */
-  public Shape getShapeOfEdge(Edge edge);
+  public Path getPathOfEdge(Edge edge);
 
   /**
    * Edge's shape
    */
-  public void setShapeOfEdge(Edge edge, Shape shape);
+  public void setPathOfEdge(Edge edge, Path shape);
 
   /**
    * Vertex's shape

@@ -130,7 +130,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     protected ElementHandler start(String name, Attributes atts) {
       if ("node".equals(name)||"vertex".equals(name)) return new VertexHandler(graph, atts);
       if ("arc".equals(name)||"edge".equals(name)) return new EdgeHandler(graph, atts);
-      if ("shape".equals(name)) return new ShapeHandler(new Point2D.Double(), atts);
+      if ("shape".equals(name)) return new ShapeHandler("shape", new Point2D.Double(), atts);
       return this;
     }
   } //GraphHandler
@@ -180,13 +180,13 @@ public class GraphReader implements PathIteratorKnowHow  {
       EditableVertex
         s = id2vertex.get(atts.getValue("s")),
         e = id2vertex.get(atts.getValue("e"));
-      edge = graph.addEdge(s, e, null);
+      edge = graph.addEdge(s, e);
       id2edge.put(atts.getValue("id"),edge);
     }
     @Override
     protected ElementHandler start(String name, Attributes atts) {
-      if ("shape".equals(name)) {
-        shapeHandler = new ShapeHandler(edge.getStart().getPosition(), atts);
+      if ("path".equals(name)) {
+        shapeHandler = new ShapeHandler("path", edge.getStart().getPosition(), atts);
         return shapeHandler;
       }
       return this;
@@ -203,14 +203,16 @@ public class GraphReader implements PathIteratorKnowHow  {
    * Handling structure elements - Shape
    */
   private class ShapeHandler extends ElementHandler {
+    private String end;
     private double[] values = new double[100];
     private int size=0;
     private String id;
     private Shape result;
     private Point2D origin;
-    protected ShapeHandler(Point2D origin, Attributes atts) {
+    protected ShapeHandler(String end, Point2D origin, Attributes atts) {
       id = atts.getValue("id");
       this.origin = origin;
+      this.end = end;
     }
     @Override
     protected ElementHandler start(String name, Attributes atts) {
@@ -248,7 +250,7 @@ public class GraphReader implements PathIteratorKnowHow  {
     }
     @Override
     protected void end(String name) {
-      if (!"shape".equals(name)) return;
+      if (!end.equals(name)) return;
       values[size++]=-1;
       result = ShapeHelper.createShape(0,0,1,1,values);
       if (id!=null) id2shape.put(id, result);

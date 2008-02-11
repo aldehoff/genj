@@ -165,7 +165,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       if (to.equals(from)) 
         continue;
       
-      EditableEdge edge = graph.addEdge(from, to, null);
+      EditableEdge edge = graph.addEdge(from, to);
     }
     
     // isConnected?
@@ -208,7 +208,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       while (true) {
         EditableVertex other = getRandomNode(others,true);
         if (!vertex.equals(other)&&graph.getNumAdjacentVertices(other) < minDegree || others.isEmpty()) {
-          graph.addEdge(vertex, other, null);
+          graph.addEdge(vertex, other);
           break;
         }
       }
@@ -238,7 +238,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       EditableVertex from = getMinDegNode(graph,nodes,true);
       if (!ModelHelper.isNeighbour(graph,from,nodes)) {
         EditableVertex to = getMinDegNode(graph, nodes,false);
-        graph.addEdge(from, to, null);
+        graph.addEdge(from, to);
       }
     }
     

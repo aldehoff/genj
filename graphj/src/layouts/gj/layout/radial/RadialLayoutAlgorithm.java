@@ -336,7 +336,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
         
         for (Edge edge : graph.getEdges(root)) {
           if (!ModelHelper.contains(edge, backtrack))
-            EdgeLayoutHelper.setShape(edge, layout);
+            EdgeLayoutHelper.setPath(edge, layout);
         }
         
         if (debug!=null) {

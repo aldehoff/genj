@@ -26,7 +26,6 @@ import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
 import gj.shell.model.EditableEdge;
-import gj.shell.model.EditableElement;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableLayout;
 import gj.shell.model.EditableVertex;
@@ -292,8 +291,8 @@ public class EditableGraphWidget extends GraphWidget {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      EditableElement oldSelection = graph.getSelection();
-      EditableElement newSelection = graph.getElement(getPoint(e.getPoint()));
+      Object oldSelection = graph.getSelection();
+      Object newSelection = graph.getElement(getPoint(e.getPoint()));
       graph.setSelection(newSelection);
       // popup?
       if (e.isPopupTrigger()) {
@@ -429,7 +428,7 @@ public class EditableGraphWidget extends GraphWidget {
           return;
         // create dummies
         dummy = graph.addVertex(null, null, null);      
-        graph.addEdge(from, dummy, null);
+        graph.addEdge(from, dummy);
       }
       // place dummy (tip of arc)
       Point2D pos = getPoint(e.getPoint());
@@ -572,7 +571,7 @@ public class EditableGraphWidget extends GraphWidget {
     }
     @Override
     protected void execute() throws Exception {
-      graph.addEdge(from, to, null);
+      graph.addEdge(from, to);
     }
   }
   

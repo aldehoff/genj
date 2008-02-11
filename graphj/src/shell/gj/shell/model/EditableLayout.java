@@ -19,6 +19,7 @@
  */
 package gj.shell.model;
 
+import gj.geom.Path;
 import gj.layout.Layout2D;
 import gj.model.Edge;
 import gj.model.Vertex;
@@ -34,15 +35,15 @@ public class EditableLayout implements Layout2D {
   /**
    * interface implementation
    */
-  public Shape getShapeOfEdge(Edge edge) {
-    return ((EditableEdge)edge).getShape();
+  public Path getPathOfEdge(Edge edge) {
+    return ((EditableEdge)edge).getPath();
   }
 
   /**
    * interface implementation
    */
-  public void setShapeOfEdge(Edge edge, Shape shape) {
-    ((EditableEdge)edge).setShape(shape);
+  public void setPathOfEdge(Edge edge, Path path) {
+    ((EditableEdge)edge).setPath(path);
  }
 
   /**

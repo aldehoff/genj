@@ -26,25 +26,21 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.logging.Logger;
 
 /**
  * A 2D path - missing from the jawa.awt.geom.* stuff
  */
 public class Path implements Shape, PathIteratorKnowHow {
-
-  /** an arrow-head pointing upwards */
-  private final static Shape ARROW_HEAD = ShapeHelper.createShape(0,0,1,1,new double[]{
-      ShapeHelper.SEG_MOVETO, 0, 0, 
-      ShapeHelper.SEG_LINETO, -5, -7, 
-      ShapeHelper.SEG_MOVETO,  5, -7, 
-      ShapeHelper.SEG_LINETO, 0, 0
-  });
   
+  private final static Logger LOG = Logger.getLogger("genj.geom");
+
   /** a general path we keep */
   private GeneralPath gp = new GeneralPath();
   
-  /** the lastAngle we keep */
-  private double lastAngle;
+  /** the angles we keep */
+  private double firstAngle = Double.NaN;
+  private double lastAngle = Double.NaN;
   
   /** the lastPoint we keep */
   private Point2D.Double lastPoint = new Point2D.Double();
@@ -52,11 +48,65 @@ public class Path implements Shape, PathIteratorKnowHow {
   /** whether we've been started */
   private boolean isStarted = false;
   
-  /** whether we've been ended */
-  private boolean isEnded = false;
+  /**
+   * Constructor
+   */
+  public Path() {
+  }
   
-  /** whether we still need a start arrow */
-  private boolean needsStartArrow = false;
+  /**
+   * Constructor
+   */
+  public Path(Path that, AffineTransform at) {
+    this.gp = new GeneralPath(that.gp);
+    this.gp.transform(at);
+    this.firstAngle = that.firstAngle;
+    this.lastAngle = that.lastAngle;
+    this.lastPoint = that.lastPoint;
+    this.isStarted = that.isStarted;
+  }
+  
+  /**
+   * Constructor
+   */
+  public Path(Shape that) {
+    
+    ShapeHelper.iterateShape(that.getPathIterator(null), new SegmentConsumer() {
+
+      @Override
+      public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
+        if (!isStarted)
+          start(start);
+        if (!lastPoint.equals(start))
+          throw new IllegalArgumentException("gap in path between "+lastPoint+" and "+start);
+        curveTo(ctrl1, ctrl2, end);
+        return true;
+      }
+
+      @Override
+      public boolean consumeLine(Point2D start, Point2D end) {
+        if (!isStarted)
+          start(start);
+        if (!lastPoint.equals(start))
+          throw new IllegalArgumentException("gap in path between "+lastPoint+" and "+start);
+        lineTo(end);
+        return true;
+      }
+
+      @Override
+      public boolean consumeQuadCurve(Point2D start, Point2D ctrl, Point2D end) {
+        if (!isStarted)
+          start(start);
+        if (!lastPoint.equals(start))
+          throw new IllegalArgumentException("gap in path between "+lastPoint+" and "+start);
+        quadTo(ctrl, end);
+        return true;
+      }
+      
+      
+    });
+    
+  }
   
   /**
    * Accessor - lastPoint
@@ -90,60 +140,10 @@ public class Path implements Shape, PathIteratorKnowHow {
     );
   }
   
-//  /**
-//   * Sets to given shape
-//   */
-//  public synchronized Path set(Shape shape) {
-//    
-//    // reset what we've got
-//    gp.reset();
-//
-//    // look at shape
-//    Point2D.Double p = new Point2D.Double();
-//    PathIterator it = shape.getPathIterator(null);
-//    float[] vals = new float[6];
-//    while (!it.isDone()) {
-//      
-//      int type = it.currentSegment(vals);
-//      int i = -1;
-//      switch (type) {
-//        case SEG_CLOSE:
-//          throw new IllegalArgumentException("Path cannot be closed");
-//        case SEG_CUBICTO:
-//          gp.curveTo(vals[0],vals[1],vals[2],vals[3],vals[4],vals[5]); 
-//          i=4;
-//          break;
-//        case SEG_LINETO:
-//          gp.lineTo(vals[0],vals[1]); 
-//          i=0;
-//          break;
-//        case SEG_MOVETO:
-//          gp.moveTo(vals[0],vals[1]); 
-//          i=0;
-//          break;
-//        case SEG_QUADTO:
-//          gp.quadTo(vals[0],vals[1],vals[2],vals[3]); 
-//          i=2;
-//          break;
-//      }
-//
-//      lastPoint.setLocation(p.getX(),p.getY());
-//      p.setLocation(vals[i+0],vals[i+1]);
-//      it.next();
-//    }
-//
-//    // update last...
-//    lastAngle = Geometry.getAngle(lastPoint,p);
-//    lastPoint.setLocation(p.getX(), p.getY());
-//
-//    // done    
-//    return this;
-//  }
-  
   /**
    * start the path
    */
-  public synchronized Path start(boolean arrow, Point2D p) {
+  public synchronized Path start(Point2D p) {
     
     // start this
     if (isStarted)
@@ -156,9 +156,6 @@ public class Path implements Shape, PathIteratorKnowHow {
     // remember 'last' point
     lastPoint.setLocation(p.getX(), p.getY());
 
-    // remember arrow
-    needsStartArrow = arrow;
-
     // done
     return this;
   }
@@ -169,8 +166,6 @@ public class Path implements Shape, PathIteratorKnowHow {
   private void checkContinue() {
     if (!isStarted)
       throw new IllegalArgumentException("continue without start");
-    if (isEnded)
-      throw new IllegalArgumentException("continue after end");
   }
   
   /**
@@ -179,16 +174,12 @@ public class Path implements Shape, PathIteratorKnowHow {
   public synchronized Path lineTo(Point2D p) {
     // check 
     checkContinue();
-    // add opening arrrow
-    if (needsStartArrow) {
-      AffineTransform at = AffineTransform.getTranslateInstance(lastPoint.getX(), lastPoint.getY());
-      at.rotate(Geometry.getAngle(lastPoint, p)+Math.PI);
-      gp.append(ARROW_HEAD.getPathIterator(at), false);
-      needsStartArrow = false;
-    }
+    // add opening angle
+    if (Double.isNaN(firstAngle)); 
+      firstAngle = Geometry.getAngle(lastPoint, p);
     // do the line
     gp.lineTo((float)p.getX(), (float)p.getY());
-    // remember angle
+    // remember closing angle & position
     lastAngle = Geometry.getAngle(lastPoint,p);
     lastPoint.setLocation(p.getX(), p.getY());
     return this;
@@ -199,9 +190,11 @@ public class Path implements Shape, PathIteratorKnowHow {
    */
   public synchronized Path quadTo(Point2D c, Point2D p) {
     checkContinue();
-    // FIXME add opening arrow
     gp.quadTo((float)c.getX(), (float)c.getY(), (float)p.getX(), (float)p.getY());
-    // FIXME compute lastAngle
+    
+    // remember closing angle & position
+    // FIXME this needs to be calculated based on quad curve to p
+    lastAngle = Geometry.getAngle(lastPoint,p);
     lastPoint.setLocation(p.getX(), p.getY());
     return this;
   }
@@ -211,35 +204,15 @@ public class Path implements Shape, PathIteratorKnowHow {
    */
   public synchronized Path curveTo(Point2D c1, Point2D c2, Point2D p) {
     checkContinue();
-    // FIXME add opening arrow
     gp.curveTo((float)c1.getX(), (float)c1.getY(), (float)c2.getX(), (float)c2.getY(), (float)p.getX(), (float)p.getY());
-    // FIXME compute lastAngle
+    
+    // remember closing angle & position
+    // FIXME this needs to be calculated based on cubic curve to p
+    lastAngle = Geometry.getAngle(lastPoint,p);
     lastPoint.setLocation(p.getX(), p.getY());
     return this;
   }
 
-  /**
-   * End
-   */
-  public synchronized void end(boolean arrow) {
-
-    // check status
-    if (!isStarted)
-      throw new IllegalArgumentException("end without start");
-    if (isEnded)
-      throw new IllegalArgumentException("end after end");
-    isEnded = true;
-    
-    // add arrow
-    if (arrow) {
-      AffineTransform at = AffineTransform.getTranslateInstance(lastPoint.getX(), lastPoint.getY());
-      at.rotate(lastAngle);
-      gp.append(ARROW_HEAD.getPathIterator(at), false);
-    }
-    
-    // done
-  }
-  
   /**
    * @see java.awt.Shape#contains(double, double, double, double)
    */

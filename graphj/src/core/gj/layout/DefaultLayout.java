@@ -19,6 +19,7 @@
  */
 package gj.layout;
 
+import gj.geom.Path;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.EdgeLayoutHelper;
@@ -37,7 +38,7 @@ public class DefaultLayout implements Layout2D {
   private Shape defaultShape;
   private Map<Vertex, Point2D> vertex2point = new HashMap<Vertex, Point2D>();
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
-  private Map<Edge, Shape> edge2shape = new HashMap<Edge, Shape>();
+  private Map<Edge, Path> edge2path = new HashMap<Edge, Path>();
 
   public DefaultLayout() {
     defaultShape = new Rectangle();
@@ -58,18 +59,18 @@ public class DefaultLayout implements Layout2D {
     vertex2point.put(vertex, new Point2D.Double(pos.getX(), pos.getY()));
   }
 
-  public Shape getShapeOfEdge(Edge edge) {
+  public Path getPathOfEdge(Edge edge) {
     
-    Shape result = edge2shape.get(edge);
+    Path result = edge2path.get(edge);
     if (result==null) {
-      result = EdgeLayoutHelper.getShape(edge, this);
-      edge2shape.put(edge, result);
+      result = EdgeLayoutHelper.getPath(edge, this);
+      edge2path.put(edge, result);
     }
     return result;
   }
 
-  public void setShapeOfEdge(Edge edge, Shape shape) {
-    edge2shape.put(edge, shape);
+  public void setPathOfEdge(Edge edge, Path path) {
+    edge2path.put(edge, path);
   }
 
   public Shape getShapeOfVertex(Vertex vertex) {

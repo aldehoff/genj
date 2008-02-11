@@ -21,16 +21,16 @@ package gj.shell.model;
 
 import gj.model.Vertex;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
  * A default implementation for a vertex
  */
-public class EditableVertex extends EditableElement implements Vertex {
+public class EditableVertex implements Vertex {
   
   /** the content of this vertex */
   private Object content;
@@ -43,6 +43,23 @@ public class EditableVertex extends EditableElement implements Vertex {
   
   /** all edges of this vertex */
   private Set<EditableEdge> edges = new LinkedHashSet<EditableEdge>(3);
+  
+  /** the shape of this node */
+  private Shape shape;
+
+  /**
+   * interface implementation
+   */
+  public Shape getShape() {
+    return shape;
+  }
+  
+  /**
+   * interface implementation
+   */
+  public void setShape(Shape set) {
+    shape = set!=null ? set : new Rectangle();
+  }
   
   /**
    * Constructor
@@ -79,7 +96,7 @@ public class EditableVertex extends EditableElement implements Vertex {
   /**
    * Adds an edge to given vertex
    */
-  /*package*/ EditableEdge addEdge(EditableVertex that, Shape shape) {
+  /*package*/ EditableEdge addEdge(EditableVertex that) {
 
     // don't allow duplicates
     if (neighbours.contains(that))
@@ -88,7 +105,7 @@ public class EditableVertex extends EditableElement implements Vertex {
       throw new IllegalArgumentException("can't have edge between self ("+this+")");
 
     // setup self
-    EditableEdge edge = new EditableEdge(this, that, shape);
+    EditableEdge edge = new EditableEdge(this, that);
     this.neighbours.add(that);
     this.edges.add(edge);
     
@@ -126,18 +143,6 @@ public class EditableVertex extends EditableElement implements Vertex {
     edges.remove(edge);
     neighbours.remove(edge.getStart());
     neighbours.remove(edge.getEnd());
-  }
-  
-  /**
-   * overriden - shape
-   */
-  @Override
-  public void setShape(Shape set) {
-    // check for null
-    if (set==null)
-      set = new Rectangle2D.Float();
-    // continue
-    super.setShape(set);
   }
   
   /**

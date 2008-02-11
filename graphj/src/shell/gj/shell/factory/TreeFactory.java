@@ -134,9 +134,9 @@ public class TreeFactory extends AbstractGraphFactory {
         EditableVertex to = nodes.get(key);
 
         if (Math.random()>0.5) {
-          graph.addEdge(from, to, null);
+          graph.addEdge(from, to);
         } else {
-          graph.addEdge(to, from, null);
+          graph.addEdge(to, from);
         }
       }
     }

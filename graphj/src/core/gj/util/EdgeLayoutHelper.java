@@ -27,7 +27,6 @@ import gj.model.Graph;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
@@ -41,7 +40,7 @@ public class EdgeLayoutHelper {
   public static void setShapes(Graph graph, Layout2D layout) {
     
     for (Edge edge : graph.getEdges()) { 
-      setShape(edge, layout);
+      setPath(edge, layout);
     }
     
   }
@@ -49,11 +48,11 @@ public class EdgeLayoutHelper {
   /**
    * Calculate a shape for an arc
    */
-  public static void setShape(Edge edge, Layout2D layout) {
-    layout.setShapeOfEdge(edge, getShape(edge, layout));
+  public static void setPath(Edge edge, Layout2D layout) {
+    layout.setPathOfEdge(edge, getPath(edge, layout));
   }
   
-  public static Shape getShape(Edge edge, Layout2D layout) {
+  public static Path getPath(Edge edge, Layout2D layout) {
     Shape
     sfrom= layout.getShapeOfVertex(edge.getStart()),
     sto  = layout.getShapeOfVertex(edge.getEnd());
@@ -70,7 +69,7 @@ public class EdgeLayoutHelper {
    * @param s1 shape positioned at the first point
    * @param s2 shape positioned at the last point
    */  
-  public static Shape getShape(Point2D[] points, Shape s1, Shape s2) {
+  public static Path getPath(Point2D[] points, Shape s1, Shape s2) {
     
     // A simple line through points
     Path result = new Path();
@@ -83,7 +82,7 @@ public class EdgeLayoutHelper {
     double cx = points[0].getX(), cy = points[0].getY();
     
     // add the points to this path
-    result.start(false, new Point2D.Double( a.getX() - cx, a.getY() - cy));
+    result.start(new Point2D.Double( a.getX() - cx, a.getY() - cy));
     for (int i=1;i<points.length-1;i++) {
       result.lineTo( new Point2D.Double( 
           points[i].getX() - cx, 
@@ -91,8 +90,6 @@ public class EdgeLayoutHelper {
         ));
     }
     result.lineTo(new Point2D.Double( b.getX() - cx, b.getY() - cy));
-    
-    result.end(true);
     
     // done
     return result;
@@ -105,7 +102,7 @@ public class EdgeLayoutHelper {
    * @param p2 the ending point
    * @param s2 the shape sitting at p2
    */
-  public static Shape getShape(Point2D p1, Shape s1, Point2D p2, Shape s2) {
+  public static Path getShape(Point2D p1, Shape s1, Point2D p2, Shape s2) {
 
     Point2D 
     	a = calcEnd(p2, p1, s1),
@@ -113,9 +110,8 @@ public class EdgeLayoutHelper {
     
     // A simple line
     Path result = new Path();
-    result.start(false, new Point2D.Double(a.getX()-p1.getX(), a.getY()-p1.getY()));
+    result.start(new Point2D.Double(a.getX()-p1.getX(), a.getY()-p1.getY()));
     result.lineTo(new Point2D.Double(b.getX()-p1.getX(), b.getY()-p1.getY()));
-    result.end(true);
     
     // done
     return result; 
@@ -131,10 +127,7 @@ public class EdgeLayoutHelper {
   }
 
   public static void translate(Edge edge, Point2D delta, Layout2D layout) {
-    
-    GeneralPath gp = new GeneralPath(layout.getShapeOfEdge(edge));
-    gp.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
-    layout.setShapeOfEdge(edge, gp);
+    layout.setPathOfEdge(edge, new Path(layout.getPathOfEdge(edge), AffineTransform.getTranslateInstance(delta.getX(), delta.getY())));
     
   }
 

@@ -20,6 +20,7 @@
 package gj.layout.tree;
 
 import gj.geom.Geometry;
+import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
@@ -59,7 +60,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
   private double alignmentOfParent = 0.5;
 
   /** whether children should be balanced or simply stacked */
-  private boolean isBalanceChildren = true;
+  private boolean isBalanceChildren = false;
 
   /** whether arcs are direct or bended */
   private boolean isBendArcs = false;
@@ -386,7 +387,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
         if (ModelHelper.contains(edge, backtrack))
           continue;
 
-        Shape shape;
+        Path path;
         if (isBendArcs) {
           // calc edge layout
           Point2D[] points;
@@ -397,12 +398,12 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          shape = EdgeLayoutHelper.getShape(points, shape(edge.getStart()), shape(edge.getEnd()));
+          path = EdgeLayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()));
           
         } else {
-          shape = EdgeLayoutHelper.getShape(edge, layout);
+          path = EdgeLayoutHelper.getPath(edge, layout);
         }
-        layout.setShapeOfEdge(edge, shape);
+        layout.setPathOfEdge(edge, path);
       }
 
       // done

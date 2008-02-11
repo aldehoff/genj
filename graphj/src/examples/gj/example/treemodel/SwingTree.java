@@ -39,6 +39,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,9 +127,10 @@ public class SwingTree {
         graphics.setColor(Color.LIGHT_GRAY);
         for (Edge edge : graph.getEdges()) {
           Point2D pos = layout.getPositionOfVertex(edge.getStart());
+          AffineTransform old = graphics.getTransform();
           graphics.translate(pos.getX(), pos.getY());
-          graphics.draw(layout.getShapeOfEdge(edge));
-          graphics.translate(-pos.getX(), -pos.getY());
+          graphics.draw(layout.getPathOfEdge(edge));
+          graphics.setTransform(old);
         }
       }
     });
