@@ -10,6 +10,11 @@ package tree.filter;
 
 import tree.IndiBox;
 
+/**
+ * Ensures spouses' boxes are the same width.
+ *
+ * @author Przemek Wiech <pwiech@losthive.org>
+ */
 public class SameWidthSpouses extends TreeFilterBase {
     protected void preFilter(IndiBox indibox) {
         if (indibox.spouse != null) {

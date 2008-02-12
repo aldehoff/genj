@@ -18,7 +18,7 @@ import tree.IndiBox;
 import tree.IndiBox.Direction;
 
 /**
- * Common code for family tree rendering classes.
+ * Vertical family tree rendering.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */

@@ -13,6 +13,7 @@ import tree.IndiBox;
 
 /**
  * A filter chain executes a list of filters one after another.
+ *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
 public class FilterChain implements TreeFilter {
