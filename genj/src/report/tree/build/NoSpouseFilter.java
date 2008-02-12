@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import tree.IndiBox;
-import tree.TreeFilterBase;
+import tree.filter.TreeFilterBase;
 
 /**
  * Filters out all spouses (except ancestors).

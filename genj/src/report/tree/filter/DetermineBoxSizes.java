@@ -6,8 +6,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree;
+package tree.filter;
 
+import tree.IndiBox;
 import tree.output.TreeElements;
 
 /**

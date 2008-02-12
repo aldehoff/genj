@@ -9,7 +9,7 @@
 package tree.arrange;
 
 import tree.IndiBox;
-import tree.TreeFilter;
+import tree.filter.TreeFilter;
 
 /**
  * Abstract class for arranger classes.

@@ -19,14 +19,23 @@ import tree.arrange.AlignTopArranger;
 import tree.arrange.CenteredArranger;
 import tree.build.BasicTreeBuilder;
 import tree.build.NoSpouseFilter;
+import tree.build.RemoveFamboxes;
+import tree.build.RemoveFamboxesWhereNoSpouse;
 import tree.build.TreeBuilder;
+import tree.filter.DetermineBoxSizes;
+import tree.filter.FilterChain;
+import tree.filter.SameHeightSpouses;
+import tree.filter.SameWidthSpouses;
+import tree.filter.TreeFilter;
 import tree.graphics.GraphicsOutput;
 import tree.graphics.GraphicsOutputFactory;
 import tree.graphics.GraphicsRenderer;
 import tree.graphics.TitleRenderer;
 import tree.output.GraphicsTreeElements;
+import tree.output.HorizontalLines;
 import tree.output.HorizontalTreeRenderer;
 import tree.output.TreeElements;
+import tree.output.VerticalLines;
 import tree.output.VerticalTreeRenderer;
 
 /**
@@ -261,6 +270,10 @@ public class ReportGraphicalTree extends Report {
         IndiBox indibox = builder.build(indi);
         if (!show_spouses)
             new NoSpouseFilter().filter(indibox);
+        if (!display_fambox)
+            new RemoveFamboxes().filter(indibox);
+        else
+            new RemoveFamboxesWhereNoSpouse().filter(indibox);
 
         TreeElements elements = new GraphicsTreeElements(properties);
         new DetermineBoxSizes(elements).filter(indibox);
@@ -269,13 +282,25 @@ public class ReportGraphicalTree extends Report {
         TreeFilter arranger = null;
         switch (arrangement) {
             case ARRANGEMENT_CENTER:
-                arranger = new CenteredArranger(SPACING);
+                arranger = new FilterChain(new TreeFilter[] {
+                        new CenteredArranger(SPACING),
+                        new SameHeightSpouses(),
+                        new HorizontalLines(SPACING)
+                    });
                 break;
             case ARRANGEMENT_LEFT:
-                arranger = new AlignLeftArranger(SPACING);
+                arranger = new FilterChain(new TreeFilter[] {
+                        new AlignLeftArranger(SPACING),
+                        new SameHeightSpouses(),
+                        new HorizontalLines(SPACING)
+                    });
                 break;
             case ARRANGEMENT_TOP:
-                arranger = new AlignTopArranger(SPACING);
+                arranger = new FilterChain(new TreeFilter[] {
+                        new AlignTopArranger(SPACING),
+                        new SameWidthSpouses(),
+                        new VerticalLines(SPACING)
+                    });
                 break;
         }
         arranger.filter(indibox);
