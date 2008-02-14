@@ -37,28 +37,28 @@ import java.util.List;
  * Blueprint/Renderer Options
  */
 public class Options extends OptionProvider {
-  
+
   private final static Resources RESOURCES = Resources.get(Options.class);
-  
+
   /** singleton */
   private final static Options instance = new Options();
-  
+
   /** the default font */
   private Font defaultFont = new Font("SansSerif", 0, 11);
-  
+
   /** the current screen resolution */
-  private Point dpi = new Point( 
+  private Point dpi = new Point(
     Toolkit.getDefaultToolkit().getScreenResolution(),
     Toolkit.getDefaultToolkit().getScreenResolution()
   );
-  
+
   /**
    * singleton access
    */
   public static Options getInstance() {
     return instance;
   }
-  
+
   /**
    * Accessor - font
    */
@@ -81,15 +81,15 @@ public class Options extends OptionProvider {
     result.add(new ScreenResolutionOption());
     return result;
   }
-  
-  /** 
+
+  /**
    * Accessor - DPI
    */
   public Point getDPI() {
     return dpi;
   }
 
-  /** 
+  /**
    * Option for Screen Resolution
    */
   private class ScreenResolutionOption extends CustomOption {
@@ -97,6 +97,11 @@ public class Options extends OptionProvider {
     /** callback - user readble name */
     public String getName() {
       return RESOURCES.getString("option.screenresolution");
+    }
+
+    /** callback - user readble tool tip */
+    public String getToolTip() {
+      return RESOURCES.getString("option.screenresolution.tip", false);
     }
 
     /** callback - persist */

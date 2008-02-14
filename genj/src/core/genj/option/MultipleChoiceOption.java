@@ -29,22 +29,22 @@ import javax.swing.JComponent;
  * A multiple choice Option
  */
 public abstract class MultipleChoiceOption extends PropertyOption {
-  
+
   /** wrapped option */
   private PropertyOption option;
-  
+
   /** constructor */
   protected MultipleChoiceOption(PropertyOption option) {
     super(option.instance, option.getProperty());
     this.option = option;
   }
-  
-  /** restore */  
+
+  /** restore */
   public void restore(Registry registry) {
     option.restore(registry);
   }
 
-  /** persist */  
+  /** persist */
   public void persist(Registry registry) {
     option.persist(registry);
   }
@@ -58,7 +58,17 @@ public abstract class MultipleChoiceOption extends PropertyOption {
   public void setName(String set) {
     option.setName(set);
   }
-  
+
+  /** tool tip */
+  public String getToolTip() {
+    return option.getToolTip();
+  }
+
+  /** tool tip */
+  public void setToolTip(String set) {
+    option.setToolTip(set);
+  }
+
   /** value */
   public Object getValue() {
     return option.getValue();
@@ -69,29 +79,29 @@ public abstract class MultipleChoiceOption extends PropertyOption {
     option.setValue(set);
   }
 
-  /** ui access */  
+  /** ui access */
   public OptionUI getUI(OptionsWidget widget) {
     return new UI();
   }
 
-  
+
   /** getter for index */
   protected int getIndex() {
     return ((Integer)option.getValue()).intValue();
   }
-  
+
   /** setter for index */
   protected void setIndex(int i) {
     option.setValue(new Integer(i));
   }
-  
+
   /** getter for choice */
   protected Object getChoice() {
     Object[] choices = getChoices();
     int i = getIndex();
     return i<0||i>choices.length-1 ? null : choices[i];
   }
-  
+
   /** accessor choices */
   protected final Object[] getChoices() {
     try  {
@@ -118,23 +128,23 @@ public abstract class MultipleChoiceOption extends PropertyOption {
         index = -1;
       setSelectedIndex(index);
     }
-    
+
     /** component representation */
     public JComponent getComponentRepresentation() {
       return this;
     }
 
-    /** text representation */    
+    /** text representation */
     public String getTextRepresentation() {
       Object result = getChoice();
       return result!=null ? result.toString() : "";
     }
-    
+
     /** commit */
     public void endRepresentation() {
       setIndex(getSelectedIndex());
     }
 
   } //UI
-  
+
 } //MultipleChoiceOption

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.127 $ $Author: nmeier $ $Date: 2007-03-06 12:34:49 $
+ * $Revision: 1.128 $ $Author: pewu $ $Date: 2008-02-14 23:30:44 $
  */
 package genj.report;
 
@@ -215,12 +215,16 @@ public abstract class Report implements Cloneable {
       PropertyOption option = (PropertyOption)it.next();
       // restore old value
       option.restore(registry);
-      // options do try to localize the name based on a properties file
+      // options do try to localize the name and tool tip based on a properties file
       // in the same package as the instance - problem is that this
       // won't work with our special way of resolving i18n in reports
       // so we have to do that manually
       String oname = translate(option.getProperty());
       if (oname.length()>0) option.setName(oname);
+      String toolTipKey = option.getProperty() + ".tip";
+      String toolTip = translate(toolTipKey);
+      if (toolTip.length() > 0 && !toolTip.equals(toolTipKey))
+          option.setToolTip(toolTip);
       // set category
       option.setCategory(getName());
     }

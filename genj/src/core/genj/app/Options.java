@@ -64,31 +64,31 @@ public class Options extends OptionProvider {
 
   /** singleton */
   private final static Options instance = new Options();
-  
+
   /** window manager */
   private WindowManager windowManager;
-  
+
   /** resources */
   private Resources resources;
- 
+
   /** maximum log file size */
   private int maxLogSizeKB = 128;
-  
+
   /** the current looknfeel */
   private int lookAndFeel = -1;
-  
-  /** the current language code */    
+
+  /** the current language code */
   private int language = -1;
-  
+
   /** restore views during startup */
   public boolean isRestoreViews = true;
-  
+
   /** all available language codes */
   private static String[] languages;
-  
+
   /** all available language codes */
   private final static String[] codes = findCodes();
-  
+
   private static String[] findCodes() {
 
     // Check available language libraries
@@ -105,7 +105,7 @@ public class Options extends OptionProvider {
           result.add(dir);
       }
     }
-    
+
     // look for language libraries (./lib/genj_pt_BR.jar)
     File[] libs = new File("./lib").listFiles();
     if (libs!=null)
@@ -128,7 +128,7 @@ public class Options extends OptionProvider {
   public static Options getInstance() {
     return instance;
   }
-  
+
   /**
    * Register a window manager
    */
@@ -136,7 +136,7 @@ public class Options extends OptionProvider {
     windowManager = set;
   }
 
-  /** 
+  /**
    * Getter - looknfeel
    */
   public int getLookAndFeel() {
@@ -145,38 +145,38 @@ public class Options extends OptionProvider {
       setLookAndFeel(0);
     return lookAndFeel;
   }
-  
-  /** 
+
+  /**
    * Setter - looknfeel
    */
   public void setLookAndFeel(int set) {
-    
+
     // Check against available LnFs
     LnF[] lnfs = LnF.getLnFs();
     if (set<0||set>lnfs.length-1)
       set = 0;
-      
+
     // set it - apply on root components if available
     lnfs[set].apply(windowManager!=null?windowManager.getRootComponents():null);
 
     // remember
     lookAndFeel = set;
-    
+
     // done
   }
-  
+
   /**
    * Getter - looknfeels
    */
   public LnF[] getLookAndFeels() {
     return LnF.getLnFs();
   }
-  
+
   /**
    * Setter - language
    */
   public void setLanguage(int language) {
-    
+
     // set locale if applicable
     if (language>=0&&language<codes.length) {
       String lang = codes[language];
@@ -193,7 +193,7 @@ public class Options extends OptionProvider {
         } catch (Throwable t) {}
       }
     }
-    
+
     // remember
     this.language = language;
 
@@ -209,26 +209,26 @@ public class Options extends OptionProvider {
         );
       }
     }
-    
+
     // done
   }
-  
+
   /**
    * Getter - language
    */
   public int getLanguage() {
     return language;
   }
-  
+
   /**
    * Getter - languages
    */
   public String[] getLanguages() {
     // not known yet?
     if (languages==null) {
-      
+
       Resources resources = getResources();
-      
+
       // init 'em
       languages = new String[codes.length];
       for (int i=0;i<languages.length;i++) {
@@ -240,21 +240,21 @@ public class Options extends OptionProvider {
     return languages;
   }
 
-  /** 
+  /**
    * Getter - maximum log size
    */
   public int getMaxLogSizeKB() {
     return maxLogSizeKB;
   }
-  
-  /** 
+
+  /**
    * Setter - maximum log size
    */
   public void setMaxLogSizeKB(int set) {
     maxLogSizeKB = Math.max(128, set);
   }
-  
-  /** 
+
+  /**
    * Getter - http proxy
    */
   public String getHttpProxy() {
@@ -264,8 +264,8 @@ public class Options extends OptionProvider {
       return "";
     return port!=null&&port.length()>0 ? host+":"+port : host;
   }
-  
-  /** 
+
+  /**
    * Setter - http proxy
    */
   public void setHttpProxy(String set) {
@@ -276,7 +276,7 @@ public class Options extends OptionProvider {
     System.setProperty("http.proxyHost", host);
     System.setProperty("http.proxyPort", port);
   }
-  
+
   /**
    * Lazy resources
    */
@@ -285,9 +285,9 @@ public class Options extends OptionProvider {
       resources = Resources.get(this);
     return resources;
   }
-  
-  /** 
-   * Provider callback 
+
+  /**
+   * Provider callback
    */
   public List getOptions() {
     // bean property options of instance
@@ -299,11 +299,15 @@ public class Options extends OptionProvider {
     // done
     return result;
   }
-  
+
   private static class UserHomeGenJOption extends Option implements OptionUI {
 
     public String getName() {
       return getInstance().getResources().getString("option.userhomegenj.name");
+    }
+
+    public String getToolTip() {
+      return getInstance().getResources().getString("option.userhomegenj.name.tip", false);
     }
 
     public OptionUI getUI(OptionsWidget widget) {
@@ -313,7 +317,7 @@ public class Options extends OptionProvider {
     public void persist(Registry registry) {
       // we're not storing anything
     }
-    
+
     public void restore(Registry registry) {
       // no state to restore
     }
@@ -333,11 +337,11 @@ public class Options extends OptionProvider {
       // none
       return null;
     }
-    
+
     /**
      * Action for UI
      */
-    private class Open extends Action2 { 
+    private class Open extends Action2 {
       Open() {
         setText("...");
       }
@@ -348,21 +352,26 @@ public class Options extends OptionProvider {
       }
     }
   }
-  
-  /** 
+
+  /**
    * Option for File Associations
    */
   private static class FileAssociationOption extends Option implements OptionUI {
-    
+
     /** the options widget */
     private OptionsWidget widget;
-    
+
     /** the current popup widget */
     private PopupWidget popup;
 
     /** callback - user readble name */
     public String getName() {
       return getInstance().getResources().getString("option.fileassociations");
+    }
+
+    /** callback - user readble tool tip */
+    public String getToolTip() {
+      return getInstance().getResources().getString("option.fileassociations.tip", false);
     }
 
     /** callback - persist */
@@ -377,7 +386,7 @@ public class Options extends OptionProvider {
         FileAssociation.add(new FileAssociation(associations[i]));
     }
 
-    /** callback - resolve ui */    
+    /** callback - resolve ui */
     public OptionUI getUI(OptionsWidget widget) {
       this.widget = widget;
       return this;
@@ -396,7 +405,7 @@ public class Options extends OptionProvider {
       // done
       return popup;
     }
-    
+
     /**
      * calculate actions for popup
      */
@@ -411,7 +420,7 @@ public class Options extends OptionProvider {
       return result;
     }
 
-    /** callback - commit */    
+    /** callback - commit */
     public void endRepresentation() {
       // already done
     }
@@ -419,7 +428,7 @@ public class Options extends OptionProvider {
     /**
      * Action for UI
      */
-    private class Edit extends Action2 { 
+    private class Edit extends Action2 {
       /** file association */
       private FileAssociation association;
       /** constructor */
@@ -430,14 +439,14 @@ public class Options extends OptionProvider {
       }
       /** localize */
       private String localize(String key) {
-        return Options.getInstance().getResources().getString("option.filesssociations."+key);        
+        return Options.getInstance().getResources().getString("option.filesssociations."+key);
       }
       /** action main */
       protected void execute() {
 
         // create panel with association fields
         JPanel panel = new JPanel();
-        final TextFieldWidget 
+        final TextFieldWidget
           suffixes   = new TextFieldWidget(),
           name       = new TextFieldWidget();
         final FileChooserWidget
@@ -456,13 +465,13 @@ public class Options extends OptionProvider {
           name      .setText(association.getName()      );
           executable.setFile(association.getExecutable());
         }
-        
+
         // prepare some actions
         final Action
           ok = Action2.ok(),
           delete = new Action2(localize("delete"), association!=null),
           cancel = Action2.cancel();
-        
+
         // track changes
         ChangeListener l = new ChangeListener() {
           public void stateChanged(ChangeEvent e) {
@@ -473,13 +482,13 @@ public class Options extends OptionProvider {
         name.addChangeListener(l);
         executable.addChangeListener(l);
         l.stateChanged(null);
-        
+
         // show a dialog with file association fields
         WindowManager mgr = widget.getWindowManager();
         int rc = mgr.openDialog(null, getName(), WindowManager.QUESTION_MESSAGE, panel, new Action[]{ ok, delete, cancel }, widget);
         if (rc==-1||rc==2)
           return;
-        
+
         // ok'd?
         if (rc==0) {
             // create new?
@@ -492,7 +501,7 @@ public class Options extends OptionProvider {
         } else { // delete
           FileAssociation.del(association);
         }
-        
+
         // update actions
         popup.setActions(getActions());
       }

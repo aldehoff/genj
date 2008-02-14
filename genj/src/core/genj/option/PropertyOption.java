@@ -57,10 +57,10 @@ public abstract class PropertyOption extends Option {
   protected Object instance;
 
   /**
-   * Get options for given instance 
+   * Get options for given instance
    */
   public static List introspect(Object instance) {
-    
+
     // prepare result
     List result = new ArrayList();
     Set beanattrs = new HashSet();
@@ -68,29 +68,29 @@ public abstract class PropertyOption extends Option {
     // loop over bean properties of instance
     try {
       BeanInfo info = Introspector.getBeanInfo(instance.getClass());
-      PropertyDescriptor[] properties = info.getPropertyDescriptors();    
+      PropertyDescriptor[] properties = info.getPropertyDescriptors();
       for (int p=0; p<properties.length; p++) {
-        
+
         PropertyDescriptor property = properties[p];
-        
+
         try {
           // has to have getter & setter
           if (property.getReadMethod()==null||property.getWriteMethod()==null)
             continue;
-            
+
           // int, boolean, String?
           if (!Impl.isSupportedArgument(property.getPropertyType()))
             continue;
-            
+
           // try a read
           property.getReadMethod().invoke(instance, null);
-            
-          // create 
+
+          // create
           Option option = BeanPropertyImpl.create(instance, property);
-          
+
           // and keep the option
           result.add(option);
-          
+
           // remember name
           beanattrs.add(property.getName());
         } catch (Throwable t) {
@@ -102,7 +102,7 @@ public abstract class PropertyOption extends Option {
     // loop over fields of instance
     Field[] fields = instance.getClass().getFields();
     for (int f=0;f<fields.length;f++) {
-      
+
       Field field = fields[f];
       Class type = field.getType();
 
@@ -110,9 +110,9 @@ public abstract class PropertyOption extends Option {
       if (beanattrs.contains(field.getName()))
         continue;
 
-      // has to be public, non-static, non-final      
+      // has to be public, non-static, non-final
       int mod = field.getModifiers();
-      if (Modifier.isFinal(mod) || Modifier.isStatic(mod)) 
+      if (Modifier.isFinal(mod) || Modifier.isStatic(mod))
         continue;
       try {
         field.get(instance);
@@ -124,15 +124,15 @@ public abstract class PropertyOption extends Option {
       if (!Impl.isSupportedArgument(type))
         continue;
 
-      // create 
+      // create
       Option option = FieldImpl.create(instance, field);
-      
+
       // and keep the option
       result.add(option);
 
       // next
     }
-    
+
     // done
     return result;
   }
@@ -155,18 +155,23 @@ public abstract class PropertyOption extends Option {
    */
   public abstract void setValue(Object set);
 
-  /** 
-   * Setter - name 
+  /**
+   * Setter - name
    */
   public abstract void setName(String set);
 
   /**
-   * Accessor - a unique key for this option 
-   */ 
+   * Setter - tool tip
+   */
+  public abstract void setToolTip(String set);
+
+  /**
+   * Accessor - a unique key for this option
+   */
   public String getProperty() {
     return property;
   }
-  
+
   /**
    * Accessor - category of this option
    */
@@ -181,65 +186,65 @@ public abstract class PropertyOption extends Option {
     }
     return result;
   }
-  
+
   /**
    * A UI for a font
    */
   private static class FontUI implements OptionUI {
-    
+
     /** widgets */
     private FontChooser chooser = new FontChooser();
-    
+
     /** option */
     private PropertyOption option;
-    
+
     /** constructor */
     FontUI(PropertyOption option) {
       this.option = option;
     }
-      
+
     /** callback - text representation = none */
     public String getTextRepresentation() {
       Font font = (Font)option.getValue();
       return font==null ? "..." : font.getFamily() + "," + font.getSize();
     }
-    
+
     /** callback - component representation */
     public JComponent getComponentRepresentation() {
       chooser.setSelectedFont((Font)option.getValue());
       return chooser;
     }
 
-    /** commit - noop */    
+    /** commit - noop */
     public void endRepresentation() {
       option.setValue(chooser.getSelectedFont());
     }
-    
+
   } //FontUI
-  
+
   /**
    * A UI for a file
    */
   private static class FileUI implements OptionUI {
-    
+
     /** file chooser */
     private FileChooserWidget chooser = new FileChooserWidget();
-    
+
     /** option */
     private PropertyOption option;
-    
+
     /** constructor */
     FileUI(PropertyOption option) {
       this.option = option;
       chooser.setFile((File)option.getValue());
     }
-    
+
     /** text is file name */
     public String getTextRepresentation() {
       return chooser.getFile().toString();
     }
 
-    /** component is the chooser */    
+    /** component is the chooser */
     public JComponent getComponentRepresentation() {
       return chooser;
     }
@@ -250,14 +255,14 @@ public abstract class PropertyOption extends Option {
     }
 
   } //FileUI
-  
+
   /**
-   * A UI for a boolean 
+   * A UI for a boolean
    */
   private static class BooleanUI extends JCheckBox implements OptionUI {
     /** option */
     private PropertyOption option;
-    
+
     /** constructor */
     BooleanUI(PropertyOption option) {
       this.option = option;
@@ -287,7 +292,7 @@ public abstract class PropertyOption extends Option {
   private static class SimpleUI extends TextFieldWidget implements OptionUI {
     /** option */
     private PropertyOption option;
-    
+
     /** constructor */
     SimpleUI(PropertyOption option) {
       this.option = option;
@@ -309,7 +314,7 @@ public abstract class PropertyOption extends Option {
       option.setValue(getText());
     }
   } //BooleanUI
-  
+
   /**
    * Impl base type
    */
@@ -317,20 +322,23 @@ public abstract class PropertyOption extends Option {
 
     /** type */
     protected Class type;
-  
+
     /** a user readable name */
     private String name;
-    
+
+    /** a user readable tool tip */
+    private String toolTip;
+
     /** mapper */
     private Mapper mapper;
-  
+
     /**
      * Constructor
      */
     protected Impl(Object instance, String property, Class type) {
       super(instance, property);
       this.type     = type;
-      
+
       // TODO Options - hardcoded mapper for fonts
       this.mapper   = type==Font.class ? new FontMapper() : new Mapper();
     }
@@ -352,37 +360,60 @@ public abstract class PropertyOption extends Option {
       // done
       return name;
     }
-  
+
     /**
      * Accessor - name of this option
      */
     public void setName(String set) {
       name = set;
     }
-    
+
+    /**
+     * Accessor - tool tip for this option
+     */
+    public String getToolTip() {
+      if (toolTip==null) {
+        // can localize?
+        Resources resources = Resources.get(instance);
+        toolTip = resources.getString("option." + property + ".tip", false);
+        if (toolTip==null) {
+          toolTip = resources.getString(property + ".tip", false);
+        }
+      }
+      // done
+      return toolTip;
+    }
+
+    /**
+     * Accessor - tool tip for this option
+     */
+    public void setToolTip(String set) {
+      toolTip = set;
+    }
+
     /**
      * Restore option values from registry
      */
     public void restore(Registry registry) {
       String value = registry.get(instance.getClass().getName() + '.' + getProperty(), (String)null);
-      if (value!=null) 
+      if (value!=null)
         setValue(value);
     }
-  
+
     /**
      * Persist option values to registry
      */
     public void persist(Registry registry) {
       Object value = getValue();
-      if (value!=null) 
+      if (value!=null)
         registry.put(instance.getClass().getName() + '.' + getProperty(), value.toString());
     }
 
     /**
      * Provider a UI for this option
-     */  
+     */
     public OptionUI getUI(OptionsWidget widget) {
-      // TODO Options - hardcoded UI 
+      // TODO Options - hardcoded UI
       // a font?
       if (Font.class.isAssignableFrom(type))
         return new FontUI(this);
@@ -395,7 +426,7 @@ public abstract class PropertyOption extends Option {
       // all else
       return new SimpleUI(this);
     }
-  
+
     /**
      * Accessor - current value of this option
      */
@@ -412,12 +443,12 @@ public abstract class PropertyOption extends Option {
      * Accessor - implementation
      */
     protected abstract Object getValueImpl() throws Throwable;
-  
+
     /**
      * Accessor - current value of this option
      */
     public final void setValue(Object value) {
-      
+
       // a change in value?
       try {
         Object old = getValueImpl();
@@ -425,9 +456,9 @@ public abstract class PropertyOption extends Option {
           return;
         if (old!=null&&value!=null&&old.equals(value))
           return;
-        
+
         setValueImpl(mapper.toObject(value, type));
-        
+
       } catch (Throwable t) {
         // not much we can do about that - ignored
       }
@@ -439,7 +470,7 @@ public abstract class PropertyOption extends Option {
      * Accessor - implementation
      */
     protected abstract void setValueImpl(Object value) throws Throwable;
-  
+
     /**
      * Test for supported option types
      */
@@ -473,7 +504,7 @@ public abstract class PropertyOption extends Option {
       if (field.getType()==Integer.TYPE) try {
         final Field choices = instance.getClass().getField(field.getName()+"s");
         if (choices.getType().isArray())
-          // wrap in multiple choice 
+          // wrap in multiple choice
           return new MultipleChoiceOption(result) {
             public Object[] getChoicesImpl() throws Throwable {
               return (Object[])choices.get(instance);
@@ -486,21 +517,21 @@ public abstract class PropertyOption extends Option {
     }
 
     /** Constructor */
-    private FieldImpl(Object instance, Field field) {  
+    private FieldImpl(Object instance, Field field) {
       super(instance, field.getName(), field.getType());
       this.field = field;
     }
 
-    /** accessor */    
+    /** accessor */
     protected Object getValueImpl() throws Throwable {
       return field.get(instance);
     }
-    
+
     /** accessor */
     protected void setValueImpl(Object value) throws Throwable {
       field.set(instance, value);
     }
-    
+
   } //Field
 
   /**
@@ -510,7 +541,7 @@ public abstract class PropertyOption extends Option {
 
     /** descriptor */
     PropertyDescriptor descriptor;
-    
+
     /** factory */
     protected static Option create(final Object instance, PropertyDescriptor descriptor) {
       // create one
@@ -519,7 +550,7 @@ public abstract class PropertyOption extends Option {
       if (descriptor.getPropertyType()==Integer.TYPE) try {
         final Method choices = instance.getClass().getMethod(descriptor.getReadMethod().getName()+"s", null);
         if (choices.getReturnType().isArray())
-          // wrap in multiple choice 
+          // wrap in multiple choice
           return new MultipleChoiceOption(result) {
             public Object[] getChoicesImpl() throws Throwable {
               return (Object[])choices.invoke(instance, null);
@@ -533,22 +564,22 @@ public abstract class PropertyOption extends Option {
 
     /** Constructor */
     private BeanPropertyImpl(Object instance, PropertyDescriptor property) {
-      super(instance, property.getName(), property.getPropertyType()); 
+      super(instance, property.getName(), property.getPropertyType());
       this.descriptor = property;
     }
-    
-    /** accessor */    
+
+    /** accessor */
     protected Object getValueImpl() throws Throwable {
       return descriptor.getReadMethod().invoke(instance, null);
     }
-    
+
     /** accessor */
     protected void setValueImpl(Object value) throws Throwable {
       descriptor.getWriteMethod().invoke(instance, new Object[]{value} );
     }
-    
+
   } //BeanProperty
-  
+
   /**
    * A mapper
    */
@@ -556,24 +587,24 @@ public abstract class PropertyOption extends Option {
 
     /**
      * box type making sure no primitive types are returned
-     */ 
+     */
     private static Class box(Class type) {
-      if (type == boolean.class) return Boolean.class;         
-      if (type == byte.class) return Byte.class;         
-      if (type == char.class) return Character.class;         
-      if (type == short.class) return Short.class;         
-      if (type == int.class) return Integer.class;         
-      if (type == long.class) return Long.class;         
-      if (type == float.class) return Float.class;         
-      if (type == double.class) return Double.class;                     
+      if (type == boolean.class) return Boolean.class;
+      if (type == byte.class) return Byte.class;
+      if (type == char.class) return Character.class;
+      if (type == short.class) return Short.class;
+      if (type == int.class) return Integer.class;
+      if (type == long.class) return Long.class;
+      if (type == float.class) return Float.class;
+      if (type == double.class) return Double.class;
       return type;
     }
-  
-    
+
+
     protected String toString(Object object) {
       return object!=null ? object.toString() : "";
     }
-    
+
     protected Object toObject(Object object, Class expected) {
       // make sure expected is not a primitive type
       expected = box(expected);
@@ -594,22 +625,22 @@ public abstract class PropertyOption extends Option {
    * A mapper - Font
    */
   private static class FontMapper extends Mapper{
-    
+
     private final static String
     FAMILY = "family=",
     STYLE  = "style=",
     SIZE   = "size=";
- 
+
     /** font from string representation */
     protected Object toObject(Object object, Class expected) {
-      
+
       if (expected!=Font.class||object==null||object.getClass()!=String.class)
         return super.toObject(object, expected);
       String string = (String)object;
-      
+
       // check what we've got
       Map map = new HashMap();
-      
+
       String family = getAttribute(string, FAMILY);
       if (family==null)
         family = "SansSerif";
@@ -620,18 +651,18 @@ public abstract class PropertyOption extends Option {
       } catch (Throwable t) {
         map.put(TextAttribute.SIZE, new Float(11F));
       }
-      
+
       // done
       return new Font(map);
     }
-    
+
     protected String getAttribute(String string, String key) {
-      
+
       int i = string.indexOf(key);
-      if (i<0) 
+      if (i<0)
         return null;
       i += key.length();
-      
+
       int j = i;
       for (;j<string.length();j++) {
         char c = string.charAt(j);
@@ -641,7 +672,7 @@ public abstract class PropertyOption extends Option {
 
       return j<i ? null : string.substring(i, j);
     }
-    
+
   }
-  
+
 } //ValueOption

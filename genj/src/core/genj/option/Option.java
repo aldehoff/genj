@@ -27,15 +27,15 @@ import java.util.List;
 
 
 /**
- * An option is simply a wrapped public field of a type 
+ * An option is simply a wrapped public field of a type
  * with meta-information (JavaBean 'light')
  */
 public abstract class Option {
-  
+
   private List listeners;
-  
+
   private String category;
-  
+
   /**
    * Accessor - category of this option
    * @return category or null
@@ -43,34 +43,39 @@ public abstract class Option {
   public String getCategory() {
     return category;
   }
-  
+
   /**
    * Accessor - category of this option
    */
   public void setCategory(String set) {
     category = set;
   }
-  
+
   /**
    * Accessor - name of this option
    */
   public abstract String getName();
-  
+
+  /**
+   * Accessor - tool tip for this option
+   */
+  public abstract String getToolTip();
+
   /**
    * Restore option values from registry
    */
   public abstract void restore(Registry registry);
-  
+
   /**
    * Persist option values to registry
    */
   public abstract void persist(Registry registry);
-  
+
   /**
    * Create an editor
    */
   public abstract OptionUI getUI(OptionsWidget widget);
-  
+
   /**
    * Add listener
    */
@@ -79,15 +84,15 @@ public abstract class Option {
       listeners = new ArrayList(4);
     listeners.add(listener);
   }
-  
+
   /**
    * Trigger for change notification
    */
   protected void fireChangeNotification() {
     if (listeners==null)
       return;
-    for (int i = 0; i < listeners.size(); i++) 
+    for (int i = 0; i < listeners.size(); i++)
       ((OptionListener)listeners.get(i)).optionChanged(this);
   }
-  
+
 } //Option
