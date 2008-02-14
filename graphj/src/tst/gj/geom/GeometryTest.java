@@ -34,6 +34,89 @@ public class GeometryTest extends TestCase {
   
   private double TwoPi = Math.PI*2;
   
+  public void testPointLine() {
+    
+    assertFalse( Geometry.testPointLeftOfLine(
+      p(0, -1), p(0, 0), p(1, 1)
+    ));
+    
+    
+    assertTrue( Geometry.testPointLeftOfLine(p(0,0), p(1,1), p(0,1)) );
+    assertFalse( Geometry.testPointLeftOfLine(p(0,0), p(1,1), p(1,1)) );
+
+    //
+    // <---
+    //   x
+    assertTrue( Geometry.testPointLeftOfLine(
+        p(0, 0), p(-1, 0), p(-0.5, -0.5)
+    ));
+    
+    //  |
+    //  | x
+    //  V
+    assertTrue( Geometry.testPointLeftOfLine(
+        p(0, 0), p(0, -1), p(0.5, 0.5)
+    ));
+    
+    assertTrue( Geometry.testPointLeftOfLine(
+        p(0, -1), p(0, -2), p(1, 0)
+    ));
+
+    //  ^
+    //  | x
+    //  |
+    assertFalse( Geometry.testPointLeftOfLine(
+        p(-1, 0), p(-1, 1), p(1, 0.5)
+    ));
+    
+    assertFalse( Geometry.testPointLeftOfLine(
+        p(0, -1), p(0, 1), p(1, 0)
+    ));
+    
+    //  x
+    // --->
+    //
+    assertTrue( Geometry.testPointLeftOfLine(
+        p(0, 0), p(2, 0), p(1, 1)
+    ));
+    
+    //   x
+    // <---
+    //   
+    assertFalse( Geometry.testPointLeftOfLine(
+        p(2, 0), p(0, 0), p(1, 1)
+    ));
+    
+    
+//    //   ^
+//    //   | x
+//    //   |
+//    assertFalse( Geometry.testPointLeftOfLine(
+//        p(0, 0), p(0, 2), p( 1, 1)
+//    ));
+//    //   |
+//    //   | x
+//    //   V
+//    assertTrue( Geometry.testPointLeftOfLine(
+//        p(0, 2), p(0, 0), p(1, 1)
+//    ));
+//    
+//    assertTrue( Geometry.testPointLeftOfLine(
+//        p(0, 1), p(0, -1), p(1, 0)
+//    ));
+//    
+//    assertFalse( Geometry.testPointLeftOfLine(
+//        p(0, -2), p(0, -1), p(1, 0)
+//    ));
+  }
+  
+  public void testRectangleArea() {
+
+    tst(  0.5, Geometry.getArea(p(0,0), p(1,0), p(0,1)) );
+    tst(  0.5, Geometry.getArea(p(0,0), p(1,0), p(0,-1)) );
+    
+  }
+  
   public void testRadian() {
     
     tst(radian(  0), Geometry.getRadian(p(0,-1000)));

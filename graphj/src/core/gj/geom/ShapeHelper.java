@@ -21,6 +21,7 @@ package gj.geom;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -29,7 +30,14 @@ import java.awt.geom.Point2D;
  * Missing shape functionality from the geom.* stuff
  */
 public class ShapeHelper implements PathIteratorKnowHow {
-  
+
+  /** 
+   * the maximum distance that the line segments used to approximate 
+   * the curved segments are allowed to deviate from any point on the
+   * original curve 
+   */
+  private static double DEFAULT_FLATNESS = 4;
+
   public static Shape createShape(Point2D ... points) {
     if (points.length<2)
       throw new IllegalArgumentException("Need minimum of 2 points for shape");
@@ -91,11 +99,29 @@ public class ShapeHelper implements PathIteratorKnowHow {
   /**
    * Applies a PathConsumer to given Path
    */
-  public static void iterateShape(Shape shape, SegmentConsumer consumer) {
+  public static void iterateShape(Shape shape, FlattenedPathConsumer consumer) {
     iterateShape(shape.getPathIterator(null), consumer);
   }
-  public static void iterateShape(PathIterator iterator, SegmentConsumer consumer) {
-    
+  public static void iterateShape(PathIterator iterator, final FlattenedPathConsumer consumer) {
+    iterateShape(new FlatteningPathIterator(iterator, DEFAULT_FLATNESS), 
+      new PathConsumer() {
+        public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
+          throw new IllegalStateException("unexpected cubic curve");
+        }
+        public boolean consumeLine(Point2D start, Point2D end) {
+          return consumer.consumeLine(start, end);
+        }
+        public boolean consumeQuadCurve(Point2D start, Point2D ctrl, Point2D end) {
+          throw new IllegalStateException("unexpected quad curve");
+        }
+      }
+    );
+  }
+  public static void iterateShape(Shape shape, PathConsumer consumer) {
+    iterateShape(shape.getPathIterator(null), consumer);
+  }
+  public static void iterateShape(PathIterator iterator, PathConsumer consumer) {
+
     // Loop through the path
     double[] segment = new double[6];
     Point2D lastPosition = new Point2D.Double();
@@ -127,10 +153,10 @@ public class ShapeHelper implements PathIteratorKnowHow {
           goon = consumer.consumeQuadCurve(lastPosition, ctrl1Position, nextPosition);
           break;
         case (PathIterator.SEG_CUBICTO) :
-          ctrl1Position.setLocation(segment[0],segment[1]);
-          ctrl2Position.setLocation(segment[2],segment[3]);
-          nextPosition.setLocation(segment[4],segment[5]);
-          goon = consumer.consumeCubicCurve(lastPosition, ctrl1Position, ctrl2Position, nextPosition);
+            ctrl1Position.setLocation(segment[0],segment[1]);
+            ctrl2Position.setLocation(segment[2],segment[3]);
+            nextPosition.setLocation(segment[4],segment[5]);
+            goon = consumer.consumeCubicCurve(lastPosition, ctrl1Position, ctrl2Position, nextPosition);
           break;
       }
       

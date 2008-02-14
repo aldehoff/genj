@@ -198,7 +198,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
     Layout2D layout;
     Collection<Shape> debug;
     int depth;
-    Map<Vertex, Double> vertex2size = new HashMap<Vertex, Double>();
+    Map<Vertex, Double> vertex2radians = new HashMap<Vertex, Double>();
     Point2D center;
     double currentNorth;
     double distanceBetweenGenerations;
@@ -267,29 +267,29 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
 
       // calculate size for children
       Set<? extends Vertex> neighbours = ModelHelper.getNeighbours(graph, root);
-      double sizeOfChildren = 0;
+      double radiansOfChildren = 0;
       for (Vertex child : neighbours) {
         if (!child.equals(backtrack)) {
           int generationOfChild = generation + getLengthOfEdge(root,child);
-          double factor = generationOfChild == 1 ? 1 : (double) (generationOfChild-1) / generationOfChild;
-          sizeOfChildren +=  getSize(root, child, generationOfChild) * factor;
+          radiansOfChildren +=  getSize(root, child, generationOfChild);
         }
       }
       
       // root?
       if (generation==0) {
-        double reqDistBetGens  = sizeOfChildren  / ONE_RADIAN;
-        if (reqDistBetGens>distanceBetweenGenerations && isAdjustDistances)
-          distanceBetweenGenerations = reqDistBetGens;
+        double reqDistanceBetweenGenerations = radiansOfChildren / ONE_RADIAN * distanceBetweenGenerations;
+        if (isAdjustDistances && reqDistanceBetweenGenerations>distanceBetweenGenerations)
+          distanceBetweenGenerations = reqDistanceBetweenGenerations;
         return 0;
       }
       
       // calculate size root
-      double sizeOfRoot = getDiameter(root) + distanceInGeneration;
+      double radiansOfRoot = ( getDiameter(root) + distanceInGeneration ) / (generation*distanceBetweenGenerations);
       
       // keep and return
-      double result = Math.max( sizeOfChildren, sizeOfRoot);
-      vertex2size.put(root, new Double(result));
+      double result = Math.max( radiansOfChildren, radiansOfRoot);
+      vertex2radians.put(root, new Double(result));
+      
       return result;
     }
     
@@ -315,8 +315,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       // compare actual radians available vs allocation
       double radiansOfChildren = 0;
       for (Vertex child : children) {
-        double radiusOfChild = radius + getLengthOfEdge(root, child) * distanceBetweenGenerations;
-        radiansOfChildren += vertex2size.get(child).doubleValue() / radiusOfChild;
+        //double radiusOfChild = radius + getLengthOfEdge(root, child) * distanceBetweenGenerations;
+        radiansOfChildren += vertex2radians.get(child).doubleValue();
       }
       double shareFactor = (toRadian-fromRadian) / radiansOfChildren;
 
@@ -331,7 +331,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements La
       for (Vertex child : children) {
         
         double radiusOfChild = radius + getLengthOfEdge(root, child) * distanceBetweenGenerations;
-        double radiansOfChild = vertex2size.get(child).doubleValue() / radiusOfChild * shareFactor;
+        double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
         layout.setPositionOfVertex(child, getPoint(center, fromRadian + radiansOfChild/2, radiusOfChild ));
         
         for (Edge edge : graph.getEdges(root)) {

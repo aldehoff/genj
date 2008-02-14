@@ -21,7 +21,6 @@ package gj.geom;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
@@ -29,7 +28,9 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Missing mathematical functions from the geom.* stuff
@@ -41,13 +42,6 @@ public class Geometry {
     QUARTER_RADIAN = ONE_RADIAN/4,
     HALF_RADIAN = ONE_RADIAN/2;
 
-  /** 
-   * the maximum distance that the line segments used to approximate 
-   * the curved segments are allowed to deviate from any point on the
-   * original curve 
-   */
-  private static double DEFAULT_FLATNESS = 4;
-  
   /**
    * Calculate the radian for given degree
    */
@@ -103,7 +97,7 @@ public class Geometry {
   /**
    * Operation - calc maximum of a shape extending into a direction 
    */
-  private static class OpGetMax extends SegmentConsumer {
+  private static class OpGetMax implements FlattenedPathConsumer {
     
     private Point2D pos;
     private double axis;
@@ -121,13 +115,12 @@ public class Geometry {
       sinaxis = Math.sin(axis);
       cosaxis = Math.cos(axis);
       
-      ShapeHelper.iterateShape(new FlatteningPathIterator(shape.getPathIterator(null), DEFAULT_FLATNESS), this);
+      ShapeHelper.iterateShape(shape, this);
     }
 
     /**
      * Check points of a segment
      */
-    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       
       double delta = sinaxis * (end.getX()) - cosaxis * (end.getY() );
@@ -163,7 +156,7 @@ public class Geometry {
   /**
    * Operation - calculate distance of two shapes
    */
-  private static class OpShapeShapeDistance extends SegmentConsumer {
+  private static class OpShapeShapeDistance implements FlattenedPathConsumer {
     
     private double result = Double.POSITIVE_INFINITY;
     
@@ -194,12 +187,12 @@ public class Geometry {
       // iterate over shape1 intersecting lines along the axis with shape2
       intersectWith = shape2;
       this.axis = axis;
-      ShapeHelper.iterateShape(new FlatteningPathIterator(shape1.getPathIterator(null), DEFAULT_FLATNESS), this);
+      ShapeHelper.iterateShape(shape1, this);
       
       // iterate over shape2 intersecting lines along the axis with shape1
       intersectWith = shape1;
       this.axis = axis + Geometry.ONE_RADIAN/2;
-      ShapeHelper.iterateShape(new FlatteningPathIterator(shape2.getPathIterator(null), DEFAULT_FLATNESS), this);
+      ShapeHelper.iterateShape(shape2, this);
       
       // done
     }
@@ -214,7 +207,6 @@ public class Geometry {
     /**
      * only expecting lines to consume
      */
-    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       
       // create a line along axis going through 'end' 
@@ -248,7 +240,7 @@ public class Geometry {
   /**
    * Operation - calculate distance of line and shape
    */
-  private static class OpLineShapeDistance extends SegmentConsumer {
+  private static class OpLineShapeDistance implements FlattenedPathConsumer {
     
     /** resulting distance */
     private double delta = Double.MAX_VALUE;
@@ -266,8 +258,7 @@ public class Geometry {
       lineEndX   = lineEnd.getX();
       lineEndY   = lineEnd.getY();
       // iterate over line segments in shape
-      PathIterator it = new FlatteningPathIterator(shape, DEFAULT_FLATNESS);
-      ShapeHelper.iterateShape(it, this);
+      ShapeHelper.iterateShape(shape, this);
       // done
     }
     
@@ -282,7 +273,6 @@ public class Geometry {
      * Callback - since we're using a flattening path iterator
      * only lines have to be consumed
      */
-    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       // calculate distance of line segment's start/end
       delta = Math.min(delta, Line2D.ptLineDist(lineStartX, lineStartY, lineEndX, lineEndY, start.getX(), start.getY()));
@@ -303,7 +293,7 @@ public class Geometry {
   /**
    * Operation - calculate maximum distance of point from shape
    */
-  private static class OpPointShapeMaxDistance extends SegmentConsumer {
+  private static class OpPointShapeMaxDistance implements FlattenedPathConsumer {
     
     private double result = Double.NEGATIVE_INFINITY;
     private Point2D point;
@@ -313,7 +303,7 @@ public class Geometry {
      */
     protected OpPointShapeMaxDistance(Point2D point, Shape shape) {
       this.point = point;
-      ShapeHelper.iterateShape(new FlatteningPathIterator(shape.getPathIterator(null), DEFAULT_FLATNESS), this);
+      ShapeHelper.iterateShape(shape, this);
     }
     
     /**
@@ -324,9 +314,8 @@ public class Geometry {
     }
     
     /**
-     * @see gj.geom.SegmentConsumer#consumeLine(java.awt.geom.Point2D, java.awt.geom.Point2D)
+     * @see gj.geom.FlattenedPathConsumer#consumeLine(java.awt.geom.Point2D, java.awt.geom.Point2D)
      */
-    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       result = Math.max(result, start.distance(point));
       result = Math.max(result, end.distance(point));
@@ -346,7 +335,7 @@ public class Geometry {
   /**
    * Operation - calculate distance of line and shape
    */
-  private static class OpPointShapeMinDistance extends SegmentConsumer {
+  private static class OpPointShapeMinDistance implements FlattenedPathConsumer {
     private double result = Double.MAX_VALUE;
     private Point2D point;
     
@@ -355,7 +344,7 @@ public class Geometry {
      */
     protected OpPointShapeMinDistance(Point2D point, PathIterator shape) {
       this.point = point;
-      ShapeHelper.iterateShape(new FlatteningPathIterator(shape, DEFAULT_FLATNESS), this);
+      ShapeHelper.iterateShape(shape, this);
     }
     
     /**
@@ -366,9 +355,8 @@ public class Geometry {
     }
     
     /**
-     * @see gj.geom.SegmentConsumer#consumeLine(java.awt.geom.Point2D, java.awt.geom.Point2D)
+     * @see gj.geom.FlattenedPathConsumer#consumeLine(java.awt.geom.Point2D, java.awt.geom.Point2D)
      */
-    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       
       double distance = Line2D.ptSegDist(start.getX(), start.getY(), end.getX(), end.getY(), point.getX(), point.getY());
@@ -513,7 +501,7 @@ public class Geometry {
   /**
    * Operation - intersect line and shape
    */
-  private static class OpLineShapeIntersections extends SegmentConsumer {
+  private static class OpLineShapeIntersections implements FlattenedPathConsumer {
     
     /** the intersections */
     private Collection<Point2D> result;
@@ -533,8 +521,7 @@ public class Geometry {
       this.lineEnd   = lineEnd;
       this.result    = result;
       // iterate over line segments in shape
-      PathIterator it = new FlatteningPathIterator(shape, DEFAULT_FLATNESS);
-      ShapeHelper.iterateShape(it, this);
+      ShapeHelper.iterateShape(shape, this);
       // done
     }
     
@@ -542,7 +529,6 @@ public class Geometry {
      * Callback - since we're using a flattening path iterator
      * only lines have to be consumed
      */
-    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       Point2D p = getIntersection(lineStart, lineEnd, start, end);
       if (p!=null) 
@@ -713,24 +699,14 @@ public class Geometry {
   /**
    * Operation - calculate bounds of path iterator
    */
-  private static class OpShapeBounds extends SegmentConsumer {
-    
+  private static class OpShapeBounds implements FlattenedPathConsumer {
     private Rectangle2D result;
-    
-    /**
-     * Constructor
-     */
     protected OpShapeBounds(Shape shape) {
-      ShapeHelper.iterateShape(shape.getPathIterator(null), this);
+      ShapeHelper.iterateShape(shape, this);
     }
-    
-    /**
-     * Result
-     */
     protected Rectangle2D getResult() {
       return result;
     }
-    
     private void add(Point2D p) {
       if (result==null) {
         result = new Rectangle2D.Double(p.getX(),p.getY(),0,0);
@@ -738,28 +714,114 @@ public class Geometry {
         result.add(p);
       }
     }
-    
-    @Override
-    public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
-      add(start);
-      add(ctrl1);
-      add(ctrl2);
-      add(end);
-      return true;
-    }
-    @Override
     public boolean consumeLine(Point2D start, Point2D end) {
       add(start);
       add(end);
       return true;
     }
-    @Override
-    public boolean consumeQuadCurve(Point2D start, Point2D ctrl, Point2D end) {
-      add(start);
-      add(ctrl);
-      add(end);
-      return true;
-    }
   } //OpBounds
+  
+  
+  /** 
+   * Calculate the area of a rectangle
+   */
+  public static double getArea(Point2D a, Point2D b, Point2D c) {
+    return Math.abs(_getArea(a,b,c));
+  }
+  public static double _getArea(Point2D a, Point2D b, Point2D c) {
+    
+    // we're using a geometric technique 
+    // see http://www.richland.edu/james/lecture/m116/matrices/applications.html
+    
+    // build determinant of matrix
+    //
+    // | x0 x1 x2 |
+    // | y0 y1 y2 | = x0(y1*1-1*y2) - y0(x1*1-1*x2) - 1(x1*y2 - y1*x2)
+    // | 1  1  1  |
+    //
+    double x1 = b.getX() - a.getX();
+    double y1 = b.getY() - a.getY();
+    double x2 = c.getX() - a.getX();
+    double y2 = c.getY() - a.getY();
+    double d = - (x1*y2 - y1*x2);
+    
+    
+//    double x0 = a.getX();
+//    double y0 = a.getY();
+//    double x1 = b.getX();
+//    double y1 = b.getY();
+//    double x2 = c.getX();
+//    double y2 = c.getY();
+//    double d = Math.abs(x0*(y1-y2)) - Math.abs(y0*(x1-x2)) - (x1*y2 - y1*x2);
+//    double d = x0*(y1-y2) - y0*(x1-x2) - (x1*y2 - y1*x2);
 
+    return d/2;
+    
+  }
+  
+  /**
+   * Test whether a point is to the left of a given line
+   */
+  public static boolean testPointLeftOfLine(Point2D start, Point2D end, Point2D point) {
+    // for a triangle with corners a,b,c the determinant area calculation will return <0 
+    // for counter-clockwise and >0 otherwise 
+    double area = _getArea(start, end, point);
+    return area < 0;
+  }
+  
+  /**
+   * Calculate the convex hull of a shape
+   */
+  public static Shape getConvexHull(Shape shape) {
+    return getConvexHull(shape.getPathIterator(null));
+  }
+  public static Shape getConvexHull(PathIterator shape) {
+ 
+    // using the gift wrapping algorithm
+    // see http://www.cse.unsw.edu.au/~lambert/java/3d/giftwrap.html
+    
+    // collect all points and find the point with lowest y coordinate (our start)
+    final LinkedList<Point2D> points = new LinkedList<Point2D>();
+    final Point2D start = new Point2D.Double(0, Double.MAX_VALUE);
+    ShapeHelper.iterateShape(shape, new FlattenedPathConsumer() {
+      public boolean consumeLine(Point2D from, Point2D to) {
+        // replace current starting point?
+        if (start.getY()==Double.MAX_VALUE || from.getY()<start.getY()) 
+          start.setLocation(from);
+        // keep
+        points.add(new Point2D.Double(from.getX(), from.getY()));
+        // continue with 'to'
+        return true;
+      }
+    });
+
+    // iterate over sides of hull
+    GeneralPath result = new GeneralPath();
+    result.moveTo( (float)start.getX(), (float)start.getY());
+    Point2D from = start;
+    while (!points.isEmpty()) {
+      
+      // random next point
+      Point2D to = points.removeFirst();
+
+      // compare to others
+      for (ListIterator<Point2D> others = points.listIterator(); others.hasNext(); ) {
+        Point2D other = others.next();
+        if (to.equals(from) || (!other.equals(from)&&!testPointLeftOfLine(from, to, other))) {
+          Point2D xchange = to; to = other; others.set(xchange);
+        }
+      }
+      
+      // draw outside hull
+      result.lineTo( (float)to.getX(), (float)to.getY());
+      // back at starting point?
+      from =to;
+      if (from.equals(start))
+        break;
+    }
+    
+    // done
+    return result;
+  }
+  
 } //Geometry

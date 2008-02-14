@@ -21,7 +21,6 @@ package gj.layout.tree;
 
 import gj.geom.Geometry;
 import gj.geom.Path;
-import gj.geom.ShapeHelper;
 import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
@@ -34,7 +33,7 @@ import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -44,9 +43,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-
 /**
- * A 'simple' tree layout for Trees
+ * Vertex layout for Trees
  */
 public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements LayoutAlgorithm {
 
@@ -215,9 +213,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       rootOfTree = verticies.iterator().next();
 
     // recurse into it
-    Area result = layout(graph, null, rootOfTree, layout).area;
-    if (debugShapes!=null)
+    Shape result = layout(graph, null, rootOfTree, layout).shape;
+    if (debugShapes!=null) {
       debugShapes.add(result);
+    }
     
     // done
     return result;
@@ -256,7 +255,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     /** shape of branch */
     private Point2D top;
-    private Area area;
+    private GeneralPath shape;
     
     /** constructor for a leaf */
     Branch(Graph graph, Vertex leaf, Layout2D layout) {
@@ -264,9 +263,12 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       this.layout = layout;
       this.root = leaf;
       vertices.add(leaf);
-      area = new Area(layout.getShapeOfVertex(leaf));
       Point2D pos = layout.getPositionOfVertex(leaf);
-      area.transform(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()));
+      shape = new GeneralPath(getConvexHull(
+          layout.getShapeOfVertex(leaf).getPathIterator(
+          AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
+      ));
+      
     }
 
     /** constructor for a parent and its children */
@@ -305,7 +307,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
         // calculate distance from all previous siblings
         double distance = Double.MAX_VALUE;
         for (int j=0;j<i;j++) {
-          distance = Math.min(distance, getDistance(getTranslated(branches[j].area, lrDeltas[j]), getTranslated(branches[i].area, lrDeltas[i]), lrAlignment) - distanceInGeneration);
+          distance = Math.min(distance, getDistance(getTranslated(branches[j].shape, lrDeltas[j]), getTranslated(branches[i].shape, lrDeltas[i]), lrAlignment) - distanceInGeneration);
         }
         // calculate delta from top aligned position with correct distance
         lrDeltas[i] = getPoint(lrDeltas[i], lrAlignment, -distance);
@@ -326,7 +328,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
           // calculate distance from all previous siblings
           double distance = Double.MAX_VALUE;
           for (int j=rlDeltas.length-1;j>i;j--) {
-            distance = Math.min(distance, getDistance(getTranslated(branches[j].area, rlDeltas[j]), getTranslated(branches[i].area, rlDeltas[i]), rlAlignment) - distanceInGeneration);
+            distance = Math.min(distance, getDistance(getTranslated(branches[j].shape, rlDeltas[j]), getTranslated(branches[i].shape, rlDeltas[i]), rlAlignment) - distanceInGeneration);
           }
           assert distance != Double.MAX_VALUE;
           // calculate delta from top aligned position with correct distance
@@ -369,16 +371,13 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       
       layout.setPositionOfVertex(root, r);
       
-      // calculate new area with shape of root, umbrella between first/last child and sub-branches
-      area = new Area(layout.getShapeOfVertex(root));
-      area.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
-      area.add(new Area(ShapeHelper.createShape(
-          r, 
-          getMax(pos(branches[0].root), shape(branches[0].root), layoutAxis+QUARTER_RADIAN),
-          getMax(pos(branches[branches.length-1].root), shape(branches[branches.length-1].root), layoutAxis-QUARTER_RADIAN),
-          r)));
+      // calculate new shape
+      GeneralPath gp = new GeneralPath();
+      gp.append(layout.getShapeOfVertex(root), false);
+      gp.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
       for (Branch branch : branches)
-        area.add(branch.area);
+        gp.append(branch.shape, false);
+      shape = new GeneralPath(getConvexHull(gp));
       
       // layout edges
       for (Edge edge : graph.getEdges(root)) {
@@ -411,7 +410,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
     
     Point2D top() {
       if (top==null)
-        top= getMax(area, getRadian(orientation) - HALF_RADIAN);
+        top= getMax(shape, getRadian(orientation) - HALF_RADIAN);
       return top;
       
     }
@@ -441,7 +440,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements Layo
       
       top = null;
       
-      area.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
+      shape.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
     }
     
     /** translate a branch */

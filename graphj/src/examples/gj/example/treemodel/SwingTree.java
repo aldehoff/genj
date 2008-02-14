@@ -60,6 +60,7 @@ public class SwingTree {
     
     // create a swing tree widget
     final JTree treeWidget = new JTree();
+    treeWidget.setVisibleRowCount(4);
     for (int i=0;i<treeWidget.getRowCount();i++)
       treeWidget.expandRow(i); 
     
@@ -98,7 +99,7 @@ public class SwingTree {
     try {
       TreeLayoutAlgorithm algorithm = new TreeLayoutAlgorithm();
       algorithm.setDistanceBetweenGenerations(16);
-      algorithm.setDistanceInGeneration(8);
+      algorithm.setDistanceInGeneration(7);
       algorithm.setOrientation(90);
       algorithm.setAlignmentOfParent(1);
       algorithm.setBendArcs(true);
@@ -143,7 +144,7 @@ public class SwingTree {
     JFrame frame = new JFrame("SwingTree in GraphJ");
     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     frame.getContentPane().add(content);
-    frame.setSize(new Dimension(640,480));
+    frame.pack();
     frame.setVisible(true);
     
     // done

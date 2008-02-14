@@ -71,9 +71,8 @@ public class Path implements Shape, PathIteratorKnowHow {
    */
   public Path(Shape that) {
     
-    ShapeHelper.iterateShape(that.getPathIterator(null), new SegmentConsumer() {
+    ShapeHelper.iterateShape(that, new PathConsumer() {
 
-      @Override
       public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
         if (!isStarted)
           start(start);
@@ -83,7 +82,6 @@ public class Path implements Shape, PathIteratorKnowHow {
         return true;
       }
 
-      @Override
       public boolean consumeLine(Point2D start, Point2D end) {
         if (!isStarted)
           start(start);
@@ -93,7 +91,6 @@ public class Path implements Shape, PathIteratorKnowHow {
         return true;
       }
 
-      @Override
       public boolean consumeQuadCurve(Point2D start, Point2D ctrl, Point2D end) {
         if (!isStarted)
           start(start);
