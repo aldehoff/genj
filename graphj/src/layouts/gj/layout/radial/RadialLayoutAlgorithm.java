@@ -20,7 +20,6 @@
 package gj.layout.radial;
 
 import gj.geom.Geometry;
-import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
@@ -47,7 +46,7 @@ import java.util.Set;
 /**
  * A radial layout for Trees
  */
-public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm implements LayoutAlgorithm {
+public class RadialLayoutAlgorithm implements LayoutAlgorithm {
   
   private WeakReference<Vertex> rootOfTree;
   private double distanceBetweenGenerations = 60;

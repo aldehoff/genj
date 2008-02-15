@@ -20,7 +20,6 @@
 package gj.layout.circular;
 
 import gj.geom.Geometry;
-import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
@@ -41,7 +40,7 @@ import java.util.List;
  * A Layout that arranges nodes in a circle with the
  * least amount of line intersections
  */
-public class CircularLayoutAlgorithm extends AbstractLayoutAlgorithm implements LayoutAlgorithm {
+public class CircularLayoutAlgorithm implements LayoutAlgorithm {
   
   /** constant */
   private final static double TWOPI = 2*Math.PI;

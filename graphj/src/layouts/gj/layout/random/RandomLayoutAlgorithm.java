@@ -19,7 +19,6 @@
  */
 package gj.layout.random;
 
-import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
@@ -36,7 +35,7 @@ import java.util.Random;
 /**
  * A random layout
  */
-public class RandomLayoutAlgorithm extends AbstractLayoutAlgorithm implements LayoutAlgorithm {
+public class RandomLayoutAlgorithm implements LayoutAlgorithm {
   
   /** the seed */
   private long seed = 0;

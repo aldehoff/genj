@@ -23,16 +23,20 @@ import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.shell.model.EditableGraph;
 import gj.shell.swing.Action2;
+import gj.shell.util.ReflectHelper;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 
 /**
@@ -119,6 +123,12 @@ public class AlgorithmWidget extends JPanel {
   public void setAlgorithms(LayoutAlgorithm[] set) {
     algorithms=set;
     comboAlgorithms.setModel(new DefaultComboBoxModel(algorithms));
+    comboAlgorithms.setRenderer(new DefaultListCellRenderer() {
+      @Override
+      public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        return super.getListCellRendererComponent(list, ReflectHelper.getName(value.getClass()), index, isSelected, cellHasFocus);
+      }
+    });
     if (algorithms.length>0) 
       comboAlgorithms.setSelectedItem(algorithms[0]);
   }

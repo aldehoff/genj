@@ -21,7 +21,6 @@ package gj.layout.tree;
 
 import gj.geom.Geometry;
 import gj.geom.Path;
-import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
@@ -46,7 +45,7 @@ import java.util.Set;
 /**
  * Vertex layout for Trees
  */
-public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm implements LayoutAlgorithm {
+public class TreeLayoutAlgorithm implements LayoutAlgorithm {
 
   /** distance of nodes in generation */
   private int distanceInGeneration = 20;
