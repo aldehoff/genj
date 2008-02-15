@@ -201,6 +201,7 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
     Point2D center;
     double currentNorth;
     double distanceBetweenGenerations;
+    double maxDiameter;
     
     Recursion(Graph graph, Vertex root, double distanceBetweenGenerations, Layout2D layout, Collection<Shape> debug) {
       
@@ -276,14 +277,19 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
       
       // root?
       if (generation==0) {
-        double reqDistanceBetweenGenerations = radiansOfChildren / ONE_RADIAN * distanceBetweenGenerations;
+        double reqDistanceBetweenGenerations = Math.max(
+            maxDiameter,
+            radiansOfChildren / ONE_RADIAN * distanceBetweenGenerations
+            );
         if (isAdjustDistances && reqDistanceBetweenGenerations>distanceBetweenGenerations)
           distanceBetweenGenerations = reqDistanceBetweenGenerations;
         return 0;
       }
       
       // calculate size root
-      double radiansOfRoot = ( getDiameter(root) + distanceInGeneration ) / (generation*distanceBetweenGenerations);
+      double diamOfRoot = getDiameter(root);
+      maxDiameter = Math.max(maxDiameter, diamOfRoot);
+      double radiansOfRoot = ( diamOfRoot + distanceInGeneration ) / (generation*distanceBetweenGenerations);
       
       // keep and return
       double result = Math.max( radiansOfChildren, radiansOfRoot);
