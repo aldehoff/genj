@@ -172,7 +172,7 @@ public class Path implements Shape, PathIteratorKnowHow {
     // check 
     checkContinue();
     // add opening angle
-    if (Double.isNaN(firstAngle)); 
+    if (Double.isNaN(firstAngle))
       firstAngle = Geometry.getAngle(lastPoint, p);
     // do the line
     gp.lineTo((float)p.getX(), (float)p.getY());
@@ -186,12 +186,15 @@ public class Path implements Shape, PathIteratorKnowHow {
    * @see java.awt.geom.GeneralPath#quadTo(float, float, float, float)
    */
   public synchronized Path quadTo(Point2D c, Point2D p) {
+    // check
     checkContinue();
+    // add opening angle
+    if (Double.isNaN(firstAngle))
+      firstAngle = Geometry.getAngle(lastPoint, c);
+    // do the quad curve
     gp.quadTo((float)c.getX(), (float)c.getY(), (float)p.getX(), (float)p.getY());
-    
     // remember closing angle & position
-    // FIXME this needs to be calculated based on quad curve to p
-    lastAngle = Geometry.getAngle(lastPoint,p);
+    lastAngle = Geometry.getAngle(c,p);
     lastPoint.setLocation(p.getX(), p.getY());
     return this;
   }
@@ -200,12 +203,16 @@ public class Path implements Shape, PathIteratorKnowHow {
    * @see java.awt.geom.GeneralPath#curveTo(float, float, float, float, float, float)
    */
   public synchronized Path curveTo(Point2D c1, Point2D c2, Point2D p) {
+    // check
     checkContinue();
+    // add opening angle
+    if (Double.isNaN(firstAngle))
+      firstAngle = Geometry.getAngle(lastPoint, c1);
+    // do the curve
     gp.curveTo((float)c1.getX(), (float)c1.getY(), (float)c2.getX(), (float)c2.getY(), (float)p.getX(), (float)p.getY());
-    
-    // remember closing angle & position
-    // FIXME this needs to be calculated based on cubic curve to p
-    lastAngle = Geometry.getAngle(lastPoint,p);
+    // remember closing angle
+    lastAngle = Geometry.getAngle(c2,p);
+    // remember position
     lastPoint.setLocation(p.getX(), p.getY());
     return this;
   }
