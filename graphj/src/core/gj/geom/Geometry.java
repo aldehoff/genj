@@ -733,28 +733,17 @@ public class Geometry {
     // we're using a geometric technique 
     // see http://www.richland.edu/james/lecture/m116/matrices/applications.html
     
-    // build determinant of matrix
+    //       | x0 y0 1 |
+    // 1/2 * | x1 y1 1 | = (x1*y2 - y1*x2 -x0*y2 + y0*x2 + x0*y1 - y0*x1)
+    //       | x2 y2 1 |
     //
-    // | x0 x1 x2 |
-    // | y0 y1 y2 | = x0(y1*1-1*y2) - y0(x1*1-1*x2) - 1(x1*y2 - y1*x2)
-    // | 1  1  1  |
-    //
-    double x1 = b.getX() - a.getX();
-    double y1 = b.getY() - a.getY();
-    double x2 = c.getX() - a.getX();
-    double y2 = c.getY() - a.getY();
-    double d = - (x1*y2 - y1*x2);
-    
-    
-//    double x0 = a.getX();
-//    double y0 = a.getY();
-//    double x1 = b.getX();
-//    double y1 = b.getY();
-//    double x2 = c.getX();
-//    double y2 = c.getY();
-//    double d = Math.abs(x0*(y1-y2)) - Math.abs(y0*(x1-x2)) - (x1*y2 - y1*x2);
-//    double d = x0*(y1-y2) - y0*(x1-x2) - (x1*y2 - y1*x2);
-
+    double x0 = a.getX();
+    double y0 = a.getY();
+    double x1 = b.getX();
+    double y1 = b.getY();
+    double x2 = c.getX();
+    double y2 = c.getY();
+    double d =  (x1*y2 - y1*x2 -x0*y2 + y0*x2 + x0*y1 - y0*x1);
     return d/2;
     
   }
@@ -766,7 +755,7 @@ public class Geometry {
     // for a triangle with corners a,b,c the determinant area calculation will return <0 
     // for counter-clockwise and >0 otherwise 
     double area = _getArea(start, end, point);
-    return area < 0;
+    return area > 0;
   }
   
   /**

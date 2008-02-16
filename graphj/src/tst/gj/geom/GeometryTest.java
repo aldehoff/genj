@@ -36,11 +36,21 @@ public class GeometryTest extends TestCase {
   
   public void testPointLine() {
     
-    assertFalse( Geometry.testPointLeftOfLine(
-      p(0, -1), p(0, 0), p(1, 1)
+    //  x
+    // --->
+    //
+    assertTrue( Geometry.testPointLeftOfLine(
+        p(0, 0), p(2, 0), p(1, 1)
     ));
     
+    //   x
+    // <---
+    //   
+    assertFalse( Geometry.testPointLeftOfLine(
+        p(2, 0), p(1, 0), p(1, 1)
+    ));
     
+
     assertTrue( Geometry.testPointLeftOfLine(p(0,0), p(1,1), p(0,1)) );
     assertFalse( Geometry.testPointLeftOfLine(p(0,0), p(1,1), p(1,1)) );
 
@@ -73,21 +83,11 @@ public class GeometryTest extends TestCase {
         p(0, -1), p(0, 1), p(1, 0)
     ));
     
-    //  x
-    // --->
-    //
-    assertTrue( Geometry.testPointLeftOfLine(
-        p(0, 0), p(2, 0), p(1, 1)
-    ));
-    
-    //   x
-    // <---
-    //   
     assertFalse( Geometry.testPointLeftOfLine(
-        p(2, 0), p(0, 0), p(1, 1)
-    ));
-    
-    
+        p(0, -1), p(0, 0), p(1, 1)
+      ));
+      
+      
 //    //   ^
 //    //   | x
 //    //   |
