@@ -15,7 +15,6 @@ import genj.util.Registry;
 import java.io.IOException;
 
 import tree.arrange.AlignLeftArranger;
-import tree.arrange.AlignTopArranger;
 import tree.arrange.CenteredArranger;
 import tree.build.BasicTreeBuilder;
 import tree.build.NoSpouseFilter;
@@ -25,17 +24,17 @@ import tree.build.TreeBuilder;
 import tree.filter.DetermineBoxSizes;
 import tree.filter.FilterChain;
 import tree.filter.SameHeightSpouses;
-import tree.filter.SameWidthSpouses;
 import tree.filter.TreeFilter;
 import tree.graphics.GraphicsOutput;
 import tree.graphics.GraphicsOutputFactory;
 import tree.graphics.GraphicsRenderer;
 import tree.graphics.TitleRenderer;
+import tree.output.FlipTreeElements;
 import tree.output.GraphicsTreeElements;
 import tree.output.HorizontalLines;
-import tree.output.HorizontalTreeRenderer;
+import tree.output.RotateRenderer;
+import tree.output.RotateTreeElements;
 import tree.output.TreeElements;
-import tree.output.VerticalLines;
 import tree.output.VerticalTreeRenderer;
 
 /**
@@ -49,7 +48,7 @@ import tree.output.VerticalTreeRenderer;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.20
+ * @version 0.21
  */
 public class ReportGraphicalTree extends Report {
 
@@ -91,8 +90,6 @@ public class ReportGraphicalTree extends Report {
     // Arrangements enum
     private static final int ARRANGEMENT_CENTER = 0;
     private static final int ARRANGEMENT_LEFT = 1;
-    private static final int ARRANGEMENT_TOP = 2;
-
 
     /**
      * Output type.
@@ -216,12 +213,24 @@ public class ReportGraphicalTree extends Report {
     public int arrangement = 0;
 
     public String[] arrangements = { translate("arrangement.center"),
-            translate("arrangement.left"), translate("arrangement.top") };
+            translate("arrangement.left") };
+
+    /**
+     * Tree rotation.
+     */
+    public int rotation = 0;
+
+    public String[] rotations = { translate("rotation.none"), translate("rotation.270"),
+            translate("rotation.180"), translate("rotation.90") };
+
+    public boolean flip = false;
 
     /**
      * Image title.
      */
     public String title = "";
+
+    public int title_height = 0;
 
     public ReportGraphicalTree()
     {
@@ -276,6 +285,10 @@ public class ReportGraphicalTree extends Report {
             new RemoveFamboxesWhereNoSpouse().filter(indibox);
 
         TreeElements elements = new GraphicsTreeElements(properties);
+        elements = new RotateTreeElements(elements, rotation);
+        if (flip)
+            elements = new FlipTreeElements(elements);
+
         new DetermineBoxSizes(elements).filter(indibox);
 
         // Arrange the tree boxes
@@ -295,31 +308,18 @@ public class ReportGraphicalTree extends Report {
                         new HorizontalLines(SPACING)
                     });
                 break;
-            case ARRANGEMENT_TOP:
-                arranger = new FilterChain(new TreeFilter[] {
-                        new AlignTopArranger(SPACING),
-                        new SameWidthSpouses(),
-                        new VerticalLines(SPACING)
-                    });
-                break;
         }
         arranger.filter(indibox);
 
         // Create renderer
-        GraphicsRenderer renderer = null;
-        switch (arrangement) {
-            case ARRANGEMENT_CENTER:
-            case ARRANGEMENT_LEFT:
-                renderer = new VerticalTreeRenderer(indibox, elements, properties);
-                break;
-            case ARRANGEMENT_TOP:
-                renderer = new HorizontalTreeRenderer(indibox, elements, properties);
-                break;
-        }
+        GraphicsRenderer renderer = new VerticalTreeRenderer(indibox, elements, properties);
+
+        // Rotate if necessary
+        renderer = new RotateRenderer(renderer, rotation);
 
         // Add title renderer
         if (!title.equals(""))
-            renderer = new TitleRenderer(renderer, title);
+            renderer = new TitleRenderer(renderer, title, title_height);
 
         // Render and display the tree
         GraphicsOutput output = GraphicsOutputFactory.getInstance().createOutput(output_type, this);

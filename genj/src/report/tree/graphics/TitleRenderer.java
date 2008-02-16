@@ -51,7 +51,7 @@ public class TitleRenderer implements GraphicsRenderer
      * Creates the object.
      * @param renderer  image renderer
      * @param title     title to display
-     * @param titleHeight  height of the title in pixels (-1 for automatic height)
+     * @param titleHeight  height of the title in pixels (0 or less for automatic height)
      */
     public TitleRenderer(GraphicsRenderer renderer, String title, int titleHeight)
     {
