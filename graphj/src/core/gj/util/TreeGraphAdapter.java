@@ -46,7 +46,7 @@ public class TreeGraphAdapter<V extends Vertex> implements Graph {
   private int _getNumVertices(V parent) {
     int result = 1;
     for (V child : tree.getChildren(parent)) 
-      result += _getNumVertices(parent);
+      result += _getNumVertices(child);
     return result;
   }
 
