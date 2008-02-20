@@ -150,7 +150,9 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   private void createArcs(EditableGraph graph) {
   
-    List<EditableVertex> nodes = new ArrayList<EditableVertex>(graph.getEditableVertices());
+    List<EditableVertex> nodes = new ArrayList<EditableVertex>(graph.getNumVertices());
+    for (EditableVertex vertex : graph.getVertices())
+      nodes.add(vertex);
     
     // No Nodes?
     if (nodes.isEmpty())
@@ -185,7 +187,9 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   private void ensureMinDegree(EditableGraph graph) {
     
-    List<EditableVertex> nodes = new ArrayList<EditableVertex>(graph.getEditableVertices());
+    List<EditableVertex> nodes = new ArrayList<EditableVertex>(graph.getNumVertices());
+    for (EditableVertex vertex : graph.getVertices())
+      nodes.add(vertex);
     
     // validate minDegree - maximum n-1 so that there
     // are always enough nodes to connect to without dups
@@ -232,7 +236,9 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
    */
   protected void ensureConnected(EditableGraph graph) {
     
-    List<EditableVertex> nodes = new LinkedList<EditableVertex>(graph.getEditableVertices());
+    List<EditableVertex> nodes = new ArrayList<EditableVertex>(graph.getNumVertices());
+    for (EditableVertex vertex : graph.getVertices())
+      nodes.add(vertex);
     
     while (nodes.size()>1) {
       EditableVertex from = getMinDegNode(graph,nodes,true);

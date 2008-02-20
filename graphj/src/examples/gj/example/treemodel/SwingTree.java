@@ -90,7 +90,7 @@ public class SwingTree {
     Layout2D layout = new DefaultLayout() {
       @Override
       public Shape getShapeOfVertex(Vertex v) {
-        boolean leaf = graph.getEdges(v).size() == 1;
+        boolean leaf = graph.getNumEdges(v) == 1;
         Dimension dim = treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false).getPreferredSize();
         return new Rectangle(-dim.width/2, -dim.height/2, dim.width, dim.height);
       }
@@ -119,7 +119,7 @@ public class SwingTree {
           Point2D p = layout.getPositionOfVertex(v);
           Rectangle r = layout.getShapeOfVertex(v).getBounds();
           r.translate((int)p.getX(), (int)p.getY());
-          boolean leaf = graph.getEdges(v).size() == 1;
+          boolean leaf = graph.getNumEdges(v) == 1;
           Component c =treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false);
           c.setSize(r.getSize());
           c.paint(graphics.create(r.x, r.y, r.width, r.height ));

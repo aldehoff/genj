@@ -87,7 +87,7 @@ public class ModelHelper {
    */
   public static Rectangle2D getBounds(Graph graph, Layout2D layout) {
     // no content?
-    if (graph==null||graph.getVertices().isEmpty()) 
+    if (graph==null||graph.getNumVertices()==0) 
       return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;
@@ -107,17 +107,16 @@ public class ModelHelper {
    */
   public static void assertSpanningTree(Graph graph) throws GraphNotSupportedException {
     
-    Set<? extends Vertex> verticies = graph.getVertices();
-    if (verticies.isEmpty())
+    if (graph.getNumVertices()==0)
       return;
     
     // look for cycles
     Set<Vertex> visited = new HashSet<Vertex>();
-    if (containsCycle(graph, null, verticies.iterator().next(), visited))
+    if (containsCycle(graph, null, graph.getVertices().iterator().next(), visited))
       throw new GraphNotSupportedException("graph is not acyclic");
     
     // check spanning
-    if (visited.size() != verticies.size())
+    if (visited.size() != graph.getNumVertices())
       throw new GraphNotSupportedException("graph is not a spanning tree");
     
   }

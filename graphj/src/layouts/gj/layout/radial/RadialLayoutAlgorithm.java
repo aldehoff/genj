@@ -171,14 +171,13 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
     ModelHelper.assertSpanningTree(graph);
     
     // ignore an empty tree
-    Set<? extends Vertex> verticies = graph.getVertices();
-    if (verticies.isEmpty())
+    if (graph.getNumVertices()==0)
       return bounds;
     
     // check root
     Vertex root = getRoot();
-    if (root==null || !verticies.contains(root))  {
-      root = verticies.iterator().next();
+    if (root==null) {
+      root = graph.getVertices().iterator().next();
       setRoot(root);
     }
     

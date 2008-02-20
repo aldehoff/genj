@@ -19,7 +19,6 @@
  */
 package gj.shell.model;
 
-import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
 
@@ -75,21 +74,20 @@ public class EditableGraph implements Graph {
   /**
    * All Edges
    */
-  public Set<? extends Edge> getEdges() {
-    return edges;
+  public int getNumEdges() {
+    return edges.size();
   }
-  
-  /**
-   * All Edges
-   */
-  public Set<EditableEdge> getEditableEdges() {
+  public Iterable<EditableEdge> getEdges() {
     return edges;
   }
   
   /**
    * Edges for a vertex
    */
-  public Set<? extends Edge> getEdges(Vertex vertex) {
+  public int getNumEdges(Vertex vertex) {
+    return ((EditableVertex)vertex).getEdges().size();
+  }
+  public Iterable<EditableEdge> getEdges(Vertex vertex) {
     return ((EditableVertex)vertex).getEdges();
   }
   
@@ -220,18 +218,7 @@ public class EditableGraph implements Graph {
   public int getNumVertices() {
     return vertices.size();
   }
-  
-  /**
-   * shell stuff
-   */
-  public Set<EditableVertex> getEditableVertices() {
-    return vertices;
-  }
-  
-  /**
-   * interface implementation
-   */
-  public Set<? extends Vertex> getVertices() {
+  public Iterable<EditableVertex> getVertices() {
     return vertices;
   }
   

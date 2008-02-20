@@ -48,12 +48,12 @@ import java.util.Stack;
   /*package*/ CircularGraph(Graph graph, boolean isSingleCircle) {
     
     // anything to do?
-    if (graph.getVertices().isEmpty()) 
+    if (graph.getNumVertices()==0) 
       return;
     
     // prepare our nodes and their initial circles
     circles = new HashSet<Circle>();
-    vertex2circle = new HashMap<Vertex, Circle>(graph.getVertices().size());
+    vertex2circle = new HashMap<Vertex, Circle>(graph.getNumVertices());
     
     // simple for isSingleCircle=true
     if (isSingleCircle) {

@@ -40,7 +40,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Vertex layout for Trees
@@ -203,14 +202,15 @@ public class TreeLayoutAlgorithm implements LayoutAlgorithm {
     ModelHelper.assertSpanningTree(graph);
 
     // ignore an empty tree
-    Set<? extends Vertex> verticies = graph.getVertices();
-    if (verticies.isEmpty())
+    if (graph.getNumVertices()==0)
       return bounds;
     
     // check root
-    if (rootOfTree==null || !verticies.contains(rootOfTree)) 
-      rootOfTree = verticies.iterator().next();
-
+    if (rootOfTree==null) { 
+      rootOfTree = graph.getVertices().iterator().next();
+      setRoot(rootOfTree);
+    }
+    
     // recurse into it
     Shape result = layout(graph, null, rootOfTree, layout).shape;
     if (debugShapes!=null) {

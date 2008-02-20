@@ -94,7 +94,7 @@ public class RandomLayoutAlgorithm implements LayoutAlgorithm {
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // something to do for me?
-    if (graph.getVertices().isEmpty())
+    if (graph.getNumVertices()==0)
       return bounds;
     
     // get a seed

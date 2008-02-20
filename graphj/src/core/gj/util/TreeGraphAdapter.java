@@ -38,8 +38,19 @@ public class TreeGraphAdapter<V extends Vertex> implements Graph {
   public TreeGraphAdapter(Tree<V> tree) {
     this.tree = tree;
   }
+  
+  public int getNumVertices() {
+    return _getNumVertices(tree.getRoot());
+  }
+  
+  private int _getNumVertices(V parent) {
+    int result = 1;
+    for (V child : tree.getChildren(parent)) 
+      result += _getNumVertices(parent);
+    return result;
+  }
 
-  public Set<V> getVertices() {
+  public Iterable<V> getVertices() {
     return _getVertices(tree.getRoot(), new LinkedHashSet<V>());
   }
     
@@ -50,15 +61,37 @@ public class TreeGraphAdapter<V extends Vertex> implements Graph {
     return result;
   }
 
-  public Set<Edge> getEdges() {
-    return _getEdges(tree.getRoot(), new HashSet<Edge>());
+  public int getNumEdges() {
+    return _getNumEdges(tree.getRoot());
   }
   
-  public Set<Edge> _getEdges(V parent, Set<Edge> result) {
+  private int _getNumEdges(V parent) {
+    int result = 0;
+    for (V child : tree.getChildren(parent)) {
+      result ++;
+      result += _getNumEdges(child);
+    }
+    return result;
+  }
+  
+  public Iterable<DefaultEdge> getEdges() {
+    return _getEdges(tree.getRoot(), new HashSet<DefaultEdge>());
+  }
+  
+  private Set<DefaultEdge> _getEdges(V parent, Set<DefaultEdge> result) {
     for (V child : tree.getChildren(parent)) {
       result.add(new DefaultEdge(parent, child));
       _getEdges(child, result);
     }
+    return result;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public int getNumEdges(Vertex vertex) {
+    int result = 0;
+    if (!vertex.equals(tree.getRoot()))
+      result++;
+    result += tree.getChildren((V)vertex).size();
     return result;
   }
       
