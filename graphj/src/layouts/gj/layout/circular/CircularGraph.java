@@ -62,7 +62,7 @@ import java.util.Stack;
     }
     
     // find circles for all
-    Set<Vertex> unvisited = new HashSet<Vertex>(ModelHelper.toList(graph.getVertices()));
+    Set<? extends Vertex> unvisited = ModelHelper.toSet(graph.getVertices());
     while (!unvisited.isEmpty()) 
       findCircles(graph, unvisited.iterator().next(), null, new Stack<Vertex>(), unvisited);
 
@@ -72,7 +72,7 @@ import java.util.Stack;
   /**
    * Find circles starting at given vertex
    */
-  private void findCircles(Graph graph, Vertex vertex, Vertex parent, Stack<Vertex> path, Set<Vertex> unvisited) {
+  private void findCircles(Graph graph, Vertex vertex, Vertex parent, Stack<Vertex> path, Set<? extends Vertex> unvisited) {
     
     // have we been here before?
     if (path.contains(vertex)) {

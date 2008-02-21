@@ -22,15 +22,15 @@ package gj.layout.hierarchical;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
-import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.util.ModelHelper;
 
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * A hierarchical layout algorithm
@@ -46,28 +46,26 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     if (graph.getNumVertices()==0)
       return bounds;
     
-    // todo
+    // wrap
+    AcyclicGraph ag = new AcyclicGraph(graph);
+    
+    // mark sinks
+    if (debugShapes!=null)
+      for (Vertex sink : ag.getSinks()) {
+        double d = ModelHelper.getDiameter(sink, layout);
+        Point2D p = layout.getPositionOfVertex(sink); 
+        debugShapes.add(new Ellipse2D.Double(p.getX()-d/2, p.getY()-d/2, d, d));
+      }
     
     return bounds;
   }
-
-
+  
   /**
    * the layering step implementation 
    */
   private class Layering {
 
-    Layering(Graph graph) {
-      
-      // find the sinks in graph
-      List<Vertex> sinks = new ArrayList<Vertex>();
-      findsinks: for (Vertex vertex : graph.getVertices()) {
-        for (Edge edge : graph.getEdges(vertex)) {
-          if (edge.getStart().equals(vertex)) continue findsinks;
-        }
-        sinks.add(vertex);
-      }
-      
+    Layering(AcyclicGraph graph) {
       
     }
     

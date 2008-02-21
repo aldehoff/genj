@@ -19,6 +19,7 @@
  */
 package gj.util;
 
+import gj.geom.Geometry;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.model.Edge;
@@ -27,11 +28,9 @@ import gj.model.Vertex;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -62,9 +61,9 @@ public class ModelHelper {
   /**
    * Calculate a list from given iterable
    */
-  public static <T> List<T> toList(Iterable<T> ts) {
-    List<T> result = new ArrayList<T>();
-    for (T t : ts)
+  public static <T> Set<T> toSet(Iterable<T> from) {
+    Set<T> result = new HashSet<T>();
+    for (T t : from)
       result.add(t);
     return result;
   }
@@ -166,6 +165,10 @@ public class ModelHelper {
   
   public static boolean contains(Edge edge, Vertex vertex) {
     return edge.getStart().equals(vertex) || edge.getEnd().equals(vertex);
+  }
+  
+  public static double getDiameter(Vertex vertex, Layout2D layout) {
+    return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
   }
   
 } //ModelHelper

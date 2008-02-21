@@ -236,13 +236,6 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
     }
     
     /**
-     * calculate the diameter of a node's shape
-     */
-    double getDiameter(Vertex vertex) {
-      return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
-    }
-    
-    /**
      * calculate the distance of two verticies (1+)
      */
     int getLengthOfEdge(Vertex a, Vertex b) {
@@ -286,7 +279,7 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
       }
       
       // calculate size root
-      double diamOfRoot = getDiameter(root);
+      double diamOfRoot = ModelHelper.getDiameter(root, layout);
       maxDiameter = Math.max(maxDiameter, diamOfRoot);
       double radiansOfRoot = ( diamOfRoot + distanceInGeneration ) / (generation*distanceBetweenGenerations);
       
