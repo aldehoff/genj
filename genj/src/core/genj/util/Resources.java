@@ -41,12 +41,9 @@ import java.util.WeakHashMap;
  *  <li>are UTF-8 encoded
  *  <li>contain comment lines starting with # or // or /* 
  *  <li>contain content lines "key = value" (key cannot contain spaces)
- *  <li>*values continue in the next line if the following line.trim() starts with a + (which is replaced with \n)
- *  <li>*values continue in the next line if the following line.trim() starts with a & (which is trimmed)
- *  <li>values continue in the next line if the following line starts with a space (which is trimmed)
- *  <li>newline escapes \n are transformed into newline characters
+ *  <li>values continue in the next line if the following line starts with a space (this one space is trimmed)
+ *  <li>values containing newline escapes \n are transformed into newline characters
  * </il>
- * (*legacy)
  */
 public class Resources {
   
@@ -186,7 +183,9 @@ public class Resources {
           }
           // \s... -> ....
           if (line.charAt(0)==' ') {
-            key2string.put(last, key2string.get(last)+breakify(line.substring(1)));
+            String appendto = (String)key2string.get(last);
+            if (!(appendto.endsWith(" ")||appendto.endsWith("\n"))) appendto += " ";
+            key2string.put(last, appendto + breakify(trimmed));
             continue;
           }
         } 
