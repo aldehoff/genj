@@ -50,9 +50,9 @@ public class ModelHelper {
    * Checks whether given Node n is neighbour of any of the given nodes. 
    * That is  E node(i), E arc(i,j) where node = node(j)
    */
-  public static boolean isNeighbour(Graph graph, Vertex vertex, Collection<? extends Vertex> verticies) {
+  public static boolean isNeighbour(Graph graph, Vertex vertex, Collection<? extends Vertex> vertices) {
     for (Edge edge : graph.getEdges(vertex)) {
-      if (verticies.contains(edge.getStart()) || verticies.contains(edge.getEnd()) )
+      if (vertices.contains(edge.getStart()) || vertices.contains(edge.getEnd()) )
         return true;
     }
     return false;
@@ -145,7 +145,7 @@ public class ModelHelper {
   }
   
   /**
-   * Get neighbouring verticies. That's all 
+   * Get neighbouring vertices. That's all 
    * <pre>
    *   A e E n : e(vertex,n ) || e(n,vertex) e graph && !n==vertex
    * </pre> 

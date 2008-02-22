@@ -37,10 +37,10 @@ public class DefaultEdge implements Edge {
     this.to = to;
   }
   
-  public DefaultEdge(Collection<Vertex> verticies) {
-    if (verticies.size()!=2) 
-      throw new IllegalArgumentException("Edge requires exactly two verticies");
-    Iterator<Vertex> it = verticies.iterator();
+  public DefaultEdge(Collection<Vertex> vertices) {
+    if (vertices.size()!=2) 
+      throw new IllegalArgumentException("Edge requires exactly two vertices");
+    Iterator<Vertex> it = vertices.iterator();
     this.from = it.next();
     this.to = it.next();
   }

@@ -236,7 +236,7 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
     }
     
     /**
-     * calculate the distance of two verticies (1+)
+     * calculate the distance of two vertices (1+)
      */
     int getLengthOfEdge(Vertex a, Vertex b) {
       Integer result = edge2length.get(new DefaultEdge(a,b));
@@ -349,7 +349,7 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
       // done
     }
     
-    /** compare two verticies' current position */
+    /** compare two vertices' current position */
     public int compare(Vertex v1, Vertex v2) {
       
       double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(v1)));

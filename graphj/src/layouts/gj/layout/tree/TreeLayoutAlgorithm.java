@@ -447,7 +447,7 @@ public class TreeLayoutAlgorithm implements LayoutAlgorithm {
       moveBy(getDelta(layout.getPositionOfVertex(root), pos));
     }
 
-    /** compare positions of two verticies */
+    /** compare positions of two vertices */
     public int compare(Vertex v1,Vertex v2) {
       
       double layoutAxis = getRadian(orientation);

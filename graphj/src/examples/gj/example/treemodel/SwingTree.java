@@ -114,7 +114,7 @@ public class SwingTree {
     graphWidget.setGraph(graph);
     graphWidget.setRenderer(new GraphRenderer() {
       public void render(Graph graph, Layout2D layout, Graphics2D graphics) {
-        // render verticies
+        // render vertices
         for (Vertex v : graph.getVertices()) {
           Point2D p = layout.getPositionOfVertex(v);
           Rectangle r = layout.getShapeOfVertex(v).getBounds();

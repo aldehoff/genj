@@ -59,16 +59,16 @@ public class DefaultVertex<T> implements Vertex {
     return content.toString();
   }
 
-  public static Set<Vertex> wrap(Object[] verticies) {
+  public static Set<Vertex> wrap(Object[] vertices) {
     Set<Vertex> result = new LinkedHashSet<Vertex>();
-    for (Object vertex : verticies)
+    for (Object vertex : vertices)
       result.add(new DefaultVertex<Object>(vertex));
     return result;
   }
   
-  public static Set<Vertex> wrap(Collection<Object> verticies) {
+  public static Set<Vertex> wrap(Collection<Object> vertices) {
     Set<Vertex> result = new LinkedHashSet<Vertex>();
-    for (Object vertex : verticies)
+    for (Object vertex : vertices)
       result.add(new DefaultVertex<Object>(vertex));
     return result;
   }

@@ -37,6 +37,22 @@ import java.util.Collection;
  */
 public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
 
+  private double distanceBetweenLayers = 50; 
+  
+  /**
+   * Accessor - distance between layers
+   */
+  public void setDistanceBetweenLayers(double distanceBetweenLayers) {
+    this.distanceBetweenLayers = distanceBetweenLayers;
+  }
+
+  /**
+   * Accessor - distance between layers
+   */
+  public double getDistanceBetweenLayers() {
+    return distanceBetweenLayers;
+  }
+
   /**
    * do the layout
    */
@@ -48,6 +64,12 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     
     // wrap
     AcyclicGraph ag = new AcyclicGraph(graph);
+    
+    // layout in layers
+    for (Vertex vertex : graph.getVertices()) {
+      Point2D p = layout.getPositionOfVertex(vertex);
+      layout.setPositionOfVertex(vertex, new Point2D.Double(p.getX(), ag.getLayer(vertex)*getDistanceBetweenLayers()));
+    }
     
     // mark sinks
     if (debugShapes!=null)
