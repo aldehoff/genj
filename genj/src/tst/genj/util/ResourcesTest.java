@@ -41,11 +41,29 @@ public class ResourcesTest extends TestCase {
    * Run externally
    */
   public static void main(String[] args) {
+    
+    // a directory given?
+    if (args.length==1 && args[0].equals("all")) {
+      File[] translations = dir.listFiles();
+      for (int i=0;i<translations.length;i++) {
+        if (!translations[i].isDirectory() ||translations[i].getName().startsWith(".") || translations[i].getName().equals("en")) 
+          continue;
+        diff(translations[i].getName());
+      }
+      return;
+    }
+    
     String translation = Locale.getDefault().getLanguage();
     if (translation.equals("en")) {
       System.out.println("Set language to diff with -Duser.language=xx");
       return;
     }
+
+    diff(translation);
+  }
+    
+  private static void diff(String translation) {
+    
     System.out.println("Diffing en against "+translation);
     try  {
       List diffs = new ResourcesTest().diff("en", translation);

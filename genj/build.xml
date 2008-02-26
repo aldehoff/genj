@@ -360,10 +360,9 @@
    Diff to languages' resources
    -->
   <target name="diff" depends="compile.tst">
-  	<java fork="true" classname="genj.util.ResourcesTest" 
-      classpathref="project.class.path">
-      <jvmarg value="-Duser.language=${user.language}"/>
-  	</java>
+  	<java fork="true" classname="genj.util.ResourcesTest" classpathref="project.class.path">
+      <arg value="all"/>
+  	</java>	
   </target>
 	
   <!--
