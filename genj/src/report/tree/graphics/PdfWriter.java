@@ -8,6 +8,7 @@
 
 package tree.graphics;
 
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -31,6 +32,7 @@ public class PdfWriter extends GraphicsFileOutput
         PDFDocumentGraphics2D pdfGraphics = new PDFDocumentGraphics2D(true, out,
             renderer.getImageWidth(), renderer.getImageHeight());
         pdfGraphics.setGraphicContext(new GraphicContext());
+        pdfGraphics.fill(new Rectangle(0, 0, 1, 1)); // initialize graphics
         renderer.render(pdfGraphics);
         pdfGraphics.finish();
 	}
