@@ -43,17 +43,16 @@ public class VerticalTreeRenderer extends TreeRendererBase {
         int midX = baseX + getMidX(indibox);
 
         // Lines (draw lines first so that boxes hide line ends)
-        int lineY = 0;
+        int lineY = baseY + getChildrenLineY(indibox);
+
         if (indibox.hasChildren() || indibox.getDir() == Direction.PARENT) {
             int midY = baseY + indibox.height;
-            lineY = midY + spacing;
+
             if (indibox.spouse != null)
                 midY -= indibox.height / 2;
 
-            if (indibox.family != null) {
+            if (indibox.family != null)
                 midY = baseY + indibox.height + indibox.family.height;
-                lineY += indibox.family.height;
-            }
 
             elements.drawLine(midX, midY, midX, lineY);
 
@@ -72,9 +71,7 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 
 		// Parent
 		if (indibox.parent != null) {
-            int parentLineY = baseY + indibox.parent.y + indibox.parent.height + spacing;
-            if (indibox.parent.family != null)
-                parentLineY += indibox.parent.family.height;
+            int parentLineY = baseY + indibox.parent.y + getChildrenLineY(indibox.parent);
             elements.drawLine(baseX + indibox.width / 2, baseY, baseX + indibox.width / 2, parentLineY);
 		}
 
@@ -99,6 +96,21 @@ public class VerticalTreeRenderer extends TreeRendererBase {
 		}
 	}
 
+    private int getChildrenLineY(IndiBox indibox) {
+        int lineY;
+        if (indibox.hasChildren()) {
+            lineY = indibox.children[0].y;
+            for (int i = 1; i < indibox.children.length; i++)
+                lineY = Math.min(lineY, indibox.children[i].y);
+            lineY -= spacing;
+        } else {
+            lineY = indibox.height + spacing;
+            if (indibox.family != null)
+                lineY += indibox.family.height;
+        }
+        return lineY;
+    }
+
     /**
      * Returns the position of the family box relative to the individual box.
      */
@@ -111,8 +123,37 @@ public class VerticalTreeRenderer extends TreeRendererBase {
     private int getMidX(IndiBox indibox) {
         if (indibox.spouse == null)
             return indibox.width / 2;
+
+        int x;
         if (indibox.spouse.x > 0)
-            return (indibox.spouse.x + indibox.width) / 2;
-        return (indibox.spouse.x + indibox.spouse.width) / 2;
+            x = (indibox.spouse.x + indibox.width) / 2;
+        else
+            x = (indibox.spouse.x + indibox.spouse.width) / 2;
+
+        if (indibox.family != null) {
+            if (indibox.spouse.x > 0) {
+                if (indibox.spouse.width < indibox.family.width) {
+                    int x1 = (indibox.spouse.x + indibox.spouse.width) / 2;
+                    int x2 = indibox.spouse.x + (indibox.spouse.width - indibox.family.width) / 2;
+                    x = Math.max(x1, x2);
+                } else if (indibox.width < indibox.family.width) {
+                    int x1 = (indibox.spouse.x + indibox.spouse.width) / 2;
+                    int x2 = (indibox.width + indibox.family.width) / 2;
+                    x = Math.min(x1, x2);
+                }
+            } else if (indibox.spouse.x <= 0) {
+                if (indibox.spouse.width < indibox.family.width) {
+                    int x1 = (indibox.width + indibox.spouse.x) / 2;
+                    int x2 = indibox.spouse.x + (indibox.family.width + indibox.spouse.width) / 2;
+                    x = Math.min(x1, x2);
+                } else if (indibox.width < indibox.family.width) {
+                    int x1 = (indibox.width + indibox.spouse.x) / 2;
+                    int x2 = (indibox.width - indibox.family.width) / 2;
+                    x = Math.max(x1, x2);
+                }
+            }
+        }
+
+        return x;
     }
 }
