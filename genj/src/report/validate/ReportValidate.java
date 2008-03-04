@@ -254,6 +254,8 @@ public class ReportValidate extends Report {
     result.add(new TestFamilyClone());
     
     result.add(new TestBiologicalChild());
+    
+    result.add(new TestChildOrder());
 
     // ****************** DATE COMPARISON TESTS *****************************
 
