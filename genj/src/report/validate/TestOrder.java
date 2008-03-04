@@ -7,8 +7,8 @@
  */
 package validate;
 
-import genj.gedcom.Fam;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyComparator;
 import genj.gedcom.TagPath;
 import genj.view.ViewContext;
 
@@ -18,25 +18,33 @@ import java.util.List;
 /**
  * Test for dupes in information about being biological child
  */
-public class TestChildOrder extends Test {
+public class TestOrder extends Test {
 
+  private String tagToSort;
+  private String pathToSort;
+  
   /**
    * Constructor
    */
-  /*package*/ TestChildOrder() {
+  /*package*/ TestOrder(String trigger, String tagToSort, String pathToSortBy) {
     // delegate to super
-    super("FAM", Fam.class);
+    super(trigger, Property.class);
+    this.tagToSort = tagToSort;
+    this.pathToSort = pathToSortBy;
   }
   
   /**
-   * Test family's children being in order of birth
+   * Test properties for order
    */
   /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
 
-    Fam fam  = (Fam)prop;
-    if (!Arrays.asList(fam.getChildren(true)).equals(Arrays.asList(fam.getChildren(false))))
-        issues.add(new ViewContext(fam).setText(report.translate("warn.fam.childorder")));
+    Property[] unsorted = prop.getProperties(tagToSort);
     
+    Property[] sorted = prop.getProperties(tagToSort);
+    Arrays.sort(sorted, new PropertyComparator(pathToSort));
+
+    if (!Arrays.asList(sorted).equals(Arrays.asList(unsorted)))
+        issues.add(new ViewContext(prop).setText(report.translate("warn.order."+tagToSort)));
     
     // done
   }

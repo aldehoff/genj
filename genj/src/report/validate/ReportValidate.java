@@ -254,8 +254,12 @@ public class ReportValidate extends Report {
     result.add(new TestFamilyClone());
     
     result.add(new TestBiologicalChild());
+
+    // order of FAMS
+    result.add(new TestOrder("INDI", "FAMS", "FAMS:*:..:MARR:DATE"));
     
-    result.add(new TestChildOrder());
+    // order of CHILdren
+    result.add(new TestOrder("FAM", "CHIL", "CHIL:*:..:BIRT:DATE"));
 
     // ****************** DATE COMPARISON TESTS *****************************
 
