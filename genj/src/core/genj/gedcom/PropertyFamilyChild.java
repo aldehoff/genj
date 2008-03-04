@@ -33,33 +33,29 @@ public class PropertyFamilyChild extends PropertyXRef {
   public PropertyFamilyChild() {
   }
   
-  static int 
-    NOT_BIOLOGICAL = 0,
-    MAYBE_BIOLOGICAL = 1,
-    CONFIRMED_BIOLOGICAL = 2;
-  
   /**
    * Check if this is a biological link (not necessarily deterministic)
+   * @return Boolean.True if biological, Boolean.FALSE if not biological, null otherwise (unknown)
    */
-  protected int isBiological() {
+  public Boolean isBiological() {
     // certainly not if contained in ADOPtion event
     String parent = getParent().getTag();
     if ("ADOP".equals(parent))
-      return NOT_BIOLOGICAL;
+      return Boolean.FALSE;
     // certainly yes if contained in BIRTh event
     if ("BIRT".equals(parent))
-      return CONFIRMED_BIOLOGICAL;
+      return Boolean.TRUE;
     // check for PEDI? could be if not present
     Property pedi = getProperty("PEDI");
-    if (pedi==null)
-      return MAYBE_BIOLOGICAL;
-    // check well known keywords
-    String value = pedi.getValue();
-    if ("birth".equals(value)) return CONFIRMED_BIOLOGICAL;
-    if ("adopted".equals(value)) return NOT_BIOLOGICAL;
-    if ("foster".equals(value)) return NOT_BIOLOGICAL; 
-    if ("sealing".equals(value)) return NOT_BIOLOGICAL;
-    return MAYBE_BIOLOGICAL;
+    if (pedi!=null) {
+      String value = pedi.getValue();
+      if ("birth".equals(value)) return Boolean.TRUE;
+      if ("adopted".equals(value)) return Boolean.FALSE;
+      if ("foster".equals(value)) return Boolean.FALSE; 
+      if ("sealing".equals(value)) return Boolean.FALSE;
+    }
+    // dunno
+    return null;
   }
 
   /**
