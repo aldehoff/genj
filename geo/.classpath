@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry combineaccessrules="false" kind="src" path="/GenJ"/>
 	<classpathentry kind="src" path="src/core"/>
 	<classpathentry kind="src" path="src/report"/>
 	<classpathentry kind="src" path="src/import"/>
 	<classpathentry kind="src" path="src/tst"/>
-	<classpathentry kind="lib" path="images"/>
-	<classpathentry kind="lib" path="language/en"/>
-	<classpathentry kind="lib" path="contrib/jump/jump.jar"/>
-	<classpathentry kind="lib" path="language/de"/>
+	<classpathentry exported="true" kind="lib" path="images"/>
+	<classpathentry exported="true" kind="lib" path="language/en"/>
+	<classpathentry exported="true" kind="lib" path="contrib/jump/jump.jar"/>
+	<classpathentry exported="true" kind="lib" path="language/de"/>
 	<classpathentry kind="lib" path="contrib/junit/junit.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GenJ"/>
 	<classpathentry kind="output" path="build/eclipse"/>
 </classpath>
