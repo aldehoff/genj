@@ -38,9 +38,9 @@ public class TestOrder extends Test {
    */
   /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
 
-    Property[] unsorted = prop.getProperties(tagToSort);
+    Property[] unsorted = prop.getProperties(tagToSort, true);
     
-    Property[] sorted = prop.getProperties(tagToSort);
+    Property[] sorted = prop.getProperties(tagToSort, true);
     Arrays.sort(sorted, new PropertyComparator(pathToSort));
 
     if (!Arrays.asList(sorted).equals(Arrays.asList(unsorted)))
