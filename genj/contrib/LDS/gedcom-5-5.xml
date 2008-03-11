@@ -229,9 +229,9 @@
  ************    Medias   ************
  *************************************
  <OBJE type="Media" img="Media.gif">
-  <TITL default="0" hide="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="1:1"/>
-  <FORM default="0" hide="1" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
-  <BLOB default="0" hide="1" type="PropertyBlob" img="Blob.gif" cardinality="1:1"/>
+  <TITL default="0" type="PropertySimpleValue" img="Attribute.gif" cardinality="1:1"/>
+  <FORM default="0" type="PropertyChoiceValue" img="Format.gif" cardinality="1:1"/>
+  <BLOB default="0" type="PropertyBlob" img="Blob.gif" cardinality="1:1"/>
   +++++++++++++ References +++++++++++++
   <NOTE super="INDI:NOTE"/>
   <SOUR super="INDI:SOUR"/>
