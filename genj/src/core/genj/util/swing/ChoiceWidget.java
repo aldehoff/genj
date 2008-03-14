@@ -187,7 +187,7 @@ public class ChoiceWidget extends JComboBox {
         getTextEditor().setText(text);
       } catch (NullPointerException e) {
         // as reported by Peter this might fail in PlainView - putting in debugging for that case
-        Logger.getLogger("genj.util.swing").log(Level.WARNING, "Couldn't call "+getTextEditor().getClass()+".setText()", e);
+        Logger.getLogger("genj.util.swing").log(Level.WARNING, "Couldn't call "+getTextEditor().getClass()+".setText("+text+")", e);
         //  java.lang.NullPointerException
         //  at javax.swing.text.PlainView.getLineWidth(PlainView.java:631)
         //  at javax.swing.text.PlainView.updateDamage(PlainView.java:534)
