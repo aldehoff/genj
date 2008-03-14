@@ -246,17 +246,17 @@ public class ReportNarrative extends Report {
           sectionTitle = title + " " + sectionTitle;
         }
       }
-      doc.startSection(sectionTitle, indi, 3);
-
-      boolean showKids = indi.getSex() == PropertySex.MALE; // TODO: track families shown, print with first parent
 
       // if indi already listed via different lineage, just write a link with no details.
       if (printed.contains(indi)) {
+        doc.startSection(sectionTitle, 3); // section without (dupe) key
         doc.addLink("Refer to entry via different lineage", indi);
       } else {
+        doc.startSection(sectionTitle, indi, 3); // section with 
         if (withNameIndex) {
           doc.addIndexTerm(nameIndexTitle, indi.getLastName(), indi.getFirstName());
         }
+        boolean showKids = indi.getSex() == PropertySex.MALE; // TODO: track families shown, print with first parent
         writer.writeEntry(showKids, DETAIL_FULL, true, /*linkToIndi*/ false, showImages);
       }
 
