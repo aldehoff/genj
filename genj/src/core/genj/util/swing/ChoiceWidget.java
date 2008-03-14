@@ -31,6 +31,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
@@ -180,10 +182,32 @@ public class ChoiceWidget extends JComboBox {
     model.setSelectedItem(null);
     try {
       blockAutoComplete = true;
-      getTextEditor().setText(text);
+      
+      try {
+        getTextEditor().setText(text);
+      } catch (NullPointerException e) {
+        // as reported by Peter this might fail in PlainView - putting in debugging for that case
+        Logger.getLogger("genj.util.swing").log(Level.WARNING, "Couldn't call "+getTextEditor().getClass()+".setText()", e);
+        //  java.lang.NullPointerException
+        //  at javax.swing.text.PlainView.getLineWidth(PlainView.java:631)
+        //  at javax.swing.text.PlainView.updateDamage(PlainView.java:534)
+        //  at javax.swing.text.PlainView.insertUpdate(PlainView.java:422)
+        //  at javax.swing.text.FieldView.insertUpdate(FieldView.java:276)
+        //  at javax.swing.plaf.basic.BasicTextUI$RootView.insertUpdate(BasicTextUI.java:1506)
+        //  at javax.swing.plaf.basic.BasicTextUI$UpdateHandler.insertUpdate(BasicTextUI.java:1749)
+        //  at javax.swing.text.AbstractDocument.fireInsertUpdate(AbstractDocument.java:184)
+        //  at javax.swing.text.AbstractDocument.handleInsertString(AbstractDocument.java:754)
+        //  at javax.swing.text.AbstractDocument.insertString(AbstractDocument.java:711)
+        //  at javax.swing.text.PlainDocument.insertString(PlainDocument.java:114)
+        //  at javax.swing.text.AbstractDocument.replace(AbstractDocument.java:673)
+        //  at javax.swing.text.JTextComponent.setText(JTextComponent.java:1441)
+        //  at genj.util.swing.ChoiceWidget.setText(ChoiceWidget.java:183)      
+      }
+      
     } finally {
       blockAutoComplete = false;
     }
+    
   }
   
   /**
