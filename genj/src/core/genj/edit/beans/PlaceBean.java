@@ -22,7 +22,6 @@ package genj.edit.beans;
 import genj.edit.Options;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
-import genj.util.DirectAccessTokenizer;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.swing.Action2;
@@ -80,7 +79,7 @@ public class PlaceBean extends PropertyBean {
    */
   private String getCommitValue() {
     
-    boolean hierarchy = Options.getInstance().isSplitJurisdictions && ((PropertyPlace)getProperty()).getHierarchy().length()>0;
+    boolean hierarchy = Options.getInstance().isSplitJurisdictions && ((PropertyPlace)getProperty()).getFormatAsString().length()>0;
     
     // collect the result by looking at all of the choices
     StringBuffer result = new StringBuffer();
@@ -149,15 +148,13 @@ public class PlaceBean extends PropertyBean {
     String value = place.isSecret() ? "" : place.getValue();
    
     // either a simple value or broken down into comma separated jurisdictions
-    String hierarchy = place.getHierarchy();
-    if (!Options.getInstance().isSplitJurisdictions || hierarchy.length()==0) {
-      createChoice(null, value, place.getAllJurisdictions(-1,true), hierarchy);
+    if (!Options.getInstance().isSplitJurisdictions || place.getFormatAsString().length()==0) {
+      createChoice(null, value, place.getAllJurisdictions(-1,true), place.getFormatAsString());
     } else {
-      DirectAccessTokenizer format = new DirectAccessTokenizer(hierarchy, ",");
-      DirectAccessTokenizer jurisdictions = new DirectAccessTokenizer( value, ",");
-      for (int i=0;;i++) {
-        if (format.get(i)==null&&jurisdictions.get(i)==null) break;
-        createChoice(format.get(i, true), jurisdictions.get(i, true), place.getAllJurisdictions(i, true), null);
+      String[] format = place.getFormat();
+      String[] jurisdictions = place.getJurisdictions();
+      for (int i=0;i<Math.max(format.length, jurisdictions.length); i++) {
+        createChoice(i<format.length ? format[i] : "?", i<jurisdictions.length ? jurisdictions[i] : "", place.getAllJurisdictions(i, true), null);
       }
     }
 

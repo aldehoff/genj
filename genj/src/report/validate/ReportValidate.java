@@ -97,14 +97,17 @@ public class ReportValidate extends Report {
    */
   public void start(Property[] props) {
 
-    List tests = createTests();
-
     List issues = new ArrayList();
-    for (int i=0;i<props.length;i++) {
-      TagPath path = props[i].getPath();
-      test(props[i], path, props[i].getGedcom().getGrammar().getMeta(path), tests, issues);
-    }
 
+    if (props.length>0) {
+      List tests = createTests(props[0].getGedcom());
+  
+      for (int i=0;i<props.length;i++) {
+        TagPath path = props[i].getPath();
+        test(props[i], path, props[i].getGedcom().getGrammar().getMeta(path), tests, issues);
+      }
+    }
+    
     // show results
     results(props[0].getGedcom(), issues);
   }
@@ -118,9 +121,9 @@ public class ReportValidate extends Report {
 
   public void start(Entity[] entities) {
 
-    List tests = createTests();
-
     Gedcom gedcom = entities[0].getGedcom();
+    List tests = createTests(gedcom);
+
     List issues = new ArrayList();
     for (int i=0;i<entities.length;i++) {
       TagPath path = new TagPath(entities[i].getTag());
@@ -137,7 +140,7 @@ public class ReportValidate extends Report {
   public void start(final Gedcom gedcom) {
 
     // prepare tests
-    List tests = createTests();
+    List tests = createTests(gedcom);
     List issues = new ArrayList();
 
     // test if there's a submitter
@@ -232,7 +235,7 @@ public class ReportValidate extends Report {
   /**
    * Create the tests we're using
    */
-  private List createTests() {
+  private List createTests(Gedcom gedcom) {
 
     List result = new ArrayList();
 
@@ -265,6 +268,9 @@ public class ReportValidate extends Report {
     // order of CHILdren
     if (!isOrderDiscretionary)
       result.add(new TestOrder("FAM", "CHIL", "CHIL:*:..:BIRT:DATE"));
+    
+    // place format
+    result.add(new TestPlace(gedcom));
 
     // ****************** DATE COMPARISON TESTS *****************************
 

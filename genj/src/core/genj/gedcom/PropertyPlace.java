@@ -23,8 +23,10 @@ import genj.util.DirectAccessTokenizer;
 import genj.util.ReferenceSet;
 import genj.util.swing.ImageIcon;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * PLAC a choice value with brains for understanding sub-property FORM
@@ -128,9 +130,27 @@ public class PropertyPlace extends PropertyChoiceValue {
   }
 
   /**
+   * Accessor - format
+   */
+  public String[] getFormat() {
+    ArrayList result = new ArrayList(10);
+    String lastToken = null;
+    for (StringTokenizer tokens = new StringTokenizer( getFormatAsString(), ",", true); tokens.hasMoreTokens(); ) {
+      String token = tokens.nextToken();
+      if (!JURISDICTION_SEPARATOR.equals(token))
+        result.add(token);
+      else if (JURISDICTION_SEPARATOR.equals(lastToken))
+        result.add("");
+      lastToken = token;
+    }
+    return (String[])result.toArray(new String[result.size()]);
+    
+  }
+
+  /**
    * Accessor - the format of this place's value (non localized)
    */
-  public String getHierarchy() {
+  public String getFormatAsString() {
     // look it up
     String result = "";
     Property pformat = getProperty(FORM);
@@ -148,7 +168,7 @@ public class PropertyPlace extends PropertyChoiceValue {
   /**
    * Accessor - the hierarchy of this place's value (non localized)
    */
-  public void setHierarchy(boolean global, String format) {
+  public void setFormatAsString(boolean global, String format) {
     if (!global)
       throw new IllegalArgumentException("non-global n/a");
     // propagate
@@ -210,6 +230,24 @@ public class PropertyPlace extends PropertyChoiceValue {
   public String getJurisdiction(int hierarchyLevel) {
     return new DirectAccessTokenizer(getValue(), JURISDICTION_SEPARATOR).get(hierarchyLevel, true);
   }
+  
+  /**
+   * Accessor - jurisdictions
+   */
+  public String[] getJurisdictions() {
+    ArrayList result = new ArrayList(10);
+    String lastToken = null;
+    for (StringTokenizer tokens = new StringTokenizer( getValue(), ",", true); tokens.hasMoreTokens(); ) {
+      String token = tokens.nextToken();
+      if (!JURISDICTION_SEPARATOR.equals(token))
+        result.add(token);
+      else if (JURISDICTION_SEPARATOR.equals(lastToken))
+        result.add("");
+      lastToken = token;
+    }
+    return (String[])result.toArray(new String[result.size()]);
+    
+  }
 
   /**
    * Accessor - jurisdictions that is the city
@@ -243,16 +281,15 @@ public class PropertyPlace extends PropertyChoiceValue {
   private int getCityIndex() {
 
     // try to get a place format
-    String hierarchy = getHierarchy();
-    if (hierarchy.length()==0)
+    if (getFormatAsString().length()==0)
       return -1;
 
     // look for a city key in the hierarchy
     Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
-    DirectAccessTokenizer hs = new DirectAccessTokenizer(hierarchy, ",");
-    for (int index=0; hs.get(index)!=null ;index++) {
-      if (cityKeys.contains(hs.get(index, true).toLowerCase()))
-        return index;
+    String[] format = getFormat();
+    for (int i=0; i<format.length;i++) {
+      if (cityKeys.contains(format[i].toLowerCase()))
+        return i;
     }
 
     // don't know
