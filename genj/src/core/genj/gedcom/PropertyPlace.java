@@ -133,9 +133,13 @@ public class PropertyPlace extends PropertyChoiceValue {
    * Accessor - format
    */
   public String[] getFormat() {
+    return toJurisdictions(getFormatAsString());
+  }
+
+  private String[] toJurisdictions(String value) {
     ArrayList result = new ArrayList(10);
-    String lastToken = null;
-    for (StringTokenizer tokens = new StringTokenizer( getFormatAsString(), ",", true); tokens.hasMoreTokens(); ) {
+    String lastToken = JURISDICTION_SEPARATOR;
+    for (StringTokenizer tokens = new StringTokenizer( value, ",", true); tokens.hasMoreTokens(); ) {
       String token = tokens.nextToken();
       if (!JURISDICTION_SEPARATOR.equals(token))
         result.add(token);
@@ -144,9 +148,8 @@ public class PropertyPlace extends PropertyChoiceValue {
       lastToken = token;
     }
     return (String[])result.toArray(new String[result.size()]);
-    
-  }
-
+  }  
+  
   /**
    * Accessor - the format of this place's value (non localized)
    */
@@ -235,18 +238,7 @@ public class PropertyPlace extends PropertyChoiceValue {
    * Accessor - jurisdictions
    */
   public String[] getJurisdictions() {
-    ArrayList result = new ArrayList(10);
-    String lastToken = null;
-    for (StringTokenizer tokens = new StringTokenizer( getValue(), ",", true); tokens.hasMoreTokens(); ) {
-      String token = tokens.nextToken();
-      if (!JURISDICTION_SEPARATOR.equals(token))
-        result.add(token);
-      else if (JURISDICTION_SEPARATOR.equals(lastToken))
-        result.add("");
-      lastToken = token;
-    }
-    return (String[])result.toArray(new String[result.size()]);
-    
+    return toJurisdictions(getValue());
   }
 
   /**

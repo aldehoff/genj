@@ -43,8 +43,10 @@ public class TestPlace extends Test {
     
     // check if place doesn't match hierarchy 
     if (hierarchy.length()>0) {
-      String[] format = place.getFormat();
       String[] jurisdictions = place.getJurisdictions();
+      if (report.isEmptyValueValid && jurisdictions.length==0)
+        return;
+      String[] format = place.getFormat();
       if (format.length!=jurisdictions.length) {
         String[] counts = new String[]{ String.valueOf(jurisdictions.length), String.valueOf(format.length) };
         issues.add(new ViewContext(place).setText(report.translate("warn.plac.value", counts)));
