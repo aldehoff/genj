@@ -30,6 +30,9 @@ import java.util.List;
  */
 public class ReportValidate extends Report {
   
+  /** whether order of properties counts or not */
+  public boolean isOrderDiscretionary = true;
+  
   /** whether we consider an empty value to be valid */
   public boolean isEmptyValueValid = true;
 
@@ -256,10 +259,12 @@ public class ReportValidate extends Report {
     result.add(new TestBiologicalChild());
 
     // order of FAMS
-    result.add(new TestOrder("INDI", "FAMS", "FAMS:*:..:MARR:DATE"));
+    if (!isOrderDiscretionary)
+      result.add(new TestOrder("INDI", "FAMS", "FAMS:*:..:MARR:DATE"));
     
     // order of CHILdren
-    result.add(new TestOrder("FAM", "CHIL", "CHIL:*:..:BIRT:DATE"));
+    if (!isOrderDiscretionary)
+      result.add(new TestOrder("FAM", "CHIL", "CHIL:*:..:BIRT:DATE"));
 
     // ****************** DATE COMPARISON TESTS *****************************
 
