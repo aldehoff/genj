@@ -20,6 +20,7 @@
 package genj.edit.beans;
 
 import genj.gedcom.Property;
+import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.view.ViewManager;
 
@@ -52,6 +53,8 @@ public class BeanFactory {
     SimpleValueBean.class // last!
   };
   
+  private boolean isRecycling = true;
+  
   /** registry used for all beans */
   private Registry registry;
   
@@ -66,6 +69,12 @@ public class BeanFactory {
    */
   public BeanFactory(ViewManager viewManager, Registry registry) {
     this.registry = registry;
+
+    if ("false".equals(EnvironmentChecker.getProperty(this, "genj.bean.recycle", "true", "checking whether to recycle beans"))) {
+      isRecycling = false;
+      Logger.getLogger("genj.edit.beans").log(Level.INFO, "Not recycling beansas genj.bean.recycle=false");
+    }
+      
   }
 
   /**
@@ -126,8 +135,10 @@ public class BeanFactory {
   private synchronized PropertyBean getBeanFor(Property prop) {
     // look into cache
     List cached = (List)property2cached.get(prop.getClass());
-    if (cached!=null&&!cached.isEmpty()) 
-      return (PropertyBean)cached.remove(cached.size()-1);
+    if (cached!=null&&!cached.isEmpty()) {
+      PropertyBean result = (PropertyBean)cached.remove(cached.size()-1);
+      return result;
+    }
     // create new instances
     try {
       for (int i=0;i<beanTypes.length;i++) {
@@ -147,6 +158,11 @@ public class BeanFactory {
    * Recycle a bean
    */
   public synchronized void recycle(PropertyBean bean) {
+    
+    // no recycling?
+    if (!isRecycling) 
+      return;
+    
     Property property = bean.getProperty();
     if (property==null)
       return;
