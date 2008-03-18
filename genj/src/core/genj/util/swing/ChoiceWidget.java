@@ -43,6 +43,9 @@ import javax.swing.Timer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.StringContent;
 
 /**
  * Our own JComboBox
@@ -185,23 +188,35 @@ public class ChoiceWidget extends JComboBox {
       
       try {
         getTextEditor().setText(text);
-      } catch (NullPointerException e) {
-        // as reported by Peter this might fail in PlainView - putting in debugging for that case
-        Logger.getLogger("genj.util.swing").log(Level.WARNING, "Couldn't call "+getTextEditor().getClass()+".setText("+text+")", e);
-        //  java.lang.NullPointerException
-        //  at javax.swing.text.PlainView.getLineWidth(PlainView.java:631)
-        //  at javax.swing.text.PlainView.updateDamage(PlainView.java:534)
-        //  at javax.swing.text.PlainView.insertUpdate(PlainView.java:422)
-        //  at javax.swing.text.FieldView.insertUpdate(FieldView.java:276)
-        //  at javax.swing.plaf.basic.BasicTextUI$RootView.insertUpdate(BasicTextUI.java:1506)
-        //  at javax.swing.plaf.basic.BasicTextUI$UpdateHandler.insertUpdate(BasicTextUI.java:1749)
-        //  at javax.swing.text.AbstractDocument.fireInsertUpdate(AbstractDocument.java:184)
-        //  at javax.swing.text.AbstractDocument.handleInsertString(AbstractDocument.java:754)
-        //  at javax.swing.text.AbstractDocument.insertString(AbstractDocument.java:711)
-        //  at javax.swing.text.PlainDocument.insertString(PlainDocument.java:114)
-        //  at javax.swing.text.AbstractDocument.replace(AbstractDocument.java:673)
-        //  at javax.swing.text.JTextComponent.setText(JTextComponent.java:1441)
-        //  at genj.util.swing.ChoiceWidget.setText(ChoiceWidget.java:183)      
+      } catch (Throwable t) {
+        
+        try {
+          // retry with a new document
+          Document doc = new PlainDocument(new StringContent(255));
+          doc.insertString(0, text, null);
+          getTextEditor().setDocument(doc);
+        } catch (Throwable retry) {
+          Logger.getLogger("genj.util.swing").log(Level.FINE, "Couldn't retry "+getTextEditor().getClass()+".setText("+text+")", retry);
+          // as reported by Peter this might fail in PlainView - putting in debugging for that case
+          Logger.getLogger("genj.util.swing").log(Level.WARNING, "Couldn't call "+getTextEditor().getClass()+".setText("+text+") - giving up", t);
+          //  java.lang.NullPointerException
+          //  at javax.swing.text.PlainView.getLineWidth(PlainView.java:631)
+          //  at javax.swing.text.PlainView.updateDamage(PlainView.java:534)
+          //  at javax.swing.text.PlainView.insertUpdate(PlainView.java:422)
+          //  at javax.swing.text.FieldView.insertUpdate(FieldView.java:276)
+          //  at javax.swing.plaf.basic.BasicTextUI$RootView.insertUpdate(BasicTextUI.java:1506)
+          //  at javax.swing.plaf.basic.BasicTextUI$UpdateHandler.insertUpdate(BasicTextUI.java:1749)
+          //  at javax.swing.text.AbstractDocument.fireInsertUpdate(AbstractDocument.java:184)
+          //  at javax.swing.text.AbstractDocument.handleInsertString(AbstractDocument.java:754)
+          //  at javax.swing.text.AbstractDocument.insertString(AbstractDocument.java:711)
+          //  at javax.swing.text.PlainDocument.insertString(PlainDocument.java:114)
+          //  at javax.swing.text.AbstractDocument.replace(AbstractDocument.java:673)
+          //  at javax.swing.text.JTextComponent.setText(JTextComponent.java:1441)
+          //  at genj.util.swing.ChoiceWidget.setText(ChoiceWidget.java:183)      
+          
+        }
+        
+
       }
       
     } finally {
