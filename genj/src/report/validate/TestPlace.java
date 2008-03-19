@@ -42,10 +42,8 @@ public class TestPlace extends Test {
     }
     
     // check if place doesn't match hierarchy 
-    if (hierarchy.length()>0) {
+    if (hierarchy.length()>0 && (place.getValue().length()>0 || !report.isEmptyValueValid)) {
       String[] jurisdictions = place.getJurisdictions();
-      if (report.isEmptyValueValid && jurisdictions.length==0)
-        return;
       String[] format = place.getFormat();
       if (format.length!=jurisdictions.length) {
         String[] counts = new String[]{ String.valueOf(jurisdictions.length), String.valueOf(format.length) };
