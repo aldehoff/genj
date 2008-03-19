@@ -147,6 +147,8 @@ public class PropertyPlace extends PropertyChoiceValue {
         result.add("");
       lastToken = token;
     }
+    if (JURISDICTION_SEPARATOR.equals(lastToken))
+      result.add("");
     return (String[])result.toArray(new String[result.size()]);
   }  
   
