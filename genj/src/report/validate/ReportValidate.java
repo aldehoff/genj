@@ -186,7 +186,7 @@ public class ReportValidate extends Report {
     }
 
     // show fixes
-    showAnnotationsToUser(gedcom, translate("issues"), issues);
+    showAnnotationsToUser(gedcom, translate("issues", Integer.toString(issues.size())), issues);
 
     // done
   }
