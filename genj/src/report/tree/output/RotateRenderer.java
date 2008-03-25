@@ -9,6 +9,7 @@
 package tree.output;
 
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 
 import tree.graphics.GraphicsRenderer;
 
@@ -37,20 +38,19 @@ public class RotateRenderer implements GraphicsRenderer
     {
         if (rotation == ROTATE_0 || rotation == ROTATE_180)
             return renderer.getImageHeight();
-        else
-            return renderer.getImageWidth();
+        return renderer.getImageWidth();
     }
 
     public int getImageWidth()
     {
         if (rotation == ROTATE_0 || rotation == ROTATE_180)
             return renderer.getImageWidth();
-        else
-            return renderer.getImageHeight();
+        return renderer.getImageHeight();
     }
 
     public void render(Graphics2D graphics)
     {
+        AffineTransform transform = graphics.getTransform();
         switch (rotation) {
             case ROTATE_90:
                 graphics.translate(renderer.getImageHeight(), 0);
@@ -61,9 +61,11 @@ public class RotateRenderer implements GraphicsRenderer
                 graphics.rotate(Math.PI);
                 break;
             case ROTATE_270:
-              graphics.translate(0, renderer.getImageWidth());
-              graphics.rotate(-Math.PI/2);
+                graphics.translate(0, renderer.getImageWidth());
+                graphics.rotate(-Math.PI/2);
+                break;
         }
         renderer.render(graphics);
+        graphics.setTransform(transform);
     }
 }
