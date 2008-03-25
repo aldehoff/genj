@@ -55,6 +55,13 @@ public class PropertyComparator implements Comparator {
   }
   
   /**
+   * Accessor - path
+   */
+  public TagPath getPath() {
+    return path;
+  }
+  
+  /**
    * @see java.util.Comparator#compare(Object, Object)
    */
   public int compare(Object o1, Object o2) {

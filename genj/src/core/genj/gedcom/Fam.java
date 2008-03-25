@@ -20,9 +20,9 @@
 package genj.gedcom;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,8 +35,22 @@ public class Fam extends Entity {
     PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC"),
     PATH_FAMDIVDATE  = new TagPath("FAM:DIV:DATE"),
     PATH_FAMDIVPLAC  = new TagPath("FAM:MARR:PLAC");
-  
-  private final static Comparator SORT_SIBLINGS =  new PropertyComparator("INDI:BIRT:DATE");
+
+  private final static TagPath
+    SORT_SIBLINGS = new TagPath("CHIL:*:..:BIRT:DATE");
+
+  /** comparator for CHIL nodes - by child's birth date and position if necessary */
+  private class CHILComparator extends PropertyComparator {
+    
+    CHILComparator() {
+      super(SORT_SIBLINGS);
+    }
+    
+    public int compare(Object o1, Object o2) {
+      int result = super.compare(o1, o2);
+      return result!=0 ? result : getPropertyPosition((Property)o1) - getPropertyPosition((Property)o2);
+    }
+  };
 
   /**
    * Returns child #i
@@ -66,23 +80,38 @@ public class Fam extends Entity {
    * Returns children
    */
   public Indi[] getChildren(boolean sorted) {
-    
-    ArrayList children = new ArrayList(getNoOfProperties());
-    
-    List childs = getProperties(PropertyChild.class);
-    for (int i=0,j=childs.size();i<j;i++) {
-      PropertyChild prop = (PropertyChild)childs.get(i);
-      Indi child = prop.getChild();
-      if (prop.isValid()&&!children.contains(child)) 
-        children.add(child);
+
+    // look for all valid CHIL
+    List CHILs = new ArrayList(getNoOfProperties());
+    for (Iterator it = getProperties(PropertyChild.class).iterator(); it.hasNext(); ) {
+      PropertyChild prop = (PropertyChild)it.next();
+      if (prop.isValid()) {
+        CHILs.add(prop);
+        // we don't sort children if there is one or many without a proper date
+        // will have to depend on the natural order of the CHIL tags then
+        if (sorted) {
+          Property sortby = prop.getProperty(SORT_SIBLINGS); 
+          if (sortby==null||!sortby.isValid())
+            sorted = false;
+        }
+      }
     }
     
     // convert to array & sort
-    Indi[] result = Indi.toIndiArray(children);
-    if (sorted) Arrays.sort(result, SORT_SIBLINGS);
+    if (sorted) 
+      Collections.sort(CHILs, new CHILComparator());
+    
+    // grab children now
+    List children = new ArrayList(CHILs.size());
+    for (int i=0;i<CHILs.size();i++) {
+      Indi child = ((PropertyChild)CHILs.get(i)).getChild();
+      if (!children.contains(child))
+          children.add(child);
+    }
+    
     
     // done
-    return result;
+    return Indi.toIndiArray(children);
   }
 
   /**
