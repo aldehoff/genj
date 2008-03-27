@@ -76,6 +76,8 @@ public class ReportMultDesc extends Report {
   public boolean reportDateOfResi = true;
 
   public boolean reportMailingAddress = true;
+  
+  public boolean reportIds = true;
 
   // outputer
   	private Output output;
@@ -238,7 +240,8 @@ public class ReportMultDesc extends Report {
     // FIXME Nils re-enable anchors for individuals processes
     output.number(prefix,doc);
     output.name(policy.getDisplayValue(indi, "NAME"),doc);
-    output.id(indi.getId(),doc);
+    if (reportIds)
+      output.id(indi.getId(),doc);
 
     String birt = output.format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
     String marr = fam!=null ? output.format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "";
