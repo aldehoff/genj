@@ -82,6 +82,9 @@ public class Options extends OptionProvider {
 
   /** restore views during startup */
   public boolean isRestoreViews = true;
+  
+  /** write BOM on save */
+  public boolean isWriteBOM = false;
 
   /** all available language codes */
   private static String[] languages;

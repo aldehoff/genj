@@ -417,9 +417,9 @@ public class GedcomReader implements Trackable {
   /**
    * SniffedInputStream
    */
-  private class SniffedInputStream extends BufferedInputStream {
+  static class SniffedInputStream extends BufferedInputStream {
     
-    private final byte[]
+    static final byte[]
       BOM_UTF8    = { (byte)0xEF, (byte)0xBB, (byte)0xBF },
       BOM_UTF16BE = { (byte)0xFE, (byte)0xFF },
       BOM_UTF16LE = { (byte)0xFF, (byte)0xFE };

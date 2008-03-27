@@ -77,6 +77,9 @@ public class GedcomWriter implements Trackable {
    * @param stream the stream to write to
    */
   public GedcomWriter(Gedcom ged, String name, String enc, OutputStream stream) {
+    this(ged,name,enc,false,stream);
+  }
+  public GedcomWriter(Gedcom ged, String name, String enc, boolean writeBOM, OutputStream stream) {
     
     Calendar now = Calendar.getInstance();
 
@@ -89,7 +92,7 @@ public class GedcomWriter implements Trackable {
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
 
-    CharsetEncoder encoder = getCharset(encoding).newEncoder();
+    CharsetEncoder encoder = getCharset(writeBOM, stream, encoding).newEncoder();
     encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
     out = new BufferedWriter(new OutputStreamWriter(stream, encoder));
     
@@ -99,16 +102,28 @@ public class GedcomWriter implements Trackable {
   /**
    * Create the charset we're using for out
    */
-  private Charset getCharset(String encoding) {
+  private Charset getCharset(boolean writeBOM, OutputStream out, String encoding) {
 
     // Attempt encoding
     try {
       // Unicode
-      if (Gedcom.UNICODE.equals(encoding))
+      if (Gedcom.UNICODE.equals(encoding)) {
+        if (writeBOM) try {
+          out.write(GedcomReader.SniffedInputStream.BOM_UTF16BE);
+        } catch (Throwable t) {
+          // ignored
+        }
         return Charset.forName("UTF-16BE");
+      }
       // UTF8
-      if (Gedcom.UTF8.equals(encoding))
+      if (Gedcom.UTF8.equals(encoding)) {
+        if (writeBOM) try {
+          out.write(GedcomReader.SniffedInputStream.BOM_UTF8);
+        } catch (Throwable t) {
+          // ignored
+        }
         return Charset.forName("UTF-8");
+      }
       // ASCII - 20050705 using Latin1 (ISO-8859-1) from now on to preserve extended ASCII characters
       if (Gedcom.ASCII.equals(encoding))
         return Charset.forName("ISO-8859-1"); // was ASCII
