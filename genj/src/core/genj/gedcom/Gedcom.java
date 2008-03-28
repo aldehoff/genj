@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.132 $ $Author: nmeier $ $Date: 2008-01-30 04:13:23 $
+ * $Revision: 1.133 $ $Author: nmeier $ $Date: 2008-03-28 20:40:52 $
  */
 package genj.gedcom;
 
@@ -147,6 +147,9 @@ public class Gedcom implements Comparable {
 
   /** origin of this Gedcom */
   private Origin origin;
+  
+  /** last change */
+  private PropertyChange lastChange = null;
   
   /** maximum ID length in file */
   private int maxIDLength = 0;
@@ -719,6 +722,22 @@ public class Gedcom implements Comparable {
     // notify
     entity.addNotify(this);
     
+  }
+  
+  /**
+   * Accessor - last change
+   * @return change or null
+   */
+  public PropertyChange getLastChange() {
+    return lastChange;
+  }
+  
+  /**
+   * Accessor - last change
+   */
+  protected void updateLastChange(PropertyChange change) {
+    if (lastChange==null || lastChange.compareTo(change)<0)
+      lastChange = change;
   }
 
   /**

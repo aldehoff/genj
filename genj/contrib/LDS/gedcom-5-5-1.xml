@@ -170,7 +170,7 @@
   <RIN type="PropertySimpleValue" img="Blob.gif" cardinality="0:1"/>
   <RESN type="PropertySimpleReadOnly" img="Description.gif" cardinality="0:1"/>
   +++++++++++++ change  - it swallows subs DATE|TIME - no need to declare in grammar +++++++++++++
-  <CHAN hide="1" type="PropertyChange" img="Code.gif">
+  <CHAN hide="1" type="PropertyChange" img="Time.gif">
    <NOTE super="INDI:NAME:NOTE"/>
   </CHAN>
  </INDI>

@@ -186,6 +186,9 @@ public class PropertyChange extends Property implements MultiLineProperty {
       // parse date
       time += PointInTime.getPointInTime(value.substring(0,i)).getTimeMillis();
       
+      // update gedcom's last change time
+      getGedcom().updateLastChange(this);
+      
     } catch (Throwable t) {
 
       time = -1;
@@ -351,6 +354,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
       
       // remember
       updated.add(entity);
+      entity.getGedcom().updateLastChange(prop);
     }
     
     public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
