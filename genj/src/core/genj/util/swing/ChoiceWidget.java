@@ -393,8 +393,10 @@ public class ChoiceWidget extends JComboBox {
       String match = model.setSelectedPrefix(prefix);
       
       // no match
-      if (match.length()==0)
+      if (match.length()==0) {
+        hidePopup();
         return;
+      }
       
       // restore the original text & selection
       blockAutoComplete = true;
