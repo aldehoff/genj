@@ -23,7 +23,9 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomMetaListener;
+import genj.gedcom.Grammar;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.SortableTableModel;
@@ -58,7 +60,19 @@ import spin.Spin;
   
   /** default column widths */
   private static final int defaultWidths[] = {
-    96, 24, 24, 24, 24, 24, 24, 24
+    96, 24, 24, 24, 24, 24, 24, 24, 48
+  };
+  
+  private static final Object COLUMNS[] = {
+    Resources.get(GedcomTableWidget.class).getString("cc.column_header.name"),
+    Gedcom.getEntityImage(Gedcom.INDI),
+    Gedcom.getEntityImage(Gedcom.FAM),
+    Gedcom.getEntityImage(Gedcom.OBJE), 
+    Gedcom.getEntityImage(Gedcom.NOTE), 
+    Gedcom.getEntityImage(Gedcom.SOUR), 
+    Gedcom.getEntityImage(Gedcom.SUBM), 
+    Gedcom.getEntityImage(Gedcom.REPO),
+    Grammar.V55.getMeta(new TagPath("INDI:CHAN")).getImage()
   };
 
   /** a registry */
@@ -78,13 +92,9 @@ import spin.Spin;
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
-    for (int h=0; h<Gedcom.ENTITIES.length+1; h++) {
+    for (int h=0; h<COLUMNS.length; h++) {
       TableColumn col = new TableColumn(h);
-      if (h==0) 
-        col.setHeaderValue(Resources.get(this).getString("cc.column_header.name"));
-      else
-        col.setHeaderValue(Gedcom.getEntityImage(Gedcom.ENTITIES[h-1]));
-
+      col.setHeaderValue(COLUMNS[h]);
       col.setWidth(defaultWidths[h]);
       col.setPreferredWidth(defaultWidths[h]);
       cm.addColumn(col);
@@ -270,7 +280,7 @@ import spin.Spin;
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount() {
-      return Gedcom.ENTITIES.length+1;
+      return COLUMNS.length;
     }
   
     /**
@@ -285,8 +295,11 @@ import spin.Spin;
      */
     public Object getValueAt(int row, int col) {
       Gedcom gedcom = getGedcom(row);
-      if (col==0) return gedcom.getName() + (gedcom.hasChanged() ? "*" : "" );
-      return new Integer(gedcom.getEntities(Gedcom.ENTITIES[col-1]).size());
+      switch (col) {
+        case 0: return gedcom.getName() + (gedcom.hasChanged() ? "*" : "" );
+        case 8: return gedcom.getLastChange();
+        default: return new Integer(gedcom.getEntities(Gedcom.ENTITIES[col-1]).size());
+      }
     }
     
     /**
