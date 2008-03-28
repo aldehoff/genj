@@ -355,14 +355,18 @@ public class GedcomReader implements Trackable {
 
     // check 1 SUBM
     tempSubmitter = header.getPropertyValue("SUBM");
-    if (tempSubmitter.length()==0)
-      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosubmitter"), gedcom));
+// NM 20080329 - really GenJ doesn't care whether this is set or not - we should really warn before saving but not
+// when reading - the user is not going to add a submitter to everything he opens so we might as well ignore a 
+// missing SUBM
+//    if (tempSubmitter.length()==0)
+//      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosubmitter"), gedcom));
 
     // check 1 SOUR
     String source = header.getPropertyValue("SOUR");
-    if (source.length()==0)
-      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosourceid"), gedcom));
-
+// NM 20080329 - same here - GenJ doesn't care and is not going to write this on save anyways    
+//    if (source.length()==0)
+//      warnings.add(new Warning(0, RESOURCES.getString("read.warn.nosourceid"), gedcom));
+    
     // check for 
     // 1 GEDC 
     // 2 VERSion and 
