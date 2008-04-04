@@ -13,6 +13,7 @@ import genj.report.Report;
 import genj.util.Registry;
 
 import java.io.IOException;
+import java.awt.Font;
 
 import tree.arrange.AlignLeftArranger;
 import tree.arrange.CenteredArranger;
@@ -48,7 +49,7 @@ import tree.output.VerticalTreeRenderer;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.21
+ * @version 0.22
  */
 public class ReportGraphicalTree extends Report {
 
@@ -135,6 +136,24 @@ public class ReportGraphicalTree extends Report {
     public int max_names_per_line = 2;
 
     public String[] max_names_per_lines = { translate("nolimit"), "1", "2", "3" };
+
+    /**
+     * Whether to display the title of an individual
+     */
+    public boolean draw_title = false;
+
+    /**
+     * Whether to display suffix from a name
+     */
+    public boolean draw_name_suffix = false;
+
+    /**
+     * Font style for display name suffix
+     */
+    public int font_name_suffix = Font.BOLD + Font.ITALIC;
+
+    public String[] font_name_suffixs = { translate("fontstyle.plain"), translate("fontstyle.bold"),
+            translate("fontstyle.italic"), translate("fontstyle.bolditalic") };
 
     /**
      * Whether to display places of birth and death.
@@ -255,6 +274,9 @@ public class ReportGraphicalTree extends Report {
         properties.put("genDescendants", gen_descendants - 1);
         properties.put("maxNames", max_names);
         properties.put("maxNamesPerLine", max_names_per_line);
+        properties.put("drawTitle", draw_title);
+        properties.put("drawNameSuffix", draw_name_suffix);
+        properties.put("fontNameSuffix", font_name_suffix);
         properties.put("defaultIndiboxHeight", DEFAULT_INDIBOX_HEIGHT);
         properties.put("defaultIndiboxWidth", shrink_boxes ? SHRINKED_INDIBOX_WIDTH : DEFAULT_INDIBOX_WIDTH);
         properties.put("spacing", SPACING);

@@ -45,6 +45,7 @@ public class GraphicsTreeElements implements TreeElements {
     private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
     private static final TagPath PATH_INDIDEATPLAC = new TagPath("INDI:DEAT:PLAC");
     private static final TagPath PATH_INDIOCCU = new TagPath("INDI:OCCU");
+    private static final TagPath PATH_INDITITL = new TagPath("INDI:TITL");
     private static final TagPath PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC");
     private static final TagPath PATH_FAMDIVPLAC = new TagPath("FAM:DIV:PLAC");
 
@@ -120,6 +121,11 @@ public class GraphicsTreeElements implements TreeElements {
     private static final Font DETAILS_FONT = new Font("verdana", Font.PLAIN, 10);
 
     /**
+     * Font for the name suffix
+     */
+    private final Font NAME_SUFFIX_FONT;
+
+    /**
      * Font for the first and last names.
      */
     private static final Font NAME_FONT = new Font("verdana", Font.BOLD, 12);
@@ -148,6 +154,21 @@ public class GraphicsTreeElements implements TreeElements {
     }
 
     private int maxImageWidth;
+
+    /**
+     * Whether to draw the title of an individual.
+     */
+    private boolean drawTitle;
+
+    /**
+     * Whether to draw the suffix from a name.
+     */
+    private boolean drawNameSuffix;
+
+    /**
+     * Font layout for drawing the name suffix.
+     */
+    private int fontNameSuffix;
 
     /**
      * Whether to draw the sex symbol.
@@ -199,6 +220,8 @@ public class GraphicsTreeElements implements TreeElements {
     public GraphicsTreeElements(Graphics2D graphics, Registry properties) {
         this.graphics = graphics;
 
+        drawTitle = properties.get("drawTitle", false);
+        drawNameSuffix = properties.get("drawNameSuffix", false);
         drawSexSymbols = properties.get("drawSexSymbols", true);
         drawIndiIds = properties.get("drawIndiIds", false);
         drawFamIds = properties.get("drawFamIds", false);
@@ -215,6 +238,8 @@ public class GraphicsTreeElements implements TreeElements {
         defaultIndiboxHeight = properties.get("defaultIndiboxHeight", 0);
         defaultFamboxHeight = properties.get("defaultFamboxHeight", 0);
         defaultFamboxWidth = properties.get("defaultFamboxWidth", 0);
+        fontNameSuffix = properties.get("fontNameSuffix", Font.BOLD + Font.ITALIC);
+        NAME_SUFFIX_FONT = new Font("verdana", fontNameSuffix, 12); // create font for name suffix
     }
 
     public GraphicsTreeElements(Registry properties)
@@ -267,27 +292,55 @@ public class GraphicsTreeElements implements TreeElements {
         Shape oldClip = graphics.getClip();
         graphics.clip(box);
 
-        // Name
-        graphics.setFont(NAME_FONT);
-
-        int currentY = y + 14;
-        String[] firstNames = getFirstNames(i);
-
-        if (swapNames) { // last name
-            centerString(graphics, i.getLastName(), x + dataWidth/2, currentY);
-            currentY += NAME_LINE_HEIGHT;
+        // Name suffix
+        String nameSuffix = null;
+        if (drawNameSuffix) {
+            nameSuffix = i.getNameSuffix();
+            if (nameSuffix != null && nameSuffix.equals(""))
+            	nameSuffix = null;
         }
 
+        // Name
+        int currentY = y + 14;
+        String[] firstNames = getFirstNames(i);
+        String lastName = null;
+
+        // generate LastName + Title
+        if (drawTitle && i.getProperty(PATH_INDITITL) != null)
+        	lastName = i.getLastName() + " " + i.getProperty(PATH_INDITITL);        	
+        else
+        	lastName = i.getLastName();        	
+        
+        if (swapNames) { // last name
+            graphics.setFont(NAME_FONT);
+            centerString(graphics, lastName, x + dataWidth/2, currentY);
+            currentY += NAME_LINE_HEIGHT;
+
+            if (nameSuffix != null) {
+                graphics.setFont(NAME_SUFFIX_FONT);
+            	centerString(graphics, nameSuffix, x + dataWidth/2, currentY);
+                currentY += NAME_LINE_HEIGHT;
+            }
+        }
+
+        graphics.setFont(NAME_FONT);
         for (int j = 0; j < firstNames.length; j++) { // first names
             centerString(graphics, firstNames[j], x + dataWidth/2, currentY);
             currentY += NAME_LINE_HEIGHT;
         }
 
         if (!swapNames) { // last name
-            centerString(graphics, i.getLastName(), x + dataWidth/2, currentY);
+            graphics.setFont(NAME_FONT);
+            centerString(graphics, lastName, x + dataWidth/2, currentY);
             currentY += NAME_LINE_HEIGHT;
-        }
 
+            if (nameSuffix != null) {
+                graphics.setFont(NAME_SUFFIX_FONT);
+            	centerString(graphics, nameSuffix, x + dataWidth/2, currentY);
+                currentY += NAME_LINE_HEIGHT;
+            }
+        }
+                
         graphics.setFont(DETAILS_FONT);
 
         Property birthDate = null;
@@ -616,10 +669,21 @@ public class GraphicsTreeElements implements TreeElements {
         // Additional first names
         indibox.height += (firstNames.length - 1) * NAME_LINE_HEIGHT;
 
+        // optional name suffix
+        if (drawNameSuffix && i.getNameSuffix() != null && !i.getNameSuffix().isEmpty())
+        	indibox.height += NAME_LINE_HEIGHT;
+        
         // Text data width
         if (width + 2*TEXT_MARGIN > indibox.width)
             indibox.width = width + 2*TEXT_MARGIN;
-        width = getTextWidth(i.getLastName(), NAME_FONT);
+        if (drawTitle && i.getProperty(PATH_INDITITL) != null)
+        	width = getTextWidth(i.getLastName() + " " + i.getProperty(PATH_INDITITL), NAME_FONT);
+        else
+        	width = getTextWidth(i.getLastName(), NAME_FONT);
+        
+        if (width + 2*TEXT_MARGIN > indibox.width)
+            indibox.width = width + 2*TEXT_MARGIN;
+        width = getTextWidth(i.getNameSuffix(), NAME_FONT);
         if (width + 2*TEXT_MARGIN > indibox.width)
             indibox.width = width + 2*TEXT_MARGIN;
 
