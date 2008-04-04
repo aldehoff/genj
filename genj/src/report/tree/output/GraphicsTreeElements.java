@@ -670,7 +670,7 @@ public class GraphicsTreeElements implements TreeElements {
         indibox.height += (firstNames.length - 1) * NAME_LINE_HEIGHT;
 
         // optional name suffix
-        if (drawNameSuffix && i.getNameSuffix() != null && !i.getNameSuffix().isEmpty())
+        if (drawNameSuffix && i.getNameSuffix() != null && i.getNameSuffix().length()>0)
         	indibox.height += NAME_LINE_HEIGHT;
         
         // Text data width
