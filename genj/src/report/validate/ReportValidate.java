@@ -47,6 +47,9 @@ public class ReportValidate extends Report {
 
   /** whether we consider extramarital children (before MARR after DIV) to be valid */
   public boolean isExtramaritalValid = false;
+  
+  /** whether a place format is binding and has to be adhered to */
+  public boolean isRelaxedPlaceFormat = false;
 
   /** options of reports are picked up via field-introspection */
   public int
@@ -270,7 +273,8 @@ public class ReportValidate extends Report {
       result.add(new TestOrder("FAM", "CHIL", "CHIL:*:..:BIRT:DATE"));
     
     // place format
-    result.add(new TestPlace(gedcom));
+    if (!isRelaxedPlaceFormat)
+      result.add(new TestPlace(gedcom));
 
     // ****************** DATE COMPARISON TESTS *****************************
 
