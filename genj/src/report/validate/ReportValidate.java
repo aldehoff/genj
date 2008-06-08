@@ -290,8 +290,8 @@ public class ReportValidate extends Report {
     // events after death
     result.add(new TestDate(LIFETIME_DATES  ,TestDate.AFTER  ,"INDI:DEAT:DATE"));
 
-    // marriage after divorce
-    result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:DIV:DATE"));
+    // divorce before marriage
+    result.add(new TestDate("FAM:DIV:DATE" ,TestDate.BEFORE ,"FAM:MARR:DATE"));
 
     // marriage outside lifespan of husband/wife
     result.add(new TestDate("FAM:MARR:DATE" ,TestDate.AFTER  ,"FAM:HUSB:*:..:DEAT:DATE"));
