@@ -279,7 +279,7 @@
   <REPO hide="1" type="PropertyRepository" img="Repository.gif">
    <NOTE xref="1" type="PropertyNote" img="Note.gif"/>
    <CALN xref="1" type="PropertySimpleValue" img="Attribute.gif">
-    <MEDI type="PropertySimpleValue" img="Attribute.gif"/>
+    <MEDI type="PropertyChoiceValue" img="Attribute.gif"/>
    </CALN>
   </REPO>
   <REFN super="INDI:REFN"/>
