@@ -40,7 +40,8 @@ public class Indi extends Entity {
     PATH_INDIFAMS = new TagPath("INDI:FAMS"),
     PATH_INDIFAMC = new TagPath("INDI:FAMC"),
     PATH_INDIBIRTDATE = new TagPath("INDI:BIRT:DATE"),
-    PATH_INDIDEATDATE = new TagPath("INDI:DEAT:DATE");
+    PATH_INDIDEATDATE = new TagPath("INDI:DEAT:DATE"),
+    PATH_INDIDEAT = new TagPath("INDI:DEAT");
 
   public final static ImageIcon
     IMG_MALE    = Grammar.V55.getMeta(PATH_INDI).getImage("male"),

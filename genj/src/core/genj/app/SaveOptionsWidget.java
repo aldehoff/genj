@@ -58,6 +58,7 @@ import javax.swing.JTextField;
   private TextFieldWidget textPassword;
   private JComboBox   comboEncodings;
   private JCheckBox checkFilterEmpties;
+   private JCheckBox checkFilterLiving;
   private Resources resources = Resources.get(this);
   private DateWidget dateEventsAfter, dateBirthsAfter;
   
@@ -102,9 +103,11 @@ import javax.swing.JTextField;
     props.add(new JLabel(resources.getString("save.options.exclude.indis")));
     dateBirthsAfter = new DateWidget();
     props.add(dateBirthsAfter);
+    checkFilterLiving = new JCheckBox(resources.getString("save.options.exclude.living"));
+    props.add(checkFilterLiving);
     checkFilterEmpties = new JCheckBox(resources.getString("save.options.exclude.empties"));
     props.add(checkFilterEmpties);
-        
+       
     // others filter
     Box others = new Box(BoxLayout.Y_AXIS);
     this.filters = filters;
@@ -163,6 +166,10 @@ import javax.swing.JTextField;
     if (birthsAfter!=null&&birthsAfter.isValid())
       result.add(new FilterIndividualsBornAfter(birthsAfter));
     
+    // create one for living
+    if (checkFilterLiving.isSelected())
+      result.add(new FilterLivingIndividuals());
+        
     // create one for empties
     if (checkFilterEmpties.isSelected())
       result.add(new FilterEmpties());
@@ -225,6 +232,29 @@ import javax.swing.JTextField;
     }
   }
   
+  /**
+   * Filter not deceased individuals
+   */
+  private static class FilterLivingIndividuals implements Filter {
+
+    private FilterLivingIndividuals() {
+    }
+
+    /** callback */
+    public boolean checkFilter(Property property) {
+      if (property instanceof Indi) {
+        return ((Indi)property).isDeceased();
+      }
+
+     // fine
+     return true;
+   }
+
+   public String getFilterName() {
+     return toString();
+   }
+ }
+
   /**
    * Filter properties if concerning events after pit
    */
