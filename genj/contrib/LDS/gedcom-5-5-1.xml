@@ -25,7 +25,7 @@
    <SOUR type="PropertySource" img="Source.gif">
     <PAGE xref="1" type="PropertySimpleValue" img="Attribute.gif" cardinality="0:1"/>
     <EVEN xref="1" type="PropertyChoiceValue" img="Blob.gif" cardinality="0:1">
-     <ROLE type="PropertySimpleValue" img="Blob.gif"/>
+     <ROLE type="PropertyChoiceValue" img="Blob.gif"/>
     </EVEN>
     <DATA xref="1" type="PropertySimpleReadOnly" img="Blob.gif" cardinality="0:1">
      <DATE type="PropertyDate" img="Date.gif"/>
