@@ -39,8 +39,12 @@ import java.awt.font.LineMetrics;
 import java.awt.geom.Dimension2D;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -602,13 +606,13 @@ public class EntityRenderer {
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       g.setFont(getFont());
       g.setColor(getForeground());
-      PropertyRenderer.DEFAULT_RENDERER.renderImpl((Graphics2D)g,r,txt,PropertyRenderer.PREFER_DEFAULT);
+      PropertyRenderer.DEFAULT_RENDERER.renderImpl((Graphics2D)g,r,txt,Collections.EMPTY_MAP);
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension2D getPreferredSpan() {
-      return PropertyRenderer.DEFAULT_RENDERER.getSizeImpl(getFont(), context, null, txt, PropertyRenderer.PREFER_DEFAULT, dpi);
+      return PropertyRenderer.DEFAULT_RENDERER.getSizeImpl(getFont(), context, null, txt, Collections.EMPTY_MAP, dpi);
     }
   } //LocalizeView
 
@@ -619,14 +623,14 @@ public class EntityRenderer {
     
     // TODO Performance - can we improve property views through some caching of size&alignment?
     
-    /** our preference when looking at the property */
-    private int preference;
-    
     /** the tag path used */
     private TagPath path = null;
     
     /** the cached property we're displaying */
     private Property cachedProperty = null;
+    
+    /** the attributes */
+    private Map attributes;
     
     /** minimum/maximum percentage of the rendering space */
     private int min, max;
@@ -639,6 +643,14 @@ public class EntityRenderer {
      */
     PropertyView(Element elem) {
       super(elem);
+
+      // prepare attributes
+      attributes = new HashMap();
+      
+      for (Enumeration as = elem.getAttributes().getAttributeNames(); as.hasMoreElements(); ) {
+        String key = as.nextElement().toString();
+        attributes.put(key, elem.getAttributes().getAttribute(key));
+      }
       
       // grab path
       Object p = elem.getAttributes().getAttribute("path");
@@ -648,28 +660,18 @@ public class EntityRenderer {
         // ignoring wrong path
       }
       
-      // check image&text
-      preference = PropertyRenderer.PREFER_DEFAULT;
-      AttributeSet atts = elem.getAttributes();
-      if ("yes".equals(atts.getAttribute("img"))) {
-        if ("no".equals(atts.getAttribute("txt"))) 
-          preference = PropertyRenderer.PREFER_IMAGE;
-        else 
-          preference |= PropertyRenderer.PREFER_IMAGE;
-      }
-      
       // minimum?
-      min = getInt(atts, "min", 1, 100, 1);
-      max = getInt(atts, "max", 1, 100, 100);
+      min = getAttribute("min", 1, 100, 1);
+      max = getAttribute("max", 1, 100, 100);
       
       // done
     }
     
     /**
      * Gets an int value from attributes     */
-    private int getInt(AttributeSet atts, String key, int min, int max, int def) {
+    private int getAttribute(String key, int min, int max, int def) {
       // grab a value and try to parse
-      Object val = atts.getAttribute(key);
+      Object val = attributes.get(key);
       if (val!=null) try {
         return Math.max(min, Math.min(max, Integer.parseInt(val.toString())));
       } catch (NumberFormatException e) {
@@ -733,7 +735,7 @@ public class EntityRenderer {
       // clip and render
       Shape old = graphics.getClip();
       graphics.clip(r);
-      renderer.render(graphics, r, property, preference, dpi);
+      renderer.render(graphics, r, property, attributes, dpi);
       g.setClip(old);
       // done
     }
@@ -748,7 +750,7 @@ public class EntityRenderer {
       if (renderer==null)
         return new Dimension(0,0);
       // calc span
-      Dimension2D d = renderer.getSize(getFont(), context, property, preference, dpi);
+      Dimension2D d = renderer.getSize(getFont(), context, property, attributes, dpi);
       // check max
       d = new Dimension2d(Math.min(d.getWidth(), root.width*max/100), d.getHeight());
       return d;

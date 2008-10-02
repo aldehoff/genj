@@ -55,6 +55,7 @@ import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -736,8 +737,6 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
      */
     private class Renderer extends HeadlessLabel implements TableCellRenderer {
       
-      private int RENDERER_PREFERENCE = PropertyRenderer.PREFER_DEFAULT & ~PropertyRenderer.PREFER_SHORT;
-      
       /** current property */
       private Property curProp;
       
@@ -773,7 +772,7 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
       public Dimension getPreferredSize() {
         if (curProp==null)
           return new Dimension(0,0);
-        return Dimension2d.getDimension(PropertyRenderer.get(curProp).getSize(getFont(), new FontRenderContext(null, false, false), curProp, RENDERER_PREFERENCE, Options.getInstance().getDPI()));
+        return Dimension2d.getDimension(PropertyRenderer.get(curProp).getSize(getFont(), new FontRenderContext(null, false, false), curProp, new HashMap(), Options.getInstance().getDPI()));
       }
       
       /**
@@ -803,7 +802,7 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
         bounds.x += 1;
         bounds.width -= 2;
         // let it render
-        proxy.render(graphics, bounds, curProp, RENDERER_PREFERENCE, Options.getInstance().getDPI());
+        proxy.render(graphics, bounds, curProp, new HashMap(), Options.getInstance().getDPI());
         // done
       }
       

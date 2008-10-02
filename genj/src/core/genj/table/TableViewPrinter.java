@@ -33,6 +33,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Dimension2D;
+import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.table.TableModel;
@@ -161,7 +162,7 @@ public class TableViewPrinter implements Printer {
     if (prop==null)
       return;
     // grab size
-    Dimension2D dim = PropertyRenderer.get(prop).getSize(font, context, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
+    Dimension2D dim = PropertyRenderer.get(prop).getSize(font, context, prop, new HashMap(), dpi);
     // keep height
     if (row<0)
       headerHeight    = max(dim.getHeight(), headerHeight, pageHeight - headerHeight - pad);
@@ -257,7 +258,7 @@ public class TableViewPrinter implements Printer {
     Shape clip = g.getClip();
     g.clip(r);
     // grab renderer and render
-    PropertyRenderer.get(prop).render(g, r, prop, PropertyRenderer.PREFER_DEFAULT, dpi);
+    PropertyRenderer.get(prop).render(g, r, prop, new HashMap(), dpi);
     // restore clip
     g.setClip(clip);
     // done
