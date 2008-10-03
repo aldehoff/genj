@@ -47,7 +47,6 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -293,13 +292,6 @@ public class PropertyRenderer {
    */
   /*package*/ static class RenderSex extends PropertyRenderer {
     
-    static Map IMAGE_ONLY = new HashMap();
-    
-    static {
-      IMAGE_ONLY.put("img", "true");
-      IMAGE_ONLY.put("txt", "false");
-    }
-
     /** acceptance */
     public boolean accepts(TagPath path, Property prop) {
       return prop instanceof PropertySex;
@@ -309,16 +301,24 @@ public class PropertyRenderer {
      * size override
      */
     public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
-      return super.getSizeImpl(font, context, prop, IMAGE_ONLY, dpi);
+      patch(attributes);
+      return super.getSizeImpl(font, context, prop, attributes, dpi);
     }
 
     /**
      * render override
      */
     public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
-      super.renderImpl(g, bounds, prop, IMAGE_ONLY, dpi);
+      patch(attributes);
+      super.renderImpl(g, bounds, prop, attributes, dpi);
     }
-  
+
+    private void patch(Map attributes) {
+      if (!attributes.containsKey("txt"))
+        attributes.put("txt", "no");
+      if (!attributes.containsKey("img"))
+        attributes.put("img", "yes");
+    }
   } //Sex
 
   /**
