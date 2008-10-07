@@ -31,6 +31,12 @@ import java.util.List;
  */
 public class PropertyName extends Property {
   
+  // TODO change to enum when migrating to java 5 
+  // and apply at least to getSameLastNames and getLastNameCount
+  public static final int PREFIX_AS_IS = 0;
+  public static final int PREFIX_LAST = 1;
+  public static final int IGNORE_PREFIX = 2;
+
   public final static String TAG =  "NAME";
   
   private final static String 
@@ -128,6 +134,32 @@ public class PropertyName extends Property {
    */
   public String getLastName() {
     return lastName;
+  }
+
+  /**
+   * @param prefixPresentation
+   * @return 'de Vries' in case of PREFIX_AS_IS.
+   *         'Vries' in case of IGNORE_PREFIX.
+   *         'Vries, de' in case of PREFIX_LAST.
+   */
+  public String getLastName(int prefixPresentation) {
+    
+    if (prefixPresentation == PropertyName.PREFIX_AS_IS) 
+      return lastName;
+    
+    String last = lastName.replaceFirst("^[a-z ]*", "");
+    last = last.replaceFirst("-", "");
+    
+    if (prefixPresentation == PropertyName.IGNORE_PREFIX) {
+      last = last.replaceFirst("Hengevel[dt]", "Hengeveld/t");
+      return last;
+    }
+    
+    int diff = lastName.length() - last.length();
+    if ( diff > 0 ) {
+      last = last + ", "+ lastName.subSequence(0, diff);
+    }
+    return last;
   }
 
   /**
