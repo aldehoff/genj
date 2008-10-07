@@ -27,6 +27,15 @@ import java.util.TreeMap;
  */
 public class ReportNameHistory extends Report {
 
+  /** how to treat a lower case prefix of the last name (such as "van der")  */
+  public int prefixPresentation = PropertyName.PREFIX_AS_IS;
+  public String[] prefixPresentations = { 
+          // TODO use enum in PropertyName (when implemented) for the string constants   
+          translate("prefixAsIs"), 
+          translate("prefixLast"), 
+          translate("prefixIgnore") 
+  };
+  
   /** whether to group non-considered names */
   public boolean makeGroupOther = false;
 
@@ -138,7 +147,7 @@ public class ReportNameHistory extends Report {
 	  PropertyName name = (PropertyName)indi.getProperty("NAME");
 	  if (name==null||!name.isValid())
 	    return;
-	  String last = name.getLastName();
+	  String last = name.getLastName(prefixPresentation);
 	  if (last.length()==0)
 	    return;
 
