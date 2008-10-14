@@ -110,7 +110,23 @@ public class ReportViewFactory implements ViewFactory, ActionProvider {
         ReportView.LOG.log(Level.WARNING, "Report "+report.getClass().getName()+" failed in accept()", t);
       }
     }
+    // too many?
+    result = nestAsRequired(result,10);
+      
     // done
+    return result;
+  }
+  
+  private List nestAsRequired(List actions,int max) {
+    if (actions.size()<=max)
+      return actions;
+    List result = new ArrayList();
+    result.addAll(actions.subList(0, max));
+    
+    Action2.Group group = new Action2.Group("...");
+    group.addAll(nestAsRequired(actions.subList(max, actions.size()), max)); 
+    result.add(group);
+    
     return result;
   }
 
