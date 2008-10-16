@@ -5,6 +5,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.regex.Pattern;
+
 import genj.fo.Document;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
@@ -43,6 +47,12 @@ public class ReportSummaryOfRecords extends Report {
   /** include IDs in output */
   public boolean includeIds = true;
   
+  /** sort properties */
+  public boolean sortProperties = false;
+  
+  /** filter properties */
+  public String filterProperties = "CHAN";
+  
   /**
    * Overridden image - we're using the provided FO image
    */
@@ -76,11 +86,20 @@ public class ReportSummaryOfRecords extends Report {
     Document doc = new Document(translate("title", gedcom.getName()));
 
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
+    
+    // prepare filter
+    Pattern tagFilter = null;
+    try {
+      if (filterProperties.length()>0)
+        tagFilter = Pattern.compile(filterProperties);
+    } catch (IllegalArgumentException e) {
+       println("Filter for properties is not a valid regular expression ("+e.getMessage()+")");
+    }
 
     // Loop through individuals, families and notes
-    exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc);
-    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM:HUSB:*:..:NAME"), doc);
-    exportEntities(gedcom.getEntities(Gedcom.NOTE, "NOTE"), doc);
+    exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc, tagFilter);
+    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM:HUSB:*:..:NAME"), doc, tagFilter);
+    exportEntities(gedcom.getEntities(Gedcom.NOTE, "NOTE"), doc, tagFilter);
 
     // add a new page here - before the index is generated
     doc.nextPage();
@@ -92,16 +111,16 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given entities
    */
-  private void exportEntities(Entity[] ents, Document doc)  {
+  private void exportEntities(Entity[] ents, Document doc, Pattern tagFilter)  {
     for (int e = 0; e < ents.length; e++) {
-      exportEntity(ents[e], doc);
+      exportEntity(ents[e], doc, tagFilter);
     }
   }
 
   /**
    * Exports the given entity
    */
-  private void exportEntity(Entity ent, Document doc) {
+  private void exportEntity(Entity ent, Document doc, Pattern tagFilter) {
 
     println(translate("exporting", ent.toString() ));
 
@@ -114,7 +133,7 @@ public class ReportSummaryOfRecords extends Report {
     doc.addTableColumn("column-width=20%");
 
     // export its properties
-    exportProperties(ent, doc, 0);
+    exportProperties(ent, doc, tagFilter, 0);
 
     // add images in next column
     doc.nextTableCell();
@@ -131,7 +150,7 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * Exports the given property's properties
    */
-  private void exportProperties(Property of, Document doc, int level) {
+  private void exportProperties(Property of, Document doc, Pattern tagFilter, int level) {
 
     // anything to do?
     if (of.getNoOfProperties()==0)
@@ -139,11 +158,23 @@ public class ReportSummaryOfRecords extends Report {
 
     // create a list
     doc.startList();
+    
+    // sort properties
+    Property[] props = of.getProperties();
+    if (sortProperties)
+      Arrays.sort(props, new Comparator() {
+        public int compare(Object p1, Object p2) {
+          return Gedcom.getName( ((Property)p1).getTag() ).compareTo( Gedcom.getName( ((Property)p2).getTag()) );
+        }
+      });
 
     // an item per property
-    for (int i=0;i<of.getNoOfProperties();i++) {
+    for (int i=0;i<props.length;i++) {
 
-      Property prop = of.getProperty(i);
+      Property prop = props[i];
+      
+      if (tagFilter!=null&&tagFilter.matcher(prop.getTag()).matches())
+        continue;
 
       // we don't do anything for xrefs to non-indi/fam
       if (prop instanceof PropertyXRef) {
@@ -176,7 +207,7 @@ public class ReportSummaryOfRecords extends Report {
       exportPropertyValue(prop, doc);
 
       // recurse into it
-      exportProperties(prop, doc, level+1);
+      exportProperties(prop, doc,  tagFilter, level+1);
     }
     doc.endList();
   }
