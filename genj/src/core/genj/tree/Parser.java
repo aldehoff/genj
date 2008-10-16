@@ -51,7 +51,7 @@ import java.util.List;
   /** padding (n, e, s, w) */
   protected int[] padIndis, padMinusPlus; 
   
-  private final static int MAX_GENERATION = 16;
+  private final static int MAX_GENERATION = 20;
   
   /** 
    * gets an instance of a parser
