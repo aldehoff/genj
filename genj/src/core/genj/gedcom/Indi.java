@@ -493,10 +493,10 @@ public class Indi extends Entity {
   
 
   /**
-   * Returns this entity as String description
+   * Name ...
    */
-  public String toString() {
-    return super.toString(getName());
+  protected String getToStringPrefix(boolean hideIds) {
+    return getName();
   }
   
   /**

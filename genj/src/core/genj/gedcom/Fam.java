@@ -332,25 +332,25 @@ public class Fam extends Entity {
   }
 
   /**
-   * Returns this entity as String description
+   * Meier, Magdalene (I1) & Meier, Lars (I2) ...
    */
-  public String toString() {
+  protected String getToStringPrefix(boolean showIds) {
     
     StringBuffer result = new StringBuffer();
 
     Indi husband = getHusband();
     if (husband!=null) {
-      result.append(husband.toString());
+      result.append(husband.toString(showIds));
       result.append(Options.getInstance().getTxtMarriageSymbol());
     }
     
     Indi wife = getWife();
     if (wife!=null) {
-      result.append(wife.toString());
+      result.append(wife.toString(showIds));
     }
 
     // Done
-    return super.toString(result);
+    return result.toString();
   }
   
   /**

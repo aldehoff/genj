@@ -29,10 +29,10 @@ import java.util.List;
 public class Media extends Entity {
 
   /**
-   * @see genj.gedcom.Entity#toString()
+   * Title ...
    */
-  public String toString() {
-    return super.toString(getTitle());
+  protected String getToStringPrefix() {
+    return getTitle();
   }
   
   /**

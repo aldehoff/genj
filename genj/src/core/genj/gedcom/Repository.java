@@ -25,10 +25,10 @@ package genj.gedcom;
 public class Repository extends Entity {
 
   /**
-   * @see genj.gedcom.Entity#toString()
+   * Title ...
    */
-  public String toString() {
-    return super.toString(getRepositoryName());
+  protected String getToStringPrefix(boolean hideIds) {
+    return getRepositoryName();
   }
 
   /**

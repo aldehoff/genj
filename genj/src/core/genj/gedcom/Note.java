@@ -60,10 +60,10 @@ public class Note extends Entity implements MultiLineProperty {
   }
   
   /**
-   * Returns this property as a string
+   * Note ...
    */
-  public String toString() {
-    return super.toString(delegate.getDisplayValue());
+  protected String getToStringPrefix(boolean hideIds) {
+    return delegate.getDisplayValue();
   }
 
   /**

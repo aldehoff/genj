@@ -29,10 +29,10 @@ package genj.gedcom;
 public class Source extends Entity {
 
   /**
-   * Returns this property as a string
+   * Title ...
    */
-  public String toString() {
-    return super.toString(getTitle());
+  protected String getToStringPrefix(boolean hideIds) {
+    return getTitle();
   }
   
   /** 
