@@ -11,6 +11,7 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.MultiLineProperty;
+import genj.gedcom.Note;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyName;
@@ -30,7 +31,7 @@ public class ReportSummaryOfRecords extends Report {
 
   private final static TagPath PATH2IMAGES = new TagPath("INDI:OBJE:FILE");
 
-  /** whether we're genering indexes for places */
+  /** whether we're generating indexes for places */
   public  int generatePlaceIndex = 0;
   public String[] generatePlaceIndexs = {
     translate("place.index.none"), translate("place.index.one"), translate("place.index.each")
@@ -39,8 +40,11 @@ public class ReportSummaryOfRecords extends Report {
   /** max # of images per record */
   private  int maxImagesPerRecord = 4;
 
+  /** include IDs in output */
+  public boolean includeIds = true;
+  
   /**
-   * Overriden image - we're using the provided FO image
+   * Overridden image - we're using the provided FO image
    */
   protected ImageIcon getImage() {
     return Report.IMG_FO;
@@ -73,16 +77,16 @@ public class ReportSummaryOfRecords extends Report {
 
     doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
 
-    // Loop through individuals & families
+    // Loop through individuals, families and notes
     exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc);
-    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM"), doc);
+    exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM:HUSB:*:..:NAME"), doc);
+    exportEntities(gedcom.getEntities(Gedcom.NOTE, "NOTE"), doc);
 
     // add a new page here - before the index is generated
     doc.nextPage();
 
     // Done
     showDocumentToUser(doc);
-
   }
 
   /**
@@ -102,7 +106,7 @@ public class ReportSummaryOfRecords extends Report {
     println(translate("exporting", ent.toString() ));
 
     // start a new section
-    doc.startSection( ent.toString(), ent );
+    doc.startSection( ent.toString(this.includeIds), ent );
 
     // start a table for the entity
     doc.startTable("width=100%");
@@ -144,7 +148,7 @@ public class ReportSummaryOfRecords extends Report {
       // we don't do anything for xrefs to non-indi/fam
       if (prop instanceof PropertyXRef) {
         PropertyXRef xref = (PropertyXRef)prop;
-        if (!(xref.getTargetEntity() instanceof Indi||xref.getTargetEntity() instanceof Fam))
+        if (xref.isTransient() || !(xref.getTargetEntity() instanceof Indi||xref.getTargetEntity() instanceof Fam||xref.getTargetEntity() instanceof Note))
           continue;
       }
 
@@ -186,7 +190,8 @@ public class ReportSummaryOfRecords extends Report {
     if (prop instanceof PropertyXRef) {
 
       PropertyXRef xref = (PropertyXRef)prop;
-      doc.addLink(xref.getTargetEntity());
+      Entity ent = xref.getTargetEntity();
+      doc.addLink(ent.toString(includeIds), ent);
 
       // done
       return;
