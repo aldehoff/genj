@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -570,17 +571,24 @@ public class Action2 extends AbstractAction implements Runnable, Cloneable {
     
     /** a name */
     private String name;
+    private ImageIcon icon;
     
     /** constructor */
-    public Group(String name) {
-      
+    public Group(String name, ImageIcon imageIcon) {
+      this.icon = imageIcon;
       this.name = name;
+    }
+    public Group(String name) {
+    	this(name,null);
     }
     
     /** accessor */
     public String getName() {
       return name;
     }
+	public ImageIcon getIcon() {
+		return icon;
+	}
   }
 
 } //ActionDelegate

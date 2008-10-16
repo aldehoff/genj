@@ -178,7 +178,7 @@ public class MenuHelper  {
       Object o = it.next();
       // an action group?
       if (o instanceof Action2.Group) {
-        createMenu(((Action2.Group)o).getName());
+        createMenu(((Action2.Group)o).getName(), ((Action2.Group)o).getIcon());
         createItems((List)o);
         popMenu();
         continue;
