@@ -605,7 +605,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
   /**
    * A Hyperlink Follow Action
    */
-  private static class FollowHyperlink implements HyperlinkListener {
+  private class FollowHyperlink implements HyperlinkListener {
 
     private JEditorPane editor;
 
@@ -620,11 +620,18 @@ public class ReportView extends JPanel implements ToolBarSupport {
       if (e.getEventType()!=HyperlinkEvent.EventType.ACTIVATED)
         return;
       // internal?
-      if (e.getDescription().startsWith("#")) try {
-          editor.scrollToReference(e.getDescription().substring(1));
+      try {
+        if (e.getDescription().startsWith("#")) 
+            editor.scrollToReference(e.getDescription().substring(1));
+        else {
+          // assemble a relative URL
+          Report report = listOfReports.getSelection();
+          URL url = report!=null ? new URL(report.getFile().toURI().toURL(), e.getDescription()) : new URL(e.getDescription());
+          FileAssociation.open(url, editor);
+        }          
+          
       } catch (Throwable t) {
-      } else {
-        FileAssociation.open(e.getURL(), editor);
+        LOG.log(Level.FINE, "Can't handle URL for "+e.getDescription());
       }
       // done
     }
@@ -653,7 +660,7 @@ public class ReportView extends JPanel implements ToolBarSupport {
         owOptions.setOptions(Collections.EMPTY_LIST);
       } else {
         editorKit.setFrom(report.getClass());
-        lFile    .setText(report.getFilename());
+        lFile    .setText(report.getFile().getName());
         lAuthor  .setText(report.getAuthor());
         lVersion .setText(getReportVersion(report));
         tpInfo   .setText(report.getInfo().replaceAll("\n", "<br>"));

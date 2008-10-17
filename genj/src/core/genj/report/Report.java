@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.128 $ $Author: pewu $ $Date: 2008-02-14 23:30:44 $
+ * $Revision: 1.129 $ $Author: nmeier $ $Date: 2008-10-17 19:05:29 $
  */
 package genj.report;
 
@@ -140,6 +140,9 @@ public abstract class Report implements Cloneable {
 
   /** image */
   private ImageIcon image;
+  
+  /** file */
+  private File file;
 
   /**
    * Constructor
@@ -757,8 +760,12 @@ public abstract class Report implements Cloneable {
   /**
    * Filename
    */
-  public String getFilename() {
-    return getClass().getName().replace('.','/')+".java";
+  public void setFile(File setFile) {
+    file = setFile;
+  }
+  
+  public File getFile() {
+    return file;
   }
 
   /**

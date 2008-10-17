@@ -28,8 +28,10 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -41,7 +43,7 @@ public class ReportLoader {
   private List instances = new ArrayList(10);
   
   /** report files */
-  private List reports = new ArrayList(10);
+  private Map file2reportclass = new HashMap(10);
   
   /** classpath */
   private List classpath = new ArrayList(10);
@@ -111,18 +113,19 @@ public class ReportLoader {
     URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]), getClass().getClassLoader());
     
     // Load reports
-    Iterator rs = reports.iterator();
-    while (rs.hasNext()) {
-      String rname = rs.next().toString(); 
+    for (Iterator files = file2reportclass.keySet().iterator(); files.hasNext(); ) {
+      File file = (File)files.next();
+      String clazz = (String)file2reportclass.get(file); 
       try {
-        Report r = (Report)cl.loadClass(rname).newInstance();
+        Report r = (Report)cl.loadClass(clazz).newInstance();
+        r.setFile(file);
         if (!isReportsInClasspath&&r.getClass().getClassLoader()!=cl) {
           ReportView.LOG.warning("Reports are in classpath and can't be reloaded");
           isReportsInClasspath = true;
         }
         instances.add(r);
       } catch (Throwable t) {
-        ReportView.LOG.log(Level.WARNING, "Failed to instantiate "+rname, t);
+        ReportView.LOG.log(Level.WARNING, "Failed to instantiate "+clazz, t);
       }
     }
     
@@ -164,7 +167,7 @@ public class ReportLoader {
       // report class file?
       String report = isReport(file, pkg);
       if (report!=null) {
-        reports.add(report);
+        file2reportclass.put(file, report);
         continue;
       } 
       
