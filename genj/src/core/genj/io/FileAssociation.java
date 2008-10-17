@@ -323,10 +323,18 @@ public class FileAssociation {
    * Gets first available association or asks the user for appropriate one for a browser url and executes it
    */
   public static void open(URL url, Component owner) {
-    // find browser capable assoc
-    FileAssociation association = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
-    if (association!=null)  
-      association.execute(url);
+    // is a file?
+    if ("file".equals(url.getProtocol())) {
+      File file = new File(url.getFile());
+      FileAssociation fa = FileAssociation.get(file, "Open", owner);
+      if (fa!=null)
+        fa.execute(file);
+    } else {
+      // find browser capable assoc
+      FileAssociation fa = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
+      if (fa!=null)  
+        fa.execute(url);
+    }
   }
   
   /**
