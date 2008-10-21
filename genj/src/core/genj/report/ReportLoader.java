@@ -118,7 +118,7 @@ public class ReportLoader {
       String clazz = (String)file2reportclass.get(file); 
       try {
         Report r = (Report)cl.loadClass(clazz).newInstance();
-        r.setFile(file);
+        r.putFile(file);
         if (!isReportsInClasspath&&r.getClass().getClassLoader()!=cl) {
           ReportView.LOG.warning("Reports are in classpath and can't be reloaded");
           isReportsInClasspath = true;

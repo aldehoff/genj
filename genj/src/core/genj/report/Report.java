@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.129 $ $Author: nmeier $ $Date: 2008-10-17 19:05:29 $
+ * $Revision: 1.130 $ $Author: jo_pol $ $Date: 2008-10-21 07:15:19 $
  */
 package genj.report;
 
@@ -760,7 +760,8 @@ public abstract class Report implements Cloneable {
   /**
    * Filename
    */
-  public void setFile(File setFile) {
+  public void putFile(File setFile) {
+    // setFile would make it appear as report option
     file = setFile;
   }
   
