@@ -23,7 +23,9 @@ import genj.util.Resources;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -325,10 +327,15 @@ public class FileAssociation {
   public static void open(URL url, Component owner) {
     // is a file?
     if ("file".equals(url.getProtocol())) {
-      File file = new File(url.getFile());
-      FileAssociation fa = FileAssociation.get(file, "Open", owner);
-      if (fa!=null)
-        fa.execute(file);
+      try {
+        // without decoding the notorious space in "my documents" would turn via %20 into %2520 
+        String decodedFileName;
+        decodedFileName = URLDecoder.decode(url.getFile(),"UTF-8");
+        File file = new File(decodedFileName); 
+        FileAssociation fa = FileAssociation.get(file, "Open", owner);
+        if (fa!=null)
+          fa.execute(file);
+      } catch (UnsupportedEncodingException e) { }
     } else {
       // find browser capable assoc
       FileAssociation fa = FileAssociation.get("html", "html, htm, xml", "Browse", owner);
