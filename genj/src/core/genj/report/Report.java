@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.130 $ $Author: jo_pol $ $Date: 2008-10-21 07:15:19 $
+ * $Revision: 1.131 $ $Author: pewu $ $Date: 2008-11-15 23:30:11 $
  */
 package genj.report;
 
@@ -203,7 +203,7 @@ public abstract class Report implements Cloneable {
   /**
    * Get report's options
    */
-  /*package*/ List getOptions() {
+  public List getOptions() {
 
     // already calculated
     if (options!=null)
@@ -346,7 +346,7 @@ public abstract class Report implements Cloneable {
    * An implementation of Report can ask the user for a file with this method.
    */
   public File getFileFromUser(String title, String button, boolean askForOverwrite) {
-	  return getFileFromUser(title, button, askForOverwrite, null);
+      return getFileFromUser(title, button, askForOverwrite, null);
   }
 
   /**
@@ -367,7 +367,7 @@ public abstract class Report implements Cloneable {
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setDialogTitle(title);
     if (extension != null)
-    	chooser.setFileFilter(new FileExtensionFilter(extension));
+        chooser.setFileFilter(new FileExtensionFilter(extension));
 
     int rc = chooser.showDialog(owner,button);
 
@@ -416,7 +416,7 @@ public abstract class Report implements Cloneable {
    * A sub-class can show a document to the user with this method allowing
    * to save, transform and view it
    */
-  public final void showDocumentToUser(Document doc) {
+  public void showDocumentToUser(Document doc) {
 
     String title = "Document "+doc.getTitle();
 
@@ -486,7 +486,7 @@ public abstract class Report implements Cloneable {
   /**
    * Show a file if there's a file association for it
    */
-  public final void showFileToUser(File file) {
+  public void showFileToUser(File file) {
     FileAssociation association = FileAssociation.get(file, "Open", owner);
     if (association!=null)
       association.execute(file);
@@ -738,7 +738,7 @@ public abstract class Report implements Cloneable {
    * @param key the key to lookup in [ReportName].properties
    * @param values an array of values to replace %1, %2, ... in value with
    */
-  public final String translate(String key, Object[] values) {
+  public String translate(String key, Object[] values) {
 
     Resources resources = getResources();
     if (resources==null)
@@ -920,7 +920,7 @@ public abstract class Report implements Cloneable {
   public String getLastUpdate() {
     // check for updated key
     String result = translate("updated");
-	  if ("updated".equals(result))
+      if ("updated".equals(result))
       return null;
     // look for cvs date - grab date and time
     Matcher cvsdata = PATTERN_CVS_DATE.matcher(result);
@@ -1048,7 +1048,7 @@ public abstract class Report implements Cloneable {
      */
     private class FileExtensionFilter extends FileFilter {
 
-    	private String extension;
+        private String extension;
 
         public FileExtensionFilter(String extension) {
             this.extension = extension.toLowerCase();
@@ -1058,8 +1058,8 @@ public abstract class Report implements Cloneable {
          * Returns true if file name has the right extension.
          */
         public boolean accept(File f) {
-        	if (f == null)
-        		return false;
+            if (f == null)
+                return false;
             if (f.isDirectory())
                 return true;
             return f.getName().toLowerCase().endsWith("." + extension);

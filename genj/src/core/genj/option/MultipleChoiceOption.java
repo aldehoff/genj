@@ -103,7 +103,7 @@ public abstract class MultipleChoiceOption extends PropertyOption {
   }
 
   /** accessor choices */
-  protected final Object[] getChoices() {
+  public final Object[] getChoices() {
     try  {
       return getChoicesImpl();
     } catch (Throwable t) {

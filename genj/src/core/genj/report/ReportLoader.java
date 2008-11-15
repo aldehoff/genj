@@ -64,7 +64,7 @@ public class ReportLoader {
   /** 
    * Access
    */
-  /*package*/ static ReportLoader getInstance() {
+  public static ReportLoader getInstance() {
     
     // not known yet?
     if (singleton==null) {
@@ -213,7 +213,7 @@ public class ReportLoader {
   /**
    * Which reports do we have
    */
-  /*package*/ Report[] getReports() {
+  public Report[] getReports() {
     return (Report[])instances.toArray(new Report[instances.size()]);
   }
 
