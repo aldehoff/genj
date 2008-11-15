@@ -1,0 +1,30 @@
+# Global options
+gedcom: gedcom/example.ged
+individual: I1
+
+reports:
+# First report
+  - report: tree.ReportGraphicalTree
+    output_type: pdf
+    output: rr_output/first.pdf
+    title: First report
+
+  # Second report
+  - report: ReportSosa
+    format: pdf
+    output: rr_output/second.pdf
+
+  # Two reports with common options
+  - report: tree.ReportGraphicalTree
+    output_type: pdf
+    display_fambox: false
+    draw_indi_ids: true
+    reports:
+    # One
+    - output: rr_output/third.pdf
+      title: Third report
+      individual: I5
+    # Two
+    - output: rr_output/fourth.pdf
+      title: Fourth report
+      individual: I8
