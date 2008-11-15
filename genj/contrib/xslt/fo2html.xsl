@@ -53,7 +53,7 @@
       </title>
       <META http-equiv="Content-Style-Type" content="text/css"/>
       <style type="text/css">
-        a { color: black; border: none; text-decoration: none; }
+        a { color: bluse; border: none; text-decoration: underline; }
         img { border: none; }
       </style>
     </head>
