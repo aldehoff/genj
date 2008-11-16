@@ -16,3 +16,5 @@ Class-Path: javassist.jar jvyaml.jar commons-cli-1.1.jar
   ../contrib/fop/commons-logging-api-1.0.4.jar ../contrib/fop/batik-awt-util.jar ../contrib/fop/batik-ext.jar
   ../contrib/fop/batik-util.jar ../contrib/fop/fop.jar ../contrib/fop/batik-bridge.jar ../contrib/fop/batik-gvt.jar ../contrib/fop/batik-xml.jar ../contrib/fop/batik-css.jar ../contrib/fop/batik-svg-dom.jar ../contrib/fop/commons-io-1.0.jar
   ../report/
+  geo.jar
+  jump.jar
