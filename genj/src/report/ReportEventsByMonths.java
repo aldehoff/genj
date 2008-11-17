@@ -19,8 +19,10 @@ import genj.report.Report;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -84,26 +86,33 @@ public class ReportEventsByMonths extends Report {
    * Report's main
    */
   public void start(Gedcom gedcom) {
-
+	  Map labels = new HashMap();
+	  
     // look for events we consider
     List series = new ArrayList();
     if (BirthsChart) {
     series.add(analyze(gedcom.getEntities("INDI"), "BIRT"));
+    labels.put("BIRT",translate("birt"));
     }
     if (BaptismsChart) {
     series.add(analyze(gedcom.getEntities("INDI"), "BAPM"));
+    labels.put("BAPM",translate("bapm"));
     }
     if (AdoptionsChart) {
     series.add(analyze(gedcom.getEntities("INDI"), "ADOP"));
+    labels.put("ADOP",translate("adop"));
     }
     if (MarriagesChart) {
     series.add(analyze(gedcom.getEntities("FAM" ), "MARR"));
+    labels.put("MARR",translate("marr"));
     }
     if (DivorcesChart) {
     series.add(analyze(gedcom.getEntities("FAM" ), "DIV"));
+    labels.put("DIV",translate("div"));
     }
     if (DeathsChart) {
     series.add(analyze(gedcom.getEntities("INDI"), "DEAT"));
+    labels.put("DEAT",translate("deat"));
     }
 
     // show it in a chart per series
@@ -112,8 +121,12 @@ public class ReportEventsByMonths extends Report {
     JTabbedPane charts = new JTabbedPane();
     for (Iterator it=series.iterator(); it.hasNext(); ) {
       IndexedSeries is = (IndexedSeries)it.next();
-      String label = Gedcom.getName(is.getName());
-      Chart chart = new Chart(null, is, categories, false);
+      //String label = Gedcom.getName(is.getName());
+      String label = (String)labels.get(is.getName());
+      // the chart title
+      String[] chartTitleParameters = {label, new Integer(inferiorYearLimit).toString(),new Integer(superiorYearLimit).toString()};
+      Chart chart = new Chart(translate("chart.title",chartTitleParameters), is, categories, false);
+      
       charts.addTab(label, chart);
     }
     JPanel panel = new JPanel(new BorderLayout());
