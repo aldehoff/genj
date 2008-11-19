@@ -5,6 +5,7 @@ import genj.gedcom.Indi;
 import genj.report.Report;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 
 import javassist.CannotCompileException;
@@ -20,7 +21,7 @@ import javassist.NotFoundException;
  * A report proxy overrides GUI methods to bypass user interaction.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportProxyFactory.java,v 1.1 2008-11-15 23:27:40 pewu Exp $
+ * @version $Id: ReportProxyFactory.java,v 1.2 2008-11-19 10:03:28 pewu Exp $
  */
 public class ReportProxyFactory
 {
@@ -51,6 +52,11 @@ public class ReportProxyFactory
             m = new CtMethod(CtClass.voidType, "showFileToUser",
                     new CtClass[] { pool.get(File.class.getCanonicalName()) } , myclass);
             m.setBody("{}");
+            myclass.addMethod(m);
+
+            m = new CtMethod(CtClass.voidType, "setOutput",
+                    new CtClass[] { pool.get(PrintWriter.class.getCanonicalName()) } , myclass);
+            m.setBody("{ this.out = $1; }");
             myclass.addMethod(m);
 
             m = new CtMethod(pool.get(String.class.getCanonicalName()), "translate",

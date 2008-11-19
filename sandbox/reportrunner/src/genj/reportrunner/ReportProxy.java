@@ -6,7 +6,12 @@ import genj.option.PropertyOption;
 import genj.report.Report;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +22,7 @@ import java.util.Map;
  * One proxy object is associated with one report.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportProxy.java,v 1.1 2008-11-15 23:27:40 pewu Exp $
+ * @version $Id: ReportProxy.java,v 1.2 2008-11-19 10:03:28 pewu Exp $
  */
 public class ReportProxy
 {
@@ -46,6 +51,11 @@ public class ReportProxy
      * Format of output file.
      */
     private String outputFormat = null;
+
+    /**
+     * Report output.
+     */
+	PrintWriter out = null;
 
     /**
      * Available formats for FO-based reports.
@@ -84,6 +94,7 @@ public class ReportProxy
      */
     public void showDocumentToUser(Document doc)
     {
+    	closeOut();
         Format formatter = FORMATS.get(outputFormat);
 
         File file = new File(outputFileName);
@@ -103,7 +114,17 @@ public class ReportProxy
      */
     public File getFileFromUser()
     {
+    	closeOut();
         return new File(outputFileName);
+    }
+
+    private void closeOut()
+    {
+    	if (out != null)
+    	{
+    		out.close();
+    		setOutput(null);
+    	}
     }
 
     /**
@@ -122,6 +143,11 @@ public class ReportProxy
      */
     public void start(Object o) throws ReportProxyException
     {
+    	if (outputFileName != null)
+    	{
+    		out = new PrintWriter(new OnDemandFileWriter(outputFileName));
+			setOutput(out);
+    	}
         try
         {
             proxiedReport.start(o);
@@ -130,6 +156,41 @@ public class ReportProxy
         {
             throw new ReportProxyException(t);
         }
+        finally
+        {
+        	if (out != null)
+        	{
+        		out.close();
+        		setOutput(null);
+        	}
+        }
+    }
+
+    private void setOutput(PrintWriter printWriter)
+    {
+    	try
+    	{
+    		out = printWriter;
+			Method method = proxiedReport.getClass().getDeclaredMethod("setOutput", PrintWriter.class);
+			method.invoke(proxiedReport, printWriter);
+		}
+		// None of these should ever happen
+    	catch (NoSuchMethodException e)
+    	{
+			e.printStackTrace();
+		}
+    	catch (IllegalArgumentException e)
+		{
+			e.printStackTrace();
+		}
+    	catch (IllegalAccessException e)
+    	{
+			e.printStackTrace();
+		}
+    	catch (InvocationTargetException e)
+    	{
+			e.printStackTrace();
+		}
     }
 
     /**
