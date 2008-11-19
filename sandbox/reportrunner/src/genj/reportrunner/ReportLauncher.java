@@ -17,7 +17,7 @@ import java.util.Map;
  * Runs a report based on a set of options.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportLauncher.java,v 1.1 2008-11-15 23:27:40 pewu Exp $
+ * @version $Id: ReportLauncher.java,v 1.2 2008-11-19 09:46:09 pewu Exp $
  */
 public class ReportLauncher
 {
@@ -69,11 +69,13 @@ public class ReportLauncher
      * Runs a report based on specified options.
      * @param options  Options for running a report
      */
-    public void runReport(Map<String, String> options) throws ReportProxyException, IOException
+    public void runReport(Map<String, String> options) throws ReportRunnerException, IOException
     {
         ReportRunner.LOG.info("Running report: " + options.get(REPORT_OPTION));
         // get report proxy
         String reportName = options.get(REPORT_OPTION);
+        if (reportName == null)
+        	throw new ReportRunnerException("Report name not supplied");
         ReportProxy proxy = getProxy(reportName);
         proxy.resetOptions();
 
@@ -111,12 +113,15 @@ public class ReportLauncher
      * @param reportName
      * @return
      */
-    private ReportProxy getProxy(String reportName) throws ReportProxyException
+    private ReportProxy getProxy(String reportName) throws ReportRunnerException
     {
         ReportProxy proxy = proxiesByName.get(reportName);
         if (proxy == null)
         {
-            proxy = proxyFactory.create(reportsByName.get(reportName));
+            Report report = reportsByName.get(reportName);
+            if (report == null)
+            	throw new ReportRunnerException("Report " + reportName + " not found");
+			proxy = proxyFactory.create(report);
             proxiesByName.put(reportName, proxy);
         }
         return proxy;
@@ -149,7 +154,7 @@ public class ReportLauncher
      * Prints options for a given report.
      * @param reportName  Name of the report
      */
-    public void printOptions(String reportName) throws ReportProxyException
+    public void printOptions(String reportName) throws ReportRunnerException
     {
         ReportProxy proxy = getProxy(reportName);
         Collection<ReportOption> options = proxy.getOptions();
