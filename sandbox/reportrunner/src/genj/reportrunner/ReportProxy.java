@@ -6,8 +6,6 @@ import genj.option.PropertyOption;
 import genj.report.Report;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -16,13 +14,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Proxy class for a report. This class is used to access report options and to run a report.
  * One proxy object is associated with one report.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportProxy.java,v 1.2 2008-11-19 10:03:28 pewu Exp $
+ * @version $Id: ReportProxy.java,v 1.3 2008-11-20 09:14:41 pewu Exp $
  */
 public class ReportProxy
 {
@@ -36,6 +35,11 @@ public class ReportProxy
      * Original unmodified report object. Used for translations.
      */
     private Report originalReport;
+
+    /**
+     * Maps available report contexts expressed in classes to appropriate start() methods.
+     */
+    private Map<Class<?>, Method> contexts = new HashMap<Class<?>, Method>();
 
     /**
      * Report options.
@@ -85,6 +89,19 @@ public class ReportProxy
             String description = originalReport.translate(propertyName);
             options.put(propertyName, new ReportOption(property, description));
         }
+
+        // Get available report contexts
+        Method[] methods = proxiedReport.getClass().getSuperclass().getDeclaredMethods();
+        for (int i = 0; i < methods.length; i++) {
+            // needs to be named start and have exactly one arg
+            if (!methods[i].getName().equals("start"))
+            	continue;
+            Class<?>[] params = methods[i].getParameterTypes();
+            if (params.length!=1)
+            	continue;
+            Class<?> param = params[0];
+            contexts.put(param, methods[i]);
+          }
     }
 
     /**
@@ -139,9 +156,9 @@ public class ReportProxy
     /**
      * Runs the report.
      * Overrides Report.start().
-     * @param o  initializing object
+     * @param context  initializing object
      */
-    public void start(Object o) throws ReportProxyException
+    public void start(Object context) throws ReportProxyException
     {
     	if (outputFileName != null)
     	{
@@ -150,7 +167,8 @@ public class ReportProxy
     	}
         try
         {
-            proxiedReport.start(o);
+        	Method method = contexts.get(context.getClass());
+            method.invoke(proxiedReport, new Object[] { context });
         }
         catch (Throwable t)
         {
@@ -237,6 +255,14 @@ public class ReportProxy
     public void setOutputFormat(String outputFormat)
     {
         this.outputFormat = outputFormat;
+    }
+
+    /**
+     * Returns available report contexts expressed in classes.
+     */
+    public Set<Class<?>> getContexts()
+    {
+    	return contexts.keySet();
     }
 
     /**

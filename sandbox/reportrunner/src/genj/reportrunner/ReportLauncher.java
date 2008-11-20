@@ -12,12 +12,13 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Runs a report based on a set of options.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportLauncher.java,v 1.2 2008-11-19 09:46:09 pewu Exp $
+ * @version $Id: ReportLauncher.java,v 1.3 2008-11-20 09:14:41 pewu Exp $
  */
 public class ReportLauncher
 {
@@ -71,15 +72,16 @@ public class ReportLauncher
      */
     public void runReport(Map<String, String> options) throws ReportRunnerException, IOException
     {
-        ReportRunner.LOG.info("Running report: " + options.get(REPORT_OPTION));
-        // get report proxy
         String reportName = options.get(REPORT_OPTION);
+        ReportRunner.LOG.info("Running report: " + reportName);
         if (reportName == null)
         	throw new ReportRunnerException("Report name not supplied");
+
+        // get report proxy
         ReportProxy proxy = getProxy(reportName);
-        proxy.resetOptions();
 
         // set report options
+        proxy.resetOptions();
         for (Map.Entry<String, String> entry : options.entrySet())
         {
             String key = entry.getKey();
@@ -101,17 +103,22 @@ public class ReportLauncher
             gedcomFile = input;
         }
 
-        String indiId = options.get(INDIVIDUAL_OPTION);
-        Indi indi= (Indi)gedcom.getEntity(Gedcom.INDI, indiId);
+        Set<Class<?>> contexts = proxy.getContexts();
+        Object context = gedcom;
 
-        proxy.start(indi);
+        String indiId = options.get(INDIVIDUAL_OPTION);
+        if (indiId != null && contexts.contains(Indi.class))
+        	context = gedcom.getEntity(Gedcom.INDI, indiId);
+        else if (!contexts.contains(Gedcom.class))
+        	throw new ReportRunnerException("Report context could not be established for report " + reportName);
+
+        proxy.start(context);
     }
 
     /**
-     *
      * Gets report proxy from cache or creates one if necessary.
-     * @param reportName
-     * @return
+     * @param reportName  name of the report
+     * @return  ReportProxy for the report
      */
     private ReportProxy getProxy(String reportName) throws ReportRunnerException
     {
