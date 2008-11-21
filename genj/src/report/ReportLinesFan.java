@@ -31,7 +31,7 @@ import java.util.LinkedList;
  */
 public class ReportLinesFan extends Report {
 
-    private PrintWriter out;
+    private PrintWriter writer;
     private final static Charset CHARSET = Charset.forName("ISO-8859-1");
     public int genPerPage = 6;
     public int reportMaxGenerations = 999;
@@ -68,21 +68,21 @@ public class ReportLinesFan extends Report {
         }
       }
 */
-	    out = getWriter(new FileOutputStream(file));
+	    writer = getWriter(new FileOutputStream(file));
 	    Reader in = new InputStreamReader(getClass().getResourceAsStream("ps-fan.ps"));
 
 	    int c;
-	    out.println("%!PS-Adobe-3.0");
-	    out.println("%%Creator: genj 1.0");
-	    out.println("%%CreationDate: ");
-	    out.println("%%PageOrder: Ascend");
-	    out.println("%%Orientation: Landscape");
-	    out.println("%%EndComments");
-	    out.println("/maxlevel "+genPerPage+" def");
-	    out.println("/color "+(useColors?"true":"false")+" def");
+	    writer.println("%!PS-Adobe-3.0");
+	    writer.println("%%Creator: genj 1.0");
+	    writer.println("%%CreationDate: ");
+	    writer.println("%%PageOrder: Ascend");
+	    writer.println("%%Orientation: Landscape");
+	    writer.println("%%EndComments");
+	    writer.println("/maxlevel "+genPerPage+" def");
+	    writer.println("/color "+(useColors?"true":"false")+" def");
 
 	    while ((c = in.read()) != -1)
-		out.write(c);
+		writer.write(c);
 	    in.close();
 	}catch(IOException ioe){
 	    System.err.println("IO Exception!");
@@ -101,15 +101,15 @@ public class ReportLinesFan extends Report {
 	    Integer genIndex = (Integer) (indiList.removeFirst());
 	    //indiList.remove(0);
 	    if (genIndex != null){
-		out.println("gsave");
+		writer.println("gsave");
 		pedigree(1,genIndex.intValue(),1,1,indiIterator);
-		out.println("showpage");
+		writer.println("showpage");
 		pageNo++;
-		out.println("grestore");
+		writer.println("grestore");
 	    }
 	}
-	out.flush();
-        out.close();
+	writer.flush();
+        writer.close();
 
         // show file the result to the user
         showFileToUser(file);
@@ -121,28 +121,28 @@ public class ReportLinesFan extends Report {
 	    return;
 	}
 	if (gen > reportMaxGenerations){ return;}
-	out.println("("+fullname(indi,1,1,50)+")");
+	writer.println("("+fullname(indi,1,1,50)+")");
 	if (in < 7) {
-	    out.println(" ("+esc(indi.format("BIRT", OPTIONS.getBirthSymbol()+" {$D}"))+")"+
+	    writer.println(" ("+esc(indi.format("BIRT", OPTIONS.getBirthSymbol()+" {$D}"))+")"+
 			" ("+esc(indi.format("DEAT",OPTIONS.getDeathSymbol()+" {$D}"))+")");
 	}else if (in == 7){
-	    out.println(" ("+esc(indi.format("BIRT",OPTIONS.getBirthSymbol()+" {$y}"))+")"+
+	    writer.println(" ("+esc(indi.format("BIRT",OPTIONS.getBirthSymbol()+" {$y}"))+")"+
 			" ("+esc(indi.format("DEAT", OPTIONS.getDeathSymbol()+" {$y}"))+")");
 	} else {
-	    out.println(" () () ");
+	    writer.println(" () () ");
 	}
 
 	Fam famc = indi.getFamilyWhereBiologicalChild();
 	// test if link
 	if (in < genPerPage ||
 	    famc == null) {
-	    out.println(" "+(in-1)+
+	    writer.println(" "+(in-1)+
 			" "+(ah-lev)+
 			" i");
 	} else {
 	    indiList.add(indi);
 	    indiList.add(new Integer(gen));
-	    out.println(" "+(in-1)+
+	    writer.println(" "+(in-1)+
 			" "+(ah-lev)+
 			" "+(indiList.size()/2+pageNo)+
 			" j");
