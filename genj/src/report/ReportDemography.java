@@ -100,7 +100,7 @@ public class ReportDemography extends Report {
           }},
 
         //------------------------------------------------------
-        new IndiAnalyzer(labelForMen, labelForWomen, translate("ageOfYoungestChildLeftBehind")){
+        new IndiAnalyzer(labelForFathers, labelForMothers, translate("ageOfYoungestChildLeftBehind")){
 
           public void addFact(Indi indi) {
             try {
@@ -115,7 +115,10 @@ public class ReportDemography extends Report {
 
               // add the child's age when its parent died
               // it may be the first parent or the second parent
-              addAge(child, deathDate);
+              if ( indi.getSex() == PropertySex.MALE )
+                  addAgeForMale(child, deathDate);
+                else 
+                  addAgeForFemale(child, deathDate);
             }
             catch (RuntimeException e) {}
           }
