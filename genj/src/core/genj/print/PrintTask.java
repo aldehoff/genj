@@ -141,16 +141,20 @@ public class PrintTask extends Action2 implements Printable, Trackable {
   protected PrintService getDefaultService() throws PrintException {
     // check system default
     PrintService service = PrintServiceLookup.lookupDefaultPrintService();
-    if (service==null)
-      throw new PrintException("Couldn't find suitable printer");
-    // check suitability
-    if (service.isDocFlavorSupported(FLAVOR))
-      return service;
+    if (service!=null) {
+      // check suitability
+      if (service.isDocFlavorSupported(FLAVOR))
+        return service;
+      LOG.info("Default print service not supported");
+    } else {
+      LOG.info("No default print service available (are you running CUPS?)");
+    }
     
     // try to find a better one
     PrintService[] suitables = PrintServiceLookup.lookupPrintServices(FLAVOR, null);
     if (suitables.length==0)
-      throw new PrintException("Couldn't find suitable printer");
+      throw new PrintException("Couldn't find any suitable printer");
+    
     return suitables[0];
   }
   
