@@ -124,11 +124,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     options.add(checkMarrSymbols);
     options.add(fontChooser);    
     
-    spinners[0] = createSpinner("indiwidth",  options, 1.0, 16.0);
+    spinners[0] = createSpinner("indiwidth",  options, 0.4, 16.0);
     spinners[1] = createSpinner("indiheight", options, 0.4, 16.0);
-    spinners[2] = createSpinner("famwidth",   options, 1.0, 16.0);
+    spinners[2] = createSpinner("famwidth",   options, 0.4, 16.0);
     spinners[3] = createSpinner("famheight",  options, 0.4, 16.0);
-    spinners[4] = createSpinner("padding",    options, 1.0,  4.0);
+    spinners[4] = createSpinner("padding",    options, 0.4,  4.0);
     
     // color chooser
     colorWidget = new ColorsWidget();
