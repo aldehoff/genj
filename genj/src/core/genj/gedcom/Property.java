@@ -1177,6 +1177,12 @@ public abstract class Property implements Comparable {
   /**
    * Copy a property and all its sub-properties
    */
+  public void copyProperties(Property[] roots, boolean useValues) throws GedcomException {
+    for (Property property : roots) {
+      copyProperties(property, useValues);
+    }
+  }
+
   public void copyProperties(Property root, boolean useValues) throws GedcomException {
     // create copy for prop?
     Property copy = getProperty(root.getTag(), false);

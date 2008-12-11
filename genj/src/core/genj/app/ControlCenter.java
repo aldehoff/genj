@@ -30,6 +30,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.Submitter;
 import genj.gedcom.UnitOfWork;
+import genj.gedcom.GedcomDirectory;
 import genj.io.Filter;
 import genj.io.GedcomEncodingException;
 import genj.io.GedcomEncryptionException;
@@ -161,27 +162,6 @@ public class ControlCenter extends JPanel {
   public void load(String[] files) {
     // Load known gedcoms
     SwingUtilities.invokeLater(new ActionAutoOpen(files));
-  }
-  
-  /**
-   * Adds another Gedcom to the list of Gedcoms
-   */
-  /*package*/ void addGedcom(Gedcom gedcom) {
-    tGedcoms.addGedcom(gedcom);
-    gedcom.addGedcomListener((GedcomListener)Spin.over(stats));
-  }
-
-  /**
-   * Removes a Gedcom from the list of Gedcoms
-   */
-  /*package*/ void removeGedcom(Gedcom gedcom) {
-    
-    // close views
-    viewManager.closeViews(gedcom);
-
-    // forget about it
-    tGedcoms.removeGedcom(gedcom);
-    gedcom.removeGedcomListener((GedcomListener)Spin.over(stats));
   }
   
   /**
@@ -416,7 +396,7 @@ public class ControlCenter extends JPanel {
     protected void execute() {
       // Remember open gedcoms
       Collection save = new ArrayList();
-      for (Iterator gedcoms=tGedcoms.getAllGedcoms().iterator(); gedcoms.hasNext(); ) {
+      for (Iterator gedcoms=GedcomDirectory.getInstance().getGedcoms().iterator(); gedcoms.hasNext(); ) {
         // next gedcom
         Gedcom gedcom = (Gedcom) gedcoms.next();
         // changes need saving?
@@ -535,7 +515,7 @@ public class ControlCenter extends JPanel {
           } catch (GedcomException e) {
           }
           // remember
-          addGedcom(gedcom);
+          GedcomDirectory.getInstance().registerGedcom(gedcom);
         } catch (MalformedURLException e) {
         }
 
@@ -703,7 +683,7 @@ public class ControlCenter extends JPanel {
       // got a successfull gedcom
       if (gedcomBeingLoaded != null) {
         
-        addGedcom(gedcomBeingLoaded);
+        GedcomDirectory.getInstance().registerGedcom(gedcomBeingLoaded);
       
         // open views again
         if (Options.getInstance().isRestoreViews) {
@@ -800,7 +780,7 @@ public class ControlCenter extends JPanel {
     private boolean open(Origin origin) {
 
       // Check if already open
-      if (tGedcoms.getGedcom(origin.getName())!=null) {
+      if (GedcomDirectory.getInstance().getGedcom(origin.getName())!=null) {
         windowManager.openDialog(null,origin.getName(),WindowManager.ERROR_MESSAGE,resources.getString("cc.open.already_open", origin.getName()),Action2.okOnly(),ControlCenter.this);
         return false;
       }
@@ -1120,9 +1100,9 @@ public class ControlCenter extends JPanel {
         if (newOrigin != null) {
           
           // .. close old
-          Gedcom alreadyOpen  = tGedcoms.getGedcom(newOrigin.getName());
+          Gedcom alreadyOpen  = GedcomDirectory.getInstance().getGedcom(newOrigin.getName());
           if (alreadyOpen!=null)
-            removeGedcom(alreadyOpen);
+            GedcomDirectory.getInstance().unregisterGedcom(alreadyOpen);
           
           // .. open new
           ActionOpen open = new ActionOpen(newOrigin) {
@@ -1179,7 +1159,7 @@ public class ControlCenter extends JPanel {
         // save now?
         if (rc==0) {
           // Remove it so the user won't change it while being saved
-          removeGedcom(gedcom);
+          GedcomDirectory.getInstance().unregisterGedcom(gedcom);
           // and save
           new ActionSave(gedcom) {
             protected void postExecute(boolean preExecuteResult) {
@@ -1187,7 +1167,7 @@ public class ControlCenter extends JPanel {
               super.postExecute(preExecuteResult);
               // add back if still changed
               if (gedcomBeingSaved.hasChanged())
-                addGedcom(gedcomBeingSaved);
+                GedcomDirectory.getInstance().registerGedcom(gedcomBeingSaved);
             }
           }.trigger();
           return;
@@ -1195,7 +1175,7 @@ public class ControlCenter extends JPanel {
       }
   
       // Remove it
-      removeGedcom(gedcom);
+      GedcomDirectory.getInstance().unregisterGedcom(gedcom);
   
       // Done
     }
@@ -1256,13 +1236,14 @@ public class ControlCenter extends JPanel {
   /**
    * a little status tracker
    */
-  private class Stats extends JLabel implements GedcomMetaListener {
+  private class Stats extends JLabel implements GedcomMetaListener, GedcomDirectory.Listener {
     
     private int commits;
     private int read,written;
     
     private Stats() {
       setHorizontalAlignment(SwingConstants.LEFT);
+      GedcomDirectory.getInstance().addListener(this);
     }
 
     public void gedcomWriteLockReleased(Gedcom gedcom) {
@@ -1316,6 +1297,14 @@ public class ControlCenter extends JPanel {
     }
 
     public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
+    }
+
+    public void gedcomRegistered(int num, Gedcom gedcom) {
+      gedcom.addGedcomListener(this);
+   }
+
+    public void gedcomUnregistered(int num, Gedcom gedcom) {
+      gedcom.removeGedcomListener(this);
     }
     
   } //Stats

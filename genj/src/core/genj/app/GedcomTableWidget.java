@@ -21,7 +21,7 @@ package genj.app;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomListener;
+import genj.gedcom.GedcomDirectory;
 import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Grammar;
 import genj.gedcom.Property;
@@ -37,21 +37,16 @@ import genj.window.WindowBroadcastEvent;
 import genj.window.WindowBroadcastListener;
 
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
-import spin.Spin;
 
 /**
  * A component displaying a list of Gedcoms
@@ -78,17 +73,15 @@ import spin.Spin;
   /** a registry */
   private Registry registry;
   
-  /** a model */
-  private Model model;
-  
   /**
    * Constructor
    */
   public GedcomTableWidget(ViewManager mgr, Registry reGistry) {
 
-    // Prepare a model
-    model = new Model();
     registry = reGistry;
+    
+    // prepare model
+    GedcomTableModel model = new GedcomTableModel();
     
     // Prepare a column model
     TableColumnModel cm = new DefaultTableColumnModel();
@@ -136,7 +129,7 @@ import spin.Spin;
    */
   public ViewContext getContext() {
     int row = getSelectedRow();
-    return row<0 ? null : new ViewContext(model.getGedcom(row));
+    return row<0 ? null : new ViewContext(GedcomDirectory.getInstance().getGedcoms().get(row));
   }
 
   /**
@@ -146,20 +139,12 @@ import spin.Spin;
     
     ContextSelectionEvent cse = ContextSelectionEvent.narrow(event);
     if (cse!=null) {
-      int row = model.getRowFor(cse.getContext().getGedcom());
+      int row = GedcomDirectory.getInstance().getGedcoms().indexOf(cse.getContext().getGedcom());
       if (row>=0)
         getSelectionModel().setSelectionInterval(row,row);
     }
     
     return true;
-  }
-
-  /**
-   * Return gedcom at given position 
-   */  
-  public Gedcom getGedcomAt(Point pos) {
-    int row = rowAtPoint(pos);
-    return row<0 ? null : model.getGedcom(row);
   }
 
   /**
@@ -178,137 +163,65 @@ import spin.Spin;
   }
   
   /**
-   * Check for gedcom with name
-   */
-  public Gedcom getGedcom(String name) {
-    for (int i=0; i<model.getRowCount(); i++) {
-      Gedcom gedcom = model.getGedcom(i);
-      if (gedcom.getName().equals(name))
-        return gedcom;
-    }
-    return null;
-  }
-  
-  /**
-   * Accessor for model
-   */
-  public List getAllGedcoms() {
-    return model.getAllGedcoms();
-  }
-  
-  /**
    * The selected gedcom
    */
   public Gedcom getSelectedGedcom() {
-    return model.getSelectedGedcom();
-  }
-  
-  /**
-   * Add a gedcom
-   */
-  public void addGedcom(Gedcom gedcom) {
-    model.addGedcom(gedcom);
-    int row = model.getRowFor(gedcom);
-    getSelectionModel().setSelectionInterval(row,row);
+    int row = getSelectedRow();
+    return row<0 ? null : GedcomDirectory.getInstance().getGedcoms().get(row);
   }
 
   /**
-   * Removes a gedcom
+   * our model
    */
-  public void removeGedcom(Gedcom gedcom) {
-    model.removeGedcom(gedcom);
-  }
-
-  /**
-   * A model keeping track of a bunch of Gedcoms
-   */
-  private class Model extends AbstractTableModel implements GedcomMetaListener {
+  private class GedcomTableModel extends AbstractTableModel implements GedcomDirectory.Listener, GedcomMetaListener {
     
-    /** the Gedcoms we know about */
-    private List gedcoms = new ArrayList(10);
-    
-    /**
-     * Selected Gedcom
-     */
-    public Gedcom getSelectedGedcom() {
-      int row = getSelectedRow();
-      if (row==-1) return null;
-      return getGedcom(row);
+    @Override
+    public void addTableModelListener(TableModelListener l) {
+      // listen
+      if (getTableModelListeners().length==0)
+        GedcomDirectory.getInstance().addListener(this);
+      // continue
+      super.addTableModelListener(l);
     }
     
-    /**
-     * Gedcom by row
-     */
-    public Gedcom getGedcom(int row) {
-      return (Gedcom)gedcoms.get(row);
-    }
-  
-    /**
-     * All Gedcoms
-     */
-    public List getAllGedcoms() {
-      return gedcoms;
+    @Override
+    public void removeTableModelListener(TableModelListener l) {
+      // continue
+      super.removeTableModelListener(l);
+      // listen
+      if (getTableModelListeners().length==0)
+        GedcomDirectory.getInstance().removeListener(this);
     }
     
-    /**
-     * Add a gedcom
-     */
-    public void addGedcom(Gedcom gedcom) {
-      gedcoms.add(gedcom);
-      Collections.sort(gedcoms);
-      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
-      fireTableDataChanged();
+    public Class<?> getColumnClass(int col) {
+      return col==0 ? String.class : Integer.class;
     }
 
-    /**
-     * Removes a gedcom
-     */
-    public void removeGedcom(Gedcom gedcom) {
-      gedcoms.remove(gedcom);
-      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
-      fireTableDataChanged();
-    }
-    
-    /**
-     * Gedcom 2 row
-     */
-    public int getRowFor(Gedcom gedcom) {
-      return gedcoms.indexOf(gedcom);
-    }
-
-    /**
-     * @see javax.swing.table.TableModel#getColumnCount()
-     */
     public int getColumnCount() {
       return COLUMNS.length;
     }
-  
-    /**
-     * @see javax.swing.table.TableModel#getRowCount()
-     */
+
     public int getRowCount() {
-      return gedcoms.size();
+      return GedcomDirectory.getInstance().getGedcoms().size();
     }
-  
-    /**
-     * @see javax.swing.table.TableModel#getValueAt(int, int)
-     */
+
     public Object getValueAt(int row, int col) {
-      Gedcom gedcom = getGedcom(row);
+      Gedcom gedcom = GedcomDirectory.getInstance().getGedcoms().get(row);
       switch (col) {
         case 0: return gedcom.getName() + (gedcom.hasChanged() ? "*" : "" );
         case 8: return gedcom.getLastChange();
         default: return new Integer(gedcom.getEntities(Gedcom.ENTITIES[col-1]).size());
       }
     }
-    
-    /**
-     * @see javax.swing.table.AbstractTableModel#getColumnClass(int)
-     */
-    public Class getColumnClass(int col) {
-      return col==0 ? String.class : Integer.class;
+
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+      return false;
     }
 
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+      throw new IllegalArgumentException("n/a");
+    }
+    
     public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
     }
 
@@ -337,10 +250,18 @@ import spin.Spin;
     }
 
     public void gedcomWriteLockReleased(Gedcom gedcom) {
-      int i = getRowFor(gedcom);
-      if (i>=0) fireTableRowsUpdated(i,i);
+      int row = GedcomDirectory.getInstance().getGedcoms().indexOf(gedcom);
+      if (row>=0) fireTableRowsUpdated(row,row);
     }
 
-  } // Model
+    public void gedcomRegistered(int pos, Gedcom gedcom) {
+      fireTableRowsInserted(pos, pos);
+      getSelectionModel().setSelectionInterval(pos, pos);
+    }
 
-} //GedcomTableWidget
+    public void gedcomUnregistered(int pos, Gedcom gedcom) {
+      fireTableRowsDeleted(pos, pos);
+    }
+  }
+
+}

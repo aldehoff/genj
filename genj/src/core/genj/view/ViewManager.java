@@ -21,6 +21,7 @@ package genj.view;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomDirectory;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.MnemonicAndText;
@@ -101,6 +102,15 @@ public class ViewManager {
 
     // continue with init
     init(windowManager, factories);
+    
+    // listen
+    GedcomDirectory.getInstance().addListener(new GedcomDirectory.Listener() {
+      public void gedcomRegistered(int num, Gedcom gedcom) {
+      }
+      public void gedcomUnregistered(int num, Gedcom gedcom) {
+        closeViews(gedcom);
+      }
+    });
   }
   
   /**

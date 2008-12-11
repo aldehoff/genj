@@ -19,7 +19,9 @@
  */
 package genj.edit;
 
+import genj.common.SelectEntityWidget;
 import genj.crypto.Enigma;
+import genj.edit.actions.AbstractChange;
 import genj.edit.actions.CreateAlias;
 import genj.edit.actions.CreateAssociation;
 import genj.edit.actions.CreateChild;
@@ -41,6 +43,8 @@ import genj.edit.actions.Undo;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomDirectory;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
@@ -59,18 +63,29 @@ import genj.io.FileAssociation;
 import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.ActionProvider;
+import genj.view.ContextSelectionEvent;
 import genj.view.ViewContext;
 import genj.view.ViewFactory;
 import genj.view.ViewManager;
+import genj.window.WindowBroadcastEvent;
+import genj.window.WindowManager;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * The factory for the TableView
@@ -257,12 +272,90 @@ public class EditViewFactory implements ViewFactory, ActionProvider {
     result.add(new CreateEntity(gedcom, Gedcom.SOUR, manager));
     result.add(new CreateEntity(gedcom, Gedcom.SUBM, manager));
 
+    for (Gedcom other : GedcomDirectory.getInstance().getGedcoms()) {
+      if (other!=gedcom && other.getEntities(Gedcom.INDI).size()>0)
+        result.add(new CopyIndividual(gedcom, other, manager));
+    }
+
     result.add(Action2.NOOP);
     result.add(new Undo(gedcom, gedcom.canUndo()));
     result.add(new Redo(gedcom, gedcom.canRedo()));
 
     // done
     return result;
+  }
+  
+  /** 
+   * Frederic - a test action showing cross-gedcom work 
+   */
+  private class CopyIndividual extends AbstractChange {
+    
+    private Gedcom source;
+    private Indi existing;
+
+    public CopyIndividual(Gedcom dest, Gedcom source, ViewManager mgr) {
+      super(dest, Gedcom.getEntityImage(Gedcom.INDI), "Copy individual from "+source, mgr);
+      this.source = source;
+    }
+    
+    /**
+     * Override content components to show to user 
+     */
+    @Override
+    protected JPanel getDialogContent() {
+      
+      JPanel result = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><text wx=\"1\" wy=\"1\"/></row><row><check/><text/></row></col>"));
+
+      // create selector
+      final SelectEntityWidget select = new SelectEntityWidget(source, Gedcom.INDI, null);
+   
+      // wrap it up
+      result.add(select);
+      result.add(getConfirmComponent());
+
+      // add listening
+      select.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          // grab current selection (might be null)
+          existing = (Indi)select.getSelection();
+          refresh();
+        }
+      });
+      
+      existing = (Indi)select.getSelection();
+      refresh();
+      
+      // done
+      return result;
+    }
+    
+    @Override
+    protected void refresh() {
+      // TODO Auto-generated method stub
+      super.refresh();
+    }
+    
+    private boolean dupe() {
+      return gedcom.getEntity(existing.getId())!=null;
+    }
+    
+    @Override
+    protected String getConfirmMessage() {
+      if (existing==null)
+        return "Please select an individual";
+      String result = "Copying individual "+existing+" from "+source.getName()+" to "+gedcom.getName();
+      if (dupe())
+        result += "\n\nNote: Duplicate ID - a new ID will be assigned";
+      return result;
+    }
+    
+    @Override
+    public void perform(Gedcom gedcom) throws GedcomException {
+      Entity e = gedcom.createEntity(Gedcom.INDI, dupe() ? null : existing.getId());
+      e.copyProperties(existing.getProperties(), true);
+      WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(e), getTarget()));
+    }
+  
   }
 
   /**
