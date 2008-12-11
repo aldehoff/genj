@@ -1,4 +1,4 @@
-#Sun Feb 11 08:13:39 EST 2007
+#Wed Apr 09 22:49:02 EDT 2008
 eclipse.preferences.version=1
 encoding//language/cs/genj/almanac/resources_cs.properties=UTF-8
 encoding//language/cs/genj/app/resources_cs.properties=UTF-8
@@ -129,7 +129,6 @@ encoding//language/hu/genj/edit/resources_hu.properties=UTF-8
 encoding//language/hu/genj/entity/resources_hu.properties=UTF-8
 encoding//language/hu/genj/gedcom/resources_hu.properties=UTF-8
 encoding//language/hu/genj/gedcom/time/resources_hu.properties=UTF-8
-encoding//language/hu/genj/nav/resources_hu.properties=UTF-8
 encoding//language/hu/genj/print/resources_hu.properties=UTF-8
 encoding//language/hu/genj/renderer/resources_hu.properties=UTF-8
 encoding//language/hu/genj/report/resources_hu.properties=UTF-8
