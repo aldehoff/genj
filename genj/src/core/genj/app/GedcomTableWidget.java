@@ -255,11 +255,13 @@ import javax.swing.table.TableColumnModel;
     }
 
     public void gedcomRegistered(int pos, Gedcom gedcom) {
+      gedcom.addGedcomListener(this);
       fireTableRowsInserted(pos, pos);
       getSelectionModel().setSelectionInterval(pos, pos);
     }
 
     public void gedcomUnregistered(int pos, Gedcom gedcom) {
+      gedcom.removeGedcomListener(this);
       fireTableRowsDeleted(pos, pos);
     }
   }
