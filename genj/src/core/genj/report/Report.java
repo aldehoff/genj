@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.131 $ $Author: pewu $ $Date: 2008-11-15 23:30:11 $
+ * $Revision: 1.132 $ $Author: pewu $ $Date: 2008-12-15 23:05:22 $
  */
 package genj.report;
 
@@ -140,7 +140,7 @@ public abstract class Report implements Cloneable {
 
   /** image */
   private ImageIcon image;
-  
+
   /** file */
   private File file;
 
@@ -391,7 +391,7 @@ public abstract class Report implements Cloneable {
   /**
    * An implementation of Report can ask the user for a directory with this method.
    */
-  public final File getDirectoryFromUser(String title, String button) {
+  public File getDirectoryFromUser(String title, String button) {
 
     String key = getClass().getName()+".dir";
 
@@ -502,7 +502,7 @@ public abstract class Report implements Cloneable {
   /**
    * A sub-class can show a Java Swing component to the user with this method
    */
-  public final void showComponentToUser(JComponent component) {
+  public void showComponentToUser(JComponent component) {
 
     // open a non-modal dialog
     windowManager.openNonModalDialog(getClass().getName()+"#component",getName(), WindowManager.INFORMATION_MESSAGE,component,Action2.okOnly(),owner);
@@ -764,7 +764,7 @@ public abstract class Report implements Cloneable {
     // setFile would make it appear as report option
     file = setFile;
   }
-  
+
   public File getFile() {
     return file;
   }
