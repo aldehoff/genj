@@ -26,12 +26,16 @@ public class RotateRenderer implements GraphicsRenderer
     public static final int ROTATE_90 = 3;
 
     private GraphicsRenderer renderer;
-    private int rotation;
 
-    public RotateRenderer(GraphicsRenderer renderer, int rotation)
+    /**
+     * Image rotation.
+     */
+    public int rotation = ROTATE_0;
+    public String[] rotations = { "none", "270", "180" , "90" };
+
+    public RotateRenderer(GraphicsRenderer renderer)
     {
         this.renderer = renderer;
-        this.rotation = rotation;
     }
 
     public int getImageHeight()

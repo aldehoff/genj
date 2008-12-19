@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.132 $ $Author: pewu $ $Date: 2008-12-15 23:05:22 $
+ * $Revision: 1.133 $ $Author: pewu $ $Date: 2008-12-19 09:28:58 $
  */
 package genj.report;
 
@@ -118,7 +118,7 @@ public abstract class Report implements Cloneable {
     ALIGN_RIGHT  = 2;
 
   /** one report for all reports */
-  private final static Registry registry = new Registry("genj-reports");
+  protected final static Registry registry = new Registry("genj-reports");
 
   /** language we're trying to use */
   private final static String lang = Locale.getDefault().getLanguage();
@@ -189,7 +189,7 @@ public abstract class Report implements Cloneable {
   /**
    * Store report's options
    */
-  /*package*/ void saveOptions() {
+  public void saveOptions() {
     // if known
     if (options==null)
       return;

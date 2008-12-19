@@ -8,14 +8,13 @@
 
 package tree.output;
 
-import genj.util.Registry;
-
 import java.awt.Dimension;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import tree.IndiBox;
 import tree.IndiBox.Direction;
+import tree.arrange.LayoutFactory;
 
 /**
  * Vertical family tree rendering.
@@ -23,13 +22,6 @@ import tree.IndiBox.Direction;
  * @author Przemek Wiech <pwiech@losthive.org>
  */
 public class VerticalTreeRenderer extends TreeRendererBase {
-
-    /**
-     * Constructs the object.
-     */
-    public VerticalTreeRenderer(IndiBox firstIndi, TreeElements elements, Registry properties) {
-        super(firstIndi, elements, properties);
-	}
 
     /**
      * Outputs the family tree starting from the given IndiBox.
@@ -102,9 +94,9 @@ public class VerticalTreeRenderer extends TreeRendererBase {
             lineY = indibox.children[0].y;
             for (int i = 1; i < indibox.children.length; i++)
                 lineY = Math.min(lineY, indibox.children[i].y);
-            lineY -= spacing;
+            lineY -= LayoutFactory.SPACING;
         } else {
-            lineY = indibox.height + spacing;
+            lineY = indibox.height + LayoutFactory.SPACING;
             if (indibox.family != null)
                 lineY += indibox.family.height;
         }

@@ -8,8 +8,6 @@
 
 package tree.output;
 
-import genj.util.Registry;
-
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 
@@ -28,8 +26,6 @@ public abstract class TreeRendererBase implements GraphicsRenderer {
      */
     protected static final int PAGE_MARGIN = 10;
 
-    protected int spacing;
-
     protected IndiBox firstIndi;
 
     /**
@@ -37,15 +33,15 @@ public abstract class TreeRendererBase implements GraphicsRenderer {
      */
     protected TreeElements elements;
 
-    /**
-     * Constructs the object.
-     */
-    public TreeRendererBase(IndiBox firstIndi, TreeElements elements, Registry properties) {
+    public void setFirstIndi(IndiBox firstIndi)
+    {
         this.firstIndi = firstIndi;
-        this.elements = elements;
+    }
 
-		spacing = properties.get("spacing", 0);
-	}
+    public void setElements(TreeElements elements)
+    {
+        this.elements = elements;
+    }
 
     /**
      * Renders the family tree to the given Graphics2D object.

@@ -20,6 +20,8 @@ import tree.IndiBox;
  */
 public class FlipTreeElements extends FilterTreeElements {
 
+    public boolean flip = false;
+
     /**
      * Constructs the object.
      */
@@ -40,6 +42,11 @@ public class FlipTreeElements extends FilterTreeElements {
      * @param gen generation number
      */
     public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
+        if (!flip)
+        {
+            elements.drawIndiBox(indibox, x, y, gen);
+            return;
+        }
         graphics.translate(x + indibox.width/2, y);
         graphics.scale(-1, 1);
         elements.drawIndiBox(indibox, -indibox.width/2, 0, gen);
@@ -55,6 +62,11 @@ public class FlipTreeElements extends FilterTreeElements {
      * @param gen generation number
      */
     public void drawFamBox(FamBox fambox, int x, int y, int gen) {
+        if (!flip)
+        {
+            elements.drawFamBox(fambox, x, y, gen);
+            return;
+        }
         graphics.translate(x + fambox.width/2, y);
         graphics.scale(-1, 1);
         elements.drawFamBox(fambox, -fambox.width/2, 0, gen);
@@ -66,9 +78,12 @@ public class FlipTreeElements extends FilterTreeElements {
      * Initializes the graphics.
      */
     public void header(int width, int height) {
-        graphics.translate(width/2, 0);
-        graphics.scale(-1, 1);
-        graphics.translate(-width/2, 0);
+        if (flip)
+        {
+            graphics.translate(width/2, 0);
+            graphics.scale(-1, 1);
+            graphics.translate(-width/2, 0);
+        }
         elements.header(width, height);
     }
 

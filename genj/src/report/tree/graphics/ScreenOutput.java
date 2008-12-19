@@ -29,7 +29,7 @@ import javax.swing.JScrollPane;
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class ScreenOutput extends JScrollPane implements GraphicsOutput {
+public class ScreenOutput implements GraphicsOutput {
 
     /**
      * Renders output to a Graphics2D object.
@@ -40,9 +40,14 @@ public class ScreenOutput extends JScrollPane implements GraphicsOutput {
      * The component containing the whole tree view.
      */
     private JComponent view;
-    
+
+    /**
+     * Panel containing the main view.
+     */
+    private JScrollPane pane = new JScrollPane();
+
     private Point lastPoint;
-    
+
     /**
      * Constructs the object.
      */
@@ -56,34 +61,34 @@ public class ScreenOutput extends JScrollPane implements GraphicsOutput {
             }
         };
 
-        setViewportView(view);
-        setPreferredSize(new Dimension(300, 200));
-        
-        addMouseListener(new MouseAdapter() {
+        pane.setViewportView(view);
+        pane.setPreferredSize(new Dimension(300, 200));
+
+        pane.addMouseListener(new MouseAdapter() {
         	public void mousePressed(MouseEvent e) {
         		lastPoint = e.getPoint();
-        		setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        		pane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         	}
-        	
+
         	public void mouseReleased(MouseEvent e) {
-        		setCursor(Cursor.getDefaultCursor());
+        		pane.setCursor(Cursor.getDefaultCursor());
         	}
         });
-        
-        addMouseMotionListener(new MouseMotionAdapter() {
-  
-      		private JScrollBar hSb = getHorizontalScrollBar();
-    		private JScrollBar vSb = getVerticalScrollBar();
-        	
+
+        pane.addMouseMotionListener(new MouseMotionAdapter() {
+
+      		private JScrollBar hSb = pane.getHorizontalScrollBar();
+    		private JScrollBar vSb = pane.getVerticalScrollBar();
+
         	public void mouseDragged(MouseEvent e) {
           		int dX = lastPoint.x - e.getX();
         		int dY = lastPoint.y - e.getY();
-        		
+
         		hSb.setValue(hSb.getValue()+dX);
         		vSb.setValue(vSb.getValue()+dY);
         		lastPoint = e.getPoint();
         	}
-        	
+
         });
     }
 
@@ -94,7 +99,7 @@ public class ScreenOutput extends JScrollPane implements GraphicsOutput {
         this.renderer = renderer;
         view.setPreferredSize(new Dimension(renderer.getImageWidth(),
                 renderer.getImageHeight()));
-        
+
 
         /* This was supposed to center both scrollbars but it doesn't work
         JScrollBar sb = getHorizontalScrollBar();
@@ -109,7 +114,7 @@ public class ScreenOutput extends JScrollPane implements GraphicsOutput {
      * Displays the component.
      */
     public void display(Report report) {
-        report.showComponentToUser(this);
+        report.showComponentToUser(pane);
     }
 
     /**

@@ -10,7 +10,6 @@ package tree.build;
 
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
-import genj.util.Registry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,21 +27,60 @@ import tree.IndiBox.Direction;
  */
 public class BasicTreeBuilder implements TreeBuilder {
 
-	private int gen_ancestors;
-	private int gen_ancestor_descendants;
-	private int gen_descendants;
-    private boolean otherMarriages;
+    /**
+     * Number of generations of ancestors.
+     */
+    public int gen_ancestors = 0;
 
-    public BasicTreeBuilder(Registry properties) {
-        gen_ancestors = properties.get("genAncestors", -1);
-        gen_ancestor_descendants = properties.get("genAncestorDescendants", -1);
-        gen_descendants = properties.get("genDescendants", -1);
-        otherMarriages = properties.get("otherMarriages", true);
-    }
+    public String[] gen_ancestorss = { "nolimit", "0", "1", "2",
+            "3", "4", "5", "6", "7", "8", "9", "10" };
 
+    /**
+     * Number of generations of descentants of ancestors.
+     */
+    public int gen_ancestor_descendants = 0;
+
+    public String[] gen_ancestor_descendantss = { "nolimit", "0",
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+
+    /**
+     * Number of generations of descentants.
+     */
+    public int gen_descendants = 0;
+
+    public String[] gen_descendantss = { "nolimit", "0", "1", "2",
+            "3", "4", "5", "6", "7", "8", "9", "10" };
+
+    /**
+     * Whether to display spouses (excluding ancestors).
+     */
+    public boolean show_spouses = true;
+
+    /**
+     * Whether to display other marriages of ancestors.
+     */
+    public boolean other_marriages = true;
+
+    /**
+     * Whether to display the family box.
+     */
+    public boolean display_fambox = true;
+
+
+    /**
+     * Builds the family tree starting with given individual.
+     */
 	public IndiBox build(Indi indi) {
 		IndiBox indibox = new IndiBox(indi);
 		buildTree(indibox, Direction.NONE, 0, 0);
+
+        if (!show_spouses)
+            new NoSpouseFilter().filter(indibox);
+        if (!display_fambox)
+            new RemoveFamboxes().filter(indibox);
+        else
+            new RemoveFamboxesWhereNoSpouse().filter(indibox);
+
 		return indibox;
 	}
 
@@ -51,7 +89,7 @@ public class BasicTreeBuilder implements TreeBuilder {
 		List families = new ArrayList(Arrays.asList(indibox.individual.getFamiliesWhereSpouse()));
 
         Fam indiboxFamily = null;
-        
+
 		if (!families.isEmpty()) {
 			// if (dir == DIR_PARENT) get all families where spouse is spouse
 			indiboxFamily = (Fam)families.get(0);
@@ -67,12 +105,12 @@ public class BasicTreeBuilder implements TreeBuilder {
 				spouse = indiboxFamily.getOtherSpouse(indibox.individual);
 
             indibox.family = new FamBox(indiboxFamily);
-            
+
 			if (spouse != null)
 				indibox.spouse = new IndiBox(spouse, indibox);
 
             // build indiboxes for these marriages
-            if (otherMarriages || genDown != 0) {
+            if (other_marriages || genDown != 0) {
     			IndiBox last = indibox.spouse;
                 if (last == null)
                     last = indibox;
@@ -98,8 +136,8 @@ public class BasicTreeBuilder implements TreeBuilder {
 			IndiBox last = indibox;
 			while (last != null) {
                 // check whether to add children
-                if ((genUp == 0 && (gen_descendants == -1 || genDown < gen_descendants)) ||
-                    (genUp < 0 && (gen_ancestor_descendants == -1 || genDown < gen_ancestor_descendants)))
+                if ((genUp == 0 && (gen_descendants == 0 || genDown < gen_descendants - 1)) ||
+                    (genUp < 0 && (gen_ancestor_descendants == 0 || genDown < gen_ancestor_descendants - 1)))
                 {
     			    // if (dir == DIR_PARENT)
     			    //   for (all children)-prev buildTree(child, DIR_CHILD)
@@ -115,7 +153,7 @@ public class BasicTreeBuilder implements TreeBuilder {
     				}
                 }
 
-                if (!otherMarriages && genDown == 0)
+                if (!other_marriages && genDown == 0)
                     last = null;
                 else if (last.spouse != null)
                     last = last.spouse.nextMarriage;
@@ -128,7 +166,7 @@ public class BasicTreeBuilder implements TreeBuilder {
 		// if (dir == DIR_PARENT || dir == DIR_NONE)
 		//   buildTree(parent, DIR_PARENT)
 		//   buildTree(spouse's parent, DIR_PARENT)
-		if ((dir == Direction.PARENT || dir == Direction.NONE) && (gen_ancestors == -1 || -genUp < gen_ancestors)) {
+		if ((dir == Direction.PARENT || dir == Direction.NONE) && (gen_ancestors == 0 || -genUp < gen_ancestors - 1)) {
 			Indi parent = getParent(indibox.individual);
 			if (parent != null) {
 				indibox.parent = new IndiBox(parent, indibox);

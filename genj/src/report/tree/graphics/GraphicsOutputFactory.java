@@ -13,63 +13,62 @@ import genj.util.swing.Action2;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import tree.options.ComponentContainer;
+
 /**
- * Creates classes that write report output. This can be
- * a file type or the screen.
+ * Creates classes that write report output. This can be a file type or the screen.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
  */
-public class GraphicsOutputFactory {
+public class GraphicsOutputFactory implements ComponentContainer
+{
 
-    private static final String PREFIX = "output_type.";
+    /**
+     * Output type.
+     */
+    public int output_type = 0;
 
-    private Map/*<String, Class>*/ outputs = new LinkedHashMap();
-    private List/*<Class>*/ outputList = new ArrayList();
+    public String[] output_types = null;
 
-    private static GraphicsOutputFactory instance = null;
+    private Map<String, GraphicsOutput> outputs = new LinkedHashMap<String, GraphicsOutput>();
+    private List<GraphicsOutput> outputList = new ArrayList<GraphicsOutput>();
 
     /**
      * Creates the object
-     * @param report  containing report object
      */
-    protected GraphicsOutputFactory() {
-        add("svg", SvgWriter.class);
-        add("pdf", PdfWriter.class);
-        add("png", PngWriter.class);
-        add("screen", ScreenOutput.class);
-    }
-
-    public static GraphicsOutputFactory getInstance()
+    public GraphicsOutputFactory()
     {
-        if (instance == null)
-            instance = new GraphicsOutputFactory();
-        return instance;
+        add("svg", new SvgWriter());
+        add("pdf", new PdfWriter());
+        add("png", new PngWriter());
+        add("screen", new ScreenOutput());
     }
 
     /**
      * Creates the output class for the given type.
-     * @param type  output type
-     * @param report  Containing report. Used to show dialogs and translate strings.
+     *
+     * @param type output type
+     * @param report Containing report. Used to show dialogs and translate strings.
      */
-    public GraphicsOutput createOutput(int type, Report report) {
-
-        GraphicsOutput output = createOutput((Class)outputList.get(type));
+    public GraphicsOutput createOutput(Report report)
+    {
+        GraphicsOutput output = outputList.get(output_type);
 
         if (output == null)
             return null;
 
-        if (output instanceof GraphicsFileOutput) {
+        if (output instanceof GraphicsFileOutput)
+        {
             GraphicsFileOutput fileOutput = (GraphicsFileOutput)output;
             String extension = fileOutput.getFileExtension();
 
             // Get filename from users
             File file = report.getFileFromUser(report.translate("output.file"),
-                        Action2.TXT_OK, true, extension);
+                    Action2.TXT_OK, true, extension);
             if (file == null)
                 return null;
 
@@ -83,38 +82,18 @@ public class GraphicsOutputFactory {
         return output;
     }
 
-    public void add(String name, Class clazz)
+    public void add(String name, GraphicsOutput output)
     {
-        outputs.put(name, clazz);
-        outputList.add(clazz);
+        outputs.put(name, output);
+        outputList.add(output);
+        output_types = outputs.keySet().toArray(new String[0]);
     }
 
-    public String[] getChoices(Report report)
+    public List<Object> getComponents()
     {
-        Iterator iter = outputs.keySet().iterator();
-        String[] choices = new String[outputs.size()];
-        int i = 0;
-        while (iter.hasNext()) {
-            choices[i] = report.translate(PREFIX + (String)iter.next());
-            i++;
-        }
-        return choices;
-    }
-
-    private GraphicsOutput createOutput(Class clazz) {
-        try
-        {
-            return (GraphicsOutput)clazz.newInstance();
-        }
-        catch (InstantiationException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
-        catch (IllegalAccessException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
+        List<Object> components = new ArrayList<Object>();
+        components.add(this);
+        components.addAll(outputList);
+        return components;
     }
 }

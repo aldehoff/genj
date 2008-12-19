@@ -28,44 +28,36 @@ public class TitleRenderer implements GraphicsRenderer
     private GraphicsRenderer renderer;
 
     /**
-     * The title to display.
+     * Image title.
      */
-    private String title;
+    public String title = "";
 
     /**
-     * Title font height.
+     * Title font height. If set to 0, the height is determined automatically.
      */
-    private int titleHeight = 24;
-
-    /**
-     * Creates the object.
-     * @param renderer  image renderer
-     * @param title     title to display
-     */
-    public TitleRenderer(GraphicsRenderer renderer, String title)
-    {
-        this(renderer, title, -1);
-    }
+    public int title_height = 0;
 
     /**
      * Creates the object.
      * @param renderer  image renderer
-     * @param title     title to display
-     * @param titleHeight  height of the title in pixels (0 or less for automatic height)
      */
-    public TitleRenderer(GraphicsRenderer renderer, String title, int titleHeight)
+    public TitleRenderer(GraphicsRenderer renderer)
     {
         this.renderer = renderer;
-        this.title = title;
-        this.titleHeight = titleHeight;
-
-        if (titleHeight <= 0)
-            this.titleHeight = (renderer.getImageHeight() + renderer.getImageWidth()) / 40; // auto-size
     }
 
     public int getImageHeight()
     {
-        return renderer.getImageHeight() + titleHeight + VERTICAL_MARGIN;
+        if (title.equals(""))
+            return renderer.getImageHeight();
+        return renderer.getImageHeight() + getTitleHeight() + VERTICAL_MARGIN;
+    }
+
+    private int getTitleHeight()
+    {
+        if (title_height > 0)
+            return title_height;
+        return (renderer.getImageHeight() + renderer.getImageWidth()) / 40; // auto-size
     }
 
     public int getImageWidth()
@@ -78,14 +70,20 @@ public class TitleRenderer implements GraphicsRenderer
      */
     public void render(Graphics2D graphics)
     {
+        if (title.equals(""))
+        {
+            renderer.render(graphics);
+            return;
+        }
         graphics.setBackground(Color.WHITE);
         graphics.clearRect(0, 0, getImageWidth(), getImageHeight());
 
+        int height = getTitleHeight();
         graphics.setColor(Color.BLACK);
-        graphics.setFont(new Font("verdana", Font.BOLD, titleHeight));
-        GraphicsTreeElements.centerString(graphics, title, getImageWidth() / 2, titleHeight * 3/4 + VERTICAL_MARGIN);
+        graphics.setFont(new Font("verdana", Font.BOLD, height));
+        GraphicsTreeElements.centerString(graphics, title, getImageWidth() / 2, height * 3/4 + VERTICAL_MARGIN);
 
-        graphics.translate(0, titleHeight + VERTICAL_MARGIN); // Move rendered image below the title
+        graphics.translate(0, height + VERTICAL_MARGIN); // Move rendered image below the title
         renderer.render(graphics);
     }
 }

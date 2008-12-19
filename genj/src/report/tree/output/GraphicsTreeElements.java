@@ -15,7 +15,6 @@ import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Options;
-import genj.util.Registry;
 import genj.util.swing.ImageIcon;
 
 import java.awt.BasicStroke;
@@ -37,6 +36,36 @@ import tree.IndiBox;
  */
 public class GraphicsTreeElements implements TreeElements {
 
+    /**
+     * Minimal indibox width in pixels.
+     */
+    private static final int DEFAULT_INDIBOX_WIDTH = 110;
+
+    /**
+     * Minimal indibox width in pixels when "shrink mode" is enabled..
+     */
+    private static final int SHRINKED_INDIBOX_WIDTH = 50;
+
+    /**
+     * Indibox height in pixels.
+     */
+    private static final int DEFAULT_INDIBOX_HEIGHT = 64;
+
+    /**
+     * Minimal family box width in pixels.
+     */
+    private static final int DEFAULT_FAMBOX_WIDTH = 100;
+
+    /**
+     * Minimal family box height in pixels.
+     */
+    private static final int DEFAULT_FAMBOX_HEIGHT = 27;
+
+    /**
+     * Width of the image inside an individual box.
+     */
+    private static final int MAX_IMAGE_WIDTH = 50;
+
     private static final int DEFAULT_INDIBOX_LINES = 2;
     private static final int DEFAULT_FAMBOX_LINES = 1;
     private static final int TEXT_MARGIN = 5;
@@ -53,6 +82,7 @@ public class GraphicsTreeElements implements TreeElements {
      * Used to determine text width.
      */
     private static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, false, false);
+
 
     /**
      * Box background colors.
@@ -91,7 +121,7 @@ public class GraphicsTreeElements implements TreeElements {
 
     private static final int COLOR_GENERATIONS = (BOX_COLORS.length - 1) / 2;
 
-    public static final float STROKE_WIDTH = 2.0f;
+    private static final float STROKE_WIDTH = 2.0f;
 
     /**
      * Male sex symbol.
@@ -121,11 +151,6 @@ public class GraphicsTreeElements implements TreeElements {
     private static final Font DETAILS_FONT = new Font("verdana", Font.PLAIN, 10);
 
     /**
-     * Font for the name suffix
-     */
-    private final Font NAME_SUFFIX_FONT;
-
-    /**
      * Font for the first and last names.
      */
     private static final Font NAME_FONT = new Font("verdana", Font.BOLD, 12);
@@ -153,99 +178,98 @@ public class GraphicsTreeElements implements TreeElements {
             sexSymbolFont = new Font("SansSerif", Font.PLAIN, 10);
     }
 
-    private int maxImageWidth;
+    /**
+     * Maximal number of first names to display.
+     */
+    public int max_names = 0;
+
+    public String[] max_namess = { "nolimit", "1", "2", "3" };
 
     /**
-     * Whether to draw the title of an individual.
+     * Maximal number of first names per line.
      */
-    private boolean drawTitle;
+    public int max_names_per_line = 2;
+
+    public String[] max_names_per_lines = { "nolimit", "1", "2", "3" };
 
     /**
-     * Whether to draw the suffix from a name.
+     * Whether to display the title of an individual
      */
-    private boolean drawNameSuffix;
+    public boolean draw_title = false;
 
     /**
-     * Font layout for drawing the name suffix.
+     * Whether to display suffix from a name
      */
-    private int fontNameSuffix;
+    public boolean draw_name_suffix = false;
 
     /**
-     * Whether to draw the sex symbol.
+     * Font style for display name suffix
      */
-    private boolean drawSexSymbols;
+    public int font_name_suffix = Font.BOLD + Font.ITALIC;
+
+    public String[] font_name_suffixs = { "plain", "bold", "italic", "bolditalic" };
 
     /**
-     * Whether do draw IDs of individuals.
+     * Whether to display places of birth and death.
      */
-    private boolean drawIndiIds;
+    public boolean draw_places = true;
 
     /**
-     * Whether to draw IDs of families.
+     * Whether to display places of birth and death.
      */
-    private boolean drawFamIds;
+    public boolean draw_dates = true;
 
-    private int maxNames;
+    /**
+     * Whether to display occupations.
+     */
+    public boolean draw_occupation = true;
 
-    private int maxNamesPerLine;
+    /**
+     * Whether to display images.
+     */
+    public boolean draw_images = true;
 
-    private boolean useColors;
+    /**
+     * Whether to display sex symbols.
+     */
+    public boolean draw_sex_symbols = true;
 
-    private boolean drawPlaces;
+    /**
+     * Whether to IDs of individuals.
+     */
+    public boolean draw_indi_ids = false;
 
-    private boolean drawDates;
+    /**
+     * Whether to IDs of families.
+     */
+    public boolean draw_fam_ids = false;
 
-    private boolean drawOccupation;
+    /**
+     * Whether to display divorce information.
+     */
+    public boolean draw_divorce = true;
 
-    private boolean drawDivorce;
+    /**
+     * Whether to shrink boxes when possible.
+     */
+    public boolean shrink_boxes = false;
 
-    private boolean swapNames;
+    /**
+     * Whether to use colors (or only black and white).
+     */
+    public boolean use_colors = true;
 
-    private int defaultIndiboxWidth;
+    /**
+     * Whether to display last name first.
+     * By default first name is in the first line and last name is in the second.
+     */
+    public boolean swap_names = false;
 
-    private int defaultIndiboxHeight;
-
-    private int defaultFamboxWidth;
-
-    private int defaultFamboxHeight;
 
     /**
      * The graphics object to paint on.
      */
     private Graphics2D graphics = null;
-
-    /**
-     * Constructs the object.
-     */
-    public GraphicsTreeElements(Graphics2D graphics, Registry properties) {
-        this.graphics = graphics;
-
-        drawTitle = properties.get("drawTitle", false);
-        drawNameSuffix = properties.get("drawNameSuffix", false);
-        drawSexSymbols = properties.get("drawSexSymbols", true);
-        drawIndiIds = properties.get("drawIndiIds", false);
-        drawFamIds = properties.get("drawFamIds", false);
-        maxNames = properties.get("maxNames", -1);
-        maxNamesPerLine = properties.get("maxNamesPerLine", 2);
-        useColors = properties.get("useColors", true);
-        maxImageWidth = properties.get("maxImageWidth", 0);
-        drawPlaces = properties.get("drawPlaces", true);
-        drawDates = properties.get("drawDates", true);
-        drawOccupation = properties.get("drawOccupation", true);
-        drawDivorce = properties.get("drawDivorce", true);
-        swapNames = properties.get("swapNames", false);
-        defaultIndiboxWidth = properties.get("defaultIndiboxWidth", 0);
-        defaultIndiboxHeight = properties.get("defaultIndiboxHeight", 0);
-        defaultFamboxHeight = properties.get("defaultFamboxHeight", 0);
-        defaultFamboxWidth = properties.get("defaultFamboxWidth", 0);
-        fontNameSuffix = properties.get("fontNameSuffix", Font.BOLD + Font.ITALIC);
-        NAME_SUFFIX_FONT = new Font("verdana", fontNameSuffix, 12); // create font for name suffix
-    }
-
-    public GraphicsTreeElements(Registry properties)
-    {
-        this(null, properties);
-    }
 
     /**
      * Sets the Graphics2D object to draw on.
@@ -268,14 +292,14 @@ public class GraphicsTreeElements implements TreeElements {
         int imageWidth = 0;
         int imageHeight = indibox.height;
         ImageIcon icon = null;
-        if (maxImageWidth > 0) {
+        if (draw_images) {
             PropertyFile file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
             if (file != null) {
                 icon = file.getValueAsIcon();
                 if (icon != null) {
                     imageWidth = icon.getIconWidth() * indibox.height / icon.getIconHeight();
-                    if (imageWidth > maxImageWidth) {
-                        imageWidth = maxImageWidth;
+                    if (imageWidth > MAX_IMAGE_WIDTH) {
+                        imageWidth = MAX_IMAGE_WIDTH;
                         imageHeight = icon.getIconHeight() * imageWidth / icon.getIconWidth();
                     }
                 }
@@ -294,7 +318,7 @@ public class GraphicsTreeElements implements TreeElements {
 
         // Name suffix
         String nameSuffix = null;
-        if (drawNameSuffix) {
+        if (draw_name_suffix) {
             nameSuffix = i.getNameSuffix();
             if (nameSuffix != null && nameSuffix.equals(""))
             	nameSuffix = null;
@@ -306,18 +330,18 @@ public class GraphicsTreeElements implements TreeElements {
         String lastName = null;
 
         // generate LastName + Title
-        if (drawTitle && i.getProperty(PATH_INDITITL) != null)
-        	lastName = i.getLastName() + " " + i.getProperty(PATH_INDITITL);        	
+        if (draw_title && i.getProperty(PATH_INDITITL) != null)
+        	lastName = i.getLastName() + " " + i.getProperty(PATH_INDITITL);
         else
-        	lastName = i.getLastName();        	
-        
-        if (swapNames) { // last name
+        	lastName = i.getLastName();
+
+        if (swap_names) { // last name
             graphics.setFont(NAME_FONT);
             centerString(graphics, lastName, x + dataWidth/2, currentY);
             currentY += NAME_LINE_HEIGHT;
 
             if (nameSuffix != null) {
-                graphics.setFont(NAME_SUFFIX_FONT);
+                graphics.setFont(new Font("verdana", font_name_suffix, 12));
             	centerString(graphics, nameSuffix, x + dataWidth/2, currentY);
                 currentY += NAME_LINE_HEIGHT;
             }
@@ -329,18 +353,18 @@ public class GraphicsTreeElements implements TreeElements {
             currentY += NAME_LINE_HEIGHT;
         }
 
-        if (!swapNames) { // last name
+        if (!swap_names) { // last name
             graphics.setFont(NAME_FONT);
             centerString(graphics, lastName, x + dataWidth/2, currentY);
             currentY += NAME_LINE_HEIGHT;
 
             if (nameSuffix != null) {
-                graphics.setFont(NAME_SUFFIX_FONT);
+                graphics.setFont(new Font("verdana", font_name_suffix, 12));
             	centerString(graphics, nameSuffix, x + dataWidth/2, currentY);
                 currentY += NAME_LINE_HEIGHT;
             }
         }
-                
+
         graphics.setFont(DETAILS_FONT);
 
         Property birthDate = null;
@@ -349,7 +373,7 @@ public class GraphicsTreeElements implements TreeElements {
         Property deathPlace = null;
         Property occupation = null;
 
-        if (drawDates) {
+        if (draw_dates) {
             birthDate = i.getBirthDate();
             if (birthDate != null && !birthDate.isValid())
                 birthDate = null;
@@ -358,7 +382,7 @@ public class GraphicsTreeElements implements TreeElements {
                 deathDate = null;
         }
 
-        if (drawPlaces) {
+        if (draw_places) {
             birthPlace = i.getProperty(PATH_INDIBIRTPLAC);
             if (birthPlace != null && birthPlace.toString().equals(""))
                 birthPlace = null;
@@ -367,7 +391,7 @@ public class GraphicsTreeElements implements TreeElements {
                 deathPlace = null;
         }
 
-        if (drawOccupation)
+        if (draw_occupation)
             occupation = i.getProperty(PATH_INDIOCCU);
 
         // Date and place of birth
@@ -406,7 +430,7 @@ public class GraphicsTreeElements implements TreeElements {
 
 
         // Sex symbol
-        if (drawSexSymbols) {
+        if (draw_sex_symbols) {
             int symbolX = x + dataWidth  - 14;
             int symbolY = y + indibox.height - 5;
             graphics.setFont(sexSymbolFont);
@@ -414,7 +438,7 @@ public class GraphicsTreeElements implements TreeElements {
         }
 
         // Id
-        if (drawIndiIds) {
+        if (draw_indi_ids) {
             graphics.setFont(ID_FONT);
             graphics.drawString(i.getId(), x + 8, y + indibox.height - 4);
         }
@@ -454,7 +478,7 @@ public class GraphicsTreeElements implements TreeElements {
         Property marriagePlace = null;
         Property divorcePlace = null;
 
-        if (drawDates) {
+        if (draw_dates) {
             marriageDate = f.getMarriageDate();
             if (marriageDate != null && !marriageDate.isValid())
                 marriageDate = null;
@@ -463,7 +487,7 @@ public class GraphicsTreeElements implements TreeElements {
                 divorceDate = null;
         }
 
-        if (drawPlaces) {
+        if (draw_places) {
             marriagePlace = f.getProperty(PATH_FAMMARRPLAC);
             if (marriagePlace != null && marriagePlace.toString().equals(""))
                 marriagePlace = null;
@@ -488,7 +512,7 @@ public class GraphicsTreeElements implements TreeElements {
         }
 
         // Date and place of divorce
-        if (drawDivorce && f.getDivorceDate() != null) {
+        if (draw_divorce && f.getDivorceDate() != null) {
             centerString(graphics, Options.getInstance().getDivorceSymbol(), x + 13, currentY);
             if (divorceDate != null) {
                 graphics.drawString(divorceDate.toString(), x + 25, currentY);
@@ -503,7 +527,7 @@ public class GraphicsTreeElements implements TreeElements {
         }
 
         // Id
-        if (drawFamIds) {
+        if (draw_fam_ids) {
             graphics.setFont(ID_FONT);
             graphics.drawString(f.getId(), x + 8, y + fambox.height - 4);
         }
@@ -583,7 +607,7 @@ public class GraphicsTreeElements implements TreeElements {
      * Returns the box color for the given generation.
      */
     private Color getBoxColor(int gen) {
-        if (!useColors)
+        if (!use_colors)
             return Color.WHITE;
         if (gen == 0)
             return BOX_COLORS[COLOR_GENERATIONS];
@@ -603,24 +627,24 @@ public class GraphicsTreeElements implements TreeElements {
      */
     private String[] getFirstNames(Indi indi) {
         String firstName = indi.getFirstName();
-        if (maxNames <= 0 && maxNamesPerLine <= 0)
+        if (max_names <= 0 && max_names_per_line <= 0)
             return new String[] {firstName};
         if (firstName.trim().equals(""))
             return new String[] {""};
 
         String[] names = firstName.split("  *");
         int namesCount = names.length;
-        if (maxNames > 0 && maxNames < namesCount)
-            namesCount = maxNames;
+        if (max_names > 0 && max_names < namesCount)
+            namesCount = max_names;
         int linesCount = 1;
-        if (maxNamesPerLine > 0)
-            linesCount = (namesCount - 1) / maxNamesPerLine + 1;
+        if (max_names_per_line > 0)
+            linesCount = (namesCount - 1) / max_names_per_line + 1;
         String[] lines = new String[linesCount];
         int currentName = 0;
         for (int j = 0; j < linesCount; j++) {
             StringBuffer sb = new StringBuffer();
-            for (int k = 0; k < maxNamesPerLine; k++) {
-                int n = j * maxNamesPerLine + k;
+            for (int k = 0; k < max_names_per_line; k++) {
+                int n = j * max_names_per_line + k;
                 if (n >= namesCount)
                     break;
                 sb.append(names[n]).append(" ");
@@ -634,15 +658,18 @@ public class GraphicsTreeElements implements TreeElements {
     public void getIndiBoxSize(IndiBox indibox)
     {
         Indi i = indibox.individual;
-        indibox.height = defaultIndiboxHeight;
-        indibox.width = defaultIndiboxWidth;
+        indibox.height = DEFAULT_INDIBOX_HEIGHT;
+        if (shrink_boxes)
+            indibox.width = SHRINKED_INDIBOX_WIDTH;
+        else
+            indibox.width = DEFAULT_INDIBOX_WIDTH;
 
         // Number of lines
         int lines = 0;
-        if (drawDates && i.getBirthDate() != null && i.getBirthDate().isValid())
+        if (draw_dates && i.getBirthDate() != null && i.getBirthDate().isValid())
             lines++;
         Property birthPlace = i.getProperty(PATH_INDIBIRTPLAC);
-        if (drawPlaces && birthPlace != null && !birthPlace.toString().equals(""))
+        if (draw_places && birthPlace != null && !birthPlace.toString().equals(""))
             lines++;
 
         Property deathPlace = i.getProperty(PATH_INDIDEATPLAC);
@@ -650,10 +677,10 @@ public class GraphicsTreeElements implements TreeElements {
             deathPlace = null;
         if (i.getDeathDate() != null || deathPlace != null) {
             lines++;
-            if (drawDates && drawPlaces && i.getDeathDate() != null && i.getDeathDate().isValid() && deathPlace != null)
+            if (draw_dates && draw_places && i.getDeathDate() != null && i.getDeathDate().isValid() && deathPlace != null)
                 lines++;
         }
-        if (drawOccupation && i.getProperty(PATH_INDIOCCU) != null)
+        if (draw_occupation && i.getProperty(PATH_INDIOCCU) != null)
             lines++;
         if (lines - DEFAULT_INDIBOX_LINES > 0)
             indibox.height += (lines - DEFAULT_INDIBOX_LINES) * LINE_HEIGHT;
@@ -670,17 +697,17 @@ public class GraphicsTreeElements implements TreeElements {
         indibox.height += (firstNames.length - 1) * NAME_LINE_HEIGHT;
 
         // optional name suffix
-        if (drawNameSuffix && i.getNameSuffix() != null && i.getNameSuffix().length()>0)
+        if (draw_name_suffix && i.getNameSuffix() != null && i.getNameSuffix().length()>0)
         	indibox.height += NAME_LINE_HEIGHT;
-        
+
         // Text data width
         if (width + 2*TEXT_MARGIN > indibox.width)
             indibox.width = width + 2*TEXT_MARGIN;
-        if (drawTitle && i.getProperty(PATH_INDITITL) != null)
+        if (draw_title && i.getProperty(PATH_INDITITL) != null)
         	width = getTextWidth(i.getLastName() + " " + i.getProperty(PATH_INDITITL), NAME_FONT);
         else
         	width = getTextWidth(i.getLastName(), NAME_FONT);
-        
+
         if (width + 2*TEXT_MARGIN > indibox.width)
             indibox.width = width + 2*TEXT_MARGIN;
         width = getTextWidth(i.getNameSuffix(), NAME_FONT);
@@ -698,7 +725,7 @@ public class GraphicsTreeElements implements TreeElements {
                 indibox.width = width + 13+TEXT_MARGIN;
         }
 
-        if (drawPlaces) {
+        if (draw_places) {
             if (birthPlace != null) {
                 width = getTextWidth(birthPlace.toString(), DETAILS_FONT);
                 if (width + 13+TEXT_MARGIN > indibox.width)
@@ -711,33 +738,33 @@ public class GraphicsTreeElements implements TreeElements {
             }
         }
 
-        if (drawOccupation && i.getProperty(PATH_INDIOCCU) != null) {
+        if (draw_occupation && i.getProperty(PATH_INDIOCCU) != null) {
             width = getTextWidth(i.getProperty(PATH_INDIOCCU).toString(), DETAILS_FONT);
             if (width + 7+TEXT_MARGIN > indibox.width)
                 indibox.width = width + 7+TEXT_MARGIN;
         }
 
-        if (drawIndiIds) {
+        if (draw_indi_ids) {
             width = getTextWidth(i.getId(), ID_FONT);
-            if (drawSexSymbols)
+            if (draw_sex_symbols)
                 width += 14;
             if (width + 8+TEXT_MARGIN > indibox.width)
                 indibox.width = width + 8+TEXT_MARGIN;
         }
 
         // Image
-        if(maxImageWidth > 0)
+        if(draw_images)
         {
             PropertyFile file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
             if(file != null)
             {
                 ImageIcon icon = file.getValueAsIcon();
                 if(icon != null) {
-                    int newWidth = icon.getIconWidth() * defaultIndiboxHeight / icon.getIconHeight();
-                    if (newWidth < maxImageWidth)
+                    int newWidth = icon.getIconWidth() * DEFAULT_INDIBOX_HEIGHT / icon.getIconHeight();
+                    if (newWidth < MAX_IMAGE_WIDTH)
                         indibox.width += newWidth;
                     else
-                        indibox.width += maxImageWidth;
+                        indibox.width += MAX_IMAGE_WIDTH;
                 }
             }
         }
@@ -746,21 +773,21 @@ public class GraphicsTreeElements implements TreeElements {
     public void getFamBoxSize(FamBox fambox)
     {
         Fam f = fambox.family;
-        fambox.width = defaultFamboxWidth;
-        fambox.height = defaultFamboxHeight;
+        fambox.width = DEFAULT_FAMBOX_WIDTH;
+        fambox.height = DEFAULT_FAMBOX_HEIGHT;
 
         // Number of lines
         int lines = 0;
         Property marriagePlace = f.getProperty(PATH_FAMMARRPLAC);
         if (f.getMarriageDate() != null) {
             lines++;
-            if (drawDates && drawPlaces && f.getMarriageDate().isValid() && marriagePlace != null && !marriagePlace.toString().equals(""))
+            if (draw_dates && draw_places && f.getMarriageDate().isValid() && marriagePlace != null && !marriagePlace.toString().equals(""))
                 lines++;
         }
         Property divorcePlace = f.getProperty(PATH_FAMDIVPLAC);
-        if (drawDivorce && f.getDivorceDate() != null) {
+        if (draw_divorce && f.getDivorceDate() != null) {
             lines++;
-            if (drawDates && drawPlaces && f.getDivorceDate().isValid() && divorcePlace != null && !divorcePlace.toString().equals(""))
+            if (draw_dates && draw_places && f.getDivorceDate().isValid() && divorcePlace != null && !divorcePlace.toString().equals(""))
                 lines++;
         }
 
@@ -773,19 +800,19 @@ public class GraphicsTreeElements implements TreeElements {
             if (width + 25+TEXT_MARGIN > fambox.width)
                 fambox.width = width + 25+TEXT_MARGIN;
         }
-        if (drawDivorce && f.getDivorceDate() != null) {
+        if (draw_divorce && f.getDivorceDate() != null) {
             int width = getTextWidth(f.getDivorceDate().toString(), DETAILS_FONT);
             if (width + 25+TEXT_MARGIN > fambox.width)
                 fambox.width = width + 25+TEXT_MARGIN;
         }
 
-        if (drawPlaces) {
+        if (draw_places) {
             if (marriagePlace != null) {
                 int width = getTextWidth(marriagePlace.toString(), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }
-            if (drawDivorce && divorcePlace != null) {
+            if (draw_divorce && divorcePlace != null) {
                 int width = getTextWidth(divorcePlace.toString(), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;

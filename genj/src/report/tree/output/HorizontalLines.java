@@ -51,6 +51,12 @@ public class HorizontalLines implements TreeFilter {
 
     public void filter(IndiBox indibox)
     {
+        // Reset variables
+        levelMin = 0;
+        levelMax = 0;
+        levelHeight.clear();
+        levelCoord.clear();
+
         // Determine height of levels
         new DetermineLevelHeight().filter(indibox);
 

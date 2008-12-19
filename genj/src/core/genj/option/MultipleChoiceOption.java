@@ -117,7 +117,7 @@ public abstract class MultipleChoiceOption extends PropertyOption {
   /**
    * our UI
    */
-  private class UI extends JComboBox implements OptionUI {
+  public class UI extends JComboBox implements OptionUI {
 
     /** constructor */
     private UI() {

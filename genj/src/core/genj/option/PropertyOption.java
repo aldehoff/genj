@@ -190,7 +190,7 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for a font
    */
-  private static class FontUI implements OptionUI {
+  protected static class FontUI implements OptionUI {
 
     /** widgets */
     private FontChooser chooser = new FontChooser();
@@ -199,7 +199,7 @@ public abstract class PropertyOption extends Option {
     private PropertyOption option;
 
     /** constructor */
-    FontUI(PropertyOption option) {
+    public FontUI(PropertyOption option) {
       this.option = option;
     }
 
@@ -225,7 +225,7 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for a file
    */
-  private static class FileUI implements OptionUI {
+  protected static class FileUI implements OptionUI {
 
     /** file chooser */
     private FileChooserWidget chooser = new FileChooserWidget();
@@ -234,7 +234,7 @@ public abstract class PropertyOption extends Option {
     private PropertyOption option;
 
     /** constructor */
-    FileUI(PropertyOption option) {
+    public FileUI(PropertyOption option) {
       this.option = option;
       chooser.setFile((File)option.getValue());
     }
@@ -259,12 +259,12 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for a boolean
    */
-  private static class BooleanUI extends JCheckBox implements OptionUI {
+  protected static class BooleanUI extends JCheckBox implements OptionUI {
     /** option */
     private PropertyOption option;
 
     /** constructor */
-    BooleanUI(PropertyOption option) {
+    public BooleanUI(PropertyOption option) {
       this.option = option;
       setOpaque(false);
       setHorizontalAlignment(JCheckBox.LEFT);
@@ -289,12 +289,12 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for text, numbers, etc.
    */
-  private static class SimpleUI extends TextFieldWidget implements OptionUI {
+  protected static class SimpleUI extends TextFieldWidget implements OptionUI {
     /** option */
     private PropertyOption option;
 
     /** constructor */
-    SimpleUI(PropertyOption option) {
+    public SimpleUI(PropertyOption option) {
       this.option = option;
       Object value = option.getValue();
       setText(value!=null?value.toString():"");

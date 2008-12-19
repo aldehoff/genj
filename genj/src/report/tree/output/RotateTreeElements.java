@@ -25,19 +25,22 @@ public class RotateTreeElements extends FilterTreeElements {
     public static final int ROTATE_180 = 2;
     public static final int ROTATE_90 = 3;
 
-    private int rotation;
+    /**
+     * Tree rotation.
+     */
+    public int rotation = 0;
+
+    public String[] rotations = { "none", "270", "180" , "90" };
 
     /**
      * Constructs the object.
      */
-    public RotateTreeElements(Graphics2D graphics, TreeElements elements, int rotation) {
+    public RotateTreeElements(Graphics2D graphics, TreeElements elements) {
         super(graphics, elements);
-        this.rotation = rotation;
     }
 
-    public RotateTreeElements(TreeElements elements, int rotation)
-    {
-        this(null, elements, rotation);
+    public RotateTreeElements(TreeElements elements) {
+        this(null, elements);
     }
 
     /**
