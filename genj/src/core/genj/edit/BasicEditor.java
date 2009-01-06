@@ -615,6 +615,11 @@ import spin.Spin;
       
       String element = cell.getElement();
       
+      // right gedcom version?
+      String version = cell.getAttribute("gedcom");
+      if (version!=null & !root.getGedcom().getGrammar().getVersion().equals(version))
+        return null;
+      
       // tabs?
       if ("tabs".equals(element)) {
         tabsPane = new ContextTabbedPane();
