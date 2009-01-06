@@ -585,7 +585,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** weight */
     Point2D weight() {
-      return staticWeight;
+      return component==null ? new Point2D.Double() : staticWeight;
     }
     
     /** layout */
