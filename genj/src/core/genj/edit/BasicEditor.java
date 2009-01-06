@@ -685,20 +685,8 @@ import spin.Spin;
       //    PLAC somewhere
       // the result of INDI:BIRT:DATE/INDI:BIRT:PLAC is
       //   somtime/somewhere
-      
-      final Property[] _prop = new Property[1];
-      path.iterate(root, new PropertyVisitor() {
-        protected boolean leaf(Property leaf) {
-          // continue in case of xref - can't use those
-          if (leaf instanceof PropertyXRef)
-            return true;
-          // keep it otherwise
-          _prop[0] = leaf;
-          // done
-          return false;
-        }
-      });
-      Property prop = _prop[0];
+      // => !backtrack
+      Property prop = root.getProperty(path, false);
       
       // addressed property doesn't exist yet? create a proxy that mirrors
       // the root and add create a temporary holder (enjoys the necessary

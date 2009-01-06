@@ -664,6 +664,13 @@ public abstract class Property implements Comparable {
    * Returns one of this property's properties by path
    */
   public Property getProperty(TagPath path) {
+    return getProperty(path, true);
+  }
+  
+  /**
+   * Returns one of this property's properties by path
+   */
+  public Property getProperty(TagPath path, boolean backtrack) {
     
     final Property[] result = new Property[1];
 
@@ -674,7 +681,7 @@ public abstract class Property implements Comparable {
       }
     };
     
-    path.iterate(this, visitor);
+    path.iterate(this, visitor, backtrack);
     
     return result[0];
   }

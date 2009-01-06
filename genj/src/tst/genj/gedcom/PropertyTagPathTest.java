@@ -36,11 +36,11 @@ public class PropertyTagPathTest extends TestCase {
     husband.addDefaultProperties(); 
     wife1.addDefaultProperties(); 
     wife2.addDefaultProperties(); 
-    
+
     // connect
     addWife(husband, wife1);
     addWife(husband, wife2);
-
+    
     // done
   }
   
@@ -48,6 +48,29 @@ public class PropertyTagPathTest extends TestCase {
     Fam fam = (Fam)gedcom.createEntity("FAM");
     ((PropertyXRef)fam.addProperty("HUSB", "@"+husband.getId()+"@")).link();
     ((PropertyXRef)fam.addProperty("WIFE", "@"+wife.getId()+"@")).link();
+  }
+  
+  /**
+   * Test path backtracking
+   */
+  public void testPathBacktracking() {
+ 
+    // give husband two births
+    // INDI
+    //  BIRT
+    //   DATE
+    //  BIRT
+    //   PLAC
+    Property birt1 =husband.getProperty("BIRT");
+    Property plac1 = birt1.getProperty("PLAC");
+    
+    Property birt2 = husband.addProperty("BIRT", "");
+    Property plac2 = birt2.addProperty("PLAC", "2nd");
+
+    assertProperty(husband, "INDI:BIRT:PLAC", plac1);
+    birt1.delProperty(plac1);
+    assertProperty(husband, "INDI:BIRT:PLAC", plac2);
+    assertNull(husband.getProperty(new TagPath("INDI:BIRT:PLAC"), false));
   }
   
   /**

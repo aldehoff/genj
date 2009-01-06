@@ -333,17 +333,20 @@ public class TagPath {
    * Iterate a properties nodes corresponding to this path
    */
   public void iterate(Property root, PropertyVisitor visitor) {
+    iterate(root, visitor, true);
+  }
+  public void iterate(Property root, PropertyVisitor visitor, boolean backtrack) {
     
     // first tag has to match
     String tag = get(0);
     char c = tag.charAt(0);
     if (c=='.'||c=='*')
-      iterate(0, root, visitor);
+      iterate(0, root, visitor, backtrack);
     else if (tag.equals(root.getTag()))
-      iterate(1, root, visitor);
+      iterate(1, root, visitor, backtrack);
   }
   
-  private boolean iterate(int pos, Property prop, PropertyVisitor visitor) {
+  private boolean iterate(int pos, Property prop, PropertyVisitor visitor, boolean backtrack) {
     
     String tag;
     
@@ -387,9 +390,11 @@ public class TagPath {
     int qualifier = qualifiers[pos];
     for (int i=0, c=0;i<prop.getNoOfProperties();i++) {
       Property child = prop.getProperty(i);
+      if (!backtrack && prop.getProperty(child.getTag())!=child)
+        continue;
       if (tag.equals(child.getTag())) {
         if (qualifier<0||qualifier==c++) {
-          if (!iterate(pos+1, child, visitor))
+          if (!iterate(pos+1, child, visitor, backtrack))
             return false;
         }
       }
