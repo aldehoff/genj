@@ -291,15 +291,16 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
 
     /** Constructor */
     public BlobIterator(String base64) {
-      setValue(base64);
+      this.base64 = base64;
+      this.offset = 0;
     }
     
     /**
      * @see genj.gedcom.MultiLineProperty.Iterator#setValue()
      */
     public void setValue(String base64) {
-      this.base64 = base64;
-      this.offset = 0;
+      // this is only called by PropertyWriter on read for encryption - ignored as the blob
+      // data cannot be encrypted / overwritten
     }
     
     /**
