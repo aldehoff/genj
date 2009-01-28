@@ -33,7 +33,7 @@ import javax.swing.JComponent;
  */
 public class GeoViewFactory implements ViewFactory {
   
-  public final static ImageIcon IMAGE = new ImageIcon(GeoViewFactory.class, "images/View.gif");
+  public final static ImageIcon IMAGE = new ImageIcon(GeoViewFactory.class, "images/View");
 
   private Resources resources = Resources.get(this);
 
