@@ -54,7 +54,7 @@ import swingx.tree.AbstractTreeModel;
 public class OptionsWidget extends JPanel {
 
   /** an image for options */
-  public final static ImageIcon IMAGE = new ImageIcon(OptionsWidget.class, "images/Options.gif");
+  public final static ImageIcon IMAGE = new ImageIcon(OptionsWidget.class, "images/Options");
 
   /** tree we're using */
   private JTree tree;

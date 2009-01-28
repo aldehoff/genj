@@ -55,24 +55,24 @@ final public class Images {
    */
   private Images() {
     
-    imgView      = new ImageIcon(this,"images/View.gif");
-    imgAdvanced  = new ImageIcon(this,"images/Advanced.gif");
+    imgView      = new ImageIcon(this,"images/View");
+    imgAdvanced  = new ImageIcon(this,"images/Advanced");
 
-    imgStickOn   = new ImageIcon(this,"images/StickOn.gif");
-    imgStickOff  = new ImageIcon(this,"images/StickOff.gif");
-    imgBack    = new ImageIcon(this,"images/Return.gif");
-    imgForward  = new ImageIcon(this,"images/Forward.gif");
+    imgStickOn   = new ImageIcon(this,"images/StickOn");
+    imgStickOff  = new ImageIcon(this,"images/StickOff");
+    imgBack    = new ImageIcon(this,"images/Return");
+    imgForward  = new ImageIcon(this,"images/Forward");
 
-    imgUndo      = new ImageIcon(this,"images/Undo.gif");
-    imgRedo      = new ImageIcon(this,"images/Redo.gif");
+    imgUndo      = new ImageIcon(this,"images/Undo");
+    imgRedo      = new ImageIcon(this,"images/Redo");
     
-    imgCut       = new ImageIcon(this,"images/Cut.gif");
-    imgCopy      = new ImageIcon(this,"images/Copy.gif");
-    imgPaste     = new ImageIcon(this,"images/Paste.gif");
+    imgCut       = new ImageIcon(this,"images/Cut");
+    imgCopy      = new ImageIcon(this,"images/Copy");
+    imgPaste     = new ImageIcon(this,"images/Paste");
     
-    imgNew     = new ImageIcon(this,"images/New.gif");
+    imgNew     = new ImageIcon(this,"images/New");
     
-    imgNewEntity   = new ImageIcon(this,"images/entity/New.gif");
-    imgDelEntity    = new ImageIcon(this,"images/entity/Delete.gif");
+    imgNewEntity   = new ImageIcon(this,"images/entity/New");
+    imgDelEntity    = new ImageIcon(this,"images/entity/Delete");
   }
 }

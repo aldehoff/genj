@@ -43,7 +43,7 @@ public class EntityViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getImage()
    */
   public ImageIcon getImage() {
-    return new ImageIcon(this, "images/View.gif");
+    return new ImageIcon(this, "images/View");
   }
 
   /**

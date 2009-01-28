@@ -42,17 +42,17 @@ final class Images {
    */
   private Images() {
 
-    imgView        = new ImageIcon(this,"images/View.gif"       );
+    imgView        = new ImageIcon(this,"images/View"       );
 
-    imgOverview    = new ImageIcon(this,"images/Overview.gif"   );
+    imgOverview    = new ImageIcon(this,"images/Overview"   );
     
-    imgHori        = new ImageIcon(this,"images/Hori.gif"       );
-    imgVert        = new ImageIcon(this,"images/Vert.gif"       );
+    imgHori        = new ImageIcon(this,"images/Hori"       );
+    imgVert        = new ImageIcon(this,"images/Vert"       );
     
-    imgDoFams      = new ImageIcon(this,"images/DoFams.gif"     ); 
-    imgDontFams    = new ImageIcon(this,"images/DontFams.gif"   ); 
+    imgDoFams      = new ImageIcon(this,"images/DoFams"     ); 
+    imgDontFams    = new ImageIcon(this,"images/DontFams"   ); 
 
-    imgFoldSymbols = new ImageIcon(this,"images/FoldUnfold.gif"    );
+    imgFoldSymbols = new ImageIcon(this,"images/FoldUnfold"    );
   }
   
 } //Images

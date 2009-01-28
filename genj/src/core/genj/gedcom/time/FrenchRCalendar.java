@@ -55,7 +55,7 @@ public class FrenchRCalendar extends Calendar {
    * Constructor
    */
   protected FrenchRCalendar() {
-    super("@#DFRENCH R@" , "french", "images/FrenchR.gif", MONTHS, WEEKDAYS);
+    super("@#DFRENCH R@" , "french", "images/FrenchR", MONTHS, WEEKDAYS);
   }
   
   /**

@@ -73,11 +73,11 @@ public class NavigatorView extends JPanel implements WindowBroadcastListener {
     CHILD    = "child";
 
   private final static ImageIcon
-    imgYSiblings = new ImageIcon(NavigatorView.class,"YSiblings.gif"),
-    imgOSiblings = new ImageIcon(NavigatorView.class,"OSiblings.gif"),
-    imgChildren  = new ImageIcon(NavigatorView.class,"Children.gif"),
-    imgFather    = Indi.IMG_MALE,
-    imgMother    = Indi.IMG_FEMALE,
+    imgYSiblings = new ImageIcon(NavigatorView.class,"YSiblings"),
+    imgOSiblings = new ImageIcon(NavigatorView.class,"OSiblings"),
+    imgChildren  = new ImageIcon(NavigatorView.class,"Children"),
+    imgFather    = new ImageIcon(NavigatorView.class,"Father"),
+    imgMother    = new ImageIcon(NavigatorView.class,"Mother"),
     imgMPartner  = Indi.IMG_MALE,
     imgFPartner  = Indi.IMG_FEMALE;
 

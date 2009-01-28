@@ -42,7 +42,7 @@ public class GregorianCalendar extends Calendar {
    * Constructor
    */
   protected GregorianCalendar() {
-    this("@#DGREGORIAN@", "gregorian", "images/Gregorian.gif");
+    this("@#DGREGORIAN@", "gregorian", "images/Gregorian");
   }
   
   /**

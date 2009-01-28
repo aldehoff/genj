@@ -98,7 +98,7 @@ public class ImageIcon extends javax.swing.ImageIcon {
    * Alternative Constructor
    */
   public ImageIcon(Class from, String resource) {
-    this(from.getName()+'#'+resource, from.getResourceAsStream(resource));
+    this(from.getName()+'#'+resource, from.getResourceAsStream(resource+".png"));
   }
   
   /**

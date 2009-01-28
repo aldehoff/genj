@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.133 $ $Author: nmeier $ $Date: 2008-03-28 20:40:52 $
+ * $Revision: 1.134 $ $Author: nmeier $ $Date: 2009-01-28 17:07:41 $
  */
 package genj.gedcom;
 
@@ -137,7 +137,7 @@ public class Gedcom implements Comparable {
     E2IMAGE = new HashMap();
 
   /** image */
-  private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom.gif");
+  private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom");
   
   /** submitter of this Gedcom */
   private Submitter submitter;

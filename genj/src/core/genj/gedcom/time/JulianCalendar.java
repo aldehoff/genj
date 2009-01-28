@@ -30,7 +30,7 @@ public class JulianCalendar extends GregorianCalendar {
    * Constructor
    */
   protected JulianCalendar() {
-    super("@#DJULIAN@", "julian", "images/Julian.gif");
+    super("@#DJULIAN@", "julian", "images/Julian");
   }
   
   /**

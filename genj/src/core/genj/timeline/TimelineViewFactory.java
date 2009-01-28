@@ -44,7 +44,7 @@ public class TimelineViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getImage()
    */
   public ImageIcon getImage() {
-    return new ImageIcon(this, "View.gif");
+    return new ImageIcon(this, "View");
   }
 
   /**

@@ -34,7 +34,7 @@ import javax.swing.JComponent;
 public class TableViewFactory implements ViewFactory {
   
   /** our image */
-  private final static ImageIcon IMG = new ImageIcon(TableViewFactory.class, "images/View.gif");
+  private final static ImageIcon IMG = new ImageIcon(TableViewFactory.class, "images/View");
 
   /**
    * @see genj.view.ViewFactory#createView(String, Gedcom, Registry, ViewManager)

@@ -45,11 +45,11 @@ public class MetaProperty implements Comparable {
   
   /** static - images */
   public final static ImageIcon
-    IMG_CUSTOM  = loadImage("Attribute.gif"),
-    IMG_LINK    = loadImage("Association.gif"),
-    IMG_UNKNOWN = loadImage("Question.gif"),
-    IMG_ERROR   = loadImage("Error.gif"),
-    IMG_PRIVATE = loadImage("Private.gif");
+    IMG_CUSTOM  = loadImage("Attribute"),
+    IMG_LINK    = loadImage("Association"),
+    IMG_UNKNOWN = loadImage("Question"),
+    IMG_ERROR   = loadImage("Error"),
+    IMG_PRIVATE = loadImage("Private");
   
   /** grammar */
   private Grammar grammar;
@@ -469,7 +469,7 @@ public class MetaProperty implements Comparable {
         // this could potentially be interrupted - we'll have to try again in that case
         while (true) {
           try {
-            result = new ImageIcon(name, MetaProperty.class.getResourceAsStream("images/"+name));
+            result = new ImageIcon(MetaProperty.class, "images/"+name);
             name2images.put(name, result);
             break;
           } catch (IllegalStateException iae) {

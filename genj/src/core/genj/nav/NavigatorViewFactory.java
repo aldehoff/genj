@@ -33,7 +33,7 @@ import javax.swing.JComponent;
  */
 public class NavigatorViewFactory implements ViewFactory {
 
-  private final static ImageIcon img = new ImageIcon(NavigatorViewFactory.class,"View.gif");
+  private final static ImageIcon img = new ImageIcon(NavigatorViewFactory.class,"View");
 
   /**
    * @see genj.view.ViewFactory#createView(String, Gedcom, Registry, ViewManager)

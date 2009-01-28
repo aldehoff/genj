@@ -52,7 +52,7 @@ public class HebrewCalendar extends Calendar {
    * Constructor
    */
   protected HebrewCalendar() {
-    super("@#DHEBREW@", "hebrew", "images/Hebrew.gif", MONTHS, WEEKDAYS);
+    super("@#DHEBREW@", "hebrew", "images/Hebrew", MONTHS, WEEKDAYS);
   }
   
   /**

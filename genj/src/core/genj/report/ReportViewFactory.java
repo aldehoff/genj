@@ -42,7 +42,7 @@ import javax.swing.JComponent;
  */
 public class ReportViewFactory implements ViewFactory, ActionProvider {
 
-  /*package*/ final static ImageIcon IMG = new ImageIcon(ReportViewFactory.class, "View.gif");
+  /*package*/ final static ImageIcon IMG = new ImageIcon(ReportViewFactory.class, "View");
   
   /**
    * Factory method - create instance of view

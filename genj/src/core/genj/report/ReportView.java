@@ -92,11 +92,11 @@ public class ReportView extends JPanel implements ToolBarSupport {
 
   /** statics */
   private final static ImageIcon
-    imgStart = new ImageIcon(ReportView.class,"Start.gif"      ),
-    imgStop  = new ImageIcon(ReportView.class,"Stop.gif"       ),
-    imgSave  = new ImageIcon(ReportView.class,"Save.gif"       ),
-    imgReload= new ImageIcon(ReportView.class,"Reload.gif"     ),
-    imgGroup = new ImageIcon(ReportView.class,"Group.gif"      );
+    imgStart = new ImageIcon(ReportView.class,"Start"      ),
+    imgStop  = new ImageIcon(ReportView.class,"Stop"       ),
+    imgSave  = new ImageIcon(ReportView.class,"Save"       ),
+    imgReload= new ImageIcon(ReportView.class,"Reload"     ),
+    imgGroup = new ImageIcon(ReportView.class,"Group"      );
 
 
   /** gedcom this view is for */

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.133 $ $Author: pewu $ $Date: 2008-12-19 09:28:58 $
+ * $Revision: 1.134 $ $Author: nmeier $ $Date: 2009-01-28 17:07:41 $
  */
 package genj.report;
 
@@ -84,9 +84,9 @@ public abstract class Report implements Cloneable {
   protected final static Logger LOG = Logger.getLogger("genj.report");
 
   protected final static ImageIcon
-    IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell.gif"),
-    IMG_FO    = new genj.util.swing.ImageIcon(ReportView.class,"ReportFO.gif"  ),
-    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui.gif"  );
+    IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell"),
+    IMG_FO    = new genj.util.swing.ImageIcon(ReportView.class,"ReportFO"  ),
+    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui"  );
 
   /** global report options */
   protected Options OPTIONS = Options.getInstance();
@@ -243,8 +243,14 @@ public abstract class Report implements Cloneable {
 
     // resolve an image
     if (image==null) try {
-      String file = getTypeName()+".gif";
-      image = new genj.util.swing.ImageIcon(file, getClass().getResourceAsStream(file));
+      String file = getTypeName()+".png";
+      InputStream in = getClass().getResourceAsStream(file);
+      if (in==null) {
+        // fallback to gif if possible
+        file = getTypeName()+".gif";
+        in = getClass().getResourceAsStream(file);
+      }
+      image = new genj.util.swing.ImageIcon(file, in);
     } catch (Throwable t) {
       image = usesStandardOut() ? IMG_SHELL : IMG_GUI;
     }
@@ -271,7 +277,7 @@ public abstract class Report implements Cloneable {
   }
 
   private Category createCategory(String name) {
-      String file = "Category" + name + ".gif";
+      String file = "Category" + name + ".png";
 
       InputStream in = Report.class.getResourceAsStream(file);
       if (in == null)

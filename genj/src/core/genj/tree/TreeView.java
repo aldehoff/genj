@@ -83,7 +83,7 @@ import javax.swing.event.ChangeListener;
 public class TreeView extends JPanel implements ContextProvider, WindowBroadcastListener, ToolBarSupport, ActionProvider, Filter {
   
   /** an icon for bookmarking */
-  private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark.gif");      
+  private final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark");      
 
   /** need resources */
   private Resources resources = Resources.get(this);

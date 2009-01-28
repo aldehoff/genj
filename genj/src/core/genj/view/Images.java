@@ -37,8 +37,8 @@ final public class Images {
    */
   private Images() {
 
-    imgSettings  = new ImageIcon(this,"images/Settings.gif");
-    imgClose     = new ImageIcon(this,"images/Close.gif");
+    imgSettings  = new ImageIcon(this,"images/Settings");
+    imgClose     = new ImageIcon(this,"images/Close");
   }
   
 } //Images

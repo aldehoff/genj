@@ -109,7 +109,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
   public PrintTask(Printer setRenderer, String setTitle, JComponent setOwner, PrintRegistry setRegistry) throws PrintException {
     
     // looks
-    setImage(new ImageIcon(this,"images/Print.gif"));
+    setImage(new ImageIcon(this,"images/Print"));
 
     // remember 
     renderer = setRenderer;

@@ -35,12 +35,12 @@ final public class Images {
    * Constructor which pre-loads all images
    */
   private Images() {
-    imgHelp         = new ImageIcon(this,"images/Help.gif");
-    imgClose        = new ImageIcon(this,"images/Close.gif");
-    imgNew         = new ImageIcon(this,"images/New.gif");
-    imgOpen         = new ImageIcon(this,"images/Open.gif");
-    imgExit         = new ImageIcon(this,"images/Exit.gif");
-    imgSave         = new ImageIcon(this,"images/Save.gif");
-    imgAbout        = new ImageIcon(this,"images/About.gif");
+    imgHelp         = new ImageIcon(this,"images/Help");
+    imgClose        = new ImageIcon(this,"images/Close");
+    imgNew         = new ImageIcon(this,"images/New");
+    imgOpen         = new ImageIcon(this,"images/Open");
+    imgExit         = new ImageIcon(this,"images/Exit");
+    imgSave         = new ImageIcon(this,"images/Save");
+    imgAbout        = new ImageIcon(this,"images/About");
   }
 }

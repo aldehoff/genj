@@ -63,7 +63,7 @@ public class PropertyRenderer {
   
   /** an replacement for a 'broken' image */  
   private final static ImageIcon broken = 
-    new ImageIcon(PropertyRenderer.class, "Broken.gif");
+    new ImageIcon(PropertyRenderer.class, "Broken");
   
   public final static PropertyRenderer DEFAULT_RENDERER = new PropertyRenderer();
 

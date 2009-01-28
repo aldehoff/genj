@@ -134,8 +134,8 @@ public class SearchView extends JPanel implements ToolBarSupport {
   
   /** images */
   private final static ImageIcon
-    IMG_START = new ImageIcon(SearchView.class, "Start.gif"),
-    IMG_STOP  = new ImageIcon(SearchView.class, "Stop.gif" );
+    IMG_START = new ImageIcon(SearchView.class, "Start"),
+    IMG_STOP  = new ImageIcon(SearchView.class, "Stop" );
 
   /**
    * Constructor
