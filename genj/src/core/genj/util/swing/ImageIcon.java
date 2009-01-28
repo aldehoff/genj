@@ -94,11 +94,15 @@ public class ImageIcon extends javax.swing.ImageIcon {
     this(from.getClass(), resource);
   }
   
+  private static String patchPNG(String resource) {
+    return resource.indexOf('.')<0 ? resource+".png" : resource;
+  }
+  
   /**
    * Alternative Constructor
    */
   public ImageIcon(Class from, String resource) {
-    this(from.getName()+'#'+resource, from.getResourceAsStream(resource+".png"));
+    this(from.getName()+'#'+resource, from.getResourceAsStream(patchPNG(resource)));
   }
   
   /**
