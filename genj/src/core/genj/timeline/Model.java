@@ -176,11 +176,15 @@ import spin.Spin;
     int months = calendar.getMonths();
     
     int y = (int)Math.floor(year);
-    int m = (int)Math.floor((year%1) * months);
+    
+    year = year%1;
+    if (year<0) year = 1+year;
+    
+    int m = (int)Math.floor(year * months);
 
     int days = calendar.getDays(m, y);
     
-    int d = (int)Math.floor((year%1*months)%1 * days);
+    int d = (int)Math.floor((year*months)%1 * days);
     
     return new PointInTime(d, m, y);
   }
@@ -388,8 +392,9 @@ import spin.Spin;
   private final void createEventFrom(PropertyEvent pe) {
     // we need a valid date for new event
     PropertyDate pd = pe.getDate();
-    if (pd==null||!pd.isValid())
+    if (pd==null||!pd.isValid()||!pd.isComparable())
       return;
+    
     // get it 
     try { 
       insertEvent(new Event(pe, pd));
