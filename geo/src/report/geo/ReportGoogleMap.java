@@ -89,9 +89,10 @@ public class ReportGoogleMap extends Report {
     
     // match locations
     try {
-      GeoService.getInstance().match(ged, locations, true);
+      locations = GeoService.getInstance().match(ged, locations, true);
     } catch (GeoServiceException e) {
       super.println(e.getMessage());
+      locations.clear();
     }
     if (locations.isEmpty()) {
       getOptionFromUser(translate("none_mapable"), OPTION_OK);
@@ -102,7 +103,7 @@ public class ReportGoogleMap extends Report {
     String key = getValueFromUser("google-key", translate("enter_key"));
     if (key==null)
       return;
-
+    
     // ask the user for file(s)
     File html = getFileFromUser(translate("which_html_file"), translate("generate"));
     if (html==null)

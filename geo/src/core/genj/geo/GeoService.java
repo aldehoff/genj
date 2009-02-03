@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -288,13 +289,15 @@ public class GeoService {
    * @param gedcom the gedcom file the locations are for
    * @param location list of locations
    * @param matchAll if some locations couldn't be matched out of the cache then this will force access of the Geo service 
+   * @return return matched locations
    */
-  public void match(Gedcom gedcom, Collection locations, boolean matchAll) throws GeoServiceException {
+  public Collection match(Gedcom gedcom, Collection locations, boolean matchAll) throws GeoServiceException {
 
     // grab registry
     Registry registry = gedcom!=null ? getRegistry(gedcom) : new Registry();
     
     // loop over locations try to use registry for matching
+    List matched = new ArrayList(locations.size());
     List todos = new ArrayList(locations.size());
     for (Iterator it=locations.iterator(); it.hasNext(); ) {
       GeoLocation location = (GeoLocation)it.next();
@@ -307,20 +310,22 @@ public class GeoService {
           location.setMatches(Integer.parseInt(tokens.nextToken()));
       } catch (Throwable t) {
       }
-      // still todo?
-      if (!location.isValid())
+      // fine or still todo?
+      if (location.isValid())
+        matched.add(location);
+      else
         todos.add(location);
     }
     
     // no more todos?
     if (todos.isEmpty() || (todos.size()!=locations.size()&&!matchAll) )
-      return;
+      return matched;
     
     // do a webservice call for all the todos
     List rows = webservice(URL, todos, true);
     
     // recheck todos for results
-    for (int i=0;i<todos.size();i++) {
+    for (int i=0; i<todos.size(); i++) {
       GeoLocation todo  = (GeoLocation)todos.get(i);
       List hits = (List)rows.get(i);
       // no hits no fun
@@ -344,10 +349,12 @@ public class GeoService {
         todo.setCoordinate(match.getCoordinate());
         todo.setMatches(hits.size());
         remember(gedcom, todo);
+        matched.add(todo);
       }
     }
     
     // done
+    return matched;
   }
 
   /**
