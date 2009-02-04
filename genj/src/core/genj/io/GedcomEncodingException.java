@@ -29,18 +29,14 @@ public class GedcomEncodingException extends GedcomIOException {
   
   private final static Resources RESOURCES = Resources.get("genj.io");
   
-  /** the entity causing the problem */
-  private Entity  entity;
-  
   /** constructor */
   public GedcomEncodingException(Entity entity, String encoding) {
       super(RESOURCES.getString("write.error.cantencode", new Object[]{ entity, encoding } ), 0);
-      this.entity = entity;
   }
 
-  /** accessor */
-  public Entity getEntity() {
-    return entity;
+  /** constructor */
+  public GedcomEncodingException(String message) {
+      super(message, 0);
   }
-  
+
 }

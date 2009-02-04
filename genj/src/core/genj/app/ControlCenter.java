@@ -1004,7 +1004,13 @@ public class ControlCenter extends JPanel {
         gedWriter.setFilters(filters);
         gedWriter.setPassword(password);
         
-        // don't think we have to catch GedcomEncodingException here
+      } catch (GedcomEncodingException ex) {
+        windowManager.openDialog(null,gedcomBeingSaved.getName(),
+            WindowManager.ERROR_MESSAGE,
+            resources.getString("cc.save.write_encoding_error", ex.getMessage()), 
+            Action2.okOnly(),
+            ControlCenter.this);
+        return false;
         
       } catch (IOException ex) {
           

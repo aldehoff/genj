@@ -398,9 +398,13 @@ public class GedcomReader implements Trackable {
     }
       
     // check 1 CHAR
-    if (header.getPropertyValue("CHAR").equals("ASCII"))
-      warnings.add(new Warning(0, RESOURCES.getString("read.warn.ascii"), gedcom));
-      
+    String encoding = header.getPropertyValue("CHAR"); 
+    if (encoding.length()>0) {
+      gedcom.setEncoding(encoding);
+      if (encoding.equals("ASCII"))
+        warnings.add(new Warning(0, RESOURCES.getString("read.warn.ascii"), gedcom));
+    } 
+    
     // check 
     // 1 PLAC
     // 2 FORM

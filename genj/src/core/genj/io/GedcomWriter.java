@@ -76,10 +76,10 @@ public class GedcomWriter implements Trackable {
    * @param enc encoding - either IBMPC, ASCII, UNICODE or ANSEL
    * @param stream the stream to write to
    */
-  public GedcomWriter(Gedcom ged, String name, String enc, OutputStream stream) {
+  public GedcomWriter(Gedcom ged, String name, String enc, OutputStream stream) throws IOException, GedcomEncodingException {
     this(ged,name,enc,false,stream);
   }
-  public GedcomWriter(Gedcom ged, String name, String enc, boolean writeBOM, OutputStream stream) {
+  public GedcomWriter(Gedcom ged, String name, String enc, boolean writeBOM, OutputStream stream) throws IOException, GedcomEncodingException  {
     
     Calendar now = Calendar.getInstance();
 
@@ -102,7 +102,7 @@ public class GedcomWriter implements Trackable {
   /**
    * Create the charset we're using for out
    */
-  private Charset getCharset(boolean writeBOM, OutputStream out, String encoding) {
+  private Charset getCharset(boolean writeBOM, OutputStream out, String encoding) throws GedcomEncodingException {
 
     // Attempt encoding
     try {
@@ -136,12 +136,13 @@ public class GedcomWriter implements Trackable {
     } catch (UnsupportedCharsetException e) {
     }
 
-    // ANSEL (in any case)
-    if (!Gedcom.ANSEL.equals(encoding)) {
-      encoding = null;
-      LOG.warning("Couldn't resolve charset for encoding " + encoding);
-    }
-    return new AnselCharset();
+    // ANSEL
+    if (Gedcom.ANSEL.equals(encoding)) 
+      return new AnselCharset();
+      
+    // unknown encoding
+    throw new GedcomEncodingException("Can't write with unknown encoding " + encoding);
+
   }
 
   /**

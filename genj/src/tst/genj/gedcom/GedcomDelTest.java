@@ -10,6 +10,7 @@ package genj.gedcom;
 import genj.io.GedcomIOException;
 import genj.io.GedcomWriter;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 import junit.framework.TestCase;
@@ -34,7 +35,7 @@ public class GedcomDelTest extends TestCase {
         junit.textui.TestRunner.run(GedcomDelTest.class);
     }
 
-    private Fam createTestFamily() throws GedcomException, GedcomIOException
+    private Fam createTestFamily() throws GedcomException, IOException
     {
         Gedcom gedcom = new Gedcom();
         
@@ -70,7 +71,7 @@ public class GedcomDelTest extends TestCase {
      * @param gedcom
      * @throws GedcomIOException
      */
-    private static void validate(Gedcom gedcom) throws GedcomIOException
+    private static void validate(Gedcom gedcom) throws IOException
     {
         OutputStream sink = new OutputStream() {
             public void write(int arg0) { /* nop */ }

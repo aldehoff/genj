@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.134 $ $Author: nmeier $ $Date: 2009-01-28 17:07:41 $
+ * $Revision: 1.135 $ $Author: nmeier $ $Date: 2009-02-04 21:41:51 $
  */
 package genj.gedcom;
 
@@ -1294,12 +1294,7 @@ public class Gedcom implements Comparable {
    * Accessor - encoding
    */
   public void setEncoding(String set) {
-    for (int e=0;e<ENCODINGS.length;e++) {
-      if (ENCODINGS[e].equals(set)) {
-        encoding = set;
-        return;
-      }
-    }
+     encoding = set;
   }
   
   /**
