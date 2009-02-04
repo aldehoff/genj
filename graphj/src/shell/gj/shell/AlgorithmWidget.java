@@ -21,7 +21,6 @@ package gj.shell;
 
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
-import gj.shell.model.EditableGraph;
 import gj.shell.swing.Action2;
 import gj.shell.util.ReflectHelper;
 
@@ -46,9 +45,6 @@ public class AlgorithmWidget extends JPanel {
   
   /** the algorithms we've instantiated */
   private LayoutAlgorithm[] algorithms = new LayoutAlgorithm[0];
-  
-  /** the graph we're looking at */
-  private EditableGraph graph;
   
   /** the combo of layouts */
   private JComboBox comboAlgorithms;
@@ -95,11 +91,11 @@ public class AlgorithmWidget extends JPanel {
   }
 
   /**
-   * Accessor - the graph
+   * editable or not
    */
-  public void setGraph(EditableGraph set) {
-    graph = set;
-    actionExecute.setEnabled(graph!=null);
+  @Override
+  public void setEnabled(boolean enabled) {
+    actionExecute.setEnabled(enabled);
   }
 
   /**

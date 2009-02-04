@@ -219,7 +219,7 @@ public class Shell {
     graph = set;
     // propagate
     graphWidget.setGraph(graph);
-    algorithmWidget.setGraph(graph);
+    algorithmWidget.setEnabled(graph!=null);
   }
   
   /**

@@ -163,6 +163,17 @@ public class EditableGraphWidget extends GraphWidget {
     // reset debug shapes
     debugShapes = null;
     
+    // reset layout state
+    if (currentAlgorithm!=null) {
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { Vertex.class } );
+      for (Method method : methods) { 
+        try {
+          method.invoke(currentAlgorithm, new Object[]{null});
+        } catch (Throwable t) {
+        }
+      }
+    }
+    
     // remember
     graph = (EditableGraph)setGraph;
     
@@ -276,8 +287,10 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseReleased(MouseEvent e) {}
     /** callback */
+    @Override
     public void mouseDragged(MouseEvent e) {}
     /** callback */
+    @Override
     public void mouseMoved(MouseEvent e) {}
   } // EOC
   
