@@ -728,7 +728,7 @@ public class Geometry {
   public static double getArea(Point2D a, Point2D b, Point2D c) {
     return Math.abs(_getArea(a,b,c));
   }
-  public static double _getArea(Point2D a, Point2D b, Point2D c) {
+  private static double _getArea(Point2D a, Point2D b, Point2D c) {
     
     // we're using a geometric technique 
     // see http://www.richland.edu/james/lecture/m116/matrices/applications.html
@@ -749,13 +749,13 @@ public class Geometry {
   }
   
   /**
-   * Test whether a point is to the left of a given line
+   * Test where a point lies in relation to a line
+   * @return <0 if left, 0 if on, >0 if right of line
    */
-  public static boolean testPointLeftOfLine(Point2D start, Point2D end, Point2D point) {
+  public static double testPointVsLine(Point2D start, Point2D end, Point2D point) {
     // for a triangle with corners a,b,c the determinant area calculation will return <0 
     // for counter-clockwise and >0 otherwise 
-    double area = _getArea(start, end, point);
-    return area > 0;
+    return -_getArea(start, end, point);
   }
   
   /**
@@ -796,7 +796,7 @@ public class Geometry {
       // compare to others
       for (ListIterator<Point2D> others = points.listIterator(); others.hasNext(); ) {
         Point2D other = others.next();
-        if (to.equals(from) || (!other.equals(from)&&!testPointLeftOfLine(from, to, other))) {
+        if (to.equals(from) || (!other.equals(from)&&testPointVsLine(from, to, other)<0)) {
           Point2D xchange = to; to = other; others.set(xchange);
         }
       }

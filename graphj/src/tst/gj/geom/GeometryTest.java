@@ -39,53 +39,36 @@ public class GeometryTest extends TestCase {
     //  x
     // --->
     //
-    assertTrue( Geometry.testPointLeftOfLine(
-        p(0, 0), p(2, 0), p(1, 1)
-    ));
+    assertTrue( Geometry.testPointVsLine( p(0, 0), p(2, 0), p(1, 1)) < 0);
     
     //   x
     // <---
     //   
-    assertFalse( Geometry.testPointLeftOfLine(
-        p(2, 0), p(1, 0), p(1, 1)
-    ));
+    assertTrue( Geometry.testPointVsLine(p(2, 0), p(1, 0), p(1, 1)) > 0);
     
-
-    assertTrue( Geometry.testPointLeftOfLine(p(0,0), p(1,1), p(0,1)) );
-    assertFalse( Geometry.testPointLeftOfLine(p(0,0), p(1,1), p(1,1)) );
+    assertTrue( Geometry.testPointVsLine(p(0,0), p(1,1), p(0,1)) < 0);
+    assertTrue( Geometry.testPointVsLine(p(0,0), p(1,1), p(1,1)) == 0);
 
     //
     // <---
     //   x
-    assertTrue( Geometry.testPointLeftOfLine(
-        p(0, 0), p(-1, 0), p(-0.5, -0.5)
-    ));
+    assertTrue( Geometry.testPointVsLine(p(0, 0), p(-1, 0), p(-0.5, -0.5)) < 0);
     
     //  |
     //  | x
     //  V
-    assertTrue( Geometry.testPointLeftOfLine(
-        p(0, 0), p(0, -1), p(0.5, 0.5)
-    ));
+    assertTrue( Geometry.testPointVsLine(p(0, 0), p(0, -1), p(0.5, 0.5)) < 0);
     
-    assertTrue( Geometry.testPointLeftOfLine(
-        p(0, -1), p(0, -2), p(1, 0)
-    ));
+    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, -2), p(1, 0)) < 0);
 
     //  ^
     //  | x
     //  |
-    assertFalse( Geometry.testPointLeftOfLine(
-        p(-1, 0), p(-1, 1), p(1, 0.5)
-    ));
+    assertTrue( Geometry.testPointVsLine( p(-1, 0), p(-1, 1), p(1, 0.5)) > 0);
     
-    assertFalse( Geometry.testPointLeftOfLine(
-        p(0, -1), p(0, 1), p(1, 0)
-    ));
+    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, 1), p(1, 0)) > 0);
     
-    assertFalse( Geometry.testPointLeftOfLine(
-        p(0, -1), p(0, 0), p(1, 1)
-      ));
+    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, 0), p(1, 1)) > 0);
       
       
 //    //   ^
