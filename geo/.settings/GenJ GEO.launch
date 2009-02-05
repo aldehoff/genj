@@ -34,5 +34,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="genj.app.App"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="GenJ"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgenj.debug.level=FINE -Dgenj.report.dir=../geo/build/eclipse"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgenj.debug.level=FINE -Dgenj.report.dir=../geo/build/eclipse -Dgenj.geo.dir=&quot;${workspace_loc:Geo}/contrib/geo&quot;"/>
 </launchConfiguration>
