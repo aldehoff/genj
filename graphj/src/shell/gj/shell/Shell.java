@@ -30,6 +30,7 @@ import gj.shell.model.EditableLayout;
 import gj.shell.swing.Action2;
 import gj.shell.swing.SwingHelper;
 import gj.shell.util.Properties;
+import gj.shell.util.ReflectHelper;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -333,7 +334,7 @@ public class Shell {
   /*package*/ class ActionSelectLayout extends Action2 {
     private LayoutAlgorithm algorithm;
     /*package*/ ActionSelectLayout(LayoutAlgorithm set) {
-      super(set.toString());
+      super(ReflectHelper.getName(set.getClass()));
       algorithm=set;
     }
     @Override
