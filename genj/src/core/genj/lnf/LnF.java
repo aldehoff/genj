@@ -149,7 +149,7 @@ public class LnF {
     this.theme = theme;      
     
     // debug
-    LOG.info("Found Look&Feel "+name+" version="+version+" url="+url+" archive="+archive+" theme="+theme);
+    LOG.info("Found Look&Feel "+name+" type="+type+" version="+version+" url="+url+" archive="+archive+" theme="+theme);
     
     // done
   }
