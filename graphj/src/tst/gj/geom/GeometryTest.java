@@ -19,8 +19,10 @@
  */
 package gj.geom;
 
+import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -33,6 +35,52 @@ import junit.framework.TestCase;
 public class GeometryTest extends TestCase {
   
   private double TwoPi = Math.PI*2;
+  
+  public void testConvexHull() {
+    
+    // 
+    //  +--+--+
+    //  |  |  |
+    //  +--+--+
+    //
+    
+    GeneralPath gp = new GeneralPath();
+    gp.append(r(0.5,0.5), false);
+    gp.append(r(1.5,0.5), false);
+    
+    tst(Geometry.getConvexHull(gp), r(1,0.5,2,1));
+    
+    // 
+    //  +--+--+
+    //   \ | /  
+    //     + 
+    //
+    
+    gp = new GeneralPath();
+    gp.moveTo(0, 0);
+    gp.lineTo(1, 0);
+    gp.lineTo(0, 1);
+    gp.lineTo(-1, 0);
+    gp.lineTo(0, 0);
+    gp.lineTo(0, 1);
+
+    tst(Geometry.getConvexHull(gp),
+      new Polygon(
+        new int[]{-1,0,1},
+        new int[]{0 ,1,0},
+        3
+      ));
+
+  }
+  
+  private void tst(Shape s1, Shape s2) {
+    Area a = new Area(s1);
+    a.subtract(new Area(s2));
+    assertTrue(a.isEmpty());
+    a = new Area(s2);
+    a.subtract(new Area(s1));
+    assertTrue(a.isEmpty());
+  }
   
   public void testPointLine() {
     
