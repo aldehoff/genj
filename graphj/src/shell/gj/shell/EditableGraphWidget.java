@@ -111,9 +111,10 @@ public class EditableGraphWidget extends GraphWidget {
     protected Stroke getStroke(Vertex vertexOrEdge) {
       // check layout getters for vertex or edge (TreeLayout's root for example)
       if (currentAlgorithm!=null) {
-        for (ReflectHelper.Property prop : ReflectHelper.getProperties(currentAlgorithm, false)) {
-          if (prop.getType().isAssignableFrom(Vertex.class)) try {
-            if (prop.getValue().equals(vertexOrEdge))
+        for (Method prop : ReflectHelper.getMethods(currentAlgorithm, "get.*", new Class[] { Graph.class }, false)) {
+          try {
+            Object value = prop.invoke(currentAlgorithm, graph);
+            if (value.equals(vertexOrEdge))
               return DASH;
           } catch (Throwable t) {
           }
@@ -163,17 +164,6 @@ public class EditableGraphWidget extends GraphWidget {
     // reset debug shapes
     debugShapes = null;
     
-    // reset layout state
-    if (currentAlgorithm!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { Vertex.class } );
-      for (Method method : methods) { 
-        try {
-          method.invoke(currentAlgorithm, new Object[]{null});
-        } catch (Throwable t) {
-        }
-      }
-    }
-    
     // remember
     graph = (EditableGraph)setGraph;
     
@@ -205,9 +195,9 @@ public class EditableGraphWidget extends GraphWidget {
 
     // collect public setters(Edge,*) on layout
     if (currentAlgorithm!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { e.getClass(), null } );
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { Graph.class, e.getClass() }, true );
       for (Method method : methods) { 
-        result.add(new ActionInvoke(currentAlgorithm, method, e));
+        result.add(new ActionInvoke(currentAlgorithm, method, new Object[] { graph, e }));
       }
     }
     // done
@@ -229,11 +219,11 @@ public class EditableGraphWidget extends GraphWidget {
     result.add(mShape);
     result.add(new ActionDeleteVertex());
 
-    // collect public setters(Vertex) on layout
+    // collect public setters(Graph, Vertex) on layout
     if (currentAlgorithm!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { v.getClass()} );
+      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { Graph.class, v.getClass()}, true );
       for (Method method : methods) { 
-        result.add(new ActionInvoke(currentAlgorithm, method, v));
+        result.add(new ActionInvoke(currentAlgorithm, method, new Object[] { graph, v }));
       }
     }
     
@@ -623,12 +613,12 @@ public class EditableGraphWidget extends GraphWidget {
   private class ActionInvoke extends Action2 {
     private Object target;
     private Method method;
-    private Object value;
-    protected ActionInvoke(Object target, Method method, Object value) { 
-      super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"("+value+")"); 
+    private Object[] values;
+    protected ActionInvoke(Object target, Method method, Object[] values) { 
+      super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"(...)"); 
       this.target = target;
       this.method = method;
-      this.value = value;
+      this.values = values;
     }
     @Override
     protected void execute() { 
@@ -636,12 +626,13 @@ public class EditableGraphWidget extends GraphWidget {
         Class<?>[] types = method.getParameterTypes();
         Object[] args = new Object[types.length];
 
-        // value's first argument
-        args[0] = value;
-        
-        // need additional parameter?
-        for (int i=1;i<args.length;i++) 
-          args[i] = ReflectHelper.wrap(JOptionPane.showInputDialog("Provide input for "+getName()), types[i] );
+        // collect parameters
+        for (int i=0;i<args.length;i++) {
+          if (i<values.length)
+            args[i] = values[i];
+          else
+            args[i] = ReflectHelper.wrap(JOptionPane.showInputDialog("Provide input for "+getName()), types[i] );
+        }
         
         // invoke
         method.invoke(target, args);

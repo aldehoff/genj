@@ -20,8 +20,8 @@
 package gj.layout.radial;
 
 import gj.geom.Geometry;
+import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
-import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
@@ -35,7 +35,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -46,28 +45,40 @@ import java.util.Set;
 /**
  * A radial layout for Trees
  */
-public class RadialLayoutAlgorithm implements LayoutAlgorithm {
-  
-  private WeakReference<Vertex> rootOfTree;
+class GraphAttributes {
+  Map<Edge, Integer> edge2length = new HashMap<Edge, Integer>();
+  Vertex root;
+}
+
+public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttributes> {
+
   private double distanceBetweenGenerations = 60;
   private boolean isAdjustDistances = false;
   private boolean isFanOut = false; 
   private double distanceInGeneration = 0;
   private boolean isOrderSiblingsByPosition = true;
-  private Map<Edge, Integer> edge2length = new HashMap<Edge, Integer>();
 
+  private GraphAttributes getAttributes(Graph graph) {
+    GraphAttributes attrs = super.getAttribute(graph);
+    if (attrs==null) {
+      attrs = new GraphAttributes();
+      super.setAttribute(graph, attrs);
+    }
+    return attrs;
+  }
+  
   /**
    * Accessor - root node
    */
-  public Vertex getRoot() {
-    return rootOfTree != null ? rootOfTree.get() : null;
+  public Vertex getRoot(Graph graph) {
+    return getAttributes(graph).root;
   }
 
   /**
    * Accessor - root node
    */
-  public void setRoot(Vertex root) {
-    rootOfTree = new WeakReference<Vertex>(root);
+  public void setRoot(Graph graph, Vertex root) {
+    getAttributes(graph).root = root;
   }
   
   /**
@@ -75,18 +86,18 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
    * @edge the edge to set the length for
    * @length length in generations (great equals 1)
    */
-  public void setLength(Edge edge, int length) {
+  public void setLength(Graph graph, Edge edge, int length) {
     if (length < 1)
-      edge2length.remove(edge);
+      getAttributes(graph).edge2length.remove(edge);
     else
-      edge2length.put(edge, new Integer(length));
+      getAttributes(graph).edge2length.put(edge, new Integer(length));
   }
   
   /**
    * Accessor - number of generations an edge spans 
    */
-  public int getLength(Edge edge) {
-    Integer result = edge2length.get(edge);
+  public int getLength(Graph graph, Edge edge) {
+    Integer result = getAttributes(graph).edge2length.get(edge);
     if (result!=null)
       return result.intValue();
     return 1;
@@ -175,11 +186,9 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
       return bounds;
     
     // check root
-    Vertex root = getRoot();
-    if (root==null) {
+    Vertex root = getRoot(graph);
+    if (root==null) 
       root = graph.getVertices().iterator().next();
-      setRoot(root);
-    }
     
     // run recursion
     return new Recursion(graph, root, distanceBetweenGenerations,layout, debugShapes).getShape();
@@ -201,6 +210,7 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
     double currentNorth;
     double distanceBetweenGenerations;
     double maxDiameter;
+    GraphAttributes attrs;
     
     Recursion(Graph graph, Vertex root, double distanceBetweenGenerations, Layout2D layout, Collection<Shape> debug) {
       
@@ -211,6 +221,7 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
       this.debug = debug;
       this.center = layout.getPositionOfVertex(root);
       this.distanceBetweenGenerations =  distanceBetweenGenerations;
+      this.attrs = getAttributes(graph);
       
       // calculate sub-tree sizes
       getSize(null, root, 0);
@@ -239,10 +250,10 @@ public class RadialLayoutAlgorithm implements LayoutAlgorithm {
      * calculate the distance of two vertices (1+)
      */
     int getLengthOfEdge(Vertex a, Vertex b) {
-      Integer result = edge2length.get(new DefaultEdge(a,b));
+      Integer result = attrs.edge2length.get(new DefaultEdge(a,b));
       if (result!=null)
         return result.intValue();
-      result = edge2length.get(new DefaultEdge(b,a));
+      result = attrs.edge2length.get(new DefaultEdge(b,a));
       if (result!=null)
         return result.intValue();
       return 1;

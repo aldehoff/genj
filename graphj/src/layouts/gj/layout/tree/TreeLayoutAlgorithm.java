@@ -21,8 +21,8 @@ package gj.layout.tree;
 
 import gj.geom.Geometry;
 import gj.geom.Path;
+import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
-import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
@@ -44,7 +44,7 @@ import java.util.List;
 /**
  * Vertex layout for Trees
  */
-public class TreeLayoutAlgorithm implements LayoutAlgorithm {
+public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
 
   /** distance of nodes in generation */
   private int distanceInGeneration = 20;
@@ -63,9 +63,6 @@ public class TreeLayoutAlgorithm implements LayoutAlgorithm {
 
   /** orientation in degrees 0-359 */
   private double orientation = 180;
-
-  /** root to start with */
-  private Vertex rootOfTree;
 
   /** whether to order by position instead of natural sequence */
   private boolean isOrderSiblingsByPosition = true;
@@ -168,15 +165,15 @@ public class TreeLayoutAlgorithm implements LayoutAlgorithm {
   /**
    * Getter - root node
    */
-  public Vertex getRoot() {
-    return rootOfTree;
+  public Vertex getRoot(Graph graph) {
+    return getAttribute(graph);
   }
 
   /**
    * Getter - root node
    */
-  public void setRoot(Vertex root) {
-    this.rootOfTree = root;
+  public void setRoot(Graph graph, Vertex root) {
+    setAttribute(graph, root);
   }
 
   /**
@@ -206,13 +203,12 @@ public class TreeLayoutAlgorithm implements LayoutAlgorithm {
       return bounds;
     
     // check root
-    if (rootOfTree==null) { 
-      rootOfTree = graph.getVertices().iterator().next();
-      setRoot(rootOfTree);
-    }
+    Vertex root = getRoot(graph);
+    if (root==null)
+      root = graph.getVertices().iterator().next();
     
     // recurse into it
-    Shape result = layout(graph, null, rootOfTree, layout).shape;
+    Shape result = layout(graph, null, root, layout).shape;
     if (debugShapes!=null) {
       debugShapes.add(result);
     }
