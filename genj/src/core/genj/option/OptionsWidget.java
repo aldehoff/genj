@@ -42,6 +42,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
+import javax.swing.plaf.TreeUI;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -68,6 +70,9 @@ public class OptionsWidget extends JPanel {
   /** a title for the options we're looking at - is used as default category */
   private String title;
 
+  /** a default renderer we keep around for colors */
+  private DefaultTreeCellRenderer defaultRenderer;
+  
   /**
    * Constructor
    */
@@ -172,6 +177,16 @@ public class OptionsWidget extends JPanel {
   }
 
   /**
+   * Intercept new ui to get default renderer that provides us with colors
+   */  
+  public void setUI(TreeUI ui) {
+    // continue
+    super.setUI(ui);
+    // grab the default renderer now
+    defaultRenderer = new DefaultTreeCellRenderer();
+  }
+
+  /**
    * A cell user either temporarily as renderer or editor
    */
   private class Cell extends AbstractCellEditor implements TreeCellRenderer, TreeCellEditor {
@@ -205,22 +220,42 @@ public class OptionsWidget extends JPanel {
       panel.setLayout(new BorderLayout());
       panel.add(labelForName, BorderLayout.WEST);
     }
+
     /**
      * callback - component generation
      */
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+      // prepare color
+      if (defaultRenderer!=null) {
+        if (selected) {
+          labelForName.setForeground(defaultRenderer.getTextSelectionColor());
+          labelForName.setBackground(defaultRenderer.getBackgroundSelectionColor());
+          labelForValue.setForeground(defaultRenderer.getTextSelectionColor());
+          labelForValue.setBackground(defaultRenderer.getBackgroundSelectionColor());
+        } else {
+          labelForName.setForeground(defaultRenderer.getTextNonSelectionColor());
+          labelForName.setBackground(defaultRenderer.getBackgroundNonSelectionColor());
+          labelForValue.setForeground(defaultRenderer.getTextNonSelectionColor());
+          labelForValue.setBackground(defaultRenderer.getBackgroundNonSelectionColor());
+        }
+      }
       // option?
       if (value instanceof Option)
         return assemblePanel((Option)value, false);
       // must be string
-      return new JLabel(value.toString());
+
+      // remove old option if there
+      if (panel.getComponentCount()>1)
+        panel.remove(1);
+      labelForName.setText(value.toString());
+      return panel;
     }
 
     /**
      * assemble the editor/renderer panel
      */
     private JPanel assemblePanel(Option option, boolean forceUI) {
-      // remove old
+      // remove old option if there
       if (panel.getComponentCount()>1)
         panel.remove(1);
       // lookup option and ui
