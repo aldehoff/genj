@@ -116,6 +116,9 @@ public class LnF {
     } catch (IOException ioe) {
     }
 
+    // add an option for using the java default (aka don't change LnF from what's setup by VM)
+    result.add(new LnF("Java Default", UIManager.getLookAndFeel().getClass().getName(), "", "", null, null));
+
     // remember
     instances = (LnF[])result.toArray(new LnF[result.size()]);   
     
