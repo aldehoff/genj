@@ -37,14 +37,23 @@ public class GeometryTest extends TestCase {
   private double TwoPi = Math.PI*2;
   
   public void testConvexHull() {
-    
+
+    GeneralPath gp = new GeneralPath();
+    gp.moveTo(1,0);
+    gp.lineTo(0,0);
+    gp.lineTo(2, 0);
+    gp.lineTo(2,1);
+    gp.lineTo(0, 1);
+    gp.lineTo(0, 0);
+    tst(Geometry.getConvexHull(gp), r(1,0.5,2,1));
+
     // 
     //  +--+--+
     //  |  |  |
     //  +--+--+
     //
     
-    GeneralPath gp = new GeneralPath();
+    gp = new GeneralPath();
     gp.append(r(0.5,0.5), false);
     gp.append(r(1.5,0.5), false);
     
@@ -87,36 +96,36 @@ public class GeometryTest extends TestCase {
     //  x
     // --->
     //
-    assertTrue( Geometry.testPointVsLine( p(0, 0), p(2, 0), p(1, 1)) < 0);
+    assertTrue( Geometry.testPointVsLine( p(0, 0), p(2, 0), p(1, 1)) > 0);
     
     //   x
     // <---
     //   
-    assertTrue( Geometry.testPointVsLine(p(2, 0), p(1, 0), p(1, 1)) > 0);
+    assertTrue( Geometry.testPointVsLine(p(2, 0), p(1, 0), p(1, 1)) < 0);
     
-    assertTrue( Geometry.testPointVsLine(p(0,0), p(1,1), p(0,1)) < 0);
+    assertTrue( Geometry.testPointVsLine(p(0,0), p(1,1), p(0,1)) > 0);
     assertTrue( Geometry.testPointVsLine(p(0,0), p(1,1), p(1,1)) == 0);
 
     //
     // <---
     //   x
-    assertTrue( Geometry.testPointVsLine(p(0, 0), p(-1, 0), p(-0.5, -0.5)) < 0);
+    assertTrue( Geometry.testPointVsLine(p(0, 0), p(-1, 0), p(-0.5, -0.5)) > 0);
     
     //  |
     //  | x
     //  V
-    assertTrue( Geometry.testPointVsLine(p(0, 0), p(0, -1), p(0.5, 0.5)) < 0);
+    assertTrue( Geometry.testPointVsLine(p(0, 0), p(0, -1), p(0.5, 0.5)) > 0);
     
-    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, -2), p(1, 0)) < 0);
+    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, -2), p(1, 0)) > 0);
 
     //  ^
     //  | x
     //  |
-    assertTrue( Geometry.testPointVsLine( p(-1, 0), p(-1, 1), p(1, 0.5)) > 0);
+    assertTrue( Geometry.testPointVsLine( p(-1, 0), p(-1, 1), p(1, 0.5)) < 0);
     
-    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, 1), p(1, 0)) > 0);
+    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, 1), p(1, 0)) < 0);
     
-    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, 0), p(1, 1)) > 0);
+    assertTrue( Geometry.testPointVsLine(p(0, -1), p(0, 0), p(1, 1)) < 0);
       
       
 //    //   ^

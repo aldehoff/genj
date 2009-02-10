@@ -755,7 +755,7 @@ public class Geometry {
   public static double testPointVsLine(Point2D start, Point2D end, Point2D point) {
     // for a triangle with corners a,b,c the determinant area calculation will return <0 
     // for counter-clockwise and >0 otherwise 
-    return -_getArea(start, end, point);
+    return _getArea(start, end, point);
   }
   
   /**
@@ -770,19 +770,29 @@ public class Geometry {
     // see http://www.cse.unsw.edu.au/~lambert/java/3d/giftwrap.html
     
     // collect all points and find the point with lowest y coordinate (our start)
+    // 20090209 added x comparison to find lowest/leftmost point
     final LinkedList<Point2D> points = new LinkedList<Point2D>();
     final Point2D start = new Point2D.Double(0, Double.MAX_VALUE);
     ShapeHelper.iterateShape(shape, new FlattenedPathConsumer() {
       public boolean consumeLine(Point2D from, Point2D to) {
-        // replace current starting point?
-        if (start.getY()==Double.MAX_VALUE || from.getY()<start.getY()) 
+        // replace current starting point or keep?
+        if (start.getY()==Double.MAX_VALUE)
           start.setLocation(from);
-        // keep
-        points.add(new Point2D.Double(from.getX(), from.getY()));
+        else {
+          if (from.getY()<start.getY() || (from.getY()==start.getY() && from.getX()<start.getX()) ) {
+            points.add(new Point2D.Double(start.getX(), start.getY()));
+            start.setLocation(from.getX(), from.getY());
+          } else {
+            points.add(new Point2D.Double(from.getX(), from.getY()));
+          }
+        }
         // continue with 'to'
         return true;
       }
     });
+    
+    // closing point
+    points.add(new Point2D.Double(start.getX(), start.getY()));
 
     // iterate over sides of hull
     GeneralPath result = new GeneralPath();
@@ -790,7 +800,7 @@ public class Geometry {
     Point2D from = start;
     while (!points.isEmpty()) {
       
-      // random next point
+      // 'random' next point
       Point2D to = points.removeFirst();
 
       // compare to others
