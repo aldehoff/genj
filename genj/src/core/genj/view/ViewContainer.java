@@ -24,6 +24,7 @@ import genj.edit.actions.Undo;
 import genj.print.PrintRegistry;
 import genj.print.PrintTask;
 import genj.print.Printer;
+import genj.util.EnvironmentChecker;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 
@@ -104,7 +105,8 @@ import javax.swing.SwingConstants;
     
     // Fill Toolbar
     ((ToolBarSupport)view).populate(bar);
-    bar.add(Box.createGlue());
+    if (EnvironmentChecker.getProperty(this, "genj.view.toolbarproblem", null, "checking for switch to not use glue in toolbar")==null)
+      bar.add(Box.createGlue());
 
     // add our buttons     
     ButtonHelper bh = new ButtonHelper().setContainer(bar);
