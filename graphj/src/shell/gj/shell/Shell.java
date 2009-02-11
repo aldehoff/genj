@@ -168,6 +168,8 @@ public class Shell {
     // Start with a Graph or load a preset
     if (preload!=null) { 
       SwingUtilities.invokeLater(new ActionLoadGraph(new File(preload)));
+    } else {
+      setGraph(factories[0]);
     }
     
     // Done
