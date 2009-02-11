@@ -124,7 +124,9 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
     
     // one node only?
     if (nodes.size()==1) {
-      layout.setPositionOfVertex(nodes.get(0), new Point2D.Double(cx,cy));
+      Vertex one = nodes.get(0);
+      layout.setPositionOfVertex(one, new Point2D.Double(cx,cy));
+      layout.setTransformOfVertex(one, null);
       return;
     }
     
@@ -154,7 +156,9 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
     for (int n=0;n<nodes.size();n++) {
       double x = (int)(cx + Math.sin(radian)*radius);
       double y = (int)(cy + Math.cos(radian)*radius);
-      layout.setPositionOfVertex(nodes.get(n), new Point2D.Double(x,y));
+      Vertex node = nodes.get(n);
+      layout.setPositionOfVertex(node, new Point2D.Double(x,y));
+      layout.setTransformOfVertex(node, null);
 
       radian += TWOPI*sizes[n]/circumference;
     }

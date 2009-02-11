@@ -251,7 +251,7 @@ public class EditableGraph implements Graph {
    * interface implementation
    */
   public Iterable<EditableVertex> getDirectPredecessors(Vertex vertex) {
-    // FIXME this could be in-situ without temporary array
+
     List<EditableVertex> predecessors = new ArrayList<EditableVertex>();
     for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
       if (edge.getEnd() == vertex)
@@ -275,7 +275,6 @@ public class EditableGraph implements Graph {
    * interface implementation
    */
   public Iterable<EditableVertex> getDirectSuccessors(EditableVertex vertex) {
-    // FIXME this could be in-situ without temporary array
     List<EditableVertex> successors = new ArrayList<EditableVertex>();
     for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
       if (edge.getStart() == vertex)

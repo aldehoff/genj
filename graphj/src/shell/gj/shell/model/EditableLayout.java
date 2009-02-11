@@ -25,6 +25,7 @@ import gj.model.Edge;
 import gj.model.Vertex;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -74,4 +75,11 @@ public class EditableLayout implements Layout2D {
     ((EditableVertex)node).setPosition(pos);
   }
 
-} //View
+  /**
+   * interface implementation
+   */
+  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+    ((EditableVertex)vertex).setTransformation(transform);
+  }
+  
+} //EditableLayout

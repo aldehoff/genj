@@ -38,10 +38,10 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
   /** connected or not */
   private boolean isConnected = true;
   
-  /** planar or not - TODO */
+  /** planar or not  */
   //private boolean isPlanar = false;
 
-  /** allows cycles or not - TODO */
+  /** allows cycles or not */
   //private boolean isAllowCycles = true;
 
   /** # number of nodes */

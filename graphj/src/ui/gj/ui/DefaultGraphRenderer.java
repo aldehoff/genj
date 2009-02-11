@@ -88,8 +88,8 @@ public class DefaultGraphRenderer implements GraphRenderer {
     graphics.setColor(color);
     graphics.setStroke(stroke);
     Shape shape = layout.getShapeOfVertex(vertex);
-    draw(shape, pos, graphics);
-  
+    draw(shape, pos, false, graphics);
+
     // and content    
     Object content = getContent(vertex);
     if (content==null) 
@@ -167,19 +167,11 @@ public class DefaultGraphRenderer implements GraphRenderer {
   }
 
   /**
-   * Helper that renders a shape at given position
-   */
-  private void draw(Shape shape, Point2D at, Graphics2D graphics) {
-    draw(shape, at, 0, false, graphics);
-  }
-
-  /**
    * Helper that renders a shape at given position with given rotation
    */
-  private void draw(Shape shape, Point2D at, double theta, boolean fill, Graphics2D graphics) {
+  private void draw(Shape shape, Point2D at, boolean fill, Graphics2D graphics) {
     AffineTransform old = graphics.getTransform();
     graphics.translate(at.getX(), at.getY());
-    graphics.rotate(theta);
     if (fill) graphics.fill(shape);
     else graphics.draw(shape);
     graphics.setTransform(old);

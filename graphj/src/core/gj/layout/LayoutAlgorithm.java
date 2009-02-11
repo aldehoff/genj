@@ -35,7 +35,7 @@ public interface LayoutAlgorithm {
    * Applies the layout to a given graph
    * @param graph the graph to layout
    * @param bounds bounds to adhere to if possible (not guaranteed)
-   * @param debugShapes TODO
+   * @param debugShapes collection of shapes the algorithm can supply to provide debugging information
    * @return resulting bounds 
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException;

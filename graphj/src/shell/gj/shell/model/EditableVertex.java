@@ -23,6 +23,8 @@ import gj.model.Vertex;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -46,11 +48,25 @@ public class EditableVertex implements Vertex {
   
   /** the shape of this node */
   private Shape shape;
+  
+  /** the transformed shape of this node */
+  private GeneralPath transformedShape;
+  
+  
+  /** transformation */
+  private AffineTransform transform = null;
 
   /**
    * interface implementation
    */
   public Shape getShape() {
+    if (transform!=null) {
+      if (transformedShape==null) {
+        transformedShape = new GeneralPath(shape);
+        transformedShape.transform(transform);
+      }
+      return transformedShape;
+    }
     return shape;
   }
   
@@ -59,6 +75,7 @@ public class EditableVertex implements Vertex {
    */
   public void setShape(Shape set) {
     shape = set!=null ? set : new Rectangle();
+    transformedShape = null;
   }
   
   /**
@@ -175,7 +192,7 @@ public class EditableVertex implements Vertex {
   }
 
   /**
-   * interface implementation
+   * accessor - content
    */
   public void setContent(Object set) {
     content = set;
@@ -191,6 +208,16 @@ public class EditableVertex implements Vertex {
     } else {
       return content.toString();
     }
+  }
+
+  /**
+   * accessor - transformation (idempotent)
+   */
+  public void setTransformation(AffineTransform transform) {
+    if (transform!=null&&transform.isIdentity())
+      transform=null;
+    this.transform = transform;
+    transformedShape = null;
   }
 
 } //Vertex

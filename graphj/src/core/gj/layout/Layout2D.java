@@ -25,6 +25,7 @@ import gj.model.Edge;
 import gj.model.Vertex;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -51,6 +52,11 @@ public interface Layout2D {
    * Vertex's shape
    */
   public void setShapeOfVertex(Vertex vertex, Shape shape);
+  
+  /** 
+   * Vertex transformation (idempotent)
+   */
+  public void setTransformOfVertex(Vertex vertex, AffineTransform transform);
 
   /**
    * Vertex's position

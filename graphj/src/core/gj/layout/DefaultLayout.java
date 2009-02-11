@@ -26,6 +26,8 @@ import gj.util.EdgeLayoutHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +39,7 @@ public class DefaultLayout implements Layout2D {
   
   private Shape defaultShape;
   private Map<Vertex, Point2D> vertex2point = new HashMap<Vertex, Point2D>();
+  private Map<Vertex, AffineTransform> vertex2transform = new HashMap<Vertex, AffineTransform>();
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
   private Map<Edge, Path> edge2path = new HashMap<Edge, Path>();
 
@@ -77,11 +80,21 @@ public class DefaultLayout implements Layout2D {
     Shape result = vertex2shape.get(vertex);
     if (result==null)
       result = defaultShape;
+    AffineTransform transform = vertex2transform.get(vertex);
+    if (transform!=null&&!transform.isIdentity()) {
+      GeneralPath gp = new GeneralPath(result);
+      gp.transform(transform);
+      result = gp;
+    }
     return result;
   }
 
   public void setShapeOfVertex(Vertex vertex, Shape shape) {
     vertex2shape.put(vertex, shape);
+  }
+
+  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+    vertex2transform.put(vertex, transform);
   }
 
 }

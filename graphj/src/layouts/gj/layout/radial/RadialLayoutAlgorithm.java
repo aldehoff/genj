@@ -31,6 +31,7 @@ import gj.util.EdgeLayoutHelper;
 import gj.util.ModelHelper;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -49,7 +50,7 @@ class GraphAttributes {
   Map<Edge, Integer> edge2length = new HashMap<Edge, Integer>();
   Vertex root;
 }
-
+// TODO the default animation is not pretty to look at especially in the radial case - it should rotate nodes to their destination
 public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttributes> {
 
   private double distanceBetweenGenerations = 60;
@@ -57,6 +58,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
   private boolean isFanOut = false; 
   private double distanceInGeneration = 0;
   private boolean isOrderSiblingsByPosition = true;
+  private boolean isRotateShapes = true;
+  private boolean isBendArcs = true;
 
   private GraphAttributes getAttributes(Graph graph) {
     GraphAttributes attrs = super.getAttribute(graph);
@@ -159,6 +162,34 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     this.isFanOut = isFanOut;
   }
 
+  /**
+   * Accessor - whether to rotate shape of vertex
+   */
+  public boolean isRotateShapes() {
+    return isRotateShapes;
+  }
+
+  /**
+   * Accessor - whether to fan out children as much as possible or group them closely
+   */
+  public void setRotateShapes(boolean isRotateShapes) {
+    this.isRotateShapes = isRotateShapes;
+  }
+
+  /**
+   * Getter - whether arcs are direct or bended
+   */
+  public boolean isBendArcs() {
+    return isBendArcs;
+  }
+
+  /**
+   * Setter - whether arcs are direct or bended
+   */
+  public void setBendArcs(boolean set) {
+    isBendArcs=set;
+  }
+  
   /**
    * Setter - whether to order siblings by their current position
    */
@@ -342,6 +373,12 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
         layout.setPositionOfVertex(child, getPoint(center, fromRadian + radiansOfChild/2, radiusOfChild ));
         
+        if (isRotateShapes)
+          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(fromRadian + radiansOfChild/2) );
+        else
+          layout.setTransformOfVertex(child, new AffineTransform());
+        
+        // TODO handle default case of bending arcs
         for (Edge edge : graph.getEdges(root)) {
           if (!ModelHelper.contains(edge, backtrack))
             EdgeLayoutHelper.setPath(edge, layout);

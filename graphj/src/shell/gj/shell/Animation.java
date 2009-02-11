@@ -148,7 +148,7 @@ import java.util.List;
       animate(1D);
     
     // restore edges
-    // FIXME edges *AND* shapes???
+    // TODO currently edges are layed out without bends in animation
     Iterator<?> it = edgesAndShapes.iterator();
     while (it.hasNext()) {
       ((EditableEdge)it.next()).setPath((Path)it.next());

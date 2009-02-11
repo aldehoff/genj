@@ -459,8 +459,10 @@ public class EditableGraphWidget extends GraphWidget {
       super.start(pos);
       // remember
       vertex = (EditableVertex)graph.getSelection();
+      vertex.setTransformation(null);
       shape = vertex.getShape();
       dim = shape.getBounds().getSize();
+      repaint();
     }
     /** callback */
     @Override

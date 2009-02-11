@@ -222,6 +222,9 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
    */
   private Branch layout(Graph graph, Vertex backtrack, Vertex root, Layout2D layout) {
     
+    // reset vertex's transformation
+    layout.setTransformOfVertex(root, null);
+    
     // check # children in neighbours (we don't count backtrack as child) - leaf?
     Collection<Vertex> children = ModelHelper.getNeighbours(graph, root);
     children.remove(backtrack);
