@@ -258,7 +258,7 @@ public class ReportFlashList extends Report {
     
     // Display one header if will not repeat them
     if (!repeatHeader) {
-       displayHeader(doc, true);
+       displayHeader(doc, null, true);
        doc.endTable();
        }
 
@@ -271,7 +271,7 @@ public class ReportFlashList extends Report {
       // primary key (by default Cntry/State)
       // secod parameter is a meaningful anchor for easier external referencing to this flash list
       doc.startSection(p,p.replaceAll(" ","%").replaceAll("/","%").replaceAll(",","%")); 
-      displayHeader(doc, repeatHeader);
+      displayHeader(doc, p, repeatHeader);
       String secondaryKey = "";
       
       Map secondary = (Map)lookup(primary, p, null);
@@ -439,9 +439,13 @@ public class ReportFlashList extends Report {
    /**
    * Header function
    */
-  private void displayHeader(Document doc, boolean dHeader) {
+  private void displayHeader(Document doc, String name, boolean dHeader) {
     // Start table
-      doc.startTable("genj:csv=true,width=100%");
+    if (name!=null)
+      doc.startTable("genj:csv=true,genj:csvprefix="+name+",width=100%");
+    else
+      doc.startTable("width=100%");
+    
       doc.addTableColumn("column-width=30%");     // secondary key (default is Names)
       doc.addTableColumn("column-width=23%");     // tertiary key (default is place)
       doc.addTableColumn("column-width=5%");      // Sosa nb

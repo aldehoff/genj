@@ -23,6 +23,7 @@
 </xsl:template>
 
 <xsl:template match="fo:table-row">
+ <xsl:if test="../../@genj:csvprefix"><xsl:value-of select="../../@genj:csvprefix"/>;</xsl:if>
  <xsl:apply-templates select="fo:table-cell"/>
  <xsl:value-of select="'&#xA;'"/>
 </xsl:template>

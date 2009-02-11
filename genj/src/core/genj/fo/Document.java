@@ -685,6 +685,10 @@ select="$header-width * 0.3333"/><xsl:text>pc</xsl:text>
     if ("true".equals(attribute("genj:csv", format))) {
       containsCSV = true;
       cursor.setAttributeNS(NS_GENJ, "genj:csv", "true");
+      
+      String prefix = attribute("genj:csvprefix", format);
+      if (prefix!=null)
+        cursor.setAttributeNS(NS_GENJ, "genj:csvprefix", prefix);
     }
     
     // head/body & row
