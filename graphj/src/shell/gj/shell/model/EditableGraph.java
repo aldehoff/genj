@@ -21,7 +21,7 @@ package gj.shell.model;
 
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -235,7 +235,7 @@ public class EditableGraph implements Graph {
    * interface implementation
    */
   public Set<Vertex> getNeighbours(Vertex vertex) {
-    return ModelHelper.getNeighbours(vertex);
+    return LayoutHelper.getNeighbours(vertex);
   }
   
   /**

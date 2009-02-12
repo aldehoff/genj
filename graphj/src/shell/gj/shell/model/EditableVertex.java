@@ -20,7 +20,7 @@
 package gj.shell.model;
 
 import gj.model.Vertex;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -99,7 +99,7 @@ public class EditableVertex implements Vertex {
    * Returns neighbours
    */
   public Set<Vertex> getNeighbours() {
-    return ModelHelper.getNeighbours(this);
+    return LayoutHelper.getNeighbours(this);
   }
 
   /**

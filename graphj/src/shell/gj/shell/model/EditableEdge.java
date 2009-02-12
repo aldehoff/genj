@@ -22,7 +22,7 @@ package gj.shell.model;
 import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.model.Edge;
-import gj.util.EdgeLayoutHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -71,7 +71,7 @@ public class EditableEdge implements Edge {
   }
   
   private Path makeShape() {
-    return EdgeLayoutHelper.getShape(start.getPosition(), start.getShape(), end.getPosition(), end.getShape());   
+    return LayoutHelper.getPath(start.getPosition(), start.getShape(), end.getPosition(), end.getShape());   
   }
   
   public void setShape(Shape set) {

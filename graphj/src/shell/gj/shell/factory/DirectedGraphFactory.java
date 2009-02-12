@@ -22,7 +22,7 @@ package gj.shell.factory;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -242,7 +242,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
     
     while (nodes.size()>1) {
       EditableVertex from = getMinDegNode(graph,nodes,true);
-      if (!ModelHelper.isNeighbour(graph,from,nodes)) {
+      if (!LayoutHelper.isNeighbour(graph,from,nodes)) {
         EditableVertex to = getMinDegNode(graph, nodes,false);
         graph.addEdge(from, to);
       }

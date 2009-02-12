@@ -23,10 +23,10 @@ import gj.layout.GraphNotSupportedException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.ModelHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +52,7 @@ public class AcyclicGraph {
     this.graph = graph;
 
     // check acyclic character - find layers&sinks
-    Set<? extends Vertex> todo = ModelHelper.toSet(graph.getVertices());
+    Set<? extends Vertex> todo = new HashSet<Vertex>(graph.getVertices());
     while (!todo.isEmpty()) 
       _findSinksEnsureAcyclic(todo.iterator().next(), new Stack<Vertex>(), todo);
     

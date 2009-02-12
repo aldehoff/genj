@@ -20,12 +20,14 @@
 package gj.util;
 
 import gj.geom.Geometry;
+import gj.geom.Path;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
 
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -38,7 +40,7 @@ import java.util.Set;
 /**
  * Helper for analyzing model.*
  */
-public class ModelHelper {
+public class LayoutHelper {
   
   /**
    * Translates a node's position
@@ -60,16 +62,6 @@ public class ModelHelper {
     return false;
   }
 
-  /**
-   * Calculate a list from given iterable
-   */
-  public static <T> Set<T> toSet(Iterable<T> from) {
-    Set<T> result = new HashSet<T>();
-    for (T t : from)
-      result.add(t);
-    return result;
-  }
-  
   /**
    * Calculates the dimension of set of nodes
    */
@@ -152,7 +144,7 @@ public class ModelHelper {
     Set<Vertex> children = new HashSet<Vertex>();
     List<Edge> edges = new ArrayList<Edge>(vertex.getEdges().size());
     for (Edge edge : vertex.getEdges()) {
-      Vertex child = ModelHelper.getOther(edge, vertex);
+      Vertex child = LayoutHelper.getOther(edge, vertex);
       if (children.contains(child)||child.equals(vertex))
         continue;
       children.add(child);
@@ -187,6 +179,98 @@ public class ModelHelper {
   
   public static double getDiameter(Vertex vertex, Layout2D layout) {
     return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
+  }
+
+  /**
+   * Calculate shape of all arcs in graph
+   */
+  public static void setPaths(Graph graph, Layout2D layout) {
+    
+    for (Edge edge : graph.getEdges()) { 
+      setPath(edge, layout);
+    }
+    
+  }
+
+  /**
+   * Calculate a shape for an arc
+   */
+  public static void setPath(Edge edge, Layout2D layout) {
+    layout.setPathOfEdge(edge, getPath(edge, layout));
+  }
+
+  public static Path getPath(Edge edge, Layout2D layout) {
+    Shape
+    sfrom= layout.getShapeOfVertex(edge.getStart()),
+    sto  = layout.getShapeOfVertex(edge.getEnd());
+  Point2D
+    pfrom= layout.getPositionOfVertex(edge.getStart()),
+    pto  = layout.getPositionOfVertex(edge.getEnd());
+  
+    return getPath(pfrom,sfrom,pto,sto);
+  }
+
+  /**
+   * path with a line going through points between two shapes
+   * @param points a sequence of points describing the path (first point is the origin of the shape)
+   * @param s1 shape positioned at the first point
+   * @param s2 shape positioned at the last point
+   */  
+  public static Path getPath(Point2D[] points, Shape s1, Shape s2) {
+    
+    // A simple line through points
+    Path result = new Path();
+    
+    // intersect the first segment with s1
+    Point2D
+      a = calcEnd(points[1], points[0], s1),
+      b = calcEnd(points[points.length-2], points[points.length-1], s2);
+    
+    double cx = points[0].getX(), cy = points[0].getY();
+    
+    // add the points to this path
+    result.start(new Point2D.Double( a.getX() - cx, a.getY() - cy));
+    for (int i=1;i<points.length-1;i++) {
+      result.lineTo( new Point2D.Double( 
+          points[i].getX() - cx, 
+          points[i].getY() - cy
+        ));
+    }
+    result.lineTo(new Point2D.Double( b.getX() - cx, b.getY() - cy));
+    
+    // done
+    return result;
+  }
+
+  /**
+   * Creates a connection between given points between two shapes
+   * @param p1 the starting point (origin of shape)
+   * @param s1 the shape sitting at p1
+   * @param p2 the ending point
+   * @param s2 the shape sitting at p2
+   */
+  public static Path getPath(Point2D p1, Shape s1, Point2D p2, Shape s2) {
+  
+    Point2D 
+    	a = calcEnd(p2, p1, s1),
+    	b = calcEnd(p1, p2, s2);
+    
+    // A simple line
+    Path result = new Path();
+    result.start(new Point2D.Double(a.getX()-p1.getX(), a.getY()-p1.getY()));
+    result.lineTo(new Point2D.Double(b.getX()-p1.getX(), b.getY()-p1.getY()));
+    
+    // done
+    return result; 
+  }
+
+  private static Point2D calcEnd(Point2D from, Point2D to, Shape shape) {
+    
+    ArrayList<Point2D> points = new ArrayList<Point2D>();
+    Geometry.getIntersections(from, to, to, shape, points);
+    
+    return points.isEmpty() ? to : Geometry.getClosest(from, points);
+  
   }
   
 } //ModelHelper

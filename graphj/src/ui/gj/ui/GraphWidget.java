@@ -21,7 +21,7 @@ package gj.ui;
 
 import gj.layout.Layout2D;
 import gj.model.Graph;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -89,7 +89,7 @@ public class GraphWidget extends JComponent {
   public void setGraph(Graph setGraph, Rectangle bounds) {
     // cleanup data
     graph = setGraph;
-    graphBounds = bounds != null ? bounds : ModelHelper.getBounds(graph, layout).getBounds();
+    graphBounds = bounds != null ? bounds : LayoutHelper.getBounds(graph, layout).getBounds();
     
     // make sure that's reflected
     revalidate();

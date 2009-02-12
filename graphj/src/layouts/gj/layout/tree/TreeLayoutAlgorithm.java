@@ -27,8 +27,7 @@ import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.EdgeLayoutHelper;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -196,7 +195,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // check that we got a tree
-    ModelHelper.assertSpanningTree(graph);
+    LayoutHelper.assertSpanningTree(graph);
 
     // ignore an empty tree
     if (graph.getVertices().isEmpty())
@@ -226,7 +225,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     layout.setTransformOfVertex(root, null);
     
     // check # children in neighbours (we don't count backtrack as child) - leaf?
-    Collection<Vertex> children = ModelHelper.getNeighbours(root);
+    Collection<Vertex> children = LayoutHelper.getNeighbours(root);
     children.remove(backtrack);
     if (children.isEmpty())
       return new Branch(graph, root, layout);
@@ -381,7 +380,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       for (Edge edge : root.getEdges()) {
         
         // don't do edge to backtrack
-        if (ModelHelper.contains(edge, backtrack))
+        if (LayoutHelper.contains(edge, backtrack))
           continue;
 
         Path path;
@@ -395,10 +394,10 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          path = EdgeLayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()));
+          path = LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()));
           
         } else {
-          path = EdgeLayoutHelper.getPath(edge, layout);
+          path = LayoutHelper.getPath(edge, layout);
         }
         layout.setPathOfEdge(edge, path);
       }
@@ -434,7 +433,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     void moveBy(Point2D delta) {
       
       for (Vertex vertice : vertices) 
-        ModelHelper.translate(layout, vertice, delta);
+        LayoutHelper.translate(layout, vertice, delta);
       
       top = null;
       

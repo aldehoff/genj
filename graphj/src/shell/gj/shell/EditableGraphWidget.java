@@ -35,7 +35,7 @@ import gj.shell.util.ReflectHelper;
 import gj.ui.DefaultGraphRenderer;
 import gj.ui.GraphRenderer;
 import gj.ui.GraphWidget;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -367,7 +367,7 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      ModelHelper.translate(getGraphLayout(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
+      LayoutHelper.translate(getGraphLayout(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();

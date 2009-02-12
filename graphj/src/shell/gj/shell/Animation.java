@@ -27,7 +27,6 @@ import gj.layout.LayoutAlgorithmException;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
-import gj.util.EdgeLayoutHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -58,9 +57,6 @@ import java.util.List;
     startFrame = 0,
     lastFrame = 0;
     
-  /** an arc helper we use during the animation */
-  private EdgeLayoutHelper helper = new EdgeLayoutHelper();    
-  
   /**
    * Constructor (before)
    */

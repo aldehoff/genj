@@ -24,7 +24,7 @@ import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
@@ -74,7 +74,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     // mark sinks
     if (debugShapes!=null)
       for (Vertex sink : ag.getSinks()) {
-        double d = ModelHelper.getDiameter(sink, layout);
+        double d = LayoutHelper.getDiameter(sink, layout);
         Point2D p = layout.getPositionOfVertex(sink); 
         debugShapes.add(new Ellipse2D.Double(p.getX()-d/2, p.getY()-d/2, d, d));
       }

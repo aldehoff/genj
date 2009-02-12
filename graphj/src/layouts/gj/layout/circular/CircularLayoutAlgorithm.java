@@ -25,8 +25,7 @@ import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.EdgeLayoutHelper;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -51,9 +50,6 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
   /** whether we're generating a single circle or not */
   private boolean isSingleCircle = true;
   
-  /** an arc layout we use */
-  private EdgeLayoutHelper alayout = new EdgeLayoutHelper();
-
   /**
    * Getter - is single circle
    */
@@ -108,10 +104,10 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
     }
     
     // update the arcs
-    EdgeLayoutHelper.setShapes(graph, layout);
+    LayoutHelper.setPaths(graph, layout);
     
     // done
-    return ModelHelper.getBounds(graph, layout);
+    return LayoutHelper.getBounds(graph, layout);
   } 
   
   /**

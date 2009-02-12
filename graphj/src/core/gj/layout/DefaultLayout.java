@@ -22,7 +22,7 @@ package gj.layout;
 import gj.geom.Path;
 import gj.model.Edge;
 import gj.model.Vertex;
-import gj.util.EdgeLayoutHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -66,7 +66,7 @@ public class DefaultLayout implements Layout2D {
     
     Path result = edge2path.get(edge);
     if (result==null) {
-      result = EdgeLayoutHelper.getPath(edge, this);
+      result = LayoutHelper.getPath(edge, this);
       edge2path.put(edge, result);
     }
     return result;

@@ -24,7 +24,7 @@ import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.EdgeLayoutHelper;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -121,7 +121,7 @@ public class RandomLayoutAlgorithm implements LayoutAlgorithm {
     }
     
     // place the arcs
-    EdgeLayoutHelper.setShapes(graph, layout);
+    LayoutHelper.setPaths(graph, layout);
     
     // done
     return bounds;

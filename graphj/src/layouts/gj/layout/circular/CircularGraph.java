@@ -21,7 +21,7 @@ package gj.layout.circular;
 
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.ModelHelper;
+import gj.util.LayoutHelper;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,7 +62,7 @@ import java.util.Stack;
     }
     
     // find circles for all
-    Set<? extends Vertex> unvisited = ModelHelper.toSet(graph.getVertices());
+    Set<? extends Vertex> unvisited = new HashSet<Vertex>(graph.getVertices());
     while (!unvisited.isEmpty()) 
       findCircles(graph, unvisited.iterator().next(), null, new Stack<Vertex>(), unvisited);
 
@@ -91,7 +91,7 @@ import java.util.Stack;
     path.push(vertex);
     
     // recurse into neighbours traversing via arcs
-    for (Vertex neighbour : ModelHelper.getNeighbours(vertex)) {
+    for (Vertex neighbour : LayoutHelper.getNeighbours(vertex)) {
       // don't go back
       if (neighbour==vertex||neighbour==parent)
         continue;
