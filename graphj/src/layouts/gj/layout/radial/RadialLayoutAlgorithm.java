@@ -20,12 +20,14 @@
 package gj.layout.radial;
 
 import static gj.util.LayoutHelper.setPath;
+import static gj.util.LayoutHelper.getPath;
 import static gj.util.LayoutHelper.assertSpanningTree;
 import static gj.util.LayoutHelper.getDiameter;
 import static gj.util.LayoutHelper.getNormalizedEdges;
 import static gj.util.LayoutHelper.getOther;
 import static java.lang.Math.max;
 import gj.geom.Geometry;
+import gj.geom.Path;
 import gj.layout.AbstractLayoutAlgorithm;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
@@ -229,7 +231,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     int depth;
     Map<Vertex, Double> vertex2radians = new HashMap<Vertex, Double>();
     Point2D center;
-    double currentNorth;
     double distanceBetweenGenerations;
     double maxDiameter;
     GraphAttributes attrs;
@@ -319,7 +320,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     /**
      * recursive layout call
      */
-    void layout(Vertex backtrack, final Vertex root, double fromRadian, double toRadian, double radius) {
+    void layout(Vertex backtrack, final Vertex root, double fromRadian, final double toRadian, final double radius) {
       
       // assemble list of children
       List<Edge> edges = getNormalizedEdges(root);
@@ -369,29 +370,41 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       }
       
       // position children and iterate into their placement recursion
+      double radianOfChild = fromRadian;
       for (Edge edge : edges) {
         
         Vertex child = getOther(edge, root);
         double radiusOfChild = radius + getLengthOfEdge(edge) * distanceBetweenGenerations;
         double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
-        layout.setPositionOfVertex(child, getPoint(center, fromRadian + radiansOfChild/2, radiusOfChild ));
+        layout.setPositionOfVertex(child, getPoint(center, radianOfChild + radiansOfChild/2, radiusOfChild ));
         
         if (isRotateShapes)
-          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(HALF_RADIAN + fromRadian + radiansOfChild/2) );
+          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild + radiansOfChild/2) );
         else
           layout.setTransformOfVertex(child, new AffineTransform());
         
-        // TODO handle default case of bending arcs
-        setPath(edge, layout);
-        
+        // layout edges
+        if (isBendArcs) {
+          Point2D[] path = new Point2D[]{ 
+              layout.getPositionOfVertex(root), 
+              getPoint(center, fromRadian+radiansOfChildren/2, (radius+radiusOfChild)/2 ),
+              getPoint(center, radianOfChild + radiansOfChild/2, (radius+radiusOfChild)/2 ),
+              layout.getPositionOfVertex(child) 
+          }; 
+          layout.setPathOfEdge(edge, getPath(path, layout.getShapeOfVertex(root), layout.getShapeOfVertex(child), edge.getStart().equals(child)));
+        } else {
+          setPath(edge, layout);
+        }
+
+        // add debugging information
         if (debug!=null) {
-          debug.add(new Line2D.Double(getPoint(center, fromRadian, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian, radiusOfChild+distanceBetweenGenerations/2)));
-          debug.add(new Line2D.Double(getPoint(center, fromRadian+radiansOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian+radiansOfChild, radiusOfChild+distanceBetweenGenerations/2)));
+          debug.add(new Line2D.Double(getPoint(center, radianOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, radianOfChild, radiusOfChild+distanceBetweenGenerations/2)));
+          debug.add(new Line2D.Double(getPoint(center, radianOfChild+radiansOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, radianOfChild+radiansOfChild, radiusOfChild+distanceBetweenGenerations/2)));
         }
         
-        layout(root, child, fromRadian, fromRadian+radiansOfChild, radiusOfChild);
+        layout(root, child, radianOfChild, radianOfChild+radiansOfChild, radiusOfChild);
         
-        fromRadian += radiansOfChild;
+        radianOfChild += radiansOfChild;
       }
 
       // done

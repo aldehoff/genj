@@ -216,7 +216,9 @@ public class LayoutHelper {
    * @param s1 shape positioned at the first point
    * @param s2 shape positioned at the last point
    */  
-  public static Path getPath(Point2D[] points, Shape s1, Shape s2) {
+  public static Path getPath(Point2D[] points, Shape s1, Shape s2, boolean reversed) {
+    
+    int n = points.length;
     
     // A simple line through points
     Path result = new Path();
@@ -224,19 +226,22 @@ public class LayoutHelper {
     // intersect the first segment with s1
     Point2D
       a = calcEnd(points[1], points[0], s1),
-      b = calcEnd(points[points.length-2], points[points.length-1], s2);
+      b = calcEnd(points[n-2], points[n-1], s2);
     
-    double cx = points[0].getX(), cy = points[0].getY();
-    
-    // add the points to this path
-    result.start(new Point2D.Double( a.getX() - cx, a.getY() - cy));
-    for (int i=1;i<points.length-1;i++) {
-      result.lineTo( new Point2D.Double( 
-          points[i].getX() - cx, 
-          points[i].getY() - cy
-        ));
+    // add the points to this path relative to start
+    if (!reversed) {
+      double cx = points[0].getX(), cy = points[0].getY();
+      result.start(new Point2D.Double( a.getX() - cx, a.getY() - cy));
+      for (int i=1;i<n-1;i++) 
+        result.lineTo( new Point2D.Double( points[i].getX() - cx, points[i].getY() - cy ));
+      result.lineTo(new Point2D.Double( b.getX() - cx, b.getY() - cy));
+    } else {
+      double cx = points[n-1].getX(), cy = points[n-1].getY();
+      result.start(new Point2D.Double( b.getX() - cx, b.getY() - cy));
+      for (int i=n-2;i>0;i--) 
+        result.lineTo( new Point2D.Double( points[i].getX() - cx, points[i].getY() - cy ));
+      result.lineTo(new Point2D.Double( a.getX() - cx, a.getY() - cy));
     }
-    result.lineTo(new Point2D.Double( b.getX() - cx, b.getY() - cy));
     
     // done
     return result;

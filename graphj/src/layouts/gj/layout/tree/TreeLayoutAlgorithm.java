@@ -394,7 +394,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          path = LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()));
+          path = LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()), false);
           
         } else {
           path = LayoutHelper.getPath(edge, layout);
