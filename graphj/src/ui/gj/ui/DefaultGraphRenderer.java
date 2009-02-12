@@ -19,6 +19,8 @@
  */
 package gj.ui;
 
+import static gj.geom.PathIteratorKnowHow.*;
+
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Layout2D;
@@ -44,10 +46,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
 
   /** an arrow-head pointing upwards */
   private final static Shape ARROW_HEAD = ShapeHelper.createShape(0,0,1,1,new double[]{
-      ShapeHelper.SEG_MOVETO, 0, 0, 
-      ShapeHelper.SEG_LINETO, -5, -7, 
-      ShapeHelper.SEG_MOVETO,  5, -7, 
-      ShapeHelper.SEG_LINETO, 0, 0
+      SEG_MOVETO, 0, 0, 
+      SEG_LINETO, -5, -7, 
+      SEG_MOVETO,  5, -7, 
+      SEG_LINETO, 0, 0
   });
 
   /**

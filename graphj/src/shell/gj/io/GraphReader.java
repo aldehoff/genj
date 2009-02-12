@@ -19,7 +19,8 @@
  */
 package gj.io;
 
-import gj.geom.PathIteratorKnowHow;
+import static gj.geom.PathIteratorKnowHow.*;
+
 import gj.geom.ShapeHelper;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
@@ -44,7 +45,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Read a graph
  */
-public class GraphReader implements PathIteratorKnowHow  {
+public class GraphReader {
   
   /** statics - default */
   private final static Shape DEFAULT_SHAPE = new Rectangle2D.Double(-16,-16,32,32);

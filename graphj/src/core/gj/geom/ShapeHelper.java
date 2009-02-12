@@ -19,6 +19,8 @@
  */
 package gj.geom;
 
+import static gj.geom.PathIteratorKnowHow.*;
+
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.FlatteningPathIterator;
@@ -29,7 +31,7 @@ import java.awt.geom.Point2D;
 /**
  * Missing shape functionality from the geom.* stuff
  */
-public class ShapeHelper implements PathIteratorKnowHow {
+public class ShapeHelper {
 
   /** 
    * the maximum distance that the line segments used to approximate 

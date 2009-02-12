@@ -19,7 +19,8 @@
  */
 package gj.io;
 
-import gj.geom.PathIteratorKnowHow;
+import static gj.geom.PathIteratorKnowHow.*;
+
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
@@ -38,7 +39,7 @@ import java.util.Stack;
 /**
  * Write a graph
  */
-public class GraphWriter implements PathIteratorKnowHow {
+public class GraphWriter {
 
   /** an empty string */
   private final static String EMPTY = "                                                         ";

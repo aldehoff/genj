@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 /**
  * A 2D path - missing from the jawa.awt.geom.* stuff
  */
-public class Path implements Shape, PathIteratorKnowHow {
+public class Path implements Shape {
   
   private final static Logger LOG = Logger.getLogger("genj.geom");
 
