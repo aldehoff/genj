@@ -26,7 +26,6 @@ import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.DefaultEdge;
 import gj.util.EdgeLayoutHelper;
 import gj.util.ModelHelper;
 
@@ -40,8 +39,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A radial layout for Trees
@@ -213,7 +212,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     ModelHelper.assertSpanningTree(graph);
     
     // ignore an empty tree
-    if (graph.getNumVertices()==0)
+    if (graph.getVertices().size()==0)
       return bounds;
     
     // check root
@@ -229,7 +228,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
   /** 
    * the recursion
    */
-  private class Recursion extends Geometry implements Comparator<Vertex> {
+  private class Recursion extends Geometry {
     
     Graph graph;
     Object root;
@@ -280,11 +279,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     /**
      * calculate the distance of two vertices (1+)
      */
-    int getLengthOfEdge(Vertex a, Vertex b) {
-      Integer result = attrs.edge2length.get(new DefaultEdge(a,b));
-      if (result!=null)
-        return result.intValue();
-      result = attrs.edge2length.get(new DefaultEdge(b,a));
+    int getLengthOfEdge(Edge e) {
+      Integer result = attrs.edge2length.get(e);
       if (result!=null)
         return result.intValue();
       return 1;
@@ -300,13 +296,13 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       depth = Math.max(depth, generation+1);
 
       // calculate size for children
-      Set<? extends Vertex> neighbours = ModelHelper.getNeighbours(graph, root);
       double radiansOfChildren = 0;
-      for (Vertex child : neighbours) {
-        if (!child.equals(backtrack)) {
-          int generationOfChild = generation + getLengthOfEdge(root,child);
-          radiansOfChildren +=  getSize(root, child, generationOfChild);
-        }
+      for (Edge edge : ModelHelper.getNormalizedEdges(root)) {
+        Vertex child = ModelHelper.getOther(edge, root);
+        if (child.equals(backtrack)) 
+          continue;
+        int generationOfChild = generation + getLengthOfEdge(edge);
+        radiansOfChildren += getSize(root, child, generationOfChild);
       }
       
       // root?
@@ -335,27 +331,45 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     /**
      * recursive layout call
      */
-    void layout(Vertex backtrack, Vertex root, double fromRadian, double toRadian, double radius) {
+    void layout(Vertex backtrack, final Vertex root, double fromRadian, double toRadian, double radius) {
       
       // assemble list of children
-      Collection<Vertex> children = ModelHelper.getNeighbours(graph, root);
-      children.remove(backtrack);
-      if (children.isEmpty())
+      List<Edge> edges = ModelHelper.getNormalizedEdges(root);
+      if (backtrack!=null)
+        edges.removeAll(backtrack.getEdges());
+      if (edges.isEmpty())
         return;
       
       // sort children by current position
       if (isOrderSiblingsByPosition)  {
-        currentNorth = fromRadian+(toRadian-fromRadian)/2+Geometry.HALF_RADIAN;
-        Vertex[] tmp = children.toArray(new Vertex[children.size()]);
-        Arrays.sort(tmp, this);
-        children = Arrays.asList(tmp);
+        final double currentNorth = fromRadian+(toRadian-fromRadian)/2+Geometry.HALF_RADIAN;
+ 
+        Edge[] tmp = edges.toArray(new Edge[edges.size()]);
+        Arrays.sort(tmp, new Comparator<Edge>() {
+          public int compare(Edge e1, Edge e2) {
+            
+            double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(ModelHelper.getOther(e1, root))));
+            double r2 = getRadian(getDelta(center,layout.getPositionOfVertex(ModelHelper.getOther(e2, root))));
+            
+            if (r1>currentNorth)
+              r1 -= ONE_RADIAN;
+            if (r2>currentNorth)
+              r2 -= ONE_RADIAN;
+            
+            if (r1<r2) 
+              return -1;
+            if (r1>r2)
+              return 1;
+            return 0;
+          }
+        });
+        edges = Arrays.asList(tmp);
       }
       
       // compare actual radians available vs allocation
       double radiansOfChildren = 0;
-      for (Vertex child : children) {
-        //double radiusOfChild = radius + getLengthOfEdge(root, child) * distanceBetweenGenerations;
-        radiansOfChildren += vertex2radians.get(child).doubleValue();
+      for (Edge edge : edges) {
+        radiansOfChildren += vertex2radians.get(ModelHelper.getOther(edge, root)).doubleValue();
       }
       double shareFactor = (toRadian-fromRadian) / radiansOfChildren;
 
@@ -367,22 +381,20 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       }
       
       // position children and iterate into their placement recursion
-      for (Vertex child : children) {
+      for (Edge edge : edges) {
         
-        double radiusOfChild = radius + getLengthOfEdge(root, child) * distanceBetweenGenerations;
+        Vertex child = ModelHelper.getOther(edge, root);
+        double radiusOfChild = radius + getLengthOfEdge(edge) * distanceBetweenGenerations;
         double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
         layout.setPositionOfVertex(child, getPoint(center, fromRadian + radiansOfChild/2, radiusOfChild ));
         
         if (isRotateShapes)
-          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(fromRadian + radiansOfChild/2) );
+          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(Math.PI + fromRadian + radiansOfChild/2) );
         else
           layout.setTransformOfVertex(child, new AffineTransform());
         
         // TODO handle default case of bending arcs
-        for (Edge edge : graph.getEdges(root)) {
-          if (!ModelHelper.contains(edge, backtrack))
-            EdgeLayoutHelper.setPath(edge, layout);
-        }
+        EdgeLayoutHelper.setPath(edge, layout);
         
         if (debug!=null) {
           debug.add(new Line2D.Double(getPoint(center, fromRadian, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian, radiusOfChild+distanceBetweenGenerations/2)));
@@ -397,23 +409,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       // done
     }
     
-    /** compare two vertices' current position */
-    public int compare(Vertex v1, Vertex v2) {
-      
-      double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(v1)));
-      double r2 = getRadian(getDelta(center,layout.getPositionOfVertex(v2)));
-      
-      if (r1>currentNorth)
-        r1 -= ONE_RADIAN;
-      if (r2>currentNorth)
-        r2 -= ONE_RADIAN;
-      
-      if (r1<r2) 
-        return -1;
-      if (r1>r2)
-        return 1;
-      return 0;
-    }
     
   } //Recursion
   

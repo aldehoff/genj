@@ -93,7 +93,7 @@ public class AcyclicGraph {
     path.add(vertex);
     // check vertex for sink and cycle 
     boolean isSink = true;
-    for (Edge edge : graph.getEdges(vertex)) {
+    for (Edge edge : vertex.getEdges()) {
       if (edge.getStart().equals(vertex))  {
         isSink = false;
         _findSinksEnsureAcyclic(edge.getEnd(), path, todo);

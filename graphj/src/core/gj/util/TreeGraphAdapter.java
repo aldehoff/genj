@@ -21,17 +21,16 @@ package gj.util;
 
 import gj.model.Edge;
 import gj.model.Graph;
-import gj.model.Tree;
 import gj.model.Vertex;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * An adapter for tree to graph
  */
-public class TreeGraphAdapter<V extends Vertex> implements Graph {
+public class TreeGraphAdapter<V> implements Graph {
   
   private Tree<V> tree;
   
@@ -50,14 +49,17 @@ public class TreeGraphAdapter<V extends Vertex> implements Graph {
     return result;
   }
 
-  public Iterable<V> getVertices() {
-    return _getVertices(tree.getRoot(), new LinkedHashSet<V>());
+  public Collection<Vertex> getVertices() {
+    return _getVertices(new DefaultVertex<V>(tree.getRoot()), new ArrayList<Vertex>());
   }
     
-  private Set<V> _getVertices(V parent, Set<V> result) {
-    result.add(parent);
-    for (V child : tree.getChildren(parent)) 
-      _getVertices(child, result);
+  private Collection<Vertex> _getVertices(DefaultVertex<V> vparent, List<Vertex> result) {
+    result.add(vparent);
+    for (V child : tree.getChildren(vparent.getContent())) {
+      DefaultVertex<V> vchild = new DefaultVertex<V>(child);
+      new DefaultEdge<V>(vparent, vchild);
+      _getVertices(vchild, result);
+    }
     return result;
   }
 
@@ -74,35 +76,28 @@ public class TreeGraphAdapter<V extends Vertex> implements Graph {
     return result;
   }
   
-  public Iterable<DefaultEdge> getEdges() {
-    return _getEdges(tree.getRoot(), new HashSet<DefaultEdge>());
+  public Collection<Edge> getEdges() {
+    return _getEdges(tree.getRoot(), new ArrayList<Edge>());
   }
   
-  private Set<DefaultEdge> _getEdges(V parent, Set<DefaultEdge> result) {
+  private Collection<Edge> _getEdges(V parent, List<Edge> result) {
     for (V child : tree.getChildren(parent)) {
-      result.add(new DefaultEdge(parent, child));
+      result.add(new DefaultEdge<V>(new DefaultVertex<V>(parent), new DefaultVertex<V>(child)));
       _getEdges(child, result);
     }
     return result;
   }
   
-  @SuppressWarnings("unchecked")
-  public int getNumEdges(Vertex vertex) {
-    int result = 0;
-    if (!vertex.equals(tree.getRoot()))
-      result++;
-    result += tree.getChildren((V)vertex).size();
-    return result;
-  }
-      
-  @SuppressWarnings("unchecked")
-  public Set<Edge> getEdges(Vertex vertex) {
-    Set<Edge> result = new LinkedHashSet<Edge>();
-    if (!vertex.equals(tree.getRoot()))
-      result.add(new DefaultEdge(tree.getParent((V)vertex), vertex));
-    for (V child : tree.getChildren((V)vertex))
-      result.add(new DefaultEdge(vertex, child));
-    return result;
-  }
+  /**
+   * Interface for a tree
+   */
+  public interface Tree<V> {
 
+    public abstract V getRoot();
+    
+    public abstract List<V> getChildren(V parent);
+    
+    public abstract V getParent(V child);
+
+  }
 }

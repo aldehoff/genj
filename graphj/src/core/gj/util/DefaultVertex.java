@@ -22,6 +22,8 @@ package gj.util;
 import gj.model.Vertex;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -32,6 +34,7 @@ import java.util.Set;
 public class DefaultVertex<T> implements Vertex {
   
   private T content;
+  private Set<DefaultEdge<T>> edges = new HashSet<DefaultEdge<T>>();
   
   public DefaultVertex(T content) {
     this.content = content;
@@ -39,6 +42,14 @@ public class DefaultVertex<T> implements Vertex {
   
   public T getContent() {
     return content;
+  }
+  
+  /*package*/ void addEdge(DefaultEdge<T> edge) {
+    edges.add(edge);
+  }
+  
+  public Collection<DefaultEdge<T>> getEdges() {
+    return Collections.unmodifiableCollection(edges);
   }
   
   @Override

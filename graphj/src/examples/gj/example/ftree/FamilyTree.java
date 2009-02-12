@@ -24,9 +24,7 @@ import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
 import gj.model.Graph;
-import gj.model.Tree;
 import gj.ui.GraphWidget;
-import gj.util.DefaultVertex;
 import gj.util.TreeGraphAdapter;
 
 import java.awt.Dimension;
@@ -55,28 +53,28 @@ public class FamilyTree {
       "S&S>Alisa,"+
       "S&S>Luka";
     
-    Tree<DefaultVertex<String>> tree = new Tree<DefaultVertex<String>>() {
-      public List<DefaultVertex<String>> getChildren(DefaultVertex<String> parent) {
-        List<DefaultVertex<String>> result = new ArrayList<DefaultVertex<String>>();
+    TreeGraphAdapter.Tree<String> tree = new TreeGraphAdapter.Tree<String>() {
+      public List<String> getChildren(String parent) {
+        List<String> result = new ArrayList<String>();
         for (String relationship : family.split(",")) {
-          if (relationship.startsWith(parent.getContent()+">"))
-            result.add(new DefaultVertex<String>(relationship.substring(parent.getContent().length()+1)));
+          if (relationship.startsWith(parent+">"))
+            result.add(relationship.substring(parent.length()+1));
         }
         return result;
       }
-      public DefaultVertex<String> getParent(DefaultVertex<String> child) {
+      public String getParent(String child) {
         for (String relationship : family.split(",")) {
-          if (relationship.endsWith(">"+child.getContent()))
-            return new DefaultVertex<String>(relationship.substring(0, relationship.length()-child.getContent().length()-1));
+          if (relationship.endsWith(">"+child))
+            return relationship.substring(0, relationship.length()-child.length()-1);
         }
         return null;
       }
-      public DefaultVertex<String> getRoot() {
-        return new DefaultVertex<String>(family.substring(0, family.indexOf('>')));
+      public String getRoot() {
+        return family.substring(0, family.indexOf('>'));
       }
     };
 
-    Graph graph = new TreeGraphAdapter<DefaultVertex<String>>(tree);
+    Graph graph = new TreeGraphAdapter<String>(tree);
  
     // apply tree layout
     Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));

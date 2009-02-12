@@ -28,9 +28,11 @@ import gj.model.Vertex;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -51,7 +53,7 @@ public class ModelHelper {
    * That is  E node(i), E arc(i,j) where node = node(j)
    */
   public static boolean isNeighbour(Graph graph, Vertex vertex, Collection<? extends Vertex> vertices) {
-    for (Edge edge : graph.getEdges(vertex)) {
+    for (Edge edge : vertex.getEdges()) {
       if (vertices.contains(edge.getStart()) || vertices.contains(edge.getEnd()) )
         return true;
     }
@@ -68,25 +70,12 @@ public class ModelHelper {
     return result;
   }
   
-  public static <T> void removeAll(Collection<T> c, Iterable<T> ts) {
-    for (T t : ts) 
-      c.remove(t);
-  }
-  
-  public static boolean contains(Iterable<?> ts, Object t) {
-    for (Object i : ts) {
-      if (i.equals(t))
-        return true;
-    }
-    return false;
-  }
-
   /**
    * Calculates the dimension of set of nodes
    */
   public static Rectangle2D getBounds(Graph graph, Layout2D layout) {
     // no content?
-    if (graph==null||graph.getNumVertices()==0) 
+    if (graph==null||graph.getVertices().size()==0) 
       return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;
@@ -106,7 +95,7 @@ public class ModelHelper {
    */
   public static void assertSpanningTree(Graph graph) throws GraphNotSupportedException {
     
-    if (graph.getNumVertices()==0)
+    if (graph.getVertices().size()==0)
       return;
     
     // look for cycles
@@ -115,7 +104,7 @@ public class ModelHelper {
       throw new GraphNotSupportedException("graph is not acyclic");
     
     // check spanning
-    if (visited.size() != graph.getNumVertices())
+    if (visited.size() != graph.getVertices().size())
       throw new GraphNotSupportedException("graph is not a spanning tree");
     
   }
@@ -133,7 +122,7 @@ public class ModelHelper {
     visited.add(root);
     
     // Recurse into neighbours
-    for (Vertex neighbour : getNeighbours(graph, root)) {
+    for (Vertex neighbour : getNeighbours(root)) {
       if (neighbour.equals(backtrack)) 
         continue;
       if (containsCycle(graph, root, neighbour, visited))
@@ -145,14 +134,43 @@ public class ModelHelper {
   }
   
   /**
+   * Get other vertex in an edge
+   */
+  public static Vertex getOther(Edge edge, Vertex vertex) {
+    if (edge.getStart().equals(vertex))
+      return edge.getEnd();
+    if (edge.getEnd().equals(vertex))
+      return edge.getStart();
+    throw new IllegalArgumentException("vertex "+vertex+" not in "+edge);
+  }
+  
+  /**
+   * get normalized edges. That's all edges from a given vertex without loops and dupes
+   */
+  public static List<Edge> getNormalizedEdges(Vertex vertex) {
+    
+    Set<Vertex> children = new HashSet<Vertex>();
+    List<Edge> edges = new ArrayList<Edge>(vertex.getEdges().size());
+    for (Edge edge : vertex.getEdges()) {
+      Vertex child = ModelHelper.getOther(edge, vertex);
+      if (children.contains(child)||child.equals(vertex))
+        continue;
+      children.add(child);
+      edges.add(edge);
+    }
+
+    return edges;
+  }
+  
+  /**
    * Get neighbouring vertices. That's all 
    * <pre>
    *   A e E n : e(vertex,n ) || e(n,vertex) e graph && !n==vertex
    * </pre> 
    */
-  public static Set<Vertex> getNeighbours(Graph graph, Vertex vertex) {
+  public static Set<Vertex> getNeighbours(Vertex vertex) {
     Set<Vertex> result = new LinkedHashSet<Vertex>();
-    for (Edge edge : graph.getEdges(vertex)) {
+    for (Edge edge : vertex.getEdges()) {
       if (edge.getStart().equals(vertex)) 
         result.add(edge.getEnd());
       else 

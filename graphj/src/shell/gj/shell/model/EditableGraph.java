@@ -21,11 +21,13 @@ package gj.shell.model;
 
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.util.ModelHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -77,8 +79,8 @@ public class EditableGraph implements Graph {
   public int getNumEdges() {
     return edges.size();
   }
-  public Iterable<EditableEdge> getEdges() {
-    return edges;
+  public Collection<EditableEdge> getEdges() {
+    return Collections.unmodifiableCollection(edges);
   }
   
   /**
@@ -218,8 +220,8 @@ public class EditableGraph implements Graph {
   public int getNumVertices() {
     return vertices.size();
   }
-  public Iterable<EditableVertex> getVertices() {
-    return vertices;
+  public Collection<EditableVertex> getVertices() {
+    return Collections.unmodifiableCollection(vertices);
   }
   
   /**
@@ -232,8 +234,8 @@ public class EditableGraph implements Graph {
   /**
    * interface implementation
    */
-  public Set<EditableVertex> getNeighbours(Vertex vertex) {
-    return ((EditableVertex)vertex).getNeighbours();
+  public Set<Vertex> getNeighbours(Vertex vertex) {
+    return ModelHelper.getNeighbours(vertex);
   }
   
   /**

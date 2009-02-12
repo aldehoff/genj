@@ -199,7 +199,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     ModelHelper.assertSpanningTree(graph);
 
     // ignore an empty tree
-    if (graph.getNumVertices()==0)
+    if (graph.getVertices().isEmpty())
       return bounds;
     
     // check root
@@ -226,7 +226,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     layout.setTransformOfVertex(root, null);
     
     // check # children in neighbours (we don't count backtrack as child) - leaf?
-    Collection<Vertex> children = ModelHelper.getNeighbours(graph, root);
+    Collection<Vertex> children = ModelHelper.getNeighbours(root);
     children.remove(backtrack);
     if (children.isEmpty())
       return new Branch(graph, root, layout);
@@ -378,7 +378,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       shape = new GeneralPath(getConvexHull(gp));
       
       // layout edges
-      for (Edge edge : graph.getEdges(root)) {
+      for (Edge edge : root.getEdges()) {
         
         // don't do edge to backtrack
         if (ModelHelper.contains(edge, backtrack))

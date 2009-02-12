@@ -88,7 +88,7 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
     // no purpose in empty|1-ary graph
-    if (graph.getNumVertices() < 2) 
+    if (graph.getVertices().size() < 2) 
       return bounds;
     
     // create a CircularGraph

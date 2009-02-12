@@ -28,13 +28,16 @@ import java.util.Iterator;
 /**
  * A default implementation of an edge
  */
-public class DefaultEdge implements Edge {
+public class DefaultEdge<T> implements Edge {
   
   private Vertex from,to;
   
-  public DefaultEdge(Vertex from, Vertex to) {
+  public DefaultEdge(DefaultVertex<T> from, DefaultVertex<T> to) {
     this.from = from;
     this.to = to;
+    from.addEdge(this);
+    if (!from.equals(to))
+      to.addEdge(this);
   }
   
   public DefaultEdge(Collection<Vertex> vertices) {

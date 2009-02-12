@@ -206,7 +206,7 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
       
       // we don't want to connect to a neighbour
       List<EditableVertex> others = new LinkedList<EditableVertex>(nodes);
-      ModelHelper.removeAll(others, graph.getNeighbours(vertex));
+      others.removeAll(vertex.getNeighbours());
       
       // find other
       while (true) {

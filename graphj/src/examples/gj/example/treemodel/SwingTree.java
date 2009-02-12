@@ -25,7 +25,6 @@ import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
 import gj.model.Edge;
 import gj.model.Graph;
-import gj.model.Tree;
 import gj.model.Vertex;
 import gj.ui.GraphRenderer;
 import gj.ui.GraphWidget;
@@ -65,7 +64,7 @@ public class SwingTree {
       treeWidget.expandRow(i); 
     
     // create a graph representation of JTree's default model
-    Tree<DefaultVertex<TreeNode>> tree = new Tree<DefaultVertex<TreeNode>>() {
+    TreeGraphAdapter.Tree<DefaultVertex<TreeNode>> tree = new TreeGraphAdapter.Tree<DefaultVertex<TreeNode>>() {
 
       public DefaultVertex<TreeNode> getRoot() {
         return new DefaultVertex<TreeNode>((TreeNode)treeWidget.getModel().getRoot());
@@ -90,7 +89,7 @@ public class SwingTree {
     Layout2D layout = new DefaultLayout() {
       @Override
       public Shape getShapeOfVertex(Vertex v) {
-        boolean leaf = graph.getNumEdges(v) == 1;
+        boolean leaf = v.getEdges().size() == 1;
         Dimension dim = treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false).getPreferredSize();
         return new Rectangle(-dim.width/2, -dim.height/2, dim.width, dim.height);
       }
@@ -119,7 +118,7 @@ public class SwingTree {
           Point2D p = layout.getPositionOfVertex(v);
           Rectangle r = layout.getShapeOfVertex(v).getBounds();
           r.translate((int)p.getX(), (int)p.getY());
-          boolean leaf = graph.getNumEdges(v) == 1;
+          boolean leaf = v.getEdges().size() == 1;
           Component c =treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false);
           c.setSize(r.getSize());
           c.paint(graphics.create(r.x, r.y, r.width, r.height ));

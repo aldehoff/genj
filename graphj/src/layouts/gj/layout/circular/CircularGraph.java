@@ -48,12 +48,12 @@ import java.util.Stack;
   /*package*/ CircularGraph(Graph graph, boolean isSingleCircle) {
     
     // anything to do?
-    if (graph.getNumVertices()==0) 
+    if (graph.getVertices().isEmpty()) 
       return;
     
     // prepare our nodes and their initial circles
     circles = new HashSet<Circle>();
-    vertex2circle = new HashMap<Vertex, Circle>(graph.getNumVertices());
+    vertex2circle = new HashMap<Vertex, Circle>(graph.getVertices().size());
     
     // simple for isSingleCircle=true
     if (isSingleCircle) {
@@ -91,7 +91,7 @@ import java.util.Stack;
     path.push(vertex);
     
     // recurse into neighbours traversing via arcs
-    for (Vertex neighbour : ModelHelper.getNeighbours(graph, vertex)) {
+    for (Vertex neighbour : ModelHelper.getNeighbours(vertex)) {
       // don't go back
       if (neighbour==vertex||neighbour==parent)
         continue;

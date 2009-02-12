@@ -59,7 +59,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
 
     // empty case?
-    if (graph.getNumVertices()==0)
+    if (graph.getVertices().isEmpty())
       return bounds;
     
     // wrap

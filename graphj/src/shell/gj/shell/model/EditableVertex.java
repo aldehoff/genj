@@ -20,12 +20,14 @@
 package gj.shell.model;
 
 import gj.model.Vertex;
+import gj.util.ModelHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -40,11 +42,8 @@ public class EditableVertex implements Vertex {
   /** the position of this vertex */
   private Point2D position;
   
-  /** neighbours of this vertex */
-  private Set<EditableVertex> neighbours = new LinkedHashSet<EditableVertex>();
-  
   /** all edges of this vertex */
-  private Set<EditableEdge> edges = new LinkedHashSet<EditableEdge>(3);
+  private Collection<EditableEdge> edges = new LinkedHashSet<EditableEdge>(3);
   
   /** the shape of this node */
   private Shape shape;
@@ -93,21 +92,21 @@ public class EditableVertex implements Vertex {
    * Number of neighbours
    */
   public int getNumNeighbours() {
-    return neighbours.size();
+    return getNeighbours().size();
   }
   
   /**
    * Returns neighbours
    */
-  public Set<EditableVertex> getNeighbours() {
-    return neighbours;
+  public Set<Vertex> getNeighbours() {
+    return ModelHelper.getNeighbours(this);
   }
 
   /**
    * Check for neighbour
    */
   public boolean isNeighbour(EditableVertex v) {
-    return neighbours.contains(v);
+    return getNeighbours().contains(v);
   }
   
   /**
@@ -116,18 +115,14 @@ public class EditableVertex implements Vertex {
   /*package*/ EditableEdge addEdge(EditableVertex that) {
 
     // don't allow duplicates
-    if (neighbours.contains(that))
+    if (getNeighbours().contains(that))
       throw new IllegalArgumentException("already exists edge between "+this+" and "+that);
     if (this.equals(that))
       throw new IllegalArgumentException("can't have edge between self ("+this+")");
 
     // setup self
     EditableEdge edge = new EditableEdge(this, that);
-    this.neighbours.add(that);
     this.edges.add(edge);
-    
-    // setup other
-    that.neighbours.add(this);
     if (that!=this) 
       that.edges.add(edge);
     
@@ -149,7 +144,7 @@ public class EditableVertex implements Vertex {
   /**
    * Retrieves all edges
    */
-  /*package*/ Set<EditableEdge> getEdges() {
+  public Collection<EditableEdge> getEdges() {
     return edges;
   }
   
@@ -158,8 +153,6 @@ public class EditableVertex implements Vertex {
    */
   /*package*/ void removeEdge(EditableEdge edge) {
     edges.remove(edge);
-    neighbours.remove(edge.getStart());
-    neighbours.remove(edge.getEnd());
   }
   
   /**

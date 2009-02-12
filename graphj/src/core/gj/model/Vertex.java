@@ -19,9 +19,15 @@
  */
 package gj.model;
 
+import java.util.Collection;
+
 /**
  * A vertex in a graph
  */
 public interface Vertex {
 
+  /**
+   * Vertex's edges
+   */
+  public Collection<? extends Edge> getEdges();
 }
