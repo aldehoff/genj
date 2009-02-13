@@ -224,7 +224,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
   private class Recursion extends Geometry {
     
     Graph graph;
-    Object root;
     Layout2D layout;
     Collection<Shape> debug;
     int depth;
@@ -238,7 +237,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       
       // init state
       this.graph = graph;
-      this.root = root;
       this.layout = layout;
       this.debug = debug;
       this.center = layout.getPositionOfVertex(root);
@@ -382,16 +380,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         else
           layout.setTransformOfVertex(child, new AffineTransform());
         
-        // layout edges
+        // layout edge
         if (isBendArcs) {
-          Path path = new Path();
-          path.start(layout.getPositionOfVertex(root));
-          path.lineTo(getPoint(center, fromRadian+radiansOfChildren/2, (radius+radiusOfChild)/2 ));
-          path.lineTo(getPoint(center, radianOfChild + radiansOfChild/2, (radius+radiusOfChild)/2 ));
-          path.lineTo(layout.getPositionOfVertex(child));
-          if (root!=edge.getStart()) path.invert();
-          path.translate(getPoint(layout.getPositionOfVertex(root==edge.getStart()?root:child), -1));
-          layout.setPathOfEdge(edge, path);
+          setBendedPath(layout, edge, root, fromRadian+radiansOfChildren/2, (radius+radiusOfChild)/2, radianOfChild + radiansOfChild/2, child );
         } else {
           setPath(edge, layout);
         }
@@ -409,7 +400,48 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
 
       // done
     }
-    
+
+    /**
+     * calculate and set edge's bended path
+     * @param layout the layout to apply the change to
+     * @param edge the edge to change
+     * @param from the start of the path (not necessarily start in edge)
+     * @param radian1 the radian of the top part of the path
+     * @param radius the radius of the middle part of the path
+     * @param radian2 the radian of the bottom part of the path
+     * @param to the end of the path (not necessarily end in edge)
+     */
+    private void setBendedPath(Layout2D layout, Edge edge, Vertex from, double radian1, double radius, double radian2, Vertex to) {
+      
+      // calculate points of path
+      Point2D p1 = layout.getPositionOfVertex(from);
+      Point2D p2 = getPoint(center, radian1, radius);
+      Point2D p3 = getPoint(center, radian2, radius );
+      Point2D p4 = layout.getPositionOfVertex(to);
+
+      // check first and last point for ending on shape
+      p1 = getVectorEnd(p2, p1, p1, layout.getShapeOfVertex(from));
+      p4 = getVectorEnd(p3, p4, p4, layout.getShapeOfVertex(to));
+
+      // draw path
+      Path path = new Path();
+      path.start(p1);
+      path.lineTo(p2);
+      path.lineTo(p3);
+      path.lineTo(p4);
+ 
+      // layout relative to start
+      if (from.equals(edge.getStart())) {
+        path.translate(getPoint(layout.getPositionOfVertex(from), -1));
+      } else {
+        path.invert();
+        path.translate(getPoint(layout.getPositionOfVertex(to), -1));
+      }
+        
+      
+      layout.setPathOfEdge(edge, path);
+    }
+
     
   } //Recursion
   

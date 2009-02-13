@@ -29,7 +29,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -65,17 +64,15 @@ public class Geometry {
   /**
    * Calculates the closest point from a list of points
    */
-  public static Point2D getClosest(Point2D point, List<Point2D> points) {
+  public static Point2D getClosest(Point2D point, Collection<Point2D> points) {
     if (points.size()==0)
       throw new IllegalArgumentException();
     // assume first
-    Point2D result = (Point2D)points.get(0);
-    double distance = result.distance(point);
-    // loop over rest
-    for (int i=1;i<points.size();i++) {
-      Point2D p = (Point2D)points.get(i);
+    Point2D result = null;
+    double distance = Double.MAX_VALUE;
+    for (Point2D p : points) {
       double d = p.distance(point);
-      if (d<distance) {
+      if (d<=distance) {
         result = p;
         distance = d;
       }
@@ -215,8 +212,7 @@ public class Geometry {
         b = new Point2D.Double(end.getX()-vector.getX(), end.getY()-vector.getY());
 
       // intersect line (a,b) with shape
-      ArrayList<Point2D> is = new ArrayList<Point2D>(10);
-      getIntersections(a, b, intersectWith, is );
+      Collection<Point2D> is = getIntersections(a, b, intersectWith);
       
       // calculate smallest distance
       for (Point2D i : is) 
@@ -487,8 +483,8 @@ public class Geometry {
    * @param lineEnd end of line
    * @param shape the shape
    */
-  public static void getIntersections(Point2D lineStart, Point2D lineEnd, Shape shape, Collection<Point2D> result) {
-    new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(null), result);
+  public static Collection<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Shape shape) {
+    return new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(null)).result;
   }
   
   /**
@@ -498,8 +494,8 @@ public class Geometry {
    * @param shapePos position of shape
    * @param shape the shape 
    */
-  public static void getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape, Collection<Point2D> result) {
-    new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())), result);
+  public static Collection<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape) {
+    return new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY()))).result;
   }
   
   /**
@@ -519,11 +515,11 @@ public class Geometry {
     /**
      * Constructor
      */
-    protected OpLineShapeIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape, Collection<Point2D> result) {
+    protected OpLineShapeIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape) {
       // remember
+      this.result = new ArrayList<Point2D>(10);
       this.lineStart = lineStart;
       this.lineEnd   = lineEnd;
-      this.result    = result;
       // iterate over line segments in shape
       ShapeHelper.iterateShape(shape, this);
       // done
@@ -691,6 +687,16 @@ public class Geometry {
       return null;
 
     return new Point2D.Double( (b1*c2 - b2*c1)/denom , (a2*c1 - a1*c2)/denom);
+  }
+  
+  /**
+   * Calculate the end-point of a vector where it intersects first with a shape.
+   * If there are more than one intersections the closest one to the vector's start 
+   * is returned. If there is no intersection then the vector's end is returned.
+   */
+  public static Point2D getVectorEnd(Point2D vectorStart, Point2D vectorEnd, Point2D shapePos, Shape shape) {
+    Collection<Point2D> points = getIntersections(vectorStart, vectorEnd, shapePos, shape);
+    return points.isEmpty() ? vectorEnd: getClosest(vectorStart, points);
   }
 
   /**

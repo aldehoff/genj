@@ -19,7 +19,7 @@
  */
 package gj.util;
 
-import gj.geom.Geometry;
+import static gj.geom.Geometry.*;
 import gj.geom.Path;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
@@ -178,7 +178,7 @@ public class LayoutHelper {
   }
   
   public static double getDiameter(Vertex vertex, Layout2D layout) {
-    return Geometry.getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
+    return getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
   }
 
   /**
@@ -200,14 +200,11 @@ public class LayoutHelper {
   }
 
   public static Path getPath(Edge edge, Layout2D layout) {
-    Shape
-    sfrom= layout.getShapeOfVertex(edge.getStart()),
-    sto  = layout.getShapeOfVertex(edge.getEnd());
-  Point2D
-    pfrom= layout.getPositionOfVertex(edge.getStart()),
-    pto  = layout.getPositionOfVertex(edge.getEnd());
-  
-    return getPath(pfrom,sfrom,pto,sto);
+    return getPath(
+        layout.getPositionOfVertex(edge.getStart()),
+        layout.getShapeOfVertex(edge.getStart()),
+        layout.getPositionOfVertex(edge.getEnd()),
+        layout.getShapeOfVertex(edge.getEnd()));
   }
 
   /**
@@ -225,8 +222,8 @@ public class LayoutHelper {
     
     // intersect the first segment with s1
     Point2D
-      a = calcEnd(points[1], points[0], s1),
-      b = calcEnd(points[n-2], points[n-1], s2);
+      a = getVectorEnd(points[1], points[0], points[0], s1),
+      b = getVectorEnd(points[n-2], points[n-1], points[n-1], s2);
     
     // add the points to this path relative to start
     if (!reversed) {
@@ -257,8 +254,8 @@ public class LayoutHelper {
   public static Path getPath(Point2D p1, Shape s1, Point2D p2, Shape s2) {
   
     Point2D 
-    	a = calcEnd(p2, p1, s1),
-    	b = calcEnd(p1, p2, s2);
+    	a = getVectorEnd(p2, p1, p1, s1),
+    	b = getVectorEnd(p1, p2, p2, s2);
     
     // A simple line
     Path result = new Path();
@@ -269,13 +266,4 @@ public class LayoutHelper {
     return result; 
   }
 
-  private static Point2D calcEnd(Point2D from, Point2D to, Shape shape) {
-    
-    ArrayList<Point2D> points = new ArrayList<Point2D>();
-    Geometry.getIntersections(from, to, to, shape, points);
-    
-    return points.isEmpty() ? to : Geometry.getClosest(from, points);
-  
-  }
-  
 } //ModelHelper
