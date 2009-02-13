@@ -433,6 +433,10 @@ public class Geometry {
     return new Point2D.Double( p1.getX() + (p2.getX()-p1.getX())*share, p1.getY() +  (p2.getY()-p1.getY())*share  );
   }
   
+  public static Point2D getPoint(Point2D p, double factor) {
+    return new Point2D.Double(p.getX()*factor, p.getY()*factor);
+  }
+  
   /**
    * substracts a from b
    * <pre>

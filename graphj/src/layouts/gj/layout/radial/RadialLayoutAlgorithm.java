@@ -20,7 +20,6 @@
 package gj.layout.radial;
 
 import static gj.util.LayoutHelper.setPath;
-import static gj.util.LayoutHelper.getPath;
 import static gj.util.LayoutHelper.assertSpanningTree;
 import static gj.util.LayoutHelper.getDiameter;
 import static gj.util.LayoutHelper.getNormalizedEdges;
@@ -331,7 +330,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       
       // sort children by current position
       if (isOrderSiblingsByPosition)  {
-        final double currentNorth = fromRadian+(toRadian-fromRadian)/2+Geometry.HALF_RADIAN;
+        final double north = fromRadian+(toRadian-fromRadian)/2+Geometry.HALF_RADIAN;
  
         Edge[] tmp = edges.toArray(new Edge[edges.size()]);
         Arrays.sort(tmp, new Comparator<Edge>() {
@@ -340,9 +339,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
             double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(getOther(e1, root))));
             double r2 = getRadian(getDelta(center,layout.getPositionOfVertex(getOther(e2, root))));
             
-            if (r1>currentNorth)
+            if (r1>north)
               r1 -= ONE_RADIAN;
-            if (r2>currentNorth)
+            if (r2>north)
               r2 -= ONE_RADIAN;
             
             if (r1<r2) 
@@ -385,13 +384,14 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         
         // layout edges
         if (isBendArcs) {
-          Point2D[] path = new Point2D[]{ 
-              layout.getPositionOfVertex(root), 
-              getPoint(center, fromRadian+radiansOfChildren/2, (radius+radiusOfChild)/2 ),
-              getPoint(center, radianOfChild + radiansOfChild/2, (radius+radiusOfChild)/2 ),
-              layout.getPositionOfVertex(child) 
-          }; 
-          layout.setPathOfEdge(edge, getPath(path, layout.getShapeOfVertex(root), layout.getShapeOfVertex(child), edge.getStart().equals(child)));
+          Path path = new Path();
+          path.start(layout.getPositionOfVertex(root));
+          path.lineTo(getPoint(center, fromRadian+radiansOfChildren/2, (radius+radiusOfChild)/2 ));
+          path.lineTo(getPoint(center, radianOfChild + radiansOfChild/2, (radius+radiusOfChild)/2 ));
+          path.lineTo(layout.getPositionOfVertex(child));
+          if (root!=edge.getStart()) path.invert();
+          path.translate(getPoint(layout.getPositionOfVertex(root==edge.getStart()?root:child), -1));
+          layout.setPathOfEdge(edge, path);
         } else {
           setPath(edge, layout);
         }

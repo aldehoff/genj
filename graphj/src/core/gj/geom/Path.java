@@ -19,6 +19,8 @@
  */
 package gj.geom;
 
+import static gj.geom.Geometry.*;
+
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -27,6 +29,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
+
 
 /**
  * A 2D path - missing from the jawa.awt.geom.* stuff
@@ -43,10 +46,8 @@ public class Path implements Shape {
   private double lastAngle = Double.NaN;
   
   /** the lastPoint we keep */
-  private Point2D.Double lastPoint = new Point2D.Double();
-  
-  /** whether we've been started */
-  private boolean isStarted = false;
+  private Point2D.Double firstPoint = null;
+  private Point2D.Double lastPoint = null;
   
   /**
    * Constructor
@@ -62,8 +63,8 @@ public class Path implements Shape {
     this.gp.transform(at);
     this.firstAngle = that.firstAngle;
     this.lastAngle = that.lastAngle;
+    this.firstPoint = that.firstPoint;
     this.lastPoint = that.lastPoint;
-    this.isStarted = that.isStarted;
   }
   
   /**
@@ -74,27 +75,27 @@ public class Path implements Shape {
     ShapeHelper.iterateShape(that, new PathConsumer() {
 
       public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
-        if (!isStarted)
+        if (firstPoint==null)
           start(start);
-        if (!lastPoint.equals(start))
+        else if (!lastPoint.equals(start))
           throw new IllegalArgumentException("gap in path between "+lastPoint+" and "+start);
         curveTo(ctrl1, ctrl2, end);
         return true;
       }
 
       public boolean consumeLine(Point2D start, Point2D end) {
-        if (!isStarted)
+        if (firstPoint==null)
           start(start);
-        if (!lastPoint.equals(start))
+        else if (!lastPoint.equals(start))
           throw new IllegalArgumentException("gap in path between "+lastPoint+" and "+start);
         lineTo(end);
         return true;
       }
 
       public boolean consumeQuadCurve(Point2D start, Point2D ctrl, Point2D end) {
-        if (!isStarted)
+        if (firstPoint==null)
           start(start);
-        if (!lastPoint.equals(start))
+        else if (!lastPoint.equals(start))
           throw new IllegalArgumentException("gap in path between "+lastPoint+" and "+start);
         quadTo(ctrl, end);
         return true;
@@ -103,6 +104,14 @@ public class Path implements Shape {
       
     });
     
+  }
+  
+  /**
+   * Invert
+   */
+  public synchronized void invert() {
+    Point2D.Double p = lastPoint; lastPoint = firstPoint; firstPoint = p;
+    double a = lastAngle; lastAngle = firstAngle + HALF_RADIAN; firstAngle = a + HALF_RADIAN;
   }
   
   /**
@@ -143,15 +152,15 @@ public class Path implements Shape {
   public synchronized Path start(Point2D p) {
     
     // start this
-    if (isStarted)
+    if (firstPoint!=null)
       throw new IllegalArgumentException("start twice");
-    isStarted = true;
 
     // setup move
     gp.moveTo((float)p.getX(), (float)p.getY());
     
-    // remember 'last' point
-    lastPoint.setLocation(p.getX(), p.getY());
+    // remember 'first/last' point
+    firstPoint = new Point2D.Double(p.getX(), p.getY());
+    lastPoint = new Point2D.Double(p.getX(), p.getY());
 
     // done
     return this;
@@ -161,7 +170,7 @@ public class Path implements Shape {
    * check for continuation
    */
   private void checkContinue() {
-    if (!isStarted)
+    if (firstPoint==null)
       throw new IllegalArgumentException("continue without start");
   }
   
@@ -173,7 +182,7 @@ public class Path implements Shape {
     checkContinue();
     // add opening angle
     if (Double.isNaN(firstAngle))
-      firstAngle = Geometry.getAngle(lastPoint, p);
+      firstAngle = Geometry.getAngle(firstPoint, p);
     // do the line
     gp.lineTo((float)p.getX(), (float)p.getY());
     // remember closing angle & position
@@ -190,7 +199,7 @@ public class Path implements Shape {
     checkContinue();
     // add opening angle
     if (Double.isNaN(firstAngle))
-      firstAngle = Geometry.getAngle(lastPoint, c);
+      firstAngle = Geometry.getAngle(firstPoint, c);
     // do the quad curve
     gp.quadTo((float)c.getX(), (float)c.getY(), (float)p.getX(), (float)p.getY());
     // remember closing angle & position
@@ -207,7 +216,7 @@ public class Path implements Shape {
     checkContinue();
     // add opening angle
     if (Double.isNaN(firstAngle))
-      firstAngle = Geometry.getAngle(lastPoint, c1);
+      firstAngle = Geometry.getAngle(firstPoint, c1);
     // do the curve
     gp.curveTo((float)c1.getX(), (float)c1.getY(), (float)c2.getX(), (float)c2.getY(), (float)p.getX(), (float)p.getY());
     // remember closing angle
