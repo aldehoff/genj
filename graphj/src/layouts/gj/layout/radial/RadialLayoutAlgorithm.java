@@ -382,7 +382,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         
         // layout edge
         if (isBendArcs) {
-          setBendedPath(layout, edge, root, fromRadian+radiansOfChildren/2, (radius+radiusOfChild)/2, radianOfChild + radiansOfChild/2, child );
+          setBendedPath(layout, edge, root, fromRadian+radiansOfChildren*shareFactor/2, (radius+radiusOfChild)/2, radianOfChild + radiansOfChild/2, child );
         } else {
           setPath(edge, layout);
         }
@@ -413,9 +413,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
      */
     private void setBendedPath(Layout2D layout, Edge edge, Vertex from, double radian1, double radius, double radian2, Vertex to) {
 
-      // FIXME handle more than quarter radian 
-      // FIXME cubic curves still don't line up right 
-      
       // calculate points of path
       Point2D p1 = layout.getPositionOfVertex(from);
       Point2D p2 = getPoint(center, radian1, radius);
@@ -432,20 +429,27 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       path.lineTo(p2);
       
       // calculate cubic curve through control points c1 and c2
+      // @see http://whizkidtech.redprince.net/bezier/circle/
+      // @see http://en.wikipedia.org/wiki/B%C3%A9zier_curve
       
-      // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
-      Point2D i = getLineIntersection(
+      // check for how many cubic curves we're going to need
+      int curves = (int)Math.ceil(Math.abs(radian2-radian1)/QUARTER_RADIAN);
+      for (int c=0;c<curves;c++) {
+        
+        // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
+        Point2D i = getLineIntersection(
           p2, new Point2D.Double( p2.getX() - (p2.getY()-center.getY()), p2.getY() + (p2.getX()-center.getX()) ), 
           p3, new Point2D.Double( p3.getX() - (p3.getY()-center.getY()), p3.getY() + (p3.getX()-center.getX()) )
           );
-      if (i==null) // no intersection handles specially
-        path.lineTo(p3);
-      else {
         
         // calculate control points half way [p2>i] & [p3>i]
-        Point2D c1 = new Point2D.Double( (p2.getX()+i.getX())/2 , (p2.getY()+i.getY())/2 );
-        Point2D c2 = new Point2D.Double( (p3.getX()+i.getX())/2 , (p3.getY()+i.getY())/2 );
+        double kappa = 0.5522847498;//0.5522847498307933984022516322796;
+        Point2D c1 = new Point2D.Double( p2.getX() + (i.getX()-p2.getX())*kappa , p2.getY() + (i.getY()-p2.getY())*kappa );
+        Point2D c2 = new Point2D.Double( p3.getX() + (i.getX()-p3.getX())*kappa , p3.getY() + (i.getY()-p3.getY())*kappa );
         path.curveTo(c1, c2, p3);
+        
+        // FIXME handle breaking down partial circle into multiple cubic curves
+        break;
       }
         
       // draw end of path
