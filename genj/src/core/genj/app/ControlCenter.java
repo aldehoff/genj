@@ -839,7 +839,7 @@ public class ControlCenter extends JPanel {
       // by default we offer the user to load example.ged
       HashSet deflt = new HashSet();
       if (args.length==0) try {
-        deflt.add(new File("gedcom/example.ged").toURL());
+        deflt.add(new File("gedcom/example.ged").toURI().toURL());
       } catch (Throwable t) {
         // ignored
       }
@@ -860,7 +860,7 @@ public class ControlCenter extends JPanel {
           // check if it's a local file
           File local  = new File(restore);
           if (local.exists())
-            restore = local.toURL().toString();
+            restore = local.toURI().toURL().toString();
           
           ActionOpen open = new ActionOpen(restore);
           open.trigger();

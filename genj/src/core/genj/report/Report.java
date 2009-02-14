@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.134 $ $Author: nmeier $ $Date: 2009-01-28 17:07:41 $
+ * $Revision: 1.135 $ $Author: nmeier $ $Date: 2009-02-14 23:55:32 $
  */
 package genj.report;
 
@@ -477,7 +477,7 @@ public abstract class Report implements Cloneable {
       // let ReportView show the file or show it in external application
       if (owner instanceof ReportView && file.getName().endsWith(".html")) {
         try {
-          log(""+file.toURL());
+          log(""+file.toURI().toURL());
         } catch (MalformedURLException e) {}
       } else {
         FileAssociation association = FileAssociation.get(formatter.getFileExtension(), formatter.getFileExtension(), "Open", owner);

@@ -83,7 +83,7 @@ public abstract class PropertyOption extends Option {
             continue;
 
           // try a read
-          property.getReadMethod().invoke(instance, null);
+          property.getReadMethod().invoke(instance, (Object[])null);
 
           // create
           Option option = BeanPropertyImpl.create(instance, property);
@@ -548,12 +548,12 @@ public abstract class PropertyOption extends Option {
       PropertyOption result = new BeanPropertyImpl(instance, descriptor);
       // is it an Integer field with matching multiple choice field?
       if (descriptor.getPropertyType()==Integer.TYPE) try {
-        final Method choices = instance.getClass().getMethod(descriptor.getReadMethod().getName()+"s", null);
+        final Method choices = instance.getClass().getMethod(descriptor.getReadMethod().getName()+"s", (Class[])null);
         if (choices.getReturnType().isArray())
           // wrap in multiple choice
           return new MultipleChoiceOption(result) {
             public Object[] getChoicesImpl() throws Throwable {
-              return (Object[])choices.invoke(instance, null);
+              return (Object[])choices.invoke(instance, (Object[])null);
             }
           };
       } catch (Throwable t) {
@@ -570,7 +570,7 @@ public abstract class PropertyOption extends Option {
 
     /** accessor */
     protected Object getValueImpl() throws Throwable {
-      return descriptor.getReadMethod().invoke(instance, null);
+      return descriptor.getReadMethod().invoke(instance, (Object[])null);
     }
 
     /** accessor */

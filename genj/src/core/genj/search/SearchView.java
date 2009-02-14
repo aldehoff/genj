@@ -386,7 +386,7 @@ public class SearchView extends JPanel implements ToolBarSupport {
       String after = all.substring(selEnd);
 
       // calculate result
-      final String result = MessageFormat.format(pattern, new String[]{ all, before, selection, after} );
+      final String result = MessageFormat.format(pattern, new Object[]{ all, before, selection, after} );
 
       // invoke this later - selection might otherwise not work correctly
       SwingUtilities.invokeLater(new Runnable() { public void run() {

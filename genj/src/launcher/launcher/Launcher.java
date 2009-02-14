@@ -337,7 +337,7 @@ public class Launcher {
     
     URL[] urls = new URL[classpath.length];
     for (int i = 0; i < urls.length; i++) {
-      urls[i] = new File(classpath[i]).toURL();
+      urls[i] = new File(classpath[i]).toURI().toURL();
     }
     
     return new URLClassLoader(urls);

@@ -103,7 +103,7 @@ public class ReportLoader {
       
     // parse report directory
     try {
-      classpath.add(base.toURL());
+      classpath.add(base.toURI().toURL());
     } catch (MalformedURLException e) {
       // n/a
     }
@@ -174,8 +174,8 @@ public class ReportLoader {
       // library?
       if (isLibrary(file)) {
         try {
-          ReportView.LOG.info("report library "+file.toURL());
-          classpath.add(file.toURL());
+          ReportView.LOG.info("report library "+file.toURI().toURL());
+          classpath.add(file.toURI().toURL());
         } catch (MalformedURLException e) {
           // n/a
         }
