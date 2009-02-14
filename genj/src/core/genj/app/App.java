@@ -64,10 +64,6 @@ public class App {
    */
   public static void main(final String[] args) {
     
-    // patching the log manager has to be done before anything else (SwingUtilities for 
-    // example causes Log access)
-    System.setProperty("java.util.logging.manager", "genj.app.App$PatchedLogManager");
-    
     // we're ready to be run twice
     synchronized (App.class) {
       if (startup==null)  {
@@ -190,14 +186,11 @@ public class App {
         }
         
         // setup control center
-        center = new ControlCenter(registry, winMgr);
+        center = new ControlCenter(registry, winMgr, new Shutdown(registry));
   
         // show it
         winMgr.openWindow("cc", resources.getString("app.title"), Gedcom.getImage(), center, center.getMenuBar(), center.getExitAction());
   
-        // hookup shutdown
-        Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(registry)));
-        
         // done
         LOG.info("/Startup");
       
@@ -239,10 +232,8 @@ public class App {
 	    Registry.persist();      
 	    // done
       LOG.info("/Shutdown");
-      // shutdown our patched log manager now
-      LogManager mgr = LogManager.getLogManager();
-      if (mgr instanceof PatchedLogManager)
-        ((PatchedLogManager)mgr).doReset();
+      // let VM do it's thing
+      System.exit(0);
       // done
     }
     
@@ -348,14 +339,5 @@ public class App {
       }
     }
   }
-  
-  public static class PatchedLogManager extends LogManager {
-    public void reset() throws SecurityException {
-      // noop
-    }
-    public void doReset() throws SecurityException {
-      super.reset();
-    }
-  }
-  
+    
 } //App

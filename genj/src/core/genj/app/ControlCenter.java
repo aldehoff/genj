@@ -113,16 +113,19 @@ public class ControlCenter extends JPanel {
   private List toolbarActions = new ArrayList();
   private Stats stats = new Stats();
   private ActionExit exit = new ActionExit();
+
+  private Runnable runOnExit;
     
   /**
    * Constructor
    */
-  public ControlCenter(Registry setRegistry, WindowManager winManager) {
+  public ControlCenter(Registry setRegistry, WindowManager winManager, Runnable onExit) {
 
     // Initialize data
     registry = new Registry(setRegistry, "cc");
     windowManager = winManager;
     viewManager = new ViewManager(windowManager);
+    runOnExit = onExit;
     
     // Table of Gedcoms
     tGedcoms = new GedcomTableWidget(viewManager, registry) {
@@ -458,10 +461,8 @@ public class ControlCenter extends JPanel {
       // Close all Windows
       windowManager.closeAll();
       
-      // Shutdown - wanted to do without but SingUtilities creates
-      // a hidden frame that sticks around (for null-parent dialogs)
-      // preventing the event dispatcher thread from shutting down
-      System.exit(0);
+      // Shutdown
+      runOnExit.run();
 
       // Done
     }
