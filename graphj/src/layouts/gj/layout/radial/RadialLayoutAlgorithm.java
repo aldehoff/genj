@@ -246,6 +246,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       // calculate sub-tree sizes
       getSize(null, root, 0);
       
+      // reset root transformation
+      layout.setTransformOfVertex(root, new AffineTransform());
+      
       // layout
       layout(null, root, 0, Geometry.ONE_RADIAN, 0);
       
@@ -366,6 +369,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         shareFactor = 1;
       }
       
+      // TODO i'll have to align bended arcs for all children by using the same
+      // radial segments to avoid curves that don't like up 100%
+      
       // position children and iterate into their placement recursion
       double radianOfChild = fromRadian;
       for (Edge edge : edges) {
@@ -434,7 +440,10 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       
       // check for how many cubic curves we're going to need
       int curves = (int)Math.ceil(Math.abs(radian2-radian1)/QUARTER_RADIAN);
-      for (int c=0;c<curves;c++) {
+      for (int c=1;c<=curves;c++) {
+        
+        if (curves>1)
+          p3 = getPoint( center, radian1+(radian2-radian1)/curves*c, radius);
         
         // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
         Point2D i = getLineIntersection(
@@ -448,8 +457,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         Point2D c2 = new Point2D.Double( p3.getX() + (i.getX()-p3.getX())*kappa , p3.getY() + (i.getY()-p3.getY())*kappa );
         path.curveTo(c1, c2, p3);
         
-        // FIXME handle breaking down partial circle into multiple cubic curves
-        break;
+        // continue with next round segment
+        p2 = p3;
       }
         
       // draw end of path
