@@ -447,6 +447,10 @@ public class Geometry {
     return new Point2D.Double( (a.getX()+b.getX())/2, (a.getY()+b.getY())/2); 
   }
   
+  public static Point2D getNeg(Point2D p) {
+    return new Point2D.Double(-p.getX(), -p.getY());
+  }
+  
   /**
    * adds a to b
    * <pre>

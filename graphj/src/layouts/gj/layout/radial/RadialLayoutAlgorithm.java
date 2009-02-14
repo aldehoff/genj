@@ -412,6 +412,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
      * @param to the end of the path (not necessarily end in edge)
      */
     private void setBendedPath(Layout2D layout, Edge edge, Vertex from, double radian1, double radius, double radian2, Vertex to) {
+
+      // FIXME handle more than quarter radian 
+      // FIXME cubic curves still don't line up right 
       
       // calculate points of path
       Point2D p1 = layout.getPositionOfVertex(from);
@@ -422,20 +425,38 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       // check first and last point for ending on shape
       p1 = getVectorEnd(p2, p1, p1, layout.getShapeOfVertex(from));
       p4 = getVectorEnd(p3, p4, p4, layout.getShapeOfVertex(to));
-
-      // draw path
+      
+      // draw start of path
       Path path = new Path();
       path.start(p1);
       path.lineTo(p2);
-      path.lineTo(p3);
+      
+      // calculate cubic curve through control points c1 and c2
+      
+      // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
+      Point2D i = getLineIntersection(
+          p2, new Point2D.Double( p2.getX() - (p2.getY()-center.getY()), p2.getY() + (p2.getX()-center.getX()) ), 
+          p3, new Point2D.Double( p3.getX() - (p3.getY()-center.getY()), p3.getY() + (p3.getX()-center.getX()) )
+          );
+      if (i==null) // no intersection handles specially
+        path.lineTo(p3);
+      else {
+        
+        // calculate control points half way [p2>i] & [p3>i]
+        Point2D c1 = new Point2D.Double( (p2.getX()+i.getX())/2 , (p2.getY()+i.getY())/2 );
+        Point2D c2 = new Point2D.Double( (p3.getX()+i.getX())/2 , (p3.getY()+i.getY())/2 );
+        path.curveTo(c1, c2, p3);
+      }
+        
+      // draw end of path
       path.lineTo(p4);
  
       // layout relative to start
       if (from.equals(edge.getStart())) {
-        path.translate(getPoint(layout.getPositionOfVertex(from), -1));
+        path.translate(getNeg(layout.getPositionOfVertex(from)));
       } else {
         path.invert();
-        path.translate(getPoint(layout.getPositionOfVertex(to), -1));
+        path.translate(getNeg(layout.getPositionOfVertex(to)));
       }
         
       
