@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.32 $ $Author: nmeier $ $Date: 2008-01-14 21:10:16 $
+ * $Revision: 1.33 $ $Author: nmeier $ $Date: 2009-02-14 01:22:12 $
  */
 package genj.util;
 
@@ -804,6 +804,7 @@ public class Registry {
         out.flush();
         out.close();
       } catch (IOException ex) {
+        LOG.warning("Couldn't store registry "+key+" ("+ex.getMessage()+")");
       }
 
     }
