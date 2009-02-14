@@ -64,6 +64,10 @@ public class App {
    */
   public static void main(final String[] args) {
     
+    // patching the log manager has to be done before anything else (SwingUtilities for 
+    // example causes Log access)
+    System.setProperty("java.util.logging.manager", "genj.app.App$PatchedLogManager");
+    
     // we're ready to be run twice
     synchronized (App.class) {
       if (startup==null)  {
@@ -112,7 +116,6 @@ public class App {
           throw new IOException("Can't initialize home directoy "+home);
         
         // prepare our master log and own LogManager for GenJ
-        System.setProperty("java.util.logging.manager", "genj.app.App$PatchedLogManager");
         LOG = Logger.getLogger("genj");
         
         // prepare some basic logging for now
