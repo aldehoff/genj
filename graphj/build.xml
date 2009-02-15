@@ -105,7 +105,8 @@
    Run
    -->
   <target name="run" depends="make">
-    <java classname="gj.shell.Shell" fork="true">
+    <java classname="gj.shell.Shell" fork="true"> 
+    	 <arg value="./save/tree1.xml"/>
        <classpath path="./build/gj-core.jar:./build/gj-layouts.jar:./build/gj-ui.jar:./build/gj-shell.jar"/>
     </java>
   </target>
