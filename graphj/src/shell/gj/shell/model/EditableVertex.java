@@ -70,6 +70,13 @@ public class EditableVertex implements Vertex {
   }
   
   /**
+   * special request for original shape
+   */
+  public Shape getOriginalShape() {
+    return shape;
+  }
+  
+  /**
    * interface implementation
    */
   public void setShape(Shape set) {
@@ -211,6 +218,10 @@ public class EditableVertex implements Vertex {
       transform=null;
     this.transform = transform;
     transformedShape = null;
+  }
+  
+  public AffineTransform getTransformation() {
+    return transform;
   }
 
 } //Vertex

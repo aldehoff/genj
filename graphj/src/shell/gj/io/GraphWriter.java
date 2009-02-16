@@ -26,6 +26,7 @@ import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -114,7 +115,7 @@ public class GraphWriter {
     // loop through vertices
     for (EditableVertex vertex: g.getVertices()) {
       // check known shape
-      Shape s = vertex.getShape();
+      Shape s = vertex.getOriginalShape();
       if (!element2id.containsKey(s))
         writeShape("shape",s, element2id.size()+1);
       // next
@@ -177,7 +178,17 @@ public class GraphWriter {
     info.put("id", getId(v));
     info.put("x", v.getPosition().getX());
     info.put("y", v.getPosition().getY());
-    info.put("sid", element2id.get(v.getShape()));
+    info.put("sid", element2id.get(v.getOriginalShape()));
+    
+    AffineTransform t = v.getTransformation();
+    if (t!=null&&!t.isIdentity()) {
+      info.put("t", "4");
+      double[] flatmatrix = new double[4];
+      t.getMatrix(flatmatrix);
+      for (int m=0;m<flatmatrix.length;m++)
+        info.put(String.format("t%d", m), flatmatrix[m]);
+    }
+      
     Object content = v.getContent();
     if (content!=null)
       info.put("c", content.toString());
