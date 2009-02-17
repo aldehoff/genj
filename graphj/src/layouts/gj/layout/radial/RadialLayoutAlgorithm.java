@@ -371,37 +371,43 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       
       // TODO i'll have to align bended arcs for all children by using the same
       // radial segments to avoid curves that don't like up 100%
+      double radianOfRoot = fromRadian+radiansOfChildren*shareFactor/2;
+      double[] radianOfChild = new double[edges.size()];
       
       // position children and iterate into their placement recursion
-      double radianOfChild = fromRadian;
-      for (Edge edge : edges) {
+      for (int c=0;c<edges.size();c++) {
         
+        Edge edge = edges.get(c);
+        
+        // place child
         Vertex child = getOther(edge, root);
         double radiusOfChild = radius + getLengthOfEdge(edge) * distanceBetweenGenerations;
         double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
-        layout.setPositionOfVertex(child, getPoint(center, radianOfChild + radiansOfChild/2, radiusOfChild ));
-        
+        radianOfChild[c] = fromRadian + radiansOfChild/2;
+        layout.setPositionOfVertex(child, getPoint(center, radianOfChild[c], radiusOfChild ));
+
+        // modify shape
         if (isRotateShapes)
-          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild + radiansOfChild/2) );
+          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild[c]) );
         else
           layout.setTransformOfVertex(child, new AffineTransform());
         
         // layout edge
         if (isBendArcs) {
-          setBendedPath(layout, edge, root, fromRadian+radiansOfChildren*shareFactor/2, (radius+radiusOfChild)/2, radianOfChild + radiansOfChild/2, child );
+          setBendedPath(layout, edge, root, radianOfRoot, radius+distanceBetweenGenerations/2, radianOfChild[c], child );
         } else {
           setPath(edge, layout);
         }
 
         // add debugging information
         if (debug!=null) {
-          debug.add(new Line2D.Double(getPoint(center, radianOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, radianOfChild, radiusOfChild+distanceBetweenGenerations/2)));
-          debug.add(new Line2D.Double(getPoint(center, radianOfChild+radiansOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, radianOfChild+radiansOfChild, radiusOfChild+distanceBetweenGenerations/2)));
+          debug.add(new Line2D.Double(getPoint(center, fromRadian, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian, radiusOfChild+distanceBetweenGenerations/2)));
+          debug.add(new Line2D.Double(getPoint(center, fromRadian+radiansOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian+radiansOfChild, radiusOfChild+distanceBetweenGenerations/2)));
         }
         
-        layout(root, child, radianOfChild, radianOfChild+radiansOfChild, radiusOfChild);
+        layout(root, child, fromRadian, fromRadian+radiansOfChild, radiusOfChild);
         
-        radianOfChild += radiansOfChild;
+        fromRadian += radiansOfChild;
       }
 
       // done
