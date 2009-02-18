@@ -248,11 +248,14 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       // calculate sub-tree sizes
       getSize(null, root, 0);
       
-      // reset root transformation
-      layout.setTransformOfVertex(root, new AffineTransform());
-      
       // layout
-      layout(null, root, 0, Geometry.ONE_RADIAN, 0);
+      double north = layout(null, root, 0, Geometry.ONE_RADIAN, 0);
+      
+      // modify root's shape
+      if (isRotateShapes)
+        layout.setTransformOfVertex(root, AffineTransform.getRotateInstance(HALF_RADIAN + north) );
+      else
+        layout.setTransformOfVertex(root, new AffineTransform());
       
       // add debug rings
       if (debug!=null) {
@@ -322,14 +325,14 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     /**
      * recursive layout call
      */
-    void layout(Vertex backtrack, final Vertex root, double fromRadian, final double toRadian, final double radius) {
+    double layout(Vertex backtrack, final Vertex root, double fromRadian, final double toRadian, final double radius) {
       
       // assemble list of children
       List<Edge> edges = getNormalizedEdges(root);
       if (backtrack!=null)
         edges.removeAll(backtrack.getEdges());
       if (edges.isEmpty())
-        return;
+        return (toRadian+fromRadian)/2;
       
       // sort children by current position
       if (isOrderSiblingsByPosition)  {
@@ -410,6 +413,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       }
 
       // done
+      return radianOfRoot;
     }
     
     /**
