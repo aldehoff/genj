@@ -48,6 +48,12 @@ public class TreeGraphAdapter<V> implements Graph {
       result += _getNumVertices(child);
     return result;
   }
+  
+  public V getContent(Vertex v) {
+    
+    // TODO the warning about unchecked cast is interesting - maybe Graphs should be paramizeable with the vertex/edge type
+    return ((DefaultVertex<V>)v).getContent();
+  }
 
   public Collection<Vertex> getVertices() {
     return _getVertices(new DefaultVertex<V>(tree.getRoot()), new ArrayList<Vertex>());

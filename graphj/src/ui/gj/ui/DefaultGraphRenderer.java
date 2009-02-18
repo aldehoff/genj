@@ -69,7 +69,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Nodes
    */
-  private void renderVertices(Graph graph, Layout2D layout, Graphics2D graphics) {
+  protected void renderVertices(Graph graph, Layout2D layout, Graphics2D graphics) {
     
     // Loop through the graph's nodes
     for (Vertex vertex : graph.getVertices()) {
@@ -79,7 +79,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     // Done
   }
 
-  private void renderVertex(Graph graph, Vertex vertex, Layout2D layout, Graphics2D graphics) {
+  protected void renderVertex(Graph graph, Vertex vertex, Layout2D layout, Graphics2D graphics) {
     
     // figure out its color
     Color color = getColor(vertex);
@@ -94,21 +94,19 @@ public class DefaultGraphRenderer implements GraphRenderer {
 
     // and content    
     Object content = getContent(vertex);
-    if (content==null) 
-      return;
-  
-    AffineTransform oldt = graphics.getTransform();
-    Shape oldcp = graphics.getClip();
-    
-    graphics.translate(pos.getX(), pos.getY());
-    graphics.clip(shape);
-    graphics.transform(layout.getTransformOfVertex(vertex));
-    
-    draw(content.toString(), new Point2D.Double(), graphics);
-  
-    graphics.setTransform(oldt);
-    graphics.setClip(oldcp);
-    
+    if (content!=null) {
+
+      AffineTransform oldt = graphics.getTransform();
+      Shape oldcp = graphics.getClip();
+      
+      graphics.translate(pos.getX(), pos.getY());
+      graphics.clip(shape);
+      graphics.transform(layout.getTransformOfVertex(vertex));
+      draw(content.toString(), new Rectangle2D.Double(), 0.5, 0.5, graphics);
+      graphics.setTransform(oldt);
+      graphics.setClip(oldcp);
+
+    }
     // done
   }
   
@@ -140,9 +138,9 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Arcs
    */
-  private void renderEdges(Graph graph, Layout2D layout, Graphics2D graphics) {
+  protected void renderEdges(Graph graph, Layout2D layout, Graphics2D graphics) {
     
-    for (Edge edge: graph.getEdges()) 
+    for (Edge edge : graph.getEdges())
       renderEdge(graph, edge, layout, graphics);
   
     // Done
@@ -151,7 +149,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders an Arc
    */
-  private void renderEdge(Graph graph, Edge edge, Layout2D layout, Graphics2D graphics) {
+  protected void renderEdge(Graph graph, Edge edge, Layout2D layout, Graphics2D graphics) {
     
     AffineTransform old = graphics.getTransform();
     
@@ -177,7 +175,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Helper that renders a shape at given position with given rotation
    */
-  private void draw(Shape shape, Point2D at, boolean fill, Graphics2D graphics) {
+  protected void draw(Shape shape, Point2D at, boolean fill, Graphics2D graphics) {
     AffineTransform old = graphics.getTransform();
     graphics.translate(at.getX(), at.getY());
     if (fill) graphics.fill(shape);
@@ -188,20 +186,41 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Helper that renders a string at given position
    */
-  private void draw(String str, Point2D at, Graphics2D graphics) {
-    float
-      x = (float)at.getX(),
-      y = (float)at.getY();
+  protected void draw(String str, Rectangle2D at, double horizontalAlign, double verticalAlign,Graphics2D graphics) {
+
+    // calculate width/height
     FontMetrics fm = graphics.getFontMetrics();
-    Rectangle2D r = fm.getStringBounds(str, graphics);
-    LineMetrics lm = fm.getLineMetrics(str, graphics);
-    float
-      w = (float)r.getWidth(),
-      h = (float)r.getHeight();
-    //  graphics.draw(new Rectangle2D.Double(
-    //    x-w/2, y-h/2, w, h     
-    //  ));
-    graphics.drawString(str, x-w/2, y+h/2-lm.getDescent());
+    double height = 0;
+    double width = 0;
+    for (int cursor=0;cursor<str.length();) {
+      int newline = str.indexOf('\n', cursor);
+      if (newline<0) newline = str.length();
+      String line = str.substring(cursor, newline);
+      Rectangle2D r = fm.getStringBounds(line, graphics);
+      LineMetrics lm = fm.getLineMetrics(line, graphics);
+      width = Math.max(width, r.getWidth());
+      height += r.getHeight();
+      cursor = newline+1;
+    }
+    
+    // calculate first line
+    double
+      x = at.getX() + (at.getWidth()-width)*horizontalAlign,
+      y = at.getY() + (at.getHeight()-height)*verticalAlign;
+
+    // draw lines
+    for (int cursor=0;cursor<str.length();) {
+      int newline = str.indexOf('\n', cursor);
+      if (newline<0) newline = str.length();
+      String line = str.substring(cursor, newline);
+      Rectangle2D r = fm.getStringBounds(line, graphics);
+      LineMetrics lm = fm.getLineMetrics(line, graphics);
+      graphics.drawString(line, (float)x, (float)y + lm.getHeight() - lm.getDescent());
+      cursor = newline+1;
+      y += r.getHeight();
+    }
+
+    // done
   }
   
 }
