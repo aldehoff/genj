@@ -264,18 +264,23 @@ public class Path implements Shape {
       
       Point2D to = getPoint(center, fromRadian+s*(radians/segments), radius);
       
-      // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
-      Point2D i = getLineIntersection(
-        from, new Point2D.Double( from.getX() - (from.getY()-center.getY()), from.getY() + (from.getX()-center.getX()) ), 
-        to, new Point2D.Double( to.getX() - (to.getY()-center.getY()), to.getY() + (to.getX()-center.getX()) )
-        );
+      // for very close radians the control point calculation won't work
+      if (from.distance(to)<1) {
+        lineTo(to);
+      } else {
+        // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
+        Point2D i = getLineIntersection(
+          from, new Point2D.Double( from.getX() - (from.getY()-center.getY()), from.getY() + (from.getX()-center.getX()) ), 
+          to, new Point2D.Double( to.getX() - (to.getY()-center.getY()), to.getY() + (to.getX()-center.getX()) )
+          );
+        
+        // calculate control points half way [p2>i] & [p3>i]
+        double kappa = 0.5522847498;//0.5522847498307933984022516322796;
+        Point2D c1 = new Point2D.Double( from.getX() + (i.getX()-from.getX())*kappa , from.getY() + (i.getY()-from.getY())*kappa );
+        Point2D c2 = new Point2D.Double( to.getX() + (i.getX()-to.getX())*kappa , to.getY() + (i.getY()-to.getY())*kappa );
+        curveTo(c1, c2, to);
+      }
       
-      // calculate control points half way [p2>i] & [p3>i]
-      double kappa = 0.5522847498;//0.5522847498307933984022516322796;
-      Point2D c1 = new Point2D.Double( from.getX() + (i.getX()-from.getX())*kappa , from.getY() + (i.getY()-from.getY())*kappa );
-      Point2D c2 = new Point2D.Double( to.getX() + (i.getX()-to.getX())*kappa , to.getY() + (i.getY()-to.getY())*kappa );
-      curveTo(c1, c2, to);
-
       // next
       from = to;
     }
