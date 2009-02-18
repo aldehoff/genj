@@ -82,4 +82,11 @@ public class EditableLayout implements Layout2D {
     ((EditableVertex)vertex).setTransformation(transform);
   }
   
+  /**
+   * interface implementation
+   */
+  public AffineTransform getTransformOfVertex(Vertex vertex) {
+    AffineTransform t = ((EditableVertex)vertex).getTransformation();
+    return t==null ? new AffineTransform() : t;
+  }
 } //EditableLayout

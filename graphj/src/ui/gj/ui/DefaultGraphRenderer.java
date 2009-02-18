@@ -19,8 +19,8 @@
  */
 package gj.ui;
 
-import static gj.geom.PathIteratorKnowHow.*;
-
+import static gj.geom.PathIteratorKnowHow.SEG_LINETO;
+import static gj.geom.PathIteratorKnowHow.SEG_MOVETO;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Layout2D;
@@ -97,12 +97,18 @@ public class DefaultGraphRenderer implements GraphRenderer {
     if (content==null) 
       return;
   
+    AffineTransform oldt = graphics.getTransform();
     Shape oldcp = graphics.getClip();
-    graphics.clip(ShapeHelper.createShape(shape, 1, pos));
     
-    draw(content.toString(), pos, graphics);
+    graphics.translate(pos.getX(), pos.getY());
+    graphics.clip(shape);
+    graphics.transform(layout.getTransformOfVertex(vertex));
+    
+    draw(content.toString(), new Point2D.Double(), graphics);
   
+    graphics.setTransform(oldt);
     graphics.setClip(oldcp);
+    
     // done
   }
   

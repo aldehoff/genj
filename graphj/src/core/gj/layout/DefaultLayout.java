@@ -97,4 +97,8 @@ public class DefaultLayout implements Layout2D {
     vertex2transform.put(vertex, transform);
   }
 
+  public AffineTransform getTransformOfVertex(Vertex vertex) {
+    AffineTransform t = vertex2transform.get(vertex);
+    return t==null ? new AffineTransform() : t;
+  }
 }

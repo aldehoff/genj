@@ -58,6 +58,11 @@ public interface Layout2D {
    */
   public void setTransformOfVertex(Vertex vertex, AffineTransform transform);
 
+  /** 
+   * Vertex transformation (idempotent)
+   */
+  public AffineTransform getTransformOfVertex(Vertex vertex);
+
   /**
    * Vertex's position
    */
