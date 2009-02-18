@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.36 $ $Author: nmeier $ $Date: 2009-02-17 22:53:28 $
+ * $Revision: 1.37 $ $Author: nmeier $ $Date: 2009-02-18 13:07:13 $
  */
 package genj.util;
 
@@ -785,9 +785,6 @@ public class Registry {
    */
   public static void persist() {
     
-    if (LOG.isLoggable(Level.FINER))
-      LOG.log(Level.FINER, "persist called", new Throwable("checking for callee"));
-
     // Go through registries
     Enumeration keys = registries.keys();
     while (keys.hasMoreElements()) {
