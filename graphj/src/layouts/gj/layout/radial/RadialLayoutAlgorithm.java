@@ -47,11 +47,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO the default animation is not pretty to look at especially in the radial case - it should rotate nodes to their destination
+/**
+ * Implementation for a Radial layout algorithm
+ */
 public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttributes> {
 
   private double distanceBetweenGenerations = 60;
-  private boolean isAdjustDistances = false;
+  private boolean isAdjustDistances = true;
   private boolean isFanOut = false; 
   private double distanceInGeneration = 0;
   private boolean isOrderSiblingsByPosition = true;
@@ -369,8 +371,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         shareFactor = 1;
       }
       
-      // TODO i'll have to align bended arcs for all children by using the same
-      // radial segments to avoid curves that don't like up 100%
       double radianOfRoot = fromRadian+radiansOfChildren*shareFactor/2;
       double[] radianOfChild = new double[edges.size()];
       
@@ -392,13 +392,6 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         else
           layout.setTransformOfVertex(child, new AffineTransform());
         
-        // layout edge
-        if (isBendArcs) {
-          setBendedPath(layout, edge, root, radianOfRoot, radius+distanceBetweenGenerations/2, radianOfChild[c], child );
-        } else {
-          setPath(edge, layout);
-        }
-
         // add debugging information
         if (debug!=null) {
           debug.add(new Line2D.Double(getPoint(center, fromRadian, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian, radiusOfChild+distanceBetweenGenerations/2)));
@@ -409,77 +402,68 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         
         fromRadian += radiansOfChild;
       }
+      
+      // layout edges
+      for (int c=0;c<edges.size();c++) {
+        Edge edge = edges.get(c);
+        layout(edge, root, radianOfRoot, radius+distanceBetweenGenerations/2, radianOfChild[c], getOther(edge, root), radianOfChild);
+      }
 
       // done
     }
-
+    
     /**
-     * calculate and set edge's bended path
-     * @param layout the layout to apply the change to
-     * @param edge the edge to change
-     * @param from the start of the path (not necessarily start in edge)
-     * @param radian1 the radian of the top part of the path
-     * @param radius the radius of the middle part of the path
-     * @param radian2 the radian of the bottom part of the path
-     * @param to the end of the path (not necessarily end in edge)
+     * layout an edge 
      */
-    private void setBendedPath(Layout2D layout, Edge edge, Vertex from, double radian1, double radius, double radian2, Vertex to) {
+    void layout(Edge edge, Vertex parent, double radianOfParent, double radius, double radianOfChild, Vertex child, double[] stopRadians) {
 
-      // calculate points of path
-      Point2D p1 = layout.getPositionOfVertex(from);
-      Point2D p2 = getPoint(center, radian1, radius);
-      Point2D p3 = getPoint(center, radian2, radius );
-      Point2D p4 = layout.getPositionOfVertex(to);
-
-      // check first and last point for ending on shape
-      p1 = getVectorEnd(p2, p1, p1, layout.getShapeOfVertex(from));
-      p4 = getVectorEnd(p3, p4, p4, layout.getShapeOfVertex(to));
+      // easy case - direc path
+      if (!isBendArcs || (radianOfParent==radianOfChild)) {
+        setPath(edge, layout);
+        return;
+      } 
       
-      // draw start of path
       Path path = new Path();
-      path.start(p1);
+      
+      // start with path at child
+      Point2D p1 = layout.getPositionOfVertex(child);
+      Point2D p2 = getPoint(center, radianOfChild, radius);
+      path.start(getVectorEnd(p2, p1, layout.getShapeOfVertex(child)));
       path.lineTo(p2);
-      
-      // calculate cubic curve through control points c1 and c2
-      // @see http://whizkidtech.redprince.net/bezier/circle/
-      // @see http://en.wikipedia.org/wiki/B%C3%A9zier_curve
-      
-      // check for how many cubic curves we're going to need
-      int curves = (int)Math.ceil(Math.abs(radian2-radian1)/QUARTER_RADIAN);
-      for (int c=1;c<=curves;c++) {
-        
-        if (curves>1)
-          p3 = getPoint( center, radian1+(radian2-radian1)/curves*c, radius);
-        
-        // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
-        Point2D i = getLineIntersection(
-          p2, new Point2D.Double( p2.getX() - (p2.getY()-center.getY()), p2.getY() + (p2.getX()-center.getX()) ), 
-          p3, new Point2D.Double( p3.getX() - (p3.getY()-center.getY()), p3.getY() + (p3.getX()-center.getX()) )
-          );
-        
-        // calculate control points half way [p2>i] & [p3>i]
-        double kappa = 0.5522847498;//0.5522847498307933984022516322796;
-        Point2D c1 = new Point2D.Double( p2.getX() + (i.getX()-p2.getX())*kappa , p2.getY() + (i.getY()-p2.getY())*kappa );
-        Point2D c2 = new Point2D.Double( p3.getX() + (i.getX()-p3.getX())*kappa , p3.getY() + (i.getY()-p3.getY())*kappa );
-        path.curveTo(c1, c2, p3);
-        
-        // continue with next round segment
-        p2 = p3;
-      }
-        
-      // draw end of path
-      path.lineTo(p4);
- 
-      // layout relative to start
-      if (from.equals(edge.getStart())) {
-        path.translate(getNeg(layout.getPositionOfVertex(from)));
+
+      // run over stops in arc (clock/counter-clockwise)
+      if (radianOfParent>radianOfChild) {
+        for (int stop=0;stopRadians[stop]<radianOfParent;stop++) {
+          if (stopRadians[stop]<=radianOfChild)
+            continue;
+          path.arcTo(center, radius, radianOfChild, stopRadians[stop]);
+          radianOfChild = stopRadians[stop];
+        }
       } else {
+        for (int stop=stopRadians.length-1;stopRadians[stop]>radianOfParent;stop--) {
+          if (stopRadians[stop]>=radianOfChild)
+            continue;
+          path.arcTo(center, radius, radianOfChild, stopRadians[stop]);
+          radianOfChild = stopRadians[stop];
+        }
+      }
+
+      // end path with final segment to parent
+      Point2D p3 = getPoint(center, radianOfParent, radius);
+      Point2D p4 = layout.getPositionOfVertex(parent);
+      path.arcTo(center, radius, radianOfChild, radianOfParent);
+      path.lineTo(getVectorEnd(p3, p4, layout.getShapeOfVertex(parent)));
+
+      // layout relative to start
+      if (parent.equals(edge.getStart())) {
         path.invert();
-        path.translate(getNeg(layout.getPositionOfVertex(to)));
+        path.translate(getNeg(layout.getPositionOfVertex(parent)));
+      } else {
+        path.translate(getNeg(layout.getPositionOfVertex(child)));
       }
         
-      
       layout.setPathOfEdge(edge, path);
+
     }
 
     
