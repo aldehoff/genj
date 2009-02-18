@@ -456,7 +456,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
 
       // layout relative to start
       if (parent.equals(edge.getStart())) {
-        path.invert();
+        path.setInverted();
         path.translate(getNeg(layout.getPositionOfVertex(parent)));
       } else {
         path.translate(getNeg(layout.getPositionOfVertex(child)));

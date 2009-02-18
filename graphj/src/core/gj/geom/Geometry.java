@@ -698,6 +698,9 @@ public class Geometry {
    * If there are more than one intersections the closest one to the vector's start 
    * is returned. If there is no intersection then the vector's end is returned.
    */
+  public static Point2D getVectorEnd(Point2D vectorStart, Point2D vectorEnd, Shape shapeEnd) {
+    return getVectorEnd(vectorStart, vectorEnd, vectorEnd, shapeEnd);
+  }
   public static Point2D getVectorEnd(Point2D vectorStart, Point2D vectorEnd, Point2D shapePos, Shape shape) {
     Collection<Point2D> points = getIntersections(vectorStart, vectorEnd, shapePos, shape);
     return points.isEmpty() ? vectorEnd: getClosest(vectorStart, points);

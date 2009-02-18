@@ -48,6 +48,7 @@ public class Path implements Shape {
   /** the lastPoint we keep */
   private Point2D.Double firstPoint = null;
   private Point2D.Double lastPoint = null;
+  private boolean isInverted = false;
   
   /**
    * Constructor
@@ -59,8 +60,13 @@ public class Path implements Shape {
    * Constructor
    */
   public Path(Path that, AffineTransform at) {
+    copy(that, at);
+  }
+  
+  private void copy(Path that, AffineTransform at) {
     this.gp = new GeneralPath(that.gp);
-    this.gp.transform(at);
+    if (at!=null)
+      this.gp.transform(at);
     this.firstAngle = that.firstAngle;
     this.lastAngle = that.lastAngle;
     this.firstPoint = that.firstPoint;
@@ -71,6 +77,11 @@ public class Path implements Shape {
    * Constructor
    */
   public Path(Shape that) {
+    
+    if (that instanceof Path) {
+      copy((Path)that, null);
+      return;
+    }
     
     ShapeHelper.iterateShape(that, new PathConsumer() {
 
@@ -109,9 +120,14 @@ public class Path implements Shape {
   /**
    * Invert
    */
-  public synchronized void invert() {
+  public synchronized void setInverted() {
     Point2D.Double p = lastPoint; lastPoint = firstPoint; firstPoint = p;
     double a = lastAngle; lastAngle = firstAngle + HALF_RADIAN; firstAngle = a + HALF_RADIAN;
+    isInverted = !isInverted;
+  }
+  
+  public boolean isInverted() {
+    return isInverted;
   }
   
   /**
@@ -225,6 +241,48 @@ public class Path implements Shape {
     lastPoint.setLocation(p.getX(), p.getY());
     return this;
   }
+  
+
+  /**
+   * Append a path element following the circle of radius around center for arc fromRadian toRadian
+   * @param center center of circle
+   * @param radius radius of circle
+   * @param fromRadian radian to start
+   * @param toRadian radian to end
+   */
+  public void arcTo(Point2D center, double radius, double fromRadian, double toRadian) {
+
+    // easy case
+    if (fromRadian==toRadian)
+      return;
+    
+    // make sure no cubic curve spans more than a quarter radian
+    double radians = toRadian-fromRadian;
+    int segments = (int)Math.ceil(Math.abs(radians/QUARTER_RADIAN));
+    Point2D from = getPoint(center, fromRadian, radius);
+    for (int s=1;s<=segments;s++) {
+      
+      Point2D to = getPoint(center, fromRadian+s*(radians/segments), radius);
+      
+      // first intersect lines perpendicular to [center>p1] & [center>p3] (negative reciprocals)
+      Point2D i = getLineIntersection(
+        from, new Point2D.Double( from.getX() - (from.getY()-center.getY()), from.getY() + (from.getX()-center.getX()) ), 
+        to, new Point2D.Double( to.getX() - (to.getY()-center.getY()), to.getY() + (to.getX()-center.getX()) )
+        );
+      
+      // calculate control points half way [p2>i] & [p3>i]
+      double kappa = 0.5522847498;//0.5522847498307933984022516322796;
+      Point2D c1 = new Point2D.Double( from.getX() + (i.getX()-from.getX())*kappa , from.getY() + (i.getY()-from.getY())*kappa );
+      Point2D c2 = new Point2D.Double( to.getX() + (i.getX()-to.getX())*kappa , to.getY() + (i.getY()-to.getY())*kappa );
+      curveTo(c1, c2, to);
+
+      // next
+      from = to;
+    }
+    
+    // done
+  }    
+  
 
   /**
    * @see java.awt.Shape#contains(double, double, double, double)

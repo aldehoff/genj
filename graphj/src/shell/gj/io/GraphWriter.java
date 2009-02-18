@@ -19,8 +19,9 @@
  */
 package gj.io;
 
-import static gj.geom.PathIteratorKnowHow.*;
-
+import static gj.geom.PathIteratorKnowHow.SEG_NAMES;
+import static gj.geom.PathIteratorKnowHow.SEG_SIZES;
+import gj.geom.Path;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
@@ -96,13 +97,17 @@ public class GraphWriter {
    * Write - Edge
    */
   private void writeEdge(EditableGraph g, EditableEdge edge) throws IOException {
+
+    Path path = edge.getPath();
     
     ElementInfo info = new ElementInfo();
     info.put("id", getId(edge));
     info.put("s", getId(edge.getStart()));
     info.put("e", getId(edge.getEnd()));
+    if (path.isInverted())
+      info.put("d", "-1" );
     push("edge",info,false);
-      writeShape("path", edge.getPath(),-1);
+      writeShape("path", path,-1);
     pop();
   }
 

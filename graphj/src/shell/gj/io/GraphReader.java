@@ -21,6 +21,7 @@ package gj.io;
 
 import static gj.geom.PathIteratorKnowHow.*;
 
+import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
@@ -186,12 +187,14 @@ public class GraphReader {
   private class EdgeHandler extends ElementHandler {
     private ShapeHandler shapeHandler;
     private EditableEdge edge;
+    private boolean invert;
     protected EdgeHandler(EditableGraph graph, Attributes atts) {
       EditableVertex
         s = id2vertex.get(atts.getValue("s")),
         e = id2vertex.get(atts.getValue("e"));
       edge = graph.addEdge(s, e);
       id2edge.put(atts.getValue("id"),edge);
+      invert = "-1".equals(atts.getValue("d"));
     }
     @Override
     protected ElementHandler start(String name, Attributes atts) {
@@ -204,7 +207,10 @@ public class GraphReader {
     @Override
     protected void end(String name) {
       if (shapeHandler!=null) {
-        edge.setShape(shapeHandler.getResult());
+        Path path = new Path(shapeHandler.getResult());
+        if (invert)
+          path.setInverted();
+        edge.setShape(path);
       }
     }    
   } //EdgeHandler
