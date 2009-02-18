@@ -249,13 +249,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       getSize(null, root, 0);
       
       // layout
-      double north = layout(null, root, 0, Geometry.ONE_RADIAN, 0);
-      
-      // modify root's shape
-      if (isRotateShapes)
-        layout.setTransformOfVertex(root, AffineTransform.getRotateInstance(HALF_RADIAN + north) );
-      else
-        layout.setTransformOfVertex(root, new AffineTransform());
+      layout(null, root, 0, Geometry.ONE_RADIAN, 0);
       
       // add debug rings
       if (debug!=null) {
@@ -325,14 +319,14 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     /**
      * recursive layout call
      */
-    double layout(Vertex backtrack, final Vertex root, double fromRadian, final double toRadian, final double radius) {
+    void layout(Vertex backtrack, final Vertex root, double fromRadian, final double toRadian, final double radius) {
       
       // assemble list of children
       List<Edge> edges = getNormalizedEdges(root);
       if (backtrack!=null)
         edges.removeAll(backtrack.getEdges());
       if (edges.isEmpty())
-        return (toRadian+fromRadian)/2;
+        return;
       
       // sort children by current position
       if (isOrderSiblingsByPosition)  {
@@ -405,7 +399,15 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         
         fromRadian += radiansOfChild;
       }
-      
+
+      // modify graph's root shape before laying out edges
+      if (backtrack==null) {
+        if (isRotateShapes)
+          layout.setTransformOfVertex(root, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfRoot) );
+        else
+          layout.setTransformOfVertex(root, new AffineTransform());
+      }      
+
       // layout edges
       for (int c=0;c<edges.size();c++) {
         Edge edge = edges.get(c);
@@ -413,7 +415,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       }
 
       // done
-      return radianOfRoot;
+      return;
     }
     
     /**
