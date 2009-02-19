@@ -24,10 +24,8 @@ import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.LayoutHelper;
 
 import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
@@ -62,35 +60,24 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     if (graph.getVertices().isEmpty())
       return bounds;
     
-    // wrap
-    AcyclicGraph ag = new AcyclicGraph(graph);
+    // 1st step - calculate layering
+    Layering layering = new LongestPathLayering(graph);
     
-    // layout in layers
+    // 2nd step - crossing reduction
+    
+    // 3rd step - vertex positioning
+    // TODO - simple layout in layers
     for (Vertex vertex : graph.getVertices()) {
       Point2D p = layout.getPositionOfVertex(vertex);
-      layout.setPositionOfVertex(vertex, new Point2D.Double(p.getX(), ag.getLayer(vertex)*getDistanceBetweenLayers()));
+      layout.setPositionOfVertex(vertex, new Point2D.Double(p.getX(), -layering.getLayer(vertex)*getDistanceBetweenLayers()));
     }
     
-    // mark sinks
+    // debug?
     if (debugShapes!=null)
-      for (Vertex sink : ag.getSinks()) {
-        double d = LayoutHelper.getDiameter(sink, layout);
-        Point2D p = layout.getPositionOfVertex(sink); 
-        debugShapes.add(new Ellipse2D.Double(p.getX()-d/2, p.getY()-d/2, d, d));
-      }
+      layering.debug(layout, debugShapes);
     
+    // done
     return bounds;
   }
-  
-  /**
-   * the layering step implementation 
-   */
-  private class Layering {
-
-    Layering(AcyclicGraph graph) {
-      
-    }
-    
-  } //Layering
   
 }

@@ -20,25 +20,26 @@
 package gj.layout.hierarchical;
 
 import gj.layout.GraphNotSupportedException;
+import gj.layout.Layout2D;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.util.LayoutHelper;
 
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 /**
- * An acyclic graph
+ * A layering based on longest paths from sinks
  */
-public class AcyclicGraph {
-  
-  /** graph */
-  private Graph graph;
+public class LongestPathLayering implements Layering {
   
   /** sinks */
   private List<Vertex> sinks = new ArrayList<Vertex>();
@@ -47,14 +48,15 @@ public class AcyclicGraph {
   private List<List<Vertex>> layers;
 
   /** constructor */
-  public AcyclicGraph(Graph graph) throws GraphNotSupportedException {
+  public LongestPathLayering(Graph graph) throws GraphNotSupportedException {
     
-    this.graph = graph;
-
-    // check acyclic character - find layers&sinks
-    Set<? extends Vertex> todo = new HashSet<Vertex>(graph.getVertices());
-    while (!todo.isEmpty()) 
-      _findSinksEnsureAcyclic(todo.iterator().next(), new Stack<Vertex>(), todo);
+    // find sinks
+    for (Vertex v : graph.getVertices()) {
+      if (LayoutHelper.isSink(v)) {
+        sinks.add(v);
+        recurse(v, new Stack<Vertex>());
+      }
+    }
     
     // build layers
     layers = new ArrayList<List<Vertex>>(numLayers);
@@ -63,6 +65,45 @@ public class AcyclicGraph {
       layers.get(getLayer(vertex)).add(vertex);
 
     // done
+  }
+  
+  public void debug(Layout2D layout, Collection<Shape> debugShapes) {
+    
+    // mark sinks
+    for (Vertex sink : getSinks()) {
+      double d = LayoutHelper.getDiameter(sink, layout);
+      Point2D p = layout.getPositionOfVertex(sink); 
+      debugShapes.add(new Ellipse2D.Double(p.getX()-d/2, p.getY()-d/2, d, d));
+    }
+    
+  }
+  
+  private void recurse(Vertex vertex, Stack<Vertex> path) throws GraphNotSupportedException{
+    
+    // check if we're back at a vertex we've seen in this iteration
+    if (path.contains(vertex))
+      throw new GraphNotSupportedException("graph has to be acyclic");
+    
+    // good layer = can stop
+    if (getLayer(vertex)>=path.size())
+      return;
+    
+    // dive in 
+    path.add(vertex);
+    
+    // asume length of path for the moment
+    vertex2layer.put(vertex, new Integer(path.size()-1));
+    numLayers = Math.max(numLayers, path.size());
+    
+    // check incoming neighbours  
+    for (Edge edge : vertex.getEdges()) {
+      if (edge.getEnd().equals(vertex))  {
+        recurse(edge.getStart(), path);
+      }
+    }
+    
+    // backtrack
+    path.remove(vertex);
   }
   
   public List<List<Vertex>> getLayers() {
@@ -76,32 +117,6 @@ public class AcyclicGraph {
   public int getLayer(Vertex vertex) {
     Integer result = vertex2layer.get(vertex);
     return result!=null ? result.intValue() : -1;
-  }
-  
-  private void _findSinksEnsureAcyclic(Vertex vertex, Stack<Vertex> path, Set<? extends Vertex> todo) throws GraphNotSupportedException{
-    // check if we're back at a vertex we've seen in this iteration
-    if (path.contains(vertex))
-      throw new GraphNotSupportedException("graph has to be acyclic");
-    // don't have to revisit vertex
-    todo.remove(vertex);
-    // good layer = can stop
-    if (getLayer(vertex)>=path.size())
-      return;
-    vertex2layer.put(vertex, new Integer(path.size()));
-    numLayers = Math.max(numLayers, path.size()+1);
-    // continue
-    path.add(vertex);
-    // check vertex for sink and cycle 
-    boolean isSink = true;
-    for (Edge edge : vertex.getEdges()) {
-      if (edge.getStart().equals(vertex))  {
-        isSink = false;
-        _findSinksEnsureAcyclic(edge.getEnd(), path, todo);
-      }
-    }
-    if (isSink) sinks.add(vertex);
-    // backtrack
-    path.remove(vertex);
   }
   
   /** 
