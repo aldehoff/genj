@@ -155,6 +155,17 @@ public class LayoutHelper {
   }
   
   /**
+   * Check vertex being sink
+   */
+  public static boolean isSink(Vertex vertex) {
+    for (Edge edge : vertex.getEdges()) {
+      if (edge.getStart().equals(vertex))
+        return false;
+    }
+    return true;
+  }
+  
+  /**
    * Get neighbouring vertices. That's all 
    * <pre>
    *   A e E n : e(vertex,n ) || e(n,vertex) e graph && !n==vertex
