@@ -39,7 +39,7 @@ import java.util.Stack;
 /**
  * A layering based on longest paths from sinks
  */
-public class LongestPathLayering implements Layering {
+public class LongestPathLA implements LayerAssignment {
   
   /** sinks */
   private List<Vertex> sinks = new ArrayList<Vertex>();
@@ -47,8 +47,8 @@ public class LongestPathLayering implements Layering {
   private int numLayers;
   private List<List<Vertex>> layers;
 
-  /** constructor */
-  public LongestPathLayering(Graph graph) throws GraphNotSupportedException {
+  /** layering algorithm */
+  public void assignLayers(Graph graph) throws GraphNotSupportedException {
     
     // find sinks
     for (Vertex v : graph.getVertices()) {
@@ -106,8 +106,8 @@ public class LongestPathLayering implements Layering {
     path.remove(vertex);
   }
   
-  public List<List<Vertex>> getLayers() {
-    return layers;
+  public int getNumLayers() {
+    return layers.size();
   }
   
   public List<Vertex> getLayer(int layer) {

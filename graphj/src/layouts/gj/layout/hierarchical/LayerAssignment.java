@@ -19,7 +19,9 @@
  */
 package gj.layout.hierarchical;
 
+import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
+import gj.model.Graph;
 import gj.model.Vertex;
 
 import java.awt.Shape;
@@ -29,13 +31,15 @@ import java.util.List;
 /**
  * A interface to a layering of vertexes
  */
-public interface Layering {
+public interface LayerAssignment {
 
+  public void assignLayers(Graph graph) throws GraphNotSupportedException;
+  
   public List<Vertex> getLayer(int layer);
   
   public int getLayer(Vertex vertex);
   
-  public List<List<Vertex>> getLayers();
+  public int getNumLayers();
   
   public void debug(Layout2D layout, Collection<Shape> debugShapes);
   

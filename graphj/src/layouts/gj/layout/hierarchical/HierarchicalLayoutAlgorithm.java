@@ -61,20 +61,23 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       return bounds;
     
     // 1st step - calculate layering
-    Layering layering = new LongestPathLayering(graph);
+    LayerAssignment la = new LongestPathLA();
+    la.assignLayers(graph);
     
     // 2nd step - crossing reduction
+    CrossingReduction cr = new LayerByLayerSweepCR();
+    
     
     // 3rd step - vertex positioning
     // TODO - simple layout in layers
     for (Vertex vertex : graph.getVertices()) {
       Point2D p = layout.getPositionOfVertex(vertex);
-      layout.setPositionOfVertex(vertex, new Point2D.Double(p.getX(), -layering.getLayer(vertex)*getDistanceBetweenLayers()));
+      layout.setPositionOfVertex(vertex, new Point2D.Double(p.getX(), -la.getLayer(vertex)*getDistanceBetweenLayers()));
     }
     
     // debug?
     if (debugShapes!=null)
-      layering.debug(layout, debugShapes);
+      la.debug(layout, debugShapes);
     
     // done
     return bounds;
