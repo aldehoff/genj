@@ -36,17 +36,20 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
 import javax.swing.SwingUtilities;
+
+import sun.rmi.log.LogHandler;
 
 /**
  * Main Class for GenJ Application
@@ -129,6 +132,8 @@ public class App {
         
         Handler[] handlers = root.getHandlers();
         for (int i=0;i<handlers.length;i++) root.removeHandler(handlers[i]);
+        BufferedHandler bufferedLogHandler = new BufferedHandler();
+        root.addHandler(bufferedLogHandler);
         root.addHandler(new FlushingHandler(new StreamHandler(System.out, formatter)));
         System.setOut(new PrintStream(new LogOutputStream(Level.INFO, "System", "out")));
         System.setErr(new PrintStream(new LogOutputStream(Level.WARNING, "System", "err")));
@@ -148,6 +153,8 @@ public class App {
         handler.setLevel(Level.ALL);
         handler.setFormatter(formatter);
         LOG.addHandler(handler);
+        bufferedLogHandler.flush(handler);
+        root.removeHandler(bufferedLogHandler);
         
         // Startup Information
         LOG.info("version = "+Version.getInstance().getBuildString());
@@ -238,6 +245,36 @@ public class App {
     }
     
   } //Shutdown
+  
+  /**
+   * a log handler that buffers 
+   */
+  private static class BufferedHandler extends Handler {
+    
+    private List<LogRecord> buffer = new ArrayList<LogRecord>();
+
+    @Override
+    public void close() throws SecurityException {
+      // noop
+    }
+
+    @Override
+    public void flush() {
+      
+    }
+    
+    private void flush(Handler other) {
+      for (LogRecord record : buffer)
+        other.publish(record);
+      buffer.clear();
+    }
+
+    @Override
+    public void publish(LogRecord record) {
+      buffer.add(record);
+    }
+    
+  }
 
   /**
    * a log handler that flushes on publish
