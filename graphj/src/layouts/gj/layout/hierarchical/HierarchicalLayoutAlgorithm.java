@@ -29,6 +29,7 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A hierarchical layout algorithm
@@ -62,19 +63,19 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       return bounds;
     
     // 1st step - calculate layering
-    LayerAssignment la = new LongestPathLA();
-    la.assignLayers(graph, layout);
+    List<Layer> layers = new LongestPathLA().assignLayers(graph, layout);
     
     // 2nd step - crossing reduction
-    CrossingReduction cr = new LayerByLayerSweepCR();
-    cr.reduceCrossings(la, layout);
+    new LayerByLayerSweepCR().reduceCrossings(layers);
     
     // 3rd step - vertex positioning
-    for (int l=0;l<la.getNumLayers();l++) {
-      Layer layer = la.getLayer(l);
+    for (int i=0;i<layers.size();i++) {
+      Layer layer = layers.get(i);
       
-      for (int v=0; v<layer.size(); v++) {
-        layout.setPositionOfVertex(layer.getVertex(v), new Point2D.Double(v*distanceBetweenVertices, -l*distanceBetweenLayers));
+      for (int j=0; j<layer.size(); j++) {
+        Layer.Assignment assignment = layer.get(j);
+        if (assignment.vertex()!=Layer.DUMMY)
+          layout.setPositionOfVertex(assignment.vertex(), new Point2D.Double(j*distanceBetweenVertices, -i*distanceBetweenLayers));
       }
     }
     

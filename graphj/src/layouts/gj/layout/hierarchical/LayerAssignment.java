@@ -22,19 +22,14 @@ package gj.layout.hierarchical;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.model.Graph;
-import gj.model.Vertex;
+
+import java.util.List;
 
 /**
  * A interface to a layering of vertexes
  */
 public interface LayerAssignment {
 
-  public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException;
-  
-  public Layer getLayer(int layer);
-  
-  public int getLayer(Vertex vertex);
-  
-  public int getNumLayers();
+  public List<Layer> assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException;
   
 }

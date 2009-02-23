@@ -19,13 +19,13 @@
  */
 package gj.layout.hierarchical;
 
-import gj.layout.Layout2D;
+import java.util.List;
 
 /**
  * A crossing reduction of a layered graph
  */
 public interface CrossingReduction {
   
-  public void reduceCrossings(LayerAssignment layerAssignment, Layout2D layout);
+  public void reduceCrossings(List<Layer> layers);
 
 }

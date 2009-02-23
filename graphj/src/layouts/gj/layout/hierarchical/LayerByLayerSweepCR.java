@@ -20,10 +20,10 @@
 package gj.layout.hierarchical;
 
 import static gj.geom.Geometry.getIntersection;
-import gj.layout.Layout2D;
 import gj.layout.hierarchical.Layer.Assignment;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 /**
  * crossing reduction implementation 
@@ -33,28 +33,31 @@ public class LayerByLayerSweepCR implements CrossingReduction {
   /**
    * algorithmic part of reducing crossings of layers via layout
    */
-  public void reduceCrossings(LayerAssignment layerAssignment, Layout2D layout) {
+  public void reduceCrossings(List<Layer> layers) {
     
     // we're going from layer to layer reducing number of crossings between layer i and i+1
-    for (int i=1;i<layerAssignment.getNumLayers()-1;i++)
-      sweepLayer(layerAssignment.getLayer(i), layout);
-    
+    for (int i=1;i<layers.size()-1;i++)
+      sweepLayer(layers.get(i), -1);
+
+    // TODO sweeping from source>sink vs sink>source can lead to a better result - we should probably try both
+//    for (int i=layers.size()-2;i>=0;i--)
+//      sweepLayer(layers.get(i), +1);
   }
 
   /**
    * reduce crossings in two layered digraph G with layers layer1+2
    */
-  private void sweepLayer(Layer layer, Layout2D layout) {
+  private int sweepLayer(Layer layer, int direction) {
     
     // calculate current number of crossings
     int originalNumCrossings = 0;
     for (int u=0,v=1;u<layer.size()-1;u++,v++) {
-      originalNumCrossings += crossingNumber(u, v, layer);
+      originalNumCrossings += crossingNumber(u, v, layer, direction);
     }    
     
     // no improvement possible?
     if (originalNumCrossings==0)
-      return;
+      return originalNumCrossings;
     
     // loop until number crossings cannot be reduced
     int optimizedNumCrossings = originalNumCrossings;
@@ -64,8 +67,8 @@ public class LayerByLayerSweepCR implements CrossingReduction {
       for (int u=0,v=1;u<layer.size()-1;u++,v++) {
         
         // calculate crossing numbers 
-        int cuv = crossingNumber(u, v, layer);
-        int cvu = crossingNumber(v, u, layer);
+        int cuv = crossingNumber(u, v, layer, direction);
+        int cvu = crossingNumber(v, u, layer, direction);
         if (cuv>cvu) layer.swap(u, v);
 
         // keep track of crossings
@@ -83,22 +86,23 @@ public class LayerByLayerSweepCR implements CrossingReduction {
     }
     
     // done
+    return optimizedNumCrossings;
   }
 
   /**
    * calculate crossing number for u,v
    */
-  private int crossingNumber(int u, int v, Layer layer) {
+  private int crossingNumber(int u, int v, Layer layer, int direction) {
     
     // start with # crossings = 0
     int cn = 0;
 
     // loop over all u1>u2 and v1>v2 pairs
     Assignment u1 = layer.get(Math.min(u,v));
-    for (Assignment u2 : u1.adjacents()) {
+    for (Assignment u2 : u1.adjacents(direction)) {
       
       Assignment v1 = layer.get(Math.max(u,v));
-      for (Assignment v2 : v1.adjacents()) {
+      for (Assignment v2 : v1.adjacents(direction)) {
         
         if (u2.pos()!=v2.pos() && intersects(u, u2.pos(), v, v2.pos()))
           cn ++;
