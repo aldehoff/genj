@@ -566,12 +566,14 @@ import spin.Spin;
       }
       
       // check tabs specifically (there might be no properties yet)
-      Component[] cs  = tabsPane.getComponents();
-      for (int i = 0; i < cs.length; i++) {
-        JComponent c = (JComponent)cs[i];
-        if (c.getClientProperty(Property.class)==prop) {
-          c.requestFocusInWindow();
-          return;
+      if (tabsPane!=null) {
+        Component[] cs  = tabsPane.getComponents();
+        for (int i = 0; i < cs.length; i++) {
+          JComponent c = (JComponent)cs[i];
+          if (c.getClientProperty(Property.class)==prop) {
+            c.requestFocusInWindow();
+            return;
+          }
         }
       }
       
