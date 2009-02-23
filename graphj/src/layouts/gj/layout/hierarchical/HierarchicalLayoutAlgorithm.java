@@ -23,7 +23,7 @@ import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
-import gj.model.Vertex;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -36,6 +36,7 @@ import java.util.Collection;
 public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
 
   private double distanceBetweenLayers = 50; 
+  private double distanceBetweenVertices= 50; 
   
   /**
    * Accessor - distance between layers
@@ -62,25 +63,40 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     
     // 1st step - calculate layering
     LayerAssignment la = new LongestPathLA();
-    la.assignLayers(graph);
+    la.assignLayers(graph, layout);
     
     // 2nd step - crossing reduction
     CrossingReduction cr = new LayerByLayerSweepCR();
-    
+    cr.reduceCrossings(la, layout);
     
     // 3rd step - vertex positioning
-    // TODO - simple layout in layers
-    for (Vertex vertex : graph.getVertices()) {
-      Point2D p = layout.getPositionOfVertex(vertex);
-      layout.setPositionOfVertex(vertex, new Point2D.Double(p.getX(), -la.getLayer(vertex)*getDistanceBetweenLayers()));
+    for (int l=0;l<la.getNumLayers();l++) {
+      Layer layer = la.getLayer(l);
+      
+      for (int v=0; v<layer.size(); v++) {
+        layout.setPositionOfVertex(layer.getVertex(v), new Point2D.Double(v*distanceBetweenVertices, -l*distanceBetweenLayers));
+      }
     }
     
-    // debug?
-    if (debugShapes!=null)
-      la.debug(layout, debugShapes);
+    // place the arcs
+    LayoutHelper.setPaths(graph, layout);
     
     // done
     return bounds;
+  }
+
+  /**
+   * Accessor - distance between verts
+   */
+  public void setDistanceBetweenVertices(double distanceBetweenVertices) {
+    this.distanceBetweenVertices = distanceBetweenVertices;
+  }
+
+  /**
+   * Accessor - distance between verts
+   */
+  public double getDistanceBetweenVertices() {
+    return distanceBetweenVertices;
   }
   
 }

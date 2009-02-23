@@ -19,7 +19,11 @@
  */
 package gj.layout.hierarchical;
 
+import static gj.geom.Geometry.getIntersection;
 import gj.layout.Layout2D;
+import gj.layout.hierarchical.Layer.Assignment;
+
+import java.awt.geom.Point2D;
 
 /**
  * crossing reduction implementation 
@@ -31,6 +35,83 @@ public class LayerByLayerSweepCR implements CrossingReduction {
    */
   public void reduceCrossings(LayerAssignment layerAssignment, Layout2D layout) {
     
+    // we're going from layer to layer reducing number of crossings between layer i and i+1
+    for (int i=1;i<layerAssignment.getNumLayers()-1;i++)
+      sweepLayer(layerAssignment.getLayer(i), layout);
+    
+  }
+
+  /**
+   * reduce crossings in two layered digraph G with layers layer1+2
+   */
+  private void sweepLayer(Layer layer, Layout2D layout) {
+    
+    // calculate current number of crossings
+    int originalNumCrossings = 0;
+    for (int u=0,v=1;u<layer.size()-1;u++,v++) {
+      originalNumCrossings += crossingNumber(u, v, layer);
+    }    
+    
+    // no improvement possible?
+    if (originalNumCrossings==0)
+      return;
+    
+    // loop until number crossings cannot be reduced
+    int optimizedNumCrossings = originalNumCrossings;
+    while (true) {
+
+      int nc = 0;
+      for (int u=0,v=1;u<layer.size()-1;u++,v++) {
+        
+        // calculate crossing numbers 
+        int cuv = crossingNumber(u, v, layer);
+        int cvu = crossingNumber(v, u, layer);
+        if (cuv>cvu) layer.swap(u, v);
+
+        // keep track of crossings
+        nc += Math.min(cuv,cvu);
+          
+        // next u,v
+      }
+
+      // stop if number of crossings wasn't reduced
+      if (nc>=optimizedNumCrossings)
+        break;
+      
+      // commit
+      optimizedNumCrossings = nc;
+    }
+    
+    // done
+  }
+
+  /**
+   * calculate crossing number for u,v
+   */
+  private int crossingNumber(int u, int v, Layer layer) {
+    
+    // start with # crossings = 0
+    int cn = 0;
+
+    // loop over all u1>u2 and v1>v2 pairs
+    Assignment u1 = layer.get(Math.min(u,v));
+    for (Assignment u2 : u1.adjacents()) {
+      
+      Assignment v1 = layer.get(Math.max(u,v));
+      for (Assignment v2 : v1.adjacents()) {
+        
+        if (u2.pos()!=v2.pos() && intersects(u, u2.pos(), v, v2.pos()))
+          cn ++;
+          
+      }
+    }
+
+    // dne
+    return cn;
+  }
+  
+  private boolean intersects(int u1, int u2, int v1, int v2) {
+    return getIntersection(new Point2D.Double(u1,0), new Point2D.Double(u2,1), new Point2D.Double(v1,0), new Point2D.Double(v2,1)) != null;
   }
   
 }

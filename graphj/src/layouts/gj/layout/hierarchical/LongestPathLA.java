@@ -26,11 +26,7 @@ import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
-import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,80 +39,102 @@ public class LongestPathLA implements LayerAssignment {
   
   /** sinks */
   private List<Vertex> sinks = new ArrayList<Vertex>();
-  private Map<Vertex, Integer> vertex2layer = new HashMap<Vertex, Integer>();
+  private Map<Vertex, Layer.Assignment> vertex2assignment = new HashMap<Vertex, Layer.Assignment>();
   private int numLayers;
-  private List<List<Vertex>> layers;
+  private List<Layer> layers;
 
   /** layering algorithm */
-  public void assignLayers(Graph graph) throws GraphNotSupportedException {
+  public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException {
     
     // find sinks
     for (Vertex v : graph.getVertices()) {
       if (LayoutHelper.isSink(v)) {
         sinks.add(v);
-        recurse(v, new Stack<Vertex>());
+        sinkToSource(v, new Stack<Layer.Assignment>());
       }
     }
     
     // build layers
-    layers = new ArrayList<List<Vertex>>(numLayers);
-    for (int i=0;i<numLayers;i++) layers.add(new ArrayList<Vertex>());
-    for (Vertex vertex : graph.getVertices()) 
-      layers.get(getLayer(vertex)).add(vertex);
+    layers = new ArrayList<Layer>(numLayers);
+    for (int i=0;i<numLayers;i++) {
+      layers.add(new Layer(layout));
+    }
 
+    // add dummy vertices
+    dummyVertices();
+
+    // fill in vertices
+    for (Vertex vertex : graph.getVertices()) {
+      Layer.Assignment assignment = vertex2assignment.get(vertex);
+      layers.get(assignment.layer()).add(assignment);
+    }
+    
     // done
   }
   
-  public void debug(Layout2D layout, Collection<Shape> debugShapes) {
-    
-    // mark sinks
-    for (Vertex sink : getSinks()) {
-      double d = LayoutHelper.getDiameter(sink, layout);
-      Point2D p = layout.getPositionOfVertex(sink); 
-      debugShapes.add(new Ellipse2D.Double(p.getX()-d/2, p.getY()-d/2, d, d));
+  /**
+   * add dummy vertices were edges span multiple layers
+   */
+  private void dummyVertices() {
+
+    // loop over layers and check incoming
+    for (int l=0;l<layers.size();l++) {
+      Layer layer = layers.get(l);
+      
+      // FIXME need dummy vertices
     }
-    
+
+    // done
   }
-  
-  private void recurse(Vertex vertex, Stack<Vertex> path) throws GraphNotSupportedException{
+
+  /**
+   * walk from sink to source recursively and collect layer information plus incoming vertices
+   */
+  private void sinkToSource(Vertex vertex, Stack<Layer.Assignment> path) throws GraphNotSupportedException{
     
     // check if we're back at a vertex we've seen in this iteration
     if (path.contains(vertex))
       throw new GraphNotSupportedException("graph has to be acyclic");
+    numLayers = Math.max(numLayers, path.size()+1);
     
-    // good layer = can stop
-    if (getLayer(vertex)>=path.size())
-      return;
-    
-    // dive in 
-    path.add(vertex);
-    
-    // asume length of path for the moment
-    vertex2layer.put(vertex, new Integer(path.size()-1));
-    numLayers = Math.max(numLayers, path.size());
-    
-    // check incoming neighbours  
-    for (Edge edge : vertex.getEdges()) {
-      if (edge.getEnd().equals(vertex))  {
-        recurse(edge.getStart(), path);
-      }
+    // create or reuse an assignment
+    Layer.Assignment assignment = vertex2assignment.get(vertex);
+    if (assignment==null) {
+      assignment = new Layer.Assignment(vertex, -1);
+      vertex2assignment.put(vertex, assignment);
     }
     
-    // backtrack
-    path.remove(vertex);
+    // add adjacent vertices (previous in path)
+    if (!path.isEmpty())
+      assignment.add(path.peek());
+    
+    // push to new layer and continue if assignments layer has changed
+    if (!assignment.push(path.size()))
+      return;      
+
+    // recurse into incoming edges direction of source
+    path.push(assignment);
+    for (Edge edge : vertex.getEdges()) {
+      if (edge.getEnd().equals(vertex))
+        sinkToSource(edge.getStart(), path);
+    }
+    path.pop();
+    
+    // done
+    return;
   }
   
   public int getNumLayers() {
     return layers.size();
   }
   
-  public List<Vertex> getLayer(int layer) {
+  public Layer getLayer(int layer) {
     return layers.get(layer);
   }
   
   public int getLayer(Vertex vertex) {
-    Integer result = vertex2layer.get(vertex);
-    return result!=null ? result.intValue() : -1;
+    Layer.Assignment assignment = vertex2assignment.get(vertex);
+    return assignment!=null ? assignment.layer() : -1;
   }
   
   /** 
@@ -125,4 +143,5 @@ public class LongestPathLA implements LayerAssignment {
   public List<? extends Vertex> getSinks() {
     return sinks;
   }
+  
 }

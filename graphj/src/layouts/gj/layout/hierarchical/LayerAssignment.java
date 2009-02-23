@@ -24,23 +24,17 @@ import gj.layout.Layout2D;
 import gj.model.Graph;
 import gj.model.Vertex;
 
-import java.awt.Shape;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * A interface to a layering of vertexes
  */
 public interface LayerAssignment {
 
-  public void assignLayers(Graph graph) throws GraphNotSupportedException;
+  public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException;
   
-  public List<Vertex> getLayer(int layer);
+  public Layer getLayer(int layer);
   
   public int getLayer(Vertex vertex);
   
   public int getNumLayers();
-  
-  public void debug(Layout2D layout, Collection<Shape> debugShapes);
   
 }
