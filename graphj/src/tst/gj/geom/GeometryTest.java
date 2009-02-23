@@ -191,7 +191,10 @@ public class GeometryTest extends TestCase {
     // | -
     tst( p(0,0.5), Geometry.getLineIntersection(p(0,0), p(0,1), p(2,0.5), p(3,0.5)));
     
-    // 
+    // \/
+    tst( p(1,1), Geometry.getIntersection(p(0,0), p(1,1), p(1,1), p(2,0)));
+    tst( p(1,1), Geometry.getIntersection(p(0,0), p(1,1), p(2,0), p(1,1)));
+    
   }
   
   /**
