@@ -20,7 +20,6 @@
 package gj.layout.hierarchical;
 
 import static gj.geom.Geometry.getIntersection;
-import gj.layout.hierarchical.Layer.Assignment;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -36,7 +35,7 @@ public class LayerByLayerSweepCR implements CrossingReduction {
   public void reduceCrossings(List<Layer> layers) {
     
     // we're going from layer to layer reducing number of crossings between layer i and i+1
-    for (int i=1;i<layers.size()-1;i++)
+    for (int i=1;i<layers.size();i++)
       sweepLayer(layers.get(i), -1);
 
     // TODO sweeping from source>sink vs sink>source can lead to a better result - we should probably try both
@@ -98,11 +97,11 @@ public class LayerByLayerSweepCR implements CrossingReduction {
     int cn = 0;
 
     // loop over all u1>u2 and v1>v2 pairs
-    Assignment u1 = layer.get(Math.min(u,v));
-    for (Assignment u2 : u1.adjacents(direction)) {
+    Layer.Assignment u1 = layer.get(Math.min(u,v));
+    for (Layer.Assignment u2 : u1.adjacents(direction)) {
       
-      Assignment v1 = layer.get(Math.max(u,v));
-      for (Assignment v2 : v1.adjacents(direction)) {
+      Layer.Assignment v1 = layer.get(Math.max(u,v));
+      for (Layer.Assignment v2 : v1.adjacents(direction)) {
         
         if (u2.pos()!=v2.pos() && intersects(u, u2.pos(), v, v2.pos()))
           cn ++;

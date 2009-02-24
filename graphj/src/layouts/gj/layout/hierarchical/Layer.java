@@ -24,15 +24,25 @@ import gj.model.Vertex;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * an ordered layer of nodes
  */
 /*package*/ class Layer implements Iterable<Layer.Assignment> {
   
-  /*package*/ static Vertex DUMMY = new Dummy();
+  /*package*/ static Vertex DUMMY = new Vertex() {
+      @Override
+      public String toString() {
+        return "Dummy";
+      }
+      public Collection<? extends Edge> getEdges() {
+        throw new IllegalArgumentException("n/a");
+      }
+    };
   
   private List<Assignment> assignments = new ArrayList<Assignment>();
 
@@ -86,6 +96,10 @@ import java.util.List;
     return assignments.toString();
   }
   
+  public Iterator<Assignment> iterator() {
+    return assignments.iterator();
+  }
+  
   /**
    * A vertex assigned to a layer
    */
@@ -95,8 +109,8 @@ import java.util.List;
     private int layer = -1;
     private Vertex vertex;
     private int position = -1;
-    private List<Assignment> outgoing = new ArrayList<Assignment>();
-    private List<Assignment> incoming = new ArrayList<Assignment>();
+    private Map<Edge, Assignment> out = new HashMap<Edge,Assignment>();
+    private Map<Edge, Assignment> in = new HashMap<Edge,Assignment>();
     
     /**
      * A new vertex/layer assignment 
@@ -107,27 +121,29 @@ import java.util.List;
       this.layer = layer;
     }
    
-    /**
-     * A dummy vertex/layer assignment between two given assignments
-     */
-    /*package*/ Assignment(Assignment source, Assignment sink, int layer, double originalx) {
-      this(DUMMY, layer, originalx);
-      addOutgoing(sink);
-      addIncoming(source);
-     
-      sink.incoming.remove(source);
-      sink.incoming.add(this);
-     
-      source.outgoing.remove(sink);
-      source.outgoing.add(this);
+//    /**
+//     * A dummy vertex/layer assignment between two given assignments
+//     */
+//    /*package*/ Node(Node source, Node sink, int layer, double originalx) {
+//      this(DUMMY, layer, originalx);
+//      addOutgoing(sink);
+//      addIncoming(source);
+//     
+//      sink.incoming.remove(source);
+//      sink.incoming.add(this);
+//     
+//      source.outgoing.remove(sink);
+//      source.outgoing.add(this);
+//    }
+    
+    /*package*/ void addOut(Edge edge, Assignment to) {
+      out.put(edge, to);
+      to.in.put(edge, this);
     }
     
-    /*package*/ void addOutgoing(Assignment adjacent) {
-      this.outgoing.add(adjacent);
-    }
-    
-    /*package*/ void addIncoming(Assignment adjacent) {
-      this.incoming.add(adjacent);
+    /*package*/ void addIn(Edge edge, Assignment from) {
+      in.put(edge,from);
+      from.out.put(edge, this);
     }
     
     /*package*/ Vertex vertex() {
@@ -141,16 +157,8 @@ import java.util.List;
       return true;
     }
     
-    /*package*/ List<Assignment> incoming() {
-      return incoming;
-    }
-    
-    /*package*/ List<Assignment> outgoing() {
-      return outgoing;
-    }
-    
-    /*package*/ List<Assignment> adjacents(int direction) {
-      return direction<0 ? outgoing : incoming;
+    /*package*/ Collection<Assignment> adjacents(int direction) {
+      return direction<0 ? out.values() : in.values();
     }
 
     /*package*/ int pos() {
@@ -165,34 +173,22 @@ import java.util.List;
     public String toString() {
       StringBuffer result = new StringBuffer();
       result.append("{");
-      for (int i=0;i<incoming.size();i++) {
-        if (i>0) result.append(",");
-        result.append(incoming.get(i).vertex);
+      int i=0;
+      for (Assignment other : in.values()) {
+        if (i++>0) result.append(",");
+        result.append(other.vertex);
       }
       result.append("}");
       result.append(vertex);
       result.append("{");
-      for (int i=0;i<outgoing.size();i++) {
-        if (i>0) result.append(",");
-        result.append(outgoing.get(i).vertex);
+      i = 0;
+      for (Assignment other : out.values()) {
+        if (i++>0) result.append(",");
+        result.append(other.vertex);
       }
       result.append("}");
       return result.toString();
     }
   } // Assignment
 
-  public Iterator<Assignment> iterator() {
-    return assignments.iterator();
-  }
-  
-  private static class Dummy implements Vertex {
-    @Override
-    public String toString() {
-      return "Dummy";
-    }
-    public Collection<? extends Edge> getEdges() {
-      throw new IllegalArgumentException("n/a");
-    }
-  }
-  
 }
