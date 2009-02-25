@@ -97,13 +97,13 @@ public class LayerByLayerSweepCR implements CrossingReduction {
     int cn = 0;
 
     // loop over all u1>u2 and v1>v2 pairs
-    Layer.Assignment u1 = layer.get(Math.min(u,v));
-    for (Layer.Assignment u2 : u1.adjacents(direction)) {
+    int[] us = layer.getOutgoing(Math.min(u,v));
+    for (int i=0;i<us.length;i++) {
       
-      Layer.Assignment v1 = layer.get(Math.max(u,v));
-      for (Layer.Assignment v2 : v1.adjacents(direction)) {
+      int[] vs = layer.getOutgoing(Math.max(u,v));
+      for (int j=0;j<vs.length;j++) {
         
-        if (u2.pos()!=v2.pos() && intersects(u, u2.pos(), v, v2.pos()))
+        if (us[i]!=vs[i] && intersects(u, us[i], v, vs[i]))
           cn ++;
           
       }

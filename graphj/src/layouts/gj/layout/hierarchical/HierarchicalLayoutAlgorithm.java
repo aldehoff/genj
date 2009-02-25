@@ -23,6 +23,7 @@ import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
+import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
 import java.awt.Shape;
@@ -73,9 +74,12 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       Layer layer = layers.get(i);
       
       for (int j=0; j<layer.size(); j++) {
-        Layer.Assignment assignment = layer.get(j);
-        if (assignment.vertex()!=Layer.DUMMY)
-          layout.setPositionOfVertex(assignment.vertex(), new Point2D.Double(j*distanceBetweenVertices, -i*distanceBetweenLayers));
+        Vertex vertex = layer.getVertex(j);
+        if (vertex!=Layer.DUMMY) {
+          layout.setPositionOfVertex(vertex, new Point2D.Double(j*distanceBetweenVertices, -i*distanceBetweenLayers));
+          
+          //layer.getEdges(j);
+        }
       }
     }
     
