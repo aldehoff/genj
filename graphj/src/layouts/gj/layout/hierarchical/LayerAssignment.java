@@ -19,17 +19,43 @@
  */
 package gj.layout.hierarchical;
 
+import java.awt.Point;
+import java.util.Collection;
+
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
+import gj.model.Edge;
 import gj.model.Graph;
-
-import java.util.List;
+import gj.model.Vertex;
 
 /**
  * A interface to a layering of vertexes
  */
 public interface LayerAssignment {
 
-  public List<Layer> assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException;
+  public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException;
   
+  public int getNumLayers();
+  
+  public int getLayerSize(int layer);
+  
+  public Vertex getVertex(int layer, int u);
+  
+  public void swapVertices(int layer, int u, int v);
+  
+  public Point[] getRouting(Edge edge);
+  
+  public int[] getIncomingIndices(int layer, int u);
+  
+  public int[] getOutgoingIndices(int layer, int u);
+  
+  public static Vertex DUMMY = new Vertex() {
+    @Override
+    public String toString() {
+      return "Dummy";
+    }
+    public Collection<? extends Edge> getEdges() {
+      throw new IllegalArgumentException("n/a");
+    }
+  };
 }

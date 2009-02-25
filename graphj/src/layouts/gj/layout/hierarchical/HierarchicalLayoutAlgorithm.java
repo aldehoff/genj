@@ -32,7 +32,6 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * A hierarchical layout algorithm
@@ -66,36 +65,35 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       return bounds;
     
     // 1st step - calculate layering
-    List<Layer> layers = new LongestPathLA().assignLayers(graph, layout);
+    LayerAssignment layerAssignment = new LongestPathLA();
+    layerAssignment.assignLayers(graph, layout);
     
     // 2nd step - crossing reduction
-    new LayerByLayerSweepCR().reduceCrossings(layers);
+    new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
     
     // 3rd step - vertex positioning
-    for (int i=0;i<layers.size();i++) {
-      Layer layer = layers.get(i);
+    for (int i=0;i<layerAssignment.getNumLayers();i++) {
       
-      for (int j=0; j<layer.size(); j++) {
-        Vertex vertex = layer.getVertex(j);
-        if (vertex!=Layer.DUMMY) {
-          
+      for (int j=0; j<layerAssignment.getLayerSize(i); j++) {
+        Vertex vertex = layerAssignment.getVertex(i,j);
+        if (vertex!=LayerAssignment.DUMMY) {
           Point2D start = new Point2D.Double(j*distanceBetweenVertices, -i*distanceBetweenLayers);
           layout.setPositionOfVertex(vertex, start);
-          
-          for (Edge edge : vertex.getEdges()) {
-            if (edge.getStart().equals(vertex)) {
-              Point[] routing = layer.getRouting(j, edge);
-              Point2D[] points = new Point2D.Double[routing.length];
-              for (int r=0;r<routing.length;r++) 
-                points[r] = new Point2D.Double(routing[r].x*distanceBetweenVertices, -routing[r].y*distanceBetweenLayers);
-              layout.setPathOfEdge(edge, 
-                  LayoutHelper.getPath(points, layout.getShapeOfVertex(vertex), layout.getShapeOfVertex(edge.getEnd()), false)
-              );
-            }
-          }
         }
       }
     }
+    
+    // 4th step - edge positioning
+    for (Edge edge : graph.getEdges()) {
+      Point[] routing = layerAssignment.getRouting(edge);
+      Point2D[] points = new Point2D.Double[routing.length];
+      for (int r=0;r<routing.length;r++) 
+        points[r] = new Point2D.Double(routing[r].x*distanceBetweenVertices, -routing[r].y*distanceBetweenLayers);
+      layout.setPathOfEdge(edge, 
+          LayoutHelper.getPath(points, layout.getShapeOfVertex(edge.getStart()), layout.getShapeOfVertex(edge.getEnd()), false)
+      );
+    }
+    
     
     // done
     // TODO make this faster

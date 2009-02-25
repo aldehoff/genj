@@ -37,60 +37,63 @@ import java.util.Stack;
  * A layering based on longest paths from sinks
  */
 public class LongestPathLA implements LayerAssignment {
-  
+
+  // prepare state
+  Map<Vertex, Cell> vertex2cell;
+  List<Layer> layers;
+
   /** layering algorithm */
-  public List<Layer> assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException {
+  public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException {
 
     // prepare state
-    Map<Vertex, Assignment> vertex2assignment = new HashMap<Vertex, Assignment>();
-    List<LayerImpl> layers = new ArrayList<LayerImpl>();
+    vertex2cell = new HashMap<Vertex, Cell>();
+    layers = new ArrayList<Layer>();
 
     // find sinks
     for (Vertex v : graph.getVertices()) {
       if (LayoutHelper.isSink(v)) 
-        sinkToSource(null, v, new Stack<Assignment>(), vertex2assignment, layers, layout);
+        sinkToSource(null, v, new Stack<Cell>(), vertex2cell, layers, layout);
     }
     
     // place vertices in resulting layers
     for (Vertex vertex : graph.getVertices()) {
-      Assignment assignment = vertex2assignment.get(vertex);
-      layers.get(assignment.layer).add(assignment);
+      Cell cell = vertex2cell.get(vertex);
+      layers.get(cell.layer).add(cell);
     }
     
     // add dummy vertices
     dummyVertices(layers, layout);
 
     // done
-    return new ArrayList<Layer>(layers);
   }
   
   /**
    * add dummy vertices were edges span multiple layers
    */
-  private void dummyVertices(List<LayerImpl> layers, Layout2D layout) {
+  private void dummyVertices(List<Layer> layers, Layout2D layout) {
 
     // loop over layers and check incoming
     for (int i=0;i<layers.size()-1;i++) {
-      LayerImpl layer = layers.get(i);
+      Layer layer = layers.get(i);
       
-      for (Assignment assignment : layer.assignments) {
+      for (Cell cell : layer.cells) {
         
-        for (int j=0;j<assignment.in.size();j++) {
+        for (int j=0;j<cell.in.size();j++) {
           
-          Connection arc = assignment.in.get(j);
+          Cell2Cell arc = cell.in.get(j);
           
           if (arc.from.layer != i+1) {
             
             // create a dummy
-            Assignment dummy = new Assignment(Layer.DUMMY, i+1, assignment.originalx);
+            Cell dummy = new Cell(LayerAssignment.DUMMY, i+1, cell.originalx);
             layers.get(i+1).add(dummy);
 
             // delete old connection
-            assignment.in.remove(j);
+            cell.in.remove(j);
             arc.from.out.remove(arc);
             
             // rewire
-            dummy.addOut(arc.edge, assignment);
+            dummy.addOut(arc.edge, cell);
             dummy.addIn(arc.edge, arc.from);
 
           }
@@ -106,7 +109,7 @@ public class LongestPathLA implements LayerAssignment {
   /**
    * walk from sink to source recursively and collect layer information plus incoming vertices
    */
-  private void sinkToSource(Edge edge, Vertex vertex, Stack<Assignment> path, Map<Vertex, Assignment> vertex2assignment, List<LayerImpl> layers, Layout2D layout) throws GraphNotSupportedException{
+  private void sinkToSource(Edge edge, Vertex vertex, Stack<Cell> path, Map<Vertex, Cell> vertex2cell, List<Layer> layers, Layout2D layout) throws GraphNotSupportedException{
     
     // check if we're back at a vertex we've seen in this iteration
     if (path.contains(vertex))
@@ -114,147 +117,162 @@ public class LongestPathLA implements LayerAssignment {
     
     // make sure we have enough layers
     if (layers.size()<path.size()+1)
-      layers.add(new LayerImpl());
+      layers.add(new Layer());
     
     // create or reuse an assignment
-    Assignment assignment = vertex2assignment.get(vertex);
-    if (assignment==null) {
-      assignment = new Assignment(vertex, -1, layout.getPositionOfVertex(vertex).getX());
-      vertex2assignment.put(vertex, assignment);
+    Cell cell = vertex2cell.get(vertex);
+    if (cell==null) {
+      cell = new Cell(vertex, -1, layout.getPositionOfVertex(vertex).getX());
+      vertex2cell.put(vertex, cell);
     }
     
     // add adjacent vertices (previous in path)
     if (edge!=null)
-      assignment.addOut(edge, path.peek());
+      cell.addOut(edge, path.peek());
     
     // push to new layer and continue if node's layer has changed
-    if (!assignment.push(path.size()))
+    if (!cell.push(path.size()))
       return;      
 
     // recurse into incoming edges direction of source
-    path.push(assignment);
+    path.push(cell);
     for (Edge e : vertex.getEdges()) {
       if (e.getEnd().equals(vertex))
-        sinkToSource(e, e.getStart(), path, vertex2assignment, layers, layout);
+        sinkToSource(e, e.getStart(), path, vertex2cell, layers, layout);
     }
     path.pop();
     
     // done
   }
    
+  public Point[] getRouting(Edge edge) {
+    
+    // start with edge's start cell and its layer
+    Cell cell = vertex2cell.get(edge.getStart());
+    List<Point> result = new ArrayList<Point>();
+    result.add(new Point(cell.position,cell.layer));
+    
+    // find outgoing arc
+    while (true) {
+      
+      Cell2Cell arc = null;
+      for (int i=0;i<cell.out.size();i++) {
+        arc = cell.out.get(i);
+        if (arc.edge.equals(edge)) break;
+        arc = null;
+      }
+  
+      if (arc==null)
+        throw new IllegalArgumentException("n/a");
+  
+      // add routing element
+      result.add(new Point(arc.to.position, arc.to.layer));
+      
+      // done?
+      if (arc.to.vertex!=LayerAssignment.DUMMY) break;
+      
+      // continue into dummy
+      cell = arc.to;
+    }
+    
+    // done
+    return result.toArray(new Point[result.size()]);
+  }
+
+  public void swapVertices(int layer, int u, int v) {
+    layers.get(layer).swap(u,v);
+  }
+
+  public int[] getOutgoingIndices(int layer, int u) {
+    Cell cell = layers.get(layer).get(u);
+    int[] result = new int[cell.out.size()];
+    for (int i=0;i<cell.out.size();i++)
+      result[i]= cell.out.get(i).to.position;
+    return result;
+  }
+
+  public int[] getIncomingIndices(int layer, int u) {
+    Cell cell = layers.get(layer).get(u);
+    int[] result = new int[cell.in.size()];
+    for (int i=0;i<cell.in.size();i++)
+      result[i] = cell.in.get(i).from.position;
+    return result;
+  }
+
+  public int getNumLayers() {
+    return layers.size();
+  }
+  
+  public int getLayerSize(int layer) {
+    return layers.get(layer).size();
+  }
+
+  public Vertex getVertex(int layer, int u) {
+    return layers.get(layer).get(u).vertex;
+  }
+
   /**
    * an ordered layer of nodes
    */
-  static private class LayerImpl implements Layer {
+  static protected class Layer {
     
-    private List<Assignment> assignments = new ArrayList<Assignment>();
+    protected List<Cell> cells = new ArrayList<Cell>();
 
     /**
      * Add a vertex to layer at given position
      */
-    private void add(Assignment assignment) {
+    protected void add(Cell cell) {
       
       int pos = 0;
-      while (pos<assignments.size()){
-        if (assignment.originalx < assignments.get(pos).originalx) 
+      while (pos<cells.size()){
+        if (cell.originalx < cells.get(pos).originalx) 
           break;
         pos ++;
       }
 
-      add(assignment, pos);
+      add(cell, pos);
     }
     
-    private void add(Assignment assignment, int pos) {
+    protected void add(Cell cell, int pos) {
       
-      assignment.position = pos;
-      assignments.add(pos, assignment);
+      cell.position = pos;
+      cells.add(pos, cell);
       
-      while (++pos<assignments.size())
-        assignments.get(pos).position++;
+      while (++pos<cells.size())
+        cells.get(pos).position++;
       
     }
     
-    public Point[] getRouting(int u, Edge edge) {
-
-      // start with assignment
-      Assignment assignment = assignments.get(u);
-      List<Point> result = new ArrayList<Point>();
-      result.add(new Point(u,assignment.layer));
-      
-      // find outgoing arc
-      while (true) {
-        
-        Connection arc = null;
-        for (int i=0;i<assignment.out.size();i++) {
-          arc = assignment.out.get(i);
-          if (arc.edge.equals(edge)) break;
-          arc = null;
-        }
-  
-        if (arc==null)
-          throw new IllegalArgumentException("n/a");
-
-        // add routing element
-        result.add(new Point(arc.to.position, arc.to.layer));
-        
-        // done?
-        if (arc.to.vertex!=Layer.DUMMY) break;
-        
-        // continue into dummy
-        assignment = arc.to;
-      }
-      
-      // done
-      return result.toArray(new Point[result.size()]);
-    }
-    
-    public void swap(int u, int v) {
-      Assignment vu = assignments.get(u);
+    protected void swap(int u, int v) {
+      Cell vu = cells.get(u);
       vu.position = v;
       
-      Assignment vv = assignments.get(v);
+      Cell vv = cells.get(v);
       vv.position = u;
       
-      assignments.set(u, vv);
-      assignments.set(v, vu);
-      
+      cells.set(u, vv);
+      cells.set(v, vu);
     }
     
-    public int[] getOutgoing(int u) {
-      Assignment assignment = assignments.get(u);
-      int[] result = new int[assignment.out.size()];
-      for (int i=0;i<assignment.out.size();i++)
-        result[i]= assignment.out.get(i).to.position;
-      return result;
+    protected Cell get(int u) {
+      return cells.get(u);
     }
     
-    public int[] getIncoming(int u) {
-      Assignment assignment = assignments.get(u);
-      int[] result = new int[assignment.in.size()];
-      for (int i=0;i<assignment.in.size();i++)
-        result[i] = assignment.in.get(i).from.position;
-      return result;
-    }
-    
-    public int size() {
-      return assignments.size();
-    }
-    
-    public Vertex getVertex(int pos) {
-      return assignments.get(pos).vertex;
+    protected int size() {
+      return cells.size();
     }
     
     @Override
     public String toString() {
-      return assignments.toString();
+      return cells.toString();
     }
     
   } //LayerImpl
   
-  private static class Connection {
-    private Edge edge;
-    private Assignment from, to;
-    private Connection(Edge edge, Assignment from, Assignment to) {
+  protected static class Cell2Cell {
+    protected Edge edge;
+    protected Cell from, to;
+    protected Cell2Cell(Edge edge, Cell from, Cell to) {
       this.edge = edge;
       this.from = from;
       this.to = to;
@@ -262,54 +280,40 @@ public class LongestPathLA implements LayerAssignment {
   } //Connection
   
   /**
-   * A vertex assigned to a layer
+   * A vertex assigned to a layer cell
    */
-  private static class Assignment {
+  protected static class Cell {
 
     private double originalx;
     private int layer = -1;
     private Vertex vertex;
     private int position = -1;
-    private List<Connection> out = new ArrayList<Connection>();
-    private List<Connection> in = new ArrayList<Connection>();
+    private List<Cell2Cell> out = new ArrayList<Cell2Cell>();
+    private List<Cell2Cell> in = new ArrayList<Cell2Cell>();
     
     /**
-     * A new vertex/layer assignment 
+     * A new vertex/layer cell 
      */
-   /*package*/ Assignment(Vertex vertex, int layer, double originalx) {
+    protected Cell(Vertex vertex, int layer, double originalx) {
       this.originalx = originalx;
       this.vertex = vertex;
       this.layer = layer;
     }
    
-//    /**
-//     * A dummy vertex/layer assignment between two given assignments
-//     */
-//    /*package*/ Node(Node source, Node sink, int layer, double originalx) {
-//      this(DUMMY, layer, originalx);
-//      addOutgoing(sink);
-//      addIncoming(source);
-//     
-//      sink.incoming.remove(source);
-//      sink.incoming.add(this);
-//     
-//      source.outgoing.remove(sink);
-//      source.outgoing.add(this);
-//    }
     
-    /*package*/ void addOut(Edge edge, Assignment to) {
-      Connection arc = new Connection(edge, this, to);
+    protected void addOut(Edge edge, Cell to) {
+      Cell2Cell arc = new Cell2Cell(edge, this, to);
       out.add(arc);
       to.in.add(arc);
     }
     
-    /*package*/ void addIn(Edge edge, Assignment from) {
-      Connection arc = new Connection(edge, from, this);
+    protected void addIn(Edge edge, Cell from) {
+      Cell2Cell arc = new Cell2Cell(edge, from, this);
       in.add(arc);
       from.out.add(arc);
     }
     
-    /*package*/ boolean push(int layer) {
+    protected boolean push(int layer) {
       if (this.layer>=layer)
         return false;
       this.layer = layer;
