@@ -22,10 +22,12 @@ package gj.layout.hierarchical;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
+import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -76,18 +78,28 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       for (int j=0; j<layer.size(); j++) {
         Vertex vertex = layer.getVertex(j);
         if (vertex!=Layer.DUMMY) {
-          layout.setPositionOfVertex(vertex, new Point2D.Double(j*distanceBetweenVertices, -i*distanceBetweenLayers));
           
-          //layer.getEdges(j);
+          Point2D start = new Point2D.Double(j*distanceBetweenVertices, -i*distanceBetweenLayers);
+          layout.setPositionOfVertex(vertex, start);
+          
+          for (Edge edge : vertex.getEdges()) {
+            if (edge.getStart().equals(vertex)) {
+              Point[] routing = layer.getRouting(j, edge);
+              Point2D[] points = new Point2D.Double[routing.length];
+              for (int r=0;r<routing.length;r++) 
+                points[r] = new Point2D.Double(routing[r].x*distanceBetweenVertices, -routing[r].y*distanceBetweenLayers);
+              layout.setPathOfEdge(edge, 
+                  LayoutHelper.getPath(points, layout.getShapeOfVertex(vertex), layout.getShapeOfVertex(edge.getEnd()), false)
+              );
+            }
+          }
         }
       }
     }
     
-    // place the arcs
-    LayoutHelper.setPaths(graph, layout);
-    
     // done
-    return bounds;
+    // TODO make this faster
+    return LayoutHelper.getBounds(graph, layout);
   }
 
   /**

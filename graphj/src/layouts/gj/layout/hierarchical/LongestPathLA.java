@@ -26,6 +26,7 @@ import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +82,7 @@ public class LongestPathLA implements LayerAssignment {
           if (arc.from.layer != i+1) {
             
             // create a dummy
-            Assignment dummy = new Assignment(Layer.DUMMY, i+1, layout.getPositionOfVertex(assignment.vertex).getX());
+            Assignment dummy = new Assignment(Layer.DUMMY, i+1, assignment.originalx);
             layers.get(i+1).add(dummy);
 
             // delete old connection
@@ -151,7 +152,7 @@ public class LongestPathLA implements LayerAssignment {
     /**
      * Add a vertex to layer at given position
      */
-    /*package*/ void add(Assignment assignment) {
+    private void add(Assignment assignment) {
       
       int pos = 0;
       while (pos<assignments.size()){
@@ -163,7 +164,7 @@ public class LongestPathLA implements LayerAssignment {
       add(assignment, pos);
     }
     
-    /*package*/ void add(Assignment assignment, int pos) {
+    private void add(Assignment assignment, int pos) {
       
       assignment.position = pos;
       assignments.add(pos, assignment);
@@ -171,6 +172,40 @@ public class LongestPathLA implements LayerAssignment {
       while (++pos<assignments.size())
         assignments.get(pos).position++;
       
+    }
+    
+    public Point[] getRouting(int u, Edge edge) {
+
+      // start with assignment
+      Assignment assignment = assignments.get(u);
+      List<Point> result = new ArrayList<Point>();
+      result.add(new Point(u,assignment.layer));
+      
+      // find outgoing arc
+      while (true) {
+        
+        Connection arc = null;
+        for (int i=0;i<assignment.out.size();i++) {
+          arc = assignment.out.get(i);
+          if (arc.edge.equals(edge)) break;
+          arc = null;
+        }
+  
+        if (arc==null)
+          throw new IllegalArgumentException("n/a");
+
+        // add routing element
+        result.add(new Point(arc.to.position, arc.to.layer));
+        
+        // done?
+        if (arc.to.vertex!=Layer.DUMMY) break;
+        
+        // continue into dummy
+        assignment = arc.to;
+      }
+      
+      // done
+      return result.toArray(new Point[result.size()]);
     }
     
     public void swap(int u, int v) {

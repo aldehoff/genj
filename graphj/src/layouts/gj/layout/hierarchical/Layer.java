@@ -22,6 +22,7 @@ package gj.layout.hierarchical;
 import gj.model.Edge;
 import gj.model.Vertex;
 
+import java.awt.Point;
 import java.util.Collection;
 
 /**
@@ -34,6 +35,8 @@ public interface Layer {
   public Vertex getVertex(int u);
   
   public void swap(int u, int v);
+  
+  public Point[] getRouting(int u, Edge edge);
   
   public int[] getIncoming(int u);
   
