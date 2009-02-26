@@ -34,7 +34,7 @@ public class LayerByLayerSweepCR implements CrossingReduction {
   public void reduceCrossings(LayerAssignment layerAssignment) {
     
     // we're going from layer to layer reducing number of crossings between layer i and i+1
-    for (int i=1;i<layerAssignment.getNumLayers();i++)
+    for (int i=1;i<layerAssignment.getHeight();i++)
       sweepLayer(layerAssignment, i, -1);
 
     // TODO sweeping from source>sink vs sink>source can lead to a better result - we should probably try both
@@ -49,7 +49,7 @@ public class LayerByLayerSweepCR implements CrossingReduction {
     
     // calculate current number of crossings
     int originalNumCrossings = 0;
-    for (int u=0,v=1;u<layerAssignment.getLayerSize(layer)-1;u++,v++) {
+    for (int u=0,v=1;u<layerAssignment.getWidth(layer)-1;u++,v++) {
       originalNumCrossings += crossingNumber(layerAssignment, layer, u, v, direction);
     }    
     
@@ -62,7 +62,7 @@ public class LayerByLayerSweepCR implements CrossingReduction {
     while (true) {
 
       int nc = 0;
-      for (int u=0,v=1;u<layerAssignment.getLayerSize(layer)-1;u++,v++) {
+      for (int u=0,v=1;u<layerAssignment.getWidth(layer)-1;u++,v++) {
         
         // calculate crossing numbers 
         int cuv = crossingNumber(layerAssignment, layer, u, v, direction);

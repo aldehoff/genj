@@ -38,9 +38,9 @@ import java.util.Stack;
  */
 public class LongestPathLA implements LayerAssignment {
 
-  // prepare state
-  Map<Vertex, Cell> vertex2cell;
-  List<Layer> layers;
+  private Map<Vertex, Cell> vertex2cell;
+  private List<Layer> layers;
+  private int width;
 
   /** layering algorithm */
   public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException {
@@ -48,6 +48,7 @@ public class LongestPathLA implements LayerAssignment {
     // prepare state
     vertex2cell = new HashMap<Vertex, Cell>();
     layers = new ArrayList<Layer>();
+    width = 0;
 
     // find sinks
     for (Vertex v : graph.getVertices()) {
@@ -58,7 +59,10 @@ public class LongestPathLA implements LayerAssignment {
     // place vertices in resulting layers
     for (Vertex vertex : graph.getVertices()) {
       Cell cell = vertex2cell.get(vertex);
-      layers.get(cell.layer).add(cell);
+      Layer layer = layers.get(cell.layer);
+      layer.add(cell);
+      width = Math.max(width, layer.size());
+
     }
     
     // add dummy vertices
@@ -199,11 +203,15 @@ public class LongestPathLA implements LayerAssignment {
     return result;
   }
 
-  public int getNumLayers() {
+  public int getHeight() {
     return layers.size();
   }
   
-  public int getLayerSize(int layer) {
+  public int getWidth() {
+    return width;
+  }
+  
+  public int getWidth(int layer) {
     return layers.get(layer).size();
   }
 

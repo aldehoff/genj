@@ -40,21 +40,9 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
 
   private double distanceBetweenLayers = 50; 
   private double distanceBetweenVertices= 50; 
+  private boolean isSinksAtBottom = true;
+  private double alignmentOfLayers = 0.5;
   
-  /**
-   * Accessor - distance between layers
-   */
-  public void setDistanceBetweenLayers(double distanceBetweenLayers) {
-    this.distanceBetweenLayers = distanceBetweenLayers;
-  }
-
-  /**
-   * Accessor - distance between layers
-   */
-  public double getDistanceBetweenLayers() {
-    return distanceBetweenLayers;
-  }
-
   /**
    * do the layout
    */
@@ -72,12 +60,15 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
     
     // 3rd step - vertex positioning
-    for (int i=0;i<layerAssignment.getNumLayers();i++) {
-      
-      for (int j=0; j<layerAssignment.getLayerSize(i); j++) {
+    int width = layerAssignment.getWidth();
+    int height = layerAssignment.getHeight();
+    int dir = isSinksAtBottom ? -1 : 1;
+    for (int i=0;i<height;i++) {
+      double alignment = (width-layerAssignment.getWidth(i))*distanceBetweenVertices*alignmentOfLayers; 
+      for (int j=0; j<layerAssignment.getWidth(i); j++) {
         Vertex vertex = layerAssignment.getVertex(i,j);
         if (vertex!=LayerAssignment.DUMMY) {
-          Point2D start = new Point2D.Double(j*distanceBetweenVertices, -i*distanceBetweenLayers);
+          Point2D start = new Point2D.Double(alignment+j*distanceBetweenVertices, dir*i*distanceBetweenLayers);
           layout.setPositionOfVertex(vertex, start);
         }
       }
@@ -87,8 +78,15 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     for (Edge edge : graph.getEdges()) {
       Point[] routing = layerAssignment.getRouting(edge);
       Point2D[] points = new Point2D.Double[routing.length];
-      for (int r=0;r<routing.length;r++) 
-        points[r] = new Point2D.Double(routing[r].x*distanceBetweenVertices, -routing[r].y*distanceBetweenLayers);
+      for (int r=0;r<routing.length;r++) {
+        int layer = routing[r].y;
+        int pos = routing[r].x;
+        points[r] = new Point2D.Double(
+            (width-layerAssignment.getWidth(layer))*distanceBetweenVertices*alignmentOfLayers + pos*distanceBetweenVertices, 
+            dir*layer*distanceBetweenLayers
+        );
+      }
+      
       layout.setPathOfEdge(edge, 
           LayoutHelper.getPath(points, layout.getShapeOfVertex(edge.getStart()), layout.getShapeOfVertex(edge.getEnd()), false)
       );
@@ -96,8 +94,21 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     
     
     // done
-    // TODO make this faster
-    return LayoutHelper.getBounds(graph, layout);
+    return new Rectangle2D.Double(0,0,width*distanceBetweenVertices,dir*height*distanceBetweenLayers);
+  }
+
+  /**
+   * Accessor - distance between layers
+   */
+  public void setDistanceBetweenLayers(double distanceBetweenLayers) {
+    this.distanceBetweenLayers = distanceBetweenLayers;
+  }
+
+  /**
+   * Accessor - distance between layers
+   */
+  public double getDistanceBetweenLayers() {
+    return distanceBetweenLayers;
   }
 
   /**
@@ -112,6 +123,34 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
    */
   public double getDistanceBetweenVertices() {
     return distanceBetweenVertices;
+  }
+
+  /**
+   * Accessor - sinks at bottom or not
+   */
+  public void setSinksAtBottom(boolean sinksAtBottom) {
+    this.isSinksAtBottom = sinksAtBottom;
+  }
+
+  /**
+   * Accessor - sinks at bottom or not
+   */
+  public boolean getSinksAtBottom() {
+    return isSinksAtBottom;
+  }
+
+  /**
+   * Accessor - alignment of layers
+   */
+  public void setAlignmentOfLayers(double alignmentOfLayers) {
+    this.alignmentOfLayers = Math.min(1,Math.max(0, alignmentOfLayers));
+  }
+
+  /**
+   * Accessor - alignment of layers
+   */
+  public double getAlignmentOfLayers() {
+    return alignmentOfLayers;
   }
   
 }

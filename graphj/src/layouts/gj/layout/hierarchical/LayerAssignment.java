@@ -33,22 +33,77 @@ import gj.model.Vertex;
  */
 public interface LayerAssignment {
 
+  /**
+   * Process given graph and layout and produce a proper layer assignment
+   * @param graph the graph to analyze
+   * @param layout the layout 
+   * @throws GraphNotSupportedException
+   */
   public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException;
+
+  /**
+   * Number of layers
+   * @return height
+   */
+  public int getHeight();
+
+  /**
+   * Maximum of number of Vertices each layer
+   * @return width
+   */
+  public int getWidth();
   
-  public int getNumLayers();
+  /**
+   * Number of Vertices for given layer 
+   * @param layer the layer to prompt
+   * @return width
+   */
+  public int getWidth(int layer);
   
-  public int getLayerSize(int layer);
-  
+  /**
+   * Vertex in a layer
+   * @param layer the layer
+   * @param u the position in the layer
+   * @return selected vertex in graph or DUMMY
+   * @see LayerAssignment#DUMMY
+   */
   public Vertex getVertex(int layer, int u);
-  
+
+  /**
+   * Swap two vertices in a layer
+   * @param layer the layer
+   * @param u first position
+   * @param v second position
+   */
   public void swapVertices(int layer, int u, int v);
-  
+
+  /**
+   * Routing of a given edge
+   * @param edge the edge
+   * @return list of pairs (layer,position)*
+   */
   public Point[] getRouting(Edge edge);
-  
+
+  /**
+   * Adjacent positions for layer and positions
+   * @param layer the layer
+   * @param u the position
+   * @return list of indices in layer-1
+   */
   public int[] getIncomingIndices(int layer, int u);
   
+  /**
+   * Adjacent positions for layer and positions
+   * @param layer the layer
+   * @param u the position
+   * @return list of indices in layer+1
+   */
   public int[] getOutgoingIndices(int layer, int u);
-  
+
+  /**
+   * The dummy vertex 
+   * @see LayerAssignment#getVertex(int, int)
+   */
   public static Vertex DUMMY = new Vertex() {
     @Override
     public String toString() {
