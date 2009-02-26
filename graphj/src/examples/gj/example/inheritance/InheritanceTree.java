@@ -19,6 +19,7 @@
  */
 package gj.example.inheritance;
 
+import gj.example.Example;
 import gj.geom.Geometry;
 import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
@@ -30,7 +31,6 @@ import gj.ui.DefaultGraphRenderer;
 import gj.ui.GraphWidget;
 import gj.util.TreeGraphAdapter;
 
-import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -40,19 +40,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.JFrame;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 
 /**
  * A simple example of using the graph API for showing a family tree
  */
-public class InheritanceTree {
+public class InheritanceTree implements Example {
+
+  private static final Class<?> root = JLabel.class;
   
-  /** main method */
-  public static void main(String[] args) {
-    
-    final Class<?> root = JLabel.class;
+  public String getName() {
+    return "Inheritance of "+root;
+  }
+  
+  public JComponent prepare(GraphWidget widget) {
     
     // prepare our relationships
     TreeGraphAdapter.Tree<Class<?>> tree = new TreeGraphAdapter.Tree<Class<?>>() {
@@ -75,7 +77,7 @@ public class InheritanceTree {
       }
     };
 
-    final TreeGraphAdapter<Class<?>> graphAdapter = new TreeGraphAdapter<Class<?>>(tree);
+    final TreeGraphAdapter<Class<?>> adapter  = new TreeGraphAdapter<Class<?>>(tree);
  
     // apply radial layout
     final int w = 150, h = 16;
@@ -85,13 +87,16 @@ public class InheritanceTree {
     try {
       RadialLayoutAlgorithm r = new RadialLayoutAlgorithm();
       r.setDistanceBetweenGenerations(220);
-      r.apply(graphAdapter, layout, null, null);
+      r.apply(adapter, layout, null, null);
     } catch (LayoutAlgorithmException e) {
       throw new RuntimeException("hmm, can't layout inheritance of "+root, e);
     }
     
     // stuff into a graph widget
-    GraphWidget widget = new GraphWidget(layout);
+    widget.setGraphLayout(layout);
+    widget.setGraph(adapter);
+    
+    // special layout
     widget.setRenderer(new DefaultGraphRenderer() {
       @Override
       protected void renderVertex(Graph graph, Vertex vertex, Layout2D layout, java.awt.Graphics2D graphics) {
@@ -103,7 +108,7 @@ public class InheritanceTree {
         graphics.transform(layout.getTransformOfVertex(vertex));
         
         // draw text vertically
-        Class<?> clazz = graphAdapter.getContent(vertex);
+        Class<?> clazz = adapter.getContent(vertex);
         
         graphics.rotate(Geometry.QUARTER_RADIAN);
         StringBuffer content = new StringBuffer();
@@ -121,16 +126,9 @@ public class InheritanceTree {
         graphics.setTransform(oldt);
       }
     });
-    widget.setGraph(graphAdapter);
  
-    // and show
-    JFrame frame = new JFrame("Inheritance of "+root);
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    frame.getContentPane().add(new JScrollPane(widget));
-    frame.setSize(new Dimension(320,250));
-    frame.setVisible(true);
-    
     // done
+    return widget;
   }
 
 }

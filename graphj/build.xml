@@ -63,7 +63,7 @@
       <fileset dir="./build/classes/ui"/>
     </jar>
   	
-	</target>
+  </target>
 
   <!--
    Shell Compilation & Build
@@ -110,5 +110,20 @@
        <classpath path="./build/gj-core.jar:./build/gj-layouts.jar:./build/gj-ui.jar:./build/gj-shell.jar"/>
     </java>
   </target>
-  
+
+  <!--
+   Run
+   -->
+  <target name="example" depends="make">
+  	
+    <mkdir dir="./build/classes/examples"/>
+    <javac srcdir="src/examples" destdir="./build/classes/examples" debug="on" optimize="off" deprecation="off">
+      <classpath path="build/gj-core.jar:./build/gj-layouts.jar:build/gj-ui.jar"/>
+    </javac>
+
+    <java classname="gj.example.Main" fork="true"> 
+       <classpath path="./build/gj-core.jar:./build/gj-layouts.jar:./build/gj-ui.jar:./build/classes/examples"/>
+    </java>
+  </target>
+
 </project>

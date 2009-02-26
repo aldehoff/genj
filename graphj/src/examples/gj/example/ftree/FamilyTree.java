@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2008 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
  */
 package gj.example.ftree;
 
+import gj.example.Example;
 import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
@@ -27,21 +28,28 @@ import gj.model.Graph;
 import gj.ui.GraphWidget;
 import gj.util.TreeGraphAdapter;
 
-import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
+import javax.swing.JComponent;
 
 /**
  * A simple example of using the graph API for showing a family tree
  */
-public class FamilyTree {
+public class FamilyTree implements Example {
   
-  /** main method */
-  public static void main(String[] args) {
+  /**
+   * our example name
+   */
+  public String getName() {
+    return "Family Tree";
+  }
+  
+  /**
+   * our example preparation
+   */
+  public JComponent prepare(GraphWidget widget) {
     
     // prepare our relationships
     final String family = 
@@ -52,7 +60,8 @@ public class FamilyTree {
       "S&S>Jonas,"+
       "S&S>Alisa,"+
       "S&S>Luka";
-    
+
+    // wrap in an adapter that understands our tree
     TreeGraphAdapter.Tree<String> tree = new TreeGraphAdapter.Tree<String>() {
       public List<String> getChildren(String parent) {
         List<String> result = new ArrayList<String>();
@@ -75,7 +84,7 @@ public class FamilyTree {
     };
 
     Graph graph = new TreeGraphAdapter<String>(tree);
- 
+    
     // apply tree layout
     Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));
     
@@ -85,18 +94,12 @@ public class FamilyTree {
       throw new RuntimeException("hmm, can't layout my family", e);
     }
     
-    // stuff into a graph widget
-    GraphWidget widget = new GraphWidget(layout);
+    // set
+    widget.setGraphLayout(layout);
     widget.setGraph(graph);
- 
-    // and show
-    JFrame frame = new JFrame("Family Tree in GraphJ");
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    frame.getContentPane().add(new JScrollPane(widget));
-    frame.setSize(new Dimension(320,250));
-    frame.setVisible(true);
     
     // done
+    return widget;
   }
 
 }

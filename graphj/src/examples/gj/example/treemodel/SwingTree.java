@@ -19,6 +19,7 @@
  */
 package gj.example.treemodel;
 
+import gj.example.Example;
 import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
@@ -43,19 +44,22 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 
 /**
- * A simple example of using the graph API for showing a family tree
+ * A simple example of using the graph API for showing a tree of swing components
  */
-public class SwingTree {
+public class SwingTree implements Example {
   
-  /** main method */
-  public static void main(String[] args) {
+  public String getName() {
+    return "SwingTree";
+  }
+
+  public JComponent prepare(GraphWidget graphWidget) {
     
     // create a swing tree widget
     final JTree treeWidget = new JTree();
@@ -109,7 +113,7 @@ public class SwingTree {
     }
     
     // stuff into a graph widget
-    GraphWidget graphWidget = new GraphWidget(layout);
+    graphWidget.setGraphLayout(layout);
     graphWidget.setGraph(graph);
     graphWidget.setRenderer(new GraphRenderer() {
       public void render(Graph graph, Layout2D layout, Graphics2D graphics) {
@@ -140,12 +144,7 @@ public class SwingTree {
     content.add(new JScrollPane(graphWidget));
     content.add(new JScrollPane(treeWidget));
     
-    JFrame frame = new JFrame("SwingTree in GraphJ");
-    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    frame.getContentPane().add(content);
-    frame.pack();
-    frame.setVisible(true);
-    
     // done
+    return content;
   }
 }
