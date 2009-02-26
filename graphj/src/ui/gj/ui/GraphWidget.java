@@ -19,6 +19,7 @@
  */
 package gj.ui;
 
+import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.model.Graph;
 import gj.util.LayoutHelper;
@@ -52,6 +53,13 @@ public class GraphWidget extends JComponent {
   
   /** a renderer */
   private GraphRenderer renderer;
+  
+  /**
+   * Constructor
+   */
+  public GraphWidget() {
+    this(new DefaultLayout(), new DefaultGraphRenderer());
+  }
   
   /**
    * Constructor
@@ -110,6 +118,13 @@ public class GraphWidget extends JComponent {
    */
   public Layout2D getGraphLayout() {
     return layout;
+  }
+  
+  /**
+   * Accessor - Layout
+   */
+  public void setGraphLayout(Layout2D layout) {
+    this.layout = layout;
   }
   
   /**
