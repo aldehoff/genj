@@ -90,7 +90,7 @@ public class LongestPathLA implements LayerAssignment {
             
             // create a dummy
             Cell dummy = new Cell(LayerAssignment.DUMMY, i+1, cell.originalx);
-            layers.get(i+1).add(dummy);
+            width = Math.max(width, layers.get(i+1).add(dummy));
 
             // delete old connection
             cell.in.remove(j);
@@ -229,7 +229,7 @@ public class LongestPathLA implements LayerAssignment {
     /**
      * Add a vertex to layer at given position
      */
-    protected void add(Cell cell) {
+    protected int add(Cell cell) {
       
       int pos = 0;
       while (pos<cells.size()){
@@ -239,6 +239,8 @@ public class LongestPathLA implements LayerAssignment {
       }
 
       add(cell, pos);
+      
+      return cells.size();
     }
     
     protected void add(Cell cell, int pos) {
