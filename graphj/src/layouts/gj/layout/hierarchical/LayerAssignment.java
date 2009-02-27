@@ -65,7 +65,7 @@ public interface LayerAssignment {
    * @param layer the layer
    * @param u the position in the layer
    * @return selected vertex in graph or DUMMY
-   * @see LayerAssignment#DUMMY
+   * @see DummyVertex
    */
   public Vertex getVertex(int layer, int u);
 
@@ -101,10 +101,10 @@ public interface LayerAssignment {
   public int[] getOutgoingIndices(int layer, int u);
 
   /**
-   * The dummy vertex 
+   * Dummy vertex 
    * @see LayerAssignment#getVertex(int, int)
    */
-  public static Vertex DUMMY = new Vertex() {
+  public class DummyVertex implements Vertex {
     @Override
     public String toString() {
       return "Dummy";

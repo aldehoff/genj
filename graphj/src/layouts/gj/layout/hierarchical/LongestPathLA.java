@@ -89,7 +89,7 @@ public class LongestPathLA implements LayerAssignment {
           if (arc.from.layer != i+1) {
             
             // create a dummy
-            Cell dummy = new Cell(LayerAssignment.DUMMY, i+1, cell.originalx);
+            Cell dummy = new Cell(new DummyVertex(), i+1, cell.originalx);
             width = Math.max(width, layers.get(i+1).add(dummy));
 
             // delete old connection
@@ -173,7 +173,7 @@ public class LongestPathLA implements LayerAssignment {
       result.add(new Point(arc.to.position, arc.to.layer));
       
       // done?
-      if (arc.to.vertex!=LayerAssignment.DUMMY) break;
+      if (!(arc.to.vertex instanceof DummyVertex)) break;
       
       // continue into dummy
       cell = arc.to;

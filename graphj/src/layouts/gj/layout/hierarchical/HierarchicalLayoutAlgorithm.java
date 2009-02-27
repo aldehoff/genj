@@ -31,7 +31,9 @@ import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A hierarchical layout algorithm
@@ -52,6 +54,9 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     if (graph.getVertices().isEmpty())
       return bounds;
     
+    // wrap layout into dummy aware one
+    layout = new DummyAwareLayout(layout);
+    
     // 1st step - calculate layering
     LayerAssignment layerAssignment = new LongestPathLA();
     layerAssignment.assignLayers(graph, layout);
@@ -60,31 +65,69 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
     
     // 3rd step - vertex positioning
-    int width = layerAssignment.getWidth();
+    assignPositions(layerAssignment, layout);
+    
+    // 4th step - edge positioning
+    routeEdges(graph, layerAssignment, layout);
+    
+    // done
+    return new Rectangle2D.Double(
+        -distanceBetweenVertices/2,
+        isSinksAtBottom?-layerAssignment.getHeight()*distanceBetweenLayers+distanceBetweenLayers/2:0,
+        layerAssignment.getWidth()*distanceBetweenVertices,
+        layerAssignment.getHeight()*distanceBetweenLayers
+    );
+  }
+
+  /**
+   * assign positions to vertices
+   */
+  private void assignPositions(LayerAssignment layerAssignment, Layout2D layout) {
+    
     int height = layerAssignment.getHeight();
+    
+    // calculate true width of widest layer in points
+    double width = 0;
+    double[] widths = new double[height];
+    for (int i=0;i<height;i++) {
+      for (int j=0;j<layerAssignment.getWidth(i);j++) {
+        if (j>0) widths[i]+=distanceBetweenVertices;
+        Vertex v = layerAssignment.getVertex(i, j);
+        widths[i] += layout.getShapeOfVertex(v).getBounds2D().getWidth();
+      }
+      if (widths[i]>width) width = widths[i];
+    }
+
+    // loop over layers and place vertices (not dummies of course)
     int dir = isSinksAtBottom ? -1 : 1;
     for (int i=0;i<height;i++) {
-      double alignment = (width-layerAssignment.getWidth(i))*distanceBetweenVertices*alignmentOfLayers; 
+      double alignment = (width-layerAssignment.getWidth(i)*distanceBetweenVertices)*alignmentOfLayers; 
       for (int j=0; j<layerAssignment.getWidth(i); j++) {
         Vertex vertex = layerAssignment.getVertex(i,j);
-        if (vertex!=LayerAssignment.DUMMY) {
-          Point2D start = new Point2D.Double(alignment+j*distanceBetweenVertices, dir*i*distanceBetweenLayers);
-          layout.setPositionOfVertex(vertex, start);
-        }
+        Point2D start = new Point2D.Double(alignment+j*distanceBetweenVertices, dir*i*distanceBetweenLayers);
+        layout.setPositionOfVertex(vertex, start);
       }
     }
     
-    // 4th step - edge positioning
+    // done
+  }
+
+  /**
+   * route edges appropriately
+   */
+  private void routeEdges(Graph graph, LayerAssignment layerAssignment, Layout2D layout) {
+    
+    int width = layerAssignment.getWidth();
+    int dir = isSinksAtBottom ? -1 : 1;
+    
     for (Edge edge : graph.getEdges()) {
+      
       Point[] routing = layerAssignment.getRouting(edge);
-      Point2D[] points = new Point2D.Double[routing.length];
+      List<Point2D> points = new ArrayList<Point2D>(routing.length);
       for (int r=0;r<routing.length;r++) {
         int layer = routing[r].y;
         int pos = routing[r].x;
-        points[r] = new Point2D.Double(
-            (width-layerAssignment.getWidth(layer))*distanceBetweenVertices*alignmentOfLayers + pos*distanceBetweenVertices, 
-            dir*layer*distanceBetweenLayers
-        );
+        points.add(layout.getPositionOfVertex(layerAssignment.getVertex(layer, pos)));
       }
       
       layout.setPathOfEdge(edge, 
@@ -93,13 +136,6 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     }
     
     
-    // done
-    return new Rectangle2D.Double(
-        -distanceBetweenVertices/2,
-        dir<0?-height*distanceBetweenLayers+distanceBetweenLayers/2:0,
-        width*distanceBetweenVertices,
-        height*distanceBetweenLayers
-    );
   }
 
   /**
