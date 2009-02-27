@@ -224,6 +224,10 @@ public class LayoutHelper {
    * @param s1 shape positioned at the first point
    * @param s2 shape positioned at the last point
    */  
+  public static Path getPath(List<Point2D> points, Shape s1, Shape s2, boolean reversed) {
+    return getPath(points.toArray(new Point2D[points.size()]),s1,s2,reversed);
+  }
+  
   public static Path getPath(Point2D[] points, Shape s1, Shape s2, boolean reversed) {
     
     int n = points.length;

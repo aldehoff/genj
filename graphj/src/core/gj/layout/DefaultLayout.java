@@ -51,6 +51,10 @@ public class DefaultLayout implements Layout2D {
     this.defaultShape = defaultShape;
   }
   
+  protected Shape getDefaultShape() {
+    return defaultShape;
+  }
+  
   public Point2D getPositionOfVertex(Vertex vertex) {
     Point2D result = vertex2point.get(vertex);
     if (result==null) 
