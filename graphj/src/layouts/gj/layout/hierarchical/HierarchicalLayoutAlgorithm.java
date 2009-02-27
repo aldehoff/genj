@@ -94,7 +94,12 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     
     
     // done
-    return new Rectangle2D.Double(0,0,width*distanceBetweenVertices,dir*height*distanceBetweenLayers);
+    return new Rectangle2D.Double(
+        -distanceBetweenVertices/2,
+        dir<0?-height*distanceBetweenLayers+distanceBetweenLayers/2:0,
+        width*distanceBetweenVertices,
+        height*distanceBetweenLayers
+    );
   }
 
   /**
