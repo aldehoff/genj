@@ -22,6 +22,7 @@ package gj.ui;
 import gj.layout.DefaultLayout;
 import gj.layout.Layout2D;
 import gj.model.Graph;
+import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
 import java.awt.Color;
@@ -31,6 +32,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.Point2D;
 
 import javax.swing.JComponent;
 
@@ -210,6 +212,22 @@ public class GraphWidget extends JComponent {
       p.x - getXOffset(),
       p.y - getYOffset()
     );
+  }
+  
+  /**
+   * return vertex by point
+   */
+  public Vertex getVertexAt(Point point) {
+    if (graph==null)
+      return null;
+    // adjust point for graph (graph space doesn't start at 0,0)
+    point = getPoint(point);
+    for (Vertex v : graph.getVertices()) {
+      Point2D pos = layout.getPositionOfVertex(v);
+      if (layout.getShapeOfVertex(v).contains(point.x - pos.getX(), point.y - pos.getY()))
+        return v;
+    }
+    return null;
   }
   
 }
