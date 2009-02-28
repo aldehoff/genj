@@ -49,7 +49,6 @@ public class TreeGraphAdapter<V> implements Graph {
     return result;
   }
   
-  // TODO the warning about unchecked cast stems from the fact that the callback for getContent() operates on a vertecx
   @SuppressWarnings({ "unchecked" })
   public V getContent(Vertex v) {
     return ((DefaultVertex<V>)v).getContent();
