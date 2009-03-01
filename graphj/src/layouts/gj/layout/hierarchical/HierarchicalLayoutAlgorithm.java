@@ -67,11 +67,8 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     // 2nd step - crossing reduction
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
     
-    // 3rd step - vertex positioning
-    bounds = assignPositions(layerAssignment, layout);
-    
-    // 4th step - edge positioning
-    routeEdges(graph, layerAssignment, layout);
+    // 3rd step - vertex positioning and edge routing
+    bounds = assignPositions(graph, layerAssignment, layout);
     
     // done
     return bounds;
@@ -80,7 +77,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
   /**
    * assign positions to vertices
    */
-  private Rectangle2D assignPositions(LayerAssignment layerAssignment, Layout2D layout) {
+  private Rectangle2D assignPositions(Graph graph, LayerAssignment layerAssignment, Layout2D layout) {
     
     int layers = layerAssignment.getHeight();
     
@@ -121,15 +118,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       y += dir*layerHeights[i];
     }
     
-    // done
-    return new Rectangle2D.Double(0,y<0?y:0,totalWidth,y<0?-y:y);
-  }
-
-  /**
-   * route edges appropriately
-   */
-  private void routeEdges(Graph graph, LayerAssignment layerAssignment, Layout2D layout) {
-    
+    // route edges appropriately
     for (Edge edge : graph.getEdges()) {
       
       Point[] routing = layerAssignment.getRouting(edge);
@@ -137,7 +126,13 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       for (int r=0;r<routing.length;r++) {
         int layer = routing[r].y;
         int pos = routing[r].x;
-        points.add(layout.getPositionOfVertex(layerAssignment.getVertex(layer, pos)));
+        if (r>0&&r<routing.length-1) {
+          Point2D p = layout.getPositionOfVertex(layerAssignment.getVertex(layer, pos));
+          points.add(new Point2D.Double(p.getX(),p.getY()+dir*layerHeights[layer]/2));
+          points.add(new Point2D.Double(p.getX(),p.getY()-dir*layerHeights[layer]/2));
+        } else {
+          points.add(layout.getPositionOfVertex(layerAssignment.getVertex(layer, pos)));
+        }
       }
       
       layout.setPathOfEdge(edge, 
@@ -145,7 +140,8 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       );
     }
     
-    
+    // done
+    return new Rectangle2D.Double(0,y<0?y:0,totalWidth,y<0?-y:y);
   }
 
   /**
