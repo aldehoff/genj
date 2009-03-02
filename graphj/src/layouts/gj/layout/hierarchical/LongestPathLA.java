@@ -67,6 +67,11 @@ public class LongestPathLA implements LayerAssignment {
     // place vertices in resulting layers
     for (Vertex vertex : graph.getVertices()) {
       Cell cell = vertex2cell.get(vertex);
+      
+      // unknown vertices at this point indicate a flaw in the graph
+      if (cell==null)
+        throw new GraphNotSupportedException("Graph presents changing set of vertices - check vertex identity");
+
       Layer layer = layers.get(cell.layer);
       layer.add(cell, initialOrdering);
       width = Math.max(width, layer.size());
