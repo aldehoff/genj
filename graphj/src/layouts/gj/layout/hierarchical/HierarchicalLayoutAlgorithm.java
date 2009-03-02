@@ -20,7 +20,6 @@
 package gj.layout.hierarchical;
 
 import static gj.geom.Geometry.getBounds;
-
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
 import gj.layout.LayoutAlgorithmException;
@@ -52,17 +51,24 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
    * do the layout
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
+    return apply(graph, layout, bounds, debugShapes, new VertexByXPositionComparator());
+  }
+  
+  /**
+   * do the layout
+   */
+  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes, VertexInLayerComparator initialOrdering) throws LayoutAlgorithmException {
 
     // empty case?
     if (graph.getVertices().isEmpty())
-      return bounds;
+      return new Rectangle2D.Double();
     
     // wrap layout into dummy aware one
     layout = new DummyAwareLayout(layout);
     
     // 1st step - calculate layering
     LayerAssignment layerAssignment = new LongestPathLA();
-    layerAssignment.assignLayers(graph, layout);
+    layerAssignment.assignLayers(graph, layout, initialOrdering);
     
     // 2nd step - crossing reduction
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
@@ -200,4 +206,20 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     return alignmentOfLayers;
   }
   
+  /**
+   * the default vertex comparator used for placing vertices into layers
+   */
+  public static class VertexByXPositionComparator implements VertexInLayerComparator {
+
+    /**
+     * compare two vertices
+     */
+    public int compare(Vertex v1, Vertex v2, int layer, Layout2D layout) {
+      double d = layout.getPositionOfVertex(v1).getX() - layout.getPositionOfVertex(v2).getX();
+      if (d==0) return 0;
+      return d<0 ? -1 : 1;
+    } 
+    
+  }//VertexByXPositionComparator
+
 }

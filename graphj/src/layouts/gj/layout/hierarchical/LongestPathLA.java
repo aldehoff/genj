@@ -41,19 +41,25 @@ public class LongestPathLA implements LayerAssignment {
   private Map<Vertex, Cell> vertex2cell;
   private List<Layer> layers;
   private int width;
+  private VertexInLayerComparator initialOrdering;
+  private Layout2D layout;
 
   /** layering algorithm */
-  public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException {
+  public void assignLayers(Graph graph, Layout2D layout, VertexInLayerComparator initialOrdering) throws GraphNotSupportedException {
 
     // prepare state
+    this.layout = layout;
+    this.initialOrdering = initialOrdering;
+    
     vertex2cell = new HashMap<Vertex, Cell>();
     layers = new ArrayList<Layer>();
+    
     width = 0;
 
     // find sinks
     for (Vertex v : graph.getVertices()) {
       if (LayoutHelper.isSink(v)) 
-        sinkToSource(null, v, new Stack<Cell>(), vertex2cell, layers, layout);
+        sinkToSource(null, v, new Stack<Cell>());
     }
     
     // place vertices in resulting layers
@@ -66,7 +72,7 @@ public class LongestPathLA implements LayerAssignment {
     }
     
     // add dummy vertices
-    dummyVertices(layers, layout);
+    dummyVertices();
 
     // done
   }
@@ -74,7 +80,7 @@ public class LongestPathLA implements LayerAssignment {
   /**
    * add dummy vertices were edges span multiple layers
    */
-  private void dummyVertices(List<Layer> layers, Layout2D layout) {
+  private void dummyVertices() {
 
     // loop over layers and check incoming
     for (int i=0;i<layers.size()-1;i++) {
@@ -88,8 +94,9 @@ public class LongestPathLA implements LayerAssignment {
           
           if (arc.from.layer != i+1) {
             
-            // create a dummy
-            Cell dummy = new Cell(new DummyVertex(), i+1, cell.originalx);
+            // create a dummy at same position as cell
+            Cell dummy = new Cell(new DummyVertex(), i+1);
+            layout.setPositionOfVertex(dummy.vertex, layout.getPositionOfVertex(cell.vertex));
             width = Math.max(width, layers.get(i+1).add(dummy));
 
             // delete old connection
@@ -113,7 +120,7 @@ public class LongestPathLA implements LayerAssignment {
   /**
    * walk from sink to source recursively and collect layer information plus incoming vertices
    */
-  private void sinkToSource(Edge edge, Vertex vertex, Stack<Cell> path, Map<Vertex, Cell> vertex2cell, List<Layer> layers, Layout2D layout) throws GraphNotSupportedException{
+  private void sinkToSource(Edge edge, Vertex vertex, Stack<Cell> path) throws GraphNotSupportedException{
     
     // check if we're back at a vertex we've seen in this iteration
     if (path.contains(vertex))
@@ -121,12 +128,12 @@ public class LongestPathLA implements LayerAssignment {
     
     // make sure we have enough layers
     if (layers.size()<path.size()+1)
-      layers.add(new Layer());
+      layers.add(new Layer(path.size()));
     
     // create or reuse an assignment
     Cell cell = vertex2cell.get(vertex);
     if (cell==null) {
-      cell = new Cell(vertex, -1, layout.getPositionOfVertex(vertex).getX());
+      cell = new Cell(vertex, -1);
       vertex2cell.put(vertex, cell);
     }
     
@@ -142,7 +149,7 @@ public class LongestPathLA implements LayerAssignment {
     path.push(cell);
     for (Edge e : vertex.getEdges()) {
       if (e.getEnd().equals(vertex))
-        sinkToSource(e, e.getStart(), path, vertex2cell, layers, layout);
+        sinkToSource(e, e.getStart(), path);
     }
     path.pop();
     
@@ -222,10 +229,16 @@ public class LongestPathLA implements LayerAssignment {
   /**
    * an ordered layer of nodes
    */
-  static protected class Layer {
+  protected class Layer {
     
     protected List<Cell> cells = new ArrayList<Cell>();
-
+    protected int layer;
+    
+    /** constructor */
+    public Layer(int layer) {
+      this.layer = layer;
+    }
+    
     /**
      * Add a vertex to layer at given position
      */
@@ -233,7 +246,7 @@ public class LongestPathLA implements LayerAssignment {
       
       int pos = 0;
       while (pos<cells.size()){
-        if (cell.originalx < cells.get(pos).originalx) 
+        if (initialOrdering.compare(cell.vertex, cells.get(pos).vertex, layer, layout)<0)
           break;
         pos ++;
       }
@@ -294,7 +307,6 @@ public class LongestPathLA implements LayerAssignment {
    */
   protected static class Cell {
 
-    private double originalx;
     private int layer = -1;
     private Vertex vertex;
     private int position = -1;
@@ -304,8 +316,7 @@ public class LongestPathLA implements LayerAssignment {
     /**
      * A new vertex/layer cell 
      */
-    protected Cell(Vertex vertex, int layer, double originalx) {
-      this.originalx = originalx;
+    protected Cell(Vertex vertex, int layer) {
       this.vertex = vertex;
       this.layer = layer;
     }

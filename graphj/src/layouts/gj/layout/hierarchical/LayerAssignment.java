@@ -19,14 +19,14 @@
  */
 package gj.layout.hierarchical;
 
-import java.awt.Point;
-import java.util.Collection;
-
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+
+import java.awt.Point;
+import java.util.Collection;
 
 /**
  * A interface to a layering of vertexes
@@ -39,7 +39,7 @@ public interface LayerAssignment {
    * @param layout the layout 
    * @throws GraphNotSupportedException
    */
-  public void assignLayers(Graph graph, Layout2D layout) throws GraphNotSupportedException;
+  public void assignLayers(Graph graph, Layout2D layout, VertexInLayerComparator initialOrdering) throws GraphNotSupportedException;
 
   /**
    * Number of layers
