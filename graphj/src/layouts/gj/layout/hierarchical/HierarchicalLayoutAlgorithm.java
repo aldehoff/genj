@@ -51,7 +51,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
    * do the layout
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
-    return apply(graph, layout, bounds, debugShapes, new VertexByXPositionComparator());
+    return apply(graph, layout, bounds, debugShapes, new LongestPathLA.VertexByXPositionComparator());
   }
   
   /**
@@ -205,21 +205,5 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
   public double getAlignmentOfLayers() {
     return alignmentOfLayers;
   }
-  
-  /**
-   * the default vertex comparator used for placing vertices into layers
-   */
-  public static class VertexByXPositionComparator implements VertexInLayerComparator {
-
-    /**
-     * compare two vertices
-     */
-    public int compare(Vertex v1, Vertex v2, int layer, Layout2D layout) {
-      double d = layout.getPositionOfVertex(v1).getX() - layout.getPositionOfVertex(v2).getX();
-      if (d==0) return 0;
-      return d<0 ? -1 : 1;
-    } 
-    
-  }//VertexByXPositionComparator
 
 }
