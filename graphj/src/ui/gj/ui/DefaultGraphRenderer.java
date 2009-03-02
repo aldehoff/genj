@@ -39,6 +39,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import javax.swing.Icon;
+
 /**
  * A default implementation for rendering a graph
  */
@@ -93,25 +95,28 @@ public class DefaultGraphRenderer implements GraphRenderer {
     draw(shape, pos, false, graphics);
 
     // and content    
-    Object content = getContent(vertex);
-    if (content!=null) {
+    String text = getText(vertex);
+    Icon icon = getIcon(vertex);
 
-      AffineTransform oldt = graphics.getTransform();
-      Shape oldcp = graphics.getClip();
-      
-      graphics.translate(pos.getX(), pos.getY());
-      graphics.clip(shape);
-      graphics.transform(layout.getTransformOfVertex(vertex));
-      draw(content.toString(), new Rectangle2D.Double(), 0.5, 0.5, graphics);
-      graphics.setTransform(oldt);
-      graphics.setClip(oldcp);
+    AffineTransform oldt = graphics.getTransform();
+    Shape oldcp = graphics.getClip();
+    
+    graphics.translate(pos.getX(), pos.getY());
+    graphics.clip(shape);
+    graphics.transform(layout.getTransformOfVertex(vertex));
+    draw(text, icon, new Rectangle2D.Double(), 0.5, 0.5, graphics);
+    graphics.setTransform(oldt);
+    graphics.setClip(oldcp);
 
-    }
     // done
   }
   
-  protected String getContent(Vertex vertex) {
-    return ""+vertex;
+  protected String getText(Vertex vertex) {
+    return vertex==null ? "" : vertex.toString();
+  }
+  
+  protected Icon getIcon(Vertex vertex) {
+    return null; // javax.swing.UIManager.getIcon( "OptionPane.errorIcon" );
   }
   
   /**
@@ -186,16 +191,16 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Helper that renders a string at given position
    */
-  protected void draw(String str, Rectangle2D at, double horizontalAlign, double verticalAlign,Graphics2D graphics) {
+  protected void draw(String text, Icon icon, Rectangle2D at, double horizontalAlign, double verticalAlign,Graphics2D graphics) {
 
     // calculate width/height
     FontMetrics fm = graphics.getFontMetrics();
     double height = 0;
     double width = 0;
-    for (int cursor=0;cursor<str.length();) {
-      int newline = str.indexOf('\n', cursor);
-      if (newline<0) newline = str.length();
-      String line = str.substring(cursor, newline);
+    for (int cursor=0;cursor<text.length();) {
+      int newline = text.indexOf('\n', cursor);
+      if (newline<0) newline = text.length();
+      String line = text.substring(cursor, newline);
       Rectangle2D r = fm.getStringBounds(line, graphics);
       LineMetrics lm = fm.getLineMetrics(line, graphics);
       width = Math.max(width, r.getWidth());
@@ -203,16 +208,21 @@ public class DefaultGraphRenderer implements GraphRenderer {
       cursor = newline+1;
     }
     
-    // calculate first line
-    double
-      x = at.getX() + (at.getWidth()-width)*horizontalAlign,
-      y = at.getY() + (at.getHeight()-height)*verticalAlign;
-
+    // draw icon
+    if (icon!=null) { 
+      int iwidth = icon.getIconWidth();
+      int cwidth = fm.charWidth(' '); 
+      icon.paintIcon(null, graphics, (int)(at.getX() + (at.getWidth()-width-iwidth-cwidth)*horizontalAlign), (int)(at.getY() + (at.getHeight()-icon.getIconHeight())*verticalAlign));
+      at.setRect(at.getX()+iwidth+cwidth, at.getY(), at.getWidth()-iwidth-cwidth, at.getHeight());
+    }
+    
     // draw lines
-    for (int cursor=0;cursor<str.length();) {
-      int newline = str.indexOf('\n', cursor);
-      if (newline<0) newline = str.length();
-      String line = str.substring(cursor, newline);
+    double x = at.getX() + (at.getWidth()-width)*horizontalAlign;
+    double y = at.getY() + (at.getHeight()-height)*verticalAlign;
+    for (int cursor=0;cursor<text.length();) {
+      int newline = text.indexOf('\n', cursor);
+      if (newline<0) newline = text.length();
+      String line = text.substring(cursor, newline);
       Rectangle2D r = fm.getStringBounds(line, graphics);
       LineMetrics lm = fm.getLineMetrics(line, graphics);
       graphics.drawString(line, (float)x, (float)y + lm.getHeight() - lm.getDescent());

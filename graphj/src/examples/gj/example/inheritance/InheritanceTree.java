@@ -120,7 +120,7 @@ public class InheritanceTree implements Example {
             j++;
           }
         }
-        draw(content.toString(), new Rectangle2D.Double(-w/2,-h/2,w,h), 0, 0.5, graphics);
+        draw(content.toString(), null, new Rectangle2D.Double(-w/2,-h/2,w,h), 0, 0.5, graphics);
         
         // restore
         graphics.setTransform(oldt);
