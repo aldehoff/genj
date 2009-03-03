@@ -60,7 +60,8 @@ public class InheritanceTree implements Example {
     TreeGraphAdapter.Tree<Class<?>> tree = new TreeGraphAdapter.Tree<Class<?>>() {
       public List<Class<?>> getChildren(Class<?> parent) {
         List<Class<?>> result = new ArrayList<Class<?>>();
-        result.addAll(Arrays.asList(parent.getInterfaces()));
+        for (Class<?> c : Arrays.asList(parent.getInterfaces()))
+          result.add(c);
         result.remove(Serializable.class);
         if (parent.getSuperclass()!=null)
           result.add(parent.getSuperclass());

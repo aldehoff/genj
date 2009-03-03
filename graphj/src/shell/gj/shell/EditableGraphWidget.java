@@ -270,18 +270,14 @@ public class EditableGraphWidget extends GraphWidget {
     }
     /** stop */
     protected void stop() { }
-    /** callback */
-    @Override
-    public void mousePressed(MouseEvent e) {}
-    /** callback */
-    @Override
-    public void mouseReleased(MouseEvent e) {}
-    /** callback */
-    @Override
-    public void mouseDragged(MouseEvent e) {}
-    /** callback */
-    @Override
-    public void mouseMoved(MouseEvent e) {}
+    /** w/1.6 this would need an override but I'm trying to keep this 1.5 compilable for a while */ 
+    @SuppressWarnings("all")
+    public void mouseDragged(MouseEvent e) {
+    }
+    /** w/1.6 this would need an override but I'm trying to keep this 1.5 compilable for a while */ 
+    @SuppressWarnings("all")
+    public void mouseMoved(MouseEvent e) {
+    }
   } // EOC
   
   /**
