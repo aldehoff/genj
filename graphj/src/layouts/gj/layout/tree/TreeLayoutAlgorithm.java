@@ -22,6 +22,7 @@ package gj.layout.tree;
 import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.layout.AbstractLayoutAlgorithm;
+import gj.layout.GraphNotSupportedException;
 import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
@@ -38,7 +39,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Vertex layout for Trees
@@ -65,6 +68,9 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
 
   /** whether to order by position instead of natural sequence */
   private boolean isOrderSiblingsByPosition = true;
+  
+  /** whether we allow cycles by introducing intersecting edges */
+  private boolean isAllowCycles = false;
 
   /**
    * Getter - distance of nodes in generation
@@ -190,24 +196,36 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   }
 
   /**
+   * Getter - whether we allow cycles by accepting intersecting lines between branches
+   */
+  public boolean isAllowCycles() {
+    return isAllowCycles;
+  }
+
+  /**
+   * Setter - whether we allow cycles by accepting intersecting lines between branches
+   */
+  public void setAllowCycles(boolean isAllowCycles) {
+    this.isAllowCycles = isAllowCycles;
+  }
+
+  /**
    * Layout a layout capable graph
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
     
-    // check that we got a tree
-    LayoutHelper.assertSpanningTree(graph);
-
     // ignore an empty tree
-    if (graph.getVertices().isEmpty())
+    Collection<? extends Vertex> vertices = graph.getVertices(); 
+    if (vertices.isEmpty())
       return bounds;
     
     // check root
     Vertex root = getRoot(graph);
     if (root==null)
-      root = graph.getVertices().iterator().next();
+      root = vertices.iterator().next();
     
     // recurse into it
-    Shape result = layout(graph, null, root, layout).shape;
+    Shape result = layout(graph, null, root, layout, new HashSet<Vertex>(vertices.size())).shape;
     if (debugShapes!=null) {
       debugShapes.add(result);
     }
@@ -219,19 +237,20 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   /**
    * Layout a branch
    */
-  private Branch layout(Graph graph, Vertex backtrack, Vertex root, Layout2D layout) {
+  private Branch layout(Graph graph, Vertex backtrack, Vertex root, Layout2D layout, Set<Vertex> visited) throws LayoutAlgorithmException, GraphNotSupportedException {
+    
+    // remember visited
+    visited.add(root);
     
     // reset vertex's transformation
     layout.setTransformOfVertex(root, null);
     
-    // check # children in neighbours (we don't count backtrack as child) - leaf?
+    // collect children without backtrack
     Collection<Vertex> children = LayoutHelper.getNeighbours(root);
     children.remove(backtrack);
-    if (children.isEmpty())
-      return new Branch(graph, root, layout);
     
     // create merged branch of sub-branches
-    return new Branch(graph, backtrack, root, children.toArray(new Vertex[children.size()]), layout);
+    return new Branch(graph, backtrack, root, children.toArray(new Vertex[children.size()]), layout, visited);
 
   }
   
@@ -254,78 +273,85 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     private Point2D top;
     private GeneralPath shape;
     
-    /** constructor for a leaf */
-    Branch(Graph graph, Vertex leaf, Layout2D layout) {
-      this.graph = graph;
-      this.layout = layout;
-      this.root = leaf;
-      vertices.add(leaf);
-      Point2D pos = layout.getPositionOfVertex(leaf);
-      shape = new GeneralPath(getConvexHull(
-          layout.getShapeOfVertex(leaf).getPathIterator(
-          AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
-      ));
-      
-    }
-
     /** constructor for a parent and its children */
-    Branch(Graph graph, Vertex backtrack, Vertex parent, Vertex[] children, Layout2D layout) {
+    Branch(Graph graph, Vertex backtrack, Vertex parent, Vertex[] children, Layout2D layout, Set<Vertex> visited) throws LayoutAlgorithmException, GraphNotSupportedException{
 
+      // init state
       this.graph = graph;
       this.layout = layout;
-      
-      double layoutAxis = getRadian(orientation);
+      this.root = parent;
+      vertices.add(root);
       
       // sort by current position
       if (isOrderSiblingsByPosition) 
         Arrays.sort(children, this);
       
-      // keep track of root and vertices
-      root = parent;
-      vertices.add(root);
-      
       // recurse into children and take over descendants
-      Branch[] branches = new Branch[children.length];
+      List<Branch> branches = new ArrayList<Branch>(children.length);
       for (int i=0;i<children.length;i++) {
         
-        branches[i] = layout(graph, parent, children[i], layout);
+        // child already in other branch?
+        if (visited.contains(children[i])) {
+          if (isAllowCycles)
+            continue;
+          throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+"]>["+children[i]+"]");
+        }
         
-        vertices.addAll(branches[i].vertices);
+        // recurse
+        Branch branch = layout(graph, parent, children[i], layout, visited);
+        branches.add(branch);
+        vertices.addAll(branch.vertices);
 
       }
       
+      // no children?
+      if (branches.isEmpty()) {
+        
+        // simple shape for a leaf
+        Point2D pos = layout.getPositionOfVertex(root);
+        shape = new GeneralPath(getConvexHull(
+            layout.getShapeOfVertex(root).getPathIterator(
+            AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
+        ));
+        top();
+        
+        // done
+        return;
+      }
+      
       // Calculate deltas of children left-aligned
+      double layoutAxis = getRadian(orientation);
       double lrAlignment = layoutAxis - QUARTER_RADIAN;
-      Point2D[] lrDeltas  = new Point2D[children.length];
+      Point2D[] lrDeltas  = new Point2D[branches.size()];
       lrDeltas[0] = new Point2D.Double();
-      for (int i=1;i<children.length;i++) {
+      for (int i=1;i<branches.size();i++) {
         // calculate delta from top alignment position
-        lrDeltas[i] = getDelta(branches[i].top(), branches[0].top());
+        lrDeltas[i] = getDelta(branches.get(i).top(), branches.get(0).top());
         // calculate distance from all previous siblings
         double distance = Double.MAX_VALUE;
         for (int j=0;j<i;j++) {
-          distance = Math.min(distance, getDistance(getTranslated(branches[j].shape, lrDeltas[j]), getTranslated(branches[i].shape, lrDeltas[i]), lrAlignment) - distanceInGeneration);
+          distance = Math.min(distance, getDistance(getTranslated(branches.get(j).shape, lrDeltas[j]), getTranslated(branches.get(i).shape, lrDeltas[i]), lrAlignment) - distanceInGeneration);
         }
         // calculate delta from top aligned position with correct distance
         lrDeltas[i] = getPoint(lrDeltas[i], lrAlignment, -distance);
       }
       
       // place last child
-      branches[branches.length-1].moveBy(lrDeltas[lrDeltas.length-1]);
+      branches.get(branches.size()-1).moveBy(lrDeltas[lrDeltas.length-1]);
 
       // Calculate deltas of children right-aligned
       Point2D[] rlDeltas  = lrDeltas;
-      if (children.length>2 && isBalanceChildren) {
-        rlDeltas = new Point2D[children.length];
+      if (branches.size()>2 && isBalanceChildren) {
+        rlDeltas = new Point2D[branches.size()];
         double rlAlignment = layoutAxis + QUARTER_RADIAN;
         rlDeltas [rlDeltas.length-1] = new Point2D.Double();
         for (int i=rlDeltas.length-2;i>=0;i--) {
           // calculate delta from top alignment position
-          rlDeltas[i] = getDelta(branches[i].top(), branches[branches.length-1].top());
+          rlDeltas[i] = getDelta(branches.get(i).top(), branches.get(branches.size()-1).top());
           // calculate distance from all previous siblings
           double distance = Double.MAX_VALUE;
           for (int j=rlDeltas.length-1;j>i;j--) {
-            distance = Math.min(distance, getDistance(getTranslated(branches[j].shape, rlDeltas[j]), getTranslated(branches[i].shape, rlDeltas[i]), rlAlignment) - distanceInGeneration);
+            distance = Math.min(distance, getDistance(getTranslated(branches.get(j).shape, rlDeltas[j]), getTranslated(branches.get(i).shape, rlDeltas[i]), rlAlignment) - distanceInGeneration);
           }
           assert distance != Double.MAX_VALUE;
           // calculate delta from top aligned position with correct distance
@@ -334,8 +360,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       }
       
       // place all children in between
-      for (int i=1; i<children.length-1; i++) {
-        branches[i].moveBy(getMid(lrDeltas[i], rlDeltas[i]));
+      for (int i=1; i<branches.size()-1; i++) {
+        branches.get(i).moveBy(getMid(lrDeltas[i], rlDeltas[i]));
       }
       
       
@@ -354,9 +380,9 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       //    /|\  |  /|\
       //
       //
-      Point2D a = branches[0].top();
-      Point2D b = layout.getPositionOfVertex(branches[0].root);
-      Point2D c = layout.getPositionOfVertex(branches[branches.length-1].root);
+      Point2D a = branches.get(0).top();
+      Point2D b = layout.getPositionOfVertex(branches.get(0).root);
+      Point2D c = layout.getPositionOfVertex(branches.get(branches.size()-1).root);
       Point2D d = getPoint(b, c, alignmentOfParent); 
       Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
       Point2D f = getPoint(e, layoutAxis-HALF_RADIAN, distanceBetweenGenerations/2);
@@ -405,9 +431,11 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       // done
     }
     
-    Point2D top() {
+    Point2D top() throws LayoutAlgorithmException{
       if (top==null)
         top= getMax(shape, getRadian(orientation) - HALF_RADIAN);
+      if (top==null)
+        throw new LayoutAlgorithmException("branch for vertex "+root+" has no valid shape containing (0,0)");
       return top;
       
     }
