@@ -35,6 +35,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -46,18 +47,12 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
   private double distanceBetweenVertices= 20; 
   private boolean isSinksAtBottom = true;
   private double alignmentOfLayers = 0.5;
+  private Comparator<Vertex> orderOfVerticesInLayer = null;
   
   /**
    * do the layout
    */
   public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
-    return apply(graph, layout, bounds, debugShapes, new LongestPathLA.VertexByXPositionComparator());
-  }
-  
-  /**
-   * do the layout
-   */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes, VertexInLayerComparator initialOrdering) throws LayoutAlgorithmException {
 
     // empty case?
     if (graph.getVertices().isEmpty())
@@ -68,7 +63,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     
     // 1st step - calculate layering
     LayerAssignment layerAssignment = new LongestPathLA();
-    layerAssignment.assignLayers(graph, layout, initialOrdering);
+    layerAssignment.assignLayers(graph, layout, orderOfVerticesInLayer);
     
     // 2nd step - crossing reduction
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
@@ -204,6 +199,20 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
    */
   public double getAlignmentOfLayers() {
     return alignmentOfLayers;
+  }
+
+  /**
+   * Accessor - ordering of vertices in layers
+   */
+  public Comparator<Vertex> getOrderOfVerticesInLayer() {
+    return orderOfVerticesInLayer;
+  }
+
+  /**
+   * Accessor - ordering of vertices in layers
+   */
+  public void setOrderOfVerticesInLayer(Comparator<Vertex> orderOfVerticesInLayer) {
+    this.orderOfVerticesInLayer = orderOfVerticesInLayer;
   }
 
 }

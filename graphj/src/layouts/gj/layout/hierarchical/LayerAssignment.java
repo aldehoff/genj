@@ -27,6 +27,7 @@ import gj.model.Vertex;
 
 import java.awt.Point;
 import java.util.Collection;
+import java.util.Comparator;
 
 /**
  * A interface to a layering of vertexes
@@ -39,7 +40,7 @@ public interface LayerAssignment {
    * @param layout the layout 
    * @throws GraphNotSupportedException
    */
-  public void assignLayers(Graph graph, Layout2D layout, VertexInLayerComparator initialOrdering) throws GraphNotSupportedException;
+  public void assignLayers(Graph graph, Layout2D layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException;
 
   /**
    * Number of layers

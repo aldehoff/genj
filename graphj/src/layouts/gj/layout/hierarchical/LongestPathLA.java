@@ -28,6 +28,7 @@ import gj.util.LayoutHelper;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,21 +39,18 @@ import java.util.Stack;
  */
 public class LongestPathLA implements LayerAssignment {
 
-  private final static VertexInLayerComparator BYXCOMPARATOR = new VertexByXPositionComparator();
-  
   private Map<Vertex, Cell> vertex2cell;
   private List<Layer> layers;
   private int width;
-  private VertexInLayerComparator initialOrdering;
+  private Comparator<Vertex> orderVerticesByX = new VertexByXPositionComparator();
+  
   private Layout2D layout;
 
   /** layering algorithm */
-  public void assignLayers(Graph graph, Layout2D layout, VertexInLayerComparator initialOrdering) throws GraphNotSupportedException {
+  public void assignLayers(Graph graph, Layout2D layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException {
 
     // prepare state
     this.layout = layout;
-    this.initialOrdering = initialOrdering;
-    
     vertex2cell = new HashMap<Vertex, Cell>();
     layers = new ArrayList<Layer>();
     
@@ -65,6 +63,9 @@ public class LongestPathLA implements LayerAssignment {
     }
     
     // place vertices in resulting layers
+    if (orderOfVerticesInLayer==null)
+      orderOfVerticesInLayer = orderVerticesByX;
+
     for (Vertex vertex : graph.getVertices()) {
       Cell cell = vertex2cell.get(vertex);
       
@@ -73,7 +74,7 @@ public class LongestPathLA implements LayerAssignment {
         throw new GraphNotSupportedException("Graph presents changing set of vertices - check vertex identity");
 
       Layer layer = layers.get(cell.layer);
-      layer.add(cell, initialOrdering);
+      layer.add(cell, orderOfVerticesInLayer);
       width = Math.max(width, layer.size());
 
     }
@@ -104,7 +105,7 @@ public class LongestPathLA implements LayerAssignment {
             // create a dummy at same position as cell
             Cell dummy = new Cell(new DummyVertex(), i+1);
             layout.setPositionOfVertex(dummy.vertex, layout.getPositionOfVertex(cell.vertex));
-            width = Math.max(width, layers.get(i+1).add(dummy, BYXCOMPARATOR));
+            width = Math.max(width, layers.get(i+1).add(dummy, orderVerticesByX));
 
             // delete old connection
             cell.in.remove(j);
@@ -249,12 +250,12 @@ public class LongestPathLA implements LayerAssignment {
     /**
      * Add a vertex to layer at given position
      */
-    protected int add(Cell cell, VertexInLayerComparator comparator) {
+    protected int add(Cell cell, Comparator<Vertex> orderOfVerticesInLayer) {
 
       // find appropriate position
       int pos = 0;
       while (pos<cells.size()){
-        if (comparator.compare(cell.vertex, cells.get(pos).vertex, layer, layout)<0)
+        if (orderOfVerticesInLayer.compare(cell.vertex, cells.get(pos).vertex)<0)
           break;
         pos ++;
       }
@@ -367,12 +368,9 @@ public class LongestPathLA implements LayerAssignment {
   /**
    * the default vertex comparator used for placing vertices into layers
    */
-  public static class VertexByXPositionComparator implements VertexInLayerComparator {
+  private class VertexByXPositionComparator implements Comparator<Vertex> {
   
-    /**
-     * compare two vertices
-     */
-    public int compare(Vertex v1, Vertex v2, int layer, Layout2D layout) {
+    public int compare(Vertex v1, Vertex v2) {
       double d = layout.getPositionOfVertex(v1).getX() - layout.getPositionOfVertex(v2).getX();
       if (d==0) return 0;
       return d<0 ? -1 : 1;
