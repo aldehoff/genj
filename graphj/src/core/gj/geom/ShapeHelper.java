@@ -36,10 +36,25 @@ public class ShapeHelper {
   /** 
    * the maximum distance that the line segments used to approximate 
    * the curved segments are allowed to deviate from any point on the
-   * original curve 
+   * original curve in a flatting path operation 
    */
-  private static double DEFAULT_FLATNESS = 4;
+  private static int defaultFlatness = 4;
+  
+  /**
+   * Change default flatness
+   * @see ShapeHelper#defaultFlatness
+   */
+  public void setDefaultFlatness(int flatness) {
+    defaultFlatness = flatness;
+  }
 
+  /**
+   * Creates a shape for given path. The path is constructed as such
+   * <ul>
+   *  <li>SEG_MOVETO, p1.x, p2.x
+   *  <li>SEG_LINETO, pi.x, pi.x
+   * </ul>
+   */
   public static Shape createShape(Point2D ... points) {
     if (points.length<2)
       throw new IllegalArgumentException("Need minimum of 2 points for shape");
@@ -105,7 +120,7 @@ public class ShapeHelper {
     iterateShape(shape.getPathIterator(null), consumer);
   }
   public static void iterateShape(PathIterator iterator, final FlattenedPathConsumer consumer) {
-    iterateShape(new FlatteningPathIterator(iterator, DEFAULT_FLATNESS), 
+    iterateShape(new FlatteningPathIterator(iterator, defaultFlatness), 
       new PathConsumer() {
         public boolean consumeCubicCurve(Point2D start, Point2D ctrl1, Point2D ctrl2, Point2D end) {
           throw new IllegalStateException("unexpected cubic curve");

@@ -174,13 +174,30 @@ public class LayoutHelper {
   public static Set<Vertex> getNeighbours(Vertex vertex) {
     Set<Vertex> result = new LinkedHashSet<Vertex>();
     for (Edge edge : vertex.getEdges()) {
-      if (edge.getStart().equals(vertex)) 
-        result.add(edge.getEnd());
-      else 
-        result.add(edge.getStart());
+      Vertex start = edge.getStart();
+      Vertex end = edge.getEnd();
+      if (start.equals(vertex)&&!end.equals(vertex)) 
+        result.add(end);
+      else if (!start.equals(vertex))
+        result.add(start);
     }
-    // remove any self-loops
-    result.remove(vertex);
+    return result;
+  }
+  
+  /**
+   * Get children of a given vertex. That's all 
+   * <pre>
+   *   A e E n : e(vertex,n ) e graph && !n==vertex
+   * </pre> 
+   */
+  public static Set<Vertex> getChildren(Vertex vertex) {
+    Set<Vertex> result = new LinkedHashSet<Vertex>();
+    for (Edge edge : vertex.getEdges()) {
+      Vertex start = edge.getStart();
+      Vertex end = edge.getEnd();
+      if (start.equals(vertex)&&!end.equals(vertex)) 
+        result.add(end);
+    }
     return result;
   }
   
