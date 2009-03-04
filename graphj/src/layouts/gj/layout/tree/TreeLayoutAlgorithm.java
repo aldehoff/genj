@@ -38,9 +38,11 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -224,8 +226,12 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     if (root==null)
       root = vertices.iterator().next();
     
+    // look for cycles
+    Map<Vertex, Vertex> vertex2parent = new HashMap<Vertex, Vertex>();
+    findCycles(root, vertex2parent);
+    
     // recurse into it
-    Shape result = layout(graph, null, root, layout, new HashSet<Vertex>(vertices.size())).shape;
+    Shape result = new Branch(null, root, layout, vertex2parent).shape;
     if (debugShapes!=null) {
       debugShapes.add(result);
     }
@@ -235,23 +241,31 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   }
   
   /**
-   * Layout a branch
+   * find cycles
    */
-  private Branch layout(Graph graph, Vertex backtrack, Vertex root, Layout2D layout, Set<Vertex> visited) throws LayoutAlgorithmException, GraphNotSupportedException {
+  private void findCycles(Vertex root, Map<Vertex,Vertex> vertex2parent) throws GraphNotSupportedException{
     
-    // remember visited
-    visited.add(root);
+    List<Vertex> generation = new ArrayList<Vertex>(Collections.singleton(root)); 
+    vertex2parent.put(root, null);
     
-    // reset vertex's transformation
-    layout.setTransformOfVertex(root, null);
+    while (!generation.isEmpty()) {
+      List<Vertex> next = new ArrayList<Vertex>();
+      for (Vertex parent : generation) {
+        Set<Vertex> children = LayoutHelper.getNeighbours(parent);
+        for (Vertex child : children) {
+          if (vertex2parent.containsKey(child)) {
+            if (!isAllowCycles)
+              throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+">"+child+"]");
+            continue;
+          }
+          vertex2parent.put(child, parent);
+          next.add(child);
+        }
+      }
+      generation = next;
+    }
     
-    // collect children without backtrack
-    Collection<Vertex> children = LayoutHelper.getNeighbours(root);
-    children.remove(backtrack);
-    
-    // create merged branch of sub-branches
-    return new Branch(graph, backtrack, root, children.toArray(new Vertex[children.size()]), layout, visited);
-
+    // done
   }
   
   /**
@@ -260,7 +274,6 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   private class Branch extends Geometry implements Comparator<Vertex> {
     
     /** tree */
-    private Graph graph;
     private Layout2D layout;
     
     /** root of branch */
@@ -274,15 +287,18 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     private GeneralPath shape;
     
     /** constructor for a parent and its children */
-    Branch(Graph graph, Vertex backtrack, Vertex parent, Vertex[] children, Layout2D layout, Set<Vertex> visited) throws LayoutAlgorithmException, GraphNotSupportedException{
+    Branch(Vertex backtrack, Vertex parent, Layout2D layout, Map<Vertex,Vertex> vertex2parent) throws LayoutAlgorithmException, GraphNotSupportedException{
 
       // init state
-      this.graph = graph;
       this.layout = layout;
       this.root = parent;
       vertices.add(root);
       
-      // sort by current position
+      // reset vertex's transformation
+      layout.setTransformOfVertex(root, null);
+      
+      // grab and sort children 
+      Vertex[] children = children(backtrack, root);
       if (isOrderSiblingsByPosition) 
         Arrays.sort(children, this);
       
@@ -290,15 +306,13 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       List<Branch> branches = new ArrayList<Branch>(children.length);
       for (int i=0;i<children.length;i++) {
         
-        // child already in other branch?
-        if (visited.contains(children[i])) {
-          if (isAllowCycles)
-            continue;
-          throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+"]>["+children[i]+"]");
+        // child for other parent?
+        if (!vertex2parent.get(children[i]).equals(parent)) {
+          continue;
         }
         
         // recurse
-        Branch branch = layout(graph, parent, children[i], layout, visited);
+        Branch branch = new Branch(parent, children[i], layout, vertex2parent);
         branches.add(branch);
         vertices.addAll(branch.vertices);
 
@@ -429,6 +443,12 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       }
 
       // done
+    }
+    
+    Vertex[] children(Vertex backtrack, Vertex parent) {
+      Collection<Vertex> result = LayoutHelper.getNeighbours(parent);
+      result.remove(backtrack);
+      return result.toArray(new Vertex[result.size()]);      
     }
     
     Point2D top() throws LayoutAlgorithmException{
