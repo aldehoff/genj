@@ -20,7 +20,7 @@
 package gj.layout.hierarchical;
 
 import gj.layout.GraphNotSupportedException;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -40,7 +40,7 @@ public interface LayerAssignment {
    * @param layout the layout 
    * @throws GraphNotSupportedException
    */
-  public void assignLayers(Graph graph, Layout2D layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException;
+  public void assignLayers(Graph graph, GraphLayout layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException;
 
   /**
    * Number of layers

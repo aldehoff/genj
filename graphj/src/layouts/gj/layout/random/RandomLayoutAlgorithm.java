@@ -19,8 +19,9 @@
  */
 package gj.layout.random;
 
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.layout.LayoutAlgorithm;
+import gj.layout.LayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -29,7 +30,6 @@ import gj.util.LayoutHelper;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Collection;
 import java.util.Random;
 
 /**
@@ -89,13 +89,13 @@ public class RandomLayoutAlgorithm implements LayoutAlgorithm {
   }
 
   /**
-   * @see LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D, Collection)
+   * @see LayoutAlgorithm#apply(Graph, GraphLayout, LayoutAlgorithmContext)
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
     
     // something to do for me?
     if (graph.getVertices().isEmpty())
-      return bounds;
+      return new Rectangle2D.Double();
     
     // get a seed
     Random random = new Random(seed++);
@@ -104,12 +104,15 @@ public class RandomLayoutAlgorithm implements LayoutAlgorithm {
     for (Vertex vertex : graph.getVertices()) {
       
       Rectangle2D nodeCanvas = layout.getShapeOfVertex(vertex).getBounds2D();
+      Rectangle2D preferred = context.getPreferredBounds();
+      if (preferred==null)
+        throw new IllegalArgumentException("LayoutAlgorithmContext.getPreferredBounds() cannot be null");
 
       double 
-        x = bounds.getMinX() - nodeCanvas.getMinX(),
-        y = bounds.getMinY() - nodeCanvas.getMinY(),
-        w = bounds.getWidth() - nodeCanvas.getWidth(),
-        h = bounds.getHeight() - nodeCanvas.getHeight();
+        x = preferred.getMinX() - nodeCanvas.getMinX(),
+        y = preferred.getMinY() - nodeCanvas.getMinY(),
+        w = preferred.getWidth() - nodeCanvas.getWidth(),
+        h = preferred.getHeight() - nodeCanvas.getHeight();
 
       Point2D pos = layout.getPositionOfVertex(vertex);
       pos.setLocation(
@@ -124,7 +127,7 @@ public class RandomLayoutAlgorithm implements LayoutAlgorithm {
     LayoutHelper.setPaths(graph, layout);
     
     // done
-    return bounds;
+    return context.getPreferredBounds();
   }
 
 }

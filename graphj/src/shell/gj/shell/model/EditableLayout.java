@@ -20,7 +20,7 @@
 package gj.shell.model;
 
 import gj.geom.Path;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -31,7 +31,7 @@ import java.awt.geom.Point2D;
 /**
  * Our implementation for a view
  */
-public class EditableLayout implements Layout2D {
+public class EditableLayout implements GraphLayout {
 
   /**
    * interface implementation

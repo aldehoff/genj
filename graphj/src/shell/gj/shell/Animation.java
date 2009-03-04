@@ -20,19 +20,17 @@
 package gj.shell;
 
 import gj.geom.Path;
+import gj.layout.GraphLayout;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.Layout2D;
 import gj.layout.LayoutAlgorithm;
+import gj.layout.LayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithmException;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -60,7 +58,7 @@ import java.util.List;
   /**
    * Constructor (before)
    */
-  public Animation(EditableGraph graph, Layout2D layout, Rectangle bounds, LayoutAlgorithm algorithm, Collection<Shape> debugShapes) throws LayoutAlgorithmException, GraphNotSupportedException {
+  public Animation(EditableGraph graph, GraphLayout layout, LayoutAlgorithm algorithm, LayoutAlgorithmContext context) throws LayoutAlgorithmException, GraphNotSupportedException {
     
     // something to animate?
     if (graph.getNumVertices() == 0) 
@@ -76,7 +74,7 @@ import java.util.List;
       moves[m] = new Movement(vertices.next());
    
     // run algorithm
-    algorithm.apply(graph, layout, bounds, debugShapes);
+    algorithm.apply(graph, layout, context);
     
     // take a snapshot of what's there right now
     for (int m=0;m<moves.length;m++) 

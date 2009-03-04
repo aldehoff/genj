@@ -20,7 +20,7 @@
 package gj.shell;
 
 import gj.geom.Geometry;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.layout.LayoutAlgorithm;
 import gj.model.Edge;
 import gj.model.Graph;
@@ -124,7 +124,7 @@ public class EditableGraphWidget extends GraphWidget {
     }
     
     @Override
-    public void render(Graph graph, Layout2D layout, Graphics2D graphics) {
+    public void render(Graph graph, GraphLayout layout, Graphics2D graphics) {
     
       graphics.setColor(Color.LIGHT_GRAY);
       if (debugShapes!=null) for (Shape shape : debugShapes) {

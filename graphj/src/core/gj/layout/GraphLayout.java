@@ -31,7 +31,7 @@ import java.awt.geom.Point2D;
 /**
  * A layout of a graph
  */
-public interface Layout2D {
+public interface GraphLayout {
 
   /**
    * Edge's shape

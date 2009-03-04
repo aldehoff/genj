@@ -19,22 +19,33 @@
  */
 package gj.layout;
 
-import gj.model.Graph;
-
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
+import java.util.logging.Logger;
 
 /**
- * What a layout is all about - Implementors provide layout
- * functionality in <i>applyTo(Graph graph)</i>. 
+ * A context for a layout algorithm which basically offers optional information
  */
-public interface LayoutAlgorithm {
+public interface LayoutAlgorithmContext {
 
-  /** 
-   * Applies the layout to a given graph
-   * @param graph the graph to layout
-   * @param context bounds to adhere to if possible (not guaranteed)
-   * @return resulting bounds 
+  /**
+   * the preferred bound for the result of the layout
    */
-  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException;
+  public Rectangle2D getPreferredBounds();
   
-} //LayoutAlgorithm
+  /**
+   * whether debugging information is expected 
+   */
+  public boolean isDebug();
+  
+  /**
+   * add a debug shape
+   */
+  public void addDebugShape(Shape shape);
+  
+  /**
+   * access to logger
+   */
+  public Logger getLogger();
+
+}

@@ -20,7 +20,7 @@
 package gj.layout.hierarchical;
 
 import gj.layout.GraphNotSupportedException;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -44,10 +44,10 @@ public class LongestPathLA implements LayerAssignment {
   private int width;
   private Comparator<Vertex> orderVerticesByX = new VertexByXPositionComparator();
   
-  private Layout2D layout;
+  private GraphLayout layout;
 
   /** layering algorithm */
-  public void assignLayers(Graph graph, Layout2D layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException {
+  public void assignLayers(Graph graph, GraphLayout layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException {
 
     // prepare state
     this.layout = layout;

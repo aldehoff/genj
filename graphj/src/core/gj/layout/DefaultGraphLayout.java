@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * A simple default implementation of a layout
  */
-public class DefaultLayout implements Layout2D {
+public class DefaultGraphLayout implements GraphLayout {
   
   private Shape defaultShape;
   private Map<Vertex, Point2D> vertex2point = new HashMap<Vertex, Point2D>();
@@ -43,11 +43,11 @@ public class DefaultLayout implements Layout2D {
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
   private Map<Edge, Path> edge2path = new HashMap<Edge, Path>();
 
-  public DefaultLayout() {
+  public DefaultGraphLayout() {
     defaultShape = new Rectangle();
   }
   
-  public DefaultLayout(Shape defaultShape) {
+  public DefaultGraphLayout(Shape defaultShape) {
     this.defaultShape = defaultShape;
   }
   

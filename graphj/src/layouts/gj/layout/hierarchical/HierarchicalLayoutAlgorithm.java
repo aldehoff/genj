@@ -20,8 +20,9 @@
 package gj.layout.hierarchical;
 
 import static gj.geom.Geometry.getBounds;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.layout.LayoutAlgorithm;
+import gj.layout.LayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.hierarchical.LayerAssignment.DummyVertex;
 import gj.model.Edge;
@@ -34,7 +35,6 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -52,7 +52,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
   /**
    * do the layout
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
 
     // empty case?
     if (graph.getVertices().isEmpty())
@@ -69,16 +69,14 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
     
     // 3rd step - vertex positioning and edge routing
-    bounds = assignPositions(graph, layerAssignment, layout);
+    return assignPositions(graph, layerAssignment, layout);
     
-    // done
-    return bounds;
   }
 
   /**
    * assign positions to vertices
    */
-  private Rectangle2D assignPositions(Graph graph, LayerAssignment layerAssignment, Layout2D layout) {
+  private Rectangle2D assignPositions(Graph graph, LayerAssignment layerAssignment, GraphLayout layout) {
     
     int layers = layerAssignment.getHeight();
     
@@ -107,13 +105,16 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       if (i>0) y += dir*distanceBetweenLayers;
       double x = (totalWidth-layerWidths[i])*alignmentOfLayers;
       for (int j=0; j<layerAssignment.getWidth(i); j++) {
+        
         Vertex vertex = layerAssignment.getVertex(i,j);
+        layout.setTransformOfVertex(vertex, null);
         if (j>0) x += (vertex instanceof DummyVertex || layerAssignment.getVertex(i,j-1) instanceof DummyVertex) ? distanceBetweenVertices/2 : distanceBetweenVertices;
         Rectangle2D r = vertexBounds[i][j];
         if (dir<0)
           layout.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMaxY() - (layerHeights[i]-r.getHeight())/2 ));
         else
           layout.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
+        
         x += r.getWidth();
       }
       y += dir*layerHeights[i];

@@ -23,7 +23,7 @@ import static gj.geom.PathIteratorKnowHow.SEG_LINETO;
 import static gj.geom.PathIteratorKnowHow.SEG_MOVETO;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -57,7 +57,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * The rendering functionality
    */
-  public void render(Graph graph, Layout2D layout, Graphics2D graphics) {
+  public void render(Graph graph, GraphLayout layout, Graphics2D graphics) {
   
     // the arcs
     renderEdges(graph, layout, graphics);    
@@ -71,7 +71,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Nodes
    */
-  protected void renderVertices(Graph graph, Layout2D layout, Graphics2D graphics) {
+  protected void renderVertices(Graph graph, GraphLayout layout, Graphics2D graphics) {
     
     // Loop through the graph's nodes
     for (Vertex vertex : graph.getVertices()) {
@@ -81,7 +81,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     // Done
   }
 
-  protected void renderVertex(Graph graph, Vertex vertex, Layout2D layout, Graphics2D graphics) {
+  protected void renderVertex(Graph graph, Vertex vertex, GraphLayout layout, Graphics2D graphics) {
     
     // figure out its color
     Color color = getColor(vertex);
@@ -143,7 +143,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Arcs
    */
-  protected void renderEdges(Graph graph, Layout2D layout, Graphics2D graphics) {
+  protected void renderEdges(Graph graph, GraphLayout layout, Graphics2D graphics) {
     
     for (Edge edge : graph.getEdges())
       renderEdge(graph, edge, layout, graphics);
@@ -154,7 +154,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders an Arc
    */
-  protected void renderEdge(Graph graph, Edge edge, Layout2D layout, Graphics2D graphics) {
+  protected void renderEdge(Graph graph, Edge edge, GraphLayout layout, Graphics2D graphics) {
     
     AffineTransform old = graphics.getTransform();
     

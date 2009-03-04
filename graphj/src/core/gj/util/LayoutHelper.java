@@ -22,7 +22,7 @@ package gj.util;
 import static gj.geom.Geometry.*;
 import gj.geom.Path;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -45,7 +45,7 @@ public class LayoutHelper {
   /**
    * Translates a node's position
    */
-  public static void translate(Layout2D layout, Vertex vertex, Point2D delta) {
+  public static void translate(GraphLayout layout, Vertex vertex, Point2D delta) {
     Point2D pos = layout.getPositionOfVertex(vertex);
     layout.setPositionOfVertex(vertex, new Point2D.Double( pos.getX() + delta.getX(), pos.getY() + delta.getY() ));
   }
@@ -65,7 +65,7 @@ public class LayoutHelper {
   /**
    * Calculates the dimension of set of nodes
    */
-  public static Rectangle2D getBounds(Graph graph, Layout2D layout) {
+  public static Rectangle2D getBounds(Graph graph, GraphLayout layout) {
     // no content?
     if (graph==null||graph.getVertices().size()==0) 
       return new Rectangle2D.Double(0,0,0,0);
@@ -205,14 +205,14 @@ public class LayoutHelper {
     return edge.getStart().equals(vertex) || edge.getEnd().equals(vertex);
   }
   
-  public static double getDiameter(Vertex vertex, Layout2D layout) {
+  public static double getDiameter(Vertex vertex, GraphLayout layout) {
     return getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
   }
 
   /**
    * Calculate shape of all arcs in graph
    */
-  public static void setPaths(Graph graph, Layout2D layout) {
+  public static void setPaths(Graph graph, GraphLayout layout) {
     
     for (Edge edge : graph.getEdges()) { 
       setPath(edge, layout);
@@ -223,11 +223,11 @@ public class LayoutHelper {
   /**
    * Calculate a shape for an arc
    */
-  public static void setPath(Edge edge, Layout2D layout) {
+  public static void setPath(Edge edge, GraphLayout layout) {
     layout.setPathOfEdge(edge, getPath(edge, layout));
   }
 
-  public static Path getPath(Edge edge, Layout2D layout) {
+  public static Path getPath(Edge edge, GraphLayout layout) {
     return getPath(
         layout.getPositionOfVertex(edge.getStart()),
         layout.getShapeOfVertex(edge.getStart()),

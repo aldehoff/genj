@@ -22,7 +22,9 @@ package gj.shell;
 import gj.geom.ShapeHelper;
 import gj.io.GraphReader;
 import gj.io.GraphWriter;
+import gj.layout.DefaultLayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithm;
+import gj.layout.LayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithmException;
 import gj.shell.factory.AbstractGraphFactory;
 import gj.shell.model.EditableGraph;
@@ -42,8 +44,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
@@ -51,6 +57,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -91,6 +98,9 @@ public class Shell {
   /** the graph we're looking at */
   private EditableGraph graph;
   
+  /** the log output */
+  private JTextArea logWidget;
+  
   /** debug flag */
   private boolean isDebug = false; 
   
@@ -111,6 +121,8 @@ public class Shell {
   
   /** our algorithms */
   private LayoutAlgorithm[] algorithms = (LayoutAlgorithm[])properties.get("algorithm", new LayoutAlgorithm[0]);
+  
+  private Logger logger = Logger.getLogger("genj.shell");
   
   /**
    * MAIN
@@ -143,6 +155,23 @@ public class Shell {
     algorithmWidget.setBorder(BorderFactory.createEtchedBorder());
     algorithmWidget.addActionListener(new ActionExecuteLayout());
     
+    logWidget = new JTextArea(3, 0);
+    logWidget.setEditable(false);
+    logger.addHandler(new Handler() {
+      @Override
+      public void publish(LogRecord record) {
+        String msg = record.getMessage();
+        Object[] parms = record.getParameters();
+        if (parms!=null&&parms.length==0)
+          msg = MessageFormat.format(msg, parms);
+        logWidget.append(String.format("%-8s%s\n",record.getLevel(), msg));
+      }
+      @Override
+      public void close() throws SecurityException { }
+      @Override
+      public void flush() { }
+    });
+    
     // Create our frame
     frame = new JFrame("GraphJ - Shell") {
       @Override
@@ -156,6 +185,7 @@ public class Shell {
     container.setLayout(new BorderLayout());
     container.add(new JScrollPane(graphWidget), BorderLayout.CENTER);
     container.add(algorithmWidget, BorderLayout.EAST  );
+    container.add(new JScrollPane(logWidget), BorderLayout.SOUTH );
     
     // Our default button
     frame.getRootPane().setDefaultButton(algorithmWidget.getDefaultButton());
@@ -297,12 +327,14 @@ public class Shell {
       // run layout
       Rectangle bounds = createGraphBounds();
       LayoutAlgorithm algorithm = algorithmWidget.getSelectedAlgorithm();
+      logger.info("Starting graph layout algorithm "+algorithm.getClass().getSimpleName());
       debugShapes = isDebug ? new ArrayList<Shape>() : null;
+      LayoutAlgorithmContext context = new DefaultLayoutAlgorithmContext(debugShapes, logger, bounds);
       if (isAnimation) {
-        animation = new Animation(graph, layout, bounds, algorithm, debugShapes);
+        animation = new Animation(graph, layout, algorithm, context);
         return true;
       } else {
-        shape = algorithm.apply(graph, layout, bounds, debugShapes);
+        shape = algorithm.apply(graph, layout, context);
         return false;
       }
     }

@@ -19,16 +19,17 @@
  */
 package gj.layout.radial;
 
-import static gj.util.LayoutHelper.setPath;
 import static gj.util.LayoutHelper.assertSpanningTree;
 import static gj.util.LayoutHelper.getDiameter;
 import static gj.util.LayoutHelper.getNormalizedEdges;
 import static gj.util.LayoutHelper.getOther;
+import static gj.util.LayoutHelper.setPath;
 import static java.lang.Math.max;
 import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.layout.AbstractLayoutAlgorithm;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
+import gj.layout.LayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
@@ -41,7 +42,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -201,14 +201,14 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
   /**
    * Layout a layout capable graph
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
     
     // check that we got a tree
     assertSpanningTree(graph);
     
     // ignore an empty tree
     if (graph.getVertices().size()==0)
-      return bounds;
+      return new Rectangle2D.Double();
     
     // check root
     Vertex root = getRoot(graph);
@@ -216,7 +216,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       root = graph.getVertices().iterator().next();
     
     // run recursion
-    return new Recursion(graph, root, distanceBetweenGenerations,layout, debugShapes).getShape();
+    return new Recursion(graph, root, distanceBetweenGenerations, layout, context).getShape();
     
   }
   
@@ -226,8 +226,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
   private class Recursion extends Geometry {
     
     Graph graph;
-    Layout2D layout;
-    Collection<Shape> debug;
+    GraphLayout layout;
+    LayoutAlgorithmContext context;
     int depth;
     Map<Vertex, Double> vertex2radians = new HashMap<Vertex, Double>();
     Point2D center;
@@ -235,12 +235,12 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     double maxDiameter;
     GraphAttributes attrs;
     
-    Recursion(Graph graph, Vertex root, double distanceBetweenGenerations, Layout2D layout, Collection<Shape> debug) {
+    Recursion(Graph graph, Vertex root, double distanceBetweenGenerations, GraphLayout layout, LayoutAlgorithmContext context) {
       
       // init state
       this.graph = graph;
       this.layout = layout;
-      this.debug = debug;
+      this.context = context;
       this.center = layout.getPositionOfVertex(root);
       this.distanceBetweenGenerations =  distanceBetweenGenerations;
       this.attrs = getAttribute(graph);
@@ -252,9 +252,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       layout(null, root, 0, Geometry.ONE_RADIAN, 0);
       
       // add debug rings
-      if (debug!=null) {
+      if (context.isDebug()) {
         for (int i=1;i<=depth ;i++) 
-          debug.add(getCircle(i*this.distanceBetweenGenerations - this.distanceBetweenGenerations/2));
+          context.addDebugShape(getCircle(i*this.distanceBetweenGenerations - this.distanceBetweenGenerations/2));
       }
 
       // done
@@ -390,9 +390,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
           layout.setTransformOfVertex(child, new AffineTransform());
         
         // add debugging information
-        if (debug!=null) {
-          debug.add(new Line2D.Double(getPoint(center, fromRadian, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian, radiusOfChild+distanceBetweenGenerations/2)));
-          debug.add(new Line2D.Double(getPoint(center, fromRadian+radiansOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian+radiansOfChild, radiusOfChild+distanceBetweenGenerations/2)));
+        if (context.isDebug()) {
+          context.addDebugShape(new Line2D.Double(getPoint(center, fromRadian, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian, radiusOfChild+distanceBetweenGenerations/2)));
+          context.addDebugShape(new Line2D.Double(getPoint(center, fromRadian+radiansOfChild, radiusOfChild - distanceBetweenGenerations/2), getPoint(center, fromRadian+radiansOfChild, radiusOfChild+distanceBetweenGenerations/2)));
         }
         
         layout(root, child, fromRadian, fromRadian+radiansOfChild, radiusOfChild);

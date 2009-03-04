@@ -35,7 +35,7 @@ import java.util.Set;
 
 /**
  * A default impl for 
- * @see gj.layout.Layout2D
+ * @see gj.layout.GraphLayout
  */
 public class EditableGraph implements Graph {
   

@@ -20,8 +20,9 @@
 package gj.layout.circular;
 
 import gj.geom.Geometry;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.layout.LayoutAlgorithm;
+import gj.layout.LayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -31,7 +32,6 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -79,13 +79,13 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
   }
   
   /**
-   * @see gj.layout.LayoutAlgorithm#apply(Graph, Layout2D, Rectangle2D, Collection)
+   * @see gj.layout.LayoutAlgorithm#apply(Graph, GraphLayout, LayoutAlgorithmContext)
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
     
     // no purpose in empty|1-ary graph
     if (graph.getVertices().size() < 2) 
-      return bounds;
+      return LayoutHelper.getBounds(graph, layout);
     
     // create a CircularGraph
     CircularGraph cgraph = new CircularGraph(graph, isSingleCircle);
@@ -113,7 +113,7 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
   /**
    * layout a circle
    */
-  private void layout(Graph graph, Layout2D layout, CircularGraph.Circle circle, double cx, double cy) {
+  private void layout(Graph graph, GraphLayout layout, CircularGraph.Circle circle, double cx, double cy) {
     
     // nodes
     List<Vertex> nodes = new ArrayList<Vertex>(circle.getNodes());

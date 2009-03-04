@@ -20,8 +20,8 @@
 package gj.example.treemodel;
 
 import gj.example.Example;
-import gj.layout.DefaultLayout;
-import gj.layout.Layout2D;
+import gj.layout.DefaultGraphLayout;
+import gj.layout.GraphLayout;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
 import gj.model.Edge;
@@ -90,7 +90,7 @@ public class SwingTree implements Example {
     final Graph graph = new TreeGraphAdapter<DefaultVertex<TreeNode>>(tree);
     
     // apply tree layout
-    Layout2D layout = new DefaultLayout() {
+    GraphLayout layout = new DefaultGraphLayout() {
       @Override
       public Shape getShapeOfVertex(Vertex v) {
         boolean leaf = v.getEdges().size() == 1;
@@ -107,7 +107,7 @@ public class SwingTree implements Example {
       algorithm.setAlignmentOfParent(1);
       algorithm.setBendArcs(true);
       algorithm.setOrderSiblingsByPosition(false);
-      algorithm.apply(graph, layout, null, null);
+      algorithm.apply(graph, layout, null);
     } catch (LayoutAlgorithmException e) {
       throw new RuntimeException("hmm, can't layout swing tree model", e);
     }
@@ -116,7 +116,7 @@ public class SwingTree implements Example {
     graphWidget.setGraphLayout(layout);
     graphWidget.setGraph(graph);
     graphWidget.setRenderer(new GraphRenderer() {
-      public void render(Graph graph, Layout2D layout, Graphics2D graphics) {
+      public void render(Graph graph, GraphLayout layout, Graphics2D graphics) {
         // render vertices
         for (Vertex v : graph.getVertices()) {
           Point2D p = layout.getPositionOfVertex(v);

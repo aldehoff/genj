@@ -20,8 +20,8 @@
 package gj.example.ftree;
 
 import gj.example.Example;
-import gj.layout.DefaultLayout;
-import gj.layout.Layout2D;
+import gj.layout.DefaultGraphLayout;
+import gj.layout.GraphLayout;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.tree.TreeLayoutAlgorithm;
 import gj.model.Graph;
@@ -86,10 +86,10 @@ public class FamilyTree implements Example {
     Graph graph = new TreeGraphAdapter<String>(tree);
     
     // apply tree layout
-    Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-20,-16,40,32));
+    GraphLayout layout = new DefaultGraphLayout(new Rectangle2D.Double(-20,-16,40,32));
     
     try {
-      new TreeLayoutAlgorithm().apply(graph, layout, null, null);
+      new TreeLayoutAlgorithm().apply(graph, layout, null);
     } catch (LayoutAlgorithmException e) {
       throw new RuntimeException("hmm, can't layout my family", e);
     }

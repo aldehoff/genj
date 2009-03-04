@@ -21,8 +21,8 @@ package gj.example.inheritance;
 
 import gj.example.Example;
 import gj.geom.Geometry;
-import gj.layout.DefaultLayout;
-import gj.layout.Layout2D;
+import gj.layout.DefaultGraphLayout;
+import gj.layout.GraphLayout;
 import gj.layout.LayoutAlgorithmException;
 import gj.layout.radial.RadialLayoutAlgorithm;
 import gj.model.Graph;
@@ -83,12 +83,12 @@ public class InheritanceTree implements Example {
     // apply radial layout
     final int w = 150, h = 16;
     
-    Layout2D layout = new DefaultLayout(new Rectangle2D.Double(-h/2,-w/2,h,w));
+    GraphLayout layout = new DefaultGraphLayout(new Rectangle2D.Double(-h/2,-w/2,h,w));
     
     try {
       RadialLayoutAlgorithm r = new RadialLayoutAlgorithm();
       r.setDistanceBetweenGenerations(220);
-      r.apply(adapter, layout, null, null);
+      r.apply(adapter, layout, null);
     } catch (LayoutAlgorithmException e) {
       throw new RuntimeException("hmm, can't layout inheritance of "+root, e);
     }
@@ -100,7 +100,7 @@ public class InheritanceTree implements Example {
     // special layout
     widget.setRenderer(new DefaultGraphRenderer() {
       @Override
-      protected void renderVertex(Graph graph, Vertex vertex, Layout2D layout, java.awt.Graphics2D graphics) {
+      protected void renderVertex(Graph graph, Vertex vertex, GraphLayout layout, java.awt.Graphics2D graphics) {
         
         // clip and position
         AffineTransform oldt = graphics.getTransform();

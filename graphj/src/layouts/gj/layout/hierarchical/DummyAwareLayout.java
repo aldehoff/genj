@@ -20,7 +20,7 @@
 package gj.layout.hierarchical;
 
 import gj.geom.Path;
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -34,12 +34,12 @@ import java.util.Map;
 /**
  * A layout that knows how to handle layer dummy vertices
  */
-public class DummyAwareLayout implements Layout2D {
+public class DummyAwareLayout implements GraphLayout {
   
   private Map<Vertex, Point2D> dummy2pos = new HashMap<Vertex, Point2D>();
-  private Layout2D wrapped;
+  private GraphLayout wrapped;
   
-  public DummyAwareLayout(Layout2D wrapped) {
+  public DummyAwareLayout(GraphLayout wrapped) {
     this.wrapped = wrapped;
   }
   
@@ -83,7 +83,8 @@ public class DummyAwareLayout implements Layout2D {
   }
 
   public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
-    wrapped.setTransformOfVertex(vertex, transform);
+    if (!(vertex instanceof LayerAssignment.DummyVertex))
+      wrapped.setTransformOfVertex(vertex, transform);
   }
 
 }

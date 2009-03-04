@@ -19,8 +19,8 @@
  */
 package gj.ui;
 
-import gj.layout.DefaultLayout;
-import gj.layout.Layout2D;
+import gj.layout.DefaultGraphLayout;
+import gj.layout.GraphLayout;
 import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
@@ -48,7 +48,7 @@ public class GraphWidget extends JComponent {
   private Rectangle graphBounds;
   
   /** the layout of the graph */
-  private Layout2D layout;
+  private GraphLayout layout;
   
   /** whether antialiasing is on */
   private boolean isAntialiasing = true;
@@ -60,20 +60,20 @@ public class GraphWidget extends JComponent {
    * Constructor
    */
   public GraphWidget() {
-    this(new DefaultLayout(), new DefaultGraphRenderer());
+    this(new DefaultGraphLayout(), new DefaultGraphRenderer());
   }
   
   /**
    * Constructor
    */
-  public GraphWidget(Layout2D graphLayout) {
+  public GraphWidget(GraphLayout graphLayout) {
     this(graphLayout, new DefaultGraphRenderer());
   }
   
   /**
    * Constructor
    */
-  public GraphWidget(Layout2D graphLayout, GraphRenderer renderer) {
+  public GraphWidget(GraphLayout graphLayout, GraphRenderer renderer) {
     
     this.layout = graphLayout;
     this.renderer = renderer;
@@ -118,14 +118,14 @@ public class GraphWidget extends JComponent {
   /**
    * Accessor - Layout
    */
-  public Layout2D getGraphLayout() {
+  public GraphLayout getGraphLayout() {
     return layout;
   }
   
   /**
    * Accessor - Layout
    */
-  public void setGraphLayout(Layout2D layout) {
+  public void setGraphLayout(GraphLayout layout) {
     this.layout = layout;
   }
   

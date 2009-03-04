@@ -20,10 +20,10 @@
 package gj.layout.tree;
 
 import gj.geom.Geometry;
-import gj.geom.Path;
 import gj.layout.AbstractLayoutAlgorithm;
+import gj.layout.GraphLayout;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.Layout2D;
+import gj.layout.LayoutAlgorithmContext;
 import gj.layout.LayoutAlgorithmException;
 import gj.model.Edge;
 import gj.model.Graph;
@@ -35,14 +35,14 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -71,8 +71,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   /** whether to order by position instead of natural sequence */
   private boolean isOrderSiblingsByPosition = true;
   
-  /** whether we allow cycles by introducing intersecting edges */
-  private boolean isAllowCycles = false;
+  /** whether we consider direction in calculating tree */
+  private boolean isConsiderDirection = true;
 
   /**
    * Getter - distance of nodes in generation
@@ -200,72 +200,43 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   /**
    * Getter - whether we allow cycles by accepting intersecting lines between branches
    */
-  public boolean isAllowCycles() {
-    return isAllowCycles;
+  public boolean isConsiderDirection() {
+    return isConsiderDirection;
   }
 
   /**
    * Setter - whether we allow cycles by accepting intersecting lines between branches
    */
-  public void setAllowCycles(boolean isAllowCycles) {
-    this.isAllowCycles = isAllowCycles;
+  public void setConsiderDirection(boolean isConsiderDirection) {
+    this.isConsiderDirection = isConsiderDirection;
   }
 
   /**
    * Layout a layout capable graph
    */
-  public Shape apply(Graph graph, Layout2D layout, Rectangle2D bounds, Collection<Shape> debugShapes) throws LayoutAlgorithmException {
+  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
     
     // ignore an empty tree
     Collection<? extends Vertex> vertices = graph.getVertices(); 
     if (vertices.isEmpty())
-      return bounds;
+      return new Rectangle2D.Double();
     
     // check root
     Vertex root = getRoot(graph);
     if (root==null)
       root = vertices.iterator().next();
     
-    // look for cycles
-    Map<Vertex, Vertex> vertex2parent = new HashMap<Vertex, Vertex>();
-    findCycles(root, vertex2parent);
-    
     // recurse into it
-    Shape result = new Branch(null, root, layout, vertex2parent).shape;
-    if (debugShapes!=null) {
-      debugShapes.add(result);
-    }
+    Set<Vertex> visited = new HashSet<Vertex>();
+    Shape result = new Branch(null, root, layout, new ArrayDeque<Vertex>(), visited, context).shape;
+    context.addDebugShape(result);
+    
+    // check spanning in case we used directions
+    if (isConsiderDirection&&!visited.containsAll(vertices))
+      throw new GraphNotSupportedException("Graph is not a spanning tree");
     
     // done
     return result;
-  }
-  
-  /**
-   * find cycles
-   */
-  private void findCycles(Vertex root, Map<Vertex,Vertex> vertex2parent) throws GraphNotSupportedException{
-    
-    List<Vertex> generation = new ArrayList<Vertex>(Collections.singleton(root)); 
-    vertex2parent.put(root, null);
-    
-    while (!generation.isEmpty()) {
-      List<Vertex> next = new ArrayList<Vertex>();
-      for (Vertex parent : generation) {
-        Set<Vertex> children = LayoutHelper.getNeighbours(parent);
-        for (Vertex child : children) {
-          if (vertex2parent.containsKey(child)) {
-            if (!isAllowCycles)
-              throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+">"+child+"]");
-            continue;
-          }
-          vertex2parent.put(child, parent);
-          next.add(child);
-        }
-      }
-      generation = next;
-    }
-    
-    // done
   }
   
   /**
@@ -274,7 +245,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   private class Branch extends Geometry implements Comparator<Vertex> {
     
     /** tree */
-    private Layout2D layout;
+    private GraphLayout layout;
     
     /** root of branch */
     private Vertex root;
@@ -287,7 +258,14 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     private GeneralPath shape;
     
     /** constructor for a parent and its children */
-    Branch(Vertex backtrack, Vertex parent, Layout2D layout, Map<Vertex,Vertex> vertex2parent) throws LayoutAlgorithmException, GraphNotSupportedException{
+    Branch(Vertex backtrack, Vertex parent, GraphLayout layout, Deque<Vertex> path, Set<Vertex> visited, LayoutAlgorithmContext context) throws LayoutAlgorithmException, GraphNotSupportedException{
+      
+      // check for directed cycle
+      if (path.contains(parent))
+        throw new GraphNotSupportedException("Graph contains directed cycle involving ["+backtrack+">"+parent+"]");
+      
+      // track coverage
+      visited.add(parent);
 
       // init state
       this.layout = layout;
@@ -303,20 +281,28 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
         Arrays.sort(children, this);
       
       // recurse into children and take over descendants
+      path.addLast(parent);
       List<Branch> branches = new ArrayList<Branch>(children.length);
       for (int i=0;i<children.length;i++) {
         
-        // child for other parent?
-        if (!vertex2parent.get(children[i]).equals(parent)) {
-          continue;
+        // don't recurse into visited nodes
+        if (visited.contains(children[i])) {
+          // case of non-cycle in directed graph
+          if (isConsiderDirection) {
+            context.getLogger().warning("Edge ["+parent+">"+children[i]+"] is in limbo");
+            continue;
+          }
+          // error if we don't consider direction
+          throw new GraphNotSupportedException("Graph contains cycle and direction isn't considered");
         }
         
         // recurse
-        Branch branch = new Branch(parent, children[i], layout, vertex2parent);
+        Branch branch = new Branch(parent, children[i], layout, path, visited, context);
         branches.add(branch);
         vertices.addAll(branch.vertices);
 
       }
+      path.removeLast();
       
       // no children?
       if (branches.isEmpty()) {
@@ -423,7 +409,6 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
         if (LayoutHelper.contains(edge, backtrack))
           continue;
 
-        Path path;
         if (isBendArcs) {
           // calc edge layout
           Point2D[] points;
@@ -434,20 +419,31 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          path = LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()), false);
-          
+          layout.setPathOfEdge(edge, LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()), false));
         } else {
-          path = LayoutHelper.getPath(edge, layout);
+          layout.setPathOfEdge(edge, LayoutHelper.getPath(edge, layout));
         }
-        layout.setPathOfEdge(edge, path);
+        
       }
 
       // done
     }
     
-    Vertex[] children(Vertex backtrack, Vertex parent) {
-      Collection<Vertex> result = LayoutHelper.getNeighbours(parent);
-      result.remove(backtrack);
+    Vertex[] children(Vertex backtrack, Vertex parent) throws GraphNotSupportedException {
+      
+      Collection<Vertex> result;
+      
+      // either all children as per directed edges or all neighbours w/o backtrack
+      if (isConsiderDirection) {
+        result = LayoutHelper.getChildren(parent);
+        if (backtrack!=null && result.contains(backtrack))
+          throw new GraphNotSupportedException("Graph contains backtracking edge ["+parent+">"+backtrack+"]");
+      } else {
+        result = LayoutHelper.getNeighbours(parent);
+        result.remove(backtrack);
+      }
+      
+      // done
       return result.toArray(new Vertex[result.size()]);      
     }
     

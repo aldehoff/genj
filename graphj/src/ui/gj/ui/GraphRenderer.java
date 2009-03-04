@@ -19,7 +19,7 @@
  */
 package gj.ui;
 
-import gj.layout.Layout2D;
+import gj.layout.GraphLayout;
 import gj.model.Graph;
 
 import java.awt.Graphics2D;
@@ -29,6 +29,6 @@ import java.awt.Graphics2D;
  */
 public interface GraphRenderer {
   
-  public void render(Graph graph, Layout2D layout, Graphics2D graphics);
+  public void render(Graph graph, GraphLayout layout, Graphics2D graphics);
 
 }
