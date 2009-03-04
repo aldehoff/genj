@@ -36,6 +36,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,7 +75,8 @@ public class Shell {
        3,20,20,10,10,0,20, // bl : cubic
       1,0,10,
        3,-10,0,0,-10,10,0 // tl : cubic
-    })
+    }),
+    new Ellipse2D.Double(-20,-10,40,20)
   };
   
   /** the frame we use */
