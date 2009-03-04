@@ -132,12 +132,7 @@ public class TreeFactory extends AbstractGraphFactory {
       for (int c = 1; c < sample[s].length; c++) {
         String key = sample[s][c];        
         EditableVertex to = nodes.get(key);
-
-        if (Math.random()>0.5) {
-          graph.addEdge(from, to);
-        } else {
-          graph.addEdge(to, from);
-        }
+        graph.addEdge(from, to);
       }
     }
     
