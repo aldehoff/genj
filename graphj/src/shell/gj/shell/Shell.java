@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
@@ -157,6 +158,7 @@ public class Shell {
     
     logWidget = new JTextArea(3, 0);
     logWidget.setEditable(false);
+    logger.setLevel(Level.ALL);
     logger.addHandler(new Handler() {
       @Override
       public void publish(LogRecord record) {

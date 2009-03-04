@@ -192,6 +192,7 @@ public class EditableGraphWidget extends GraphWidget {
     // Create the popups
     JPopupMenu result = new JPopupMenu();
     result.add(new ActionDeleteEdge());
+    result.add(new ActionReverseEdge());
 
     // collect public setters(Edge,*) on layout
     if (currentAlgorithm!=null) {
@@ -501,6 +502,23 @@ public class EditableGraphWidget extends GraphWidget {
       repaint();
     }
   } //ActionDeleteVertex
+
+  /**
+   * How to handle - Reverse an edge
+   */
+  private class ActionReverseEdge extends Action2 {
+    protected ActionReverseEdge() { super("Reverse Edge"); }
+    @Override
+    protected void execute() {
+      EditableEdge selection = (EditableEdge)graph.getSelection();
+      if (selection==null)
+        return;
+      EditableVertex start = selection.getStart(), end = selection.getEnd();
+      graph.removeEdge(selection);
+      graph.addEdge(end, start);
+      repaint();
+    }
+  } //ActionDeleteEdge
 
   /**
    * How to handle - Delete an edge
