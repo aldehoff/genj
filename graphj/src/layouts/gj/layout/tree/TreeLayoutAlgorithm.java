@@ -226,14 +226,18 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     if (root==null)
       root = vertices.iterator().next();
     
+    context.getLogger().fine("root is ["+root+"]");
+    
     // recurse into it
     Set<Vertex> visited = new HashSet<Vertex>();
     Shape result = new Branch(null, root, layout, new ArrayDeque<Vertex>(), visited, context).shape;
     context.addDebugShape(result);
     
     // check spanning in case we used directions
-    if (isConsiderDirection&&!visited.containsAll(vertices))
-      throw new GraphNotSupportedException("Graph is not a spanning tree");
+    if (isConsiderDirection&&visited.size()!=vertices.size()) {
+      context.getLogger().fine("not a spanning tree (#visited="+visited.size()+" #vertices="+vertices.size());
+      throw new GraphNotSupportedException("Graph is not a spanning tree ("+vertices.size()+"!="+visited.size()+")");
+    }
     
     // done
     return result;
@@ -260,10 +264,6 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     /** constructor for a parent and its children */
     Branch(Vertex backtrack, Vertex parent, GraphLayout layout, Deque<Vertex> path, Set<Vertex> visited, LayoutAlgorithmContext context) throws LayoutAlgorithmException, GraphNotSupportedException{
       
-      // check for directed cycle
-      if (path.contains(parent))
-        throw new GraphNotSupportedException("Graph contains directed cycle involving ["+backtrack+">"+parent+"]");
-      
       // track coverage
       visited.add(parent);
 
@@ -285,19 +285,30 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       List<Branch> branches = new ArrayList<Branch>(children.length);
       for (int i=0;i<children.length;i++) {
         
-        // don't recurse into visited nodes
-        if (visited.contains(children[i])) {
-          // case of non-cycle in directed graph
-          if (isConsiderDirection) {
-            context.getLogger().warning("Edge ["+parent+">"+children[i]+"] is in limbo");
-            continue;
+        Vertex child = children[i];
+        
+        // catch possible recurse step into already visited nodes
+        if (visited.contains(child)) {
+          
+          // make sure this is an acyclic graph
+          if (path.contains(child)) {
+            context.getLogger().info("cannot handle directed cycle at all");
+            throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+">"+child+"]");
           }
-          // error if we don't consider direction
-          throw new GraphNotSupportedException("Graph contains cycle and direction isn't considered");
+
+          // make sure this is not an undirected graph
+          if (!isConsiderDirection) {
+            context.getLogger().info("cannot handle undirected graph with cycle unless isConsiderDirection=true");
+            throw new GraphNotSupportedException("Non Digraph contains non-directed cycle involving ["+parent+">"+child+"]");
+          }
+          
+          // don't re-recurse into child - handle edge layout
+          context.getLogger().warning("Edge ["+parent+">"+child+"] is in limbo");
+          continue;
         }
         
         // recurse
-        Branch branch = new Branch(parent, children[i], layout, path, visited, context);
+        Branch branch = new Branch(parent, child, layout, path, visited, context);
         branches.add(branch);
         vertices.addAll(branch.vertices);
 
