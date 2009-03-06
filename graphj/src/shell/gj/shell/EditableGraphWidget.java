@@ -285,6 +285,7 @@ public class EditableGraphWidget extends GraphWidget {
    * Mouse Analyzer - Waiting
    */
   private class DnDIdle extends DnD {
+    private Object selection;
     /** callback */
     @Override
     public void mousePressed(MouseEvent e) {
@@ -292,8 +293,8 @@ public class EditableGraphWidget extends GraphWidget {
       if (graph==null) return;
       // something there?
       Object oldSelection = graph.getSelection();
-      Object newSelection = graph.getElement(getPoint(e.getPoint()));
-      graph.setSelection(newSelection);
+      selection = graph.getElement(getPoint(e.getPoint()));
+      graph.setSelection(selection);
       // popup?
       if (e.isPopupTrigger()) {
         popup(e.getPoint());
@@ -301,8 +302,8 @@ public class EditableGraphWidget extends GraphWidget {
       }
       // start dragging?
       if (e.getButton()==MouseEvent.BUTTON1) {
-        if (newSelection instanceof EditableVertex) {
-	        if (oldSelection==newSelection)
+        if (selection instanceof EditableVertex) {
+	        if (oldSelection==selection)
 	          dndMoveNode.start(e.getPoint());
 	        else
 	          dndCreateEdge.start(e.getPoint());
@@ -323,7 +324,7 @@ public class EditableGraphWidget extends GraphWidget {
       }
       
       // quick create?
-      if (quickNode) {
+      if (selection==null&&quickNode) {
         graph.addVertex(getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
         repaint();
         return;
