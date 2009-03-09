@@ -153,8 +153,8 @@ public class App {
         handler.setLevel(Level.ALL);
         handler.setFormatter(formatter);
         LOG.addHandler(handler);
-        bufferedLogHandler.flush(handler);
         root.removeHandler(bufferedLogHandler);
+        bufferedLogHandler.flush(handler);
         
         // Startup Information
         LOG.info("version = "+Version.getInstance().getBuildString());
