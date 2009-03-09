@@ -226,7 +226,17 @@ public class LayoutHelper {
   public static void setPath(Edge edge, Graph2D graph2d) {
     graph2d.setPathOfEdge(edge, getPath(edge, graph2d));
   }
+  
+  /**
+   * path for given points
+   */
+  public static Path getPath(List<Point2D> points) {
+    return getPath(points, null, null, false);
+  }
 
+  /**
+   * path for given edge
+   */
   public static Path getPath(Edge edge, Graph2D graph2d) {
     return getPath(
         graph2d.getPositionOfVertex(edge.getStart()),
@@ -254,8 +264,8 @@ public class LayoutHelper {
     
     // intersect the first segment with s1
     Point2D
-      a = getVectorEnd(points[1], points[0], points[0], s1),
-      b = getVectorEnd(points[n-2], points[n-1], points[n-1], s2);
+      a = s1!=null ? getVectorEnd(points[1], points[0], points[0], s1) : points[0],
+      b = s2!=null ? getVectorEnd(points[n-2], points[n-1], points[n-1], s2) : points[n-1];
     
     // add the points to this path relative to start
     if (!reversed) {
