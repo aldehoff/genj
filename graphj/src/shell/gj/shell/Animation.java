@@ -22,9 +22,8 @@ package gj.shell;
 import gj.geom.Path;
 import gj.layout.GraphLayout;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.LayoutAlgorithm;
-import gj.layout.LayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithmException;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
@@ -58,7 +57,7 @@ import java.util.List;
   /**
    * Constructor (before)
    */
-  public Animation(EditableGraph graph, GraphLayout layout, LayoutAlgorithm algorithm, LayoutAlgorithmContext context) throws LayoutAlgorithmException, GraphNotSupportedException {
+  public Animation(EditableGraph graph, GraphLayout layout, LayoutContext context) throws LayoutException, GraphNotSupportedException {
     
     // something to animate?
     if (graph.getNumVertices() == 0) 
@@ -73,8 +72,10 @@ import java.util.List;
     for (int m=0;vertices.hasNext();m++) 
       moves[m] = new Movement(vertices.next());
    
-    // run algorithm
-    algorithm.apply(graph, layout, context);
+    // run layout
+    context.getLogger().info("Started pre-animation graph layout "+layout.getClass().getSimpleName());
+    layout.apply(graph, context);
+    context.getLogger().info("Finished pre-animation graph layout "+layout.getClass().getSimpleName());
     
     // take a snapshot of what's there right now
     for (int m=0;m<moves.length;m++) 

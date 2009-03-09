@@ -17,12 +17,11 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.hierarchical;
+package gj.layout.graph.hierarchical;
 
+import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.GraphLayout;
 import gj.model.Edge;
-import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
@@ -44,20 +43,20 @@ public class LongestPathLA implements LayerAssignment {
   private int width;
   private Comparator<Vertex> orderVerticesByX = new VertexByXPositionComparator();
   
-  private GraphLayout layout;
+  private Graph2D graph2d;
 
   /** layering algorithm */
-  public void assignLayers(Graph graph, GraphLayout layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException {
+  public void assignLayers(Graph2D graph2d, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException {
 
     // prepare state
-    this.layout = layout;
+    this.graph2d = graph2d;
     vertex2cell = new HashMap<Vertex, Cell>();
     layers = new ArrayList<Layer>();
     
     width = 0;
 
     // find sinks
-    for (Vertex v : graph.getVertices()) {
+    for (Vertex v : graph2d.getVertices()) {
       if (LayoutHelper.isSink(v)) 
         sinkToSource(null, v, new Stack<Cell>());
     }
@@ -66,7 +65,7 @@ public class LongestPathLA implements LayerAssignment {
     if (orderOfVerticesInLayer==null)
       orderOfVerticesInLayer = orderVerticesByX;
 
-    for (Vertex vertex : graph.getVertices()) {
+    for (Vertex vertex : graph2d.getVertices()) {
       Cell cell = vertex2cell.get(vertex);
       
       // unknown vertices at this point indicate a flaw in the graph
@@ -104,11 +103,11 @@ public class LongestPathLA implements LayerAssignment {
             
             // create a dummy at same position as cell
             Cell dummy = new Cell(new DummyVertex(), i+1);
-            layout.setPositionOfVertex(dummy.vertex, layout.getPositionOfVertex(cell.vertex));
+            graph2d.setPositionOfVertex(dummy.vertex, graph2d.getPositionOfVertex(cell.vertex));
             width = Math.max(width, layers.get(i+1).add(dummy, orderVerticesByX));
 
             // delete old connection
-            cell.in.remove(j);
+            cell.in.remove(j--);
             arc.from.out.remove(arc);
             
             // rewire
@@ -371,7 +370,7 @@ public class LongestPathLA implements LayerAssignment {
   private class VertexByXPositionComparator implements Comparator<Vertex> {
   
     public int compare(Vertex v1, Vertex v2) {
-      double d = layout.getPositionOfVertex(v1).getX() - layout.getPositionOfVertex(v2).getX();
+      double d = graph2d.getPositionOfVertex(v1).getX() - graph2d.getPositionOfVertex(v2).getX();
       if (d==0) return 0;
       return d<0 ? -1 : 1;
     } 

@@ -17,12 +17,11 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.hierarchical;
+package gj.layout.graph.hierarchical;
 
+import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.GraphLayout;
 import gj.model.Edge;
-import gj.model.Graph;
 import gj.model.Vertex;
 
 import java.awt.Point;
@@ -37,10 +36,9 @@ public interface LayerAssignment {
   /**
    * Process given graph and layout and produce a proper layer assignment
    * @param graph the graph to analyze
-   * @param layout the layout 
    * @throws GraphNotSupportedException
    */
-  public void assignLayers(Graph graph, GraphLayout layout, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException;
+  public void assignLayers(Graph2D graph, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException;
 
   /**
    * Number of layers

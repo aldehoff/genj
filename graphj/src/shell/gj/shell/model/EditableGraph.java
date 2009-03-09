@@ -19,11 +19,14 @@
  */
 package gj.shell.model;
 
-import gj.model.Graph;
+import gj.geom.Path;
+import gj.layout.Graph2D;
+import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,9 +38,9 @@ import java.util.Set;
 
 /**
  * A default impl for 
- * @see gj.layout.GraphLayout
+ * @see gj.layout.Graph2D
  */
-public class EditableGraph implements Graph {
+public class EditableGraph implements Graph2D {
   
   /** current selection - either edge or vertex*/
   private Object selection;
@@ -283,6 +286,63 @@ public class EditableGraph implements Graph {
         successors.add(edge.getEnd());
     }  
     return successors;
+  }
+
+  /**
+   * interface implementation
+   */
+  public Path getPathOfEdge(Edge edge) {
+    return ((EditableEdge)edge).getPath();
+  }
+
+  /**
+   * interface implementation
+   */
+  public Point2D getPositionOfVertex(Vertex node) {
+    return ((EditableVertex)node).getPosition();
+  }
+
+  /**
+   * interface implementation
+   */
+  public Shape getShapeOfVertex(Vertex node) {
+    return ((EditableVertex)node).getShape();
+  }
+
+  /**
+   * interface implementation
+   */
+  public AffineTransform getTransformOfVertex(Vertex vertex) {
+    AffineTransform t = ((EditableVertex)vertex).getTransformation();
+    return t==null ? new AffineTransform() : t;
+  }
+
+  /**
+     * interface implementation
+     */
+    public void setPathOfEdge(Edge edge, Path path) {
+      ((EditableEdge)edge).setPath(path);
+   }
+
+  /**
+   * interface implementation
+   */
+  public void setPositionOfVertex(Vertex node, Point2D pos) {
+    ((EditableVertex)node).setPosition(pos);
+  }
+
+  /**
+   * interface implementation
+   */
+  public void setShapeOfVertex(Vertex node, Shape shape) {
+    ((EditableVertex)node).setShape(shape);
+  }
+
+  /**
+   * interface implementation
+   */
+  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+    ((EditableVertex)vertex).setTransformation(transform);
   }
   
 } //DefaultGraph

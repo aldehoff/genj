@@ -19,7 +19,11 @@
  */
 package gj.geom;
 
-import static gj.geom.PathIteratorKnowHow.*;
+import static gj.geom.PathIteratorKnowHow.SEG_CLOSE;
+import static gj.geom.PathIteratorKnowHow.SEG_CUBICTO;
+import static gj.geom.PathIteratorKnowHow.SEG_LINETO;
+import static gj.geom.PathIteratorKnowHow.SEG_MOVETO;
+import static gj.geom.PathIteratorKnowHow.SEG_QUADTO;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -27,6 +31,8 @@ import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Missing shape functionality from the geom.* stuff
@@ -116,6 +122,9 @@ public class ShapeHelper {
   /**
    * Applies a PathConsumer to given Path
    */
+  public static void iterateShape(Shape shape, Point2D pos, FlattenedPathConsumer consumer) {
+    iterateShape(shape.getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY())), consumer);
+  }
   public static void iterateShape(Shape shape, FlattenedPathConsumer consumer) {
     iterateShape(shape.getPathIterator(null), consumer);
   }
@@ -201,6 +210,31 @@ public class ShapeHelper {
       gp.transform(AffineTransform.getTranslateInstance(origin.getX(),origin.getY()));
     gp.transform(AffineTransform.getScaleInstance(scale,scale));
     return gp;
+  }
+  
+  /**
+   * Transform a shape to flattened points
+   */
+  public static List<Point2D> getPoints(Shape shape, Point2D pos) {
+    return getPoints(shape.getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY())));
+  }
+  
+  /**
+   * Transform a shape to flattened points
+   */
+  public static List<Point2D> getPoints(PathIterator shape) {
+    
+    final List<Point2D> result = new ArrayList<Point2D>();
+    
+    iterateShape(shape, new FlattenedPathConsumer() {
+      public boolean consumeLine(Point2D start, Point2D end) {
+        result.add(new Point2D.Double(start.getX(), start.getY()));
+        // continue
+        return true;
+      }
+    });
+    
+    return result;
   }
     
 } //ShapeHelper

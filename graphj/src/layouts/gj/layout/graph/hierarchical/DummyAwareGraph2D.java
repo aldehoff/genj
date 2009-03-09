@@ -17,10 +17,10 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.hierarchical;
+package gj.layout.graph.hierarchical;
 
 import gj.geom.Path;
-import gj.layout.GraphLayout;
+import gj.layout.Graph2D;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -28,19 +28,28 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * A layout that knows how to handle layer dummy vertices
  */
-public class DummyAwareLayout implements GraphLayout {
+public class DummyAwareGraph2D implements Graph2D {
   
   private Map<Vertex, Point2D> dummy2pos = new HashMap<Vertex, Point2D>();
-  private GraphLayout wrapped;
+  private Graph2D wrapped;
   
-  public DummyAwareLayout(GraphLayout wrapped) {
+  public DummyAwareGraph2D(Graph2D wrapped) {
     this.wrapped = wrapped;
+  }
+  
+  public Collection<? extends Vertex> getVertices() {
+    return wrapped.getVertices();
+  }
+  
+  public Collection<? extends Edge> getEdges() {
+    return wrapped.getEdges();
   }
   
   public Point2D getPositionOfVertex(Vertex vertex) {

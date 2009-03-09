@@ -17,38 +17,55 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout;
+package gj.util;
 
 import gj.geom.Path;
+import gj.layout.Graph2D;
 import gj.model.Edge;
+import gj.model.Graph;
 import gj.model.Vertex;
-import gj.util.LayoutHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * A simple default implementation of a layout
  */
-public class DefaultGraphLayout implements GraphLayout {
-  
+public class DefaultGraph implements Graph2D {
+
+  private Graph graph;
   private Shape defaultShape;
   private Map<Vertex, Point2D> vertex2point = new HashMap<Vertex, Point2D>();
   private Map<Vertex, AffineTransform> vertex2transform = new HashMap<Vertex, AffineTransform>();
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
   private Map<Edge, Path> edge2path = new HashMap<Edge, Path>();
-
-  public DefaultGraphLayout() {
-    defaultShape = new Rectangle();
+  
+  /*package*/ DefaultGraph() {
+    this(null);
   }
   
-  public DefaultGraphLayout(Shape defaultShape) {
+  public DefaultGraph(Graph graph) {
+    this(graph, new Rectangle());
+  }
+  
+  public DefaultGraph(Graph graph, Shape defaultShape) {
+    this.graph = graph;
     this.defaultShape = defaultShape;
+  }
+  
+  public Collection<? extends Edge> getEdges() {
+    return graph==null ? new ArrayList<Edge>() : graph.getEdges();
+  }
+  
+  public Collection<? extends Vertex> getVertices() {
+    return graph==null ? new ArrayList<Vertex>() : graph.getVertices();
   }
   
   protected Shape getDefaultShape() {
@@ -98,7 +115,10 @@ public class DefaultGraphLayout implements GraphLayout {
   }
 
   public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
-    vertex2transform.put(vertex, transform);
+    if (transform==null)
+      vertex2transform.remove(vertex);
+    else
+      vertex2transform.put(vertex, transform);
   }
 
   public AffineTransform getTransformOfVertex(Vertex vertex) {

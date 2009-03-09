@@ -17,7 +17,7 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.radial;
+package gj.layout.graph.radial;
 
 import static gj.util.LayoutHelper.assertSpanningTree;
 import static gj.util.LayoutHelper.getDiameter;
@@ -27,10 +27,10 @@ import static gj.util.LayoutHelper.setPath;
 import static java.lang.Math.max;
 import gj.geom.Geometry;
 import gj.geom.Path;
-import gj.layout.AbstractLayoutAlgorithm;
-import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithmException;
+import gj.layout.AbstractGraphLayout;
+import gj.layout.Graph2D;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -48,9 +48,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation for a Radial layout algorithm
+ * Implementation for a Radial layout
  */
-public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttributes> {
+public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
 
   private double distanceBetweenGenerations = 60;
   private boolean isAdjustDistances = true;
@@ -61,7 +61,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
   private boolean isBendArcs = true;
 
   @Override
-  protected GraphAttributes getAttribute(Graph graph) {
+  protected GraphAttributes getAttribute(Object graph) {
     GraphAttributes attrs = super.getAttribute(graph);
     if (attrs==null) {
       attrs = new GraphAttributes();
@@ -201,22 +201,22 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
   /**
    * Layout a layout capable graph
    */
-  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
+  public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
     
     // check that we got a tree
-    assertSpanningTree(graph);
+    assertSpanningTree(graph2d);
     
     // ignore an empty tree
-    if (graph.getVertices().size()==0)
+    if (graph2d.getVertices().size()==0)
       return new Rectangle2D.Double();
     
     // check root
-    Vertex root = getRoot(graph);
+    Vertex root = getRoot(graph2d);
     if (root==null) 
-      root = graph.getVertices().iterator().next();
+      root = graph2d.getVertices().iterator().next();
     
     // run recursion
-    return new Recursion(graph, root, distanceBetweenGenerations, layout, context).getShape();
+    return new Recursion(graph2d, root, distanceBetweenGenerations, context).getShape();
     
   }
   
@@ -225,9 +225,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
    */
   private class Recursion extends Geometry {
     
-    Graph graph;
-    GraphLayout layout;
-    LayoutAlgorithmContext context;
+    Graph2D graph2d;
+    LayoutContext context;
     int depth;
     Map<Vertex, Double> vertex2radians = new HashMap<Vertex, Double>();
     Point2D center;
@@ -235,15 +234,14 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
     double maxDiameter;
     GraphAttributes attrs;
     
-    Recursion(Graph graph, Vertex root, double distanceBetweenGenerations, GraphLayout layout, LayoutAlgorithmContext context) {
+    Recursion(Graph2D graph2d, Vertex root, double distanceBetweenGenerations, LayoutContext context) {
       
       // init state
-      this.graph = graph;
-      this.layout = layout;
+      this.graph2d = graph2d;
       this.context = context;
-      this.center = layout.getPositionOfVertex(root);
+      this.center = graph2d.getPositionOfVertex(root);
       this.distanceBetweenGenerations =  distanceBetweenGenerations;
-      this.attrs = getAttribute(graph);
+      this.attrs = getAttribute(graph2d);
       
       // calculate sub-tree sizes
       getSize(null, root, 0);
@@ -305,7 +303,7 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       }
       
       // calculate size root
-      double diamOfRoot = getDiameter(root, layout);
+      double diamOfRoot = getDiameter(root, graph2d);
       maxDiameter = max(maxDiameter, diamOfRoot);
       double radiansOfRoot = ( diamOfRoot + distanceInGeneration ) / (generation*distanceBetweenGenerations);
       
@@ -336,8 +334,8 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         Arrays.sort(tmp, new Comparator<Edge>() {
           public int compare(Edge e1, Edge e2) {
             
-            double r1 = getRadian(getDelta(center,layout.getPositionOfVertex(getOther(e1, root))));
-            double r2 = getRadian(getDelta(center,layout.getPositionOfVertex(getOther(e2, root))));
+            double r1 = getRadian(getDelta(center,graph2d.getPositionOfVertex(getOther(e1, root))));
+            double r2 = getRadian(getDelta(center,graph2d.getPositionOfVertex(getOther(e2, root))));
             
             if (r1>north)
               r1 -= ONE_RADIAN;
@@ -381,13 +379,13 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
         double radiusOfChild = radius + getLengthOfEdge(edge) * distanceBetweenGenerations;
         double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
         radianOfChild[c] = fromRadian + radiansOfChild/2;
-        layout.setPositionOfVertex(child, getPoint(center, radianOfChild[c], radiusOfChild ));
+        graph2d.setPositionOfVertex(child, getPoint(center, radianOfChild[c], radiusOfChild ));
 
         // modify shape
         if (isRotateShapes)
-          layout.setTransformOfVertex(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild[c]) );
+          graph2d.setTransformOfVertex(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild[c]) );
         else
-          layout.setTransformOfVertex(child, new AffineTransform());
+          graph2d.setTransformOfVertex(child, new AffineTransform());
         
         // add debugging information
         if (context.isDebug()) {
@@ -403,9 +401,9 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
       // modify graph's root shape before laying out edges
       if (backtrack==null) {
         if (isRotateShapes)
-          layout.setTransformOfVertex(root, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfRoot) );
+          graph2d.setTransformOfVertex(root, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfRoot) );
         else
-          layout.setTransformOfVertex(root, new AffineTransform());
+          graph2d.setTransformOfVertex(root, new AffineTransform());
       }      
 
       // layout edges
@@ -425,16 +423,16 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
 
       // easy case - direc path
       if (!isBendArcs || (radianOfParent==radianOfChild)) {
-        setPath(edge, layout);
+        setPath(edge, graph2d);
         return;
       } 
       
       Path path = new Path();
       
       // start with path at child
-      Point2D p1 = layout.getPositionOfVertex(child);
+      Point2D p1 = graph2d.getPositionOfVertex(child);
       Point2D p2 = getPoint(center, radianOfChild, radius);
-      path.start(getVectorEnd(p2, p1, layout.getShapeOfVertex(child)));
+      path.start(getVectorEnd(p2, p1, graph2d.getShapeOfVertex(child)));
       path.lineTo(p2);
 
       // run over stops in arc (clock/counter-clockwise)
@@ -456,23 +454,23 @@ public class RadialLayoutAlgorithm extends AbstractLayoutAlgorithm<GraphAttribut
 
       // end path with final segment to parent
       Point2D p3 = getPoint(center, radianOfParent, radius);
-      Point2D p4 = layout.getPositionOfVertex(parent);
+      Point2D p4 = graph2d.getPositionOfVertex(parent);
       path.arcTo(center, radius, radianOfChild, radianOfParent);
-      path.lineTo(getVectorEnd(p3, p4, layout.getShapeOfVertex(parent)));
+      path.lineTo(getVectorEnd(p3, p4, graph2d.getShapeOfVertex(parent)));
 
       // layout relative to start
       if (parent.equals(edge.getStart())) {
         path.setInverted();
-        path.translate(getNeg(layout.getPositionOfVertex(parent)));
+        path.translate(getNeg(graph2d.getPositionOfVertex(parent)));
       } else {
-        path.translate(getNeg(layout.getPositionOfVertex(child)));
+        path.translate(getNeg(graph2d.getPositionOfVertex(child)));
       }
         
-      layout.setPathOfEdge(edge, path);
+      graph2d.setPathOfEdge(edge, path);
 
     }
 
     
   } //Recursion
   
-} //RadialLayoutAlgorithm
+} //RadialLayout

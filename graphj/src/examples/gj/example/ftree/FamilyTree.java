@@ -20,12 +20,13 @@
 package gj.example.ftree;
 
 import gj.example.Example;
-import gj.layout.DefaultGraphLayout;
-import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithmException;
-import gj.layout.tree.TreeLayoutAlgorithm;
+import gj.layout.Graph2D;
+import gj.layout.LayoutException;
+import gj.layout.graph.tree.TreeLayout;
 import gj.model.Graph;
 import gj.ui.GraphWidget;
+import gj.util.DefaultGraph;
+import gj.util.DefaultLayoutContext;
 import gj.util.TreeGraphAdapter;
 
 import java.awt.geom.Rectangle2D;
@@ -86,17 +87,16 @@ public class FamilyTree implements Example {
     Graph graph = new TreeGraphAdapter<String>(tree);
     
     // apply tree layout
-    GraphLayout layout = new DefaultGraphLayout(new Rectangle2D.Double(-20,-16,40,32));
+    Graph2D graph2d = new DefaultGraph(graph, new Rectangle2D.Double(-20,-16,40,32));
     
     try {
-      new TreeLayoutAlgorithm().apply(graph, layout, null);
-    } catch (LayoutAlgorithmException e) {
+      new TreeLayout().apply(graph2d, new DefaultLayoutContext());
+    } catch (LayoutException e) {
       throw new RuntimeException("hmm, can't layout my family", e);
     }
     
     // set
-    widget.setGraphLayout(layout);
-    widget.setGraph(graph);
+    widget.setGraph2D(graph2d);
     
     // done
     return widget;

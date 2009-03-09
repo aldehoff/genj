@@ -17,7 +17,9 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout;
+package gj.util;
+
+import gj.layout.LayoutContext;
 
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
@@ -25,9 +27,9 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 /**
- * A default implementation of a layout algorithm context
+ * A default implementation of a layout context
  */
-public class DefaultLayoutAlgorithmContext implements LayoutAlgorithmContext {
+public class DefaultLayoutContext implements LayoutContext {
   
   private Collection<Shape> debugShapes = null;
   private Logger logger;
@@ -38,14 +40,14 @@ public class DefaultLayoutAlgorithmContext implements LayoutAlgorithmContext {
   /**
    * Constructor
    */
-  public DefaultLayoutAlgorithmContext() {
+  public DefaultLayoutContext() {
     this(null, DEFAULTLOGGER, null);
   }
   
   /**
    * Constructor
    */
-  public DefaultLayoutAlgorithmContext(Collection<Shape> debugShape, Logger logger, Rectangle2D preferredBounds) {
+  public DefaultLayoutContext(Collection<Shape> debugShape, Logger logger, Rectangle2D preferredBounds) {
     this.debugShapes = debugShape;
     this.logger = logger;
     this.preferredBounds = preferredBounds;

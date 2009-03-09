@@ -29,6 +29,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -487,8 +488,18 @@ public class Geometry {
    * @param lineEnd end of line
    * @param shape the shape
    */
-  public static Collection<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Shape shape) {
+  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Shape shape) {
     return new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(null)).result;
+  }
+  
+  /**
+   * Calculates the intersecting points of a line and a shape
+   * @param lineStart start of line
+   * @param lineEnd end of line
+   * @param shape the shape
+   */
+  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape) {
+    return new OpLineShapeIntersections(lineStart, lineEnd, shape).result;
   }
   
   /**
@@ -498,8 +509,8 @@ public class Geometry {
    * @param shapePos position of shape
    * @param shape the shape 
    */
-  public static Collection<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape) {
-    return new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY()))).result;
+  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape) {
+    return getIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())));
   }
   
   /**
@@ -508,7 +519,7 @@ public class Geometry {
   private static class OpLineShapeIntersections implements FlattenedPathConsumer {
     
     /** the intersections */
-    private Collection<Point2D> result;
+    private List<Point2D> result;
     
     /** it's distance */
     private double distance = Double.MAX_VALUE;

@@ -17,13 +17,12 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.random;
+package gj.layout.graph.random;
 
+import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithm;
-import gj.layout.LayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithmException;
-import gj.model.Graph;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
@@ -35,7 +34,7 @@ import java.util.Random;
 /**
  * A random layout
  */
-public class RandomLayoutAlgorithm implements LayoutAlgorithm {
+public class RandomLayout implements GraphLayout {
   
   /** the seed */
   private long seed = 0;
@@ -89,24 +88,24 @@ public class RandomLayoutAlgorithm implements LayoutAlgorithm {
   }
 
   /**
-   * @see LayoutAlgorithm#apply(Graph, GraphLayout, LayoutAlgorithmContext)
+   * @see GraphLayout#apply(Graph2D, LayoutContext)
    */
-  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
+  public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
     
     // something to do for me?
-    if (graph.getVertices().isEmpty())
+    if (graph2d.getVertices().isEmpty())
       return new Rectangle2D.Double();
     
     // get a seed
     Random random = new Random(seed++);
 
     // place the nodes    
-    for (Vertex vertex : graph.getVertices()) {
+    for (Vertex vertex : graph2d.getVertices()) {
       
-      Rectangle2D nodeCanvas = layout.getShapeOfVertex(vertex).getBounds2D();
+      Rectangle2D nodeCanvas = graph2d.getShapeOfVertex(vertex).getBounds2D();
       Rectangle2D preferred = context.getPreferredBounds();
       if (preferred==null)
-        throw new IllegalArgumentException("LayoutAlgorithmContext.getPreferredBounds() cannot be null");
+        throw new IllegalArgumentException("LayoutContext.getPreferredBounds() cannot be null");
 
       double 
         x = preferred.getMinX() - nodeCanvas.getMinX(),
@@ -114,17 +113,17 @@ public class RandomLayoutAlgorithm implements LayoutAlgorithm {
         w = preferred.getWidth() - nodeCanvas.getWidth(),
         h = preferred.getHeight() - nodeCanvas.getHeight();
 
-      Point2D pos = layout.getPositionOfVertex(vertex);
+      Point2D pos = graph2d.getPositionOfVertex(vertex);
       pos.setLocation(
         isApplyHorizontally ? x + random.nextDouble()*w : pos.getX(), 
         isApplyVertically ? y + random.nextDouble()*h : pos.getY()
       );
-      layout.setPositionOfVertex(vertex, pos);
+      graph2d.setPositionOfVertex(vertex, pos);
 
     }
     
     // place the arcs
-    LayoutHelper.setPaths(graph, layout);
+    LayoutHelper.setPaths(graph2d);
     
     // done
     return context.getPreferredBounds();

@@ -19,8 +19,8 @@
  */
 package gj.shell;
 
-import gj.layout.LayoutAlgorithm;
-import gj.layout.LayoutAlgorithmException;
+import gj.layout.GraphLayout;
+import gj.layout.LayoutException;
 import gj.shell.swing.Action2;
 import gj.shell.util.ReflectHelper;
 
@@ -41,13 +41,13 @@ import javax.swing.JPanel;
 /**
  * A widget that describes a Layout
  */
-public class AlgorithmWidget extends JPanel {
+public class LayoutWidget extends JPanel {
   
-  /** the algorithms we've instantiated */
-  private LayoutAlgorithm[] algorithms = new LayoutAlgorithm[0];
+  /** the layouts we've instantiated */
+  private GraphLayout[] layouts = new GraphLayout[0];
   
   /** the combo of layouts */
-  private JComboBox comboAlgorithms;
+  private JComboBox comboLayouts;
 
   /** the layout's properties */
   private PropertyWidget widgetProperties;
@@ -66,17 +66,17 @@ public class AlgorithmWidget extends JPanel {
   /**
    * Constructor
    */  
-  public AlgorithmWidget() {
+  public LayoutWidget() {
 
     // prepare this
     setLayout(new BorderLayout());
     
     // create widgets
-    comboAlgorithms = new JComboBox();
+    comboLayouts = new JComboBox();
     widgetProperties = new PropertyWidget();
     buttonExecute = new JButton();
     
-    add(comboAlgorithms,BorderLayout.NORTH);
+    add(comboLayouts,BorderLayout.NORTH);
     add(widgetProperties, BorderLayout.CENTER);
     add(buttonExecute, BorderLayout.SOUTH);
 
@@ -85,7 +85,7 @@ public class AlgorithmWidget extends JPanel {
     buttonExecute.setAction(actionExecute);
     
     // listening
-    comboAlgorithms.setAction(actionSelect);
+    comboLayouts.setAction(actionSelect);
     
     // done
   }
@@ -107,40 +107,40 @@ public class AlgorithmWidget extends JPanel {
 
   
   /**
-   * Accessor - the algorithms
+   * Accessor - the layouts
    */
-  public LayoutAlgorithm[] getAlgorithms() {
-    return algorithms;
+  public GraphLayout[] getLayouts() {
+    return layouts;
   }
 
   /**
-   * Accessor - the algorithms
+   * Accessor - the layouts
    */
-  public void setAlgorithms(LayoutAlgorithm[] set) {
-    algorithms=set;
-    comboAlgorithms.setModel(new DefaultComboBoxModel(algorithms));
-    comboAlgorithms.setRenderer(new DefaultListCellRenderer() {
+  public void setLayouts(GraphLayout[] set) {
+    layouts=set;
+    comboLayouts.setModel(new DefaultComboBoxModel(layouts));
+    comboLayouts.setRenderer(new DefaultListCellRenderer() {
       @Override
       public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        return super.getListCellRendererComponent(list, ReflectHelper.getName(value.getClass()), index, isSelected, cellHasFocus);
+        return super.getListCellRendererComponent(list, value!=null?ReflectHelper.getName(value.getClass()):"", index, isSelected, cellHasFocus);
       }
     });
-    if (algorithms.length>0) 
-      comboAlgorithms.setSelectedItem(algorithms[0]);
+    if (layouts.length>0) 
+      comboLayouts.setSelectedItem(layouts[0]);
   }
 
   /**
-   * Accessor - current algorithms
+   * Accessor - current layouts
    */
-  public void setSelectedAlgorithm(LayoutAlgorithm set) {
-    comboAlgorithms.setSelectedItem(set);
+  public void setSelectedLayout(GraphLayout set) {
+    comboLayouts.setSelectedItem(set);
   }
   
   /**
-   * Accessor - current algorithm
+   * Accessor - current layout
    */
-  public LayoutAlgorithm getSelectedAlgorithm() {
-    return (LayoutAlgorithm)comboAlgorithms.getSelectedItem();
+  public GraphLayout getSelectedLayouts() {
+    return (GraphLayout)comboLayouts.getSelectedItem();
   }
   
   /** 
@@ -151,7 +151,7 @@ public class AlgorithmWidget extends JPanel {
   }
   
   /**
-   * How to handle - Run the algorithm
+   * How to handle - Run the layout
    */
   protected class ActionExecute extends Action2 {
     protected ActionExecute() { 
@@ -159,8 +159,8 @@ public class AlgorithmWidget extends JPanel {
       setEnabled(false); 
     }
     @Override
-    public void execute() throws LayoutAlgorithmException {
-      if (getSelectedAlgorithm()==null) 
+    public void execute() throws LayoutException {
+      if (getSelectedLayouts()==null) 
         return;
       widgetProperties.commit();
       for (ActionListener listener : alisteners) 
@@ -170,7 +170,7 @@ public class AlgorithmWidget extends JPanel {
   }
   
   /**
-   * How to handle - Select an algorithm
+   * How to handle - Select an layout
    */
   protected class ActionSelect extends Action2 {
     protected ActionSelect() { 
@@ -178,14 +178,14 @@ public class AlgorithmWidget extends JPanel {
     }
     @Override
     public void execute() {
-      // get the selected algorithm
-      Object algorithm = comboAlgorithms.getModel().getSelectedItem();
-      if (algorithm==null) 
+      // get the selected layout
+      Object layout = comboLayouts.getModel().getSelectedItem();
+      if (layout==null) 
         return;
       for (ActionListener listener : alisteners) 
         listener.actionPerformed(null);
       // show its properties
-      widgetProperties.setInstance(algorithm);
+      widgetProperties.setInstance(layout);
     }
   }
 

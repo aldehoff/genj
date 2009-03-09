@@ -17,17 +17,30 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.ui;
+package gj.layout;
 
-import gj.layout.Graph2D;
 
-import java.awt.Graphics2D;
+import java.util.WeakHashMap;
 
 /**
- * A renderer for graphs
+ * Abstract base class for layouts with common functionality
  */
-public interface GraphRenderer {
-  
-  public void render(Graph2D layout, Graphics2D graphics);
+public abstract class AbstractGraphLayout<Attribute> implements GraphLayout {
 
-}
+  private WeakHashMap<Object, Attribute> object2attr = new WeakHashMap<Object, Attribute>();
+  
+  /**
+   * lookup a graph attribute
+   */
+  protected Attribute getAttribute(Object object) {
+    return object2attr.get(object);
+  }
+  
+  /**
+   * store a graph attribute
+   */
+  protected void setAttribute(Object object, Attribute attr) {
+    object2attr.put(object, attr);
+  }
+  
+} //AbstractLayout

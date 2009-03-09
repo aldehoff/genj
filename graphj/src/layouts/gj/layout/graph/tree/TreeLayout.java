@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,14 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.tree;
+package gj.layout.graph.tree;
 
 import gj.geom.Geometry;
-import gj.layout.AbstractLayoutAlgorithm;
-import gj.layout.GraphLayout;
+import gj.layout.AbstractGraphLayout;
+import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.LayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithmException;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -48,7 +48,7 @@ import java.util.Set;
 /**
  * Vertex layout for Trees
  */
-public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
+public class TreeLayout extends AbstractGraphLayout<Vertex> {
 
   /** distance of nodes in generation */
   private int distanceInGeneration = 20;
@@ -214,15 +214,15 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   /**
    * Layout a layout capable graph
    */
-  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
+  public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
     
     // ignore an empty tree
-    Collection<? extends Vertex> vertices = graph.getVertices(); 
+    Collection<? extends Vertex> vertices = graph2d.getVertices(); 
     if (vertices.isEmpty())
       return new Rectangle2D.Double();
     
     // check root
-    Vertex root = getRoot(graph);
+    Vertex root = getRoot(graph2d);
     if (root==null)
       root = vertices.iterator().next();
     
@@ -230,7 +230,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     
     // recurse into it
     Set<Vertex> visited = new HashSet<Vertex>();
-    Shape result = new Branch(null, root, layout, new ArrayDeque<Vertex>(), visited, context).shape;
+    Shape result = new Branch(null, root, graph2d, new ArrayDeque<Vertex>(), visited, context).shape;
     context.addDebugShape(result);
     
     // check spanning in case we used directions
@@ -249,7 +249,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
   private class Branch extends Geometry implements Comparator<Vertex> {
     
     /** tree */
-    private GraphLayout layout;
+    private Graph2D layout;
     
     /** root of branch */
     private Vertex root;
@@ -262,18 +262,18 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
     private GeneralPath shape;
     
     /** constructor for a parent and its children */
-    Branch(Vertex backtrack, Vertex parent, GraphLayout layout, Deque<Vertex> path, Set<Vertex> visited, LayoutAlgorithmContext context) throws LayoutAlgorithmException, GraphNotSupportedException{
+    Branch(Vertex backtrack, Vertex parent, Graph2D graph2d, Deque<Vertex> path, Set<Vertex> visited, LayoutContext context) throws LayoutException, GraphNotSupportedException{
       
       // track coverage
       visited.add(parent);
 
       // init state
-      this.layout = layout;
+      this.layout = graph2d;
       this.root = parent;
       vertices.add(root);
       
       // reset vertex's transformation
-      layout.setTransformOfVertex(root, null);
+      graph2d.setTransformOfVertex(root, null);
       
       // grab and sort children 
       Vertex[] children = children(backtrack, root);
@@ -308,7 +308,7 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
         }
         
         // recurse
-        Branch branch = new Branch(parent, child, layout, path, visited, context);
+        Branch branch = new Branch(parent, child, graph2d, path, visited, context);
         branches.add(branch);
         vertices.addAll(branch.vertices);
 
@@ -319,9 +319,9 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       if (branches.isEmpty()) {
         
         // simple shape for a leaf
-        Point2D pos = layout.getPositionOfVertex(root);
+        Point2D pos = graph2d.getPositionOfVertex(root);
         shape = new GeneralPath(getConvexHull(
-            layout.getShapeOfVertex(root).getPathIterator(
+            graph2d.getShapeOfVertex(root).getPathIterator(
             AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
         ));
         top();
@@ -392,8 +392,8 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       //
       //
       Point2D a = branches.get(0).top();
-      Point2D b = layout.getPositionOfVertex(branches.get(0).root);
-      Point2D c = layout.getPositionOfVertex(branches.get(branches.size()-1).root);
+      Point2D b = graph2d.getPositionOfVertex(branches.get(0).root);
+      Point2D c = graph2d.getPositionOfVertex(branches.get(branches.size()-1).root);
       Point2D d = getPoint(b, c, alignmentOfParent); 
       Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
       Point2D f = getPoint(e, layoutAxis-HALF_RADIAN, distanceBetweenGenerations/2);
@@ -403,11 +403,11 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
           distanceBetweenGenerations + getLength(getMax(shape(root), layoutAxis)) 
         );
       
-      layout.setPositionOfVertex(root, r);
+      graph2d.setPositionOfVertex(root, r);
       
       // calculate new shape
       GeneralPath gp = new GeneralPath();
-      gp.append(layout.getShapeOfVertex(root), false);
+      gp.append(graph2d.getShapeOfVertex(root), false);
       gp.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
       for (Branch branch : branches)
         gp.append(branch.shape, false);
@@ -430,9 +430,9 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          layout.setPathOfEdge(edge, LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()), false));
+          graph2d.setPathOfEdge(edge, LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()), false));
         } else {
-          layout.setPathOfEdge(edge, LayoutHelper.getPath(edge, layout));
+          graph2d.setPathOfEdge(edge, LayoutHelper.getPath(edge, graph2d));
         }
         
       }
@@ -458,11 +458,11 @@ public class TreeLayoutAlgorithm extends AbstractLayoutAlgorithm<Vertex> {
       return result.toArray(new Vertex[result.size()]);      
     }
     
-    Point2D top() throws LayoutAlgorithmException{
+    Point2D top() throws LayoutException{
       if (top==null)
         top= getMax(shape, getRadian(orientation) - HALF_RADIAN);
       if (top==null)
-        throw new LayoutAlgorithmException("branch for vertex "+root+" has no valid shape containing (0,0)");
+        throw new LayoutException("branch for vertex "+root+" has no valid shape containing (0,0)");
       return top;
       
     }

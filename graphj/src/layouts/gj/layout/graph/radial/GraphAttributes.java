@@ -17,31 +17,41 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout;
+package gj.layout.graph.radial;
 
-import gj.model.Graph;
+import gj.model.Edge;
+import gj.model.Vertex;
 
-import java.util.WeakHashMap;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Abstract base class for algorithms with common functionality
+ * Graph attribute for radial layout
  */
-public abstract class AbstractLayoutAlgorithm<GraphAttribute> implements LayoutAlgorithm {
+/*package*/ class GraphAttributes {
 
-  private WeakHashMap<Graph, GraphAttribute> graphSetting = new WeakHashMap<Graph, GraphAttribute>();
+  private Map<Edge, Integer> edge2length = new HashMap<Edge, Integer>();
+  private Vertex root;
   
-  /**
-   * lookup a graph attribute
-   */
-  protected GraphAttribute getAttribute(Graph graph) {
-    return graphSetting.get(graph);
+  /*package*/ int getLength(Edge edge) {
+    Integer result = edge2length.get(edge);
+    if (result!=null)
+      return result.intValue();
+    return 1;
   }
   
-  /**
-   * store a graph attribute
-   */
-  protected void setAttribute(Graph graph, GraphAttribute attr) {
-    graphSetting.put(graph, attr);
+  /*package*/ Vertex getRoot() {
+    return root;
   }
   
+  /*package*/ void setRoot(Vertex vertex) {
+    root = vertex;
+  }
+
+  /*package*/ void setLength(Edge edge, int length) {
+    if (length < 1)
+      edge2length.remove(edge);
+    else
+      edge2length.put(edge, new Integer(length));
+  }
 }

@@ -21,9 +21,9 @@ package gj.layout;
 
 
 /**
- * A layout algorithm exception that explains what type of graph is supported
+ * A layout exception that explains what type of graph is supported
  */
-public class GraphNotSupportedException extends LayoutAlgorithmException {
+public class GraphNotSupportedException extends LayoutException {
   
   /**
    * Constructor

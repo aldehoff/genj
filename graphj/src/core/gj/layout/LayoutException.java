@@ -17,41 +17,27 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.radial;
-
-import gj.model.Edge;
-import gj.model.Vertex;
-
-import java.util.HashMap;
-import java.util.Map;
+package gj.layout;
 
 /**
- * Graph attribute for radial layout
+ * What can go wrong with a layout
  */
-/*package*/ class GraphAttributes {
+public class LayoutException extends Exception {
 
-  private Map<Edge, Integer> edge2length = new HashMap<Edge, Integer>();
-  private Vertex root;
-  
-  /*package*/ int getLength(Edge edge) {
-    Integer result = edge2length.get(edge);
-    if (result!=null)
-      return result.intValue();
-    return 1;
-  }
-  
-  /*package*/ Vertex getRoot() {
-    return root;
-  }
-  
-  /*package*/ void setRoot(Vertex vertex) {
-    root = vertex;
+  /**
+   * Constructor for LayoutException.
+   * @param message
+   */
+  public LayoutException(String message) {
+    super(message);
   }
 
-  /*package*/ void setLength(Edge edge, int length) {
-    if (length < 1)
-      edge2length.remove(edge);
-    else
-      edge2length.put(edge, new Integer(length));
+  /**
+   * Constructor for LayoutException.
+   * @param message
+   */
+  public LayoutException(String message, Throwable t) {
+    super(message, t);
   }
-}
+
+} //LayoutException

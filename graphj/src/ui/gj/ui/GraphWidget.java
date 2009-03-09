@@ -19,10 +19,9 @@
  */
 package gj.ui;
 
-import gj.layout.DefaultGraphLayout;
-import gj.layout.GraphLayout;
-import gj.model.Graph;
+import gj.layout.Graph2D;
 import gj.model.Vertex;
+import gj.util.EmptyGraph;
 import gj.util.LayoutHelper;
 
 import java.awt.Color;
@@ -42,13 +41,10 @@ import javax.swing.JComponent;
 public class GraphWidget extends JComponent {
 
   /** the graph we're displaying */
-  private Graph graph;
+  private Graph2D graph2d;
   
   /** the size of the graph */
   private Rectangle graphBounds;
-  
-  /** the layout of the graph */
-  private GraphLayout layout;
   
   /** whether antialiasing is on */
   private boolean isAntialiasing = true;
@@ -60,23 +56,23 @@ public class GraphWidget extends JComponent {
    * Constructor
    */
   public GraphWidget() {
-    this(new DefaultGraphLayout(), new DefaultGraphRenderer());
+    this(new EmptyGraph(), new DefaultGraphRenderer());
   }
   
   /**
    * Constructor
    */
-  public GraphWidget(GraphLayout graphLayout) {
+  public GraphWidget(Graph2D graphLayout) {
     this(graphLayout, new DefaultGraphRenderer());
   }
   
   /**
    * Constructor
    */
-  public GraphWidget(GraphLayout graphLayout, GraphRenderer renderer) {
-    
-    this.layout = graphLayout;
+  public GraphWidget(Graph2D graph2d, GraphRenderer renderer) {
     this.renderer = renderer;
+    this.graph2d = graph2d;
+    graphBounds = LayoutHelper.getBounds(graph2d).getBounds();
   }
   
   /**
@@ -92,14 +88,14 @@ public class GraphWidget extends JComponent {
   /**
    * Accessor - Graph
    */
-  public void setGraph(Graph setGraph) {
-    setGraph(setGraph, null);
+  public void setGraph2D(Graph2D graph2d) {
+    setGraph2D(graph2d, null);
   }
     
-  public void setGraph(Graph setGraph, Rectangle bounds) {
+  public void setGraph2D(Graph2D graph2d, Rectangle bounds) {
     // cleanup data
-    graph = setGraph;
-    graphBounds = bounds != null ? bounds : LayoutHelper.getBounds(graph, layout).getBounds();
+    this.graph2d = graph2d;
+    graphBounds = bounds != null ? bounds : LayoutHelper.getBounds(graph2d).getBounds();
     
     // make sure that's reflected
     revalidate();
@@ -111,22 +107,8 @@ public class GraphWidget extends JComponent {
   /**
    * Accessor - Graph
    */
-  public Graph getGraph() {
-    return graph;
-  }
-  
-  /**
-   * Accessor - Layout
-   */
-  public GraphLayout getGraphLayout() {
-    return layout;
-  }
-  
-  /**
-   * Accessor - Layout
-   */
-  public void setGraphLayout(GraphLayout layout) {
-    this.layout = layout;
+  public Graph2D getGraph2D() {
+    return graph2d;
   }
   
   /**
@@ -148,7 +130,7 @@ public class GraphWidget extends JComponent {
    * Calculate x offset for centered graph
    */
   private int getXOffset() {
-    if (graph==null) return 0;
+    if (graph2d==null) return 0;
     return -graphBounds.x+(getWidth()-graphBounds.width)/2;
   }
   
@@ -156,7 +138,7 @@ public class GraphWidget extends JComponent {
    * Calculate y offset for centered graph
    */
   private int getYOffset() {
-    if (graph==null) return 0;
+    if (graph2d==null) return 0;
     return -graphBounds.y+(getHeight()-graphBounds.height)/2;
   }
   
@@ -165,7 +147,7 @@ public class GraphWidget extends JComponent {
    */
   @Override
   public Dimension getPreferredSize() {
-    if (graph==null) return new Dimension();
+    if (graph2d==null) return new Dimension();
     return graphBounds.getSize();
   }
 
@@ -180,7 +162,7 @@ public class GraphWidget extends JComponent {
     g.fillRect(0,0,getWidth(),getHeight());
 
     // graph there?
-    if (graph==null) 
+    if (graph2d==null) 
       return;
     
     // cast to 2d
@@ -193,12 +175,12 @@ public class GraphWidget extends JComponent {
     );
     
     // synchronize on graph and go?
-    synchronized (graph) {
+    synchronized (graph2d) {
       // create our working graphics
       // paint at 0,0
       graphics.translate(getXOffset(),getYOffset());
       // let the renderer do its work
-      renderer.render(graph, layout, graphics);
+      renderer.render(graph2d, graphics);
     }
 
     // done
@@ -218,13 +200,13 @@ public class GraphWidget extends JComponent {
    * return vertex by point
    */
   public Vertex getVertexAt(Point point) {
-    if (graph==null)
+    if (graph2d==null)
       return null;
     // adjust point for graph (graph space doesn't start at 0,0)
     point = getPoint(point);
-    for (Vertex v : graph.getVertices()) {
-      Point2D pos = layout.getPositionOfVertex(v);
-      if (layout.getShapeOfVertex(v).contains(point.x - pos.getX(), point.y - pos.getY()))
+    for (Vertex v : graph2d.getVertices()) {
+      Point2D pos = graph2d.getPositionOfVertex(v);
+      if (graph2d.getShapeOfVertex(v).contains(point.x - pos.getX(), point.y - pos.getY()))
         return v;
     }
     return null;

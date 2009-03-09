@@ -17,27 +17,34 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout;
+package gj.layout.edge.visibility;
+
+import java.awt.Shape;
+
+import gj.layout.EdgeLayout;
+import gj.layout.Graph2D;
+import gj.layout.GraphLayout;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
+import gj.util.LayoutHelper;
 
 /**
- * What can go wrong with a layout
+ * Given a set of vertices w/shapes find the shortest path between two vertices
+ * that does not intersect any of the shapes.
  */
-public class LayoutAlgorithmException extends Exception {
+public class EuclideanShortestPathLayout implements GraphLayout {
 
   /**
-   * Constructor for LayoutException.
-   * @param message
+   * apply it
    */
-  public LayoutAlgorithmException(String message) {
-    super(message);
+  public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
+    
+    // create a visibility graph
+    VisibilityGraph vg = new VisibilityGraph(graph2d);
+    context.addDebugShape(vg.getDebugShape());
+    
+    // done
+    return LayoutHelper.getBounds(graph2d);
   }
-
-  /**
-   * Constructor for LayoutException.
-   * @param message
-   */
-  public LayoutAlgorithmException(String message, Throwable t) {
-    super(message, t);
-  }
-
-} //LayoutException
+  
+} //EuclideanShortestPathLayout

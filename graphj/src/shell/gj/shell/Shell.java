@@ -22,17 +22,16 @@ package gj.shell;
 import gj.geom.ShapeHelper;
 import gj.io.GraphReader;
 import gj.io.GraphWriter;
-import gj.layout.DefaultLayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithm;
-import gj.layout.LayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithmException;
+import gj.layout.GraphLayout;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
 import gj.shell.factory.AbstractGraphFactory;
 import gj.shell.model.EditableGraph;
-import gj.shell.model.EditableLayout;
 import gj.shell.swing.Action2;
 import gj.shell.swing.SwingHelper;
 import gj.shell.util.Properties;
 import gj.shell.util.ReflectHelper;
+import gj.util.DefaultLayoutContext;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -93,8 +92,8 @@ public class Shell {
   /** the graph widget we show */
   private EditableGraphWidget graphWidget;
 
-  /** the algorithm widget we show */
-  private AlgorithmWidget algorithmWidget;
+  /** the layout widget we show */
+  private LayoutWidget layoutWidget;
   
   /** the graph we're looking at */
   private EditableGraph graph;
@@ -104,9 +103,6 @@ public class Shell {
   
   /** debug flag */
   private boolean isDebug = false; 
-  
-  /** the view of the graph */
-  private EditableLayout layout = new EditableLayout();
   
   /** whether we perform an animation after layout */
   private boolean isAnimation = true;
@@ -120,8 +116,8 @@ public class Shell {
   /** our factories */
   private AbstractGraphFactory[] factories = (AbstractGraphFactory[])properties.get("factory", new AbstractGraphFactory[0]);
   
-  /** our algorithms */
-  private LayoutAlgorithm[] algorithms = (LayoutAlgorithm[])properties.get("algorithm", new LayoutAlgorithm[0]);
+  /** our layouts */
+  private GraphLayout[] layouts = (GraphLayout[])properties.get("layout", new GraphLayout[0]);
   
   private Logger logger = Logger.getLogger("genj.shell");
   
@@ -146,15 +142,15 @@ public class Shell {
     // Create our widgets
     graphWidget = new EditableGraphWidget() {
       @Override
-      protected void algorithmChangeNotify() {
+      protected void layoutConfiguredNotify(GraphLayout layout) {
         new ActionExecuteLayout().trigger();
       }
     };
     
-    algorithmWidget = new AlgorithmWidget();
-    algorithmWidget.setAlgorithms(algorithms);
-    algorithmWidget.setBorder(BorderFactory.createEtchedBorder());
-    algorithmWidget.addActionListener(new ActionExecuteLayout());
+    layoutWidget = new LayoutWidget();
+    layoutWidget.setLayouts(layouts);
+    layoutWidget.setBorder(BorderFactory.createEtchedBorder());
+    layoutWidget.addActionListener(new ActionExecuteLayout());
     
     logWidget = new JTextArea(3, 0);
     logWidget.setEditable(false);
@@ -186,11 +182,11 @@ public class Shell {
     Container container = frame.getContentPane();
     container.setLayout(new BorderLayout());
     container.add(new JScrollPane(graphWidget), BorderLayout.CENTER);
-    container.add(algorithmWidget, BorderLayout.EAST  );
+    container.add(layoutWidget, BorderLayout.EAST  );
     container.add(new JScrollPane(logWidget), BorderLayout.SOUTH );
     
     // Our default button
-    frame.getRootPane().setDefaultButton(algorithmWidget.getDefaultButton());
+    frame.getRootPane().setDefaultButton(layoutWidget.getDefaultButton());
     
     // Setup Menu
     frame.setJMenuBar(createMenu());
@@ -228,8 +224,8 @@ public class Shell {
 
     // LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT LAYOUT 
     JMenu mLayout = new JMenu("Layout");
-    for (int i=0;i<algorithms.length;i++) {
-      mLayout.add(new ActionSelectLayout(algorithms[i]));
+    for (int i=0;i<layouts.length;i++) {
+      mLayout.add(new ActionSelectLayout(layouts[i]));
     }
     
     // OPTIONS OPTIONS OPTIONS OPTIONS OPTIONS OPTIONS OPTIONS 
@@ -255,8 +251,8 @@ public class Shell {
     // remember
     graph = set;
     // propagate
-    graphWidget.setGraph(graph);
-    algorithmWidget.setEnabled(graph!=null);
+    graphWidget.setGraph2D(graph);
+    layoutWidget.setEnabled(graph!=null);
   }
   
   /**
@@ -302,7 +298,7 @@ public class Shell {
   }
   
   /**
-   * How to handle - run an algorithm
+   * How to handle - run a layout
    */
   /*package*/ class ActionExecuteLayout extends Action2 {
     
@@ -320,7 +316,7 @@ public class Shell {
     
     /** initializer (EDT) */
     @Override
-    protected boolean preExecute() throws LayoutAlgorithmException {
+    protected boolean preExecute() throws LayoutException {
       // something to do?
       if (graph==null) 
         return false;
@@ -328,26 +324,27 @@ public class Shell {
       cancel(true);
       // run layout
       Rectangle bounds = createGraphBounds();
-      LayoutAlgorithm algorithm = algorithmWidget.getSelectedAlgorithm();
-      logger.info("Starting graph layout algorithm "+algorithm.getClass().getSimpleName());
+      GraphLayout layout = layoutWidget.getSelectedLayouts();
       debugShapes = isDebug ? new ArrayList<Shape>() : null;
-      LayoutAlgorithmContext context = new DefaultLayoutAlgorithmContext(debugShapes, logger, bounds);
+      LayoutContext context = new DefaultLayoutContext(debugShapes, logger, bounds);
       if (isAnimation) {
-        animation = new Animation(graph, layout, algorithm, context);
+        animation = new Animation(graph, layout, context);
         return true;
       } else {
-        shape = algorithm.apply(graph, layout, context);
+        logger.info("Starting graph layout "+layout.getClass().getSimpleName());
+        shape = layout.apply(graph, context);
+        logger.info("Finished graph layout "+layout.getClass().getSimpleName());
         return false;
       }
     }
     /** async execute */
     @Override
-    protected void execute() throws LayoutAlgorithmException {
+    protected void execute() throws LayoutException {
       try {
         while (true) {
           if (Thread.currentThread().isInterrupted()) break;
           if (animation.animate()) break;
-          graphWidget.setGraph(graph);
+          graphWidget.setGraph2D(graph);
           shape = null;
         }
       } catch (InterruptedException e) {
@@ -359,9 +356,9 @@ public class Shell {
     @Override
     protected void postExecute() throws Exception {
       if (graph!=null)
-        graphWidget.setGraph(graph, shape!=null?shape.getBounds():null);
+        graphWidget.setGraph2D(graph, shape!=null?shape.getBounds():null);
       graphWidget.setDebugShapes(debugShapes);
-      graphWidget.setCurrentAlgorithm(algorithmWidget.getSelectedAlgorithm());
+      graphWidget.setCurrentLayout(layoutWidget.getSelectedLayouts());
     }
     
   } //ActionExecuteLayout
@@ -370,14 +367,14 @@ public class Shell {
    * How to handle - switch to Layout
    */
   /*package*/ class ActionSelectLayout extends Action2 {
-    private LayoutAlgorithm algorithm;
-    /*package*/ ActionSelectLayout(LayoutAlgorithm set) {
+    private GraphLayout layout;
+    /*package*/ ActionSelectLayout(GraphLayout set) {
       super(ReflectHelper.getName(set.getClass()));
-      algorithm=set;
+      layout=set;
     }
     @Override
     protected void execute() { 
-      algorithmWidget.setSelectedAlgorithm(algorithm); 
+      layoutWidget.setSelectedLayout(layout); 
     }
   }
 

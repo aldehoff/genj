@@ -19,24 +19,10 @@
  */
 package gj.util;
 
-import gj.model.Edge;
-import gj.model.Graph;
-import gj.model.Vertex;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * An immutable empty graph implementation
  */
-public class EmptyGraph implements Graph {
+public class EmptyGraph extends DefaultGraph  {
 
-  public Collection<? extends Edge> getEdges() {
-    return new ArrayList<Edge>();
-  }
-
-  public Collection<? extends Vertex> getVertices() {
-    return new ArrayList<Vertex>();
-  }
-
-}
+} //EmptyGraph2D

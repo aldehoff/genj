@@ -17,16 +17,15 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.hierarchical;
+package gj.layout.graph.hierarchical;
 
 import static gj.geom.Geometry.getBounds;
+import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithm;
-import gj.layout.LayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithmException;
-import gj.layout.hierarchical.LayerAssignment.DummyVertex;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
+import gj.layout.graph.hierarchical.LayerAssignment.DummyVertex;
 import gj.model.Edge;
-import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
@@ -39,9 +38,9 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * A hierarchical layout algorithm
+ * A hierarchical layout
  */
-public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
+public class HierarchicalLayout implements GraphLayout {
 
   private double distanceBetweenLayers = 20; 
   private double distanceBetweenVertices= 20; 
@@ -52,31 +51,31 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
   /**
    * do the layout
    */
-  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
+  public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
 
     // empty case?
-    if (graph.getVertices().isEmpty())
+    if (graph2d.getVertices().isEmpty())
       return new Rectangle2D.Double();
     
     // wrap layout into dummy aware one
-    layout = new DummyAwareLayout(layout);
+    graph2d = new DummyAwareGraph2D(graph2d);
     
     // 1st step - calculate layering
     LayerAssignment layerAssignment = new LongestPathLA();
-    layerAssignment.assignLayers(graph, layout, orderOfVerticesInLayer);
+    layerAssignment.assignLayers(graph2d, orderOfVerticesInLayer);
     
     // 2nd step - crossing reduction
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
     
     // 3rd step - vertex positioning and edge routing
-    return assignPositions(graph, layerAssignment, layout);
+    return assignPositions(graph2d, layerAssignment);
     
   }
 
   /**
    * assign positions to vertices
    */
-  private Rectangle2D assignPositions(Graph graph, LayerAssignment layerAssignment, GraphLayout layout) {
+  private Rectangle2D assignPositions(Graph2D graph2d, LayerAssignment layerAssignment) {
     
     int layers = layerAssignment.getHeight();
     
@@ -89,7 +88,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     for (int i=0;i<layers;i++) {
       for (int j=0;j<layerAssignment.getWidth(i);j++) {
         if (j>0) layerWidths[i]+=distanceBetweenVertices;
-        Rectangle2D r = getBounds(layout.getShapeOfVertex(layerAssignment.getVertex(i, j)));
+        Rectangle2D r = getBounds(graph2d.getShapeOfVertex(layerAssignment.getVertex(i, j)));
         vertexBounds[i][j] = r;
         layerWidths[i] += r.getWidth();
         layerHeights[i] = Math.max(layerHeights[i], r.getHeight());
@@ -107,13 +106,13 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
       for (int j=0; j<layerAssignment.getWidth(i); j++) {
         
         Vertex vertex = layerAssignment.getVertex(i,j);
-        layout.setTransformOfVertex(vertex, null);
+        graph2d.setTransformOfVertex(vertex, null);
         if (j>0) x += (vertex instanceof DummyVertex || layerAssignment.getVertex(i,j-1) instanceof DummyVertex) ? distanceBetweenVertices/2 : distanceBetweenVertices;
         Rectangle2D r = vertexBounds[i][j];
         if (dir<0)
-          layout.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMaxY() - (layerHeights[i]-r.getHeight())/2 ));
+          graph2d.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMaxY() - (layerHeights[i]-r.getHeight())/2 ));
         else
-          layout.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
+          graph2d.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
         
         x += r.getWidth();
       }
@@ -121,7 +120,7 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
     }
     
     // route edges appropriately
-    for (Edge edge : graph.getEdges()) {
+    for (Edge edge : graph2d.getEdges()) {
       
       Point[] routing = layerAssignment.getRouting(edge);
       List<Point2D> points = new ArrayList<Point2D>(routing.length);
@@ -129,16 +128,16 @@ public class HierarchicalLayoutAlgorithm implements LayoutAlgorithm {
         int layer = routing[r].y;
         int pos = routing[r].x;
         if (r>0&&r<routing.length-1) {
-          Point2D p = layout.getPositionOfVertex(layerAssignment.getVertex(layer, pos));
+          Point2D p = graph2d.getPositionOfVertex(layerAssignment.getVertex(layer, pos));
           points.add(new Point2D.Double(p.getX(),p.getY()+dir*layerHeights[layer]/2));
           points.add(new Point2D.Double(p.getX(),p.getY()-dir*layerHeights[layer]/2));
         } else {
-          points.add(layout.getPositionOfVertex(layerAssignment.getVertex(layer, pos)));
+          points.add(graph2d.getPositionOfVertex(layerAssignment.getVertex(layer, pos)));
         }
       }
       
-      layout.setPathOfEdge(edge, 
-          LayoutHelper.getPath(points, layout.getShapeOfVertex(edge.getStart()), layout.getShapeOfVertex(edge.getEnd()), false)
+      graph2d.setPathOfEdge(edge, 
+          LayoutHelper.getPath(points, graph2d.getShapeOfVertex(edge.getStart()), graph2d.getShapeOfVertex(edge.getEnd()), false)
       );
     }
     

@@ -19,33 +19,10 @@
  */
 package gj.layout;
 
-import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
-import java.util.logging.Logger;
-
 /**
- * A context for a layout algorithm which basically offers optional information
+ * An edge layout responsible for edge routing
  */
-public interface LayoutAlgorithmContext {
+public interface EdgeLayout {
 
-  /**
-   * the preferred bound for the result of the layout
-   */
-  public Rectangle2D getPreferredBounds();
   
-  /**
-   * whether debugging information is expected 
-   */
-  public boolean isDebug();
-  
-  /**
-   * add a debug shape
-   */
-  public void addDebugShape(Shape shape);
-  
-  /**
-   * access to logger
-   */
-  public Logger getLogger();
-
 }

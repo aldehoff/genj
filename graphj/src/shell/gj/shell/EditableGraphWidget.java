@@ -20,14 +20,13 @@
 package gj.shell;
 
 import gj.geom.Geometry;
+import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithm;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
-import gj.shell.model.EditableLayout;
 import gj.shell.model.EditableVertex;
 import gj.shell.swing.Action2;
 import gj.shell.swing.SwingHelper;
@@ -82,8 +81,8 @@ public class EditableGraphWidget extends GraphWidget {
     dndResizeNode = new DnDResizeVertex(),
     dndCurrent = null;
     
-  /** a algorithm we know about */
-  private LayoutAlgorithm currentAlgorithm;
+  /** a layout we know about */
+  private GraphLayout currentLayout;
 
   /**
    * our graph renderer
@@ -110,10 +109,10 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     protected Stroke getStroke(Vertex vertexOrEdge) {
       // check layout getters for vertex or edge (TreeLayout's root for example)
-      if (currentAlgorithm!=null) {
-        for (Method prop : ReflectHelper.getMethods(currentAlgorithm, "get.*", new Class[] { Graph.class }, false)) {
+      if (currentLayout!=null) {
+        for (Method prop : ReflectHelper.getMethods(currentLayout, "get.*", new Class[] { Graph.class }, false)) {
           try {
-            Object value = prop.invoke(currentAlgorithm, graph);
+            Object value = prop.invoke(currentLayout, graph);
             if (value.equals(vertexOrEdge))
               return DASH;
           } catch (Throwable t) {
@@ -124,14 +123,14 @@ public class EditableGraphWidget extends GraphWidget {
     }
     
     @Override
-    public void render(Graph graph, GraphLayout layout, Graphics2D graphics) {
+    public void render(Graph2D graph2d, Graphics2D graphics) {
     
       graphics.setColor(Color.LIGHT_GRAY);
       if (debugShapes!=null) for (Shape shape : debugShapes) {
         graphics.draw(shape);
       }
       
-      super.render(graph, layout, graphics);
+      super.render(graph2d, graphics);
     }
 
   };
@@ -140,7 +139,7 @@ public class EditableGraphWidget extends GraphWidget {
    * Constructor
    */
   public EditableGraphWidget() {
-    super(new EditableLayout());
+    super(new EditableGraph());
     setRenderer(renderer);
   }
   
@@ -156,7 +155,7 @@ public class EditableGraphWidget extends GraphWidget {
    * Accessor - Graph
    */
   @Override
-  public void setGraph(Graph setGraph, Rectangle bounds) {
+  public void setGraph2D(Graph2D setGraph, Rectangle bounds) {
 
     if (!(setGraph instanceof EditableGraph))
       throw new IllegalArgumentException();
@@ -168,7 +167,7 @@ public class EditableGraphWidget extends GraphWidget {
     graph = (EditableGraph)setGraph;
     
     // let super do its thing
-    super.setGraph(setGraph, bounds);
+    super.setGraph2D(setGraph, bounds);
     
     // start fresh with DnD
     dndNoOp.start(null);
@@ -177,10 +176,10 @@ public class EditableGraphWidget extends GraphWidget {
   }
   
   /** 
-   * Accessor - the current algorithm
+   * Accessor - the current layout
    */
-  public void setCurrentAlgorithm(LayoutAlgorithm set) {
-    currentAlgorithm = set;
+  public void setCurrentLayout(GraphLayout set) {
+    currentLayout = set;
     repaint();
   }
   
@@ -195,10 +194,10 @@ public class EditableGraphWidget extends GraphWidget {
     result.add(new ActionReverseEdge());
 
     // collect public setters(Edge,*) on layout
-    if (currentAlgorithm!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { Graph.class, e.getClass() }, true );
+    if (currentLayout!=null) {
+      List<Method> methods = ReflectHelper.getMethods(currentLayout, "set.*", new Class[] { Graph.class, e.getClass() }, true );
       for (Method method : methods) { 
-        result.add(new ActionInvoke(currentAlgorithm, method, new Object[] { graph, e }));
+        result.add(new ActionInvoke(currentLayout, method, new Object[] { graph, e }));
       }
     }
     // done
@@ -221,10 +220,10 @@ public class EditableGraphWidget extends GraphWidget {
     result.add(new ActionDeleteVertex());
 
     // collect public setters(Graph, Vertex) on layout
-    if (currentAlgorithm!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentAlgorithm, "set.*", new Class[] { Graph.class, v.getClass()}, true );
+    if (currentLayout!=null) {
+      List<Method> methods = ReflectHelper.getMethods(currentLayout, "set.*", new Class[] { Graph.class, v.getClass()}, true );
       for (Method method : methods) { 
-        result.add(new ActionInvoke(currentAlgorithm, method, new Object[] { graph, v }));
+        result.add(new ActionInvoke(currentLayout, method, new Object[] { graph, v }));
       }
     }
     
@@ -244,9 +243,9 @@ public class EditableGraphWidget extends GraphWidget {
   }
   
   /**
-   * Algorithm as been changed
+   * callback - layout related information as been changed
    */
-  protected void algorithmChangeNotify() {
+  protected void layoutConfiguredNotify(GraphLayout layout) {
     
   }
 
@@ -365,7 +364,7 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      LayoutHelper.translate(getGraphLayout(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
+      LayoutHelper.translate(getGraph2D(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
       from = e.getPoint();
       // show
       repaint();
@@ -496,9 +495,6 @@ public class EditableGraphWidget extends GraphWidget {
       EditableVertex selection = (EditableVertex)graph.getSelection();
       if (selection==null)
         return;
-      int i = SwingHelper.showDialog(EditableGraphWidget.this, "Delete Node", "Are you sure?", SwingHelper.DLG_YES_NO);
-      if (SwingHelper.OPTION_YES!=i) 
-        return;
       graph.removeVertex(selection);
       repaint();
     }
@@ -530,9 +526,6 @@ public class EditableGraphWidget extends GraphWidget {
     protected void execute() {
       EditableEdge selection = (EditableEdge)graph.getSelection();
       if (selection==null)
-        return;
-      int i = SwingHelper.showDialog(EditableGraphWidget.this, "Delete Edge", "Are you sure?", SwingHelper.DLG_YES_NO);
-      if (SwingHelper.OPTION_YES!=i) 
         return;
       graph.removeEdge(selection);
       repaint();
@@ -628,10 +621,10 @@ public class EditableGraphWidget extends GraphWidget {
    * How to handle - Graph property 
    */
   private class ActionInvoke extends Action2 {
-    private Object target;
+    private GraphLayout target;
     private Method method;
     private Object[] values;
-    protected ActionInvoke(Object target, Method method, Object[] values) { 
+    protected ActionInvoke(GraphLayout target, Method method, Object[] values) { 
       super.setName(ReflectHelper.getName(target.getClass())+"."+method.getName()+"(...)"); 
       this.target = target;
       this.method = method;
@@ -655,7 +648,7 @@ public class EditableGraphWidget extends GraphWidget {
         method.invoke(target, args);
         
         // notify
-        algorithmChangeNotify();
+        layoutConfiguredNotify(target);
         
       } catch (Exception e) {
       }

@@ -17,14 +17,13 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.circular;
+package gj.layout.graph.circular;
 
 import gj.geom.Geometry;
+import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithm;
-import gj.layout.LayoutAlgorithmContext;
-import gj.layout.LayoutAlgorithmException;
-import gj.model.Graph;
+import gj.layout.LayoutContext;
+import gj.layout.LayoutException;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
@@ -39,7 +38,7 @@ import java.util.List;
  * A Layout that arranges nodes in a circle with the
  * least amount of line intersections
  */
-public class CircularLayoutAlgorithm implements LayoutAlgorithm {
+public class CircularLayout implements GraphLayout {
   
   /** constant */
   private final static double TWOPI = 2*Math.PI;
@@ -79,16 +78,16 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
   }
   
   /**
-   * @see gj.layout.LayoutAlgorithm#apply(Graph, GraphLayout, LayoutAlgorithmContext)
+   * @see gj.layout.GraphLayout#apply(Graph2D, LayoutContext)
    */
-  public Shape apply(Graph graph, GraphLayout layout, LayoutAlgorithmContext context) throws LayoutAlgorithmException {
+  public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
     
     // no purpose in empty|1-ary graph
-    if (graph.getVertices().size() < 2) 
-      return LayoutHelper.getBounds(graph, layout);
+    if (graph2d.getVertices().size() < 2) 
+      return LayoutHelper.getBounds(graph2d);
     
     // create a CircularGraph
-    CircularGraph cgraph = new CircularGraph(graph, isSingleCircle);
+    CircularGraph cgraph = new CircularGraph(graph2d, isSingleCircle);
     
     // analyze the circle(s)
     Iterator<CircularGraph.Circle> it = cgraph.getCircles().iterator();
@@ -97,23 +96,23 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
       
       // look at a circle
       CircularGraph.Circle circle = (CircularGraph.Circle)it.next();
-      layout(graph, layout, circle, x, y);
+      layout(graph2d, circle, x, y);
       
       // next
       x+=160;
     }
     
     // update the arcs
-    LayoutHelper.setPaths(graph, layout);
+    LayoutHelper.setPaths(graph2d);
     
     // done
-    return LayoutHelper.getBounds(graph, layout);
+    return LayoutHelper.getBounds(graph2d);
   } 
   
   /**
    * layout a circle
    */
-  private void layout(Graph graph, GraphLayout layout, CircularGraph.Circle circle, double cx, double cy) {
+  private void layout(Graph2D graph2d, CircularGraph.Circle circle, double cx, double cy) {
     
     // nodes
     List<Vertex> nodes = new ArrayList<Vertex>(circle.getNodes());
@@ -121,8 +120,8 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
     // one node only?
     if (nodes.size()==1) {
       Vertex one = nodes.get(0);
-      layout.setPositionOfVertex(one, new Point2D.Double(cx,cy));
-      layout.setTransformOfVertex(one, null);
+      graph2d.setPositionOfVertex(one, new Point2D.Double(cx,cy));
+      graph2d.setTransformOfVertex(one, null);
       return;
     }
     
@@ -134,7 +133,7 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
     for (int n=0;n<nodes.size();n++) {
         
       // .. its size - the length of vector (x,y)
-      Rectangle2D bounds = layout.getShapeOfVertex(nodes.get(n)).getBounds2D();
+      Rectangle2D bounds = graph2d.getShapeOfVertex(nodes.get(n)).getBounds2D();
       double size = Geometry.getLength(bounds.getWidth()+padNodes, bounds.getHeight()+padNodes);
         
       // .. keep what we need
@@ -153,8 +152,8 @@ public class CircularLayoutAlgorithm implements LayoutAlgorithm {
       double x = (int)(cx + Math.sin(radian)*radius);
       double y = (int)(cy + Math.cos(radian)*radius);
       Vertex node = nodes.get(n);
-      layout.setPositionOfVertex(node, new Point2D.Double(x,y));
-      layout.setTransformOfVertex(node, null);
+      graph2d.setPositionOfVertex(node, new Point2D.Double(x,y));
+      graph2d.setTransformOfVertex(node, null);
 
       radian += TWOPI*sizes[n]/circumference;
     }

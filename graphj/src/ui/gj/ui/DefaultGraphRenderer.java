@@ -23,9 +23,8 @@ import static gj.geom.PathIteratorKnowHow.SEG_LINETO;
 import static gj.geom.PathIteratorKnowHow.SEG_MOVETO;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
-import gj.layout.GraphLayout;
+import gj.layout.Graph2D;
 import gj.model.Edge;
-import gj.model.Graph;
 import gj.model.Vertex;
 
 import java.awt.BasicStroke;
@@ -57,13 +56,13 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * The rendering functionality
    */
-  public void render(Graph graph, GraphLayout layout, Graphics2D graphics) {
+  public void render(Graph2D graph2d, Graphics2D graphics) {
   
     // the arcs
-    renderEdges(graph, layout, graphics);    
+    renderEdges(graph2d, graphics);    
     
     // the nodes
-    renderVertices(graph, layout, graphics);
+    renderVertices(graph2d, graphics);
   
     // done
   }
@@ -71,27 +70,27 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Nodes
    */
-  protected void renderVertices(Graph graph, GraphLayout layout, Graphics2D graphics) {
+  protected void renderVertices(Graph2D graph2d, Graphics2D graphics) {
     
     // Loop through the graph's nodes
-    for (Vertex vertex : graph.getVertices()) {
-      renderVertex(graph, vertex, layout, graphics);
+    for (Vertex vertex : graph2d.getVertices()) {
+      renderVertex(graph2d, vertex, graphics);
     }
     
     // Done
   }
 
-  protected void renderVertex(Graph graph, Vertex vertex, GraphLayout layout, Graphics2D graphics) {
+  protected void renderVertex(Graph2D graph2d, Vertex vertex, Graphics2D graphics) {
     
     // figure out its color
     Color color = getColor(vertex);
     Stroke stroke = getStroke(vertex);
   
     // draw its shape
-    Point2D pos = layout.getPositionOfVertex(vertex);
+    Point2D pos = graph2d.getPositionOfVertex(vertex);
     graphics.setColor(color);
     graphics.setStroke(stroke);
-    Shape shape = layout.getShapeOfVertex(vertex);
+    Shape shape = graph2d.getShapeOfVertex(vertex);
     draw(shape, pos, false, graphics);
 
     // and content    
@@ -103,7 +102,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     
     graphics.translate(pos.getX(), pos.getY());
     graphics.clip(shape);
-    graphics.transform(layout.getTransformOfVertex(vertex));
+    graphics.transform(graph2d.getTransformOfVertex(vertex));
     draw(text, icon, new Rectangle2D.Double(), 0.5, 0.5, graphics);
     graphics.setTransform(oldt);
     graphics.setClip(oldcp);
@@ -143,10 +142,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders all Arcs
    */
-  protected void renderEdges(Graph graph, GraphLayout layout, Graphics2D graphics) {
+  protected void renderEdges(Graph2D graph2d, Graphics2D graphics) {
     
-    for (Edge edge : graph.getEdges())
-      renderEdge(graph, edge, layout, graphics);
+    for (Edge edge : graph2d.getEdges())
+      renderEdge(graph2d, edge, graphics);
   
     // Done
   }
@@ -154,7 +153,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Renders an Arc
    */
-  protected void renderEdge(Graph graph, Edge edge, GraphLayout layout, Graphics2D graphics) {
+  protected void renderEdge(Graph2D graph2d, Edge edge, Graphics2D graphics) {
     
     AffineTransform old = graphics.getTransform();
     
@@ -162,10 +161,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
     graphics.setColor(getColor(edge));
     
     // draw path from start
-    Point2D pos = layout.getPositionOfVertex(edge.getStart());
-    Path path = layout.getPathOfEdge(edge);
+    Point2D pos = graph2d.getPositionOfVertex(edge.getStart());
+    Path path = graph2d.getPathOfEdge(edge);
     graphics.translate(pos.getX(), pos.getY());
-    graphics.draw(layout.getPathOfEdge(edge));
+    graphics.draw(graph2d.getPathOfEdge(edge));
     
     // draw arrow
     pos = path.getLastPoint();

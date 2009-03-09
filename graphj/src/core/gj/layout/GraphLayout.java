@@ -20,57 +20,20 @@
 package gj.layout;
 
 
-import gj.geom.Path;
-import gj.model.Edge;
-import gj.model.Vertex;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 
 /**
- * A layout of a graph
+ * Interface to a graph layout  
  */
 public interface GraphLayout {
 
-  /**
-   * Edge's shape
+  /** 
+   * Applies the layout to a given graph
+   * @param graph2d the graph to layout
+   * @param context bounds to adhere to if possible (not guaranteed)
+   * @return resulting bounds 
    */
-  public Path getPathOfEdge(Edge edge);
-
-  /**
-   * Edge's shape
-   */
-  public void setPathOfEdge(Edge edge, Path shape);
-
-  /**
-   * Vertex's shape
-   */
-  public Shape getShapeOfVertex(Vertex vertex);
-
-  /**
-   * Vertex's shape
-   */
-  public void setShapeOfVertex(Vertex vertex, Shape shape);
+  public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException;
   
-  /** 
-   * Vertex transformation (idempotent)
-   */
-  public void setTransformOfVertex(Vertex vertex, AffineTransform transform);
-
-  /** 
-   * Vertex transformation (idempotent)
-   */
-  public AffineTransform getTransformOfVertex(Vertex vertex);
-
-  /**
-   * Vertex's position
-   */
-  public Point2D getPositionOfVertex(Vertex vertex);
-
-  /**
-   * Vertex's position
-   */
-  public void setPositionOfVertex(Vertex vertex, Point2D pos);
-
-} //Layout2D
+} //Layout

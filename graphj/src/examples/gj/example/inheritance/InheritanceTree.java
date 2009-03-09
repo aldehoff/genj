@@ -21,14 +21,14 @@ package gj.example.inheritance;
 
 import gj.example.Example;
 import gj.geom.Geometry;
-import gj.layout.DefaultGraphLayout;
-import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithmException;
-import gj.layout.radial.RadialLayoutAlgorithm;
-import gj.model.Graph;
+import gj.layout.Graph2D;
+import gj.layout.LayoutException;
+import gj.layout.graph.radial.RadialLayout;
 import gj.model.Vertex;
 import gj.ui.DefaultGraphRenderer;
 import gj.ui.GraphWidget;
+import gj.util.DefaultGraph;
+import gj.util.DefaultLayoutContext;
 import gj.util.TreeGraphAdapter;
 
 import java.awt.geom.AffineTransform;
@@ -83,30 +83,29 @@ public class InheritanceTree implements Example {
     // apply radial layout
     final int w = 150, h = 16;
     
-    GraphLayout layout = new DefaultGraphLayout(new Rectangle2D.Double(-h/2,-w/2,h,w));
+    Graph2D graph2d = new DefaultGraph(adapter, new Rectangle2D.Double(-h/2,-w/2,h,w));
     
     try {
-      RadialLayoutAlgorithm r = new RadialLayoutAlgorithm();
+      RadialLayout r = new RadialLayout();
       r.setDistanceBetweenGenerations(220);
-      r.apply(adapter, layout, null);
-    } catch (LayoutAlgorithmException e) {
+      r.apply(graph2d, new DefaultLayoutContext());
+    } catch (LayoutException e) {
       throw new RuntimeException("hmm, can't layout inheritance of "+root, e);
     }
     
     // stuff into a graph widget
-    widget.setGraphLayout(layout);
-    widget.setGraph(adapter);
+    widget.setGraph2D(graph2d);
     
     // special layout
     widget.setRenderer(new DefaultGraphRenderer() {
       @Override
-      protected void renderVertex(Graph graph, Vertex vertex, GraphLayout layout, java.awt.Graphics2D graphics) {
+      protected void renderVertex(Graph2D graph2d, Vertex vertex, java.awt.Graphics2D graphics) {
         
         // clip and position
         AffineTransform oldt = graphics.getTransform();
-        Point2D pos = layout.getPositionOfVertex(vertex);
+        Point2D pos = graph2d.getPositionOfVertex(vertex);
         graphics.translate(pos.getX(), pos.getY());
-        graphics.transform(layout.getTransformOfVertex(vertex));
+        graphics.transform(graph2d.getTransformOfVertex(vertex));
         
         // draw text vertically
         Class<?> clazz = adapter.getContent(vertex);

@@ -22,7 +22,7 @@ package gj.util;
 import static gj.geom.Geometry.*;
 import gj.geom.Path;
 import gj.layout.GraphNotSupportedException;
-import gj.layout.GraphLayout;
+import gj.layout.Graph2D;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -45,7 +45,7 @@ public class LayoutHelper {
   /**
    * Translates a node's position
    */
-  public static void translate(GraphLayout layout, Vertex vertex, Point2D delta) {
+  public static void translate(Graph2D layout, Vertex vertex, Point2D delta) {
     Point2D pos = layout.getPositionOfVertex(vertex);
     layout.setPositionOfVertex(vertex, new Point2D.Double( pos.getX() + delta.getX(), pos.getY() + delta.getY() ));
   }
@@ -65,15 +65,15 @@ public class LayoutHelper {
   /**
    * Calculates the dimension of set of nodes
    */
-  public static Rectangle2D getBounds(Graph graph, GraphLayout layout) {
+  public static Rectangle2D getBounds(Graph2D graph2d) {
     // no content?
-    if (graph==null||graph.getVertices().size()==0) 
+    if (graph2d==null||graph2d.getVertices().size()==0) 
       return new Rectangle2D.Double(0,0,0,0);
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;
-    for (Vertex vertex : graph.getVertices()) {
-      Point2D p = layout.getPositionOfVertex(vertex);
-      Rectangle2D box = layout.getShapeOfVertex(vertex).getBounds2D();
+    for (Vertex vertex : graph2d.getVertices()) {
+      Point2D p = graph2d.getPositionOfVertex(vertex);
+      Rectangle2D box = graph2d.getShapeOfVertex(vertex).getBounds2D();
       x1 = Math.min(x1,p.getX()+box.getMinX());
       y1 = Math.min(y1,p.getY()+box.getMinY());
       x2 = Math.max(x2,p.getX()+box.getMaxX());
@@ -205,17 +205,17 @@ public class LayoutHelper {
     return edge.getStart().equals(vertex) || edge.getEnd().equals(vertex);
   }
   
-  public static double getDiameter(Vertex vertex, GraphLayout layout) {
+  public static double getDiameter(Vertex vertex, Graph2D layout) {
     return getMaximumDistance(new Point2D.Double(0,0), layout.getShapeOfVertex(vertex)) * 2;
   }
 
   /**
    * Calculate shape of all arcs in graph
    */
-  public static void setPaths(Graph graph, GraphLayout layout) {
+  public static void setPaths(Graph2D graph2d) {
     
-    for (Edge edge : graph.getEdges()) { 
-      setPath(edge, layout);
+    for (Edge edge : graph2d.getEdges()) { 
+      setPath(edge, graph2d);
     }
     
   }
@@ -223,16 +223,16 @@ public class LayoutHelper {
   /**
    * Calculate a shape for an arc
    */
-  public static void setPath(Edge edge, GraphLayout layout) {
-    layout.setPathOfEdge(edge, getPath(edge, layout));
+  public static void setPath(Edge edge, Graph2D graph2d) {
+    graph2d.setPathOfEdge(edge, getPath(edge, graph2d));
   }
 
-  public static Path getPath(Edge edge, GraphLayout layout) {
+  public static Path getPath(Edge edge, Graph2D graph2d) {
     return getPath(
-        layout.getPositionOfVertex(edge.getStart()),
-        layout.getShapeOfVertex(edge.getStart()),
-        layout.getPositionOfVertex(edge.getEnd()),
-        layout.getShapeOfVertex(edge.getEnd()));
+        graph2d.getPositionOfVertex(edge.getStart()),
+        graph2d.getShapeOfVertex(edge.getStart()),
+        graph2d.getPositionOfVertex(edge.getEnd()),
+        graph2d.getShapeOfVertex(edge.getEnd()));
   }
 
   /**

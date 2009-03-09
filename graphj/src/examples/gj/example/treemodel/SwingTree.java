@@ -20,15 +20,16 @@
 package gj.example.treemodel;
 
 import gj.example.Example;
-import gj.layout.DefaultGraphLayout;
-import gj.layout.GraphLayout;
-import gj.layout.LayoutAlgorithmException;
-import gj.layout.tree.TreeLayoutAlgorithm;
+import gj.layout.Graph2D;
+import gj.layout.LayoutException;
+import gj.layout.graph.tree.TreeLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
 import gj.ui.GraphRenderer;
 import gj.ui.GraphWidget;
+import gj.util.DefaultGraph;
+import gj.util.DefaultLayoutContext;
 import gj.util.DefaultVertex;
 import gj.util.TreeGraphAdapter;
 
@@ -90,7 +91,7 @@ public class SwingTree implements Example {
     final Graph graph = new TreeGraphAdapter<DefaultVertex<TreeNode>>(tree);
     
     // apply tree layout
-    GraphLayout layout = new DefaultGraphLayout() {
+    Graph2D graph2d = new DefaultGraph(graph) {
       @Override
       public Shape getShapeOfVertex(Vertex v) {
         boolean leaf = v.getEdges().size() == 1;
@@ -100,27 +101,26 @@ public class SwingTree implements Example {
     };
     
     try {
-      TreeLayoutAlgorithm algorithm = new TreeLayoutAlgorithm();
-      algorithm.setDistanceBetweenGenerations(16);
-      algorithm.setDistanceInGeneration(7);
-      algorithm.setOrientation(90);
-      algorithm.setAlignmentOfParent(1);
-      algorithm.setBendArcs(true);
-      algorithm.setOrderSiblingsByPosition(false);
-      algorithm.apply(graph, layout, null);
-    } catch (LayoutAlgorithmException e) {
+      TreeLayout layout = new TreeLayout();
+      layout.setDistanceBetweenGenerations(16);
+      layout.setDistanceInGeneration(7);
+      layout.setOrientation(90);
+      layout.setAlignmentOfParent(1);
+      layout.setBendArcs(true);
+      layout.setOrderSiblingsByPosition(false);
+      layout.apply(graph2d, new DefaultLayoutContext());
+    } catch (LayoutException e) {
       throw new RuntimeException("hmm, can't layout swing tree model", e);
     }
     
     // stuff into a graph widget
-    graphWidget.setGraphLayout(layout);
-    graphWidget.setGraph(graph);
+    graphWidget.setGraph2D(graph2d);
     graphWidget.setRenderer(new GraphRenderer() {
-      public void render(Graph graph, GraphLayout layout, Graphics2D graphics) {
+      public void render(Graph2D graph2d, Graphics2D graphics) {
         // render vertices
         for (Vertex v : graph.getVertices()) {
-          Point2D p = layout.getPositionOfVertex(v);
-          Rectangle r = layout.getShapeOfVertex(v).getBounds();
+          Point2D p = graph2d.getPositionOfVertex(v);
+          Rectangle r = graph2d.getShapeOfVertex(v).getBounds();
           r.translate((int)p.getX(), (int)p.getY());
           boolean leaf = v.getEdges().size() == 1;
           Component c =treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false);
@@ -130,10 +130,10 @@ public class SwingTree implements Example {
         // render edges
         graphics.setColor(Color.LIGHT_GRAY);
         for (Edge edge : graph.getEdges()) {
-          Point2D pos = layout.getPositionOfVertex(edge.getStart());
+          Point2D pos = graph2d.getPositionOfVertex(edge.getStart());
           AffineTransform old = graphics.getTransform();
           graphics.translate(pos.getX(), pos.getY());
-          graphics.draw(layout.getPathOfEdge(edge));
+          graphics.draw(graph2d.getPathOfEdge(edge));
           graphics.setTransform(old);
         }
       }
