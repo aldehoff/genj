@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,16 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout.edge.visibility;
+package gj.visibility;
 
 import gj.geom.Geometry;
+import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.model.Edge;
-import gj.model.Graph;
 import gj.model.Vertex;
+import gj.model.WeightedGraph;
+import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -32,6 +34,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +42,10 @@ import java.util.Map;
 /**
  * a visibility graph implementation
  */
-public class VisibilityGraph implements Graph {
+public class VisibilityGraph implements Graph2D, WeightedGraph {
   
-  private Map<Point2D, V> p2v;
+  private Map<Point2D, PointLocation> point2location;
+  private List<VisibleConnection> connections;
     
   /**
    * Constructor
@@ -50,7 +54,8 @@ public class VisibilityGraph implements Graph {
   public VisibilityGraph(Graph2D graph2d) {
     
     // init
-    this.p2v = new HashMap<Point2D, V>(graph2d.getVertices().size()*4);
+    this.point2location = new HashMap<Point2D, PointLocation>(graph2d.getVertices().size()*4);
+    this.connections = new ArrayList<VisibleConnection>();
      
     // each vertex is a hole
     final List<Hole> holes = new ArrayList<Hole>();
@@ -67,7 +72,6 @@ public class VisibilityGraph implements Graph {
     // done
   }
   
-  
   private void scan(Hole source, List<Hole> destinations, List<Hole> holes) {
     
     for (Hole dest : destinations) {
@@ -77,7 +81,7 @@ public class VisibilityGraph implements Graph {
         for (int j=0;j<dest.points.size();j++) {
           Point2D destPoint = dest.points.get(j);
           if (!obstructed(sourcePoint, destPoint, holes))
-            vertex(sourcePoint).sees(vertex(destPoint));
+            vertex(sourcePoint).sees(vertex(destPoint), connections);
         }
       }
       
@@ -98,30 +102,35 @@ public class VisibilityGraph implements Graph {
   /**
    * lookup a vertex
    */
-  private V vertex(Point2D pos) {
-    V v = p2v.get(pos);
+  private PointLocation vertex(Point2D pos) {
+    PointLocation v = point2location.get(pos);
     if (v==null) {
-      v = new V(pos);
-      p2v.put(pos, v);
+      v = new PointLocation(pos);
+      point2location.put(pos, v);
     }
     return v;
   }
   
   /** interface implementation */
+  public double getWeight(Edge edge) {
+    return ((VisibleConnection)edge).weight;
+  }
+  
+  /** interface implementation */
   public Collection<? extends Vertex> getVertices() {
-    return p2v.values();
+    return point2location.values();
   }
 
   /** interface implementation */
   public Collection<? extends Edge> getEdges() {
-    return new ArrayList<Edge>();
+    return Collections.unmodifiableCollection(connections);
   }
 
   /** debug shape */
   public Shape getDebugShape() {
     GeneralPath result = new GeneralPath();
-    for (V v : p2v.values()) {
-      for (E e : v.es) {
+    for (PointLocation v : point2location.values()) {
+      for (VisibleConnection e : v.es) {
         if (e.start.equals(v)) {
           result.moveTo(v.x, v.y);
           result.lineTo(e.end.x, e.end.y);
@@ -129,6 +138,43 @@ public class VisibilityGraph implements Graph {
       }
     }
     return result;
+  }
+
+  public Path getPathOfEdge(Edge edge) {
+    VisibleConnection con = (VisibleConnection)edge;
+    List<Point2D> path = new ArrayList<Point2D>(2);
+    path.add(con.start);
+    path.add(con.end);
+    return LayoutHelper.getPath(path);
+  }
+
+  public Point2D getPositionOfVertex(Vertex vertex) {
+    PointLocation loc = (PointLocation)vertex;
+    return new Point2D.Double(loc.x, loc.y);
+  }
+
+  public Shape getShapeOfVertex(Vertex vertex) {
+    return null;
+  }
+
+  public AffineTransform getTransformOfVertex(Vertex vertex) {
+    return null;
+  }
+
+  public void setPathOfEdge(Edge edge, Path shape) {
+    throw new IllegalArgumentException("n/a");
+  }
+
+  public void setPositionOfVertex(Vertex vertex, Point2D pos) {
+    throw new IllegalArgumentException("n/a");
+  }
+
+  public void setShapeOfVertex(Vertex vertex, Shape shape) {
+    throw new IllegalArgumentException("n/a");
+  }
+
+  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+    throw new IllegalArgumentException("n/a");
   }
   
   /**
@@ -143,7 +189,7 @@ public class VisibilityGraph implements Graph {
         shape.getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
       );
       for (int i=0;i<points.size();i++) {
-        vertex(points.get(i)).sees(vertex(points.get( (i+1)%points.size() )));
+        vertex(points.get(i)).sees(vertex(points.get( (i+1)%points.size() )), connections);
       }
     }
     
@@ -163,13 +209,16 @@ public class VisibilityGraph implements Graph {
   /**
    * An edge in the visibility graph
    */
-  private static class E implements Edge {
+  private static class VisibleConnection implements Edge {
     
-    V start,end;
+    PointLocation start,end;
+    double weight;
     
-    public E(V start, V end) {
+    VisibleConnection(PointLocation start, PointLocation end) {
       this.start = start;
       this.end = end;
+      
+      weight = end.distance(start);
     }
     public Vertex getStart() {
       return start;
@@ -182,31 +231,32 @@ public class VisibilityGraph implements Graph {
   /**
    * A vertex in the the visibility graph
    */
-  private static class V implements Vertex {
+  private static class PointLocation extends Point2D.Double implements Vertex {
     
-    double x,y;
-    List<E> es = new ArrayList<E>(4);
+    List<VisibleConnection> es = new ArrayList<VisibleConnection>(4);
     
-    V(Point2D pos) {
-      x = pos.getX();
-      y = pos.getY();
+    PointLocation(Point2D pos) {
+      super(pos.getX(), pos.getY());
     }
     
-    void sees(V that) {
+    void sees(PointLocation that, List<VisibleConnection> connections) {
       
       for (int i=0;i<es.size();i++) {
-        if (es.get(i).end.equals(that)||es.get(i).start.equals(that))
+        VisibleConnection e = es.get(i); 
+        if (e.end.equals(that)||e.start.equals(that))
           return;
       }
       
-      E e = new E(this, that);
+      VisibleConnection e = new VisibleConnection(this, that);
+      connections.add(e);
       this.es.add(e);
       that.es.add(e);
+      
     }
     
     public Collection<? extends Edge> getEdges() {
-      return new ArrayList<Edge>();
+      return Collections.unmodifiableCollection(es);
     }
-  } //V
+  } //PointLocation
   
 } //DefaultVisibilityGraph
