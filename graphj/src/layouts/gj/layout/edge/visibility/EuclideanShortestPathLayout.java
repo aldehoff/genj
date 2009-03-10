@@ -20,6 +20,7 @@
 package gj.layout.edge.visibility;
 
 import gj.geom.Path;
+import gj.layout.EdgeLayout;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.layout.GraphNotSupportedException;
@@ -42,7 +43,7 @@ import java.util.List;
  * Given a set of vertices w/shapes find the shortest path between two vertices
  * that does not intersect any of the shapes.
  */
-public class EuclideanShortestPathLayout implements GraphLayout {
+public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
 
   /**
    * apply it
@@ -67,7 +68,7 @@ public class EuclideanShortestPathLayout implements GraphLayout {
   /**
    * apply it 
    */
-  public void apply(Edge edge, Graph2D graph2d) throws GraphNotSupportedException {
+  public void apply(Edge edge, Graph2D graph2d, LayoutContext context) throws GraphNotSupportedException {
     layout(edge, graph2d);
   }
   

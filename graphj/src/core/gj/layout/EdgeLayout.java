@@ -19,10 +19,16 @@
  */
 package gj.layout;
 
+import gj.model.Edge;
+
 /**
  * An edge layout responsible for edge routing
  */
 public interface EdgeLayout {
 
+  /**
+   * Apply edge layout
+   */
+  public void apply(Edge edge, Graph2D graph2d, LayoutContext context) throws LayoutException;
   
-}
+} //EdgeLayout

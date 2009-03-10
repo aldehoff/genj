@@ -238,9 +238,10 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       context.addDebugShape(result);
     
     // catch up on layouting edges that need routing because of acyclic graph
+    // FIXME edge routing should pad shapes of vertices
     for (Edge e : edgesToRoute)  {
-      context.getLogger().fine("routing edge "+e);
-      new EuclideanShortestPathLayout().apply(e, graph2d);
+    context.getLogger().fine("routing edge ["+e+"]");
+      new EuclideanShortestPathLayout().apply(e, graph2d, context);
     }
     
     // check spanning in case we used directions
