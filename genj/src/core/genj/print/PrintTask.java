@@ -40,6 +40,7 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.File;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -344,17 +345,20 @@ public class PrintTask extends Action2 implements Printable, Trackable {
     result = service.getDefaultAttributeValue(category);
     // fallback to first supported
     if (result==null) {
+      LOG.finer( "Couldn't find default PrintRequestAttribute for category "+category);
       result = service.getSupportedAttributeValues(category, null, attributes);
 	    if (result!=null&&result.getClass().isArray()&&result.getClass().getComponentType()==category) {
+	      LOG.finer( "Got PrintRequestAttribute values "+Arrays.toString((Object[])result)+" for category "+category);
 	      result = ((Object[])result)[0];
 	    } else {
 	      result = null;
-        LOG.warning( "No default "+category+" with "+toString(attributes));
 	    }
     }
     // remember
     if (result!=null)
       attributes.add((PrintRequestAttribute)result);
+    else
+      LOG.warning( "Couldn't find PrintRequestAttribute for category "+category+" with "+toString(attributes));
     // done
     return (PrintRequestAttribute)result;
   }
