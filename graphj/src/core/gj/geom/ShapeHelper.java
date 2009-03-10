@@ -228,7 +228,8 @@ public class ShapeHelper {
     
     iterateShape(shape, new FlattenedPathConsumer() {
       public boolean consumeLine(Point2D start, Point2D end) {
-        result.add(new Point2D.Double(start.getX(), start.getY()));
+        if (result.isEmpty() || !result.get(result.size()-1).equals(start))
+          result.add(new Point2D.Double(start.getX(), start.getY()));
         // continue
         return true;
       }
