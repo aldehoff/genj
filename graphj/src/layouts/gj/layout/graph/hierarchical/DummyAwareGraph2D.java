@@ -72,13 +72,6 @@ public class DummyAwareGraph2D implements Graph2D {
     return new Rectangle2D.Double();
   }
   
-  public void setShapeOfVertex(Vertex vertex, Shape shape) {
-    if (!(vertex instanceof LayerAssignment.DummyVertex))
-      wrapped.setShapeOfVertex(vertex,shape);
-    else
-      throw new IllegalArgumentException("n/a");
-  }
-
   public Path getPathOfEdge(Edge edge) {
     return wrapped.getPathOfEdge(edge);
   }

@@ -41,6 +41,9 @@ import java.util.Map;
 
 /**
  * a visibility graph implementation
+ * TODO visibility graph can be done faster
+ *  http://www.geometrylab.de/VisGraph/index.html.en
+ *  http://bengimizrahi.googlepages.com/visibilitygraphconstructionforasetofpolygons(in2d)
  */
 public class VisibilityGraph implements Graph2D, WeightedGraph {
   
@@ -63,9 +66,6 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
       holes.add(new Hole(graph2d.getShapeOfVertex(v), graph2d.getPositionOfVertex(v)));
     
     // loop over holes and check visibility to others
-    // TODO visibility graph can be done faster
-    //  http://www.geometrylab.de/VisGraph/index.html.en
-    // this can be done faster
     for (int i=0; i<holes.size(); i++) 
       scan(holes.get(i), holes.subList(i+1, holes.size()), holes);
     
@@ -125,6 +125,14 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   public Collection<? extends Edge> getEdges() {
     return Collections.unmodifiableCollection(connections);
   }
+  
+  /** vertex for position */
+  public Vertex getVertex(Point2D point) throws IllegalArgumentException {
+    PointLocation result = point2location.get(point);
+    if (result==null)
+      throw new IllegalArgumentException("Point "+point+" is not a valid point location");
+    return result;
+  }
 
   /** debug shape */
   public Shape getDebugShape() {
@@ -166,10 +174,6 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   }
 
   public void setPositionOfVertex(Vertex vertex, Point2D pos) {
-    throw new IllegalArgumentException("n/a");
-  }
-
-  public void setShapeOfVertex(Vertex vertex, Shape shape) {
     throw new IllegalArgumentException("n/a");
   }
 

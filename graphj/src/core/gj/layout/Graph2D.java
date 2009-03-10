@@ -49,11 +49,6 @@ public interface Graph2D extends Graph {
    */
   public Shape getShapeOfVertex(Vertex vertex);
 
-  /**
-   * Vertex's shape
-   */
-  public void setShapeOfVertex(Vertex vertex, Shape shape);
-  
   /** 
    * Vertex transformation (idempotent)
    */

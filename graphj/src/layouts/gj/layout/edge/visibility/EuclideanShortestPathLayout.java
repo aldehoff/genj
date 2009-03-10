@@ -22,15 +22,19 @@ package gj.layout.edge.visibility;
 import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
+import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
+import gj.model.Edge;
 import gj.model.Vertex;
 import gj.routing.dijkstra.DijkstraShortestPath;
+import gj.util.DelegatingGraph;
 import gj.util.LayoutHelper;
 import gj.visibility.VisibilityGraph;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,39 +48,60 @@ public class EuclideanShortestPathLayout implements GraphLayout {
    * apply it
    */
   public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
-    
-    // create a visibility graph
-    VisibilityGraph graph = new VisibilityGraph(graph2d);
-    
-//    context.addDebugShape(graph.getDebugShape());
-    
-    // find shortes path
-    List<Vertex> vs = new ArrayList<Vertex>(graph.getVertices());
-    if (vs.size()>=2) {
-      
-      Vertex source = null; 
-      Vertex dest = null;
-      
-      for (Vertex v : vs) {
-        if (source==null || graph.getPositionOfVertex(v).getY()<graph.getPositionOfVertex(source).getY())
-          source = v;
-        if (dest==null || graph.getPositionOfVertex(v).getY()>graph.getPositionOfVertex(dest).getY())
-          dest = v;
-      }
-      
-      List<Vertex> route = new DijkstraShortestPath().getShortestPath(graph, source, dest);
 
-      List<Point2D> ps = new ArrayList<Point2D>(route.size());
-      for (Vertex v : route) 
-        ps.add(graph.getPositionOfVertex(v));
+    // loop over all edges and perform layout
+    boolean debugOnce = false;
+    for (Edge edge : graph2d.getEdges()) {
       
-      Path path = LayoutHelper.getPath(ps);
-      path.translate(graph.getPositionOfVertex(source));
-      context.addDebugShape(path);
+      VisibilityGraph vg = layout(edge, graph2d);
+      if (context.isDebug()&&!debugOnce) {
+        debugOnce = true;
+        context.addDebugShape(vg.getDebugShape());
+      }
     }
     
     // done
     return LayoutHelper.getBounds(graph2d);
+  }
+  
+  /**
+   * apply it 
+   */
+  public void apply(Edge edge, Graph2D graph2d) throws GraphNotSupportedException {
+    layout(edge, graph2d);
+  }
+  
+  /** layout generation of one edge */
+  private VisibilityGraph layout(final Edge edge, Graph2D graph2d) throws GraphNotSupportedException {
+    
+    // create a wrapped graph that overwrites start/end vertices' shape
+    DelegatingGraph collapsed = new DelegatingGraph(graph2d) {
+      @Override
+      public Shape getShapeOfVertex(Vertex vertex) {
+        if (LayoutHelper.contains(edge, vertex))
+          return new Rectangle2D.Double();
+        return super.getShapeOfVertex(vertex);
+      }
+    };
+  
+    // create a visibility graph for the edge
+    VisibilityGraph graph = new VisibilityGraph(collapsed);
+    Vertex source = graph.getVertex(collapsed.getPositionOfVertex(edge.getStart()));
+    Vertex sink = graph.getVertex(collapsed.getPositionOfVertex(edge.getEnd()));
+    
+    // find shortest path for edge
+    List<Vertex> route = new DijkstraShortestPath().getShortestPath(graph, source, sink);
+
+    // debug
+    List<Point2D> ps = new ArrayList<Point2D>(route.size());
+    for (Vertex v : route) 
+      ps.add(graph.getPositionOfVertex(v));
+      
+    Path path = LayoutHelper.getPath(ps, graph2d.getShapeOfVertex(edge.getStart()), graph2d.getShapeOfVertex(edge.getEnd()), false);
+    collapsed.setPathOfEdge(edge, path);
+   
+    // done
+    return graph;
   }
   
 } //EuclideanShortestPathLayout

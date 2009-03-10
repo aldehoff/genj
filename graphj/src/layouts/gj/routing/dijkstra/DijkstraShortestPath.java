@@ -37,7 +37,7 @@ import java.util.TreeSet;
 
 /**
  * An implementation of the shortes path algorithm by Dijkstra
- * @see http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+ * @see <a href="http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">Dijkstra on Wikepedia</a>
  */
 public class DijkstraShortestPath {
   

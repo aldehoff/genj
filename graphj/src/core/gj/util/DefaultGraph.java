@@ -110,10 +110,6 @@ public class DefaultGraph implements Graph2D {
     return result;
   }
 
-  public void setShapeOfVertex(Vertex vertex, Shape shape) {
-    vertex2shape.put(vertex, shape);
-  }
-
   public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
     if (transform==null)
       vertex2transform.remove(vertex);

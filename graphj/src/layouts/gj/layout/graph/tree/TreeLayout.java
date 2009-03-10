@@ -25,6 +25,7 @@ import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
+import gj.layout.edge.visibility.EuclideanShortestPathLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -71,8 +72,8 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /** whether to order by position instead of natural sequence */
   private boolean isOrderSiblingsByPosition = true;
   
-  /** whether we consider direction in calculating tree */
-  private boolean isConsiderDirection = true;
+  /** whether we allow acyclic graphs */
+  private boolean isAllowAcyclicGraph = true;
 
   /**
    * Getter - distance of nodes in generation
@@ -200,15 +201,15 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /**
    * Getter - whether we allow cycles by accepting intersecting lines between branches
    */
-  public boolean isConsiderDirection() {
-    return isConsiderDirection;
+  public boolean isAllowAcyclicGraph() {
+    return isAllowAcyclicGraph;
   }
 
   /**
    * Setter - whether we allow cycles by accepting intersecting lines between branches
    */
-  public void setConsiderDirection(boolean isConsiderDirection) {
-    this.isConsiderDirection = isConsiderDirection;
+  public void setAllowAcyclicGraph(boolean isAllowAcyclicGraph) {
+    this.isAllowAcyclicGraph = isAllowAcyclicGraph;
   }
 
   /**
@@ -230,11 +231,20 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     
     // recurse into it
     Set<Vertex> visited = new HashSet<Vertex>();
-    Shape result = new Branch(null, root, graph2d, new ArrayDeque<Vertex>(), visited, context).shape;
-    context.addDebugShape(result);
+    List<Edge> edgesToRoute = new ArrayList<Edge>();
+    Shape result = new Branch(null, root, graph2d, new ArrayDeque<Vertex>(), visited, edgesToRoute, context).shape;
+    
+    if (context.isDebug())
+      context.addDebugShape(result);
+    
+    // catch up on layouting edges that need routing because of acyclic graph
+    for (Edge e : edgesToRoute)  {
+      context.getLogger().fine("routing edge "+e);
+      new EuclideanShortestPathLayout().apply(e, graph2d);
+    }
     
     // check spanning in case we used directions
-    if (isConsiderDirection&&visited.size()!=vertices.size()) {
+    if (isAllowAcyclicGraph&&visited.size()!=vertices.size()) {
       context.getLogger().fine("not a spanning tree (#visited="+visited.size()+" #vertices="+vertices.size());
       throw new GraphNotSupportedException("Graph is not a spanning tree ("+vertices.size()+"!="+visited.size()+")");
     }
@@ -262,7 +272,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     private GeneralPath shape;
     
     /** constructor for a parent and its children */
-    Branch(Vertex backtrack, Vertex parent, Graph2D graph2d, Deque<Vertex> path, Set<Vertex> visited, LayoutContext context) throws LayoutException, GraphNotSupportedException{
+    Branch(Vertex backtrack, Vertex parent, Graph2D graph2d, Deque<Vertex> path, Set<Vertex> visited, List<Edge> edgesToRoute, LayoutContext context) throws LayoutException, GraphNotSupportedException{
       
       // track coverage
       visited.add(parent);
@@ -290,25 +300,28 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
         // catch possible recurse step into already visited nodes
         if (visited.contains(child)) {
           
-          // make sure this is an acyclic graph
+          // we don't allow directed cycles
           if (path.contains(child)) {
             context.getLogger().info("cannot handle directed cycle at all");
             throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+">"+child+"]");
           }
 
-          // make sure this is not an undirected graph
-          if (!isConsiderDirection) {
+          // allowing acyclic graphs
+          if (!isAllowAcyclicGraph) {
             context.getLogger().info("cannot handle undirected graph with cycle unless isConsiderDirection=true");
             throw new GraphNotSupportedException("Non Digraph contains non-directed cycle involving ["+parent+">"+child+"]");
           }
           
-          // don't re-recurse into child - handle edge layout
-          context.getLogger().warning("Edge ["+parent+">"+child+"] is in limbo");
+          // don't re-recurse into child - remember applicable edge(s)
+          for (Edge e : parent.getEdges()) {
+            if (e.getEnd().equals(child))
+              edgesToRoute.add(e);
+          }
           continue;
         }
         
         // recurse
-        Branch branch = new Branch(parent, child, graph2d, path, visited, context);
+        Branch branch = new Branch(parent, child, graph2d, path, visited, edgesToRoute, context);
         branches.add(branch);
         vertices.addAll(branch.vertices);
 
@@ -445,7 +458,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       Collection<Vertex> result;
       
       // either all children as per directed edges or all neighbours w/o backtrack
-      if (isConsiderDirection) {
+      if (isAllowAcyclicGraph) {
         result = LayoutHelper.getChildren(parent);
         if (backtrack!=null && result.contains(backtrack))
           throw new GraphNotSupportedException("Graph contains backtracking edge ["+parent+">"+backtrack+"]");

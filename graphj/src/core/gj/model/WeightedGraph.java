@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package gj.model;
 
 /**
  * A graph that associates a weight with every edge in the graph
- * @see http://en.wikipedia.org/wiki/Glossary_of_graph_theory
+ * @see <a href="http://en.wikipedia.org/wiki/Glossary_of_graph_theory">Graph Theory</a>
  */
 public interface WeightedGraph extends Graph {
   
