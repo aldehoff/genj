@@ -47,6 +47,8 @@ public class LongestPathLA implements LayerAssignment {
 
   /** layering algorithm */
   public void assignLayers(Graph2D graph2d, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException {
+    
+    // FIXME need option to assign layers from source2sink vs sink2source
 
     // prepare state
     this.graph2d = graph2d;

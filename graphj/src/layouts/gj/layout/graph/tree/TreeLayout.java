@@ -73,7 +73,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   private boolean isOrderSiblingsByPosition = true;
   
   /** whether we allow acyclic graphs */
-  private boolean isAllowAcyclicGraph = true;
+  private boolean isSingleSourceDAG = true;
 
   /**
    * Getter - distance of nodes in generation
@@ -199,17 +199,23 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   }
 
   /**
-   * Getter - whether we allow cycles by accepting intersecting lines between branches
+   * Whether layout should assume a single source directed acyclic graph or not.
+   * In the former case this means that direction of edges is considered and graphs without
+   * directed cycles but with shared sub-trees are handled by routing edges between 
+   * non-siblings via a euclidean shortest path layout
    */
-  public boolean isAllowAcyclicGraph() {
-    return isAllowAcyclicGraph;
+  public boolean isSingleSourceDAG() {
+    return isSingleSourceDAG;
   }
 
   /**
-   * Setter - whether we allow cycles by accepting intersecting lines between branches
+   * Whether layout should assume a single source directed acyclic graph or not.
+   * In the former case this means that direction of edges is considered and graphs without
+   * directed cycles but with shared sub-trees are handled by routing edges between 
+   * non-siblings via a euclidean shortest path layout
    */
-  public void setAllowAcyclicGraph(boolean isAllowAcyclicGraph) {
-    this.isAllowAcyclicGraph = isAllowAcyclicGraph;
+  public void setSingleSourceDAG(boolean setSingleSourceDAG) {
+    this.isSingleSourceDAG = setSingleSourceDAG;
   }
 
   /**
@@ -237,23 +243,24 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     if (context.isDebug())
       context.addDebugShape(result);
     
-    // catch up on layouting edges that need routing because of acyclic graph
-    // FIXME edge routing should pad shapes of vertices
-    for (Edge e : edgesToRoute)  {
-    context.getLogger().fine("routing edge ["+e+"]");
-      new EuclideanShortestPathLayout().apply(e, graph2d, context);
-    }
-    
-    // check spanning in case we used directions
-    if (isAllowAcyclicGraph&&visited.size()!=vertices.size()) {
+    // check spanning tree in case we assumed DAG with single source
+    if (isSingleSourceDAG&&visited.size()!=vertices.size()) {
       context.getLogger().fine("not a spanning tree (#visited="+visited.size()+" #vertices="+vertices.size());
       throw new GraphNotSupportedException("Graph is not a spanning tree ("+vertices.size()+"!="+visited.size()+")");
+    }
+    
+    // catch up on layouting edges that need routing because of acyclic graph
+    EuclideanShortestPathLayout edgeLayout = new EuclideanShortestPathLayout();
+    edgeLayout.setEdgeVertexDistance(Math.min(distanceBetweenGenerations, distanceInGeneration)/2);
+    for (Edge e : edgesToRoute)  {
+      context.getLogger().fine("routing edge ["+e+"]");
+      edgeLayout.apply(e, graph2d, context);
     }
     
     // done
     return result;
   }
-  
+
   /**
    * A Branch is the recursively worked on part of the tree
    */
@@ -308,7 +315,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
           }
 
           // allowing acyclic graphs
-          if (!isAllowAcyclicGraph) {
+          if (!isSingleSourceDAG) {
             context.getLogger().info("cannot handle undirected graph with cycle unless isConsiderDirection=true");
             throw new GraphNotSupportedException("Non Digraph contains non-directed cycle involving ["+parent+">"+child+"]");
           }
@@ -459,7 +466,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       Collection<Vertex> result;
       
       // either all children as per directed edges or all neighbours w/o backtrack
-      if (isAllowAcyclicGraph) {
+      if (isSingleSourceDAG) {
         result = LayoutHelper.getChildren(parent);
         if (backtrack!=null && result.contains(backtrack))
           throw new GraphNotSupportedException("Graph contains backtracking edge ["+parent+">"+backtrack+"]");
