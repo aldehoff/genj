@@ -42,13 +42,14 @@ public class LongestPathLA implements LayerAssignment {
   private List<Layer> layers;
   private int width;
   private Comparator<Vertex> orderVerticesByX = new VertexByXPositionComparator();
+  private int numDummyVertices;
   
   private Graph2D graph2d;
 
   /** layering algorithm */
   public void assignLayers(Graph2D graph2d, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException {
     
-    // FIXME need option to assign layers from source2sink vs sink2source
+    // FIXME need option to assign layers from source2sink vs sink2source, shift heuristic(?)
 
     // prepare state
     this.graph2d = graph2d;
@@ -80,10 +81,32 @@ public class LongestPathLA implements LayerAssignment {
 
     }
     
+    // revisit layers in opposite direction to pull up sinks
+    for (int i=layers.size()-3;i>=0;i--) {
+      Layer layer = layers.get(i);
+      for (int j=0;j<layer.cells.size();j++) {
+        // can cell move up?
+        Cell to = layer.get(j);
+        int max = to.max();
+        if (max>to.layer) {
+          layer.remove(j--);
+          layers.get(max).add(to, orderOfVerticesInLayer);
+          width = Math.max(width, layers.get(max).size());
+        }
+      }
+    }
+    
     // add dummy vertices
     dummyVertices();
 
     // done
+  }
+  
+  /**
+   * @see gj.layout.graph.hierarchical.LayerAssignment#getNumDummyVertices()
+   */
+  public int getNumDummyVertices() {
+    return numDummyVertices;
   }
   
   /**
@@ -105,6 +128,7 @@ public class LongestPathLA implements LayerAssignment {
             
             // create a dummy at same position as cell
             Cell dummy = new Cell(new DummyVertex(), i+1);
+            numDummyVertices++;
             graph2d.setPositionOfVertex(dummy.vertex, graph2d.getPositionOfVertex(cell.vertex));
             width = Math.max(width, layers.get(i+1).add(dummy, orderVerticesByX));
 
@@ -262,6 +286,7 @@ public class LongestPathLA implements LayerAssignment {
       }
 
       // insert 
+      cell.layer = layer;
       cell.position = pos;
       cells.add(pos, cell);
       while (++pos<cells.size())
@@ -269,6 +294,12 @@ public class LongestPathLA implements LayerAssignment {
 
       // done
       return cells.size();
+    }
+    
+    protected void remove(int i) {
+      cells.remove(i);
+      while (i<cells.size())
+        cells.get(i++).position--;
     }
     
     protected void swap(int u, int v) {
@@ -344,6 +375,19 @@ public class LongestPathLA implements LayerAssignment {
         return false;
       this.layer = layer;
       return true;
+    }
+    
+    protected int max() {
+      // assume current layer if no ins
+      if (in.isEmpty())
+        return layer;
+      int result = Integer.MAX_VALUE;
+      // check how far we can go
+      for (Cell2Cell arc : in) {
+        result = Math.min(result, arc.from.layer-1);
+      }
+      // done
+      return result;
     }
     
     @Override

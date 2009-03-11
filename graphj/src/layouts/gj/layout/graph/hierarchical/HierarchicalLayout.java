@@ -64,6 +64,8 @@ public class HierarchicalLayout implements GraphLayout {
     LayerAssignment layerAssignment = new LongestPathLA();
     layerAssignment.assignLayers(graph2d, orderOfVerticesInLayer);
     
+    context.getLogger().fine("Layer assignment with "+layerAssignment.getHeight()+" layers, maximum width "+layerAssignment.getWidth()+", "+layerAssignment.getNumDummyVertices()+" dummy vertices");
+    
     // 2nd step - crossing reduction
     new LayerByLayerSweepCR().reduceCrossings(layerAssignment);
     
@@ -76,6 +78,8 @@ public class HierarchicalLayout implements GraphLayout {
    * assign positions to vertices
    */
   private Rectangle2D assignPositions(Graph2D graph2d, LayerAssignment layerAssignment) {
+    
+    // FIXME need options for node placement (e.g. reduce bends in lines)
     
     int layers = layerAssignment.getHeight();
     

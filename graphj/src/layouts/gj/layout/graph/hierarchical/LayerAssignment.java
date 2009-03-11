@@ -39,6 +39,11 @@ public interface LayerAssignment {
    * @throws GraphNotSupportedException
    */
   public void assignLayers(Graph2D graph, Comparator<Vertex> orderOfVerticesInLayer) throws GraphNotSupportedException;
+  
+  /**
+   * number of dummy vertices
+   */
+  public int getNumDummyVertices();
 
   /**
    * Number of layers
