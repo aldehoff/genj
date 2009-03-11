@@ -102,6 +102,8 @@ public class CircularLayout implements GraphLayout {
       x+=160;
     }
     
+    // FIXME circular doesn't work
+    
     // update the arcs
     LayoutHelper.setPaths(graph2d);
     

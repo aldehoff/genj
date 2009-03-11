@@ -79,7 +79,9 @@ public class HierarchicalLayout implements GraphLayout {
    */
   private Rectangle2D assignPositions(Graph2D graph2d, LayerAssignment layerAssignment) {
     
-    // FIXME need options for node placement (e.g. reduce bends in lines)
+    // FIXME need options for node placement 
+    //  max # of bends
+    //  balance nodes left/center/right
     
     int layers = layerAssignment.getHeight();
     
