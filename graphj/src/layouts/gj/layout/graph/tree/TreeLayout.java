@@ -251,7 +251,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     
     // catch up on layouting edges that need routing because of acyclic graph
     EuclideanShortestPathLayout edgeLayout = new EuclideanShortestPathLayout();
-    edgeLayout.setEdgeVertexDistance(Math.min(distanceBetweenGenerations, distanceInGeneration)/2);
+    edgeLayout.setEdgeVertexDistance(Math.min(distanceBetweenGenerations, distanceInGeneration)/4);
     for (Edge e : edgesToRoute)  {
       context.getLogger().fine("routing edge ["+e+"]");
       edgeLayout.apply(e, graph2d, context);
