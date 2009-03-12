@@ -23,7 +23,6 @@ import gj.geom.Geometry;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.model.Edge;
-import gj.model.Graph;
 import gj.model.Vertex;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
@@ -110,7 +109,7 @@ public class EditableGraphWidget extends GraphWidget {
     protected Stroke getStroke(Vertex vertexOrEdge) {
       // check layout getters for vertex or edge (TreeLayout's root for example)
       if (currentLayout!=null) {
-        for (Method prop : ReflectHelper.getMethods(currentLayout, "get.*", new Class[] { Graph.class }, false)) {
+        for (Method prop : ReflectHelper.getMethods(currentLayout, "get.*", new Class[] { Graph2D.class }, false)) {
           try {
             Object value = prop.invoke(currentLayout, graph);
             if (value.equals(vertexOrEdge))
@@ -195,7 +194,7 @@ public class EditableGraphWidget extends GraphWidget {
 
     // collect public setters(Edge,*) on layout
     if (currentLayout!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentLayout, "set.*", new Class[] { Graph.class, e.getClass() }, true );
+      List<Method> methods = ReflectHelper.getMethods(currentLayout, "set.*", new Class[] { Graph2D.class, e.getClass() }, true );
       for (Method method : methods) { 
         result.add(new ActionInvoke(currentLayout, method, new Object[] { graph, e }));
       }
@@ -221,7 +220,7 @@ public class EditableGraphWidget extends GraphWidget {
 
     // collect public setters(Graph, Vertex) on layout
     if (currentLayout!=null) {
-      List<Method> methods = ReflectHelper.getMethods(currentLayout, "set.*", new Class[] { Graph.class, v.getClass()}, true );
+      List<Method> methods = ReflectHelper.getMethods(currentLayout, "set.*", new Class[] { Graph2D.class, v.getClass()}, true );
       for (Method method : methods) { 
         result.add(new ActionInvoke(currentLayout, method, new Object[] { graph, v }));
       }
@@ -285,6 +284,7 @@ public class EditableGraphWidget extends GraphWidget {
    */
   private class DnDIdle extends DnD {
     private Object selection;
+    private int button;
     /** callback */
     @Override
     public void mousePressed(MouseEvent e) {
@@ -294,23 +294,26 @@ public class EditableGraphWidget extends GraphWidget {
       Object oldSelection = graph.getSelection();
       selection = graph.getElement(getPoint(e.getPoint()));
       graph.setSelection(selection);
+      button = e.getButton();
       // popup?
       if (e.isPopupTrigger()) {
         popup(e.getPoint());
         return;
       }
-      // start dragging?
-      if (e.getButton()==MouseEvent.BUTTON1) {
-        if (selection instanceof EditableVertex) {
-	        if (oldSelection==selection)
-	          dndMoveNode.start(e.getPoint());
-	        else
-	          dndCreateEdge.start(e.getPoint());
-        }
-      }
       // always show
       repaint();
       // done
+    }
+    /** callback */
+    @Override
+    public void mouseDragged(MouseEvent e) {
+      // start dragging?
+      if (selection instanceof EditableVertex) {
+        if (button==MouseEvent.BUTTON1)
+          dndMoveNode.start(e.getPoint());
+        else
+          dndCreateEdge.start(e.getPoint());
+      }
     }
     /** callback */
     @Override
@@ -412,7 +415,6 @@ public class EditableGraphWidget extends GraphWidget {
 	        new ActionCreateEdge(from, v).trigger();
         }
       }
-      graph.setSelection(from);
       // show
       repaint();
       // continue
