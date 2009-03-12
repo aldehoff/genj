@@ -27,7 +27,6 @@ import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
 import gj.layout.edge.visibility.EuclideanShortestPathLayout;
 import gj.model.Edge;
-import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
@@ -173,15 +172,28 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /**
    * Getter - root node
    */
-  public Vertex getRoot(Graph graph) {
-    return getAttribute(graph);
+  public Vertex getRoot(Graph2D graph2d) {
+    // check remembered
+    Vertex result = getAttribute(graph2d);
+    if (result==null) {
+      // find root with zero in-degree
+      for (Vertex v : graph2d.getVertices()) {
+        if (LayoutHelper.getInDegree(v)==0) {
+          result = v;
+          setRoot(graph2d, result);
+          break;
+        }
+      }
+    }
+    // done
+    return result;
   }
 
   /**
    * Getter - root node
    */
-  public void setRoot(Graph graph, Vertex root) {
-    setAttribute(graph, root);
+  public void setRoot(Graph2D graph2d, Vertex root) {
+    setAttribute(graph2d, root);
   }
 
   /**
@@ -231,7 +243,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     // check root
     Vertex root = getRoot(graph2d);
     if (root==null)
-      root = vertices.iterator().next();
+      throw new GraphNotSupportedException("Graph is not a tree (no vertex with in-degree of zero)");
     
     context.getLogger().fine("root is ["+root+"]");
     

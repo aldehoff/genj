@@ -308,4 +308,27 @@ public class LayoutHelper {
     return result; 
   }
 
+  /**
+   * Calculate in-degree of a vertex
+   */
+  public static int getInDegree(Vertex v) {
+    int result = 0;
+    for (Edge e : v.getEdges()) {
+      if (e.getEnd().equals(v))
+        result ++;
+    }
+    return result;
+  }
+
+  /**
+   * Calculate out-degree of a vertex
+   */
+  public static int getOutDegree(Vertex v) {
+    int result = 0;
+    for (Edge e : v.getEdges()) {
+      if (e.getStart().equals(v))
+        result ++;
+    }
+    return result;
+  }
 } //ModelHelper
