@@ -398,6 +398,10 @@ public class ControlCenter extends JPanel {
     }
     /** run */
     protected void execute() {
+      // force a commit
+      for (Gedcom gedcom : GedcomDirectory.getInstance().getGedcoms()) {
+        WindowManager.broadcast(new CommitRequestedEvent(gedcom, ControlCenter.this));
+      }
       // Remember open gedcoms
       Collection save = new ArrayList();
       for (Iterator gedcoms=GedcomDirectory.getInstance().getGedcoms().iterator(); gedcoms.hasNext(); ) {
