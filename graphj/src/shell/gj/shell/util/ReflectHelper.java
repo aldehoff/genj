@@ -88,7 +88,8 @@ public class ReflectHelper {
     List<Method> methods = getMethods(instance, ".*", new Class[0], false);
     for (Method getter : methods) {
       // check *primitive* result
-      if (primitiveOnly&&!getter.getReturnType().isPrimitive()) continue;
+      if (primitiveOnly&&!(getter.getReturnType().isPrimitive()||getter.getReturnType().isEnum())) 
+        continue;
       // check *is* or *get* naming convention
       String name = null;
       if (getter.getName().startsWith("is" )) name = getter.getName().substring(2);

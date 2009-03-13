@@ -177,12 +177,24 @@ public class PropertyWidget extends JPanel {
    * Returns a component appropriate for editing given property
    */
   private JComponent getComponent(Object prop) {
+    
+    // a boolean
     if (prop instanceof Boolean) {
       JComboBox cb = new JComboBox(BOOLEANS);
       cb.setSelectedItem(prop);
       cb.addActionListener(alistener);
       return cb;
     }
+    
+    // an enumeration
+    if (prop.getClass().isEnum()) {
+      JComboBox cb = new JComboBox(prop.getClass().getEnumConstants());
+      cb.setSelectedItem(prop);
+      cb.addActionListener(alistener);
+      return cb;
+    }
+    
+    // assuming text
     final JTextField result = new JTextField(prop.toString());
     result.addFocusListener(new FocusListener() {
       public void focusGained(FocusEvent e) {

@@ -47,6 +47,7 @@ public class HierarchicalLayout implements GraphLayout {
   private boolean isSinksAtBottom = true;
   private double alignmentOfLayers = 0.5;
   private Comparator<Vertex> orderOfVerticesInLayer = null;
+  private HorizontalPositioning positioning = HorizontalPositioning.Simplex;
   
   /**
    * do the layout
@@ -220,5 +221,29 @@ public class HierarchicalLayout implements GraphLayout {
   public void setOrderOfVerticesInLayer(Comparator<Vertex> orderOfVerticesInLayer) {
     this.orderOfVerticesInLayer = orderOfVerticesInLayer;
   }
+  
+  /**
+   * Accessor - horizontal positioning
+   */
+  public HorizontalPositioning getHorizontalPositioning() {
+    return positioning;
+  }
+  
+  /**
+   * Accessor - horizontal positioning
+   */
+  public void setHorizontalPositioning(HorizontalPositioning positioning) {
+    this.positioning = positioning;
+  }
+  
+  /**
+   * our supported horizontal positioning
+   */
+  public enum HorizontalPositioning {
+    
+    Compact,
+    Simplex 
+    
+  } //HorizontalPositioning
 
-}
+} //HierarchicalLayout
