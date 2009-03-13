@@ -233,6 +233,12 @@ import javax.swing.tree.TreePath;
     // Done
   }
   
+  @Override
+  public void commit() {
+    if (ok.isEnabled())
+      ok.trigger();
+  }
+  
   /**
    * Action - propagate properties
    */

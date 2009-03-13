@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 2009 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,37 +17,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.edit;
+package genj.view;
 
 import genj.gedcom.Gedcom;
-import genj.util.Registry;
-import genj.view.ViewContext;
+import genj.window.WindowBroadcastEvent;
 
-import javax.swing.JPanel;
+import java.awt.Component;
 
 /**
- * The base class for our two editors basic and advanced
+ * A class wrapping the event of someone requesting a commit of changes 
  */
-/*package*/ abstract class Editor extends JPanel {
+public class CommitRequestedEvent extends WindowBroadcastEvent {
 
-  /**
-   * Initializer (post constructor)
-   */
-  public abstract void init(Gedcom gedcom, EditView view, Registry registry);
-
-  /** 
-   * Accessor - current 
-   */
-  public abstract ViewContext getContext();
-  
-  /** 
-   * Accessor - current 
-   */
-  public abstract void setContext(ViewContext context);
+  private Gedcom gedcom;
   
   /**
-   * commit changes
+   * Constructor
    */
-  public abstract void commit();
+  public CommitRequestedEvent(Gedcom gedcom, Component source) {
+    super(source);
+    this.gedcom = gedcom;
+  }
   
-} //Editor
+  /**
+   * accessor - gedcom for which commits have been requested
+   */
+  public Gedcom getGedcom() {
+    return gedcom;
+  }
+  
+} //CommitRequestedEvent

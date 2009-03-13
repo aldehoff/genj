@@ -34,6 +34,7 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.PopupWidget;
+import genj.view.CommitRequestedEvent;
 import genj.view.ContextProvider;
 import genj.view.ContextSelectionEvent;
 import genj.view.ToolBarSupport;
@@ -294,8 +295,16 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
    */
   public boolean handleBroadcastEvent(genj.window.WindowBroadcastEvent event) {
     
+    // check for commit request
+    if (event instanceof CommitRequestedEvent && ((CommitRequestedEvent)event).getGedcom()==gedcom) {
+      editor.commit();
+      return true;
+    }
+    
+    
+    // check for context selection
     ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
-    if (cse==null)
+    if (cse==null) 
       return true;
     
     ViewContext context = cse.getContext();

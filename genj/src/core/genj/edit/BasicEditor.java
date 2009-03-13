@@ -184,6 +184,12 @@ import spin.Spin;
     // done
   }
   
+  @Override
+  public void commit() {
+    if (ok.isEnabled())
+      ok.trigger();
+  }
+  
   /**
    * Set current entity
    */

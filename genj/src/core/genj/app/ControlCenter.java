@@ -54,6 +54,7 @@ import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ProgressWidget;
+import genj.view.CommitRequestedEvent;
 import genj.view.ViewContext;
 import genj.view.ViewFactory;
 import genj.view.ViewHandle;
@@ -987,6 +988,9 @@ public class ControlCenter extends JPanel {
         }
         
       }
+      
+      // ask everyone to commit their data
+      WindowManager.broadcast(new CommitRequestedEvent(gedcomBeingSaved, ControlCenter.this));
       
       // .. open io 
       try {
