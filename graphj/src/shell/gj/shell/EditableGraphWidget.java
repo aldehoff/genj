@@ -291,14 +291,11 @@ public class EditableGraphWidget extends GraphWidget {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      Object oldSelection = graph.getSelection();
-      selection = graph.getElement(getPoint(e.getPoint()));
-      graph.setSelection(selection);
+      graph.setSelection(graph.getElement(getPoint(e.getPoint())));
       button = e.getButton();
       // popup?
       if (e.isPopupTrigger()) {
         popup(e.getPoint());
-        return;
       }
       // always show
       repaint();
@@ -319,18 +316,18 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseReleased(MouseEvent e) {
       
+      graph.setSelection(graph.getElement(getPoint(e.getPoint())));
+      
       // context menu?
       if (e.isPopupTrigger()) {
         popup(e.getPoint());
-        return;
+      } else {
+        // quick create?
+        if (selection==null&&quickNode) {
+          graph.addVertex(getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
+        }
       }
-      
-      // quick create?
-      if (selection==null&&quickNode) {
-        graph.addVertex(getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
-        repaint();
-        return;
-      }
+      repaint();
       // done
     }
     /** popup */
