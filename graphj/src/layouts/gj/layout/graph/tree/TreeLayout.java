@@ -20,7 +20,6 @@
 package gj.layout.graph.tree;
 
 import gj.geom.Geometry;
-import gj.layout.AbstractGraphLayout;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
@@ -28,6 +27,7 @@ import gj.layout.LayoutException;
 import gj.layout.edge.visibility.EuclideanShortestPathLayout;
 import gj.model.Edge;
 import gj.model.Vertex;
+import gj.util.AbstractGraphLayout;
 import gj.util.LayoutHelper;
 
 import java.awt.Shape;

@@ -23,6 +23,7 @@ import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
+import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.model.WeightedGraph;
@@ -167,6 +168,10 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
 
   public AffineTransform getTransformOfVertex(Vertex vertex) {
     return null;
+  }
+  
+  public Port getPort(Vertex vertex, Edge edge) {
+    return Port.NONE;
   }
 
   public void setPathOfEdge(Edge edge, Path shape) {

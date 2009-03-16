@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import gj.geom.Path;
 import gj.layout.Graph2D;
+import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -85,5 +86,11 @@ public class DelegatingGraph implements Graph2D {
   public Collection<? extends Vertex> getVertices() {
     return delegated.getVertices();
   }
+  
+  /** delegating call */
+  public Port getPort(Vertex vertex, Edge edge) {
+    return delegated.getPort(vertex, edge);
+  }
+  
   
 } //DelegatingGraph2D

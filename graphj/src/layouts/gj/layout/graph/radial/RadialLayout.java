@@ -27,13 +27,13 @@ import static gj.util.LayoutHelper.setPath;
 import static java.lang.Math.max;
 import gj.geom.Geometry;
 import gj.geom.Path;
-import gj.layout.AbstractGraphLayout;
 import gj.layout.Graph2D;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
+import gj.util.AbstractGraphLayout;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
