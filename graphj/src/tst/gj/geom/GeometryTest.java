@@ -26,6 +26,7 @@ import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -169,13 +170,44 @@ public class GeometryTest extends TestCase {
     tst(radian(315), Geometry.getRadian(p(-1,-1   )));
     
   }
+  
+  public void testShapeIntersections() {
 
-  public void testLineIntersection() {
+    // some extreme close line intersection tests
+    tst(
+        Geometry.getIntersections(p(2.5, -0.5000000000000001), p(0.5, -0.49999999999999994), true, p(0,0), r(0,0)),
+        p(-0.5, -0.49999999999999994), p(0.5, -0.49999999999999994)
+    );
+    
+    tst(
+        Geometry.getIntersections(p(1.5, -0.5000000000000001), p(-0.5, -0.49999999999999994), r(1,0)),
+        p(0.5, -0.5)
+    );
+    tst(
+        Geometry.getIntersections(p(-0.5, -0.5000000000000001), p(1.5, -0.49999999999999994), r(1,0)),
+        p(1.5, -0.5)
+    );
+    
+    
+  }
+
+  public void testIntersections() {
+    
+    // --
+    tst( null, Geometry.getLineIntersection(p(0,0), p(1,0), p(1,0), p(2,0)));
+    tst( null, Geometry.getIntersection(p(0,0), p(1,0), p(1,0), p(2,0)));
+    
+    // - -
+    tst( null, Geometry.getLineIntersection(p(0,0), p(1,0), p(2,0), p(3,0)));
+    tst( null, Geometry.getIntersection(p(0,0), p(1,0), p(2,0), p(3,0)));
+    
+    // --==--
+    tst( null, Geometry.getLineIntersection(p(0,0), p(3,0), p(1,0), p(2,0)));
+    tst( null, Geometry.getIntersection(p(0,0), p(3,0), p(1,0), p(2,0)));
     
     // | |
     tst( null, Geometry.getLineIntersection(p(0,0), p(0,1), p(1,0), p(1,1)));
-    
-    //tst( null, Geometry.getIntersection(p(0,0), radian(180), p(1,0), radian(180)));
+    tst( null, Geometry.getIntersection(p(0,0), p(0,1), p(1,0), p(1,1)));
 
     // X
     tst( p(0.5,0.5), Geometry.getLineIntersection(p(0,0), p(1,1), p(0,1), p(1,0)));
@@ -183,17 +215,25 @@ public class GeometryTest extends TestCase {
 
     // +
     tst( p(0,0), Geometry.getLineIntersection(p(-1,0), p(1,0), p(0,-1), p(0,1)));
+    tst( p(0,0), Geometry.getIntersection(p(-1,0), p(1,0), p(0,-1), p(0,1)));
     
     // /
     //  \
     tst( p(0.5,0.5), Geometry.getLineIntersection(p(1,0), p(0,1), p(1,1), p(2,2)));
+    tst( null, Geometry.getIntersection(p(1,0), p(0,1), p(1,1), p(2,2)));
+    tst( p(0.5,0.5), Geometry.getIntersection(p(1,0), p(0,1), false, p(1,1), p(2,2), true));
+    tst( p(0.5,0.5), Geometry.getIntersection(p(1,0), p(0,1), true, p(1,1), p(2,2), true));
+    tst( null, Geometry.getIntersection(p(1,0), p(0,1), true, p(1,1), p(2,2), false));
 
     // | -
     tst( p(0,0.5), Geometry.getLineIntersection(p(0,0), p(0,1), p(2,0.5), p(3,0.5)));
+    tst( null, Geometry.getIntersection(p(0,0), p(0,1), p(2,0.5), p(3,0.5)));
     
     // \/
     tst( p(1,1), Geometry.getIntersection(p(0,0), p(1,1), p(1,1), p(2,0)));
     tst( p(1,1), Geometry.getIntersection(p(0,0), p(1,1), p(2,0), p(1,1)));
+        
+    
     
   }
   
@@ -242,7 +282,8 @@ public class GeometryTest extends TestCase {
     // xoxo
     // xxxo
     //  ooo
-    tst( -0.5, dist(r(0,0), r(0.5,0), radian(90)));
+    tst( -0.6, dist(r(0,0), r(0.4,0), radian(90)));
+    tst( -1.4, dist(r(0.4,0), r(0,0), radian(90)));
 
     // ******
     //-*-**-*-
@@ -342,6 +383,26 @@ public class GeometryTest extends TestCase {
   /**
    * equals test
    */
+  private void tst(List<Point2D> ps1, Point2D... ps2) {
+    
+    assertEquals(ps2.length, ps1.size());
+    
+    i: for (int i=0;i<ps2.length;i++) {
+      
+      for (int j=0;j<ps1.size();j++) {
+        if (equals(ps1.get(j), ps2[i]))
+          continue i;
+      }
+      
+      fail("can't fine "+ps2[i]+" in ps1");
+    }
+    
+    
+  }
+  
+  /**
+   * equals test
+   */
   private void tst(Point2D a, Point2D b) {
     if (a==b)
       return;
@@ -354,8 +415,12 @@ public class GeometryTest extends TestCase {
       return;
     }
       
-    if ( Math.abs(a.getX()-b.getX()) > 0.0000001 || Math.abs(a.getY()-b.getY())>0.0000001 )
+    if (!equals(a,b))
       fail("expected "+a+" but got "+b);
+  }
+  
+  private boolean equals(Point2D a, Point2D b) {
+    return Math.abs(a.getX()-b.getX()) < 0.0000001 || Math.abs(a.getY()-b.getY())<0.0000001;
   }
   
   /**

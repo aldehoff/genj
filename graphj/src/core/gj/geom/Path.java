@@ -182,6 +182,10 @@ public class Path implements Shape {
     return this;
   }
   
+  public boolean isStarted() {
+    return firstPoint!=null;
+  }
+  
   /**
    * check for continuation
    */

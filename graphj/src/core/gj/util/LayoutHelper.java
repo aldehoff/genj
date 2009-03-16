@@ -19,10 +19,14 @@
  */
 package gj.util;
 
-import static gj.geom.Geometry.*;
+import static gj.geom.Geometry.getClosest;
+import static gj.geom.Geometry.getIntersections;
+import static gj.geom.Geometry.getMaximumDistance;
+import static gj.geom.Geometry.getSum;
+import static gj.geom.Geometry.getVectorEnd;
 import gj.geom.Path;
-import gj.layout.GraphNotSupportedException;
 import gj.layout.Graph2D;
+import gj.layout.GraphNotSupportedException;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -239,10 +243,9 @@ public class LayoutHelper {
    */
   public static Path getPath(Edge edge, Graph2D graph2d) {
     return getPath(
-        graph2d.getPositionOfVertex(edge.getStart()),
-        graph2d.getShapeOfVertex(edge.getStart()),
-        graph2d.getPositionOfVertex(edge.getEnd()),
-        graph2d.getShapeOfVertex(edge.getEnd()));
+        graph2d.getPositionOfVertex(edge.getStart()), graph2d.getShapeOfVertex(edge.getStart()), new Point2D.Double(),
+        graph2d.getPositionOfVertex(edge.getEnd())  , graph2d.getShapeOfVertex(edge.getEnd()), new Point2D.Double()
+        );
   }
 
   /**
@@ -287,22 +290,55 @@ public class LayoutHelper {
   }
 
   /**
-   * Creates a connection between given points between two shapes
-   * @param p1 the starting point (origin of shape)
-   * @param s1 the shape sitting at p1
-   * @param p2 the ending point
-   * @param s2 the shape sitting at p2
+   * Calculates a path between two ports from source to destination shape
+   * @param fromPos the position of the source shape
+   * @param fromShape the source shape located at fromPos
+   * @param fromPort the port for fromShape
+   * @param toPos the position of the destination shape
+   * @param toShape the destination shape located at toPos
+   * @param toPort the port for toShape
    */
-  public static Path getPath(Point2D p1, Shape s1, Point2D p2, Shape s2) {
-  
-    Point2D 
-    	a = getVectorEnd(p2, p1, p1, s1),
-    	b = getVectorEnd(p1, p2, p2, s2);
+  public static Path getPath(Point2D fromPos, Shape fromShape, Point2D fromPort, Point2D toPos, Shape toShape, Point2D toPort) {
+    
+    ArrayList<Point2D> points = new ArrayList<Point2D>(4);
+    
+    Point2D a = getSum(fromPos, fromPort);
+    Point2D b = getSum(toPos, toPort);
+    
+    // resolve start position
+    Collection<Point2D> is = getIntersections(a, b, true, fromPos, fromShape);
+    if (!is.isEmpty())
+      points.add(getClosest(b, is));
+    else {
+      is = getIntersections(fromPos, a, true, fromPos, fromShape);
+      if (is.isEmpty())
+        points.add(fromPos);
+      else
+        points.add(getClosest(a, is));
+      points.add(a);
+    }
+    
+    // resolve end position
+    is = getIntersections(b, a, true, toPos, toShape);
+    if (!is.isEmpty())
+      points.add(getClosest(a, is));
+    else  {
+      points.add(b);
+      is = getIntersections(b, toPos, true, toPos, toShape);
+      if (is.isEmpty())
+        points.add(toPos);
+      else
+        points.add(getClosest(b, is));
+    }
     
     // A simple line
     Path result = new Path();
-    result.start(new Point2D.Double(a.getX()-p1.getX(), a.getY()-p1.getY()));
-    result.lineTo(new Point2D.Double(b.getX()-p1.getX(), b.getY()-p1.getY()));
+    for (Point2D p : points) { 
+      if (!result.isStarted())
+        result.start(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
+      else
+        result.lineTo(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
+    }
     
     // done
     return result; 

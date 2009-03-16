@@ -83,6 +83,26 @@ public class Geometry {
   }
   
   /**
+   * Calculates the farthest point from a list of points
+   */
+  public static Point2D getFarthest(Point2D point, Collection<Point2D> points) {
+    if (points.size()==0)
+      throw new IllegalArgumentException();
+    // assume first
+    Point2D result = null;
+    double distance = 0;
+    for (Point2D p : points) {
+      double d = p.distance(point);
+      if (d>=distance) {
+        result = p;
+        distance = d;
+      }
+    }
+    // done
+    return result;
+  }
+  
+  /**
    * Calculates the "maximum" that the given shape at position extends into the given direction
    */
   public static Point2D getMax(Shape shape, double axis) {
@@ -157,39 +177,34 @@ public class Geometry {
   private static class OpShapeShapeDistance implements FlattenedPathConsumer {
     
     private double result = Double.POSITIVE_INFINITY;
+    private double axis;
     
     /** the axis vector we're measuring distance on */
-    private double axis;
     private Point2D vector;
 
     /** the current shape we're intersecting against */
     private Shape intersectWith;
     
-    private Line2D line;
     
     /**
      * Constructor
      */
     protected OpShapeShapeDistance(Shape shape1, Shape shape2, double axis) throws IllegalArgumentException {
 
-      // calculate
-      Rectangle2D area = getBounds(shape2).createUnion(getBounds(shape1));
-      double span = getLength(area.getWidth(), area.getHeight());
-      
       // keep an axis vector
-      vector = new Point2D.Double(
-          Math.sin(axis)*span,
-          -Math.cos(axis)*span
-      );
+      if (axis==QUARTER_RADIAN)
+        vector = new Point2D.Double(1,0);
+      else 
+        vector = new Point2D.Double(Math.sin(axis),-Math.cos(axis));
       
       // iterate over shape1 intersecting lines along the axis with shape2
-      intersectWith = shape2;
       this.axis = axis;
+      intersectWith = shape2;
       ShapeHelper.iterateShape(shape1, this);
       
       // iterate over shape2 intersecting lines along the axis with shape1
+      this.axis += HALF_RADIAN;
       intersectWith = shape1;
-      this.axis = axis + Geometry.ONE_RADIAN/2;
       ShapeHelper.iterateShape(shape2, this);
       
       // done
@@ -213,11 +228,13 @@ public class Geometry {
         b = new Point2D.Double(end.getX()-vector.getX(), end.getY()-vector.getY());
 
       // intersect line (a,b) with shape
-      Collection<Point2D> is = getIntersections(a, b, intersectWith);
-      
+      Collection<Point2D> is = getIntersections(a, b, true, new Point2D.Double(), intersectWith);
+
       // calculate smallest distance
-      for (Point2D i : is) 
+      Point2D p = null;
+      for (Point2D i : is) {
         result = Math.min(result, Math.sin(axis)*(i.getX()-end.getX()) - Math.cos(axis)*(i.getY()-end.getY()));
+      }
       
       // continue
       return true;
@@ -489,28 +506,30 @@ public class Geometry {
    * @param shape the shape
    */
   public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Shape shape) {
-    return new OpLineShapeIntersections(lineStart, lineEnd, shape.getPathIterator(null)).result;
+    return new OpLineShapeIntersections(lineStart, lineEnd, false, shape.getPathIterator(null)).result;
   }
   
   /**
    * Calculates the intersecting points of a line and a shape
    * @param lineStart start of line
    * @param lineEnd end of line
+   * @param infinite whether line is infinite or not (segment)
    * @param shape the shape
    */
-  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape) {
-    return new OpLineShapeIntersections(lineStart, lineEnd, shape).result;
+  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, boolean infinite, PathIterator shape) {
+    return new OpLineShapeIntersections(lineStart, lineEnd, infinite, shape).result;
   }
   
   /**
    * Calculates the intersecting points of a line and a shape
    * @param lineStart start of line
    * @param lineEnd end of line
+   * @param infinite whether line is infinite or not (segment)
    * @param shapePos position of shape
    * @param shape the shape 
    */
-  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, Point2D shapePos, Shape shape) {
-    return getIntersections(lineStart, lineEnd, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())));
+  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, boolean infinite, Point2D shapePos, Shape shape) {
+    return getIntersections(lineStart, lineEnd, infinite, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())));
   }
   
   /**
@@ -527,14 +546,18 @@ public class Geometry {
     /** our criterias */
     private Point2D lineStart, lineEnd;
     
+    /** whether we're looking at line segment or infinite line */
+    private boolean infinite;
+    
     /**
      * Constructor
      */
-    protected OpLineShapeIntersections(Point2D lineStart, Point2D lineEnd, PathIterator shape) {
+    protected OpLineShapeIntersections(Point2D lineStart, Point2D lineEnd, boolean infinite, PathIterator shape) {
       // remember
       this.result = new ArrayList<Point2D>(10);
       this.lineStart = lineStart;
       this.lineEnd   = lineEnd;
+      this.infinite = infinite;
       // iterate over line segments in shape
       ShapeHelper.iterateShape(shape, this);
       // done
@@ -545,7 +568,7 @@ public class Geometry {
      * only lines have to be consumed
      */
     public boolean consumeLine(Point2D start, Point2D end) {
-      Point2D p = getIntersection(lineStart, lineEnd, start, end);
+      Point2D p = getIntersection(lineStart, lineEnd, infinite, start, end, false);
       if (p!=null) 
         result.add(p);
       return true;
@@ -601,7 +624,7 @@ public class Geometry {
   }
   
   /**
-   * Calculates the intersecting point of two lines
+   * Calculates the intersecting point of finite line segments
    * @param aStart line segment describing line A
    * @param aEnd line segment describing line A
    * @param bStart line segment describing line B
@@ -609,64 +632,93 @@ public class Geometry {
    * @return either intersecting point or null if lines are parallel or line segments don't cross
    */
   public static Point2D getIntersection(Point2D aStart, Point2D aEnd, Point2D bStart, Point2D bEnd) {
+    return getIntersection(aStart, aEnd, false, bStart, bEnd, false);
+  }
+  
+  /**
+   * Calculates the intersecting point of two lines
+   * @param aStart line a
+   * @param aEnd line a
+   * @param aInfinite whether a is infinite or not
+   * @param bStart line b
+   * @param bEnd line b
+   * @param bInfinite whether a is infinite or not
+   * @return either intersecting point or null if lines are parallel or line segments don't cross
+   */
+  public static Point2D getIntersection(Point2D aStart, Point2D aEnd, boolean aInfinite, Point2D bStart, Point2D bEnd, boolean bInfinite) {
     
-    // finite - do they intersect at all?
-    if (!testIntersection(aStart,aEnd,bStart,bEnd)) 
+    // infinite case - do they intersect at all?
+    Point2D i = getLineIntersection(aStart, aEnd, bStart, bEnd);
+    if (i==null)
       return null;
-    
-    // We calculate the direction vectors a, b and c
-    //
-    //     AS     b BE
-    //      |\    |/
-    //    c-|  \ /
-    //      |  / \  a
-    //      |/     \|
-    //     BS        \
-    //                AE
-    //
-    // Note equations for lines AS-AE, BS-BE, BS-AS
-    //
-    //  y = AS + s*v_a
-    //  y = BS + t*v_b
-    //  y = BS + u*v_c
-    //
-    double 
-      v_ax = aEnd.getX() - aStart.getX(),
-      v_ay = aEnd.getY() - aStart.getY(),
-      v_bx = bEnd.getX() - bStart.getX(),
-      v_by = bEnd.getY() - bStart.getY(),
-      v_cx = bStart.getX() - aStart.getX(),
-      v_cy = bStart.getY() - aStart.getY();
 
-    // Then we calculate the cross-product between
-    // vectors b/a and b/c
-    //
-    //  cp_ba = v_a x v_b
-    //  cp_bc = v_b x v_c
-    //
-    double cp_ba = getCrossProduct(v_bx,v_by,v_ax,v_ay);
-    double cp_bc = getCrossProduct(v_bx,v_by,v_cx,v_cy);
-    
-    // A zero x-prod means that the lines are either
-    // parallel or have coinciding endpoints
-    if (cp_ba==0) {
+    // b !infinite? check that bStart&bEnd are not on the same side of aStart->aEnd
+    if (!bInfinite && testPointVsLine(aStart, aEnd, bStart)*testPointVsLine(aStart, aEnd, bEnd) > 0)
       return null;
-    }
     
-    // So our factor s for lines AS-AE is
-    //
-    // s = cp_bc/cp_ba
-    //
-    double s = cp_bc/cp_ba;
+    // a !infinite ? check that aStart&aEnd are not on the same side of bStart->bEnd 
+    if (!aInfinite && testPointVsLine(bStart, bEnd, aStart)*testPointVsLine(bStart, bEnd, aEnd) > 0)
+      return null;
     
-    // The result is defined by
-    //
-    //  AS + s * v_a
-    //
-    return new Point2D.Double(
-      aStart.getX()+s*v_ax,
-      aStart.getY()+s*v_ay
-    );
+    return i;
+    
+//    // infinite case - do they intersect at all?
+//    if (!testIntersection(aStart,aEnd,bStart,bEnd)) 
+//      return null;
+//    
+//    // We calculate the direction vectors a, b and c
+//    //
+//    //     AS b  BE
+//    //      |\ \/
+//    //    c-| \/
+//    //      | /\  a
+//    //      |/  \/
+//    //     BS    \
+//    //            AE
+//    //
+//    // Note equations for lines AS-AE, BS-BE, BS-AS
+//    //
+//    //  y = AS + s*v_a
+//    //  y = BS + t*v_b
+//    //  y = BS + u*v_c
+//    //
+//    double 
+//      v_ax = aEnd.getX() - aStart.getX(),
+//      v_ay = aEnd.getY() - aStart.getY(),
+//      v_bx = bEnd.getX() - bStart.getX(),
+//      v_by = bEnd.getY() - bStart.getY(),
+//      v_cx = bStart.getX() - aStart.getX(),
+//      v_cy = bStart.getY() - aStart.getY();
+//
+//    // Then we calculate the cross-product between
+//    // vectors b/a and b/c
+//    //
+//    //  cp_ba = v_a x v_b
+//    //  cp_bc = v_b x v_c
+//    //
+//    double cp_ba = getCrossProduct(v_bx,v_by,v_ax,v_ay);
+//    double cp_bc = getCrossProduct(v_bx,v_by,v_cx,v_cy);
+//    
+//    // A zero x-prod means that the lines are either
+//    // parallel or have coinciding endpoints
+//    if (cp_ba==0) {
+//      return null;
+//    }
+//    
+//    // So our factor s for lines AS-AE is
+//    //
+//    // s = cp_bc/cp_ba
+//    //
+//    double s = cp_bc/cp_ba;
+//    
+//    // The result is defined by
+//    //
+//    //  AS + s * v_a
+//    //
+//    return new Point2D.Double(
+//      aStart.getX()+s*v_ax,
+//      aStart.getY()+s*v_ay
+//    );
     
   }
   
@@ -697,8 +749,9 @@ public class Geometry {
     double b2 = bStart.getX()-bEnd.getX();
     double c2 = bEnd.getX()*bStart.getY() - bStart.getX()*bEnd.getY();
 
+    // check if lines are parallel
     double denom = a1*b2 - a2*b1;
-    if (denom==0)
+    if (Math.abs(denom)< 0.000000001)
       return null;
 
     return new Point2D.Double( (b1*c2 - b2*c1)/denom , (a2*c1 - a1*c2)/denom);
@@ -713,7 +766,7 @@ public class Geometry {
     return getVectorEnd(vectorStart, vectorEnd, vectorEnd, shapeEnd);
   }
   public static Point2D getVectorEnd(Point2D vectorStart, Point2D vectorEnd, Point2D shapePos, Shape shape) {
-    Collection<Point2D> points = getIntersections(vectorStart, vectorEnd, shapePos, shape);
+    Collection<Point2D> points = getIntersections(vectorStart, vectorEnd, false, shapePos, shape);
     return points.isEmpty() ? vectorEnd: getClosest(vectorStart, points);
   }
 
