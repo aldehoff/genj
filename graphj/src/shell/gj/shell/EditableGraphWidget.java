@@ -291,7 +291,8 @@ public class EditableGraphWidget extends GraphWidget {
       // nothing to do?
       if (graph==null) return;
       // something there?
-      graph.setSelection(graph.getElement(getPoint(e.getPoint())));
+      this.selection = graph.getElement(getPoint(e.getPoint()));
+      graph.setSelection(selection);
       button = e.getButton();
       // popup?
       if (e.isPopupTrigger()) {
@@ -316,8 +317,6 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseReleased(MouseEvent e) {
       
-      graph.setSelection(graph.getElement(getPoint(e.getPoint())));
-      
       // context menu?
       if (e.isPopupTrigger()) {
         popup(e.getPoint());
@@ -326,8 +325,8 @@ public class EditableGraphWidget extends GraphWidget {
         if (selection==null&&quickNode) {
           graph.addVertex(getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
         }
+        repaint();
       }
-      repaint();
       // done
     }
     /** popup */
