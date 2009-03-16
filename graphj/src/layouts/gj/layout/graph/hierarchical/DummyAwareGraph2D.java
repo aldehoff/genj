@@ -21,7 +21,6 @@ package gj.layout.graph.hierarchical;
 
 import gj.geom.Path;
 import gj.layout.Graph2D;
-import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -88,10 +87,6 @@ public class DummyAwareGraph2D implements Graph2D {
   public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
       wrapped.setTransformOfVertex(vertex, transform);
-  }
-
-  public Port getPort(Vertex vertex, Edge edge) {
-    return wrapped.getPort(vertex, edge);
   }
 
 } //DummyAwareGraph2D

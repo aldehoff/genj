@@ -178,7 +178,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     if (result==null) {
       // find root with zero in-degree
       for (Vertex v : graph2d.getVertices()) {
-        if (LayoutHelper.getInDegree(v)==0) {
+        if (getInDegree(v)==0) {
           result = v;
           setRoot(graph2d, result);
           break;
@@ -463,7 +463,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          graph2d.setPathOfEdge(edge, LayoutHelper.getPath(points, shape(edge.getStart()), shape(edge.getEnd()), false));
+          graph2d.setPathOfEdge(edge, LayoutHelper.getPath(points, pos(edge.getStart()), shape(edge.getStart()), pos(edge.getEnd()), shape(edge.getEnd()), false));
         } else {
           graph2d.setPathOfEdge(edge, LayoutHelper.getPath(edge, graph2d));
         }

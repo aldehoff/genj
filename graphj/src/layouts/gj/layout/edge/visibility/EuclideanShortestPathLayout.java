@@ -112,7 +112,12 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     for (Vertex v : route) 
       ps.add(graph.getPositionOfVertex(v));
       
-    Path path = LayoutHelper.getPath(ps, graph2d.getShapeOfVertex(edge.getStart()), graph2d.getShapeOfVertex(edge.getEnd()), false);
+    Path path = LayoutHelper.getPath(ps, 
+        graph2d.getPositionOfVertex(edge.getStart()),
+        graph2d.getShapeOfVertex(edge.getStart()), 
+        graph2d.getPositionOfVertex(edge.getEnd()),
+        graph2d.getShapeOfVertex(edge.getEnd()), 
+        false);
     wrapper.setPathOfEdge(edge, path);
    
     // done

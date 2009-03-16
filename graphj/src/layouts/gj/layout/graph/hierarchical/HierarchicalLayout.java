@@ -144,7 +144,13 @@ public class HierarchicalLayout implements GraphLayout {
       }
       
       graph2d.setPathOfEdge(edge, 
-          LayoutHelper.getPath(points, graph2d.getShapeOfVertex(edge.getStart()), graph2d.getShapeOfVertex(edge.getEnd()), false)
+          LayoutHelper.getPath(points, 
+              graph2d.getPositionOfVertex(edge.getStart()),
+              graph2d.getShapeOfVertex(edge.getStart()), 
+              graph2d.getPositionOfVertex(edge.getEnd()),
+              graph2d.getShapeOfVertex(edge.getEnd()), 
+              false
+          )
       );
     }
     

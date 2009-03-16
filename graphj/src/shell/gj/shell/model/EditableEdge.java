@@ -72,8 +72,8 @@ public class EditableEdge implements Edge {
   
   private Path makeShape() {
     return LayoutHelper.getPath(
-        start.getPosition(), start.getShape(), new Point2D.Double(0,0),
-        end.getPosition(), end.getShape(), new Point2D.Double(0,0)
+        start.getPosition(), start.getShape(), new Point2D.Double(),
+        end.getPosition(), end.getShape(), new Point2D.Double()
     );   
   }
   

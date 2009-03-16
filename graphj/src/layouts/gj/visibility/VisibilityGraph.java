@@ -23,7 +23,6 @@ import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
-import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.model.WeightedGraph;
@@ -33,6 +32,7 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -137,24 +137,17 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
 
   /** debug shape */
   public Shape getDebugShape() {
+    
     GeneralPath result = new GeneralPath();
-    for (PointLocation v : point2location.values()) {
-      for (VisibleConnection e : v.es) {
-        if (e.start.equals(v)) {
-          result.moveTo(v.x, v.y);
-          result.lineTo(e.end.x, e.end.y);
-        }
-      }
+    for (Edge edge : getEdges()) {
+      Point2D p = getPositionOfVertex(edge.getStart());
+      result.append(getPathOfEdge(edge).getPathIterator(AffineTransform.getTranslateInstance(p.getX(), p.getY())), false);
     }
     return result;
   }
 
   public Path getPathOfEdge(Edge edge) {
-    VisibleConnection con = (VisibleConnection)edge;
-    List<Point2D> path = new ArrayList<Point2D>(2);
-    path.add(con.start);
-    path.add(con.end);
-    return LayoutHelper.getPath(path);
+    return LayoutHelper.getPath(edge, this);
   }
 
   public Point2D getPositionOfVertex(Vertex vertex) {
@@ -163,17 +156,13 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   }
 
   public Shape getShapeOfVertex(Vertex vertex) {
-    return null;
+    return new Rectangle2D.Double();
   }
 
   public AffineTransform getTransformOfVertex(Vertex vertex) {
     return null;
   }
   
-  public Port getPort(Vertex vertex, Edge edge) {
-    return Port.NONE;
-  }
-
   public void setPathOfEdge(Edge edge, Path shape) {
     throw new IllegalArgumentException("n/a");
   }

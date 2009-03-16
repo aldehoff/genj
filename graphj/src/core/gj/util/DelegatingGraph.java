@@ -19,16 +19,15 @@
  */
 package gj.util;
 
+import gj.geom.Path;
+import gj.layout.Graph2D;
+import gj.model.Edge;
+import gj.model.Vertex;
+
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.Collection;
-
-import gj.geom.Path;
-import gj.layout.Graph2D;
-import gj.layout.Port;
-import gj.model.Edge;
-import gj.model.Vertex;
 
 /**
  * A delegating graph2d
@@ -86,11 +85,5 @@ public class DelegatingGraph implements Graph2D {
   public Collection<? extends Vertex> getVertices() {
     return delegated.getVertices();
   }
-  
-  /** delegating call */
-  public Port getPort(Vertex vertex, Edge edge) {
-    return delegated.getPort(vertex, edge);
-  }
-  
   
 } //DelegatingGraph2D

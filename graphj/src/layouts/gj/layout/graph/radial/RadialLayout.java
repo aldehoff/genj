@@ -42,6 +42,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -421,7 +422,7 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
      */
     void layout(Edge edge, Vertex parent, double radianOfParent, double radius, double radianOfChild, Vertex child, double[] stopRadians) {
 
-      // easy case - direc path
+      // easy case - direct path
       if (!isBendArcs || (radianOfParent==radianOfChild)) {
         setPath(edge, graph2d);
         return;
@@ -432,7 +433,11 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       // start with path at child
       Point2D p1 = graph2d.getPositionOfVertex(child);
       Point2D p2 = getPoint(center, radianOfChild, radius);
-      path.start(getVectorEnd(p2, p1, graph2d.getShapeOfVertex(child)));
+      Collection<Point2D> is = getIntersections(p2, p1, false, p1, graph2d.getShapeOfVertex(child));
+      if (is.isEmpty())
+        path.start(p1);
+      else
+        path.start(getFarthest(p1, is));
       path.lineTo(p2);
 
       // run over stops in arc (clock/counter-clockwise)
@@ -456,7 +461,11 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       Point2D p3 = getPoint(center, radianOfParent, radius);
       Point2D p4 = graph2d.getPositionOfVertex(parent);
       path.arcTo(center, radius, radianOfChild, radianOfParent);
-      path.lineTo(getVectorEnd(p3, p4, graph2d.getShapeOfVertex(parent)));
+      is = getIntersections(p3, p4, false, p4, graph2d.getShapeOfVertex(parent));
+      if (is.isEmpty())
+        path.lineTo(p4);
+      else
+        path.lineTo(getFarthest(p4, is));
 
       // layout relative to start
       if (parent.equals(edge.getStart())) {

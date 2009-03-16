@@ -21,7 +21,6 @@ package gj.shell.model;
 
 import gj.geom.Path;
 import gj.layout.Graph2D;
-import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
@@ -339,13 +338,6 @@ public class EditableGraph implements Graph2D {
     ((EditableVertex)node).setShape(shape);
   }
   
-  /**
-   * interface implementation
-   */
-  public Port getPort(Vertex vertex, Edge edge) {
-    return Port.NONE;
-  }
-
   /**
    * interface implementation
    */

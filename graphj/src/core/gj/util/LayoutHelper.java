@@ -23,7 +23,6 @@ import static gj.geom.Geometry.getClosest;
 import static gj.geom.Geometry.getIntersections;
 import static gj.geom.Geometry.getMaximumDistance;
 import static gj.geom.Geometry.getSum;
-import static gj.geom.Geometry.getVectorEnd;
 import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
@@ -35,6 +34,7 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -234,8 +234,11 @@ public class LayoutHelper {
   /**
    * path for given points
    */
-  public static Path getPath(List<Point2D> points) {
-    return getPath(points, null, null, false);
+  public static Path getPath(Point2D from, Point2D to) {
+    return getPath(
+        from, new Rectangle2D.Double(), new Point2D.Double(),
+        to, new Rectangle2D.Double(), new Point2D.Double()
+    );
   }
 
   /**
@@ -249,47 +252,6 @@ public class LayoutHelper {
   }
 
   /**
-   * path with a line going through points between two shapes
-   * @param points a sequence of points describing the path (first point is the origin of the shape)
-   * @param s1 shape positioned at the first point
-   * @param s2 shape positioned at the last point
-   */  
-  public static Path getPath(List<Point2D> points, Shape s1, Shape s2, boolean reversed) {
-    return getPath(points.toArray(new Point2D[points.size()]),s1,s2,reversed);
-  }
-  
-  public static Path getPath(Point2D[] points, Shape s1, Shape s2, boolean reversed) {
-    
-    int n = points.length;
-    
-    // A simple line through points
-    Path result = new Path();
-    
-    // intersect the first segment with s1
-    Point2D
-      a = s1!=null ? getVectorEnd(points[1], points[0], points[0], s1) : points[0],
-      b = s2!=null ? getVectorEnd(points[n-2], points[n-1], points[n-1], s2) : points[n-1];
-    
-    // add the points to this path relative to start
-    if (!reversed) {
-      double cx = points[0].getX(), cy = points[0].getY();
-      result.start(new Point2D.Double( a.getX() - cx, a.getY() - cy));
-      for (int i=1;i<n-1;i++) 
-        result.lineTo( new Point2D.Double( points[i].getX() - cx, points[i].getY() - cy ));
-      result.lineTo(new Point2D.Double( b.getX() - cx, b.getY() - cy));
-    } else {
-      double cx = points[n-1].getX(), cy = points[n-1].getY();
-      result.start(new Point2D.Double( b.getX() - cx, b.getY() - cy));
-      for (int i=n-2;i>0;i--) 
-        result.lineTo( new Point2D.Double( points[i].getX() - cx, points[i].getY() - cy ));
-      result.lineTo(new Point2D.Double( a.getX() - cx, a.getY() - cy));
-    }
-    
-    // done
-    return result;
-  }
-
-  /**
    * Calculates a path between two ports from source to destination shape
    * @param fromPos the position of the source shape
    * @param fromShape the source shape located at fromPos
@@ -299,72 +261,143 @@ public class LayoutHelper {
    * @param toPort the port for toShape
    */
   public static Path getPath(Point2D fromPos, Shape fromShape, Point2D fromPort, Point2D toPos, Shape toShape, Point2D toPort) {
-    
     ArrayList<Point2D> points = new ArrayList<Point2D>(4);
+    points.add(getSum(fromPos, fromPort));
+    points.add(getSum(toPos, toPort));
+    return getPath(points, fromPos, fromShape, toPos, toShape, false);
+//    ArrayList<Point2D> points = new ArrayList<Point2D>(4);
+//    
+//    Point2D start = getSum(fromPos, fromPort);
+//    Point2D end = getSum(toPos, toPort);
+//    
+//    // resolve start position
+//    Collection<Point2D> is = getIntersections(start, end, true, fromPos, fromShape);
+//    if (!is.isEmpty())
+//      points.add(getClosest(end, is));
+//    else {
+//      if (!fromPos.equals(start)) {
+//        is = getIntersections(fromPos, start, true, fromPos, fromShape);
+//        if (is.isEmpty())
+//          points.add(fromPos);
+//        else
+//          points.add(getClosest(start, is));
+//      }
+//      points.add(start);
+//    }
+//    
+//    // resolve end position
+//    is = getIntersections(end, start, true, toPos, toShape);
+//    if (!is.isEmpty())
+//      points.add(getClosest(start, is));
+//    else  {
+//      points.add(end);
+//      if (!toPos.equals(end)) {
+//        is = getIntersections(end, toPos, true, toPos, toShape);
+//        if (is.isEmpty())
+//          points.add(toPos);
+//        else
+//          points.add(getClosest(end, is));
+//      }
+//    }
+//    
+//    // A simple line
+//    Path result = new Path();
+//    for (Point2D p : points) { 
+//      if (!result.isStarted())
+//        result.start(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
+//      else
+//        result.lineTo(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
+//    }
+//    
+//    // done
+//    return result; 
+  }
+  
+  /**
+   * path with a line going through points between two shapes
+   * @param points a sequence of points describing the path (from source port via transitions to destination port)
+   * @param fromPos position of originating shape
+   * @param fromShape originating shape located at fromPos
+   * @param toPos position of destination shape
+   * @param toShape destination shape located at toPos
+   */  
+  public static Path getPath(Point2D[] points, Point2D fromPos, Shape fromShape, Point2D toPos, Shape toShape, boolean reversed) {
+    return getPath(Arrays.asList(points),fromPos,fromShape,toPos,toShape,reversed);
+  }
+  
+  /**
+   * path with a line going through points between two shapes
+   * @param points a sequence of points describing the path (from source port via transitions to destination port)
+   * @param fromPos position of originating shape
+   * @param fromShape originating shape located at fromPos
+   * @param toPos position of destination shape
+   * @param toShape destination shape located at toPos
+   */  
+  public static Path getPath(List<Point2D> points, Point2D fromPos, Shape fromShape, Point2D toPos, Shape toShape, boolean reversed) {
     
-    Point2D a = getSum(fromPos, fromPort);
-    Point2D b = getSum(toPos, toPort);
+    if (points.size()<2)
+      throw new IllegalArgumentException("list of points cannot be smaller than two");
     
-    // resolve start position
-    Collection<Point2D> is = getIntersections(a, b, true, fromPos, fromShape);
-    if (!is.isEmpty())
-      points.add(getClosest(b, is));
-    else {
-      is = getIntersections(fromPos, a, true, fromPos, fromShape);
-      if (is.isEmpty())
-        points.add(fromPos);
-      else
-        points.add(getClosest(a, is));
-      points.add(a);
-    }
-    
-    // resolve end position
-    is = getIntersections(b, a, true, toPos, toShape);
-    if (!is.isEmpty())
-      points.add(getClosest(a, is));
-    else  {
-      points.add(b);
-      is = getIntersections(b, toPos, true, toPos, toShape);
-      if (is.isEmpty())
-        points.add(toPos);
-      else
-        points.add(getClosest(b, is));
-    }
-    
-    // A simple line
+    // A simple line through points
     Path result = new Path();
-    for (Point2D p : points) { 
-      if (!result.isStarted())
-        result.start(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
-      else
-        result.lineTo(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
+    
+    // intersect the first segment with fromShape
+    Collection<Point2D> is = getIntersections(points.get(0), points.get(1), true, fromPos, fromShape);
+    if (!is.isEmpty())
+      points.set(0, getClosest(points.get(1), is));
+    else {
+      if (!points.get(0).equals(fromPos)) {
+        is = getIntersections(fromPos, points.get(0), true, fromPos, fromShape);
+        if (is.isEmpty())
+          points.add(0, fromPos);
+        else
+          points.add(0, getClosest(points.get(0), is));
+      }
+    }
+    
+    // intersect the last segment with toShape
+    int n = points.size();
+    is = getIntersections(points.get(n-2), points.get(n-1), true, toPos, toShape);
+    if (!is.isEmpty())
+      points.set(n-1, getClosest(points.get(n-2), is));
+    else {
+      if (!points.get(n-1).equals(toPos)) {
+        is = getIntersections(points.get(n-1), toPos, true, toPos, toShape);
+        if (is.isEmpty())
+          points.add(toPos);
+        else
+          points.add(getClosest(points.get(n-1), is));
+      }
+    }
+    
+    // add the points to this path relative to start
+    if (!reversed) {
+      double 
+        cx = fromPos.getX(), 
+        cy = fromPos.getY();
+      
+      for (int i=0;i<points.size();i++) {
+        Point2D p = points.get(i);
+        if (i==0)
+          result.start(new Point2D.Double( p.getX() - cx, p.getY() - cy));
+        else
+          result.lineTo(new Point2D.Double( p.getX() - cx, p.getY() - cy ));
+      }
+      
+    } else {
+      double 
+        cx = toPos.getX(), 
+        cy = toPos.getY();
+      for (int i=n-1;i>=0;i--) {
+        Point2D p = points.get(i);
+        if (i==0)
+          result.start(new Point2D.Double( p.getX() - cx, p.getY() - cy));
+        else
+          result.lineTo(new Point2D.Double( p.getX() - cx, p.getY() - cy ));
+      }
     }
     
     // done
-    return result; 
-  }
-
-  /**
-   * Calculate in-degree of a vertex
-   */
-  public static int getInDegree(Vertex v) {
-    int result = 0;
-    for (Edge e : v.getEdges()) {
-      if (e.getEnd().equals(v))
-        result ++;
-    }
-    return result;
-  }
-
-  /**
-   * Calculate out-degree of a vertex
-   */
-  public static int getOutDegree(Vertex v) {
-    int result = 0;
-    for (Edge e : v.getEdges()) {
-      if (e.getStart().equals(v))
-        result ++;
-    }
     return result;
   }
 } //ModelHelper
