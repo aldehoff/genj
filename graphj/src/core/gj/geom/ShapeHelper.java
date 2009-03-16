@@ -38,20 +38,20 @@ import java.util.List;
  * Missing shape functionality from the geom.* stuff
  */
 public class ShapeHelper {
-
+  
   /** 
-   * the maximum distance that the line segments used to approximate 
-   * the curved segments are allowed to deviate from any point on the
-   * original curve in a flatting path operation 
+   * the maximum distance the line segments used to approximate 
+   * the curved segments are allowed to deviate from its control points
+   * @see FlatteningPathIterator#FlatteningPathIterator(PathIterator, double, int)
    */
-  private static int defaultFlatness = 4;
+  private static double defaultFlatness = 0.5;
   
   /**
    * Change default flatness
    * @see ShapeHelper#defaultFlatness
    */
-  public void setDefaultFlatness(int flatness) {
-    defaultFlatness = flatness;
+  public void setDefaultFlatness(double flatness) {
+    defaultFlatness = Math.min(flatness, defaultFlatness);
   }
 
   /**
