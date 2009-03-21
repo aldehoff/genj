@@ -280,6 +280,12 @@ public class ReportEvents extends Report {
         // filter '='
         if (filter.charAt(0)=='=')
           return Integer.parseInt(filter.substring(1)) == value;
+        // filter '-'
+        int range = filter.indexOf("-");
+        if (range>0) {
+          return Integer.parseInt(filter.substring(0,range)) <= value
+            && Integer.parseInt(filter.substring(range+1)) >= value;
+        }
         return Integer.parseInt(filter) == value;
       } catch (NumberFormatException e) {
         return false;
