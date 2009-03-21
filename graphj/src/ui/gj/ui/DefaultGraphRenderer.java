@@ -21,6 +21,7 @@ package gj.ui;
 
 import static gj.geom.PathIteratorKnowHow.SEG_LINETO;
 import static gj.geom.PathIteratorKnowHow.SEG_MOVETO;
+import static gj.geom.PathIteratorKnowHow.SEG_CLOSE;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
@@ -48,9 +49,9 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /** an arrow-head pointing upwards */
   private final static Shape ARROW_HEAD = ShapeHelper.createShape(0,0,1,1,new double[]{
       SEG_MOVETO, 0, 0, 
-      SEG_LINETO, -5, -7, 
-      SEG_MOVETO,  5, -7, 
-      SEG_LINETO, 0, 0
+      SEG_LINETO, -3, -7, 
+      SEG_LINETO,  3, -7, 
+      SEG_CLOSE
   });
 
   /**
@@ -168,8 +169,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
     
     // draw arrow
     pos = path.getLastPoint();
+    graphics.setBackground(getColor(edge));
     graphics.translate(pos.getX(), pos.getY());
     graphics.rotate(path.getLastAngle());
+    graphics.fill(ARROW_HEAD);
     graphics.draw(ARROW_HEAD);
     
     // done      
