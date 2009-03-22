@@ -14,6 +14,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
@@ -40,8 +41,6 @@ public class ReportEvents extends Report {
   
     /** whether we sort by day-of-month or date */
     public boolean isSortDay = true;
-    /** wether dead persons' events should be considered */
-    public boolean isShowDead = true;
     /** whether births should be reported */
     public boolean reportBirth = true;
     /** whether baptisms should be reported */
@@ -61,6 +60,13 @@ public class ReportEvents extends Report {
     /** whether the output should be in icalendar format */
     public boolean isOutputICal = false;
 
+    /** wether dead persons' events should be filtered out */
+    public boolean isNoDead = false;
+    
+    /** filter place */
+    public String place = "";
+    
+    /** filter gender */
     public int sex = 3;
     public String[] sexs = {PropertySex.TXT_MALE, PropertySex.TXT_FEMALE, PropertySex.TXT_UNKNOWN, ""};
 
@@ -120,10 +126,18 @@ public class ReportEvents extends Report {
           println("VERSION:2.0");
           println("METHOD:PUBLISH");
         } else {
-          println(PropertySex.TXT_SEX + ": " + (sex==3?"*":sexs[sex]));
-          println(Delta.TXT_DAY + ": " + (day.length()==0?"*":day));
-          println(Delta.TXT_MONTH + ": " + (month.length()==0?"*":month));
-          println(Delta.TXT_YEAR + ": " + (year.length()==0?"*":year));
+          if (isNoDead)
+            println(translate("isNoDead"));
+          if (place.length()>0)
+            println(translate("place") + " = " + place);
+          if (sex!=3)
+            println(translate("sex") + " = " + sexs[sex]);
+          if (day.length()>0)
+            println(translate("day") + " = " + day);
+          if (month.length()>0)
+            println(translate("month") + " = " + month);
+          if (year.length()>0)
+            println(translate("year")+ " = " + year);
           println();
         }
         
@@ -161,8 +175,8 @@ public class ReportEvents extends Report {
      */
     private void analyze(Indi indi, Map tag2events) {
 
-        // consider dead?
-        if (!isShowDead && indi.getDeathDate() != null && indi.getDeathDate().isValid())
+        // filter dead?
+        if (isNoDead && indi.getDeathDate() != null && indi.getDeathDate().isValid())
             return;
 
         if(checkSex(indi)==false)
@@ -194,7 +208,18 @@ public class ReportEvents extends Report {
             Property date = event.getProperty("DATE");
             if (date instanceof PropertyDate) {
               Hit hit = new Hit(entity, (PropertyEvent)event, i, (PropertyDate)date);
-              if(checkDate((PropertyDate)date)&&!events.contains(hit)) events.add(hit); 
+              
+              // already known?
+              if (events.contains(hit))
+                continue;
+              // bad date?
+              if (!checkDate((PropertyDate)date))
+                continue;
+              // bad place?
+              if (!checkPlace(event))
+                continue;
+              // got it
+              events.add(hit); 
             }
           }
         }
@@ -211,8 +236,27 @@ public class ReportEvents extends Report {
       }
       return Property.toArray(result);
     }
+    
+    /**
+     * checks if the place of an event matches the user's choice
+     */
+    private boolean checkPlace(Property event) {
+      
+      // no filter = always matching
+      if (place.length()==0)
+        return true;
+      
+      // need place
+      PropertyPlace pp = (PropertyPlace)event.getProperty("PLAC");
+      if (pp==null)
+        return false;
+      
+      // need matching value
+      return pp.getValue().matches(".*"+place+".*");
+    }
 
-    /** checks if the sex of an indi matches the user choice
+    /** 
+     * checks if the sex of an indi matches the user choice
      * @param indi to check
      * @return boolean the result
      */
