@@ -37,7 +37,7 @@ public class LayerByLayerSweepCR implements CrossingReduction {
     for (int i=1;i<layerAssignment.getHeight();i++)
       sweepLayer(layerAssignment, i, -1);
 
-    // TODO sweeping from source>sink vs sink>source can lead to a better result - we should probably try both
+    // FIXME sweeping from source>sink vs sink>source can lead to a better result - we should probably try both
 //    for (int i=layers.size()-2;i>=0;i--)
 //      sweepLayer(layers.get(i), +1);
   }

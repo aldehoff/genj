@@ -19,17 +19,19 @@
  */
 package gj.layout.graph.hierarchical;
 
-import static gj.geom.Geometry.*;
+import static gj.geom.Geometry.getBounds;
+import static gj.util.LayoutHelper.getPort;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
 import gj.layout.graph.hierarchical.LayerAssignment.DummyVertex;
+import gj.layout.graph.hierarchical.LayerAssignment.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
+import gj.util.LayoutHelper.Side;
 
-import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -193,24 +195,30 @@ public class HierarchicalLayout implements GraphLayout {
     private double totalWidth = 0;
     private double[] layerWidths = null;
     private double[] layerHeights = null;
-    private double[] layerPos = null;
+    private Rectangle2D[][] cellBounds = null;
     private Rectangle2D[][] vertexBounds = null;
-    private int dir = isSinksAtBottom ? -1 : 1;
+    private Side top, bottom;
     
     private Rectangle2D apply(Graph2D graph2d, LayerAssignment layerAssignment) {
 
       int layers = layerAssignment.getHeight();
       
+      if (isSinksAtBottom) {
+        top = Side.North;
+        bottom = Side.South;
+      } else {
+        top = Side.South;
+        bottom = Side.North;
+      }
+      
       // init structures
       layerWidths = new double[layers];
       layerHeights = new double[layers];
-      layerPos = new double[layers];
+      cellBounds = new Rectangle2D[layers][layerAssignment.getWidth()];
       vertexBounds = new Rectangle2D[layers][layerAssignment.getWidth()];
       
       // calculate true width of widest layer in points
-      double y = 0;
       for (int i=0;i<layers;i++) {
-        layerPos[i] = y;
         for (int j=0;j<layerAssignment.getWidth(i);j++) {
           if (j>0) layerWidths[i]+=distanceBetweenVertices;
           Rectangle2D r = getBounds(graph2d.getShapeOfVertex(layerAssignment.getVertex(i, j)));
@@ -219,10 +227,8 @@ public class HierarchicalLayout implements GraphLayout {
           layerHeights[i] = Math.max(layerHeights[i], r.getHeight());
         }
         totalHeight += layerHeights[i];
-        y += dir*(distanceBetweenLayers+layerHeights[i]);
         if (layerWidths[i]>totalWidth) totalWidth = layerWidths[i];
       }
-      
       totalHeight += distanceBetweenLayers*(layers-1);
 
       // do it
@@ -243,25 +249,27 @@ public class HierarchicalLayout implements GraphLayout {
       //  balance nodes left/center/right
 
       // loop over layers and place vertices 
+      double y = 0;
       for (int i=0;i<layerAssignment.getHeight();i++) {
         double x = (totalWidth-layerWidths[i])*alignmentOfLayers;
-        double y = layerPos[i];
+        y += isSinksAtBottom ? -layerHeights[i] : 0;
         for (int j=0; j<layerAssignment.getWidth(i); j++) {
           Vertex vertex = layerAssignment.getVertex(i,j);
           graph2d.setTransformOfVertex(vertex, null);
           if (j>0) x += (vertex instanceof DummyVertex || layerAssignment.getVertex(i,j-1) instanceof DummyVertex) ? distanceBetweenVertices/2 : distanceBetweenVertices;
           Rectangle2D r = vertexBounds[i][j];
-          if (dir<0)
-            graph2d.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMaxY() - (layerHeights[i]-r.getHeight())/2 ));
-          else
-            graph2d.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
+          
+          cellBounds[i][j] = new Rectangle2D.Double(x, y, r.getWidth(), layerHeights[i]);
+          
+          graph2d.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
           
           x += r.getWidth();
         }
+        y += isSinksAtBottom ? -distanceBetweenLayers : layerHeights[i] + distanceBetweenLayers;
       }
       
       // done
-      return new Rectangle2D.Double(0,dir<0?-totalHeight:0,totalWidth,totalHeight);
+      return new Rectangle2D.Double(0,isSinksAtBottom?-totalHeight:0,totalWidth,totalHeight);
     }
     
     /**
@@ -272,33 +280,21 @@ public class HierarchicalLayout implements GraphLayout {
       // route edges appropriately
       for (Edge edge : graph2d.getEdges()) {
         
-        Point[] routing = layerAssignment.getRouting(edge);
-        int n = routing.length-1;
-        List<Point2D> points = new ArrayList<Point2D>(routing.length);
+        Routing routing = layerAssignment.getRouting(edge);
+        List<Point2D> points = new ArrayList<Point2D>(routing.len);
 
-        if (!pickPorts)
-          points.add(graph2d.getPositionOfVertex(layerAssignment.getVertex(routing[0].y, routing[0].x)));
-        else
-          points.add(new Point2D.Double(
-            graph2d.getPositionOfVertex(layerAssignment.getVertex(routing[0].y, routing[0].x)).getX(),
-            layerPos[routing[0].y]
-          ));
+        points.add(getPort(cellBounds[routing.layers[0]][routing.positions[0]], 
+            routing.outIndex, routing.outDegree, 
+            pickPorts ? bottom : Side.None));
         
-        for (int r=1;r<n;r++) {
-          int layer = routing[r].y;
-          int pos = routing[r].x;
-          Point2D p = graph2d.getPositionOfVertex(layerAssignment.getVertex(layer, pos));
-          points.add(new Point2D.Double(p.getX(),layerPos[layer]+dir*layerHeights[layer]));
-          points.add(new Point2D.Double(p.getX(),layerPos[layer]));
+        for (int r=1;r<routing.len-1;r++) {
+          points.add(getPort(cellBounds[routing.layers[r]][routing.positions[r]], 0, 1, top));
+          points.add(getPort(cellBounds[routing.layers[r]][routing.positions[r]], 0, 1, bottom));
         }
         
-        if (!pickPorts)
-          points.add(graph2d.getPositionOfVertex(layerAssignment.getVertex(routing[n].y, routing[n].x)));
-        else
-          points.add(new Point2D.Double(
-            graph2d.getPositionOfVertex(layerAssignment.getVertex(routing[n].y, routing[n].x)).getX(),
-            (layerPos[routing[n].y] + dir*layerHeights[routing[n].y])
-          ));
+        points.add(getPort(cellBounds[routing.layers[routing.len-1]][routing.positions[routing.len-1]], 
+            routing.inIndex, routing.inDegree, 
+            pickPorts ? top : Side.None));
         
         graph2d.setPathOfEdge(edge, 
             LayoutHelper.getPath(points, 
@@ -315,5 +311,5 @@ public class HierarchicalLayout implements GraphLayout {
     }
     
   } //VertexPositioning
-
+  
 } //HierarchicalLayout

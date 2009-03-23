@@ -24,7 +24,6 @@ import gj.layout.GraphNotSupportedException;
 import gj.model.Edge;
 import gj.model.Vertex;
 
-import java.awt.Point;
 import java.util.Collection;
 import java.util.Comparator;
 
@@ -84,9 +83,9 @@ public interface LayerAssignment {
   /**
    * Routing of a given edge
    * @param edge the edge
-   * @return list of pairs (layer,position)*
+   * @return routing of edge
    */
-  public Point[] getRouting(Edge edge);
+  public Routing getRouting(Edge edge);
 
   /**
    * Adjacent positions for layer and positions
@@ -103,6 +102,19 @@ public interface LayerAssignment {
    * @return list of indices in layer+1
    */
   public int[] getOutgoingIndices(int layer, int u);
+
+  /**
+   * An edge routing
+   */
+  public class Routing {
+    public int outIndex;
+    public int outDegree;
+    public int len;
+    public int[] layers;
+    public int[] positions;
+    public int inIndex;
+    public int inDegree;
+  }
 
   /**
    * Dummy vertex 

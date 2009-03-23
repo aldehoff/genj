@@ -25,7 +25,6 @@ import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -191,20 +190,27 @@ public class LongestPathLA implements LayerAssignment {
     
     // done
   }
+  
    
-  public Point[] getRouting(Edge edge) {
+  public Routing getRouting(Edge edge) {
+    
+    Routing result = new Routing();
+    result.len = 0;
+    result.layers = new int[layers.size()];
+    result.positions = new int[layers.size()];
     
     // start with edge's start cell and its layer
-    Cell cell = vertex2cell.get(edge.getStart());
-    List<Point> result = new ArrayList<Point>();
-    result.add(new Point(cell.position,cell.layer));
+    Cell source = vertex2cell.get(edge.getStart());
+    result.layers[result.len] = source.layer;
+    result.positions[result.len++] = source.position;
     
     // find outgoing arc
+    Cell dest = source;
     while (true) {
       
       Cell2Cell arc = null;
-      for (int i=0;i<cell.out.size();i++) {
-        arc = cell.out.get(i);
+      for (int i=0;i<dest.out.size();i++) {
+        arc = dest.out.get(i);
         if (arc.edge.equals(edge)) break;
         arc = null;
       }
@@ -213,17 +219,32 @@ public class LongestPathLA implements LayerAssignment {
         throw new IllegalArgumentException("n/a");
   
       // add routing element
-      result.add(new Point(arc.to.position, arc.to.layer));
+      result.layers[result.len] = arc.to.layer;
+      result.positions[result.len++] = arc.to.position;
+      
+      // continue into next
+      dest = arc.to;
       
       // done?
-      if (!(arc.to.vertex instanceof DummyVertex)) break;
-      
-      // continue into dummy
-      cell = arc.to;
+      if (!(dest.vertex instanceof DummyVertex)) break;
+    }
+    
+    // calculate source's outgoing index/degree
+    result.outDegree = source.out.size();
+    for (int i=0;i<source.out.size();i++) {
+      if (source.out.get(i).to.position < result.positions[1])
+        result.outIndex++;
+    }
+    
+    // calculate dest's incoming index/degree
+    result.inDegree = dest.in.size();
+    for (int i=0;i<dest.in.size();i++) {
+      if (dest.in.get(i).from.position < result.positions[result.len-2])
+        result.inIndex++;
     }
     
     // done
-    return result.toArray(new Point[result.size()]);
+    return result;
   }
 
   public void swapVertices(int layer, int u, int v) {
@@ -362,12 +383,16 @@ public class LongestPathLA implements LayerAssignment {
    
     
     protected void addOut(Edge edge, Cell to) {
+      for (Cell2Cell c : out) 
+        if (c.edge.equals(edge)) return;
       Cell2Cell arc = new Cell2Cell(edge, this, to);
       out.add(arc);
       to.in.add(arc);
     }
     
     protected void addIn(Edge edge, Cell from) {
+      for (Cell2Cell c : in) 
+        if (c.edge.equals(edge)) return;
       Cell2Cell arc = new Cell2Cell(edge, from, this);
       in.add(arc);
       from.out.add(arc);
