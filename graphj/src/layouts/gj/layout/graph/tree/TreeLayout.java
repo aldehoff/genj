@@ -19,6 +19,8 @@
  */
 package gj.layout.graph.tree;
 
+import static gj.util.LayoutHelper.*;
+
 import gj.geom.Geometry;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
@@ -28,7 +30,6 @@ import gj.layout.edge.visibility.EuclideanShortestPathLayout;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.AbstractGraphLayout;
-import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -450,7 +451,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       for (Edge edge : root.getEdges()) {
         
         // don't do edge to backtrack
-        if (LayoutHelper.contains(edge, backtrack))
+        if (contains(edge, backtrack))
           continue;
 
         if (isBendArcs) {
@@ -463,9 +464,9 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
             Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
             points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
           }
-          graph2d.setPathOfEdge(edge, LayoutHelper.getPath(points, pos(edge.getStart()), shape(edge.getStart()), pos(edge.getEnd()), shape(edge.getEnd()), false));
+          graph2d.setPathOfEdge(edge, getPath(points, pos(edge.getStart()), shape(edge.getStart()), pos(edge.getEnd()), shape(edge.getEnd()), false));
         } else {
-          graph2d.setPathOfEdge(edge, LayoutHelper.getPath(edge, graph2d));
+          graph2d.setPathOfEdge(edge, getPath(edge, graph2d));
         }
         
       }
@@ -479,11 +480,11 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       
       // either all children as per directed edges or all neighbours w/o backtrack
       if (isSingleSourceDAG) {
-        result = LayoutHelper.getChildren(parent);
+        result = getChildren(parent);
         if (backtrack!=null && result.contains(backtrack))
           throw new GraphNotSupportedException("Graph contains backtracking edge ["+parent+">"+backtrack+"]");
       } else {
-        result = LayoutHelper.getNeighbours(parent);
+        result = getNeighbours(parent);
         result.remove(backtrack);
       }
       
@@ -521,7 +522,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     void moveBy(Point2D delta) {
       
       for (Vertex vertice : vertices) 
-        LayoutHelper.translate(layout, vertice, delta);
+        translate(layout, vertice, delta);
       
       top = null;
       

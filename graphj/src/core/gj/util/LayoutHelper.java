@@ -45,6 +45,49 @@ import java.util.Set;
  * Helper for analyzing model.*
  */
 public class LayoutHelper {
+
+  /** enumeration for describing a side of a geometric shape */
+  public enum Side {
+    
+    North() { @Override public Side opposite() { return South; } },
+    West () { @Override public Side opposite() { return East ; } },
+    East () { @Override public Side opposite() { return West ; } },
+    South() { @Override public Side opposite() { return North; } },
+    None () { @Override public Side opposite() { return this ; } };
+    
+    public abstract Side opposite();
+  }
+
+  /**
+   * Resolve the port for given shape
+   * @param shape the shape to calculate a port for
+   * @param index zero based index of count ports on side
+   * @param count number ports on side
+   * @param side the side of the port
+   */
+  public static Point2D getPort(Shape shape, int index, int count, Side side) {
+    
+    if (index<0||index>=count)
+      throw new IllegalArgumentException("!(0<="+index+"<"+count+")");
+    count++;
+    index ++;
+    
+    Rectangle2D bounds = shape.getBounds2D();
+    switch (side) {
+    case None:
+      return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()); 
+    case North:
+      return new Point2D.Double(bounds.getMinX() + (bounds.getWidth()/count)*index, bounds.getMinY()); 
+    case South:
+      return new Point2D.Double(bounds.getMinX() + (bounds.getWidth()/count)*index, bounds.getMaxY()); 
+    case West:
+      return new Point2D.Double(bounds.getMinX(), bounds.getMinY() + (bounds.getHeight()/count)*index); 
+    case East:
+      return new Point2D.Double(bounds.getMaxX(), bounds.getMinY() + (bounds.getHeight()/count)*index); 
+    default:
+      throw new IllegalArgumentException("n/a");
+    }
+  }
   
   /**
    * Translates a node's position
@@ -398,6 +441,30 @@ public class LayoutHelper {
     }
     
     // done
+    return result;
+  }
+
+  /**
+   * Calculate in-degree of a vertex
+   */
+  public static int getInDegree(Vertex v) {
+    int result = 0;
+    for (Edge e : v.getEdges()) {
+      if (e.getEnd().equals(v))
+        result ++;
+    }
+    return result;
+  }
+
+  /**
+   * Calculate out-degree of a vertex
+   */
+  public static int getOutDegree(Vertex v) {
+    int result = 0;
+    for (Edge e : v.getEdges()) {
+      if (e.getStart().equals(v))
+        result ++;
+    }
     return result;
   }
 } //ModelHelper

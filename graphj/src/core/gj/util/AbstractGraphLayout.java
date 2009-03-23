@@ -21,8 +21,6 @@ package gj.util;
 
 
 import gj.layout.GraphLayout;
-import gj.model.Edge;
-import gj.model.Vertex;
 
 import java.util.WeakHashMap;
 
@@ -45,30 +43,6 @@ public abstract class AbstractGraphLayout<Attribute> implements GraphLayout {
    */
   protected void setAttribute(Object object, Attribute attr) {
     object2attr.put(object, attr);
-  }
-
-  /**
-   * Calculate in-degree of a vertex
-   */
-  protected int getInDegree(Vertex v) {
-    int result = 0;
-    for (Edge e : v.getEdges()) {
-      if (e.getEnd().equals(v))
-        result ++;
-    }
-    return result;
-  }
-
-  /**
-   * Calculate out-degree of a vertex
-   */
-  protected int getOutDegree(Vertex v) {
-    int result = 0;
-    for (Edge e : v.getEdges()) {
-      if (e.getStart().equals(v))
-        result ++;
-    }
-    return result;
   }
   
 } //AbstractLayout
