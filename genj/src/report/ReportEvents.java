@@ -16,17 +16,16 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
-import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 import genj.util.WordBuffer;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -104,19 +103,19 @@ public class ReportEvents extends Report {
         formatDTSTAMP.setTimeZone(TimeZone.getDefault()); // apply local timezone to dtstamp formatting (it's considered Z)
 
         // collect evens for all individuals/families
-        Map tag2events = new HashMap();
-        if (reportBirth) tag2events.put("BIRT", new ArrayList());
-        if (reportBaptism) tag2events.put("BAPM|BAPL|CHR|CHRA",  new ArrayList());
-        if (reportMarriage) tag2events.put("MARR", new ArrayList());
-        if (reportDivorce) tag2events.put("DIV", new ArrayList());
-        if (reportEmigration) tag2events.put("EMI", new ArrayList());
-        if (reportImmigration) tag2events.put("IMMI", new ArrayList());
-        if (reportNaturalization) tag2events.put("NATU", new ArrayList());
-        if (reportDeath) tag2events.put("DEAT", new ArrayList());
+        Map<String, List<Hit>> tag2events = new HashMap<String, List<Hit>>();
+        if (reportBirth) tag2events.put("BIRT", new ArrayList<Hit>());
+        if (reportBaptism) tag2events.put("BAPM|BAPL|CHR|CHRA",  new ArrayList<Hit>());
+        if (reportMarriage) tag2events.put("MARR", new ArrayList<Hit>());
+        if (reportDivorce) tag2events.put("DIV", new ArrayList<Hit>());
+        if (reportEmigration) tag2events.put("EMI", new ArrayList<Hit>());
+        if (reportImmigration) tag2events.put("IMMI", new ArrayList<Hit>());
+        if (reportNaturalization) tag2events.put("NATU", new ArrayList<Hit>());
+        if (reportDeath) tag2events.put("DEAT", new ArrayList<Hit>());
 
         // loop individuals
-        for (Iterator indis = gedcom.getEntities(Gedcom.INDI).iterator(); indis.hasNext(); ) {
-            analyze((Indi)indis.next(), tag2events);
+        for (Entity indi : (Collection<Entity>)gedcom.getEntities(Gedcom.INDI)) {
+            analyze((Indi)indi, tag2events);
         }
         
         // output header
@@ -142,9 +141,8 @@ public class ReportEvents extends Report {
         }
         
         // ... output events type by type
-        for (Iterator tags=tag2events.keySet().iterator(); tags.hasNext(); ) {
-          String tag = (String)tags.next();
-          List events = (List)tag2events.get(tag);
+        for (String tag : tag2events.keySet()) {
+          List<Hit> events = tag2events.get(tag);
           if (!events.isEmpty()) {
             
             Collections.sort(events);
@@ -152,8 +150,8 @@ public class ReportEvents extends Report {
             if (!isOutputICal) 
               println(getIndent(2) + Gedcom.getName(new StringTokenizer(tag, "|").nextToken()));
 
-            for (Iterator it=events.iterator();it.hasNext();) 
-              println(it.next());
+            for (Hit event : events) 
+              println(event);
             
             if (!isOutputICal) 
               println();
@@ -173,7 +171,7 @@ public class ReportEvents extends Report {
     /**
      * Analyze one individual
      */
-    private void analyze(Indi indi, Map tag2events) {
+    private void analyze(Indi indi, Map<String,List<Hit>> tag2events) {
 
         // filter dead?
         if (isNoDead && indi.getDeathDate() != null && indi.getDeathDate().isValid())
@@ -195,11 +193,10 @@ public class ReportEvents extends Report {
         // done
     }
     
-    private void analyzeEvents(Entity entity, Map tag2events) {
+    private void analyzeEvents(Entity entity, Map<String, List<Hit>> tag2events) {
       
-      for (Iterator tags = tag2events.keySet().iterator(); tags.hasNext(); ) {
-        String tag = (String)tags.next();
-        List events = (List)tag2events.get(tag);
+      for (String tag : tag2events.keySet()) {
+        List<Hit> events = tag2events.get(tag);
         
         Property[] props = getProperties(entity, tag);
         for (int i = 0; i < props.length; i++) {
@@ -228,7 +225,7 @@ public class ReportEvents extends Report {
     }
     
     private Property[] getProperties(Entity entity, String tag) {
-      ArrayList result = new ArrayList();
+      ArrayList<Property> result = new ArrayList<Property>();
       for (int i=0, j = entity.getNoOfProperties(); i<j ; i++) {
         Property prop = entity.getProperty(i);
         if (prop.getTag().matches(tag))
@@ -252,7 +249,7 @@ public class ReportEvents extends Report {
         return false;
       
       // need matching value
-      return pp.getValue().matches(".*"+place+".*");
+      return pp.getValue().matches("(?i).*"+place+".*");
     }
 
     /** 
@@ -344,7 +341,7 @@ public class ReportEvents extends Report {
     /**
      * Wrapping an Event hit
      */
-    private class Hit implements Comparable {
+    private class Hit implements Comparable<Hit> {
       
       Entity who;
       int num;
@@ -366,8 +363,8 @@ public class ReportEvents extends Report {
           compare = when;
       }
       // comparison
-      public int compareTo(Object object) {
-          return compare.compareTo(((Hit)object).compare);
+      public int compareTo(Hit other) {
+          return compare.compareTo(other.compare);
       }
       // equals
       public boolean equals(Object that) {
