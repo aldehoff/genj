@@ -60,12 +60,24 @@ public class LayoutHelper {
 
   /**
    * Resolve the port for given shape
+   * @param pos position of shape
    * @param shape the shape to calculate a port for
    * @param index zero based index of count ports on side
    * @param count number ports on side
    * @param side the side of the port
    */
   public static Point2D getPort(Shape shape, int index, int count, Side side) {
+    return getPort(new Point2D.Double(), shape, index, count, side);
+  }
+  
+  /**
+   * Resolve the port for given shape
+   * @param shape the shape to calculate a port for
+   * @param index zero based index of count ports on side
+   * @param count number ports on side
+   * @param side the side of the port
+   */
+  public static Point2D getPort(Point2D pos, Shape shape, int index, int count, Side side) {
     
     if (index<0||index>=count)
       throw new IllegalArgumentException("!(0<="+index+"<"+count+")");
@@ -304,56 +316,14 @@ public class LayoutHelper {
    * @param toPort the port for toShape
    */
   public static Path getPath(Point2D fromPos, Shape fromShape, Point2D fromPort, Point2D toPos, Shape toShape, Point2D toPort) {
+    return getPath(fromPos, fromShape, fromPort, toPos, toShape, toPort, false);
+  }
+  
+  public static Path getPath(Point2D fromPos, Shape fromShape, Point2D fromPort, Point2D toPos, Shape toShape, Point2D toPort, boolean reversed) {
     ArrayList<Point2D> points = new ArrayList<Point2D>(4);
     points.add(getSum(fromPos, fromPort));
     points.add(getSum(toPos, toPort));
-    return getPath(points, fromPos, fromShape, toPos, toShape, false);
-//    ArrayList<Point2D> points = new ArrayList<Point2D>(4);
-//    
-//    Point2D start = getSum(fromPos, fromPort);
-//    Point2D end = getSum(toPos, toPort);
-//    
-//    // resolve start position
-//    Collection<Point2D> is = getIntersections(start, end, true, fromPos, fromShape);
-//    if (!is.isEmpty())
-//      points.add(getClosest(end, is));
-//    else {
-//      if (!fromPos.equals(start)) {
-//        is = getIntersections(fromPos, start, true, fromPos, fromShape);
-//        if (is.isEmpty())
-//          points.add(fromPos);
-//        else
-//          points.add(getClosest(start, is));
-//      }
-//      points.add(start);
-//    }
-//    
-//    // resolve end position
-//    is = getIntersections(end, start, true, toPos, toShape);
-//    if (!is.isEmpty())
-//      points.add(getClosest(start, is));
-//    else  {
-//      points.add(end);
-//      if (!toPos.equals(end)) {
-//        is = getIntersections(end, toPos, true, toPos, toShape);
-//        if (is.isEmpty())
-//          points.add(toPos);
-//        else
-//          points.add(getClosest(end, is));
-//      }
-//    }
-//    
-//    // A simple line
-//    Path result = new Path();
-//    for (Point2D p : points) { 
-//      if (!result.isStarted())
-//        result.start(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
-//      else
-//        result.lineTo(new Point2D.Double(p.getX()-fromPos.getX(), p.getY()-fromPos.getY()));
-//    }
-//    
-//    // done
-//    return result; 
+    return getPath(points, fromPos, fromShape, toPos, toShape, reversed);
   }
   
   /**
@@ -433,7 +403,7 @@ public class LayoutHelper {
         cy = toPos.getY();
       for (int i=n-1;i>=0;i--) {
         Point2D p = points.get(i);
-        if (i==0)
+        if (i==n-1)
           result.start(new Point2D.Double( p.getX() - cx, p.getY() - cy));
         else
           result.lineTo(new Point2D.Double( p.getX() - cx, p.getY() - cy ));
