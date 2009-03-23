@@ -19,9 +19,16 @@
  */
 package gj.layout.graph.tree;
 
-import static gj.util.LayoutHelper.*;
-
+import static gj.util.LayoutHelper.contains;
+import static gj.util.LayoutHelper.getChildren;
+import static gj.util.LayoutHelper.getInDegree;
+import static gj.util.LayoutHelper.getNeighbours;
+import static gj.util.LayoutHelper.getOther;
+import static gj.util.LayoutHelper.getPath;
+import static gj.util.LayoutHelper.getPort;
+import static gj.util.LayoutHelper.translate;
 import gj.geom.Geometry;
+import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
@@ -30,6 +37,7 @@ import gj.layout.edge.visibility.EuclideanShortestPathLayout;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.AbstractGraphLayout;
+import gj.util.LayoutHelper.Side;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -38,8 +46,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
@@ -63,8 +71,8 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /** whether children should be balanced or simply stacked */
   private boolean isBalanceChildren = false;
 
-  /** whether arcs are direct or bended */
-  private boolean isBendArcs = false;
+  /** what we do with edges */
+  private EdgeControl edgeControl = EdgeControl.DirectLinesOnCenter;
 
   /** orientation in degrees 0-359 */
   private double orientation = 180;
@@ -141,17 +149,17 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   }
 
   /**
-   * Getter - whether arcs are direct or bended
+   * Getter - what we do with edges
    */
-  public boolean isBendArcs() {
-    return isBendArcs;
+  public EdgeControl getEdgeControl() {
+    return edgeControl;
   }
 
   /**
    * Setter - whether arcs are direct or bended
    */
-  public void setBendArcs(boolean set) {
-    isBendArcs=set;
+  public void setEdgeControl(EdgeControl set) {
+    edgeControl = set;
   }
   
   /**
@@ -293,7 +301,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     private GeneralPath shape;
     
     /** constructor for a parent and its children */
-    Branch(Vertex backtrack, Vertex parent, Graph2D graph2d, Deque<Vertex> path, Set<Vertex> visited, List<Edge> edgesToRoute, LayoutContext context) throws LayoutException, GraphNotSupportedException{
+    Branch(Vertex backtrack, Vertex parent, Graph2D graph2d, Deque<Vertex> stack, Set<Vertex> visited, List<Edge> edgesToRoute, LayoutContext context) throws LayoutException, GraphNotSupportedException{
       
       // track coverage
       visited.add(parent);
@@ -307,22 +315,20 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       graph2d.setTransformOfVertex(root, null);
       
       // grab and sort children 
-      Vertex[] children = children(backtrack, root);
+      List<Vertex> children = children(backtrack, root);
       if (isOrderSiblingsByPosition) 
-        Arrays.sort(children, this);
+        Collections.sort(children, this);
       
       // recurse into children and take over descendants
-      path.addLast(parent);
-      List<Branch> branches = new ArrayList<Branch>(children.length);
-      for (int i=0;i<children.length;i++) {
-        
-        Vertex child = children[i];
+      stack.addLast(parent);
+      List<Branch> branches = new ArrayList<Branch>(children.size());
+      for (Vertex child : children) {
         
         // catch possible recurse step into already visited nodes
         if (visited.contains(child)) {
           
           // we don't allow directed cycles
-          if (path.contains(child)) {
+          if (stack.contains(child)) {
             context.getLogger().info("cannot handle directed cycle at all");
             throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+">"+child+"]");
           }
@@ -342,12 +348,12 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
         }
         
         // recurse
-        Branch branch = new Branch(parent, child, graph2d, path, visited, edgesToRoute, context);
+        Branch branch = new Branch(parent, child, graph2d, stack, visited, edgesToRoute, context);
         branches.add(branch);
         vertices.addAll(branch.vertices);
 
       }
-      path.removeLast();
+      stack.removeLast();
       
       // no children?
       if (branches.isEmpty()) {
@@ -454,42 +460,75 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
         if (contains(edge, backtrack))
           continue;
 
-        if (isBendArcs) {
-          // calc edge layout
-          Point2D[] points;
-          if (edge.getStart().equals(parent)) {
-            Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getEnd()), layoutAxis);
-            points = new Point2D[]{ pos(edge.getStart()), f, g, pos(edge.getEnd()) };
-          } else {
-            Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
-            points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
-          }
-          graph2d.setPathOfEdge(edge, getPath(points, pos(edge.getStart()), shape(edge.getStart()), pos(edge.getEnd()), shape(edge.getEnd()), false));
-        } else {
-          graph2d.setPathOfEdge(edge, getPath(edge, graph2d));
+        // calculate path
+        Path path;
+        switch (edgeControl) {
+          case BendedLines:
+            // calc edge layout
+            Point2D[] points;
+            if (edge.getStart().equals(parent)) {
+              Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getEnd()), layoutAxis);
+              points = new Point2D[]{ pos(edge.getStart()), f, g, pos(edge.getEnd()) };
+            } else {
+              Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
+              points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
+            }
+            path = getPath(points, pos(edge.getStart()), shape(edge.getStart()), pos(edge.getEnd()), shape(edge.getEnd()), false);
+            break;
+          case DirectLinesWithPorts:
+            Side side = side();
+            if (edge.getEnd().equals(parent))
+              side = side.opposite();
+            path = getPath(
+                pos(edge.getStart()), shape(edge.getStart()), getPort(pos(edge.getStart()), shape(edge.getStart()), children.indexOf(getOther(edge, parent)), children.size(), side           ),
+                pos(edge.getEnd  ()), shape(edge.getEnd  ()), getPort(pos(edge.getEnd  ()), shape(edge.getEnd  ()), 0  , 1              , side.opposite())
+            );
+            break;
+          case DirectLinesOnCenter: default:
+            path = getPath(edge, graph2d);
+            break;
         }
+        
+        graph2d.setPathOfEdge(edge, path);
+        
+        
+        // next
         
       }
 
       // done
     }
     
-    Vertex[] children(Vertex backtrack, Vertex parent) throws GraphNotSupportedException {
+    /** vertex port side for current orientation */
+    Side side() {
+      if (orientation==0)
+        return Side.North;
+      if (orientation==180)
+        return Side.South;
+      if (orientation==90)
+        return Side.East;
+      if (orientation==270)
+        return Side.West;
+      // only support NWES
+      return Side.None;
+    }
+    
+    List<Vertex> children(Vertex backtrack, Vertex parent) throws GraphNotSupportedException {
       
-      Collection<Vertex> result;
+      List<Vertex> result = new ArrayList<Vertex>(10);
       
       // either all children as per directed edges or all neighbours w/o backtrack
       if (isSingleSourceDAG) {
-        result = getChildren(parent);
+        result.addAll(getChildren(parent));
         if (backtrack!=null && result.contains(backtrack))
           throw new GraphNotSupportedException("Graph contains backtracking edge ["+parent+">"+backtrack+"]");
       } else {
-        result = getNeighbours(parent);
+        result.addAll(getNeighbours(parent));
         result.remove(backtrack);
       }
       
       // done
-      return result.toArray(new Vertex[result.size()]);      
+      return result;      
     }
     
     Point2D top() throws LayoutException{
@@ -547,5 +586,14 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       return (int)(delta);
     }
   } //Branch
+  
+  /**
+   * our edge control
+   */
+  public enum EdgeControl {
+    DirectLinesOnCenter,
+    DirectLinesWithPorts,
+    BendedLines
+  }
   
 } //TreeLayout
