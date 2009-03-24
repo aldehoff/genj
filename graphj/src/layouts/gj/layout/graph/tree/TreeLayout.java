@@ -33,11 +33,12 @@ import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
+import gj.layout.Port;
 import gj.layout.edge.visibility.EuclideanShortestPathLayout;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.AbstractGraphLayout;
-import gj.util.LayoutHelper.Side;
+import gj.util.DelegatingGraph;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -72,7 +73,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   private boolean isBalanceChildren = false;
 
   /** what we do with edges */
-  private EdgeControl edgeControl = EdgeControl.DirectLinesOnCenter;
+  private EdgeLayout edgeLayout = EdgeLayout.Polyline;
 
   /** orientation in degrees 0-359 */
   private double orientation = 180;
@@ -151,15 +152,15 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /**
    * Getter - what we do with edges
    */
-  public EdgeControl getEdgeControl() {
-    return edgeControl;
+  public EdgeLayout getEdgeControl() {
+    return edgeLayout;
   }
 
   /**
    * Setter - whether arcs are direct or bended
    */
-  public void setEdgeControl(EdgeControl set) {
-    edgeControl = set;
+  public void setEdgeControl(EdgeLayout set) {
+    edgeLayout = set;
   }
   
   /**
@@ -271,11 +272,16 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     }
     
     // catch up on layouting edges that need routing because of acyclic graph
-    EuclideanShortestPathLayout edgeLayout = new EuclideanShortestPathLayout();
-    edgeLayout.setEdgeVertexDistance(Math.min(distanceBetweenGenerations, distanceInGeneration)/4);
+    EuclideanShortestPathLayout layout = new EuclideanShortestPathLayout();
+    layout.setEdgeVertexDistance(Math.min(distanceBetweenGenerations, distanceInGeneration)/4);
     for (Edge e : edgesToRoute)  {
       context.getLogger().fine("routing edge ["+e+"]");
-      edgeLayout.apply(e, graph2d, context);
+      layout.apply(e, new DelegatingGraph(graph2d) {
+        @Override
+        public Port getPortOfEdge(Edge edge, Vertex at) {
+          return edgeLayout == EdgeLayout.PortPolyline ? Port.Fixed : Port.None;
+        }
+      }, context);
     }
     
     // done
@@ -462,8 +468,8 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
 
         // calculate path
         Path path;
-        switch (edgeControl) {
-          case BendedLines:
+        switch (edgeLayout) {
+          case Orthogonal:
             // calc edge layout
             Point2D[] points;
             if (edge.getStart().equals(parent)) {
@@ -475,16 +481,16 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
             }
             path = getPath(points, pos(edge.getStart()), shape(edge.getStart()), pos(edge.getEnd()), shape(edge.getEnd()), false);
             break;
-          case DirectLinesWithPorts:
-            Side side = side();
+          case PortPolyline:
+            Port side = side();
             if (edge.getEnd().equals(parent))
               side = side.opposite();
             path = getPath(
-                pos(edge.getStart()), shape(edge.getStart()), getPort(pos(edge.getStart()), shape(edge.getStart()), children.indexOf(getOther(edge, parent)), children.size(), side           ),
-                pos(edge.getEnd  ()), shape(edge.getEnd  ()), getPort(pos(edge.getEnd  ()), shape(edge.getEnd  ()), 0  , 1              , side.opposite())
+                pos(edge.getStart()), shape(edge.getStart()), getPort(shape(edge.getStart()), children.indexOf(getOther(edge, parent)), children.size(), side           ),
+                pos(edge.getEnd  ()), shape(edge.getEnd  ()), getPort(shape(edge.getEnd  ()), 0  , 1              , side.opposite())
             );
             break;
-          case DirectLinesOnCenter: default:
+          case Polyline: default:
             path = getPath(edge, graph2d);
             break;
         }
@@ -500,17 +506,17 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     }
     
     /** vertex port side for current orientation */
-    Side side() {
+    Port side() {
       if (orientation==0)
-        return Side.North;
+        return Port.North;
       if (orientation==180)
-        return Side.South;
+        return Port.South;
       if (orientation==90)
-        return Side.East;
+        return Port.East;
       if (orientation==270)
-        return Side.West;
+        return Port.West;
       // only support NWES
-      return Side.None;
+      return Port.None;
     }
     
     List<Vertex> children(Vertex backtrack, Vertex parent) throws GraphNotSupportedException {
@@ -590,10 +596,10 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /**
    * our edge control
    */
-  public enum EdgeControl {
-    DirectLinesOnCenter,
-    DirectLinesWithPorts,
-    BendedLines
+  public enum EdgeLayout {
+    Polyline,
+    PortPolyline,
+    Orthogonal
   }
   
 } //TreeLayout

@@ -23,6 +23,7 @@ import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
+import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.model.WeightedGraph;
@@ -173,6 +174,10 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
 
   public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
     throw new IllegalArgumentException("n/a");
+  }
+  
+  public Port getPortOfEdge(Edge edge, Vertex at) {
+    return Port.None;
   }
   
   /**

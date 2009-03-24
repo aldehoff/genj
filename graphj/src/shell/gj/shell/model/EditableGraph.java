@@ -21,6 +21,7 @@ package gj.shell.model;
 
 import gj.geom.Path;
 import gj.layout.Graph2D;
+import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
@@ -343,6 +344,13 @@ public class EditableGraph implements Graph2D {
    */
   public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
     ((EditableVertex)vertex).setTransformation(transform);
+  }
+  
+  /**
+   * interface implementation
+   */
+  public Port getPortOfEdge(Edge edge, Vertex at) {
+    return Port.None;
   }
   
 } //DefaultGraph

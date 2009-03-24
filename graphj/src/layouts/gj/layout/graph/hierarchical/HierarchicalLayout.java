@@ -25,12 +25,12 @@ import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
+import gj.layout.Port;
 import gj.layout.graph.hierarchical.LayerAssignment.DummyVertex;
 import gj.layout.graph.hierarchical.LayerAssignment.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
-import gj.util.LayoutHelper.Side;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -197,18 +197,18 @@ public class HierarchicalLayout implements GraphLayout {
     private double[] layerHeights = null;
     private Rectangle2D[][] cellBounds = null;
     private Rectangle2D[][] vertexBounds = null;
-    private Side top, bottom;
+    private Port top, bottom;
     
     private Rectangle2D apply(Graph2D graph2d, LayerAssignment layerAssignment) {
 
       int layers = layerAssignment.getHeight();
       
       if (isSinksAtBottom) {
-        top = Side.North;
-        bottom = Side.South;
+        top = Port.North;
+        bottom = Port.South;
       } else {
-        top = Side.South;
-        bottom = Side.North;
+        top = Port.South;
+        bottom = Port.North;
       }
       
       // init structures
@@ -285,7 +285,7 @@ public class HierarchicalLayout implements GraphLayout {
 
         points.add(getPort(cellBounds[routing.layers[0]][routing.positions[0]], 
             routing.outIndex, routing.outDegree, 
-            pickPorts ? bottom : Side.None));
+            pickPorts ? bottom : Port.None));
         
         for (int r=1;r<routing.len-1;r++) {
           points.add(getPort(cellBounds[routing.layers[r]][routing.positions[r]], 0, 1, top));
@@ -294,7 +294,7 @@ public class HierarchicalLayout implements GraphLayout {
         
         points.add(getPort(cellBounds[routing.layers[routing.len-1]][routing.positions[routing.len-1]], 
             routing.inIndex, routing.inDegree, 
-            pickPorts ? top : Side.None));
+            pickPorts ? top : Port.None));
         
         graph2d.setPathOfEdge(edge, 
             LayoutHelper.getPath(points, 

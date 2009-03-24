@@ -26,6 +26,7 @@ import static gj.geom.Geometry.getSum;
 import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
+import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -46,18 +47,6 @@ import java.util.Set;
  */
 public class LayoutHelper {
 
-  /** enumeration for describing a side of a geometric shape */
-  public enum Side {
-    
-    North() { @Override public Side opposite() { return South; } },
-    West () { @Override public Side opposite() { return East ; } },
-    East () { @Override public Side opposite() { return West ; } },
-    South() { @Override public Side opposite() { return North; } },
-    None () { @Override public Side opposite() { return this ; } };
-    
-    public abstract Side opposite();
-  }
-
   /**
    * Resolve the port for given shape
    * @param pos position of shape
@@ -66,7 +55,7 @@ public class LayoutHelper {
    * @param count number ports on side
    * @param side the side of the port
    */
-  public static Point2D getPort(Shape shape, int index, int count, Side side) {
+  public static Point2D getPort(Shape shape, int index, int count, Port side) {
     return getPort(new Point2D.Double(), shape, index, count, side);
   }
   
@@ -77,7 +66,7 @@ public class LayoutHelper {
    * @param count number ports on side
    * @param side the side of the port
    */
-  public static Point2D getPort(Point2D pos, Shape shape, int index, int count, Side side) {
+  public static Point2D getPort(Point2D pos, Shape shape, int index, int count, Port side) {
     
     if (index<0||index>=count)
       throw new IllegalArgumentException("!(0<="+index+"<"+count+")");
@@ -85,17 +74,18 @@ public class LayoutHelper {
     index ++;
     
     Rectangle2D bounds = shape.getBounds2D();
+    double x = pos.getX(), y = pos.getY();
     switch (side) {
     case None:
-      return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()); 
+      return new Point2D.Double(x + bounds.getCenterX(), y + bounds.getCenterY()); 
     case North:
-      return new Point2D.Double(bounds.getMinX() + (bounds.getWidth()/count)*index, bounds.getMinY()); 
+      return new Point2D.Double(x + bounds.getMinX() + (bounds.getWidth()/count)*index, y + bounds.getMinY()); 
     case South:
-      return new Point2D.Double(bounds.getMinX() + (bounds.getWidth()/count)*index, bounds.getMaxY()); 
+      return new Point2D.Double(x + bounds.getMinX() + (bounds.getWidth()/count)*index, y + bounds.getMaxY()); 
     case West:
-      return new Point2D.Double(bounds.getMinX(), bounds.getMinY() + (bounds.getHeight()/count)*index); 
+      return new Point2D.Double(x + bounds.getMinX(), y + bounds.getMinY() + (bounds.getHeight()/count)*index); 
     case East:
-      return new Point2D.Double(bounds.getMaxX(), bounds.getMinY() + (bounds.getHeight()/count)*index); 
+      return new Point2D.Double(x + bounds.getMaxX(), y + bounds.getMinY() + (bounds.getHeight()/count)*index); 
     default:
       throw new IllegalArgumentException("n/a");
     }

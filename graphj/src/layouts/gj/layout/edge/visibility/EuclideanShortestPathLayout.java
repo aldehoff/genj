@@ -100,6 +100,7 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     Graph2D wrapper = new GraphWrapper(graph2d, edge);
   
     // create a visibility graph for the edge
+// FIXME respect ports    
     VisibilityGraph graph = new VisibilityGraph(wrapper);
     Vertex source = graph.getVertex(wrapper.getPositionOfVertex(edge.getStart()));
     Vertex sink = graph.getVertex(wrapper.getPositionOfVertex(edge.getEnd()));

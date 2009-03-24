@@ -23,7 +23,7 @@ import gj.example.Example;
 import gj.layout.Graph2D;
 import gj.layout.LayoutException;
 import gj.layout.graph.tree.TreeLayout;
-import gj.layout.graph.tree.TreeLayout.EdgeControl;
+import gj.layout.graph.tree.TreeLayout.EdgeLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -107,7 +107,7 @@ public class SwingTree implements Example {
       layout.setDistanceInGeneration(7);
       layout.setOrientation(90);
       layout.setAlignmentOfParent(1);
-      layout.setEdgeControl(EdgeControl.BendedLines);
+      layout.setEdgeControl(EdgeLayout.Orthogonal);
       layout.setOrderSiblingsByPosition(false);
       layout.apply(graph2d, new DefaultLayoutContext());
     } catch (LayoutException e) {

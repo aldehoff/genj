@@ -21,6 +21,7 @@ package gj.util;
 
 import gj.geom.Path;
 import gj.layout.Graph2D;
+import gj.layout.Port;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -120,6 +121,13 @@ public class DefaultGraph implements Graph2D {
   public AffineTransform getTransformOfVertex(Vertex vertex) {
     AffineTransform t = vertex2transform.get(vertex);
     return t==null ? new AffineTransform() : t;
+  }
+  
+  /**
+   * Edge's port control
+   */
+  public Port getPortOfEdge(Edge edge, Vertex at) {
+    return Port.None;
   }
   
 } //DefaultGraph

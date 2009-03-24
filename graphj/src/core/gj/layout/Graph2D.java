@@ -69,4 +69,9 @@ public interface Graph2D extends Graph {
    */
   public void setPositionOfVertex(Vertex vertex, Point2D pos);
   
+  /**
+   * Edge's port control
+   */
+  public Port getPortOfEdge(Edge edge, Vertex at);
+  
 } //Layout2D
