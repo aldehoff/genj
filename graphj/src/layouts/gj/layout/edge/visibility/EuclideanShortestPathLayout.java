@@ -19,6 +19,8 @@
  */
 package gj.layout.edge.visibility;
 
+import static gj.util.LayoutHelper.*;
+
 import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.layout.EdgeLayout;
@@ -51,19 +53,22 @@ import java.util.Map;
 public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
   
   private double edgeVertexDistance = 3;
+  private int debugIndex = 0;
 
   /**
    * apply it
    */
   public Shape apply(Graph2D graph2d, LayoutContext context) throws LayoutException {
 
+    if (context.isDebug() && ++debugIndex>graph2d.getEdges().size()-1)
+      debugIndex = 0;
+    
     // loop over all edges and perform layout
-    boolean debugOnce = false;
+    int debug = 0;
     for (Edge edge : graph2d.getEdges()) {
       
       VisibilityGraph vg = layout(edge, graph2d);
-      if (context.isDebug()&&!debugOnce) {
-        debugOnce = true;
+      if (context.isDebug()&& debug++==debugIndex) {
         context.addDebugShape(vg.getDebugShape());
       }
     }
@@ -100,7 +105,6 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     Graph2D wrapper = new GraphWrapper(graph2d, edge);
   
     // create a visibility graph for the edge
-// FIXME respect ports    
     VisibilityGraph graph = new VisibilityGraph(wrapper);
     Vertex source = graph.getVertex(wrapper.getPositionOfVertex(edge.getStart()));
     Vertex sink = graph.getVertex(wrapper.getPositionOfVertex(edge.getEnd()));
@@ -146,31 +150,49 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
       if (shape!=null) 
         return shape;
 
-      // one of the vertices in edge?
-      if (LayoutHelper.contains(edge, vertex)) {
-        shape = new Rectangle2D.Double();
-        vertex2override.put(vertex, shape);
-        return shape;
-      }
+      // do it now
+      shape = override(vertex);
       
-      // a vertex we don't need to pad?
-      if (edgeVertexDistance==0) {
-        shape = super.getShapeOfVertex(vertex);
-        vertex2override.put(vertex, shape);
-        return shape;
-      }
-        
-      // pad it once
-      GeneralPath overwritten =new GeneralPath(Geometry.getConvexHull(super.getShapeOfVertex(vertex)));
-      Rectangle2D bounds = overwritten.getBounds2D();
-      overwritten.transform(AffineTransform.getScaleInstance(
-          (bounds.getWidth()+(2*edgeVertexDistance))/bounds.getWidth(), 
-          (bounds.getHeight()+(2*edgeVertexDistance))/bounds.getHeight()
-       ));
-      vertex2override.put(vertex, overwritten);
+      // remember
+      vertex2override.put(vertex, shape);
       
       // done
-      return overwritten;
+      return shape;
+    }
+    
+    /** overwrite a vertex's shape */
+    private Shape override(Vertex vertex) {
+      
+      // padded shape if not a start or end?
+      if (!contains(edge, vertex)) 
+        return pad(vertex);
+        
+      // special shape based on port
+      switch (getPortOfEdge(edge, vertex)) {
+        default: case None:
+          return new Rectangle2D.Double();
+      }
+        
+    }
+    
+    /** pad a vertex's shape */
+    private GeneralPath pad(Vertex vertex) {
+      
+      // build convex hull
+      GeneralPath hull = new GeneralPath(Geometry.getConvexHull(super.getShapeOfVertex(vertex)));
+      
+      // pad
+      if (edgeVertexDistance>0) {
+        // pad it once
+        Rectangle2D bounds = hull.getBounds2D();
+        hull.transform(AffineTransform.getScaleInstance(
+            (bounds.getWidth()+(2*edgeVertexDistance))/bounds.getWidth(), 
+            (bounds.getHeight()+(2*edgeVertexDistance))/bounds.getHeight()
+         ));
+      }
+
+      // done
+      return hull;
     }
     
   } //ManipulatingGraph

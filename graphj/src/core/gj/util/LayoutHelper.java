@@ -49,7 +49,6 @@ public class LayoutHelper {
 
   /**
    * Resolve the port for given shape
-   * @param pos position of shape
    * @param shape the shape to calculate a port for
    * @param index zero based index of count ports on side
    * @param count number ports on side
@@ -61,6 +60,7 @@ public class LayoutHelper {
   
   /**
    * Resolve the port for given shape
+   * @param pos position of shape
    * @param shape the shape to calculate a port for
    * @param index zero based index of count ports on side
    * @param count number ports on side
