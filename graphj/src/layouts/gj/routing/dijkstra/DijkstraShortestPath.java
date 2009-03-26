@@ -26,14 +26,11 @@ import gj.model.Edge;
 import gj.model.Vertex;
 import gj.model.WeightedGraph;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * An implementation of the shortes path algorithm by Dijkstra
@@ -50,22 +47,15 @@ public class DijkstraShortestPath {
   public List<Vertex> getShortestPath(WeightedGraph graph, Vertex source, Vertex sink) throws GraphNotSupportedException {
     
     // preload unvisited and start with source
-    Set<Vertex> unvisited = new HashSet<Vertex>(graph.getVertices());
     final Map<Vertex,Integer> vertex2distance = new HashMap<Vertex, Integer>();
-    TreeSet<Vertex> considered = new TreeSet<Vertex>(new Comparator<Vertex>() {
-      public int compare(Vertex v1, Vertex v2) {
-        return getDistance(vertex2distance, v1) - getDistance(vertex2distance, v2);
-      }
-    });
+    
+    List<Vertex> considered = new ArrayList<Vertex>();
     
     Vertex cursor = source;
     setDistance(vertex2distance, source, 0);
     
     // loop from cursor through all unvisited vertices until we hit dest
     while (!cursor.equals(sink)) {
-      
-      // we're never revisiting cursor again
-      unvisited.remove(cursor);
       
       // consider all neighbours
       int dist2here = vertex2distance.get(cursor);
@@ -75,12 +65,15 @@ public class DijkstraShortestPath {
         int dist2there = dist2here + getWeight(graph, edge);
         if (dist2there < getDistance(vertex2distance, neighbour)) {
           setDistance(vertex2distance, neighbour, dist2there);
-          considered.add(neighbour);
+
+          int pos=0;
+          while (pos<considered.size() && dist2there<getDistance(vertex2distance, considered.get(pos))) pos++;
+          considered.add(pos, neighbour);
         }
       }
       
       // pick next considered with min distance
-      cursor = considered.pollFirst();
+      cursor = considered.remove(considered.size()-1);
       if (cursor==null)
         throw new GraphNotSupportedException("Graph is not spanning");
       
