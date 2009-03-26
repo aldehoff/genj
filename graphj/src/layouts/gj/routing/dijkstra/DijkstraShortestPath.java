@@ -74,8 +74,8 @@ public class DijkstraShortestPath {
         Vertex neighbour = getOther(edge, cursor);
         int dist2there = dist2here + getWeight(graph, edge);
         if (dist2there < getDistance(vertex2distance, neighbour)) {
-          considered.add(neighbour);
           setDistance(vertex2distance, neighbour, dist2there);
+          considered.add(neighbour);
         }
       }
       
