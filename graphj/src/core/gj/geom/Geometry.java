@@ -750,6 +750,7 @@ public class Geometry {
     double c2 = bEnd.getX()*bStart.getY() - bStart.getX()*bEnd.getY();
 
     // check if lines are parallel
+    // TODO review rounding error handling - for sufficiently small denominator we assume parallel
     double denom = a1*b2 - a2*b1;
     if (Math.abs(denom)< 0.000000001)
       return null;

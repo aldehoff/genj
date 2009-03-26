@@ -420,6 +420,7 @@ public class GeometryTest extends TestCase {
   }
   
   private boolean equals(Point2D a, Point2D b) {
+    // TODO review testing points arithmetics - for sufficiently small delta we assume equals
     return Math.abs(a.getX()-b.getX()) < 0.0000001 || Math.abs(a.getY()-b.getY())<0.0000001;
   }
   
@@ -427,6 +428,7 @@ public class GeometryTest extends TestCase {
    * equals test
    */
   private void tst(double a, double b) {
+    // TODO review testing double arithmetics - for sufficiently small delta we assume equals
     assertEquals(a,b,0.0000001);
   }
   
