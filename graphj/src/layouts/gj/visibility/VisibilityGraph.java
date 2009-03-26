@@ -19,6 +19,7 @@
  */
 package gj.visibility;
 
+import gj.geom.FlattenedPathConsumer;
 import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.geom.ShapeHelper;
@@ -29,6 +30,7 @@ import gj.model.Vertex;
 import gj.model.WeightedGraph;
 import gj.util.LayoutHelper;
 
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
@@ -49,7 +51,8 @@ import java.util.Map;
  */
 public class VisibilityGraph implements Graph2D, WeightedGraph {
   
-  private Map<Point2D, PointLocation> point2location;
+  // using integer points for the visibility graph to avoid rounding errors 
+  private Map<Point, PointLocation> point2location;
   private List<VisibleConnection> connections;
     
   /**
@@ -59,7 +62,7 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   public VisibilityGraph(Graph2D graph2d) {
     
     // init
-    this.point2location = new HashMap<Point2D, PointLocation>(graph2d.getVertices().size()*4);
+    this.point2location = new HashMap<Point, PointLocation>(graph2d.getVertices().size()*4);
     this.connections = new ArrayList<VisibleConnection>();
      
     // each vertex is a hole
@@ -68,8 +71,9 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
       holes.add(new Hole(graph2d.getShapeOfVertex(v), graph2d.getPositionOfVertex(v)));
     
     // loop over holes and check visibility to others
-    for (int i=0; i<holes.size(); i++) 
+    for (int i=0; i<holes.size(); i++) {
       scan(holes.get(i), holes.subList(i+1, holes.size()), holes);
+    }
     
     // done
   }
@@ -79,9 +83,9 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     for (Hole dest : destinations) {
       
       for (int i=0;i<source.points.size();i++) {
-        Point2D sourcePoint = source.points.get(i);
+        Point sourcePoint = source.points.get(i);
         for (int j=0;j<dest.points.size();j++) {
-          Point2D destPoint = dest.points.get(j);
+          Point destPoint = dest.points.get(j);
           if (!obstructed(sourcePoint, destPoint, holes))
             vertex(sourcePoint).sees(vertex(destPoint), connections);
         }
@@ -104,7 +108,7 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   /**
    * lookup a vertex
    */
-  private PointLocation vertex(Point2D pos) {
+  private PointLocation vertex(Point pos) {
     PointLocation v = point2location.get(pos);
     if (v==null) {
       v = new PointLocation(pos);
@@ -130,10 +134,15 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   
   /** vertex for position */
   public Vertex getVertex(Point2D point) throws IllegalArgumentException {
-    PointLocation result = point2location.get(point);
+    PointLocation result = point2location.get(round(point));
     if (result==null)
       throw new IllegalArgumentException("Point "+point+" is not a valid point location");
     return result;
+  }
+
+  /** helper for rounding */
+  Point round(Point2D p) {
+    return new Point((int)p.getX(), (int)p.getY());
   }
 
   /** debug shape */
@@ -185,12 +194,20 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
    */
   private class Hole {
     
-    private List<Point2D> points;
+    private List<Point> points = new ArrayList<Point>(4);
     
     Hole(Shape shape, Point2D pos) {
-      this.points = ShapeHelper.getPoints(
-        shape.getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
-      );
+
+      ShapeHelper.iterateShape(shape.getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY())), new FlattenedPathConsumer() {
+        public boolean consumeLine(Point2D start, Point2D end) {
+          Point p = round(start);
+          if (points.isEmpty() || !points.get(points.size()-1).equals(p))
+            points.add(p);
+          // continue
+          return true;
+        }
+      });
+      
       for (int i=0;i<points.size();i++) {
         vertex(points.get(i)).sees(vertex(points.get( (i+1)%points.size() )), connections);
       }
@@ -234,12 +251,12 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   /**
    * A vertex in the the visibility graph
    */
-  private static class PointLocation extends Point2D.Double implements Vertex {
+  private static class PointLocation extends Point implements Vertex {
     
     List<VisibleConnection> es = new ArrayList<VisibleConnection>(4);
     
-    PointLocation(Point2D pos) {
-      super(pos.getX(), pos.getY());
+    PointLocation(Point pos) {
+      super(pos.x, pos.y);
     }
     
     void sees(PointLocation that, List<VisibleConnection> connections) {
