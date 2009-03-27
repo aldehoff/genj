@@ -830,11 +830,14 @@ public class Geometry {
   /**
    * Calculate the convex hull of a shape
    */
-  public static Shape getConvexHull(Shape shape) {
+  public static ConvexHull getConvexHull(Shape shape) {
+    // check marker
+    if (shape instanceof ConvexHull)
+      return (ConvexHull)shape;
     return getConvexHull(shape.getPathIterator(null));
   }
-  public static Shape getConvexHull(PathIterator shape) {
- 
+  public static ConvexHull getConvexHull(PathIterator shape) {
+    
     // using the gift wrapping algorithm
     // see http://www.cse.unsw.edu.au/~lambert/java/3d/giftwrap.html
     
@@ -864,7 +867,7 @@ public class Geometry {
     points.add(new Point2D.Double(start.getX(), start.getY()));
 
     // iterate over sides of hull
-    GeneralPath result = new GeneralPath();
+    ConvexHullImpl result = new ConvexHullImpl();
     result.moveTo( (float)start.getX(), (float)start.getY());
     Point2D from = start;
     while (!points.isEmpty()) {
@@ -891,5 +894,14 @@ public class Geometry {
     // done
     return result;
   }
+  
+  /**
+   * an impl for a convex hull marked shape
+   * TODO should recalculate convex hull characteristics on segment add/reset etc.
+   */
+  private static class ConvexHullImpl extends java.awt.geom.Path2D.Double implements ConvexHull {
+    
+  } //ConvexHullImpl
+  
   
 } //Geometry

@@ -197,13 +197,15 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     private List<Point> points = new ArrayList<Point>(4);
     
     Hole(Shape shape, Point2D pos) {
-
-      ShapeHelper.iterateShape(shape.getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY())), new FlattenedPathConsumer() {
+      
+      ShapeHelper.iterateShape(Geometry.getConvexHull(shape).getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY())), new FlattenedPathConsumer() {
         public boolean consumeLine(Point2D start, Point2D end) {
-          Point p = round(start);
-          if (points.isEmpty() || !points.get(points.size()-1).equals(p))
-            points.add(p);
-          // continue
+          Point s = round(start);
+          if (points.isEmpty() || !points.get(points.size()-1).equals(s))
+            points.add(s);
+          Point e = round(end);
+          if (!s.equals(e))
+            points.add(e);
           return true;
         }
       });
