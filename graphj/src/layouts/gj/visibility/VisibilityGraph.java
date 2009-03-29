@@ -217,11 +217,18 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     
     boolean obstructs(Point2D lineStart, Point2D lineEnd) {
       
+      int n = 0;
       for (int i=0;i<points.size();i++) {
         
         Point2D p = Geometry.getIntersection(lineStart, lineEnd, points.get(i), points.get((i+1)%points.size()));
-        if (p!=null && !p.equals(lineStart) && !p.equals(lineEnd))
-          return true;
+        if (p!=null) {
+          // truly intersecting a segment? (no start/end)
+          if (!(p.equals(lineStart)||p.equals(lineEnd)))
+            return true;
+          // segment going through inside? (more than one corner)
+          if (++n>2)
+            return true;
+        }
       }
       
       return false;

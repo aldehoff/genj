@@ -279,7 +279,9 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       layout.apply(e, new DelegatingGraph(graph2d) {
         @Override
         public Port getPortOfEdge(Edge edge, Vertex at) {
-          return edgeLayout == EdgeLayout.PortPolyline ? Port.Fixed : Port.None;
+          if (edgeLayout == EdgeLayout.Polyline)
+            return Port.None;
+          return edge.getEnd().equals(at) ? Port.North : Port.South;
         }
       }, context);
     }
