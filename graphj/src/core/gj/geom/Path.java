@@ -131,6 +131,13 @@ public class Path implements Shape {
   }
   
   /**
+   * Accessor - firstPoint
+   */
+  public synchronized Point2D getFirstPoint() {
+    return new Point2D.Double(firstPoint.x, firstPoint.y);
+  }
+  
+  /**
    * Accessor - lastPoint
    */
   public synchronized Point2D getLastPoint() {
