@@ -341,24 +341,27 @@ public class PrintTask extends Action2 implements Printable, Trackable {
     // make sure we know the media if this is not Media category
     if (!Media.class.isAssignableFrom(category)) 
       getAttribute(Media.class);
-    // now grab default for category
+    // now grab configured default for category
     result = service.getDefaultAttributeValue(category);
     // fallback to first supported
     if (result==null) {
       LOG.finer( "Couldn't find default PrintRequestAttribute for category "+category);
+      // note - at this point we have made sure that Media is defined in attributes so
+      // MediaPrintableArea for example should result in something non-null
       result = service.getSupportedAttributeValues(category, null, attributes);
-	    if (result!=null&&result.getClass().isArray()&&result.getClass().getComponentType()==category) {
+      if (result==null)
+        LOG.warning( "Couldn't find PrintRequestAttribute for category "+category+" with "+toString(attributes));
+      else if (result.getClass().isArray()&&result.getClass().getComponentType()==category) {
 	      LOG.finer( "Got PrintRequestAttribute values "+Arrays.toString((Object[])result)+" for category "+category);
 	      result = ((Object[])result)[0];
 	    } else {
-	      result = null;
+	      // according to http://java.sun.com/j2se/1.4.2/docs/guide/jps/spec/attributes.fm5.html the result can be an array or the single value
+        LOG.finer( "Got PrintRequestAttribute value "+result+" for category "+category);
 	    }
     }
     // remember
     if (result!=null)
       attributes.add((PrintRequestAttribute)result);
-    else
-      LOG.warning( "Couldn't find PrintRequestAttribute for category "+category+" with "+toString(attributes));
     // done
     return (PrintRequestAttribute)result;
   }
