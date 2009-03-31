@@ -20,6 +20,7 @@
 package gj.layout.edge.visibility;
 
 import static gj.geom.Geometry.getConvexHull;
+import gj.geom.Geometry;
 import gj.geom.Path;
 import gj.layout.EdgeLayout;
 import gj.layout.Graph2D;
@@ -148,8 +149,50 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
       this.vertices.addAll(vertices);
       
       // patch source and sink
-      sourcePort = patch(edge.getStart(), getPortOfEdge(edge, edge.getStart()));
-      destPort = patch(edge.getEnd  (), getPortOfEdge(edge, edge.getEnd  ()));
+      sourcePort = patch(delegated, edge, true);
+      destPort = patch(delegated, edge, false);
+    }
+    
+    /** overwrite a vertex's shape */
+    private Point2D patch(Graph2D delegated, Edge edge, boolean start) {
+
+      Vertex vertex = start ? edge.getStart() : edge.getEnd();
+      Port port = getPortOfEdge(edge, vertex);
+
+      // special shape based on port
+      switch (port) {
+        case Fixed:
+
+          Point2D p1 = getPositionOfVertex(vertex);
+          Point2D p2  = Geometry.getSum(
+            start ? getPathOfEdge(edge).getFirstPoint() : getPathOfEdge(edge).getLastPoint(),
+            getPositionOfVertex(edge.getStart())
+          );
+          return dummy(Geometry.getClosest(p2, Geometry.getIntersections(
+                p1, p2, true,
+                p1, getShapeOfVertex(vertex)
+            )));
+        case West:
+        case East:
+        case North:
+        case South:
+          return dummy(LayoutHelper.getPort(getPositionOfVertex(vertex), getShapeOfVertex(vertex), 0, 1, port));
+        default:
+        case None:
+          // no shape for source and sink
+          vertex2shape.put(vertex, new Rectangle2D.Double());
+          return super.getPositionOfVertex(vertex);
+      }
+        
+    }
+    
+    /** create a dummy */
+    private Point2D dummy(Point2D pos) {
+      Vertex dummy = new DummyVertex();
+      vertices.add(dummy);
+      vertex2pos.put(dummy, pos);
+      vertex2shape.put(dummy, new Rectangle2D.Double());
+      return pos;
     }
     
     @Override
@@ -162,8 +205,24 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
       
       Shape shape = vertex2shape.get(vertex);
       if (shape==null) {
-        shape = pad(vertex);
-        vertex2shape.put(vertex, shape);
+        
+        // build convex hull
+        GeneralPath hull = new GeneralPath(getConvexHull(super.getShapeOfVertex(vertex)));
+        
+        // pad
+        if (edgeVertexDistance>0) {
+          // pad it once
+          Rectangle2D bounds = hull.getBounds2D();
+          hull.transform(AffineTransform.getScaleInstance(
+              (bounds.getWidth()+(2*edgeVertexDistance))/bounds.getWidth(), 
+              (bounds.getHeight()+(2*edgeVertexDistance))/bounds.getHeight()
+           ));
+        }
+
+        // done
+        vertex2shape.put(vertex, hull);
+        
+        shape = hull;
       }
       return shape;
     }
@@ -172,51 +231,6 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     public Point2D getPositionOfVertex(Vertex vertex) {
       Point2D pos = vertex2pos.get(vertex);
       return pos!=null ? pos : super.getPositionOfVertex(vertex);
-    }
-    
-    /** overwrite a vertex's shape */
-    private Point2D patch(Vertex sourceOrSink, Port port) {
-      
-      // special shape based on port
-      switch (port) {
-        default:
-          Point2D pos = LayoutHelper.getPort(getPositionOfVertex(sourceOrSink), getShapeOfVertex(sourceOrSink), 0, 1, port);
-          dummy(pos);
-          return pos;
-        case None:
-          // no shape for source and sink
-          vertex2shape.put(sourceOrSink, new Rectangle2D.Double());
-          return super.getPositionOfVertex(sourceOrSink);
-      }
-        
-    }
-    
-    /** create a dummy */
-    private void dummy(Point2D pos) {
-      Vertex dummy = new DummyVertex();
-      vertices.add(dummy);
-      vertex2pos.put(dummy, pos);
-      vertex2shape.put(dummy, new Rectangle2D.Double());
-    }
-    
-    /** pad a vertex's shape */
-    private GeneralPath pad(Vertex vertex) {
-      
-      // build convex hull
-      GeneralPath hull = new GeneralPath(getConvexHull(super.getShapeOfVertex(vertex)));
-      
-      // pad
-      if (edgeVertexDistance>0) {
-        // pad it once
-        Rectangle2D bounds = hull.getBounds2D();
-        hull.transform(AffineTransform.getScaleInstance(
-            (bounds.getWidth()+(2*edgeVertexDistance))/bounds.getWidth(), 
-            (bounds.getHeight()+(2*edgeVertexDistance))/bounds.getHeight()
-         ));
-      }
-
-      // done
-      return hull;
     }
     
   } //ManipulatingGraph
