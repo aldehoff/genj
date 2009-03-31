@@ -325,7 +325,7 @@ public class LayoutHelper {
    * @param toShape destination shape located at toPos
    */  
   public static Path getPath(Point2D[] points, Point2D fromPos, Shape fromShape, Point2D toPos, Shape toShape, boolean reversed) {
-    return getPath(Arrays.asList(points),fromPos,fromShape,toPos,toShape,reversed);
+    return getPath(new ArrayList<Point2D>(Arrays.asList(points)),fromPos,fromShape,toPos,toShape,reversed);
   }
   
   /**
