@@ -19,13 +19,13 @@
  */
 package gj.io;
 
-import static gj.geom.PathIteratorKnowHow.*;
-
-import gj.geom.Path;
+import static gj.geom.PathIteratorKnowHow.SEG_NAMES;
+import static gj.geom.PathIteratorKnowHow.SEG_SIZES;
 import gj.geom.ShapeHelper;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
+import gj.util.DefaultRouting;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -207,7 +207,7 @@ public class GraphReader {
     @Override
     protected void end(String name) {
       if (shapeHandler!=null) {
-        Path path = new Path(shapeHandler.getResult());
+        DefaultRouting path = new DefaultRouting(shapeHandler.getResult());
         if (invert)
           path.setInverted();
         edge.setShape(path);

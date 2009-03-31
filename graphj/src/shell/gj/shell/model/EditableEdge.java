@@ -20,11 +20,10 @@
 package gj.shell.model;
 
 import gj.geom.Geometry;
-import gj.geom.Path;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.util.LayoutHelper;
 
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
@@ -39,7 +38,7 @@ public class EditableEdge implements Edge {
   /** ending vertex */
   private EditableVertex end;
   
-  private Path path;
+  private Routing path;
   
   private long hash = -1;
   
@@ -62,7 +61,7 @@ public class EditableEdge implements Edge {
   /**
    * overriden - create a default edge shape if necessary
    */
-  public Path getPath() {
+  public Routing getPath() {
     
     if (!updateHash()) 
       setPath(makeShape());
@@ -70,24 +69,24 @@ public class EditableEdge implements Edge {
     return path;
   }
   
-  private Path makeShape() {
-    return LayoutHelper.getPath(
+  private Routing makeShape() {
+    return LayoutHelper.getRouting(
         start.getPosition(), start.getShape(), new Point2D.Double(),
         end.getPosition(), end.getShape(), new Point2D.Double()
     );   
   }
   
-  public void setShape(Shape set) {
+  public void setShape(Routing set) {
     if (set==null) {
       setPath(null);
       return;
     }
 
-    setPath(new Path(set));
+    setPath(set);
     
   }
   
-  public void setPath(Path set) {
+  public void setPath(Routing set) {
     if (set==null)
       set = makeShape();
     path = set;

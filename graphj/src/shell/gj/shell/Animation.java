@@ -19,11 +19,11 @@
  */
 package gj.shell;
 
-import gj.geom.Path;
 import gj.layout.GraphLayout;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
+import gj.layout.Routing;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
@@ -146,7 +146,7 @@ import java.util.List;
     // TODO currently edges are layed out without bends in animation
     Iterator<?> it = edgesAndShapes.iterator();
     while (it.hasNext()) {
-      ((EditableEdge)it.next()).setPath((Path)it.next());
+      ((EditableEdge)it.next()).setPath((Routing)it.next());
     }
     // stop all moves
     moves=null;

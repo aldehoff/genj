@@ -19,58 +19,33 @@
  */
 package gj.layout;
 
-
-import gj.model.Edge;
-import gj.model.Graph;
-import gj.model.Vertex;
-
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
+
 /**
- * A graph with 2 dimensional layout information
+ * A routing through points
  */
-public interface Graph2D extends Graph {
-
-  /**
-   * Edge's shape
-   */
-  public Routing getRouting(Edge edge);
-
-  /**
-   * Edge's shape
-   */
-  public void setRouting(Edge edge, Routing shape);
-
-  /**
-   * Vertex's shape
-   */
-  public Shape getShape(Vertex vertex);
-
-  /** 
-   * Vertex transformation (idempotent)
-   */
-  public void setTransform(Vertex vertex, AffineTransform transform);
-
-  /** 
-   * Vertex transformation (idempotent)
-   */
-  public AffineTransform getTransform(Vertex vertex);
-
-  /**
-   * Vertex's position
-   */
-  public Point2D getPosition(Vertex vertex);
-
-  /**
-   * Vertex's position
-   */
-  public void setPosition(Vertex vertex, Point2D pos);
+public interface Routing extends Shape {
   
   /**
-   * Edge's port control
+   * first point in routing
    */
-  public Port getPortOfEdge(Edge edge, Vertex at);
+  public Point2D getFirstPoint();
   
-} //Layout2D
+  /**
+   * last point in routing
+   */
+  public Point2D getLastPoint();
+  
+  /**
+   * first angle in routing
+   */
+  public double getFirstAngle();
+  
+  /**
+   * last angle in routing
+   */
+  public double getLastAngle();
+
+}

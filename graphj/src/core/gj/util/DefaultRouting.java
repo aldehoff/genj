@@ -17,9 +17,17 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.geom;
+package gj.util;
 
-import static gj.geom.Geometry.*;
+import static gj.geom.Geometry.HALF_RADIAN;
+import static gj.geom.Geometry.QUARTER_RADIAN;
+import static gj.geom.Geometry.getLineIntersection;
+import static gj.geom.Geometry.getPoint;
+
+import gj.geom.Geometry;
+import gj.geom.PathConsumer;
+import gj.geom.ShapeHelper;
+import gj.layout.Routing;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -30,11 +38,10 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 
-
 /**
- * A 2D path - missing from the jawa.awt.geom.* stuff
+ * An implementation for routing through points
  */
-public class Path implements Shape {
+public class DefaultRouting implements Routing {
   
   private final static Logger LOG = Logger.getLogger("genj.geom");
 
@@ -53,33 +60,35 @@ public class Path implements Shape {
   /**
    * Constructor
    */
-  public Path() {
+  public DefaultRouting() {
   }
   
   /**
    * Constructor
    */
-  public Path(Path that, AffineTransform at) {
+  public DefaultRouting(Routing that, AffineTransform at) {
     copy(that, at);
   }
   
-  private void copy(Path that, AffineTransform at) {
-    this.gp = new GeneralPath(that.gp);
+  private void copy(Routing that, AffineTransform at) {
+    this.gp = new GeneralPath(that);
     if (at!=null)
       this.gp.transform(at);
-    this.firstAngle = that.firstAngle;
-    this.lastAngle = that.lastAngle;
-    this.firstPoint = that.firstPoint;
-    this.lastPoint = that.lastPoint;
+    this.firstAngle = that.getFirstAngle();
+    this.lastAngle = that.getLastAngle();
+    this.firstPoint = new Point2D.Double();
+    this.firstPoint.setLocation(that.getFirstPoint());
+    this.lastPoint = new Point2D.Double();
+    this.lastPoint.setLocation(that.getLastPoint());
   }
   
   /**
    * Constructor
    */
-  public Path(Shape that) {
+  public DefaultRouting(Shape that) {
     
-    if (that instanceof Path) {
-      copy((Path)that, null);
+    if (that instanceof Routing) {
+      copy((Routing)that, null);
       return;
     }
     
@@ -145,6 +154,13 @@ public class Path implements Shape {
   }
   
   /**
+   * Accessor - firstAngle
+   */
+  public synchronized double getFirstAngle() {
+    return firstAngle;
+  }
+
+  /**
    * Accessor - lastAngle
    */
   public synchronized double getLastAngle() {
@@ -172,7 +188,7 @@ public class Path implements Shape {
   /**
    * start the path
    */
-  public synchronized Path start(Point2D p) {
+  public synchronized Routing start(Point2D p) {
     
     // start this
     if (firstPoint!=null)
@@ -204,7 +220,7 @@ public class Path implements Shape {
   /**
    * @see java.awt.geom.GeneralPath#lineTo(float, float)
    */
-  public synchronized Path lineTo(Point2D p) {
+  public synchronized Routing lineTo(Point2D p) {
     // check 
     checkContinue();
     // add opening angle
@@ -221,7 +237,7 @@ public class Path implements Shape {
   /**
    * @see java.awt.geom.GeneralPath#quadTo(float, float, float, float)
    */
-  public synchronized Path quadTo(Point2D c, Point2D p) {
+  public synchronized Routing quadTo(Point2D c, Point2D p) {
     // check
     checkContinue();
     // add opening angle
@@ -238,7 +254,7 @@ public class Path implements Shape {
   /**
    * @see java.awt.geom.GeneralPath#curveTo(float, float, float, float, float, float)
    */
-  public synchronized Path curveTo(Point2D c1, Point2D c2, Point2D p) {
+  public synchronized Routing curveTo(Point2D c1, Point2D c2, Point2D p) {
     // check
     checkContinue();
     // add opening angle
@@ -370,4 +386,4 @@ public class Path implements Shape {
     return gp.intersects(r);
   }
 
-}
+} //GeneralRouting

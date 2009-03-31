@@ -19,9 +19,9 @@
  */
 package gj.shell.model;
 
-import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.Port;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
@@ -292,28 +292,28 @@ public class EditableGraph implements Graph2D {
   /**
    * interface implementation
    */
-  public Path getPathOfEdge(Edge edge) {
+  public Routing getRouting(Edge edge) {
     return ((EditableEdge)edge).getPath();
   }
 
   /**
    * interface implementation
    */
-  public Point2D getPositionOfVertex(Vertex node) {
+  public Point2D getPosition(Vertex node) {
     return ((EditableVertex)node).getPosition();
   }
 
   /**
    * interface implementation
    */
-  public Shape getShapeOfVertex(Vertex node) {
+  public Shape getShape(Vertex node) {
     return ((EditableVertex)node).getShape();
   }
 
   /**
    * interface implementation
    */
-  public AffineTransform getTransformOfVertex(Vertex vertex) {
+  public AffineTransform getTransform(Vertex vertex) {
     AffineTransform t = ((EditableVertex)vertex).getTransformation();
     return t==null ? new AffineTransform() : t;
   }
@@ -321,14 +321,14 @@ public class EditableGraph implements Graph2D {
   /**
    * interface implementation
    */
-  public void setPathOfEdge(Edge edge, Path path) {
+  public void setRouting(Edge edge, Routing path) {
     ((EditableEdge)edge).setPath(path);
   }
 
   /**
    * interface implementation
    */
-  public void setPositionOfVertex(Vertex node, Point2D pos) {
+  public void setPosition(Vertex node, Point2D pos) {
     ((EditableVertex)node).setPosition(pos);
   }
 
@@ -342,7 +342,7 @@ public class EditableGraph implements Graph2D {
   /**
    * interface implementation
    */
-  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+  public void setTransform(Vertex vertex, AffineTransform transform) {
     ((EditableVertex)vertex).setTransformation(transform);
   }
   

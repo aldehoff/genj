@@ -21,7 +21,6 @@ package gj.layout.edge.visibility;
 
 import static gj.geom.Geometry.getConvexHull;
 import gj.geom.Geometry;
-import gj.geom.Path;
 import gj.layout.EdgeLayout;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
@@ -29,6 +28,7 @@ import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
 import gj.layout.Port;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.routing.dijkstra.DijkstraShortestPath;
@@ -116,15 +116,15 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     // debug
     List<Point2D> ps = new ArrayList<Point2D>(route.size());
     for (Vertex v : route) 
-      ps.add(graph.getPositionOfVertex(v));
+      ps.add(graph.getPosition(v));
       
-    Path path = LayoutHelper.getPath(ps, 
-        graph2d.getPositionOfVertex(edge.getStart()),
-        graph2d.getShapeOfVertex(edge.getStart()), 
-        graph2d.getPositionOfVertex(edge.getEnd()),
-        graph2d.getShapeOfVertex(edge.getEnd()), 
+    Routing path = LayoutHelper.getRouting(ps, 
+        graph2d.getPosition(edge.getStart()),
+        graph2d.getShape(edge.getStart()), 
+        graph2d.getPosition(edge.getEnd()),
+        graph2d.getShape(edge.getEnd()), 
         false);
-    wrapper.setPathOfEdge(edge, path);
+    wrapper.setRouting(edge, path);
     
     // done
     return graph;
@@ -163,25 +163,25 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
       switch (port) {
         case Fixed:
 
-          Point2D p1 = getPositionOfVertex(vertex);
+          Point2D p1 = getPosition(vertex);
           Point2D p2  = Geometry.getSum(
-            start ? getPathOfEdge(edge).getFirstPoint() : getPathOfEdge(edge).getLastPoint(),
-            getPositionOfVertex(edge.getStart())
+            start ? getRouting(edge).getFirstPoint() : getRouting(edge).getLastPoint(),
+            getPosition(edge.getStart())
           );
           return dummy(Geometry.getClosest(p2, Geometry.getIntersections(
                 p1, p2, true,
-                p1, getShapeOfVertex(vertex)
+                p1, getShape(vertex)
             )));
         case West:
         case East:
         case North:
         case South:
-          return dummy(LayoutHelper.getPort(getPositionOfVertex(vertex), getShapeOfVertex(vertex), 0, 1, port));
+          return dummy(LayoutHelper.getPort(getPosition(vertex), getShape(vertex), 0, 1, port));
         default:
         case None:
           // no shape for source and sink
           vertex2shape.put(vertex, new Rectangle2D.Double());
-          return super.getPositionOfVertex(vertex);
+          return super.getPosition(vertex);
       }
         
     }
@@ -201,13 +201,13 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     }
     
     @Override
-    public Shape getShapeOfVertex(Vertex vertex) {
+    public Shape getShape(Vertex vertex) {
       
       Shape shape = vertex2shape.get(vertex);
       if (shape==null) {
         
         // build convex hull
-        GeneralPath hull = new GeneralPath(getConvexHull(super.getShapeOfVertex(vertex)));
+        GeneralPath hull = new GeneralPath(getConvexHull(super.getShape(vertex)));
         
         // pad
         if (edgeVertexDistance>0) {
@@ -228,9 +228,9 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     }
     
     @Override
-    public Point2D getPositionOfVertex(Vertex vertex) {
+    public Point2D getPosition(Vertex vertex) {
       Point2D pos = vertex2pos.get(vertex);
-      return pos!=null ? pos : super.getPositionOfVertex(vertex);
+      return pos!=null ? pos : super.getPosition(vertex);
     }
     
   } //ManipulatingGraph

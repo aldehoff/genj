@@ -21,10 +21,10 @@ package gj.visibility;
 
 import gj.geom.FlattenedPathConsumer;
 import gj.geom.Geometry;
-import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.layout.Port;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.model.WeightedGraph;
@@ -68,7 +68,7 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     // each vertex is a hole
     final List<Hole> holes = new ArrayList<Hole>();
     for (Vertex v : graph2d.getVertices())
-      holes.add(new Hole(graph2d.getShapeOfVertex(v), graph2d.getPositionOfVertex(v)));
+      holes.add(new Hole(graph2d.getShape(v), graph2d.getPosition(v)));
     
     // loop over holes and check visibility to others
     for (int i=0; i<holes.size(); i++) {
@@ -150,38 +150,38 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     
     GeneralPath result = new GeneralPath();
     for (Edge edge : getEdges()) {
-      Point2D p = getPositionOfVertex(edge.getStart());
-      result.append(getPathOfEdge(edge).getPathIterator(AffineTransform.getTranslateInstance(p.getX(), p.getY())), false);
+      Point2D p = getPosition(edge.getStart());
+      result.append(getRouting(edge).getPathIterator(AffineTransform.getTranslateInstance(p.getX(), p.getY())), false);
     }
     return result;
   }
 
-  public Path getPathOfEdge(Edge edge) {
-    return LayoutHelper.getPath(edge, this);
+  public Routing getRouting(Edge edge) {
+    return LayoutHelper.getRouting(edge, this);
   }
 
-  public Point2D getPositionOfVertex(Vertex vertex) {
+  public Point2D getPosition(Vertex vertex) {
     PointLocation loc = (PointLocation)vertex;
     return new Point2D.Double(loc.x, loc.y);
   }
 
-  public Shape getShapeOfVertex(Vertex vertex) {
+  public Shape getShape(Vertex vertex) {
     return new Rectangle2D.Double();
   }
 
-  public AffineTransform getTransformOfVertex(Vertex vertex) {
+  public AffineTransform getTransform(Vertex vertex) {
     return null;
   }
   
-  public void setPathOfEdge(Edge edge, Path shape) {
+  public void setRouting(Edge edge, Routing shape) {
     throw new IllegalArgumentException("n/a");
   }
 
-  public void setPositionOfVertex(Vertex vertex, Point2D pos) {
+  public void setPosition(Vertex vertex, Point2D pos) {
     throw new IllegalArgumentException("n/a");
   }
 
-  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+  public void setTransform(Vertex vertex, AffineTransform transform) {
     throw new IllegalArgumentException("n/a");
   }
   

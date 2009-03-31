@@ -131,7 +131,7 @@ public class LongestPathLA implements LayerAssignment {
             // create a dummy at same position as cell
             Cell dummy = new Cell(new DummyVertex(), i+1);
             numDummyVertices++;
-            graph2d.setPositionOfVertex(dummy.vertex, graph2d.getPositionOfVertex(cell.vertex));
+            graph2d.setPosition(dummy.vertex, graph2d.getPosition(cell.vertex));
             width = Math.max(width, layers.get(i+1).add(dummy, orderVerticesByX));
 
             // delete old connection
@@ -444,7 +444,7 @@ public class LongestPathLA implements LayerAssignment {
   private class VertexByXPositionComparator implements Comparator<Vertex> {
   
     public int compare(Vertex v1, Vertex v2) {
-      double d = graph2d.getPositionOfVertex(v1).getX() - graph2d.getPositionOfVertex(v2).getX();
+      double d = graph2d.getPosition(v1).getX() - graph2d.getPosition(v2).getX();
       if (d==0) return 0;
       return d<0 ? -1 : 1;
     } 

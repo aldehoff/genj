@@ -23,10 +23,9 @@ import static gj.util.LayoutHelper.assertSpanningTree;
 import static gj.util.LayoutHelper.getDiameter;
 import static gj.util.LayoutHelper.getNormalizedEdges;
 import static gj.util.LayoutHelper.getOther;
-import static gj.util.LayoutHelper.setPath;
+import static gj.util.LayoutHelper.setRouting;
 import static java.lang.Math.max;
 import gj.geom.Geometry;
-import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
@@ -34,6 +33,7 @@ import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
 import gj.util.AbstractGraphLayout;
+import gj.util.DefaultRouting;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -240,7 +240,7 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       // init state
       this.graph2d = graph2d;
       this.context = context;
-      this.center = graph2d.getPositionOfVertex(root);
+      this.center = graph2d.getPosition(root);
       this.distanceBetweenGenerations =  distanceBetweenGenerations;
       this.attrs = getAttribute(graph2d);
       
@@ -335,8 +335,8 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
         Arrays.sort(tmp, new Comparator<Edge>() {
           public int compare(Edge e1, Edge e2) {
             
-            double r1 = getRadian(getDelta(center,graph2d.getPositionOfVertex(getOther(e1, root))));
-            double r2 = getRadian(getDelta(center,graph2d.getPositionOfVertex(getOther(e2, root))));
+            double r1 = getRadian(getDelta(center,graph2d.getPosition(getOther(e1, root))));
+            double r2 = getRadian(getDelta(center,graph2d.getPosition(getOther(e2, root))));
             
             if (r1>north)
               r1 -= ONE_RADIAN;
@@ -380,13 +380,13 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
         double radiusOfChild = radius + getLengthOfEdge(edge) * distanceBetweenGenerations;
         double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
         radianOfChild[c] = fromRadian + radiansOfChild/2;
-        graph2d.setPositionOfVertex(child, getPoint(center, radianOfChild[c], radiusOfChild ));
+        graph2d.setPosition(child, getPoint(center, radianOfChild[c], radiusOfChild ));
 
         // modify shape
         if (isRotateShapes)
-          graph2d.setTransformOfVertex(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild[c]) );
+          graph2d.setTransform(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild[c]) );
         else
-          graph2d.setTransformOfVertex(child, new AffineTransform());
+          graph2d.setTransform(child, new AffineTransform());
         
         // add debugging information
         if (context.isDebug()) {
@@ -402,9 +402,9 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       // modify graph's root shape before laying out edges
       if (backtrack==null) {
         if (isRotateShapes)
-          graph2d.setTransformOfVertex(root, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfRoot) );
+          graph2d.setTransform(root, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfRoot) );
         else
-          graph2d.setTransformOfVertex(root, new AffineTransform());
+          graph2d.setTransform(root, new AffineTransform());
       }      
 
       // layout edges
@@ -424,16 +424,16 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
 
       // easy case - direct path
       if (!isBendArcs || (radianOfParent==radianOfChild)) {
-        setPath(edge, graph2d);
+        setRouting(edge, graph2d);
         return;
       } 
       
-      Path path = new Path();
+      DefaultRouting path = new DefaultRouting();
       
       // start with path at child
-      Point2D p1 = graph2d.getPositionOfVertex(child);
+      Point2D p1 = graph2d.getPosition(child);
       Point2D p2 = getPoint(center, radianOfChild, radius);
-      Collection<Point2D> is = getIntersections(p2, p1, false, p1, graph2d.getShapeOfVertex(child));
+      Collection<Point2D> is = getIntersections(p2, p1, false, p1, graph2d.getShape(child));
       if (is.isEmpty())
         path.start(p1);
       else
@@ -459,9 +459,9 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
 
       // end path with final segment to parent
       Point2D p3 = getPoint(center, radianOfParent, radius);
-      Point2D p4 = graph2d.getPositionOfVertex(parent);
+      Point2D p4 = graph2d.getPosition(parent);
       path.arcTo(center, radius, radianOfChild, radianOfParent);
-      is = getIntersections(p3, p4, false, p4, graph2d.getShapeOfVertex(parent));
+      is = getIntersections(p3, p4, false, p4, graph2d.getShape(parent));
       if (is.isEmpty())
         path.lineTo(p4);
       else
@@ -470,12 +470,12 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       // layout relative to start
       if (parent.equals(edge.getStart())) {
         path.setInverted();
-        path.translate(getNeg(graph2d.getPositionOfVertex(parent)));
+        path.translate(getNeg(graph2d.getPosition(parent)));
       } else {
-        path.translate(getNeg(graph2d.getPositionOfVertex(child)));
+        path.translate(getNeg(graph2d.getPosition(child)));
       }
         
-      graph2d.setPathOfEdge(edge, path);
+      graph2d.setRouting(edge, path);
 
     }
 

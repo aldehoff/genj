@@ -21,10 +21,11 @@ package gj.io;
 
 import static gj.geom.PathIteratorKnowHow.SEG_NAMES;
 import static gj.geom.PathIteratorKnowHow.SEG_SIZES;
-import gj.geom.Path;
+import gj.layout.Routing;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
+import gj.util.DefaultRouting;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -98,13 +99,13 @@ public class GraphWriter {
    */
   private void writeEdge(EditableGraph g, EditableEdge edge) throws IOException {
 
-    Path path = edge.getPath();
+    Routing path = edge.getPath();
     
     ElementInfo info = new ElementInfo();
     info.put("id", getId(edge));
     info.put("s", getId(edge.getStart()));
     info.put("e", getId(edge.getEnd()));
-    if (path.isInverted())
+    if (path instanceof DefaultRouting && ((DefaultRouting)path).isInverted())
       info.put("d", "-1" );
     push("edge",info,false);
       writeShape("path", path,-1);

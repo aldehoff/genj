@@ -105,7 +105,7 @@ public class CircularLayout implements GraphLayout {
     // FIXME circular doesn't work
     
     // update the arcs
-    LayoutHelper.setPaths(graph2d);
+    LayoutHelper.setRoutings(graph2d);
     
     // done
     return LayoutHelper.getBounds(graph2d);
@@ -122,8 +122,8 @@ public class CircularLayout implements GraphLayout {
     // one node only?
     if (nodes.size()==1) {
       Vertex one = nodes.get(0);
-      graph2d.setPositionOfVertex(one, new Point2D.Double(cx,cy));
-      graph2d.setTransformOfVertex(one, null);
+      graph2d.setPosition(one, new Point2D.Double(cx,cy));
+      graph2d.setTransform(one, null);
       return;
     }
     
@@ -135,7 +135,7 @@ public class CircularLayout implements GraphLayout {
     for (int n=0;n<nodes.size();n++) {
         
       // .. its size - the length of vector (x,y)
-      Rectangle2D bounds = graph2d.getShapeOfVertex(nodes.get(n)).getBounds2D();
+      Rectangle2D bounds = graph2d.getShape(nodes.get(n)).getBounds2D();
       double size = Geometry.getLength(bounds.getWidth()+padNodes, bounds.getHeight()+padNodes);
         
       // .. keep what we need
@@ -154,8 +154,8 @@ public class CircularLayout implements GraphLayout {
       double x = (int)(cx + Math.sin(radian)*radius);
       double y = (int)(cy + Math.cos(radian)*radius);
       Vertex node = nodes.get(n);
-      graph2d.setPositionOfVertex(node, new Point2D.Double(x,y));
-      graph2d.setTransformOfVertex(node, null);
+      graph2d.setPosition(node, new Point2D.Double(x,y));
+      graph2d.setTransform(node, null);
 
       radian += TWOPI*sizes[n]/circumference;
     }

@@ -102,7 +102,7 @@ public class RandomLayout implements GraphLayout {
     // place the nodes    
     for (Vertex vertex : graph2d.getVertices()) {
       
-      Rectangle2D nodeCanvas = graph2d.getShapeOfVertex(vertex).getBounds2D();
+      Rectangle2D nodeCanvas = graph2d.getShape(vertex).getBounds2D();
       Rectangle2D preferred = context.getPreferredBounds();
       if (preferred==null)
         throw new IllegalArgumentException("LayoutContext.getPreferredBounds() cannot be null");
@@ -113,17 +113,17 @@ public class RandomLayout implements GraphLayout {
         w = preferred.getWidth() - nodeCanvas.getWidth(),
         h = preferred.getHeight() - nodeCanvas.getHeight();
 
-      Point2D pos = graph2d.getPositionOfVertex(vertex);
+      Point2D pos = graph2d.getPosition(vertex);
       pos.setLocation(
         isApplyHorizontally ? x + random.nextDouble()*w : pos.getX(), 
         isApplyVertically ? y + random.nextDouble()*h : pos.getY()
       );
-      graph2d.setPositionOfVertex(vertex, pos);
+      graph2d.setPosition(vertex, pos);
 
     }
     
     // place the arcs
-    LayoutHelper.setPaths(graph2d);
+    LayoutHelper.setRoutings(graph2d);
     
     // done
     return context.getPreferredBounds();

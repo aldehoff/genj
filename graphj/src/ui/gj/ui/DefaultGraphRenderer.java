@@ -22,9 +22,9 @@ package gj.ui;
 import static gj.geom.PathIteratorKnowHow.SEG_LINETO;
 import static gj.geom.PathIteratorKnowHow.SEG_MOVETO;
 import static gj.geom.PathIteratorKnowHow.SEG_CLOSE;
-import gj.geom.Path;
 import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -88,10 +88,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
     Stroke stroke = getStroke(vertex);
   
     // draw its shape
-    Point2D pos = graph2d.getPositionOfVertex(vertex);
+    Point2D pos = graph2d.getPosition(vertex);
     graphics.setColor(color);
     graphics.setStroke(stroke);
-    Shape shape = graph2d.getShapeOfVertex(vertex);
+    Shape shape = graph2d.getShape(vertex);
     draw(shape, pos, false, graphics);
 
     // and content    
@@ -103,7 +103,7 @@ public class DefaultGraphRenderer implements GraphRenderer {
     
     graphics.translate(pos.getX(), pos.getY());
     graphics.clip(shape);
-    graphics.transform(graph2d.getTransformOfVertex(vertex));
+    graphics.transform(graph2d.getTransform(vertex));
     draw(text, icon, new Rectangle2D.Double(), 0.5, 0.5, graphics);
     graphics.setTransform(oldt);
     graphics.setClip(oldcp);
@@ -162,10 +162,10 @@ public class DefaultGraphRenderer implements GraphRenderer {
     graphics.setColor(getColor(edge));
     
     // draw path from start
-    Point2D pos = graph2d.getPositionOfVertex(edge.getStart());
-    Path path = graph2d.getPathOfEdge(edge);
+    Point2D pos = graph2d.getPosition(edge.getStart());
+    Routing path = graph2d.getRouting(edge);
     graphics.translate(pos.getX(), pos.getY());
-    graphics.draw(graph2d.getPathOfEdge(edge));
+    graphics.draw(graph2d.getRouting(edge));
     
     // draw arrow
     pos = path.getLastPoint();

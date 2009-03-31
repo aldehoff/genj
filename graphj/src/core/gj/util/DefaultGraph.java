@@ -19,9 +19,9 @@
  */
 package gj.util;
 
-import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.Port;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -43,10 +43,10 @@ public class DefaultGraph implements Graph2D {
 
   private Graph graph;
   private Shape defaultShape;
-  private Map<Vertex, Point2D> vertex2point = new HashMap<Vertex, Point2D>();
+  private Map<Vertex, Point2D> vertex2pos = new HashMap<Vertex, Point2D>();
   private Map<Vertex, AffineTransform> vertex2transform = new HashMap<Vertex, AffineTransform>();
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
-  private Map<Edge, Path> edge2path = new HashMap<Edge, Path>();
+  private Map<Edge, Routing> edge2path = new HashMap<Edge, Routing>();
   
   /*package*/ DefaultGraph() {
     this(null);
@@ -73,32 +73,30 @@ public class DefaultGraph implements Graph2D {
     return defaultShape;
   }
   
-  public Point2D getPositionOfVertex(Vertex vertex) {
-    Point2D result = vertex2point.get(vertex);
-    if (result==null) 
-      result = new Point2D.Double();
-    return result;
+  public Point2D getPosition(Vertex vertex) {
+    Point2D result = vertex2pos.get(vertex);
+    return result!=null ? result : new Point2D.Double();
   }
 
-  public void setPositionOfVertex(Vertex vertex, Point2D pos) {
-    vertex2point.put(vertex, new Point2D.Double(pos.getX(), pos.getY()));
+  public void setPosition(Vertex vertex, Point2D pos) {
+    vertex2pos.put(vertex, pos);
   }
 
-  public Path getPathOfEdge(Edge edge) {
+  public Routing getRouting(Edge edge) {
     
-    Path result = edge2path.get(edge);
+    Routing result = edge2path.get(edge);
     if (result==null) {
-      result = LayoutHelper.getPath(edge, this);
+      result = LayoutHelper.getRouting(edge, this);
       edge2path.put(edge, result);
     }
     return result;
   }
 
-  public void setPathOfEdge(Edge edge, Path path) {
+  public void setRouting(Edge edge, Routing path) {
     edge2path.put(edge, path);
   }
 
-  public Shape getShapeOfVertex(Vertex vertex) {
+  public Shape getShape(Vertex vertex) {
     Shape result = vertex2shape.get(vertex);
     if (result==null)
       result = defaultShape;
@@ -111,14 +109,14 @@ public class DefaultGraph implements Graph2D {
     return result;
   }
 
-  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+  public void setTransform(Vertex vertex, AffineTransform transform) {
     if (transform==null)
       vertex2transform.remove(vertex);
     else
       vertex2transform.put(vertex, transform);
   }
 
-  public AffineTransform getTransformOfVertex(Vertex vertex) {
+  public AffineTransform getTransform(Vertex vertex) {
     AffineTransform t = vertex2transform.get(vertex);
     return t==null ? new AffineTransform() : t;
   }

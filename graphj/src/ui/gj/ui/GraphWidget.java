@@ -205,8 +205,8 @@ public class GraphWidget extends JComponent {
     // adjust point for graph (graph space doesn't start at 0,0)
     point = getPoint(point);
     for (Vertex v : graph2d.getVertices()) {
-      Point2D pos = graph2d.getPositionOfVertex(v);
-      if (graph2d.getShapeOfVertex(v).contains(point.x - pos.getX(), point.y - pos.getY()))
+      Point2D pos = graph2d.getPosition(v);
+      if (graph2d.getShape(v).contains(point.x - pos.getX(), point.y - pos.getY()))
         return v;
     }
     return null;

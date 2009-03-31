@@ -221,7 +221,7 @@ public class HierarchicalLayout implements GraphLayout {
       for (int i=0;i<layers;i++) {
         for (int j=0;j<layerAssignment.getWidth(i);j++) {
           if (j>0) layerWidths[i]+=distanceBetweenVertices;
-          Rectangle2D r = getBounds(graph2d.getShapeOfVertex(layerAssignment.getVertex(i, j)));
+          Rectangle2D r = getBounds(graph2d.getShape(layerAssignment.getVertex(i, j)));
           vertexBounds[i][j] = r;
           layerWidths[i] += r.getWidth();
           layerHeights[i] = Math.max(layerHeights[i], r.getHeight());
@@ -255,13 +255,13 @@ public class HierarchicalLayout implements GraphLayout {
         y += isSinksAtBottom ? -layerHeights[i] : 0;
         for (int j=0; j<layerAssignment.getWidth(i); j++) {
           Vertex vertex = layerAssignment.getVertex(i,j);
-          graph2d.setTransformOfVertex(vertex, null);
+          graph2d.setTransform(vertex, null);
           if (j>0) x += (vertex instanceof DummyVertex || layerAssignment.getVertex(i,j-1) instanceof DummyVertex) ? distanceBetweenVertices/2 : distanceBetweenVertices;
           Rectangle2D r = vertexBounds[i][j];
           
           cellBounds[i][j] = new Rectangle2D.Double(x, y, r.getWidth(), layerHeights[i]);
           
-          graph2d.setPositionOfVertex(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
+          graph2d.setPosition(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
           
           x += r.getWidth();
         }
@@ -296,12 +296,12 @@ public class HierarchicalLayout implements GraphLayout {
             routing.inIndex, routing.inDegree, 
             pickPorts ? top : Port.None));
         
-        graph2d.setPathOfEdge(edge, 
-            LayoutHelper.getPath(points, 
-                graph2d.getPositionOfVertex(edge.getStart()),
-                graph2d.getShapeOfVertex(edge.getStart()), 
-                graph2d.getPositionOfVertex(edge.getEnd()),
-                graph2d.getShapeOfVertex(edge.getEnd()), 
+        graph2d.setRouting(edge, 
+            LayoutHelper.getRouting(points, 
+                graph2d.getPosition(edge.getStart()),
+                graph2d.getShape(edge.getStart()), 
+                graph2d.getPosition(edge.getEnd()),
+                graph2d.getShape(edge.getEnd()), 
                 false
             )
         );

@@ -19,9 +19,9 @@
  */
 package gj.util;
 
-import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.Port;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -43,38 +43,38 @@ public class DelegatingGraph implements Graph2D {
   }
 
   /** delegating call */
-  public Path getPathOfEdge(Edge edge) {
-    return delegated.getPathOfEdge(edge);
+  public Routing getRouting(Edge edge) {
+    return delegated.getRouting(edge);
   }
 
   /** delegating call */
-  public Point2D getPositionOfVertex(Vertex vertex) {
-    return delegated.getPositionOfVertex(vertex);
+  public Point2D getPosition(Vertex vertex) {
+    return delegated.getPosition(vertex);
   }
 
   /** delegating call */
-  public Shape getShapeOfVertex(Vertex vertex) {
-    return delegated.getShapeOfVertex(vertex);
+  public Shape getShape(Vertex vertex) {
+    return delegated.getShape(vertex);
   }
 
   /** delegating call */
-  public AffineTransform getTransformOfVertex(Vertex vertex) {
-    return delegated.getTransformOfVertex(vertex);
+  public AffineTransform getTransform(Vertex vertex) {
+    return delegated.getTransform(vertex);
   }
 
   /** delegating call */
-  public void setPathOfEdge(Edge edge, Path shape) {
-    delegated.setPathOfEdge(edge, shape);
+  public void setRouting(Edge edge, Routing shape) {
+    delegated.setRouting(edge, shape);
   }
 
   /** delegating call */
-  public void setPositionOfVertex(Vertex vertex, Point2D pos) {
-    delegated.setPositionOfVertex(vertex, pos);
+  public void setPosition(Vertex vertex, Point2D pos) {
+    delegated.setPosition(vertex, pos);
   }
 
   /** delegating call */
-  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
-    delegated.setTransformOfVertex(vertex, transform);
+  public void setTransform(Vertex vertex, AffineTransform transform) {
+    delegated.setTransform(vertex, transform);
   }
 
   /** delegating call */

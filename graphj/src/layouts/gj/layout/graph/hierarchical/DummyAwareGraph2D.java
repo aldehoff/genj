@@ -19,9 +19,9 @@
  */
 package gj.layout.graph.hierarchical;
 
-import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.Port;
+import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
 
@@ -53,41 +53,41 @@ public class DummyAwareGraph2D implements Graph2D {
     return wrapped.getEdges();
   }
   
-  public Point2D getPositionOfVertex(Vertex vertex) {
+  public Point2D getPosition(Vertex vertex) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
-      return wrapped.getPositionOfVertex(vertex);
+      return wrapped.getPosition(vertex);
     Point2D result = dummy2pos.get(vertex);
     return result!=null ? result : new Point2D.Double();
   }
   
-  public void setPositionOfVertex(Vertex vertex, Point2D pos) {
+  public void setPosition(Vertex vertex, Point2D pos) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
-      wrapped.setPositionOfVertex(vertex, pos);
+      wrapped.setPosition(vertex, pos);
     else
       dummy2pos.put(vertex, pos);
   }
   
-  public Shape getShapeOfVertex(Vertex vertex) {
+  public Shape getShape(Vertex vertex) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
-      return wrapped.getShapeOfVertex(vertex);
+      return wrapped.getShape(vertex);
     return new Rectangle2D.Double();
   }
   
-  public Path getPathOfEdge(Edge edge) {
-    return wrapped.getPathOfEdge(edge);
+  public Routing getRouting(Edge edge) {
+    return wrapped.getRouting(edge);
   }
 
-  public AffineTransform getTransformOfVertex(Vertex vertex) {
-    return wrapped.getTransformOfVertex(vertex);
+  public AffineTransform getTransform(Vertex vertex) {
+    return wrapped.getTransform(vertex);
   }
 
-  public void setPathOfEdge(Edge edge, Path shape) {
-    wrapped.setPathOfEdge(edge, shape);
+  public void setRouting(Edge edge, Routing shape) {
+    wrapped.setRouting(edge, shape);
   }
 
-  public void setTransformOfVertex(Vertex vertex, AffineTransform transform) {
+  public void setTransform(Vertex vertex, AffineTransform transform) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
-      wrapped.setTransformOfVertex(vertex, transform);
+      wrapped.setTransform(vertex, transform);
   }
   
   public Port getPortOfEdge(Edge edge, Vertex at) {

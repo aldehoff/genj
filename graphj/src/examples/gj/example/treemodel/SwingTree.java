@@ -94,7 +94,7 @@ public class SwingTree implements Example {
     // apply tree layout
     Graph2D graph2d = new DefaultGraph(graph) {
       @Override
-      public Shape getShapeOfVertex(Vertex v) {
+      public Shape getShape(Vertex v) {
         boolean leaf = v.getEdges().size() == 1;
         Dimension dim = treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false).getPreferredSize();
         return new Rectangle(-dim.width/2, -dim.height/2, dim.width, dim.height);
@@ -120,8 +120,8 @@ public class SwingTree implements Example {
       public void render(Graph2D graph2d, Graphics2D graphics) {
         // render vertices
         for (Vertex v : graph.getVertices()) {
-          Point2D p = graph2d.getPositionOfVertex(v);
-          Rectangle r = graph2d.getShapeOfVertex(v).getBounds();
+          Point2D p = graph2d.getPosition(v);
+          Rectangle r = graph2d.getShape(v).getBounds();
           r.translate((int)p.getX(), (int)p.getY());
           boolean leaf = v.getEdges().size() == 1;
           Component c =treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false);
@@ -131,10 +131,10 @@ public class SwingTree implements Example {
         // render edges
         graphics.setColor(Color.LIGHT_GRAY);
         for (Edge edge : graph.getEdges()) {
-          Point2D pos = graph2d.getPositionOfVertex(edge.getStart());
+          Point2D pos = graph2d.getPosition(edge.getStart());
           AffineTransform old = graphics.getTransform();
           graphics.translate(pos.getX(), pos.getY());
-          graphics.draw(graph2d.getPathOfEdge(edge));
+          graphics.draw(graph2d.getRouting(edge));
           graphics.setTransform(old);
         }
       }

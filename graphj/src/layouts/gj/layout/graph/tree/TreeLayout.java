@@ -24,16 +24,16 @@ import static gj.util.LayoutHelper.getChildren;
 import static gj.util.LayoutHelper.getInDegree;
 import static gj.util.LayoutHelper.getNeighbours;
 import static gj.util.LayoutHelper.getOther;
-import static gj.util.LayoutHelper.getPath;
+import static gj.util.LayoutHelper.getRouting;
 import static gj.util.LayoutHelper.getPort;
 import static gj.util.LayoutHelper.translate;
 import gj.geom.Geometry;
-import gj.geom.Path;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
 import gj.layout.Port;
+import gj.layout.Routing;
 import gj.layout.edge.visibility.EuclideanShortestPathLayout;
 import gj.model.Edge;
 import gj.model.Vertex;
@@ -319,7 +319,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       vertices.add(root);
       
       // reset vertex's transformation
-      graph2d.setTransformOfVertex(root, null);
+      graph2d.setTransform(root, null);
       
       // grab and sort children 
       List<Vertex> children = children(backtrack, root);
@@ -366,9 +366,9 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       if (branches.isEmpty()) {
         
         // simple shape for a leaf
-        Point2D pos = graph2d.getPositionOfVertex(root);
+        Point2D pos = graph2d.getPosition(root);
         shape = new GeneralPath(getConvexHull(
-            graph2d.getShapeOfVertex(root).getPathIterator(
+            graph2d.getShape(root).getPathIterator(
             AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
         ));
         top();
@@ -442,8 +442,8 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       //
       //
       Point2D a = branches.get(0).top();
-      Point2D b = graph2d.getPositionOfVertex(branches.get(0).root);
-      Point2D c = graph2d.getPositionOfVertex(branches.get(branches.size()-1).root);
+      Point2D b = graph2d.getPosition(branches.get(0).root);
+      Point2D c = graph2d.getPosition(branches.get(branches.size()-1).root);
       Point2D d = getPoint(b, c, alignmentOfParent); 
       Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
       
@@ -452,14 +452,14 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
           distanceBetweenGenerations + getLength(getMax(shape(root), layoutAxis)) 
         );
       
-      graph2d.setPositionOfVertex(root, r);
+      graph2d.setPosition(root, r);
       
       // do the edges
       edges(backtrack, parent, children);
       
       // calculate new shape
       GeneralPath gp = new GeneralPath();
-      gp.append(graph2d.getShapeOfVertex(root), false);
+      gp.append(graph2d.getShape(root), false);
       gp.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
       for (Branch branch : branches)
         gp.append(branch.shape, false);
@@ -483,7 +483,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
         Vertex child = getOther(edge, parent);
 
         // calculate path
-        Path path;
+        Routing path;
         switch (edgeLayout) {
           case Orthogonal:
             // calc edge layout
@@ -499,27 +499,27 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
               ),
               pos(child) 
             };
-            path = getPath(points, pos(parent), shape(parent), pos(child), shape(child), !edge.getStart().equals(parent));
+            path = getRouting(points, pos(parent), shape(parent), pos(child), shape(child), !edge.getStart().equals(parent));
             break;
           case PortPolyline:
             Port side = side();
             if (edge.getEnd().equals(parent))
               side = side.opposite();
-            path = getPath(
+            path = getRouting(
                 pos(edge.getStart()), shape(edge.getStart()), getPort(shape(edge.getStart()), children.indexOf(getOther(edge, parent)), children.size(), side           ),
                 // FIXME port polyline count for destinations isn't correct for acyclic DAGs
                 pos(edge.getEnd  ()), shape(edge.getEnd  ()), getPort(shape(edge.getEnd  ()), 0  , 1              , side.opposite())
             );
             break;
           case Polyline: default:
-            path = getPath(
-                layout.getPositionOfVertex(edge.getStart()), layout.getShapeOfVertex(edge.getStart()), new Point2D.Double(),
-                layout.getPositionOfVertex(edge.getEnd())  , layout.getShapeOfVertex(edge.getEnd()), new Point2D.Double()
+            path = getRouting(
+                layout.getPosition(edge.getStart()), layout.getShape(edge.getStart()), new Point2D.Double(),
+                layout.getPosition(edge.getEnd())  , layout.getShape(edge.getEnd()), new Point2D.Double()
                 );
             break;
         }
         
-        layout.setPathOfEdge(edge, path);
+        layout.setRouting(edge, path);
         
         // next
       }
@@ -573,11 +573,11 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     }
     
     Point2D pos(Vertex vertex) {
-      return layout.getPositionOfVertex(vertex);
+      return layout.getPosition(vertex);
     }
     
     Shape shape(Vertex vertex) {
-      return layout.getShapeOfVertex(vertex);
+      return layout.getShape(vertex);
     }
     
     Vertex other(Edge edge, Vertex other) {
@@ -598,15 +598,15 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     
     /** translate a branch */
     void moveTo(Point2D pos) {
-      moveBy(getDelta(layout.getPositionOfVertex(root), pos));
+      moveBy(getDelta(layout.getPosition(root), pos));
     }
 
     /** compare positions of two vertices */
     public int compare(Vertex v1,Vertex v2) {
       
       double layoutAxis = getRadian(orientation);
-      Point2D p1 = layout.getPositionOfVertex(v1);
-      Point2D p2 = layout.getPositionOfVertex(v2);
+      Point2D p1 = layout.getPosition(v1);
+      Point2D p2 = layout.getPosition(v2);
       
       double delta =
         Math.cos(layoutAxis) * (p2.getX()-p1.getX()) + Math.sin(layoutAxis) * (p2.getY()-p1.getY());

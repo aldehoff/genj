@@ -103,9 +103,9 @@ public class InheritanceTree implements Example {
         
         // clip and position
         AffineTransform oldt = graphics.getTransform();
-        Point2D pos = graph2d.getPositionOfVertex(vertex);
+        Point2D pos = graph2d.getPosition(vertex);
         graphics.translate(pos.getX(), pos.getY());
-        graphics.transform(graph2d.getTransformOfVertex(vertex));
+        graphics.transform(graph2d.getTransform(vertex));
         
         // draw text vertically
         Class<?> clazz = adapter.getContent(vertex);
