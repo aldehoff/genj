@@ -279,9 +279,8 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       layout.apply(e, new DelegatingGraph(graph2d) {
         @Override
         public Port getPortOfEdge(Edge edge, Vertex at) {
-          if (edgeLayout == EdgeLayout.Polyline)
-            return Port.None;
-          return edge.getEnd().equals(at) ? Port.North : Port.South;
+          // either no port or fixed port as touched earlier
+          return edgeLayout == EdgeLayout.Polyline ? Port.None : Port.Fixed;
         }
       }, context);
     }
@@ -374,6 +373,9 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
         ));
         top();
         
+        // do edges
+        edges(backtrack, parent, children);
+        
         // done
         return;
       }
@@ -444,7 +446,6 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       Point2D c = graph2d.getPositionOfVertex(branches.get(branches.size()-1).root);
       Point2D d = getPoint(b, c, alignmentOfParent); 
       Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
-      Point2D f = getPoint(e, layoutAxis-HALF_RADIAN, distanceBetweenGenerations/2);
       
       Point2D r = getPoint(
           e, layoutAxis - HALF_RADIAN, 
@@ -453,6 +454,9 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       
       graph2d.setPositionOfVertex(root, r);
       
+      // do the edges
+      edges(backtrack, parent, children);
+      
       // calculate new shape
       GeneralPath gp = new GeneralPath();
       gp.append(graph2d.getShapeOfVertex(root), false);
@@ -460,28 +464,42 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       for (Branch branch : branches)
         gp.append(branch.shape, false);
       shape = new GeneralPath(getConvexHull(gp));
+     
+      
+    }
+    
+    /** layout edges */
+    void edges(Vertex backtrack, Vertex parent, List<Vertex> children) {
+      
+      double layoutAxis = getRadian(orientation);
       
       // layout edges
       for (Edge edge : root.getEdges()) {
         
-        // don't do edge to backtrack
-        if (contains(edge, backtrack))
+        // don't do edge to backtrack and edge to parent (dag)
+        if (contains(edge, backtrack) || (isSingleSourceDAG&&!edge.getStart().equals(parent)))
           continue;
+        
+        Vertex child = getOther(edge, parent);
 
         // calculate path
         Path path;
         switch (edgeLayout) {
           case Orthogonal:
             // calc edge layout
-            Point2D[] points;
-            if (edge.getStart().equals(parent)) {
-              Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getEnd()), layoutAxis);
-              points = new Point2D[]{ pos(edge.getStart()), f, g, pos(edge.getEnd()) };
-            } else {
-              Point2D g = getIntersection(f, layoutAxis-QUARTER_RADIAN, pos(edge.getStart()), layoutAxis);
-              points = new Point2D[]{ pos(edge.getStart()), g, f, pos(edge.getEnd()) };
-            }
-            path = getPath(points, pos(edge.getStart()), shape(edge.getStart()), pos(edge.getEnd()), shape(edge.getEnd()), false);
+            Point2D[] points = new Point2D[]{ 
+              pos(parent), 
+              getPoint(
+                getMax(pos(parent), shape(parent), layoutAxis),
+                layoutAxis, distanceBetweenGenerations/2
+              ),
+              getPoint(
+                getMax(pos(child), shape(child), layoutAxis-HALF_RADIAN),
+                layoutAxis-HALF_RADIAN, distanceBetweenGenerations/2
+              ),
+              pos(child) 
+            };
+            path = getPath(points, pos(parent), shape(parent), pos(child), shape(child), !edge.getStart().equals(parent));
             break;
           case PortPolyline:
             Port side = side();
@@ -489,21 +507,23 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
               side = side.opposite();
             path = getPath(
                 pos(edge.getStart()), shape(edge.getStart()), getPort(shape(edge.getStart()), children.indexOf(getOther(edge, parent)), children.size(), side           ),
+                // FIXME port polyline count for destinations isn't correct for acyclic DAGs
                 pos(edge.getEnd  ()), shape(edge.getEnd  ()), getPort(shape(edge.getEnd  ()), 0  , 1              , side.opposite())
             );
             break;
           case Polyline: default:
-            path = getPath(edge, graph2d);
+            path = getPath(
+                layout.getPositionOfVertex(edge.getStart()), layout.getShapeOfVertex(edge.getStart()), new Point2D.Double(),
+                layout.getPositionOfVertex(edge.getEnd())  , layout.getShapeOfVertex(edge.getEnd()), new Point2D.Double()
+                );
             break;
         }
         
-        graph2d.setPathOfEdge(edge, path);
-        
+        layout.setPathOfEdge(edge, path);
         
         // next
-        
       }
-
+      
       // done
     }
     
