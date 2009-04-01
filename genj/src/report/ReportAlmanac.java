@@ -6,6 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 import genj.almanac.Almanac;
+import genj.almanac.Event;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
@@ -25,6 +26,8 @@ import java.util.List;
  * @author NMeier
  */
 public class ReportAlmanac extends Report {
+  
+  public boolean groupByYear = false;
 
   /**
    * main for Gedcom
@@ -71,9 +74,9 @@ public class ReportAlmanac extends Report {
   /**
    * Report events for list of individuals
    */
-  private void report(Gedcom ged, Collection indis) {
+  private void report(Gedcom ged, Collection<Indi> indis) {
 
-    Iterator events = getEvents(ged, indis);
+    Iterator<Event> events = getEvents(ged, indis);
     if (events==null) {
       println(translate("norange", indis.size()));
       return;
@@ -83,11 +86,22 @@ public class ReportAlmanac extends Report {
 
   }
 
-  private void report(Iterator events) {
+  private void report(Iterator<Event> events) {
 
+    int year = -Integer.MAX_VALUE;
     int num = 0;
     while (events.hasNext()) {
-      println(" + "+events.next());
+      
+      Event event = events.next();
+      
+      if (groupByYear) {
+        int y = event.getTime().getYear(); 
+        if (y>year) {
+          year = y;
+          println(translate("year", ""+year));
+        }
+      }
+      println(" + "+event);
       num++;
     }
     println("\n");
@@ -100,15 +114,15 @@ public class ReportAlmanac extends Report {
   /**
    * Lookup alamanac events for the given individuals
    */
-  private Iterator getEvents(Gedcom gedcom, Collection indis) {
+  private Iterator<Event> getEvents(Gedcom gedcom, Collection<Indi> indis) {
 
     // collect 'lifespan'
     PointInTime
       from = new PointInTime(),
       to   = new PointInTime();
 
-    for (Iterator it=indis.iterator(); it.hasNext(); )
-      getLifespan((Indi)it.next(), from, to);
+    for (Indi indi : indis)
+      getLifespan(indi, from, to);
 
     // got something?
     if (!from.isValid()||!to.isValid())
@@ -127,7 +141,7 @@ public class ReportAlmanac extends Report {
   private void getLifespan(Indi indi, PointInTime from, PointInTime to) {
 
     // look at his events to find start and end
-    List events = indi.getProperties(PropertyEvent.class);
+    List<Property> events = indi.getProperties(PropertyEvent.class);
     for (int e=0; e<events.size(); e++) {
       Property event = (Property)events.get(e);
       PropertyDate date = (PropertyDate)event.getProperty("DATE");
