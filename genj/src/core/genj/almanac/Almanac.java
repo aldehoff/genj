@@ -63,16 +63,16 @@ public class Almanac {
   private final static String LANG = Locale.getDefault().getLanguage();
   
   /** listeners */
-  private List listeners = new ArrayList(10);
+  private List<ChangeListener> listeners = new ArrayList<ChangeListener>(10);
   
   /** singleton */
   private static Almanac instance;
   
   /** events */
-  private List events = new ArrayList();
+  private List<Event> events = new ArrayList<Event>();
   
   /** categories */
-  private Set categories = new HashSet();
+  private Set<String> categories = new HashSet<String>();
   
   /** whether we've loaded all events */
   private boolean isLoaded = false;
@@ -180,7 +180,7 @@ public class Almanac {
   /**
    * Accessor - a range of events by (gregorian) year
    */
-  public Iterator getEvents(PointInTime from, PointInTime to, Set cats) {
+  public Iterator<Event> getEvents(PointInTime from, PointInTime to, Set<String> cats) {
     return new Range(from, to, cats);
   }
   
@@ -468,7 +468,7 @@ public class Almanac {
   /**
    * An iterator over a range of events
    */
-  private class Range implements Iterator {
+  private class Range implements Iterator<Event> {
     
     private int start, end;
     
@@ -580,10 +580,10 @@ public class Almanac {
     /**
      * @see java.util.Iterator#next()
      */
-    public Object next() {
+    public Event next() {
       if (next==null&&!hasNext())
         throw new IllegalArgumentException("no next");
-      Object result = next;
+      Event result = next;
       next = null;
       return result;
     }

@@ -29,15 +29,15 @@ import java.util.Set;
 /**
  * A CDay event
  */
-public class Event implements Comparable {
+public class Event implements Comparable<Event> {
   
   private PointInTime pit;
   private String desc;
-  private List cats;
+  private List<String> cats;
   private long julianDay;
   
   /** constructor */
-  public Event(List setCats, PointInTime setTime, String setText) throws GedcomException {
+  public Event(List<String> setCats, PointInTime setTime, String setText) throws GedcomException {
     pit = setTime;
     cats = setCats;
     desc = setText;
@@ -51,7 +51,7 @@ public class Event implements Comparable {
   }
   
   /* Test for category */
-  protected boolean isCategory(Set criteria) {
+  protected boolean isCategory(Set<String> criteria) {
     for (int c=0; c<cats.size(); c++) {
       if (criteria.contains(cats.get(c)))
         return true;
@@ -68,8 +68,7 @@ public class Event implements Comparable {
   }
   
   /** comparison */
-  public int compareTo(Object o) {
-    Event that = (Event)o;
+  public int compareTo(Event that) {
     return this.pit.compareTo(that.pit);
   }
   
@@ -83,7 +82,7 @@ public class Event implements Comparable {
   /**
    * Accessor
    */
-  public List getCategories() {
+  public List<String> getCategories() {
     return cats;
   }
   
