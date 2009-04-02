@@ -76,16 +76,6 @@ public class EditableEdge implements Edge {
     );   
   }
   
-  public void setShape(Routing set) {
-    if (set==null) {
-      setPath(null);
-      return;
-    }
-
-    setPath(set);
-    
-  }
-  
   public void setPath(Routing set) {
     if (set==null)
       set = makeShape();

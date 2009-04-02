@@ -210,7 +210,7 @@ public class GraphReader {
         DefaultRouting path = new DefaultRouting(shapeHandler.getResult());
         if (invert)
           path.setInverted();
-        edge.setShape(path);
+        edge.setPath(path);
       }
     }    
   } //EdgeHandler
