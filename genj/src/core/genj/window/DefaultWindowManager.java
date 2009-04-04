@@ -203,6 +203,23 @@ public class DefaultWindowManager extends WindowManager {
     // return result
     return optionPane.getValue();
   }
+
+  @Override
+  public void setTitle(String key, String title) {
+    
+    Object framedlg = recall(key);
+    
+    if (framedlg instanceof JFrame) {
+      ((JFrame)framedlg).setTitle(title); 
+      return;
+    }
+
+    if (framedlg instanceof JDialog) {
+      ((JDialog)framedlg).setTitle(title);
+      return;
+    }
+    
+  }
   
   /**
    * @see genj.window.WindowManager#show(java.lang.String)

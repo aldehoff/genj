@@ -233,6 +233,11 @@ public abstract class WindowManager {
   public abstract boolean show(String key);
   
   /**
+   * Sets the title of a top-level window
+   */
+  public abstract void setTitle(String key, String title);
+  
+  /**
    * Returns an appropriate WindowManager instance for given component
    * @return manager or null if no appropriate manager could be found
    */

@@ -390,6 +390,23 @@ public class ViewManager {
     
     // not found    
   }
+  
+  /**
+   * Set a view's title
+   */
+  public void setTitle(JComponent view, String title) {
+    
+    // loop through views
+    for (Iterator handles = allHandles.iterator(); handles.hasNext(); ) {
+      ViewHandle handle = (ViewHandle)handles.next();
+      if (handle.getView()==view) {
+        windowManager.setTitle(handle.getKey(), handle.getTitle() + (title.length()>0 ? " - " + title : ""));
+        break;
+      }
+    }
+    
+    // not found    
+  }
 
   /**
    * Returns views and factories with given support 

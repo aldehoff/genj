@@ -343,15 +343,25 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
   
   public void setContext(ViewContext context) {
     
-    // check current editor's context
+    // keep track of current editor's context
     ViewContext current = editor.getContext();
     if (current.getEntity()!=context.getEntity())
       back.push(current);
-    
-    // tell to editors - they're lazy and won't change if not needed
-    editor.setContext(context);
+
+    // tell to editors
+    setContextImpl(context);
     
     // done
+  }
+  
+  private void setContextImpl(ViewContext context) {
+    
+    editor.setContext(context);
+
+    // update title
+    context = editor.getContext();
+    manager.setTitle(this, context!=null&&context.getEntity()!=null?context.getEntity().toString():"");
+    
   }
   
   /**
@@ -494,7 +504,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       
       // let others know (we'll ignore the outgoing never receiving the incoming)
       WindowManager.broadcast(new ContextSelectionEvent(context, EditView.this));
-      editor.setContext(context);
+      setContextImpl(context);
       
       // reflect state
       setEnabled(stack.size()>0);
@@ -541,7 +551,7 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       
       // let others know (we'll ignore the outgoing never receiving the incoming)
       WindowManager.broadcast(new ContextSelectionEvent(context, EditView.this));
-      editor.setContext(context);
+      setContextImpl(context);
       
       // reflect state
       setEnabled(stack.size()>0);
