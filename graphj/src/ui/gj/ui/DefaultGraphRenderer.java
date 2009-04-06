@@ -162,13 +162,11 @@ public class DefaultGraphRenderer implements GraphRenderer {
     graphics.setColor(getColor(edge));
     
     // draw path from start
-    Point2D pos = graph2d.getPosition(edge.getStart());
     Routing path = graph2d.getRouting(edge);
-    graphics.translate(pos.getX(), pos.getY());
     graphics.draw(graph2d.getRouting(edge));
     
     // draw arrow
-    pos = path.getLastPoint();
+    Point2D pos = path.getLastPoint();
     graphics.setBackground(getColor(edge));
     graphics.translate(pos.getX(), pos.getY());
     graphics.rotate(path.getLastAngle());

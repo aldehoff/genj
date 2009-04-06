@@ -468,12 +468,8 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
         path.lineTo(getFarthest(p4, is));
 
       // layout relative to start
-      if (parent.equals(edge.getStart())) {
+      if (parent.equals(edge.getStart())) 
         path.setInverted();
-        path.translate(getNeg(graph2d.getPosition(parent)));
-      } else {
-        path.translate(getNeg(graph2d.getPosition(child)));
-      }
         
       graph2d.setRouting(edge, path);
 

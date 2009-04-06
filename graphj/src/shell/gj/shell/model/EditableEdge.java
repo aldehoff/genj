@@ -24,7 +24,6 @@ import gj.layout.Routing;
 import gj.model.Edge;
 import gj.util.LayoutHelper;
 
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -54,8 +53,7 @@ public class EditableEdge implements Edge {
    * Check if a point lies at vertex
    */
   public boolean contains(Point2D point) {
-    Point2D origin = start.getPosition();
-    return 8>Geometry.getMinimumDistance(point, getPath().getPathIterator(AffineTransform.getTranslateInstance(origin.getX(), origin.getY())));
+    return 8>Geometry.getMinimumDistance(point, getPath().getPathIterator(null));
   }
   
   /**

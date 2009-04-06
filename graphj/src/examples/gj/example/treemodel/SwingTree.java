@@ -22,8 +22,8 @@ package gj.example.treemodel;
 import gj.example.Example;
 import gj.layout.Graph2D;
 import gj.layout.LayoutException;
+import gj.layout.graph.tree.EdgeLayout;
 import gj.layout.graph.tree.TreeLayout;
-import gj.layout.graph.tree.TreeLayout.EdgeLayout;
 import gj.model.Edge;
 import gj.model.Graph;
 import gj.model.Vertex;
@@ -41,7 +41,6 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +106,7 @@ public class SwingTree implements Example {
       layout.setDistanceInGeneration(7);
       layout.setOrientation(90);
       layout.setAlignmentOfParent(1);
-      layout.setEdgeControl(EdgeLayout.Orthogonal);
+      layout.setEdgeLayout(EdgeLayout.Orthogonal);
       layout.setOrderSiblingsByPosition(false);
       layout.apply(graph2d, new DefaultLayoutContext());
     } catch (LayoutException e) {
@@ -132,10 +131,7 @@ public class SwingTree implements Example {
         graphics.setColor(Color.LIGHT_GRAY);
         for (Edge edge : graph.getEdges()) {
           Point2D pos = graph2d.getPosition(edge.getStart());
-          AffineTransform old = graphics.getTransform();
-          graphics.translate(pos.getX(), pos.getY());
           graphics.draw(graph2d.getRouting(edge));
-          graphics.setTransform(old);
         }
       }
     });

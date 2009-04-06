@@ -19,40 +19,19 @@
  */
 package gj.layout.graph.tree;
 
-import static gj.util.LayoutHelper.contains;
-import static gj.util.LayoutHelper.getChildren;
 import static gj.util.LayoutHelper.getInDegree;
-import static gj.util.LayoutHelper.getNeighbours;
-import static gj.util.LayoutHelper.getOther;
-import static gj.util.LayoutHelper.getRouting;
-import static gj.util.LayoutHelper.getPort;
-import static gj.util.LayoutHelper.translate;
-import gj.geom.Geometry;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
-import gj.layout.Port;
-import gj.layout.Routing;
-import gj.layout.edge.visibility.EuclideanShortestPathLayout;
-import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.AbstractGraphLayout;
-import gj.util.DelegatingGraph;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -152,14 +131,14 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /**
    * Getter - what we do with edges
    */
-  public EdgeLayout getEdgeControl() {
+  public EdgeLayout getEdgeLayout() {
     return edgeLayout;
   }
 
   /**
    * Setter - whether arcs are direct or bended
    */
-  public void setEdgeControl(EdgeLayout set) {
+  public void setEdgeLayout(EdgeLayout set) {
     edgeLayout = set;
   }
   
@@ -259,11 +238,10 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
     
     // recurse into it
     Set<Vertex> visited = new HashSet<Vertex>();
-    List<Edge> edgesToRoute = new ArrayList<Edge>();
-    Shape result = new Branch(null, root, graph2d, new ArrayDeque<Vertex>(), visited, edgesToRoute, context).shape;
+    Branch branch = new Branch(null, root, graph2d, new ArrayDeque<Vertex>(), visited, this, context);
     
     if (context.isDebug())
-      context.addDebugShape(result);
+      context.addDebugShape(branch.getShape());
     
     // check spanning tree in case we assumed DAG with single source
     if (isSingleSourceDAG&&visited.size()!=vertices.size()) {
@@ -271,357 +249,11 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
       throw new GraphNotSupportedException("Graph is not a spanning tree ("+vertices.size()+"!="+visited.size()+")");
     }
     
-    // catch up on layouting edges that need routing because of acyclic graph
-    EuclideanShortestPathLayout layout = new EuclideanShortestPathLayout();
-    layout.setEdgeVertexDistance(Math.min(distanceBetweenGenerations, distanceInGeneration)/4);
-    for (Edge e : edgesToRoute)  {
-      context.getLogger().fine("routing edge ["+e+"]");
-      layout.apply(e, new DelegatingGraph(graph2d) {
-        @Override
-        public Port getPortOfEdge(Edge edge, Vertex at) {
-          // either no port or fixed port as touched earlier
-          return edgeLayout == EdgeLayout.Polyline ? Port.None : Port.Fixed;
-        }
-      }, context);
-    }
+    // layout edges
+    edgeLayout.apply(graph2d, branch, this, context);
     
     // done
-    return result;
-  }
-
-  /**
-   * A Branch is the recursively worked on part of the tree
-   */
-  private class Branch extends Geometry implements Comparator<Vertex> {
-    
-    /** tree */
-    private Graph2D layout;
-    
-    /** root of branch */
-    private Vertex root;
-    
-    /** contained vertices */
-    private List<Vertex> vertices = new ArrayList<Vertex>();
-    
-    /** shape of branch */
-    private Point2D top;
-    private GeneralPath shape;
-    
-    /** constructor for a parent and its children */
-    Branch(Vertex backtrack, Vertex parent, Graph2D graph2d, Deque<Vertex> stack, Set<Vertex> visited, List<Edge> edgesToRoute, LayoutContext context) throws LayoutException, GraphNotSupportedException{
-      
-      // track coverage
-      visited.add(parent);
-
-      // init state
-      this.layout = graph2d;
-      this.root = parent;
-      vertices.add(root);
-      
-      // reset vertex's transformation
-      graph2d.setTransform(root, null);
-      
-      // grab and sort children 
-      List<Vertex> children = children(backtrack, root);
-      if (isOrderSiblingsByPosition) 
-        Collections.sort(children, this);
-      
-      // recurse into children and take over descendants
-      stack.addLast(parent);
-      List<Branch> branches = new ArrayList<Branch>(children.size());
-      for (Vertex child : children) {
-        
-        // catch possible recurse step into already visited nodes
-        if (visited.contains(child)) {
-          
-          // we don't allow directed cycles
-          if (stack.contains(child)) {
-            context.getLogger().info("cannot handle directed cycle at all");
-            throw new GraphNotSupportedException("Graph contains cycle involving ["+parent+">"+child+"]");
-          }
-
-          // allowing acyclic graphs
-          if (!isSingleSourceDAG) {
-            context.getLogger().info("cannot handle undirected graph with cycle unless isConsiderDirection=true");
-            throw new GraphNotSupportedException("Non Digraph contains non-directed cycle involving ["+parent+">"+child+"]");
-          }
-          
-          // don't re-recurse into child - remember applicable edge(s)
-          for (Edge e : parent.getEdges()) {
-            if (e.getEnd().equals(child))
-              edgesToRoute.add(e);
-          }
-          continue;
-        }
-        
-        // recurse
-        Branch branch = new Branch(parent, child, graph2d, stack, visited, edgesToRoute, context);
-        branches.add(branch);
-        vertices.addAll(branch.vertices);
-
-      }
-      stack.removeLast();
-      
-      // no children?
-      if (branches.isEmpty()) {
-        
-        // simple shape for a leaf
-        Point2D pos = graph2d.getPosition(root);
-        shape = new GeneralPath(getConvexHull(
-            graph2d.getShape(root).getPathIterator(
-            AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
-        ));
-        top();
-        
-        // do edges
-        edges(backtrack, parent, children);
-        
-        // done
-        return;
-      }
-      
-      // Calculate deltas of children left-aligned
-      double layoutAxis = getRadian(orientation);
-      double lrAlignment = layoutAxis - QUARTER_RADIAN;
-      Point2D[] lrDeltas  = new Point2D[branches.size()];
-      lrDeltas[0] = new Point2D.Double();
-      for (int i=1;i<branches.size();i++) {
-        // calculate delta from top alignment position
-        lrDeltas[i] = getDelta(branches.get(i).top(), branches.get(0).top());
-        // calculate distance from all previous siblings
-        double distance = Double.MAX_VALUE;
-        for (int j=0;j<i;j++) {
-          distance = Math.min(distance, getDistance(getTranslated(branches.get(j).shape, lrDeltas[j]), getTranslated(branches.get(i).shape, lrDeltas[i]), lrAlignment) - distanceInGeneration);
-        }
-        // calculate delta from top aligned position with correct distance
-        lrDeltas[i] = getPoint(lrDeltas[i], lrAlignment, -distance);
-      }
-      
-      // place last child
-      branches.get(branches.size()-1).moveBy(lrDeltas[lrDeltas.length-1]);
-
-      // Calculate deltas of children right-aligned
-      Point2D[] rlDeltas  = lrDeltas;
-      if (branches.size()>2 && isBalanceChildren) {
-        rlDeltas = new Point2D[branches.size()];
-        double rlAlignment = layoutAxis + QUARTER_RADIAN;
-        rlDeltas [rlDeltas.length-1] = new Point2D.Double();
-        for (int i=rlDeltas.length-2;i>=0;i--) {
-          // calculate delta from top alignment position
-          rlDeltas[i] = getDelta(branches.get(i).top(), branches.get(branches.size()-1).top());
-          // calculate distance from all previous siblings
-          double distance = Double.MAX_VALUE;
-          for (int j=rlDeltas.length-1;j>i;j--) {
-            distance = Math.min(distance, getDistance(getTranslated(branches.get(j).shape, rlDeltas[j]), getTranslated(branches.get(i).shape, rlDeltas[i]), rlAlignment) - distanceInGeneration);
-          }
-          assert distance != Double.MAX_VALUE;
-          // calculate delta from top aligned position with correct distance
-          rlDeltas[i] = getPoint(rlDeltas[i], rlAlignment, -distance);
-        }
-      }
-      
-      // place all children in between
-      for (int i=1; i<branches.size()-1; i++) {
-        branches.get(i).moveBy(getMid(lrDeltas[i], rlDeltas[i]));
-      }
-      
-      
-      // Place Root
-      //
-      //        rrr
-      //        r r  
-      //     b  rrr  c
-      //     |   |   |
-      //     |  =f=  |
-      //     |   |   |
-      //   --+---e---+--a
-      //   11|11 | NN|NN    
-      //   1 | 1.d.N | N
-      //   11|11 | NN|NN
-      //    /|\  |  /|\
-      //
-      //
-      Point2D a = branches.get(0).top();
-      Point2D b = graph2d.getPosition(branches.get(0).root);
-      Point2D c = graph2d.getPosition(branches.get(branches.size()-1).root);
-      Point2D d = getPoint(b, c, alignmentOfParent); 
-      Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
-      
-      Point2D r = getPoint(
-          e, layoutAxis - HALF_RADIAN, 
-          distanceBetweenGenerations + getLength(getMax(shape(root), layoutAxis)) 
-        );
-      
-      graph2d.setPosition(root, r);
-      
-      // do the edges
-      edges(backtrack, parent, children);
-      
-      // calculate new shape
-      GeneralPath gp = new GeneralPath();
-      gp.append(graph2d.getShape(root), false);
-      gp.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
-      for (Branch branch : branches)
-        gp.append(branch.shape, false);
-      shape = new GeneralPath(getConvexHull(gp));
-     
-      
-    }
-    
-    /** layout edges */
-    void edges(Vertex backtrack, Vertex parent, List<Vertex> children) {
-      
-      double layoutAxis = getRadian(orientation);
-      
-      // layout edges
-      for (Edge edge : root.getEdges()) {
-        
-        // don't do edge to backtrack and edge to parent (dag)
-        if (contains(edge, backtrack) || (isSingleSourceDAG&&!edge.getStart().equals(parent)))
-          continue;
-        
-        Vertex child = getOther(edge, parent);
-
-        // calculate path
-        Routing path;
-        switch (edgeLayout) {
-          case Orthogonal:
-            // calc edge layout
-            Point2D[] points = new Point2D[]{ 
-              pos(parent), 
-              getPoint(
-                getMax(pos(parent), shape(parent), layoutAxis),
-                layoutAxis, distanceBetweenGenerations/2
-              ),
-              getPoint(
-                getMax(pos(child), shape(child), layoutAxis-HALF_RADIAN),
-                layoutAxis-HALF_RADIAN, distanceBetweenGenerations/2
-              ),
-              pos(child) 
-            };
-            path = getRouting(points, pos(parent), shape(parent), pos(child), shape(child), !edge.getStart().equals(parent));
-            break;
-          case PortPolyline:
-            Port side = side();
-            if (edge.getEnd().equals(parent))
-              side = side.opposite();
-            path = getRouting(
-                pos(edge.getStart()), shape(edge.getStart()), getPort(shape(edge.getStart()), children.indexOf(getOther(edge, parent)), children.size(), side           ),
-                // FIXME port polyline count for destinations isn't correct for acyclic DAGs
-                pos(edge.getEnd  ()), shape(edge.getEnd  ()), getPort(shape(edge.getEnd  ()), 0  , 1              , side.opposite())
-            );
-            break;
-          case Polyline: default:
-            path = getRouting(
-                layout.getPosition(edge.getStart()), layout.getShape(edge.getStart()), new Point2D.Double(),
-                layout.getPosition(edge.getEnd())  , layout.getShape(edge.getEnd()), new Point2D.Double()
-                );
-            break;
-        }
-        
-        layout.setRouting(edge, path);
-        
-        // next
-      }
-      
-      // done
-    }
-    
-    /** vertex port side for current orientation */
-    Port side() {
-      if (orientation==0)
-        return Port.North;
-      if (orientation==180)
-        return Port.South;
-      if (orientation==90)
-        return Port.East;
-      if (orientation==270)
-        return Port.West;
-      // only support NWES
-      return Port.None;
-    }
-    
-    List<Vertex> children(Vertex backtrack, Vertex parent) throws GraphNotSupportedException {
-      
-      List<Vertex> result = new ArrayList<Vertex>(10);
-      
-      // either all children as per directed edges or all neighbours w/o backtrack
-      if (isSingleSourceDAG) {
-        result.addAll(getChildren(parent));
-        if (backtrack!=null && result.contains(backtrack))
-          throw new GraphNotSupportedException("Graph contains backtracking edge ["+parent+">"+backtrack+"]");
-      } else {
-        result.addAll(getNeighbours(parent));
-        result.remove(backtrack);
-      }
-      
-      // done
-      return result;      
-    }
-    
-    Point2D top() throws LayoutException{
-      if (top==null)
-        top= getMax(shape, getRadian(orientation) - HALF_RADIAN);
-      if (top==null)
-        throw new LayoutException("branch for vertex "+root+" has no valid shape containing (0,0)");
-      return top;
-      
-    }
-    
-    Point2D pos() {
-      return pos(root);
-    }
-    
-    Point2D pos(Vertex vertex) {
-      return layout.getPosition(vertex);
-    }
-    
-    Shape shape(Vertex vertex) {
-      return layout.getShape(vertex);
-    }
-    
-    Vertex other(Edge edge, Vertex other) {
-      return edge.getStart().equals(other) ? edge.getEnd() : edge.getStart();
-    }
-    
-    
-    /** translate a branch */
-    void moveBy(Point2D delta) {
-      
-      for (Vertex vertice : vertices) 
-        translate(layout, vertice, delta);
-      
-      top = null;
-      
-      shape.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
-    }
-    
-    /** translate a branch */
-    void moveTo(Point2D pos) {
-      moveBy(getDelta(layout.getPosition(root), pos));
-    }
-
-    /** compare positions of two vertices */
-    public int compare(Vertex v1,Vertex v2) {
-      
-      double layoutAxis = getRadian(orientation);
-      Point2D p1 = layout.getPosition(v1);
-      Point2D p2 = layout.getPosition(v2);
-      
-      double delta =
-        Math.cos(layoutAxis) * (p2.getX()-p1.getX()) + Math.sin(layoutAxis) * (p2.getY()-p1.getY());
-      
-      return (int)(delta);
-    }
-  } //Branch
-  
-  /**
-   * our edge control
-   */
-  public enum EdgeLayout {
-    Polyline,
-    PortPolyline,
-    Orthogonal
+    return branch.getShape();
   }
   
 } //TreeLayout

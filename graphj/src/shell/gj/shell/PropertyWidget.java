@@ -187,8 +187,10 @@ public class PropertyWidget extends JPanel {
     }
     
     // an enumeration
-    if (prop.getClass().isEnum()) {
-      JComboBox cb = new JComboBox(prop.getClass().getEnumConstants());
+    if (Enum.class.isAssignableFrom(prop.getClass())) {
+      Class<?> c = prop.getClass();
+      while (c.getSuperclass()!=Enum.class) c = c.getSuperclass();
+      JComboBox cb = new JComboBox(c.getEnumConstants());
       cb.setSelectedItem(prop);
       cb.addActionListener(alistener);
       return cb;

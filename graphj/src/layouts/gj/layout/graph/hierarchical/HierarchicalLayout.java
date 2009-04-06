@@ -221,7 +221,9 @@ public class HierarchicalLayout implements GraphLayout {
       for (int i=0;i<layers;i++) {
         for (int j=0;j<layerAssignment.getWidth(i);j++) {
           if (j>0) layerWidths[i]+=distanceBetweenVertices;
-          Rectangle2D r = getBounds(graph2d.getShape(layerAssignment.getVertex(i, j)));
+          Vertex v = layerAssignment.getVertex(i, j);
+          graph2d.setTransform(v, null);
+          Rectangle2D r = getBounds(graph2d.getShape(v));
           vertexBounds[i][j] = r;
           layerWidths[i] += r.getWidth();
           layerHeights[i] = Math.max(layerHeights[i], r.getHeight());
@@ -255,7 +257,6 @@ public class HierarchicalLayout implements GraphLayout {
         y += isSinksAtBottom ? -layerHeights[i] : 0;
         for (int j=0; j<layerAssignment.getWidth(i); j++) {
           Vertex vertex = layerAssignment.getVertex(i,j);
-          graph2d.setTransform(vertex, null);
           if (j>0) x += (vertex instanceof DummyVertex || layerAssignment.getVertex(i,j-1) instanceof DummyVertex) ? distanceBetweenVertices/2 : distanceBetweenVertices;
           Rectangle2D r = vertexBounds[i][j];
           

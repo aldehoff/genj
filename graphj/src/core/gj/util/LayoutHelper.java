@@ -234,6 +234,17 @@ public class LayoutHelper {
   }
   
   /**
+   * Returns the edge between vertex1 and vertex2
+   */
+  public static Edge getEdge(Vertex vertex1, Vertex vertex2) {
+    for (Edge edge : vertex1.getEdges()) {
+      if (contains(edge, vertex1) && contains(edge, vertex2))
+        return edge;
+    }
+    throw new IllegalArgumentException("no edge between ["+vertex1+"] and ["+vertex2+"]");
+  }
+  
+  /**
    * Get children of a given vertex. That's all 
    * <pre>
    *   A e E n : e(vertex,n ) e graph && !n==vertex
@@ -375,28 +386,21 @@ public class LayoutHelper {
     
     // add the points to this path relative to start
     if (!reversed) {
-      double 
-        cx = fromPos.getX(), 
-        cy = fromPos.getY();
-      
       for (int i=0;i<points.size();i++) {
         Point2D p = points.get(i);
         if (i==0)
-          result.start(new Point2D.Double( p.getX() - cx, p.getY() - cy));
+          result.start(new Point2D.Double( p.getX() , p.getY() ));
         else
-          result.lineTo(new Point2D.Double( p.getX() - cx, p.getY() - cy ));
+          result.lineTo(new Point2D.Double( p.getX() , p.getY() ));
       }
       
     } else {
-      double 
-        cx = toPos.getX(), 
-        cy = toPos.getY();
       for (int i=n-1;i>=0;i--) {
         Point2D p = points.get(i);
         if (i==n-1)
-          result.start(new Point2D.Double( p.getX() - cx, p.getY() - cy));
+          result.start(new Point2D.Double( p.getX() , p.getY() ));
         else
-          result.lineTo(new Point2D.Double( p.getX() - cx, p.getY() - cy ));
+          result.lineTo(new Point2D.Double( p.getX() , p.getY() ));
       }
     }
     

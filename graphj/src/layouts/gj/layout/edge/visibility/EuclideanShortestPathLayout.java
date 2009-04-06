@@ -55,6 +55,19 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
   
   private double edgeVertexDistance = 3;
   private int debugIndex = 0;
+  
+  /**
+   * Constructor
+   */
+  public EuclideanShortestPathLayout() {
+  }
+
+  /**
+   * Constructor
+   */
+  public EuclideanShortestPathLayout(double edgeVertexDistance) {
+    this.edgeVertexDistance = edgeVertexDistance;
+  }
 
   /**
    * apply it
