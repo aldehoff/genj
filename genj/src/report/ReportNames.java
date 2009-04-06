@@ -72,41 +72,97 @@ public class ReportNames extends Report {
 		str += indi.getName();
 
 		// Birth
-		if(reportAlwaysDetailSeparator || reportOutputBirth & ((trim(indi.getBirthAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) ))
-			str += reportDetailSeparator; // If flag is true or content ist available, print separator
-		if(reportOutputBirth & ((trim(indi.getBirthAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) ))
-			str += " " + OPTIONS.getBirthSymbol()+" "+trim(getDate(indi.getBirthAsString()));
-			if (trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0)
-				str += " ";
-			str += trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC")));
+		if (reportOutputBirth) {
+			// any data for birth available? IF yes, print birthsymbol
+			if((trim(indi.getBirthAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) ) {
+				str += reportDetailSeparator + " " + OPTIONS.getBirthSymbol();
+			}
+			else if (reportAlwaysDetailSeparator) {
+				str += reportDetailSeparator;
+			}
+
+			// if separator always wanted, give also a separator around the birth symbol
+			str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
+
+
+			// get date of birth
+			if(trim(indi.getBirthAsString()).length()>0 ) {
+				str += trim(getDate(indi.getBirthAsString()));
+			}
+
+			// if separator always wanted
+			str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
+
+			// get place of birth
+			if(trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0 ) {
+				str += trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC")));
+			}
+		}
+		else if (reportAlwaysDetailSeparator) {
+			str += reportDetailSeparator + reportDetailSeparator + reportDetailSeparator ;
+		}
+
 
 		// Death
-		if(reportAlwaysDetailSeparator || reportOutputDeath & (indi.getProperty("DEAT")!=null && ( (trim(indi.getDeathAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) ) ) )
-			str += reportDetailSeparator; // If flag is true or content ist available, print separator
-		if(reportOutputDeath & (indi.getProperty("DEAT")!=null && ( (trim(indi.getDeathAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) ) ) )
-            str += " " +  OPTIONS.getDeathSymbol()+" "+trim(getDate(indi.getDeathAsString()));
-            if (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0)
-            	str += " ";
-            str += trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")));
+		if (reportOutputDeath) {
+			if(indi.getProperty("DEAT")!=null && ( (trim(indi.getDeathAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0))) {
+				str += reportDetailSeparator + " "+ OPTIONS.getDeathSymbol();
+			} else if (reportAlwaysDetailSeparator) {
+				str += reportDetailSeparator;
+			}
+
+			str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
+
+			if(trim(indi.getDeathAsString()).length()>0)
+				str += trim(getDate(indi.getDeathAsString()));
+
+			str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
+
+			if (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) {
+				str += trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")));
+			}
+
+		}
+		else if (reportAlwaysDetailSeparator) {
+			str += reportDetailSeparator + reportDetailSeparator + reportDetailSeparator + reportDetailSeparator ;
+		}
+
 
 		// Marriage
 		if (reportOutputMarriage)
 		{
 			Fam[] families = indi.getFamiliesWhereSpouse();
 			for(int i=0; i<families.length; i++) {
-				if (reportAlwaysDetailSeparator ||  ((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) || ((indi != (Indi)families[i].getHusband()) & ((Indi)families[i].getHusband() != null) ) || ( (indi != (Indi)families[i].getWife()) & ((Indi)families[i].getWife() != null) ))
-					str += reportDetailSeparator; // If flag is true or content ist available, print separator
-				if ( ((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) || ((indi != (Indi)families[i].getHusband()) & ((Indi)families[i].getHusband() != null) ) || ( (indi != (Indi)families[i].getWife()) & ((Indi)families[i].getWife() != null) ))
-					str += " ("+OPTIONS.getMarriageSymbol();
-				if((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
-					str += " "+getDate(trim(families[i].getMarriageDate()))+" "+trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")))+" ";
+				//if (reportAlwaysDetailSeparator ||  ((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) || ((indi != (Indi)families[i].getHusband()) & ((Indi)families[i].getHusband() != null) ) || ( (indi != (Indi)families[i].getWife()) & ((Indi)families[i].getWife() != null) ))
+				//  str += reportDetailSeparator; // If flag is true or content is available, print separator
 
-				if ( (indi != (Indi)families[i].getHusband()) & ((Indi)families[i].getHusband() != null) )
-					str += " "+families[i].getHusband().getName();
-				if ( (indi != (Indi)families[i].getWife()) & ((Indi)families[i].getWife() != null) )
-					str += " "+families[i].getWife().getName();
-				if ( ((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) || ((indi != (Indi)families[i].getHusband()) & ((Indi)families[i].getHusband() != null) ) || ( (indi != (Indi)families[i].getWife()) & ((Indi)families[i].getWife() != null) ))
-				str += ") ";
+				if ( ((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) || ((indi != (Indi)families[i].getHusband()) && ((Indi)families[i].getHusband() != null) ) || ( (indi != (Indi)families[i].getWife()) && ((Indi)families[i].getWife() != null) )) {
+					str += reportDetailSeparator + " ("+OPTIONS.getMarriageSymbol();
+				}
+
+				if((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) {
+					str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
+					str += getDate(trim(families[i].getMarriageDate()));
+					str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
+					str += trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")));
+				} else if (reportAlwaysDetailSeparator) {
+					str += reportDetailSeparator + reportDetailSeparator;
+				}
+
+				if ( (indi != (Indi)families[i].getHusband()) && ((Indi)families[i].getHusband() != null) ) {
+					if(reportAlwaysDetailSeparator || (trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
+						str += reportDetailSeparator+" ";
+					str += families[i].getHusband().getName();
+				}
+
+				if ( (indi != (Indi)families[i].getWife()) && ((Indi)families[i].getWife() != null) ) {
+					if(reportAlwaysDetailSeparator || (trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
+						str += reportDetailSeparator+" ";
+					str += families[i].getWife().getName();
+				}
+
+				if ( ((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) || ((indi != (Indi)families[i].getHusband()) && ((Indi)families[i].getHusband() != null) ) || ( (indi != (Indi)families[i].getWife()) && ((Indi)families[i].getWife() != null) ))
+				str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ") +")";
 			}
 		}
 
