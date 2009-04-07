@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ import gj.model.Graph;
 import gj.model.Vertex;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -41,22 +40,17 @@ public interface Graph2D extends Graph {
   /**
    * Edge's shape
    */
-  public void setRouting(Edge edge, Routing shape);
+  public void setRouting(Edge edge, Routing routing);
 
   /**
    * Vertex's shape
    */
   public Shape getShape(Vertex vertex);
 
-  /** 
-   * Vertex transformation (idempotent)
+  /**
+   * Vertex's shape
    */
-  public void setTransform(Vertex vertex, AffineTransform transform);
-
-  /** 
-   * Vertex transformation (idempotent)
-   */
-  public AffineTransform getTransform(Vertex vertex);
+  public void setShape(Vertex vertex, Shape shape);
 
   /**
    * Vertex's position
@@ -71,6 +65,6 @@ public interface Graph2D extends Graph {
   /**
    * Edge's port control
    */
-  public Port getPortOfEdge(Edge edge, Vertex at);
+  public Port getPort(Edge edge, Vertex at);
   
 } //Layout2D

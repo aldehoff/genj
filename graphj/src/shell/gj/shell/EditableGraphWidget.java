@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -454,7 +454,6 @@ public class EditableGraphWidget extends GraphWidget {
       super.start(pos);
       // remember
       vertex = (EditableVertex)graph.getSelection();
-      vertex.setTransformation(null);
       shape = vertex.getShape();
       dim = shape.getBounds().getSize();
       repaint();

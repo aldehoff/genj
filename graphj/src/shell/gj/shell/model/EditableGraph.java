@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -313,14 +312,6 @@ public class EditableGraph implements Graph2D {
   /**
    * interface implementation
    */
-  public AffineTransform getTransform(Vertex vertex) {
-    AffineTransform t = ((EditableVertex)vertex).getTransformation();
-    return t==null ? new AffineTransform() : t;
-  }
-
-  /**
-   * interface implementation
-   */
   public void setRouting(Edge edge, Routing path) {
     ((EditableEdge)edge).setPath(path);
   }
@@ -335,21 +326,14 @@ public class EditableGraph implements Graph2D {
   /**
    * interface implementation
    */
-  public void setShapeOfVertex(Vertex node, Shape shape) {
+  public void setShape(Vertex node, Shape shape) {
     ((EditableVertex)node).setShape(shape);
   }
   
   /**
    * interface implementation
    */
-  public void setTransform(Vertex vertex, AffineTransform transform) {
-    ((EditableVertex)vertex).setTransformation(transform);
-  }
-  
-  /**
-   * interface implementation
-   */
-  public Port getPortOfEdge(Edge edge, Vertex at) {
+  public Port getPort(Edge edge, Vertex at) {
     return Port.None;
   }
   

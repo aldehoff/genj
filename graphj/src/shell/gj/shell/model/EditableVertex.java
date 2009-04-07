@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@ import gj.util.LayoutHelper;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -45,43 +43,28 @@ public class EditableVertex implements Vertex {
   /** all edges of this vertex */
   private Collection<EditableEdge> edges = new LinkedHashSet<EditableEdge>(3);
   
-  /** the shape of this node */
-  private Shape shape;
+  /** the original shape of this node */
+  private Shape originalShape, editedShape;
   
-  /** the transformed shape of this node */
-  private GeneralPath transformedShape;
-  
-  
-  /** transformation */
-  private AffineTransform transform = null;
-
   /**
    * interface implementation
    */
   public Shape getShape() {
-    if (transform!=null) {
-      if (transformedShape==null) {
-        transformedShape = new GeneralPath(shape);
-        transformedShape.transform(transform);
-      }
-      return transformedShape;
-    }
-    return shape;
+    return editedShape;
   }
   
   /**
    * special request for original shape
    */
   public Shape getOriginalShape() {
-    return shape;
+    return originalShape;
   }
   
   /**
    * interface implementation
    */
   public void setShape(Shape set) {
-    shape = set!=null ? set : new Rectangle();
-    transformedShape = null;
+    editedShape = set!=null ? set : new Rectangle();
   }
   
   /**
@@ -91,7 +74,7 @@ public class EditableVertex implements Vertex {
     
     this.position = position!=null ? position : new Point2D.Double();
     this.content = content;
-    
+    this.originalShape = shape;
     setShape(shape);
   }
   
@@ -208,20 +191,6 @@ public class EditableVertex implements Vertex {
     } else {
       return content.toString();
     }
-  }
-
-  /**
-   * accessor - transformation (idempotent)
-   */
-  public void setTransformation(AffineTransform transform) {
-    if (transform!=null&&transform.isIdentity())
-      transform=null;
-    this.transform = transform;
-    transformedShape = null;
-  }
-  
-  public AffineTransform getTransformation() {
-    return transform;
   }
 
 } //Vertex

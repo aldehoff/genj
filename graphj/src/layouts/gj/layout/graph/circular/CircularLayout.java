@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,6 @@ public class CircularLayout implements GraphLayout {
     if (nodes.size()==1) {
       Vertex one = nodes.get(0);
       graph2d.setPosition(one, new Point2D.Double(cx,cy));
-      graph2d.setTransform(one, null);
       return;
     }
     
@@ -155,7 +154,6 @@ public class CircularLayout implements GraphLayout {
       double y = (int)(cy + Math.cos(radian)*radius);
       Vertex node = nodes.get(n);
       graph2d.setPosition(node, new Point2D.Double(x,y));
-      graph2d.setTransform(node, null);
 
       radian += TWOPI*sizes[n]/circumference;
     }

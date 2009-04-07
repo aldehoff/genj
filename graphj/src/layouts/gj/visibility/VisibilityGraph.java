@@ -169,10 +169,6 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     return new Rectangle2D.Double();
   }
 
-  public AffineTransform getTransform(Vertex vertex) {
-    return null;
-  }
-  
   public void setRouting(Edge edge, Routing shape) {
     throw new IllegalArgumentException("n/a");
   }
@@ -181,11 +177,11 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     throw new IllegalArgumentException("n/a");
   }
 
-  public void setTransform(Vertex vertex, AffineTransform transform) {
+  public void setShape(Vertex vertex, Shape shape) {
     throw new IllegalArgumentException("n/a");
   }
   
-  public Port getPortOfEdge(Edge edge, Vertex at) {
+  public Port getPort(Edge edge, Vertex at) {
     return Port.None;
   }
   

@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,7 +222,6 @@ public class HierarchicalLayout implements GraphLayout {
         for (int j=0;j<layerAssignment.getWidth(i);j++) {
           if (j>0) layerWidths[i]+=distanceBetweenVertices;
           Vertex v = layerAssignment.getVertex(i, j);
-          graph2d.setTransform(v, null);
           Rectangle2D r = getBounds(graph2d.getShape(v));
           vertexBounds[i][j] = r;
           layerWidths[i] += r.getWidth();

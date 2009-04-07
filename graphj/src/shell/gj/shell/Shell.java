@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
 import gj.shell.factory.AbstractGraphFactory;
 import gj.shell.model.EditableGraph;
+import gj.shell.model.EditableVertex;
 import gj.shell.swing.Action2;
 import gj.shell.swing.SwingHelper;
 import gj.shell.util.Properties;
@@ -322,6 +323,10 @@ public class Shell {
         return false;
       // something running?
       cancel(true);
+      // restore original vertex shapes
+      for (EditableVertex v : graph.getVertices()) 
+        graph.setShape(v, v.getOriginalShape());
+      
       // run layout
       Rectangle bounds = createGraphBounds();
       GraphLayout layout = layoutWidget.getSelectedLayouts();

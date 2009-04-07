@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import static gj.util.LayoutHelper.getOther;
 import static gj.util.LayoutHelper.setRouting;
 import static java.lang.Math.max;
 import gj.geom.Geometry;
+import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
@@ -384,9 +385,7 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
 
         // modify shape
         if (isRotateShapes)
-          graph2d.setTransform(child, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild[c]) );
-        else
-          graph2d.setTransform(child, new AffineTransform());
+          graph2d.setShape(child, ShapeHelper.createShape(graph2d.getShape(child), AffineTransform.getRotateInstance(HALF_RADIAN + radianOfChild[c])));
         
         // add debugging information
         if (context.isDebug()) {
@@ -402,9 +401,7 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       // modify graph's root shape before laying out edges
       if (backtrack==null) {
         if (isRotateShapes)
-          graph2d.setTransform(root, AffineTransform.getRotateInstance(HALF_RADIAN + radianOfRoot) );
-        else
-          graph2d.setTransform(root, new AffineTransform());
+          graph2d.setShape(root, ShapeHelper.createShape(graph2d.getShape(root), AffineTransform.getRotateInstance(HALF_RADIAN + radianOfRoot) ));
       }      
 
       // layout edges

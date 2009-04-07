@@ -170,7 +170,7 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     private Point2D patch(Graph2D delegated, Edge edge, boolean start) {
 
       Vertex vertex = start ? edge.getStart() : edge.getEnd();
-      Port port = getPortOfEdge(edge, vertex);
+      Port port = getPort(edge, vertex);
 
       // special shape based on port
       switch (port) {

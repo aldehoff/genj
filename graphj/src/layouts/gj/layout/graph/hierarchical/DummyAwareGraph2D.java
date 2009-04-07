@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@ import gj.model.Edge;
 import gj.model.Vertex;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
@@ -77,24 +76,20 @@ public class DummyAwareGraph2D implements Graph2D {
     return wrapped.getRouting(edge);
   }
 
-  public AffineTransform getTransform(Vertex vertex) {
-    return wrapped.getTransform(vertex);
-  }
-
   public void setRouting(Edge edge, Routing shape) {
     wrapped.setRouting(edge, shape);
   }
 
-  public void setTransform(Vertex vertex, AffineTransform transform) {
+  public void setShape(Vertex vertex, Shape shape) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
-      wrapped.setTransform(vertex, transform);
+      wrapped.setShape(vertex, shape);
   }
   
-  public Port getPortOfEdge(Edge edge, Vertex at) {
+  public Port getPort(Edge edge, Vertex at) {
     if (  (edge.getStart() instanceof LayerAssignment.DummyVertex)
         ||(edge.getEnd  () instanceof LayerAssignment.DummyVertex))
       return Port.None;
-    return wrapped.getPortOfEdge(edge, at);
+    return wrapped.getPort(edge, at);
   }
 
 } //DummyAwareGraph2D

@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,9 +83,7 @@ public class EditableEdge implements Edge {
   
   boolean updateHash() {
     long oldHash = hash;
-    Point2D delta = Geometry.getDelta(getEnd().getPosition(), getStart().getPosition());
-    hash = ((int)delta.getX()) * 31 + ((int)delta.getY()) +  
-        + getStart().getShape().hashCode() + getEnd().getShape().hashCode();
+    hash = (int)(start.getPosition().hashCode()+start.getShape().hashCode()+end.getPosition().hashCode()+end.getShape().hashCode());
     return oldHash==hash;
   }
 

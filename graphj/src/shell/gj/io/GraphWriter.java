@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ import gj.shell.model.EditableVertex;
 import gj.util.DefaultRouting;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -185,15 +184,16 @@ public class GraphWriter {
     info.put("x", v.getPosition().getX());
     info.put("y", v.getPosition().getY());
     info.put("sid", element2id.get(v.getOriginalShape()));
-    
-    AffineTransform t = v.getTransformation();
-    if (t!=null&&!t.isIdentity()) {
-      info.put("t", "4");
-      double[] flatmatrix = new double[4];
-      t.getMatrix(flatmatrix);
-      for (int m=0;m<flatmatrix.length;m++)
-        info.put(String.format("t%d", m), flatmatrix[m]);
-    }
+
+    // FIXME need to store original/transformed shape
+//    AffineTransform t = v.getTransformation();
+//    if (t!=null&&!t.isIdentity()) {
+//      info.put("t", "4");
+//      double[] flatmatrix = new double[4];
+//      t.getMatrix(flatmatrix);
+//      for (int m=0;m<flatmatrix.length;m++)
+//        info.put(String.format("t%d", m), flatmatrix[m]);
+//    }
       
     Object content = v.getContent();
     if (content!=null)

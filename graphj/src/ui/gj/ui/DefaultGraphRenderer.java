@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,7 +103,6 @@ public class DefaultGraphRenderer implements GraphRenderer {
     
     graphics.translate(pos.getX(), pos.getY());
     graphics.clip(shape);
-    graphics.transform(graph2d.getTransform(vertex));
     draw(text, icon, new Rectangle2D.Double(), 0.5, 0.5, graphics);
     graphics.setTransform(oldt);
     graphics.setClip(oldcp);

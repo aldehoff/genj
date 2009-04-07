@@ -26,7 +26,6 @@ import gj.model.Edge;
 import gj.model.Vertex;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 
@@ -58,11 +57,6 @@ public class DelegatingGraph implements Graph2D {
   }
 
   /** delegating call */
-  public AffineTransform getTransform(Vertex vertex) {
-    return delegated.getTransform(vertex);
-  }
-
-  /** delegating call */
   public void setRouting(Edge edge, Routing shape) {
     delegated.setRouting(edge, shape);
   }
@@ -71,10 +65,10 @@ public class DelegatingGraph implements Graph2D {
   public void setPosition(Vertex vertex, Point2D pos) {
     delegated.setPosition(vertex, pos);
   }
-
+  
   /** delegating call */
-  public void setTransform(Vertex vertex, AffineTransform transform) {
-    delegated.setTransform(vertex, transform);
+  public void setShape(Vertex vertex, Shape shape) {
+    delegated.setShape(vertex, shape);
   }
 
   /** delegating call */
@@ -88,8 +82,8 @@ public class DelegatingGraph implements Graph2D {
   }
   
   /** delegating call */
-  public Port getPortOfEdge(Edge edge, Vertex at) {
-    return delegated.getPortOfEdge(edge, at);
+  public Port getPort(Edge edge, Vertex at) {
+    return delegated.getPort(edge, at);
   }
   
 } //DelegatingGraph2D

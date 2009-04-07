@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,6 @@ import gj.model.Vertex;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +42,6 @@ public class DefaultGraph implements Graph2D {
   private Graph graph;
   private Shape defaultShape;
   private Map<Vertex, Point2D> vertex2pos = new HashMap<Vertex, Point2D>();
-  private Map<Vertex, AffineTransform> vertex2transform = new HashMap<Vertex, AffineTransform>();
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
   private Map<Edge, Routing> edge2path = new HashMap<Edge, Routing>();
   
@@ -100,31 +97,17 @@ public class DefaultGraph implements Graph2D {
     Shape result = vertex2shape.get(vertex);
     if (result==null)
       result = defaultShape;
-    AffineTransform transform = vertex2transform.get(vertex);
-    if (transform!=null&&!transform.isIdentity()) {
-      GeneralPath gp = new GeneralPath(result);
-      gp.transform(transform);
-      result = gp;
-    }
     return result;
   }
-
-  public void setTransform(Vertex vertex, AffineTransform transform) {
-    if (transform==null)
-      vertex2transform.remove(vertex);
-    else
-      vertex2transform.put(vertex, transform);
-  }
-
-  public AffineTransform getTransform(Vertex vertex) {
-    AffineTransform t = vertex2transform.get(vertex);
-    return t==null ? new AffineTransform() : t;
-  }
   
+  public void setShape(Vertex vertex, Shape shape) {
+    vertex2shape.put(vertex, shape); 
+  }
+
   /**
    * Edge's port control
    */
-  public Port getPortOfEdge(Edge edge, Vertex at) {
+  public Port getPort(Edge edge, Vertex at) {
     return Port.None;
   }
   

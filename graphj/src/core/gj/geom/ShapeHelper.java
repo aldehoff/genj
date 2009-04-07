@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,6 +71,15 @@ public class ShapeHelper {
       result.lineTo( (float)points[i].getX(), (float)points[i].getY());
     }
     
+    return result;
+  }
+  
+  /**
+   * Creates a transformed shape
+   */
+  public static Shape createShape(Shape shape, AffineTransform tx) {
+    GeneralPath result = new GeneralPath(shape);
+    result.transform(tx);
     return result;
   }
   

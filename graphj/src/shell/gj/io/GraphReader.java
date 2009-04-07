@@ -1,7 +1,7 @@
 /**
  * This file is part of GraphJ
  * 
- * Copyright (C) 2002-2004 Nils Meier
+ * Copyright (C) 2009 Nils Meier
  * 
  * GraphJ is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ import gj.shell.model.EditableVertex;
 import gj.util.DefaultRouting;
 
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -162,14 +161,6 @@ public class GraphReader {
       content = atts.getValue("c");
       // create the vertex
       EditableVertex v = graph.addVertex(pos, shape, content);
-      // its shape transformation
-      String t = atts.getValue("t");
-      if (t!=null) {
-        double[] matrix = new double[Integer.parseInt(t)];
-        for (int i=0;i<matrix.length;i++)
-          matrix[i] = Double.parseDouble(atts.getValue("t"+i));
-        v.setTransformation(new AffineTransform(matrix));
-      }
       // keep it
       id2vertex.put(id, v);
       // done

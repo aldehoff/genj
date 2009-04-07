@@ -70,9 +70,6 @@ import java.util.Set;
     this.root = parent;
     this.orientation = layout.getOrientation();
     
-    // reset vertex's transformation
-    graph2d.setTransform(parent, null);
-    
     // grab and sort children 
     List<Vertex> children = children(backtrack, parent, layout);
     if (layout.isOrderSiblingsByPosition()) 
