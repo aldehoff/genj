@@ -602,8 +602,12 @@ public class GedcomReader implements Trackable {
         throw new GedcomFormatException(RESOURCES.getString("read.error.nonumber"), lines);
 
       // Trailer? we're done
-      if (tag.equals("TRLR")) 
+      if (tag.equals("TRLR")) {
+        // consume any trailing blanks
+        if (readLine(true))
+          throw new GedcomFormatException(RESOURCES.getString("read.error.aftertrlr"), lines);
         return null;
+      }
       
       // Create entity and read its properties
       Entity result;
@@ -707,7 +711,9 @@ public class GedcomReader implements Trackable {
     
     /** keep track of empty lines */
     protected void trackEmptyLine() {
-      warnings.add(new Warning(getLines(), RESOURCES.getString("read.error.emptyline"), gedcom));
+      // care about empty lines before TRLR
+      if (!"TRLR".equals(tag))
+        warnings.add(new Warning(getLines(), RESOURCES.getString("read.error.emptyline"), gedcom));
     }
     
     /** keep track of bad levels */
