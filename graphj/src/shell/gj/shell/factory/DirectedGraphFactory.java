@@ -19,6 +19,7 @@
  */
 package gj.shell.factory;
 
+import gj.geom.ShapeHelper;
 import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
@@ -135,11 +136,8 @@ public class DirectedGraphFactory extends AbstractGraphFactory {
     
     // loop for nodes
     for (int n=0;n<numNodes;n++) {
-      
-      EditableVertex vertex = graph.addVertex(null, nodeShape, ""+(n+1));
-      Point2D pos = getRandomPosition(canvas,vertex.getShape());
-      vertex.setPosition(pos);
-     
+      Point2D pos = getRandomPosition(canvas, nodeShape);
+      graph.addVertex(ShapeHelper.createShape(nodeShape, pos), ""+(n+1));
     }
     
     // done

@@ -26,7 +26,6 @@ import gj.model.Edge;
 import gj.model.Vertex;
 
 import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +36,7 @@ import java.util.Map;
  */
 public class DummyAwareGraph2D implements Graph2D {
   
-  private Map<Vertex, Point2D> dummy2pos = new HashMap<Vertex, Point2D>();
+  private Map<Vertex, Shape> dummy2shape = new HashMap<Vertex, Shape>();
   private Graph2D wrapped;
   
   public DummyAwareGraph2D(Graph2D wrapped) {
@@ -52,24 +51,11 @@ public class DummyAwareGraph2D implements Graph2D {
     return wrapped.getEdges();
   }
   
-  public Point2D getPosition(Vertex vertex) {
-    if (!(vertex instanceof LayerAssignment.DummyVertex))
-      return wrapped.getPosition(vertex);
-    Point2D result = dummy2pos.get(vertex);
-    return result!=null ? result : new Point2D.Double();
-  }
-  
-  public void setPosition(Vertex vertex, Point2D pos) {
-    if (!(vertex instanceof LayerAssignment.DummyVertex))
-      wrapped.setPosition(vertex, pos);
-    else
-      dummy2pos.put(vertex, pos);
-  }
-  
   public Shape getShape(Vertex vertex) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
       return wrapped.getShape(vertex);
-    return new Rectangle2D.Double();
+    Shape result = dummy2shape.get(vertex);
+    return result!=null ? result : new Rectangle2D.Double();
   }
   
   public Routing getRouting(Edge edge) {
@@ -83,6 +69,8 @@ public class DummyAwareGraph2D implements Graph2D {
   public void setShape(Vertex vertex, Shape shape) {
     if (!(vertex instanceof LayerAssignment.DummyVertex))
       wrapped.setShape(vertex, shape);
+    else
+      dummy2shape.put(vertex, shape);
   }
   
   public Port getPort(Edge edge, Vertex at) {

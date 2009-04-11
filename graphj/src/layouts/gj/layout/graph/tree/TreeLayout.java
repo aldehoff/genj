@@ -46,7 +46,7 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   private int distanceBetweenGenerations = 20;
 
   /** the alignment of parent over its children */
-  private double alignmentOfParent = 0.5;
+  private Alignment alignmentOfParents = Alignment.Center;
 
   /** whether children should be balanced or simply stacked */
   private boolean isBalanceChildren = false;
@@ -94,15 +94,15 @@ public class TreeLayout extends AbstractGraphLayout<Vertex> {
   /**
    * Getter - the alignment of parent over its children
    */
-  public double getAlignmentOfParent() {
-    return alignmentOfParent;
+  public Alignment getAlignmentOfParents() {
+    return alignmentOfParents;
   }
 
   /**
    * Setter - the alignment of parent over its children
    */
-  public void setAlignmentOfParent(double set) {
-    alignmentOfParent = Math.max(0, Math.min(1,set));
+  public void setAlignmentOfParents(Alignment set) {
+    alignmentOfParents = set;
   }
 
   /**

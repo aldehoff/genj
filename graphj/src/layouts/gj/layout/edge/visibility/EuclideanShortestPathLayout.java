@@ -20,7 +20,9 @@
 package gj.layout.edge.visibility;
 
 import static gj.geom.Geometry.getConvexHull;
+import gj.geom.ConvexHull;
 import gj.geom.Geometry;
+import gj.geom.ShapeHelper;
 import gj.layout.EdgeLayout;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
@@ -38,7 +40,6 @@ import gj.visibility.VisibilityGraph;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -132,9 +133,7 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
       ps.add(graph.getPosition(v));
       
     Routing path = LayoutHelper.getRouting(ps, 
-        graph2d.getPosition(edge.getStart()),
         graph2d.getShape(edge.getStart()), 
-        graph2d.getPosition(edge.getEnd()),
         graph2d.getShape(edge.getEnd()), 
         false);
     wrapper.setRouting(edge, path);
@@ -150,7 +149,6 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
 
     private List<Vertex> vertices;
     private Map<Vertex,Shape> vertex2shape = new HashMap<Vertex,Shape>();
-    private Map<Vertex,Point2D> vertex2pos = new HashMap<Vertex,Point2D>();
     private Point2D sourcePort, destPort;
     
     GraphWrapper(Graph2D delegated, Edge edge) {
@@ -175,26 +173,20 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
       // special shape based on port
       switch (port) {
         case Fixed:
-
-          Point2D p1 = getPosition(vertex);
-          Point2D p2  = Geometry.getSum(
-            start ? getRouting(edge).getFirstPoint() : getRouting(edge).getLastPoint(),
-            getPosition(edge.getStart())
-          );
-          return dummy(Geometry.getClosest(p2, Geometry.getIntersections(
-                p1, p2, true,
-                p1, getShape(vertex)
-            )));
+          Point2D p1 = ShapeHelper.getCenter(getShape(vertex));
+          Point2D p2  = start ? getRouting(edge).getFirstPoint() : getRouting(edge).getLastPoint();
+          return dummy(Geometry.getClosest(p2, Geometry.getIntersections(p1, p2, true, getShape(vertex))));
         case West:
         case East:
         case North:
         case South:
-          return dummy(LayoutHelper.getPort(getPosition(vertex), getShape(vertex), 0, 1, port));
+          return dummy(LayoutHelper.getPort(getShape(vertex), 0, 1, port));
         default:
         case None:
           // no shape for source and sink
-          vertex2shape.put(vertex, new Rectangle2D.Double());
-          return super.getPosition(vertex);
+          Point2D pos = ShapeHelper.getCenter(super.getShape(vertex));
+          vertex2shape.put(vertex, new Rectangle2D.Double(pos.getX(), pos.getY(), 0, 0));
+          return pos;
       }
         
     }
@@ -203,8 +195,7 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
     private Point2D dummy(Point2D pos) {
       Vertex dummy = new DummyVertex();
       vertices.add(dummy);
-      vertex2pos.put(dummy, pos);
-      vertex2shape.put(dummy, new Rectangle2D.Double());
+      vertex2shape.put(dummy, new Rectangle2D.Double(pos.getX(), pos.getY(), 0, 0));
       return pos;
     }
     
@@ -220,16 +211,19 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
       if (shape==null) {
         
         // build convex hull
-        GeneralPath hull = new GeneralPath(getConvexHull(super.getShape(vertex)));
+        ConvexHull hull = getConvexHull(super.getShape(vertex));
         
         // pad
         if (edgeVertexDistance>0) {
           // pad it once
           Rectangle2D bounds = hull.getBounds2D();
+          double cx = bounds.getCenterX(), cy = bounds.getCenterY();
+          hull.transform(AffineTransform.getTranslateInstance(-cx, -cy));
           hull.transform(AffineTransform.getScaleInstance(
               (bounds.getWidth()+(2*edgeVertexDistance))/bounds.getWidth(), 
               (bounds.getHeight()+(2*edgeVertexDistance))/bounds.getHeight()
            ));
+          hull.transform(AffineTransform.getTranslateInstance(cx, cy));
         }
 
         // done
@@ -238,12 +232,6 @@ public class EuclideanShortestPathLayout implements GraphLayout, EdgeLayout {
         shape = hull;
       }
       return shape;
-    }
-    
-    @Override
-    public Point2D getPosition(Vertex vertex) {
-      Point2D pos = vertex2pos.get(vertex);
-      return pos!=null ? pos : super.getPosition(vertex);
     }
     
   } //ManipulatingGraph

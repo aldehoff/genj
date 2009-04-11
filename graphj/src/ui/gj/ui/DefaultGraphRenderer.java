@@ -88,23 +88,18 @@ public class DefaultGraphRenderer implements GraphRenderer {
     Stroke stroke = getStroke(vertex);
   
     // draw its shape
-    Point2D pos = graph2d.getPosition(vertex);
     graphics.setColor(color);
     graphics.setStroke(stroke);
     Shape shape = graph2d.getShape(vertex);
-    draw(shape, pos, false, graphics);
+    draw(shape, false, graphics);
 
     // and content    
     String text = getText(vertex);
     Icon icon = getIcon(vertex);
 
-    AffineTransform oldt = graphics.getTransform();
     Shape oldcp = graphics.getClip();
-    
-    graphics.translate(pos.getX(), pos.getY());
     graphics.clip(shape);
-    draw(text, icon, new Rectangle2D.Double(), 0.5, 0.5, graphics);
-    graphics.setTransform(oldt);
+    draw(text, icon, shape.getBounds2D(), 0.5, 0.5, graphics);
     graphics.setClip(oldcp);
 
     // done
@@ -179,12 +174,9 @@ public class DefaultGraphRenderer implements GraphRenderer {
   /**
    * Helper that renders a shape at given position with given rotation
    */
-  protected void draw(Shape shape, Point2D at, boolean fill, Graphics2D graphics) {
-    AffineTransform old = graphics.getTransform();
-    graphics.translate(at.getX(), at.getY());
+  protected void draw(Shape shape, boolean fill, Graphics2D graphics) {
     if (fill) graphics.fill(shape);
     else graphics.draw(shape);
-    graphics.setTransform(old);
   }
 
   /**

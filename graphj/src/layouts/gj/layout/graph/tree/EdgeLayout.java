@@ -19,14 +19,15 @@
  */
 package gj.layout.graph.tree;
 
-import static gj.geom.Geometry.HALF_RADIAN;
 import static gj.geom.Geometry.getMax;
 import static gj.geom.Geometry.getPoint;
 import static gj.geom.Geometry.getRadian;
+import static gj.geom.ShapeHelper.getCenter;
 import static gj.util.LayoutHelper.getNormalizedEdges;
 import static gj.util.LayoutHelper.getOther;
 import static gj.util.LayoutHelper.getPort;
 import static gj.util.LayoutHelper.getRouting;
+import gj.geom.Geometry;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
@@ -47,15 +48,12 @@ public enum EdgeLayout {
   
   Polyline { 
     @Override protected Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout) {
-      return getRouting(
-          graph2d.getPosition(edge.getStart()), graph2d.getShape(edge.getStart()), new Point2D.Double(),
-          graph2d.getPosition(edge.getEnd())  , graph2d.getShape(edge.getEnd()), new Point2D.Double()
-          );
+      return getRouting(edge, graph2d);
     }
   },
   
   PortPolyline {
-
+    
     /** vertex port side for current orientation */
     private Port side(TreeLayout layout) {
       if (layout.getOrientation()==0)
@@ -72,13 +70,15 @@ public enum EdgeLayout {
 
     @Override protected Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout) {
 
+      // FIXME ports are wrong for re-ordered children
+      // FIXME port polyline count for destinations isn't correct for acyclic DAGs
+
       Port side = side(layout);
       if (edge.getEnd().equals(parent))
         side = side.opposite();
       return getRouting(
-          graph2d.getPosition(edge.getStart()), graph2d.getShape(edge.getStart()), getPort(graph2d.getShape(edge.getStart()), i, j, side           ),
-          // FIXME port polyline count for destinations isn't correct for acyclic DAGs
-          graph2d.getPosition(edge.getEnd  ()), graph2d.getShape(edge.getEnd  ()), getPort(graph2d.getShape(edge.getEnd  ()), 0, 1, side.opposite())
+          graph2d.getShape(edge.getStart()), getPort(graph2d.getShape(edge.getStart()), i, j, side           ),
+          graph2d.getShape(edge.getEnd  ()), getPort(graph2d.getShape(edge.getEnd  ()), 0, 1, side.opposite())
       );
     }
   },
@@ -86,22 +86,23 @@ public enum EdgeLayout {
   Orthogonal {
     @Override protected Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout) {
       
+      // FIXME consider LeftOffset & RightOffset
+      //layout.getAlignmentOfParents()
+      
       double layoutAxis = getRadian(layout.getOrientation());
       
       // calc edge layout
+      Point2D s = getCenter(graph2d.getShape(parent));
+      Point2D e = getCenter(graph2d.getShape(child));
+      Point2D c = getPoint(getMax(graph2d.getShape(parent), layoutAxis), layoutAxis, layout.getDistanceBetweenGenerations()/2);
+      
       Point2D[] points = new Point2D[]{ 
-        graph2d.getPosition(parent), 
-        getPoint(
-          getMax(graph2d.getPosition(parent), graph2d.getShape(parent), layoutAxis),
-          layoutAxis, layout.getDistanceBetweenGenerations()/2
-        ),
-        getPoint(
-          getMax(graph2d.getPosition(child), graph2d.getShape(child), layoutAxis-HALF_RADIAN),
-          layoutAxis-HALF_RADIAN, layout.getDistanceBetweenGenerations()/2
-        ),
-        graph2d.getPosition(child) 
+        s, 
+        Geometry.getIntersection(s, layoutAxis, c, layoutAxis-Geometry.QUARTER_RADIAN),
+        Geometry.getIntersection(e, layoutAxis, c, layoutAxis-Geometry.QUARTER_RADIAN),
+        e 
       };
-      return getRouting(points, graph2d.getPosition(parent), graph2d.getShape(parent), graph2d.getPosition(child), graph2d.getShape(child), !edge.getStart().equals(parent));
+      return getRouting(points, graph2d.getShape(parent), graph2d.getShape(child), !edge.getStart().equals(parent));
     }
   };
   

@@ -37,6 +37,42 @@ public class GeometryTest extends TestCase {
   
   private double TwoPi = Math.PI*2;
   
+  public void testAlignment() {
+    
+    // +-------->
+    //    rrr
+    // +--r-r--->
+    //    rrr
+    // +-------->
+    
+    tst( r(10,-5,10,10), ShapeHelper.createShape( r(10,10,10,10), p(0,0), p(1,0), -1  ) );
+    tst( r(10, 0,10,10), ShapeHelper.createShape( r(10,10,10,10), p(0,0), p(1,0), 0) );
+    tst( r(10, 5,10,10), ShapeHelper.createShape( r(10,10,10,10), p(0,0), p(1,0), +1 ) );
+
+    //  + + +
+    //  | | |
+    //  |rrr|
+    //  |r|r|
+    //  |rrr|
+    //  | | |
+    //  V V V
+    
+    tst( r( 5,10,10,10), ShapeHelper.createShape( r(10,10,10,10), p(0,0), p(0,1), -1  ) );
+    tst( r( 0,10,10,10), ShapeHelper.createShape( r(10,10,10,10), p(0,0), p(0,1), 0) );
+    tst( r(-5,10,10,10), ShapeHelper.createShape( r(10,10,10,10), p(0,0), p(0,1), +1 ) );
+
+    //      A  A  A
+    //     /  /  /
+    //    /rrr  /
+    //   / r/r /
+    //  /  rrr/
+    // /  /  /
+    //+  +  +
+    tst( r(-5,-5,10,10), ShapeHelper.createShape( r(10,10,10,10), p(-1,1), p(1,-1), -1  ) );
+    tst( r( 0, 0,10,10), ShapeHelper.createShape( r(10,10,10,10), p(-1,1), p(1,-1), 0) );
+    tst( r( 5, 5,10,10), ShapeHelper.createShape( r(10,10,10,10), p(-1,1), p(1,-1), +1 ) );
+  }
+  
   public void testConvexHull() {
 
     GeneralPath gp = new GeneralPath();
@@ -175,7 +211,7 @@ public class GeometryTest extends TestCase {
 
     // some extreme close line intersection tests
     tst(
-        Geometry.getIntersections(p(2.5, -0.5000000000000001), p(0.5, -0.49999999999999994), true, p(0,0), r(0,0)),
+        Geometry.getIntersections(p(2.5, -0.5000000000000001), p(0.5, -0.49999999999999994), true, r(0,0)),
         p(-0.5, -0.49999999999999994), p(0.5, -0.49999999999999994)
     );
     
@@ -246,24 +282,30 @@ public class GeometryTest extends TestCase {
     //  xxx
     //  x x
     //  xxx
-    tst(p(10,9.5), Geometry.getMax( p(10,10), r(0,0), radian(0)) );
+    tst( 5, Geometry.getMax( r(10,10,10,10), radian(0)).getY() );
     
     //  xxx
     //  x x
     //  xxx
     // -----
-    tst(p(0.5, 1.0), Geometry.getMax(  p(0.5,0.5), r(0,0), radian(180)) );
+    tst( 1, Geometry.getMax(  r(0.5,0.5), radian(180)).getY() );
     
     //  xxx|
     //  x x|
     //  xxx|
-    tst(p(0.5, 0), Geometry.getMax(  p(0,0), r(0,0), radian(90)) );
+    tst( 0.5 , Geometry.getMax( r(0,0), radian(90)).getX() );
     
     //  xxx
     //  x x
     //  xxx/
     //    /
-    tst(p(.5,.5), Geometry.getMax(  p(0,0), r(0,0), radian(90+45)));
+    tst(p(.5,.5), Geometry.getMax( r(0,0), radian(90+45)));
+    
+    //  /
+    // /xxx
+    //  x x
+    //  xxx
+    tst(p(.5,.5), Geometry.getMax( r(1,1), radian(270+45)));
     
     
     //    x  |
@@ -421,7 +463,7 @@ public class GeometryTest extends TestCase {
   
   private boolean equals(Point2D a, Point2D b) {
     // TODO review testing points arithmetics - for sufficiently small delta we assume equals
-    return Math.abs(a.getX()-b.getX()) < 0.0000001 || Math.abs(a.getY()-b.getY())<0.0000001;
+    return Math.abs(a.getX()-b.getX()) < 0.0000001 && Math.abs(a.getY()-b.getY())<0.0000001;
   }
   
   /**

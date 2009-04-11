@@ -103,35 +103,30 @@ public class Geometry {
   }
   
   /**
-   * Calculates the "maximum" that the given shape at position extends into the given direction
+   * Calculates the "maximum" that the given shape extends into the given direction
    */
   public static Point2D getMax(Shape shape, double axis) {
-    return new OpGetMax(new Point2D.Double(), shape, axis).getResult();
-  }
-  public static Point2D getMax(Point2D pos, Shape shape, double axis) {
-    return new OpGetMax(pos, shape, axis).getResult();
+    return new OpGetMax(shape, axis).getResult();
   }
   
   /**
    * Operation - calc maximum of a shape extending into a direction 
    */
   private static class OpGetMax implements FlattenedPathConsumer {
-    
-    private Point2D pos;
-    private double axis;
-    private double sinaxis, cosaxis; 
-    private double max = Double.NEGATIVE_INFINITY;
+
+    private Point2D vector;
     private Point2D result;
 
     /**
      * Constructor
      */
-    public OpGetMax(Point2D pos, Shape shape, double axis) {
-      this.pos = pos;
-      this.axis = axis;
-      
-      sinaxis = Math.sin(axis);
-      cosaxis = Math.cos(axis);
+    public OpGetMax(Shape shape, double axis) {
+
+      axis = axis - QUARTER_RADIAN;
+
+      vector = new Point2D.Double(
+          Math.sin(axis) * 1, -Math.cos(axis) * 1
+      );
       
       ShapeHelper.iterateShape(shape, this);
     }
@@ -140,13 +135,14 @@ public class Geometry {
      * Check points of a segment
      */
     public boolean consumeLine(Point2D start, Point2D end) {
-      
-      double delta = sinaxis * (end.getX()) - cosaxis * (end.getY() );
-      if (delta>max) {
-        max = delta;
-        result = getPoint(pos, axis, delta);
-      }
 
+      if (result==null) {
+        result = new Point2D.Double(end.getX(), end.getY());
+      } else {
+        if (testPointVsLine(result, new Point2D.Double(result.getX() + vector.getX(), result.getY() + vector.getY()), end)>0)
+          result.setLocation(end);
+      }
+      
       // continue
       return true;
     }
@@ -228,7 +224,7 @@ public class Geometry {
         b = new Point2D.Double(end.getX()-vector.getX(), end.getY()-vector.getY());
 
       // intersect line (a,b) with shape
-      Collection<Point2D> is = getIntersections(a, b, true, new Point2D.Double(), intersectWith);
+      Collection<Point2D> is = getIntersections(a, b, true, intersectWith);
 
       // calculate smallest distance
       Point2D p = null;
@@ -437,6 +433,10 @@ public class Geometry {
   public static Point2D getPoint(Point2D origin, double radian, double distance) {
     return new Point2D.Double( origin.getX() + Math.sin(radian)*distance, origin.getY() - Math.cos(radian) * distance);
   }
+
+  public static Point2D getVector(Point2D origin, double radian) {
+    return getPoint(origin, radian, 1);
+  }
   
   /**
    * (x1,y1) -> (x2,y2) -> factor-> (x1 + (x2-x1)*factor, y1 + (y2-y1)*factor )
@@ -525,11 +525,10 @@ public class Geometry {
    * @param lineStart start of line
    * @param lineEnd end of line
    * @param infinite whether line is infinite or not (segment)
-   * @param shapePos position of shape
    * @param shape the shape 
    */
-  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, boolean infinite, Point2D shapePos, Shape shape) {
-    return getIntersections(lineStart, lineEnd, infinite, shape.getPathIterator(AffineTransform.getTranslateInstance(shapePos.getX(), shapePos.getY())));
+  public static List<Point2D> getIntersections(Point2D lineStart, Point2D lineEnd, boolean infinite, Shape shape) {
+    return getIntersections(lineStart, lineEnd, infinite, shape.getPathIterator(null));
   }
   
   /**
@@ -831,9 +830,21 @@ public class Geometry {
    * Calculate the convex hull of a shape
    */
   public static ConvexHull getConvexHull(Shape shape) {
+    // check understood objects
+    if (shape instanceof Rectangle2D) {
+      Rectangle2D r = (Rectangle2D)shape;
+      ConvexHullImpl result = new ConvexHullImpl();
+      result.moveTo(r.getMinX(), r.getMinY());
+      result.lineTo(r.getMaxX(), r.getMinY());
+      result.lineTo(r.getMaxX(), r.getMaxY());
+      result.lineTo(r.getMinX(), r.getMaxY());
+      result.closePath();
+      return result;
+    }
     // check marker
     if (shape instanceof ConvexHull)
       return (ConvexHull)shape;
+    // create
     return getConvexHull(shape.getPathIterator(null));
   }
   public static ConvexHull getConvexHull(PathIterator shape) {
@@ -897,11 +908,9 @@ public class Geometry {
   
   /**
    * an impl for a convex hull marked shape
-   * TODO should recalculate convex hull characteristics on segment add/reset etc.
    */
   private static class ConvexHullImpl extends java.awt.geom.Path2D.Double implements ConvexHull {
     
   } //ConvexHullImpl
-  
-  
+
 } //Geometry

@@ -187,12 +187,19 @@ public class GraphWidget extends JComponent {
   }
   
   /**
-   * Convert screen postition to model
+   * Convert screen position to model
    */
   protected Point getPoint(Point p) {
     return new Point(
       p.x - getXOffset(),
       p.y - getYOffset()
+    );
+  }
+  
+  protected Point model2screen(Point2D point) {
+    return new Point(
+        ((int)point.getX()) + getXOffset(),
+        ((int)point.getY()) + getYOffset()
     );
   }
   
@@ -205,8 +212,7 @@ public class GraphWidget extends JComponent {
     // adjust point for graph (graph space doesn't start at 0,0)
     point = getPoint(point);
     for (Vertex v : graph2d.getVertices()) {
-      Point2D pos = graph2d.getPosition(v);
-      if (graph2d.getShape(v).contains(point.x - pos.getX(), point.y - pos.getY()))
+      if (graph2d.getShape(v).contains(point.x, point.y))
         return v;
     }
     return null;

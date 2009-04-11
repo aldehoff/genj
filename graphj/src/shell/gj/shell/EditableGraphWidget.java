@@ -19,7 +19,9 @@
  */
 package gj.shell;
 
-import gj.geom.Geometry;
+import static gj.geom.Geometry.*;
+import static gj.geom.ShapeHelper.*;
+
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.model.Edge;
@@ -33,7 +35,6 @@ import gj.shell.util.ReflectHelper;
 import gj.ui.DefaultGraphRenderer;
 import gj.ui.GraphRenderer;
 import gj.ui.GraphWidget;
-import gj.util.LayoutHelper;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -47,8 +48,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
@@ -323,7 +324,7 @@ public class EditableGraphWidget extends GraphWidget {
       } else {
         // quick create?
         if (selection==null&&quickNode) {
-          graph.addVertex(getPoint(e.getPoint()), Shell.shapes[0], ""+(graph.getNumVertices() + 1) );
+          graph.addVertex(createShape(Shell.shapes[0],getPoint(e.getPoint())), ""+(graph.getNumVertices() + 1) );
         }
         repaint();
       }
@@ -363,8 +364,11 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     public void mouseDragged(MouseEvent e) {
       // move the selected
-      LayoutHelper.translate(getGraph2D(), (EditableVertex)graph.getSelection(), Geometry.getDelta(from, e.getPoint()));
-      from = e.getPoint();
+      EditableVertex v = (EditableVertex)graph.getSelection();
+      double dx = e.getPoint().x - from.getX();
+      double dy = e.getPoint().y - from.getY();
+      v.setOriginalShape(createShape(v.getOriginalShape(), AffineTransform.getTranslateInstance(dx, dy)));
+      from.setLocation(e.getPoint());
       // show
       repaint();
     }
@@ -425,12 +429,12 @@ public class EditableGraphWidget extends GraphWidget {
         if (graph.getVertex(getPoint(e.getPoint()))==from)
           return;
         // create dummies
-        dummy = graph.addVertex(null, null, null);      
+        dummy = graph.addVertex(null, null);      
         graph.addEdge(from, dummy);
       }
       // place dummy (tip of arc)
       Point2D pos = getPoint(e.getPoint());
-      dummy.setPosition(pos);
+      dummy.setShape(createShape(new Rectangle2D.Double(), pos));
       // find target
       EditableVertex selection = graph.getVertex(pos);
       if (selection!=from)
@@ -448,14 +452,17 @@ public class EditableGraphWidget extends GraphWidget {
     private EditableVertex vertex;
     private Shape shape;
     private Dimension dim;
+    private Point2D start = null;
     /** start */
     @Override
     protected void start(Point pos) {
       super.start(pos);
       // remember
       vertex = (EditableVertex)graph.getSelection();
-      shape = vertex.getShape();
+      shape = vertex.getOriginalShape();
       dim = shape.getBounds().getSize();
+      
+      start = model2screen(getCenter(shape));
       repaint();
     }
     /** callback */
@@ -466,17 +473,15 @@ public class EditableGraphWidget extends GraphWidget {
     /** callback */
     @Override
     public void mouseMoved(MouseEvent e) {
-
+      
       // change shape
-      Point2D delta = Geometry.getDelta(vertex.getPosition(), getPoint(e.getPoint()));
+      Point2D delta = getDelta(start, e.getPoint());
       double 
         sx = Math.max(0.1,Math.abs(delta.getX())/dim.width *2),
         sy = Math.max(0.1,Math.abs(delta.getY())/dim.height*2);
 
-      GeneralPath gp = new GeneralPath(shape);
-      gp.transform(AffineTransform.getScaleInstance(sx, sy));
-      vertex.setShape(gp);
-      
+      vertex.setOriginalShape(createShape(shape, AffineTransform.getScaleInstance(sx, sy)));
+
       // show it
       repaint();
     }
@@ -540,7 +545,7 @@ public class EditableGraphWidget extends GraphWidget {
     @Override
     protected void execute() {
       EditableVertex vertex = (EditableVertex)graph.getSelection();
-      vertex.setShape(shape);
+      vertex.setOriginalShape(createShape(shape, getCenter(vertex.getShape())));
       repaint();
     }
   }
@@ -598,7 +603,7 @@ public class EditableGraphWidget extends GraphWidget {
     protected void execute() {
       String txt = SwingHelper.showDialog(EditableGraphWidget.this, "Set content", "Please enter text here:");
       if (txt!=null) 
-        graph.addVertex(pos, Shell.shapes[0], txt);
+        graph.addVertex(createShape(Shell.shapes[0], pos), txt);
       repaint();
     }
   }

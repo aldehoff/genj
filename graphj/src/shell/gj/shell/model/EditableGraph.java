@@ -113,8 +113,8 @@ public class EditableGraph implements Graph2D {
   /**
    * add a vertex
    */
-  public EditableVertex addVertex(Point2D position, Shape shape, Object content) {
-    EditableVertex node = new EditableVertex(position, shape, content);
+  public EditableVertex addVertex(Shape shape, Object content) {
+    EditableVertex node = new EditableVertex(shape, content);
     vertices.add(node);
     return node;
   }
@@ -298,13 +298,6 @@ public class EditableGraph implements Graph2D {
   /**
    * interface implementation
    */
-  public Point2D getPosition(Vertex node) {
-    return ((EditableVertex)node).getPosition();
-  }
-
-  /**
-   * interface implementation
-   */
   public Shape getShape(Vertex node) {
     return ((EditableVertex)node).getShape();
   }
@@ -314,13 +307,6 @@ public class EditableGraph implements Graph2D {
    */
   public void setRouting(Edge edge, Routing path) {
     ((EditableEdge)edge).setPath(path);
-  }
-
-  /**
-   * interface implementation
-   */
-  public void setPosition(Vertex node, Point2D pos) {
-    ((EditableVertex)node).setPosition(pos);
   }
 
   /**

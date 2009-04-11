@@ -19,9 +19,12 @@
  */
 package gj.shell.factory;
 
+import gj.geom.ShapeHelper;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
 
+import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,8 +125,9 @@ public class TreeFactory extends AbstractGraphFactory {
     for (int s = 0; s < sample.length; s++) {
 
       String key = sample[s][0];
-      EditableVertex vertex = graph.addVertex(null, nodeShape, key);
-      vertex.setPosition(getRandomPosition(bounds, vertex.getShape()));
+      Point2D pos = getRandomPosition(bounds, nodeShape);
+      Shape shape = ShapeHelper.createShape(nodeShape, pos);
+      EditableVertex vertex = graph.addVertex(shape, key);
       nodes.put(key, vertex);
     }
      

@@ -68,8 +68,6 @@ public class GraphWriter {
   public void write(EditableGraph g) throws IOException {
     // open the graph
     push("graph",null,false);
-    // shapes
-    writeShapes(g);
     // vertices
     writeVertices(g);
     // edges
@@ -107,38 +105,16 @@ public class GraphWriter {
     if (path instanceof DefaultRouting && ((DefaultRouting)path).isInverted())
       info.put("d", "-1" );
     push("edge",info,false);
-      writeShape("path", path,-1);
+      writeShape("path", path);
     pop();
   }
 
-  /**
-   * Write - Shapes
-   */
-  private void writeShapes(EditableGraph g) throws IOException {
-    // starting shapes
-    push("shapes",null,false);
-    // loop through vertices
-    for (EditableVertex vertex: g.getVertices()) {
-      // check known shape
-      Shape s = vertex.getOriginalShape();
-      if (!element2id.containsKey(s))
-        writeShape("shape",s, element2id.size()+1);
-      // next
-    }
-    // done
-    pop();
-  }
-  
   /**
    * Write - Shape
    */
-  private void writeShape(String element, Shape shape, int sid) throws IOException {
+  private void writeShape(String element, Shape shape) throws IOException {
 
     ElementInfo info = new ElementInfo();
-    if (sid>=0) {
-      info.put("id", sid);
-      element2id.put(shape,new Integer(sid));
-    }
     push(element,info,false);
     PathIterator it = shape.getPathIterator(null);
     double[] segment = new double[6];
@@ -181,26 +157,22 @@ public class GraphWriter {
     // gather element information
     ElementInfo info = new ElementInfo();
     info.put("id", getId(v));
-    info.put("x", v.getPosition().getX());
-    info.put("y", v.getPosition().getY());
-    info.put("sid", element2id.get(v.getOriginalShape()));
 
-    // FIXME need to store original/transformed shape
-//    AffineTransform t = v.getTransformation();
-//    if (t!=null&&!t.isIdentity()) {
-//      info.put("t", "4");
-//      double[] flatmatrix = new double[4];
-//      t.getMatrix(flatmatrix);
-//      for (int m=0;m<flatmatrix.length;m++)
-//        info.put(String.format("t%d", m), flatmatrix[m]);
-//    }
-      
     Object content = v.getContent();
     if (content!=null)
       info.put("c", content.toString());
 
-    // keep it
-    push("vertex",info,true);
+    push("vertex",info,false);
+
+    // store shape
+    Shape shape = v.getShape();
+    writeShape("shape", shape);
+    
+    Shape original = v.getOriginalShape();
+    if (!shape.equals(original))
+      writeShape("original", original);
+    
+    pop();
 
     // done
   }

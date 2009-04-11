@@ -21,6 +21,7 @@ package gj.layout.graph.hierarchical;
 
 import static gj.geom.Geometry.getBounds;
 import static gj.util.LayoutHelper.getPort;
+import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.layout.LayoutContext;
@@ -261,7 +262,10 @@ public class HierarchicalLayout implements GraphLayout {
           
           cellBounds[i][j] = new Rectangle2D.Double(x, y, r.getWidth(), layerHeights[i]);
           
-          graph2d.setPosition(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
+          // FIXME graph2d.setPosition(vertex, new Point2D.Double(x - r.getMinX(), y - r.getMinY() + (layerHeights[i]-r.getHeight())/2 ));
+          graph2d.setShape(vertex, ShapeHelper.createShape(graph2d.getShape(vertex),
+              new Point2D.Double(x + r.getWidth()/2, y + r.getHeight()/2 + (layerHeights[i]-r.getHeight())/2 )
+          ));
           
           x += r.getWidth();
         }
@@ -298,9 +302,7 @@ public class HierarchicalLayout implements GraphLayout {
         
         graph2d.setRouting(edge, 
             LayoutHelper.getRouting(points, 
-                graph2d.getPosition(edge.getStart()),
                 graph2d.getShape(edge.getStart()), 
-                graph2d.getPosition(edge.getEnd()),
                 graph2d.getShape(edge.getEnd()), 
                 false
             )

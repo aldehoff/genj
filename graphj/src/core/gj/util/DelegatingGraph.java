@@ -26,7 +26,6 @@ import gj.model.Edge;
 import gj.model.Vertex;
 
 import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.util.Collection;
 
 /**
@@ -47,11 +46,6 @@ public class DelegatingGraph implements Graph2D {
   }
 
   /** delegating call */
-  public Point2D getPosition(Vertex vertex) {
-    return delegated.getPosition(vertex);
-  }
-
-  /** delegating call */
   public Shape getShape(Vertex vertex) {
     return delegated.getShape(vertex);
   }
@@ -61,11 +55,6 @@ public class DelegatingGraph implements Graph2D {
     delegated.setRouting(edge, shape);
   }
 
-  /** delegating call */
-  public void setPosition(Vertex vertex, Point2D pos) {
-    delegated.setPosition(vertex, pos);
-  }
-  
   /** delegating call */
   public void setShape(Vertex vertex, Shape shape) {
     delegated.setShape(vertex, shape);

@@ -22,7 +22,7 @@ package gj.util;
 import static gj.geom.Geometry.getClosest;
 import static gj.geom.Geometry.getIntersections;
 import static gj.geom.Geometry.getMaximumDistance;
-import static gj.geom.Geometry.getSum;
+import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.Port;
@@ -32,6 +32,7 @@ import gj.model.Graph;
 import gj.model.Vertex;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -55,18 +56,6 @@ public class LayoutHelper {
    * @param side the side of the port
    */
   public static Point2D getPort(Shape shape, int index, int count, Port side) {
-    return getPort(new Point2D.Double(), shape, index, count, side);
-  }
-  
-  /**
-   * Resolve the port for given shape
-   * @param pos position of shape
-   * @param shape the shape to calculate a port for
-   * @param index zero based index of count ports on side
-   * @param count number ports on side
-   * @param side the side of the port
-   */
-  public static Point2D getPort(Point2D pos, Shape shape, int index, int count, Port side) {
     
     if (index<0||index>=count)
       throw new IllegalArgumentException("!(0<="+index+"<"+count+")");
@@ -74,18 +63,17 @@ public class LayoutHelper {
     index ++;
     
     Rectangle2D bounds = shape.getBounds2D();
-    double x = pos.getX(), y = pos.getY();
     switch (side) {
     case None:
-      return new Point2D.Double(x + bounds.getCenterX(), y + bounds.getCenterY()); 
+      return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()); 
     case North:
-      return new Point2D.Double(x + bounds.getMinX() + (bounds.getWidth()/count)*index, y + bounds.getMinY()); 
+      return new Point2D.Double(bounds.getMinX() + (bounds.getWidth()/count)*index, bounds.getMinY()); 
     case South:
-      return new Point2D.Double(x + bounds.getMinX() + (bounds.getWidth()/count)*index, y + bounds.getMaxY()); 
+      return new Point2D.Double(bounds.getMinX() + (bounds.getWidth()/count)*index, bounds.getMaxY()); 
     case West:
-      return new Point2D.Double(x + bounds.getMinX(), y + bounds.getMinY() + (bounds.getHeight()/count)*index); 
+      return new Point2D.Double(bounds.getMinX(), bounds.getMinY() + (bounds.getHeight()/count)*index); 
     case East:
-      return new Point2D.Double(x + bounds.getMaxX(), y + bounds.getMinY() + (bounds.getHeight()/count)*index); 
+      return new Point2D.Double(bounds.getMaxX(), bounds.getMinY() + (bounds.getHeight()/count)*index); 
     default:
       throw new IllegalArgumentException("n/a");
     }
@@ -94,9 +82,8 @@ public class LayoutHelper {
   /**
    * Translates a node's position
    */
-  public static void translate(Graph2D layout, Vertex vertex, Point2D delta) {
-    Point2D pos = layout.getPosition(vertex);
-    layout.setPosition(vertex, new Point2D.Double( pos.getX() + delta.getX(), pos.getY() + delta.getY() ));
+  public static void translate(Graph2D graph2d, Vertex vertex, Point2D delta) {
+    graph2d.setShape(vertex, ShapeHelper.createShape(graph2d.getShape(vertex), AffineTransform.getTranslateInstance(delta.getX(), delta.getY())));
   }
 
   /**
@@ -121,12 +108,11 @@ public class LayoutHelper {
     // loop through nodes and calculate
     double x1=Double.MAX_VALUE,y1=Double.MAX_VALUE,x2=-Double.MAX_VALUE,y2=-Double.MAX_VALUE;
     for (Vertex vertex : graph2d.getVertices()) {
-      Point2D p = graph2d.getPosition(vertex);
       Rectangle2D box = graph2d.getShape(vertex).getBounds2D();
-      x1 = Math.min(x1,p.getX()+box.getMinX());
-      y1 = Math.min(y1,p.getY()+box.getMinY());
-      x2 = Math.max(x2,p.getX()+box.getMaxX());
-      y2 = Math.max(y2,p.getY()+box.getMaxY());
+      x1 = Math.min(x1,box.getMinX());
+      y1 = Math.min(y1,box.getMinY());
+      x2 = Math.max(x2,box.getMaxX());
+      y2 = Math.max(y2,box.getMaxY());
     }
     return new Rectangle2D.Double(x1,y1,x2-x1,y2-y1);
   }
@@ -266,7 +252,8 @@ public class LayoutHelper {
   }
   
   public static double getDiameter(Vertex vertex, Graph2D layout) {
-    return getMaximumDistance(new Point2D.Double(0,0), layout.getShape(vertex)) * 2;
+    Shape shape = layout.getShape(vertex);
+    return getMaximumDistance(ShapeHelper.getCenter(shape), shape) * 2;
   }
 
   /**
@@ -292,8 +279,8 @@ public class LayoutHelper {
    */
   public static Routing getRouting(Point2D from, Point2D to) {
     return getRouting(
-        from, new Rectangle2D.Double(), new Point2D.Double(),
-        to, new Rectangle2D.Double(), new Point2D.Double()
+        new Rectangle2D.Double(from.getX(),from.getY(),0,0), new Point2D.Double(),
+        new Rectangle2D.Double(to.getX(),to.getY(),0,0), new Point2D.Double()
     );
   }
 
@@ -301,53 +288,53 @@ public class LayoutHelper {
    * path for given edge
    */
   public static Routing getRouting(Edge edge, Graph2D graph2d) {
-    return getRouting(
-        graph2d.getPosition(edge.getStart()), graph2d.getShape(edge.getStart()), new Point2D.Double(),
-        graph2d.getPosition(edge.getEnd())  , graph2d.getShape(edge.getEnd()), new Point2D.Double()
-        );
+    return getRouting(graph2d.getShape(edge.getStart()), graph2d.getShape(edge.getEnd()));
   }
 
   /**
    * Calculates a path between two ports from source to destination shape
-   * @param fromPos the position of the source shape
-   * @param fromShape the source shape located at fromPos
+   * @param fromShape the source shape 
+   * @param toShape the destination shape 
+   */
+  public static Routing getRouting(Shape fromShape, Shape toShape) {
+    return getRouting(fromShape, ShapeHelper.getCenter(fromShape), toShape, ShapeHelper.getCenter(toShape), false);
+  }
+  
+  /**
+   * Calculates a path between two ports from source to destination shape
+   * @param fromShape the source shape 
    * @param fromPort the port for fromShape
-   * @param toPos the position of the destination shape
-   * @param toShape the destination shape located at toPos
+   * @param toShape the destination shape 
    * @param toPort the port for toShape
    */
-  public static Routing getRouting(Point2D fromPos, Shape fromShape, Point2D fromPort, Point2D toPos, Shape toShape, Point2D toPort) {
-    return getRouting(fromPos, fromShape, fromPort, toPos, toShape, toPort, false);
+  public static Routing getRouting(Shape fromShape, Point2D fromPort, Shape toShape, Point2D toPort) {
+    return getRouting(fromShape, fromPort, toShape, toPort, false);
   }
   
-  public static Routing getRouting(Point2D fromPos, Shape fromShape, Point2D fromPort, Point2D toPos, Shape toShape, Point2D toPort, boolean reversed) {
+  public static Routing getRouting(Shape fromShape, Point2D fromPort, Shape toShape, Point2D toPort, boolean reversed) {
     ArrayList<Point2D> points = new ArrayList<Point2D>(4);
-    points.add(getSum(fromPos, fromPort));
-    points.add(getSum(toPos, toPort));
-    return getRouting(points, fromPos, fromShape, toPos, toShape, reversed);
+    points.add(fromPort);
+    points.add(toPort);
+    return getRouting(points, fromShape, toShape, reversed);
   }
   
   /**
    * path with a line going through points between two shapes
    * @param points a sequence of points describing the path (from source port via transitions to destination port)
-   * @param fromPos position of originating shape
-   * @param fromShape originating shape located at fromPos
-   * @param toPos position of destination shape
-   * @param toShape destination shape located at toPos
+   * @param fromShape originating shape
+   * @param toShape destination shape
    */  
-  public static Routing getRouting(Point2D[] points, Point2D fromPos, Shape fromShape, Point2D toPos, Shape toShape, boolean reversed) {
-    return getRouting(new ArrayList<Point2D>(Arrays.asList(points)),fromPos,fromShape,toPos,toShape,reversed);
+  public static Routing getRouting(Point2D[] points, Shape fromShape, Shape toShape, boolean reversed) {
+    return getRouting(new ArrayList<Point2D>(Arrays.asList(points)),fromShape,toShape,reversed);
   }
   
   /**
    * path with a line going through points between two shapes
    * @param points a sequence of points describing the path (from source port via transitions to destination port)
-   * @param fromPos position of originating shape
-   * @param fromShape originating shape located at fromPos
-   * @param toPos position of destination shape
-   * @param toShape destination shape located at toPos
+   * @param fromShape originating shape
+   * @param toShape destination shape
    */  
-  public static Routing getRouting(List<Point2D> points, Point2D fromPos, Shape fromShape, Point2D toPos, Shape toShape, boolean reversed) {
+  public static Routing getRouting(List<Point2D> points, Shape fromShape, Shape toShape, boolean reversed) {
     
     if (points.size()<2)
       throw new IllegalArgumentException("list of points cannot be smaller than two");
@@ -356,14 +343,15 @@ public class LayoutHelper {
     DefaultRouting result = new DefaultRouting();
     
     // intersect the first segment with fromShape
-    Collection<Point2D> is = getIntersections(points.get(0), points.get(1), true, fromPos, fromShape);
+    Collection<Point2D> is = getIntersections(points.get(0), points.get(1), true, fromShape);
     if (!is.isEmpty())
       points.set(0, getClosest(points.get(1), is));
     else {
-      if (!points.get(0).equals(fromPos)) {
-        is = getIntersections(fromPos, points.get(0), true, fromPos, fromShape);
+      Point2D fromCenter = ShapeHelper.getCenter(fromShape);
+      if (!points.get(0).equals(fromCenter)) {
+        is = getIntersections(fromCenter, points.get(0), true, fromShape);
         if (is.isEmpty())
-          points.add(0, fromPos);
+          points.add(0, fromCenter);
         else
           points.add(0, getClosest(points.get(0), is));
       }
@@ -371,14 +359,15 @@ public class LayoutHelper {
     
     // intersect the last segment with toShape
     int n = points.size();
-    is = getIntersections(points.get(n-2), points.get(n-1), true, toPos, toShape);
+    is = getIntersections(points.get(n-2), points.get(n-1), true, toShape);
     if (!is.isEmpty())
       points.set(n-1, getClosest(points.get(n-2), is));
     else {
-      if (!points.get(n-1).equals(toPos)) {
-        is = getIntersections(points.get(n-1), toPos, true, toPos, toShape);
+      Point2D toCenter = ShapeHelper.getCenter(toShape);
+      if (!points.get(n-1).equals(toCenter)) {
+        is = getIntersections(points.get(n-1), toCenter, true, toShape);
         if (is.isEmpty())
-          points.add(toPos);
+          points.add(toCenter);
         else
           points.add(getClosest(points.get(n-1), is));
       }

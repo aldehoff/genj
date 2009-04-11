@@ -20,6 +20,7 @@
 package gj.shell.model;
 
 import gj.geom.Geometry;
+import gj.geom.ShapeHelper;
 import gj.layout.Routing;
 import gj.model.Edge;
 import gj.util.LayoutHelper;
@@ -69,8 +70,8 @@ public class EditableEdge implements Edge {
   
   private Routing makeShape() {
     return LayoutHelper.getRouting(
-        start.getPosition(), start.getShape(), new Point2D.Double(),
-        end.getPosition(), end.getShape(), new Point2D.Double()
+        start.getShape(), ShapeHelper.getCenter(start.getShape()),
+        end.getShape(), ShapeHelper.getCenter(end.getShape())
     );   
   }
   
@@ -83,7 +84,7 @@ public class EditableEdge implements Edge {
   
   boolean updateHash() {
     long oldHash = hash;
-    hash = (int)(start.getPosition().hashCode()+start.getShape().hashCode()+end.getPosition().hashCode()+end.getShape().hashCode());
+    hash = (int)(start.getShape().hashCode()+end.getShape().hashCode());
     return oldHash==hash;
   }
 

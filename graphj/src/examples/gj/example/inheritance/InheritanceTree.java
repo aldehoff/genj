@@ -21,6 +21,8 @@ package gj.example.inheritance;
 
 import gj.example.Example;
 import gj.geom.Geometry;
+import gj.geom.ShapeHelper;
+import gj.geom.TransformedShape;
 import gj.layout.Graph2D;
 import gj.layout.LayoutException;
 import gj.layout.graph.radial.RadialLayout;
@@ -31,6 +33,7 @@ import gj.util.DefaultGraph;
 import gj.util.DefaultLayoutContext;
 import gj.util.TreeGraphAdapter;
 
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -101,15 +104,19 @@ public class InheritanceTree implements Example {
       @Override
       protected void renderVertex(Graph2D graph2d, Vertex vertex, java.awt.Graphics2D graphics) {
         
-        // clip and position
+        // clip, position and re-apply transformation if we have it
         AffineTransform oldt = graphics.getTransform();
-        Point2D pos = graph2d.getPosition(vertex);
+        Point2D pos = ShapeHelper.getCenter(graph2d.getShape(vertex));
         graphics.translate(pos.getX(), pos.getY());
         
-        // draw text vertically
-        Class<?> clazz = adapter.getContent(vertex);
+        Shape shape = graph2d.getShape(vertex);
+        if (shape instanceof TransformedShape) {
+          graphics.transform(((TransformedShape)shape).getTransformation());
+          graphics.transform(AffineTransform.getRotateInstance(Geometry.QUARTER_RADIAN));
+        }
         
-        graphics.rotate(Geometry.QUARTER_RADIAN);
+        // draw text 
+        Class<?> clazz = adapter.getContent(vertex);
         StringBuffer content = new StringBuffer();
         content.append(clazz.getSimpleName());
         Method[] methods = clazz.getDeclaredMethods();

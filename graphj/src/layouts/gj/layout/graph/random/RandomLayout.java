@@ -19,6 +19,7 @@
  */
 package gj.layout.graph.random;
 
+import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.layout.LayoutContext;
@@ -108,17 +109,16 @@ public class RandomLayout implements GraphLayout {
         throw new IllegalArgumentException("LayoutContext.getPreferredBounds() cannot be null");
 
       double 
-        x = preferred.getMinX() - nodeCanvas.getMinX(),
-        y = preferred.getMinY() - nodeCanvas.getMinY(),
+        x = preferred.getMinX(),
+        y = preferred.getMinY(),
         w = preferred.getWidth() - nodeCanvas.getWidth(),
         h = preferred.getHeight() - nodeCanvas.getHeight();
-
-      Point2D pos = graph2d.getPosition(vertex);
-      pos.setLocation(
-        isApplyHorizontally ? x + random.nextDouble()*w : pos.getX(), 
-        isApplyVertically ? y + random.nextDouble()*h : pos.getY()
+      
+      Point2D pos = new Point2D.Double(
+        isApplyHorizontally ? (x + random.nextDouble()*w) : 0, 
+        isApplyVertically ? (y + random.nextDouble()*h) : 0
       );
-      graph2d.setPosition(vertex, pos);
+      graph2d.setShape(vertex, ShapeHelper.createShape(graph2d.getShape(vertex), pos));
 
     }
     

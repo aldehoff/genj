@@ -22,6 +22,7 @@ package gj.example.treemodel;
 import gj.example.Example;
 import gj.layout.Graph2D;
 import gj.layout.LayoutException;
+import gj.layout.graph.tree.Alignment;
 import gj.layout.graph.tree.EdgeLayout;
 import gj.layout.graph.tree.TreeLayout;
 import gj.model.Edge;
@@ -41,7 +42,6 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,10 +93,10 @@ public class SwingTree implements Example {
     // apply tree layout
     Graph2D graph2d = new DefaultGraph(graph) {
       @Override
-      public Shape getShape(Vertex v) {
+      protected Shape getDefaultShape(Vertex v) {
         boolean leaf = v.getEdges().size() == 1;
         Dimension dim = treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false).getPreferredSize();
-        return new Rectangle(-dim.width/2, -dim.height/2, dim.width, dim.height);
+        return new Rectangle(0, 0, dim.width, dim.height);
       }
     };
     
@@ -105,7 +105,7 @@ public class SwingTree implements Example {
       layout.setDistanceBetweenGenerations(16);
       layout.setDistanceInGeneration(7);
       layout.setOrientation(90);
-      layout.setAlignmentOfParent(1);
+      layout.setAlignmentOfParents(Alignment.RightOffset);
       layout.setEdgeLayout(EdgeLayout.Orthogonal);
       layout.setOrderSiblingsByPosition(false);
       layout.apply(graph2d, new DefaultLayoutContext());
@@ -119,18 +119,15 @@ public class SwingTree implements Example {
       public void render(Graph2D graph2d, Graphics2D graphics) {
         // render vertices
         for (Vertex v : graph.getVertices()) {
-          Point2D p = graph2d.getPosition(v);
           Rectangle r = graph2d.getShape(v).getBounds();
-          r.translate((int)p.getX(), (int)p.getY());
           boolean leaf = v.getEdges().size() == 1;
-          Component c =treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false);
-          c.setSize(r.getSize());
-          c.paint(graphics.create(r.x, r.y, r.width, r.height ));
+          Component c = treeWidget.getCellRenderer().getTreeCellRendererComponent(treeWidget, v, false, false, leaf, 0, false);
+          c.setBounds(r);
+          c.paint(graphics.create(r.x, r.y, r.width, r.height));
         }
         // render edges
         graphics.setColor(Color.LIGHT_GRAY);
         for (Edge edge : graph.getEdges()) {
-          Point2D pos = graph2d.getPosition(edge.getStart());
           graphics.draw(graph2d.getRouting(edge));
         }
       }

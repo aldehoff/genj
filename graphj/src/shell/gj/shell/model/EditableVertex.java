@@ -19,6 +19,7 @@
  */
 package gj.shell.model;
 
+import gj.geom.ShapeHelper;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
@@ -36,9 +37,6 @@ public class EditableVertex implements Vertex {
   
   /** the content of this vertex */
   private Object content;
-  
-  /** the position of this vertex */
-  private Point2D position;
   
   /** all edges of this vertex */
   private Collection<EditableEdge> edges = new LinkedHashSet<EditableEdge>(3);
@@ -61,18 +59,32 @@ public class EditableVertex implements Vertex {
   }
   
   /**
+   * special request for original shape
+   */
+  public void setOriginalShape(Shape shape) {
+    originalShape = shape;
+    setShape(shape);
+  }
+  
+  /**
    * interface implementation
    */
   public void setShape(Shape set) {
-    editedShape = set!=null ? set : new Rectangle();
+    
+    editedShape = set;
+    
+    Point2D to = ShapeHelper.getCenter(set);
+    //Point2D from = ShapeHelper.getCenter(originalShape);
+    originalShape = ShapeHelper.createShape(originalShape, to);
   }
   
   /**
    * Constructor
    */  
-  EditableVertex(Point2D position, Shape shape, Object content) {
+  EditableVertex(Shape shape, Object content) {
     
-    this.position = position!=null ? position : new Point2D.Double();
+    if (shape==null) shape = new Rectangle();
+    
     this.content = content;
     this.originalShape = shape;
     setShape(shape);
@@ -149,22 +161,7 @@ public class EditableVertex implements Vertex {
    * Check if a point lies within vertex
    */
   public boolean contains(Point2D point) {
-    return getShape().contains(point.getX()-position.getX(),point.getY()-position.getY());   
-  }
-  /**
-   * interface implementation
-   */
-  public Point2D getPosition() {
-    return position;
-  }
-  
-  /**
-   * interface implementation
-   */
-  public void setPosition(Point2D set) {
-    
-    position = set;
-    
+    return getShape().contains(point.getX(),point.getY());   
   }
   
   /**

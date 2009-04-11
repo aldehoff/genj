@@ -241,7 +241,7 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       // init state
       this.graph2d = graph2d;
       this.context = context;
-      this.center = graph2d.getPosition(root);
+      this.center = ShapeHelper.getCenter(graph2d.getShape(root));
       this.distanceBetweenGenerations =  distanceBetweenGenerations;
       this.attrs = getAttribute(graph2d);
       
@@ -336,8 +336,8 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
         Arrays.sort(tmp, new Comparator<Edge>() {
           public int compare(Edge e1, Edge e2) {
             
-            double r1 = getRadian(getDelta(center,graph2d.getPosition(getOther(e1, root))));
-            double r2 = getRadian(getDelta(center,graph2d.getPosition(getOther(e2, root))));
+            double r1 = getRadian(getDelta(center,ShapeHelper.getCenter(graph2d.getShape(getOther(e1, root)))));
+            double r2 = getRadian(getDelta(center,ShapeHelper.getCenter(graph2d.getShape(getOther(e2, root)))));
             
             if (r1>north)
               r1 -= ONE_RADIAN;
@@ -381,7 +381,9 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
         double radiusOfChild = radius + getLengthOfEdge(edge) * distanceBetweenGenerations;
         double radiansOfChild = vertex2radians.get(child).doubleValue() * shareFactor;
         radianOfChild[c] = fromRadian + radiansOfChild/2;
-        graph2d.setPosition(child, getPoint(center, radianOfChild[c], radiusOfChild ));
+        
+        graph2d.setShape(child, ShapeHelper.createShape(graph2d.getShape(child),
+            getPoint(center, radianOfChild[c], radiusOfChild )));
 
         // modify shape
         if (isRotateShapes)
@@ -428,9 +430,9 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
       DefaultRouting path = new DefaultRouting();
       
       // start with path at child
-      Point2D p1 = graph2d.getPosition(child);
+      Point2D p1 = ShapeHelper.getCenter(graph2d.getShape(child));
       Point2D p2 = getPoint(center, radianOfChild, radius);
-      Collection<Point2D> is = getIntersections(p2, p1, false, p1, graph2d.getShape(child));
+      Collection<Point2D> is = getIntersections(p2, p1, false, graph2d.getShape(child));
       if (is.isEmpty())
         path.start(p1);
       else
@@ -456,9 +458,9 @@ public class RadialLayout extends AbstractGraphLayout<GraphAttributes> {
 
       // end path with final segment to parent
       Point2D p3 = getPoint(center, radianOfParent, radius);
-      Point2D p4 = graph2d.getPosition(parent);
+      Point2D p4 = ShapeHelper.getCenter(graph2d.getShape(parent));
       path.arcTo(center, radius, radianOfChild, radianOfParent);
-      is = getIntersections(p3, p4, false, p4, graph2d.getShape(parent));
+      is = getIntersections(p3, p4, false, graph2d.getShape(parent));
       if (is.isEmpty())
         path.lineTo(p4);
       else

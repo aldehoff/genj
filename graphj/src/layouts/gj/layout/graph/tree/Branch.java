@@ -19,14 +19,26 @@
  */
 package gj.layout.graph.tree;
 
-import static gj.util.LayoutHelper.*;
-import static gj.geom.Geometry.*;
-
+import static gj.geom.Geometry.HALF_RADIAN;
+import static gj.geom.Geometry.QUARTER_RADIAN;
+import static gj.geom.Geometry.getConvexHull;
+import static gj.geom.Geometry.getDelta;
+import static gj.geom.Geometry.getDistance;
+import static gj.geom.Geometry.getMax;
+import static gj.geom.Geometry.getMid;
+import static gj.geom.Geometry.getPoint;
+import static gj.geom.Geometry.getRadian;
+import static gj.geom.Geometry.getTranslated;
+import static gj.geom.ShapeHelper.createShape;
+import static gj.geom.ShapeHelper.getCenter;
+import static gj.util.LayoutHelper.getChildren;
+import static gj.util.LayoutHelper.getNeighbours;
+import static gj.util.LayoutHelper.translate;
+import gj.geom.ConvexHull;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
 import gj.layout.LayoutException;
-import gj.model.Edge;
 import gj.model.Vertex;
 
 import java.awt.Shape;
@@ -56,7 +68,7 @@ import java.util.Set;
   
   /** shape of branch */
   private Point2D top;
-  private GeneralPath shape;
+  private ConvexHull shape;
   private double orientation;
   
   /** constructor for a parent and its children */
@@ -107,15 +119,8 @@ import java.util.Set;
     
     // no children?
     if (branches.isEmpty()) {
-      
       // simple shape for a leaf
-      Point2D pos = graph2d.getPosition(parent);
-      shape = new GeneralPath(getConvexHull(
-          graph2d.getShape(parent).getPathIterator(
-          AffineTransform.getTranslateInstance(pos.getX(), pos.getY()))
-      ));
-      top();
-      
+      shape = getConvexHull(graph2d.getShape(parent));
       // done
       return;
     }
@@ -165,42 +170,57 @@ import java.util.Set;
       branches.get(i).moveBy(getMid(lrDeltas[i], rlDeltas[i]));
     }
     
-    
     // Place Root
     //
-    //        rrr
-    //        r r  
-    //     b  rrr  c
-    //     |   |   |
-    //     |  =f=  |
-    //     |   |   |
-    //   --+---e---+--a
-    //   11|11 | NN|NN    
-    //   1 | 1.d.N | N
-    //   11|11 | NN|NN
-    //    /|\  |  /|\
+    //         rrr
+    //         r r  
+    //         rrr  
+    //          |    
+    //    b     |     c
+    //   -+-----+-----+-a
+    //    |     |     |
+    //    |111  |  NNN|    
+    //    |1 1  |  N N|
+    //    |111  |  NNN|
+    //    |     |     |
     //
     //
-    Point2D a = branches.get(0).top();
-    Point2D b = graph2d.getPosition(branches.get(0).root);
-    Point2D c = graph2d.getPosition(branches.get(branches.size()-1).root);
-    Point2D d = getPoint(b, c, layout.getAlignmentOfParent()); 
-    Point2D e = getIntersection(a, layoutAxis-QUARTER_RADIAN, d, layoutAxis - HALF_RADIAN);
     
-    Point2D r = getPoint(
-        e, layoutAxis - HALF_RADIAN, 
-        layout.getDistanceBetweenGenerations() + getLength(getMax(shape(parent), layoutAxis)) 
-      );
+    Point2D a = getPoint(branches.get(0).top(), layoutAxis-HALF_RADIAN, layout.getDistanceBetweenGenerations());
+    Point2D b = getMax(graph2d.getShape(branches.get(0).root), layoutAxis+QUARTER_RADIAN); 
+    Point2D c = getMax(graph2d.getShape(branches.get(branches.size()-1).root), layoutAxis-QUARTER_RADIAN);
     
-    graph2d.setPosition(parent, r);
+    switch (layout.getAlignmentOfParents()) {
+      default: case Center:
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), getPoint(b, c, 0.5)));
+        break;
+      case Left:
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), b, layoutAxis, -1));
+        break;
+      case Right:
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), c, layoutAxis, +1));
+        break;
+      case LeftOffset:
+        b = getPoint(b, layoutAxis+QUARTER_RADIAN, layout.getDistanceInGeneration());
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), b, layoutAxis, +1));
+        break;
+      case RightOffset:
+        c = getPoint(c, layoutAxis-QUARTER_RADIAN, layout.getDistanceInGeneration());
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), c, layoutAxis, -1));
+        break;
+    }
+    
+    graph2d.setShape(
+      parent,
+      createShape(graph2d.getShape(parent), a, getPoint(a, layoutAxis-QUARTER_RADIAN, 1), -1)
+    );
     
     // calculate new shape
     GeneralPath gp = new GeneralPath();
     gp.append(graph2d.getShape(parent), false);
-    gp.transform(AffineTransform.getTranslateInstance(r.getX(), r.getY()));
     for (Branch branch : branches)
       gp.append(branch.shape, false);
-    shape = new GeneralPath(getConvexHull(gp));
+    shape = getConvexHull(gp);
    
     // done
   }
@@ -245,23 +265,6 @@ import java.util.Set;
     
   }
   
-  private Point2D pos() {
-    return pos(root);
-  }
-  
-  private Point2D pos(Vertex vertex) {
-    return graph2d.getPosition(vertex);
-  }
-  
-  private Shape shape(Vertex vertex) {
-    return graph2d.getShape(vertex);
-  }
-  
-  private Vertex other(Edge edge, Vertex other) {
-    return edge.getStart().equals(other) ? edge.getEnd() : edge.getStart();
-  }
-  
-  
   /** translate a branch */
   private void moveBy(Point2D delta) {
     
@@ -275,17 +278,12 @@ import java.util.Set;
     shape.transform(AffineTransform.getTranslateInstance(delta.getX(), delta.getY()));
   }
   
-  /** translate a branch */
-  private void moveTo(Point2D pos) {
-    moveBy(getDelta(graph2d.getPosition(root), pos));
-  }
-
   /** compare positions of two vertices */
   public int compare(Vertex v1,Vertex v2) {
     
     double layoutAxis = getRadian(orientation);
-    Point2D p1 = graph2d.getPosition(v1);
-    Point2D p2 = graph2d.getPosition(v2);
+    Point2D p1 = getCenter(graph2d.getShape(v1));
+    Point2D p2 = getCenter(graph2d.getShape(v2));
     
     double delta =
       Math.cos(layoutAxis) * (p2.getX()-p1.getX()) + Math.sin(layoutAxis) * (p2.getY()-p1.getY());

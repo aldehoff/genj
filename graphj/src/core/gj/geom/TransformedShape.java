@@ -17,43 +17,15 @@
  * along with GraphJ; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package gj.layout;
+package gj.geom;
 
-
-import gj.model.Edge;
-import gj.model.Graph;
-import gj.model.Vertex;
-
-import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 
 /**
- * A graph with 2 dimensional layout information
+ * A transformed shape
  */
-public interface Graph2D extends Graph {
+public interface TransformedShape {
 
-  /**
-   * Edge's shape
-   */
-  public Routing getRouting(Edge edge);
-
-  /**
-   * Edge's shape
-   */
-  public void setRouting(Edge edge, Routing routing);
-
-  /**
-   * Vertex's shape
-   */
-  public Shape getShape(Vertex vertex);
-
-  /**
-   * Vertex's shape
-   */
-  public void setShape(Vertex vertex, Shape shape);
-
-  /**
-   * Edge's port control
-   */
-  public Port getPort(Edge edge, Vertex at);
+  public AffineTransform getTransformation();
   
-} //Layout2D
+}

@@ -132,7 +132,7 @@ public class GraphReader {
     protected ElementHandler start(String name, Attributes atts) {
       if ("node".equals(name)||"vertex".equals(name)) return new VertexHandler(graph, atts);
       if ("arc".equals(name)||"edge".equals(name)) return new EdgeHandler(graph, atts);
-      if ("shape".equals(name)) return new ShapeHandler("shape", new Point2D.Double(), atts);
+      if ("shape".equals(name)) return new ShapeHandler("shape", atts);
       return this;
     }
   } //GraphHandler
@@ -141,6 +141,8 @@ public class GraphReader {
    * Handling structure elements - Vertex
    */
   private class VertexHandler extends ElementHandler {
+    private ShapeHandler shapeHandler;
+    private ShapeHandler originalShapeHandler;
     private EditableGraph graph;
     private String id = null;
     private Shape shape = null;
@@ -155,21 +157,41 @@ public class GraphReader {
       // find a shape
       shape = id2shape.get(atts.getValue("sid"));
       if (shape==null) shape = DEFAULT_SHAPE;
-      // its position
-      pos = new Point2D.Double(Double.parseDouble(atts.getValue("x")), Double.parseDouble(atts.getValue("y")));
+      // relative position?
+      if (atts.getValue("x")!=null)
+        pos = new Point2D.Double(Double.parseDouble(atts.getValue("x")), Double.parseDouble(atts.getValue("y")));
       // its content
       content = atts.getValue("c");
-      // create the vertex
-      EditableVertex v = graph.addVertex(pos, shape, content);
-      // keep it
-      id2vertex.put(id, v);
       // done
     }
     @Override
     protected ElementHandler start(String name, Attributes atts) {
-      error(name+" not allowed in vertex");
+      if ("shape".equals(name)) {
+        shapeHandler = new ShapeHandler("shape", atts);
+        return shapeHandler;
+      }
+      if ("original".equals(name)) {
+        originalShapeHandler = new ShapeHandler("original", atts);
+        return originalShapeHandler;
+      }
       return this;
     }
+    @Override
+    protected void end(String name) {
+      // check for shape in vertex
+      if (shapeHandler!=null) 
+        shape = shapeHandler.getResult();
+      // handle old style relative shape position
+      if (pos!=null) 
+        shape = ShapeHelper.createShape(shape, pos);
+      // calculate original shape
+      Shape original = originalShapeHandler!=null ? originalShapeHandler.getResult() : shape;
+      // create the vertex
+      EditableVertex v = graph.addVertex(original, content);
+      v.setShape(shape);
+      // keep it
+      id2vertex.put(id, v);
+    }    
   } //VertexHandler
   
   /**
@@ -190,7 +212,7 @@ public class GraphReader {
     @Override
     protected ElementHandler start(String name, Attributes atts) {
       if ("path".equals(name)) {
-        shapeHandler = new ShapeHandler("path", edge.getStart().getPosition(), atts);
+        shapeHandler = new ShapeHandler("path", atts);
         return shapeHandler;
       }
       return this;
@@ -215,10 +237,8 @@ public class GraphReader {
     private int size=0;
     private String id;
     private Shape result;
-    private Point2D origin;
-    protected ShapeHandler(String end, Point2D origin, Attributes atts) {
+    protected ShapeHandler(String end, Attributes atts) {
       id = atts.getValue("id");
-      this.origin = origin;
       this.end = end;
     }
     @Override
@@ -231,23 +251,10 @@ public class GraphReader {
           
           if (SEG_SIZES[i]>0) {
             
-            // old style absolute positions
-            if (atts.getValue("v0")!=null) {
-              
-              for (int j=0;j<SEG_SIZES[i]; )  {
-                values[size++] = Double.parseDouble(atts.getValue("v"+j++)) - origin.getX();
-                values[size++] = Double.parseDouble(atts.getValue("v"+j++)) - origin.getY();
-              }
-              
-            } else {
-              
-              // new style relative x,y's
-              for (int j=0;j<SEG_SIZES[i]/2; j++) {
-                  values[size++] = Double.parseDouble(atts.getValue("x"+j));
-                  values[size++] = Double.parseDouble(atts.getValue("y"+j));
-              }
+            for (int j=0;j<SEG_SIZES[i]/2; j++) {
+              values[size++] = Double.parseDouble(atts.getValue("x"+j));
+              values[size++] = Double.parseDouble(atts.getValue("y"+j));
             }
-            
           }
           break;
         }

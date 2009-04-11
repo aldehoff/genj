@@ -20,6 +20,7 @@
 package gj.layout.graph.circular;
 
 import gj.geom.Geometry;
+import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.layout.GraphLayout;
 import gj.layout.LayoutContext;
@@ -122,7 +123,7 @@ public class CircularLayout implements GraphLayout {
     // one node only?
     if (nodes.size()==1) {
       Vertex one = nodes.get(0);
-      graph2d.setPosition(one, new Point2D.Double(cx,cy));
+      graph2d.setShape(one, ShapeHelper.createShape(graph2d.getShape(one), new Point2D.Double(cx,cy)));
       return;
     }
     
@@ -153,7 +154,8 @@ public class CircularLayout implements GraphLayout {
       double x = (int)(cx + Math.sin(radian)*radius);
       double y = (int)(cy + Math.cos(radian)*radius);
       Vertex node = nodes.get(n);
-      graph2d.setPosition(node, new Point2D.Double(x,y));
+      Point2D pos = new Point2D.Double(x,y);
+      graph2d.setShape(node, ShapeHelper.createShape(graph2d.getShape(node), pos));
 
       radian += TWOPI*sizes[n]/circumference;
     }

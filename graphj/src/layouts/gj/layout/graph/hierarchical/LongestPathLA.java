@@ -19,12 +19,15 @@
  */
 package gj.layout.graph.hierarchical;
 
+import gj.geom.ShapeHelper;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.model.Edge;
 import gj.model.Vertex;
 import gj.util.LayoutHelper;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -131,7 +134,8 @@ public class LongestPathLA implements LayerAssignment {
             // create a dummy at same position as cell
             Cell dummy = new Cell(new DummyVertex(), i+1);
             numDummyVertices++;
-            graph2d.setPosition(dummy.vertex, graph2d.getPosition(cell.vertex));
+            Point2D c = ShapeHelper.getCenter(graph2d.getShape(cell.vertex));
+            graph2d.setShape(dummy.vertex, new Rectangle2D.Double(c.getX(), c.getY(), 0, 0));
             width = Math.max(width, layers.get(i+1).add(dummy, orderVerticesByX));
 
             // delete old connection
@@ -444,7 +448,7 @@ public class LongestPathLA implements LayerAssignment {
   private class VertexByXPositionComparator implements Comparator<Vertex> {
   
     public int compare(Vertex v1, Vertex v2) {
-      double d = graph2d.getPosition(v1).getX() - graph2d.getPosition(v2).getX();
+      double d = ShapeHelper.getCenter(graph2d.getShape(v1)).getX() - ShapeHelper.getCenter(graph2d.getShape(v2)).getX();
       if (d==0) return 0;
       return d<0 ? -1 : 1;
     } 

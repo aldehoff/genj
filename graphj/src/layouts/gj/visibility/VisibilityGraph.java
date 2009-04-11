@@ -31,11 +31,10 @@ import gj.model.WeightedGraph;
 import gj.util.LayoutHelper;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,7 +67,7 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     // each vertex is a hole
     final List<Hole> holes = new ArrayList<Hole>();
     for (Vertex v : graph2d.getVertices())
-      holes.add(new Hole(graph2d.getShape(v), graph2d.getPosition(v)));
+      holes.add(new Hole(graph2d.getShape(v)));
     
     // loop over holes and check visibility to others
     for (int i=0; i<holes.size(); i++) {
@@ -150,8 +149,7 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     
     GeneralPath result = new GeneralPath();
     for (Edge edge : getEdges()) {
-      Point2D p = getPosition(edge.getStart());
-      result.append(getRouting(edge).getPathIterator(AffineTransform.getTranslateInstance(p.getX(), p.getY())), false);
+      result.append(getRouting(edge), false);
     }
     return result;
   }
@@ -166,7 +164,7 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   }
 
   public Shape getShape(Vertex vertex) {
-    return new Rectangle2D.Double();
+    return new Rectangle( ((PointLocation)vertex).x, ((PointLocation)vertex).y, 0, 0);
   }
 
   public void setRouting(Edge edge, Routing shape) {
@@ -192,9 +190,9 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
     
     private List<Point> points = new ArrayList<Point>(4);
     
-    Hole(Shape shape, Point2D pos) {
+    Hole(Shape shape) {
       
-      ShapeHelper.iterateShape(Geometry.getConvexHull(shape).getPathIterator(AffineTransform.getTranslateInstance(pos.getX(), pos.getY())), new FlattenedPathConsumer() {
+      ShapeHelper.iterateShape(Geometry.getConvexHull(shape), new FlattenedPathConsumer() {
         public boolean consumeLine(Point2D start, Point2D end) {
           Point s = round(start);
           if (points.isEmpty() || !points.get(points.size()-1).equals(s))

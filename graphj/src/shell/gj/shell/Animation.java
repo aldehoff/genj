@@ -28,7 +28,6 @@ import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -179,30 +178,19 @@ import java.util.List;
    */
   private class Movement {
     private EditableVertex vertex;
-    private Point2D 
-      from = new Point2D.Double(), 
-      step = new Point2D.Double(),
-      to = new Point2D.Double();
     Movement(EditableVertex set) { 
       vertex = set; 
-      from.setLocation(vertex.getPosition());
     }
     void snapshot() { 
-      to.setLocation(vertex.getPosition());
+      // FIXME need animation snapshot
     } 
     boolean animate(double time) {
       // done?
       if (time==1) {
-        vertex.setPosition(to);
+        // FIXME need animation destination
         return true;
       }
-      // calculate current position
-      step.setLocation(
-        from.getX()+(to.getX()-from.getX())*time,
-        from.getY()+(to.getY()-from.getY())*time
-      );
-      // change position
-      vertex.setPosition(step);
+      // FIXME need animation step
       // done      
       return false;
     }

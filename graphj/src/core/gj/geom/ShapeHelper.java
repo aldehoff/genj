@@ -29,8 +29,11 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +58,14 @@ public class ShapeHelper {
   }
 
   /**
+   * Calculates the center of a shape
+   */
+  public static Point2D getCenter(Shape shape) {
+    Rectangle2D bounds = shape.getBounds2D();
+    return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
+  }
+  
+  /**
    * Creates a shape for given path. The path is constructed as such
    * <ul>
    *  <li>SEG_MOVETO, p1.x, p2.x
@@ -77,12 +88,123 @@ public class ShapeHelper {
   /**
    * Creates a transformed shape
    */
-  public static Shape createShape(Shape shape, AffineTransform tx) {
+  public static Shape createShape(Shape shape, Point2D center) {
+    Point2D oldCenter = getCenter(shape);
     GeneralPath result = new GeneralPath(shape);
-    result.transform(tx);
+    result.transform(AffineTransform.getTranslateInstance(center.getX()-oldCenter.getX(), center.getY()-oldCenter.getY()));
     return result;
   }
   
+  /**
+   * Creates a transformed shape (origin is center of shape)
+   */
+  public static Shape createShape(Shape shape, AffineTransform tx) {
+    return new TransformedShapeImpl(shape, tx);
+  }
+  
+  private static class TransformedShapeImpl extends Path2D.Double implements TransformedShape {
+    
+    private AffineTransform tx;
+    
+    public TransformedShapeImpl(Shape shape, AffineTransform tx) {
+      super(shape);
+      Point2D center = getCenter(shape);
+      transform(AffineTransform.getTranslateInstance(-center.getX(), -center.getY()));
+      transform(tx);
+      transform(AffineTransform.getTranslateInstance(center.getX(), center.getY()));
+
+      this.tx = tx;
+      if (shape instanceof TransformedShape) 
+        this.tx.concatenate(((TransformedShape)shape).getTransformation());
+    }
+    
+    public AffineTransform getTransformation() {
+      return tx;
+    }
+    
+  } //TransformedShapeImpl
+  
+  
+
+  /**
+   * Creates a shape aligned at given axis
+   * @param shape the original shape
+   * @param axisStart the starting point defining the aligning axis
+   * @param axisRadian the radian of the defining the aligning axis
+   * @param alignment left(<0),center(0) or right(>0) of [axisStart->axisEnd]
+   */
+  public static Shape createShape(Shape shape, Point2D axisStart, double axisRadian, int alignment) {
+    return new OpAlignShape(shape, axisStart, Geometry.getPoint(axisStart, axisRadian, 1), alignment).getResult();
+  }
+
+  /**
+   * Creates a shape aligned at given axis
+   * @param shape the original shape
+   * @param axisStart the starting point defining the aligning axis
+   * @param axisEnd the ending point defining the aligning axis
+   * @param alignment left(<0),center(0) or right(>0) of [axisStart->axisEnd]
+   */
+  public static Shape createShape(Shape shape, Point2D axisStart, Point2D axisEnd, int alignment) {
+    return new OpAlignShape(shape, axisStart, axisEnd, alignment).getResult();
+  }
+  
+  private static class OpAlignShape implements FlattenedPathConsumer {
+
+    private Shape result;
+    private Point2D axisStart, axisEnd;
+    private int alignment;
+    private double leftmost = Double.MAX_VALUE, rightmost = -Double.MAX_VALUE;
+    
+    private OpAlignShape(Shape shape, Point2D axisStart, Point2D axisEnd, int alignment) {
+      // init
+      this.axisStart = axisStart;
+      this.axisEnd = axisEnd;
+      this.alignment = alignment;
+      // analyze shape
+      iterateShape(shape, this);
+      // create aligned shape
+      double delta = 0;
+      if (alignment<0)       // left
+        delta = -rightmost;
+      else if (alignment>0)  // right
+        delta = -leftmost;
+      else                   // center
+        delta = -(rightmost+leftmost)/2;
+      // calculate delta vector and rotate by 90 degrees
+      Point2D vector = new Point2D.Double( -(axisEnd.getY()-axisStart.getY()), axisEnd.getX()-axisStart.getX() );
+      double len = Geometry.getLength(vector);
+      result = createShape(shape, AffineTransform.getTranslateInstance( vector.getX()/len*delta, vector.getY()/len*delta));
+      // done
+    }
+    
+    public boolean consumeLine(Point2D start, Point2D end) {
+      if (leftmost == Double.MAX_VALUE)
+        track(start);
+      track(end);
+      return true;
+    }
+    
+    private void track(Point2D point) {
+      double dist = Line2D.ptLineDist(axisStart.getX(), axisStart.getY(), axisEnd.getX(), axisEnd.getY(), point.getX(), point.getY());
+      if (dist==0) {
+        leftmost = Math.min(leftmost,0);
+        rightmost = Math.max(rightmost,0);
+      } else {
+        if (Geometry.testPointVsLine(axisStart, axisEnd, point)<0) {
+          leftmost = Math.min(leftmost, -dist);
+          rightmost = Math.max(rightmost, -dist);
+        } else {
+          leftmost = Math.min(leftmost, dist);
+          rightmost = Math.max(rightmost, dist);
+        }
+      }
+    }
+    
+    private Shape getResult() {
+      return result;
+    }
+  } //OpAlignShape
+
   /**
    * Creates a shape for given path and offset. The path is
    * constructed according to the array of double-values:

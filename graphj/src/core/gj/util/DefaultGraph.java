@@ -28,7 +28,6 @@ import gj.model.Vertex;
 
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +40,6 @@ public class DefaultGraph implements Graph2D {
 
   private Graph graph;
   private Shape defaultShape;
-  private Map<Vertex, Point2D> vertex2pos = new HashMap<Vertex, Point2D>();
   private Map<Vertex, Shape> vertex2shape = new HashMap<Vertex, Shape>();
   private Map<Edge, Routing> edge2path = new HashMap<Edge, Routing>();
   
@@ -66,19 +64,10 @@ public class DefaultGraph implements Graph2D {
     return graph==null ? new ArrayList<Vertex>() : graph.getVertices();
   }
   
-  protected Shape getDefaultShape() {
+  protected Shape getDefaultShape(Vertex vertex) {
     return defaultShape;
   }
   
-  public Point2D getPosition(Vertex vertex) {
-    Point2D result = vertex2pos.get(vertex);
-    return result!=null ? result : new Point2D.Double();
-  }
-
-  public void setPosition(Vertex vertex, Point2D pos) {
-    vertex2pos.put(vertex, pos);
-  }
-
   public Routing getRouting(Edge edge) {
     
     Routing result = edge2path.get(edge);
@@ -96,7 +85,7 @@ public class DefaultGraph implements Graph2D {
   public Shape getShape(Vertex vertex) {
     Shape result = vertex2shape.get(vertex);
     if (result==null)
-      result = defaultShape;
+      result = getDefaultShape(vertex);
     return result;
   }
   
