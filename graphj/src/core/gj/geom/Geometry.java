@@ -861,14 +861,14 @@ public class Geometry {
         // replace current starting point or keep?
         if (start.getY()==Double.MAX_VALUE)
           start.setLocation(from);
-        else {
-          if (from.getY()<start.getY() || (from.getY()==start.getY() && from.getX()<start.getX()) ) {
+
+          if (to.getY()<start.getY() || (to.getY()==start.getY() && to.getX()<start.getX()) ) {
             points.add(new Point2D.Double(start.getX(), start.getY()));
-            start.setLocation(from.getX(), from.getY());
+            start.setLocation(to.getX(), to.getY());
           } else {
-            points.add(new Point2D.Double(from.getX(), from.getY()));
+            points.add(new Point2D.Double(to.getX(), to.getY()));
           }
-        }
+
         // continue with 'to'
         return true;
       }
