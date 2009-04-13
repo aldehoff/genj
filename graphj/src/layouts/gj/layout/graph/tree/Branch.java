@@ -35,6 +35,7 @@ import static gj.util.LayoutHelper.getChildren;
 import static gj.util.LayoutHelper.getNeighbours;
 import static gj.util.LayoutHelper.translate;
 import gj.geom.ConvexHull;
+import gj.geom.Geometry;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
@@ -212,14 +213,36 @@ import java.util.Set;
     
     graph2d.setShape(
       parent,
-      createShape(graph2d.getShape(parent), a, getPoint(a, layoutAxis-QUARTER_RADIAN, 1), -1)
+      createShape(graph2d.getShape(parent), a, QUARTER_RADIAN, -1)
     );
     
-    // calculate new shape
+    // calculate new shape with sub-branches' shapes
     GeneralPath gp = new GeneralPath();
     gp.append(graph2d.getShape(parent), false);
     for (Branch branch : branches)
       gp.append(branch.shape, false);
+    
+    // .. add buffer for edges
+    Point2D b1,b2;
+    switch (layout.getAlignmentOfParents()) {
+      case LeftOffset:
+        b1 = Geometry.getIntersection(c, layoutAxis, getCenter(graph2d.getShape(parent)), layoutAxis-QUARTER_RADIAN);
+        b2 = b1;
+        break;
+      case RightOffset:
+        b1 = Geometry.getIntersection(b, layoutAxis, getCenter(graph2d.getShape(parent)), layoutAxis-QUARTER_RADIAN);
+        b2 = b1;
+        break;
+      default:
+        b1 = Geometry.getIntersection(b, layoutAxis, a, layoutAxis-QUARTER_RADIAN);
+        b2 = Geometry.getIntersection(c, layoutAxis, a, layoutAxis-QUARTER_RADIAN);
+        break;
+    }
+    gp.lineTo(b2.getX(), b2.getY());
+    gp.lineTo(b1.getX(), b1.getY());
+    
+    // .. and convert to convex hull
+    // TODO using convex hull for branch merging leads to wide graphs - consider using a different merge mechanism
     shape = getConvexHull(gp);
    
     // done
