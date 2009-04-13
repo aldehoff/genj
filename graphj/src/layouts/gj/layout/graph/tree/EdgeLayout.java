@@ -86,22 +86,26 @@ public enum EdgeLayout {
   Orthogonal {
     @Override protected Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout) {
       
-      // FIXME consider LeftOffset & RightOffset
-      //layout.getAlignmentOfParents()
-      
       double layoutAxis = getRadian(layout.getOrientation());
       
-      // calc edge layout
       Point2D s = getCenter(graph2d.getShape(parent));
       Point2D e = getCenter(graph2d.getShape(child));
-      Point2D c = getPoint(getMax(graph2d.getShape(parent), layoutAxis), layoutAxis, layout.getDistanceBetweenGenerations()/2);
       
-      Point2D[] points = new Point2D[]{ 
-        s, 
-        Geometry.getIntersection(s, layoutAxis, c, layoutAxis-Geometry.QUARTER_RADIAN),
-        Geometry.getIntersection(e, layoutAxis, c, layoutAxis-Geometry.QUARTER_RADIAN),
-        e 
-      };
+      Point2D[] points;
+      Point2D c;
+      switch (layout.getAlignmentOfParents()) {
+        case LeftOffset:
+        case RightOffset:
+          c = Geometry.getIntersection(s, layoutAxis-Geometry.QUARTER_RADIAN, e, layoutAxis);
+          points = new Point2D[]{s, c, e};
+          break;
+        default:
+          c = getPoint(getMax(graph2d.getShape(parent), layoutAxis), layoutAxis, layout.getDistanceBetweenGenerations()/2);
+          points = new Point2D[]{s, 
+              Geometry.getIntersection(s, layoutAxis, c, layoutAxis-Geometry.QUARTER_RADIAN),
+              Geometry.getIntersection(e, layoutAxis, c, layoutAxis-Geometry.QUARTER_RADIAN),
+              e};
+      }
       return getRouting(points, graph2d.getShape(parent), graph2d.getShape(child), !edge.getStart().equals(parent));
     }
   };
