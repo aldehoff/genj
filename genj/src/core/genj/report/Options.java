@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.14 $ $Author: daniel-andre $ $Date: 2006-11-15 20:33:49 $
+ * $Revision: 1.15 $ $Author: nmeier $ $Date: 2009-04-22 20:26:34 $
  */
 package genj.report;
 
@@ -80,6 +80,18 @@ public class Options extends OptionProvider {
     /** number of years an event is private */
     public int yearsEventsArePrivate = 0; 
     
+    private String trim(String symbol, String fallback) {
+      if (symbol==null)
+        return fallback;
+      symbol = symbol.trim();
+      int len = symbol.length();
+      if (symbol.length()==0)
+        return fallback;
+      if (!Character.isLetter(symbol.charAt(len-1)))
+        return symbol;
+      return symbol + ' ';
+    }
+    
     public int getIndentPerLevel() {
         return indentPerLevel;
     }
@@ -101,10 +113,7 @@ public class Options extends OptionProvider {
     }
     
     public void setBirthSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            birthSymbol = set;
-        else
-            birthSymbol = "*";
+      birthSymbol = trim(set, "*");
     }
     
     public String getBaptismSymbol() {
@@ -112,10 +121,7 @@ public class Options extends OptionProvider {
     }
     
     public void setBaptismSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            baptismSymbol = set;
-        else
-            baptismSymbol = "~";
+        baptismSymbol = trim(set, "~");
     }
     
     public String getEngagingSymbol() {
@@ -123,10 +129,7 @@ public class Options extends OptionProvider {
     }
     
     public void setEngagingSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            engagingSymbol = set;
-        else
-            engagingSymbol = "o";
+        engagingSymbol = trim(set, "o");
     }
     
     public String getMarriageSymbol() {
@@ -134,10 +137,7 @@ public class Options extends OptionProvider {
     }
     
     public void setMarriageSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            marriageSymbol = set;
-        else
-            marriageSymbol = "oo";
+        marriageSymbol  = trim(set, "oo");
     }
     
     public String getDivorceSymbol() {
@@ -145,10 +145,7 @@ public class Options extends OptionProvider {
     }
     
     public void setDivorceSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            divorceSymbol = set;
-        else
-            divorceSymbol = "o|o";
+        divorceSymbol = trim(set, "o|o");
     }
     
     public String getDeathSymbol() {
@@ -156,10 +153,7 @@ public class Options extends OptionProvider {
     }
     
     public void setDeathSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            deathSymbol = set;
-        else
-            deathSymbol = "+";
+        deathSymbol = trim(set, "+");
     }
     
     public String getBurialSymbol() {
@@ -167,10 +161,7 @@ public class Options extends OptionProvider {
     }
     
     public void setBurialSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            burialSymbol = set;
-        else
-            burialSymbol = "[]";
+        burialSymbol = trim(set, "[]");
     }
     
     public String getOccuSymbol() {
@@ -178,10 +169,7 @@ public class Options extends OptionProvider {
 	}
 
 	public void setOccuSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-        	occuSymbol = set;
-        else
-        	occuSymbol = "=";
+	  occuSymbol  = trim(set, "=");
 	}
 
 	public String getResiSymbol() {
@@ -189,10 +177,7 @@ public class Options extends OptionProvider {
 	}
 
 	public void setResiSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-        	resiSymbol = set;
-        else
-        	resiSymbol = "^";
+	   	resiSymbol  = trim(set, "^");
 	}
 
 	public String getChildOfSymbol() {
@@ -200,10 +185,7 @@ public class Options extends OptionProvider {
     }
     
     public void setChildOfSymbol(String set) {
-        if (set!=null&&set.trim().length()>0)
-            childOfSymbol = set;
-        else
-            childOfSymbol = "/";
+       childOfSymbol  = trim(set, "/");
     }
     
     /**

@@ -1353,7 +1353,7 @@ private String put_given_name(Indi person,int length){
 		result += "-"+year(death);
 	    } else {
 		if (birth != null){
-		    result += OPTIONS.getBirthSymbol()+" "+birth.getDisplayValue();
+		    result += OPTIONS.getBirthSymbol()+birth.getDisplayValue();
 		}
 	    }
 	    break;

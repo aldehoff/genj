@@ -79,10 +79,10 @@ public class ReportAges extends Report {
         // print birth date (give up if none)
         PropertyDate birth = indi.getBirthDate();
         if (birth == null || !birth.isValid()) {
-            println(OPTIONS.getBirthSymbol()+" "+translate("noData"));
+            println(OPTIONS.getBirthSymbol()+translate("noData"));
             return;
         }
-        println(OPTIONS.getBirthSymbol()+" " + birth);
+        println(OPTIONS.getBirthSymbol()+ birth);
         println();
 
         if (reportBaptismAge) {
@@ -143,7 +143,7 @@ public class ReportAges extends Report {
                 println(getIndent(2) + translate("childBirths") + ":");
                 for (int i = 0; i < children.length; i++) {
                     Indi child = children[i];
-                    String text = getIndent(3) + OPTIONS.getBirthSymbol()+" "+child+": ";
+                    String text = getIndent(3) + OPTIONS.getBirthSymbol()+child+": ";
                     PropertyDate cbirth = child.getBirthDate();
                     if (cbirth == null)
                         println(text + translate("noData"));
@@ -170,7 +170,7 @@ public class ReportAges extends Report {
             PropertyDate death = indi.getDeathDate();
             if (death != null) {
                 println(getIndent(2) + Gedcom.getName("DEAT") + ":");
-                println(getIndent(3) + OPTIONS.getDeathSymbol()+" " + death);
+                println(getIndent(3) + OPTIONS.getDeathSymbol() + death);
                 age = indi.getAge(indi.getDeathDate().getStart());
                 printAge(age,4);
                 println();
@@ -204,7 +204,7 @@ public class ReportAges extends Report {
 author               = Daniel P. Kionka, Carsten Müssig <carsten.muessig@gmx.net>
 version              = 1.4
 category             = Analysis
-updated              = $Date: 2007-01-27 21:53:58 $
+updated              = $Date: 2009-04-22 20:26:34 $
 
 name                 = Ages
 name.de              = Alter

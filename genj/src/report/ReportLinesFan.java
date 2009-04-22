@@ -123,11 +123,11 @@ public class ReportLinesFan extends Report {
 	if (gen > reportMaxGenerations){ return;}
 	writer.println("("+fullname(indi,1,1,50)+")");
 	if (in < 7) {
-	    writer.println(" ("+esc(indi.format("BIRT", OPTIONS.getBirthSymbol()+" {$D}"))+")"+
-			" ("+esc(indi.format("DEAT",OPTIONS.getDeathSymbol()+" {$D}"))+")");
+	    writer.println(" ("+esc(indi.format("BIRT", OPTIONS.getBirthSymbol()+"{$D}"))+")"+
+			" ("+esc(indi.format("DEAT",OPTIONS.getDeathSymbol()+"{$D}"))+")");
 	}else if (in == 7){
-	    writer.println(" ("+esc(indi.format("BIRT",OPTIONS.getBirthSymbol()+" {$y}"))+")"+
-			" ("+esc(indi.format("DEAT", OPTIONS.getDeathSymbol()+" {$y}"))+")");
+	    writer.println(" ("+esc(indi.format("BIRT",OPTIONS.getBirthSymbol()+"{$y}"))+")"+
+			" ("+esc(indi.format("DEAT", OPTIONS.getDeathSymbol()+"{$y}"))+")");
 	} else {
 	    writer.println(" () () ");
 	}

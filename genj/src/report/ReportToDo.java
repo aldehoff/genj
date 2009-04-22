@@ -646,8 +646,8 @@ public class ReportToDo extends Report {
     // Might be null
     if (indi == null)
       return ;
-    String birth = indi.format("BIRT", OPTIONS.getBirthSymbol() + " " + PLACE_AND_DATE_FORMAT);
-    String death = indi.format("DEAT", OPTIONS.getDeathSymbol() + " " + PLACE_AND_DATE_FORMAT);
+    String birth = indi.format("BIRT", OPTIONS.getBirthSymbol() + PLACE_AND_DATE_FORMAT);
+    String death = indi.format("DEAT", OPTIONS.getDeathSymbol() + PLACE_AND_DATE_FORMAT);
     doc.addText(indi.toString(),FORMAT_STRONG);
     doc.addText(" " + birth + " " + death);
   }

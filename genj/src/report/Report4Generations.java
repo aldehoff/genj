@@ -216,10 +216,10 @@ public class Report4Generations extends Report {
         String n = indi.getName();
 
         // birth?
-        String b = " "+OPTIONS.getBirthSymbol()+" " + indi.getBirthAsString();
+        String b = " "+OPTIONS.getBirthSymbol() + indi.getBirthAsString();
 
         // death?
-        String d = " "+OPTIONS.getDeathSymbol()+" " + indi.getDeathAsString();
+        String d = " "+OPTIONS.getDeathSymbol() + indi.getDeathAsString();
 
         Property place = indi.getProperty(new TagPath("INDI:BIRT:PLAC"));
 
@@ -281,9 +281,9 @@ public class Report4Generations extends Report {
         String dates = "";
 
         if (indi.getBirthAsString().length() > 0)
-            dates = " "+OPTIONS.getBirthSymbol()+" " + indi.getBirthAsString();
+            dates = " "+OPTIONS.getBirthSymbol() + indi.getBirthAsString();
         if (indi.getDeathAsString().length() > 0)
-            dates += " "+OPTIONS.getDeathSymbol()+" " + indi.getDeathAsString();
+            dates += " "+OPTIONS.getDeathSymbol() + indi.getDeathAsString();
 
         if (dates.length() <= 0) {
             if (left)
