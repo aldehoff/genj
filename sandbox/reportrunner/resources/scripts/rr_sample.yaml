@@ -1,3 +1,4 @@
+# For more information about the YAML format see http://yaml.org/
 # Global options
 gedcom: gedcom/example.ged
 individual: I1
@@ -17,6 +18,24 @@ reports:
   # Third report
   - report: ReportAges
     output: rr_output/ages.txt
+
+  # Generates three reports for individuals I5, I6, I7
+  - report: tree.ReportGraphicalTree
+    output_type: pdf
+    title: Wildcard example
+    # You can use variables in the output file name
+    # $i - ID
+    # $n - full name
+    # $f - first name
+    # $l - last name
+    output: rr_output/tree_$i_$f_$l.pdf
+    # You can use only regular expressions here, so I[51-60] won't work
+    # For information about regular expressions see http://java.sun.com/j2se/1.5.0/docs/api/java/util/regex/Pattern.html
+    # Examples:
+    # I.*      - everyone
+    # I1\d\d      - from I100 to I199
+    # I[2-3]\d       - from I20 to I39
+    individual: I[5-7]
 
   # Two reports with common options
   - report: tree.ReportGraphicalTree

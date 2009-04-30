@@ -21,7 +21,7 @@ import java.util.Set;
  * One proxy object is associated with one report.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportProxy.java,v 1.3 2008-11-20 09:14:41 pewu Exp $
+ * @version $Id: ReportProxy.java,v 1.4 2009-04-30 17:32:35 pewu Exp $
  */
 public class ReportProxy
 {
@@ -247,6 +247,14 @@ public class ReportProxy
     public void setOutputFileName(String outputFileName)
     {
         this.outputFileName = outputFileName;
+    }
+
+    /**
+     * Gets output file name.
+     */
+    public String getOutputFileName()
+    {
+        return outputFileName;
     }
 
     /**

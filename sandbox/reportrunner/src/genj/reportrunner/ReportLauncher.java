@@ -9,16 +9,19 @@ import genj.util.Origin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Runs a report based on a set of options.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportLauncher.java,v 1.3 2008-11-20 09:14:41 pewu Exp $
+ * @version $Id: ReportLauncher.java,v 1.4 2009-04-30 17:32:36 pewu Exp $
  */
 public class ReportLauncher
 {
@@ -93,7 +96,7 @@ public class ReportLauncher
                 proxy.setOption(key, entry.getValue());
         }
 
-        // if gedcom not loaded, load
+        // If gedcom is not loaded then load it
         String input = options.get(GEDCOM_OPTION);
         if (input != null && !input.equals(gedcomFile))
         {
@@ -105,14 +108,73 @@ public class ReportLauncher
 
         Set<Class<?>> contexts = proxy.getContexts();
         Object context = gedcom;
+        List<Object> contextList = null;
 
         String indiId = options.get(INDIVIDUAL_OPTION);
         if (indiId != null && contexts.contains(Indi.class))
-        	context = gedcom.getEntity(Gedcom.INDI, indiId);
+        {
+            if (indiId.matches("\\w*"))
+                context = gedcom.getEntity(Gedcom.INDI, indiId);
+            else
+            {
+                contextList = new ArrayList<Object>();
+
+                // special cases
+                if (indiId.equals("all"))
+                    indiId = ".*";
+
+                // Build a list of Individuals based on a regular expression
+                Pattern pattern = Pattern.compile(indiId);
+                @SuppressWarnings("unchecked")
+                Collection<Indi> indis = (Collection<Indi>)gedcom.getEntities(Gedcom.INDI);
+                for (Indi indi : indis)
+                {
+                    if (pattern.matcher(indi.getId()).matches())
+                        contextList.add(indi);
+                }
+            }
+        }
         else if (!contexts.contains(Gedcom.class))
         	throw new ReportRunnerException("Report context could not be established for report " + reportName);
 
+        if (contextList != null)
+        {
+            ReportRunner.LOG.info("Running report " + contextList.size() + " times: " + reportName);
+            for (Object o : contextList)
+                startReport(proxy, o);
+        }
+        else
+            startReport(proxy, context);
+    }
+
+    /**
+     * @param proxy
+     * @param context
+     * @throws ReportProxyException
+     */
+    private void startReport(ReportProxy proxy, Object context) throws ReportProxyException
+    {
+        // TODO: Replace variables in output field
+        String output = proxy.getOutputFileName();
+        if (output != null)
+        {
+            String newOutput = output;
+            if (context instanceof Indi)
+            {
+                Indi indi = (Indi)context;
+                newOutput = newOutput.replaceAll("\\$i", indi.getId());
+                newOutput = newOutput.replaceAll("\\$n", indi.getName());
+                newOutput = newOutput.replaceAll("\\$f", indi.getFirstName());
+                newOutput = newOutput.replaceAll("\\$l", indi.getLastName());
+            }
+            proxy.setOutputFileName(newOutput);
+        }
+
         proxy.start(context);
+
+        // Switch back to original output file name
+        if (output != null)
+            proxy.setOutputFileName(output);
     }
 
     /**
