@@ -22,7 +22,7 @@ import javassist.NotFoundException;
  * A report proxy overrides GUI methods to bypass user interaction.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportProxyFactory.java,v 1.3 2009-04-30 16:58:26 pewu Exp $
+ * @version $Id: ReportProxyFactory.java,v 1.4 2009-04-30 17:03:24 pewu Exp $
  */
 public class ReportProxyFactory
 {
@@ -38,7 +38,6 @@ public class ReportProxyFactory
         }
         catch (NotFoundException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -52,7 +51,6 @@ public class ReportProxyFactory
     {
         try
         {
-            ClassPool pool = ClassPool.getDefault();
             String className = report.getClass().getCanonicalName() + "Runner";
             CtClass myclass = pool.makeClass(className);
             myclass.setSuperclass(pool.get(report.getClass().getCanonicalName()));
