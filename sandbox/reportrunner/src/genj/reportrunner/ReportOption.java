@@ -2,6 +2,7 @@ package genj.reportrunner;
 
 import genj.option.MultipleChoiceOption;
 import genj.option.PropertyOption;
+import genj.report.options.AggregatorOption;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  * Class representing a single report option.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportOption.java,v 1.1 2008-11-15 23:27:40 pewu Exp $
+ * @version $Id: ReportOption.java,v 1.2 2009-04-30 16:58:26 pewu Exp $
  */
 public class ReportOption
 {
@@ -45,10 +46,19 @@ public class ReportOption
         this.description = description;
         defaultValue = property.getValue();
 
+        Object[] optionChoices = null;
         if (property instanceof MultipleChoiceOption)
+            optionChoices = ((MultipleChoiceOption)property).getChoices();
+        else if (property instanceof AggregatorOption)
+        {
+            AggregatorOption aggregator = (AggregatorOption)property;
+            if (MultipleChoiceOption.class.isAssignableFrom(aggregator.getType()))
+                optionChoices = aggregator.getChoices();
+        }
+        if (optionChoices != null)
         {
             List<String> list = new ArrayList<String>();
-            for (Object choice : ((MultipleChoiceOption)property).getChoices())
+            for (Object choice : optionChoices)
             {
                 String choiceStr = choice.toString();
                 int i = choiceStr.lastIndexOf('.');

@@ -3,6 +3,7 @@ package genj.reportrunner;
 import genj.fo.Document;
 import genj.gedcom.Indi;
 import genj.report.Report;
+import genj.report.ReportLoader;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -21,10 +22,26 @@ import javassist.NotFoundException;
  * A report proxy overrides GUI methods to bypass user interaction.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportProxyFactory.java,v 1.2 2008-11-19 10:03:28 pewu Exp $
+ * @version $Id: ReportProxyFactory.java,v 1.3 2009-04-30 16:58:26 pewu Exp $
  */
 public class ReportProxyFactory
 {
+    private ClassPool pool;
+
+    public ReportProxyFactory()
+    {
+        pool = ClassPool.getDefault();
+        try
+        {
+            String reportDir = ReportLoader.getReportDirectory().toString();
+            pool.appendClassPath(reportDir);
+        }
+        catch (NotFoundException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
 	/**
 	 * Creates a proxy object for a given report.
@@ -80,7 +97,7 @@ public class ReportProxyFactory
             myclass.addMethod(m);
 
             @SuppressWarnings("unchecked")
-            Class<Report> cl = myclass.toClass();
+            Class<Report> cl = myclass.toClass(report.getClass().getClassLoader(), null);
             Report newReport = cl.newInstance();
 
             // Set proxy object field
