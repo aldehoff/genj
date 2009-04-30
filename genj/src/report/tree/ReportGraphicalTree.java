@@ -122,11 +122,15 @@ public class ReportGraphicalTree extends ComponentReport
 
         try {
             output.output(renderer);
+            output.display(this);
+        } catch (OutOfMemoryError e) {
+            println("ERROR! The report ran out of memory.\n");
+            println("You can try to do the following things:");
+            println("  * Increase the memory limit for GenJ");
+            println("  * Build a smaller tree");
+            println("  * Choose SVG output (requires the least memory)");
         } catch (IOException e) {
             println("Error generating output: " + e.getMessage());
-            return;
         }
-
-        output.display(this);
     }
 }
