@@ -8,6 +8,8 @@
 
 package tree.arrange;
 
+import genj.report.options.ComponentContainer;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -17,7 +19,6 @@ import java.util.Map;
 import tree.filter.FilterChain;
 import tree.filter.SameHeightSpouses;
 import tree.filter.TreeFilter;
-import tree.options.ComponentContainer;
 import tree.output.HorizontalLines;
 
 /**

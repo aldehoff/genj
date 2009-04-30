@@ -8,10 +8,11 @@
 
 package tree.output;
 
+import genj.report.options.ComponentContainer;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import tree.options.ComponentContainer;
 
 /**
  * Creates classes that generate individual and family boxes.

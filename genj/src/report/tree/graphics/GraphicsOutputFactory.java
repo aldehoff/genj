@@ -9,6 +9,7 @@
 package tree.graphics;
 
 import genj.report.Report;
+import genj.report.options.ComponentContainer;
 import genj.util.swing.Action2;
 
 import java.io.File;
@@ -17,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import tree.options.ComponentContainer;
 
 /**
  * Creates classes that write report output. This can be a file type or the screen.

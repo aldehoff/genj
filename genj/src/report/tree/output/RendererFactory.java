@@ -8,13 +8,14 @@
 
 package tree.output;
 
+import genj.report.options.ComponentContainer;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import tree.IndiBox;
 import tree.graphics.GraphicsRenderer;
 import tree.graphics.TitleRenderer;
-import tree.options.ComponentContainer;
 
 /**
  * Creates classes that render the tree to a graphics object.

@@ -9,6 +9,7 @@
 package tree;
 
 import genj.gedcom.Indi;
+import genj.report.options.ComponentReport;
 import genj.util.Registry;
 
 import java.io.IOException;
@@ -21,7 +22,6 @@ import tree.filter.TreeFilter;
 import tree.graphics.GraphicsOutput;
 import tree.graphics.GraphicsOutputFactory;
 import tree.graphics.GraphicsRenderer;
-import tree.options.ComponentReport;
 import tree.output.RendererFactory;
 import tree.output.TreeElements;
 import tree.output.TreeElementsFactory;

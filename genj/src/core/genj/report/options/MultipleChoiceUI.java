@@ -6,7 +6,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package tree.options;
+package genj.report.options;
 
 import genj.option.OptionUI;
 import genj.option.PropertyOption;
