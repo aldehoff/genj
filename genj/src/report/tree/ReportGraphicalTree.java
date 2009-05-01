@@ -9,10 +9,12 @@
 package tree;
 
 import genj.gedcom.Indi;
+import genj.option.PropertyOption;
 import genj.report.options.ComponentReport;
-import genj.util.Registry;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import tree.arrange.LayoutFactory;
 import tree.build.BasicTreeBuilder;
@@ -72,6 +74,10 @@ public class ReportGraphicalTree extends ComponentReport
      */
     private GraphicsOutputFactory outputs = new GraphicsOutputFactory();
 
+    /**
+     * Original option values for options that use variable replacing.
+     */
+    private Map<PropertyOption, Object> originalValues;
 
     public ReportGraphicalTree()
     {
@@ -99,7 +105,8 @@ public class ReportGraphicalTree extends ComponentReport
      */
     public void start(Indi indi) {
 
-        Registry properties = new Registry();
+        // Replace variables
+        replaceVariables(indi);
 
         // Build the tree
         IndiBox indibox = builder.build(indi);
@@ -117,8 +124,11 @@ public class ReportGraphicalTree extends ComponentReport
 
         // Render and display the tree
         GraphicsOutput output = outputs.createOutput(this);
-        if (output == null)
-            return; // Report cancelled
+        if (output == null)  // Report cancelled
+        {
+            restoreOptionValues();
+            return;
+        }
 
         try {
             output.output(renderer);
@@ -132,5 +142,37 @@ public class ReportGraphicalTree extends ComponentReport
         } catch (IOException e) {
             println("Error generating output: " + e.getMessage());
         }
+
+        // Restore option values (those with replaced variables)
+        restoreOptionValues();
+    }
+
+    /**
+     * @param indi
+     */
+    private void replaceVariables(Indi indi)
+    {
+        originalValues = new HashMap<PropertyOption, Object>();
+        for (PropertyOption option : getOptions())
+        {
+            if (option.getValue().getClass().equals(String.class))
+            {
+                String value = (String)option.getValue();
+                originalValues.put(option, value);
+
+                value = value.replaceAll("\\$i", indi.getId());
+                value = value.replaceAll("\\$n", indi.getName());
+                value = value.replaceAll("\\$f", indi.getFirstName());
+                value = value.replaceAll("\\$l", indi.getLastName());
+
+                option.setValue(value);
+            }
+        }
+    }
+
+    private void restoreOptionValues()
+    {
+        for (Map.Entry<PropertyOption, Object> entry : originalValues.entrySet())
+            entry.getKey().setValue(entry.getValue());
     }
 }
