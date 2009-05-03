@@ -1,6 +1,7 @@
 package genj.reportrunner;
 
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -23,11 +24,12 @@ import org.jvyaml.YAML;
  * Console application for running reports from the command line.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportRunner.java,v 1.1 2008-11-15 23:27:40 pewu Exp $
+ * @version $Id: ReportRunner.java,v 1.2 2009-05-03 19:38:57 pewu Exp $
  */
 public class ReportRunner
 {
 
+    private static final String REPORTS_HEADING = "reports";
     private static final String LANGUAGE_ARGUMENT = "language";
     private static final String CONFIG_ARGUMENT = "config";
     private static final String HELP_ARGUMENT = "help";
@@ -77,7 +79,9 @@ public class ReportRunner
         if (arguments.containsKey(ReportLauncher.INDIVIDUAL_OPTION))
         	defaults.put(ReportLauncher.INDIVIDUAL_OPTION, arguments.get(ReportLauncher.INDIVIDUAL_OPTION));
         if (arguments.containsKey(ReportLauncher.OUTPUT_OPTION))
-        	defaults.put(ReportLauncher.OUTPUT_OPTION, arguments.get(ReportLauncher.OUTPUT_OPTION));
+            defaults.put(ReportLauncher.OUTPUT_OPTION, arguments.get(ReportLauncher.OUTPUT_OPTION));
+        if (arguments.containsKey(ReportLauncher.OUTPUT_DIR_OPTION))
+            defaults.put(ReportLauncher.OUTPUT_DIR_OPTION, arguments.get(ReportLauncher.OUTPUT_DIR_OPTION));
 
         // Create list of reports to execute
         List<Map<String, String>> optionsList = getOptionsList(new FileReader(arguments.get(CONFIG_ARGUMENT)), defaults);
@@ -109,14 +113,14 @@ public class ReportRunner
     static List<Map<String, String>> getOptionsList(Object config, Map<String, String> defaults)
     {
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        if (config instanceof List)
+        if (config instanceof List) // list of reports or groups of reports
         {
             @SuppressWarnings("unchecked")
             List<Object> configList = (List<Object>)config;
             for (Object o : configList)
                 list.addAll(getOptionsList(o, defaults));
         }
-        else
+        else // options map
         {
         	Map<String, String> newDefaults = new HashMap<String, String>();
         	if (defaults != null)
@@ -128,10 +132,23 @@ public class ReportRunner
             Object reports = null;
             for (Map.Entry<Object, Object> entry : (configMap).entrySet())
             {
-            	if (entry.getKey().equals("reports"))
+            	if (entry.getKey().equals(REPORTS_HEADING)) // list of reports
             		reports = entry.getValue();
-            	else
-            		newDefaults.put(entry.getKey().toString(), entry.getValue().toString());
+            	else // report option
+            	{
+            	    String key = entry.getKey().toString();
+            	    String value = entry.getValue().toString();
+
+            	    // Build output directory from command line and config hierarchy
+            	    if (key.equals(ReportLauncher.OUTPUT_DIR_OPTION) || key.equals(ReportLauncher.OUTPUT_OPTION))
+            	    {
+                        String outputDir = newDefaults.get(ReportLauncher.OUTPUT_DIR_OPTION);
+                        if (outputDir != null && !(new File(value).isAbsolute()))
+                            value = new File(outputDir).getPath() + File.separatorChar + value;
+            	    }
+
+            		newDefaults.put(key, value);
+            	}
             }
             if (reports == null)
             	list.add(newDefaults);
@@ -187,11 +204,15 @@ public class ReportRunner
         cliOptions.addOption(opt);
 
         opt = new Option("i", ReportLauncher.INDIVIDUAL_OPTION, true, "Starting individual");
-        opt.setArgName("file");
+        opt.setArgName("indi");
         cliOptions.addOption(opt);
 
         opt = new Option("o", ReportLauncher.OUTPUT_OPTION, true, "Output file name");
         opt.setArgName("file");
+        cliOptions.addOption(opt);
+
+        opt = new Option("d", ReportLauncher.OUTPUT_DIR_OPTION, true, "Output directory");
+        opt.setArgName("dir");
         cliOptions.addOption(opt);
 
         opt = new Option("l", LANGUAGE_ARGUMENT, true, "Language");

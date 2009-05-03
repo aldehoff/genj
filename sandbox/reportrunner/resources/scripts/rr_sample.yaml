@@ -42,12 +42,14 @@ reports:
     output_type: pdf
     display_fambox: false
     draw_indi_ids: true
+    # A common output directory can be specified here
+    output-dir: rr_output
     reports:
     # One
-    - output: rr_output/tree2a.pdf
+    - output: tree2a.pdf
       title: Third report
       individual: I5
     # Two
-    - output: rr_output/tree2b.pdf
+    - output: tree2b.pdf
       title: Fourth report
       individual: I8

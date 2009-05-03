@@ -21,13 +21,14 @@ import java.util.regex.Pattern;
  * Runs a report based on a set of options.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportLauncher.java,v 1.4 2009-04-30 17:32:36 pewu Exp $
+ * @version $Id: ReportLauncher.java,v 1.5 2009-05-03 19:38:57 pewu Exp $
  */
 public class ReportLauncher
 {
     public static final String INDIVIDUAL_OPTION = "individual";
     public static final String FORMAT_OPTION = "format";
     public static final String OUTPUT_OPTION = "output";
+    public static final String OUTPUT_DIR_OPTION = "output-dir";
     public static final String REPORT_OPTION = "report";
     public static final String GEDCOM_OPTION = "gedcom";
 
@@ -92,7 +93,7 @@ public class ReportLauncher
                 proxy.setOutputFileName(entry.getValue());
             else if (key.equals(FORMAT_OPTION))
                 proxy.setOutputFormat(entry.getValue());
-            else if (!key.equals(REPORT_OPTION) && !key.equals(GEDCOM_OPTION) && !key.equals(INDIVIDUAL_OPTION))
+            else if (!key.equals(REPORT_OPTION) && !key.equals(GEDCOM_OPTION) && !key.equals(INDIVIDUAL_OPTION) && !key.equals(OUTPUT_DIR_OPTION))
                 proxy.setOption(key, entry.getValue());
         }
 
@@ -168,6 +169,11 @@ public class ReportLauncher
                 newOutput = newOutput.replaceAll("\\$l", indi.getLastName());
             }
             proxy.setOutputFileName(newOutput);
+
+            // Make sure all directories exist
+            File parentDir = new File(newOutput).getParentFile();
+            if (parentDir != null)
+                parentDir.mkdirs();
         }
 
         proxy.start(context);
