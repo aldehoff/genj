@@ -9,6 +9,7 @@
 package tree.output;
 
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 
 import tree.FamBox;
 import tree.IndiBox;
@@ -51,11 +52,12 @@ public class RotateTreeElements extends FilterTreeElements {
      * @param gen generation number
      */
     public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
+        AffineTransform transform = graphics.getTransform();
         transform(x, y, indibox.width, indibox.height);
         transpose(indibox);
         elements.drawIndiBox(indibox, 0, 0, gen);
         transpose(indibox);
-        transformBack(x, y, indibox.width, indibox.height);
+        graphics.setTransform(transform);
     }
 
     /**
@@ -66,11 +68,12 @@ public class RotateTreeElements extends FilterTreeElements {
      * @param gen generation number
      */
     public void drawFamBox(FamBox fambox, int x, int y, int gen) {
+        AffineTransform transform = graphics.getTransform();
         transform(x, y, fambox.width, fambox.height);
         transpose(fambox);
         elements.drawFamBox(fambox, 0, 0, gen);
         transpose(fambox);
-        transformBack(x, y, fambox.width, fambox.height);
+        graphics.setTransform(transform);
     }
 
 	/**
@@ -92,29 +95,6 @@ public class RotateTreeElements extends FilterTreeElements {
             case ROTATE_270:
                 graphics.translate(x + w, y);
                 graphics.rotate(Math.PI/2);
-                break;
-        }
-    }
-
-    /**
-     * Takes back the rotation transformation.
-     */
-    private void transformBack(int x, int y, int w, int h) {
-        switch (rotation) {
-            case ROTATE_0:
-                graphics.translate(-x, -y);
-                break;
-            case ROTATE_90:
-                graphics.rotate(Math.PI/2);
-                graphics.translate(-x, -y - h);
-                break;
-            case ROTATE_180:
-                graphics.rotate(-Math.PI);
-                graphics.translate(-x - w, -y - h);
-                break;
-            case ROTATE_270:
-                graphics.rotate(-Math.PI/2);
-                graphics.translate(-x - w, -y);
                 break;
         }
     }
