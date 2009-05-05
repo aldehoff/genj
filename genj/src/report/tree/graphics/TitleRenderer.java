@@ -70,20 +70,18 @@ public class TitleRenderer implements GraphicsRenderer
      */
     public void render(Graphics2D graphics)
     {
-        if (title.equals(""))
+        if (!title.equals(""))
         {
-            renderer.render(graphics);
-            return;
+            graphics.setBackground(Color.WHITE);
+            graphics.clearRect(0, 0, getImageWidth(), getImageHeight());
+
+            int height = getTitleHeight();
+            graphics.setColor(Color.BLACK);
+            graphics.setFont(new Font("verdana", Font.BOLD, height));
+            GraphicsTreeElements.centerString(graphics, title, getImageWidth() / 2, height * 3/4 + VERTICAL_MARGIN);
+
+            graphics.translate(0, height + VERTICAL_MARGIN); // Move rendered image below the title
         }
-        graphics.setBackground(Color.WHITE);
-        graphics.clearRect(0, 0, getImageWidth(), getImageHeight());
-
-        int height = getTitleHeight();
-        graphics.setColor(Color.BLACK);
-        graphics.setFont(new Font("verdana", Font.BOLD, height));
-        GraphicsTreeElements.centerString(graphics, title, getImageWidth() / 2, height * 3/4 + VERTICAL_MARGIN);
-
-        graphics.translate(0, height + VERTICAL_MARGIN); // Move rendered image below the title
         renderer.render(graphics);
     }
 }
