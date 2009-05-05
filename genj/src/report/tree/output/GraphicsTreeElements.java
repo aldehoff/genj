@@ -286,6 +286,11 @@ public class GraphicsTreeElements implements TreeElements {
      * @param gen generation number
      */
     public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
+
+        // Don't draw if it's not visible
+        if (!graphics.hitClip(x, y, indibox.width, indibox.height))
+            return;
+
         Indi i = indibox.individual;
 
         // Determine photo size
@@ -458,6 +463,11 @@ public class GraphicsTreeElements implements TreeElements {
      * @param gen generation number
      */
     public void drawFamBox(FamBox fambox, int x, int y, int gen) {
+
+        // Don't draw if it's not visible
+        if (!graphics.hitClip(x, y, fambox.width, fambox.height))
+            return;
+
         Fam f = fambox.family;
 
         Color color = getBoxColor(gen);
@@ -582,6 +592,14 @@ public class GraphicsTreeElements implements TreeElements {
     public static void centerString(Graphics2D graphics, String text, int x, int y) {
         int width = getTextWidth(text, graphics.getFont(), graphics);
         graphics.drawString(text, x - width / 2, y);
+    }
+
+    /**
+     * Outputs a string aligned right.
+     */
+    public static void alignRightString(Graphics2D graphics, String text, int x, int y) {
+        int width = getTextWidth(text, graphics.getFont(), graphics);
+        graphics.drawString(text, x - width, y);
     }
 
     private static int getTextWidth(String text, Font font, Graphics2D graphics) {

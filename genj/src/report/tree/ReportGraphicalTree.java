@@ -39,7 +39,7 @@ import tree.output.TreeElementsFactory;
  * Each of these steps can be separately customized.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version 0.23
+ * @version 0.24
  */
 public class ReportGraphicalTree extends ComponentReport
 {
@@ -48,6 +48,11 @@ public class ReportGraphicalTree extends ComponentReport
     private static final String RENDERER_CATEGORY = "renderer";
     private static final String LAYOUT_CATEGORY = "layout";
     private static final String BUILDER_CATEGORY = "builder";
+
+    /**
+     * Object used for translating strings.
+     */
+    private Translator translator = new Translator(this);;
 
     /**
      * Builds the tree structure.
@@ -67,7 +72,7 @@ public class ReportGraphicalTree extends ComponentReport
     /**
      * Draws the tree to an output.
      */
-    private RendererFactory renderers = new RendererFactory();
+    private RendererFactory renderers = new RendererFactory(translator);
 
     /**
      * Generates file or screen output.
