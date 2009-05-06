@@ -86,9 +86,12 @@ public class FooterRenderer implements GraphicsRenderer
             FindDateOfModification filter = new FindDateOfModification();
             filter.filter(firstIndi);
             displayDate = filter.mostRecent;
-            break;
+            if (displayDate != null)
+                break;
         case 2:
-            displayDate = firstIndi.individual.getGedcom().getLastChange().toString();
+            PropertyChange lastChange = firstIndi.individual.getGedcom().getLastChange();
+            if (lastChange != null)
+                displayDate = lastChange.toString();
             break;
         case 3:
             PropertyChange currentTime = new PropertyChange();
@@ -96,6 +99,8 @@ public class FooterRenderer implements GraphicsRenderer
             displayDate = currentTime.toString();
             break;
         }
+        if (displayDate == null)
+            displayDate = translator.translate("not_available");
     }
 
     public int getImageHeight()
@@ -146,6 +151,9 @@ public class FooterRenderer implements GraphicsRenderer
 
         private void checkDate(PropertyChange lastChange)
         {
+            if (lastChange == null)
+                return;
+
             long time = lastChange.getTime();
             if (time > mostRecentTime)
             {
