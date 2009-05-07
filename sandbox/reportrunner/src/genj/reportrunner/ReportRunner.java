@@ -1,14 +1,18 @@
 package genj.reportrunner;
 
-
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
@@ -24,7 +28,7 @@ import org.jvyaml.YAML;
  * Console application for running reports from the command line.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportRunner.java,v 1.2 2009-05-03 19:38:57 pewu Exp $
+ * @version $Id: ReportRunner.java,v 1.3 2009-05-07 09:58:36 pewu Exp $
  */
 public class ReportRunner
 {
@@ -43,6 +47,11 @@ public class ReportRunner
      */
     public static void main(String[] args) throws Exception
     {
+        // Change to our log formatter
+        Handler[] handlers = Logger.getLogger("").getHandlers();
+        if (handlers.length > 0)
+            handlers[0].setFormatter(new LogFormatter());
+
         Map<String, String> arguments = getOptions(args);
 
         String language = arguments.get(LANGUAGE_ARGUMENT);
@@ -227,5 +236,39 @@ public class ReportRunner
         opt.setOptionalArg(true);
         cliOptions.addOption(opt);
         return cliOptions;
+    }
+
+    /**
+     * Really simple log formatter.
+     */
+    private static class LogFormatter extends Formatter
+    {
+        static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+        public String format(LogRecord record)
+        {
+            StringBuilder result = new StringBuilder();
+            result.append(record.getLevel());
+            result.append(": ");
+            result.append(formatMessage(record));
+            result.append(LINE_SEPARATOR);
+
+            if (record.getThrown() != null)
+            {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                try
+                {
+                    record.getThrown().printStackTrace(pw);
+                }
+                catch (Throwable t)
+                {
+                }
+                pw.close();
+                result.append(sw.toString());
+            }
+
+            return result.toString();
+        }
     }
 }

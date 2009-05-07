@@ -1,5 +1,6 @@
 package genj.reportrunner;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.io.GedcomReader;
@@ -21,7 +22,7 @@ import java.util.regex.Pattern;
  * Runs a report based on a set of options.
  *
  * @author Przemek Wiech <pwiech@losthive.org>
- * @version $Id: ReportLauncher.java,v 1.5 2009-05-03 19:38:57 pewu Exp $
+ * @version $Id: ReportLauncher.java,v 1.6 2009-05-07 09:58:36 pewu Exp $
  */
 public class ReportLauncher
 {
@@ -114,8 +115,15 @@ public class ReportLauncher
         String indiId = options.get(INDIVIDUAL_OPTION);
         if (indiId != null && contexts.contains(Indi.class))
         {
-            if (indiId.matches("\\w*"))
+            if (indiId.matches("\\w*") && !indiId.equals("all"))
+            {
                 context = gedcom.getEntity(Gedcom.INDI, indiId);
+                if (context == null)
+                {
+                    ReportRunner.LOG.warning("Individual '" + indiId + "' not found");
+                    return;
+                }
+            }
             else
             {
                 contextList = new ArrayList<Object>();
@@ -133,6 +141,11 @@ public class ReportLauncher
                     if (pattern.matcher(indi.getId()).matches())
                         contextList.add(indi);
                 }
+                if (contextList.isEmpty())
+                {
+                    ReportRunner.LOG.warning("Regular expression '" + indiId + "' did not match any entities");
+                    return;
+                }
             }
         }
         else if (!contexts.contains(Gedcom.class))
@@ -140,9 +153,18 @@ public class ReportLauncher
 
         if (contextList != null)
         {
-            ReportRunner.LOG.info("Running report " + contextList.size() + " times: " + reportName);
+            int size = contextList.size();
+            ReportRunner.LOG.info("Running report " + size + " times: " + reportName);
+            int count = 0;
             for (Object o : contextList)
+            {
+                count++;
+                if (o instanceof Entity)
+                    ReportRunner.LOG.info("[" + count + "/" + size + "] " + ((Entity)o).getId());
+                else
+                    ReportRunner.LOG.info("[" + count + "/" + size + "]");
                 startReport(proxy, o);
+            }
         }
         else
             startReport(proxy, context);
@@ -155,7 +177,7 @@ public class ReportLauncher
      */
     private void startReport(ReportProxy proxy, Object context) throws ReportProxyException
     {
-        // TODO: Replace variables in output field
+        // Replace variables in output field
         String output = proxy.getOutputFileName();
         if (output != null)
         {
