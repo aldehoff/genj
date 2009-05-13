@@ -24,6 +24,7 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.RoundRectangle2D;
 
 import tree.FamBox;
@@ -77,6 +78,11 @@ public class GraphicsTreeElements implements TreeElements {
     private static final TagPath PATH_INDITITL = new TagPath("INDI:TITL");
     private static final TagPath PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC");
     private static final TagPath PATH_FAMDIVPLAC = new TagPath("FAM:DIV:PLAC");
+
+    /**
+     * Factor for scaling images to achieve higher quality in the PDF renderer.
+     */
+    private double IMAGE_SCALE_FACTOR = 4;
 
     /**
      * Used to determine text width.
@@ -228,6 +234,12 @@ public class GraphicsTreeElements implements TreeElements {
      * Whether to display images.
      */
     public boolean draw_images = true;
+
+    /**
+     * Whether to produce high quality images (photos) in PDF files.
+     * Note: Produced PDF files can be several times larger with this option enabled.
+     */
+    public boolean high_quality_images = false;
 
     /**
      * Whether to display sex symbols.
@@ -450,7 +462,21 @@ public class GraphicsTreeElements implements TreeElements {
 
         // Photo
         if(imageWidth > 0)
-            graphics.drawImage(icon.getImage(), x + dataWidth, y, imageWidth, imageHeight, null);
+        {
+            AffineTransform transform = null;
+            double scale = 1;
+            if (high_quality_images)
+            {
+                transform = graphics.getTransform();
+                graphics.scale(1/IMAGE_SCALE_FACTOR, 1/IMAGE_SCALE_FACTOR);
+                scale = IMAGE_SCALE_FACTOR;
+            }
+
+            graphics.drawImage(icon.getImage(), (int)(x + dataWidth*scale), (int)(y), (int)(imageWidth*scale), (int)(imageHeight*scale), null);
+
+            if (high_quality_images)
+                graphics.setTransform(transform);
+        }
 
         graphics.setClip(oldClip);
         graphics.draw(box);
