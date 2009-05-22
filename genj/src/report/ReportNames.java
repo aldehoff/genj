@@ -16,8 +16,9 @@ import genj.report.Report;
 
 /**
  * @author Carsten Muessig <carsten.muessig@gmx.net>
- * @version 1.02
- * @modified by Ekran
+ * @version $Revision: 1.3 $
+ * @modified by $Author: lukas0815 $, Ekran
+ * updated   = $Date: 2009-05-22 11:03:18 $
  */
 
 public class ReportNames extends Report {
@@ -171,7 +172,7 @@ public class ReportNames extends Report {
 			if (indi.getName().toLowerCase().matches(".*"+StrFilter+".*")) {
 				println(str);
 			}
-		}
+		} else
 
 		// filter in output line
 		if (reportFilterLine) {
