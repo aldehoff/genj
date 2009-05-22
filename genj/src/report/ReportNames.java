@@ -15,10 +15,10 @@ import genj.gedcom.TagPath;
 import genj.report.Report;
 
 /**
- * @author Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.3 $
+ * @author   = Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
+ * @version $Revision: 1.4 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-05-22 11:03:18 $
+ * updated   = $Date: 2009-05-22 13:34:58 $
  */
 
 public class ReportNames extends Report {
@@ -169,14 +169,14 @@ public class ReportNames extends Report {
 
 		// filter for name
 		if (reportFilterName) {
-			if (indi.getName().toLowerCase().matches(".*"+StrFilter+".*")) {
+			if (indi.getName().toLowerCase().matches(".*"+StrFilter.toLowerCase()+".*")) {
 				println(str);
 			}
 		} else
 
 		// filter in output line
 		if (reportFilterLine) {
-			if (str.toLowerCase().matches(".*"+StrFilter+".*")) {
+			if (str.toLowerCase().matches(".*"+StrFilter.toLowerCase()+".*")) {
 				println(str);
 			}
 		}
