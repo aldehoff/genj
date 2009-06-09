@@ -18,9 +18,9 @@ import genj.report.Report;
 
 /**
  * @author Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-05-22 12:19:33 $
+ * updated   = $Date: 2009-06-09 21:12:00 $
  */
 
 public class ReportFamilyTex extends Report {
@@ -55,7 +55,7 @@ public class ReportFamilyTex extends Report {
 		  println("\\usepackage[T1]{fontenc}");
 		  println("\\usepackage[latin1]{inputenc}");
 		  println("\\usepackage{float}" );
-		  println("\\usepackage{ngerman}");
+		  println("\\usepackage{ngerman} % or use: \\usepackage[francais]{babel}");
 		  println("\\usepackage[pdftex]{graphicx}");
 		  println("\\DeclareGraphicsExtensions{.jpg,.pdf,.png} % for pdflatex");
 		  println("\\usepackage{subfig} % for subfloat");
@@ -97,14 +97,14 @@ public class ReportFamilyTex extends Report {
 		  println("\n\\maketitle");
 		  println("\n\\section{Introduction}\nsome words ...");
 		  println("\nEin Inhaltsverzeichnis der Familien gibt es am Ende der Datei.");
-		  println("\n\\subsection{Symbolerkl�rung}");
-		  println("Zur Markierung verschiedener Ereignisse werden Symbole genutzt:\\\\");
-		  println("* - Geburt \\\\");
-		  println("println(- Tod \\\\");
-		  println("oo - Hochzeit \\\\");
-		  println("/ - Kind in Familie \\\\");
-		  println("\\lbrack \\rbrack - Taufe \\\\");
-		  println("\n\\section{Familien}");
+		  println("\n\\subsection{Used symbols}");
+		  println("The following symbols are used for the events:\\\\");
+		  println("* - Birth \\\\");
+		  println("+ - Death \\\\");
+		  println("oo - Marriage \\\\");
+		  println("/ - Child in Family\\\\");
+		  println("\\lbrack \\rbrack - Baptism \\\\");
+		  println("\n\\section{Families}");
 		  println("\n\n\\parindent0mm");
 	  }
 
@@ -137,13 +137,9 @@ public class ReportFamilyTex extends Report {
 	 * Function deletes or modify some characters which cause malfunction of tex
 	 */
     private String TexEncode(String str) {
-
-        str = str.replaceAll("[_]", " ");
-
+        str = str.replaceAll("[_]", "\\_");
         // str = str.replaceAll("\<_", " "); // \<_\([[:Alpha:]]*\)_\>
-
         str = str.replaceAll("[\"]", "\\grqq ");
-
         str = str.replaceAll("[&]", "\\\\& ");
         // soll Zeichen & ersetzen
         return str;
