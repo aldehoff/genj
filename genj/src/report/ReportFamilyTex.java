@@ -18,9 +18,9 @@ import genj.report.Report;
 
 /**
  * @author Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-06-09 21:12:00 $
+ * updated   = $Date: 2009-06-09 21:23:14 $
  */
 
 public class ReportFamilyTex extends Report {
@@ -137,7 +137,7 @@ public class ReportFamilyTex extends Report {
 	 * Function deletes or modify some characters which cause malfunction of tex
 	 */
     private String TexEncode(String str) {
-        str = str.replaceAll("[_]", "\\_");
+        str = str.replaceAll("[_]", " ");
         // str = str.replaceAll("\<_", " "); // \<_\([[:Alpha:]]*\)_\>
         str = str.replaceAll("[\"]", "\\grqq ");
         str = str.replaceAll("[&]", "\\\\& ");
@@ -262,7 +262,7 @@ public class ReportFamilyTex extends Report {
 		if(wife!=null)
 			str = str + (reportNumberIndi==true?wife:wife.getName());
 
-		return str;
+		return TexEncode(str);
 
 
 	}
