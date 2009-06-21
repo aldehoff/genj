@@ -261,6 +261,7 @@ public class ReportKML extends Report {
 	/** Writes the top level of a lineage section */
 	private void writeLineage(final String indent, final Indi indi)
 			throws IOException {
+		processedIndis.clear();
 		new FolderWriter(out, false, 1) {
 			public void writeContent(String indent) throws IOException {
 				writeLineage(indent, 1, indi, nrOfPrivateGenerations);
@@ -274,19 +275,29 @@ public class ReportKML extends Report {
 
 		if (indi == null)
 			return;
-		if (hide > 0)
+		if (hide > 0) {
 			writeLineageParents(indent, sosaNr, indi, hide);
-		else {
-			final Iterator<GeoLocation> locations = getLocations(indi,
-					hide == 0);
+			return;
+		}
+		
+		if (processedIndis.containsKey(indi)) {
 			new FolderWriter(out, false, 0) {
 				public void writeContent(String indent) throws IOException {
-					detailedPlacemarkWriter.write//
-							(indent, locations, labelForLocations, "", false);
-					writeLineageParents(indent, sosaNr, indi, hide);
 				}
-			}.write(indent, sosaNr + ": " + indi.toString(showIds), "");
+			}.write(indent, sosaNr + " = " + processedIndis.get(indi) + ": " + indi.toString(showIds), "");
+			return;
 		}
+		processedIndis.put(indi,sosaNr);
+		
+		final Iterator<GeoLocation> locations = getLocations(indi,
+				hide == 0);
+		new FolderWriter(out, false, 0) {
+			public void writeContent(String indent) throws IOException {
+				detailedPlacemarkWriter.write//
+						(indent, locations, labelForLocations, "", false);
+				writeLineageParents(indent, sosaNr, indi, hide);
+			}
+		}.write(indent, sosaNr + ": " + indi.toString(showIds), "");
 	}
 
 	/** Writes the next generation of a lineage section */

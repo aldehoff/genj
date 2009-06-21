@@ -17,7 +17,7 @@ public class CompactPlacemarkWriter extends PlacemarkWriter {
 		Iterator<String> it = names.keys();
 		while (it.hasNext()) {
 			String name = it.next();
-			out.write(indent + "\t" + name + "(" + names.getValue(name)
+			out.write(indent + "\t" + name + " (" + names.getValue(name)
 					+ ")<br>\n ");
 		}
 	}
