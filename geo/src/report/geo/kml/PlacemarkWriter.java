@@ -15,10 +15,13 @@ abstract class PlacemarkWriter extends KmlWriter{
 	= new DecimalFormat("##0.###", new DecimalFormatSymbols(Locale.US));
 
 	private final int folded;
+
+	private boolean showIds;
 	
-	PlacemarkWriter(Writer out, int folded) {
+	PlacemarkWriter(Writer out, int folded, boolean showIds) {
 		super(out);
 		this.folded = folded;
+		this.showIds = showIds;
 	}
 
 	public void write(final String indent, final Iterator<GeoLocation> locations,
@@ -47,7 +50,7 @@ abstract class PlacemarkWriter extends KmlWriter{
 				+ "<Placemark>" //
 				+ "<name>" + location.toString() + "</name>"
 				+ "<Snippet maxLines='1'/><description><![CDATA[\n");
-		writePlacemarkContent(indent + "\t", location);
+		writePlacemarkContent(indent + "\t", location, showIds);
 		out.write(indent + "]]></description><Point>" //
 				+ "<coordinates>" //
 				+ FORMAT.format(location.getX()) + "," //
@@ -55,6 +58,6 @@ abstract class PlacemarkWriter extends KmlWriter{
 				+ "</coordinates></Point></Placemark>\n");
 	}
 
-	protected abstract void writePlacemarkContent(String indent, GeoLocation location)
+	protected abstract void writePlacemarkContent(String indent, GeoLocation location, boolean showIds)
 			throws IOException;
 }

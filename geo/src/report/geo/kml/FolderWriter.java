@@ -16,7 +16,7 @@ public abstract class FolderWriter extends KmlWriter {
 	public void write(String indent, String name, String description)
 			throws IOException {
 		out.write(indent + "<Folder>" + "<name>" + name + "</name>"
-				+ properties + "\n");
+				+ description + properties + "\n");
 		writeContent(indent + "\t");
 		out.write("\n" + indent + "</Folder>\n");
 	}

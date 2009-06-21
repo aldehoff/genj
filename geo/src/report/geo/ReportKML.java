@@ -40,23 +40,30 @@ import geo.kml.*;
 /** This GenJ Report exports places for viewing online in Google Maps */
 public class ReportKML extends Report {
 
+	public boolean showIds = false;
 	public int nrOfPrivateGenerations = 1;
 
-	public String byFamilyDescription = "";
-	public String byFamilyName = translate("byFamily");
-	public String byGenerationDescription = "";
-	public String byGenerationName = translate("byGeneration");
-	public String byPlaceDescription = "";
-	public String byPlaceName = translate("byPlace");
-
-	public String reportDescription = translate("reportDefaultDescription");
 	public String reportName = translate("reportDefaultName", "{0}");
+	public String reportDescription = translate("reportDefaultDescription");
 
+	public String byPlaceName = translate("byPlace");
+	public String byPlaceDescription = "";
+	
+	public String byFamilyName = translate("byFamily");
+	public String byFamilyDescription = "";
+	
+	public String byGenerationName = translate("byGeneration");
+	public String byGenerationDescription = "";
 	public String labelForGeneration = translate("generationNr", new Object[] {
 			"{0}", "{1}" });
+
 	public String labelForLocations = translate("locationsDefaultLabel");
 
+	public String indiLink = translate("indiDefaultLink", "{0}");
+	public String famLink = translate("famDefaultLink", "{0}");
+
 	private Writer out;
+	private DetailedPlacemarkWriter detailedPlacemarkWriter;
 
 	/** we're not a stdout report */
 	public boolean usesStandardOut() {
@@ -74,13 +81,14 @@ public class ReportKML extends Report {
 		try {
 			out = new BufferedWriter(new OutputStreamWriter(
 					new FileOutputStream(kml), Charset.forName("UTF8")));
+			detailedPlacemarkWriter = new DetailedPlacemarkWriter(out, showIds, indiLink, famLink);
 			writeKML(indi);
 			out.close();
 		} catch (IOException e) {
 			getOptionFromUser(translate("ioerror", kml), OPTION_OK);
 			return;
 		}
-
+		
 		// let the user know
 		getOptionFromUser(translate("done", new String[] { kml.getName(),
 				kml.getName(), kml.getParent() }), OPTION_OK);
@@ -132,8 +140,8 @@ public class ReportKML extends Report {
 						+ "\t\t<Style id='radioFolder'><ListStyle><listItemType>radioFolder</listItemType></ListStyle></Style>\n"
 						+ "\t\t<styleUrl>#radioFolder</styleUrl>\n");
 		writeSosa("\t\t", indi);
-		writeLocations("\t\t", getLocations(ancestors));
 		writeLineage("\t\t", indi);
+		writeLocations("\t\t", getLocations(ancestors));
 		out.write("\t</Document>\n"//
 				+ "</kml>\n");
 	}
@@ -240,8 +248,8 @@ public class ReportKML extends Report {
 
 		// TODO sort locations alphabetically
 		Iterator<GeoLocation> iterator = locations.iterator();
-		new CompactPlacemarkWriter(out).write//
-				(indent, iterator, byPlaceName, byPlaceDescription, true);
+		new CompactPlacemarkWriter(out, showIds).write//
+				(indent, iterator, byPlaceName, byPlaceDescription, false);
 	}
 
 	/** Writes the top level of a lineage section */
@@ -267,11 +275,11 @@ public class ReportKML extends Report {
 					hide == 0);
 			new FolderWriter(out, false, 0) {
 				public void writeContent(String indent) throws IOException {
-					new DetailedPlacemarkWriter(out).write//
+					detailedPlacemarkWriter.write//
 							(indent, locations, labelForLocations, "", false);
 					writeLineageParents(indent, sosaNr, indi, hide);
 				}
-			}.write(indent, sosaNr + ": " + indi.toString(), "");
+			}.write(indent, sosaNr + ": " + indi.toString(showIds), "");
 		}
 	}
 
@@ -287,12 +295,12 @@ public class ReportKML extends Report {
 	private void writeSosaIndi(String indent, final int sosaNr,
 			final Indi indi, boolean showBirthOfChildren) throws IOException {
 
-		String folderName = sosaNr + ": " + indi;
+		String folderName = sosaNr + ": " + indi.toString(showIds);
 
 		Iterator<GeoLocation> locations = getLocations(indi,
 				showBirthOfChildren);
 		if (locations != null) {
-			new DetailedPlacemarkWriter(out).write //
+			detailedPlacemarkWriter.write //
 					(indent, locations, folderName, "", false);
 		} else {
 			new FolderWriter(out, false, 1) {
