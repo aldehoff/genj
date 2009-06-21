@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import geo.kml.*;
 
@@ -191,7 +192,7 @@ public class ReportKML extends Report {
 	private void writeSosa(final String indent, final Indi indi)
 			throws IOException {
 
-		final Map<Integer, Indi> sosaIndis = new HashMap<Integer, Indi>();
+		final Map<Integer, Indi> sosaIndis = new TreeMap<Integer, Indi>();
 		final int privateSosa = calc();
 		sosaIndis.put(1, indi);
 		final FolderWriter folderWriter = new FolderWriter(out, false, 0) {
@@ -225,22 +226,27 @@ public class ReportKML extends Report {
 			privateSosa *= 2;
 		return privateSosa - 1;
 	}
-
+	
+	HashMap<Indi, Integer> processedIndis = new HashMap<Indi, Integer>();
+	
 	private void nextGeneration(final Map<Integer, Indi> sosaIndis) {
-		Map<Integer, Indi> ancestors = new HashMap<Integer, Indi>();
+		Map<Integer, Indi> ancestors = new TreeMap<Integer, Indi>();
 		Iterator<Integer> it = sosaIndis.keySet().iterator();
 		while (it.hasNext()) {
 			final int sosaNr = it.next();
 			final Indi indi = sosaIndis.get(sosaNr);
-			Indi father = indi.getBiologicalFather();
-			if (father != null)
-				ancestors.put(sosaNr * 2, father);
-			Indi mother = indi.getBiologicalMother();
-			if (mother != null)
-				ancestors.put(sosaNr * 2 + 1, mother);
+			addParent(ancestors, indi.getBiologicalFather(), sosaNr * 2);
+			addParent(ancestors, indi.getBiologicalMother(), sosaNr * 2 + 1);
 		}
 		sosaIndis.clear();
 		sosaIndis.putAll(ancestors);
+	}
+
+	private void addParent(Map<Integer, Indi> ancestors, Indi parent, int sosaNr) {
+		if (parent != null && ! processedIndis.containsKey(parent)) {
+			processedIndis.put(parent,sosaNr);
+			ancestors.put(sosaNr, parent);
+		}
 	}
 
 	private void writeLocations(final String indent,
