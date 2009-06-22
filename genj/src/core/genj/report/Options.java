@@ -17,10 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.15 $ $Author: nmeier $ $Date: 2009-04-22 20:26:34 $
+ * $Revision: 1.16 $ $Author: nmeier $ $Date: 2009-06-22 18:48:59 $
  */
 package genj.report;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.PrivacyPolicy;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
@@ -186,6 +187,31 @@ public class Options extends OptionProvider {
     
     public void setChildOfSymbol(String set) {
        childOfSymbol  = trim(set, "/");
+    }
+    
+    public String getSymbol(String tag) {
+      if ("BIRT".equals(tag))
+        return getBirthSymbol();
+      if ("BAPM".equals(tag))
+        return getBaptismSymbol();
+      if ("ENGA".equals(tag))
+        return getEngagingSymbol();
+      if ("MARR".equals(tag))
+        return getMarriageSymbol();
+      if ("DIV".equals(tag))
+        return getDivorceSymbol();
+      if ("DEAT".equals(tag))
+        return getDeathSymbol();
+      if ("BURI".equals(tag))
+        return getBurialSymbol();
+      if ("OCCU".equals(tag))
+        return getOccuSymbol();
+      if ("RESI".equals(tag))
+        return getResiSymbol();
+      if ("FAMC".equals(tag))
+        return getChildOfSymbol();
+      
+      return Gedcom.getName(tag);
     }
     
     /**
