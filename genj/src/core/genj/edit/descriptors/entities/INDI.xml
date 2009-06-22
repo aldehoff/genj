@@ -12,8 +12,10 @@
   </col>
   <col>
    <row><label path="INDI:OBJE"/></row>
-   <row><label path="INDI:OBJE:TITL"/><bean path="INDI:OBJE:TITL" wx="1"/></row>
-   <row><bean path="INDI:OBJE:FILE" wx="1" wy="0.5"/></row>
+   <row><label path="INDI:OBJE:TITL" ifnot="INDI:OBJE:*"/><bean path="INDI:OBJE:TITL" wx="1" ifnot="INDI:OBJE:*"/></row>
+   <row><bean path="INDI:OBJE:FILE" wx="1" wy="0.5" ifnot="INDI:OBJE:*"/></row>
+   <row><label path="INDI:OBJE:TITL" if ="INDI:OBJE:*:..:FILE:TITL"/><bean path="INDI:OBJE:*:..:FILE:TITL" wx="1" if="INDI:OBJE:*:..:FILE:TITL"/></row>
+   <row><bean path="INDI:OBJE:*:..:FILE" wx="1" wy="0.5" if="INDI:OBJE:*:..:FILE"/></row>
   </col>
  </row>
  <row><label path="INDI:FAMS"/></row>

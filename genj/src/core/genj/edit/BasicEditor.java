@@ -649,7 +649,11 @@ import spin.Spin;
       MetaProperty meta = root.getMetaProperty().getNestedRecursively(path, false);
       
       // conditional?
-      if (cell.getAttribute("ifexists")!=null&&root.getProperty(path)==null)
+      String iff = cell.getAttribute("if"); 
+      if (iff!=null&&root.getProperty(new TagPath(iff))==null)
+          return null;
+      String ifnot = cell.getAttribute("ifnot"); 
+      if (ifnot!=null&&root.getProperty(new TagPath(ifnot))!=null)
           return null;
       
       // a label?
