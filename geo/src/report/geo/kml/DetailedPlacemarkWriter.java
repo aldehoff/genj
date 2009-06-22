@@ -7,6 +7,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.geo.GeoLocation;
+import genj.report.Options;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -31,8 +32,8 @@ public class DetailedPlacemarkWriter extends PlacemarkWriter {
 			out.write(indent);
 			addDate(prop);
 			
-			// TODO optionally allow abbreviation
-			out.write(Gedcom.getName(prop.getTag()));
+			// TODO make usage of abbreviations optional
+			out.write(Options.getInstance().getSymbol(prop.getTag()));
 			
 			// TODO add links for individuals in marriage
 			out.write(" " + entity.toString(showIds));
