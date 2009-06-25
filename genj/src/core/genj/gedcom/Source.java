@@ -31,7 +31,7 @@ public class Source extends Entity {
   /**
    * Title ...
    */
-  protected String getToStringPrefix(boolean hideIds) {
+  protected String getToStringPrefix(boolean hideIds, boolean showAsLink) {
     return getTitle();
   }
   

@@ -284,7 +284,7 @@ public class ReportKML extends Report {
 			new FolderWriter(out, false, 0) {
 				public void writeContent(String indent) throws IOException {
 				}
-			}.write(indent, sosaNr + " = " + processedIndis.get(indi) + ": " + indi.toString(showIds), "");
+			}.write(indent, sosaNr + " = " + processedIndis.get(indi) + ": " + indi.toString(showIds,false), "");
 			return;
 		}
 		processedIndis.put(indi,sosaNr);
@@ -297,7 +297,7 @@ public class ReportKML extends Report {
 						(indent, locations, labelForLocations, "", false);
 				writeLineageParents(indent, sosaNr, indi, hide);
 			}
-		}.write(indent, sosaNr + ": " + indi.toString(showIds), "");
+		}.write(indent, sosaNr + ": " + indi.toString(showIds,false), "");
 	}
 
 	/** Writes the next generation of a lineage section */
@@ -312,7 +312,7 @@ public class ReportKML extends Report {
 	private void writeSosaIndi(String indent, final int sosaNr,
 			final Indi indi, boolean showBirthOfChildren) throws IOException {
 
-		String folderName = sosaNr + ": " + indi.toString(showIds);
+		String folderName = sosaNr + ": " + indi.toString(showIds,false);
 
 		Iterator<GeoLocation> locations = getLocations(indi,
 				showBirthOfChildren);

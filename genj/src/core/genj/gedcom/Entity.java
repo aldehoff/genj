@@ -19,6 +19,10 @@
  */
 package genj.gedcom;
 
+import java.text.MessageFormat;
+
+import genj.util.Resources;
+
 
 /**
  * Abstract base type for all Entities - don't make abstract since we actually
@@ -127,24 +131,34 @@ public class Entity extends Property {
    * @see genj.gedcom.Property#toString()
    */
   public final String toString() {
-    return toString(true);
+    return toString(true, false);
   }
   
-  public final String toString(boolean showIds) {
+  public final String toString(boolean showIds, boolean showAsLink) {
     
     StringBuffer buf = new StringBuffer();
-    buf.append(getToStringPrefix(showIds));
+    buf.append(getToStringPrefix(showIds, showAsLink));
     if (buf.length()==0)
       buf.append(getTag());
     if (showIds) {
       buf.append(" (");
-      buf.append(getId());
+      String linkToId = getIdLinkFormat();
+   if (showAsLink && ! linkToId.equals("")) {
+  MessageFormat fmt = Resources.getMessageFormat(linkToId);
+  buf.append(fmt.format(new String[]{""+getId()}));
+   }else {
+        buf.append(getId());
+   }
       buf.append(')');
     }
     return buf.toString();
   }
 
-  protected String getToStringPrefix(boolean showIds) {
+  protected String getIdLinkFormat() {
+ return genj.report.Options.getInstance().getLinkToId();
+  }
+
+  protected String getToStringPrefix(boolean showIds, boolean showAsLink) {
     return getTag();
   }
   

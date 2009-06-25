@@ -125,7 +125,7 @@ public class ReportSummaryOfRecords extends Report {
     println(translate("exporting", ent.toString() ));
 
     // start a new section
-    doc.startSection( ent.toString(this.includeIds), ent );
+    doc.startSection( ent.toString(this.includeIds, false), ent );
 
     // start a table for the entity
     doc.startTable("width=100%");
@@ -222,7 +222,7 @@ public class ReportSummaryOfRecords extends Report {
 
       PropertyXRef xref = (PropertyXRef)prop;
       Entity ent = xref.getTargetEntity();
-      doc.addLink(ent.toString(includeIds), ent);
+      doc.addLink(ent.toString(includeIds, false), ent);
 
       // done
       return;

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.16 $ $Author: nmeier $ $Date: 2009-06-22 18:48:59 $
+ * $Revision: 1.17 $ $Author: jo_pol $ $Date: 2009-06-25 17:01:30 $
  */
 package genj.report;
 
@@ -80,7 +80,10 @@ public class Options extends OptionProvider {
     
     /** number of years an event is private */
     public int yearsEventsArePrivate = 0; 
-    
+
+    private String linkToId      = "(<a href='index.html#{0}'>{0}</a>)";
+    private String linkToFam     = "";
+        
     private String trim(String symbol, String fallback) {
       if (symbol==null)
         return fallback;
@@ -242,5 +245,21 @@ public class Options extends OptionProvider {
     public static Options getInstance() {
         return instance;
     }
-    
+
+ public void setLinkToId(String linkToIndi) {
+  this.linkToId = linkToIndi;
+ }
+
+ public String getLinkToId() {
+  return linkToId;
+ }
+
+ public void setLinkToFam(String linkToFam) {
+  this.linkToFam = linkToFam;
+ }
+
+ public String getLinkToFam() {
+  return linkToFam;
+ }
+
 } //Options

@@ -334,19 +334,19 @@ public class Fam extends Entity {
   /**
    * Meier, Magdalene (I1) & Meier, Lars (I2) ...
    */
-  protected String getToStringPrefix(boolean showIds) {
+  protected String getToStringPrefix(boolean showIds, boolean showAsLink) {
     
     StringBuffer result = new StringBuffer();
 
     Indi husband = getHusband();
     if (husband!=null) {
-      result.append(husband.toString(showIds));
+      result.append(husband.toString(showIds, showAsLink));
       result.append(Options.getInstance().getTxtMarriageSymbol());
     }
     
     Indi wife = getWife();
     if (wife!=null) {
-      result.append(wife.toString(showIds));
+      result.append(wife.toString(showIds, showAsLink));
     }
 
     // Done
@@ -403,4 +403,9 @@ public class Fam extends Entity {
       
   }
   
+  protected String getIdLinkFormat() {
+ return genj.report.Options.getInstance().getLinkToFam();
+  }
+
+
 } //Fam
