@@ -18,11 +18,13 @@ import genj.report.Report;
 
 /**
  * @author Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-06-09 21:23:14 $
+ * updated   = $Date: 2009-07-07 20:38:27 $
  */
-
+/*
+ * ToDo: rework the conversation of special characters for LaTeX output in TexEncode()
+ */
 public class ReportFamilyTex extends Report {
 
     public boolean reportParents = true;
@@ -96,7 +98,6 @@ public class ReportFamilyTex extends Report {
 		  println("\\date{ \\today }\n\n\\restylefloat{figure}");
 		  println("\n\\maketitle");
 		  println("\n\\section{Introduction}\nsome words ...");
-		  println("\nEin Inhaltsverzeichnis der Familien gibt es am Ende der Datei.");
 		  println("\n\\subsection{Used symbols}");
 		  println("The following symbols are used for the events:\\\\");
 		  println("* - Birth \\\\");
@@ -137,12 +138,50 @@ public class ReportFamilyTex extends Report {
 	 * Function deletes or modify some characters which cause malfunction of tex
 	 */
     private String TexEncode(String str) {
-        str = str.replaceAll("[_]", " ");
-        // str = str.replaceAll("\<_", " "); // \<_\([[:Alpha:]]*\)_\>
-        str = str.replaceAll("[\"]", "\\grqq ");
-        str = str.replaceAll("[&]", "\\\\& ");
-        // soll Zeichen & ersetzen
-        return str;
+    	// discussed at http://genj.sourceforge.net/forum/viewtopic.php?p=5841
+    	// replace characters acording to 
+    	// http://www.ctan.org/tex-archive/info/symbols/comprehensive/symbols-a4.pdf
+    	// Attention: to get a singel \ in the tex mode, you must follow 
+    	// the string convetions and write \\  ('\' is used as escape for special
+    	// characters like \n, \t, \r, ...
+    	// within string: \ --> \\
+    	//                " --> \"
+    	String out;
+    	
+    	// 
+    	// working:
+    	out = str.replaceAll("[%]", "\\\\%");
+    	out = out.replaceAll("[_]", "\\\\_");
+    	out = out.replaceAll("[{]", "\\\\{");
+    	out = out.replaceAll("[}]", "\\\\}");
+        out = out.replaceAll("[#]", "\\\\#");
+        out = out.replaceAll("[&]", "\\\\&");
+        out = out.replaceAll("[\"]", "\\\\grqq");
+        
+        // not working / tested
+        // out = out.replaceAll("\\$", "\\\\$"); // why not?
+        // out = out.replaceAll("\\", "\\\\");
+        
+         
+         /*
+    	out = out.replaceAll("[�]", "\\\\\"{a}");
+    	out = out.replaceAll("[�]", "\\\\\"{o}");
+    	out = out.replaceAll("[�]", "\\\\\"{u}");
+    	out = out.replaceAll("[�]", "\\\\\"{A}");
+    	out = out.replaceAll("[�]", "\\\\\"{O}");
+    	out = out.replaceAll("[�]", "\\\\\"{U}");
+    	out = out.replaceAll("[�]", "\\\\\"{a}");
+    	*/
+    	
+    	// out = out.replaceAll("[�]", "\\\\\`{e}");
+    	// out = out.replaceAll("[�]", "\\\\\'{e}");
+    	
+    	
+        // out = out.replaceAll("\<_", " "); // \<_\([[:Alpha:]]*\)_\>
+        
+        
+        // 
+        return out;
     }
 
 	/**
@@ -166,9 +205,11 @@ public class ReportFamilyTex extends Report {
 		String str = "";
 
 		for(int n = 0; n < f.getProperties("NOTE").length; n++) {
-			str += "\\NoteFam{"+trim(f.getProperties("NOTE")[n])+"}";
+			str += "\\NoteFam{";
+			str += TexEncode(trim(f.getProperties("NOTE")[n]));
+			str += "}";
 		}
-        return TexEncode(str);
+        return str;
     }
 
 	/**
@@ -182,10 +223,10 @@ public class ReportFamilyTex extends Report {
 			str += trim(i.getProperty(new TagPath("INDI:BIRT:NOTE")));
 			if (str.length() <1)
 				return "";
-			str = "\\NoteBirth{"+ str +"}";
+			str = "\\NoteBirth{"+ TexEncode(str) +"}";
 		// }
 
-        return TexEncode(str);
+        return str;
     }
 
 	/**
@@ -199,9 +240,9 @@ public class ReportFamilyTex extends Report {
 			str += trim(i.getProperty(new TagPath("INDI:DEAT:NOTE")));
 			if (str.length() <1)
 				return "";
-			str = "\\NoteDeath{"+ str +"}";
+			str = "\\NoteDeath{"+ TexEncode(str) +"}";
 		// }
-        return TexEncode(str);
+        return str;
     }
 
 
@@ -224,15 +265,15 @@ public class ReportFamilyTex extends Report {
 			str = str + " (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})";
 		// str = str + (reportPages==false?"":"; (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})")+"}"; // Link zu Familie geht �ber gesamte Namen oder nur �ber Fxx Nummer
 		str += "}";
-        return TexEncode(str);
+        return str;
     }
 
 	/**
 	 * Function prints the names of husband and wife as subsection
 	 */
     private String familyToStringSubsection(Fam f) {
-        Indi husband = f.getHusband(), wife = f.getWife();
-
+        // ToDo: TexEncode(str)
+    	Indi husband = f.getHusband(), wife = f.getWife();
 
         String str = "\\leftskip=0mm \\subsection{"+(reportNumberFamilies==true?f.getId()+" ":"");
         // str += f.getId()+" ";
@@ -244,7 +285,7 @@ public class ReportFamilyTex extends Report {
             str = str + (reportNumberIndi==true?wife:wife.getName());
 
         str += "} \n\\hypertarget{"+f.getId()+"}{}\n\\label{"+f.getId()+"}";
-        return TexEncode(str);
+        return str;
     }
 
 	/**
@@ -252,6 +293,7 @@ public class ReportFamilyTex extends Report {
 	 */
 
 	private String familyImageCaption(Fam f) {
+        // ToDo: TexEncode(str)
 		String str = "\n";
 		Indi husband = f.getHusband(), wife = f.getWife();
 		str += "Stammbaum der Famile "+(reportNumberFamilies==true?f.getId()+" ":"");
@@ -262,7 +304,7 @@ public class ReportFamilyTex extends Report {
 		if(wife!=null)
 			str = str + (reportNumberIndi==true?wife:wife.getName());
 
-		return TexEncode(str);
+		return str;
 
 
 	}
@@ -272,6 +314,7 @@ public class ReportFamilyTex extends Report {
 	 * Function prints the picture for each family
 	 */
 	private String familyImage(Fam f) {
+        // ToDo: TexEncode(str)
 		// Indi husband = f.getHusband();
 		Indi husband = f.getHusband(), wife = f.getWife();
 		// str += "} \n\\hypertarget{"+f.getId()+"}{}\n\\label{"+f.getId()+"}";
@@ -290,7 +333,7 @@ public class ReportFamilyTex extends Report {
 		str += "\\Bild{Bild_"+husband.getId()+"}{"+husband.getId()+".pdf}{" + familyImageCaption(f) + "}}\n";
 		// str += "\\Bild{Bild_"+wife.getId()+"}{"+wife.getId()+".pdf}{" + familyImageCaption(f) + "}}\n";
 	}
-        return TexEncode(str);
+        return str;
 	}
 
 	/**
@@ -301,11 +344,11 @@ public class ReportFamilyTex extends Report {
 		str += familyToStringSubsection(f);
 		if (reportFamiliyImage == true) {str += familyImage(f);}
 
-		println(TexEncode(str));
+		println(str);
 
 		str = getIndentTex(1)+familyToString(f);
         if(reportNoteFam) { str += familyNote(f); }
-		println(TexEncode(str +"\\par"));
+		println(str +"\\par");
 
         if( (trim(f.getMarriageDate()).length()>0) || (trim(f.getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0) )
             println(getIndentTex(1)+OPTIONS.getMarriageSymbol()+" "+trim(f.getMarriageDate())+" "+trim(f.getProperty(new TagPath("FAM:MARR:PLAC")))+"\\par");
