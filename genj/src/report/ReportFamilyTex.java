@@ -18,13 +18,11 @@ import genj.report.Report;
 
 /**
  * @author Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-07-07 20:38:27 $
+ * updated   = $Date: 2009-07-08 21:22:05 $
  */
-/*
- * ToDo: rework the conversation of special characters for LaTeX output in TexEncode()
- */
+
 public class ReportFamilyTex extends Report {
 
     public boolean reportParents = true;
@@ -150,32 +148,38 @@ public class ReportFamilyTex extends Report {
     	
     	// 
     	// working:
+    	// special characters
     	out = str.replaceAll("[%]", "\\\\%");
     	out = out.replaceAll("[_]", "\\\\_");
     	out = out.replaceAll("[{]", "\\\\{");
     	out = out.replaceAll("[}]", "\\\\}");
         out = out.replaceAll("[#]", "\\\\#");
         out = out.replaceAll("[&]", "\\\\&");
-        out = out.replaceAll("[\"]", "\\\\grqq");
-        
+        out = out.replaceAll("<", "\\\\textless");
+    	out = out.replaceAll(">", "\\\\textgreater");
+
+        // german
+        out = out.replaceAll("\u00DF", "\\\\ss");
+    	out = out.replaceAll("\u00c4", "\\\\\"{A}");
+    	out = out.replaceAll("\u00d6", "\\\\\"{O}");
+    	out = out.replaceAll("\u00dc", "\\\\\"{U}");
+    	out = out.replaceAll("\u00e4", "\\\\\"{a}");
+    	out = out.replaceAll("\u00f6", "\\\\\"{o}");
+    	out = out.replaceAll("\u00fc", "\\\\\"{u}");
+    	
+
+    	
+    	out = out.replaceAll("\u00E8", "\\\\`{e}");
+    	out = out.replaceAll("\u00e9", "\\\\'{e}");
+    	
+    	
         // not working / tested
-        // out = out.replaceAll("\\$", "\\\\$"); // why not?
+    	
+    	
+    	// out = out.replaceAll("[\"]", "\\\\grqq");
+        // out = out.replaceAll("\\$", "\\\\$"); 
         // out = out.replaceAll("\\", "\\\\");
-        
-         
-         /*
-    	out = out.replaceAll("[�]", "\\\\\"{a}");
-    	out = out.replaceAll("[�]", "\\\\\"{o}");
-    	out = out.replaceAll("[�]", "\\\\\"{u}");
-    	out = out.replaceAll("[�]", "\\\\\"{A}");
-    	out = out.replaceAll("[�]", "\\\\\"{O}");
-    	out = out.replaceAll("[�]", "\\\\\"{U}");
-    	out = out.replaceAll("[�]", "\\\\\"{a}");
-    	*/
-    	
-    	// out = out.replaceAll("[�]", "\\\\\`{e}");
-    	// out = out.replaceAll("[�]", "\\\\\'{e}");
-    	
+            	
     	
         // out = out.replaceAll("\<_", " "); // \<_\([[:Alpha:]]*\)_\>
         
@@ -263,7 +267,7 @@ public class ReportFamilyTex extends Report {
 
 		if (reportPages)
 			str = str + " (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})";
-		// str = str + (reportPages==false?"":"; (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})")+"}"; // Link zu Familie geht �ber gesamte Namen oder nur �ber Fxx Nummer
+		// str = str + (reportPages==false?"":"; (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})")+"}"; // Link zu Familie geht ï¿½ber gesamte Namen oder nur ï¿½ber Fxx Nummer
 		str += "}";
         return str;
     }
@@ -318,7 +322,7 @@ public class ReportFamilyTex extends Report {
 		// Indi husband = f.getHusband();
 		Indi husband = f.getHusband(), wife = f.getWife();
 		// str += "} \n\\hypertarget{"+f.getId()+"}{}\n\\label{"+f.getId()+"}";
-		// \Bild{bild060}{./Schreiter-Bild-060.jpg}{Testunterschrift f�r Bild 60}
+		// \Bild{bild060}{./Schreiter-Bild-060.jpg}{Testunterschrift fï¿½r Bild 60}
 		String str = "\n";
 
 		if(husband!=null){
