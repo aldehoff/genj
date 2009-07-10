@@ -18,9 +18,9 @@ import genj.report.Report;
 
 /**
  * @author Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-07-08 21:22:05 $
+ * updated   = $Date: 2009-07-10 21:39:20 $
  */
 
 public class ReportFamilyTex extends Report {
@@ -55,7 +55,7 @@ public class ReportFamilyTex extends Report {
 		  println("\\usepackage[T1]{fontenc}");
 		  println("\\usepackage[latin1]{inputenc}");
 		  println("\\usepackage{float}" );
-		  println("\\usepackage{ngerman} % or use: \\usepackage[francais]{babel}");
+		  println("%\\usepackage{ngerman} % or use: \\usepackage[francais]{babel}");
 		  println("\\usepackage[pdftex]{graphicx}");
 		  println("\\DeclareGraphicsExtensions{.jpg,.pdf,.png} % for pdflatex");
 		  println("\\usepackage{subfig} % for subfloat");
@@ -85,8 +85,8 @@ public class ReportFamilyTex extends Report {
 		  println("\\newcommand{ \\NoteDeath }[1]{, Notiz: #1  }");
 		  println("\n%\\newcommand{ \\NoteIndi  }[1]{ \\footnote{ #1 } }");
 		  println("\\newcommand{ \\NoteIndi  }[1]{ \\\\ \\leftskip=12mm Notiz: #1 }");
-		  println("\n\\newcommand{ \\NoteFam   }[1]{ \\\\ \\leftskip=0mm Notiz zur Familie: #1 }");
-		  println("% \\newcommand{ \\NoteFam   }[1]{ \\footnote{ #1 } }");
+		  println("\n% \\newcommand{ \\NoteFam   }[1]{ \\\\ \\leftskip=0mm Notiz zur Familie: #1 } \\par");
+		  println("\\newcommand{ \\NoteFam   }[1]{ \\footnote{ #1 } }");
 		  println("\n%\\newcommand{\\zeile}[2]{\\hspace*{#1}\\begin{minipage}[t]{\\textwidth} #2 \\end{minipage}\\\\}");
 		  println("\n\\begin{document}");
 		  println("");
@@ -149,43 +149,79 @@ public class ReportFamilyTex extends Report {
     	// 
     	// working:
     	// special characters
-    	out = str.replaceAll("[%]", "\\\\%");
-    	out = out.replaceAll("[_]", "\\\\_");
+    	out = str.replaceAll("[\\\\]", "\\\\textbackslash");		// very first becaus all other command add some '\'
+    	out = out.replaceAll("[%]", "\\\\%");
     	out = out.replaceAll("[{]", "\\\\{");
-    	out = out.replaceAll("[}]", "\\\\}");
+    	out = out.replaceAll("[}]", "\\\\}"); 
+    	out = out.replaceAll("\\\u005B", "\\\\[");				// [
+    	out = out.replaceAll("\\\u005D", "\\\\]");    				// ]
+    	// out = out.replaceAll("[\"]", "\\\\grqq{}"); // have to be befor any \"{a} ... 
+    	out = out.replaceAll("[_]", "\\\\_");
         out = out.replaceAll("[#]", "\\\\#");
         out = out.replaceAll("[&]", "\\\\&");
-        out = out.replaceAll("<", "\\\\textless");
-    	out = out.replaceAll(">", "\\\\textgreater");
+        out = out.replaceAll("<", "\\\\textless{}");
+    	out = out.replaceAll(">", "\\\\textgreater{}");
+    	out = out.replaceAll("\u00A7", "\\\\S");	// §
+    	out = out.replaceAll("(\\$)", "\\\\\\$");  // $
 
         // german
-        out = out.replaceAll("\u00DF", "\\\\ss");
+        out = out.replaceAll("\u00DF", "\\\\ss{}");
     	out = out.replaceAll("\u00c4", "\\\\\"{A}");
     	out = out.replaceAll("\u00d6", "\\\\\"{O}");
     	out = out.replaceAll("\u00dc", "\\\\\"{U}");
     	out = out.replaceAll("\u00e4", "\\\\\"{a}");
     	out = out.replaceAll("\u00f6", "\\\\\"{o}");
     	out = out.replaceAll("\u00fc", "\\\\\"{u}");
+  	
+
+    	// France
+    	// http://www.uni-koeln.de/themen/fremdsprachig/franzosisch.html
+    	// http://www.wer-weiss-was.de/theme46/article3401656.html
+    	out = out.replaceAll("\u00E8", "\\\\`{e}");		// è
+    	out = out.replaceAll("\u00e9", "\\\\'{e}");		// é
+    	
+    	// not working / tested
+    	out = out.replaceAll("\u00EA", "\\\\k{e}");	// ê
+    	out = out.replaceAll("\u00EB", "\\\\\"{e}");	// ë
+    	out = out.replaceAll("\u00C9", "\\\\'{E}");	// É
+    	
+       	out = out.replaceAll("\u00E2", "\\\\^{a}");	// â
+    	out = out.replaceAll("\u00E1", "\\\\'{a}");	// á
+    	out = out.replaceAll("\u00E0", "\\\\`{a}");	// à
+    	out = out.replaceAll("\u00C2", "\\\\^{A}");	// Â
+    	out = out.replaceAll("\u00E6", "\\\\ae");	// æ
+    	out = out.replaceAll("\u00C6", "\\\\AE");	// Æ
+    	
+    	out = out.replaceAll("\u00E7", "\\\\c{c}");	// ç
+    	out = out.replaceAll("\u00C7", "\\\\c{C}");	// Ç
+    	
+    	out = out.replaceAll("\u0153", "\\\\oe");	// œ
+    	out = out.replaceAll("\u0152", "\\\\OE");	// Œ
+    		
+    	
+    	
+    	out = out.replaceAll("\u00EF", "\\\\\"{i}");	// ï
+    	out = out.replaceAll("\u00ED", "\\\\'{i}");	// í
+    	out = out.replaceAll("\u00EC", "\\\\`{i}");	// ì
+    	out = out.replaceAll("\u00EE", "\\\\^{i}");	// î
+    	out = out.replaceAll("\u00CF", "\\\\\"{I}");	// Ï
+
+    	out = out.replaceAll("\u00F3", "\\\\'{o}");	// ó
+    	out = out.replaceAll("\u00F2", "\\\\`{o}");	// ò
+    	out = out.replaceAll("\u00F4", "\\\\^{o}");	// ô
+
+    	out = out.replaceAll("\u00FA", "\\\\'{u}");	// ú
+    	out = out.replaceAll("\u00F9", "\\\\`{u}");	// ù
+    	out = out.replaceAll("\u00FB", "\\\\^{u}");	// û
+    	
+    	out = out.replaceAll("\u00F1", "\\\\~{n}");	// ñ
+    	out = out.replaceAll("\u00D1", "\\\\~{N}");	// Ñ
+    	
+    	out = out.replaceAll("\u00E5", "\\\\r{a}");	// å
+    	out = out.replaceAll("\u00C5", "\\\\r{A}");	// Å
     	
 
-    	
-    	out = out.replaceAll("\u00E8", "\\\\`{e}");
-    	out = out.replaceAll("\u00e9", "\\\\'{e}");
-    	
-    	
-        // not working / tested
-    	
-    	
-    	// out = out.replaceAll("[\"]", "\\\\grqq");
-        // out = out.replaceAll("\\$", "\\\\$"); 
-        // out = out.replaceAll("\\", "\\\\");
-            	
-    	
-        // out = out.replaceAll("\<_", " "); // \<_\([[:Alpha:]]*\)_\>
-        
-        
-        // 
-        return out;
+    	return out;
     }
 
 	/**
@@ -206,12 +242,16 @@ public class ReportFamilyTex extends Report {
 	 * specify in the header (or tex output) how the note should be shown
 	 */
 	private String familyNote(Fam f) {
+		if(!reportNoteFam) 
+		{ 
+			return "";
+		}
 		String str = "";
 
 		for(int n = 0; n < f.getProperties("NOTE").length; n++) {
 			str += "\\NoteFam{";
 			str += TexEncode(trim(f.getProperties("NOTE")[n]));
-			str += "}";
+			str += "} ";
 		}
         return str;
     }
@@ -221,13 +261,17 @@ public class ReportFamilyTex extends Report {
 	 * specify in the header (or tex output) how the note should be shown
 	 */
 	private String BirthNote(Indi i) {
+		if (!reportNoteBirth)
+		{
+			return "";
+		}
 		String str = "";
 
 		// for(int n = 0; n < i.getProperty(new TagPath("INDI:BIRTH:NOTE")).length; n++) { // f.getProperty(new TagPath("FAM:MARR:PLAC"))
 			str += trim(i.getProperty(new TagPath("INDI:BIRT:NOTE")));
 			if (str.length() <1)
 				return "";
-			str = "\\NoteBirth{"+ TexEncode(str) +"}";
+			str = "\\NoteBirth{"+ TexEncode(str) +"} ";
 		// }
 
         return str;
@@ -238,17 +282,69 @@ public class ReportFamilyTex extends Report {
 	 * specify in the header (or tex output) how the note should be shown
 	 */
 	private String DeathNote(Indi i) {
+        if( ! reportNoteDeath) {
+			return "";
+			}
 		String str = "";
 
 		// for(int n = 0; n < i.getProperty(new TagPath("INDI:BIRTH:NOTE")).length; n++) { // f.getProperty(new TagPath("FAM:MARR:PLAC"))
 			str += trim(i.getProperty(new TagPath("INDI:DEAT:NOTE")));
 			if (str.length() <1)
 				return "";
-			str = "\\NoteDeath{"+ TexEncode(str) +"}";
+			str = "\\NoteDeath{"+ TexEncode(str) + "} ";
 		// }
         return str;
     }
 
+	private String ID_of_Family(Fam f)
+	{
+		if (reportNumberFamilies==true)
+		{
+			return TexEncode((String)  f.getId())+" ";
+		}
+		else
+		{
+			return "";
+		}
+
+	}
+	private String Name_of_Husband(Fam f)
+	{
+		String str="";
+	
+		str = f.getHusband().getName();
+		if (reportNumberIndi==true)
+		{
+			str += " " + f.getHusband().getId();
+		}
+		
+		return TexEncode(str); 
+	}
+	
+	private String Name_of_Wife(Fam f)
+	{
+		String str="";
+		
+		str = f.getWife().getName();
+		if (reportNumberIndi==true)
+		{
+			str += " " + f.getWife().getId();
+		}		
+		return TexEncode(str); 
+	}
+	
+	private String Name_of_Indi(Indi Indi)
+	{
+		String str="";
+
+		
+		str = Indi.getName();
+		if (reportNumberIndi==true)
+		{
+			str += " " + Indi.getId();
+		}		
+		return TexEncode(str); 
+	}
 
 
 	/**
@@ -256,14 +352,14 @@ public class ReportFamilyTex extends Report {
 	 */
 	private String familyToString(Fam f) {
 		Indi husband = f.getHusband(), wife = f.getWife();
-		String str = "\\hyperlink{"+f.getId()+"}{"+(reportNumberFamilies==true?f.getId()+" ":"");
+		String str = "\\hyperlink{"+f.getId()+"}{"+ ID_of_Family(f);
 
 		if(husband!=null)
-			str = str + (reportNumberIndi==true?husband:husband.getName());
+			str = str + Name_of_Husband(f);
 		if(husband!=null & wife!=null)
 			str = str + " + ";
 		if(wife!=null)
-			str = str + (reportNumberIndi==true?wife:wife.getName());
+			str = str + Name_of_Wife(f);
 
 		if (reportPages)
 			str = str + " (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})";
@@ -279,14 +375,14 @@ public class ReportFamilyTex extends Report {
         // ToDo: TexEncode(str)
     	Indi husband = f.getHusband(), wife = f.getWife();
 
-        String str = "\\leftskip=0mm \\subsection{"+(reportNumberFamilies==true?f.getId()+" ":"");
+        String str = "\\leftskip=0mm \\subsection{"+ ID_of_Family(f);
         // str += f.getId()+" ";
         if(husband!=null)
-            str = str + (reportNumberIndi==true?husband:husband.getName());
+            str = str + Name_of_Husband(f);
         if(husband!=null & wife!=null)
             str=str+" + ";
         if(wife!=null)
-            str = str + (reportNumberIndi==true?wife:wife.getName());
+            str = str + Name_of_Wife(f);
 
         str += "} \n\\hypertarget{"+f.getId()+"}{}\n\\label{"+f.getId()+"}";
         return str;
@@ -300,13 +396,13 @@ public class ReportFamilyTex extends Report {
         // ToDo: TexEncode(str)
 		String str = "\n";
 		Indi husband = f.getHusband(), wife = f.getWife();
-		str += "Stammbaum der Famile "+(reportNumberFamilies==true?f.getId()+" ":"");
+		str += "Stammbaum der Famile " + ID_of_Family(f);
 		if(husband!=null)
-			str = str + (reportNumberIndi==true?husband:husband.getName());
+			str = str + Name_of_Husband(f);
 		if(husband!=null & wife!=null)
 			str = str + " " + translate("and") + " ";
 		if(wife!=null)
-			str = str + (reportNumberIndi==true?wife:wife.getName());
+			str = str + Name_of_Wife(f);
 
 		return str;
 
@@ -344,18 +440,19 @@ public class ReportFamilyTex extends Report {
 	 * Function prints the data for family
 	 */
     private void analyzeFam(Fam f) {
+    	// ToDo: TexEncode(str)
 		String str = "";
-		str += familyToStringSubsection(f);
-		if (reportFamiliyImage == true) {str += familyImage(f);}
+		println(familyToStringSubsection(f));
+		if (reportFamiliyImage == true) 
+		{
+			println(familyImage(f));
+		}
 
-		println(str);
-
-		str = getIndentTex(1)+familyToString(f);
-        if(reportNoteFam) { str += familyNote(f); }
-		println(str +"\\par");
+		// str = getIndentTex(1)+familyToString(f); // same as subsection!
+        println(str + familyNote(f));
 
         if( (trim(f.getMarriageDate()).length()>0) || (trim(f.getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0) )
-            println(getIndentTex(1)+OPTIONS.getMarriageSymbol()+" "+trim(f.getMarriageDate())+" "+trim(f.getProperty(new TagPath("FAM:MARR:PLAC")))+"\\par");
+            println(getIndentTex(1)+TexEncode(OPTIONS.getMarriageSymbol()+" "+trim(f.getMarriageDate())+" "+trim(f.getProperty(new TagPath("FAM:MARR:PLAC"))))+"\\par");
         analyzeIndi(f.getHusband(), f);
         analyzeIndi(f.getWife(), f);
         analyzeChildren(f);
@@ -365,35 +462,32 @@ public class ReportFamilyTex extends Report {
 	 * Function prints the datas for a person
 	 */
     private void analyzeIndi(Indi indi, Fam f) {
-
+    	// ToDo: TexEncode(str)
         if(indi==null)
             return;
 
-		String str = getIndentTex(2)+(reportNumberIndi==true?indi:indi.getName())+"\\par";
+		String str;
+		println( getIndentTex(2) + Name_of_Indi(indi) + "\\par");
 
         // println(str.replaceAll("[_]", " "));
-        println(TexEncode(str));
+        // println(str);
 
         if(reportParents) {
           Fam fam = indi.getFamilyWhereBiologicalChild();
             if(fam!=null)
-                println(getIndentTex(3)+OPTIONS.getChildOfSymbol()+" "+familyToString(fam)+"\\par");
+                println(getIndentTex(3)+TexEncode(OPTIONS.getChildOfSymbol()) + " "+familyToString(fam) + "\\par");
         }
 
         if( (trim(indi.getBirthAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) ) {
-            str = getIndentTex(3)+OPTIONS.getBirthSymbol()+" "+trim(indi.getBirthAsString())+" "+trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC")));
-        	if( reportNoteBirth ) {
-				str += BirthNote(indi);
-				}
-			println(TexEncode(str)+"\\par");
+            str = OPTIONS.getBirthSymbol()+" "+trim(indi.getBirthAsString())+" "+trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC")));
+            str = TexEncode(str);
+			println(getIndentTex(3) + str + BirthNote(indi) + "\\par");
 			}
 
         if(indi.getProperty("DEAT")!=null && ( (trim(indi.getDeathAsString()).length()>0) || (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) ) ) {
-            str = getIndentTex(3)+OPTIONS.getDeathSymbol()+" "+trim(indi.getDeathAsString())+" "+trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")));
-        	if( reportNoteDeath ) {
-				str += DeathNote(indi);
-				}
-        	println(TexEncode(str)+"\\par");
+            str = OPTIONS.getDeathSymbol()+" "+trim(indi.getDeathAsString())+" "+trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")));
+            str = TexEncode(str);
+            println(getIndentTex(3) + str + DeathNote(indi) + "\\par");
 		}
 
         if(reportOtherSpouses) {
@@ -406,15 +500,16 @@ public class ReportFamilyTex extends Report {
                         str = "";
                         if((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0))
                             str = OPTIONS.getMarriageSymbol()+" "+trim(families[i].getMarriageDate())+" "+trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")))+" ";
+                        str = TexEncode(str);
                         println(getIndentTex(4)+str+" "+familyToString(families[i])+"\\par");
                     }
                 }
             }
         }
         if (reportDetailOccupation & trim(indi.getProperty(new TagPath("INDI:OCCU"))).length()>0) {
-			str = getIndentTex(3)+translate("occupation")+": "+ trim(indi.getProperty(new TagPath("INDI:OCCU"))) +"\\par";
-			// println(str);
-			println(TexEncode(str));
+			str = translate("occupation")+": "+ trim(indi.getProperty(new TagPath("INDI:OCCU"))) ;
+			str = TexEncode(str);
+			println(getIndentTex(3) + str + "\\par");
 		}
     }
 
@@ -431,19 +526,18 @@ public class ReportFamilyTex extends Report {
 		String str = "";
 
         if(children.length>0)
-            println(getIndentTex(2)+translate("children")+"\\par");
+            println(getIndentTex(2) + translate("children") + "\\par");
         for(int i=0; i<children.length; i++) {
             child = children[i];
-            str = getIndentTex(3)+(reportNumberIndi==true?child:child.getName())+"\\par";
-            println(TexEncode(str));
+            str = Name_of_Indi(child); // (reportNumberIndi==true?(String)child:(String)child.getName());
+            println(getIndentTex(3) + str + "\\par");
             if(reportDetailedChildrenData) {
                 if ( (trim(child.getBirthAsString()).length()>0) || (trim(child.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0) ) {
-                    str = getIndentTex(4)+OPTIONS.getBirthSymbol()+" "+trim(child.getBirthAsString())+" "+trim(child.getProperty(new TagPath("INDI:BIRT:PLAC")));
-					if( reportNoteBirth ) {
-						str += BirthNote(child);
-					}
-					str += "\\par";
-					println(TexEncode(str));
+                    str = OPTIONS.getBirthSymbol()+" ";
+                    str += trim(child.getBirthAsString())+" ";
+                    str += trim(child.getProperty(new TagPath("INDI:BIRT:PLAC")));
+					str = TexEncode(str);
+					println(getIndentTex(4) + str + BirthNote(child) + "\\par");
 				}
                 printBaptism(child, "BAPM");
                 printBaptism(child, "BAPL");
@@ -453,18 +547,24 @@ public class ReportFamilyTex extends Report {
                 for(int j=0; j<families.length; j++) {
                     family = (Fam)families[j];
                     // println(getIndentTex(4)+OPTIONS.getMarriageSymbol()+family+" "+trim(family.getMarriageDate())+" "+trim(family.getProperty(new TagPath("FAM:MARR:PLAC")))+"\\par");
-                    println(getIndentTex(4)+OPTIONS.getMarriageSymbol()+" "+familyToString(family)+" "+trim(family.getMarriageDate())+" "+trim(family.getProperty(new TagPath("FAM:MARR:PLAC")))+"\\par");
+
+                    str = trim(family.getMarriageDate())+" ";
+                    str += trim(family.getProperty(new TagPath("FAM:MARR:PLAC")));
+					str = TexEncode(str);
+					println(getIndentTex(4) + OPTIONS.getMarriageSymbol() + " " + familyToString(family) + " " + str + "\\par");                    
                 }
                 if (reportDetailOccupation & trim(child.getProperty(new TagPath("INDI:OCCU"))).length()>0) {
-					println(TexEncode(getIndentTex(4)+translate("occupation")+": "+ trim(child.getProperty(new TagPath("INDI:OCCU"))) +"\\par"));
+					str = translate("occupation")+": ";
+					str += trim(child.getProperty(new TagPath("INDI:OCCU")));
+					str = TexEncode(str);
+					println(getIndentTex(4) + str + "\\par");
 				}
                 if(child.getProperty("DEAT")!=null && ( (trim(child.getDeathAsString()).length()>0) || (trim(child.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) ) ) {
-                    str = getIndentTex(4)+OPTIONS.getDeathSymbol()+" "+trim(child.getDeathAsString())+" "+trim(child.getProperty(new TagPath("INDI:DEAT:PLAC")));
-                    if( reportNoteDeath ) {
-						str += DeathNote(child);
-					}
-					str += "\\par";
-					println(TexEncode(str));
+                    str = OPTIONS.getDeathSymbol()+" ";
+                    str += trim(child.getDeathAsString())+" ";
+                    str += trim(child.getProperty(new TagPath("INDI:DEAT:PLAC")));
+                    str = TexEncode(str);
+					println(getIndentTex(4) + str + DeathNote(child) + "\\par");
 				}
             }
         }
@@ -474,9 +574,21 @@ public class ReportFamilyTex extends Report {
 	 * Function prints the infos for Baptism
 	 */
     private void printBaptism(Indi indi, String tag) {
-
-        if( (indi.getProperty(tag)!=null) && ( (trim(indi.getProperty(new TagPath("INDI:"+tag+":DATE"))).length()>0) || (trim(indi.getProperty(new TagPath("INDI:"+tag+":PLAC"))).length()>0) ) )
-            println(getIndentTex(4)+OPTIONS.getBaptismSymbol()+" ("+tag+"): "+trim(indi.getProperty(new TagPath("INDI:"+tag+":DATE")))+" "+trim(indi.getProperty(new TagPath("INDI:"+tag+":PLAC")))+"\\par");
+    	String str = "";
+        if( (indi.getProperty(tag)!=null) 
+        	&& (
+        			(trim(indi.getProperty(new TagPath("INDI:"+tag+":DATE"))).length()>0) 
+        			|| (trim(indi.getProperty(new TagPath("INDI:"+tag+":PLAC"))).length()>0) 
+        		) 
+        	) {
+	        	
+	        	str = OPTIONS.getBaptismSymbol() + " (" + tag;
+	        	str += "): ";
+	        	str += trim(indi.getProperty(new TagPath("INDI:"+tag+":DATE")))+" ";
+	        	str += trim(indi.getProperty(new TagPath("INDI:"+tag+":PLAC")));
+	        	str = TexEncode(str);
+	        	println(getIndentTex(4) + str + "\\par");
+	        }
     }
 
 } //ReportFamily
