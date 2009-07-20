@@ -18,9 +18,9 @@ import genj.report.Report;
 
 /**
  * @author Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-07-10 21:39:20 $
+ * updated   = $Date: 2009-07-20 21:06:18 $
  */
 
 public class ReportFamilyTex extends Report {
@@ -47,6 +47,7 @@ public class ReportFamilyTex extends Report {
      * Main for argument Gedcom
      */
     public void start(Gedcom gedcom) {
+    	String str = "";
 
 
 	  // Header for TEX File
@@ -98,11 +99,12 @@ public class ReportFamilyTex extends Report {
 		  println("\n\\section{Introduction}\nsome words ...");
 		  println("\n\\subsection{Used symbols}");
 		  println("The following symbols are used for the events:\\\\");
-		  println("* - Birth \\\\");
-		  println("+ - Death \\\\");
-		  println("oo - Marriage \\\\");
-		  println("/ - Child in Family\\\\");
-		  println("\\lbrack \\rbrack - Baptism \\\\");
+		  println(TexEncode(OPTIONS.getBirthSymbol()) + " - Birth \\\\");
+		  println(TexEncode(OPTIONS.getDeathSymbol()) + " - Death \\\\");
+		  println(TexEncode(OPTIONS.getMarriageSymbol()) + " - Marriage \\\\");
+		  println(TexEncode(OPTIONS.getOccuSymbol()) + " - Occupation \\\\");
+		  println(TexEncode(OPTIONS.getChildOfSymbol()) + " - Child in Family\\\\");
+		  println(TexEncode(OPTIONS.getBaptismSymbol()) + " - Baptism \\\\");
 		  println("\n\\section{Families}");
 		  println("\n\n\\parindent0mm");
 	  }
@@ -139,7 +141,8 @@ public class ReportFamilyTex extends Report {
     	// discussed at http://genj.sourceforge.net/forum/viewtopic.php?p=5841
     	// replace characters acording to 
     	// http://www.ctan.org/tex-archive/info/symbols/comprehensive/symbols-a4.pdf
-    	// Attention: to get a singel \ in the tex mode, you must follow 
+    	// UTF-8 database: http://www.sql-und-xml.de/unicode-database/
+    	// Attention: to get a single \ in the tex mode, you must follow 
     	// the string convetions and write \\  ('\' is used as escape for special
     	// characters like \n, \t, \r, ...
     	// within string: \ --> \\
@@ -173,17 +176,14 @@ public class ReportFamilyTex extends Report {
     	out = out.replaceAll("\u00f6", "\\\\\"{o}");
     	out = out.replaceAll("\u00fc", "\\\\\"{u}");
   	
-
-    	// France
-    	// http://www.uni-koeln.de/themen/fremdsprachig/franzosisch.html
-    	// http://www.wer-weiss-was.de/theme46/article3401656.html
+    	// circumflex, grave, circle
     	out = out.replaceAll("\u00E8", "\\\\`{e}");		// è
     	out = out.replaceAll("\u00e9", "\\\\'{e}");		// é
-    	
-    	// not working / tested
-    	out = out.replaceAll("\u00EA", "\\\\k{e}");	// ê
+    	out = out.replaceAll("\u00EA", "\\\\^{e}");	// ê
     	out = out.replaceAll("\u00EB", "\\\\\"{e}");	// ë
     	out = out.replaceAll("\u00C9", "\\\\'{E}");	// É
+    	out = out.replaceAll("\u00C8", "\\\\`{E}"); // È
+    	out = out.replaceAll("\u00CA", "\\\\^{E}"); // Ê 
     	
        	out = out.replaceAll("\u00E2", "\\\\^{a}");	// â
     	out = out.replaceAll("\u00E1", "\\\\'{a}");	// á
@@ -204,8 +204,9 @@ public class ReportFamilyTex extends Report {
     	out = out.replaceAll("\u00ED", "\\\\'{i}");	// í
     	out = out.replaceAll("\u00EC", "\\\\`{i}");	// ì
     	out = out.replaceAll("\u00EE", "\\\\^{i}");	// î
-    	out = out.replaceAll("\u00CF", "\\\\\"{I}");	// Ï
-
+    	out = out.replaceAll("\u00CF", "\\\\\"{I}"); // Ï
+    	out = out.replaceAll("\u00CE", "\\\\^{I}");	// Î
+    	
     	out = out.replaceAll("\u00F3", "\\\\'{o}");	// ó
     	out = out.replaceAll("\u00F2", "\\\\`{o}");	// ò
     	out = out.replaceAll("\u00F4", "\\\\^{o}");	// ô
@@ -220,6 +221,14 @@ public class ReportFamilyTex extends Report {
     	out = out.replaceAll("\u00E5", "\\\\r{a}");	// å
     	out = out.replaceAll("\u00C5", "\\\\r{A}");	// Å
     	
+    	// new or untested symbols
+    	
+    	out = out.replaceAll("\u00B0", "\\\\degree");	// ° (Degree sign)
+    	out = out.replaceAll("\\*", "\\\\textasteriskcentered");	// * (asterix)
+    	
+    	// ToDo:
+    	// poland:
+    	// l and s    	
 
     	return out;
     }
@@ -357,13 +366,12 @@ public class ReportFamilyTex extends Report {
 		if(husband!=null)
 			str = str + Name_of_Husband(f);
 		if(husband!=null & wife!=null)
-			str = str + " + ";
+			str = str + " " + TexEncode(translate("and")) + " ";
 		if(wife!=null)
 			str = str + Name_of_Wife(f);
 
 		if (reportPages)
-			str = str + " (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})";
-		// str = str + (reportPages==false?"":"; (Kap. \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})")+"}"; // Link zu Familie geht ï¿½ber gesamte Namen oder nur ï¿½ber Fxx Nummer
+			str = str + "(" + TexEncode(translate("Chap")) +  ". \\ref*{"+f.getId()+"}, S. \\pageref*{"+f.getId()+"})";
 		str += "}";
         return str;
     }
@@ -380,7 +388,7 @@ public class ReportFamilyTex extends Report {
         if(husband!=null)
             str = str + Name_of_Husband(f);
         if(husband!=null & wife!=null)
-            str=str+" + ";
+        	str = str + " " + TexEncode(translate("and")) + " ";
         if(wife!=null)
             str = str + Name_of_Wife(f);
 
