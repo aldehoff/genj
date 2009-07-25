@@ -18,9 +18,9 @@ import genj.report.Report;
 
 /**
  * @author Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-07-20 21:06:18 $
+ * updated   = $Date: 2009-07-25 20:46:42 $
  */
 
 public class ReportFamilyTex extends Report {
@@ -33,15 +33,17 @@ public class ReportFamilyTex extends Report {
     public boolean reportNumberFamilies = true;
     public boolean reportPages = false;
 	public boolean reportNumberIndi = true;
-	public boolean reportSymbolFamilies = true;
-	public boolean reportSymbolIndi = true;
+	// public boolean reportSymbolFamilies = true;	// not used,
+	// public boolean reportSymbolIndi = true;		// not used,
 	public boolean reportNoteFam    = true;
 	public boolean reportNoteIndi   = false;
 	public boolean reportNoteDeath  = true;
 	public boolean reportNoteBirth  = true;
 	public boolean reportDetailOccupation  = true;
-	public boolean reportFamiliyImage  = false;
+	public boolean reportFamiliyImage  = false;  
 	public boolean reportTexHeader  = false;
+
+	public boolean reportsubsection_on_newpage  = false;
 
     /**
      * Main for argument Gedcom
@@ -107,12 +109,19 @@ public class ReportFamilyTex extends Report {
 		  println(TexEncode(OPTIONS.getBaptismSymbol()) + " - Baptism \\\\");
 		  println("\n\\section{Families}");
 		  println("\n\n\\parindent0mm");
+		  
 	  }
-
+      // include head.tex if exists
+	  println("\n\n\\IfFileExists{head}{\\input{head}}\n\n");
+	  
       Entity[] fams = gedcom.getEntities(Gedcom.FAM,"");
       for(int i=0; i<fams.length; i++) {
           analyzeFam((Fam)fams[i]);
       }
+      
+      // include foot.tex if exists
+      println("\n\n\\IfFileExists{foot}{\\input{foot}}\n");
+      
 	  // Footer for TEX File
 	  if (reportTexHeader == true){
 		  println("\\tableofcontents");
@@ -380,11 +389,16 @@ public class ReportFamilyTex extends Report {
 	 * Function prints the names of husband and wife as subsection
 	 */
     private String familyToStringSubsection(Fam f) {
-        // ToDo: TexEncode(str)
     	Indi husband = f.getHusband(), wife = f.getWife();
 
-        String str = "\\leftskip=0mm \\subsection{"+ ID_of_Family(f);
-        // str += f.getId()+" ";
+        String str = "\\leftskip=0mm ";
+        
+        if (reportsubsection_on_newpage == true) {
+        	str += "\\newpage ";
+        }
+        
+        str += "\\subsection{"+ ID_of_Family(f);
+
         if(husband!=null)
             str = str + Name_of_Husband(f);
         if(husband!=null & wife!=null)
@@ -414,7 +428,6 @@ public class ReportFamilyTex extends Report {
 
 		return str;
 
-
 	}
 
 
@@ -425,22 +438,12 @@ public class ReportFamilyTex extends Report {
         // ToDo: TexEncode(str)
 		// Indi husband = f.getHusband();
 		Indi husband = f.getHusband(), wife = f.getWife();
-		// str += "} \n\\hypertarget{"+f.getId()+"}{}\n\\label{"+f.getId()+"}";
-		// \Bild{bild060}{./Schreiter-Bild-060.jpg}{Testunterschrift fï¿½r Bild 60}
 		String str = "\n";
 
 		if(husband!=null){
-
-		// str += "\\IfFileExists{"+f.getId()+".pdf}{"; // Picture for family
-	// or
-		str += "\\IfFileExists{"+husband.getId()+".pdf}{"; // Picture for husband
-	// or
-		// str += "\\IfFileExists{"+wife.getId()+".pdf}{"; // Picture for wife
-
-		// str += "\\Bild{Bild_"+f.getId()+"}{"+f.getId()+".pdf}{" + familyImageCaption(f) + "}}\n";
-		str += "\\Bild{Bild_"+husband.getId()+"}{"+husband.getId()+".pdf}{" + familyImageCaption(f) + "}}\n";
-		// str += "\\Bild{Bild_"+wife.getId()+"}{"+wife.getId()+".pdf}{" + familyImageCaption(f) + "}}\n";
-	}
+			str += "\\IfFileExists{"+husband.getId()+".pdf}{"; // Picture for husband
+			str += "\\Bild{Bild_"+husband.getId()+"}{"+husband.getId()+".pdf}{" + familyImageCaption(f) + "}}\n";
+		}
         return str;
 	}
 
@@ -451,8 +454,7 @@ public class ReportFamilyTex extends Report {
     	// ToDo: TexEncode(str)
 		String str = "";
 		println(familyToStringSubsection(f));
-		if (reportFamiliyImage == true) 
-		{
+		if (reportFamiliyImage == true) {
 			println(familyImage(f));
 		}
 
