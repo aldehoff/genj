@@ -19,6 +19,10 @@ import genj.geo.GeoLocation;
 import genj.geo.GeoService;
 import genj.io.FileAssociation;
 import genj.report.Report;
+import geo.kml.CompactPlacemarkWriter;
+import geo.kml.DetailedPlacemarkWriter;
+import geo.kml.FolderWriter;
+import geo.kml.Names;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,12 +35,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.TreeMap;
-
-import geo.kml.*;
+import java.util.Arrays;
 
 /** This GenJ Report exports places for viewing online in Google Maps */
 public class ReportKML extends Report {
@@ -170,6 +176,31 @@ public class ReportKML extends Report {
 		return locations == null ? null : locations.iterator();
 	}
 
+	private Collection<GeoLocation> famLocations (Entity[] families) {
+		List<Entity> famList = Arrays.asList(families);
+		return getLocations(famList);
+	}
+	
+	private Collection<GeoLocation> getFamLocations(Indi indi) {
+		Collection<GeoLocation> locations=null;
+		try {
+			locations = famLocations(indi.getFamiliesWhereChild());
+			locations.addAll(famLocations(indi.getFamiliesWhereSpouse()));
+		}catch (NoSuchElementException e) {
+			return null;
+		}
+		Set<GeoLocation> set = new HashSet<GeoLocation>();
+		List<GeoLocation> list = new ArrayList<GeoLocation>();
+		for (GeoLocation location:locations) {
+			if (!set.contains(location)) {
+				set.add(location);
+				list.add(location);
+			}
+		}
+		if (list.size()<2) return null;
+		return list;
+	}
+	
 	private void addBirthsOfChildren(Indi indi,
 			Collection<GeoLocation> locations) {
 		try {
@@ -295,6 +326,7 @@ public class ReportKML extends Report {
 			public void writeContent(String indent) throws IOException {
 				detailedPlacemarkWriter.write//
 						(indent, locations, labelForLocations, "", false);
+				detailedPlacemarkWriter.writeLine(getFamLocations(indi), indent);
 				writeLineageParents(indent, sosaNr, indi, hide);
 			}
 		}.write(indent, sosaNr + ": " + indi.toString(showIds,false), "");
