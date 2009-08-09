@@ -132,13 +132,13 @@ public class Shell {
     } catch (Throwable t) {
     }
     
-    new Shell(args.length>0?args[0]:null);
+    new Shell(args.length>0?args[0]:null, args.length>1?"-maximized".equals(args[1])?true:false:false);
   }
   
   /**
    * Constructor
    */
-  private Shell(String preload) {
+  private Shell(String preload, boolean maximized) {
     
     // Create our widgets
     graphWidget = new EditableGraphWidget() {
@@ -194,6 +194,8 @@ public class Shell {
     
     // Show the whole thing
     frame.setBounds(128,128,480,480);
+    if (maximized)
+    	frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
     frame.setVisible(true);
     
     // Start with a Graph or load a preset
