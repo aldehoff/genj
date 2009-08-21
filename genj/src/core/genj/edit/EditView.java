@@ -184,12 +184,22 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
     // remember
     instances.add(this);
     
-    // Check if we can preset something to edit
+    // Check if we were sticky
     Entity entity = gedcom.getEntity(registry.get("entity", (String)null));
-    if (entity==null) entity = gedcom.getFirstEntity(Gedcom.INDI);
-    isSticky = entity==null ? false : registry.get("sticky", false);
-    if (entity!=null) setContext(new ViewContext(entity));
+    if (registry.get("sticky", false) && entity!=null) {
+      isSticky = true;
+    } else {
+      // fallback
+      ViewContext context = ContextSelectionEvent.getLastBroadcastedSelection();
+      if (context!=null&&context.getGedcom()==gedcom&&gedcom.contains(context.getEntity()))
+        entity = context.getEntity();
+      else
+        entity = gedcom.getFirstEntity(Gedcom.INDI);
+    }
     
+    if (entity!=null)
+      setContext(new ViewContext(entity));
+
     // listen to gedcom
     callback.enable();
     gedcom.addGedcomListener((GedcomListener)Spin.over(undo));

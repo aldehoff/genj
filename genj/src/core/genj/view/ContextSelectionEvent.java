@@ -29,6 +29,7 @@ import java.awt.Component;
  */
 public class ContextSelectionEvent extends WindowBroadcastEvent {
   
+  private static ViewContext lastContext = null;
   private ViewContext context;
   private boolean isActionPerformed = false;
   
@@ -47,6 +48,20 @@ public class ContextSelectionEvent extends WindowBroadcastEvent {
     this(context, source);
     this.isActionPerformed = isActionPerformed;
   }
+  
+  /**
+   * last selection context
+   * @return null or last selection context
+   */
+  public static ViewContext getLastBroadcastedSelection() {
+    return lastContext;
+  }
+  
+  @Override
+  protected void setBroadcasted() {
+    lastContext = context;
+  }
+  
   
   /**
    * Read-Only Accessor

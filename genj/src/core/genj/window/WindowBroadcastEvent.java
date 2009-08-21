@@ -63,5 +63,12 @@ public abstract class WindowBroadcastEvent {
   /*package*/ void setInbound() {
     isOutbound = false;
   }
+
+  /**
+   * Mark event as broadcasted
+   */
+  protected void setBroadcasted() {
+    // noop
+  }
   
 }

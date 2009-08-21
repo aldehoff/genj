@@ -120,9 +120,13 @@ public class EntityView extends JPanel implements WindowBroadcastListener, ToolB
     isAntialiasing  = registry.get("antial"  , false);
     
     // Check if we can preset something to show
-    Entity entity = gedcom.getEntity(registry.get("entity", (String)null));
-    if (entity==null) entity = gedcom.getFirstEntity(Gedcom.INDI);
-    if (entity!=null) 
+    Entity entity;
+    ViewContext context = ContextSelectionEvent.getLastBroadcastedSelection();
+    if (context!=null&&context.getGedcom()==gedcom&&gedcom.contains(context.getEntity()))
+      entity = context.getEntity();
+    else
+      entity = gedcom.getFirstEntity(Gedcom.INDI);
+    if (entity!=null)
       setEntity(entity);
     
     // done    

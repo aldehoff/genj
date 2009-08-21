@@ -130,6 +130,9 @@ public abstract class WindowManager {
     // are we muted atm?
     if (muteBroadcasts)
       return;
+    
+    // mark it
+    event.setBroadcasted();
 
     try {
       muteBroadcasts = true;
