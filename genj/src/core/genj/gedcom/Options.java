@@ -49,6 +49,13 @@ public class Options extends OptionProvider {
   
   /** option - wether to set wife lastname when indi is created */
   public boolean setWifeLastname = true;
+  
+  /** option - whether to use "last,first" or "first last" */
+  public int nameFormat = 0;
+  public final static String[] nameFormats = {
+    RESOURCES.getString("option.nameFormat.first"),
+    RESOURCES.getString("option.nameFormat.last")
+};
 
   /** option - maximum image files size to be loaded */  
   private int maxImageFileSizeKB = 128;

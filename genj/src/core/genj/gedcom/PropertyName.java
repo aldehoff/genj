@@ -223,12 +223,22 @@ public class PropertyName extends Property {
       return nameAsString;
     
     WordBuffer b = new WordBuffer();
-    String last = getLastName();
-    if (last.length()==0) last = "?";
-    b.append(last);
-    b.append(getSuffix());
-    b.setFiller(", ");
-    b.append(getFirstName());
+    
+    if (Options.getInstance().nameFormat==1) {
+      
+      String last = getLastName();
+      if (last.length()==0) last = "?";
+      b.append(last);
+      b.append(getSuffix());
+      b.setFiller(", ");
+      b.append(getFirstName());
+      
+    } else {
+      
+      b.append(getFirstName());
+      b.append(getLastName());
+      
+    }
     
     return b.toString();
   }

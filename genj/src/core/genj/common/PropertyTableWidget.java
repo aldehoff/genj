@@ -24,6 +24,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyName;
 import genj.gedcom.TagPath;
 import genj.renderer.Options;
 import genj.renderer.PropertyRenderer;
@@ -409,7 +410,7 @@ public class PropertyTableWidget extends JPanel implements WindowBroadcastListen
         if (prop==null)
           continue;
         
-        String value = prop.getDisplayValue().trim(); 
+        String value = prop instanceof PropertyName ? ((PropertyName)prop).getLastName().trim() : prop.getDisplayValue().trim(); 
         if (value.length()==0)
           continue;
         value = value.substring(0,1).toLowerCase();
