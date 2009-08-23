@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -284,10 +285,22 @@ public class ReportKML extends Report {
 	private void writeLocations(final String indent,
 			final Collection<GeoLocation> locations) throws IOException {
 
-		// TODO sort locations alphabetically
-		Iterator<GeoLocation> iterator = locations.iterator();
+		Iterator<GeoLocation> iterator = sortPlaces(locations).iterator();
 		new CompactPlacemarkWriter(out, showIds).write//
 				(indent, iterator, byPlaceName, byPlaceDescription, false, null);
+	}
+
+	private Collection<GeoLocation> sortPlaces(
+			final Collection<GeoLocation> locations) {
+		GeoLocation[] a = new GeoLocation[locations.size()];
+		a = locations.toArray(a);
+		Arrays.sort(a,new Comparator<GeoLocation>(){
+			public int compare(GeoLocation o1, GeoLocation o2) {
+				if (o1==null)return -1;
+				if (o2==null)return 1;
+				return o1.toString().compareTo(o2.toString());
+			}});
+		return Arrays.asList(a);
 	}
 
 	/** Writes the top level of a lineage section */
