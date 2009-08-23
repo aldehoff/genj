@@ -185,6 +185,7 @@ public class ReportKML extends Report {
 		Collection<GeoLocation> locations=null;
 		try {
 			locations = famLocations(indi.getFamiliesWhereChild());
+			// TODO locations.addAll(getLocations(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))));
 			locations.addAll(famLocations(indi.getFamiliesWhereSpouse()));
 		}catch (NoSuchElementException e) {
 			return null;
@@ -286,7 +287,7 @@ public class ReportKML extends Report {
 		// TODO sort locations alphabetically
 		Iterator<GeoLocation> iterator = locations.iterator();
 		new CompactPlacemarkWriter(out, showIds).write//
-				(indent, iterator, byPlaceName, byPlaceDescription, false);
+				(indent, iterator, byPlaceName, byPlaceDescription, false, null);
 	}
 
 	/** Writes the top level of a lineage section */
@@ -324,9 +325,10 @@ public class ReportKML extends Report {
 				hide == 0);
 		new FolderWriter(out, false, 0) {
 			public void writeContent(String indent) throws IOException {
+				Iterator<GeoLocation> lineLocs = (getFamLocations(indi)==null?null:getFamLocations(indi).iterator());
 				detailedPlacemarkWriter.write//
-						(indent, locations, labelForLocations, "", false);
-				detailedPlacemarkWriter.writeLine(getFamLocations(indi), indent);
+						(indent, locations, labelForLocations, "", false, lineLocs);
+				//detailedPlacemarkWriter.writeLine(getFamLocations(indi).iterator(), indent);
 				writeLineageParents(indent, sosaNr, indi, hide);
 			}
 		}.write(indent, sosaNr + ": " + indi.toString(showIds,false), "");
@@ -346,11 +348,10 @@ public class ReportKML extends Report {
 
 		String folderName = sosaNr + ": " + indi.toString(showIds,false);
 
-		Iterator<GeoLocation> locations = getLocations(indi,
-				showBirthOfChildren);
+		Iterator<GeoLocation> locations = getLocations(indi,showBirthOfChildren);
 		if (locations != null) {
 			detailedPlacemarkWriter.write //
-					(indent, locations, folderName, "", false);
+					(indent, locations, folderName, "", false, null);
 		} else {
 			new FolderWriter(out, false, 1) {
 				public void writeContent(String indent) throws IOException {

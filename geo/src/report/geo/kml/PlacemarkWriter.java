@@ -25,19 +25,25 @@ abstract class PlacemarkWriter extends KmlWriter{
 		this.showIds = showIds;
 	}
 
-	public void write(final String indent, final Iterator<GeoLocation> locations,
-			final String name, final String description, final boolean radio)
+	public void write(
+			final String indent, 
+			final Iterator<GeoLocation> markers,
+			final String name, 
+			final String description, 
+			final boolean radio, 
+			final Iterator<GeoLocation> lines)
 			throws IOException {
 
-		if (locations==null)
+		if (markers==null && lines == null)
 			return;
 
 		new FolderWriter(out, radio, 0) {
 
 			public void writeContent(final String indent) throws IOException {
-				while (locations.hasNext()) {
-					writePlacemark(indent, locations.next());
+				while (markers.hasNext()) {
+					writePlacemark(indent, markers.next());
 				}
+				writeLine(lines, indent);
 			}
 
 		}.write(indent, name, description);
@@ -55,6 +61,18 @@ abstract class PlacemarkWriter extends KmlWriter{
 		if (locations==null) return;
 		out.write( indent+"<Placemark><LineString><coordinates>");
 		for (GeoLocation location:locations){
+			String x = FORMAT.format(location.getX());
+			String y = FORMAT.format(location.getY());
+			out.write( x + "," + y +"\n"+indent);
+		}
+		out.write( "</coordinates></LineString></Placemark>\n");
+	}
+	
+	public void writeLine(final Iterator<GeoLocation> locations, String indent) throws IOException{
+		if (locations==null) return;
+		out.write( indent+"<Placemark><LineString><coordinates>");
+		while (locations.hasNext()) {
+			GeoLocation location = locations.next();
 			String x = FORMAT.format(location.getX());
 			String y = FORMAT.format(location.getY());
 			out.write( x + "," + y +"\n"+indent);
