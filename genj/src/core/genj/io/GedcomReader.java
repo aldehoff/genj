@@ -305,7 +305,7 @@ public class GedcomReader implements Trackable {
   /**
    * linkage
    */
-  private void linkReferences() {
+  private void linkReferences() throws GedcomIOException {
 
     // loop over kept references
     for (int i=0,n=lazyLinks.size(); i<n; i++) {
@@ -316,6 +316,8 @@ public class GedcomReader implements Trackable {
         progress = Math.min(100,(int)(i*(100*2)/n));  // 100*2 because Links are probably backref'd
       } catch (GedcomException ex) {
         warnings.add(new Warning(lazyLink.line, ex.getMessage(), lazyLink.xref));
+      } catch (Throwable t) {
+        throw new GedcomIOException(RESOURCES.getString("read.error.xref", new Object[]{ lazyLink.xref.getTag(), lazyLink.xref.getValue() }), lazyLink.line);
       }
     }
 
