@@ -22,6 +22,7 @@ package genj.chart;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jfree.data.category.CategoryDataset;
@@ -314,6 +315,13 @@ public class IndexedSeries {
     public Number getY(int s, int i) {
       return new Float(series[s].get(start+i));
     }
+
+	@Override
+	public Comparable getSeriesKey(int series) {
+		
+		// if the name can be considered as the series key ...
+		  return this.series[series].name;
+	}
 
   } //TableXYDatasetImpl
   

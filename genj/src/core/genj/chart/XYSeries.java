@@ -183,6 +183,12 @@ public class XYSeries {
       return new Float(p.y);
     }
 
+	@Override
+	public Comparable getSeriesKey(int series) {
+		// if the name can be considered as the series key
+		return this.series[series].name;
+	}
+
   } //Wrapper
   
 } //XYSeries

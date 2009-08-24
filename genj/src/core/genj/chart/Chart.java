@@ -17,13 +17,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.7 $ $Author: nmeier $ $Date: 2006-02-16 23:26:16 $
+ * $Revision: 1.8 $ $Author: badisgood $ $Date: 2009-08-24 09:33:28 $
  */
 package genj.chart;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Insets;
 import java.text.NumberFormat;
 
 import javax.swing.JPanel;
@@ -32,7 +31,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.StandardPieItemLabelGenerator;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.Plot;
@@ -40,10 +39,11 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
-import org.jfree.chart.renderer.xy.StackedXYAreaRenderer;
+import org.jfree.chart.renderer.xy.StackedXYAreaRenderer2;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYAreaRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.ui.RectangleInsets;
 
 /**
  * A Chart in GenJ can be created by instantiating an object of this
@@ -58,8 +58,12 @@ public class Chart extends JPanel {
   private void init(String title, Plot plot, boolean legend) {
     setLayout(new BorderLayout());
     ChartPanel panel = new ChartPanel(new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, legend));
-    panel.setHorizontalZoom(true);
-    panel.setVerticalZoom(true);
+//    panel.setHorizontalZoom(true);
+    panel.setDomainZoomable(true);
+    
+//    panel.setVerticalZoom(true);
+    panel.setRangeZoomable(true);
+    
     add(panel, BorderLayout.CENTER);
   }
   
@@ -81,7 +85,7 @@ public class Chart extends JPanel {
     NumberAxis yAxis = new NumberAxis(labelAxisY);
     yAxis.setNumberFormatOverride(format);
     
-    XYItemRenderer renderer = stacked ? new StackedXYAreaRenderer() : new XYAreaRenderer();
+    XYItemRenderer renderer = stacked ? new StackedXYAreaRenderer2() : new XYAreaRenderer();
     XYPlot plot = new XYPlot(IndexedSeries.asTableXYDataset(series), xAxis, yAxis, renderer);
 
     // init
@@ -132,8 +136,8 @@ public class Chart extends JPanel {
   public Chart(String title, IndexedSeries series, String[] categories, boolean legend) {
     
     PiePlot plot = new PiePlot(IndexedSeries.asPieDataset(series, categories));
-    plot.setLabelGenerator(new StandardPieItemLabelGenerator());
-    plot.setInsets(new Insets(0, 5, 5, 5));
+    plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} = {1}"));
+    plot.setInsets(new RectangleInsets(0, 5, 5, 10));
     
     init(title, plot, legend);
     

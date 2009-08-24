@@ -86,10 +86,10 @@ public class ReportEventsByMonths extends Report {
    * Report's main
    */
   public void start(Gedcom gedcom) {
-	  Map labels = new HashMap();
+	  Map<String, String> labels = new HashMap<String, String>();
 	  
     // look for events we consider
-    List series = new ArrayList();
+    List<IndexedSeries> series = new ArrayList<IndexedSeries>();
     if (BirthsChart) {
     series.add(analyze(gedcom.getEntities("INDI"), "BIRT"));
     labels.put("BIRT",translate("birt"));
@@ -119,7 +119,7 @@ public class ReportEventsByMonths extends Report {
     String[] categories = CALENDARS[calendar].getMonths(true);
 
     JTabbedPane charts = new JTabbedPane();
-    for (Iterator it=series.iterator(); it.hasNext(); ) {
+    for (Iterator<IndexedSeries> it=series.iterator(); it.hasNext(); ) {
       IndexedSeries is = (IndexedSeries)it.next();
       //String label = Gedcom.getName(is.getName());
       String label = (String)labels.get(is.getName());
