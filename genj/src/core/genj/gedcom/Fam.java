@@ -34,7 +34,7 @@ public class Fam extends Entity {
     PATH_FAMMARRDATE = new TagPath("FAM:MARR:DATE"),
     PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC"),
     PATH_FAMDIVDATE  = new TagPath("FAM:DIV:DATE"),
-    PATH_FAMDIVPLAC  = new TagPath("FAM:MARR:PLAC");
+    PATH_FAMDIVPLAC  = new TagPath("FAM:DIV:PLAC");
 
   private final static TagPath
     SORT_SIBLINGS = new TagPath("CHIL:*:..:BIRT:DATE");
