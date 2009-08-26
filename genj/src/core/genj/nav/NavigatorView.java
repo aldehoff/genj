@@ -421,7 +421,7 @@ public class NavigatorView extends JPanel implements WindowBroadcastListener {
       // follow immediately
       setCurrentEntity(target);
       // propagate to others
-      WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(target), NavigatorView.this));
+      WindowManager.broadcast(new ContextSelectionEvent(new ViewContext(target), NavigatorView.this, true));
     }
   } //Jump
 
