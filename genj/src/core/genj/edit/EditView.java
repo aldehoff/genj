@@ -193,7 +193,8 @@ public class EditView extends JPanel implements ToolBarSupport, WindowBroadcastL
       ViewContext context = ContextSelectionEvent.getLastBroadcastedSelection();
       if (context!=null&&context.getGedcom()==gedcom&&gedcom.contains(context.getEntity()))
         entity = context.getEntity();
-      else
+      // fallback more (only if needed)
+      if (entity==null)
         entity = gedcom.getFirstEntity(Gedcom.INDI);
     }
     
