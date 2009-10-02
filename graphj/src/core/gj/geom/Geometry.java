@@ -941,6 +941,7 @@ public class Geometry {
       else
         result.lineTo(p.getX(), p.getY());
     }
+    result.closePath();
     
     return result;
     
