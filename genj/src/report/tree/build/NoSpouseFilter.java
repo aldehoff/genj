@@ -8,6 +8,8 @@
 
 package tree.build;
 
+import genj.gedcom.Indi;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,20 +34,25 @@ public class NoSpouseFilter extends TreeFilterBase {
         if (indibox.getDir() != IndiBox.Direction.PARENT &&
             indibox.getDir() != IndiBox.Direction.SPOUSE)
         {
-            indibox.children = getChildren(indibox);
+            indibox.children = getChildren(indibox, indibox.individual);
             indibox.spouse = null;
         }
     }
 
     /**
      * Returns all children of an individual (from all marriages)
+     * @param indibox  start looking from this individual
+     * @param parent  look only for parent's children
      */
-    private IndiBox[] getChildren(IndiBox indibox) {
-        IndiBox[] children = indibox.children;
+    private IndiBox[] getChildren(IndiBox indibox, Indi parent) {
+        IndiBox[] children = null;
+        if (indibox.individual == parent || (indibox.spouse != null && indibox.spouse.individual == parent))
+        	children = indibox.children;
+        
         if (indibox.nextMarriage != null)
-            children = merge(children, getChildren(indibox.nextMarriage));
+            children = merge(children, getChildren(indibox.nextMarriage, parent));
         if (indibox.spouse != null && indibox.spouse.nextMarriage != null)
-            children = merge(children, getChildren(indibox.spouse.nextMarriage));
+            children = merge(children, getChildren(indibox.spouse.nextMarriage, parent));
         return children;
     }
 
