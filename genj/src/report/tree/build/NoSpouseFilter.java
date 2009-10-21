@@ -57,8 +57,8 @@ public class NoSpouseFilter extends TreeFilterBase {
             return b;
         if (b == null)
             return a;
-        List list = new ArrayList(Arrays.asList(a));
+        List<IndiBox> list = new ArrayList<IndiBox>(Arrays.asList(a));
         list.addAll(Arrays.asList(b));
-        return (IndiBox[])list.toArray(new IndiBox[0]);
+        return list.toArray(new IndiBox[0]);
     }
 }
