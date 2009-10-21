@@ -84,7 +84,7 @@ public class BasicTreeBuilder implements TreeBuilder {
 		return indibox;
 	}
 
-	private void buildTree(IndiBox indibox, int dir, int genUp, int genDown) {
+	private void buildTree(IndiBox indibox, Direction dir, int genUp, int genDown) {
 		// get all families where spouse
 		List<Fam> families = new ArrayList<Fam>(Arrays.asList(indibox.individual.getFamiliesWhereSpouse()));
 
