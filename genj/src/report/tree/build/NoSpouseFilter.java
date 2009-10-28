@@ -35,6 +35,9 @@ public class NoSpouseFilter extends TreeFilterBase {
             indibox.getDir() != IndiBox.Direction.SPOUSE)
         {
             indibox.children = getChildren(indibox, indibox.individual);
+            if (indibox.children != null)
+            	for (IndiBox c : indibox.children)
+            		c.prev = indibox;
             indibox.spouse = null;
         }
     }
