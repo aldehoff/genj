@@ -178,8 +178,9 @@ import java.util.List;
       end = new GeneralPath(vertex.getShape());
     } 
     boolean animate(double index) {
-      vertex.setShape(shape(index));
-      return false;
+      Shape shape = shape(index);
+      vertex.setShape(shape);
+      return shape.equals(end);
     }
 
     private Shape shape(double index) {

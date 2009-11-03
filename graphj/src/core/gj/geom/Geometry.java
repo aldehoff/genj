@@ -914,6 +914,14 @@ public class Geometry {
   } //ConvexHullImpl
   
   /**
+   * Test to points to be equal to within a given delta
+   */
+  public static boolean equals(Point2D p1, Point2D p2, double delta) {
+    return Math.abs(p1.getX()-p2.getX()) < delta
+      && Math.abs(p1.getY()-p2.getY()) < delta;
+  }
+  
+  /**
    * Calculate the blended shape between two given shapes
    * @param t 0.0 <= frame <= 1.0
    * @param start starting shape
@@ -933,15 +941,28 @@ public class Geometry {
     
     List<Point2D> s = ShapeHelper.getPoints(start);
     List<Point2D> e = ShapeHelper.getPoints(end);
+
+    boolean isStart = true, isEnd = true;
     
     for (int i=0, n=Math.max(s.size(), e.size()); i<n; i++) {
-      Point2D p = getPoint(i>=s.size() ? s.get(s.size()-1) : s.get(i), i>=e.size() ? e.get(e.size()-1) : e.get(i), t);
+      Point2D pStart = i>=s.size() ? s.get(s.size()-1) : s.get(i);
+      Point2D pEnd = i>=e.size() ? e.get(e.size()-1) : e.get(i);
+      Point2D p = getPoint(pStart, pEnd, t);
+      if (!equals(p, pStart, 0.001))
+        isStart = false;
+      if (!equals(p, pEnd, 0.001))
+        isEnd = false;
       if (i==0)
         result.moveTo(p.getX(), p.getY());
       else
         result.lineTo(p.getX(), p.getY());
     }
     result.closePath();
+    
+    if (isEnd)
+      return end;
+    if (isStart)
+      return start;
     
     return result;
     
