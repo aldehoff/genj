@@ -23,9 +23,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -310,7 +312,15 @@ public abstract class Origin {
      * @see genj.util.Origin#getFile()
      */
     public File getFile() {
-      return "file".equals(url.getProtocol()) ? new File(url.getFile()) : null;
+      // only for locals
+      if (!"file".equals(url.getProtocol()))
+        return null;
+      try {
+        return new File(URLDecoder.decode(url.getFile(), "UTF-8"));
+      } catch (UnsupportedEncodingException e) {
+        // try fallback without url decoded
+        return new File(url.getFile());
+      }
     }
 
     /**
