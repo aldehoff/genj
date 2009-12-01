@@ -80,6 +80,16 @@ public class PointInTime implements Comparable {
   /**
    * Constructor
    */
+  public PointInTime(java.util.Calendar cal) {
+    calendar = GREGORIAN;
+    day = cal.get(java.util.Calendar.DAY_OF_MONTH) - 1;
+    month = cal.get(java.util.Calendar.MONTH);
+    year = cal.get(java.util.Calendar.YEAR);
+  }
+  
+  /**
+   * Constructor
+   */
   public PointInTime(int d, int m, int y) {
     this(d,m,y,GREGORIAN);
   }

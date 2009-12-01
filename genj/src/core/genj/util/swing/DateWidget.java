@@ -24,18 +24,28 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.util.ChangeSupport;
+import genj.util.LiturgicalYear;
 import genj.util.WordBuffer;
+import genj.util.LiturgicalYear.Sunday;
 import genj.window.WindowManager;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Generic component for editing dates
@@ -79,13 +89,14 @@ public class DateWidget extends JPanel {
     calendar = pit.getCalendar();
         
     // create calendar switches
-    ArrayList switches = new ArrayList(PointInTime.CALENDARS.length+1);
+    ArrayList<Action> actions = new ArrayList<Action>(PointInTime.CALENDARS.length+1);
     for (int s=0;s<PointInTime.CALENDARS.length;s++)
-      switches.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
+      actions.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
+    actions.add(new ConvertLiturgicalYear());
     
     // initialize Sub-components
     widgetCalendar = new PopupWidget(); 
-    widgetCalendar.setActions(switches);
+    widgetCalendar.setActions(actions);
     
     widgetYear  = new TextFieldWidget("",5+1);
     widgetYear.setSelectAllOnFocus(true);
@@ -277,6 +288,99 @@ public class DateWidget extends JPanel {
    */
   public boolean requestFocusInWindow() {
     return getComponent(1).requestFocusInWindow();
+  }
+  
+  /**
+   * Action enter a value in form of liturgical year
+   */
+  private class ConvertLiturgicalYear extends Action2 {
+    /**
+     * Constructor
+     */
+    private ConvertLiturgicalYear() {
+      setImage(LiturgicalYear.IMAGE);
+      setText("Liturgical Year");
+    }
+    
+    @Override
+    protected void execute() {
+      
+      final JTextField txtYear = new JTextField(4);
+      final JTextField txtWeek = new JTextField(3);
+
+      final Sunday[] sundays = Sunday.values();
+      String[] names = new String[sundays.length];
+      for (int i = 0; i < names.length; i++) 
+        names[i] = sundays[i].getName();
+      
+      final JComboBox pickSunday = new JComboBox(names);
+      
+      JPanel input = new JPanel(new BorderLayout());
+      input.add(txtWeek, BorderLayout.WEST);
+      input.add(pickSunday, BorderLayout.CENTER);
+      input.add(txtYear, BorderLayout.EAST);
+      
+      final Action ok = Action2.ok();
+      Action cancel = Action2.cancel();
+      
+      final ActionListener alistener = new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          
+          try {
+            Integer.parseInt(txtYear.getText());
+          } catch (NumberFormatException nfe) {
+            ok.setEnabled(false);
+            return;
+          }
+
+          Sunday sunday = sundays[pickSunday.getSelectedIndex()];
+          if (sunday.getWeeks()==0) {
+            txtWeek.setText("");
+            txtWeek.setEnabled(false);
+            ok.setEnabled(true);
+          } else {
+            txtWeek.setEnabled(true);
+            try {
+              int weeks = Integer.parseInt(txtWeek.getText());
+              ok.setEnabled(weeks>0 && weeks<=sunday.getWeeks());
+            } catch (NumberFormatException nfe) {
+              ok.setEnabled(false);
+            }
+          }
+        }
+      };
+      
+      DocumentListener dlistener = new DocumentListener() {
+        public void changedUpdate(DocumentEvent e) {
+          alistener.actionPerformed(null);
+        }
+        public void insertUpdate(DocumentEvent e) {
+          alistener.actionPerformed(null);
+        }
+        public void removeUpdate(DocumentEvent e) {
+          alistener.actionPerformed(null);
+        }
+        
+      };
+      
+      txtWeek.getDocument().addDocumentListener(dlistener);
+      txtYear.getDocument().addDocumentListener(dlistener);
+      pickSunday.addActionListener(alistener);
+      
+      pickSunday.setSelectedIndex(0);
+      
+      WindowManager wm = WindowManager.getInstance(DateWidget.this);
+
+      // confirmed?
+      if (0 == wm.openDialog("lityear", "Liturgical Year", WindowManager.QUESTION_MESSAGE, input, new Action[]{ok,cancel}, DateWidget.this)) {
+        java.util.Calendar date = sundays[pickSunday.getSelectedIndex()].getDate(
+            Integer.parseInt(txtYear.getText()),
+            txtWeek.getText().length()==0 ? 0 : Integer.parseInt(txtWeek.getText())
+        );
+        setValue(new PointInTime(date));
+      }
+      
+    }
   }
   
   /**
