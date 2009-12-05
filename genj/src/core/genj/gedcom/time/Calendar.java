@@ -40,9 +40,9 @@ public abstract class Calendar {
   protected String[] months;
   protected String[] monthsLowerCase;
   protected String[] weekDays, localizedWeekDays;
-  protected Map
-    localizedMonthNames = new HashMap(),
-    abbreviatedMonthNames = new HashMap();
+  protected Map<String,String>
+    localizedMonthNames = new HashMap<String,String>(),
+    abbreviatedMonthNames = new HashMap<String,String>();
     
   protected final static Resources resources = PointInTime.resources; 
 
