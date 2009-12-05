@@ -20,10 +20,16 @@ import java.util.List;
  */
 public class LiturgicalYear {
   
+  private final static Resources RES = Resources.get(LiturgicalYear.class);
+  
   public final static ImageIcon IMAGE = new ImageIcon(LiturgicalYear.class, "LiturgicalYear.png");
+  
+  public final static String
+    TXT_LITURGICAL_YEAR = RES.getString("liturgicalyear"),
+    TXT_SUNDAY = RES.getString("liturgicalyear.sunday");
 
 	public enum Sunday {
-		
+	  
     /* Epiphanias = 6th of January, so 1 post Epiphanias can be 7th-13th of January */
 		PostEpiphanias(Integer.MAX_VALUE, 5, "post Ephiphanias") { 
 		  
@@ -31,7 +37,7 @@ public class LiturgicalYear {
 		  @Override
 		  protected Calendar getDateImpl(int year, int postEventWeeks) {
 	      int K;  // secular number
-	      int S;  // secular sun period(? german: säkulare Sonnenschaltung)
+	      int S;  // secular sun period(? german: saekulare Sonnenschaltung)
 	      int SZ; // first sunday in march
 	      int dayOfYear;
 
@@ -173,8 +179,8 @@ public class LiturgicalYear {
 		public static Calendar getEaster(int year) {
 		  
 	    int K;  // secular number
-	    int M;  // secular moon period(? german: säkulare Mondschaltung)
-	    int S;  // secular sun period(? german: säkulare Sonnenschaltung)
+	    int M;  // secular moon period(? german: saekulare Mondschaltung)
+	    int S;  // secular sun period(? german: saekulare Sonnenschaltung)
 	    int A;  // moon parameter
 	    int D;  // seed of first full moon in spring (german: Keim ...)
 	    int R;  // Calendaric correction
@@ -206,9 +212,8 @@ public class LiturgicalYear {
 	    }
 	    return result;
 	  }
-		  
+		
 	};
-
 
 	/** demo method */
   public static void main(String[] args) {

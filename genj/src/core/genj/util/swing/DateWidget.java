@@ -40,9 +40,9 @@ import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -305,7 +305,7 @@ public class DateWidget extends JPanel {
     @Override
     protected void execute() {
       
-      final JTextField txtYear = new JTextField(4);
+      final JTextField txtYear = new JTextField(widgetYear.getText(), 4);
       final JTextField txtWeek = new JTextField(3);
 
       final Sunday[] sundays = Sunday.values();
@@ -316,6 +316,7 @@ public class DateWidget extends JPanel {
       final JComboBox pickSunday = new JComboBox(names);
       
       JPanel input = new JPanel(new BorderLayout());
+      input.add(new JLabel(LiturgicalYear.TXT_SUNDAY), BorderLayout.NORTH);
       input.add(txtWeek, BorderLayout.WEST);
       input.add(pickSunday, BorderLayout.CENTER);
       input.add(txtYear, BorderLayout.EAST);
@@ -335,10 +336,11 @@ public class DateWidget extends JPanel {
 
           Sunday sunday = sundays[pickSunday.getSelectedIndex()];
           if (sunday.getWeeks()==0) {
-            txtWeek.setText("");
+            if (e!=null) txtWeek.setText("");
             txtWeek.setEnabled(false);
             ok.setEnabled(true);
           } else {
+            if (e!=null) txtWeek.setText("1");              
             txtWeek.setEnabled(true);
             try {
               int weeks = Integer.parseInt(txtWeek.getText());
@@ -372,7 +374,7 @@ public class DateWidget extends JPanel {
       WindowManager wm = WindowManager.getInstance(DateWidget.this);
 
       // confirmed?
-      if (0 == wm.openDialog("lityear", "Liturgical Year", WindowManager.QUESTION_MESSAGE, input, new Action[]{ok,cancel}, DateWidget.this)) {
+      if (0 == wm.openDialog("lityear", LiturgicalYear.TXT_LITURGICAL_YEAR, WindowManager.QUESTION_MESSAGE, input, new Action[]{ok,cancel}, DateWidget.this)) {
         java.util.Calendar date = sundays[pickSunday.getSelectedIndex()].getDate(
             Integer.parseInt(txtYear.getText()),
             txtWeek.getText().length()==0 ? 0 : Integer.parseInt(txtWeek.getText())
