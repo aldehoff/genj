@@ -3,8 +3,7 @@
 
 The people behind GenJ (alphabetically):
 
-    Admins:
-      . Francois Massonneau
+    Admin:
       . Nils Meier 
 
     Reports:
