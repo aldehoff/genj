@@ -389,19 +389,46 @@ public class Fam extends Entity {
    */
   public void swapSpouses() throws GedcomException {
     
-    Indi 
-      husband = getHusband(),
-      wife = getWife();
+    PropertyHusband husband = (PropertyHusband) getProperty("HUSB", true);
+    PropertyWife wife = (PropertyWife) getProperty("WIFE", true);
+    
+    // noop?
+    if (husband==null&&wife==null)
+      return;
+    
+    // only one?
+    if (husband==null) {
+      setHusband(getWife());
+      return;
+    }
 
-    setWife(null);
-    setHusband(null);
+    if (wife==null) {
+      setWife(getHusband());
+      return;
+    }
       
-    if (wife!=null)
-      setHusband(wife);
-    if (husband!=null)
-      setWife(husband);
-      
+    // swivel pointers
+    PropertyFamilySpouse famsh= null;
+    PropertyFamilySpouse famsw = null;
+    
+    if (husband!=null) {
+      famsh = (PropertyFamilySpouse) husband.getTarget();
+      husband.unlink();
+    }
+
+    if (wife!=null) {
+      famsw = (PropertyFamilySpouse) wife.getTarget();
+      wife.unlink();
+    }
+
+    if (husband!=null&&famsw!=null)
+      husband.link(famsw);
+    
+    if (wife!=null&&famsh!=null)
+      wife.link(famsh);
+    
   }
+
   
   protected String getIdLinkFormat() {
  return genj.report.Options.getInstance().getLinkToFam();

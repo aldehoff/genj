@@ -127,7 +127,7 @@ public class PropertyFamilySpouse extends PropertyXRef {
     // place as husband/wife as appropriately
     if (indi.getSex()==PropertySex.MALE) {
       // swap if necessary
-      if (husband!=null)
+      if (husband!=null&&husband.getSex()!=PropertySex.MALE)
         fam.swapSpouses();
       // create new back ref
       PropertyXRef backref = new PropertyHusband();
