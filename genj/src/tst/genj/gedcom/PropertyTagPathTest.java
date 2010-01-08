@@ -79,7 +79,7 @@ public class PropertyTagPathTest extends TestCase {
   public void testGetPropertyByPath() {
     
     assertProperty(husband, "INDI"                          , husband);
-    assertProperty(husband, ".."                               ,null);
+    assertProperty(husband, ".."                               ,husband);
     assertProperty(husband, "."                                , husband);
     assertProperty(husband, "INDI:BIRT:DATE:..:..:BIRT:DATE", husband.getProperty(new TagPath("INDI:BIRT:DATE")));
 
