@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +23,39 @@ import junit.framework.TestCase;
 public class ResourcesTest extends TestCase {
   
   private final static File dir = new File("./language");
+  
+  /** check resources functionality */
+  public void testLoad() throws IOException {
+    
+    Resources r = new Resources(getClass().getResourceAsStream("resources.properties"));
+    
+    String[] keys =   { "one",  "two",  "multi", "newline", "plus",    "and" };
+    String[] values = { "true", "also", "1 2 3", "1\n2\n3", "1\n2\n3", "123" };
+    
+    assertTrue(Arrays.equals(r.getKeys().toArray(new String[keys.length]), keys));
+    for (int i=0;i<keys.length;i++) 
+      assertEquals(keys[i], values[i], r.getString(keys[i]));
+    
+  }
 
+  /** check resources functionality */
+  public void testLoadLiteral() throws IOException {
+    
+    Resources r = new Resources();
+    
+    r.load(getClass().getResourceAsStream("Literal.java.properties"), true);
+
+    String[] keys =   { "one",  "two",  "multi", "newline", "plus",    "and" };
+    String[] values = { "true", "also", "1 2 3", "1\n2\n3", "1\n2\n3", "123" };
+    
+    assertTrue(Arrays.equals(r.getKeys().toArray(new String[keys.length]), keys));
+    for (int i=0;i<keys.length;i++) 
+      assertEquals(keys[i], values[i], r.getString(keys[i]));
+    
+    
+  }
+
+  
   /** check english resources against german*/
   public void testDE() throws IOException {
     testTranslated("de");

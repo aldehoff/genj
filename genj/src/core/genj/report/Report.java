@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.137 $ $Author: nmeier $ $Date: 2010-01-08 05:35:28 $
+ * $Revision: 1.138 $ $Author: nmeier $ $Date: 2010-01-08 23:12:04 $
  */
 package genj.report;
 
@@ -686,7 +686,7 @@ public abstract class Report implements Cloneable {
         InputStream in = (reports.exists()&&reports.isDirectory()) ?
             new FileInputStream(new File(reports, src)) :
             getClass().getResourceAsStream(src);
-        resources.load(in);
+        resources.load(in, true);
       } catch (IOException e) {
         // ignore
       }
