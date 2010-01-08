@@ -161,6 +161,9 @@ public class ReportView extends View {
       DialogHelper.openDialog(report.getName(), DialogHelper.ERROR_MESSAGE, RESOURCES.getString("report.noaccept"), Action2.okOnly(), ReportView.this);
       return;
     }
+
+    // remember
+    REGISTRY.put("lastreport", report.getClass().getName());
     
     // set report ui context
     report.setOwner(this);
