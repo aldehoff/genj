@@ -18,6 +18,12 @@ package launcher;
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -105,12 +111,14 @@ public class Launcher {
   
   private static Manifest manifest;
   private static Method main;
+  private static Window splash;
   
   public final static String 
     MANIFEST = "META-INF/MANIFEST.MF",
     LAUNCH_CLASSPATH = "Launch-Classpath",
     LAUNCH_CLASS = "Launch-Class",
-    LAUNCH_PORT = "Launch-Port";
+    LAUNCH_PORT = "Launch-Port",
+    LAUNCH_SPLASH = "Launch-Splash";
   
   /**
    * Launcher's main
@@ -119,15 +127,27 @@ public class Launcher {
     
     try {
       
+      // prepare classloader
+      String[] classpath = getLaunchClasspath();
+      exportClasspath(classpath);
+      ClassLoader cl  = getClassLoader(classpath);
+      Thread.currentThread().setContextClassLoader(cl);
+      
       // setup IPC connection
-      if (!setupIPC(args))
+      if (!setupIPC(args, cl))
         return;
+      
+      // show splash screen
+      showSplash();
       
       // cd into 'current' directoruy
       cd(Launcher.class);
       
       // call main
-      callMain(args);
+      callMain(args, cl);
+      
+      // hide splash screen
+      hideSplash();
       
     } catch (Throwable t) {
       t.printStackTrace(System.err);
@@ -136,25 +156,57 @@ public class Launcher {
     // nothing more to do here
   }
   
+  private static void hideSplash() {
+    Window w = splash;
+    if (w!=null) {
+      w.dispose();
+      splash = null;
+    }
+  }
+  
+  private static void showSplash() {
+    
+    String img = getManifest().getMainAttributes().getValue(LAUNCH_SPLASH);
+    if (img==null)
+      return;
+    
+    try {
+      final Image image = Toolkit.getDefaultToolkit().createImage(Launcher.class.getResource(img));
+      
+      splash = new Window(null) {
+        @Override
+        public void paint(Graphics g) {
+          g.drawImage(image, 0, 0, this);
+        }
+      };
+      
+      MediaTracker mt = new MediaTracker(splash);
+      mt.addImage(image,0);
+      try {
+          mt.waitForID(0);
+      } catch(InterruptedException ie){}
+      
+      splash.setSize(new Dimension(image.getWidth(null), image.getHeight(null)));
+      splash.setLocationRelativeTo(null);
+      splash.setVisible(true);
+      
+    } catch (Throwable t) {
+      System.err.println("Can't read splash image "+img);
+      t.printStackTrace(System.err);
+      return;
+    }
+    
+  }
+  
   /**
    * call the main method of the class being launched
    */
-  private static void callMain(String[] args) throws Exception {
+  private static void callMain(String[] args, ClassLoader cl) throws Exception {
 
     // get access to main method?
     if (main==null) {
 
-        // prepare classpath
-      String[] classpath = getLaunchClasspath();
-      
-      // tell everyone about it
-      setClasspath(classpath);
-      
-      // prepare classloader
-      ClassLoader cl  = getClassLoader(classpath);
-  
       // instantiate class and run main
-      Thread.currentThread().setContextClassLoader(cl);
       Class clazz = cl.loadClass( getLaunchClass());
       main = clazz.getMethod("main", new Class[]{String[].class});
       
@@ -169,7 +221,7 @@ public class Launcher {
    * Setup IPC communication to other launcher instance that can handle a launch
    * @return whether to continue into launch or
    */
-  private static boolean setupIPC(String[] args) {
+  private static boolean setupIPC(String[] args, final ClassLoader cl) {
     
     final String launchClass = getLaunchClass();
     int port = getLaunchPort();
@@ -201,7 +253,7 @@ public class Launcher {
         CallHandler handler = new CallHandler() {
           public String handleCall(String msg) {
             try {
-              callMain(decode(msg));
+              callMain(decode(msg), cl);
             } catch (Throwable t) {
               return "ERR";
             }
@@ -346,7 +398,7 @@ public class Launcher {
   /**
    * Set java.class.path
    */
-  private static void setClasspath(String[] classpath) {
+  private static void exportClasspath(String[] classpath) {
     
     String separator = System.getProperty("path.separator");
     

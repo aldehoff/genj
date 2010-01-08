@@ -32,6 +32,8 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -52,7 +54,7 @@ public class ContentRenderer {
   /*package*/ Color cSelectedShape = null;
 
   /** an entity that we consider selected */
-  /*package*/ Entity selection = null;
+  /*package*/ Collection<? extends Entity> selected = new ArrayList<Entity>(0);
   
   /** the entity renderer we're using */
   /*package*/ EntityRenderer indiRenderer, famRenderer;
@@ -120,7 +122,7 @@ public class ContentRenderer {
    * Calc color for given node   */
   private Color getColor(Object content) {
     // selected?
-    if (cSelectedShape!=null&&content!=null&&content==selection) {
+    if (cSelectedShape!=null&&selected.contains(content)) {
       return cSelectedShape;
     }
     // fam?

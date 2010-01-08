@@ -204,6 +204,23 @@ public class Indi extends Entity {
     return result;
   }
   
+  /** 
+   * Calculate indi's parents. The number of partners can be
+   * smaller than the number of families this individual is
+   * child in because spouses in families don't have to be defined.
+   */
+  public List<Indi> getParents () {
+    List<Indi> parents = new ArrayList<Indi>(2);
+    for (Fam fam : getFamiliesWhereChild()) {
+      Indi husband = fam.getHusband();
+      if (husband!=null)
+        parents.add(husband);
+      Indi wife = fam.getWife();
+        parents.add(wife);
+    }
+    return parents;
+  }
+  
   /**
    * Calculate indi's children
    */

@@ -43,12 +43,19 @@ import javax.print.attribute.standard.MediaPrintableArea;
  * An extended Registry for Print parameters
  */
 public class PrintRegistry extends Registry {
+  
+  public static PrintRegistry get(Class<?> source) {
+    
+    Registry r = Registry.get(source);
+    
+    return new PrintRegistry(r);
+  }
 
   /**
    * Constructor
    */
-  public PrintRegistry(Registry registry, String view) {
-    super(registry, view);
+  private PrintRegistry(Registry registry) {
+    super(registry, "");
   }
   
   /**

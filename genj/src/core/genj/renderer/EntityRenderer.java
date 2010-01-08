@@ -39,12 +39,12 @@ import java.awt.font.LineMetrics;
 import java.awt.geom.Dimension2D;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -99,10 +99,10 @@ public class EntityRenderer {
   private Entity entity;
   
   /** all PropertyViews we know */
-  private List propViews = new ArrayList(16);
+  private List<PropertyView> propViews = new ArrayList<PropertyView>(16);
   
   /** all TableViews we know */
-  private List tableViews = new ArrayList(4);
+  private List<View> tableViews = new ArrayList<View>(4);
   
   /** whether we have a debug mode */
   private boolean isDebug = false;
@@ -160,7 +160,7 @@ public class EntityRenderer {
       reader.flush();      
       
     } catch (Throwable t) {
-      // ignored
+      Logger.getLogger("genj.renderer").log(Level.WARNING, "can't parse blueprint "+bp, t);
     }
 
     // create the root view
@@ -170,7 +170,8 @@ public class EntityRenderer {
   }
   
   /**
-   * Setup specific resolution (dpi)   */
+   * Setup specific resolution (dpi)
+   */
   public EntityRenderer setResolution(Point set) {
     dpi = new Point(set);
     // done
@@ -205,17 +206,14 @@ public class EntityRenderer {
     context = ((Graphics2D)g).getFontRenderContext();
     
     // invalidate views 
-    Iterator pv = propViews.iterator();
-    while (pv.hasNext()) {
-      ((PropertyView)pv.next()).invalidate();
-    }
+    for (PropertyView pv : propViews) 
+      pv.invalidate();
     
     // and make sure TableView's update their grid
-    Iterator tv = tableViews.iterator();
-    while (tv.hasNext()) {
+    for (View tv : tableViews) {
       // this will cause invalidateGrid on a javax.swing.text.html.TableView
       try {
-        ((View)tv.next()).replace(0,0,null);
+        tv.replace(0,0,null);
       } catch (Throwable t) {
       }
     }
@@ -237,13 +235,15 @@ public class EntityRenderer {
   }
   
   /**
-   * Sets debug mode    */
+   * Sets debug mode 
+   */
   public void setDebug(boolean set) {
     isDebug = set;
   }
 
   /**
-   * Our own HTMLDocument   */  
+   * Our own HTMLDocument
+   */  
   private class MyHTMLDocument extends HTMLDocument {
     /**
      * @see javax.swing.text.DefaultStyledDocument#getFont(javax.swing.text.AttributeSet)
@@ -265,7 +265,8 @@ public class EntityRenderer {
    */
   private class MyDocumentParser extends DocumentParser {
     /**
-     * Constructor     */
+     * Constructor
+     */
     private MyDocumentParser(DTD dtd) {
       super(dtd);
       // patch strictness
@@ -283,7 +284,8 @@ public class EntityRenderer {
     /** whether we ignore content */
     private boolean skipContent = false;
     /**
-     * Constructor     */
+     * Constructor
+     */
     protected MyHTMLReader(HTMLDocument doc) {
       doc.super(0);
     }
@@ -337,7 +339,7 @@ public class EntityRenderer {
 
       // check if the element is "prop"
       if ("prop".equals(name)) {
-        View result = new PropertyView(elem);
+        PropertyView result = new PropertyView(elem);
         propViews.add(result);
         return result;
         
@@ -446,7 +448,8 @@ public class EntityRenderer {
     }
     
     /**
-     * Get the preferred span     */
+     * Get the preferred span
+     */
     protected abstract Dimension2D getPreferredSpan();
 
     /** 
@@ -520,10 +523,10 @@ public class EntityRenderer {
       // keep view
       this.view = view;
       
-      try {
+//      try {
         view.setParent(this);
-      } catch (Throwable t) {
-      }
+//      } catch (Throwable t) {
+//      }
       
       // done
     }
@@ -580,14 +583,16 @@ public class EntityRenderer {
   } //RootView
 
   /**
-   * A view for translating text   */
+   * A view for translating text
+   */
   private class I18NView extends MyView {
     
     /** the text to paint */
     private String txt = "?";
     
     /**
-     * Constructor     */
+     * Constructor
+     */
     private I18NView(Element elem) {
       super(elem);
       // resolve and localize text .. tag|entity
@@ -606,13 +611,13 @@ public class EntityRenderer {
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       g.setFont(getFont());
       g.setColor(getForeground());
-      PropertyRenderer.DEFAULT_RENDERER.renderImpl((Graphics2D)g,r,txt,Collections.EMPTY_MAP);
+      PropertyRenderer.DEFAULT.renderImpl((Graphics2D)g,r,txt,new HashMap<String, String>());
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension2D getPreferredSpan() {
-      return PropertyRenderer.DEFAULT_RENDERER.getSizeImpl(getFont(), context, null, txt, Collections.EMPTY_MAP, dpi);
+      return PropertyRenderer.DEFAULT.getSizeImpl(getFont(), context, null, txt, new HashMap<String, String>(), dpi);
     }
   } //LocalizeView
 
@@ -630,7 +635,7 @@ public class EntityRenderer {
     private Property cachedProperty = null;
     
     /** the attributes */
-    private Map attributes;
+    private Map<String,String> attributes;
     
     /** minimum/maximum percentage of the rendering space */
     private int min, max;
@@ -645,11 +650,12 @@ public class EntityRenderer {
       super(elem);
 
       // prepare attributes
-      attributes = new HashMap();
+      attributes = new HashMap<String, String>();
       
-      for (Enumeration as = elem.getAttributes().getAttributeNames(); as.hasMoreElements(); ) {
-        String key = as.nextElement().toString();
-        attributes.put(key, elem.getAttributes().getAttribute(key));
+      for (Enumeration<?> as = elem.getAttributes().getAttributeNames(); as.hasMoreElements(); ) {
+        Object key = as.nextElement();
+        if (key instanceof String)
+          attributes.put((String)key, (String)elem.getAttributes().getAttribute(key));
       }
       
       // grab path
@@ -668,12 +674,13 @@ public class EntityRenderer {
     }
     
     /**
-     * Gets an int value from attributes     */
+     * Gets an int value from attributes
+     */
     private int getAttribute(String key, int min, int max, int def) {
       // grab a value and try to parse
-      Object val = attributes.get(key);
+      String val = attributes.get(key);
       if (val!=null) try {
-        return Math.max(min, Math.min(max, Integer.parseInt(val.toString())));
+        return Math.max(min, Math.min(max, Integer.parseInt(val)));
       } catch (NumberFormatException e) {
       }
       // not found
@@ -685,8 +692,8 @@ public class EntityRenderer {
      */
     private Property getProperty() {
       // still looking for property?
-      if (!isValid) {
-        cachedProperty = path!=null ? entity.getProperty(path) : null;
+      if (!isValid&&entity!=null&path!=null) {
+        cachedProperty = entity.getProperty(path);
         // valid now
         isValid = true;
       }      
@@ -705,7 +712,7 @@ public class EntityRenderer {
       // might resolve to a different proxy
       
       // derive from property?
-      PropertyRenderer result = PropertyRenderer.get(path, prop);
+      PropertyRenderer result = PropertyRendererFactory.DEFAULT.getRenderer(path, prop);
 
       // check renderer/prop compatibility
       if (prop==null&&!result.isNullRenderer()) 

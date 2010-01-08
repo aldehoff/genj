@@ -19,13 +19,10 @@
  */
 package genj.search;
 
-import javax.swing.JComponent;
-
-import genj.gedcom.Gedcom;
-import genj.util.Registry;
 import genj.util.swing.ImageIcon;
+import genj.view.View;
 import genj.view.ViewFactory;
-import genj.view.ViewManager;
+
 
 /**
  * Factory for the SearchView
@@ -38,8 +35,8 @@ public class SearchViewFactory implements ViewFactory {
   /**
    * @see genj.view.ViewFactory#createView(java.lang.String, genj.gedcom.Gedcom, genj.util.Registry, genj.view.ViewManager)
    */
-  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
-    return new SearchView(gedcom, registry, manager);
+  public View createView() {
+    return new SearchView();
   }
 
   /**
@@ -52,8 +49,8 @@ public class SearchViewFactory implements ViewFactory {
   /**
    * @see genj.view.ViewFactory#getTitle(boolean)
    */
-  public String getTitle(boolean abbreviate) {
-    return SearchView.resources.getString("title" + (abbreviate?".short":""));
+  public String getTitle() {
+    return SearchView.resources.getString("title");
   }
 
 } //SearchViewFactory

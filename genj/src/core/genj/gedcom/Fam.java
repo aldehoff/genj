@@ -46,9 +46,9 @@ public class Fam extends Entity {
       super(SORT_SIBLINGS);
     }
     
-    public int compare(Object o1, Object o2) {
-      int result = super.compare(o1, o2);
-      return result!=0 ? result : getPropertyPosition((Property)o1) - getPropertyPosition((Property)o2);
+    public int compare(Property p1, Property p2) {
+      int result = super.compare(p1, p2);
+      return result!=0 ? result : getPropertyPosition(p1) - getPropertyPosition(p2);
     }
   };
 

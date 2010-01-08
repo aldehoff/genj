@@ -22,8 +22,10 @@ package genj.util.swing;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,16 +46,16 @@ import javax.swing.ListSelectionModel;
  * A component that shows a list of elements the user can choose - based on whether an initial 
  * selection is provided selections are shown with checkboxes, otherwise only the elements themselves are rendered.
  */
-public class ListSelectionWidget extends JComponent {
+public class ListSelectionWidget<T> extends JComponent {
 
   /** list showing tag paths */
   private JList lChoose;
   
   /** the tag paths */
-  private List choices = new ArrayList();
+  private List<T> choices = new ArrayList<T>();
   
   /** the selection */
-  private Set selection = null;
+  private Set<T> selection = null;
 
   /**
    * Constructor
@@ -70,6 +72,21 @@ public class ListSelectionWidget extends JComponent {
     add(new JScrollPane(lChoose),"Center");
 
     // Done
+  }
+  
+  @Override
+  public synchronized void addMouseListener(MouseListener l) {
+    lChoose.addMouseListener(l);
+  }
+
+  @Override
+  public synchronized void removeMouseListener(MouseListener l) {
+    lChoose.removeMouseListener(l);
+  }
+
+  public T getChoice(Point point) {
+    int i = lChoose.locationToIndex(point);
+    return i<0||i>choices.size()-1 ? null : choices.get(i);
   }
 
   /**
@@ -89,7 +106,7 @@ public class ListSelectionWidget extends JComponent {
   /**
    * Adds a choice to this list
    */
-  public void addChoice(Object choice) {
+  public void addChoice(T choice) {
     choices.add(choice);
     update();
   }
@@ -97,7 +114,7 @@ public class ListSelectionWidget extends JComponent {
   /**
    * Removes a choice from this list
    */
-  public void removeChoice(Object choice) {
+  public void removeChoice(T choice) {
     choices.remove(choice);
     update();
   }
@@ -105,14 +122,14 @@ public class ListSelectionWidget extends JComponent {
   /**
    * Returns the choices
    */
-  public List getChoices() {
+  public List<T> getChoices() {
     return Collections.unmodifiableList(choices);
   }
 
   /**
    * Sets the choices
    */
-  public void setChoices(Object[] set) {
+  public void setChoices(T[] set) {
     choices.clear();
     choices.addAll(Arrays.asList(set));
     update();
@@ -121,24 +138,29 @@ public class ListSelectionWidget extends JComponent {
   /**
    * Sets the choices
    */
-  public void setChoices(Collection c) {
-    choices = new ArrayList(c);
+  public void setChoices(Collection<T> c) {
+    choices = new ArrayList<T>(c);
     update();
   }
   
   /**
    * Set selection
    */
-  public void setSelection(Set set) {
-    selection = new HashSet(set);
-    selection.retainAll(choices);
+  public void setSelection(Set<T> set) {
+    selection = new HashSet<T>(set);
+    
+    for (T t : set)
+      if (!choices.contains(t))
+        choices.add(t);
+    
+    update();
   }
   
   /**
    * Return selection
    */
-  public Set getSelection() {
-    if (selection==null) selection = new HashSet();
+  public Set<T> getSelection() {
+    if (selection==null) selection = new HashSet<T>();
     return Collections.unmodifiableSet(selection);
   }
 
@@ -154,7 +176,7 @@ public class ListSelectionWidget extends JComponent {
     }
 
     // Move it down
-    Object o = choices.get(row);
+    T o = choices.get(row);
     choices.set(row, choices.get(row-1));
     choices.set(row-1, o);
 
@@ -174,7 +196,7 @@ public class ListSelectionWidget extends JComponent {
       return;
 
     // Move it down
-    Object o = choices.get(row);
+    T o = choices.get(row);
     choices.set(row, choices.get(row+1));
     choices.set(row+1, o);
 
@@ -186,14 +208,14 @@ public class ListSelectionWidget extends JComponent {
   /**
    * Override to provide custom text
    */
-  protected String getText(Object choice) {
+  protected String getText(T choice) {
     return choice.toString();
   }
 
   /**
    * Override to provide custom text
    */
-  protected ImageIcon getIcon(Object choice) {
+  protected ImageIcon getIcon(T choice) {
     return null;
   }
 
@@ -216,11 +238,12 @@ public class ListSelectionWidget extends JComponent {
     }
 
     /** callback for component that renders element */
+    @SuppressWarnings("unchecked")
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
       // prepare its data
       super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-      setText( ListSelectionWidget.this.getText(value) );
-      setIcon( ListSelectionWidget.this.getIcon(value) );
+      setText( ListSelectionWidget.this.getText( (T)value) );
+      setIcon( ListSelectionWidget.this.getIcon( (T)value) );
       // with selection or not?
       if (selection==null) 
         return this;
@@ -243,7 +266,7 @@ public class ListSelectionWidget extends JComponent {
       int pos = lChoose.locationToIndex(me.getPoint());
       if (pos==-1) return;
       // Get entry and invert selection
-      Object choice = choices.get(pos);
+      T choice = choices.get(pos);
       if (!selection.remove(choice)) 
         selection.add(choice);
       // Show it 

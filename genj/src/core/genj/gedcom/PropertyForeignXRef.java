@@ -93,7 +93,7 @@ import genj.util.swing.ImageIcon;
    * @see genj.gedcom.PropertyForeignXRef#isValid()
    */
   public boolean isValid() {
-    return false;
+    return true; //always valid
   }
 
   /**

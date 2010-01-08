@@ -163,11 +163,10 @@ public class PropertyAge extends Property {
   /**
    * @see genj.gedcom.Property#compareTo(java.lang.Object)
    */
-  public int compareTo(Object o) {
-    PropertyAge other = (PropertyAge)o;
+  public int compareTo(Property other) {
     if (!isValid()||!other.isValid())
-      return super.compareTo(o);
-    return age.compareTo(other.age);
+      return super.compareTo(other);
+    return age.compareTo(((PropertyAge)other).age);
   }
 
   /**

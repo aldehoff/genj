@@ -210,15 +210,11 @@ public class PropertyChange extends Property implements MultiLineProperty {
   /**
    * @see genj.gedcom.Property#compareTo(java.lang.Object)
    */
-  public int compareTo(Object o) {
-    // safety check
-    if (!(o instanceof PropertyChange))
-      return super.compareTo(o);
+  public int compareTo(Property other) {
     // compare time
-    PropertyChange other = (PropertyChange)o;
-    if (time<other.time)
+    if (time<((PropertyChange)other).time)
       return -1;
-    if (time>other.time)
+    if (time>((PropertyChange)other).time)
       return 1;
     return 0;
   }

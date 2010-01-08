@@ -79,7 +79,6 @@ public class TreeViewPrinter implements Printer {
     renderer.cArcs          = Color.black;
     renderer.cFamShape      = Color.black;
     renderer.cIndiShape     = Color.black;
-    renderer.selection      = null;
 
     if (!preview) {    
       renderer.indiRenderer   = tree.createEntityRenderer(Gedcom.INDI).setResolution(dpi);

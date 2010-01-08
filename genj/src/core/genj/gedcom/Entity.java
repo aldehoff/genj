@@ -186,13 +186,12 @@ public class Entity extends Property {
   /**
    * @see genj.gedcom.Property#compareTo(java.lang.Object)
    */
-  public int compareTo(Object o) {
-    try {
-      Entity other = (Entity)o;
-      return getID() - other.getID(); 
-    } catch (Throwable t) {
-    }
-    return super.compareTo(o);
+  public int compareTo(Property other) {
+    
+    if (!(other instanceof Entity))
+      throw new IllegalArgumentException("Cannot compare entity to property");
+    
+    return getID() - ((Entity)other).getID(); 
   }
 
   /**

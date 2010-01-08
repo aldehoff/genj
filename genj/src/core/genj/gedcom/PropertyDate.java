@@ -79,9 +79,8 @@ public class PropertyDate extends Property {
   /**
    * @see java.lang.Comparable#compareTo(Object)
    */
-  public int compareTo(Object o) {
-    if (!(o instanceof PropertyDate)) return super.compareTo(o);
-    return start.compareTo(((PropertyDate)o).start);
+  public int compareTo(Property other) {
+    return start.compareTo(((PropertyDate)other).start);
   }
   
   /**

@@ -20,68 +20,47 @@
 package genj.table;
 
 import genj.common.AbstractPropertyTableModel;
+import genj.common.PropertyTableModel;
 import genj.common.PropertyTableWidget;
+import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
-import genj.view.ToolBarSupport;
-import genj.view.ViewManager;
+import genj.view.SettingsAction;
+import genj.view.ToolBar;
+import genj.view.View;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.table.TableModel;
-
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
-public class TableView extends JPanel implements ToolBarSupport  {
+public class TableView extends View {
   
   private final static Logger LOG = Logger.getLogger("genj.table");
-
+  private final static Registry REGISTRY = Registry.get(TableView.class);
+  
   /** a static set of resources */
   private Resources resources = Resources.get(this);
-  
-  /** the gedcom we're looking at */
-  /*package*/ Gedcom gedcom;
-  
-  /** the manager around us */
-  private ViewManager manager;
-  
-  /** the registry we keep */
-  private Registry registry;
-  
-  /** the title we keep */
-  private String title;
   
   /** the table we're using */
   /*package*/ PropertyTableWidget propertyTable;
   
-  /** the gedcom listener we're using */
-  private GedcomListener listener;
-  
   /** the modes we're offering */
-  private Map modes = new HashMap();
+  private Map<String, Mode> modes = new HashMap<String, Mode>();
     {
-      modes.put(Gedcom.INDI, new Mode(Gedcom.INDI, new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC", "INDI:OBJE:FILE"}));
+      modes.put(Gedcom.INDI, new Mode(Gedcom.INDI, new String[]{"INDI","INDI:NAME","INDI:SEX","INDI:BIRT:DATE","INDI:BIRT:PLAC","INDI:FAMS", "INDI:FAMC"}));
       modes.put(Gedcom.FAM , new Mode(Gedcom.FAM , new String[]{"FAM" ,"FAM:MARR:DATE","FAM:MARR:PLAC", "FAM:HUSB", "FAM:WIFE", "FAM:CHIL" }));
       modes.put(Gedcom.OBJE, new Mode(Gedcom.OBJE, new String[]{"OBJE","OBJE:TITL"}));
       modes.put(Gedcom.NOTE, new Mode(Gedcom.NOTE, new String[]{"NOTE","NOTE:NOTE"}));
@@ -91,39 +70,40 @@ public class TableView extends JPanel implements ToolBarSupport  {
     };
   
   /** current type we're showing */
-  private Mode currentMode = getMode(Gedcom.INDI);
+  private Mode currentMode;
   
   /**
    * Constructor
    */
-  public TableView(String titl, Gedcom gedcom, Registry registry, ViewManager mgr) {
+  public TableView() {
     
-    // keep some stuff
-    this.gedcom = gedcom;
-    this.registry = registry;
-    this.title = titl;
-    this.manager = mgr;
-    
-    // read properties
-    loadProperties();
-    
+    // get modes
+    for (Mode mode : modes.values())
+      mode.load();
+
     // create our table
-    propertyTable = new PropertyTableWidget(null);
+    propertyTable = new PropertyTableWidget();
     propertyTable.setAutoResize(false);
 
     // lay it out
     setLayout(new BorderLayout());
     add(propertyTable, BorderLayout.CENTER);
     
-    // shortcuts
-    new NextMode(true).install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
-    new NextMode(false).install(this, JComponent.WHEN_IN_FOCUSED_WINDOW);
+    // get current mode
+    currentMode = getMode(Gedcom.INDI);
+    String tag = REGISTRY.get("mode", "");
+    if (modes.containsKey(tag))
+      currentMode = getMode(tag);
+    
+    // shortcuts KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK)
+    new NextMode(true).install(this, "ctrl pressed LEFT");
+    new NextMode(false).install(this, "ctrl pressed RIGHT");
     
     // done
   }
   
-  /*package*/ TableModel getModel() {
-    return propertyTable.getTableModel();
+  /*package*/ PropertyTableWidget getTable() {
+    return propertyTable;
   }
   
   /**
@@ -131,30 +111,6 @@ public class TableView extends JPanel implements ToolBarSupport  {
    */
   public Dimension getPreferredSize() {
     return new Dimension(480,320);
-  }
-  
-  /**
-   * callback - chance to hook-up on add
-   */  
-  public void addNotify() {
-    // continue
-    super.addNotify();
-    // hook on
-    Mode set = currentMode;
-    currentMode = null;
-    setMode(set);
-  }
-
-  /**
-   * callback - chance to hook-off on remove
-   */
-  public void removeNotify() {
-    // save state
-    saveProperties();
-    // delegate
-    super.removeNotify();
-    // make sure the swing model is disconnected from gedcom model
-    propertyTable.setModel(null);
   }
   
   /**
@@ -181,71 +137,88 @@ public class TableView extends JPanel implements ToolBarSupport  {
    * Sets the type of entities to look at
    */
   /*package*/ void setMode(Mode set) {
+    PropertyTableModel currentModel = propertyTable.getModel();
+    
     // give mode a change to grab what it wants to preserve
-    if (currentMode!=null)
-      currentMode.save(registry);
+    if (currentModel!=null&&currentMode!=null)
+      currentMode.save();
+    
     // remember current mode
     currentMode = set;
+    
     // tell to table
-    propertyTable.setModel(new Model(currentMode));
-    // update its layout
-    propertyTable.setColumnLayout(currentMode.layout);
+    if (currentModel!=null) {
+      propertyTable.setModel(new Model(currentModel.getGedcom(),currentMode));
+      propertyTable.setColumnLayout(currentMode.layout);
+    }
+  }
+  
+  @Override
+  public void setContext(Context context, boolean isActionPerformed) {
+    
+    // save settings
+    currentMode.save();
+
+    // clear?
+    PropertyTableModel old = propertyTable.getModel();
+    if (context.getGedcom()==null) {
+      if (old!=null)
+        propertyTable.setModel(null);
+      return;
+    }
+    
+    // new gedcom?
+    if (old==null||old.getGedcom()!=context.getGedcom()) {
+      propertyTable.setModel(new Model(context.getGedcom(), currentMode));
+      propertyTable.setColumnLayout(currentMode.layout);
+    }
+
+    // select
+    propertyTable.select(context);
   }
   
   /**
    * @see genj.view.ToolBarSupport#populate(JToolBar)
    */
-  public void populate(JToolBar bar) {
-    // create buttons for mode switch
-    ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(bar);
-    
-    InputMap inputs = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    
+  public void populate(ToolBar toolbar) {
+	  
     for (int i=0, j=1;i<Gedcom.ENTITIES.length;i++) {
       String tag = Gedcom.ENTITIES[i];
-      SwitchMode change = new SwitchMode(getMode(tag));
-      bh.create(change);
+      toolbar.add(new SwitchMode(getMode(tag)));
     }
     
-    // done
+    toolbar.add(new Settings());
+
   }
   
   /**
-   * Read properties from registry
+   * Write table settings before going
    */
-  private void loadProperties() {
-
-    // get modes
-    Iterator it = modes.values().iterator();
-    while (it.hasNext()) {
-      Mode mode = (Mode)it.next();
-      mode.load(registry);
-    }
-
-    // get current mode
-    String tag = registry.get("mode", "");
-    if (modes.containsKey(tag))
-      currentMode = getMode(tag);
-    
-    // Done
-  }
-  
-  /**
-   * Write properties from registry
-   */
-  private void saveProperties() {
-    
-    // save current type
-    registry.put("mode", currentMode.getTag());
-    
+  @Override
+  public void removeNotify() {
     // save modes
-    Iterator it = modes.values().iterator();
-    while (it.hasNext()) {
-      Mode mode = (Mode)it.next();
-      mode.save(registry);
+    for (Mode mode : modes.values())
+      mode.save();
+    // continue
+    super.removeNotify();
+  }
+  
+  /**
+   * Action - settings
+   */
+  private class Settings extends SettingsAction<TableViewSettings> {
+
+    @Override
+    protected void commit(TableViewSettings editor) {
+      editor.commit();
     }
-    // Done
-  }  
+
+    @Override
+    protected TableViewSettings getEditor() {
+      return new TableViewSettings(TableView.this);
+    }
+
+  }
   
   /**
    * Action - go to next mode
@@ -253,17 +226,13 @@ public class TableView extends JPanel implements ToolBarSupport  {
   private class NextMode extends Action2 {
     private int dir;
     private NextMode(boolean left) {
-      int vk;
       if (left) {
-        vk = KeyEvent.VK_LEFT;
         dir = -1;
       } else {
-        vk = KeyEvent.VK_RIGHT;
         dir = 1;
       }
-      setAccelerator(KeyStroke.getKeyStroke(vk, KeyEvent.CTRL_DOWN_MASK));
     }
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       int next = -1;
       for (int i=0,j=Gedcom.ENTITIES.length; i<j; i++) {
         next = (i+j+dir)%Gedcom.ENTITIES.length;
@@ -287,8 +256,11 @@ public class TableView extends JPanel implements ToolBarSupport  {
       setImage(Gedcom.getEntityImage(mode.getTag()));
     }
     /** run */
-    public void execute() {
+    public void actionPerformed(ActionEvent event) {
       setMode(mode);
+      
+      // save current type
+      REGISTRY.put("mode", mode.getTag());
     }
   } //ActionMode
   
@@ -301,18 +273,14 @@ public class TableView extends JPanel implements ToolBarSupport  {
     private Mode mode;
     
     /** our cached rows */
-    private List rows;
+    private List<Entity> rows;
     
     /** constructor */
-    private Model(Mode set) {
+    private Model(Gedcom gedcom, Mode set) {
+      super(gedcom);
       mode = set;
     }
     
-    /** gedcom */
-    public Gedcom getGedcom() {
-      return gedcom;
-    }
-
     /** # columns */
     public int getNumCols() {
       return mode.getPaths().length;
@@ -322,7 +290,7 @@ public class TableView extends JPanel implements ToolBarSupport  {
     public int getNumRows() {
       // cache entities if not there yet
       if (rows==null) 
-        rows = new ArrayList(gedcom.getEntities(mode.getTag()));
+        rows = new ArrayList<Entity>(getGedcom().getEntities(mode.getTag()));
       // ready 
       return rows.size();
     }
@@ -440,13 +408,13 @@ public class TableView extends JPanel implements ToolBarSupport  {
     }
     
     /** load properties from registry */
-    private void load(Registry r) {
+    private void load() {
       
-      String[] ps = r.get(tag+".paths" , (String[])null);
+      String[] ps = REGISTRY.get(tag+".paths" , (String[])null);
       if (ps!=null) 
         paths = TagPath.toArray(ps);
 
-      layout = r.get(tag+".layout", (String)null);
+      layout = REGISTRY.get(tag+".layout", (String)null);
       
     }
     
@@ -463,14 +431,14 @@ public class TableView extends JPanel implements ToolBarSupport  {
     }
     
     /** save properties from registry */
-    private void save(Registry r) {
+    private void save() {
       
       // grab current column widths & sort column
-      if (currentMode==this) 
+      if (currentMode==this && propertyTable.getModel()!=null) 
         layout = propertyTable.getColumnLayout();
 
-	    registry.put(tag+".paths" , paths);
-	    registry.put(tag+".layout", layout);
+	    REGISTRY.put(tag+".paths" , paths);
+	    REGISTRY.put(tag+".layout", layout);
     }
     
     /** tag */

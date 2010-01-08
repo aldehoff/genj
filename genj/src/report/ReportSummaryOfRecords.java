@@ -80,7 +80,7 @@ public class ReportSummaryOfRecords extends Report {
   /**
    * The report's entry point
    */
-  public void start(Gedcom gedcom) {
+  public Document start(Gedcom gedcom) {
 
     // create a document
     Document doc = new Document(translate("title", gedcom.getName()));
@@ -105,7 +105,7 @@ public class ReportSummaryOfRecords extends Report {
     doc.nextPage();
 
     // Done
-    showDocumentToUser(doc);
+    return doc;
   }
 
   /**

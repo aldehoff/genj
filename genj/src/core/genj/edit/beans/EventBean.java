@@ -25,7 +25,6 @@ import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
-import genj.util.Registry;
 import genj.util.swing.NestedBlockLayout;
 
 import javax.swing.JCheckBox;
@@ -46,8 +45,7 @@ public class EventBean extends PropertyBean {
   private JLabel lAgeAt;
   private JTextField tAge;
   
-  void initialize(Registry setRegistry) {
-    super.initialize(setRegistry);
+  public EventBean() {
     
     setLayout(LAYOUT.copy());
     
@@ -57,7 +55,7 @@ public class EventBean extends PropertyBean {
     tAge.setEditable(false);
     tAge.setFocusable(false);
 
-    cKnown = new JCheckBox(resources.getString("even.known"));
+    cKnown = new JCheckBox(RESOURCES.getString("even.known"));
     cKnown.addActionListener(changeSupport);
     
     add(lAgeAt);
@@ -69,8 +67,7 @@ public class EventBean extends PropertyBean {
   /**
    * Finish proxying edit for property Birth
    */
-  public void commit(Property property) {
-    super.commit(property);
+  protected void commitImpl(Property property) {
     if (cKnown.isVisible()) {
       ((PropertyEvent)property).setKnownToHaveHappened(cKnown.isSelected());
     }
@@ -86,10 +83,6 @@ public class EventBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  boolean accepts(Property prop) {
-    return prop instanceof PropertyEvent;
-  }
-  
   public void setPropertyImpl(Property prop) {
 
     if (prop==null)
@@ -113,10 +106,10 @@ public class EventBean extends PropertyBean {
             age = delta.toString();
         }
       } else {
-        age = date!=null ? indi.getAgeString(date.getStart()) : resources.getString("even.age.?");
+        age = date!=null ? indi.getAgeString(date.getStart()) : RESOURCES.getString("even.age.?");
       }
       
-      lAgeAt.setText(resources.getString(ageat));
+      lAgeAt.setText(RESOURCES.getString(ageat));
       tAge.setText(age);
       
       lAgeAt.setVisible(true);

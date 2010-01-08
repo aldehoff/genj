@@ -164,16 +164,16 @@ public class Almanac {
   /**
    * Accessor - categories
    */
-  public List getCategories() {
+  public List<String> getCategories() {
     synchronized (categories) {
-      return new ArrayList(categories);
+      return new ArrayList<String>(categories);
     }
   }
   
   /**
    * Accessor - events by point in time
    */
-  public Iterator getEvents(PointInTime when, int days, Set cats) throws GedcomException {
+  public Iterator<Event> getEvents(PointInTime when, int days, Set cats) throws GedcomException {
     return new Range(when, days, cats);
   }
   

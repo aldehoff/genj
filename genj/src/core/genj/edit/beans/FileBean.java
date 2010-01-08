@@ -19,11 +19,11 @@
  */
 package genj.edit.beans;
 
+import genj.edit.actions.RunExternal;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.util.Origin;
-import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.ImageWidget;
@@ -54,7 +54,7 @@ public class FileBean extends PropertyBean {
   private ImageWidget preview = new ImageWidget();
   
   /** a checkbox as accessory */
-  private JCheckBox updateMeta = new JCheckBox(resources.getString("file.update"), true);
+  private JCheckBox updateMeta = new JCheckBox(RESOURCES.getString("file.update"), true);
   
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
@@ -63,7 +63,7 @@ public class FileBean extends PropertyBean {
     public void actionPerformed(ActionEvent e) {
       
       // remember directory
-      registry.put("bean.file.dir", chooser.getDirectory());
+      REGISTRY.put("bean.file.dir", chooser.getDirectory());
       
       // show file
       File file = getProperty().getGedcom().getOrigin().getFile(chooser.getFile().toString());
@@ -82,8 +82,7 @@ public class FileBean extends PropertyBean {
     }
   };
   
-  void initialize(Registry setRegistry) {
-    super.initialize(setRegistry);
+  public FileBean() {
     
     setLayout(new BorderLayout());
     
@@ -109,9 +108,6 @@ public class FileBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  boolean accepts(Property prop) {
-    return prop instanceof PropertyFile || prop instanceof PropertyBlob;
-  }
   public void setPropertyImpl(Property property) {
 
     if (property==null)
@@ -128,7 +124,7 @@ public class FileBean extends PropertyBean {
       if (sm!=null) 
         sm.checkPermission( new FilePermission(dir, "read"));      
 
-      chooser.setDirectory(registry.get("bean.file.dir", dir));
+      chooser.setDirectory(REGISTRY.get("bean.file.dir", dir));
       chooser.setVisible(true);
       defaultFocus = chooser;
 
@@ -168,7 +164,7 @@ public class FileBean extends PropertyBean {
 
     }
       
-    preview.setZoom(registry.get("file.zoom", 0)/100F);
+    preview.setZoom(REGISTRY.get("file.zoom", 0)/100F);
     
     // Done
   }
@@ -176,9 +172,7 @@ public class FileBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Property property) {
-    
-    super.commit(property);
+  protected void commitImpl(Property property) {
     
     // propagate
     String value = chooser.getFile().toString();
@@ -209,6 +203,10 @@ public class FileBean extends PropertyBean {
       result.addAction(new ActionZoom(150));
       result.addAction(new ActionZoom(200));
       result.addAction(new ActionZoom(  0));
+      
+      PropertyFile file = (PropertyFile)getProperty();
+      if (file!=null) 
+        result.addAction(new RunExternal(file));
     }
     // all done
     return result;
@@ -225,15 +223,15 @@ public class FileBean extends PropertyBean {
      */
     protected ActionZoom(int zOOm) {
       zoom = zOOm;
-      setText(zoom==0?resources.getString("file.zoom.fit"):zoom+"%");
+      setText(zoom==0?RESOURCES.getString("file.zoom.fit"):zoom+"%");
       setEnabled(zoom != (int)(preview.getZoom()*100));
     }
     /**
      * @see genj.util.swing.Action2#execute()
      */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       preview.setZoom(zoom/100F);
-      registry.put("file.zoom", zoom);
+      REGISTRY.put("file.zoom", zoom);
     }
   } //ActionZoom
 
@@ -251,15 +249,14 @@ public class FileBean extends PropertyBean {
     }
      
     /** callback - dropped */
+    @SuppressWarnings("unchecked")
     public void drop(DropTargetDropEvent dtde) {
       try {
         dtde.acceptDrop(dtde.getDropAction());
         
-        List files = (List)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-        File file = (File)files.get(0);
-        chooser.setFile(file);
-        
-        preview.setSource(new ImageWidget.FileSource(file));
+        List<File> files = (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+        chooser.setFile(files.get(0));
+        preview.setSource(new ImageWidget.FileSource(files.get(0)));
         
         dtde.dropComplete(true);
         

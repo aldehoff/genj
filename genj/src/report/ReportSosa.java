@@ -174,7 +174,7 @@ public class ReportSosa extends Report {
 /**
    * Main for argument individual
    */
-  public void start(Indi indi) {
+  public Document start(Indi indi) {
 
     // Init some stuff
     PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
@@ -221,7 +221,7 @@ public class ReportSosa extends Report {
     recursion.start(indi, policy, doc);
 
     // Done
-    showDocumentToUser(doc);
+    return doc;
   }
 
   /**

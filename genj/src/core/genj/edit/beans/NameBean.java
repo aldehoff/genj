@@ -24,12 +24,11 @@ import java.awt.event.ActionListener;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
-import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
-import genj.window.WindowManager;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -46,7 +45,7 @@ public class NameBean extends PropertyBean {
   private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><l/><v wx=\"1\"/></row><row><l/><v wx=\"1\"/><check/></row><row><l/><v wx=\"1\"/></row></col>");
   
   /** our components */
-  private Property[] sameLastNames;
+  private Property[] sameLastNames = new Property[0];
   private ChoiceWidget cLast, cFirst;
   private JCheckBox cAll;
   private TextFieldWidget tSuff;
@@ -60,11 +59,10 @@ public class NameBean extends PropertyBean {
     // we're using getDisplayValue() here
     // because like in PropertyRelationship's case there might be more
     // in the gedcom value than what we want to display (witness@INDI:BIRT)
-    return resources.getString("choice.global.confirm", new String[]{ ""+sameLastNames.length, ((PropertyName)getProperty()).getLastName(), cLast.getText()});
+    return RESOURCES.getString("choice.global.confirm", new String[]{ ""+sameLastNames.length, ((PropertyName)getProperty()).getLastName(), cLast.getText()});
   }
   
-  void initialize(Registry setRegistry) {
-    super.initialize(setRegistry);
+  public NameBean() {
     
     setLayout(LAYOUT.copy());
 
@@ -105,9 +103,8 @@ public class NameBean extends PropertyBean {
     cAll.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         String msg = getReplaceAllMsg();
-        WindowManager wm = WindowManager.getInstance(NameBean.this);
-        if (wm!=null&&msg!=null&&cAll.isSelected()) {
-          int rc = wm.openDialog(null, resources.getString("choice.global.enable"), WindowManager.QUESTION_MESSAGE, msg, Action2.yesNo(), NameBean.this);
+        if (msg!=null&&cAll.isSelected()) {
+          int rc = DialogHelper.openDialog(RESOURCES.getString("choice.global.enable"), DialogHelper.QUESTION_MESSAGE, msg, Action2.yesNo(), NameBean.this);
           cAll.setSelected(rc==0);
         }        
       }
@@ -122,10 +119,9 @@ public class NameBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Property property) {
+  @Override
+  protected void commitImpl(Property property) {
 
-    super.commit(property);
-    
     // ... calc texts
     String first = cFirst.getText().trim();
     String last  = cLast .getText().trim();
@@ -141,23 +137,25 @@ public class NameBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  boolean accepts(Property prop) {
-    return prop instanceof PropertyName;
-  }
   public void setPropertyImpl(Property prop) {
+    
     PropertyName name = (PropertyName)prop;
-    if (name==null)
-      return;
-    
-    // keep track of who has the same last name
-    sameLastNames = name.getSameLastNames();
-    
-    // first, last, suff
-    cLast.setValues(name.getLastNames(true));
-    cLast.setText(name.getLastName());
-    cFirst.setValues(name.getFirstNames(true));
-    cFirst.setText(name.getFirstName()); 
-    tSuff.setText(name.getSuffix()); 
+    if (name==null) {
+      sameLastNames = new Property[0];
+      cLast.setValues(new PropertyName[0]);
+      cLast.setText("");
+      cFirst.setValues(new PropertyName[0]);
+      cFirst.setText("");
+    } else {
+      // keep track of who has the same last name
+      sameLastNames = name.getSameLastNames();
+      // first, last, suff
+      cLast.setValues(name.getLastNames(true));
+      cLast.setText(name.getLastName());
+      cFirst.setValues(name.getFirstNames(true));
+      cFirst.setText(name.getFirstName()); 
+      tSuff.setText(name.getSuffix()); 
+    }
     
     cAll.setVisible(false);
     cAll.setSelected(false);

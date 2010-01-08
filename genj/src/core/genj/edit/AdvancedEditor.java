@@ -21,6 +21,7 @@ package genj.edit;
 
 import genj.common.SelectEntityWidget;
 import genj.edit.beans.PropertyBean;
+import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -35,11 +36,12 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
-import genj.view.ContextSelectionEvent;
+import genj.view.ActionProvider;
+import genj.view.SelectionSink;
 import genj.view.ViewContext;
-import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -51,15 +53,14 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -90,6 +91,8 @@ import javax.swing.tree.TreePath;
     ACC_PASTE = "ctrl V";
 
   private final static Clipboard clipboard = initClipboard();
+  
+  private final static Registry REGISTRY = Registry.get(AdvancedEditor.class);
   
   private boolean ignoreSelection = false;
 
@@ -122,28 +125,24 @@ import javax.swing.tree.TreePath;
   private JSplitPane        splitPane = null;
 
   /** view */
-  private EditView editView;
+  private EditView view;
 
   /** actions */
   private Action2    
     ok   = new OK(), 
     cancel = new Cancel();
 
-  /** registry */
-  private Registry registry;
-  
   /** interaction callback */
   private InteractionListener callback;
 
   /**
    * Initialize
    */
-  public void init(Gedcom ged, EditView view, Registry regty) {
+  public AdvancedEditor(Gedcom gedcom, EditView view) {
     
     // remember
-    gedcom = ged;
-    editView = view;
-    registry = regty;
+    this.gedcom = gedcom;
+    this.view = view;
     
     // TREE Component's 
     tree = new Tree();
@@ -165,7 +164,13 @@ import javax.swing.tree.TreePath;
 
     // SplitPane with tree/edit
     splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treePane, editScroll);
-    splitPane.setDividerLocation(registry.get("divider",-1));
+    splitPane.setDividerLocation(REGISTRY.get("divider",-1));
+    splitPane.addPropertyChangeListener(new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        if (JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(evt.getPropertyName()))
+          REGISTRY.put("divider",splitPane.getDividerLocation());
+      }
+    });
 
     // layout
     setLayout(new BorderLayout());
@@ -175,11 +180,7 @@ import javax.swing.tree.TreePath;
     setFocusTraversalPolicy(new FocusPolicy());
     setFocusCycleRoot(true);
     
-    // shortcuts
-    new Cut().install(tree, JComponent.WHEN_FOCUSED);
-    new Copy().install(tree, JComponent.WHEN_FOCUSED);
-    new Paste().install(tree, JComponent.WHEN_FOCUSED);
-    
+
     // done    
   }
   
@@ -189,26 +190,21 @@ import javax.swing.tree.TreePath;
   public ViewContext getContext() {
     return tree.getContext();
   }
-  
-  /**
-   * Component callback event in case removed from parent. Used
-   * for storing current state.
-   */
-  public void removeNotify() {
-    // remember
-    registry.put("divider",splitPane.getDividerLocation());
-    // continue
-    super.removeNotify();
-  }
 
   /**
    * Accessor - current context 
    * @param context context to switch to
    */
-  public void setContext(ViewContext context) {
+  public void setContext(Context context) {
+    
+    // clear?
+    if (context.getGedcom()==null) {
+      tree.setRoot(null);
+      return;
+    }
     
     // ignore?
-    if (ignoreSelection||context.getEntities().length==0)
+    if (ignoreSelection||context.getEntities().isEmpty())
       return;
 
     // clear current selection
@@ -220,13 +216,13 @@ import javax.swing.tree.TreePath;
       tree.setRoot(entity);
 
     // set selection
-    Property[] props = context.getProperties();
-    if (props.length==0&&entity.getNoOfProperties()>0) 
-      props = new Property[]{ entity.getProperty(0) }; 
-    tree.setSelection(Arrays.asList(props));
+    List<? extends Property> props = context.getProperties();
+    if (props.isEmpty()&&entity.getNoOfProperties()>0) 
+      props = Collections.singletonList(entity.getProperty(0)); 
+    tree.setSelection(props);
     
     // 20060301 set focus since selection change won't do that anymore
-    if (bean!=null)
+    if (bean!=null && view.isGrabFocus())
       bean.requestFocusInWindow();
     
   
@@ -235,8 +231,22 @@ import javax.swing.tree.TreePath;
   
   @Override
   public void commit() {
-    if (ok.isEnabled())
-      ok.trigger();
+    if (ok.isEnabled()) {
+      Property root = tree.getRoot();
+      if (root==null)
+        return;
+      Gedcom gedcom = root.getGedcom();
+  
+      if (bean!=null) 
+        gedcom.doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) {
+            bean.commit();
+          }
+        });
+
+      ok.setEnabled(false);
+      cancel.setEnabled(false);
+    }
   }
   
   /**
@@ -245,11 +255,11 @@ import javax.swing.tree.TreePath;
   private class Propagate extends Action2 {
     /** selection to propagate */
     private Entity entity;
-    private List properties;
+    private List<Property> properties;
     private String what;
     
     /** constructor */
-    private Propagate(List selection) {
+    private Propagate(List<Property> selection) {
       // remember
       this.entity = (Entity)tree.getRoot();
       properties = Property.normalize(selection);
@@ -260,11 +270,11 @@ import javax.swing.tree.TreePath;
         return;
       }
       // setup looks
-      this.what = "'"+Property.getPropertyNames(Property.toArray(properties),5)+"' ("+properties.size()+")";
+      this.what = "'"+Property.getPropertyNames(properties,5)+"' ("+properties.size()+")";
       setText(resources.getString("action.propagate", what)+" ...");
     }
     /** apply it */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       
       // prepare options
       final TextAreaWidget text = new TextAreaWidget("", 4, 10, false, true);
@@ -286,41 +296,39 @@ import javax.swing.tree.TreePath;
       panel.add(check);
       
       // preselect something?
-      select.setSelection(gedcom.getEntity(registry.get("select."+entity.getTag(), (String)null)));
+      select.setSelection(gedcom.getEntity(REGISTRY.get("select."+entity.getTag(), (String)null)));
 
       // show it
-      boolean cancel = 0!=WindowManager.getInstance(AdvancedEditor.this).openDialog("propagate", getText(), WindowManager.WARNING_MESSAGE, panel, Action2.okCancel(), AdvancedEditor.this);
+      boolean cancel = 0!=DialogHelper.openDialog(getText(), DialogHelper.WARNING_MESSAGE, panel, Action2.okCancel(), AdvancedEditor.this);
       if (cancel)
         return;
 
       final Entity selection = select.getSelection();
       
       // remember selection
-      registry.put("select."+entity.getTag(), selection!=null ? selection.getId() : null);
+      REGISTRY.put("select."+entity.getTag(), selection!=null ? selection.getId() : null);
       
       // change it
       try {
         gedcom.doUnitOfWork(new UnitOfWork() {        
           public void perform(Gedcom gedcom) throws GedcomException {
-            Collection to = selection!=null ? Collections.singletonList(selection) : gedcom.getEntities(entity.getTag());
-            for (Iterator it = to.iterator(); it.hasNext(); ) 
-              Propagate.this.copy(properties, entity, (Entity)it.next(), check.isSelected());
+            for (Entity to : selection!=null ? Collections.singletonList(selection) : gedcom.getEntities(entity.getTag())) 
+              Propagate.this.copy(properties, entity, to, check.isSelected());
           }
         });
       } catch (GedcomException e) {
-        WindowManager.getInstance(AdvancedEditor.this).openDialog(null,null,WindowManager.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(), AdvancedEditor.this);
+        DialogHelper.openDialog(null,DialogHelper.ERROR_MESSAGE,e.getMessage(),Action2.okOnly(),AdvancedEditor.this);
       }
 
       // done
     }
     
-    private void copy(List selection, Entity from, Entity to, boolean values)  throws GedcomException {
+    private void copy(List<Property> selection, Entity from, Entity to, boolean values)  throws GedcomException {
       // make sure we're not propagating to self
       if (from==to)
         return;
       // loop over selection
-      for (int i=0;i<selection.size();i++) {
-        Property property = (Property)selection.get(i);
+      for (Property property : selection) {
         TagPath path = property.getParent().getPath();
         Property root = to.getProperty(path);
         if (root==null)
@@ -337,25 +345,24 @@ import javax.swing.tree.TreePath;
   private class Cut extends Action2 {
 
     /** selection */
-    protected List presetSelection; 
+    protected List<Property> presetSelection; 
     
     /** constructor */
-    private Cut(List preset) {
+    private Cut(List<Property> preset) {
       presetSelection = Property.normalize(preset);
       super.setImage(Images.imgCut);
       super.setText(resources.getString("action.cut"));
     }
     
-    /** constructor */
     private Cut() {
-      setAccelerator(ACC_CUT);
+      
     }
     
     /** run */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       
       // available
-      final List selection = presetSelection!=null ? presetSelection : Property.normalize(tree.getSelection());
+      final List<Property> selection = presetSelection!=null ? presetSelection : Property.normalize(tree.getSelection());
       if (selection.isEmpty())
         return;
       
@@ -368,7 +375,7 @@ import javax.swing.tree.TreePath;
       // warn about cut
       String veto = getVeto(selection);
       if (veto.length()>0) {
-        int rc = WindowManager.getInstance(AdvancedEditor.this).openDialog("cut.warning", resources.getString("action.cut"), WindowManager.WARNING_MESSAGE, veto, new Action[]{ new Action2(resources.getString("action.cut")), Action2.cancel() }, AdvancedEditor.this );
+        int rc = DialogHelper.openDialog(resources.getString("action.cut"), DialogHelper.WARNING_MESSAGE, veto, new Action[]{ new Action2(resources.getString("action.cut")), Action2.cancel() }, AdvancedEditor.this );
         if (rc!=0)
           return;
       }
@@ -384,22 +391,19 @@ import javax.swing.tree.TreePath;
       // now cut
       gedcom.doMuteUnitOfWork(new UnitOfWork() {
         public void perform(Gedcom gedcom) {
-          for (ListIterator props = selection.listIterator(); props.hasNext(); )  {
-            Property p = (Property)props.next();
+          for (Property p : selection)  
             p.getParent().delProperty(p);
-          }
         }
       });
       // done
     }
     
     /** assemble a list of vetos for cutting properties */
-    private String getVeto(List properties) {
+    private String getVeto(List<Property> properties) {
       
       StringBuffer result = new StringBuffer();
-      for (ListIterator checks=properties.listIterator(); checks.hasNext(); ) {
+      for (Property p : properties) {
         
-        Property p = (Property)checks.next();
         String veto = p.getDeleteVeto();
         if (veto!=null) {
           // Removing property {0} from {1} leads to:\n{2}
@@ -419,23 +423,22 @@ import javax.swing.tree.TreePath;
   private class Copy extends Action2 {
   	
     /** selection */
-    protected List presetSelection; 
+    protected List<Property> presetSelection; 
     
     /** constructor */
-    protected Copy(List preset) {
+    protected Copy(List<Property> preset) {
       presetSelection = Property.normalize(preset);
       setText(resources.getString("action.copy"));
       setImage(Images.imgCopy);
     }
     /** constructor */
     protected Copy() {
-      setAccelerator(ACC_COPY);
     }
     /** run */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       
       // check selection
-      List selection = presetSelection;
+      List<Property> selection = presetSelection;
       if (selection==null) 
         selection = Property.normalize(tree.getSelection());
       
@@ -472,10 +475,9 @@ import javax.swing.tree.TreePath;
     }
     /** constructor */
     protected Paste() {
-      setAccelerator(ACC_PASTE);
     }
     /** run */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
 
       // grab the clipboard content now
       final String content;
@@ -538,21 +540,21 @@ import javax.swing.tree.TreePath;
       setImage(Images.imgNew);
     }
     /** run */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       
       // need to let user select tags to add?
       if (tags==null) {
         JLabel label = new JLabel(resources.getString("add.choose"));
         ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
         JCheckBox check = new JCheckBox(resources.getString("add.default_too"),addDefaults);
-        int option = WindowManager.getInstance(AdvancedEditor.this).openDialog("add",resources.getString("add.title"),WindowManager.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(), AdvancedEditor.this); 
+        int option = DialogHelper.openDialog(resources.getString("add.title"),DialogHelper.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(),AdvancedEditor.this); 
         if (option!=0)
           return;
         // .. calculate chosen tags
         tags = choose.getSelectedTags();
         addDefaults = check.isSelected();
         if (tags.length==0)  {
-          WindowManager.getInstance(AdvancedEditor.this).openDialog(null,null,WindowManager.ERROR_MESSAGE,resources.getString("add.must_enter"),Action2.okOnly(), AdvancedEditor.this);
+          DialogHelper.openDialog(null,DialogHelper.ERROR_MESSAGE,resources.getString("add.must_enter"),Action2.okOnly(),AdvancedEditor.this);
           return;
         }
       }
@@ -561,7 +563,7 @@ import javax.swing.tree.TreePath;
       tree.clearSelection();
   
       // .. add properties
-      final List newProps = new ArrayList();
+      final List<Property> newProps = new ArrayList<Property>();
       gedcom.doMuteUnitOfWork(new UnitOfWork() {
         public void perform(Gedcom gedcom) {
           for (int i=0;i<tags.length;i++) {
@@ -581,7 +583,7 @@ import javax.swing.tree.TreePath;
       tree.setSelectionPath(new TreePath(tree.getPathFor(newProp)));
       
       // bean we can give focus to (in case of single selection)?
-      if (bean!=null)
+      if (bean!=null && view.isGrabFocus())
         bean.requestFocusInWindow();
       
       // done
@@ -597,25 +599,12 @@ import javax.swing.tree.TreePath;
     /** constructor */
     private OK() {
       setText(Action2.TXT_OK);
+      setEnabled(false);
     }
-  
-    /** cancel current proxy */
-    protected void execute() {
-  
-      Property root = tree.getRoot();
-      if (root==null)
-        return;
-      Gedcom gedcom = root.getGedcom();
-  
-      if (bean!=null) 
-        gedcom.doMuteUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) {
-            bean.commit();
-          }
-        });
-
-      ok.setEnabled(false);
-      cancel.setEnabled(false);
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      commit();
     }
   
   } //OK
@@ -628,15 +617,16 @@ import javax.swing.tree.TreePath;
     /** constructor */
     private Cancel() {
       setText(Action2.TXT_CANCEL);
+      setEnabled(false);
     }
   
     /** cancel current proxy */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       // disable ok&cancel
       ok.setEnabled(false);
       cancel.setEnabled(false);
       // simulate a selection change
-      List selection = tree.getSelection();
+      List<Property> selection = tree.getSelection();
       tree.clearSelection();
       tree.setSelection(selection);
     }
@@ -658,28 +648,26 @@ import javax.swing.tree.TreePath;
       if (root!=null) {
         Gedcom gedcom = root.getGedcom();
         // ask user for commit if
-        if (!gedcom.isWriteLocked()&&bean!=null&&ok.isEnabled()&&editView.isCommitChanges()) 
-          ok.trigger();
+        if (ok.isEnabled()&&!gedcom.isWriteLocked()&&view.isCommitChanges()) 
+          commit();
       }
 
       // Clean up
-      if (bean!=null) {
+      if (bean!=null) 
         bean.removeChangeListener(this);
-        editView.getBeanFactory().recycle(bean);
-      }
       bean = null;
       editPane.removeAll();
       editPane.revalidate();
       editPane.repaint();
       
       // can show bean if single selection
-      Property[] selection = Property.toArray(tree.getSelection());
-      if (selection.length==1) {
-        Property prop = selection[0];
+      List<Property> selection = tree.getSelection();
+      if (selection.size()==1) {
+        Property prop = selection.get(0);
         try {
   
           // get a bean for property
-          bean = editView.getBeanFactory().get(prop);
+          bean = PropertyBean.getBean(prop.getClass()).setProperty(prop);
           
           // add bean to center of editPane 
           editPane.add(bean, BorderLayout.CENTER);
@@ -711,11 +699,11 @@ import javax.swing.tree.TreePath;
       }
       
       // tell to others
-      if (selection.length>0) try {
+      if (!selection.isEmpty()) try {
         ignoreSelection = true;
-        ViewContext context = new ViewContext(gedcom);
-        context.addProperties(selection);
-        WindowManager.broadcast(new ContextSelectionEvent(context, AdvancedEditor.this));
+        ViewContext context = new ViewContext(gedcom, new ArrayList<Entity>(), selection);
+
+        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, context, false);
       } finally {
         ignoreSelection = false;
       }
@@ -774,6 +762,10 @@ import javax.swing.tree.TreePath;
     /** constructor */
     private Tree() {
       super(gedcom);
+      // shortcuts
+      new Cut().install(this, ACC_CUT, JComponent.WHEN_FOCUSED);
+      new Copy().install(this, ACC_COPY, JComponent.WHEN_FOCUSED);
+      new Paste().install(this, ACC_PASTE, JComponent.WHEN_FOCUSED);
     }
 
     /** provide context */
@@ -781,11 +773,11 @@ import javax.swing.tree.TreePath;
       
       // check selection
       ViewContext result = super.getContext();
-      Property[] props = result.getProperties();
-      List selection = tree.getSelection();
+      List<? extends Property> props = result.getProperties();
+      List<Property> selection = tree.getSelection();
 
       // cut copy paste
-      if (props.length>0) {
+      if (!props.isEmpty()) {
         result.addAction(new Cut(selection));
         result.addAction(new Copy(selection));
       }
@@ -793,7 +785,7 @@ import javax.swing.tree.TreePath;
         result.addAction(new Paste((Property)selection.get(0)));
         
         // add
-        result.addAction(Action2.NOOP);
+        result.addAction(new ActionProvider.SeparatorAction());
         Property prop = (Property)selection.get(0);
         if (!prop.isTransient()) {
           result.addAction(new Add(prop));

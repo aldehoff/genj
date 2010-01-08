@@ -52,7 +52,7 @@ public class ReportDemography extends Report {
   }
 
   /** main */
-  public void start(Gedcom gedcom) throws Exception {
+  public JPanel start(Gedcom gedcom) throws Exception {
 
     createCategories();
     String labelForMen = translate("men");
@@ -191,7 +191,8 @@ public class ReportDemography extends Report {
     };
 
     gatherData( gedcom,       indiAnalyzers, famAnalyzers);
-    showData  ( diagramTitle, indiAnalyzers, famAnalyzers);
+    
+    return showData  ( diagramTitle, indiAnalyzers, famAnalyzers);
   }
 
   /** Show the gathered data to the user.
@@ -200,7 +201,7 @@ public class ReportDemography extends Report {
    * @param indiAnalyzers data collected when looping over individuals
    * @param famAnalyzers data collected when looping over families
    */
-  private void showData(
+  private JPanel showData(
       String title, 
       IndiAnalyzer[] indiAnalyzers,
       FamAnalyzer[] famAnalyzers) {
@@ -215,7 +216,8 @@ public class ReportDemography extends Report {
     
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(BorderLayout.CENTER, charts);
-    showComponentToUser(panel);
+    
+    return panel;
   }
 
   /** Gather data by looping over individuals and families.

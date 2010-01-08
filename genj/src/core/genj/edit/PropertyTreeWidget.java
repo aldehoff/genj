@@ -47,9 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -104,7 +102,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         if (path==null)
           clearSelection();
         else
-          setSelection(Collections.singletonList(path.getLastPathComponent()));
+          setSelection(Collections.singletonList((Property)path.getLastPathComponent()));
       }
     });
 
@@ -124,13 +122,11 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     if (root==null) 
       return new ViewContext(gedcom);
     // no selection - it's the root
-    Property[] selection = Property.toArray(getSelection());
-    if (selection.length==0)
+    List<Property> selection = getSelection();
+    if (selection.isEmpty())
       return new ViewContext(root);
     // we can be specific now
-    ViewContext result = new ViewContext(gedcom);
-    result.addProperties(selection);
-    return result;
+    return new ViewContext(gedcom, new ArrayList<Entity>(), selection);
   }
   
   /**
@@ -155,20 +151,18 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   }
 
   /**
-   * @see javax.swing.JComponent#addNotify()
+   * track usage in ui
    */
   public void addNotify() {
     // continue
     super.addNotify();
-    
     // connect model to gedcom
     gedcom.addGedcomListener((GedcomListener)Spin.over(getPropertyModel()));
-    
   }
 
   
   /**
-   * @see javax.swing.JComponent#removeNotify()
+   * track usage in ui
    */
   public void removeNotify() {
     // disconnect model from gedcom
@@ -238,7 +232,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   /**
    * Selects a property
    */
-  public void setSelection(List select) {
+  public void setSelection(List<? extends Property> select) {
     clearSelection();
     // safety check
     Property root = (Property)getPropertyModel().getRoot();
@@ -246,9 +240,9 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       return;
     // add to selection
     TreePath first = null;
-    for (Iterator ps = select.iterator(); ps.hasNext(); ) {
+    for (Property p : select) {
       try {
-        TreePath path = new TreePath(getPropertyModel().getPathToRoot((Property)ps.next()));
+        TreePath path = new TreePath(getPropertyModel().getPathToRoot(p));
         addSelectionPath(path);
         if (first==null) first = path;
       } catch (IllegalArgumentException e) {
@@ -264,12 +258,12 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   /**
    * returns the currently selected properties
    */
-  public List getSelection() {
+  public List<Property> getSelection() {
     // go through selection paths
-    List result = new ArrayList();
+    List<Property> result = new ArrayList<Property>();
     TreePath[] paths = getSelectionPaths();
     for (int i=0;paths!=null&&i<paths.length;i++) {
-      result.add(paths[i].getLastPathComponent());
+      result.add((Property)paths[i].getLastPathComponent());
     }
     // done
     return result;
@@ -381,7 +375,10 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       draggingFrom = ged;
       
       // normalize selection
-      List list = Property.normalize(Arrays.asList(nodes));
+      List<Property> props = new ArrayList<Property>(nodes.length);
+      for (Object node : nodes)
+        props.add((Property)node);
+      List<Property> list = Property.normalize(props);
       
       // done 
       return new PropertyTransferable(list);
@@ -398,7 +395,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         // an in-vm dnd?
         if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
           // we don't allow drop on parent if parent is in list of dragged (recursive)
-          List dragged = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+          List<Property> dragged = (List<Property>)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
           Property pparent = (Property)parent;
           while (pparent!=null) {
             if (dragged.contains(pparent)) 
@@ -434,7 +431,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       if (transferable.isDataFlavorSupported(PropertyTransferable.VMLOCAL_FLAVOR)) {
 
         // dragging children for reordeing in place?
-        final List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+        final List<Property> children = (List<Property>)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
         if (action==MOVE&&pparent.hasProperties(children)) {
           ged.doMuteUnitOfWork(new UnitOfWork() {
             public void perform(Gedcom gedcom) throws GedcomException {
@@ -449,7 +446,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
           protected void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException {
             
             // keep track of transferred xrefs
-            List xrefs = new ArrayList();
+            List<PropertyXRef> xrefs = new ArrayList<PropertyXRef>();
             String string = transferable.getTransferData(PropertyTransferable.STRING_FLAVOR).toString();
             
             // paste text keep track of xrefs
@@ -457,15 +454,15 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
             
             // delete children for MOVE within same gedcom (drag won't do it)
             if (action==MOVE&&draggingFrom==gedcom) {
-              for (int i=0;i<children.size();i++) {
-                Property child = (Property)children.get(i);
+              for (Property child : children) 
                 child.getParent().delProperty(child);
-              }
             }
             
-            // link xrefs now that already existing props have been deleted
-            for (int i=0;i<xrefs.size();i++) {
-              try { ((PropertyXRef)xrefs.get(i)).link(); } catch (Throwable t) {
+            // link references now that already existing props have been deleted
+            for (PropertyXRef xref : xrefs) {
+              try { 
+                xref.link(); 
+              } catch (Throwable t) {
                 EditView.LOG.log(Level.WARNING, "caught exception during dnd trying to link xrefs", t);
               }
             }
@@ -480,8 +477,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         
         ged.doMuteUnitOfWork(new IOUnitOfWork() {
           protected void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException {
-            for (Iterator files=((List)transferable.getTransferData(DataFlavor.javaFileListFlavor)).iterator(); files.hasNext(); ) 
-              pparent.addFile((File)files.next());
+            for (File file : (List<File>)transferable.getTransferData(DataFlavor.javaFileListFlavor))
+              pparent.addFile(file);
           }
         });
         
@@ -527,7 +524,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     public void drag(Transferable transferable, int action) throws UnsupportedFlavorException, IOException {
       
       // anything to drag?
-      final List children = (List)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
+      final List<Property> children = (List<Property>)transferable.getTransferData(PropertyTransferable.VMLOCAL_FLAVOR);
       if (children.isEmpty())
         return;
       

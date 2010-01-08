@@ -87,9 +87,9 @@ public class ReportToDo extends Report {
   /**
    * The report's entry point
    */
-  public void start(Gedcom gedcom) {
+  public Document start(Gedcom gedcom) {
     List ents = gedcom.getEntities();
-    start((Entity[])ents.toArray(new Entity[ents.size()]));
+    return start((Entity[])ents.toArray(new Entity[ents.size()]));
   }
 
   /**
@@ -102,14 +102,14 @@ public class ReportToDo extends Report {
   /**
    * The report's entry point - for a single family
    */
-  public void start(Fam fam) {
-    start(new Fam[]{ fam });
+  public Document start(Fam fam) {
+    return start(new Fam[]{ fam });
   }
 
   /**
    * The report's entry point - for a bunch of entities
    */
-  public void start(Entity[] entities) {
+  public Document start(Entity[] entities) {
 
     // create an output document
     Document doc = new Document(translate("titletodos"));
@@ -167,7 +167,7 @@ public class ReportToDo extends Report {
     }
 
     // Done
-    showDocumentToUser(doc);
+    return doc;
 
   }
 

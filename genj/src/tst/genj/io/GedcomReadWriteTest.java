@@ -3,6 +3,7 @@
  */
 package genj.io;
 
+import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
@@ -41,7 +42,7 @@ public class GedcomReadWriteTest extends TestCase {
 
     // read it
     File original = new File("./gedcom/example.ged");
-    Gedcom ged = new GedcomReader(Origin.create(original.toURL())).read();
+    Gedcom ged = GedcomReaderFactory.createReader(Origin.create(original.toURL()), null).read();
     
     // set everything to private
     ged.setPassword("password");
@@ -53,37 +54,28 @@ public class GedcomReadWriteTest extends TestCase {
     // write it encrypted
     File temp = File.createTempFile("test", ".ged");
     FileOutputStream out = new FileOutputStream(temp);
-    new GedcomWriter(ged, temp.getName(), null, out).write();
+    new GedcomWriter(ged, out).write();
     out.close();
     
-    // read again - first without then with password
-    try {
-      GedcomReader reader = new GedcomReader(Origin.create(temp.toURL()));
-      ged = reader.read();
-      fail("reading without password should fail");
-    } catch (GedcomIOException e) {
-      // this should happen
-    }
-    GedcomReader reader = new GedcomReader(Origin.create(temp.toURL()));
-    reader.setPassword(Gedcom.PASSWORD_UNKNOWN);
-    ged = reader.read();
+    // read again - first with wrong (will fallback to null) then without password
+    Origin o = Origin.create(temp.toURL());
+    GedcomReaderFactory.createReader(o, new PasswordContext("wrong")).read();
+    ged = GedcomReaderFactory.createReader(o, new PasswordContext(null)).read();
     
     // write it encrypted a second time
     temp = File.createTempFile("test", ".ged");
     out = new FileOutputStream(temp);
-    new GedcomWriter(ged, temp.getName(), null, out).write();
+    new GedcomWriter(ged, out).write();
     out.close();
     
     // read again - this time with password
-    reader = new GedcomReader(Origin.create(temp.toURL()));
-    reader.setPassword("password");
-    ged = reader.read();
+    ged = GedcomReaderFactory.createReader(o, new PasswordContext("password")).read();
     
     // write it deencrypted (without password) 
     temp = File.createTempFile("test", ".ged");
     out = new FileOutputStream(temp);
-    ged.setPassword("");
-    new GedcomWriter(ged, temp.getName(), null, out).write();
+    ged.setPassword(null);
+    new GedcomWriter(ged, out).write();
     out.close();
     
     // compare original to last temp now
@@ -91,6 +83,20 @@ public class GedcomReadWriteTest extends TestCase {
     
     // done
     
+  }
+  
+  private class PasswordContext implements GedcomReaderContext {
+    String pwd;
+    public PasswordContext(String password) {
+      pwd = password;
+    }
+    public String getPassword() {
+      String result = pwd;
+      pwd = null;
+      return result;
+    }
+    public void handleWarning(int line, String warning, Context context) {
+    }
   }
   
   /**
@@ -102,12 +108,12 @@ public class GedcomReadWriteTest extends TestCase {
     Logger.getLogger("").setLevel(Level.OFF);
 
     // try to read file
-    Gedcom ged = new GedcomReader(getClass().getResourceAsStream("stress.ged")).read();
+    Gedcom ged = GedcomReaderFactory.createReader(getClass().getResourceAsStream("stress.ged"), null).read();
     
     // write it again
     File temp = File.createTempFile("test", ".ged");
     OutputStream out = new FileOutputStream(temp);
-    new GedcomWriter(ged, temp.getName(), null, out).write();
+    new GedcomWriter(ged, out).write();
     out.close();
     
     // compare line by line
@@ -127,11 +133,11 @@ public class GedcomReadWriteTest extends TestCase {
     File temp = File.createTempFile("test", ".ged");
     
     // read it
-    Gedcom ged = new GedcomReader(Origin.create(original.toURL())).read();
+    Gedcom ged = GedcomReaderFactory.createReader(Origin.create(original.toURL()), null).read();
     
     // write it
     FileOutputStream out = new FileOutputStream(temp);
-    new GedcomWriter(ged, temp.getName(), null, out).write();
+    new GedcomWriter(ged, out).write();
     out.close();
     
     // diff files and there should be one difference

@@ -211,11 +211,10 @@ public class FileChooserWidget extends JPanel {
     /** constructor */
     private Choose() {
       setText("...");
-      setTarget(FileChooserWidget.this);
     }
 
     /** choose file */    
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
 
       // create and show chooser      
       FileChooser fc = new FileChooser(FileChooserWidget.this, getName(), Action2.TXT_OK, extensions, directory);

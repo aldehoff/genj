@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.SAXParser;
@@ -57,12 +58,24 @@ import org.xml.sax.helpers.DefaultHandler;
  * <!ATTLIST * wy CDATA>
  * <!ATTLIST * gx CDATA>
  * <!ATTLIST * gy CDATA>
+ * <!ATTLIST * ax CDATA>
+ * <!ATTLIST * ay CDATA>
  * </pre>
  * wx,wy are weight arguments - gx,gy are grow arguments
  */
 public class NestedBlockLayout implements LayoutManager2, Cloneable {
   
   private final static SAXException DONE = new SAXException("");
+  private final static SAXParser PARSER = getSaxParser();
+  
+  private final static SAXParser getSaxParser() {
+    try {
+      return SAXParserFactory.newInstance().newSAXParser();
+    } catch (Throwable t) {
+      Logger.getLogger("genj.util.swing").log(Level.SEVERE, "Can't initialize SAX parser", t);
+      throw new Error("Can't initialize SAX parser", t);
+    }
+  }
   
   private final static Logger LOG = Logger.getLogger("genj.util");
 
@@ -110,8 +123,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   /**
    * Accessor to cell definitions
    */
-  public Collection getCells() {
-    return root.getCells(new ArrayList(10));
+  public Collection<Cell> getCells() {
+    return root.getCells(new ArrayList<Cell>(10));
   }
   
   /**
@@ -121,8 +134,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     // parse descriptor
     try {
-	    SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-	    parser.parse(new InputSource(descriptor), new DescriptorHandler());
+	    PARSER.parse(new InputSource(descriptor), new DescriptorHandler());
     } catch (SAXException sax) {
       if (DONE==sax) {
         return;
@@ -142,13 +154,34 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   private class DescriptorHandler extends DefaultHandler {
     
-    private Stack stack = new Stack();
+    private Stack<Block> stack = new Stack<Block>();
     
     public InputSource resolveEntity(String publicId, String systemId) {
       // 20060601 let's not try to resolve any external entities - in case of GenJ running as an applet and a 
       // webserver returning a custom 404 spmeone might read a layout string from getResourceAsStream()
       // which doesn't return null but returns a custom page that we can't parse
       throw new IllegalArgumentException("Request for resolveEntity "+publicId+"/"+systemId+" not allowed in layout descriptor");
+    }
+    
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+      
+      boolean startsWithSpace = Character.isWhitespace(ch[start]);
+      boolean endsWithSpace = Character.isWhitespace(ch[start+length-1]);
+      
+      // trim
+      while (length>0 && Character.isWhitespace(ch[start])) { start++; length--; }
+      while (length>0 && Character.isWhitespace(ch[start+length-1])) length--;
+      if (length==0)
+        return;
+      
+      // add
+      if (startsWithSpace) { start--; length++; }
+      if (endsWithSpace) { length++; }
+      String s = new String(ch,start,length);
+            
+      Block parent = (Block)stack.peek();
+      parent.add(new Cell(s));
     }
     
     public void startElement(java.lang.String uri, java.lang.String localName, java.lang.String qName, Attributes attributes) throws org.xml.sax.SAXException {
@@ -169,10 +202,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private Block getBlock(String element, Attributes attrs) {
       // row?
       if ("row".equals(element)) 
-        return new Row(attrs);
+        return new Row();
       // column?
       if ("col".equals(element))
-        return new Column(attrs);
+        return new Column();
       // a cell!
       return new Cell(element, attrs, padding);
     }
@@ -201,24 +234,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** preferred size of column */
     Dimension preferred;
 
-    /** weight of column */
+    /** weight/growth */
     Point2D.Double weight;
+    Point grow;
     
     /** subs */
-    ArrayList subs = new ArrayList(16);
+    ArrayList<Block> subs = new ArrayList<Block>(16);
     
-    /** constructor */
-    Block(Attributes attributes) {
-    }
-
     /** copy */
     protected Object clone() {
       try {
         Block clone = (Block)super.clone();
         
-        clone.subs = new ArrayList(subs.size());
+        clone.subs = new ArrayList<Block>(subs.size());
         for (int i=0;i<subs.size();i++)
-          clone.subs.add( ((Block)subs.get(i)).clone() );
+          clone.subs.add( (Block)subs.get(i).clone() );
         return clone;
       } catch (CloneNotSupportedException cnse) {
         throw new Error();
@@ -255,6 +285,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // clear state
       preferred = null;
       weight = null;
+      grow = null;
 
       // recurse
       if (recurse) for (int i=0;i<subs.size();i++) {
@@ -265,6 +296,27 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** weight */
     abstract Point2D weight();
     
+    /** grow */
+    Point grow() {
+      
+      // known?
+      if (grow!=null)
+        return grow;
+      
+      // calculate
+      grow = new Point();
+      for (Block block : subs) {
+        Point sub = block.grow();
+        if (sub.x==1)
+          grow.x=1;
+        if (sub.y==1)
+          grow.y=1;
+      }      
+      
+      // done
+      return grow;
+    }
+    
     /** preferred size */
     abstract Dimension preferred();
       
@@ -272,7 +324,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     abstract void layout(Rectangle in);
     
     /** all cells */
-    Collection getCells(Collection collect) {
+    Collection<Cell> getCells(Collection<Cell> collect) {
       for (int i=0;i<subs.size();i++) 
         ((Block)subs.get(i)).getCells(collect);
       return collect;
@@ -299,11 +351,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    * a row
    */
   private static class Row extends Block {
-
-    /** constructor */
-    Row(Attributes attributes) {
-      super(attributes);
-    }
 
     /** add a sub */
     Block add(Block sub) {
@@ -332,6 +379,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** weight */
+    @Override
     Point2D weight() {
       
       // known?
@@ -351,17 +399,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** layout */
+    @Override
     void layout(Rectangle in) {
       
       // compute spare space horizontally
       double weight = 0;
+      int grow = 0;
       int spare = in.width;
       for (int i=0;i<subs.size();i++) {
         Block sub = (Block)subs.get(i);
         spare -= sub.preferred().width;
         weight += sub.weight().getX();
+        grow += sub.grow().x;
       }
-      double spareOverWeight = weight>0 ? spare/weight : 0;
+      double weightFactor = weight>0 ? spare/weight : 0;
+      int growFactor = weightFactor==0 && grow>0 ? spare/grow : 0;
       
       // layout subs
       Rectangle avail = new Rectangle(in.x, in.y, 0, 0);
@@ -369,7 +421,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         
         Block sub = (Block)subs.get(i);
         
-        avail.width = sub.preferred().width + (int)(sub.weight().getX() * spareOverWeight);
+        avail.width = sub.preferred().width + (int)(sub.weight().getX() * weightFactor) + (sub.grow().x*growFactor);
         avail.height = in.height;
 
         sub.layout(avail);
@@ -386,11 +438,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   private static class Column extends Block {
     
-    /** constructor */
-    Column(Attributes attributes) {
-      super(attributes);
-    }
-
     /** add a sub */
     Block add(Block sub) {
       if (sub instanceof Column)
@@ -442,12 +489,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // compute spare space vertically
       double weight = 0;
       int spare = in.height;
+      int grow = 0;
       for (int i=0;i<subs.size();i++) {
         Block sub = (Block)subs.get(i);
         spare -= sub.preferred().height;
         weight += sub.weight().getY();
+        grow += sub.grow().y;
       }
-      double spareOverWeight = weight>0 ? spare/weight : 0;
+      double weightFactor = weight>0 ? spare/weight : 0;
+      int growFactor = weightFactor==0 && grow>0 ? spare/grow : 0;
       
       // loop over subs
       Rectangle avail = new Rectangle(in.x, in.y, 0, 0);
@@ -456,7 +506,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         Block sub = (Block)subs.get(i);
         
         avail.width = in.width;
-        avail.height = sub.preferred().height + (int)(sub.weight().getY() * spareOverWeight);
+        avail.height = sub.preferred().height + (int)(sub.weight().getY() * weightFactor) + (sub.grow().y*growFactor);
         
         sub.layout(avail);
   
@@ -476,28 +526,32 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private String element;
     
     /** attributes */
-    private Map attrs = new HashMap();
+    private Map<String,String> attrs = new HashMap<String, String>();
     
     /** wrapped component */
     private Component component;
     
-    /** grow constraints */
-    private Point grow = new Point();
-    
     /** padding */
-    private int padding;
+    private int cellPadding;
     
     /** cached weight */
-    private Point2D.Double staticWeight = new Point2D.Double();
+    private Point2D.Double cellWeight = new Point2D.Double();
+    
+    /** cached alignment */
+    private Point2D.Double cellAlign = new Point2D.Double(0.5,0.5);
+
+    /** constructor */
+    private Cell(String text) {
+      this.element = "text";
+      attrs.put("value", text);
+    }
     
     /** constructor */
     private Cell(String element, Attributes attributes, int padding) {
       
-      super(attributes);
-      
       // keep key
       this.element = element;
-      this.padding = padding;
+      this.cellPadding = padding;
       
       for (int i=0,j=attributes.getLength();i<j;i++) 
         attrs.put(attributes.getQName(i), attributes.getValue(i));
@@ -505,12 +559,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // look for weight info
       String wx = getAttribute("wx");
       if (wx!=null)
-        staticWeight.x = Float.parseFloat(wx);
+        cellWeight.x = Float.parseFloat(wx);
       String wy = getAttribute("wy");
       if (wy!=null)
-        staticWeight.y = Float.parseFloat(wy);
+        cellWeight.y = Float.parseFloat(wy);
+      
+      // look for alignment info
+      String ax = getAttribute("ax");
+      if (ax!=null)
+        cellAlign.x = Float.parseFloat(ax);
+      String ay = getAttribute("ay");
+      if (ay!=null)
+        cellAlign.y = Float.parseFloat(ay);
       
       // look for grow info
+      grow = new Point();
       String gx = getAttribute("gx");
       if (gx!=null)
         grow.x = 1;
@@ -528,14 +591,20 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return clone;
     }
     
+    @Override
+    void invalidate(boolean arg0) {
+      // component info only
+      preferred = null;
+    }
+    
     /** set contained content */
     void setContent(Component component) {
       this.component = component;
     }
     
     /** returns nested block layout */
-    public Collection getNestedLayouts() {
-      ArrayList result = new ArrayList(subs.size());
+    public Collection<NestedBlockLayout> getNestedLayouts() {
+      ArrayList<NestedBlockLayout> result = new ArrayList<NestedBlockLayout>(subs.size());
       for (int i = 0; i < subs.size(); i++) {
         result.add(new NestedBlockLayout((Block)subs.get(i)));
       }
@@ -577,15 +646,16 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         preferred = new Dimension();
       else {
 	      preferred = new Dimension(component.getPreferredSize());
-	      preferred.width += padding*2;
-	      preferred.height += padding*2;
+	      preferred.width += cellPadding*2;
+	      preferred.height += cellPadding*2;
       }
 	    return preferred;
     }
     
     /** weight */
+    @Override
     Point2D weight() {
-      return component==null ? new Point2D.Double() : staticWeight;
+      return component==null ? new Point2D.Double() : cellWeight;
     }
     
     /** layout */
@@ -595,31 +665,31 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         return;
       
       // calculate what's available
-      Rectangle avail = new Rectangle(in.x+padding, in.y+padding, in.width-padding*2, in.height-padding*2);
+      Rectangle avail = new Rectangle(in.x+cellPadding, in.y+cellPadding, in.width-cellPadding*2, in.height-cellPadding*2);
       
       // make sure it's not more than maximum
       Dimension pref = preferred();
       Dimension max = component.getMaximumSize();
       if (grow.x!=0) 
         max.width = avail.width;
-      else if (staticWeight.x==0) 
+      else if (cellWeight.x==0) 
         max.width = pref.width;
         
       if (grow.y!=0) 
         max.height = avail.height;
-      else if (staticWeight.y==0)
+      else if (cellWeight.y==0)
         max.height = pref.height;
       
       // share space
       int extraX = avail.width-max.width;
       if (extraX>0) {
-        avail.x += extraX/2;
+        avail.x += extraX * cellAlign.x;
         avail.width = max.width;
       }
       
       int extraY = avail.height-max.height;
       if (extraY>0) {
-        avail.y += extraY/2;
+        avail.y += extraY * cellAlign.y;
         avail.height = max.height;
       }
 
@@ -633,7 +703,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** all cells */
-    Collection getCells(Collection collect) {
+    Collection<Cell> getCells(Collection<Cell> collect) {
       collect.add(this);
       return collect;
     }

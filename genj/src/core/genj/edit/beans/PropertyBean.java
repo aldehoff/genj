@@ -21,6 +21,17 @@ package genj.edit.beans;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyAge;
+import genj.gedcom.PropertyBlob;
+import genj.gedcom.PropertyChoiceValue;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyMultilineValue;
+import genj.gedcom.PropertyName;
+import genj.gedcom.PropertyPlace;
+import genj.gedcom.PropertySex;
+import genj.gedcom.PropertyXRef;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
@@ -30,33 +41,136 @@ import genj.view.ContextProvider;
 import genj.view.ViewContext;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 
 /**
- * Beans allow the user to edit gedcom properties (a.k.a lines) - the lifecycle of a bean
- * looks like this:
- * <pre>
- * </pre>
+ * Beans allow the user to edit gedcom properties
  */
 public abstract class PropertyBean extends JPanel implements ContextProvider {
   
-  /** the resources */
-  protected final static Resources resources = Resources.get(PropertyBean.class); 
+  private final static int CACHE_PRELOAD = 10;
+  
+  protected final static Resources RESOURCES = Resources.get(PropertyBean.class); 
+  protected final static Logger LOG = Logger.getLogger("genj.edit.beans");
+  protected final static Registry REGISTRY = Registry.get(PropertyBean.class); 
+
+  // TODO beans could be resolved dynamically to allow plugin overrides
+  private final static Class<?>[] PROPERTY2BEANTYPE = {
+    Entity.class                , EntityBean.class,
+    PropertyPlace.class         , PlaceBean.class, // before choice!
+    PropertyAge.class           , AgeBean.class,
+    PropertyChoiceValue.class   , ChoiceBean.class,
+    PropertyDate.class          , DateBean.class,
+    PropertyEvent.class         , EventBean.class,
+    PropertyFile.class          , FileBean.class,
+    PropertyBlob.class          , FileBean.class,
+    PropertyMultilineValue.class, MLEBean.class,
+    PropertyName.class          , NameBean.class,
+    PropertySex.class           , SexBean.class,
+    PropertyXRef.class          , XRefBean.class,
+    Property.class              , SimpleValueBean.class  // last!
+  };
+  
+  private final static Map<Class<? extends PropertyBean>,List<PropertyBean>> BEANCACHE = createBeanCache();
+  
+  @SuppressWarnings("unchecked")
+  private static Map<Class<? extends PropertyBean>,List<PropertyBean>> createBeanCache() {
+    LOG.fine("Initializing bean cache");
+    Map<Class<? extends PropertyBean>,List<PropertyBean>> result = new HashMap<Class<? extends PropertyBean>,List<PropertyBean>>();
+    for (int i=0;i<PROPERTY2BEANTYPE.length;i+=2) {
+        try {
+          List<PropertyBean> cache = new ArrayList<PropertyBean>(CACHE_PRELOAD);
+          for (int j=0;j<CACHE_PRELOAD;j++)
+            cache.add((PropertyBean)PROPERTY2BEANTYPE[i+1].newInstance());
+          result.put((Class<? extends PropertyBean>)PROPERTY2BEANTYPE[i+1], cache);
+        } catch (Throwable t) {
+          LOG.log(Level.WARNING, "can't instantiate bean "+PROPERTY2BEANTYPE[i+1], t);
+        }
+    }
+    return result;
+  }
+
+  /**
+   * Lookup
+   */
+  @SuppressWarnings("unchecked")
+  public static PropertyBean getBean(Class<? extends Property> property) {
+    
+    for (int i=0;i<PROPERTY2BEANTYPE.length;i+=2) {
+      if (PROPERTY2BEANTYPE[i]!=null&&PROPERTY2BEANTYPE[i].isAssignableFrom(property))
+        return getBeanImpl((Class<? extends PropertyBean>)PROPERTY2BEANTYPE[i+1]);
+    }
+
+    LOG.warning("Can't find declared bean for property type "+property.getName()+")");
+    return getBeanImpl(SimpleValueBean.class);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public static PropertyBean getBean(String bean) {
+    try {
+      return getBeanImpl((Class<? extends PropertyBean>)Class.forName(bean));
+    } catch (ClassNotFoundException e) {
+      LOG.log(Level.FINE, "Can't find desired bean "+bean, e);
+      return getBeanImpl(SimpleValueBean.class);
+    }
+  }
+  
+  private static PropertyBean getBeanImpl(Class<? extends PropertyBean> clazz) {
+    try {
+      // grab from cache if we can
+      List<PropertyBean> cache = BEANCACHE.get(clazz);
+      if (cache!=null&&!cache.isEmpty()) {
+        PropertyBean bean = cache.remove(cache.size()-1);
+        if (bean.getParent()==null)
+          return bean;
+        LOG.log(Level.FINE, "Bean has parent coming out of cache "+bean);
+      }
+      return ((PropertyBean)clazz.newInstance());
+    } catch (Throwable t) {
+      LOG.log(Level.FINE, "Problem with bean lookup "+clazz.getName(), t);
+      return new SimpleValueBean();
+    }
+  }
+  
+  /**
+   * recycle an unused bean
+   */
+  public static void recycle(PropertyBean bean) {
+    if (bean.getParent()!=null)
+      throw new IllegalArgumentException("bean still has parent");
+    List<PropertyBean> cache = BEANCACHE.get(bean.getClass());
+    if (cache==null) {
+      cache = new ArrayList<PropertyBean>();
+      BEANCACHE.put(bean.getClass(), cache);
+    }
+    cache.add(bean);
+  }
+
+  /**
+   * Available beans
+   */
+  public static Set<Class<? extends PropertyBean>> getAvailableBeans() {
+    return Collections.unmodifiableSet(BEANCACHE.keySet());
+  }
+
   
   /** the property to edit */
   private Property property;
-  
-  /** current registry */
-  protected Registry registry;
   
   /** the default focus */
   protected JComponent defaultFocus = null;
@@ -65,27 +179,24 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   protected ChangeSupport changeSupport = new ChangeSupport(this);
   
   /**
-   * Initialize (happens once)
+   * tell bean to prefer the horizontal instead of the vertical
    */
-  /*package*/ void initialize(Registry setRegistry) {
-    registry = setRegistry;
+  public void setPreferHorizontal(boolean set) {
+    // bean dependent
   }
-  
-  /**
-   * test for setter
-   */
-  /*package*/ abstract boolean accepts(Property prop);
   
   /**
    * set property to look at
    */
-  public final void setProperty(Property prop) {
+  public final PropertyBean setProperty(Property prop) {
     
     property = prop;
 
     setPropertyImpl(prop);
     
     changeSupport.setChanged(false);
+    
+    return this;
   }
 
   protected abstract void setPropertyImpl(Property prop);
@@ -106,7 +217,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Current Property
    */
-  public Property getProperty() {
+  public final Property getProperty() {
     return property;
   }
   
@@ -134,20 +245,24 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Commit any changes made by the user
    */
-  public void commit() {
+  public final void commit() {
     commit(property);
   }
   
   /**
    * Commit any changes made by the user switching target property
    */
-  public void commit(Property property) {
+  public final void commit(Property property) {
     // remember property
     this.property = property;
+    // let impl do its thing
+    commitImpl(property);
     // clear changed
     changeSupport.setChanged(false);
     // nothing more
   }
+  
+  protected abstract void commitImpl(Property property);
   
   /**
    * Editable? default is yes
@@ -156,31 +271,10 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     return true;
   }
   
-  /**
-   * helper that makes this bean visible if possible
-   */
-  private void makeVisible() {
-    // let's test if we're in a tabbed pane first
-    Component c = getParent();
-    while (c!=null) {
-      // is it a tabbed pane?
-      if (c.getParent() instanceof JTabbedPane) {
-        ((JTabbedPane)c.getParent()).setSelectedComponent(c);
-        return;
-      }
-      // continue lookin
-      c = c.getParent();
-    }
-    // not contained in tabbed pane
-  }
-  
   /** 
    * overridden requestFocusInWindow()
    */
   public boolean requestFocusInWindow() {
-    // make sure we're visible
-    makeVisible();
-    
     // delegate to default focus
     if (defaultFocus!=null)
       return defaultFocus.requestFocusInWindow();
@@ -191,8 +285,6 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
    * overridden requestFocus()
    */
   public void requestFocus() {
-    //  make sure we're visible
-    makeVisible();
     // delegate to default focus
     if (defaultFocus!=null)
       defaultFocus.requestFocus();
@@ -231,7 +323,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     protected void setEntity(Entity ent) {
       entity = ent;
       if (entity!=null)
-        renderer = new EntityRenderer(BlueprintManager.getInstance().getBlueprint(entity.getGedcom().getOrigin(), entity.getTag(), "Edit"));
+        renderer = new EntityRenderer(BlueprintManager.getInstance().getBlueprint(entity.getTag(), "Edit"));
       repaint();
     }
   } //Preview

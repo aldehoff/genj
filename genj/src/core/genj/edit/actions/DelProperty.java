@@ -20,14 +20,14 @@
 package genj.edit.actions;
 
 import genj.edit.Images;
+import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
-import genj.view.ViewManager;
 
-import java.util.Arrays;
+import java.awt.event.ActionEvent;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -36,32 +36,31 @@ import java.util.Set;
 public class DelProperty extends AbstractChange {
   
   /** the candidates to delete */
-  private Set candidates = new HashSet();
+  private Set<Property> candidates = new HashSet<Property>();
   
   /**
    * Constructor
    */
-  public DelProperty(Property property, ViewManager manager) {
-    super(property.getGedcom(), Images.imgDelEntity, resources.getString("delete"), manager);
+  public DelProperty(Property property) {
+    super(property.getGedcom(), Images.imgDelEntity, resources.getString("delete"));
     candidates.add(property);
   }
 
   /**
    * Constructor
    */
-  public DelProperty(Property[] properties, ViewManager manager) {
-    super(properties[0].getGedcom(), Images.imgDelEntity, resources.getString("delete"), manager);
-    candidates.addAll(Arrays.asList(properties));
+  public DelProperty(List<? extends Property> properties) {
+    super(properties.get(0).getGedcom(), Images.imgDelEntity, resources.getString("delete"));
+    candidates.addAll(properties);
   }
 
   /**
    * Perform the delete
    */
-  public void perform(Gedcom gedcom) throws GedcomException {
-    for (Iterator candidate = candidates.iterator(); candidate.hasNext();) {
-      Property prop  = (Property) candidate.next();
+  protected Context execute(Gedcom gedcom, ActionEvent event) throws GedcomException {
+    for (Property prop : candidates) 
       prop.getParent().delProperty(prop);
-    }
+    return null;
   }
   
 } //DelProperty

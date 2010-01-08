@@ -102,21 +102,21 @@ public class ReportMultDesc extends Report {
   /**
    * Main for argument individual
    */
-  public void start(Indi indi) {
-    start( new Indi[] { indi }, translate("title.descendant", indi.getName()));
+  public Object start(Indi indi) {
+    return start( new Indi[] { indi }, translate("title.descendant", indi.getName()));
   }
 
   /**
    * One of the report's entry point
    */
-  public void start(Indi[] indis) {
-    start( indis, getName() + " - " + indis[0].getGedcom().getName());
+  public Object start(Indi[] indis) {
+    return start( indis, getName() + " - " + indis[0].getGedcom().getName());
   }
 
   /**
    * Our main private report point
    */
-  private void start(Indi[] indis, String title) {
+  private Document start(Indi[] indis, String title) {
 
 	  switch (reportFormat){
 	  case TABLE:
@@ -159,7 +159,7 @@ public class ReportMultDesc extends Report {
     output.statistiques(doc);
 
     // done
-    showDocumentToUser(doc);
+    return doc;
 
   }
 

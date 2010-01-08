@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
@@ -58,7 +59,7 @@ public class ImageWidget extends JPanel {
   private final static Worker WORKER = new Worker();
   
   /** a cache mapping sources to soft-references of images */
-  private final static Map source2imgsoftref = new HashMap();
+  private final static Map<Source, SoftReference<Image>> source2imgsoftref = new HashMap<Source, SoftReference<Image>>();
   
   /** content */
   private JScrollPane scroll = new JScrollPane(); 
@@ -114,9 +115,9 @@ public class ImageWidget extends JPanel {
    */
   private static Image lookupCachedImage(Source source) {
     Image result = null;
-    SoftReference ref = (SoftReference)source2imgsoftref.get(source);
+    SoftReference<Image> ref = source2imgsoftref.get(source);
     if (ref!=null) 
-      result = (Image)ref.get();
+      result = ref.get();
     return result;
   }
   
@@ -124,7 +125,7 @@ public class ImageWidget extends JPanel {
    * Keep a cached image
    */
   private static void keepCachedImage(Source source, Image img) {
-    source2imgsoftref.put(source, new SoftReference(img));
+    source2imgsoftref.put(source, new SoftReference<Image>(img));
   }
   
    /**
@@ -154,7 +155,7 @@ public class ImageWidget extends JPanel {
         
         ImageInputStream iin = ImageIO.createImageInputStream(in);
           
-        Iterator iter = ImageIO.getImageReaders(iin);
+        Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
         if (!iter.hasNext()) 
           throw new IOException("no suitable image reader for "+source);
     
@@ -165,7 +166,7 @@ public class ImageWidget extends JPanel {
         reader.read(0, reader.getDefaultReadParam());
         
       } catch (Throwable t) {
-        LOG.fine("Loading "+source+" failed with "+t.getMessage());
+        LOG.log(Level.FINE, "Loading "+source+" failed with "+t.getMessage(), t);
         
         // blank image
         keepCachedImage(source, null);
@@ -328,30 +329,35 @@ public class ImageWidget extends JPanel {
       height = height*periodY;
       
       // show progress
-      Graphics2D g2d = (Graphics2D)getGraphics();
+      repaint();
       
-      // zoom (==0 means "to fit")
-      // TODO ImageWidget - do the dpi math
-      // zoom==0 means "to fit"
-      double scale;
-      if (zoom==0) {
-        Dimension avail = getSize();
-        scale = avail.width/(double)getCachedImageSize().width;
-      } else {
-        scale = zoom;
-      }
-      g2d.scale(scale, scale);
-      
-      try {
-        g2d.drawImage(img, 
-            minX, minY,
-            minX+width, minY+height,
-            minX, minY,
-            minX+width, minY+height,
-            null);
-      } catch (Throwable t) {
-        // This can fail intermittently (case: PNG/interlaced) - don't want to kill the load process though
-      }
+//      Graphics2D g2d = (Graphics2D)getGraphics();
+//      if (g2d==null)
+//        return;
+//      
+//      // zoom (==0 means "to fit")
+//      // TODO ImageWidget - do the dpi math
+//      // zoom==0 means "to fit"
+//      double scale;
+//      if (zoom==0) {
+//        Dimension avail = getSize();
+//        scale = avail.width/(double)getCachedImageSize().width;
+//      } else {
+//        scale = zoom;
+//      }
+//      g2d.scale(scale, scale);
+//      
+//      try {
+//        g2d.drawImage(img, 
+//            minX, minY,
+//            minX+width, minY+height,
+//            minX, minY,
+//            minX+width, minY+height,
+//            null);
+//      } catch (Throwable t) {
+//        // This can fail intermittently (case: PNG/interlaced) - don't want to kill the load process though
+//        LOG.log(Level.FINE, "Drawing image into graphics failed with "+t.getMessage(), t);
+//      }
       
       
       // done
@@ -491,7 +497,7 @@ public class ImageWidget extends JPanel {
   private static class Worker implements Runnable {
     
     /** lifo stack of needy runnables */
-    private Stack stack = new Stack();
+    private Stack<Runnable> stack = new Stack<Runnable>();
     
     /** the currently served runnable */
     private Runnable current = null;

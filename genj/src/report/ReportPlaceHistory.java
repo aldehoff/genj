@@ -63,7 +63,7 @@ public class ReportPlaceHistory extends Report {
   /**
    * Report's main
    */
-  public void start(Gedcom gedcom) {
+  public Chart start(Gedcom gedcom) {
 
     // check for place format / jurisdiction to look at
     int jurisdiction = 0;
@@ -72,7 +72,8 @@ public class ReportPlaceHistory extends Report {
       String [] jurisdictions = new DirectAccessTokenizer(format,PropertyPlace.JURISDICTION_SEPARATOR).getTokens(true);
       if (jurisdictions.length>0) {
         Object choice = getValueFromUser(translate("jurisdiction"), jurisdictions, jurisdictions[0]);
-        if (choice==null) return;
+        if (choice==null) 
+          return null;
         for (int i=0; i<jurisdictions.length; i++) if (jurisdictions[i]==choice) jurisdiction = i;
       }
     }
@@ -100,8 +101,8 @@ public class ReportPlaceHistory extends Report {
     String title = translate("title", gedcom.getName());
     String xaxis = translate("xaxis", resolution);
     String yaxis = translate("yaxis");
-    Chart chart = new Chart(title, xaxis, yaxis, series, null, true);
-    showChartToUser(chart);
+
+    return new Chart(title, xaxis, yaxis, series, null, true);
 
     // done
   }

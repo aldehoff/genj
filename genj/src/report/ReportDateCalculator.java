@@ -50,7 +50,7 @@ public class ReportDateCalculator extends Report {
   /**
    * Our entry point
    */
-  public void start(PropertyDate date) {
+  public JLabel start(PropertyDate date) {
       // Date in gregorian format
       //      PointInTime pit = GregorianCalendar.toPointInTime(date.getStart().getCalendar().toJulianDay(date.getStart().getDay(),
       //											  date.getStart().getMonth(),
@@ -72,7 +72,7 @@ public class ReportDateCalculator extends Report {
 	      ageStr = getValueFromUser( translate("date.title"), translate("age.title"), new String[0]);
         // check if the user cancelled this
         if (ageStr==null)
-          return;
+          return null;
 
 	  }
 
@@ -89,7 +89,8 @@ public class ReportDateCalculator extends Report {
 	      result = translate("age.invalid");
 	  }
       }
-      showComponentToUser(new JLabel(result));
+      
+      return new JLabel(result);
   }
 
     // only for gregorian

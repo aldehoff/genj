@@ -20,6 +20,8 @@
 package genj.timeline;
 
 import genj.almanac.Almanac;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Grammar;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
 import genj.util.Resources;
@@ -27,8 +29,6 @@ import genj.util.swing.ColorsWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ListSelectionWidget;
 import genj.util.swing.NestedBlockLayout;
-import genj.view.Settings;
-import genj.view.ViewManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -57,21 +56,13 @@ import javax.swing.SpinnerNumberModel;
  *  date color
  *  line color
  */
-public class TimelineViewSettings extends JTabbedPane implements Settings {
+public class TimelineViewSettings extends JTabbedPane {
   
   /** resources we use */
   private Resources resources = Resources.get(this);
   
-  /** keeping track of timeline these settings are for */
-  private TimelineView view;
-  
   /** a widget for selecting paths to show */
-  private ListSelectionWidget pathsList = new ListSelectionWidget() {
-    protected ImageIcon getIcon(Object choice) {
-      TagPath path = (TagPath)choice;
-      return view.getModel().gedcom.getGrammar().getMeta(path).getImage();
-    }
-  };
+  private ListSelectionWidget<TagPath> pathsList;
   
   /** a widget for selecting almanac event libraries / categories */
   private ListSelectionWidget almanacCategories = new ListSelectionWidget() {
@@ -95,8 +86,19 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
   /**
    * @see genj.view.Settings#init(genj.view.ViewManager)
    */
-  public void init(ViewManager manager) {
+  TimelineViewSettings(final TimelineView view) {
     
+    final Gedcom gedcom = view.getModel().getGedcom();
+    
+    pathsList = new ListSelectionWidget<TagPath>() {
+      protected ImageIcon getIcon(TagPath path) {
+        Grammar grammar = Grammar.V55;
+        if (gedcom!=null)
+          grammar = gedcom.getGrammar();
+        return grammar.getMeta(path).getImage();
+      }
+    };
+
     // create a panel for check and cm options
     JPanel panelOptions = new JPanel(new NestedBlockLayout(
         "<col><check gx=\"1\"/><check gx=\"1\"/><check gx=\"1\"/><row><label/><spin/></row><row><label/><spin/></row></col>"
@@ -133,67 +135,9 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     add(resources.getString("page.colors"), colorWidget);
     add(resources.getString("page.almanac"), panelEvents);
 
-    // done
-  }
-  
-  private JSpinner createSpinner(double min, double max, String tip) {
-    
-    JSpinner result = new JSpinner(new SpinnerNumberModel(min, min, max, 0.1D));
-    JSpinner.NumberEditor editor = new JSpinner.NumberEditor(result, "##0.0");
-    result.setEditor(editor);
-    result.addChangeListener(editor);
-    result.setToolTipText(tip);
-    return result;
-  }
-
-  /**
-   * Tells the ViewInfo to apply made changes
-   */
-  public void apply() {
-    
-    // choosen EventTags
-    view.getModel().setPaths(pathsList.getSelection());
-    
-    // checks
-    view.setPaintTags(checkTags.isSelected());
-    view.setPaintDates(checkDates.isSelected());
-    view.setPaintGrid(checkGrid.isSelected());
-    
-    // sliders
-    view.setCMPerEvents(
-       ((Double)spinCmBefEvent.getModel().getValue()).doubleValue(), 
-       ((Double)spinCmAftEvent.getModel().getValue()).doubleValue()
-    );
-    
-    // colors
-    Iterator colors = view.colors.keySet().iterator();
-    while (colors.hasNext()) {
-      String key = colors.next().toString();
-      view.colors.put(key, colorWidget.getColor(key));
-    }
-    
-    // almanac categories
-    view.setAlmanacCategories(almanacCategories.getSelection());
-    
-    // Done
-  }
-  
-  /**
-   * @see genj.view.Settings#setView(javax.swing.JComponent, genj.view.ViewManager)
-   */
-  public void setView(JComponent viEw) {
-    // remember
-    view = (TimelineView)viEw;
-  }
-
-
-  /**
-   * Tells the ViewInfo to reset made changes
-   */
-  public void reset() {
-    
     // EventTags to choose from
-    pathsList.setChoices(PropertyEvent.getTagPaths(view.getModel().gedcom));
+    if (gedcom!=null)
+      pathsList.setChoices(PropertyEvent.getTagPaths(gedcom));
     pathsList.setSelection(view.getModel().getPaths());
     
     // Checks
@@ -222,15 +166,49 @@ public class TimelineViewSettings extends JTabbedPane implements Settings {
     almanacCategories.setChoices(cats);
     almanacCategories.setSelection(view.getAlmanacCategories());
     
+    // done
+  }
+  
+  private JSpinner createSpinner(double min, double max, String tip) {
+    
+    JSpinner result = new JSpinner(new SpinnerNumberModel(min, min, max, 0.1D));
+    JSpinner.NumberEditor editor = new JSpinner.NumberEditor(result, "##0.0");
+    result.setEditor(editor);
+    result.addChangeListener(editor);
+    result.setToolTipText(tip);
+    return result;
+  }
+
+  /**
+   * Tells the ViewInfo to apply made changes
+   */
+  public void commit(TimelineView view) {
+    
+    // choosen EventTags
+    view.getModel().setPaths(pathsList.getSelection());
+    
+    // checks
+    view.setPaintTags(checkTags.isSelected());
+    view.setPaintDates(checkDates.isSelected());
+    view.setPaintGrid(checkGrid.isSelected());
+    
+    // sliders
+    view.setCMPerEvents(
+       ((Double)spinCmBefEvent.getModel().getValue()).doubleValue(), 
+       ((Double)spinCmAftEvent.getModel().getValue()).doubleValue()
+    );
+    
+    // colors
+    Iterator colors = view.colors.keySet().iterator();
+    while (colors.hasNext()) {
+      String key = colors.next().toString();
+      view.colors.put(key, colorWidget.getColor(key));
+    }
+    
+    // almanac categories
+    view.setAlmanacCategories(almanacCategories.getSelection());
+    
     // Done
   }
   
-  /**
-   * @see genj.view.Settings#getEditor()
-   */
-  public JComponent getEditor() {
-    return this;
-  }
-
-
 } //TimelineViewSettings

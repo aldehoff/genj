@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="GenJ" default="dist" basedir=".">
   
-  <property file="build.properties"/>
-	
   <path id="project.class.path">
     <pathelement path ="./build/version"/>
     <pathelement path ="./build/classes/contrib"/>
@@ -22,19 +20,30 @@
    Initialization
    -->
   <target name="init">
-    <echo level="info">Creating output directories</echo>
-    <mkdir dir="./build"/>
-    <mkdir dir="./build/run"/>
-    <mkdir dir="./build/dist"/>
-    <mkdir dir="./build/lib"/>
 
-    <tstamp><format property="now.long" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
     <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
+    <tstamp><format property="now.long" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
+  	
+    <loadproperties srcfile="./build.properties">
+    	<filterchain>
+          <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]+([^\s]+)[\s]*\$$" replace="version=\1-${now.short}" flags="i" byline="true"/>
+          <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]*\$$" replace="version=HEAD-${now.short}" flags="i" byline="true"/>
+          <replaceregex pattern="^version[\s]*=[\s]*$" replace="" flags="i"/>
+    	</filterchain>
+    </loadproperties>
+
   	<property name="version" value="${now.short}"/>
     <property name="build" value="${version} ${now.long} ${user.name}"/>
   	
     <echo level="info">version = ${version}</echo>
     <echo level="info">build = ${build}</echo>
+    	
+  	<echo level="info">Creating output directories</echo>
+    <mkdir dir="./build"/>
+    <mkdir dir="./build/run"/>
+    <mkdir dir="./build/dist"/>
+    <mkdir dir="./build/lib"/>
+
   </target>
   	
   <!--
@@ -242,57 +251,6 @@
   </target>
 
   <!--
-   Distribution - Applet
-   -->
-  <target name="dist.applet" depends="init,keyfile,compile,version">
-  
-  	 <!-- what we exclude - would be great to derive that automatically :( -->
-     <property name="exclude" value="
-      genj/app/**, genj/fo/**, genj/chart/**, genj/lnf/**, genj/report/**, **/*ViewPrinter*.class, **/*ViewSettings*.class
-     "/>
-
-     <!-- applet sub -->
-     <mkdir dir="./build/applet"/>
-
-     <!-- create genj.jar -->
-     <delete file="./build/applet/genj.jar"/>
-     <jar jarfile="./build/applet/genj.jar" update="True">
-       <fileset dir="./build/classes/contrib" 
-       	 excludes="${exclude}"
-         includes="**/*.class"/>
-       <fileset dir="./build/classes/core" 
-       	 excludes="${exclude}"
-         includes="**/*.class"/>
-       <fileset dir="./images" excludes="${exclude}"/>
-       <fileset dir="./language/en" excludes="${exclude}"/>
-       <fileset dir="./src/core" excludes="${exclude}"
-         includes="**/*.properties,**/*.xml"/>
-       <fileset dir="./build/version"/>
-      <fileset dir="." includes="contrib/LDS/*.xml"/>
-     </jar>
-  	
-     <!-- copy graphj.jar -->
-     <copy todir="./build/applet" file="./lib/graphj.jar"/>
-  	
-    <!-- copy example.ged -->
-    <copy todir="./build/applet">
-      <fileset dir="./gedcom"/>
-	  </copy> 	
-  	
-  	 <!-- sign em -->
-     <signjar keystore="./build/keyfile" alias="genj" storepass="password">
-      <fileset dir="./build/applet" includes="*.jar"/>
-     </signjar>	
-  	
-     <!-- create genj_applet_xyz.jar -->
-     <zip zipfile="./build/dist/genj_applet-${version}.zip" update="True">
-       <fileset dir="./build" includes="applet/*"/>
-       <fileset dir="." includes="doc/*"/>
-     </zip>
-
-  </target>
-
-  <!--
    Distribution - Application
    -->
   <target name="dist.app" depends="compile, version">
@@ -312,11 +270,13 @@
      <delete file="./build/lib/run.jar"/>
      <jar jarfile="./build/lib/run.jar" update="True">
        <fileset dir="./build/classes/launcher" includes="**"/>
+       <fileset dir="./images" includes="splash.png"/>
        <manifest>
          <attribute name="Main-Class" value="launcher.Launcher"/>
       	 <attribute name="Launch-Classpath" value="lib, contrib, $${java.home}/lib/tools.jar, $${java.home}/../lib/tools.jar"/>
        	 <attribute name="Launch-Class" value="genj.app.App"/>
          <attribute name="Launch-Port" value="2505"/>
+         <attribute name="Launch-Splash" value="/splash.png"/>
        </manifest>
      </jar>
      
@@ -329,6 +289,8 @@
        <zipfileset dir="." includes="lib/jfreechart-1.0.13.jar"/>
        <zipfileset dir="." includes="lib/jcommon-1.0.16.jar"/>
        <zipfileset dir="." includes="lib/graphj.jar"/>
+       <zipfileset dir="." includes="lib/swingx-0.7.jar"/>
+       <zipfileset dir="." includes="lib/spin-1.5.jar"/>
        
        <!-- stuff for reports (classes, sources, scripts)-->
        <zipfileset dir="./build/classes" includes="report/**/*.class" excludes="report/_*/**"/>
@@ -354,7 +316,7 @@
   <!--
    Distribution
    -->
-  <target name="dist" depends="init,compile,version,dist.languages,dist.applet,dist.app,dist.javadoc">
+  <target name="dist" depends="init,compile,version,dist.languages,dist.app,dist.javadoc">
   </target>
 
   <!--

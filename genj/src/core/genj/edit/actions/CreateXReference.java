@@ -8,7 +8,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
-import genj.view.ViewManager;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,8 +22,8 @@ public class CreateXReference extends CreateRelationship {
   private String sourceTag;
 
   /** Constructor */
-  public CreateXReference(Property source, String sourceTag, ViewManager mgr) {
-    super(getName(source, sourceTag),source.getGedcom(), getTargetType(source, sourceTag), mgr);
+  public CreateXReference(Property source, String sourceTag) {
+    super(getName(source, sourceTag),source.getGedcom(), getTargetType(source, sourceTag));
     this.source = source;
     this.sourceTag = sourceTag;
   }

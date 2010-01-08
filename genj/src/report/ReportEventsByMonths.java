@@ -85,8 +85,9 @@ public class ReportEventsByMonths extends Report {
   /**
    * Report's main
    */
-  public void start(Gedcom gedcom) {
-	  Map<String, String> labels = new HashMap<String, String>();
+  public Object start(Gedcom gedcom) {
+    
+	Map<String, String> labels = new HashMap<String, String>();
 	  
     // look for events we consider
     List<IndexedSeries> series = new ArrayList<IndexedSeries>();
@@ -131,8 +132,7 @@ public class ReportEventsByMonths extends Report {
     }
     JPanel panel = new JPanel(new BorderLayout());
     panel.add(BorderLayout.CENTER, charts);
-
-    showComponentToUser(panel);
+    return panel;
 
     // done
   }

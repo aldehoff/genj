@@ -51,7 +51,7 @@ public class ReportRecompile extends Report {
     try {
       Object javac = Class.forName("com.sun.tools.javac.Main").newInstance();
       rc = javac.getClass().getMethod("compile", new Class[]{ new String[0].getClass(), PrintWriter.class } )
-            .invoke(javac, new Object[]{ args.toArray(new String[args.size()]), out });
+            .invoke(javac, new Object[]{ args.toArray(new String[args.size()]), getOut() });
     } catch (Exception e) {
       println(translate("javac.jre", System.getProperty("java.home")));
       return;
@@ -93,7 +93,7 @@ public class ReportRecompile extends Report {
 author               = Nils Meier
 version              = 1.0
 category             = Utilities
-updated              = $Date: 2007-05-17 13:03:48 $
+updated              = $Date: 2010-01-08 05:35:26 $
 
 name                 = Recompile Reports
 name.de              = Reports rekompilieren 

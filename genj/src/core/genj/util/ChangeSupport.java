@@ -21,10 +21,8 @@ package genj.util;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -37,7 +35,7 @@ import javax.swing.event.DocumentListener;
 public class ChangeSupport implements DocumentListener, ChangeListener, ActionListener {
 
   /** listeners */
-  private List listeners = new LinkedList();
+  private List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
   
   /** source */
   private Object source;
@@ -97,9 +95,8 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
   protected void fireChangeEvent(Object source) {
     hasChanged = true;
     ChangeEvent e = new ChangeEvent(source);
-    Iterator it = new ArrayList(listeners).iterator();
-    while (it.hasNext())
-      ((ChangeListener)it.next()).stateChanged(e);
+    for (ChangeListener listener : listeners)
+      listener.stateChanged(e);
   }
   
   /**

@@ -9,7 +9,9 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
-import genj.report.AnnotationsReport;
+import genj.report.Report;
+import genj.view.ViewContext;
+import genj.view.ViewContext.ContextList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +22,7 @@ import java.util.StringTokenizer;
 /**
  * A report for displaying relatives of a person
  */
-public class ReportRelatives extends AnnotationsReport {
+public class ReportRelatives extends Report {
 
   private final static int
     UNKNOWN = PropertySex.UNKNOWN,
@@ -87,9 +89,7 @@ public class ReportRelatives extends AnnotationsReport {
   /**
    * Reports main
    */
-  public void start(Indi indi) {
-
-    setMessage(translate("title", indi));
+  public ContextList start(Indi indi) {
 
     // prepare map of relationships
     Map key2relative = new HashMap();
@@ -99,16 +99,16 @@ public class ReportRelatives extends AnnotationsReport {
     }
 
     // Loop over relative descriptions
-    addAnnotation(indi);
+    ContextList result = new ContextList(indi.getGedcom(), translate("title", indi));
+    result.add(new ViewContext(indi));
+    
     for (int i=0; i<RELATIVES.length; i++) {
       Relative relative = RELATIVES[i];
-      List result = find(indi, relative.expression, relative.sex, key2relative);
-      for (int j=0;j<result.size();j++) {
-        Indi found = (Indi)result.get(j);
-        String name = translate(relative.key) + ": " + found;
-        addAnnotation(found, name);
+      for (Indi found : find(indi, relative.expression, relative.sex, key2relative)) {
+        result.add(new ViewContext(found).setText(translate(relative.key) + ": " + found));
       }
     }
+    return result;
 
     // done
   }
@@ -116,9 +116,9 @@ public class ReportRelatives extends AnnotationsReport {
   /**
    * Find all relatives of given roots and expression
    */
-  private List find(List roots, String expression, int sex, Map key2relative) {
+  private List<Indi>  find(List roots, String expression, int sex, Map key2relative) {
 
-    List result = new ArrayList();
+    List<Indi>  result = new ArrayList<Indi>();
     for (int i=0;i<roots.size();i++) {
       result.addAll(find((Property)roots.get(i), expression, sex, key2relative));
     }
@@ -130,12 +130,12 @@ public class ReportRelatives extends AnnotationsReport {
   /**
    * Find all relatives of given root and expression
    */
-  private List find(Property root, String expression, int sex, Map key2relative) {
+  private List<Indi> find(Property root, String expression, int sex, Map key2relative) {
 
     // any 'OR's?
     int or = expression.indexOf('|');
     if (or>0) {
-      List result = new ArrayList();
+      List<Indi> result = new ArrayList<Indi>();
       StringTokenizer ors = new StringTokenizer(expression, "|");
       while (ors.hasMoreTokens())
         result.addAll(find(root, ors.nextToken().trim(), sex, key2relative));
@@ -145,8 +145,8 @@ public class ReportRelatives extends AnnotationsReport {
     // is relationship recursive?
     int dot = expression.indexOf('+');
     if (dot>0) {
-      List roots = new ArrayList();
-      roots.add(root);
+      List<Indi> roots = new ArrayList<Indi>();
+      roots.add((Indi)root.getEntity());
       StringTokenizer cont = new StringTokenizer(expression, "+");
       while (cont.hasMoreTokens()) {
         roots = find(roots, cont.nextToken(), sex, key2relative);
@@ -162,7 +162,7 @@ public class ReportRelatives extends AnnotationsReport {
     }
 
     // assuming expression consists of tagpath from here
-    List result = new ArrayList();
+    List<Indi> result = new ArrayList<Indi>();
     Property[] found = root.getProperties(new TagPath(expression));
     for (int i = 0; i < found.length; i++) {
       Indi indi = (Indi)found[i].getEntity();

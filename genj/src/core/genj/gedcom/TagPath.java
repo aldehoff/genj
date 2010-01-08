@@ -22,6 +22,7 @@ package genj.gedcom;
 import java.util.Collection;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 /**
  * Class for encapsulating a path of tags that describe the way throug
@@ -164,7 +165,7 @@ public class TagPath {
    * @exception IllegalArgumentException in case format isn't o.k.
    * @return the path [a:b:c]
    */
-  /*package*/ TagPath(Stack path) throws IllegalArgumentException {
+  /*package*/ TagPath(Stack<String> path) throws IllegalArgumentException {
     // grab stack elements
     len = path.size();
     tags = new String[len];
@@ -282,16 +283,21 @@ public class TagPath {
       // try to find a reasonable tag to display as text (that's not '.' or '*')
       int i = length()-1;
       String tag = get(i);
-      while (i>1&&!Character.isLetter(tag.charAt(0))) 
+      while (i>1&&!Character.isJavaIdentifierPart(tag.charAt(0))) 
         tag = get(--i);
       
       // as text
       name = Gedcom.getName(tag);
       
-      // date or place?
-      //if (i>1&&(tag.equals("DATE")||tag.equals("PLAC"))) 
-      if (i>1) 
-        name = name + " - " + Gedcom.getName(get(i-1));
+      // qualify 2nd level path element (e.g. date or place) for events if possible
+      //  BIRT:DATE > Date - Birth
+      //  IMMI:PLAC > Date - Immigration
+      //  NAME:NICK > Nickname (not "Nickname - Name")
+      if (i>1 && Character.isLetter(get(i-1).charAt(0))) {
+        String up = Gedcom.getName(get(i-1));
+        if (!Pattern.compile(".*"+up+".*", Pattern.CASE_INSENSITIVE).matcher(name).find())
+          name = name + " - " + up;
+      }
     }
     return name;
   }
@@ -314,8 +320,8 @@ public class TagPath {
   /**
    * Get an array out of collection
    */
-  public static TagPath[] toArray(Collection c) {
-    return (TagPath[])c.toArray(new TagPath[c.size()]);
+  public static TagPath[] toArray(Collection<TagPath> c) {
+    return c.toArray(new TagPath[c.size()]);
   }
   
   /**
@@ -362,8 +368,8 @@ public class TagPath {
       
        // up?
       if (tag.equals("..")) {
-        if ((prop=prop.getParent())==null)
-          return false;
+        if (prop.getParent()!=null)
+          prop = prop.getParent();
         continue;
       }
       // stay?

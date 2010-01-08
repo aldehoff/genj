@@ -191,7 +191,7 @@ public class ReportLinesCirc extends Report {
     /**
      * Main for argument individual
      */
-    public void start(Indi indi) {
+    public File start(Indi indi) {
 
       // init options
       initUserOptions();
@@ -199,7 +199,7 @@ public class ReportLinesCirc extends Report {
       // ask for file
       File file = getFileFromUser(translate("output.file"), Action2.TXT_OK,true);
       if (file == null)
-        return ;
+        return null;
 
       // open output stream
       try{
@@ -207,7 +207,7 @@ public class ReportLinesCirc extends Report {
       }catch(IOException ioe){
         System.err.println("IO Exception!");
         ioe.printStackTrace();
-        return; //abort
+        return null; //abort
       }
 
       // generate output
@@ -217,7 +217,7 @@ public class ReportLinesCirc extends Report {
       writer.close();
 
       // show file the result to the user
-      showFileToUser(file);
+      return file;
 
     }
 

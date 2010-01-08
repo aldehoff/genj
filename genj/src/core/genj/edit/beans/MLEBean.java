@@ -21,7 +21,6 @@ package genj.edit.beans;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyMultilineValue;
-import genj.util.Registry;
 import genj.util.swing.TextAreaWidget;
 
 import java.awt.BorderLayout;
@@ -37,8 +36,7 @@ public class MLEBean extends PropertyBean {
   /** members */
   private TextAreaWidget tarea;
 
-  void initialize(Registry setRegistry) {
-    super.initialize(setRegistry);
+  public MLEBean() {
     
     tarea = new TextAreaWidget("",3,20);
     tarea.addChangeListener(changeSupport);
@@ -55,19 +53,14 @@ public class MLEBean extends PropertyBean {
   /**
    * Finish editing a property through proxy
    */
-  public void commit(Property property) {
-    
-    super.commit(property);
-    
+  @Override
+  protected void commitImpl(Property property) {
     property.setValue(tarea.getText());
   }
 
   /**
    * Set context to edit
    */
-  boolean accepts(Property prop) {
-    return prop instanceof PropertyMultilineValue;
-  }
   public void setPropertyImpl(Property property) {
 
     if (property==null)

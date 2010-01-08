@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -40,13 +39,13 @@ import java.util.logging.Level;
 public class ReportLoader {
 
   /** reports we have */
-  private List instances = new ArrayList(10);
+  private List<Report> instances = new ArrayList<Report>(10);
   
   /** report files */
-  private Map file2reportclass = new HashMap(10);
+  private Map<File,String> file2reportclass = new HashMap<File, String>(10);
   
   /** classpath */
-  private List classpath = new ArrayList(10);
+  private List<URL> classpath = new ArrayList<URL>(10);
   
   /** whether reports are in classpath */
   private boolean isReportsInClasspath = false;
@@ -78,6 +77,18 @@ public class ReportLoader {
     // done
     return singleton;
       
+  }
+  
+  /**
+   * Report by class name
+   */
+  public Report getReportByName(String classname) {
+    for (Report report : instances) {
+      if (report.getClass().getName().equals(classname))
+        return report;
+    }
+    return null;
+    
   }
   
   /**
@@ -113,8 +124,7 @@ public class ReportLoader {
     URLClassLoader cl = new URLClassLoader((URL[])classpath.toArray(new URL[classpath.size()]), getClass().getClassLoader());
     
     // Load reports
-    for (Iterator files = file2reportclass.keySet().iterator(); files.hasNext(); ) {
-      File file = (File)files.next();
+    for (File file : file2reportclass.keySet()) {
       String clazz = (String)file2reportclass.get(file); 
       try {
         Report r = (Report)cl.loadClass(clazz).newInstance();
@@ -130,11 +140,11 @@ public class ReportLoader {
     }
     
     // sort 'em
-    Collections.sort(instances, new Comparator() { 
-      public int compare(Object a, Object b) {
+    Collections.sort(instances, new Comparator<Report>() { 
+      public int compare(Report a, Report b) {
         // 20063008 this can actually fail if the report is bad
         try {
-          return ((Report)a).getName().compareTo(((Report)b).getName());
+          return a.getName().compareTo(b.getName());
         } catch (Throwable t) {
           return 0;
         }

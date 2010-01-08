@@ -21,24 +21,27 @@ package genj.edit.beans;
 
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.util.Registry;
+import genj.gedcom.time.PointInTime;
 import genj.util.swing.Action2;
 import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 /**
  * A bean for editing DATEs
  */
 public class DateBean extends PropertyBean {
-
-  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><a/><b/></row><row><c/><d/></row><row><e wx=\"0.1\"/></row></col>");
 
   private final static ImageIcon PIT = new ImageIcon(PropertyBean.class, "/genj/gedcom/images/Time");
   
@@ -48,53 +51,85 @@ public class DateBean extends PropertyBean {
   private PopupWidget choose;
   private JLabel label2;
   private TextFieldWidget phrase;
+  private JComponent[][] preferredLayout;
+  
+  public DateBean() {
 
-  void initialize(Registry setRegistry) {
-    super.initialize(setRegistry);
-    
-    // setup Laout
-    setLayout(LAYOUT.copy());
-    
+    setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    setAlignmentX(0);
+
     // prepare format change actions
-    ArrayList actions = new ArrayList(10);
+    List<ChangeFormat> actions = new ArrayList<ChangeFormat>(10);
     for (int i=0;i<PropertyDate.FORMATS.length;i++)
       actions.add(new ChangeFormat(PropertyDate.FORMATS[i]));
 
-    // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
-    choose = new PopupWidget(null, null, actions);
-    add(choose);
-    
     // .. first date
     date1 = new DateWidget();
     date1.addChangeListener(changeSupport);
-    add(date1);
 
+    // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
+    choose = new PopupWidget();
+    choose.addItems(actions);
+    
     // .. second date
     label2 = new JLabel();
-    add(label2);
     
     date2 = new DateWidget();
     date2.addChangeListener(changeSupport);
-    add(date2);
     
     // phrase
-    phrase = new TextFieldWidget();
+    phrase = new TextFieldWidget("",10);
     phrase.addChangeListener(changeSupport);
-    add(phrase);
+    
+    // do the layout and format
+    setPreferHorizontal(false);
+    setFormat(PropertyDate.FORMATS[0]);
     
     // setup default focus
     defaultFocus = date1;
-
+    
     // Done
+  }
+
+  @Override
+  public void setPreferHorizontal(boolean set) {
+    
+    if (set) {
+      preferredLayout = new JComponent[1][0];
+      preferredLayout[0] = new JComponent[] { date1, choose, label2, date2,phrase };
+    } else {
+      preferredLayout = new JComponent[3][0];
+      preferredLayout[0] = new JComponent[] { date1, choose };
+      preferredLayout[1] = new JComponent[] { label2, date2 };
+      preferredLayout[2] = new JComponent[] { phrase };
+    }
+  }
+  
+  @Override
+  public Dimension getPreferredSize() {
+    Dimension result = new Dimension();
+    for (int y=0;y<preferredLayout.length;y++) {
+      Dimension line = new Dimension();
+      for (int x=0;x<preferredLayout[y].length;x++) {
+        Component c = preferredLayout[y][x];
+        if (c.isVisible()) {
+          Dimension pref = c.getPreferredSize();
+          line.width += pref.width;
+          line.height = Math.max(line.height, pref.height);
+        }
+      }      
+      result.width = Math.max(result.width, line.width);
+      result.height += line.height;
+    }
+    return result;
   }
   
   /**
    * Finish proxying edit for property Date
    */
-  public void commit(Property property) {
+  @Override
+  protected void commitImpl(Property property) {
 
-    super.commit(property);
-    
     PropertyDate p = (PropertyDate)property;
     
     p.setValue(format, date1.getValue(), date2.getValue(), phrase.getText());
@@ -111,6 +146,24 @@ public class DateBean extends PropertyBean {
     if (format==set)
       return;
     
+    // setup order of components
+    if (set==PropertyDate.FORMATS[0]) {
+      removeAll();
+      add(date1);
+      add(choose);
+      add(label2);
+      add(date2);
+      add(phrase);
+    } else {
+      removeAll();
+      add(choose);
+      add(date1);
+      add(label2);
+      add(date2);
+      add(phrase);
+    }
+    
+    // signal
     changeSupport.fireChangeEvent();
 
     // remember
@@ -144,21 +197,21 @@ public class DateBean extends PropertyBean {
   /**
    * Set context to edit
    */
-  boolean accepts(Property prop) {
-    return prop instanceof PropertyDate;
-  }
   public void setPropertyImpl(Property prop) {
 
-    if (prop==null)
-      return;
-    PropertyDate date = (PropertyDate)prop;
-    
-    // connect
-    date1.setValue(date.getStart());
-    date2.setValue(date.getEnd());
-    phrase.setText(date.getPhrase());
-    setFormat(date.getFormat());
-    
+    if (prop==null) {
+      PointInTime pit = new PointInTime();
+      date1.setValue(pit);
+      date2.setValue(pit);
+      phrase.setText("");
+      setFormat(PropertyDate.FORMATS[0]);
+    } else {
+      PropertyDate date = (PropertyDate)prop;
+      date1.setValue(date.getStart());
+      date2.setValue(date.getEnd());
+      phrase.setText(date.getPhrase());
+      setFormat(date.getFormat());
+    }    
     // done
   }
   
@@ -174,7 +227,7 @@ public class DateBean extends PropertyBean {
       super.setText(set.getName());
     }
     
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       setFormat(formatToSet);
       date1.requestFocusInWindow();
     }

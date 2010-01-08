@@ -54,6 +54,8 @@ import java.util.Map;
  */
 public class PropertyRenderer {
 
+  public final static PropertyRenderer DEFAULT = new PropertyRenderer();
+
   private final static String STARS = "*****";
   
   private final static int IMAGE_GAP = 4;
@@ -64,22 +66,14 @@ public class PropertyRenderer {
   /** an replacement for a 'broken' image */  
   private final static ImageIcon broken = 
     new ImageIcon(PropertyRenderer.class, "Broken");
+
+  public static final String HINT_KEY_TXT = "txt";
+  public static final String HINT_KEY_IMG = "img";
+  public static final String HINT_KEY_SHORT = "short";
+
+  public static final String HINT_VALUE_TRUE = "yes";
+  public static final String HINT_VALUE_FALSE = "no";
   
-  public final static PropertyRenderer DEFAULT_RENDERER = new PropertyRenderer();
-
-  /** cached renderer instances */
-  private static PropertyRenderer[] renderers = new PropertyRenderer[]{
-    new RenderSecret(),
-    new RenderFile(),
-    new RenderPlace(),
-    new RenderMLE(),
-    new RenderXRef(),
-    new RenderDate(),
-    new RenderSex(),
-    new RenderEntity(),
-    DEFAULT_RENDERER
-  };
-
   /**
    * acceptable check
    */
@@ -88,28 +82,6 @@ public class PropertyRenderer {
     return true;
   }
 
-  /** 
-   * static accessor  
-   */
-  public static PropertyRenderer get(Property prop) {
-    return get(null, prop);
-  }
-  /** 
-   * static accessor  
-   */
-  public static PropertyRenderer get(TagPath path, Property prop) {
-    
-    // loop over known renderers
-    for (int i=0;i<renderers.length;i++) {
-      PropertyRenderer renderer = renderers[i];
-      if (renderer.accepts(path, prop))
-        return renderer;
-    }
-
-    // this shouldn't happen since PropertyRenderer is in the list
-    return DEFAULT_RENDERER;
-  }  
-  
   /**
    * Calculates the preferred size with given metrics, prop and image/text preferrence
    * @param metrics current font metrics
@@ -117,26 +89,26 @@ public class PropertyRenderer {
    * @param preference rendering preference
    * @param dpi resolution or null  
    */
-  public final Dimension2D getSize(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+  public final Dimension2D getSize(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
     return getSizeImpl(font, context, prop, attributes, dpi);
   }
   
-  protected Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+  protected Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
     return getSizeImpl(font, context, prop, prop.getDisplayValue(), attributes, dpi);
 
   }
-  protected Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, String txt, Map attributes, Point dpi) {
+  protected Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, String txt, Map<String,String> attributes, Point dpi) {
     double 
       w = 0,
       h = 0;
     // calculate text size (the default size we use)
-    if (!"no".equals(attributes.get("txt"))&&txt.length()>0) {
+    if (!HINT_VALUE_FALSE.equals(attributes.get(HINT_KEY_TXT))&&txt.length()>0) {
       TextLayout layout = new TextLayout(txt, font, context);
       w += layout.getAdvance();
       h = Math.max(h, layout.getAscent() + layout.getDescent());
     }
     // add image size
-    if ("yes".equals(attributes.get("img"))) {
+    if (HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) {
       ImageIcon img = prop.getImage(false);
       LineMetrics lm = font.getLineMetrics("", context);
       float max = lm.getHeight();
@@ -159,23 +131,23 @@ public class PropertyRenderer {
    * @param preference rendering preference
    * @param dpi resolution or null  
    */
-  public final void render(Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+  public final void render(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
     renderImpl(g,bounds,prop,attributes,dpi);
   }
   
-  protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+  protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
     renderImpl(g,bounds,prop,prop.getDisplayValue(),attributes,dpi);
   }
   
   /**
    * Implementation for rendering img/txt 
    */
-  protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, String txt, Map attributes, Point dpi) {
+  protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, String txt, Map<String,String> attributes, Point dpi) {
     // image?
-    if ("yes".equals(attributes.get("img"))) 
+    if (HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) 
       renderImpl(g, bounds, prop.getImage(false), dpi);
     // text?
-    if (!"no".equals(attributes.get("txt"))) 
+    if (!HINT_VALUE_FALSE.equals(attributes.get(HINT_KEY_TXT))) 
       renderImpl(g, bounds, txt, attributes);
     // done
   }
@@ -210,7 +182,7 @@ public class PropertyRenderer {
   /**
    * Implementation for rendering txt
    */
-  protected void renderImpl(Graphics2D g, Rectangle bounds, String txt, Map attributes) {
+  protected void renderImpl(Graphics2D g, Rectangle bounds, String txt, Map<String,String> attributes) {
     
     // check for empty string
     if (txt.length()==0)
@@ -250,18 +222,18 @@ public class PropertyRenderer {
     /** 
      * size override
      */
-    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
       return super.getSizeImpl(font, context, prop, getText(prop, attributes), attributes, dpi);
     }
 
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
       super.renderImpl(g, bounds, prop, getText(prop, attributes), attributes, dpi);
     }
     
-    private String getText(Property prop, Map attributes) {
+    private String getText(Property prop, Map<String,String> attributes) {
 
       Object j = attributes.get("jurisdiction");
       
@@ -300,24 +272,31 @@ public class PropertyRenderer {
     /** 
      * size override
      */
-    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
       patch(attributes);
-      return super.getSizeImpl(font, context, prop, attributes, dpi);
+      return super.getSizeImpl(font, context, prop, value(prop, attributes), attributes, dpi);
     }
 
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
       patch(attributes);
-      super.renderImpl(g, bounds, prop, attributes, dpi);
+      super.renderImpl(g, bounds, prop, value(prop, attributes) ,attributes, dpi);
+    }
+    
+    private String value(Property sex, Map<String,String> attributes) {
+      String result = sex.getDisplayValue();
+      if (result.length()>0 && HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_SHORT)))
+        result = result.substring(0,1);
+      return result;
     }
 
-    private void patch(Map attributes) {
-      if (!attributes.containsKey("txt"))
-        attributes.put("txt", "no");
-      if (!attributes.containsKey("img"))
-        attributes.put("img", "yes");
+    private void patch(Map<String,String> attributes) {
+      if (!attributes.containsKey(HINT_KEY_TXT))
+        attributes.put(HINT_KEY_TXT, HINT_VALUE_FALSE);
+      if (!attributes.containsKey(HINT_KEY_IMG))
+        attributes.put(HINT_KEY_IMG, HINT_VALUE_TRUE);
     }
   } //Sex
 
@@ -334,7 +313,7 @@ public class PropertyRenderer {
     /**
      * size override
      */
-    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
       
       //.gotta be multiline
       if (!(prop instanceof MultiLineProperty))
@@ -359,7 +338,7 @@ public class PropertyRenderer {
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
       
       // gotta be multiline
       if (!(prop instanceof MultiLineProperty)) {
@@ -416,7 +395,7 @@ public class PropertyRenderer {
     /**
      * size override 
      */
-    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
       
       // try to resolve image
       ImageIcon img = getImage(prop, attributes);
@@ -431,7 +410,7 @@ public class PropertyRenderer {
     /**
      * render override
      */
-    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
       
       // grab the image
       ImageIcon img = getImage(prop, attributes);
@@ -481,13 +460,13 @@ public class PropertyRenderer {
     /**
      * Helper to get the image of PropertyFile
      */
-    private ImageIcon getImage(Property prop, Map attributes) {
+    private ImageIcon getImage(Property prop, Map<String,String> attributes) {
       // check file for image
       ImageIcon result = null;
       if (prop instanceof IconValueAvailable) 
         result = ((IconValueAvailable)prop).getValueAsIcon();
       // fallback
-      if (result==null&&"yes".equals(attributes.get("img"))) return broken;
+      if (result==null&&HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) return broken;
       // done
       return result;
     }  
@@ -514,15 +493,15 @@ public class PropertyRenderer {
     /**
      * size override
      */
-    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
       return super.getSizeImpl(font, context, prop, ((genj.gedcom.Entity)prop).getId(), attributes, dpi);
     }
   
     /**
      * render override
      */
-    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
-      attributes.put("alignt", "right");
+    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
+      attributes.put("align", "right");
       super.renderImpl(g, bounds, prop, ((genj.gedcom.Entity)prop).getId(), attributes, dpi);
     }
     
@@ -555,14 +534,14 @@ public class PropertyRenderer {
     /**
      * size override
      */
-    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map attributes, Point dpi) {
+    public Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
       return super.getSizeImpl(font, context, prop, STARS, attributes, dpi);
     }
   
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
       super.renderImpl(g, bounds, prop, STARS, attributes, dpi);
     }
     
@@ -581,7 +560,7 @@ public class PropertyRenderer {
     /**
      * render override - make it right aligned
      */
-    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map attributes, Point dpi) {
+    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
       attributes.put("align", "right");
       super.renderImpl(g, bounds, prop, attributes, dpi);
     }

@@ -35,6 +35,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Rectangle2D;
@@ -231,11 +232,10 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     /** constructor */
     private Settings() {
       super.setText(PrintTask.RESOURCES.getString("settings"));
-      super.setTarget(PrintWidget.this);
     }
 
     /** run */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       // show settings
       Point pos = task.getOwner().getLocationOnScreen();
       PrintService choice = ServiceUI.printDialog(null, pos.x, pos.y, task.getServices(), task.getService(), null, task.getAttributes());

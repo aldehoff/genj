@@ -18,10 +18,6 @@ Running GenJ Application (part of genj_app-x.y.zip)
  double-click on run.jar is sufficient (the association has to 
  be set up to call 'javaw -jar %1').
 
-Running GenJ Applet (part of genj_applet-x.y.zip)
-
- See ./doc/applet.txt
-
 Problems
    
  If you encounter runtime problems open genj.log (~/genj.log on

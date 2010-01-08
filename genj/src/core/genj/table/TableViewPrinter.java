@@ -22,7 +22,7 @@ package genj.table;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySimpleValue;
 import genj.print.Printer;
-import genj.renderer.PropertyRenderer;
+import genj.renderer.PropertyRendererFactory;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -91,7 +91,7 @@ public class TableViewPrinter implements Printer {
    */
   public Dimension calcSize(Dimension2D pageSizeInInches, Point dpi) {
 
-    TableModel model = table.getModel();
+    TableModel model = table.getTable().getTableModel();
     
     // prepare data
     pageWidth = (int)Math.ceil(pageSizeInInches.getWidth()*dpi.x);
@@ -162,7 +162,7 @@ public class TableViewPrinter implements Printer {
     if (prop==null)
       return;
     // grab size
-    Dimension2D dim = PropertyRenderer.get(prop).getSize(font, context, prop, new HashMap(), dpi);
+    Dimension2D dim = PropertyRendererFactory.DEFAULT.getRenderer(prop).getSize(font, context, prop, new HashMap(), dpi);
     // keep height
     if (row<0)
       headerHeight    = max(dim.getHeight(), headerHeight, pageHeight - headerHeight - pad);
@@ -197,7 +197,7 @@ public class TableViewPrinter implements Printer {
     g.setFont(font);
 
     // grab model
-    TableModel model = table.getModel();
+    TableModel model = table.getTable().getTableModel();
     
     // identify column/row for this page
     int scol=0, cols=0;
@@ -258,7 +258,7 @@ public class TableViewPrinter implements Printer {
     Shape clip = g.getClip();
     g.clip(r);
     // grab renderer and render
-    PropertyRenderer.get(prop).render(g, r, prop, new HashMap(), dpi);
+    PropertyRendererFactory.DEFAULT.getRenderer(prop).render(g, r, prop, new HashMap(), dpi);
     // restore clip
     g.setClip(clip);
     // done

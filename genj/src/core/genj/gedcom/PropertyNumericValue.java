@@ -89,14 +89,11 @@ public class PropertyNumericValue extends Property {
   /**
    * Compare two numeric values
    */
-  public int compareTo(Object o) {
-    // numeric value as well?
-    if (!(o instanceof PropertyNumericValue))
-      return super.compareTo(o);
-    PropertyNumericValue that = (PropertyNumericValue)o;
+  public int compareTo(Property other) {
+    PropertyNumericValue that = (PropertyNumericValue)other;
     // boxes don't match?
     if (that.value.getClass()!=this.value.getClass())
-      return super.compareTo(o);
+      return super.compareTo(other);
     // let boxes compare
     return this.value.compareTo(that.value);
   }

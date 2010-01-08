@@ -20,7 +20,6 @@
 package genj.option;
 
 import genj.util.swing.ImageIcon;
-import genj.window.WindowManager;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -167,13 +166,6 @@ public class OptionsWidget extends JPanel {
 
     // layout
     doLayout();
-  }
-
-  /**
-   * Access to window manager
-   */
-  public WindowManager getWindowManager() {
-    return WindowManager.getInstance(this);
   }
 
   /**

@@ -24,28 +24,18 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.time.Calendar;
 import genj.gedcom.time.PointInTime;
 import genj.util.ChangeSupport;
-import genj.util.LiturgicalYear;
 import genj.util.WordBuffer;
-import genj.util.LiturgicalYear.Sunday;
-import genj.window.WindowManager;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Logger;
+import java.util.List;
 
 import javax.swing.Action;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * Generic component for editing dates
@@ -89,15 +79,11 @@ public class DateWidget extends JPanel {
     calendar = pit.getCalendar();
         
     // create calendar switches
-    ArrayList<Action> actions = new ArrayList<Action>(PointInTime.CALENDARS.length+1);
+    List<SwitchCalendar> switches = new ArrayList<SwitchCalendar>(PointInTime.CALENDARS.length+1);
     for (int s=0;s<PointInTime.CALENDARS.length;s++)
-      actions.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
-    actions.add(new ConvertLiturgicalYear());
+      switches.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
     
     // initialize Sub-components
-    widgetCalendar = new PopupWidget(); 
-    widgetCalendar.setActions(actions);
-    
     widgetYear  = new TextFieldWidget("",5+1);
     widgetYear.setSelectAllOnFocus(true);
     widgetYear.addChangeListener(changeSupport);
@@ -111,10 +97,11 @@ public class DateWidget extends JPanel {
     widgetDay.setSelectAllOnFocus(true);
     widgetDay.addChangeListener(changeSupport);
     
+    widgetCalendar = new PopupWidget(); 
+    widgetCalendar.addItems(switches);
+    
     // Setup Layout
     setLayout(LAYOUT.copy()); // reuse a copy of layout 
-    
-    add(widgetCalendar);
     
     String format;
     switch (new SimpleDateFormat().toPattern().charAt(0)) {
@@ -137,6 +124,8 @@ public class DateWidget extends JPanel {
 	      add(widgetDay) ; 
 	      break;
     }
+    
+    add(widgetCalendar);
     
     widgetDay.setToolTipText(format);
     widgetMonth.setToolTipText(format);
@@ -291,101 +280,6 @@ public class DateWidget extends JPanel {
   }
   
   /**
-   * Action enter a value in form of liturgical year
-   */
-  private class ConvertLiturgicalYear extends Action2 {
-    /**
-     * Constructor
-     */
-    private ConvertLiturgicalYear() {
-      setImage(LiturgicalYear.IMAGE);
-      setText("Liturgical Year");
-    }
-    
-    @Override
-    protected void execute() {
-      
-      final JTextField txtYear = new JTextField(widgetYear.getText(), 4);
-      final JTextField txtWeek = new JTextField(3);
-
-      final Sunday[] sundays = Sunday.values();
-      String[] names = new String[sundays.length];
-      for (int i = 0; i < names.length; i++) 
-        names[i] = sundays[i].getName();
-      
-      final JComboBox pickSunday = new JComboBox(names);
-      
-      JPanel input = new JPanel(new BorderLayout());
-      input.add(new JLabel(LiturgicalYear.TXT_SUNDAY), BorderLayout.NORTH);
-      input.add(txtWeek, BorderLayout.WEST);
-      input.add(pickSunday, BorderLayout.CENTER);
-      input.add(txtYear, BorderLayout.EAST);
-      
-      final Action ok = Action2.ok();
-      Action cancel = Action2.cancel();
-      
-      final ActionListener alistener = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          
-          try {
-            Integer.parseInt(txtYear.getText());
-          } catch (NumberFormatException nfe) {
-            ok.setEnabled(false);
-            return;
-          }
-
-          Sunday sunday = sundays[pickSunday.getSelectedIndex()];
-          if (sunday.getWeeks()==0) {
-            if (e!=null) txtWeek.setText("");
-            txtWeek.setEnabled(false);
-            ok.setEnabled(true);
-          } else {
-            if (e!=null) txtWeek.setText("1");              
-            txtWeek.setEnabled(true);
-            try {
-              int weeks = Integer.parseInt(txtWeek.getText());
-              ok.setEnabled(weeks>0 && weeks<=sunday.getWeeks());
-            } catch (NumberFormatException nfe) {
-              ok.setEnabled(false);
-            }
-          }
-        }
-      };
-      
-      DocumentListener dlistener = new DocumentListener() {
-        public void changedUpdate(DocumentEvent e) {
-          alistener.actionPerformed(null);
-        }
-        public void insertUpdate(DocumentEvent e) {
-          alistener.actionPerformed(null);
-        }
-        public void removeUpdate(DocumentEvent e) {
-          alistener.actionPerformed(null);
-        }
-        
-      };
-      
-      txtWeek.getDocument().addDocumentListener(dlistener);
-      txtYear.getDocument().addDocumentListener(dlistener);
-      pickSunday.addActionListener(alistener);
-      
-      pickSunday.setSelectedIndex(0);
-      
-      WindowManager wm = WindowManager.getInstance(DateWidget.this);
-
-      // confirmed?
-      if (0 == wm.openDialog("lityear", LiturgicalYear.TXT_LITURGICAL_YEAR, WindowManager.QUESTION_MESSAGE, input, new Action[]{ok,cancel}, DateWidget.this)) {
-        java.util.Calendar date = sundays[pickSunday.getSelectedIndex()].getDate(
-            Integer.parseInt(txtYear.getText()),
-            txtWeek.getText().length()==0 ? 0 : Integer.parseInt(txtWeek.getText())
-        );
-        setValue(new PointInTime(date));
-      }
-      
-    }
-  }
-  
-  /**
    * Action to switch calendar
    */
   private class SwitchCalendar extends Action2 {
@@ -416,21 +310,16 @@ public class DateWidget extends JPanel {
     /**
      * @see genj.util.swing.Action2#execute()
      */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       PointInTime pit = DateWidget.this.getValue();
       if (pit!=null) {
         try {
           pit.set(newCalendar);
         } catch (GedcomException e) {
-          WindowManager wm = WindowManager.getInstance(DateWidget.this);
-          if (wm==null) {
-            Logger.getLogger("genj.util.swing").info(e.getMessage());
-          } else {
-            Action[] actions = { Action2.ok(),  new Action2(Calendar.TXT_CALENDAR_RESET) };
-            int rc = wm.openDialog(null, Calendar.TXT_CALENDAR_SWITCH, WindowManager.ERROR_MESSAGE, e.getMessage(), actions, DateWidget.this);
-            if (rc==0) 
-              return;
-          }
+          Action[] actions = { Action2.ok(),  new Action2(Calendar.TXT_CALENDAR_RESET) };
+          int rc = DialogHelper.openDialog(Calendar.TXT_CALENDAR_SWITCH, DialogHelper.ERROR_MESSAGE, e.getMessage(), actions, DateWidget.this);
+          if (rc==0) 
+            return;
           pit = new PointInTime(newCalendar);
         }
         // change

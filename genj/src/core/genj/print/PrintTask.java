@@ -25,15 +25,15 @@ import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.ProgressWidget;
 import genj.util.swing.UnitGraphics;
-import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
@@ -118,9 +118,6 @@ public class PrintTask extends Action2 implements Printable, Trackable {
     title = RESOURCES.getString("title", setTitle);
     registry = setRegistry;
 
-    // setup async
-    setAsync(Action2.ASYNC_SAME_INSTANCE);
-    
     // restore last service
     PrintService service = registry.get(getDefaultService());
     if (!service.isDocFlavorSupported(FLAVOR))
@@ -389,7 +386,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
     };
 
     // show it in dialog
-    int choice = WindowManager.getInstance(owner).openDialog("print", title, WindowManager.QUESTION_MESSAGE, widget, actions, owner);
+    int choice = DialogHelper.openDialog(title, DialogHelper.QUESTION_MESSAGE, widget, actions, owner);
 
     // keep settings
     registry.put(attributes);
@@ -404,7 +401,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
       attributes.add(new Destination(new File(file).toURI()));
     
     // setup progress dlg
-    progress = WindowManager.getInstance(owner).openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), Action2.cancelOnly(), owner);
+//    progress = WindowManager.getInstance(owner).openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), Action2.cancelOnly(), owner);
 
     // continue
     return true;
@@ -413,7 +410,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
   /**
    * @see genj.util.swing.Action2#execute()
    */
-  protected void execute() {
+  public void actionPerformed(ActionEvent event) {
     try {
       service.createPrintJob().print(new SimpleDoc(this, FLAVOR, null), attributes);
     } catch (PrintException e) {
@@ -424,20 +421,22 @@ public class PrintTask extends Action2 implements Printable, Trackable {
   /**
    * @see genj.util.swing.Action2#postExecute(boolean)
    */
-  protected void postExecute(boolean preExecuteResult) {
-    // close progress
-    WindowManager.getInstance(owner).close(progress);
+  protected boolean postExecute(boolean preExecuteResult) {
+//    // close progress
+//    WindowManager.close(progress);
     // something we should know about?
-    if (throwable != null) 
+    if (throwable != null) {
       LOG.log(Level.WARNING, "print() threw error", throwable);
+      return false;
+    }
     // finished
+    return true;
   }
 
   /**
    * @see genj.util.Trackable#cancelTrackable()
    */
   public void cancelTrackable() {
-    cancel(true);
   }
 
   /**

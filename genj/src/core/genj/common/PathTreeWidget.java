@@ -279,7 +279,7 @@ public class PathTreeWidget extends JScrollPane {
      */
     private TagPath[] getChildrenOfNode(TagPath path) {
       // all paths starting with path
-      List children = new ArrayList(8);
+      List<TagPath> children = new ArrayList<TagPath>(8);
       for (int p=0;p<paths.length;p++) {
         if (paths[p].length()>path.length()&&paths[p].startsWith(path)) 
           add(new TagPath(paths[p], path.length()+1), children);
@@ -307,7 +307,7 @@ public class PathTreeWidget extends JScrollPane {
       return TagPath.toArray(children);
     }
     
-    private void add(TagPath path, List list) {
+    private void add(TagPath path, List<TagPath> list) {
       if (!list.contains(path))
         list.add(path);
     }

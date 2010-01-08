@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import genj.option.Option;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
 import genj.util.Resources;
@@ -50,6 +51,9 @@ public class Options extends OptionProvider {
   /** option - wether to set wife lastname when indi is created */
   public boolean setWifeLastname = true;
   
+  /** option - wether to add GIVN|SURN information on name changes */
+  public boolean isAddGivenSurname = false;
+  
   /** option - whether to use "last,first" or "first last" */
   public int nameFormat = 0;
   public final static String[] nameFormats = {
@@ -70,7 +74,7 @@ public class Options extends OptionProvider {
   protected int numberOfUndos = 10;
   
   /** option - place hierarchy keys for city NOT EDITABLE ATM */
-  protected Set placeHierarchyCityKeys = new HashSet(Arrays.asList(new String[]{ "city", "commune", "ville", "stadt"}));
+  protected Set<String> placeHierarchyCityKeys = new HashSet<String>(Arrays.asList(new String[]{ "city", "commune", "ville", "stadt"}));
   
   /** option - private information mask */
   public String maskPrivate = "...";
@@ -157,7 +161,7 @@ public class Options extends OptionProvider {
   /** 
    * Provider callback 
    */
-  public List getOptions() {
+  public List<? extends Option> getOptions() {
     return PropertyOption.introspect(instance);
   }
 

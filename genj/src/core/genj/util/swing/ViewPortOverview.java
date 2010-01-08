@@ -24,7 +24,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Panel;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
@@ -34,6 +34,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 
+import javax.swing.JPanel;
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -41,7 +42,7 @@ import javax.swing.event.ChangeListener;
 /**
  * A component showing an overview for a viewport
  */
-public class ViewPortOverview extends Panel {
+public class ViewPortOverview extends JPanel {
   
   /** the square dimension used for resizing */
   private final static int DIM_RESIZE = 6;
@@ -49,9 +50,9 @@ public class ViewPortOverview extends Panel {
   /** keep the viewport */
   private JViewport viewport;
   
-  /** the last indicator */
-  private Rectangle last = null; 
-
+  /** last indicator painted */
+  private Rectangle last;
+  
   /**
    * Constructor
    */
@@ -84,46 +85,29 @@ public class ViewPortOverview extends Panel {
     g.setColor(Color.blue);
     g.drawRect(0,0,dim.width-1,dim.height-1);
 
-    // reset last
-    last = null;
+    // do we have the zoom
+    if (zoom==null) zoom = getZoom();
     
-    // indicate viewport
-    renderIndicator(g, zoom);
+    // build rect
+    Rectangle shown = viewport.getViewRect();
+    last= new Rectangle(
+      (int)(shown.x     * zoom.getX()),
+      (int)(shown.y     * zoom.getY()),
+      (int)(shown.width * zoom.getX()),
+      (int)(shown.height* zoom.getY())
+    );
     
-    // done
+    // indicate content bounds
+    Graphics2D g2d = (Graphics2D)g;
+    g2d.setColor(new Color(64, 64, 64, 32));
+    g.fillRect(last.x, last.y, last.width, last.height);
+    
   }
   
   /**
    * Override for specific rendering
    */
   protected void renderContent(Graphics g, double zoomx, double zoomy) {
-  }
-  
-  /**
-   * Draw viewport indicator
-   */
-  private void renderIndicator(Graphics g, Point2D zoom) {
-    // have to undo last one?
-    if (last!=null) {
-      g.setColor(Color.white);
-      g.setXORMode(Color.lightGray);
-      g.fillRect(last.x, last.y, last.width, last.height);
-    }
-    // do we have the zoom
-    if (zoom==null) zoom = getZoom();
-    // build rect
-    Rectangle shown = viewport.getViewRect();
-    last = new Rectangle(
-      (int)(shown.x     * zoom.getX()),
-      (int)(shown.y     * zoom.getY()),
-      (int)(shown.width * zoom.getX()),
-      (int)(shown.height* zoom.getY())
-    );
-    // indicate content bounds
-    g.setColor(Color.lightGray);
-    g.setXORMode(Color.white);
-    g.fillRect(last.x, last.y, last.width, last.height);
-    // done
   }
   
   /**
@@ -162,7 +146,7 @@ public class ViewPortOverview extends Panel {
      */
     public void stateChanged(ChangeEvent e) {
       if (!isVisible()) return;
-      renderIndicator(getGraphics(), null);
+      repaint();
     }
     /**
      * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)

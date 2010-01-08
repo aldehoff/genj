@@ -19,7 +19,6 @@
  */
 package genj.option;
 
-import genj.util.Registry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,12 +63,12 @@ public abstract class Option {
   /**
    * Restore option values from registry
    */
-  public abstract void restore(Registry registry);
+  public abstract void restore();
 
   /**
    * Persist option values to registry
    */
-  public abstract void persist(Registry registry);
+  public abstract void persist();
 
   /**
    * Create an editor

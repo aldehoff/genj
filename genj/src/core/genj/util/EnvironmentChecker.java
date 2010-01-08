@@ -77,6 +77,14 @@ public class EnvironmentChecker {
     // o.k. this should be more flexible 8)
     return version.startsWith("1.5") || version.startsWith("1.6");
   }
+
+  /**
+   * Check for Java 1.6 and higher
+   */
+  public static boolean isJava16(Object receipient) {
+    String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
+    return version.startsWith("1.6");
+  }
   
   /**
    * Check for Mac
@@ -284,12 +292,12 @@ public class EnvironmentChecker {
     try {
       File user_home_genj;
       File home = new File(System.getProperty("user.home"));
-      File dotgenj = new File(home, ".genj");
+      File dotgenj = new File(home, ".genj3");
       File appdata = new File(home, "Application Data");
       if (!isWindows() || dotgenj.isDirectory() || !appdata.isDirectory())
         user_home_genj = dotgenj;
       else
-        user_home_genj = new File(appdata, "GenJ");
+        user_home_genj = new File(appdata, "GenJ3");
       
       setProperty("user.home.genj", user_home_genj.getAbsolutePath());
 

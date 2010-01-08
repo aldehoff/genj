@@ -59,11 +59,23 @@ public abstract class PropertyOption extends Option {
   /**
    * Get options for given instance
    */
-  public static List introspect(Object instance) {
+  public static List<PropertyOption> introspect(Object instance) {
+    return introspect(instance, false);
+  }
 
+  public static List<PropertyOption> introspect(Object instance, boolean recursively) {
+    return introspect(instance, recursively?new ArrayList<Object>():null);
+  }
+  
+  private static List<PropertyOption> introspect(Object instance, List<Object> trackingRecursivelyVisited) {
+ 
+    // tracking visited?
+    if (trackingRecursivelyVisited!=null)
+      trackingRecursivelyVisited.add(instance);   
+    
     // prepare result
-    List result = new ArrayList();
-    Set beanattrs = new HashSet();
+    List<PropertyOption> result = new ArrayList<PropertyOption>();
+    Set<String> beanattrs = new HashSet<String>();
 
     // loop over bean properties of instance
     try {
@@ -81,15 +93,12 @@ public abstract class PropertyOption extends Option {
           // int, boolean, String?
           if (!Impl.isSupportedArgument(property.getPropertyType()))
             continue;
-
+          
           // try a read
           property.getReadMethod().invoke(instance, (Object[])null);
 
           // create
-          Option option = BeanPropertyImpl.create(instance, property);
-
-          // and keep the option
-          result.add(option);
+          result.add(BeanPropertyImpl.create(instance, property));
 
           // remember name
           beanattrs.add(property.getName());
@@ -104,7 +113,7 @@ public abstract class PropertyOption extends Option {
     for (int f=0;f<fields.length;f++) {
 
       Field field = fields[f];
-      Class type = field.getType();
+      Class<?> type = field.getType();
 
       // won't address name of property again
       if (beanattrs.contains(field.getName()))
@@ -121,18 +130,25 @@ public abstract class PropertyOption extends Option {
       }
 
       // int, boolean, String?
-      if (!Impl.isSupportedArgument(type))
-        continue;
-
-      // create
-      Option option = FieldImpl.create(instance, field);
-
-      // and keep the option
-      result.add(option);
-
+      if (Impl.isSupportedArgument(type)) {
+        result.add(FieldImpl.create(instance, field));
+      } else {
+        // could still be recursive
+        if (trackingRecursivelyVisited!=null)
+          try {
+            for (PropertyOption recursiveOption : introspect(field.get(instance), trackingRecursivelyVisited)) {
+              String cat = recursiveOption.getCategory();
+              recursiveOption.setCategory(field.getName() );
+              result.add(recursiveOption);
+            }
+          } catch (Throwable t) {
+            // ignore it
+          }
+      }
+ 
       // next
     }
-
+    
     // done
     return result;
   }
@@ -144,6 +160,16 @@ public abstract class PropertyOption extends Option {
     this.instance = instance;
     this.property = property;
   }
+  
+  /**
+   * Persist
+   */
+  public abstract void persist(Registry registry);
+
+  /**
+   * Persist
+   */
+  public abstract void restore(Registry registry);
 
   /**
    * Accessor - option value
@@ -321,7 +347,7 @@ public abstract class PropertyOption extends Option {
   private static abstract class Impl extends PropertyOption {
 
     /** type */
-    protected Class type;
+    protected Class<?> type;
 
     /** a user readable name */
     private String name;
@@ -335,7 +361,7 @@ public abstract class PropertyOption extends Option {
     /**
      * Constructor
      */
-    protected Impl(Object instance, String property, Class type) {
+    protected Impl(Object instance, String property, Class<?> type) {
       super(instance, property);
       this.type     = type;
 
@@ -394,8 +420,11 @@ public abstract class PropertyOption extends Option {
     /**
      * Restore option values from registry
      */
+    public void restore() {
+      restore(Registry.get(instance));
+    }
     public void restore(Registry registry) {
-      String value = registry.get(instance.getClass().getName() + '.' + getProperty(), (String)null);
+      String value = registry.get(getProperty(), (String)null);
       if (value!=null)
         setValue(value);
     }
@@ -403,10 +432,13 @@ public abstract class PropertyOption extends Option {
     /**
      * Persist option values to registry
      */
+    public void persist() {
+      persist(Registry.get(instance));
+    }
     public void persist(Registry registry) {
       Object value = getValue();
       if (value!=null)
-        registry.put(instance.getClass().getName() + '.' + getProperty(), value.toString());
+        registry.put(getProperty(), value.toString());
     }
 
     /**
@@ -474,7 +506,7 @@ public abstract class PropertyOption extends Option {
     /**
      * Test for supported option types
      */
-    private static boolean isSupportedArgument(Class type) {
+    private static boolean isSupportedArgument(Class<?> type) {
       return
         Font.class.isAssignableFrom(type)   ||
         File.class.isAssignableFrom(type)   ||
@@ -497,7 +529,7 @@ public abstract class PropertyOption extends Option {
     protected Field field;
 
     /** factory */
-    protected static Option create(final Object instance, Field field) {
+    protected static PropertyOption create(final Object instance, Field field) {
       // create one
       PropertyOption result = new FieldImpl(instance, field);
       // is it an Integer field with matching multiple choice field?
@@ -543,7 +575,7 @@ public abstract class PropertyOption extends Option {
     PropertyDescriptor descriptor;
 
     /** factory */
-    protected static Option create(final Object instance, PropertyDescriptor descriptor) {
+    protected static PropertyOption create(final Object instance, PropertyDescriptor descriptor) {
       // create one
       PropertyOption result = new BeanPropertyImpl(instance, descriptor);
       // is it an Integer field with matching multiple choice field?
@@ -588,7 +620,7 @@ public abstract class PropertyOption extends Option {
     /**
      * box type making sure no primitive types are returned
      */
-    private static Class box(Class type) {
+    private static Class<?> box(Class<?> type) {
       if (type == boolean.class) return Boolean.class;
       if (type == byte.class) return Byte.class;
       if (type == char.class) return Character.class;
@@ -605,7 +637,7 @@ public abstract class PropertyOption extends Option {
       return object!=null ? object.toString() : "";
     }
 
-    protected Object toObject(Object object, Class expected) {
+    protected Object toObject(Object object, Class<?> expected) {
       // make sure expected is not a primitive type
       expected = box(expected);
       // already ok?
@@ -632,14 +664,14 @@ public abstract class PropertyOption extends Option {
     SIZE   = "size=";
 
     /** font from string representation */
-    protected Object toObject(Object object, Class expected) {
+    protected Object toObject(Object object, Class<?> expected) {
 
       if (expected!=Font.class||object==null||object.getClass()!=String.class)
         return super.toObject(object, expected);
       String string = (String)object;
 
       // check what we've got
-      Map map = new HashMap();
+      Map<TextAttribute, Object> map = new HashMap<TextAttribute, Object>();
 
       String family = getAttribute(string, FAMILY);
       if (family==null)

@@ -35,6 +35,7 @@ final public class Images {
     
     imgStickOn,
     imgStickOff,
+    imgFocus,
     imgBack,
     imgForward,
     
@@ -60,8 +61,9 @@ final public class Images {
 
     imgStickOn   = new ImageIcon(this,"images/StickOn");
     imgStickOff  = new ImageIcon(this,"images/StickOff");
-    imgBack    = new ImageIcon(this,"images/Return");
-    imgForward  = new ImageIcon(this,"images/Forward");
+    imgFocus     = new ImageIcon(this,"images/Focus");
+    imgBack      = new ImageIcon(this,"images/Return");
+    imgForward   = new ImageIcon(this,"images/Forward");
 
     imgUndo      = new ImageIcon(this,"images/Undo");
     imgRedo      = new ImageIcon(this,"images/Redo");

@@ -17,9 +17,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.8 $ $Author: nmeier $ $Date: 2006-02-21 23:28:40 $
+ * $Revision: 1.9 $ $Author: nmeier $ $Date: 2010-01-08 05:35:30 $
  */
 package genj.option;
+
+import java.awt.event.ActionEvent;
 
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
@@ -71,7 +73,7 @@ public abstract class CustomOption extends Option {
     }
     
     /** callback - button pressed */
-    protected void execute() {
+    public void actionPerformed(ActionEvent event) {
       edit();
     }
   

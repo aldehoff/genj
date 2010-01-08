@@ -19,8 +19,6 @@
  */
 package genj.tree;
 
-import genj.renderer.BlueprintList;
-import genj.renderer.BlueprintManager;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
@@ -28,20 +26,15 @@ import genj.util.swing.ColorsWidget;
 import genj.util.swing.FontChooser;
 import genj.util.swing.ListWidget;
 import genj.util.swing.NestedBlockLayout;
-import genj.view.Settings;
-import genj.view.ViewManager;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -56,19 +49,13 @@ import javax.swing.event.ListSelectionListener;
 
 /**
  * The settings component for the Tree View */
-public class TreeViewSettings extends JTabbedPane implements Settings {
-
-  /** keeping track of tree these settings are for */
-  private TreeView view;
+public class TreeViewSettings extends JTabbedPane {
 
   /** spinners */
   private JSpinner[] spinners = new JSpinner[5]; 
   
   /** colorchooser for colors */
   private ColorsWidget colorWidget;
-  
-  /** blueprintlist */
-  private BlueprintList blueprintList;
   
   /** resources */
   private Resources resources = Resources.get(this);
@@ -93,10 +80,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   /** bookmark list */
   private JList bookmarkList;
 
-  /**
-   * @see genj.view.Settings#init(genj.view.ViewManager)
-   */
-  public void init(ViewManager manager) {
+  public TreeViewSettings(TreeView view) {
     
     // panel for checkbox options    
     JPanel options = new JPanel(new NestedBlockLayout(
@@ -133,9 +117,6 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     // color chooser
     colorWidget = new ColorsWidget();
     
-    // blueprint options
-    blueprintList = new BlueprintList(BlueprintManager.getInstance());
-    
     // bookmarks
     Box bookmarks = new Box(BoxLayout.Y_AXIS);
     bookmarkList = new ListWidget();
@@ -165,7 +146,27 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     add(resources.getString("page.main")  , options);
     add(resources.getString("page.colors"), colorWidget);
     add(resources.getString("page.bookmarks"), bookmarks);
-    add(resources.getString("page.blueprints"), blueprintList);
+    
+    // options
+    checkBending.setSelected(view.getModel().isBendArcs());
+    checkAntialiasing.setSelected(view.isAntialising());
+    checkAdjustFonts.setSelected(view.isAdjustFonts());
+    fontChooser.setSelectedFont(view.getContentFont());
+    checkMarrSymbols.setSelected(view.getModel().isMarrSymbols());
+    // colors
+    colorWidget.removeAllColors();
+    for (String key : view.colors.keySet()) 
+      colorWidget.addColor(key, resources.getString("color."+key), view.colors.get(key));
+    // bookmarks
+    bookmarkList.setModel(new DefaultComboBoxModel(view.getModel().getBookmarks().toArray()));
+    // metrics
+    TreeMetrics m = view.getModel().getMetrics();
+    int[] values = new int[] {
+      m.wIndis, m.hIndis, m.wFams, m.hFams, m.pad   
+    };
+    for (int i=0;i<values.length;i++) {
+      spinners[i].setValue(new Double(values[i]*0.1D));
+    }
     
     // done
   }
@@ -188,21 +189,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     return result;
   }
   
-  /**
-   * @see genj.view.Settings#setView(javax.swing.JComponent, genj.view.ViewManager)
-   */
-  public void setView(JComponent viEw) {
-    // remember
-    view = (TreeView)viEw;
-    // update characteristics
-    blueprintList.setGedcom(view.getModel().getGedcom());
-    // done
-  }
-  
-  /**
-   * @see genj.view.ApplyResetSupport#apply()
-   */
-  public void apply() {
+  public void commit(TreeView view) {
     // options
     view.getModel().setBendArcs(checkBending.isSelected());
     view.setAntialiasing(checkAntialiasing.isSelected());
@@ -210,16 +197,14 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
     view.setContentFont(fontChooser.getSelectedFont());
     view.getModel().setMarrSymbols(checkMarrSymbols.isSelected());
     // colors
-    Iterator colors = view.colors.keySet().iterator();
-    while (colors.hasNext()) {
-      String key = colors.next().toString();
+    for (String key : view.colors.keySet()) {
       view.colors.put(key, colorWidget.getColor(key));
     }
     // bookmarks
-    List bookmarks = new ArrayList();
+    List<Bookmark> bookmarks = new ArrayList<Bookmark>();
     ListModel list = bookmarkList.getModel();
     for (int i=0;i<list.getSize();i++) {
-      bookmarks.add(list.getElementAt(i));
+      bookmarks.add((Bookmark)list.getElementAt(i));
     }
     view.getModel().setBookmarks(bookmarks);
     // metrics
@@ -230,50 +215,7 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
       (int)(((Double)spinners[3].getModel().getValue()).doubleValue()*10),
       (int)(((Double)spinners[4].getModel().getValue()).doubleValue()*10)
     ));
-    // blueprints
-    view.setBlueprints(blueprintList.getSelection());
     // done
-  }
-
-  /**
-   * @see genj.view.ApplyResetSupport#reset()
-   */
-  public void reset() {
-    // options
-    checkBending.setSelected(view.getModel().isBendArcs());
-    checkAntialiasing.setSelected(view.isAntialising());
-    checkAdjustFonts.setSelected(view.isAdjustFonts());
-    fontChooser.setSelectedFont(view.getContentFont());
-    checkMarrSymbols.setSelected(view.getModel().isMarrSymbols());
-    // colors
-    colorWidget.removeAllColors();
-    Iterator keys = view.colors.keySet().iterator();
-    while (keys.hasNext()) {
-      String key = keys.next().toString();
-      String name = resources.getString("color."+key);
-      Color color = (Color)view.colors.get(key);
-      colorWidget.addColor(key, name, color);
-    }
-    // bookmarks
-    bookmarkList.setModel(new DefaultComboBoxModel(view.getModel().getBookmarks().toArray()));
-    // metrics
-    TreeMetrics m = view.getModel().getMetrics();
-    int[] values = new int[] {
-      m.wIndis, m.hIndis, m.wFams, m.hFams, m.pad   
-    };
-    for (int i=0;i<values.length;i++) {
-      spinners[i].setValue(new Double(values[i]*0.1D));
-    }
-    // blueprints
-    blueprintList.setSelection(view.getBlueprints());
-    // done
-  }
-  
-  /**
-   * @see genj.view.Settings#getEditor()
-   */
-  public JComponent getEditor() {
-    return this;
   }
 
   /**
@@ -282,18 +224,12 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
   private class ActionMove extends Action2 {
     /** by how much to move */
     private int by;
-    /**
-     * Constructor
-     */
     private ActionMove(int how) {
       setText(resources.getString("bookmark.move."+how));
       setEnabled(false);
       by = how;
     }
-    /**
-     * @see genj.util.swing.Action2#execute()
-     */
-    protected void execute() {
+    public void actionPerformed(java.awt.event.ActionEvent e) {
       int i = bookmarkList.getSelectedIndex();
       DefaultComboBoxModel model = (DefaultComboBoxModel)bookmarkList.getModel();
       Object bookmark = model.getElementAt(i);
@@ -307,17 +243,11 @@ public class TreeViewSettings extends JTabbedPane implements Settings {
    * Action - delete a bookmark
    */
   private class ActionDelete extends Action2 {
-    /**
-     * Constructor
-     */
     private ActionDelete() {
       setText(resources.getString("bookmark.del"));
       setEnabled(false);
     }
-    /**
-     * @see genj.util.swing.Action2#execute()
-     */
-    protected void execute() {
+    public void actionPerformed(java.awt.event.ActionEvent e) {
       int i = bookmarkList.getSelectedIndex();
       if (i>=0)
         ((DefaultComboBoxModel)bookmarkList.getModel()).removeElementAt(i);

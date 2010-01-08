@@ -32,7 +32,7 @@ import java.util.logging.Level;
 /**
  * Wrapper for a Property
  */
-public class MetaProperty implements Comparable {
+public class MetaProperty implements Comparable<MetaProperty> {
 
   /** static - flags */
   public final static int
@@ -113,6 +113,8 @@ public class MetaProperty implements Comparable {
       attrs.put("img", supr.getAttribute("img"));
     if (getAttribute("cardinality")==null)
       attrs.put("cardinality", supr.getAttribute("cardinality"));
+    if (getAttribute("hide")==null)
+      attrs.put("hide", supr.getAttribute("hide"));
   }
   
   /**
@@ -233,8 +235,7 @@ public class MetaProperty implements Comparable {
   /**
    * A comparison based on tag name
    */
-  public int compareTo(Object o) {
-    MetaProperty other = (MetaProperty)o;
+  public int compareTo(MetaProperty other) {
     return Collator.getInstance().compare(getName(), other.getName());
   }
 
@@ -332,7 +333,7 @@ public class MetaProperty implements Comparable {
   /**
    * Accessor - type
    */
-  public Class getType() {
+  public Class<? extends Property> getType() {
     // check cached type
     if (type==null) {
       String attrType = getAttribute("type");
@@ -483,6 +484,11 @@ public class MetaProperty implements Comparable {
     }
     // done
     return result;
+  }
+  
+  @Override
+  public String toString() {
+    return getTag() + attrs;
   }
   
 } //MetaProperty

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.135 $ $Author: nmeier $ $Date: 2009-02-04 21:41:51 $
+ * $Revision: 1.136 $ $Author: nmeier $ $Date: 2010-01-08 05:35:27 $
  */
 package genj.gedcom;
 
@@ -46,14 +46,14 @@ import java.util.logging.Logger;
 /**
  * The object-representation of a Gedom file
  */
-public class Gedcom implements Comparable {
+public class Gedcom {
   
-  /*package*/ final static Logger LOG = Logger.getLogger("genj.gedcom");
-  
-  /** static resourcs */
-  static private Random seed = new Random();
-  static /*package*/ Resources resources = Resources.get(Gedcom.class);
+  final static Logger LOG = Logger.getLogger("genj.gedcom");
+  final static private Random seed = new Random();
+  final static Resources resources = Resources.get(Gedcom.class);
 
+  public final static String PASSWORD_UNKNOWN = "unknown";
+  
   public static final String
    // standard Gedcom encodings 
     UNICODE  = "UNICODE", 
@@ -121,8 +121,8 @@ public class Gedcom implements Comparable {
       E2PREFIX.put(REPO, "R");
     }
     
-  private final static Map 
-    E2TYPE = new HashMap();
+  private final static Map<String, Class<? extends Entity>> 
+    E2TYPE = new HashMap<String, Class<? extends Entity>>();
     static {
       E2TYPE.put(INDI, Indi.class);
       E2TYPE.put(FAM , Fam .class);
@@ -174,7 +174,7 @@ public class Gedcom implements Comparable {
   private List listeners = new ArrayList(10);
   
   /** mapping tags refence sets */
-  private Map tags2refsets = new HashMap();
+  private Map<String, ReferenceSet<String,Property>> tags2refsets = new HashMap<String, ReferenceSet<String, Property>>();
 
   /** encoding */
   private String encoding = ENCODINGS[Math.min(ENCODINGS.length-1, Options.getInstance().defaultEncoding)];
@@ -192,11 +192,7 @@ public class Gedcom implements Comparable {
   private String placeFormat = "";
 
   /** password for private information */
-  private String password = PASSWORD_NOT_SET;
-
-  public final static String
-    PASSWORD_NOT_SET = "PASSWORD_NOT_SET",
-    PASSWORD_UNKNOWN = "PASSWORD_UNKNOWN";
+  private String password = null;
 
   /**
    * Gedcom's Constructor
@@ -219,6 +215,13 @@ public class Gedcom implements Comparable {
    */
   public Origin getOrigin() {
     return origin;
+  }
+  
+  /**
+   * Returns the origin of this gedcom
+   */
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
   }
   
   /**
@@ -858,7 +861,7 @@ public class Gedcom implements Comparable {
   /**
    * Returns entities of given type
    */
-  public Collection getEntities(String tag) {
+  public Collection<? extends Entity> getEntities(String tag) {
     return Collections.unmodifiableCollection(getEntityMap(tag).values());
   }
 
@@ -987,6 +990,10 @@ public class Gedcom implements Comparable {
    * Clears flag for unsaved changes
    */
   public void setUnchanged() {
+    
+    // is dirty?
+    if (!hasChanged())
+      return;
     
     // do it
     undoHistory.clear();
@@ -1203,12 +1210,12 @@ public class Gedcom implements Comparable {
   /**
    * Get a reference set for given tag
    */
-  /*package*/ ReferenceSet getReferenceSet(String tag) {
+  /*package*/ ReferenceSet<String,Property> getReferenceSet(String tag) {
     // lookup
-    ReferenceSet result = (ReferenceSet)tags2refsets.get(tag);
+    ReferenceSet<String,Property> result = tags2refsets.get(tag);
     if (result==null) {
       // .. instantiate if necessary
-      result = new ReferenceSet();
+      result = new ReferenceSet<String, Property>();
       tags2refsets.put(tag, result);
       // .. and pre-fill
       String defaults = Gedcom.resources.getString(tag+".vals",false);
@@ -1329,8 +1336,6 @@ public class Gedcom implements Comparable {
    * Accessor - password
    */
   public void setPassword(String set) {
-    if (set==null)
-      throw new IllegalArgumentException("Password can't be null");
     password = set;
   }
   
@@ -1343,10 +1348,9 @@ public class Gedcom implements Comparable {
   
   /**
    * Accessor - password
-   * @return password!=PASSWORD_UNKNOWN!=PASSWORD_NOT_SET
    */
   public boolean hasPassword() {
-    return password!=PASSWORD_NOT_SET && password!=PASSWORD_UNKNOWN;
+    return password!=null;
   }
   
   /**
@@ -1407,14 +1411,6 @@ public class Gedcom implements Comparable {
     // done
     return cachedCollator;
   }
-  
-  /**
-   * can be compared by name
-   */
-  public int compareTo(Object other) {
-    Gedcom that = (Gedcom)other;
-    return getName().compareTo(that.getName());
-  };
   
   /**
    * Undo

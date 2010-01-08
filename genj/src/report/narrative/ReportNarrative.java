@@ -99,20 +99,20 @@ public class ReportNarrative extends Report {
   /**
    * The report's entry point
    */
-  public void start(Gedcom gedcom) {
+  public Object start(Gedcom gedcom) {
 
     String resource = ancestors ? "ancestors.of" : "descendants.of";
     Indi indi = (Indi)getEntityFromUser(translate(resource), gedcom, Gedcom.INDI); // Remove while testing
     if (indi==null)
-      return;
+      return null;
 
-    start(indi);
+    return start(indi);
   }
 
   /**
    * The report's entry point
    */
-  public void start(Indi indi) {
+  public Document start(Indi indi) {
 
     println("indi = " + indi.getName());
 
@@ -177,9 +177,9 @@ public class ReportNarrative extends Report {
     }
 
     // done
-    showDocumentToUser(doc);
-
     println(translate("log.finished"));
+    return doc;
+
   }
 
 //  private void printUtterance(String key) {
