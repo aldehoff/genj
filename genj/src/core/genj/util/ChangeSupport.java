@@ -43,6 +43,8 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
   /** has changed */
   private boolean hasChanged = false;
   
+  private boolean mute = false;
+  
   /**
    * Constructor
    */
@@ -94,9 +96,12 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
   }
   protected void fireChangeEvent(Object source) {
     hasChanged = true;
-    ChangeEvent e = new ChangeEvent(source);
-    for (ChangeListener listener : listeners)
-      listener.stateChanged(e);
+    
+    if (!mute) {
+      ChangeEvent e = new ChangeEvent(source);
+      for (ChangeListener listener : listeners)
+        listener.stateChanged(e);
+    }
   }
   
   /**
@@ -124,6 +129,14 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
    */
   public void actionPerformed(ActionEvent e) {
     fireChangeEvent(e.getSource());
+  }
+
+  public void mute() {
+    mute = true;
+  }
+
+  public void unmute() {
+    mute = false;
   }
   
 } //ChangeSupport

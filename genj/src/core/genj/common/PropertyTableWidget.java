@@ -283,10 +283,8 @@ public class PropertyTableWidget extends JPanel  {
     try {
       StringTokenizer tokens = new StringTokenizer(layout, ",");
       int n = Integer.parseInt(tokens.nextToken());
-      if (n!=model.getColumnCount())
-        return;
   
-      for (int i=0;i<n;i++) {
+      for (int i=0;i<n&&i<columns.getColumnCount();i++) {
         TableColumn col = columns.getColumn(i);
         int w = Integer.parseInt(tokens.nextToken());
         col.setWidth(w);
@@ -297,7 +295,8 @@ public class PropertyTableWidget extends JPanel  {
       while (tokens.hasMoreTokens()) {
         int c = Integer.parseInt(tokens.nextToken());
         int d = Integer.parseInt(tokens.nextToken());
-        model.setSortingStatus(c, d);
+        if (c<columns.getColumnCount())
+          model.setSortingStatus(c, d);
       }
 
     } catch (Throwable t) {

@@ -691,12 +691,7 @@ public class TimelineView extends View {
     }
   } // ModelListener
   
-  private class Settings extends SettingsAction<TimelineViewSettings> {
-
-    @Override
-    protected void commit(TimelineViewSettings editor) {
-      editor.commit(TimelineView.this);
-    }
+  private class Settings extends SettingsAction {
 
     @Override
     protected TimelineViewSettings getEditor() {

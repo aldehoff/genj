@@ -19,6 +19,8 @@
  */
 package genj.util.swing;
 
+import genj.util.ChangeSupport;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -44,6 +46,8 @@ import javax.swing.event.ListSelectionListener;
  * A widget for colors
  */
 public class ColorsWidget extends JPanel {
+
+  private ChangeSupport changes = new ChangeSupport(this);
   
   /** the wrapped swing ColorChooser */
   private JColorChooser chooser = new JColorChooser();
@@ -73,19 +77,35 @@ public class ColorsWidget extends JPanel {
     list.addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
         int i = list.getSelectedIndex();
-        if (i>=0)
-          chooser.setColor(model.getItemAt(i).color);
+        if (i>=0) {
+          changes.mute();
+          try {
+            chooser.setColor(model.getItemAt(i).color);
+          } finally {
+            changes.unmute();
+          }
+        }
       }
     });
     chooser.getSelectionModel().addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
         int i = list.getSelectedIndex();
-        if (i>=0) 
+        if (i>=0) {
           model.setColor(i, chooser.getColor());
+          changes.fireChangeEvent();
+        }
       }
     });
     
     // done
+  }
+  
+  public void addChangeListener(ChangeListener listener) {
+    changes.addChangeListener(listener);
+  }
+  
+  public void removeChangeListener(ChangeListener listener) {
+    changes.removeChangeListener(listener);
   }
   
   /**
@@ -115,7 +135,7 @@ public class ColorsWidget extends JPanel {
   private class Model extends AbstractListModel {
 
     /** items */
-    private List items = new ArrayList();
+    private List<Item> items = new ArrayList<Item>();
 
     void clear() {
       int size = items.size();
@@ -133,15 +153,13 @@ public class ColorsWidget extends JPanel {
       fireContentsChanged(this, index, index);
     }
     Item getItem(String key) {
-      for (int i = 0; i < items.size(); i++) {
-        Item item = (Item)items.get(i);
+      for (Item item : items) 
         if (item.key.equals(key))
           return item;
-      }
       throw new IllegalArgumentException("key for unknown color");
     }
     Item getItemAt(int index) {
-      return (Item)getElementAt(index);
+      return items.get(index);
     }
     public Object getElementAt(int index) {
       return items.get(index);

@@ -19,6 +19,8 @@
  */
 package genj.util.swing;
 
+import genj.util.ChangeSupport;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -41,6 +43,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeListener;
 
 /**
  * A component that shows a list of elements the user can choose - based on whether an initial 
@@ -56,6 +59,8 @@ public class ListSelectionWidget<T> extends JComponent {
   
   /** the selection */
   private Set<T> selection = null;
+  
+  private ChangeSupport changes = new ChangeSupport(this);
 
   /**
    * Constructor
@@ -72,6 +77,14 @@ public class ListSelectionWidget<T> extends JComponent {
     add(new JScrollPane(lChoose),"Center");
 
     // Done
+  }
+  
+  public void addChangeListener(ChangeListener listener) {
+    changes.addChangeListener(listener);
+  }
+  
+  public void removeChangeListener(ChangeListener listener) {
+    changes.removeChangeListener(listener);
   }
   
   @Override
@@ -101,6 +114,7 @@ public class ListSelectionWidget<T> extends JComponent {
    */
   private void update() {
     lChoose.setListData(choices.toArray(new Object[choices.size()]));
+    changes.fireChangeEvent();
   }
   
   /**
@@ -271,6 +285,8 @@ public class ListSelectionWidget<T> extends JComponent {
         selection.add(choice);
       // Show it 
       lChoose.repaint(lChoose.getCellBounds(pos,pos));
+      // tell
+      changes.fireChangeEvent();
     }
   } //SelectionListener
   

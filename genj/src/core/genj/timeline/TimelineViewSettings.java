@@ -31,8 +31,8 @@ import genj.util.swing.ListSelectionWidget;
 import genj.util.swing.NestedBlockLayout;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.util.Iterator;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.JCheckBox;
@@ -41,20 +41,11 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * The ViewInfo representing settings of a TimelineView
- * +remember the event last visible in the middle
- * +colors
- *  ruler 
- *    background
- *    foreground
- *  content 
- *  background
- *  tag color
- *  txt color
- *  date color
- *  line color
  */
 public class TimelineViewSettings extends JTabbedPane {
   
@@ -65,23 +56,18 @@ public class TimelineViewSettings extends JTabbedPane {
   private ListSelectionWidget<TagPath> pathsList;
   
   /** a widget for selecting almanac event libraries / categories */
-  private ListSelectionWidget almanacCategories = new ListSelectionWidget() {
-    protected String getText(Object choice) {
-      return "<html><body>"+choice+"</body></html>";
-    }
-  };
+  private ListSelectionWidget<String> almanacsList;
   
   /** Checkbox for options */
-  private JCheckBox 
-    checkTags = new JCheckBox(resources.getString("info.show.tags" )),
-    checkDates = new JCheckBox(resources.getString("info.show.dates")),
-    checkGrid = new JCheckBox(resources.getString("info.show.grid" ));
+  private JCheckBox checkTags,checkDates,checkGrid;
   
   /** spinners */
   private JSpinner spinCmBefEvent, spinCmAftEvent;
      
   /** colorchooser for colors */
   private ColorsWidget colorWidget;
+  
+  private Commit commit;
     
   /**
    * @see genj.view.Settings#init(genj.view.ViewManager)
@@ -89,7 +75,10 @@ public class TimelineViewSettings extends JTabbedPane {
   TimelineViewSettings(final TimelineView view) {
     
     final Gedcom gedcom = view.getModel().getGedcom();
-    
+
+    commit = new Commit(view);
+
+    // events to pick from
     pathsList = new ListSelectionWidget<TagPath>() {
       protected ImageIcon getIcon(TagPath path) {
         Grammar grammar = Grammar.V55;
@@ -98,22 +87,43 @@ public class TimelineViewSettings extends JTabbedPane {
         return grammar.getMeta(path).getImage();
       }
     };
+    if (gedcom!=null)
+      pathsList.setChoices(PropertyEvent.getTagPaths(gedcom));
+    pathsList.setSelection(view.getModel().getPaths());
+    pathsList.addChangeListener(commit);
 
-    // create a panel for check and cm options
+    // categories to select from
+    almanacsList = new ListSelectionWidget<String>() {
+      protected String getText(String choice) {
+        return "<html><body>"+choice+"</body></html>";
+      }
+    };
+    Almanac almanac = Almanac.getInstance();
+    almanac.waitLoaded();
+    List<String> cats = almanac.getCategories();
+    almanacsList.setChoices(cats);
+    almanacsList.setSelection(view.getAlmanacCategories());
+    almanacsList.addChangeListener(commit);
+    
+
+    // create a panel for options
     JPanel panelOptions = new JPanel(new NestedBlockLayout(
         "<col><check gx=\"1\"/><check gx=\"1\"/><check gx=\"1\"/><row><label/><spin/></row><row><label/><spin/></row></col>"
         ));
     
     // ... checkboxes    
+    checkTags = createCheck("info.show.tags", view.isPaintTags());
+    checkDates = createCheck("info.show.dates", view.isPaintDates());
+    checkGrid = createCheck("info.show.grid", view.isPaintGrid());
     panelOptions.add(checkTags);
     panelOptions.add(checkDates);
     panelOptions.add(checkGrid);
     
-    spinCmBefEvent = createSpinner(TimelineView.MIN_CM_BEF_EVENT, TimelineView.MAX_CM_BEF_EVENT, resources.getString("info.befevent.tip"));
+    spinCmBefEvent = createSpinner(TimelineView.MIN_CM_BEF_EVENT, view.getCmBeforeEvents(), TimelineView.MAX_CM_BEF_EVENT, "info.befevent.tip");
     panelOptions.add(new JLabel(resources.getString("info.befevent")));
     panelOptions.add(spinCmBefEvent);
 
-    spinCmAftEvent = createSpinner(TimelineView.MIN_CM_AFT_EVENT, TimelineView.MAX_CM_AFT_EVENT, resources.getString("info.aftevent.tip"));
+    spinCmAftEvent = createSpinner(TimelineView.MIN_CM_AFT_EVENT, view.getCmAfterEvents(), TimelineView.MAX_CM_AFT_EVENT, "info.aftevent.tip");
     panelOptions.add(new JLabel(resources.getString("info.aftevent")));
     panelOptions.add(spinCmAftEvent);
     
@@ -125,90 +135,73 @@ public class TimelineViewSettings extends JTabbedPane {
     
     // panel for history options
     JPanel panelEvents = new JPanel(new BorderLayout());
-    panelEvents.add(almanacCategories, BorderLayout.CENTER);
+    panelEvents.add(almanacsList, BorderLayout.CENTER);
     
     // color chooser
     colorWidget = new ColorsWidget();
+    for (String key : view.colors.keySet()) 
+      colorWidget.addColor(key, resources.getString("color."+key), view.colors.get(key));
+    colorWidget.addChangeListener(commit);
     
-    // add those tabs
+    // layout 
     add(resources.getString("page.main")  , panelMain);
     add(resources.getString("page.colors"), colorWidget);
     add(resources.getString("page.almanac"), panelEvents);
 
-    // EventTags to choose from
-    if (gedcom!=null)
-      pathsList.setChoices(PropertyEvent.getTagPaths(gedcom));
-    pathsList.setSelection(view.getModel().getPaths());
-    
-    // Checks
-    checkTags.setSelected(view.isPaintTags());
-    checkDates.setSelected(view.isPaintDates());
-    checkGrid.setSelected(view.isPaintGrid());
-
-    // sliders
-    spinCmBefEvent.setValue(new Double(view.getCmBeforeEvents()));
-    spinCmAftEvent.setValue(new Double(view.getCmAfterEvents()));
-    
-    // colors
-    colorWidget.removeAllColors();
-    Iterator keys = view.colors.keySet().iterator();
-    while (keys.hasNext()) {
-      String key = keys.next().toString();
-      String name = resources.getString("color."+key);
-      Color color = (Color)view.colors.get(key);
-      colorWidget.addColor(key, name, color);
-    }
-    
-    // almanac categories
-    Almanac almanac = Almanac.getInstance();
-    almanac.waitLoaded();
-    List cats = almanac.getCategories();
-    almanacCategories.setChoices(cats);
-    almanacCategories.setSelection(view.getAlmanacCategories());
-    
     // done
   }
   
-  private JSpinner createSpinner(double min, double max, String tip) {
-    
-    JSpinner result = new JSpinner(new SpinnerNumberModel(min, min, max, 0.1D));
-    JSpinner.NumberEditor editor = new JSpinner.NumberEditor(result, "##0.0");
-    result.setEditor(editor);
-    result.addChangeListener(editor);
-    result.setToolTipText(tip);
+  private JCheckBox createCheck(String key, boolean on) {
+    JCheckBox result = new JCheckBox(resources.getString(key), on);
+    result.addActionListener(commit);
     return result;
   }
 
-  /**
-   * Tells the ViewInfo to apply made changes
-   */
-  public void commit(TimelineView view) {
+  private class Commit implements ChangeListener, ActionListener {
     
-    // choosen EventTags
-    view.getModel().setPaths(pathsList.getSelection());
+    private TimelineView view;
     
-    // checks
-    view.setPaintTags(checkTags.isSelected());
-    view.setPaintDates(checkDates.isSelected());
-    view.setPaintGrid(checkGrid.isSelected());
-    
-    // sliders
-    view.setCMPerEvents(
-       ((Double)spinCmBefEvent.getModel().getValue()).doubleValue(), 
-       ((Double)spinCmAftEvent.getModel().getValue()).doubleValue()
-    );
-    
-    // colors
-    Iterator colors = view.colors.keySet().iterator();
-    while (colors.hasNext()) {
-      String key = colors.next().toString();
-      view.colors.put(key, colorWidget.getColor(key));
+    private Commit(TimelineView view) {
+      this.view = view;
+    }
+
+    public void stateChanged(ChangeEvent e) {
+      actionPerformed(null);
     }
     
-    // almanac categories
-    view.setAlmanacCategories(almanacCategories.getSelection());
-    
-    // Done
+    public void actionPerformed(ActionEvent e) {
+      
+      // choosen EventTags
+      view.getModel().setPaths(pathsList.getSelection());
+      
+      // checks
+      view.setPaintTags(checkTags.isSelected());
+      view.setPaintDates(checkDates.isSelected());
+      view.setPaintGrid(checkGrid.isSelected());
+      
+      // sliders
+      view.setCMPerEvents(
+         ((Double)spinCmBefEvent.getModel().getValue()).doubleValue(), 
+         ((Double)spinCmAftEvent.getModel().getValue()).doubleValue()
+      );
+      
+      // colors
+      for (String key : view.colors.keySet()) 
+        view.colors.put(key, colorWidget.getColor(key));
+      
+      // almanac categories
+      view.setAlmanacCategories(almanacsList.getSelection());
+    }
   }
   
+  private JSpinner createSpinner(double min, double value, double max, String tip) {
+    JSpinner result = new JSpinner(new SpinnerNumberModel(value, min, max, 0.1D));
+    JSpinner.NumberEditor editor = new JSpinner.NumberEditor(result, "##0.0");
+    result.setEditor(editor);
+    result.addChangeListener(editor);
+    result.addChangeListener(commit);
+    result.setToolTipText(resources.getString(tip));
+    return result;
+  }
+
 } //TimelineViewSettings

@@ -206,12 +206,7 @@ public class TableView extends View {
   /**
    * Action - settings
    */
-  private class Settings extends SettingsAction<TableViewSettings> {
-
-    @Override
-    protected void commit(TableViewSettings editor) {
-      editor.commit();
-    }
+  private class Settings extends SettingsAction {
 
     @Override
     protected TableViewSettings getEditor() {

@@ -37,23 +37,21 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Class for providing ViewInfo information to a ViewEditor
  */
 public class TableViewSettings extends JPanel {
 
-  private TableView           view;
   private Grammar             grammar = Grammar.V55;
   private PathTreeWidget      pathTree;
   private ListSelectionWidget<TagPath> pathList;
   private Resources           resources = Resources.get(this);
 
-  public TableViewSettings(TableView view) {
+  public TableViewSettings(final TableView view) {
     
-    this.view = view;
-
     // Create!
     GridBagHelper gh = new GridBagHelper(this);
 
@@ -89,9 +87,16 @@ public class TableViewSettings extends JPanel {
       @Override
       public void mouseClicked(MouseEvent e) {
         TagPath path = pathList.getChoice(e.getPoint());
-        if (path!=null&&e.getClickCount()==2)
+        if (path!=null&&e.getClickCount()==2) {
           pathList.removeChoice(path);
+        }
       }
+    });
+    pathList.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        List<TagPath> choices = pathList.getChoices();
+        view.getMode().setPaths(choices.toArray(new TagPath[choices.size()]));
+      }      
     });
 
     // Up/Down of ordering
@@ -115,16 +120,6 @@ public class TableViewSettings extends JPanel {
 
   }
 
-
-  /**
-   * Tells the ViewInfo to apply made changes
-   */
-  public void commit() {
-    // Write columns by TagPaths
-    List<TagPath> choices = pathList.getChoices();
-    view.getMode().setPaths(choices.toArray(new TagPath[choices.size()]));
-    // Done
-  }
 
   /**
    * Action - ActionUpDown

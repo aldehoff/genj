@@ -252,7 +252,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
   /**
    * Returns the filter - set of Tags we consider
    */
-  public Set getPaths() {
+  public Set<TagPath> getPaths() {
     return Collections.unmodifiableSet(paths);
   }
   

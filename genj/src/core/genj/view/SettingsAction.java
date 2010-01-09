@@ -30,7 +30,7 @@ import javax.swing.JComponent;
 /**
  * A base action for settings on views
  */
-public abstract class SettingsAction<E extends JComponent> extends Action2 {
+public abstract class SettingsAction extends Action2 {
   
   private final static Resources RESOURCES = Resources.get(SettingsAction.class);
   
@@ -42,22 +42,17 @@ public abstract class SettingsAction<E extends JComponent> extends Action2 {
   @Override
   public void actionPerformed(ActionEvent e) {
     
-    E editor = getEditor();
+    JComponent editor = getEditor();
     
-    if (0!=DialogHelper.openDialog(
+    DialogHelper.openDialog(
         RESOURCES.getString("view.edit.title"), 
         DialogHelper.QUESTION_MESSAGE, 
         editor, 
-        Action2.okCancel(), 
-        DialogHelper.getComponent(e)))
-      return;
+        Action2.okOnly(), 
+        DialogHelper.getComponent(e));
 
-    commit(editor);
-    
   }
   
-  protected abstract E getEditor();
-  
-  protected abstract void commit(E editor);
+  protected abstract JComponent getEditor();
   
 }
