@@ -82,6 +82,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -119,7 +120,7 @@ public class Workbench extends JPanel implements SelectionSink {
   private List<Object> plugins = new ArrayList<Object>();
   private List<ViewFactory> viewFactories = ServiceLookup.lookup(ViewFactory.class);
   private Context context = new Context();
-  private DockingPane dockingPane = new DockingPane();
+  private DockingPane dockingPane = new WorkbenchPane();
   private Menu menu = new Menu();
   private Toolbar toolbar = new Toolbar();
   private Runnable runOnExit;
@@ -1464,6 +1465,71 @@ public class Workbench extends JPanel implements SelectionSink {
     }
 
     public void viewOpened(Workbench workbench, View view) {
+    }
+
+    public boolean workbenchClosing(Workbench workbench) {
+      return true;
+    }
+  }
+  
+  private class WorkbenchPane extends DockingPane implements WorkbenchListener {
+    
+    private List<JDialog> dialogs = new ArrayList<JDialog>();
+    
+    public WorkbenchPane() {
+      addWorkbenchListener(this);
+    }
+    
+    private void updateTitle(JDialog dlg, String title) {
+      dlg.setTitle(title);
+    }
+    
+    private void updateTitles(String title) {
+      for (JDialog dlg : dialogs) 
+        updateTitle(dlg, title);
+    }
+    
+    @Override
+    protected JDialog createDialog() {
+      JDialog dialog = super.createDialog();
+      if (context.getGedcom()!=null);
+        updateTitle(dialog, context.getGedcom().getName());
+      return dialog;
+    }
+    
+    @Override
+    protected void dismissDialog(JDialog dialog) {
+      super.dismissDialog(dialog);
+      dialogs.remove(dialog);
+    }
+
+    public void commitRequested(Workbench workbench) {
+    }
+
+    public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
+      updateTitles("");
+    }
+
+    public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
+      updateTitles(gedcom.getName());
+    }
+
+    public void processStarted(Workbench workbench, Trackable process) {
+    }
+
+    public void processStopped(Workbench workbench, Trackable process) {
+    }
+
+    public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
+    }
+
+    public void viewClosed(Workbench workbench, View view) {
+    }
+
+    public void viewOpened(Workbench workbench, View view) {
+    }
+
+    public void viewRestored(Workbench workbench, View view) {
     }
 
     public boolean workbenchClosing(Workbench workbench) {
