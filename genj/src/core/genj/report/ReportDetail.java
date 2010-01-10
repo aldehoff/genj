@@ -26,6 +26,7 @@ import genj.util.GridBagHelper;
 import genj.util.Resources;
 import genj.util.swing.EditorHyperlinkSupport;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -88,6 +89,7 @@ class ReportDetail extends JPanel {
   }
   
   public void setReport(Report report) {
+    setBorder(BorderFactory.createTitledBorder(report.getName()));
     // update info
     if (report == null) {
       lFile    .setText("");
