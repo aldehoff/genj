@@ -81,7 +81,7 @@ public class BlueprintEditor extends JSplitPane {
   private AbstractButton bInsert;
   
   /** an example entity we use */
-  private Example example = new Example(); 
+  private Example example; 
   
   /** whether we've changed */
   private boolean isChanged = false;
@@ -92,6 +92,7 @@ public class BlueprintEditor extends JSplitPane {
   /**
    * Constructor   */
   public BlueprintEditor(Entity recipient) { 
+    example = new Example(recipient);
     // preview
     preview = new Preview();
     preview.setBorder(BorderFactory.createTitledBorder(resources.getString("blueprint.preview")));
@@ -258,13 +259,17 @@ public class BlueprintEditor extends JSplitPane {
    */
   private class Example extends Entity  {
     
+    private Entity proxied;
+    
     /** faked values */
     private Map<String,String> tag2value = new HashMap<String, String>();
     
     /**
      * Constructor
      */
-    private Example() {
+    private Example(Entity proxied) {
+      this.proxied = proxied;
+      
       tag2value.put("NAME", "John /Doe/");
       tag2value.put("SEX" , "M");
       tag2value.put("DATE", "01 JAN 1900");
@@ -277,16 +282,13 @@ public class BlueprintEditor extends JSplitPane {
      * @see genj.gedcom.Indi#getId()
      */
     public String getId() {
-      String prefix;
-      if (blueprint==null) prefix = "X";
-      else prefix = Gedcom.getEntityPrefix(blueprint.getTag());
-      return prefix+"999";
+      return proxied.getId();
     }
     /**
      * @see genj.gedcom.PropertyIndi#getTag()
      */
     public String getTag() {
-      return blueprint==null ? "INDI" : blueprint.getTag();
+      return proxied.getTag();
     }
     /**
      * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath)
@@ -297,11 +299,15 @@ public class BlueprintEditor extends JSplitPane {
         return null;
       // this?
       if (path.length()==1)
-        return this;
+        return proxied;
+      // available?
+      Property result = proxied.getProperty(path);
+      if (result!=null&&result.getValue().length()>0)
+        return result;
       // fake it
       String value = tag2value.get(path.getLast());
       if (value==null) 
-        value = "Something";
+        value = Gedcom.getName(path.getLast());
       MetaProperty meta = grammar.getMeta(path, false);
       if (PropertyXRef.class.isAssignableFrom(meta.getType()))
         value = "@...@";

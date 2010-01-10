@@ -56,7 +56,7 @@ public abstract class ChooseBlueprintAction extends Action2 {
   protected ChooseBlueprintAction(Entity recipient, Blueprint current) {
     this.recipient = recipient;
     this.current = current;
-    setText("Blueprint ...");
+    setText(RESOURCES.getString("blueprint.select"));
     setImage(IMAGE.getOverLayed(recipient.getImage(false)));
   }
 
