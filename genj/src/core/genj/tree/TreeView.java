@@ -135,6 +135,8 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   /** current context */
   private Context context = new Context();
   
+  private boolean ignoreContextChange = false;
+  
   /**
    * Constructor
    */
@@ -364,6 +366,10 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
    */
   @Override
   public void setContext(Context newContext, boolean isActionPerformed) {
+    
+    // ignored?
+    if (ignoreContextChange)
+      return;
     
     // remember
     context = new Context(newContext.getGedcom(), newContext.getEntities());
@@ -881,8 +887,13 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
         }
         repaint();
         overview.repaint();
-        // propagate it
-        SelectionSink.Dispatcher.fireSelection(e, context);
+        // propagate to others
+        try {
+          ignoreContextChange = true;
+          SelectionSink.Dispatcher.fireSelection(e, context);
+        } finally {
+          ignoreContextChange = false;
+        }
         return;
       }
       // runnable?
