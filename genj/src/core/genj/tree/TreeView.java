@@ -44,6 +44,7 @@ import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.view.ActionProvider;
+import genj.view.ActionScreenshot;
 import genj.view.ContextProvider;
 import genj.view.SelectionSink;
 import genj.view.SettingsAction;
@@ -504,6 +505,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     
     // settings
     toolbar.add(new Settings());
+    toolbar.add(new ActionScreenshot(content));
     
     // done
   }
