@@ -575,10 +575,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // look for grow info
       grow = new Point();
       String gx = getAttribute("gx");
-      if (gx!=null)
+      if (gx!=null||cellWeight.getX()>0)
         grow.x = 1;
       String gy = getAttribute("gy");
-      if (gy!=null)
+      if (gy!=null||cellWeight.getY()>0)
         grow.y = 1;
 
       // done
