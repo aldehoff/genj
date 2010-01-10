@@ -67,6 +67,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +117,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   private boolean isAdjustFonts = false; 
   
   /** our colors */
-  /*package*/ Map<String,Color> colors = new HashMap<String, Color>();
+  private Map<String,Color> colors = new HashMap<String, Color>();
   
   /** our blueprints */
   private Map<String,String> tag2blueprint = new HashMap<String,String>();
@@ -336,6 +337,19 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     // show
     repaint();
   }
+  
+  public void setColors(Map<String,Color> set) {
+    for (String key : colors.keySet()) {
+      Color c = set.get(key);
+      if (c!=null)
+        colors.put(key, c);
+    }
+    repaint();
+  }
+  
+  public Map<String,Color> getColors() {
+    return Collections.unmodifiableMap(colors);
+  }
 
   /**
    * Access - Mode
@@ -353,23 +367,19 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     // remember
     context = new Context(newContext.getGedcom(), newContext.getEntities());
     
-    // propagate (last) entity
-    if (isActionPerformed || context.getGedcom()==null)
+    // must root change?
+    if (isActionPerformed || context.getGedcom()==null) {
       setRoot(context.getEntity());
+      return;
+    }
     
-    // something we can scroll to?
-    if (context.getEntity()!=null)
-      show(context.getEntity());
-    
-    // make sure it's shown
-    invalidate();
-    repaint();
-    
-//    // context a link?
-//    if (prop instanceof PropertyXRef && ((PropertyXRef)prop).isValid()) {
-//      entity = ((PropertyXRef)prop).getTargetEntity();
-//      prop = null;
-//    }
+    // nothing we can show?
+    if (context.getEntity()==null)
+      return;
+
+    // try to show - otherwise force
+    if (!show(context.getEntity()))
+      setRoot(context.getEntity());
     
     // done
   }
@@ -377,16 +387,16 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   /**
    * Set current entity
    */
-  /*package*/ void show(Entity entity) {
+  /*package*/ boolean show(Entity entity) {
     
     // allowed?
     if (!(entity instanceof Indi||entity instanceof Fam)) 
-      return;
+      return true;
     
     // Node for it?
     TreeNode node = model.getNode(entity);
     if (node==null) 
-      return;
+      return false;
     
     // scroll
     scrollTo(node.pos);
@@ -396,6 +406,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     overview.repaint();
     
     // done
+    return true;
   }
   
   /**
@@ -503,6 +514,10 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   public List<Action2> createActions(Context context, Purpose purpose) {
     
     List<Action2> result = new ArrayList<Action2>(2);
+    
+    // not for own
+    if (context instanceof TreeContext)
+      return result;
 
     // for context menu of one record
     if (purpose==Purpose.CONTEXT&&context.getEntities().size()==1) {
@@ -758,7 +773,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
      * ContextProvider - callback
      */
     public ViewContext getContext() {
-      ViewContext result = new ViewContext(context);
+      TreeContext result = new TreeContext(context);
       Entity entity = context.getEntity();
       if (entity instanceof Indi) {
         result.addAction(new ActionBookmark((Indi)context.getEntity(), true));
@@ -1047,13 +1062,8 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
      * @see genj.util.swing.Action2#execute()
      */
     public void actionPerformed(ActionEvent event) {
-      // Either scroll to or change root
-      Entity entity = bookmark.getEntity();
-      TreeNode node = getModel().getNode(entity);
-      if (node!=null)
-        show(entity);
-      else
-        setRoot(entity);
+      // let everyone know
+      SelectionSink.Dispatcher.fireSelection(TreeView.this, new Context(bookmark.getEntity()), false);
     }
 
   }
@@ -1108,12 +1118,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   
   } //ActionBookmark
   
-  private class Settings extends SettingsAction<TreeViewSettings> {
-
-    @Override
-    protected void commit(TreeViewSettings editor) {
-      editor.commit(TreeView.this);
-    }
+  private class Settings extends SettingsAction {
 
     @Override
     protected TreeViewSettings getEditor() {
@@ -1121,5 +1126,11 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     }
     
   }
-
+  
+  private class TreeContext extends ViewContext {
+    public TreeContext(Context context) {
+      super(context);
+    } 
+  }
+  
 } //TreeView
