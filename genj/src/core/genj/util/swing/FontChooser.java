@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import genj.util.ChangeSupport;
 import genj.util.EnvironmentChecker;
 
 import java.awt.BorderLayout;
@@ -34,6 +35,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
 
 /**
  * A component for choosing a font */
@@ -47,6 +49,8 @@ public class FontChooser extends JPanel {
   
   /** text for size */
   private JTextField size;
+  
+  private ChangeSupport changes = new ChangeSupport(this);
   
   /** 
    * apparently on some systems there might be a problem with 
@@ -67,6 +71,9 @@ public class FontChooser extends JPanel {
     fonts.setEditable(false);
     fonts.setRenderer(new Renderer());
     size = new JTextField(3);
+    
+    fonts.addActionListener(changes);
+    size.getDocument().addDocumentListener(changes);
     
     //layout
     setAlignmentX(0F);
@@ -196,5 +203,13 @@ public class FontChooser extends JPanel {
     }
     
   } //Renderer
+
+  public void addChangeListener(ChangeListener listener) {
+    changes.addChangeListener(listener);
+  }
+  
+  public void removeChangeListener(ChangeListener listener) {
+    changes.removeChangeListener(listener);
+  }
   
 } //FontChooser

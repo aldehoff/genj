@@ -26,7 +26,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
@@ -122,6 +124,10 @@ public class ColorsWidget extends JPanel {
     return model.getItem(key).color;
   }
   
+  public Map<String,Color> getColors() {
+    return model.colors();
+  }
+  
   /**
    * Adds a color
    */
@@ -137,6 +143,13 @@ public class ColorsWidget extends JPanel {
     /** items */
     private List<Item> items = new ArrayList<Item>();
 
+    Map<String,Color> colors() {
+      Map<String,Color> result = new HashMap<String, Color>();
+      for (Item item : items)
+        result.put(item.key, item.color);
+      return result;
+    }
+    
     void clear() {
       int size = items.size();
       for (int i=size-1;i>=0;i--) {
