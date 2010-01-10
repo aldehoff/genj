@@ -45,7 +45,7 @@ public abstract class SettingsAction extends Action2 {
     JComponent editor = getEditor();
     
     DialogHelper.openDialog(
-        RESOURCES.getString("view.edit.title"), 
+        RESOURCES.getString("view.settings.tip"), 
         DialogHelper.QUESTION_MESSAGE, 
         editor, 
         Action2.okOnly(), 
