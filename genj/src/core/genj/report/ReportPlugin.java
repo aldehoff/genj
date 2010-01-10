@@ -228,16 +228,13 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
     
     /** callback */
     public void actionPerformed(ActionEvent event) {
-      View view = workbench.getView(ReportViewFactory.class);
-      if (view==null) {
-        showReportPickerOnOpen = false;
-        try {
-          view = workbench.openView(ReportViewFactory.class);
-        } finally {
-          showReportPickerOnOpen = true;
-        }
-      }      
-      ((ReportView)view).startReport(report, context);
+      showReportPickerOnOpen = false;
+      try {
+        ReportView view = (ReportView)workbench.openView(ReportViewFactory.class);
+        view.startReport(report, context);
+      } finally {
+        showReportPickerOnOpen = true;
+      }
     }
   } //ActionRun
 
