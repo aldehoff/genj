@@ -64,6 +64,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 
 import spin.Spin;
@@ -500,21 +501,31 @@ public class ReportView extends View {
       // .. choose file
       JFileChooser chooser = new JFileChooser(".");
       chooser.setDialogTitle("Save Output");
+      chooser.setFileFilter(new FileFilter() {
+        @Override
+        public boolean accept(File f) {
+          return f.getName().endsWith(".txt");
+        }
 
-      if (JFileChooser.APPROVE_OPTION != chooser.showDialog(ReportView.this, "Save")) {
+        @Override
+        public String getDescription() {
+          return "*.txt (Text)";
+        }
+      });
+
+      if (JFileChooser.APPROVE_OPTION != chooser.showDialog(ReportView.this, "Save")) 
         return;
-      }
       File file = chooser.getSelectedFile();
-      if (file == null) {
+      if (file == null) 
         return;
-      }
+      if (!file.getName().endsWith("*.txt"))
+        file = new File(file.getAbsolutePath()+".txt");
 
       // .. exits ?
       if (file.exists()) {
         int rc = DialogHelper.openDialog(RESOURCES.getString("title"), DialogHelper.WARNING_MESSAGE, "File exists. Overwrite?", Action2.yesNo(), ReportView.this);
-        if (rc != 0) {
+        if (rc != 0) 
           return;
-        }
       }
 
       // .. open file
@@ -528,13 +539,14 @@ public class ReportView extends View {
 
       // .. save data
       try {
+        String newline = System.getProperty("line.separator");
         BufferedReader in = new BufferedReader(new StringReader(output.getText()));
         while (true) {
           String line = in.readLine();
           if (line == null)
             break;
           out.write(line);
-          out.write("\n");
+          out.write(newline);
         }
         in.close();
         out.close();
