@@ -25,11 +25,10 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
+import genj.gedcom.PropertyNumericValue;
+import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.renderer.Options;
-import genj.renderer.PropertyRenderer;
-import genj.renderer.PropertyRendererFactory;
-import genj.util.Dimension2d;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.HeadlessLabel;
@@ -44,8 +43,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -56,9 +53,7 @@ import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -72,6 +67,7 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -88,16 +84,9 @@ public class PropertyTableWidget extends JPanel  {
   
   private final static Logger LOG = Logger.getLogger("genj.common");
   
-  /** table component */
   private Table table;
-  
-  /** shortcuts panel */
   private JPanel panelShortcuts;
-  
   private boolean ignoreSelection  = false;
-  
-  private PropertyRendererFactory renderers = PropertyRendererFactory.DEFAULT;
-
   private int visibleRowCount = -1;
   
   /**
@@ -139,14 +128,6 @@ public class PropertyTableWidget extends JPanel  {
    */
   public void setModel(PropertyTableModel set) {
     table.setPropertyTableModel(set);
-  }
-  
-  /**
-   * Setter for property renderer
-   */
-  public void setRendererFactory(PropertyRendererFactory factory) {
-    renderers = factory!=null ? factory : PropertyRendererFactory.DEFAULT;
-    repaint();
   }
   
   public void setVisibleRowCount(int rows) {
@@ -324,6 +305,16 @@ public class PropertyTableWidget extends JPanel  {
     for (int i = 0; i<set.length && i<model.getColumnCount(); i++) {
       model.setSortingStatus(i, set[i]);
     }
+  }
+  
+  protected String getDisplayValue(Property property, int row, int col) {
+    if (property==null)
+      return "";
+    if (property instanceof Entity) 
+      return ((Entity)property).getId();
+    if (property instanceof PropertySex) 
+      return Character.toString(((PropertySex)property).getDisplayValue().charAt(0));
+    return property.getDisplayValue();
   }
   
   /**
@@ -512,6 +503,7 @@ public class PropertyTableWidget extends JPanel  {
       this.propertyModel = propertyModel;
       // pass through 
       sortableModel.setTableModel(new Model(propertyModel));
+      // done
     }
     
     /**
@@ -769,81 +761,33 @@ public class PropertyTableWidget extends JPanel  {
      */
     private class Renderer extends HeadlessLabel implements TableCellRenderer {
       
-      /** current property */
-      private Property curProp;
-      
-      /** table */
-      private JTable curTable;
-      
-      /** attributes */
-      private boolean isSelected;
-      
-      /**
-       * constructor
-       */
-      /*package*/ Renderer() {
-        setFont(Options.getInstance().getDefaultFont());
-      }
-      
       /**
        * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
        */
       public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focs, int row, int col) {
+        setPadding(1);
         // there's a property here
-        curProp = (Property)value;
-        curTable = table;
-        // and some status
-        isSelected = selected;
+        setText(getDisplayValue((Property)value, row, col));
+        // figure out alignment
+        int align = SwingConstants.LEFT;
+        if (value instanceof Entity) 
+          align = SwingConstants.RIGHT;
+        if (value instanceof PropertyDate) 
+          align = SwingConstants.RIGHT;
+        if (value instanceof PropertyNumericValue) 
+          align = SwingConstants.RIGHT;
+        setHorizontalAlignment(align);
+        // background?
+        if (selected) {
+          setBackground(table.getSelectionBackground());
+          setForeground(table.getSelectionForeground());
+          setOpaque(true);
+        } else {
+          setForeground(table.getForeground());
+          setOpaque(false);
+        }
         // ready
         return this;
-      }
-      
-      private Map<String,String> atts() {
-        Map<String,String> result = new HashMap<String, String>();
-        result.put(PropertyRenderer.HINT_KEY_TXT, PropertyRenderer.HINT_VALUE_TRUE);
-        result.put(PropertyRenderer.HINT_KEY_IMG, PropertyRenderer.HINT_VALUE_FALSE);
-        result.put(PropertyRenderer.HINT_KEY_SHORT, PropertyRenderer.HINT_VALUE_TRUE);
-        return result;
-      }
-      
-      /**
-       * patched preferred size
-       */
-      public Dimension getPreferredSize() {
-        if (curProp==null)
-          return new Dimension(0,0);
-        return Dimension2d.getDimension(renderers.getRenderer(curProp).getSize(getFont(), new FontRenderContext(null, false, false), curProp, atts(), Options.getInstance().getDPI()));
-      }
-      
-      /**
-       * @see genj.util.swing.HeadlessLabel#paint(java.awt.Graphics)
-       */
-      public void paint(Graphics g) {
-        Graphics2D graphics = (Graphics2D)g;
-        // our bounds
-        Rectangle bounds = getBounds();
-        bounds.x=0; bounds.y=0;
-        // background?
-        if (isSelected) {
-          g.setColor(curTable.getSelectionBackground());
-          g.fillRect(0,0,bounds.width,bounds.height);
-          g.setColor(curTable.getSelectionForeground());
-        } else {
-          g.setColor(curTable.getForeground());
-        }
-        // no prop and we're done
-        if (curProp==null) 
-          return;
-        // set font
-        g.setFont(getFont());
-        // get the proxy
-        PropertyRenderer proxy = renderers.getRenderer(curProp);
-        // add some space left and right
-        bounds.x += 1;
-        bounds.width -= 2;
-        // let it render
-        proxy.render(graphics, bounds, curProp, atts(), Options.getInstance().getDPI());
-        // done
       }
       
     } //PropertyTableCellRenderer

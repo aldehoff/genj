@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -55,7 +56,7 @@ import javax.swing.tree.TreeSelectionModel;
 public class PathTreeWidget extends JScrollPane {
 
   /** list listeners */
-  private List    listeners = new ArrayList();
+  private List<Listener> listeners = new ArrayList<Listener>();
   
   /** gedcom */
   private Gedcom  gedcom;
@@ -129,6 +130,10 @@ public class PathTreeWidget extends JScrollPane {
     model.setPaths(paths, selection);
     expandRows();
   }
+
+  public void setSelected(TagPath path, boolean set) {
+    model.setSelected(path, set);
+  }
   
   /**
    * Returns the selected TagPaths
@@ -182,13 +187,13 @@ public class PathTreeWidget extends JScrollPane {
     private TagPath[] paths = new TagPath[0];
 
     /** the selection */
-    private Set selection = new HashSet();
+    private Set<TagPath> selection = new HashSet<TagPath>();
     
     /** map a path to its children */
-    private Map path2childen = new HashMap(); 
+    private Map<TagPath,TagPath[]> path2childen = new HashMap<TagPath,TagPath[]>(); 
     
     /** listeners */
-    private List tmlisteners = new ArrayList();
+    private List<TreeModelListener> tmlisteners = new CopyOnWriteArrayList<TreeModelListener>();
   
     /**
      * Sets the TagPaths to choose from
@@ -196,17 +201,44 @@ public class PathTreeWidget extends JScrollPane {
     public void setPaths(TagPath[] ps, TagPath[] ss) {
 
       // remember selection
-      selection = new HashSet(Arrays.asList(ss));
+      selection = new HashSet<TagPath>(Arrays.asList(ss));
       
       // keep paths
       paths = ps;
       
       // notify
       TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
-      TreeModelListener[] ls = getListenerSnapshot();
-      for (int l=0;l<ls.length;l++) ls[l].treeStructureChanged(e);
+      for (TreeModelListener listener : tmlisteners)
+        listener.treeStructureChanged(e);
       
       // done
+    }
+    
+    private void ensure(TagPath path) {
+      for (int i=0;i<paths.length;i++) {
+        if (paths[i].equals(path))
+          return;
+      }
+      throw new IllegalArgumentException("path not a choice");
+    }
+    
+    private void setSelected(TagPath path, boolean set) {
+      
+      ensure(path);
+      
+      // in/out
+      if (set)
+        selection.add(path);
+      else
+        selection.remove(path);
+      
+      // notify
+      TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
+      for (TreeModelListener listener : tmlisteners) 
+        listener.treeNodesChanged(e);
+      
+      fireSelectionChanged(path, set);
+      
     }
     
     /**
@@ -214,23 +246,10 @@ public class PathTreeWidget extends JScrollPane {
      */
     private void toggleSelection(TagPath path) {
       
-      // toggle
-      boolean removed = selection.remove(path);
-      if (!removed) selection.add(path);
-      
-      fireSelectionChanged(path, !removed);
-      
-      // notify
-      TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
-      TreeModelListener[] ls = getListenerSnapshot();
-      for (int l=0;l<ls.length;l++) ls[l].treeNodesChanged(e);
-    }
-    
-    /**
-     * Get listeners
-     */
-    private TreeModelListener[] getListenerSnapshot() {
-      return (TreeModelListener[])tmlisteners.toArray(new TreeModelListener[listeners.size()]);
+      if (selection.contains(path))
+        setSelected(path, false);
+      else
+        setSelected(path, true);
     }
     
     /**
@@ -266,7 +285,7 @@ public class PathTreeWidget extends JScrollPane {
      */
     private TagPath[] getChildren(Object node) {
       // lazy
-      TagPath[] result = (TagPath[])path2childen.get(node);
+      TagPath[] result = path2childen.get(node);
       if (result==null) {
         result = node==this ? getChildrenOfRoot() : getChildrenOfNode((TagPath)node);
       }
@@ -343,7 +362,7 @@ public class PathTreeWidget extends JScrollPane {
     /**
      * Returns the selected TagPaths
      */
-    public Collection getSelection() {
+    public Collection<TagPath> getSelection() {
       return selection;
     }
 
