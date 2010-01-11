@@ -31,16 +31,8 @@ import genj.gedcom.PropertyChild;
 import genj.gedcom.PropertyWife;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.renderer.PropertyRenderer;
-import genj.renderer.PropertyRendererFactory;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.Dimension2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,11 +48,18 @@ public class RelationshipsBean extends PropertyBean {
   public static Icon IMG = Grammar.V55.getMeta(new TagPath("FAM")).getImage().getOverLayed(MetaProperty.IMG_LINK);
     
   private PropertyTableWidget table;
+  private Map<Property,String> relationships = new HashMap<Property,String>();
   
   public RelationshipsBean() {
     
     // prepare a simple table
-    table = new PropertyTableWidget();
+    table = new PropertyTableWidget() {
+      @Override
+      protected String getDisplayValue(Property property, int row, int col) {
+        String relationship = relationships.get(property);
+        return relationship!=null ? relationship : super.getDisplayValue(property, row, col);
+      }
+    };
     table.setVisibleRowCount(5);
     
     setLayout(new BorderLayout());
@@ -77,16 +76,16 @@ public class RelationshipsBean extends PropertyBean {
    * Set context to edit
    */
   protected void setPropertyImpl(Property prop) {
+    
+    relationships.clear();
 
     Model model = null;
-    
     if (prop instanceof Indi)
       model = getModel((Indi)prop);
     if (prop instanceof Fam)
       model = getModel((Fam)prop);
       
     table.setModel(model);
-    table.setRendererFactory(model);
   }
   
   private Model getModel(Fam fam) {
@@ -98,29 +97,28 @@ public class RelationshipsBean extends PropertyBean {
       new TagPath("*:..:BIRT:DATE") // person's birth date
     };
     
-    Map<Property,String> p2t = new HashMap<Property, String>();
     List<Property> rows = new ArrayList<Property>();
     
     // father and mother
     Property husband = fam.getProperty("HUSB");
     if (husband instanceof PropertyXRef && husband.isValid()) {
-      p2t.put(husband, "Father");
+      relationships.put(husband, "Father");
       rows.add(husband);
     }
     Property wife = fam.getProperty("WIFE");
     if (wife instanceof PropertyWife && wife.isValid()) {
-      p2t.put(wife, "Mother");
+      relationships.put(wife, "Mother");
       rows.add(wife);
     }
     
     for (Property child : fam.getProperties("CHIL")) {
       if (child instanceof PropertyXRef && child.isValid()) {
-        p2t.put(child, "Child");
+        relationships.put(child, "Child");
         rows.add(child);
       }
     }
     
-    return new Model(fam.getGedcom(), columns, rows, p2t);
+    return new Model(fam.getGedcom(), columns, rows);
   }
   
   private Model getModel(Indi indi) {
@@ -134,7 +132,6 @@ public class RelationshipsBean extends PropertyBean {
       new TagPath("..:MARR:DATE") // families id
     };
     
-    Map<Property,String> p2t = new HashMap<Property, String>();
     List<Property> rows = new ArrayList<Property>();
     
     // parental family
@@ -142,12 +139,12 @@ public class RelationshipsBean extends PropertyBean {
     if (parental!=null) {
       Property husband = parental.getProperty("HUSB");
       if (husband instanceof PropertyXRef && husband.isValid()) {
-        p2t.put(husband, "Father");
+        relationships.put(husband, "Father");
         rows.add(husband);
       }
       Property wife = parental.getProperty("WIFE");
       if (wife instanceof PropertyWife && wife.isValid()) {
-        p2t.put(wife, "Mother");
+        relationships.put(wife, "Mother");
         rows.add(wife);
       }
     }
@@ -156,44 +153,35 @@ public class RelationshipsBean extends PropertyBean {
     for (Fam spousal : indi.getFamiliesWhereSpouse()) {
       Property spouse = spousal.getProperty("HUSB");
       if (spouse instanceof PropertyXRef && spouse.isValid() && ((PropertyXRef)spouse).getTargetEntity()!=indi) {
-        p2t.put(spouse, "Husband");
+        relationships.put(spouse, "Husband");
         rows.add(spouse);
       } else {
         spouse = spousal.getProperty("WIFE");
         if (spouse instanceof PropertyXRef && spouse.isValid() && ((PropertyXRef)spouse).getTargetEntity()!=indi) {
-          p2t.put(spouse, "Wife");
+          relationships.put(spouse, "Wife");
           rows.add(spouse);
         }
       }
       for (PropertyChild child : spousal.getProperties(PropertyChild.class)) {
         if (child.isValid()) {
-          p2t.put(child, "Child");
+          relationships.put(child, "Child");
           rows.add(child);
         }
       }
     }
-    
-    // aliases
-//    for (PropertyAlias alias : indi.getProperties(PropertyAlias.class)) {
-//      if (alias.isValid()) {
-//      }
-//    }
 
-    return new Model(indi.getGedcom(), columns, rows, p2t);
+    return new Model(indi.getGedcom(), columns, rows);
   }
   
-  private class Model extends AbstractPropertyTableModel implements PropertyRendererFactory  {
+  private class Model extends AbstractPropertyTableModel {
     
     private TagPath[] columns;
-    private Map<Property, String> property2text;
     private List<Property> rows;
-    private PropertyRenderer renderer = new Renderer();
     
-    public Model(Gedcom gedcom, TagPath[] columns, List<Property> rows, Map<Property,String> p2t) {
+    public Model(Gedcom gedcom, TagPath[] columns, List<Property> rows) {
       super(gedcom);
       this.columns = columns;
       this.rows = rows;
-      this.property2text = p2t;
     }
     
     public int getNumCols() {
@@ -212,25 +200,5 @@ public class RelationshipsBean extends PropertyBean {
       return rows.get(row);
     }
     
-    public PropertyRenderer getRenderer(TagPath path, Property prop) {
-      return getRenderer(prop);
-    }
-    public PropertyRenderer getRenderer(Property prop) {
-      if (property2text.containsKey(prop))
-        return renderer ;
-      return PropertyRendererFactory.DEFAULT.getRenderer(prop);
-    }
-    
-    private class Renderer extends PropertyRenderer {
-      @Override
-      protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
-        super.renderImpl(g, bounds, property2text.get(prop), attributes);
-      }
-      @Override
-      protected Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
-        return super.getSizeImpl(font, context, prop, property2text.get(prop), attributes, dpi);
-      }
-    };
   }
-
 } 

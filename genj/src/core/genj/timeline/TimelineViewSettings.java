@@ -89,7 +89,7 @@ public class TimelineViewSettings extends JTabbedPane {
     };
     if (gedcom!=null)
       pathsList.setChoices(PropertyEvent.getTagPaths(gedcom));
-    pathsList.setSelection(view.getModel().getPaths());
+    pathsList.setCheckedChoices(view.getModel().getPaths());
     pathsList.addChangeListener(commit);
 
     // categories to select from
@@ -102,7 +102,7 @@ public class TimelineViewSettings extends JTabbedPane {
     almanac.waitLoaded();
     List<String> cats = almanac.getCategories();
     almanacsList.setChoices(cats);
-    almanacsList.setSelection(view.getAlmanacCategories());
+    almanacsList.setCheckedChoices(view.getAlmanacCategories());
     almanacsList.addChangeListener(commit);
     
 
@@ -172,7 +172,7 @@ public class TimelineViewSettings extends JTabbedPane {
     public void actionPerformed(ActionEvent e) {
       
       // choosen EventTags
-      view.getModel().setPaths(pathsList.getSelection());
+      view.getModel().setPaths(pathsList.getCheckedChoices());
       
       // checks
       view.setPaintTags(checkTags.isSelected());
@@ -190,7 +190,7 @@ public class TimelineViewSettings extends JTabbedPane {
         view.colors.put(key, colorWidget.getColor(key));
       
       // almanac categories
-      view.setAlmanacCategories(almanacsList.getSelection());
+      view.setAlmanacCategories(almanacsList.getCheckedChoices());
     }
   }
   

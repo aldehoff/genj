@@ -31,20 +31,10 @@ import genj.gedcom.PropertyHusband;
 import genj.gedcom.PropertyWife;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.renderer.PropertyRenderer;
-import genj.renderer.PropertyRendererFactory;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.Dimension2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.Icon;
 
@@ -60,7 +50,18 @@ public class ReferencesBean extends PropertyBean {
   public ReferencesBean() {
     
     // prepare a simple table
-    table = new PropertyTableWidget();
+    table = new PropertyTableWidget() {
+      @Override
+      protected String getDisplayValue(Property property, int row, int col) {
+        if (property instanceof PropertyXRef) {
+          PropertyXRef ref = (PropertyXRef)property;
+          if (ref.isTransient())
+            ref = ref.getTarget();
+          return Gedcom.getName(ref.getTag());
+        }
+        return super.getDisplayValue(property, row, col);
+      }
+    };
     table.setVisibleRowCount(5);
     
     setLayout(new BorderLayout());
@@ -84,13 +85,11 @@ public class ReferencesBean extends PropertyBean {
       model = getModel(prop);
       
     table.setModel(model);
-    table.setRendererFactory(model);
   }
   
   private Model getModel(Property root) {
     
     List<PropertyXRef> rows = new ArrayList<PropertyXRef>();
-    Map<Property,String> p2t = new HashMap<Property, String>();
     
     // refs
     for (PropertyXRef ref : root.getProperties(PropertyXRef.class)) {
@@ -99,28 +98,22 @@ public class ReferencesBean extends PropertyBean {
           || ref instanceof PropertyFamilyChild || ref instanceof PropertyFamilySpouse || !ref.isValid())
         continue;
       rows.add(ref);
-      if (ref.isTransient())
-        ref = ref.getTarget();
-      p2t.put(ref, ref.getPropertyName());
     }
     
-    return new Model(root, rows, p2t);
+    return new Model(root, rows);
   }
   
-  private class Model extends AbstractPropertyTableModel implements PropertyRendererFactory {
+  private class Model extends AbstractPropertyTableModel {
     
-    private Map<Property,String> property2text;
     private List<PropertyXRef> rows;
     private TagPath[] columns = new TagPath[] {
         new TagPath(".", Gedcom.getName("REFN")), 
         new TagPath("*:..:..", "*"), 
       };
-    private PropertyRenderer renderer = new Renderer();
-    
-    Model(Property root, List<PropertyXRef> rows, Map<Property,String> p2t) {
+        
+    Model(Property root, List<PropertyXRef> rows) {
       super(root.getGedcom());
       this.rows = rows;
-      this.property2text = p2t;
     }
 
     public int getNumCols() {
@@ -139,24 +132,5 @@ public class ReferencesBean extends PropertyBean {
       return rows.get(row);
     }
 
-    public PropertyRenderer getRenderer(TagPath path, Property prop) {
-      return getRenderer(prop);
-    }
-    public PropertyRenderer getRenderer(Property prop) {
-      if (property2text.containsKey(prop))
-        return renderer ;
-      return PropertyRendererFactory.DEFAULT.getRenderer(prop);
-    }
-    
-    private class Renderer extends PropertyRenderer {
-      @Override
-      protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes, Point dpi) {
-        super.renderImpl(g, bounds, property2text.get(prop), attributes);
-      }
-      @Override
-      protected Dimension2D getSizeImpl(Font font, FontRenderContext context, Property prop, Map<String,String> attributes, Point dpi) {
-        return super.getSizeImpl(font, context, prop, property2text.get(prop), attributes, dpi);
-      }
-    }
   }
 } 

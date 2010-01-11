@@ -26,7 +26,6 @@ import genj.gedcom.TagPath;
 import genj.util.GridBagHelper;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ListSelectionWidget;
 
@@ -34,11 +33,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Class for providing ViewInfo information to a ViewEditor
@@ -76,6 +77,11 @@ public class TableViewSettings extends JPanel {
     pathTree.setPaths(usedPaths, selectedPaths);
     pathTree.addListener(plistener);
 
+    // Up/Down of ordering
+    final Move up = new Move(true);
+    final Move dn = new Move(false);
+    final Del del = new Del();
+    
     // List of TagPaths
     pathList = new ListSelectionWidget<TagPath>() {
       protected ImageIcon getIcon(TagPath path) {
@@ -87,31 +93,36 @@ public class TableViewSettings extends JPanel {
       @Override
       public void mouseClicked(MouseEvent e) {
         TagPath path = pathList.getChoice(e.getPoint());
-        if (path!=null&&e.getClickCount()==2) {
-          pathList.removeChoice(path);
-        }
+        if (path!=null&&e.getClickCount()==2) 
+          pathTree.setSelected(path, false);
+      }
+    });
+    pathList.addSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent e) {
+        // update actions
+        int i = pathList.getSelectedIndex();
+        up.setEnabled(i>0);
+        dn.setEnabled(i>=0&&i<pathList.getChoices().size()-1);
+        del.setEnabled(i>=0);
       }
     });
     pathList.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
+        // commit selected choices
         List<TagPath> choices = pathList.getChoices();
         view.getMode().setPaths(choices.toArray(new TagPath[choices.size()]));
       }      
     });
 
-    // Up/Down of ordering
-    ButtonHelper bh = new ButtonHelper().setInsets(0);
-    AbstractButton bUp   = bh.create(new Move(true));
-    AbstractButton bDown = bh.create(new Move(false));
-    
     // Layout
-    gh.add(new JLabel(resources.getString("info.columns"))   ,0,0,3,1, GridBagHelper.FILL_HORIZONTAL);
-    gh.add(pathTree                ,0,1,3,1,GridBagHelper.GROWFILL_BOTH);
+    gh.add(new JLabel(resources.getString("info.columns")),0,0,4,1, GridBagHelper.FILL_HORIZONTAL);
+    gh.add(pathTree                                       ,0,1,4,1,GridBagHelper.GROWFILL_BOTH);
 
-    gh.add(new JLabel(resources.getString("info.order"))  ,0,2,3,1, GridBagHelper.FILL_HORIZONTAL);
-    gh.add(pathList                                       ,0,3,3,1,GridBagHelper.GROWFILL_BOTH);
-    gh.add(bUp                                            ,0,4,1,1,GridBagHelper.FILL_HORIZONTAL);
-    gh.add(bDown                                          ,1,4,1,1,GridBagHelper.FILL_HORIZONTAL);
+    gh.add(new JLabel(resources.getString("info.order"))  ,0,2,4,1, GridBagHelper.FILL_HORIZONTAL);
+    gh.add(pathList                                       ,0,3,4,1,GridBagHelper.GROWFILL_BOTH);
+    gh.add(new JButton(up)                                ,0,4,1,1,GridBagHelper.FILL_HORIZONTAL);
+    gh.add(new JButton(dn)                                ,1,4,1,1,GridBagHelper.FILL_HORIZONTAL);
+    gh.add(new JButton(del)                               ,2,4,1,1,GridBagHelper.FILL_HORIZONTAL);
 
     
     // check grammar
@@ -130,16 +141,32 @@ public class TableViewSettings extends JPanel {
     /** constructor */
     protected Move(boolean up) {
       this.up=up;
+      setEnabled(false);
       if (up) setText(resources, "info.up");
       else setText(resources, "info.down");
     }
     /** run */
     public void actionPerformed(java.awt.event.ActionEvent e) {
+      int i = pathList.getSelectedIndex();
       if (up)
-        pathList.up();
+        pathList.swapChoices(i,i-1);
       else 
-        pathList.down();
+        pathList.swapChoices(i,i+1);
+    }
+  }
+  
+  /**
+   * Action - ActionUpDown
+   */
+  private class Del extends Action2 {
+    /** constructor */
+    protected Del() {
+      setEnabled(false);
+      setText(resources, "info.del");
+    }
+    /** run */
+    public void actionPerformed(java.awt.event.ActionEvent e) {
+      pathTree.setSelected(pathList.getSelectedChoice(), false);
     }
   } //ActionUpDown
-  
 }
