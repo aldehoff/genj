@@ -44,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * A component that shows a list of elements the user can choose - based on whether an initial 
@@ -160,7 +161,7 @@ public class ListSelectionWidget<T> extends JComponent {
   /**
    * Set selection
    */
-  public void setSelection(Set<T> set) {
+  public void setCheckedChoices(Set<T> set) {
     selection = new HashSet<T>(set);
     
     for (T t : set)
@@ -173,30 +174,41 @@ public class ListSelectionWidget<T> extends JComponent {
   /**
    * Return selection
    */
-  public Set<T> getSelection() {
+  public Set<T> getCheckedChoices() {
     if (selection==null) selection = new HashSet<T>();
     return Collections.unmodifiableSet(selection);
   }
+  
+  
+  @SuppressWarnings("unchecked")
+  public T getSelectedChoice() {
+    return (T)lChoose.getSelectedValue();
+  }
+  
+  public int getSelectedIndex() {
+    return lChoose.getSelectedIndex();
+  }
 
+  
   /**
-   * Moves currently selected paths up
+   * exchange two choices
    */
-  public void up() {
-
-    // Find out which row is selected now
-    int row = lChoose.getSelectedIndex();
-    if ((row==-1)||(row==0)) {
-      return;
-    }
-
+  public void swapChoices(int i, int j) {
+    
+    int selected = lChoose.getSelectedIndex();
+  
     // Move it down
-    T o = choices.get(row);
-    choices.set(row, choices.get(row-1));
-    choices.set(row-1, o);
+    T o = choices.get(i);
+    choices.set(i, choices.get(j));
+    choices.set(j, o);
 
     // Show it
     update();
-    lChoose.setSelectedIndex(row-1);
+
+    if (selected==i)
+      lChoose.setSelectedIndex(j);
+    if (selected==j)
+      lChoose.setSelectedIndex(i);
   }          
 
   /**
@@ -289,5 +301,13 @@ public class ListSelectionWidget<T> extends JComponent {
       changes.fireChangeEvent();
     }
   } //SelectionListener
+
+  public void addSelectionListener(ListSelectionListener listener) {
+    lChoose.addListSelectionListener(listener);
+  }
+  
+  public void removeSelectionListener(ListSelectionListener listener) {
+    lChoose.removeListSelectionListener(listener);
+  }
   
 } //ListSelectionWidget

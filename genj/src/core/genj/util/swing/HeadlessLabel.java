@@ -27,8 +27,8 @@ import java.awt.Rectangle;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.plaf.basic.BasicHTML;
-import javax.swing.text.View;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 
 /**
  * A fast-drawing label containing Icon+HTML/txt
@@ -42,25 +42,14 @@ import javax.swing.text.View;
 public class HeadlessLabel extends JComponent {
     
   /** GAP */
-  private int ICON_TEXT_GAP = 4;
-
-  /** simple text */
+  private int iconTextGap = 4;
+  private int padding = 0;
   private String txt = "";
-        
-  /** the view */
-  private View view;
-    
-  /** the icon */
   private Icon icon;
-  
-  /** the icon location */
   private float iconLocation = 0.0F;
-    
-  /** whether we're opaque or not */
   private boolean isOpaque = false;
-  
-  /** a cached font */
   private Font font;
+  private int horizontalAlignment = SwingConstants.LEFT;
 
   /**
    * Constructor
@@ -75,6 +64,19 @@ public class HeadlessLabel extends JComponent {
     setFont(font);
   }
   
+  public void setHorizontalAlignment(int swingConstantAlignment) {
+    switch (swingConstantAlignment) {
+      case SwingConstants.LEFT:
+        horizontalAlignment = SwingConstants.LEFT;
+        break;
+      case SwingConstants.RIGHT:
+        horizontalAlignment = SwingConstants.RIGHT;
+        icon = null;
+      break;
+    }
+    
+  }
+  
   public void setFont(Font set) {
     font = set;
   }
@@ -86,34 +88,27 @@ public class HeadlessLabel extends JComponent {
   }
 
   /**
-   * Set HTML to render
-   */
-  public View setHTML(String set) {
-    return setView(BasicHTML.createHTMLView(this, set));
-  }
-  
-  /**
-   * Set View to render
-   */
-  public View setView(View set) {
-    view = set;
-    txt = "";
-    return set;
-  }
-    
-  /**
    * Set txt to render
    */
   public void setText(String set) {
-    view = null;
     txt = set!=null ? set : "";
   }
-    
+  
+  @Override
+  public void setBorder(Border border) {
+    throw new IllegalArgumentException("don't set border on headless label");
+  }
+  
+  public void setPadding(int padding) {
+    this.padding = padding;
+  }
+  
   /**
    * Set Image to render
    */
   public void setIcon(Icon icOn) {
     icon = icOn;
+    horizontalAlignment = SwingConstants.LEFT;
   }
     
   /**
@@ -144,27 +139,17 @@ public class HeadlessLabel extends JComponent {
     int 
       width, 
       height;
-    // ask rootView or text
-    if (view!=null) {
-      width = (int)view.getPreferredSpan(View.X_AXIS);
-      height= (int)view.getPreferredSpan(View.Y_AXIS);
-    } else {
-      FontMetrics fm = getFontMetrics(getFont());
-      width = fm.stringWidth(txt);
-      height = fm.getHeight();
-    }
+    FontMetrics fm = getFontMetrics(getFont());
+    width = fm.stringWidth(txt);
+    height = fm.getHeight();
     // check image
     if (icon!=null) {
       width += icon.getIconWidth();
       height = Math.max(height,icon.getIconHeight());
     }
     // gap?
-    if ((view!=null||txt.length()>0)&&icon!=null) 
-      width += ICON_TEXT_GAP;
-    // max
-//    Dimension max = getMaximumSize();
-//    width = Math.min(max.width, width);
-//    height = Math.min(max.height, height);
+    if (txt.length()>0&&icon!=null) 
+      width += iconTextGap;
     // done
     return new Dimension(width, height);
   }
@@ -173,33 +158,37 @@ public class HeadlessLabel extends JComponent {
    * @see javax.swing.JComponent#paint(java.awt.Graphics)
    */
   public void paint(Graphics g) {
-    Rectangle bounds = getBounds();
-    bounds.x=0;
-    bounds.y=0;
+    Font font = getFont();
+    Dimension size = getSize();
+    int x = 0, y = 0;
     // fill background
     if (isOpaque) {
       g.setColor(getBackground());
-      g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
+      g.fillRect(x,y,size.width,size.height);
+    }
+    // padding?
+    if (padding>0) {
+      x+=padding;
+      y+=padding;
+      size.width-=padding+padding;
+      size.height-=padding+padding;
     }
     // render icon
     if (icon!=null) {
       int
         w = icon.getIconWidth(),
         h = icon.getIconHeight();
-      icon.paintIcon(null, g, 0, (int)(iconLocation*(bounds.height - h)));
-      bounds.x += w+ICON_TEXT_GAP;
-      bounds.width -= w+ICON_TEXT_GAP;
+      icon.paintIcon(null, g, 0, (int)(iconLocation*(size.height - h)));
+      x += w+iconTextGap;
+      size.width -= w+iconTextGap;
     }
-    // render html or txt
+    // fix-up right-alignment
+    if (horizontalAlignment==SwingConstants.RIGHT) 
+      x += size.width - getFontMetrics(font).stringWidth(txt);
+    // render text
     g.setColor(getForeground());
-    if (view!=null) {
-      view.setSize(bounds.width, bounds.height);
-      view.paint(g, bounds);
-    } else {
-      Font font = getFont();
-      g.setFont(font);
-      g.drawString(txt, bounds.x, getFontMetrics(font).getMaxAscent());       
-    }
+    g.setFont(font);
+    g.drawString(txt, x, getFontMetrics(font).getMaxAscent());       
     // done
   }
   
