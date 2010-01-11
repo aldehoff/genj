@@ -23,7 +23,6 @@ import genj.util.Registry;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -164,19 +163,17 @@ public class DialogHelper {
     final JDialog dlg = optionPane.createDialog(source, title);
     dlg.setResizable(true);
     dlg.setModal(true);
+    dlg.pack();
+    dlg.setMinimumSize(dlg.getSize());
     
-    // setup bounds
-    StackTraceElement caller = new Throwable().getStackTrace()[2];
+    // restore bounds
+    StackTraceElement caller = getCaller();
     final Registry registry = Registry.get(caller.getClassName());
     final String key = caller.getMethodName() + ".dialog";
     Dimension bounds = registry.get(key, (Dimension)null);
-    if (bounds==null) {
-      dlg.pack();
-      dlg.setLocationRelativeTo(source);
-    } else {
+    if (bounds!=null) 
       dlg.setBounds(new Rectangle(bounds).intersection(screen));
-      dlg.setLocationRelativeTo(source);
-    }
+    dlg.setLocationRelativeTo(source);
 
     // hook up to the dialog being hidden by the optionpane - that's what is being called after the user selected a button (setValue())
     dlg.addComponentListener(new ComponentAdapter() {
@@ -191,6 +188,15 @@ public class DialogHelper {
     
     // return result
     return optionPane.getValue();
+  }
+  
+  private static StackTraceElement getCaller() {
+    String clazz = DialogHelper.class.getName();
+    for (StackTraceElement element : new Throwable().getStackTrace())
+      if (!clazz.equals(element.getClassName()))
+        return element;
+    // shouldn't happen
+    return new StackTraceElement("Class", "method", "file", 0);
   }
 
   /**
@@ -229,26 +235,7 @@ public class DialogHelper {
       
       // done
     }
-
-    /** patch up layout - don't allow too small */
-    public void doLayout() {
-      // let super do its thing
-      super.doLayout();
-      // check minimum size
-      Container container = getTopLevelAncestor();
-      Dimension minimumSize = container.getMinimumSize();
-      Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-      minimumSize.width = Math.min(screen.width/2, minimumSize.width);
-      minimumSize.height = Math.min(screen.height/2, minimumSize.height);
-      Dimension size        = container.getSize();
-      if (size.width < minimumSize.width || size.height < minimumSize.height) {
-        Dimension newSize = new Dimension(Math.max(minimumSize.width,  size.width),
-                                          Math.max(minimumSize.height, size.height));
-        container.setSize(newSize);
-      }
-      // checked
-    }
-    
+   
     /** an option in our option-pane */
     private class Option extends JButton implements ActionListener {
       
