@@ -342,9 +342,7 @@ public class Workbench extends JPanel implements SelectionSink {
     fireCommit();
     
     // .. choose file
-    // FIXME docket let views and plugins participate in save filter
-    SaveOptionsWidget options = new SaveOptionsWidget(context.getGedcom(), new Filter[] {});
-    // (Filter[])viewManager.getViews(Filter.class, gedcomBeingSaved));
+    SaveOptionsWidget options = new SaveOptionsWidget(context.getGedcom());
     File file = chooseFile(RES.getString("cc.save.title"), RES.getString("cc.save.action"), options);
     if (file == null)
       return false;

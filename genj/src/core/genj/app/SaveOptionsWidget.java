@@ -24,7 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
 import genj.io.Filter;
 import genj.util.Resources;
@@ -36,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -51,33 +49,31 @@ import javax.swing.JTextField;
  */
 /*package*/ class SaveOptionsWidget extends JTabbedPane {
   
+  private final static Resources RESOURCES = Resources.get(SaveOptionsWidget.class);
+  
   /** components */
   private JCheckBox[] checkEntities = new JCheckBox[Gedcom.ENTITIES.length];
   private JCheckBox[] checkFilters;
-  private JTextField  textTags, textValues;
+  private JTextField  textTags, textMarkers;
   private TextFieldWidget textPassword;
   private JComboBox   comboEncodings;
   private JCheckBox checkFilterEmpties;
-   private JCheckBox checkFilterLiving;
-  private Resources resources = Resources.get(this);
+  private JCheckBox checkFilterLiving;
   private DateWidget dateEventsAfter, dateBirthsAfter;
-  
-  /** filters */
-  private Filter[] filters;
 
   /**
    * Constructor
    */    
-  /*package*/ SaveOptionsWidget(Gedcom gedcom, Filter[] filters) {
+  /*package*/ SaveOptionsWidget(Gedcom gedcom) {
     
     // Options
     Box options = new Box(BoxLayout.Y_AXIS);
-    options.add(new JLabel(resources.getString("save.options.encoding")));
+    options.add(new JLabel(RESOURCES.getString("save.options.encoding")));
     comboEncodings = new ChoiceWidget(Gedcom.ENCODINGS, Gedcom.ANSEL);
     comboEncodings.setEditable(false);
     comboEncodings.setSelectedItem(gedcom.getEncoding());
     options.add(comboEncodings);
-    options.add(new JLabel(resources.getString("save.options.password")));
+    options.add(new JLabel(RESOURCES.getString("save.options.password")));
     textPassword = new TextFieldWidget(gedcom.hasPassword() ? gedcom.getPassword() : "", 10);
     textPassword.setEditable(gedcom.getPassword()!=Gedcom.PASSWORD_UNKNOWN);
     options.add(textPassword);
@@ -85,45 +81,41 @@ import javax.swing.JTextField;
     // entities filter    
     Box types = new Box(BoxLayout.Y_AXIS);
     for (int t=0; t<Gedcom.ENTITIES.length; t++) {
-      checkEntities[t] = new JCheckBox(Gedcom.getName(Gedcom.ENTITIES[t], true), true);
+      checkEntities[t] = check(Gedcom.getName(Gedcom.ENTITIES[t], true), false);
       types.add(checkEntities[t]);
     }
     
     // property filter
     Box props = new Box(BoxLayout.Y_AXIS);
-    props.add(new JLabel(resources.getString("save.options.exclude.tags")));
-    textTags = new TextFieldWidget(resources.getString("save.options.exclude.tags.eg"), 10).setTemplate(true);
+    props.add(new JLabel(RESOURCES.getString("save.options.exclude.tags")));
+    textTags = new TextFieldWidget(RESOURCES.getString("save.options.exclude.tags.eg"), 10).setTemplate(true);
     props.add(textTags);
-    props.add(new JLabel(resources.getString("save.options.exclude.values")));
-    textValues = new TextFieldWidget(resources.getString("save.options.exclude.values.eg"), 10).setTemplate(true);
-    props.add(textValues);
-    props.add(new JLabel(resources.getString("save.options.exclude.events")));
+    props.add(new JLabel(RESOURCES.getString("save.options.exclude.markers")));
+    textMarkers = new TextFieldWidget(RESOURCES.getString("save.options.exclude.markers.eg"), 10).setTemplate(true);
+    props.add(textMarkers);
+    props.add(new JLabel(RESOURCES.getString("save.options.exclude.events")));
     dateEventsAfter = new DateWidget();
     props.add(dateEventsAfter);
-    props.add(new JLabel(resources.getString("save.options.exclude.indis")));
+    props.add(new JLabel(RESOURCES.getString("save.options.exclude.indis")));
     dateBirthsAfter = new DateWidget();
     props.add(dateBirthsAfter);
-    checkFilterLiving = new JCheckBox(resources.getString("save.options.exclude.living"));
+    checkFilterLiving = check(RESOURCES.getString("save.options.exclude.living"),false);
     props.add(checkFilterLiving);
-    checkFilterEmpties = new JCheckBox(resources.getString("save.options.exclude.empties"));
+    checkFilterEmpties = check(RESOURCES.getString("save.options.exclude.empties"), false);
     props.add(checkFilterEmpties);
        
-    // others filter
-    Box others = new Box(BoxLayout.Y_AXIS);
-    this.filters = filters;
-    this.checkFilters = new JCheckBox[filters.length];
-    for (int i=0; i<checkFilters.length; i++) {
-      checkFilters[i] = new JCheckBox(filters[i].getFilterName(), false);
-      others.add(checkFilters[i]);
-    }
-    
     // layout
-    add(resources.getString("save.options"                  ), options);
-    add(resources.getString("save.options.filter.entities"  ), types);
-    add(resources.getString("save.options.filter.properties"), props);
-    add(resources.getString("save.options.filter.views"     ), others);
+    add(RESOURCES.getString("save.options"                  ), options);
+    add(RESOURCES.getString("save.options.filter.entities"  ), types);
+    add(RESOURCES.getString("save.options.filter.properties"), props);
     
     // done
+  }
+  
+  private JCheckBox check(String text, boolean selected) {
+    JCheckBox result = new JCheckBox(text, selected);
+    result.setOpaque(false);
+    return result;
   }
 
   /**
@@ -149,12 +141,10 @@ import javax.swing.JTextField;
     List result = new ArrayList(10);
     
     // create one for the types
-    FilterByType fbt = FilterByType.get(checkEntities);
-    if (fbt!=null) result.add(fbt);
+    result.add(new FilterByType(checkEntities));
     
     // create one for the properties
-    FilterProperties fp = FilterProperties.get(textTags.getText(), textValues.getText());
-    if (fp!=null) result.add(fp);
+    result.add(new FilterProperties(textTags.getText().split(","), textMarkers.getText().split(",")));
     
     // create one for events
     PointInTime eventsAfter = dateEventsAfter.getValue();
@@ -173,12 +163,6 @@ import javax.swing.JTextField;
     // create one for empties
     if (checkFilterEmpties.isSelected())
       result.add(new FilterEmpties());
-    
-    // create one for every other
-    for (int f=0; f<filters.length; f++) {
-      if (checkFilters[f].isSelected())
-    	 result.add(filters[f]);
-    }
     
     // done
     return (Filter[])result.toArray(new Filter[result.size()]);
@@ -283,82 +267,36 @@ import javax.swing.JTextField;
   private static class FilterProperties implements Filter {
     
     /** filter tags */
-    private Set tags;
+    private String[] tags;
     
-    /** filter paths */
-    private Set paths;
-    
-    /** filter values */
-    private String[] values;
+    /** filter markers */
+    private String[] markers;
     
     /**
      * Constructor
      */
-    private FilterProperties(Set tags, Set paths, List values) {
+    public FilterProperties(String[] tags, String[] markers) {
       this.tags = tags;
-      this.paths = paths;
-      this.values = (String[])values.toArray(new String[0]);
+      this.markers = markers;
       // done
     }
-    
-    /**
-     * Get instance
-     */
-    protected static FilterProperties get(String sTags, String sValues) {
-      
-      // calculate tags
-      Set tags = new HashSet();
-      Set paths = new HashSet();
-      
-      StringTokenizer tokens = new StringTokenizer(sTags, ",");
-      while (tokens.hasMoreTokens()) {
-        String s = tokens.nextToken().trim();
-        if (s.indexOf(':')>0) {
-          try {
-            paths.add(new TagPath(s));
-          } catch (IllegalArgumentException e) { 
-          }
-        } else {
-          tags.add(s);
-        }
-      }
-      // calculate values
-      List values = new ArrayList();
-      tokens = new StringTokenizer(sValues, ",");
-      while (tokens.hasMoreTokens()) {
-        values.add(tokens.nextToken().trim());
-      }
-     
-      // done
-      return (tags.isEmpty() && paths.isEmpty() && values.isEmpty()) ? null : new FilterProperties(tags, paths, values);
-    }
-    
+        
     /**
      * @see genj.io.Filter#accept(genj.gedcom.Property)
      */
     public boolean checkFilter(Property property) {
-      // allow all entities
-      if (property instanceof Entity)
-        return true;
       // check if tag is applying
-      if (tags.contains(property.getTag())) return false;
-      // check if path is applying
-      if (paths.contains(property.getPath())) return false;
-      // simple
-      return accept(property.getValue());
-    }
-    
-    /**
-     * Whether we accept a value
-     */
-    private boolean accept(String value) {
-      if (value==null) return true;
-      for (int i=0; i<values.length; i++) {
-        if (value.indexOf(values[i])>=0) return false;
-      }
+      for (String tag : tags)
+        if (tag.equals(property.getTag())) 
+          return false;
+      // check if marker is applying
+      for (String marker : markers)
+        if (property.getProperty(marker)!=null)
+          return false;
+      // in
       return true;
     }
-
+    
     public String getFilterName() {
       return toString();
     }
@@ -369,30 +307,24 @@ import javax.swing.JTextField;
    */
   private static class FilterByType implements Filter {
     
-    /** the enabled types */
-    private Set types = new HashSet();
+    /** the excluded types */
+    private Set<String> excluded = new HashSet<String>();
     
     /**
-     * Create an instance
+     * Constructor
      */
-    protected static FilterByType get(JCheckBox[] checks) {
-      
-      FilterByType result = new FilterByType();
-      
+    FilterByType(JCheckBox[] checks) {
       for (int t=0; t<checks.length; t++) {
       	if (checks[t].isSelected())
-          result.types.add(Gedcom.ENTITIES[t]);
+          excluded.add(Gedcom.ENTITIES[t]);
       }
-      return result.types.size()<Gedcom.ENTITIES.length ? result : null;
     }
     /**
      * accepting all properties, limit to entities of parameterized types
      * @see genj.io.Filter#accept(genj.gedcom.Property)
      */
     public boolean checkFilter(Property property) {
-      if (property instanceof Entity && !types.contains(property.getTag()))
-          return false;
-      return true;
+      return !(property instanceof Entity) || !excluded.contains(property.getTag());
     }
     public String getFilterName() {
       return toString();
