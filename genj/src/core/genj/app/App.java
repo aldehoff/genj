@@ -52,6 +52,7 @@ import java.util.logging.StreamHandler;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 /**
  * Main Class for GenJ Application
@@ -175,6 +176,9 @@ public class App {
           // show disclaimer
           DialogHelper.openDialog("Disclaimer", DialogHelper.INFORMATION_MESSAGE, RESOURCES.getString("app.disclaimer"), Action2.okOnly(), null);    
         }
+        
+        // patch JPopupMenu consuming events on close
+        UIManager.put("PopupMenu.consumeEventOnClose", new Boolean(false));
         
         // setup control center
         workbench = new Workbench(new Shutdown());
