@@ -46,8 +46,8 @@ public class PopupWidget extends JButton {
   /** list of actions */
   private List<JComponent> items = new ArrayList<JComponent>();
 
-  /** whether we fire the first of the available actions on popup click */
-  private boolean isFireOnClick = false;
+  /** whether we fire the first of the available actions on popup click within ms */
+  private long fireOnClickWithin = 0;
   
   /** current popup */
   private JPopupMenu popup;
@@ -183,54 +183,46 @@ public class PopupWidget extends JButton {
   }
 
   /**
-   * Setting this to true will fire first available action
-   * on popup button click (default off) 
+   * Setting this to a value >0 will fire first available action
+   * on popup button click if clicked within that give time from
+   * pressing the button
    */
-  public void setFireOnClick(boolean set) {
-    isFireOnClick = set;
+  public void setFireOnClickWithin(long ms) {
+    fireOnClickWithin = ms;
   }
 
   /**
    * Our special model
    */
   private class Model extends DefaultButtonModel implements Runnable {
-    boolean popupTriggered;
+    private long triggerTime = 0;
     /** our menu trigger */
     public void setPressed(boolean b) {
       // continue
       super.setPressed(b);
       // show menue (delayed)
-      if (b) {
-        popupTriggered = true;
+      if (b) 
         SwingUtilities.invokeLater(this);
-      } else {
-        if (isFireOnClick)
-          cancelPopup();
-      }
     }
     /** EDT callback */
     public void run() { 
-      if (popupTriggered)
-        showPopup(); 
+      showPopup(); 
+      triggerTime = System.currentTimeMillis();
     }
     /**
      * action performed
      */
     protected void fireActionPerformed(ActionEvent e) {
       // fire action on popup button press?
-      if (isFireOnClick) { 
-        
-        if (popup.getComponentCount()>0) {
-          Component c = popup.getComponent(0);
-          if (c instanceof AbstractButton)
+      if (fireOnClickWithin>0 && System.currentTimeMillis()-triggerTime<fireOnClickWithin) { 
+        for (int i=0;i<popup.getComponentCount();i++) {
+          Component c = popup.getComponent(i);
+          if (c instanceof AbstractButton) {
+            cancelPopup();
             ((AbstractButton)c).doClick();
-
+            break;
+          }
         }
-        
-        // cancel popup
-        popupTriggered = false;
-        cancelPopup();
-        
       }
     }
   } //Model

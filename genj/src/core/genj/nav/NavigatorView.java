@@ -27,7 +27,6 @@ import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertySex;
 import genj.util.GridBagHelper;
-import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
@@ -96,16 +95,10 @@ public class NavigatorView extends View {
   /** the current context */
   private Context context = new Context();
 
-  /** where we store stuff */
-  private Registry registry;
-  
   /**
    * Constructor
    */
   public NavigatorView() {
-    
-    // remember
-    this.registry = registry;
     
     // layout    
     setLayout(new BorderLayout());
@@ -276,7 +269,7 @@ public class NavigatorView extends View {
     PopupWidget result = new PopupWidget();
     result.setIcon(i);
     result.setFocusPainted(false);
-    result.setFireOnClick(true);
+    result.setFireOnClickWithin(500);
     result.setFocusable(false);
     result.setEnabled(false);
 //    result.setToolTipText(new MnemonicAndText(resources.getString(key)).getText("Ctrl-"));
