@@ -96,15 +96,6 @@ public class PathTreeWidget extends JScrollPane {
   }
 
   /**
-   * Helper that expands all rows
-   */
-  private void expandRows() {
-    for (int i=0;i<tree.getRowCount();i++) {
-      tree.expandRow(i);
-    }
-  }
-
-  /**
    * Signals a change in a node to the listeners
    * @param path the TreePath to the selected node
    */
@@ -128,7 +119,17 @@ public class PathTreeWidget extends JScrollPane {
    */
   public void setPaths(TagPath[] paths, TagPath[] selection) {
     model.setPaths(paths, selection);
-    expandRows();
+
+    // ensure selected nodes are expanded
+    for (TagPath path : selection) {
+      Object[] treepath = new Object[path.length()];
+      treepath[0] = model;
+      for (int i=1;i<path.length();i++) {
+        treepath[i] = new TagPath(path, i);
+      }
+      tree.expandPath(new TreePath(treepath));
+    }
+    
   }
 
   public void setSelected(TagPath path, boolean set) {

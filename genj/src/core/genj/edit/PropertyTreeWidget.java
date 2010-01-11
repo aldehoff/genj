@@ -187,8 +187,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       return;
     // propagate to model
     getPropertyModel().setRoot(property);
-    // show all rows
-    expandAllRows();
     // done
   }
   
@@ -358,8 +356,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       rootExchanged();
       // make sure we don't show null-root
       setRootVisible(root!=null);
-      // expand all
-      expandAllRows();
     }
     
     public Property getPropertyRoot() {
@@ -618,7 +614,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       Object[] path = getPathFor(property);
       fireTreeNodesInserted(this, path, new int[] { pos }, new Property[]{ added });
       // expand all rows
-     expandAllRows();
+      //expandAllRows();
      
      // NM 20070520 - used to follow selection here but
      // a) this is not good as the selection gets propagated to listeners who haven't received the new property yet

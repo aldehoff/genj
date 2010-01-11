@@ -212,8 +212,10 @@ import javax.swing.tree.TreePath;
 
     // change root if necessary
     Entity entity = context.getEntity();
-    if (entity!=tree.getRoot())
+    if (entity!=tree.getRoot()) {
       tree.setRoot(entity);
+      tree.expandAllRows();
+    }
 
     // set selection
     List<? extends Property> props = context.getProperties();
