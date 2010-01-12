@@ -33,7 +33,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,6 +119,14 @@ public class PathTreeWidget extends JScrollPane {
   public void setPaths(TagPath[] paths, TagPath[] selection) {
     model.setPaths(paths, selection);
 
+    // ensure all first level paths are expanded
+    for (TagPath path : paths) {
+      Object[] treepath = new Object[2];
+      treepath[0] = model;
+      treepath[1] = new TagPath(path.get(0));
+      tree.expandPath(new TreePath(treepath));
+    }
+    
     // ensure selected nodes are expanded
     for (TagPath path : selection) {
       Object[] treepath = new Object[path.length()];
@@ -304,8 +311,7 @@ public class PathTreeWidget extends JScrollPane {
         if (paths[p].length()>path.length()&&paths[p].startsWith(path)) 
           add(new TagPath(paths[p], path.length()+1), children);
       }
-      for (Iterator ss=selection.iterator();ss.hasNext();) {
-        TagPath sel = (TagPath)ss.next();
+      for (TagPath sel : selection) {
         if (sel.length()>path.length()&&sel.startsWith(path)) 
           add(new TagPath(sel, path.length()+1), children);
       }
@@ -318,11 +324,11 @@ public class PathTreeWidget extends JScrollPane {
      */
     private TagPath[] getChildrenOfRoot() {
       // all paths' first tag 
-      List children = new ArrayList(8);
-      for (int p=0;p<paths.length;p++) 
-        add(new TagPath(paths[p], 1), children);
-      for (Iterator ss=selection.iterator();ss.hasNext();) 
-        add(new TagPath((TagPath)ss.next(), 1), children);
+      List<TagPath> children = new ArrayList<TagPath>(8);
+      for (TagPath path : paths) 
+        add(new TagPath(path, 1), children);
+      for (TagPath path : selection) 
+        add(new TagPath(path, 1), children);
       // done
       return TagPath.toArray(children);
     }
