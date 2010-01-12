@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.139 $ $Author: nmeier $ $Date: 2010-01-12 00:43:50 $
+ * $Revision: 1.140 $ $Author: nmeier $ $Date: 2010-01-12 20:38:32 $
  */
 package genj.report;
 
@@ -599,17 +599,6 @@ public abstract class Report implements Cloneable {
    */
   public final String translate(String key) {
     return translate(key, (Object[])null);
-  }
-
-  /**
-   * Sub-classes that are accompanied by a [ReportName].properties file
-   * containing simple key=value pairs can lookup internationalized
-   * text-values with this method.
-   * @param key the key to lookup in [ReportName].properties
-   * @param value an integer value to replace %1 in value with
-   */
-  public final String translate(String key, int value) {
-    return translate(key, new Integer(value));
   }
 
   /**
