@@ -605,6 +605,15 @@ public class Indi extends Entity {
       if (date!=null&&date.isValid())
         return true;
     }
+    // TOOD we should have a configurable value for max age 
+    
+    // born more than 100 years ago?
+    PropertyDate birt = getBirthDate();
+    if (birt!=null) {
+      Delta delta = birt.getAnniversary();
+      if (delta!=null && delta.getYears()>100)
+        return true;
+    }
     // not afaik
     return false;
   }
