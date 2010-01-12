@@ -31,6 +31,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.EditorHyperlinkSupport;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.SelectionSink;
 import genj.view.ToolBar;
 import genj.view.View;
@@ -54,17 +55,21 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 
@@ -76,6 +81,11 @@ import spin.Spin;
 public class ReportView extends View {
 
   /* package */static Logger LOG = Logger.getLogger("genj.report");
+  
+  private final static String
+    WELCOME = "welcome",
+    CONSOLE = "console",
+    RESULT = "result";
 
   /** time between flush of output writer to output text area */
   private final static String EOL = System.getProperty("line.separator");
@@ -88,9 +98,10 @@ public class ReportView extends View {
 
   /** components to show report info */
   private Output output;
+  private JScrollPane result;
   private ActionStart actionStart = new ActionStart();
   private ActionStop actionStop = new ActionStop();
-  private ActionConsole actionConsole = new ActionConsole();
+  private ActionShow actionShow = new ActionShow();
 
   /** registry for settings */
   private final static Registry REGISTRY = Registry.get(ReportView.class);
@@ -105,13 +116,31 @@ public class ReportView extends View {
    * Constructor
    */
   public ReportView() {
-
+    
+    setLayout(new CardLayout());
+    
     // Output
     output = new Output();
+    add(new JScrollPane(output), CONSOLE);
+    
+    // result
+    result = new JScrollPane();
+    add(result, RESULT);
 
-    // Layout for this component
-    setLayout(new CardLayout());
-    add(new JScrollPane(output), "output");
+    // welcome panel
+    String msg = RESOURCES.getString("report.welcome");
+
+    JButton b = new JButton(new ActionStart());
+    b.setRequestFocusEnabled(false);
+    b.setOpaque(false);
+    
+    JPanel welcome = new JPanel(new NestedBlockLayout("<col><row><a wx=\"1\" wy=\"1\"/><b/><c wx=\"1\"/></row></col>"));
+    welcome.setBackground(output.getBackground());
+    welcome.setOpaque(true);
+    welcome.add(new JLabel(msg.substring(0, msg.indexOf('*')), SwingConstants.RIGHT));
+    welcome.add(b);
+    welcome.add(new JLabel(msg.substring(msg.indexOf('*')+1)));
+    add(welcome, WELCOME);
 
     // done
   }
@@ -170,8 +199,9 @@ public class ReportView extends View {
     // set report ui context
     report.setOwner(this);
 
-    // clear the current output
+    // clear the current output and show coming
     clear();
+    show(CONSOLE);
     
     // set running
     actionStart.setEnabled(false);
@@ -187,9 +217,10 @@ public class ReportView extends View {
   private void clear() {
     output.clear();
     output.setContentType("text/plain");
-    while (getComponentCount() > 1)
-      remove(1);
-    showConsole(true);
+    result.setViewportView(null);
+    actionShow.setSelected(false);
+    actionShow.setEnabled(false);
+    show(WELCOME);
   }
 
   /**
@@ -258,14 +289,8 @@ public class ReportView extends View {
   public void setContext(Context context, boolean isActionPerformed) {
     
     // different gedcom?
-    if (gedcom!=context.getGedcom()) {
+    if (gedcom!=context.getGedcom()) 
       clear();
-      
-      if (context.getGedcom()!=null) {
-        output.setContentType("text/html");
-        output.setText(RESOURCES.getString("report.welcome", "<a href=\"run\">", "</a>"));
-      }
-    }
 
     // keep
     gedcom = context.getGedcom();
@@ -276,50 +301,40 @@ public class ReportView extends View {
   }
 
   /**
-   * show console instead of result of a report run
+   * show welcome/console/output
    */
-  /* package */void showConsole(boolean show) {
-    if (show) {
-      output.setVisible(true);
-      ((CardLayout) getLayout()).first(this);
-      actionConsole.setEnabled(getComponentCount() > 1);
-      actionConsole.setImage(imgGui);
-    } else {
-      output.setVisible(false);
-      ((CardLayout) getLayout()).last(this);
-      actionConsole.setEnabled(true);
-      actionConsole.setImage(imgConsole);
-    }
+  /* package */void show(String page) {
+    ((CardLayout) getLayout()).show(this, page);
   }
-
+  
   /**
    * show result of a report run
    */
-  /* package */void showResult(Object result) {
+  /* package */void showResult(Object object) {
 
     // none?
-    if (result == null)
+    if (object == null)
       return;
 
     // Exception?
-    if (result instanceof InterruptedException) {
+    if (object instanceof InterruptedException) {
       output.add("*** cancelled");
       return;
     }
 
-    if (result instanceof Throwable) {
+    if (object instanceof Throwable) {
       CharArrayWriter buf = new CharArrayWriter(256);
-      ((Throwable) result).printStackTrace(new PrintWriter(buf));
+      ((Throwable) object).printStackTrace(new PrintWriter(buf));
       output.add("*** exception caught" + '\n' + buf);
       return;
     }
 
     // File?
-    if (result instanceof File) {
-      File file = (File) result;
+    if (object instanceof File) {
+      File file = (File) object;
       if (file.getName().endsWith(".htm") || file.getName().endsWith(".html")) {
         try {
-          result = file.toURI().toURL();
+          object = file.toURI().toURL();
         } catch (Throwable t) {
           // can't happen
         }
@@ -334,34 +349,38 @@ public class ReportView extends View {
     }
 
     // URL?
-    if (result instanceof URL) {
+    if (object instanceof URL) {
       try {
-        output.setPage((URL) result);
+        output.setPage((URL) object);
       } catch (IOException e) {
-        output.add("*** can't open URL " + result + ": " + e.getMessage());
+        output.add("*** can't open URL " + object + ": " + e.getMessage());
       }
-      showConsole(true);
+      actionShow.setEnabled(false);
+      actionShow.setSelected(false);
+      show(CONSOLE);
       return;
     }
 
     // context list?
-    if (result instanceof ViewContext.ContextList) {
-      result = new ContextListWidget((ContextList)result);
+    if (object instanceof ViewContext.ContextList) {
+      object = new ContextListWidget((ContextList)object);
     }
 
     // component?
-    if (result instanceof JComponent) {
-      JComponent c = (JComponent) result;
+    if (object instanceof JComponent) {
+      JComponent c = (JComponent) object;
       c.setMinimumSize(new Dimension(0, 0));
-      add((JComponent) result, "result");
-      showConsole(false);
+      result.setViewportView(c);
+      actionShow.setEnabled(true);
+      actionShow.setSelected(true);
+      show(RESULT);
       return;
     }
     
     // document
-    if (result instanceof genj.fo.Document) {
+    if (object instanceof genj.fo.Document) {
 
-      genj.fo.Document doc = (genj.fo.Document) result;
+      genj.fo.Document doc = (genj.fo.Document) object;
       String title = "Document " + doc.getTitle();
 
       Registry foRegistry = Registry.get(getClass());
@@ -403,7 +422,7 @@ public class ReportView extends View {
     }
 
     // unknown
-    output.add("*** report returned unknown result " + result);
+    output.add("*** report returned unknown result " + object);
   }
 
   /**
@@ -415,7 +434,8 @@ public class ReportView extends View {
     
     // TODO stopping report doesn't really work anyways
     //toolbar.add(actionStop);
-    toolbar.add(actionConsole);
+    
+    toolbar.add(new JToggleButton(actionShow));
     toolbar.add(new ActionSave());
 
     // done
@@ -469,16 +489,27 @@ public class ReportView extends View {
   /**
    * Action: Console
    */
-  private class ActionConsole extends Action2 {
-    protected ActionConsole() {
+  private class ActionShow extends Action2 {
+    protected ActionShow() {
       setImage(imgConsole);
       setTip(RESOURCES, "report.output");
       setEnabled(false);
     }
 
     public void actionPerformed(ActionEvent event) {
-      showConsole(!output.isVisible());
+      setSelected(isSelected());
     }
+    
+    @Override
+    public boolean setSelected(boolean selected) {
+      setImage(selected ? imgGui : imgConsole);
+      if (selected)
+        show(RESULT);
+      else
+        show(CONSOLE);
+      return super.setSelected(selected);
+    }
+      
   }
 
   /**
@@ -580,15 +611,7 @@ public class ReportView extends View {
       setContentType("text/plain");
       setFont(new Font("Monospaced", Font.PLAIN, 12));
       setEditable(false);
-      addHyperlinkListener(new EditorHyperlinkSupport(this) {
-        @Override
-        protected void handleHyperlink(String link) throws IOException, URISyntaxException {
-          if ("run".equals(link))
-            startReport();
-          else
-            super.handleHyperlink(link);
-        }
-      });
+      addHyperlinkListener(new EditorHyperlinkSupport(this));
       addMouseMotionListener(this);
       addMouseListener(this);
     }
