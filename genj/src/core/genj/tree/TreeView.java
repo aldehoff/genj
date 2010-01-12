@@ -1047,6 +1047,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     /** constructor */
     private ActionChooseRoot() {
       setText(RESOURCES, "select.root");
+      setImage(Images.imgView);
     }
 
     /** do the choosin' */
