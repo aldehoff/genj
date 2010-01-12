@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.138 $ $Author: nmeier $ $Date: 2010-01-08 23:12:04 $
+ * $Revision: 1.139 $ $Author: nmeier $ $Date: 2010-01-12 00:43:50 $
  */
 package genj.report;
 
@@ -619,18 +619,7 @@ public abstract class Report implements Cloneable {
    * @param key the key to lookup in [ReportName].properties
    * @param value an object value to replace %1 in value with
    */
-  public final String translate(String key, Object value) {
-    return translate(key, new Object[]{value});
-  }
-
-  /**
-   * Sub-classes that are accompanied by a [ReportName].properties file
-   * containing simple key=value pairs can lookup internationalized
-   * text-values with this method.
-   * @param key the key to lookup in [ReportName].properties
-   * @param values an array of values to replace %1, %2, ... in value with
-   */
-  public String translate(String key, Object[] values) {
+  public final String translate(String key, Object... values) {
 
     Resources resources = getResources();
     if (resources==null)
@@ -638,12 +627,15 @@ public abstract class Report implements Cloneable {
 
     // look it up in language
     String result = null;
-    if (lang!=null)
-      result = resources.getString(key+'.'+lang, values, false);
+    if (lang!=null) {
+      String locKey = key+'.'+lang;
+      result = resources.getString(locKey, values);
+      if (result!=locKey)
+        return result;
+    }
 
     // fallback if necessary
-    if (result==null)
-      result = resources.getString(key, values, true);
+    result = resources.getString(key, values);
 
     // done
     return result;

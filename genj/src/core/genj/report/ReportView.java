@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
@@ -185,6 +186,7 @@ public class ReportView extends View {
   
   private void clear() {
     output.clear();
+    output.setContentType("text/plain");
     while (getComponentCount() > 1)
       remove(1);
     showConsole(true);
@@ -256,8 +258,14 @@ public class ReportView extends View {
   public void setContext(Context context, boolean isActionPerformed) {
     
     // different gedcom?
-    if (gedcom!=context.getGedcom())
+    if (gedcom!=context.getGedcom()) {
       clear();
+      
+      if (context.getGedcom()!=null) {
+        output.setContentType("text/html");
+        output.setText(RESOURCES.getString("report.welcome", "<a href=\"run\">", "</a>"));
+      }
+    }
 
     // keep
     gedcom = context.getGedcom();
@@ -572,7 +580,15 @@ public class ReportView extends View {
       setContentType("text/plain");
       setFont(new Font("Monospaced", Font.PLAIN, 12));
       setEditable(false);
-      addHyperlinkListener(new EditorHyperlinkSupport(this));
+      addHyperlinkListener(new EditorHyperlinkSupport(this) {
+        @Override
+        protected void handleHyperlink(String link) throws IOException, URISyntaxException {
+          if ("run".equals(link))
+            startReport();
+          else
+            super.handleHyperlink(link);
+        }
+      });
       addMouseMotionListener(this);
       addMouseListener(this);
     }
