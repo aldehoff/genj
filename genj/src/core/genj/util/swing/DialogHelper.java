@@ -164,7 +164,7 @@ public class DialogHelper {
     dlg.setResizable(true);
     dlg.setModal(true);
     dlg.pack();
-    dlg.setMinimumSize(dlg.getSize());
+    dlg.setMinimumSize(content.getMinimumSize());
     
     // restore bounds
     StackTraceElement caller = getCaller();

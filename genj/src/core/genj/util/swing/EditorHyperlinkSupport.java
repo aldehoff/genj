@@ -20,7 +20,9 @@
 package genj.util.swing;
 
 import java.awt.Desktop;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,21 +50,20 @@ public class EditorHyperlinkSupport implements HyperlinkListener {
     if (e.getEventType()!=HyperlinkEvent.EventType.ACTIVATED)
       return;
     // internal?
-    try {
-      if (e.getDescription().startsWith("#")) 
-          editor.scrollToReference(e.getDescription().substring(1));
-      else {
-        try {
-          Desktop.getDesktop().browse(new URI(e.getDescription()));
-        } catch (Throwable t) {
-          LOG.log(Level.INFO, "can't open browser for "+e.getDescription());
-        }
-      }          
-        
-    } catch (Throwable t) {
-      LOG.log(Level.FINE, "Can't handle URL for "+e.getDescription(), t);
-    }
+    if (e.getDescription().startsWith("#")) 
+        editor.scrollToReference(e.getDescription().substring(1));
+    else {
+      try {
+        handleHyperlink(e.getDescription());
+      } catch (Throwable t) {
+        LOG.log(Level.INFO, "can't open browser for "+e.getDescription());
+      }
+    }          
     // done
+  }
+  
+  protected void handleHyperlink(String link) throws IOException, URISyntaxException {
+    Desktop.getDesktop().browse(new URI(link));
   }
 
 }
