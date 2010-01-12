@@ -349,32 +349,14 @@ public class Resources {
    * @param key identifies string to return
    * @param values array of values to replace placeholders in value
    */
-  public String getString(String key, Object substitute) {
-    return getString(key, new Object[]{ substitute });
-  }
-
-  /**
-   * Returns a localized string
-   * @param key identifies string to return
-   * @param values array of values to replace placeholders in value
-   */
-  public String getString(String key, Object[] substitutes) {
-    return getString(key, substitutes, true);
-  }
-  
-  /**
-   * Returns a localized string
-   * @param key identifies string to return
-   * @param values array of values to replace placeholders in value
-   */
-  public String getString(String key, Object[] substitutes, boolean notNull) {
+  public String getString(String key, Object... substitutes) {
 
     // do we have a message format already?
     MessageFormat format = (MessageFormat)msgFormats.get(key);
     if (format==null) {
       String string = getString(key, false);
       if (string==null)
-        return notNull ? key : null;
+        return key;
       format = getMessageFormat(string);
       msgFormats.put(key, format);
     }
