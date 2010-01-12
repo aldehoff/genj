@@ -16,7 +16,6 @@ import genj.gedcom.time.PointInTime;
 import genj.geo.GeoLocation;
 import genj.geo.GeoService;
 import genj.geo.GeoServiceException;
-import genj.io.FileAssociation;
 import genj.io.Filter;
 import genj.report.Report;
 
@@ -108,8 +107,13 @@ public class ReportGoogleMap extends Report {
     File html = getFileFromUser(translate("which_html_file"), translate("generate"));
     if (html==null)
       return;
-    String suffix = FileAssociation.getSuffix(html);
-    if (!suffix.toLowerCase().startsWith("htm")) {
+
+    String suffix;
+    if (html.getName().toLowerCase().endsWith(".htm")) {
+      suffix = "htm";
+    } else if (html.getName().toLowerCase().endsWith(".html")) {
+      suffix = "html";
+    } else {
       suffix = "html";
       html = new File(html.getAbsolutePath()+"."+suffix);
     }

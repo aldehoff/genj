@@ -17,7 +17,6 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.geo.GeoLocation;
 import genj.geo.GeoService;
-import genj.io.FileAssociation;
 import genj.report.Report;
 import geo.kml.CompactPlacemarkWriter;
 import geo.kml.DetailedPlacemarkWriter;
@@ -118,10 +117,8 @@ public class ReportKML extends Report {
 				translate("generate"));
 		if (kml == null)
 			return null;
-		String suffix = FileAssociation.getSuffix(kml);
-		if (!suffix.toLowerCase().equals("kml")) {
+		if (!kml.getName().toLowerCase().endsWith(".kml")) 
 			kml = new File(kml.getAbsolutePath() + ".kml");
-		}
 		return kml;
 	}
 

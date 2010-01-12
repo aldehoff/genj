@@ -19,14 +19,10 @@
  */
 package genj.geo;
 
-import genj.gedcom.Gedcom;
-import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
+import genj.view.View;
 import genj.view.ViewFactory;
-import genj.view.ViewManager;
-
-import javax.swing.JComponent;
 
 /**
  * The factory for Geography Views
@@ -40,8 +36,8 @@ public class GeoViewFactory implements ViewFactory {
   /**
    * Need a view
    */
-  public JComponent createView(String title, Gedcom gedcom, Registry registry, ViewManager manager) {
-    return new GeoView(title, gedcom, registry);
+  public View createView() {
+    return new GeoView();
   }
 
   /**
@@ -54,8 +50,8 @@ public class GeoViewFactory implements ViewFactory {
   /**
    * 
    */
-  public String getTitle(boolean abbreviate) {
-    return resources.getString("title" + (abbreviate?".short":""));
+  public String getTitle() {
+    return resources.getString("title");
   }
 
 }

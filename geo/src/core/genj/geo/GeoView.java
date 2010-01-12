@@ -19,6 +19,7 @@
  */
 package genj.geo;
 
+import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -26,11 +27,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextSelectionEvent;
-import genj.view.ToolBarSupport;
-import genj.view.ViewManager;
-import genj.window.WindowBroadcastEvent;
-import genj.window.WindowBroadcastListener;
+import genj.view.View;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -52,7 +49,6 @@ import java.util.logging.Logger;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
@@ -82,7 +78,9 @@ import com.vividsolutions.jump.workbench.ui.zoom.ZoomTool;
 /**
  * The view showing gedcom data in geographic context
  */
-public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarSupport {
+public class GeoView extends View {
+  
+  private final static Registry REGISTRY = Registry.get(GeoView.class);
   
   /*package*/ final static Logger LOG = Logger.getLogger("genj.geo");
   
@@ -102,9 +100,6 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
   /** gedcom we're looking at */
   private Gedcom gedcom;
   
-  /** handle to view manager */
-  private ViewManager viewManager;
-  
   /** the current map */
   private GeoMap currentMap;
   
@@ -117,9 +112,6 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
   /** action for update */
   private ActionLocate locate;
   
-  /** registry */
-  private Registry registry;
-  
   /** our model & layer */
   private GeoModel model;
   private GeoList locationList;
@@ -130,17 +122,13 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
   /**
    * Constructor
    */
-  public GeoView(String title, Gedcom gedcom, Registry registry) {
-    
-    // state to remember
-    this.registry = registry;
-    this.gedcom = gedcom;
+  public GeoView() {
     
     // create our model 
     model = new GeoModel();
     
     // create a location grid
-    locationList = new GeoList(model, this, viewManager);
+    locationList = new GeoList(model, this);
     
     // create layers
     locationLayer = new LocationsLayer();  
@@ -164,7 +152,7 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
     // hook up gedcom with model
     model.setGedcom(gedcom);
     // show map 
-    String map = registry.get("map", (String)null);
+    String map = REGISTRY.get("map", (String)null);
     GeoMap[] maps = GeoService.getInstance().getMaps();
     for (int i=0;i<maps.length;i++) {
       if (map==null||maps[i].getKey().equals(map)) {
@@ -183,23 +171,16 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
     model.setGedcom(null);
     // remember map
     if (currentMap!=null)
-      registry.put("map", currentMap.getKey());
+      REGISTRY.put("map", currentMap.getKey());
     // remember split
-    registry.put("split", split.getDividerLocation());
+    REGISTRY.put("split", split.getDividerLocation());
     // override
     super.removeNotify();
   }
-  
-  /**
-   * Callback for context changes
-   */
-  public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
-    // check for inbound context selection
-    ContextSelectionEvent cse = ContextSelectionEvent.narrow(event, gedcom);
-    if (event.isInbound() && cse!=null)
-      locationList.setSelectedContext(cse.getContext());
-    // continue
-    return true;
+
+  @Override
+  public void setContext(Context context, boolean isActionPerformed) {
+    locationList.setSelectedContext(context);
   }
   
   /**
@@ -209,13 +190,14 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
     
     // get maps
     GeoMap[] maps = GeoService.getInstance().getMaps();
-    List actions = new ArrayList(maps.length);
+    List<Action2> actions = new ArrayList<Action2>(maps.length);
     for (int i=0;i<maps.length;i++) {
       actions.add(new ChooseMap(maps[i]));
     }
 
     // add a popup for them
-    PopupWidget chooseMap = new PopupWidget(null, IMG_MAP, actions);
+    PopupWidget chooseMap = new PopupWidget(null, IMG_MAP);
+    chooseMap.addItems(actions);
     chooseMap.setToolTipText(RESOURCES.getString("toolbar.map"));
     chooseMap.setEnabled(!actions.isEmpty());
     bar.add(chooseMap);
@@ -279,7 +261,7 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
     repaint();
     
     // set split position
-    int pos = registry.get("split", -1);
+    int pos = REGISTRY.get("split", -1);
     if (pos<0)
       split.setDividerLocation(0.7D);
     else {
@@ -320,7 +302,8 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
       setTip(RESOURCES, "toolbar.extent");
     }
     /** zoom to all */
-    public void execute() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
       if (layerPanel!=null) try {
           layerPanel.getViewport().zoomToFullExtent();
         } catch (Throwable t) {
@@ -338,8 +321,9 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
       setImage(IMG_ZOOM);
       setTip(RESOURCES, "toolbar.zoom");
     }
+    @Override
     /** choose current map */
-    protected void execute() {
+    public void actionPerformed(ActionEvent e) {
       currentTool =  currentTool instanceof ZoomTool ? (CursorTool)new PanTool(null) :  new ZoomTool(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       if (layerPanel!=null) 
         layerPanel.setCurrentCursorTool(currentTool);
@@ -359,7 +343,7 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
     /** choose current map */
     protected void execute() {
       // remember split
-      registry.put("split", split.getDividerLocation());
+      REGISTRY.put("split", split.getDividerLocation());
       // set it
       try {
         setMap(map);
@@ -635,7 +619,7 @@ public class GeoView extends JPanel implements WindowBroadcastListener, ToolBarS
     }
     /** component listener callback */
     public void componentResized(ComponentEvent e) {
-      new ZoomExtent().trigger();
+      new ZoomExtent().actionPerformed(null);
     }
     /** component listener callback */
     public void componentShown(ComponentEvent e) {

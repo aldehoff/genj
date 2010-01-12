@@ -21,9 +21,9 @@ package genj.geo;
 
 import genj.util.Resources;
 import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
-import genj.window.WindowManager;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
@@ -275,7 +275,7 @@ public class QueryWidget extends JPanel {
             SwingUtilities.invokeLater(new Runnable() {
               public void run() {
                 if (QueryWidget.this.isVisible())
-                  WindowManager.getInstance(QueryWidget.this).openDialog(null, TXT_QUERYING, WindowManager.INFORMATION_MESSAGE, e.getMessage(), Action2.okOnly(), QueryWidget.this);
+                  DialogHelper.openDialog(TXT_QUERYING, DialogHelper.INFORMATION_MESSAGE, e.getMessage(), Action2.okOnly(), QueryWidget.this);
               }
             });
           }
