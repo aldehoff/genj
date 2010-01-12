@@ -142,8 +142,6 @@ public abstract class ChooseBlueprintAction extends Action2 {
         Blueprint blueprint = MGR.addBlueprint(new Blueprint(recipient.getTag(), name, html, false));
         blueprints.setListData(MGR.getBlueprints(recipient.getTag()).toArray());
         blueprints.setSelectedValue(blueprint, true);
-        if (!blueprint.isReadOnly()) 
-          editor.setHTMLVisible(true);
       } catch (IOException ex) {
         Logger.getLogger("genj.renderer").log(Level.WARNING, "can't add blueprint "+name, ex);
       }

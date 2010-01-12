@@ -55,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -63,7 +64,7 @@ import javax.swing.event.DocumentListener;
 public class BlueprintEditor extends JSplitPane {
 
   /** the text are for the html */
-  private JTextArea html;
+  private JTextArea source;
   
   /** the preview */
   private Preview preview;
@@ -99,12 +100,12 @@ public class BlueprintEditor extends JSplitPane {
     // edit
     JPanel edit = new JPanel(new BorderLayout());
       // html
-      html = new JTextArea(3,32);
-      html.setFont(new Font("Monospaced", Font.PLAIN, 12));
-      JScrollPane scroll = new JScrollPane(html);
+      source = new JTextArea(3,32);
+      source.setFont(new Font("Monospaced", Font.PLAIN, 12));
+      JScrollPane scroll = new JScrollPane(source);
       scroll.setBorder(BorderFactory.createTitledBorder("HTML"));
       // buttons
-      bInsert = new JButton(new ActionInsert());
+      bInsert = new JButton(new Insert());
     edit.setMinimumSize(new Dimension(0,0));
     edit.add(scroll, BorderLayout.CENTER);
     edit.add(bInsert, BorderLayout.SOUTH);
@@ -115,7 +116,7 @@ public class BlueprintEditor extends JSplitPane {
     setOrientation(JSplitPane.VERTICAL_SPLIT);
     setOneTouchExpandable(true);
     // event listening
-    html.getDocument().addDocumentListener(preview);
+    source.getDocument().addDocumentListener(preview);
     // intial set
     set(null);
     // done
@@ -135,16 +136,18 @@ public class BlueprintEditor extends JSplitPane {
     // resolve buttons and html
     if (setBlueprint==null) {
       blueprint = null;
-      html.setText("");
+      source.setText("");
     } else {
       blueprint = setBlueprint;
-      html.setText(blueprint.getHTML());
-      html.setCaretPosition(0);
+      source.setText(blueprint.getHTML());
+      source.setCaretPosition(0);
     }
     boolean edit = blueprint!=null&&!blueprint.isReadOnly();
     bInsert.setEnabled(edit);
-    html.setEditable(edit);
-    html.setToolTipText(edit?resources.getString("blueprint.readonly", blueprint.getName()):null);
+    source.setEditable(edit);
+    source.setToolTipText(edit?resources.getString("blueprint.readonly", blueprint.getName()):null);
+    if (edit)
+      setSourceVisible(true);
     // mark unchanged
     isChanged = false;
     // make sure that changes
@@ -156,7 +159,7 @@ public class BlueprintEditor extends JSplitPane {
    * Commits changes   */
   public void commit() {
     if (blueprint!=null&&isChanged) {
-      blueprint.setHTML(html.getText());
+      blueprint.setSource(source.getText());
       try {
         blueprintManager.saveBlueprint(blueprint);
         // mark unchanged
@@ -170,8 +173,19 @@ public class BlueprintEditor extends JSplitPane {
   /**
    * Make sure html is visible
    */
-  public void setHTMLVisible(boolean v) {
-    setDividerLocation( v ? 0.5D : 1.0D);
+  public void setSourceVisible(boolean v) {
+    // this doesn't work if component isn't "correctly realized"
+    SwingUtilities.invokeLater(new ShowHTML(v));
+  }
+  
+  private class ShowHTML implements Runnable {
+    private boolean visible;
+    public ShowHTML(boolean visible) {
+      this.visible = visible;
+    }
+    public void run() {
+      setDividerLocation( visible ? 0.5D : 1.0D);
+    }
   }
   
   /**
@@ -203,7 +217,7 @@ public class BlueprintEditor extends JSplitPane {
      */
     protected void paintComponent(Graphics g) {
       // no html doing nothing
-      if (html.getText().length()==0) return; 
+      if (source.getText().length()==0) return; 
       // fix bounds (border changes insets)
       Rectangle bounds = getBounds();
       Insets insets = getInsets();
@@ -215,7 +229,7 @@ public class BlueprintEditor extends JSplitPane {
       g.setColor(Color.white);
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       // render content
-      EntityRenderer renderer = new EntityRenderer(new Blueprint(html.getText()), getFont());
+      EntityRenderer renderer = new EntityRenderer(new Blueprint(source.getText()), getFont());
       renderer.setDebug(isChanged);
       renderer.render(g, example, bounds);
       // done
@@ -224,9 +238,9 @@ public class BlueprintEditor extends JSplitPane {
 
   /**
    * Insert a property   */
-  private class ActionInsert extends Action2 {
+  private class Insert extends Action2 {
     /** constructor */
-    private ActionInsert() {
+    private Insert() {
       super.setText(resources.getString("prop.insert"));
       super.setTip(resources.getString("prop.insert.tip"));
     }
@@ -243,13 +257,13 @@ public class BlueprintEditor extends JSplitPane {
       // add those properties
       paths = tree.getSelection();
       for (int p=0;p<paths.length; p++) {
-        html.insert(
+        source.insert(
           "<prop path="+paths[p].toString()+">"+(p==paths.length-1?"":"\n"), 
-          html.getCaretPosition()
+          source.getCaretPosition()
         );
       }
       // request focus
-      html.requestFocusInWindow();
+      source.requestFocusInWindow();
       // done
     }
   } //ActionInsert

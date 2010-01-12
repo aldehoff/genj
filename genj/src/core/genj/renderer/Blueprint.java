@@ -60,12 +60,12 @@ public class Blueprint {
   /**
    * Accessor - html
    */
-  public void setHTML(String hTml) {
+  public void setSource(String html) {
     // o.k.?
     if (isReadOnly()) 
       throw new IllegalArgumentException("Can't change read-only Blueprint");
     // remember
-    html = hTml;
+    this.html = html;
     isDirty = true;
     // done
   }
