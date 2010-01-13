@@ -106,7 +106,7 @@ public class NavigatorView extends View {
     labelCurrent = new JLabel();
     labelCurrent.setBorder(BorderFactory.createTitledBorder(Gedcom.getName(Gedcom.INDI,false)));
     add(labelCurrent,BorderLayout.NORTH);
-    add(new JScrollPane(popupPanel),BorderLayout.CENTER);
+    add(popupPanel,BorderLayout.CENTER);
     
 //    // setup key bindings
 //    new Shortcut(FATHER  );
