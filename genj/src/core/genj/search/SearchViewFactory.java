@@ -50,7 +50,7 @@ public class SearchViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getTitle(boolean)
    */
   public String getTitle() {
-    return SearchView.resources.getString("title");
+    return SearchView.RESOURCES.getString("title");
   }
 
 } //SearchViewFactory

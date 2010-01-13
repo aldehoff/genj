@@ -95,7 +95,7 @@ public class SearchView extends View {
   private final static int MAX_OLD = 16;
   
   /** resources */
-  /*package*/ static Resources resources = Resources.get(SearchView.class);
+  /*package*/ final static Resources RESOURCES = Resources.get(SearchView.class);
   
   /** current context */
   private Context context = new Context();
@@ -167,8 +167,8 @@ public class SearchView extends View {
     };
     
     // prepare search criteria
-    JLabel labelValue = new JLabel(resources.getString("label.value"));
-    checkRegExp = new JCheckBox(resources.getString("label.regexp"), useRegEx);
+    JLabel labelValue = new JLabel(RESOURCES.getString("label.value"));
+    checkRegExp = new JCheckBox(RESOURCES.getString("label.regexp"), useRegEx);
 
     choiceValue = new ChoiceWidget(oldValues);
     choiceValue.addActionListener(aclick);
@@ -177,7 +177,7 @@ public class SearchView extends View {
     popupPatterns.addItems(createPatternActions());
     popupPatterns.setMargin(new Insets(0,0,0,0));
 
-    JLabel labelPath = new JLabel(resources.getString("label.path"));    
+    JLabel labelPath = new JLabel(RESOURCES.getString("label.path"));    
     choicePath = new ChoiceWidget(oldPaths);
     choicePath.addActionListener(aclick);
     
@@ -337,8 +337,8 @@ public class SearchView extends View {
       // check text and pattern
       String 
         key = "regexp."+i,
-        txt = resources.getString(key+".txt", false),
-        pat = resources.getString(key+".pat", false);
+        txt = RESOURCES.getString(key+".txt", false),
+        pat = RESOURCES.getString(key+".pat", false);
       // no more?
       if (txt==null) break;
       // pattern?
@@ -449,6 +449,7 @@ public class SearchView extends View {
     /** constructor */
     private ActionStart() {
       setImage(IMG_START);
+      setTip(RESOURCES.getString("start.tip"));
     }
     
     @Override
@@ -466,6 +467,7 @@ public class SearchView extends View {
     /** constructor */
     private ActionStop() {
       setImage(IMG_STOP);
+      setTip(RESOURCES.getString("stop.tip"));
       setEnabled(false);
     }
     /** run */
