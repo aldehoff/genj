@@ -32,8 +32,10 @@ import genj.Version;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 import genj.util.swing.Action2;
+import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -45,20 +47,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 /**
  * AboutDialog 
  */
-public class AboutWidget extends JPanel{
+public class AboutWidget extends JTabbedPane {
   
   private final static int DEFAULT_ROWS = 16, DEFAULT_COLS = 40;
   
@@ -70,27 +70,20 @@ public class AboutWidget extends JPanel{
    */
   public AboutWidget() {
 
-    // create a north panel
-    JLabel pNorth = new JLabel(resources.getString("cc.about.dialog.northpanel.label"), null, JLabel.CENTER);
+    JLabel welcome = new JLabel(new ImageIcon(this, "/splash.png"));
+    welcome.setBackground(Color.WHITE);
+    welcome.setOpaque(true);
     
-    // create a center panel
-    JTabbedPane pCenter = new JTabbedPane(SwingConstants.TOP);
-    pCenter.addTab(resources.getString("cc.about.dialog.tab1.title"), null, new WelcomePanel());
-    pCenter.addTab(resources.getString("cc.about.dialog.tab2.title"), null, new AuthorsPanel());
-    pCenter.addTab(resources.getString("cc.about.dialog.tab3.title"), null, new CopyrightPanel());
+    addTab("GenealogyJ "+Version.getInstance().getVersionString(), null, welcome);
+    addTab(resources.getString("about.authors"), null, new AuthorsPanel());
+    addTab(resources.getString("about.copyright"), null, new CopyrightPanel());
 
-    // create the main panel    
-    setLayout(new BorderLayout());
-    add(pNorth , BorderLayout.NORTH );
-    add(pCenter, BorderLayout.CENTER);
-    
-    // done    
   }
   
   /**
    * Helper to read text from a file
    */
-  protected void readTextFile(JTextArea ta, String file, String fallback) {
+  protected void readTextFile(JTextArea ta, String file) {
     try {
       FileInputStream fin = new FileInputStream(file);
       Reader in = new InputStreamReader(fin);
@@ -98,7 +91,6 @@ public class AboutWidget extends JPanel{
       fin.close();
     }
     catch (Throwable t) {
-      ta.setText(fallback);
     }
   }
 
@@ -127,7 +119,7 @@ public class AboutWidget extends JPanel{
       
       String path = dir + File.separatorChar + "doc" + File.separatorChar + "authors.txt";
       
-      readTextFile(text, path, resources.getString("cc.about.file_missing.text") + path);
+      readTextFile(text, path);
 
       // setup looks
       setViewportView(text);      
@@ -169,7 +161,7 @@ public class AboutWidget extends JPanel{
       
       JPanel panel = new JPanel(new BorderLayout());
       panel.setBorder(BorderFactory.createCompoundBorder(
-        BorderFactory.createTitledBorder(resources.getString("cc.about.dialog.tab3.title")),
+        BorderFactory.createTitledBorder(resources.getString("about.copyright")),
         new EmptyBorder(3, 3, 3, 3)
       ));
       panel.add(text, BorderLayout.CENTER);
@@ -192,7 +184,7 @@ public class AboutWidget extends JPanel{
       );
       
       String path = dir + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
-      readTextFile(text, path, resources.getString("cc.about.file_missing.text") + path);
+      readTextFile(text, path);
       text.setLineWrap(false);
       text.setEditable(false);
       text.setBorder(new EmptyBorder(3, 3, 3, 3));
@@ -201,42 +193,13 @@ public class AboutWidget extends JPanel{
       JScrollPane scroll = new JScrollPane(text);
       scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
       scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      scroll.setBorder(BorderFactory.createTitledBorder(resources.getString("cc.about.tab3.text2.title")));
+      scroll.setBorder(BorderFactory.createTitledBorder(resources.getString("about.license")));
       
       // done
       return scroll;
     }
   
   } // CopyrightPanel
-
-  /**
-   * Panel - Welcome
-   */  
-  private class WelcomePanel extends JPanel  {
-  
-    /**
-     * Constructor
-     */
-    protected WelcomePanel() {
-      
-      super(new BorderLayout());
-      
-      String msg = resources.getString("cc.about.tab1.text1", Version.getInstance().getVersionString());
-        
-      // the text
-      JTextArea text = new JTextArea(msg,DEFAULT_ROWS,DEFAULT_COLS);
-      text.setBorder(new EmptyBorder(3, 3, 3, 3));    
-      text.setLineWrap(true);
-      text.setWrapStyleWord(true);
-      text.setEditable(false);
-    
-      // looks
-      add(text, BorderLayout.CENTER);
-      add(new JButton(new Log()), BorderLayout.SOUTH);
-      
-    }
-    
-  }
   
   private class Log extends Action2 {
     Log() {
