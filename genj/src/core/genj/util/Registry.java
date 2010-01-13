@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.38 $ $Author: nmeier $ $Date: 2010-01-08 05:35:28 $
+ * $Revision: 1.39 $ $Author: nmeier $ $Date: 2010-01-13 00:39:06 $
  */
 package genj.util;
 
@@ -54,10 +54,13 @@ import javax.swing.JFrame;
 public class Registry {
   
   private final static Logger LOG = Logger.getLogger("genj.util");
+  
   private String prefix;
   private Properties properties;
-  private static Map<String, Registry> registries = new HashMap<String, Registry>();
-
+  
+  private static Map<String, Registry> prefix2registry = new HashMap<String, Registry>();
+  private static Map<File, Registry> file2registry = new HashMap<File, Registry>();
+  
   /**
    * Constructor 
    */
@@ -74,7 +77,8 @@ public class Registry {
     this.prefix = rootPrefix;
     
     // patch properties that keeps order
-    properties = new Properties() {
+    this.properties = new Properties() {
+      @SuppressWarnings("unchecked")
       @Override
       public synchronized Enumeration<Object> keys() {
         Vector result = new Vector(super.keySet()); 
@@ -83,19 +87,10 @@ public class Registry {
       }
     };
     
-    // read all from local registry
-    File file = getFile(prefix);
-    try {
-      LOG.fine("Loading registry '"+prefix+".properties' from file "+file.getAbsolutePath());
-      FileInputStream in = new FileInputStream(file);
-      properties.load(in);
-      in.close();
-    } catch (Throwable t) {
-      LOG.log(Level.FINE, "Failed to read registry "+prefix+" from "+file+" ("+t.getMessage()+")");
-    }
-    
     // remember
-    registries.put(prefix,this);
+    synchronized (Registry.class) {
+      prefix2registry.put(prefix,this);
+    }
   }
 
   /**
@@ -111,7 +106,24 @@ public class Registry {
     } catch (Exception ex) {
     }
   }
-  
+
+  /**
+   * Registry representation of a file - changes are committed
+   */
+  public static Registry get(File file) {
+    synchronized (Registry.class) {
+      Registry r = file2registry.get(file);
+      if (r==null) {
+        try {
+          r = new Registry(new FileInputStream(file));
+        } catch (IOException e) {
+        }
+        file2registry.put(file, r);
+      }
+      return r;
+    }
+  }
+
   /**
    * Accessor 
    */
@@ -135,18 +147,25 @@ public class Registry {
     if (tokens.length==1)
       throw new IllegalArgumentException("default package not allowed");
     
-    Registry r = registries.get(tokens[0]);
-    if (r==null) 
-      r = new Registry(tokens[0]);
+    String prefix = tokens[0];
+    
+    Registry r;
+    synchronized (Registry.class) {
+      r = prefix2registry.get(prefix);
+      if (r==null) {
+        r = new Registry(tokens[0]);
+        prefix2registry.put(prefix, r);
+      }
+    }
 
-    return tokens.length==1 ? r : new Registry(r, pckg.substring(tokens[0].length()+1));
+    return tokens.length==1 ? r : new Registry(r, pckg.substring(prefix.length()+1));
   }
 
   /**
    * Remove keys
    */
   public void remove(String prefix) {
-    List keys = new ArrayList(properties.keySet());
+    List<Object> keys = new ArrayList<Object>(properties.keySet());
     for (int i=0,j=keys.size();i<j;i++) {
       String key = (String)keys.get(i);
       if (key.startsWith(prefix))
@@ -157,6 +176,7 @@ public class Registry {
   /**
    * Returns a map of values
    */
+  @SuppressWarnings("unchecked")
   public <K,V> Map<K,V> get(String prefix, Map<K,V> def) {
     Map<K,V> result = new HashMap<K,V>();
     // loop over keys in map
@@ -366,31 +386,8 @@ public class Registry {
   }
 
   /**
-   * Returns vector of strings by key
-   */
-  /*
-  public Vector get(String key, Vector def) {
-
-    // Get size of array
-    int size = get(key,-1);
-    if (size==-1)
-      return def;
-
-    // Gather array
-    Vector result = new Vector(size);
-    for (int i=0;i<size;i++) {
-      result.addElement(get(key+"."+(i+1),""));
-    }
-
-    // Done
-    return result;
-  }
-  */
-
-  /**
    * Returns a collection of strings by key
    */
-  @SuppressWarnings("unchecked")
   public List<String> get(String key, List<String> def) {
 
     // Get size of array
@@ -477,13 +474,11 @@ public class Registry {
   /**
    * Remember an array of values
    */
-  public void put(String prefix, Map values) {
+  public void put(String prefix, Map<String,?> values) {
     
     // loop over keys in map
-    Iterator keys = values.keySet().iterator();
-    while (keys.hasNext()) {
+    for (String key : values.keySet()) {
       // grab value
-      Object key = keys.next();
       Object value = values.get(key);
       // try to store
       try {
@@ -668,40 +663,44 @@ public class Registry {
   }
   
   /**
-   * Calculates a filename for given registry name
+   * Set the file to read from/write to 
    */
-  private static File getFile(String name) {
+  public void setFile(File file) {
     
-    name = name+".properties";
+    synchronized (Registry.class) {
     
-    String dir = EnvironmentChecker.getProperty(
-      Registry.class,
-      new String[]{ "user.home.genj" },
-      ".",
-      "calculate dir for registry file "+name
-    );
-    
-    return new File(dir,name);
-  }
+      // read all from local registry
+      try {
+        properties.clear();
+        LOG.fine("Loading registry "+prefix+" from file "+file.getAbsolutePath());
+        FileInputStream in = new FileInputStream(file);
+        properties.load(in);
+        in.close();
+      } catch (Throwable t) {
+        LOG.log(Level.FINE, "Failed to read registry from "+file+" ("+t.getMessage()+")");
+      }
 
+      file2registry.put(file, this);
+    }
+  }
+  
   /**
    * Save registries
    */
   public static void persist() {
     
-    // Go through registries
-    for (String pkg : registries.keySet()) {
-      // Open known file
+    // Go through list of registries that have a file
+    for (File file : file2registry.keySet()) {
+      Registry registry = file2registry.get(file);
       try {
-        Registry registry = registries.get(pkg);
-        File file = getFile(pkg);
         LOG.fine("Storing registry in file "+file.getAbsolutePath());
         file.getParentFile().mkdirs();
         FileOutputStream out = new FileOutputStream(file);
-        registry.properties.store(out,pkg);
+        registry.properties.store(out, registry.prefix);
         out.flush();
         out.close();
       } catch (IOException ex) {
+        LOG.log(Level.INFO, "Can't store registry in file "+file.getAbsolutePath(), ex);
       }
 
     }

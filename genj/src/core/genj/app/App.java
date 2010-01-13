@@ -77,7 +77,7 @@ public class App {
       return;
     
     try {
-  
+      
       // prepare our master log and own LogManager for GenJ
       LOG = Logger.getLogger("genj");
       
@@ -102,6 +102,9 @@ public class App {
   
       LOG.info("Main");
       
+      // prepare our registry
+      REGISTRY.setFile(new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", ".", "calculate dir for registry"), "genj.properties"));
+  
       // initialize options first
       OptionProvider.getAllOptions();
       
