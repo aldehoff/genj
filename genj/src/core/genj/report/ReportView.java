@@ -70,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 
@@ -97,7 +98,7 @@ public class ReportView extends View {
   private Gedcom gedcom;
 
   /** components to show report info */
-  private Output output;
+  private Console output;
   private JScrollPane result;
   private ActionStart actionStart = new ActionStart();
   private ActionStop actionStop = new ActionStop();
@@ -120,7 +121,7 @@ public class ReportView extends View {
     setLayout(new CardLayout());
     
     // Output
-    output = new Output();
+    output = new Console();
     add(new JScrollPane(output), CONSOLE);
     
     // result
@@ -223,7 +224,7 @@ public class ReportView extends View {
     result.setViewportView(null);
     actionShow.setSelected(false);
     actionShow.setEnabled(false);
-    show(WELCOME);
+    show(gedcom!=null ? WELCOME : CONSOLE);
   }
 
   /**
@@ -290,17 +291,35 @@ public class ReportView extends View {
 
   @Override
   public void setContext(Context context, boolean isActionPerformed) {
-    
-    // different gedcom?
-    if (gedcom!=context.getGedcom()) 
-      clear();
 
+    // lifecycle of a view sadly means it gets a context.gedcom==null when undocked/docked
+    // To not blow away a perfectly valid output during those UI ops we're kicking off
+    // a delayed clear here that checks for a gedcom change (one at a time only)
+    if (getClientProperty(CheckGedcom.class)==null) 
+      SwingUtilities.invokeLater(new CheckGedcom(gedcom));
+    
     // keep
     gedcom = context.getGedcom();
-
+    
     // enable if none running and data available
     actionStart.setEnabled(!actionStop.isEnabled() && gedcom != null);
 
+  }
+  
+  private class CheckGedcom implements Runnable {
+    private Gedcom old;
+    public CheckGedcom(Gedcom current) {
+      old = current;
+      // one at the time - me now
+      putClientProperty(CheckGedcom.class, this);
+    }
+    public void run() {
+      // one at the time - not me anymore
+      putClientProperty(CheckGedcom.class, null);
+      // old gedcom gone by now?
+      if (gedcom!=old) 
+        clear();
+    }
   }
 
   /**
@@ -527,12 +546,12 @@ public class ReportView extends View {
     public void actionPerformed(ActionEvent event) {
       
       // user looking at a context-list?
-      if (getComponentCount()>1 && getComponent(1) instanceof ContextListWidget) {
-        ContextListWidget list = (ContextListWidget)getComponent(1);
+      if (result.isVisible() && result.getViewport().getView() instanceof ContextListWidget) {
+        ContextListWidget list = (ContextListWidget)result.getViewport().getView();
         genj.fo.Document doc = new genj.fo.Document(list.getTitle());
         doc.startSection(list.getTitle());
         for (ViewContext c : list.getContexts()) {
-          doc.addText(c.getText());
+          doc.addText(c.getEntity()+":"+c.getText());
           doc.nextParagraph();
         }
         showResult(doc);
@@ -602,15 +621,15 @@ public class ReportView extends View {
   } // ActionSave
 
   /**
-   * output
+   * console output
    */
-  private class Output extends JEditorPane implements MouseListener, MouseMotionListener {
+  private class Console extends JEditorPane implements MouseListener, MouseMotionListener {
 
     /** the currently found entity id */
     private String id = null;
 
     /** constructor */
-    private Output() {
+    private Console() {
       setContentType("text/plain");
       setFont(new Font("Monospaced", Font.PLAIN, 12));
       setEditable(false);
