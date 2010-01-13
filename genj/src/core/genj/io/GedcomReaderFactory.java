@@ -155,7 +155,7 @@ public class GedcomReaderFactory {
         case READHEADER :
           return RESOURCES.getString("progress.read.header");
         case READENTITIES :default:
-          return RESOURCES.getString("progress.read.entities", new String[]{ ""+reader.getLines(), ""+entity} );
+          return RESOURCES.getString("progress.read.entities", ""+reader.getLines(), ""+entity );
         case LINKING      :
           return RESOURCES.getString("progress.read.linking");
       }
@@ -254,7 +254,7 @@ public class GedcomReaderFactory {
       for (int i=0,n=lazyLinks.size(); i<n; i++) {
         LazyLink lazyLink = (LazyLink)lazyLinks.get(i);
         try {
-          if (lazyLink.xref.getTarget()==null)
+          if (lazyLink.xref.getParent()!=null && lazyLink.xref.getTarget()==null)
             lazyLink.xref.link();
           progress = Math.min(100,(int)(i*(100*2)/n));  // 100*2 because Links are probably backref'd
         } catch (GedcomException ex) {
@@ -328,8 +328,8 @@ public class GedcomReaderFactory {
           gedcom.setGrammar(Grammar.V551);
           LOG.info("Found VERS "+v+" - Gedcom version is 5.5.1");
         } else {
-          String s = RESOURCES.getString("read.warn.badversion", new String[] { v, gedcom.getGrammar().getVersion() } );
-          context.handleWarning(0, RESOURCES.getString("read.warn.badversion", new String[] { v, gedcom.getGrammar().getVersion() } ), new Context(gedcom));
+          String s = RESOURCES.getString("read.warn.badversion", v, gedcom.getGrammar().getVersion() );
+          context.handleWarning(0, RESOURCES.getString("read.warn.badversion", v, gedcom.getGrammar().getVersion() ), new Context(gedcom));
           LOG.warning(s);
         }
       }
