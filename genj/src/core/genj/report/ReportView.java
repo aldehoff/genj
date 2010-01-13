@@ -129,7 +129,10 @@ public class ReportView extends View {
 
     // welcome panel
     String msg = RESOURCES.getString("report.welcome");
-
+    int i = msg.indexOf('*');
+    String pre = i<0 ? "" : msg.substring(0, i);
+    String post = i<0 ? "" : msg.substring(i+1);
+    
     JButton b = new JButton(new ActionStart());
     b.setRequestFocusEnabled(false);
     b.setOpaque(false);
@@ -137,9 +140,9 @@ public class ReportView extends View {
     JPanel welcome = new JPanel(new NestedBlockLayout("<col><row><a wx=\"1\" wy=\"1\"/><b/><c wx=\"1\"/></row></col>"));
     welcome.setBackground(output.getBackground());
     welcome.setOpaque(true);
-    welcome.add(new JLabel(msg.substring(0, msg.indexOf('*')), SwingConstants.RIGHT));
+    welcome.add(new JLabel(pre, SwingConstants.RIGHT));
     welcome.add(b);
-    welcome.add(new JLabel(msg.substring(msg.indexOf('*')+1)));
+    welcome.add(new JLabel(post));
     add(welcome, WELCOME);
 
     // done

@@ -110,7 +110,7 @@ public abstract class Origin {
     // Absolute file specification?
     if (ABSOLUTE.matcher(name).matches()) {
       
-      LOG.fine("Trying to open "+name+" as absolute path (origin is "+this+")");
+      LOG.finer("Trying to open "+name+" as absolute path (origin is "+this+")");
 
       URLConnection uc;
       try {
@@ -130,7 +130,7 @@ public abstract class Origin {
     }
 
     // relative file
-    LOG.fine("Trying to open "+name+" as relative path (origin is "+this+")");
+    LOG.finer("Trying to open "+name+" as relative path (origin is "+this+")");
     
     return openImpl(name);
   }
@@ -178,7 +178,7 @@ public abstract class Origin {
       file = back2forwardslash(new File(file).getCanonicalPath()); 
       
       boolean startsWith = file.startsWith(here);
-      LOG.fine("File "+file+" is "+(startsWith?"":"not ")+"relative to "+here);
+      LOG.finer("File "+file+" is "+(startsWith?"":"not ")+"relative to "+here);
       if (startsWith)
         return file.substring(here.length());
     } catch (Throwable t) {

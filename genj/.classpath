@@ -20,10 +20,10 @@
 	<classpathentry kind="lib" path="language/pl"/>
 	<classpathentry kind="lib" path="language/pt_BR"/>
 	<classpathentry kind="lib" path="language/ru"/>
-	<classpathentry exported="true" kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="contrib/fop/commons-io-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="contrib/fop/fop.jar"/>
-	<classpathentry exported="true" kind="lib" path="contrib/fop/commons-logging-api-1.0.4.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/commons-io-1.0.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/fop.jar"/>
+	<classpathentry kind="lib" path="contrib/fop/commons-logging-api-1.0.4.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/batik-awt-util.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/batik-bridge.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/batik-css.jar"/>
@@ -36,6 +36,6 @@
 	<classpathentry kind="lib" path="contrib/fop/batik-xml.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/swingx-0.7.jar" sourcepath="C:/Documents and Settings/Netbook/My Documents/Workspace/swingx/trunk/swingx/src/main/java"/>
-	<classpathentry kind="lib" path="lib/spin-1.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/spin-1.5.jar"/>
 	<classpathentry kind="output" path="build/eclipse/lostnfound"/>
 </classpath>
