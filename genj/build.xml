@@ -316,7 +316,7 @@
   <!--
    Distribution
    -->
-  <target name="dist" depends="init,compile,version,dist.languages,dist.app,dist.javadoc">
+  <target name="dist" depends="init,compile,version,dist.languages,dist.app">
   </target>
 
   <!--
