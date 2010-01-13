@@ -20,13 +20,13 @@
 package genj.geo;
 
 import genj.gedcom.Context;
-import genj.gedcom.Gedcom;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
+import genj.view.ToolBar;
 import genj.view.View;
 
 import java.awt.BorderLayout;
@@ -52,7 +52,6 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 
@@ -97,9 +96,6 @@ public class GeoView extends View {
   
   /*package*/ final static Resources RESOURCES = Resources.get(GeoView.class);
   
-  /** gedcom we're looking at */
-  private Gedcom gedcom;
-  
   /** the current map */
   private GeoMap currentMap;
   
@@ -140,17 +136,6 @@ public class GeoView extends View {
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, split);
     
-    // done
-  }
-  
-  /**
-   * component lifecycle - we're needed
-   */
-  public void addNotify() {
-    // override
-    super.addNotify();
-    // hook up gedcom with model
-    model.setGedcom(gedcom);
     // show map 
     String map = REGISTRY.get("map", (String)null);
     GeoMap[] maps = GeoService.getInstance().getMaps();
@@ -160,6 +145,7 @@ public class GeoView extends View {
         break;
       }
     }
+    
     // done
   }
   
@@ -167,8 +153,6 @@ public class GeoView extends View {
    * component lifecycle - we're not needed anymore
    */
   public void removeNotify() {
-    // unhook gedcom from model
-    model.setGedcom(null);
     // remember map
     if (currentMap!=null)
       REGISTRY.put("map", currentMap.getKey());
@@ -180,13 +164,14 @@ public class GeoView extends View {
 
   @Override
   public void setContext(Context context, boolean isActionPerformed) {
+    model.setGedcom(context.getGedcom());
     locationList.setSelectedContext(context);
   }
   
   /**
    * Callback for populating toolbar 
    */
-  public void populate(JToolBar bar) {
+  public void populate(ToolBar toolbar) {
     
     // get maps
     GeoMap[] maps = GeoService.getInstance().getMaps();
@@ -197,20 +182,19 @@ public class GeoView extends View {
 
     // add a popup for them
     PopupWidget chooseMap = new PopupWidget(null, IMG_MAP);
+    chooseMap.setOpaque(false); 
     chooseMap.addItems(actions);
     chooseMap.setToolTipText(RESOURCES.getString("toolbar.map"));
     chooseMap.setEnabled(!actions.isEmpty());
-    bar.add(chooseMap);
+    toolbar.add(chooseMap);
     
     // add zoom
-    ButtonHelper bh = new ButtonHelper().setInsets(0);
-    bh.setContainer(bar);
-    bh.create(new ZoomExtent());
-    bh.setButtonType(JToggleButton.class).create(new ZoomOnOff());
+    toolbar.add(new ZoomExtent());
+    toolbar.add(new JToggleButton(new ZoomOnOff()));
     
     // add locate button
     locate = new ActionLocate();
-    bh.setButtonType(JButton.class).create(locate);
+    toolbar.add(locate);
     
     
     // done
@@ -341,14 +325,15 @@ public class GeoView extends View {
       setText(map.getName());
     }
     /** choose current map */
-    protected void execute() {
+    public void actionPerformed(ActionEvent e) {
+      
       // remember split
       REGISTRY.put("split", split.getDividerLocation());
       // set it
       try {
         setMap(map);
-      } catch (IOException e) {
-        e.printStackTrace();
+      } catch (IOException ex) {
+        LOG.log(Level.WARNING, "couldn't set map "+map.getName(), ex);
       }
     }
     public Icon getImage() {

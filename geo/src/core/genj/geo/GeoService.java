@@ -41,7 +41,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,9 +125,10 @@ public class GeoService {
    */
   private Registry getRegistry(Gedcom gedcom) {
     String name = gedcom.getName();
-    if (name.endsWith(".ged")) name = name.substring(0, name.length()-".ged".length());
+    if (name.endsWith(".ged")) 
+      name = name.substring(0, name.length()-".ged".length());
     name = name + ".geo";
-    return Registry.lookup(name, gedcom.getOrigin());
+    return Registry.get(gedcom.getOrigin().getFile(name));
   }
   
   /**
@@ -294,7 +294,7 @@ public class GeoService {
   public Collection match(Gedcom gedcom, Collection locations, boolean matchAll) throws GeoServiceException {
 
     // grab registry
-    Registry registry = gedcom!=null ? getRegistry(gedcom) : new Registry();
+    Registry registry = getRegistry(gedcom);
     
     // loop over locations try to use registry for matching
     List matched = new ArrayList(locations.size());

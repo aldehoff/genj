@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import spin.Spin;
 
@@ -50,9 +51,9 @@ import com.vividsolutions.jts.geom.Coordinate;
     ERROR = 2;
   
   /** state */
-  private List listeners = new ArrayList();
+  private List<GeoModelListener> listeners = new CopyOnWriteArrayList<GeoModelListener>();
   private Gedcom gedcom;
-  private Map locations = new HashMap();
+  private Map<GeoLocation,GeoLocation> locations = new HashMap<GeoLocation, GeoLocation>();
   private LinkedList resolvers = new LinkedList();
   
   /**
@@ -192,72 +193,65 @@ import com.vividsolutions.jts.geom.Coordinate;
   /**
    * Start a resolver
    */
-  private void resolve(Collection todo, boolean matchAll) {
-    synchronized (resolvers) {
-      Resolver resolver = new Resolver(todo, matchAll);
-      if (resolvers.isEmpty())
-        resolver.trigger();
-      else
-        resolvers.add(resolver);
-    }
+  private void resolve(Collection<GeoLocation> todo, boolean matchAll) {
   }
 
-  /**
-   * A resolver for our locations
-   */
-  private class Resolver extends Action2 {
-    
-    private ArrayList todo;
-    private boolean matchAll;
-    private Throwable err = null;
-
-    /** constructor */
-    private Resolver(Collection todo, boolean matchAll) {
-      setAsync(Action2.ASYNC_SAME_INSTANCE);
-      getThread().setDaemon(true);
-      // make a private copy of todo
-      this.todo = new ArrayList(todo);
-      this.matchAll = matchAll;
-    }
-    
-    /** just signal that we're busy */
-    protected boolean preExecute() {
-      fireAsyncResolveStart();
-      return true;
-    }
-
-    /** async exec */
-    protected void execute() {
-      try { 
-        GeoService.getInstance().match(gedcom, todo, matchAll);
-      } catch (Throwable t) {
-        err = t;
-      }
-    }
-
-    /** sync post-exec */
-    protected void postExecute(boolean preExecuteResult) {
-      // update all locations - some might have changed even in case of err
-      int misses = 0;
-      for (Iterator it=todo.iterator(); it.hasNext(); ) {
-        GeoLocation loc = (GeoLocation)it.next();
-        if (!loc.isValid()) misses++;
-        GeoLocation old = (GeoLocation)locations.get(loc);
-        if (old!=null) fireLocationUpdated(old);
-      }
-      // signal we're done
-      if (err!=null) 
-        fireAsyncResolveEnd( ERROR, GeoView.RESOURCES.getString("resolve.error", err.getMessage() ));
-      else
-        fireAsyncResolveEnd( misses>0 ? SOME_MATCHED : ALL_MATCHED, GeoView.RESOURCES.getString("resolve.matches", new Integer[]{ new Integer(todo.size()-misses), new Integer(todo.size())}));
-      // start pending?
-      synchronized (resolvers) {
-        if (!resolvers.isEmpty())
-          ((Resolver)resolvers.removeFirst()).trigger();
-      }
-    }
-    
-  } //Resolver
+//  /**
+//   * A resolver for our locations
+//   */
+//  private class Resolver implements Runnable {
+//    
+//    private ArrayList todo;
+//    private boolean matchAll;
+//    private Throwable err = null;
+//
+//    /** constructor */
+//    private Resolver(Collection todo, boolean matchAll) {
+//      setAsync(Action2.ASYNC_SAME_INSTANCE);
+//      getThread().setDaemon(true);
+//      // make a private copy of todo
+//      this.todo = new ArrayList(todo);
+//      this.matchAll = matchAll;
+//    }
+//    
+//    /** just signal that we're busy */
+//    protected boolean preExecute() {
+//      fireAsyncResolveStart();
+//      return true;
+//    }
+//
+//    /** async exec */
+//    protected void execute() {
+//      try { 
+//        GeoService.getInstance().match(gedcom, todo, matchAll);
+//      } catch (Throwable t) {
+//        err = t;
+//      }
+//    }
+//
+//    /** sync post-exec */
+//    protected void postExecute(boolean preExecuteResult) {
+//      // update all locations - some might have changed even in case of err
+//      int misses = 0;
+//      for (Iterator it=todo.iterator(); it.hasNext(); ) {
+//        GeoLocation loc = (GeoLocation)it.next();
+//        if (!loc.isValid()) misses++;
+//        GeoLocation old = (GeoLocation)locations.get(loc);
+//        if (old!=null) fireLocationUpdated(old);
+//      }
+//      // signal we're done
+//      if (err!=null) 
+//        fireAsyncResolveEnd( ERROR, GeoView.RESOURCES.getString("resolve.error", err.getMessage() ));
+//      else
+//        fireAsyncResolveEnd( misses>0 ? SOME_MATCHED : ALL_MATCHED, GeoView.RESOURCES.getString("resolve.matches", new Integer[]{ new Integer(todo.size()-misses), new Integer(todo.size())}));
+//      // start pending?
+//      synchronized (resolvers) {
+//        if (!resolvers.isEmpty())
+//          ((Resolver)resolvers.removeFirst()).trigger();
+//      }
+//    }
+//    
+//  } //Resolver
   
   /**
    * add a listener
