@@ -23,7 +23,6 @@ import genj.gedcom.Context;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.ToolBar;
@@ -48,7 +47,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
@@ -210,7 +208,7 @@ public class GeoView extends View {
   /**
    * Select a location
    */
-  public void setSelection(Collection locations) {
+  public void setSelection(Collection<GeoLocation> locations) {
     selectionLayer.setLocations(locations);
   }
   
@@ -634,9 +632,10 @@ public class GeoView extends View {
    */
   private class ActionLocate extends Action2 {
     private ActionLocate() {
-      setImage(STATUS2IMG[GeoModel.ALL_MATCHED]);
+      setImage(STATUS2IMG[GeoModelListener.ALL_MATCHED]);
     }
-    protected void execute() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
       model.resolveAll();
     }
   }

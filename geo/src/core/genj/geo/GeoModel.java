@@ -23,18 +23,21 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
-import genj.util.swing.Action2;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import spin.Spin;
 
@@ -44,22 +47,23 @@ import com.vividsolutions.jts.geom.Coordinate;
  * Geographic model wrapper for gedcom
  */
 /*package*/ class GeoModel implements GedcomListener {
-  
-  public final static int 
-    ALL_MATCHED = 0,
-    SOME_MATCHED = 1,
-    ERROR = 2;
+
+  private final static Logger LOG = Logger.getLogger("genj.geo");
   
   /** state */
   private List<GeoModelListener> listeners = new CopyOnWriteArrayList<GeoModelListener>();
   private Gedcom gedcom;
   private Map<GeoLocation,GeoLocation> locations = new HashMap<GeoLocation, GeoLocation>();
-  private LinkedList resolvers = new LinkedList();
+  private Worker worker = new Worker();
   
   /**
    * Constructor
    */
   public GeoModel() {
+    // start a worker
+    Thread t = new Thread(worker);
+    t.setDaemon(true);
+    t.start();
   }
   
   /**
@@ -69,10 +73,22 @@ import com.vividsolutions.jts.geom.Coordinate;
     return gedcom;
   }
   
+  /** 
+   * re-resolve all locations
+   */
+  public void resolveAll() {
+    if (gedcom!=null)
+      worker.queue(gedcom, locations.keySet(), true);
+  }
+  
   /**
    * Accessor - gedcom
    */
   public void setGedcom(Gedcom set) {
+    
+    // no change?
+    if (gedcom==set)
+      return;
     
     // had one before?
     if (gedcom!=null) {
@@ -84,7 +100,7 @@ import com.vividsolutions.jts.geom.Coordinate;
         fireLocationRemoved(loc);
       }
       // detach
-      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
+      gedcom.removeGedcomListener(this);
     }
     
     // remember
@@ -99,9 +115,9 @@ import com.vividsolutions.jts.geom.Coordinate;
         fireLocationAdded(loc);
       }
       // start a resolver
-      resolve(locations.keySet(), false);
+      worker.queue(gedcom, locations.keySet(), false);
       // attach
-      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
+      gedcom.addGedcomListener(this);
     }
     
     // done
@@ -137,128 +153,48 @@ import com.vividsolutions.jts.geom.Coordinate;
    * Tell listeners about a found location
    */
   private void fireLocationAdded(GeoLocation location) {
-    GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
-    for (int i = 0; i < ls.length; i++) {
-      ls[i].locationAdded(location);
-    }
+    for (GeoModelListener listener : listeners) 
+      listener.locationAdded(location);
   }
   
   /**
    * Tell listeners about an updated location
    */
   private void fireLocationUpdated(GeoLocation location) {
-    GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
-    for (int i = 0; i < ls.length; i++) {
-      ls[i].locationUpdated(location);
-    }
+    for (GeoModelListener listener : listeners) 
+      listener.locationUpdated(location);
   }
 
   /**
    * Tell listeners about a removed location
    */
   private void fireLocationRemoved(GeoLocation location) {
-    GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
-    for (int i = 0; i < ls.length; i++) {
-      ls[i].locationRemoved(location);
-    }
+    for (GeoModelListener listener : listeners) 
+      listener.locationRemoved(location);
   }
   
   /**
    * Tell listeners about async resolving going on
    */
   private void fireAsyncResolveStart() {
-    GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
-    for (int i = 0; i < ls.length; i++) {
-      ls[i].asyncResolveStart();
-    }
+    for (GeoModelListener listener : listeners) 
+      listener.asyncResolveStart();
   }
   
   /**
    * Tell listeners about async resolving ended
    */
   private void fireAsyncResolveEnd(int status, String msg) {
-    GeoModelListener[] ls = (GeoModelListener[])listeners.toArray(new GeoModelListener[listeners.size()]);
-    for (int i = 0; i < ls.length; i++) {
-      ls[i].asyncResolveEnd(status, msg);
-    }
+    for (GeoModelListener listener : listeners) 
+      listener.asyncResolveEnd(status, msg);
   }
-  
-  /**
-   * Resolve all locations (again)
-   */
-  public void resolveAll() {
-    resolve(locations.keySet(), true);
-  }
-  
-  /**
-   * Start a resolver
-   */
-  private void resolve(Collection<GeoLocation> todo, boolean matchAll) {
-  }
-
-//  /**
-//   * A resolver for our locations
-//   */
-//  private class Resolver implements Runnable {
-//    
-//    private ArrayList todo;
-//    private boolean matchAll;
-//    private Throwable err = null;
-//
-//    /** constructor */
-//    private Resolver(Collection todo, boolean matchAll) {
-//      setAsync(Action2.ASYNC_SAME_INSTANCE);
-//      getThread().setDaemon(true);
-//      // make a private copy of todo
-//      this.todo = new ArrayList(todo);
-//      this.matchAll = matchAll;
-//    }
-//    
-//    /** just signal that we're busy */
-//    protected boolean preExecute() {
-//      fireAsyncResolveStart();
-//      return true;
-//    }
-//
-//    /** async exec */
-//    protected void execute() {
-//      try { 
-//        GeoService.getInstance().match(gedcom, todo, matchAll);
-//      } catch (Throwable t) {
-//        err = t;
-//      }
-//    }
-//
-//    /** sync post-exec */
-//    protected void postExecute(boolean preExecuteResult) {
-//      // update all locations - some might have changed even in case of err
-//      int misses = 0;
-//      for (Iterator it=todo.iterator(); it.hasNext(); ) {
-//        GeoLocation loc = (GeoLocation)it.next();
-//        if (!loc.isValid()) misses++;
-//        GeoLocation old = (GeoLocation)locations.get(loc);
-//        if (old!=null) fireLocationUpdated(old);
-//      }
-//      // signal we're done
-//      if (err!=null) 
-//        fireAsyncResolveEnd( ERROR, GeoView.RESOURCES.getString("resolve.error", err.getMessage() ));
-//      else
-//        fireAsyncResolveEnd( misses>0 ? SOME_MATCHED : ALL_MATCHED, GeoView.RESOURCES.getString("resolve.matches", new Integer[]{ new Integer(todo.size()-misses), new Integer(todo.size())}));
-//      // start pending?
-//      synchronized (resolvers) {
-//        if (!resolvers.isEmpty())
-//          ((Resolver)resolvers.removeFirst()).trigger();
-//      }
-//    }
-//    
-//  } //Resolver
   
   /**
    * add a listener
    */
   public void addGeoModelListener(GeoModelListener l) {
     // remember
-    listeners.add(l);
+    listeners.add((GeoModelListener)Spin.over(l));
     // done
   }
   
@@ -267,7 +203,7 @@ import com.vividsolutions.jts.geom.Coordinate;
    */
   public void removeGeoModelListener(GeoModelListener l) {
     // bbye
-    listeners.remove(l);
+    listeners.remove((GeoModelListener)Spin.over(l));
   }
 
   public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
@@ -288,7 +224,7 @@ import com.vividsolutions.jts.geom.Coordinate;
     }
     
     // resolve
-    resolve(added, true);
+    worker.queue(gedcom, added, true);
   }
 
   public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
@@ -319,6 +255,68 @@ import com.vividsolutions.jts.geom.Coordinate;
 
   public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
     gedcomPropertyChanged(gedcom, property);
+  }
+
+  /**
+   * our asynchronous worker
+   */
+  private class Worker implements Runnable {
+    
+    private BlockingDeque<Job> jobs = new LinkedBlockingDeque<Job>();
+
+    public void run() {
+      while (true) try { 
+        
+        // look for job
+        Job job = jobs.takeFirst();
+        
+        // let folks know
+        fireAsyncResolveStart();
+        
+        // talk to service
+        GeoServiceException gse = null;
+        try {
+          GeoService.getInstance().match(job.gedcom, job.locations, job.matchAll);
+        } catch (GeoServiceException ex) {
+          LOG.log(Level.FINE, ex.getMessage(), ex);
+          gse = ex;
+        }
+        
+        // update all locations - some might have changed even in case of err
+        int misses = 0;
+        for (GeoLocation location : job.locations) {
+          if (!location.isValid()) misses++;
+          GeoLocation old = (GeoLocation)locations.get(location);
+          if (old!=null) fireLocationUpdated(location);
+        }
+          
+        // let folks know
+        if (gse!=null)
+          fireAsyncResolveEnd(GeoModelListener.ERROR, gse.getMessage());
+        else
+          fireAsyncResolveEnd(misses>0 ? GeoModelListener.SOME_MATCHED : GeoModelListener.ALL_MATCHED, "");
+          
+        
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "throwable in GeoModel.Worker", t);
+      }
+    }
+    
+    void queue(Gedcom gedcom, Collection<GeoLocation> todo, boolean matchAll) {
+      jobs.push(new Job(gedcom, todo, matchAll));
+    }
+    
+    private class Job {
+      private Gedcom gedcom;
+      private Collection<GeoLocation> locations;
+      private boolean matchAll;
+      private Job(Gedcom gedcom, Collection<GeoLocation> locations,boolean matchAll) {
+        this.gedcom = gedcom;
+        this.locations = locations;
+        this.matchAll = matchAll;
+      }
+    }
+
   }
   
 }

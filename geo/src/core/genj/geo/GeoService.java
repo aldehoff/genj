@@ -127,7 +127,7 @@ public class GeoService {
     String name = gedcom.getName();
     if (name.endsWith(".ged")) 
       name = name.substring(0, name.length()-".ged".length());
-    name = name + ".geo";
+    name = name + ".geo.properties";
     return Registry.get(gedcom.getOrigin().getFile(name));
   }
   
@@ -219,7 +219,7 @@ public class GeoService {
         }
         out.close();
       } catch (IOException e) {
-        throw new GeoServiceException("Accessing GEO Webservice failed");
+        throw new GeoServiceException("Accessing GEO Webservice failed", e);
       }
       
       // read input
@@ -230,6 +230,7 @@ public class GeoService {
           
           // line by line
           String line = in.readLine();
+          LOG.finer(line);
           if (line==null) break;
           
           // is it a redirect?
@@ -257,7 +258,7 @@ public class GeoService {
         }
         in.close();
       } catch (IOException e) {
-        throw new GeoServiceException("Reading from GEO Webservice failed");
+        throw new GeoServiceException("Reading from GEO Webservice failed", e);
       }
 
       // check what we've got
@@ -269,7 +270,7 @@ public class GeoService {
       
     } finally {
       long secs  = (System.currentTimeMillis()-start)/1000;
-      LOG.info("query for "+locations.size()+" locations in "+secs+"s resulted in "+rowCount+" rows and "+hitCount+" total hits");
+      LOG.fine("query for "+locations.size()+" locations in "+secs+"s resulted in "+rowCount+" rows and "+hitCount+" total hits");
     }
     
   }
@@ -291,7 +292,7 @@ public class GeoService {
    * @param matchAll if some locations couldn't be matched out of the cache then this will force access of the Geo service 
    * @return return matched locations
    */
-  public Collection match(Gedcom gedcom, Collection locations, boolean matchAll) throws GeoServiceException {
+  public Collection<GeoLocation> match(Gedcom gedcom, Collection<GeoLocation> locations, boolean matchAll) throws GeoServiceException {
 
     // grab registry
     Registry registry = getRegistry(gedcom);
@@ -301,10 +302,10 @@ public class GeoService {
     List todos = new ArrayList(locations.size());
     for (Iterator it=locations.iterator(); it.hasNext(); ) {
       GeoLocation location = (GeoLocation)it.next();
-      // something we can map through the registry or have to add to todo-list?
-      String restored  = registry.get(location.getJurisdictionsAsString(), (String)null);
-      if (restored!=null) try {
-        StringTokenizer tokens = new StringTokenizer(restored, ",");
+        // something we can map through the registry or have to add to todo-list?
+        String restored  = registry.get(location.getJurisdictionsAsString(), (String)null);
+        if (restored!=null) try {
+          StringTokenizer tokens = new StringTokenizer(restored, ",");
         location.setCoordinate( Double.parseDouble(tokens.nextToken()), Double.parseDouble(tokens.nextToken()));
         if (tokens.hasMoreTokens())
           location.setMatches(Integer.parseInt(tokens.nextToken()));

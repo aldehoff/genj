@@ -29,4 +29,9 @@ public class GeoServiceException extends Exception {
     super(message);
   }
 
+  /** constructor */
+  public GeoServiceException(String message, Throwable reason) {
+    super(message, reason);
+  }
+
 }

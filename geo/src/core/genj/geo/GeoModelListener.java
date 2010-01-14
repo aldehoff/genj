@@ -24,6 +24,11 @@ package genj.geo;
  */
 public interface GeoModelListener {
   
+  public final static int 
+    ALL_MATCHED = 0,
+    SOME_MATCHED = 1,
+    ERROR = 2;
+
   /**
    * We've added a location
    */

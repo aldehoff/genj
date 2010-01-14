@@ -311,14 +311,14 @@ import swingx.tree.AbstractTreeModel;
         return;
       // collect selection
       Set<Property> props = new HashSet<Property>();
-      Set locs = new HashSet();
+      Set<GeoLocation> locs = new HashSet<GeoLocation>();
         
       TreePath[] paths = tree.getSelectionModel().getSelectionPaths();
       if (paths!=null) for (int i=0; i<paths.length; i++) {
         if (paths[i].getPathCount()==3)
           props.add((Property)paths[i].getPathComponent(2));
         if (paths[i].getPathCount()>1)
-          locs.add((Property)paths[i].getPathComponent(1));
+          locs.add((GeoLocation)paths[i].getPathComponent(1));
       }
 
       // show selection in view
