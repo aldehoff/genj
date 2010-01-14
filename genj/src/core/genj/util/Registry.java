@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.40 $ $Author: nmeier $ $Date: 2010-01-14 00:09:16 $
+ * $Revision: 1.41 $ $Author: nmeier $ $Date: 2010-01-14 00:20:46 $
  */
 package genj.util;
 
@@ -65,7 +65,9 @@ public class Registry {
    * Constructor 
    */
   public Registry(Registry registry, String view) {
-    this.prefix = registry.prefix + "." + view;
+    if (registry.prefix.length()>0)
+      view = registry.prefix + "." + view;
+    this.prefix = view;
     this.properties = registry.properties;
   }
   
@@ -177,20 +179,20 @@ public class Registry {
    * Returns a map of values
    */
   @SuppressWarnings("unchecked")
-  public <K,V> Map<K,V> get(String prefix, Map<K,V> def) {
+  public <K,V> Map<K,V> get(String key, Map<K,V> def) {
     Map<K,V> result = new HashMap<K,V>();
     // loop over keys in map
-    for (K key : def.keySet()) {
+    for (K subkey : def.keySet()) {
       // grab from default
-      V value = def.get(key);
+      V value = def.get(subkey);
       // try to get a better value
       try {
         value = (V)getClass().getMethod("get", new Class[]{ String.class, value.getClass() })
-          .invoke(this, new Object[]{ prefix+"."+key, value });
+          .invoke(this, new Object[]{ key+"."+subkey, value });
       } catch (Throwable t) {
       }
       // overwrite it
-      result.put(key, value);
+      result.put(subkey, value);
     }
     // done
     return result;
@@ -446,9 +448,13 @@ public class Registry {
    * Returns String parameter to key
    */
   public String get(String key, String def) {
+    
+    // prepend prefix
+    if (prefix.length()>0)
+      key = prefix+"."+key;
 
     // Get property by key
-    String result = (String)properties.get(prefix+"."+key);
+    String result = (String)properties.get(key);
 
     // verify it exists
     // 20060222 NM can't assume length()==0 means default should apply - it could indeed mean an empty value!
@@ -465,25 +471,29 @@ public class Registry {
    */
   public void put(String key, String value) {
 
+    // prepend prefix
+    if (prefix.length()>0)
+      key = prefix+"."+key;
+
     if (value==null)
-      properties.remove(prefix+"."+key);
+      properties.remove(key);
     else
-      properties.put(prefix+"."+key,value);
+      properties.put(key,value);
   }
 
   /**
    * Remember an array of values
    */
-  public void put(String prefix, Map<String,?> values) {
+  public void put(String key, Map<String,?> values) {
     
     // loop over keys in map
-    for (String key : values.keySet()) {
+    for (String subkey : values.keySet()) {
       // grab value
-      Object value = values.get(key);
+      Object value = values.get(subkey);
       // try to store
       try {
         value = getClass().getMethod("put", new Class[]{ String.class, value.getClass() })
-          .invoke(this, new Object[]{ prefix+"."+key, value });
+          .invoke(this, new Object[]{ key+"."+subkey, value });
       } catch (Throwable t) {        
       }
     }
