@@ -7,6 +7,7 @@
     <pathelement path="contrib/jump/jump.jar"/>
     <pathelement path="${dir.app}/build/classes/core"/>
     <pathelement path="${dir.app}/build/classes/contrib"/>
+    <pathelement path="${dir.app}/lib/spin-1.5.jar"/>
     <pathelement path="./build/classes/core"/>
   </path>
 
