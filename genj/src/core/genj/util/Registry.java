@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.39 $ $Author: nmeier $ $Date: 2010-01-13 00:39:06 $
+ * $Revision: 1.40 $ $Author: nmeier $ $Date: 2010-01-14 00:09:16 $
  */
 package genj.util;
 
@@ -77,15 +77,7 @@ public class Registry {
     this.prefix = rootPrefix;
     
     // patch properties that keeps order
-    this.properties = new Properties() {
-      @SuppressWarnings("unchecked")
-      @Override
-      public synchronized Enumeration<Object> keys() {
-        Vector result = new Vector(super.keySet()); 
-        Collections.sort(result);
-        return result.elements();
-      }
-    };
+    this.properties = new SortingProperties();
     
     // remember
     synchronized (Registry.class) {
@@ -101,8 +93,19 @@ public class Registry {
   public Registry(InputStream in) {
     // Load settings
     prefix = "";
+    properties = new SortingProperties();
     try {
       properties.load(in);
+    } catch (Exception ex) {
+    }
+  }
+  
+  private Registry(File file) {
+    // Load settings
+    prefix = "";
+    properties = new SortingProperties();
+    try {
+      properties.load(new FileInputStream(file));
     } catch (Exception ex) {
     }
   }
@@ -114,10 +117,7 @@ public class Registry {
     synchronized (Registry.class) {
       Registry r = file2registry.get(file);
       if (r==null) {
-        try {
-          r = new Registry(new FileInputStream(file));
-        } catch (IOException e) {
-        }
+        r = new Registry(file);
         file2registry.put(file, r);
       }
       return r;
@@ -727,5 +727,15 @@ public class Registry {
     
     return frame;
   }
+
+  private static class SortingProperties extends Properties {
+    @SuppressWarnings("unchecked")
+    @Override
+    public synchronized Enumeration<Object> keys() {
+      Vector result = new Vector(super.keySet()); 
+      Collections.sort(result);
+      return result.elements();
+    }
+  };
 
 } //Registry
