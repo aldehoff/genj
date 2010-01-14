@@ -30,6 +30,8 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,7 +80,7 @@ public class ChoiceWidget extends JComboBox {
   /**
    * Constructor
    */
-  public ChoiceWidget(List values) {
+  public ChoiceWidget(List<?> values) {
     this(values.toArray(), null);
   }
   
@@ -125,7 +127,7 @@ public class ChoiceWidget extends JComboBox {
   /**
    * set values
    */
-  public void setValues(List values) {
+  public void setValues(List<?> values) {
     setValues(values.toArray());
   }
 
@@ -316,7 +318,7 @@ public class ChoiceWidget extends JComboBox {
   /**
    * Auto complete support
    */
-  private class AutoCompleteSupport extends KeyAdapter implements DocumentListener, ActionListener, FocusListener {
+  private class AutoCompleteSupport extends KeyAdapter implements DocumentListener, ActionListener, FocusListener, PropertyChangeListener {
 
     private JTextField text;
     private Timer timer = new Timer(250, this);
@@ -337,6 +339,7 @@ public class ChoiceWidget extends JComboBox {
         text.getDocument().removeDocumentListener(this);
         text.removeFocusListener(this);
         text.removeKeyListener(this);
+        text.removePropertyChangeListener(this);
       }
       
       // new!
@@ -344,6 +347,17 @@ public class ChoiceWidget extends JComboBox {
       text.getDocument().addDocumentListener(this);
       text.addFocusListener(this);
       text.addKeyListener(this);
+      text.addPropertyChangeListener(this);
+    }
+
+    /**
+     * check for document changing 
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+      if (evt.getPropertyName().equals("document")) {
+        ((Document)evt.getOldValue()).removeDocumentListener(this);
+        ((Document)evt.getNewValue()).addDocumentListener(this);
+      }
     }
     
     /**
