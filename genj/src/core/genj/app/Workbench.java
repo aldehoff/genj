@@ -1301,6 +1301,8 @@ public class Workbench extends JPanel implements SelectionSink {
     
     @Override
     public JButton add(Action action) {
+      // no mnemonic in toolbar (e.g. alt-o triggering Open action)
+      action.putValue(Action.MNEMONIC_KEY, null);
       actions.add(action);
       return super.add(action);
     }
