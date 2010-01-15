@@ -995,7 +995,7 @@ public class Workbench extends JPanel implements SelectionSink {
 
     private int commits;
 
-    private JLabel[] ents = new JLabel[Gedcom.ENTITIES.length];
+    private JLabel[] label = new JLabel[Gedcom.ENTITIES.length];
     private JLabel changes = new JLabel("", SwingConstants.RIGHT);
     private HeapStatusWidget heap = new HeapStatusWidget();
     
@@ -1005,8 +1005,8 @@ public class Workbench extends JPanel implements SelectionSink {
 
       JPanel panel = new JPanel();
       for (int i = 0; i < Gedcom.ENTITIES.length; i++) {
-        ents[i] = new JLabel("0", Gedcom.getEntityImage(Gedcom.ENTITIES[i]), SwingConstants.LEFT);
-        panel.add(ents[i]);
+        label[i] = new JLabel("0", Gedcom.getEntityImage(Gedcom.ENTITIES[i]), SwingConstants.LEFT);
+        panel.add(label[i]);
       }
       add(panel, BorderLayout.WEST);
       add(changes, BorderLayout.CENTER);
@@ -1026,8 +1026,19 @@ public class Workbench extends JPanel implements SelectionSink {
     }
     
     private void update(Gedcom gedcom) {
-      for (int i=0;i<Gedcom.ENTITIES.length;i++) 
-        ents[i].setText(count(gedcom, i));
+      
+      for (int i=0;i<Gedcom.ENTITIES.length;i++)  {
+        String tag = Gedcom.ENTITIES[i];
+        int es = gedcom.getEntities(tag).size();
+        int ps = gedcom.getPropertyCount(tag);
+        if (ps==0) {
+          label[i].setText(Integer.toString(es));
+          label[i].setToolTipText(Gedcom.getName(tag, true));
+        } else {
+          label[i].setText(es + "/" + ps);
+          label[i].setToolTipText(Gedcom.getName(tag, true)+" ("+RES.getString("cc.tip.record_inline")+")");
+        }
+      }
       
       changes.setText(commits>0?RES.getString("stat.commits", new Integer(commits)):"");
     }
@@ -1035,10 +1046,6 @@ public class Workbench extends JPanel implements SelectionSink {
     public void gedcomWriteLockReleased(Gedcom gedcom) {
       commits++;
       update(gedcom);
-    }
-
-    private String count(Gedcom gedcom, int type) {
-      return ""+gedcom.getEntities(Gedcom.ENTITIES[type]).size();
     }
 
     public void gedcomHeaderChanged(Gedcom gedcom) {
@@ -1075,7 +1082,7 @@ public class Workbench extends JPanel implements SelectionSink {
       gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
       commits = 0;
       for (int i=0;i<Gedcom.ENTITIES.length;i++) 
-        ents[i].setText("-");
+        label[i].setText("-");
       changes.setText("");
     }
 
