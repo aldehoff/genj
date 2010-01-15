@@ -298,9 +298,7 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     }
     
     // go forward
-    ViewContext context = new ViewContext((Context)forwards.pop());
-    
-    editor.setContext(context);
+    editor.setContext(forwards.pop());
     
     // reflect state
     forward.setEnabled(forwards.size()>0);
