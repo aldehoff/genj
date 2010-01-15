@@ -250,24 +250,28 @@ import swingx.docking.Docked;
     }
     
     /**
-     * Resolve context for given component
+     * Op for finding view context
      */
-    private ViewContext getContext(Component component) {
-      ViewContext context;
-      // find context provider in component hierarchy
-      while (component != null) {
-        // component can provide context?
-        if (component instanceof ContextProvider) {
-          ContextProvider provider = (ContextProvider) component;
-          context = provider.getContext();
-          if (context != null)
-            return context;
+    private class FindContext {
+      
+      private ViewContext context;
+      private ContextProvider provider;
+      
+      FindContext(Component component) {
+        // find context provider in component hierarchy
+        while (component != null) {
+          // component can provide context?
+          if (component instanceof ContextProvider) {
+            context = ((ContextProvider) component).getContext();
+            if (context != null) {
+              provider = (ContextProvider)component;
+              break;
+            }
+          }
+          // try parent
+          component = component.getParent();
         }
-        // try parent
-        component = component.getParent();
       }
-      // not found
-      return null;
     }
 
     /**
@@ -279,7 +283,7 @@ import swingx.docking.Docked;
       if (!(focus instanceof JComponent))
         return;
       // look for ContextProvider and show menu if appropriate
-      ViewContext context = getContext(focus);
+      ViewContext context = new FindContext(focus).context;
       if (context != null) {
         JPopupMenu popup = getContextMenu(context, getWorkbench((Component)event.getSource()));
         if (popup != null)
@@ -313,10 +317,13 @@ import swingx.docking.Docked;
       
       // find workbench now (popup menu might go away after this method call)
       final Workbench workbench = getWorkbench((Component)me.getSource());
+      if (workbench==null)
+        return;
       
       // find context at point
-      final ViewContext context = getContext(SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY()));
-      if (context==null||workbench==null)
+      final Component source = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
+      final FindContext find = new FindContext(source);
+      if (find.context==null)
         return;
 
       final Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), workbench);
@@ -325,8 +332,11 @@ import swingx.docking.Docked;
         public void run() {
           
           // a double-click on provider?
-          if (me.getButton() == MouseEvent.BUTTON1 && me.getID() == MouseEvent.MOUSE_CLICKED && me.getClickCount() == 2) {
-        	  SelectionSink.Dispatcher.fireSelection(me.getComponent(),context, true);
+          if (find.provider == source
+              && me.getButton() == MouseEvent.BUTTON1 
+              && me.getID() == MouseEvent.MOUSE_CLICKED 
+              && me.getClickCount() == 2) {
+            SelectionSink.Dispatcher.fireSelection(me.getComponent(), find.context, true);
             return;
           }
 
@@ -337,7 +347,7 @@ import swingx.docking.Docked;
             MenuSelectionManager.defaultManager().clearSelectedPath();
 
             // show context menu
-            JPopupMenu popup = getContextMenu(context, workbench);
+            JPopupMenu popup = getContextMenu(find.context, workbench);
             if (popup != null)
               popup.show(workbench, point.x, point.y);
 
