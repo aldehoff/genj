@@ -215,8 +215,8 @@
  ************    Notes    ************
  *************************************
  <NOTE type="Note" img="Note">
-  +++++++++++++ we use inline NOTE to store the entity's content (GEDCOM anomalie) +++++++++++++
-  <NOTE hide="1" type="PropertyMultilineValue" img="Note"/>
+  +++++++++++++ we use inline CONT to store the entity's content (GEDCOM anomalie) +++++++++++++
+  <CONT hide="1" type="PropertyMultilineValue" img="Note"/>
   +++++++++++++ References +++++++++++++
   <SOUR super="INDI:SOUR"/>
   <REFN super="INDI:REFN"/>

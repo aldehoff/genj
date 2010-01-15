@@ -17,13 +17,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.136 $ $Author: nmeier $ $Date: 2010-01-08 05:35:27 $
+ * $Revision: 1.137 $ $Author: nmeier $ $Date: 2010-01-15 15:04:41 $
  */
 package genj.gedcom;
 
 import genj.util.Origin;
 import genj.util.ReferenceSet;
 import genj.util.Resources;
+import genj.util.SafeProxy;
 import genj.util.swing.ImageIcon;
 
 import java.text.Collator;
@@ -40,6 +41,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -109,8 +111,8 @@ public class Gedcom {
   public final static String[] 
     ENTITIES = { INDI, FAM, OBJE, NOTE, SOUR, SUBM, REPO };      
 
-  private final static Map 
-    E2PREFIX = new HashMap();
+  private final static Map<String,String>
+    E2PREFIX = new HashMap<String,String>();
     static {
       E2PREFIX.put(INDI, "I");
       E2PREFIX.put(FAM , "F");
@@ -133,8 +135,8 @@ public class Gedcom {
       E2TYPE.put(REPO, Repository.class);
     }
     
-  private final static Map
-    E2IMAGE = new HashMap();
+  private final static Map<String,ImageIcon>
+    E2IMAGE = new HashMap<String,ImageIcon>();
 
   /** image */
   private final static ImageIcon image = new ImageIcon(Gedcom.class, "images/Gedcom");
@@ -155,14 +157,14 @@ public class Gedcom {
   private int maxIDLength = 0;
   
   /** entities */
-  private LinkedList allEntities = new LinkedList();
-  private Map tag2id2entity = new HashMap();
+  private LinkedList<Entity> allEntities = new LinkedList<Entity>();
+  private Map<String, Map<String,Entity>> tag2id2entity = new HashMap<String, Map<String,Entity>>();
   
   /** currently collected undos and redos */
   private boolean isDirty = false;
-  private List 
-    undoHistory = new ArrayList(),
-    redoHistory = new ArrayList();
+  private List<List<Undo>> 
+    undoHistory = new ArrayList<List<Undo>>(),
+    redoHistory = new ArrayList<List<Undo>>();
 
   /** a semaphore we're using for syncing */
   private Object writeSemaphore = new Object();
@@ -171,10 +173,13 @@ public class Gedcom {
   private Lock lock = null;
   
   /** listeners */
-  private List listeners = new ArrayList(10);
+  private List<GedcomListener> listeners = new CopyOnWriteArrayList<GedcomListener>();
   
   /** mapping tags refence sets */
   private Map<String, ReferenceSet<String,Property>> tags2refsets = new HashMap<String, ReferenceSet<String, Property>>();
+  
+  /** mapping tags to counts */
+  private Map<String,Integer> propertyTag2valueCount = new HashMap<String,Integer>();
 
   /** encoding */
   private String encoding = ENCODINGS[Math.min(ENCODINGS.length-1, Options.getInstance().defaultEncoding)];
@@ -272,14 +277,9 @@ public class Gedcom {
     });
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      GedcomListener gl = (GedcomListener)gls[l];
-      if (gl instanceof GedcomMetaListener) try {
-        ((GedcomMetaListener)gl).gedcomHeaderChanged(this);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      if (listener instanceof GedcomMetaListener)
+        ((GedcomMetaListener)listener).gedcomHeaderChanged(this);
     }
     
     // done
@@ -291,17 +291,15 @@ public class Gedcom {
   public String toString() {
     return getName();
   }
-
+  
   /**
    * Adds a Listener which will be notified when data changes
    */
   public void addGedcomListener(GedcomListener listener) {
     if (listener==null)
       throw new IllegalArgumentException("listener can't be null");
-    synchronized (listeners) {
-      if (!listeners.add(listener))
-        throw new IllegalArgumentException("can't add gedcom listener "+listener+"twice");
-    }
+    if (!listeners.add(SafeProxy.harden(listener)))
+      throw new IllegalArgumentException("can't add gedcom listener "+listener+"twice");
     LOG.log(Level.FINER, "addGedcomListener() from "+new Throwable().getStackTrace()[1]+" (now "+listeners.size()+")");
     
   }
@@ -310,20 +308,18 @@ public class Gedcom {
    * Removes a Listener from receiving notifications
    */
   public void removeGedcomListener(GedcomListener listener) {
-    synchronized (listeners) {
-      // 20060101 apparently window lifecycle mgmt including removeNotify() can be called multiple times (for windows
-      // owning windows for example) .. so down the line the same listener might unregister twice - we'll just ignore that
-      // for now
-      listeners.remove(listener);
-    }
+    // 20060101 apparently window lifecycle mgmt including removeNotify() can be called multiple times (for windows
+    // owning windows for example) .. so down the line the same listener might unregister twice - we'll just ignore that
+    // for now
+    listeners.remove(SafeProxy.harden(listener));
     LOG.log(Level.FINER, "removeGedcomListener() from "+new Throwable().getStackTrace()[1]+" (now "+listeners.size()+")");
   }
   
   /**
    * the current undo set
    */
-  private List getCurrentUndoSet() {
-    return (List)undoHistory.get(undoHistory.size()-1);
+  private List<Undo> getCurrentUndoSet() {
+    return undoHistory.get(undoHistory.size()-1);
   }
   
   /**
@@ -346,14 +342,9 @@ public class Gedcom {
     });
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomPropertyChanged(this, property1);
-        gls[l].gedcomPropertyChanged(this, property2);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      listener.gedcomPropertyChanged(this, property1);
+      listener.gedcomPropertyChanged(this, property2);
     }
 
     // done
@@ -379,14 +370,9 @@ public class Gedcom {
       });
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomPropertyChanged(this, property1);
-        gls[l].gedcomPropertyChanged(this, property2);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      listener.gedcomPropertyChanged(this, property1);
+      listener.gedcomPropertyChanged(this, property2);
     }
 
     // done
@@ -412,14 +398,8 @@ public class Gedcom {
     });
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomEntityAdded(this, entity);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
-    }
+    for (GedcomListener listener : listeners) 
+      listener.gedcomEntityAdded(this, entity);
 
     // done
   }
@@ -444,14 +424,8 @@ public class Gedcom {
       });
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomEntityDeleted(this, entity);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
-    }
+    for (GedcomListener listener : listeners) 
+      listener.gedcomEntityDeleted(this, entity);
 
     // done
   }
@@ -463,6 +437,12 @@ public class Gedcom {
     
     if (LOG.isLoggable(Level.FINER))
       LOG.finer("Property "+added.getTag()+" added to "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
+    
+    // track counts for value properties (that's none references)
+    if (!(added instanceof PropertyXRef)) {
+      Integer count = propertyTag2valueCount.get(added.getTag());
+      propertyTag2valueCount.put(added.getTag(), count==null ? 1 : count+1);
+    }
     
     // no lock? we're done
     if (lock==null) 
@@ -476,14 +456,8 @@ public class Gedcom {
       });
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomPropertyAdded(this, container, pos, added);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
-    }
+    for (GedcomListener listener : listeners) 
+      listener.gedcomPropertyAdded(this, container, pos, added);
 
     // done
   }
@@ -495,6 +469,11 @@ public class Gedcom {
     
     if (LOG.isLoggable(Level.FINER))
       LOG.finer("Property "+deleted.getTag()+" deleted from "+container.getTag()+" at position "+pos+" (entity "+entity.getId()+")");
+    
+    // track counts for value properties (that's none references)
+    if (!(deleted instanceof PropertyXRef)) {
+      propertyTag2valueCount.put(deleted.getTag(), propertyTag2valueCount.get(deleted.getTag())-1 );
+    } 
     
     // no lock? we're done
     if (lock==null) 
@@ -508,14 +487,8 @@ public class Gedcom {
       });
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomPropertyDeleted(this, container, pos, deleted);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
-    }
+    for (GedcomListener listener : listeners) 
+      listener.gedcomPropertyDeleted(this, container, pos, deleted);
     
     // done
   }
@@ -540,14 +513,8 @@ public class Gedcom {
       });
     
     // notify
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomPropertyChanged(this, property);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
-    }
+    for (GedcomListener listener : listeners) 
+      listener.gedcomPropertyChanged(this, property);
 
     // done
   }
@@ -572,14 +539,9 @@ public class Gedcom {
       });
     
     // notify
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-          gls[l].gedcomPropertyDeleted(this, property, from, moved);
-          gls[l].gedcomPropertyAdded(this, property, to, moved);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      listener.gedcomPropertyDeleted(this, property, from, moved);
+      listener.gedcomPropertyAdded(this, property, to, moved);
     }
 
     // done
@@ -589,14 +551,9 @@ public class Gedcom {
    * Final destination for a change propagation
    */
   protected void propagateWriteLockAqcuired() {
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      GedcomListener gl = (GedcomListener)gls[l];
-      if (gl instanceof GedcomMetaListener) try {
-        ((GedcomMetaListener)gl).gedcomWriteLockAcquired(this);
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      if (listener instanceof GedcomMetaListener)
+        ((GedcomMetaListener)listener).gedcomWriteLockAcquired(this);
     }
   }
   
@@ -604,14 +561,9 @@ public class Gedcom {
    * Final destination for a change propagation
    */
   protected void propagateBeforeUnitOfWork() {
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      GedcomListener gl = (GedcomListener)gls[l];
-      if (gl instanceof GedcomMetaListener) try {
-        ((GedcomMetaListener)gl).gedcomBeforeUnitOfWork(this);
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      if (listener instanceof GedcomMetaListener)
+        ((GedcomMetaListener)listener).gedcomBeforeUnitOfWork(this);
     }
   }
   
@@ -619,14 +571,9 @@ public class Gedcom {
    * Final destination for a change propagation
    */
   protected void propagateAfterUnitOfWork() {
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      GedcomListener gl = (GedcomListener)gls[l];
-      if (gl instanceof GedcomMetaListener) try {
-        ((GedcomMetaListener)gl).gedcomAfterUnitOfWork(this);
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      if (listener instanceof GedcomMetaListener) 
+        ((GedcomMetaListener)listener).gedcomAfterUnitOfWork(this);
     }
   }
   
@@ -635,14 +582,9 @@ public class Gedcom {
    */
   protected void propagateWriteLockReleased() {
     
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      GedcomListener gl = (GedcomListener)gls[l];
-      if (gl instanceof GedcomMetaListener) try {
-        ((GedcomMetaListener)gl).gedcomWriteLockReleased(this);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      if (listener instanceof GedcomMetaListener) 
+        ((GedcomMetaListener)listener).gedcomWriteLockReleased(this);
     }
   }  
   
@@ -689,14 +631,8 @@ public class Gedcom {
       });
     
     // notify
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      try {
-        gls[l].gedcomPropertyChanged(this, entity);
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "exception in gedcom listener "+gls[l], t);
-      }
-    }
+    for (GedcomListener listener : listeners) 
+      listener.gedcomPropertyChanged(this, entity);
 
     // done
   }
@@ -827,11 +763,11 @@ public class Gedcom {
   /**
    * Internal entity lookup
    */
-  private Map getEntityMap(String tag) {
+  private Map<String,Entity> getEntityMap(String tag) {
     // lookup map of entities for tag
-    Map id2entity = (Map)tag2id2entity.get(tag);
+    Map<String,Entity> id2entity = tag2id2entity.get(tag);
     if (id2entity==null) {
-      id2entity = new HashMap();
+      id2entity = new HashMap<String,Entity>();
       tag2id2entity.put(tag, id2entity);
     }
     // done
@@ -852,9 +788,17 @@ public class Gedcom {
   }
   
   /**
+   * Count statistics for property tag
+   */
+  public int getPropertyCount(String tag) {
+    Integer result = propertyTag2valueCount.get(tag);
+    return result==null ? 0 : result;
+  }
+
+  /**
    * Returns all entities
    */
-  public List getEntities() {
+  public List<Entity> getEntities() {
     return Collections.unmodifiableList(allEntities);
   }
 
@@ -1004,14 +948,9 @@ public class Gedcom {
       return;
     
     // let listeners know
-    GedcomListener[] gls = (GedcomListener[])listeners.toArray(new GedcomListener[listeners.size()]);
-    for (int l=0;l<gls.length;l++) {
-      GedcomListener gl = (GedcomListener)gls[l];
-      if (gl instanceof GedcomMetaListener) try {
-        ((GedcomMetaListener)gl).gedcomHeaderChanged(this);
-      } catch (Throwable t) {
-        LOG.log(Level.WARNING, "exception in gedcom listener "+gls[l], t);
-      }
+    for (GedcomListener listener : listeners) {
+      if (listener instanceof GedcomMetaListener)
+        ((GedcomMetaListener)listener).gedcomHeaderChanged(this);
     }
 
     // done
@@ -1090,6 +1029,9 @@ public class Gedcom {
       // unhook updater for changes
       removeGedcomListener(updater);
     }
+    
+    // log
+    LOG.log(Level.FINE, "End of UOW, property counts "+propertyTag2valueCount);
 
     // done
     if (rethrow!=null) {
@@ -1127,7 +1069,7 @@ public class Gedcom {
     propagateWriteLockAqcuired();
     
     // run through undos
-    List todo = (List)undoHistory.remove(undoHistory.size()-1);
+    List<Undo> todo = undoHistory.remove(undoHistory.size()-1);
     for (int i=todo.size()-1;i>=0;i--) {
       Undo undo = (Undo)todo.remove(i);
       try {
@@ -1180,7 +1122,7 @@ public class Gedcom {
     propagateWriteLockAqcuired();
     
     // run the redos
-    List todo = (List)redoHistory.remove(redoHistory.size()-1);
+    List<Undo> todo = redoHistory.remove(redoHistory.size()-1);
     for (int i=todo.size()-1;i>=0;i--) {
       Undo undo = (Undo)todo.remove(i);
       try {
@@ -1424,7 +1366,7 @@ public class Gedcom {
    */
   private class Lock implements UnitOfWork {
     UnitOfWork uow;
-    List undos = new ArrayList();
+    List<Undo> undos = new ArrayList<Undo>();
     
     Lock() {
       this.uow = this;

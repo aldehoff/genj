@@ -44,7 +44,7 @@ public class Note extends Entity implements MultiLineProperty {
     // create a delegate we're using for storing the 
     // note's multiline value
     if (delegate==null) {
-      delegate = (PropertyMultilineValue)addProperty("NOTE", "");
+      delegate = (PropertyMultilineValue)addProperty("CONT", "");
       delegate.isTransient = true;
     }
     
