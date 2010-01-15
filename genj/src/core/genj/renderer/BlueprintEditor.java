@@ -145,7 +145,7 @@ public class BlueprintEditor extends JSplitPane {
     boolean edit = blueprint!=null&&!blueprint.isReadOnly();
     bInsert.setEnabled(edit);
     source.setEditable(edit);
-    source.setToolTipText(edit?resources.getString("blueprint.readonly", blueprint.getName()):null);
+    source.setToolTipText(!edit?resources.getString("blueprint.readonly", blueprint.getName()):null);
     if (edit)
       setSourceVisible(true);
     // mark unchanged
