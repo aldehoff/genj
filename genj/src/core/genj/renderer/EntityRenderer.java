@@ -34,6 +34,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.RenderingHints.Key;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Dimension2D;
@@ -65,6 +66,23 @@ import javax.swing.text.html.parser.ParserDelegator;
  * A renderer for entities - blueprint necessary
  */
 public class EntityRenderer {
+
+  public final static Key KEY_RENDER_SELECTION = new RenderSelectionHintKey();
+  
+  /**
+   * a hint for whether to render selections or not
+   */
+  private static class RenderSelectionHintKey extends Key {
+    private RenderSelectionHintKey() {
+      super(0);
+    }
+
+    @Override
+    public boolean isCompatibleValue(Object val) {
+      return val instanceof Boolean;
+    }
+  }
+
   
   // this will initialize and load the html32 dtd
   // "/javax/swing/text/html/parser/html32.bdtd"

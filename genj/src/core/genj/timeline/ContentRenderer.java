@@ -55,7 +55,7 @@ public class ContentRenderer {
   /*package*/ boolean paintGrid = false;
   
   /** current selection */
-  /*package*/ Set selection = new HashSet();
+  /*package*/ Set<Model.Event> selection = new HashSet<Model.Event>();
   
   /** background color */
   /*package*/ Color cBackground = null;

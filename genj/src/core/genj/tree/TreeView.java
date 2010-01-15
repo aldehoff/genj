@@ -57,6 +57,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -845,12 +846,18 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
       // resolve our Graphics
       UnitGraphics gw = new UnitGraphics(g,DPMM.getX()*zoom, DPMM.getY()*zoom);
       gw.setAntialiasing(isAntialiasing);
+      
+      // render selection?
+      Boolean selection = (Boolean) ((Graphics2D)g).getRenderingHint(EntityRenderer.KEY_RENDER_SELECTION);
+      if (selection==null)
+        selection = true;
+      
       // init renderer
       contentRenderer.cIndiShape     = (Color)colors.get("indis");
       contentRenderer.cFamShape      = (Color)colors.get("fams");
       contentRenderer.cArcs          = (Color)colors.get("arcs");
       contentRenderer.cSelectedShape = (Color)colors.get("selects");
-      contentRenderer.selected       = context.getEntities();
+      contentRenderer.selected       = selection ? context.getEntities() : new ArrayList<Entity>() ;
       contentRenderer.indiRenderer   = getEntityRenderer(Gedcom.INDI);
       contentRenderer.famRenderer    = getEntityRenderer(Gedcom.FAM );
       // let the renderer do its work

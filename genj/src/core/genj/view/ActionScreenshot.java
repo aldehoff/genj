@@ -1,5 +1,6 @@
 package genj.view;
 
+import genj.renderer.EntityRenderer;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
@@ -65,6 +66,7 @@ public class ActionScreenshot extends Action2 {
     // Create image
     BufferedImage image = new BufferedImage(r.width, r.height, BufferedImage.TYPE_INT_RGB);
     Graphics2D g = image.createGraphics();
+    g.setRenderingHint(EntityRenderer.KEY_RENDER_SELECTION, false);
     g.setClip(0, 0, r.width, r.height);
     g.translate(-r.x, -r.y);
     component.paint(g);
@@ -77,7 +79,7 @@ public class ActionScreenshot extends Action2 {
 
     // done
   }
-
+  
   /**
    * A Transferable able to transfer an AWT Image. Similar to the JDK
    * StringSelection class.

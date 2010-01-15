@@ -26,6 +26,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
+import genj.renderer.EntityRenderer;
 import genj.renderer.Options;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -46,6 +47,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
@@ -54,6 +56,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -573,8 +576,13 @@ public class TimelineView extends View {
      */
     protected void paintComponent(Graphics g) {
       
+      // render selection?
+      Boolean rsel = (Boolean) ((Graphics2D)g).getRenderingHint(EntityRenderer.KEY_RENDER_SELECTION);
+      if (rsel==null)
+        rsel = true;
+      
       // let the renderer do its work
-      contentRenderer.selection = selection;
+      contentRenderer.selection = rsel ? selection : Collections.<Model.Event>emptySet();
       contentRenderer.cBackground = (Color)colors.get("background" );
       contentRenderer.cText       = (Color)colors.get("text"    );
       contentRenderer.cDate       = (Color)colors.get("date"    );
