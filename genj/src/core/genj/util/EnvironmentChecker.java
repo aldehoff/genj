@@ -30,7 +30,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
@@ -55,7 +54,7 @@ public class EnvironmentChecker {
         "user.name", "user.dir", "user.home", "all.home", "user.home.genj", "all.home.genj"
   };
   
-  private final static Set NOOVERRIDE = new HashSet();
+  private final static Set<String> NOOVERRIDE = new HashSet<String>();
   
   /**
    * Check for Java 1.4 and higher
@@ -218,10 +217,9 @@ public class EnvironmentChecker {
     try {
       Properties props = new Properties();
       props.load(in);
-      for (Iterator keys = props.keySet().iterator(); keys.hasNext(); ) {
-        String key = keys.next().toString();
-        if (System.getProperty(key)==null)
-          setProperty(key, props.getProperty(key));
+      for (Object key : props.keySet()) {
+        if (System.getProperty((String)key)==null)
+          setProperty((String)key, props.getProperty((String)key));
       }
     } catch (Throwable t) {
       if (t instanceof IOException)
@@ -246,6 +244,10 @@ public class EnvironmentChecker {
    * read system properties from file
    */
   static {
+    
+    // set ipv4 stack by default (unless preset) as there are Java/ipv6 problems at least on Linux/64
+    setProperty("java.net.preferIPv4Stack", "true");
+    
     try {
       EnvironmentChecker.loadSystemProperties(new FileInputStream(new File("system.properties")));
     } catch (IOException e) {
