@@ -82,11 +82,13 @@ import spin.Spin;
 public class ReportView extends View {
 
   /* package */static Logger LOG = Logger.getLogger("genj.report");
-  
+
+  /** pages to switch between */
   private final static String
     WELCOME = "welcome",
     CONSOLE = "console",
     RESULT = "result";
+  private String currentPage = WELCOME;
 
   /** time between flush of output writer to output text area */
   private final static String EOL = System.getProperty("line.separator");
@@ -233,6 +235,10 @@ public class ReportView extends View {
   private class RunnerCallback implements Runner.Callback {
 
     public void handleOutput(Report report, String s) {
+      
+      if (currentPage!=CONSOLE)
+        show(CONSOLE);
+      
       output.add(s);
     }
 
@@ -326,7 +332,10 @@ public class ReportView extends View {
    * show welcome/console/output
    */
   /* package */void show(String page) {
-    ((CardLayout) getLayout()).show(this, page);
+    if (currentPage!=page) {
+      ((CardLayout) getLayout()).show(this, page);
+      currentPage = page;
+    }
   }
   
   /**
@@ -335,8 +344,13 @@ public class ReportView extends View {
   /* package */void showResult(Object object) {
 
     // none?
-    if (object == null)
+    if (object == null) {
+      
+      // go back to welcome if there was nothing dumped to console
+      if (output.getDocument().getLength()==0)
+        show(WELCOME);
       return;
+    }
 
     // Exception?
     if (object instanceof InterruptedException) {
