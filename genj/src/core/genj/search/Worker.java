@@ -46,7 +46,7 @@ import java.util.logging.Logger;
   
   /** current search state */
   private Gedcom gedcom;
-  private TagPath tagPath;
+  private List<String> tags;
   private Matcher matcher;
   private Set<Entity> entities = new HashSet<Entity>();
   private List<Hit> hits = new ArrayList<Hit>(MAX_HITS);
@@ -76,7 +76,7 @@ import java.util.logging.Logger;
   }
 
   /** start search */
-  /*package*/ void start(Gedcom gedcom, TagPath path, String value, boolean regexp) {
+  /*package*/ void start(Gedcom gedcom, String tags, String value, boolean regexp) {
     
     // sync up
     synchronized (lock) {
@@ -89,7 +89,7 @@ import java.util.logging.Logger;
       // prepare matcher & path
       this.gedcom = gedcom;
       this.matcher = getMatcher(value, regexp);
-      this.tagPath = path;
+      this.tags = split(tags);
       this.hits.clear();
       this.entities.clear();
       this.hitCount = 0;
@@ -108,9 +108,15 @@ import java.util.logging.Logger;
             synchronized (lock) {
               thread = null;
               lock.set(false);
-              lock.notifyAll();
+              lock.notifyAll(); 
             }
-            Worker.this.listener.stopped();
+            try {
+              Worker.this.listener.stopped();
+            } catch (Throwable t) {
+              // this will happen if we are being interrupted
+              // going through Spin's transition to EDT
+              // and we don't care about the result
+            }
           }
         }
       });
@@ -121,13 +127,24 @@ import java.util.logging.Logger;
     // done
   }
   
+  private List<String> split(String tags) {
+    String[] ss = tags.split(",");
+    ArrayList<String> result = new ArrayList<String>(ss.length);
+    for (String s : ss) {
+      s = s.trim();
+      if (s.length()>0 && !result.contains(s))
+        result.add(s);
+    }
+    return result;
+  }
+  
   /** search in gedcom (not on EDT) */
   private void search(Gedcom gedcom) {
     for (int t=0; t<Gedcom.ENTITIES.length && hitCount<MAX_HITS; t++) {
       for (Entity entity : gedcom.getEntities(Gedcom.ENTITIES[t])) {
         
         // next
-        search(entity, entity, 0);
+        search(entity, entity);
 
         // still going?
         if (!lock.get())
@@ -144,19 +161,23 @@ import java.util.logging.Logger;
     }
   }
   
-  /** search property (not on EDT) */
-  private void search(Entity entity, Property prop, int pathIndex) {
-    // got a path?
-    boolean searchThis = true;
-    if (tagPath!=null) {
-      // break if we don't match path
-      if (pathIndex<tagPath.length()&&!tagPath.get(pathIndex).equals(prop.getTag())) 
-        return;
-      // search this if path is consumed 
-      searchThis = pathIndex>=tagPath.length()-1;
+  private boolean checkPath(Entity entity, Property prop) {
+    // entities are always ok, no path all good as well
+    if (entity==prop || tags.isEmpty())
+      return true;
+    // all tags in path?
+    TagPath path = prop.getPath();
+    for (String tag : tags) {
+      if (!path.contains(tag))
+        return false;
     }
-    // parse all but transients
-    if (searchThis&&!prop.isTransient()) {
+    return true;
+  }
+  
+  /** search property (not on EDT) */
+  private void search(Entity entity, Property prop) {
+    // parse all where path ok and not transient
+    if (checkPath(entity,prop)&&!prop.isTransient()) {
       // check entity's id
       if (entity==prop)
         search(entity, entity, entity.getId(), true);
@@ -165,9 +186,8 @@ import java.util.logging.Logger;
     }
     // check subs
     int n = prop.getNoOfProperties();
-    for (int i=0;i<n;i++) {
-      search(entity, prop.getProperty(i), pathIndex+1);
-    }
+    for (int i=0;i<n;i++) 
+      search(entity, prop.getProperty(i));
     // done
   }
 

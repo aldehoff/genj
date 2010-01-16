@@ -23,16 +23,13 @@ import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.Grammar;
-import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.TagPath;
 import genj.util.GridBagHelper;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
@@ -85,9 +82,8 @@ public class SearchView extends View {
     DEFAULT_VALUES = {
       "M(a|e)(i|y)er", "San.+Francisco", "^(M|F)"
     },
-    DEFAULT_PATHS = {
-      "INDI", "INDI:NAME", "INDI:BIRT", "INDI:OCCU", "INDI:NOTE", "INDI:RESI",
-      "FAM"
+    DEFAULT_TAGS = {
+      "NAME", "BIRT", "BIRT, PLAC", "OCCU", "NOTE", "BIRT, NOTE", "RESI"
     }
   ;
   
@@ -111,14 +107,14 @@ public class SearchView extends View {
   private HeadlessLabel viewFactory = new HeadlessLabel(listResults.getFont()); 
 
   /** criterias */
-  private ChoiceWidget choicePath, choiceValue;
+  private ChoiceWidget choiceTag, choiceValue;
   private JCheckBox checkRegExp;
   private JLabel labelCount;
   
   private Action2 actionStart = new ActionStart(), actionStop = new ActionStop();
   
   /** history */
-  private LinkedList<String> oldPaths, oldValues;
+  private LinkedList<String> oldTags, oldValues;
   
   /** images */
   private final static ImageIcon
@@ -153,7 +149,7 @@ public class SearchView extends View {
     }));
     
     // lookup old search values & settings
-    oldPaths = new LinkedList<String>(Arrays.asList(REGISTRY.get("old.paths" , DEFAULT_PATHS)));
+    oldTags = new LinkedList<String>(Arrays.asList(REGISTRY.get("old.tags" , DEFAULT_TAGS)));
     oldValues= new LinkedList<String>(Arrays.asList(REGISTRY.get("old.values", DEFAULT_VALUES)));
     boolean useRegEx = REGISTRY.get("regexp", false);
 
@@ -161,8 +157,10 @@ public class SearchView extends View {
     ActionListener aclick = new ActionListener() {
       /** button */
       public void actionPerformed(ActionEvent e) {
-        stop();
-        start();
+        if (actionStop.isEnabled()) 
+          stop();
+        if (actionStart.isEnabled()) 
+          start();
       }
     };
     
@@ -177,13 +175,13 @@ public class SearchView extends View {
     popupPatterns.addItems(createPatternActions());
     popupPatterns.setMargin(new Insets(0,0,0,0));
 
-    JLabel labelPath = new JLabel(RESOURCES.getString("label.path"));    
-    choicePath = new ChoiceWidget(oldPaths);
-    choicePath.addActionListener(aclick);
+    JLabel labelTag = new JLabel(RESOURCES.getString("label.tag"));    
+    choiceTag = new ChoiceWidget(oldTags);
+    choiceTag.addActionListener(aclick);
     
-    PopupWidget popupPaths = new PopupWidget("...", null);
-    popupPaths.addItems(createPathActions());
-    popupPaths.setMargin(new Insets(0,0,0,0));
+    PopupWidget popupTags = new PopupWidget("...", null);
+    popupTags.addItems(createTagActions());
+    popupTags.setMargin(new Insets(0,0,0,0));
     
     labelCount = new JLabel();
     
@@ -202,10 +200,10 @@ public class SearchView extends View {
     gh.add(popupPatterns ,0,1,1,1);
     gh.add(choiceValue   ,1,1,3,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL, new Insets(3,3,3,3));
     // .. line 2
-    gh.add(labelPath     ,0,2,4,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL);
+    gh.add(labelTag     ,0,2,4,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL);
     // .. line 3
-    gh.add(popupPaths    ,0,3,1,1);
-    gh.add(choicePath    ,1,3,3,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL, new Insets(0,3,3,3));
+    gh.add(popupTags    ,0,3,1,1);
+    gh.add(choiceTag    ,1,3,3,1, GridBagHelper.GROW_HORIZONTAL|GridBagHelper.FILL_HORIZONTAL, new Insets(0,3,3,3));
     
     // prepare layout
     setLayout(new BorderLayout());
@@ -227,20 +225,12 @@ public class SearchView extends View {
     
     // prep args
     String value = choiceValue.getText();
-    String path = choicePath.getText();
+    String tags = choiceTag.getText();
     remember(choiceValue, oldValues, value);
-    remember(choicePath , oldPaths , path );
+    remember(choiceTag , oldTags , tags );
     
     // start anew
-    TagPath p = null;
-    if (path.length()>0) try {
-      p = new TagPath(path);
-    } catch (IllegalArgumentException iae) {
-      DialogHelper.openDialog(value,DialogHelper.ERROR_MESSAGE,iae.getMessage(),Action2.okOnly(),SearchView.this);
-      return;
-    }
-    
-    worker.start(context.getGedcom(), p, value, checkRegExp.isSelected());
+    worker.start(context.getGedcom(), tags, value, checkRegExp.isSelected());
     
     // done
   }
@@ -258,7 +248,7 @@ public class SearchView extends View {
     // keep old
     REGISTRY.put("regexp"    , checkRegExp.isSelected());
     REGISTRY.put("old.values", oldValues);
-    REGISTRY.put("old.paths" , oldPaths );
+    REGISTRY.put("old.tags" , oldTags );
     // continue
     super.removeNotify();
   }
@@ -313,14 +303,14 @@ public class SearchView extends View {
   }
 
   /**
-   * Create preset Path Actions
+   * Create preset Tag Actions
    */
-  private List<Action2> createPathActions() {
+  private List<Action2> createTagActions() {
     
-    // loop through DEFAULT_PATHS
+    // loop through DEFAULT_TAGS
     List<Action2> result = new ArrayList<Action2>();
-    for (int i=0;i<DEFAULT_PATHS.length;i++) {
-      result.add(new ActionPath(DEFAULT_PATHS[i]));
+    for (int i=0;i<DEFAULT_TAGS.length;i++) {
+      result.add(new ActionTag(DEFAULT_TAGS[i]));
     }
     
     // done
@@ -353,25 +343,27 @@ public class SearchView extends View {
   /**
    * Action - select predefined paths
    */
-  private class ActionPath extends Action2 {
+  private class ActionTag extends Action2 {
     
-    private TagPath tagPath;
+    private String tags;
     
     /**
      * Constructor
      */
-    private ActionPath(String path) {
-      tagPath = new TagPath(path);
-      MetaProperty meta = Grammar.V55.getMeta(tagPath);
-      setText(meta.getName());
-      setImage(meta.getImage());
+    private ActionTag(String tags) {
+      this.tags = tags;
+      
+      WordBuffer txt = new WordBuffer(", ");
+      for (String t : tags.split(",")) 
+        txt.append(Gedcom.getName(t.trim()));
+      setText(txt.toString());
     }
     
     /**
      * @see genj.util.swing.Action2#execute()
      */
     public void actionPerformed(ActionEvent event) {
-      choicePath.setText(tagPath.toString());
+      choiceTag.setText(tags);
     }
   } //ActionPath
 
