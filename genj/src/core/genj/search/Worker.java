@@ -89,7 +89,7 @@ import java.util.logging.Logger;
       // prepare matcher & path
       this.gedcom = gedcom;
       this.matcher = getMatcher(value, regexp);
-      this.tagPath = null;
+      this.tagPath = path;
       this.hits.clear();
       this.entities.clear();
       this.hitCount = 0;
