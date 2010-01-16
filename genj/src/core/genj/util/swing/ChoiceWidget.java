@@ -253,7 +253,7 @@ public class ChoiceWidget extends JComboBox {
       String pre = getText();
       for (int i=0; i<getItemCount(); i++) {
         String item = getItemAt(i).toString();
-        if (item.regionMatches(true, 0, pre, 0, pre.length())) {
+        if (item.regionMatches(isIgnoreCase, 0, pre, 0, pre.length())) {
           setSelectedIndex(i);
           break;
         }
@@ -502,13 +502,10 @@ public class ChoiceWidget extends JComboBox {
      */
     private String setSelectedPrefix(String prefix) {
       
-      if (isIgnoreCase)
-        prefix = prefix.toLowerCase();
-      
       // try to find a match
       for (int i=0;i<values.length;i++) {
         String value = values[i].toString();
-        if ((isIgnoreCase ? value.toLowerCase() : value).startsWith(prefix)) {
+        if (value.regionMatches(isIgnoreCase, 0, prefix, 0, prefix.length())) {
           setSelectedItem(value);
           return value;        
         }
