@@ -409,5 +409,15 @@ public class TagPath {
     // backtrack
     return true;
   }
+
+  /**
+   * tag in path check
+   */
+  public boolean contains(String tag) {
+    for (int i=0;i<len;i++) 
+      if (tags[i].equals(tag))
+        return true;
+    return false;
+  }
   
 } //TagPath
