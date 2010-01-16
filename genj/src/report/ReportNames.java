@@ -16,9 +16,10 @@ import genj.report.Report;
 
 /**
  * @author   = Ekran, based on work of Carsten Muessig <carsten.muessig@gmx.net>
- * @version $Revision: 1.4 $
- * @modified by $Author: lukas0815 $, Ekran
- * updated   = $Date: 2009-05-22 13:34:58 $
+ * @version $Revision: 1.5 $
+ * @modified by $Author: paul59 $, Ekran
+ * updated   = $Date: 2010-01-16 11:06:32 $
+ * Modified by Paul Robinson 2010/01/16
  */
 
 public class ReportNames extends Report {
@@ -26,10 +27,10 @@ public class ReportNames extends Report {
 	public boolean reportOutputBirth  = true;
 	public boolean reportOutputDeath  = true;
 	public boolean reportOutputMarriage  = true;
+	public String StrFilter = "";
 	public boolean reportFilterName  = false;
 	public boolean reportFilterLine  = false;
 	public boolean reportDatesOnlyYears  = false;
-	public String StrFilter = "";
 	public String reportDetailSeparator = ";";
 	public boolean reportAlwaysDetailSeparator  = false;
 
