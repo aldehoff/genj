@@ -312,7 +312,7 @@ import com.vividsolutions.jts.geom.Coordinate;
       private boolean matchAll;
       private Job(Gedcom gedcom, Collection<GeoLocation> locations,boolean matchAll) {
         this.gedcom = gedcom;
-        this.locations = locations;
+        this.locations = new ArrayList<GeoLocation>(locations);
         this.matchAll = matchAll;
       }
     }
