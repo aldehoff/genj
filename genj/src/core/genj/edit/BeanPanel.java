@@ -51,6 +51,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -595,7 +596,7 @@ public class BeanPanel extends JPanel {
   /**
    * A 'bean' we use for groups
    */
-  private class PopupBean extends PopupWidget implements MouseMotionListener {
+  private class PopupBean extends PopupWidget implements MouseMotionListener, MouseListener {
     
     private PropertyBean wrapped;
     private JPanel content;
@@ -625,7 +626,9 @@ public class BeanPanel extends JPanel {
       content.setAlignmentX(0);
       content.setBorder(new TitledBorder(prop.getPropertyName()));
       content.addMouseMotionListener(this);
+      content.addMouseListener(this);
       content.add(wrapped);
+      content.setFocusCycleRoot(true);
       
       // prepare 'actions'
       addItem(content);
@@ -659,7 +662,7 @@ public class BeanPanel extends JPanel {
     
     public void mouseDragged(MouseEvent e) {
       // allow to resize 
-      if (wrapped.getCursor()!=Cursor.getDefaultCursor()) {
+      if (content.getCursor()==Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR)) {
         Dimension d = new Dimension(e.getPoint().x, e.getPoint().y);
         BasicEditor.REGISTRY.put("popup."+wrapped.getProperty().getTag(), d);
         setPopupSize(d);
@@ -667,12 +670,44 @@ public class BeanPanel extends JPanel {
     }
   
     public void mouseMoved(MouseEvent e) {
-      // indicate resize cursor if applicable
+      // resize?
       if (e.getX()>content.getWidth()-content.getInsets().right
-        &&e.getY()>content.getHeight()-content.getInsets().bottom)
+        &&e.getY()>content.getHeight()-content.getInsets().bottom) {
         content.setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-      else
-        content.setCursor(Cursor.getDefaultCursor());
+        return;
+      }
+      // close?
+      if (e.getY()<content.getInsets().top) try {
+        content.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return;
+      } catch (Throwable t) {}
+      // default
+      content.setCursor(Cursor.getDefaultCursor());
+    }
+
+    public void mouseClicked(MouseEvent e) {
+      if (content.getCursor()==Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)) 
+        cancelPopup();
+    }
+
+    public void mouseEntered(MouseEvent e) {
+      // TODO Auto-generated method stub
+      
+    }
+
+    public void mouseExited(MouseEvent e) {
+      // TODO Auto-generated method stub
+      
+    }
+
+    public void mousePressed(MouseEvent e) {
+      // TODO Auto-generated method stub
+      
+    }
+
+    public void mouseReleased(MouseEvent e) {
+      // TODO Auto-generated method stub
+      
     }
   
   } //Label
