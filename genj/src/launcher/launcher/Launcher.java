@@ -21,9 +21,12 @@ package launcher;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.KeyboardFocusManager;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -111,7 +114,6 @@ public class Launcher {
   
   private static Manifest manifest;
   private static Method main;
-  private static Window splash;
   
   public final static String 
     MANIFEST = "META-INF/MANIFEST.MF",
@@ -157,11 +159,9 @@ public class Launcher {
   }
   
   private static void hideSplash() {
-    Window w = splash;
-    if (w!=null) {
-      w.dispose();
-      splash = null;
-    }
+    Splash splash = Splash.instance;
+    if (splash!=null) 
+      splash.dispose();
   }
   
   private static void showSplash() {
@@ -171,31 +171,72 @@ public class Launcher {
       return;
     
     try {
-      final Image image = Toolkit.getDefaultToolkit().createImage(Launcher.class.getResource(img));
-      
-      splash = new Window(null) {
-        @Override
-        public void paint(Graphics g) {
-          g.drawImage(image, 0, 0, this);
-        }
-      };
-      
-      MediaTracker mt = new MediaTracker(splash);
-      mt.addImage(image,0);
-      try {
-          mt.waitForID(0);
-      } catch(InterruptedException ie){}
-      
-      splash.setSize(new Dimension(image.getWidth(null), image.getHeight(null)));
-      splash.setLocationRelativeTo(null);
-      splash.setVisible(true);
-      
+      new Splash(Toolkit.getDefaultToolkit().createImage(Launcher.class.getResource(img)));
     } catch (Throwable t) {
       System.err.println("Can't read splash image "+img);
       t.printStackTrace(System.err);
       return;
     }
     
+  }
+
+  /**
+   * our splash
+   */
+  private static class Splash extends Window implements PropertyChangeListener {
+    
+    private static Splash instance;
+    
+    private Image image;
+    
+    private Splash(Image image) {
+      super(null);
+      
+      instance = this;
+
+      // grab image and load it
+      this.image = image;
+      MediaTracker mt = new MediaTracker(this);
+      mt.addImage(image,0);
+      try {
+          mt.waitForID(0);
+      } catch(InterruptedException ie){}
+
+      // size and show
+      setSize(new Dimension(image.getWidth(null), image.getHeight(null)));
+      setLocationRelativeTo(null);
+      setVisible(true);
+    }
+    
+    @Override
+    public synchronized void dispose() {
+      // still needed?
+      if (instance==null)
+        return;
+      // listen to active window change
+      KeyboardFocusManager.getCurrentKeyboardFocusManager().removePropertyChangeListener(this);
+      super.dispose();
+      // clear
+      instance = null;
+    }
+
+    @Override
+    public void setVisible(boolean b) {
+      // don't listen to active window change
+      KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(this);
+      super.setVisible(b);
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+      // hide splash if other window becomes active
+      if ("activeWindow".equals(evt.getPropertyName()) && evt.getNewValue()!=this)
+        dispose();
+    }
+    
+    @Override
+    public void paint(Graphics g) {
+      g.drawImage(image, 0, 0, this);
+    }
   }
   
   /**
