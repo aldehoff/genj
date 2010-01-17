@@ -11,10 +11,7 @@ import genj.report.Report;
 /**
 
  
-author    = Paul Robinson
-version   = 1.0 - 10 Jan 2010
-category  = Utilities
-name      = Missing Information
+
 
 */
 public class ReportMissingInformation extends Report {
