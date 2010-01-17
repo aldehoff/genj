@@ -99,6 +99,10 @@ public class ReportAncestorStatistics extends Report {
 
         // Print consanguinity statistics
         printConsanguinityStats(indi);
+        
+        //print explanation of terms in footer
+        println("");
+        println(translate("footer_info"));
     }
 
     /**
@@ -123,8 +127,9 @@ public class ReportAncestorStatistics extends Report {
      */
     private void printHeader(Indi indi) {
         // Print description
-        println(translate("info"));
-        println();
+        //println(translate("info"));
+        println(translate("name"));
+    	println();
 
         // Print root individual
         println(translate("root_individual"));
