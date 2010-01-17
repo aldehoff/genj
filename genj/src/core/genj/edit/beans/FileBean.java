@@ -103,6 +103,7 @@ public class FileBean extends PropertyBean {
     new DropTarget(this, new DropHandler());
     
     // done
+    defaultFocus = chooser;
   }
   
   /**

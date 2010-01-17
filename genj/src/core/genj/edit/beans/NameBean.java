@@ -59,7 +59,7 @@ public class NameBean extends PropertyBean {
     // we're using getDisplayValue() here
     // because like in PropertyRelationship's case there might be more
     // in the gedcom value than what we want to display (witness@INDI:BIRT)
-    return RESOURCES.getString("choice.global.confirm", new String[]{ ""+sameLastNames.length, ((PropertyName)getProperty()).getLastName(), cLast.getText()});
+    return RESOURCES.getString("choice.global.confirm", ""+sameLastNames.length, ((PropertyName)getProperty()).getLastName(), cLast.getText());
   }
   
   public NameBean() {
