@@ -202,6 +202,11 @@ public class FileChooserWidget extends JPanel {
   public boolean requestFocusInWindow() {
     return text.requestFocusInWindow();
   }
+  
+  @Override
+  public void requestFocus() {
+    text.requestFocus();
+  }
 
   /**
    * Choose with file dialog
