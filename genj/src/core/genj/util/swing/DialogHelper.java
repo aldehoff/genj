@@ -23,6 +23,7 @@ import genj.util.Registry;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -307,6 +308,17 @@ public class DialogHelper {
      * @return null to continue in the parent hierarchy, !null to abort otherwise
      */
     public Component visit(Component parent, Component child);
+  }
+
+  /**
+   * Set a component and all its contained components to opaque
+   */
+  public static void setOpaque(Component component, boolean set) {
+    if (component instanceof JComponent)
+      ((JComponent)component).setOpaque(set);
+    if (component instanceof Container)
+      for (Component c : ((Container)component).getComponents()) 
+        setOpaque(c, set);
   }
   
 } //AbstractWindowManager

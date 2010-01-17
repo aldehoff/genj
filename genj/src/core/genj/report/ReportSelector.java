@@ -25,17 +25,20 @@ import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 
 /**
  * Select report from list, show details, show options
  */
-class ReportSelector extends JTabbedPane {
+class ReportSelector extends JPanel {
   
   private final static ImageIcon
     imgReload= new ImageIcon(ReportView.class,"Reload"     );
@@ -46,19 +49,24 @@ class ReportSelector extends JTabbedPane {
 
   /** Constructor */
   public ReportSelector() {
+    
+    super(new BorderLayout());
 
     Resources res = Resources.get(this);
     
-    JPanel tab = new JPanel(new BorderLayout());
-    tab.add(new JScrollPane(list), BorderLayout.WEST);
-    tab.add(detail, BorderLayout.CENTER);
+    final JTabbedPane right = new JTabbedPane();
+    right.add(res.getString("title"), detail);
+    right.add(res.getString("report.options"), options);
+    detail.setOpaque(false);
     
-    add(res.getString("report.reports"), tab);
-    add(res.getString("report.options"), options);
+    add(new JLabel(res.getString("report.reports")), BorderLayout.NORTH);
+    add(new JScrollPane(list), BorderLayout.WEST);
+    add(right, BorderLayout.CENTER);
     
     list.setSelectionListener(new ReportSelectionListener() {
       public void valueChanged(Report report) {
         detail.setReport(report);
+        right.setTitleAt(0, report.getName());
         options.setOptions(report!=null ? report.getOptions() : Collections.EMPTY_LIST);
       }
     });

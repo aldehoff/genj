@@ -26,6 +26,7 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
 import genj.util.Resources;
 import genj.util.swing.ColorsWidget;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ListSelectionWidget;
 import genj.util.swing.NestedBlockLayout;
@@ -110,6 +111,7 @@ public class TimelineViewSettings extends JTabbedPane {
     JPanel panelOptions = new JPanel(new NestedBlockLayout(
         "<col><check gx=\"1\"/><check gx=\"1\"/><check gx=\"1\"/><row><label/><spin/></row><row><label/><spin/></row></col>"
         ));
+    panelOptions.setOpaque(false);
     
     // ... checkboxes    
     checkTags = createCheck("info.show.tags", view.isPaintTags());
@@ -133,10 +135,6 @@ public class TimelineViewSettings extends JTabbedPane {
     panelMain.add(pathsList   , BorderLayout.CENTER);
     panelMain.add(panelOptions, BorderLayout.SOUTH);
     
-    // panel for history options
-    JPanel panelEvents = new JPanel(new BorderLayout());
-    panelEvents.add(almanacsList, BorderLayout.CENTER);
-    
     // color chooser
     colorWidget = new ColorsWidget();
     for (String key : view.colors.keySet()) 
@@ -146,14 +144,19 @@ public class TimelineViewSettings extends JTabbedPane {
     // layout 
     add(resources.getString("page.main")  , panelMain);
     add(resources.getString("page.colors"), colorWidget);
-    add(resources.getString("page.almanac"), panelEvents);
+    add(resources.getString("page.almanac"), almanacsList);
 
+    // fixup looks
+    DialogHelper.setOpaque(colorWidget, false);
+    DialogHelper.setOpaque(panelMain, false);
+    
     // done
   }
   
   private JCheckBox createCheck(String key, boolean on) {
     JCheckBox result = new JCheckBox(resources.getString(key), on);
     result.addActionListener(commit);
+    result.setOpaque(false);
     return result;
   }
 

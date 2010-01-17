@@ -34,6 +34,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JColorChooser;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -65,7 +66,7 @@ public class ColorsWidget extends JPanel {
     
     // patch chooser
     chooser.setPreviewPanel(new JPanel()); 
-
+    
     // prepare list
     final JList list = new JList(model);
     list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

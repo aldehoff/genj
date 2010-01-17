@@ -89,7 +89,6 @@ class ReportDetail extends JPanel {
   }
   
   public void setReport(Report report) {
-    setBorder(BorderFactory.createTitledBorder(report.getName()));
     // update info
     if (report == null) {
       lFile    .setText("");

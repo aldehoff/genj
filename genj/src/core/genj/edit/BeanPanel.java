@@ -310,6 +310,7 @@ public class BeanPanel extends JPanel {
   private void createPropertiesTab(Property root, Set<String> beanifiedTags) {
     
     JPanel tab = new JPanel(new GridLayout(0,2));
+    tab.setOpaque(false);
     
     MetaProperty[] nested = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
     Arrays.sort(nested);
@@ -329,9 +330,7 @@ public class BeanPanel extends JPanel {
       tab.add(createBean(root, new TagPath(root.getTag()+":"+meta.getTag()), meta, null));
     }
     
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.add(tab, BorderLayout.NORTH);
-    tabs.addTab("", MetaProperty.IMG_CUSTOM, panel);
+    tabs.addTab("", MetaProperty.IMG_CUSTOM, tab);
   }
   
   /**
@@ -444,6 +443,7 @@ public class BeanPanel extends JPanel {
     // 'create' a tab with links to create sub-property that we have a descriptor for
     JPanel linksTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
     linksTab.setPreferredSize(new Dimension(64,64));
+    linksTab.setOpaque(false);
     tabs.addTab("", Images.imgNew, linksTab);
     MetaProperty[] nested = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
     Arrays.sort(nested);
@@ -501,7 +501,8 @@ public class BeanPanel extends JPanel {
     // create the panel
     JPanel tab = new JPanel();
     tab.putClientProperty(Property.class, prop);
-
+    tab.setOpaque(false);
+    
     parse(tab, root, prop, descriptor, null);
     tabs.addTab(meta.getName() + prop.format("{ $y}"), prop.getImage(false), tab, meta.getInfo());
 

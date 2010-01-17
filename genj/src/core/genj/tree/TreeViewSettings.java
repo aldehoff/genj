@@ -22,6 +22,7 @@ package genj.tree;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ColorsWidget;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.FontChooser;
 import genj.util.swing.NestedBlockLayout;
 
@@ -149,6 +150,9 @@ public class TreeViewSettings extends JTabbedPane {
     add(RESOURCES.getString("page.main")  , options);
     add(RESOURCES.getString("page.colors"), colors);
     add(RESOURCES.getString("page.bookmarks"), bPanel);
+
+    DialogHelper.setOpaque(options, false);
+    DialogHelper.setOpaque(colors, false);
     
     // done
   }
