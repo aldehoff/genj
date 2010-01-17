@@ -204,7 +204,7 @@ public class ReportAges extends Report {
 author               = Daniel P. Kionka, Carsten Müssig <carsten.muessig@gmx.net>
 version              = 1.4
 category             = Analysis
-updated              = $Date: 2009-04-22 20:26:34 $
+updated              = $Date: 2010-01-17 09:40:04 $
 
 name                 = Ages
 name.de              = Alter
@@ -212,12 +212,12 @@ name.fr              = Ages
 name.es              = Edad
 name.pl              = Wiek osoby
 
-info = This report prints out the age of an individual at different events. Use the options to turn these events on/off.
-info.de = Alter einer Person zu verschiedenen Zeitpunkten ausgeben. Die Zeitpunkte können in den Optionen gewählt werden.
-info.fr = <h1><center>Les Ages au cours de la vie</center></h1><br>
+info = <h1><center>Age at Events</center></h1><p>This report prints out the age of an individual at different events during their life. Use the options to turn these events on/off.</p>
+info.de = <h1><center>Age at Events</center></h1><p>Alter einer Person zu verschiedenen Zeitpunkten ausgeben. Die Zeitpunkte können in den Optionen gewählt werden.</p>
+info.fr = <h1><center>Les Ages au cours de la vie</center></h1><p>
  Aprés avoir choisi la personne sur laquelle vous voulez lancer ce 
  script, vous obtiendrez l'âge d'une personne à différentes époques 
- de sa vie.<br><br>Ainsi on trouvera :<br>
+ de sa vie.</p><p>Ainsi on trouvera :</p>
  <ul>
   <li>La date de sa naissance,</li>
   <li>L'âge à son baptême,</li>
@@ -230,15 +230,16 @@ info.fr = <h1><center>Les Ages au cours de la vie</center></h1><br>
   <li>L'âge qu'elle avait à son décès,</li>
   <li>Le temps écoulé depuis sa naissance.</li>
  </ul>
- Utilisez les options pour visualiser tel ou tel évènement (actif : 
- oui/non).<br>
- Bien sûr si tel ou tel évènement ne s'est pas produit, ou si une 
+ <p>Utilisez les options pour visualiser tel ou tel évènement (actif : 
+ oui/non).</p>
+ <p>Bien sûr si tel ou tel évènement ne s'est pas produit, ou si une 
  date n'est pas renseignée, l'information correspondante ne sera pas 
- affichée.
-info.es = Este informe imprime la edad de un individuo en diferentes momentos. 
- Use las opciones para incluir o no esos momentos
-info.pl = Ten raport wyświetla wiek osoby podczas różnych wydarzeń. 
- Zdarzenia te można wybrać na zakładce ustawień.
+ affichée.</p>
+ 
+info.es = <h1><center>Age at Events</center></h1><p>Este informe imprime la edad de un individuo en diferentes momentos. 
+ Use las opciones para incluir o no esos momentos</p>
+info.pl = <h1><center>Age at Events</center></h1><p>Ten raport wyświetla wiek osoby podczas różnych wydarzeń. 
+ Zdarzenia te można wybrać na zakładce ustawień.</p>
 
 reportMarriageAge    = Report age at marriage
 reportMarriageAge.de = Alter bei Heirat ausgeben
