@@ -25,7 +25,7 @@
 
   Translators
   
-   Daniel Durand
+   Daniel Durand (French)
    Alex Evdokimenko (Russian)
    Nestor Garcia (Spanish)
    Mauricio Girardi (Brazilian Portuguese)
