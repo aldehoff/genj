@@ -1506,7 +1506,7 @@ public class Workbench extends JPanel implements SelectionSink {
     protected JDialog createDialog() {
       JDialog dialog = super.createDialog();
       if (context.getGedcom()!=null);
-        updateTitle(dialog, context.getGedcom().getName());
+        updateTitle(dialog, context.getGedcom()!=null ? context.getGedcom().getName() : "");
       return dialog;
     }
     
