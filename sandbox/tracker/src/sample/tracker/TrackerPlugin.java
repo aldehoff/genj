@@ -6,125 +6,63 @@
  */
 package sample.tracker;
 
-import genj.app.ExtendGedcomClosed;
-import genj.app.ExtendGedcomOpened;
-import genj.app.ExtendMenubar;
+import genj.app.Workbench;
+import genj.app.WorkbenchListener;
+import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomLifecycleEvent;
-import genj.gedcom.GedcomLifecycleListener;
 import genj.gedcom.GedcomListener;
+import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.plugin.ExtensionPoint;
-import genj.plugin.Plugin;
 import genj.util.Resources;
+import genj.util.Trackable;
 import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
-import genj.view.ExtendContextMenu;
-import genj.window.WindowBroadcastEvent;
-import genj.window.WindowBroadcastListener;
-import genj.window.WindowClosingEvent;
-import genj.window.WindowManager;
+import genj.view.ActionProvider;
+import genj.view.View;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+import java.util.logging.Logger;
 
 /**
- * A sample plugin that tracks all changes to all gedcom files and adds an update counter to each changed entity
+ * A sample GenJ plugin that tracks all changes to all gedcom files and adds an update counter to each changed entity
  */
-public class TrackerPlugin implements Plugin {
+public class TrackerPlugin implements WorkbenchListener, ActionProvider {
   
-  private final ImageIcon IMG = new ImageIcon(this, "/Tracker.gif");
+  final static ImageIcon IMG = new ImageIcon(TrackerPlugin.class, "/Tracker.gif");
+  final static Resources RESOURCES = Resources.get(TrackerPlugin.class);
+  final static Logger LOG = Logger.getLogger("sample.tracker");
   
-  private final Resources RESOURCES = Resources.get(this);
-  
-  private Log log = new Log();
-  private Map gedcom2tracker = new HashMap();
   private boolean active = true;
+  private GedcomTracker tracker = new GedcomTracker();
+  private Workbench workbench;
   
   /**
-   * our log output
+   * Constructor
    */
-  private class Log extends JTextArea implements WindowBroadcastListener {
-    private Log() {
-      super(40,10);
-      setEditable(false);
-    }
-    public boolean handleBroadcastEvent(WindowBroadcastEvent event) {
-      // intercept and cancel closing
-      if (event instanceof WindowClosingEvent)
-        ((WindowClosingEvent)event).cancel();
-      return true;
-    }
+  public TrackerPlugin(Workbench workbench) {
+    
+    this.workbench = workbench;
+    
+    workbench.addWorkbenchListener(this);
+    
   }
   
-  
-  /**
-   * Our change to enrich an extension point
-   * @see genj.plugin.Plugin#extend(genj.plugin.ExtensionPoint)
-   */
-  public void extend(ExtensionPoint ep) {
-    
-    if (ep instanceof ExtendGedcomOpened) {
-      // attach to gedcom
-      Gedcom gedcom = ((ExtendGedcomOpened)ep).getGedcom();
-      GedcomTracker tracker = new GedcomTracker();
-      gedcom.addLifecycleListener(tracker);
-      gedcom.addGedcomListener(tracker);
-      gedcom2tracker.put(gedcom, tracker);
-      log(RESOURCES.getString("log.attached", gedcom.getName()));
-      // done
-      return;
-    }
-
-    if (ep instanceof ExtendGedcomClosed) {
-      // detach from gedcom
-      Gedcom gedcom = ((ExtendGedcomClosed)ep).getGedcom();
-      GedcomTracker tracker = (GedcomTracker)gedcom2tracker.get(gedcom);
-      gedcom.removeLifecycleListener(tracker);
-      gedcom.removeGedcomListener(tracker);
-      log(RESOURCES.getString("log.detached", gedcom.getName()));
-    }
-    
-    if (ep instanceof ExtendContextMenu) {
-      // show a context related tracker action
-      ((ExtendContextMenu)ep).getContext().addAction("**Tracker**", 
-          new Action2(RESOURCES.getString("action.remove"), false));
-    }
-    
-    if (ep instanceof ExtendMenubar) {
-      ExtendMenubar em = (ExtendMenubar)ep;
-      // show our log
-      if (!em.getWindowManager().show("tracker"))
-        em.getWindowManager().openWindow("tracker", "Tracker", new ImageIcon(this, "/Tracker.gif"), new JScrollPane(log));
-      // add a Tracker tools items 
-      em.addAction(ExtendMenubar.TOOLS_MENU, new EnableDisable());
-      em.addAction(ExtendMenubar.HELP_MENU, new About());
-    }
-    
-  }
-
   /** helper for logging text */ 
   private void log(String msg) {
-    // log a text message to our output area
-    try {
-      Document doc = log.getDocument();
-      doc.insertString(doc.getLength(), msg, null);
-      doc.insertString(doc.getLength(), "\n", null);
-    } catch (BadLocationException e) {
-      // can't happen
-    }
+    LOG.info("Tracker"+msg);
+    
+    TrackerView view = (TrackerView)workbench.getView(TrackerViewFactory.class);
+    if (view==null)
+      view = (TrackerView)workbench.openView(TrackerViewFactory.class);
+    
+    view.add(msg);
   }
   
   /**
@@ -134,7 +72,8 @@ public class TrackerPlugin implements Plugin {
     public EnableDisable() {
       setText();
     }
-    protected void execute() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
       active = !active;
       setText();
       log("Writing TRAcs is "+(active?"enabled":"disabled"));
@@ -151,55 +90,21 @@ public class TrackerPlugin implements Plugin {
     About() {
       setText(RESOURCES.getString("action.about"));
     }
-    protected void execute() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
       String text = RESOURCES.getString("info.txt", RESOURCES.getString((active?"info.active":"info.inactive")));
-      WindowManager.getInstance(getTarget()).openDialog("tracker.about", "Tracker", WindowManager.INFORMATION_MESSAGE, text, Action2.okOnly(), getTarget());
+      DialogHelper.openDialog("Tracker", DialogHelper.INFORMATION_MESSAGE, text, Action2.okOnly(), DialogHelper.getComponent(e));
     }
   } //About
     
   /**
    * Our gedcom listener
    */
-  private class GedcomTracker implements GedcomListener, GedcomLifecycleListener { 
+  private class GedcomTracker implements GedcomListener, GedcomMetaListener { 
 
     private TagPath PATH = new TagPath(".:TRAC");
-    private Set touchedEntities = new HashSet();
+    private Set<Entity> touchedEntities = new HashSet<Entity>();
 
-    public void handleLifecycleEvent(GedcomLifecycleEvent event) {
-      
-      // So we were not allowed to make changes to the underlying gedcom information
-      // during the gedcomlistener callbacks - no problem: we kept track of entities
-      // touched and now we'll update a counter for all touched entities ***after the 
-      // unit of work has done its part**  (this is still before the write lock is released)
-      
-      // The result should look like this
-      // 0 @..@ INDI
-      // 1 TRAC n
-      //
-      if (active)
-      if (event.getId()==GedcomLifecycleEvent.AFTER_UNIT_OF_WORK) {
-        
-        List list = new ArrayList(touchedEntities);
-        for (Iterator it = list.iterator(); it.hasNext();) {
-          Entity entity = (Entity) it.next();
-          int value;
-          try {
-            value = Integer.parseInt(entity.getValue(PATH, "0"))+1;
-          } catch (NumberFormatException e) {
-            value = 1;
-          }
-          entity.setValue(PATH, Integer.toString(value));
-        }
-      }
-      
-      // we reset our tracking state after the write lock has been released
-      if (event.getId()==GedcomLifecycleEvent.WRITE_LOCK_RELEASED) {
-        touchedEntities.clear();
-      }
-      
-      // done
-    }
-  
     /** 
      * notification that an entity has been added
      * 
@@ -274,39 +179,140 @@ public class TrackerPlugin implements Plugin {
       log("Property "+deleted.getTag()+" deleted from "+property.getEntity()+" in "+gedcom.getName());
       touchedEntities.add(property.getEntity());
     }
-    
-    /** 
-     * notification that properties have been linked
-     * 
-     * NOTE: this is a notification only and it's not allowed to make changes to the 
-     * underlying gedcom structure at this point!
-     * If Gedcom changes require subsequent changes performed by a plugin then this has 
-     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
-     * 
-     * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
-     */
-    public void gedcomPropertyLinked(Gedcom gedcom, Property from, Property to) {
-      log("Property "+from.getTag()+" in "+from.getEntity()+" is now linked with "+to.getTag()+" in "+to.getEntity()+" in "+gedcom.getName());
-      touchedEntities.add(from.getEntity());
-      touchedEntities.add(to.getEntity());
-    }
-    
-    /** 
-     * notification that a link between properties has been broken
-     * 
-     * NOTE: this is a notification only and it's not allowed to make changes to the 
-     * underlying gedcom structure at this point!
-     * If Gedcom changes require subsequent changes performed by a plugin then this has 
-     * to be deferred until the GedcomLifecycleListener-callback signals AFTER_UNIT_OF_WORK
-     * 
-     * @see GedcomListener#gedcomPropertyDeleted(Gedcom, Property, int, Property)
-     */
-    public void gedcomPropertyUnlinked(Gedcom gedcom, Property from, Property to) {
-      log("Property "+from.getTag()+" in "+from.getEntity()+" is no longer linked with "+to.getTag()+" in "+to.getEntity()+" in "+gedcom.getName());
-      touchedEntities.add(from.getEntity());
-      touchedEntities.add(to.getEntity());
+
+    @Override
+    public void gedcomAfterUnitOfWork(Gedcom gedcom) {
+      
+      // So we were not allowed to make changes to the underlying gedcom information
+      // during the gedcomlistener callbacks - no problem: we kept track of entities
+      // touched and now we'll update a counter for all touched entities ***after the 
+      // unit of work has done its part**  (this is still before the write lock is released)
+      
+      // The result should look like this
+      // 0 @..@ INDI
+      // 1 TRAC n
+      //
+      for (Entity entity : touchedEntities) {
+        int value;
+        try {
+          value = Integer.parseInt(entity.getValue(PATH, "0"))+1;
+        } catch (NumberFormatException e) {
+          value = 1;
+        }
+        entity.setValue(PATH, Integer.toString(value));
+      }
+      
     }
 
+    @Override
+    public void gedcomBeforeUnitOfWork(Gedcom gedcom) {
+      // TODO Auto-generated method stub
+      
+    }
+
+    @Override
+    public void gedcomHeaderChanged(Gedcom gedcom) {
+      // TODO Auto-generated method stub
+      
+    }
+
+    @Override
+    public void gedcomWriteLockAcquired(Gedcom gedcom) {
+      // TODO Auto-generated method stub
+      
+    }
+
+    @Override
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
+      // start fresh next time
+      touchedEntities.clear();
+    }
+    
   } //GedcomTracker
+
+  public void commitRequested(Workbench workbench) {
+    // TODO Auto-generated method stub
+  }
+
+
+  public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
+    gedcom.removeGedcomListener(tracker);
+    log(RESOURCES.getString("log.detached", gedcom.getName()));
+  }
+
+
+
+  public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
+    
+    gedcom.addGedcomListener(tracker);
+    log(RESOURCES.getString("log.attached", gedcom.getName()));
+  }
+
+
+
+  public void processStarted(Workbench workbench, Trackable process) {
+    // TODO Auto-generated method stub
+    
+  }
+
+
+
+  public void processStopped(Workbench workbench, Trackable process) {
+    // TODO Auto-generated method stub
+    
+  }
+
+
+
+  public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
+    // TODO Auto-generated method stub
+    
+  }
+
+
+
+  public void viewClosed(Workbench workbench, View view) {
+    // TODO Auto-generated method stub
+    
+  }
+
+
+
+  public void viewOpened(Workbench workbench, View view) {
+    // TODO Auto-generated method stub
+    
+  }
+
+
+
+  public void viewRestored(Workbench workbench, View view) {
+    // TODO Auto-generated method stub
+    
+  }
+
+
+
+  public boolean workbenchClosing(Workbench workbench) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public List<Action2> createActions(Context context, Purpose purpose) {
+    
+    List<Action2> actions = new ArrayList<Action2>();
+    
+    switch (purpose) {
+      case CONTEXT:
+        actions.add(new Action2(RESOURCES.getString("action.remove"), false));
+        break;
+      case MENU:
+        actions.add(new ActionProvider.EditActionGroup().add(new EnableDisable()));
+        actions.add(new ActionProvider.HelpActionGroup().add(new About()));
+        break;
+    }
+    
+    return actions;
+  }
   
 } //TrackerPlugin
