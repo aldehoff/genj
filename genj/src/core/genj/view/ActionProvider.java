@@ -26,6 +26,7 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.Resources;
 import genj.util.swing.Action2;
+import genj.util.swing.Action2.Group;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public interface ActionProvider {
   /**
    * Callback for actions on a list of entities
    */
-  public List<Action2> createActions(Context context, Purpose purpose);
+  public void createActions(Context context, Purpose purpose, Group into);
 
   /**
    * an action for separator indication

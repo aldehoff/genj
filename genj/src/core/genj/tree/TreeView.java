@@ -43,6 +43,7 @@ import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
+import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 import genj.view.ActionScreenshot;
 import genj.view.ContextProvider;
@@ -520,13 +521,11 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   /**
    * create actions for a context
    */
-  public List<Action2> createActions(Context context, Purpose purpose) {
-    
-    List<Action2> result = new ArrayList<Action2>(2);
+  public void createActions(Context context, Purpose purpose, Group result) {
     
     // not for own
     if (context instanceof TreeContext)
-      return result;
+      return;
 
     // for context menu of one record
     if (purpose==Purpose.CONTEXT&&context.getEntities().size()==1) {
@@ -540,7 +539,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     }
     
     // done
-    return result;
   }
 
   /**

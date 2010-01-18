@@ -20,13 +20,12 @@ import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 import genj.view.View;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -297,22 +296,21 @@ public class TrackerPlugin implements WorkbenchListener, ActionProvider {
     return false;
   }
 
-  @Override
-  public List<Action2> createActions(Context context, Purpose purpose) {
-    
-    List<Action2> actions = new ArrayList<Action2>();
+  /**
+   * provide plugin actions
+   */
+  public void createActions(Context context, Purpose purpose, Group result) {
     
     switch (purpose) {
       case CONTEXT:
-        actions.add(new Action2(RESOURCES.getString("action.remove"), false));
+        result.add(new Action2(RESOURCES.getString("action.remove"), false));
         break;
       case MENU:
-        actions.add(new ActionProvider.EditActionGroup().add(new EnableDisable()));
-        actions.add(new ActionProvider.HelpActionGroup().add(new About()));
+        result.add(new ActionProvider.EditActionGroup().add(new EnableDisable()));
+        result.add(new ActionProvider.HelpActionGroup().add(new About()));
         break;
     }
     
-    return actions;
   }
   
 } //TrackerPlugin

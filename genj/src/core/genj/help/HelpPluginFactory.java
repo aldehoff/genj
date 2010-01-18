@@ -5,11 +5,10 @@ import genj.app.Workbench;
 import genj.gedcom.Context;
 import genj.util.Resources;
 import genj.util.swing.Action2;
+import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HelpPluginFactory implements PluginFactory, ActionProvider {
   
@@ -21,14 +20,12 @@ public class HelpPluginFactory implements PluginFactory, ActionProvider {
     return this;
   }
 
-  public List<Action2> createActions(Context context, Purpose purpose) {
-    List<Action2> result = new ArrayList<Action2>();
+  public void createActions(Context context, Purpose purpose, Group result) {
     if (purpose == Purpose.MENU) {
       Action2.Group help = new ActionProvider.HelpActionGroup();
       help.add(new ActionHelp());
       result.add(help);
     }
-    return result;
   }
 
   /**

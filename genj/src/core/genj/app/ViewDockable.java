@@ -411,13 +411,13 @@ import swingx.docking.Docked;
       return popup;
     }
     
-    private List<Action2> getProvidedActions(List<ActionProvider> providers, Context context) {
+    private Action2.Group getProvidedActions(List<ActionProvider> providers, Context context) {
+      Action2.Group group = new Action2.Group("");
       // ask the action providers
-      List<Action2> actions = new ArrayList<Action2>(8);
       for (ActionProvider provider : providers) 
-        actions.addAll(provider.createActions(context, Purpose.CONTEXT));
+        provider.createActions(context, Purpose.CONTEXT, group);
       // done
-      return actions;
+      return group;
     }
 
     

@@ -658,7 +658,7 @@ public class Workbench extends JPanel implements SelectionSink {
   }
   
   public void addWorkbenchListener(WorkbenchListener listener) {
-    listeners.add(SafeProxy.harden(listener));
+    listeners.add(0, SafeProxy.harden(listener));
   }
 
   public void removeWorkbenchListener(WorkbenchListener listener) {
@@ -1203,16 +1203,23 @@ public class Workbench extends JPanel implements SelectionSink {
       for (ViewFactory factory : viewFactories) 
         views.add(new ActionOpenView(factory));
 
+      // Tools
+      groups.add(new ActionProvider.ToolsActionGroup());
+
+
       // merge providers' actions
       if (context.getGedcom()!=null) {
+        Action2.Group provided = new Action2.Group("ignore");
         for (ActionProvider provider : lookup(ActionProvider.class)) {
-          for (Action2 action : provider.createActions(context, Purpose.MENU)) {
+          provider.createActions(context, Purpose.MENU, provided);
+          for (Action2 action : provided) {
             if (action instanceof Action2.Group) {
               groups.add(action);
             } else {
               LOG.warning("ActionProvider "+provider+" returned a non-group for menu");
             }
           }
+          provided.clear();
         }
       }
       
@@ -1228,8 +1235,11 @@ public class Workbench extends JPanel implements SelectionSink {
       // Build menu
       MenuHelper mh = new MenuHelper().pushMenu(this);
       for (Action2 group : groups) {
-        mh.createMenu((Action2.Group)group);
-        mh.popMenu();
+        Action2.Group subgroup = (Action2.Group)group;
+        if (subgroup.size()>0) {
+          mh.createMenu(subgroup);
+          mh.popMenu();
+        }
       }
       
       // remember actions
@@ -1319,9 +1329,12 @@ public class Workbench extends JPanel implements SelectionSink {
       
       // let providers speak
       if (context.getGedcom()!=null) {
+        Action2.Group actions = new Action2.Group("ignore");
         addSeparator();
         for (ActionProvider provider : lookup(ActionProvider.class)) {
-          for (Action2 action : provider.createActions(context, Purpose.TOOLBAR)) {
+          actions.clear();
+          provider.createActions(context, Purpose.TOOLBAR, actions);
+          for (Action2 action : actions) {
             if (action instanceof Action2.Group)
               LOG.warning("ActionProvider "+provider+" returned a group for toolbar");
             else {

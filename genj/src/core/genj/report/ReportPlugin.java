@@ -28,6 +28,7 @@ import genj.gedcom.Property;
 import genj.report.Report.Category;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
+import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 import genj.view.View;
 
@@ -76,9 +77,7 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
   /**
    * actions we provide
    */
-  public List<Action2> createActions(Context context, Purpose purpose) {
-    
-    List<Action2> result = new ArrayList<Action2>();
+  public void createActions(Context context, Purpose purpose, Group result) {
     
     switch (purpose) {
       case TOOLBAR:
@@ -125,7 +124,6 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
     }
 
     // done
-    return result;
   }
   
   /**

@@ -70,11 +70,11 @@ import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -292,10 +292,8 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
   /**
    * Actions for context
    */
-  public List<Action2> createActions(Context context, Purpose purpose) {
+  public void createActions(Context context, Purpose purpose, Group result) {
     
-    List<Action2> result = new ArrayList<Action2>();
-
     switch (purpose) {
       case MENU:
     	  
@@ -367,7 +365,6 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
 
     
     // done
-    return result;
   }
 
   /**
