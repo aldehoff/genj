@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="images"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/PLUGIN"/>
 	<classpathentry exported="true" kind="lib" path="language/en"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/GenJ"/>
 	<classpathentry kind="output" path="build/eclipse"/>
 </classpath>
