@@ -171,15 +171,6 @@ public class App {
         // Log is up
         LOG.info("Startup");
         
-        // Disclaimer - check version and registry value
-        String version = Version.getInstance().getVersionString();
-        if (!version.equals(REGISTRY.get("disclaimer",""))) {
-          // keep it      
-          REGISTRY.put("disclaimer", version);
-          // show disclaimer
-          DialogHelper.openDialog("Disclaimer", DialogHelper.INFORMATION_MESSAGE, RESOURCES.getString("app.disclaimer"), Action2.okOnly(), null);    
-        }
-        
         // patch JPopupMenu consuming events on close
         UIManager.put("PopupMenu.consumeEventOnClose", new Boolean(false));
         
@@ -205,7 +196,16 @@ public class App {
         });
         REGISTRY.get("frame", frame);
         frame.setVisible(true);
-        
+
+        // Disclaimer - check version and registry value
+        String version = Version.getInstance().getVersionString();
+        if (!version.equals(REGISTRY.get("disclaimer",""))) {
+          // keep it      
+          REGISTRY.put("disclaimer", version);
+          // show disclaimer
+          DialogHelper.openDialog("Disclaimer", DialogHelper.INFORMATION_MESSAGE, RESOURCES.getString("app.disclaimer"), Action2.okOnly(), frame);    
+        }
+
         // connect
         workbench.addWorkbenchListener(new WorkbenchAdapter() {
           @Override
