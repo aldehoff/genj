@@ -19,6 +19,8 @@
  */
 package genj.gedcom;
 
+import genj.gedcom.time.Delta;
+
 /**
  * Gedcom Property : EVENT
  */
@@ -92,6 +94,69 @@ public class PropertyEvent extends Property {
    */
   public void setValue(String value) {
     setKnownToHaveHappened(value.toLowerCase().equals("y"));
+  }
+  
+  @Override
+  void propagatePropertyChanged(Property property, String oldValue) {
+    super.propagatePropertyChanged(property, oldValue);
+    
+    // sniff for changes in date
+    if (property instanceof PropertyDate && getProperty("DATE")==property && getParent() instanceof Indi) {
+      // propagate birth changes to co-located other events
+      if (getParent().getProperty("BIRT") == this) {
+        for (PropertyEvent event : getParent().getProperties(PropertyEvent.class)) {
+          if (event!=this)
+            event.updateAge((PropertyDate)property);
+        }
+      } else if (!"BIRT".equals(getTag())){
+        updateAge();
+      }
+    }
+
+    // done
+  }
+
+
+  /**
+   * Update age information for this event
+   */
+  public void updateAge() {
+    
+    if (!(getParent() instanceof Indi ))
+      return;
+    
+    updateAge( ((Indi)getParent()).getBirthDate() );
+    
+  }
+  
+  /*package*/ void updateAge(PropertyDate birt) {
+    
+    // got a date?
+    PropertyDate date = getDate(true);
+    if (date==birt)
+      return;
+    
+    // got age?
+    PropertyAge age = (PropertyAge) getProperty("AGE");
+    if (age==null) {
+      if (date==null || !Options.getInstance().isAddAge)
+        return;
+      age = (PropertyAge)addProperty("AGE", "");
+    }
+    
+    // no age computable?
+    if (date==null||birt==null||!birt.isValid()) {
+      // leave it alone
+      return;
+    }
+    
+    // compute
+    if (birt.getStart().compareTo(date.getStart())>=0)
+      age.setValue("");
+    else
+      age.setValue(Delta.get(birt.getStart(), date.getStart()));
+    
+    // done
   }
 
   /**

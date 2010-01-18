@@ -136,6 +136,13 @@ public class PropertyAge extends Property {
     
     // Done
   }
+  
+  public void setValue(Delta age) {
+    String old = getValue();
+    this.age.setValue(age);
+    // notify
+    propagatePropertyChanged(this, old);
+  }
 
   /**
    * Update the age

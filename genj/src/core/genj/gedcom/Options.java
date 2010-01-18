@@ -54,6 +54,9 @@ public class Options extends OptionProvider {
   /** option - wether to add GIVN|SURN information on name changes */
   public boolean isAddGivenSurname = false;
   
+  /** option - wether to main AGE information for events */
+  public boolean isAddAge = false;
+  
   /** option - whether to use "last,first" or "first last" */
   public int nameFormat = 0;
   public final static String[] nameFormats = {
