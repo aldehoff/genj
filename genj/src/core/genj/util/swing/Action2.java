@@ -300,29 +300,33 @@ public class Action2 extends AbstractAction {
     	this(text,null);
     }
 
-    public void add(Action2 action) {
+    public Group add(Action2 action) {
       // merge into known
       for (Action old : this) {
         if (old.equals(action)) {
           if (old instanceof Action2.Group) 
             ((Action2.Group) old).addAll((Action2.Group)action);
-          return;
+          return this;
         }
       }
       // or keep as is
       actions.add(action);
+      return this;
     }
 
-    public void addAll(Group action) {
+    public Group addAll(Group action) {
       actions.addAll(action.actions);
+      return this;
     }
     
-    public void addAll(List<Action2> actions) {
+    public Group addAll(List<Action2> actions) {
       this.actions.addAll(actions);
+      return this;
     }
     
-    public void clear() {
+    public Group clear() {
       actions.clear();
+      return this;
     }
 
     public int size() {

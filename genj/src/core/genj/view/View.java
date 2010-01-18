@@ -21,6 +21,7 @@ package genj.view;
 
 import genj.gedcom.Context;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.LayoutManager;
 import java.awt.Window;
@@ -37,6 +38,7 @@ public abstract class View extends JPanel implements SelectionListener {
    * Constructor
    */
   public View() {
+    super(new BorderLayout()); 
   }
   
   /**
@@ -44,6 +46,17 @@ public abstract class View extends JPanel implements SelectionListener {
    */
   public View(LayoutManager lm) {
     super(lm);
+  }
+  
+  @Override
+  public Component add(Component comp) {
+    // first w/border layout goes into center
+    if (getLayout() instanceof BorderLayout && getComponentCount()==0)
+      super.add(comp, BorderLayout.CENTER);
+    else
+      super.add(comp);
+    
+    return comp;
   }
   
   /**
