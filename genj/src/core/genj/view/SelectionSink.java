@@ -2,7 +2,7 @@ package genj.view;
 
 import genj.gedcom.Context;
 import genj.util.swing.DialogHelper;
-import genj.util.swing.DialogHelper.ContainerVisitor;
+import genj.util.swing.DialogHelper.ComponentVisitor;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
@@ -37,7 +37,7 @@ public interface SelectionSink {
 
     public static void fireSelection(Component source, Context context, boolean isActionPerformed) {
 
-      SelectionSink sink = (SelectionSink)DialogHelper.visitContainers(source, new ContainerVisitor() {
+      SelectionSink sink = (SelectionSink)DialogHelper.visitOwners(source, new ComponentVisitor() {
         public Component visit(Component parent, Component child) {
           if (parent instanceof RootPaneContainer) {
             Container contentPane = ((RootPaneContainer)parent).getContentPane();

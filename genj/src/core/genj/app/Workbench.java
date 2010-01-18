@@ -60,6 +60,7 @@ import genj.view.ActionProvider.Purpose;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -99,6 +100,7 @@ import swingx.docking.DefaultDockable;
 import swingx.docking.Dockable;
 import swingx.docking.Docked;
 import swingx.docking.DockingPane;
+import swingx.docking.dock.TabbedDock;
 import swingx.docking.persistence.XMLPersister;
 
 /**
@@ -110,7 +112,9 @@ public class Workbench extends JPanel implements SelectionSink {
   private final static String 
     ACC_SAVE = "ctrl S", 
     ACC_NEW = "ctrl N", 
-    ACC_OPEN = "ctrl O";
+    ACC_OPEN = "ctrl O",
+    ACC_CLOSE = "ctrl W";
+
   
   private final static Resources RES = Resources.get(Workbench.class);
   private final static Registry REGISTRY = Registry.get(Workbench.class);
@@ -156,6 +160,8 @@ public class Workbench extends JPanel implements SelectionSink {
     else
       new LayoutPersister(dockingPane, new InputStreamReader(getClass().getResourceAsStream("layout.xml"))).load();
 
+    // hook up close view action
+    new ActionCloseView();
     
     // Done
   }
@@ -164,7 +170,7 @@ public class Workbench extends JPanel implements SelectionSink {
   public void addNotify() {
     super.addNotify();
     // install menu into frame
-    DialogHelper.visitContainers(this, new DialogHelper.ContainerVisitor() {
+    DialogHelper.visitContainers(this, new DialogHelper.ComponentVisitor() {
       public Component visit(Component parent, Component child) {
         if (parent instanceof JFrame)
           ((JFrame)parent).setJMenuBar(menu);
@@ -947,7 +953,36 @@ public class Workbench extends JPanel implements SelectionSink {
   } // ActionSave
 
   /**
-   * Action - View
+   * Action - Close View (for keyboard binding only)
+   *
+   */
+  private class ActionCloseView extends Action2 {
+    public ActionCloseView() {
+      install(Workbench.this, ACC_CLOSE, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      DialogHelper.visitContainers(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner(), new DialogHelper.ComponentVisitor() {
+        public Component visit(Component parent, Component child) {
+          // check any tabbed pane we can find for possibly contained views
+          if (child instanceof TabbedDock) {
+            ((ViewDockable)((TabbedDock)child).getSelectedDockable()).close();
+            return child;
+          }
+          // encountered view?
+          if (child instanceof View) {
+            ViewDockable.getDockable((View)child).close();
+            return child;
+          }
+          return null;
+        }
+      });
+
+    }
+  }
+  
+  /**
+   * Action - Open View
    */
   private class ActionOpenView extends Action2 {
     /** which ViewFactory */
@@ -1505,6 +1540,7 @@ public class Workbench extends JPanel implements SelectionSink {
     @Override
     protected JDialog createDialog() {
       JDialog dialog = super.createDialog();
+      dialog.setUndecorated(true);
       if (context.getGedcom()!=null);
         updateTitle(dialog, context.getGedcom()!=null ? context.getGedcom().getName() : "");
       return dialog;

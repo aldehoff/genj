@@ -151,7 +151,7 @@ public class DialogHelper {
   private static Object openDialogImpl(String title, int messageType,  JComponent content, Action[] actions, Component source) {
 
     // find window for source
-    source = visitContainers(source, new ContainerVisitor() {
+    source = visitOwners(source, new ComponentVisitor() {
       public Component visit(Component parent, Component child) {
         return parent ==null ? child : null;
       }
@@ -264,11 +264,30 @@ public class DialogHelper {
   }
   
   /**
-   * Visit parents of a component recursively. This method takes (popup) menu containment
-   * into account so one can recursively go from a component in a menu up to the component
-   * showing the menu.
+   * Visit containers of a component recursively. This method follows the getParent()
+   * hierarchy.
    */
-  public static Component visitContainers(Component component, ContainerVisitor visitor) {
+  public static Component visitContainers(Component component, ComponentVisitor visitor) {
+    do {
+      Component parent = component.getParent();
+      
+      Component result = visitor.visit(parent, component);
+      if (result!=null)
+        return result;
+      
+      component = parent;
+      
+    } while (component!=null);
+    
+    return null;
+  }
+  
+  /**
+   * Visit owners of a component recursively. This method takes (popup) menu containment
+   * into account so one can recursively go from a component in a menu up to the owning
+   * component showing the menu.
+   */
+  public static Component visitOwners(Component component, ComponentVisitor visitor) {
     
     do {
       Component parent;
@@ -294,20 +313,20 @@ public class DialogHelper {
     return null;
   }
     
-  public static Component visitContainers(EventObject event, ContainerVisitor visitor) {
-    return visitContainers((Component)event.getSource(), visitor);
+  public static Component visitOwners(EventObject event, ComponentVisitor visitor) {
+    return visitOwners((Component)event.getSource(), visitor);
   }
   
   /**
-   * interface for visiting container hierarchy
+   * interface for visiting components
    */
-  public interface ContainerVisitor {
+  public interface ComponentVisitor {
     
     /** 
-     * visit a parent and child 
+     * visit a component (owner or container) and its child 
      * @return null to continue in the parent hierarchy, !null to abort otherwise
      */
-    public Component visit(Component parent, Component child);
+    public Component visit(Component component, Component child);
   }
 
   /**

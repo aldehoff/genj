@@ -28,7 +28,7 @@ import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.MenuHelper;
-import genj.util.swing.DialogHelper.ContainerVisitor;
+import genj.util.swing.DialogHelper.ComponentVisitor;
 import genj.view.ActionProvider;
 import genj.view.ContextProvider;
 import genj.view.SelectionSink;
@@ -70,9 +70,6 @@ import swingx.docking.Docked;
  */
 /* package */class ViewDockable extends DefaultDockable implements WorkbenchListener {
   
-  private final static String 
-    ACC_CLOSE = "ctrl W";
-  
   private final static Logger LOG = Logger.getLogger("genj.app");
   private final static ContextHook HOOK = new ContextHook();
 
@@ -104,15 +101,26 @@ import swingx.docking.Docked;
     setIcon(factory.getImage());
   }
   
+  public static ViewDockable getDockable(View view) {
+    return (ViewDockable)view.getClientProperty(ViewDockable.class);
+  }
+  
+  public void close() {
+    workbench.closeView(factory.getClass());
+  }
+  
   public View getView() {
     return (View)getContent();
   }
 
+  public ViewFactory getViewFactory() {
+    return factory;
+  }
   
   @Override
   public void docked(final Docked docked) {
     super.docked(docked);
-
+    
     // listen to workbench
     workbench.addWorkbenchListener(this);
     
@@ -139,11 +147,6 @@ import swingx.docking.Docked;
         toolbar.set(true);
       }
     });
-
-    // .. a button for editing the View's settings
-    // FIXME docket show settings button
-    // if (SettingsWidget.hasSettings(view))
-    // bh.create(new ActionOpenSettings());
 
     // .. a button for printing View
     // FIXME docket show print button
@@ -233,7 +236,7 @@ import swingx.docking.Docked;
      */
     private static Workbench getWorkbench(Component component) {
       
-      Component result = DialogHelper.visitContainers(component, new ContainerVisitor() {
+      Component result = DialogHelper.visitOwners(component, new ComponentVisitor() {
         public Component visit(Component parent, Component child) {
           if (parent instanceof Workbench)
             return (Workbench)parent;
@@ -435,7 +438,6 @@ import swingx.docking.Docked;
     protected ActionCloseView() {
       setImage(Images.imgClose);
       setTip(Resources.get(this).getString("cc.tip.close_view", factory.getTitle()));
-      install(view, ACC_CLOSE, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     /** run */
