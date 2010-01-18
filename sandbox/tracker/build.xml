@@ -35,7 +35,7 @@
 
     <mkdir dir="./build/classes"/>
     <javac srcdir="src" destdir="./build/classes"
-           debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.4" target="1.4">
+           debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" source="1.6" target="1.6">
       <classpath refid="project.class.path"/>
     </javac>
 
