@@ -85,7 +85,7 @@ public class ReportSummaryOfRecords extends Report {
     // create a document
     Document doc = new Document(translate("title", gedcom.getName()));
 
-    doc.addText("This report shows information about all records in the Gedcom file "+gedcom.getName());
+    doc.addText(translate("outputHeader")+": "+gedcom.getName());
     
     // prepare filter
     Pattern tagFilter = null;
@@ -96,10 +96,10 @@ public class ReportSummaryOfRecords extends Report {
        println("Filter for properties is not a valid regular expression ("+e.getMessage()+")");
     }
 
-    // Loop through individuals, families and notes
+    // Loop through individuals, families //and notes
     exportEntities(gedcom.getEntities(Gedcom.INDI, "INDI:NAME"), doc, tagFilter);
     exportEntities(gedcom.getEntities(Gedcom.FAM, "FAM:HUSB:*:..:NAME"), doc, tagFilter);
-    exportEntities(gedcom.getEntities(Gedcom.NOTE, "NOTE"), doc, tagFilter);
+    //exportEntities(gedcom.getEntities(Gedcom.NOTE, "NOTE"), doc, tagFilter);
 
     // add a new page here - before the index is generated
     doc.nextPage();
@@ -198,8 +198,8 @@ public class ReportSummaryOfRecords extends Report {
 
       // ... and the text
       String format = "";
-      if (level==0) format = "text-decoration=underline";
-      if (level==1) format =  "font-style=italic";
+      if (level==0) format = "font-weight=bold";
+      if (level==1) format = "font-style=italic";
       doc.addText(Gedcom.getName(prop.getTag()), format);
       doc.addText(" ");
 
