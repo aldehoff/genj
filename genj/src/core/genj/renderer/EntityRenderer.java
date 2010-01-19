@@ -25,18 +25,17 @@ import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.util.Dimension2d;
+import genj.util.EnvironmentChecker;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.RenderingHints.Key;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
 import java.awt.geom.Dimension2D;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -67,22 +66,7 @@ import javax.swing.text.html.parser.ParserDelegator;
  */
 public class EntityRenderer {
 
-  public final static Key KEY_RENDER_SELECTION = new RenderSelectionHintKey();
-  
-  /**
-   * a hint for whether to render selections or not
-   */
-  private static class RenderSelectionHintKey extends Key {
-    private RenderSelectionHintKey() {
-      super(0);
-    }
-
-    @Override
-    public boolean isCompatibleValue(Object val) {
-      return val instanceof Boolean;
-    }
-  }
-
+  private final static Logger LOG = Logger.getLogger("genj.renderer");
   
   // this will initialize and load the html32 dtd
   // "/javax/swing/text/html/parser/html32.bdtd"
@@ -110,9 +94,6 @@ public class EntityRenderer {
   /** a cached dtd for html */
   private static DTD dtd = null;
   
-  /** current font renderer context */
-  private FontRenderContext context;
-  
   /** the entity we're looking at */
   private Entity entity;
   
@@ -125,12 +106,9 @@ public class EntityRenderer {
   /** whether we have a debug mode */
   private boolean isDebug = false;
   
-  /** a resolution */
-  private Point dpi = new Point(96,96);
+  /** current graphics context */
+  private Graphics2D graphics;
   
-  /** whether we scale fonts to resolution */
-  private boolean isScaleFonts = false;
-
   /**
    * Constructor
    */  
@@ -188,67 +166,40 @@ public class EntityRenderer {
   }
   
   /**
-   * Setup specific resolution (dpi)
-   */
-  public EntityRenderer setResolution(Point set) {
-    dpi = new Point(set);
-    // done
-    return this;
-  }
-  
-  /**
-   * Setup specific resolution (dpi)
-   */
-  public EntityRenderer setResolution(Dimension set) {
-    dpi = new Point(set.width, set.height);
-    // done
-    return this;
-  }
-  
-  /**
-   * Setup font scaling
-   */
-  public EntityRenderer setScaleFonts(boolean set) {
-    isScaleFonts = set;
-    // done
-    return this;
-  }
-  
-  /**
    * Render the entity on given context
    */
   public void render(Graphics g, Entity e, Rectangle r) {
-    
-    // keep the entity and graphics
-    entity = e;
-    context = ((Graphics2D)g).getFontRenderContext();
-    
-    // invalidate views 
-    for (PropertyView pv : propViews) 
-      pv.invalidate();
-    
-    // and make sure TableView's update their grid
-    for (View tv : tableViews) {
-      // this will cause invalidateGrid on a javax.swing.text.html.TableView
-      try {
-        tv.replace(0,0,null);
-      } catch (Throwable t) {
-      }
-    }
-    
-    // set the size of root
-    root.setSize((float)r.getWidth(),(float)r.getHeight());
-    
-    // clip it
-    Rectangle oc = g.getClipBounds();
-    g.clipRect(r.x,r.y,r.width,r.height);
 
-    // show it
-    root.paint(g, r);
-    
-    // restore clip
-    g.setClip(oc.x,oc.y,oc.width,oc.height);
-    
+    try {
+      // keep the entity and graphics
+      entity = e;
+      graphics = (Graphics2D)g;
+      
+      // invalidate views 
+      for (PropertyView pv : propViews) 
+        pv.invalidate();
+      
+      // and make sure TableView's update their grid
+      for (View tv : tableViews) {
+        // this will cause invalidateGrid on a javax.swing.text.html.TableView
+        tv.replace(0,0,null);
+      }
+      
+      // set the size of root - this triggers a layout of the views
+      root.setSize((float)r.getWidth(),(float)r.getHeight());
+      
+      // clip and paint it
+      Rectangle oc = g.getClipBounds();
+      g.clipRect(r.x,r.y,r.width,r.height);
+      try {
+        root.paint(g, r);
+      } finally {
+        g.setClip(oc.x,oc.y,oc.width,oc.height);
+      }
+
+    } catch (Throwable t) {
+      LOG.log(Level.WARNING, "can't render", t);
+    }
     // done
   }
   
@@ -268,8 +219,10 @@ public class EntityRenderer {
      */
     public Font getFont(AttributeSet attr) {
       Font font = super.getFont(attr);
-      if (isScaleFonts) {
-        float factor = dpi.y/72F; 
+      // see http://www.3rd-evolution.de/tkrammer/docs/java_font_size.html
+      // While Java assumes 72 dpi screen resolution Windows uses 96 dpi or 120 dpi depending on your font size setting in the display properties. 
+      if (!EnvironmentChecker.isMac()) {
+        float factor = getDPI(graphics).y/72F; 
         font = font.deriveFont(factor*font.getSize2D());
       }
       return font;
@@ -459,10 +412,21 @@ public class EntityRenderer {
       // height we prefer
       float height = (float)getPreferredSpan().getHeight();
       // where's first line's baseline
-      LineMetrics lm = getFont().getLineMetrics("", context);
-      float h = lm.getHeight();
-      float d = lm.getDescent();
+      FontMetrics fm = getGraphics().getFontMetrics();
+      float h = fm.getHeight();
+      float d = fm.getDescent();
       return (h-d)/height;
+    }
+    
+    @Override
+    public Graphics getGraphics() {
+      View view = this;
+      while (view!=null) {
+        if (view instanceof RootView)
+          return ((RootView)view).getGraphics();
+        view = view.getParent();
+      }
+      throw new IllegalStateException("can't find graphics for view");
     }
     
     /**
@@ -540,11 +504,7 @@ public class EntityRenderer {
 
       // keep view
       this.view = view;
-      
-//      try {
-        view.setParent(this);
-//      } catch (Throwable t) {
-//      }
+      view.setParent(this);
       
       // done
     }
@@ -560,10 +520,7 @@ public class EntityRenderer {
      * we let the wrapped view do the painting
      */
     public void paint(Graphics g, Shape allocation) {
-      try {
-        view.paint(g, allocation);
-      } catch (Throwable t) {
-      }
+      view.paint(g, allocation);
     }
 
     /** 
@@ -572,7 +529,12 @@ public class EntityRenderer {
     public Document getDocument() {
       return doc;
     }
-
+    
+    @Override
+    public Graphics getGraphics() {
+      return graphics;
+    }
+    
     /**
      * the wrapped view needs to be sized
      */    
@@ -635,7 +597,7 @@ public class EntityRenderer {
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension2D getPreferredSpan() {
-      return PropertyRenderer.DEFAULT.getSizeImpl(getFont(), context, null, txt, new HashMap<String, String>(), dpi);
+      return PropertyRenderer.DEFAULT.getSizeImpl(null, txt, new HashMap<String, String>(), (Graphics2D)getGraphics());
     }
   } //LocalizeView
 
@@ -740,6 +702,7 @@ public class EntityRenderer {
       return result;
     }
     
+    
     /**
      * @see javax.swing.text.View#paint(Graphics, Shape)
      */
@@ -760,7 +723,7 @@ public class EntityRenderer {
       // clip and render
       Shape old = graphics.getClip();
       graphics.clip(r);
-      renderer.render(graphics, r, property, attributes, dpi);
+      renderer.render(graphics, r, property, attributes);
       g.setClip(old);
       // done
     }
@@ -775,7 +738,8 @@ public class EntityRenderer {
       if (renderer==null)
         return new Dimension(0,0);
       // calc span
-      Dimension2D d = renderer.getSize(getFont(), context, property, attributes, dpi);
+      graphics.setFont(getFont());
+      Dimension2D d = renderer.getSize(property, attributes, (Graphics2D)getGraphics());
       // check max
       d = new Dimension2d(Math.min(d.getWidth(), root.width*max/100), d.getHeight());
       return d;
@@ -799,5 +763,15 @@ public class EntityRenderer {
     }
     
   } //PropertyView
+
+  /**
+   * resolve DPI From graphics
+   */
+  public static Point getDPI(Graphics2D graphics) {
+    Point dpi = (Point)graphics.getRenderingHint(DPIHintKey.KEY);
+    if (dpi==null)
+      dpi = Options.getInstance().getDPI();
+    return dpi;
+  }
  
 } //EntityRenderer

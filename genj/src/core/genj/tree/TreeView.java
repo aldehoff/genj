@@ -32,6 +32,7 @@ import genj.renderer.BlueprintManager;
 import genj.renderer.ChooseBlueprintAction;
 import genj.renderer.EntityRenderer;
 import genj.renderer.Options;
+import genj.renderer.RenderSelectionHintKey;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -90,9 +91,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   protected final static Resources RESOURCES = Resources.get(TreeView.class);
   protected final static String TITLE = RESOURCES.getString("title");
   
-  
   /** the units we use */
-  private final Point DPI;
   private final Point2D DPMM;
   
   /** our model */
@@ -115,9 +114,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   
   /** whether we use antialising */
   private boolean isAntialiasing = false;
-  
-  /** whether we adjust fonts to correct resolution */
-  private boolean isAdjustFonts = false; 
   
   /** our colors */
   private Map<String,Color> colors = new HashMap<String, Color>();
@@ -145,10 +141,10 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   public TreeView() {
     
     // remember
-    DPI = Options.getInstance().getDPI();
+    Point dpi = Options.getInstance().getDPI();
     DPMM = new Point2D.Float(
-      DPI.x / 2.54F / 10,
-      DPI.y / 2.54F / 10
+      dpi.x / 2.54F / 10,
+      dpi.y / 2.54F / 10
     );
     
     // grab colors
@@ -161,7 +157,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     
     // grab font
     contentFont = REGISTRY.get("font", contentFont);
-    isAdjustFonts = REGISTRY.get("adjust", isAdjustFonts);
     
     // grab blueprints
     BlueprintManager bpm = BlueprintManager.getInstance();
@@ -231,7 +226,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     REGISTRY.put("pad"     , m.pad   );
     REGISTRY.put("antial"  , isAntialiasing );
     REGISTRY.put("font"    , contentFont);
-    REGISTRY.put("adjust"  , isAdjustFonts);
     REGISTRY.put("color", colors);
     // blueprints
     for (String tag : tag2blueprint.keySet()) {
@@ -300,25 +294,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   public void setAntialiasing(boolean set) {
     if (isAntialiasing==set) return;
     isAntialiasing = set;
-    repaint();
-  }
-  
-  /**
-   * Access - isAdjustFonts.
-   */
-  public boolean isAdjustFonts() {
-    return isAdjustFonts;
-  }
-
-  /**
-   * Access - isAdjustFonts
-   */
-  public void setAdjustFonts(boolean set) {
-    if (isAdjustFonts==set) return;
-    isAdjustFonts = set;
-    // reset renderers
-    tag2renderer.clear();
-    // show
     repaint();
   }
   
@@ -419,7 +394,8 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   }
   
   /**
-   * Scroll to given position   */
+   * Scroll to given position
+   */
   private void scrollTo(Point p) {
     // remember
     center.setLocation(p);
@@ -436,7 +412,8 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   }
   
   /**
-   * Scroll to current entity   */
+   * Scroll to current entity
+   */
   private void scrollToCurrent() {
     
     Entity current = context.getEntity();
@@ -591,13 +568,12 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   }
   
   /**
-   * Resolve a renderer   */
+   * Resolve a renderer
+   */
   private EntityRenderer getEntityRenderer(String tag) {
     EntityRenderer result = tag2renderer.get(tag);
     if (result==null) { 
       result = createEntityRenderer(tag);
-      result.setResolution(DPI);
-      result.setScaleFonts(isAdjustFonts);
       tag2renderer.put(tag,result);
     }
     return result;
@@ -659,10 +635,12 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   }
 
   /**
-   * Overview   */
+   * Overview
+   */
   private class Overview extends ViewPortOverview implements ModelListener {
     /**
-     * Constructor     */
+     * Constructor
+     */
     private Overview(JScrollPane scroll) {
       super(scroll.getViewport());
       super.setSize(new Dimension(TreeView.this.getWidth()/4,TreeView.this.getHeight()/4));
@@ -846,7 +824,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
       gw.setAntialiasing(isAntialiasing);
       
       // render selection?
-      Boolean selection = (Boolean) ((Graphics2D)g).getRenderingHint(EntityRenderer.KEY_RENDER_SELECTION);
+      Boolean selection = (Boolean) ((Graphics2D)g).getRenderingHint(RenderSelectionHintKey.KEY);
       if (selection==null)
         selection = true;
       
@@ -987,10 +965,12 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   } //ActionTree
 
   /**
-   * Action Orientation change   */
+   * Action Orientation change
+   */
   private class ActionOrientation extends Action2 {
     /**
-     * Constructor     */
+     * Constructor
+     */
     private ActionOrientation() {
       super.setImage(Images.imgHori);
       super.setTip(RESOURCES, "orientation.tip");

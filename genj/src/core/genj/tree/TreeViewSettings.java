@@ -60,7 +60,7 @@ public class TreeViewSettings extends JTabbedPane {
   /** members  */
   private JSpinner[] spinners = new JSpinner[5]; 
   private ColorsWidget colors;
-  private JCheckBox checkBending, checkAntialiasing, checkAdjustFonts, checkMarrSymbols;
+  private JCheckBox checkBending, checkAntialiasing, checkMarrSymbols;
   private Action2 
     up = new Move(-1), 
     down = new Move( 1), 
@@ -96,7 +96,6 @@ public class TreeViewSettings extends JTabbedPane {
 
     checkBending = createCheck("bend", view.getModel().isBendArcs());
     checkAntialiasing = createCheck("antialiasing", view.isAntialising());
-    checkAdjustFonts = createCheck("adjustfonts", view.isAdjustFonts());
     checkMarrSymbols = createCheck("marrsymbols", view.getModel().isMarrSymbols());
     font = new FontChooser();
     font.setSelectedFont(view.getContentFont());
@@ -104,7 +103,6 @@ public class TreeViewSettings extends JTabbedPane {
     
     options.add(checkBending);
     options.add(checkAntialiasing);
-    options.add(checkAdjustFonts);
     options.add(checkMarrSymbols);
     options.add(font);    
 
@@ -268,7 +266,6 @@ public class TreeViewSettings extends JTabbedPane {
       // options
       view.getModel().setBendArcs(checkBending.isSelected());
       view.setAntialiasing(checkAntialiasing.isSelected());
-      view.setAdjustFonts(checkAdjustFonts.isSelected());
       view.setContentFont(font.getSelectedFont());
       view.getModel().setMarrSymbols(checkMarrSymbols.isSelected());
       // metrics

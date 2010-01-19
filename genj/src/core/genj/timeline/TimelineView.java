@@ -26,8 +26,8 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
-import genj.renderer.EntityRenderer;
 import genj.renderer.Options;
+import genj.renderer.RenderSelectionHintKey;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.WordBuffer;
@@ -577,7 +577,7 @@ public class TimelineView extends View {
     protected void paintComponent(Graphics g) {
       
       // render selection?
-      Boolean rsel = (Boolean) ((Graphics2D)g).getRenderingHint(EntityRenderer.KEY_RENDER_SELECTION);
+      Boolean rsel = (Boolean) ((Graphics2D)g).getRenderingHint(RenderSelectionHintKey.KEY);
       if (rsel==null)
         rsel = true;
       

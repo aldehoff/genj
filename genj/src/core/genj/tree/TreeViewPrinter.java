@@ -21,6 +21,7 @@ package genj.tree;
 
 import genj.gedcom.Gedcom;
 import genj.print.Printer;
+import genj.renderer.DPIHintKey;
 import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
@@ -81,9 +82,11 @@ public class TreeViewPrinter implements Printer {
     renderer.cIndiShape     = Color.black;
 
     if (!preview) {    
-      renderer.indiRenderer   = tree.createEntityRenderer(Gedcom.INDI).setResolution(dpi);
-      renderer.famRenderer    =  tree.createEntityRenderer(Gedcom.FAM).setResolution(dpi);
+      renderer.indiRenderer   = tree.createEntityRenderer(Gedcom.INDI);
+      renderer.famRenderer    =  tree.createEntityRenderer(Gedcom.FAM);
     }
+    
+    g.setRenderingHint(DPIHintKey.KEY, dpi);
     
     renderer.render(graphics, tree.getModel());
 
