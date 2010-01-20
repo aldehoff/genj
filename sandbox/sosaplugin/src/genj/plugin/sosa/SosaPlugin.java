@@ -10,6 +10,7 @@ package genj.plugin.sosa;
 import genj.app.Workbench;
 import genj.app.WorkbenchListener;
 import genj.gedcom.Context;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.util.Registry;
@@ -55,7 +56,10 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
   public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
     // store indexer state
     Indexation index = gedcom2indexation.remove(gedcom);
-    REGISTRY.put(gedcom.getName(), index.isEnabled());
+    Indi root = index.getRoot();
+    index.setRoot(null);
+    REGISTRY.put(gedcom.getName()+".on", index.isEnabled());
+    REGISTRY.put(gedcom.getName()+".root", root!=null ? root.getId() : "");
     // detach from gedcom
     gedcom.removeGedcomListener(index);
   }
@@ -64,7 +68,11 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
     
     // init/restore indexer
     Indexation index = new SosaIndexation();
-    index.setEnabled(REGISTRY.get(gedcom.getName(), false));
+    
+    Entity root = gedcom.getEntity(Gedcom.INDI, REGISTRY.get(gedcom.getName()+".root", "noroot"));
+    if (root instanceof Indi)
+      index.setRoot((Indi)root);
+    index.setEnabled(REGISTRY.get(gedcom.getName()+".on", false));
     
     gedcom2indexation.put(gedcom, index);
     
@@ -125,15 +133,23 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
   }
   
   private class Root extends Action2 {
-    public Root(Indexation engine, Context context) {
-      boolean enabled = engine.isEnabled(); 
+    private Indi root;
+    private Indexation index;
+    public Root(Indexation index, Context context) {
+      this.index = index;
+      boolean enabled = index.isEnabled(); 
       if (context.getEntities().size()==1 && (context.getEntity() instanceof Indi)) {
         setText(RESOURCES.getString("action.root.indi", context.getEntity()));
+        root = (Indi)context.getEntity();
       } else {
         setText(RESOURCES.getString("action.root"));
         enabled = false;
       }
       setEnabled(enabled);
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      index.setRoot(root);
     }
   }
 
@@ -143,6 +159,7 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
       this.index = index;
       setText(RESOURCES.getString("action.maintain"));
       setSelected(index.isEnabled());
+      this.index = index;
     }
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -153,15 +170,28 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
 
   
   private class Index extends Action2 {
+    private Indexation engine;
     public Index(Indexation engine, Context context) {
       setText(RESOURCES.getString("action.reindex"));
       setEnabled(engine.getRoot()!=null);
     }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      engine.reindex();
+    }
   }
   
   private class Remove extends Action2 {
+    private Indexation engine;
+    private Gedcom gedcom;
     public Remove(Indexation engine, Gedcom gedcom) {
       setText(RESOURCES.getString("action.remove"));
+      this.gedcom = gedcom;
+      setEnabled(gedcom!=null);
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      engine.remove(gedcom);
     }
   }
 }

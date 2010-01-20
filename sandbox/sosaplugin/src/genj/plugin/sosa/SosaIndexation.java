@@ -63,57 +63,37 @@ public class SosaIndexation extends Indexation {
   protected String getTag() {
     return TAG;
   }
-  
-  /**
-   * Sets Sosa indexation from root individual
-   * <p>
-   * This method sets sosa indexation starting from root individual
-   */
 
-  public void setSosaIndexation(Indi indi) {
-    /* we start with an empty map when necessary */
-    if (myMap.size() != 0)
-      myMap.clear();
+  /**
+   * This method sets sosa indexation starting from root individual
+   * Assuming old index is cleared already.
+   */
+  public void reindex() {
+    
+    Indi root = getRoot();
+    if (root==null)
+      throw new IllegalArgumentException("reindex requires root");
+
     /* we set Sosa root value */
     int sosaIndex = 1;
-    /* (1) we remove all set _SOSA tags to start afresh */
-    removeSosaIndexationFromAllIndis();
-    // removeSosaIndexationFromIndi(indi,sosaIndex);
+    
     /* (2) we build Sosa Index value */
-    buildSosaIndexation(mySosaRoot, sosaIndex);
+    buildSosaIndexation(root, sosaIndex);
+    
     /* we sort the map by alphabetical order of key */
     sosaIndexIndiMap = new TreeMap<Integer, Indi>(myMap);
+    
     /* we start with an empty list when necessary */
     if (myList.size() != 0)
       myList.removeAll(myList);
+    
     /* we build list of index values */
     for (Map.Entry<Integer, Indi> entry : sosaIndexIndiMap.entrySet()) {
       myList.add(Integer.toString(entry.getKey()));
     }
+    
     /* we build string array of index values */
     sosaIndexArray = myList.toArray(new String[myList.size()]);
-  }
-
-  /**
-   * Removes all _SOSA properties from all individuals
-   * <p>
-   * This method deletes all _SOSA properties in the Gedcom
-   */
-  public void removeSosaIndexationFromAllIndis() {
-    /* we need to search for all existing _SOSA properties to delete them */
-    Property SosaProperties[];
-    Indi indi;
-    Collection indisCollection = gedcom.getEntities(Gedcom.INDI);
-    for (Iterator it = indisCollection.iterator(); it.hasNext();) {
-      indi = (Indi) it.next();
-      /* we delete all _SOSA properties of INDI */
-      /* there might be more than one due to data base incoherencies */
-      SosaProperties = indi.getProperties(SOSA_LABEL);
-      for (int i = 0; i < SosaProperties.length; i++) {
-        /* we delete SosaProperties[i] of indi1 */
-        indi.delProperty(SosaProperties[i]);
-      }
-    }
   }
 
   /**
@@ -752,50 +732,6 @@ public class SosaIndexation extends Indexation {
    */
   public Map<Integer, Indi> getSosaMap() {
     return sosaIndexIndiMap;
-  }
-
-  /**
-   * Sets the Sosa gedcom
-   * <p>
-   * This method sets the gedcom
-   * 
-   * @param gedcom
-   *          Sosa gedcom
-   */
-  public void setSosaGedcom(Gedcom gedcom) {
-    this.gedcom = gedcom;
-  }
-
-  /**
-   * Sets the Sosa root individual
-   * <p>
-   * This method set the Sosa root individual used to build Sosa indexation
-   * 
-   * @param mySosaRoot
-   *          Sosa root individual
-   */
-  public void setSosaRoot(Indi indi) {
-    LOG.fine("Sosa indexation mise dans les données = " + indi);
-    this.mySosaRoot = indi;
-  }
-
-  /**
-   * Returns the Sosa root individual
-   * <p>
-   * This method returns the Sosa root individual used to build Sosa indexation
-   * 
-   * @param mySosaRoot
-   *          Sosa root individual
-   */
-  public Indi getSosaRoot() {
-    return mySosaRoot;
-  }
-
-  /**
-   * Check whether sosa indexation is actually turned on by user
-   */
-  private boolean isExtendSosaIndexation() {
-    return SosaOptions.getInstance().isExtendSosaIndexation;
   }
 
 }
