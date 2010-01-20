@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -24,27 +24,26 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Dimension2D;
 
-import javax.swing.JComponent;
-
 /**
- * Interface between Printer and Renderer
+ * Printing Renderer
  */
-public interface Printer {
+public interface PrintRenderer {
   
   /**
-   * Sets the view to print   */
-  public void setView(JComponent view);
-  
-  /**
-   * Calculates the size of the content in page
+   * Calculate the number of pages required for printing
+   * @param pageSize size of page in inches
+   * @param dpi resolution
+   * @result dimension expressing number of pages horizontally&vertically
    */
-  public Dimension calcSize(Dimension2D pageSizeInInches, Point dpi);
+  public Dimension calcSize(Dimension2D pageSize, Point dpi);
   
   /**
-   * Renders page content (x,y) on given context (dots) and 
-   * resolution (dpi) - (0,0) in graphics space is the top-left
-   * location of the printable area of given page
+   * Render page content 
+   * @param g graphics context to render on - (0,0) in graphics space is the top-left
+   * @param page page to render (x,y)
+   * @param pageSize size of page in inches
+   * @param dpi resolution 
    */  
-  public void renderPage(Graphics2D g, Point page, Dimension2D pageSizeInInches, Point dpi, boolean preview);
+  public void renderPage(Graphics2D g, Point page, Dimension2D pageSize, Point dpi);
   
 } //PrintRenderer

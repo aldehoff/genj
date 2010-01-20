@@ -27,6 +27,8 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 import genj.io.Filter;
+import genj.print.PrintAction;
+import genj.print.PrintRenderer;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.ChooseBlueprintAction;
@@ -46,8 +48,8 @@ import genj.util.swing.ViewPortAdapter;
 import genj.util.swing.ViewPortOverview;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
-import genj.view.ActionScreenshot;
 import genj.view.ContextProvider;
+import genj.view.ScreenshotAction;
 import genj.view.SelectionSink;
 import genj.view.SettingsAction;
 import genj.view.ToolBar;
@@ -490,7 +492,8 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     
     // settings
     toolbar.add(new Settings());
-    toolbar.add(new ActionScreenshot(content));
+    toolbar.add(new ScreenshotAction(content));
+    toolbar.add(new Print());
     
     // done
   }
@@ -1130,6 +1133,19 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     public TreeContext(Context context) {
       super(context);
     } 
+  }
+  
+  private class Print extends PrintAction {
+    
+    public boolean yes;
+    
+    protected Print() {
+      super(TITLE);
+    }
+    @Override
+    protected PrintRenderer getRenderer() {
+      return new TreeViewPrinter();
+    }
   }
   
 } //TreeView

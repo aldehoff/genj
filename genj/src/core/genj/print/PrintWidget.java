@@ -24,11 +24,10 @@ import genj.option.OptionListener;
 import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
 import genj.renderer.Options;
-import genj.util.Dimension2d;
+import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
 import genj.util.swing.NestedBlockLayout;
-import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -56,6 +55,8 @@ import javax.swing.SwingConstants;
  * A PrintDialog */
 public class PrintWidget extends JTabbedPane implements OptionListener {
   
+  /*package*/ final static Resources RESOURCES = Resources.get(PrintWidget.class);
+  
   /** task */
   private PrintTask task;
   
@@ -72,8 +73,8 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     // remember 
     this.task = task;
 
-    add(PrintTask.RESOURCES.getString("printer" ), createFirstPage());
-    add(PrintTask.RESOURCES.getString("settings"), createSecondPage());
+    add(RESOURCES.getString("printer" ), createFirstPage());
+    add(RESOURCES.getString("settings"), createSecondPage());
     
     // done    
   }
@@ -91,7 +92,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     JPanel page = new JPanel(new NestedBlockLayout(LAYOUT_TEMPLATE));
     
     // 'printer'
-    page.add("lprinter", new JLabel(PrintTask.RESOURCES.getString("printer")));
+    page.add("lprinter", new JLabel(RESOURCES.getString("printer")));
     
     // choose service
     services = new ChoiceWidget(task.getServices(), task.getService());
@@ -110,7 +111,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     page.add("settings", new JButton(new Settings()));
     
     // 'preview'
-    page.add("lpreview", new JLabel(PrintTask.RESOURCES.getString("preview")));
+    page.add("lpreview", new JLabel(RESOURCES.getString("preview")));
     
     // the actual preview
     preview = new Preview();
@@ -122,10 +123,10 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
   }
   
   private JComponent createSecondPage() {
-    List options = PropertyOption.introspect(task.getRenderer());
+    List<PropertyOption> options = PropertyOption.introspect(task.getRenderer());
     for (int i = 0; i < options.size(); i++) 
       ((Option)options.get(i)).addOptionListener(this);
-    return new OptionsWidget(PrintTask.RESOURCES.getString("printer"), options);
+    return new OptionsWidget(task.getTitle(), options);
   }
   
   /**
@@ -169,36 +170,36 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
       g.fillRect(0,0,getWidth(),getHeight());
       g.setColor(Color.white);
       
-      // render pages in app's dpi space
-      Printer renderer = task.getRenderer();
-      Dimension pages = task.getPages(); 
-      UnitGraphics ug = new UnitGraphics(g, dpiScreen.x*zoom, dpiScreen.y*zoom);
-      Rectangle2D clip = ug.getClip();
-      for (int y=0;y<pages.height;y++) {
-        for (int x=0;x<pages.width;x++) {
-          // calculate layout
-          Rectangle2D 
-            page = task.getPage(x,y, padd), 
-            imageable = task.getPrintable(page);
-          // visible?
-          if (!clip.intersects(page))
-            continue;
-          // draw page
-          ug.setColor(Color.white);
-          ug.draw(page, 0, 0, true);
-          // draw number
-          ug.setColor(Color.gray);
-          ug.draw(String.valueOf(x+y*pages.width+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
-          ug.pushTransformation();
-          ug.pushClip(imageable);
-          ug.translate(imageable.getMinX(), imageable.getMinY());
-          ug.getGraphics().scale(zoom,zoom);
-          renderer.renderPage(ug.getGraphics(), new Point(x,y), new Dimension2d(imageable), dpiScreen, true);
-          ug.popTransformation();
-          ug.popClip();
-          // next   
-        }
-      }
+//      // render pages in app's dpi space
+//      PrintRenderer renderer = task.getRenderer();
+//      Dimension pages = task.getPages(); 
+//      UnitGraphics ug = new UnitGraphics(g, dpiScreen.x*zoom, dpiScreen.y*zoom);
+//      Rectangle2D clip = ug.getClip();
+//      for (int y=0;y<pages.height;y++) {
+//        for (int x=0;x<pages.width;x++) {
+//          // calculate layout
+//          Rectangle2D 
+//            page = task.getPage(x,y, padd), 
+//            imageable = task.getPrintable(page);
+//          // visible?
+//          if (!clip.intersects(page))
+//            continue;
+//          // draw page
+//          ug.setColor(Color.white);
+//          ug.draw(page, 0, 0, true);
+//          // draw number
+//          ug.setColor(Color.gray);
+//          ug.draw(String.valueOf(x+y*pages.width+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
+//          ug.pushTransformation();
+//          ug.pushClip(imageable);
+//          ug.translate(imageable.getMinX(), imageable.getMinY());
+//          ug.getGraphics().scale(zoom,zoom);
+//          renderer.renderPage(ug.getGraphics(), new Point(x,y), new Dimension2d(imageable), dpiScreen, true);
+//          ug.popTransformation();
+//          ug.popClip();
+//          // next   
+//        }
+//      }
       // done
     }
 
@@ -231,13 +232,14 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
 
     /** constructor */
     private Settings() {
-      super.setText(PrintTask.RESOURCES.getString("settings"));
+      super.setText(RESOURCES.getString("settings"));
     }
 
     /** run */
     public void actionPerformed(ActionEvent event) {
+      
       // show settings
-      Point pos = task.getOwner().getLocationOnScreen();
+      Point pos = PrintWidget.this.getLocationOnScreen();
       PrintService choice = ServiceUI.printDialog(null, pos.x, pos.y, task.getServices(), task.getService(), null, task.getAttributes());
       if (choice!=null) {
         services.setSelectedItem(choice);

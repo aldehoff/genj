@@ -44,7 +44,7 @@ import javax.print.attribute.standard.MediaPrintableArea;
  */
 public class PrintRegistry extends Registry {
   
-  public static PrintRegistry get(Class<?> source) {
+  public static PrintRegistry get(Object source) {
     
     Registry r = Registry.get(source);
     

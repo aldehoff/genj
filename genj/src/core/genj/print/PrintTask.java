@@ -24,16 +24,12 @@ import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.WordBuffer;
-import genj.util.swing.Action2;
-import genj.util.swing.DialogHelper;
-import genj.util.swing.ImageIcon;
 import genj.util.swing.UnitGraphics;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
@@ -41,14 +37,12 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.File;
 import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.print.DocFlavor;
 import javax.print.PrintException;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
-import javax.print.SimpleDoc;
 import javax.print.attribute.Attribute;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttribute;
@@ -60,28 +54,22 @@ import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
-import javax.swing.Action;
-import javax.swing.JComponent;
 
 /**
  * Our own task for printing
  */
-public class PrintTask extends Action2 implements Printable, Trackable {
+/*package*/ class PrintTask implements Printable, Trackable {
 
   /** our flavor */
   /*package*/ final static DocFlavor FLAVOR = DocFlavor.SERVICE_FORMATTED.PRINTABLE;
-  
   /*package*/ final static Resources RESOURCES = Resources.get(PrintTask.class);
   /*package*/ final static Logger LOG = Logger.getLogger("genj.print");
   
-  /** the owning component */
-  private JComponent owner;
-
   /** our print service */
   private PrintService service;
 
   /** the current renderer */
-  private Printer renderer;
+  private PrintRenderer renderer;
 
   /** current page */
   private int page = 0;
@@ -107,17 +95,15 @@ public class PrintTask extends Action2 implements Printable, Trackable {
   /**
    * Constructor
    */
-  public PrintTask(Printer setRenderer, String setTitle, JComponent setOwner, PrintRegistry setRegistry) throws PrintException {
+  public PrintTask(String title, PrintRenderer setRenderer) throws PrintException {
     
-    // looks
-    setImage(new ImageIcon(this,"images/Print"));
-
     // remember 
     renderer = setRenderer;
-    owner = setOwner;
-    title = RESOURCES.getString("title", setTitle);
-    registry = setRegistry;
+    this.title = title;
 
+    // FIXME print registry per callee?    
+    registry = PrintRegistry.get(this);    
+    
     // restore last service
     PrintService service = registry.get(getDefaultService());
     if (!service.isDocFlavorSupported(FLAVOR))
@@ -125,12 +111,21 @@ public class PrintTask extends Action2 implements Printable, Trackable {
     setService(service);
 
     // setup a default job name
-    attributes.add(new JobName(title, null));
+    attributes.add(new JobName("GenJ", null));
     
     // restore print attributes
     registry.get(attributes);
+    
+    // file output preset?
+    String file = EnvironmentChecker.getProperty(this, "genj.print.file", null, "Print file output");
+    if (file!=null)
+      attributes.add(new Destination(new File(file).toURI()));
 
     // done
+  }
+  
+  public String getTitle() {
+    return title;
   }
 
   /**
@@ -168,13 +163,6 @@ public class PrintTask extends Action2 implements Printable, Trackable {
    */
   /*package*/ PrintRequestAttributeSet getAttributes() {
     return attributes;
-  }
-
-  /**
-   * Owner access
-   */
-  /*package*/ JComponent getOwner() {
-    return owner;
   }
 
   /**
@@ -309,7 +297,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
   /**
    * Renderer
    */
-  /*package*/ Printer getRenderer() {
+  /*package*/ PrintRenderer getRenderer() {
     return renderer;
   }
   
@@ -327,10 +315,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
   /**
    * Resolve a print attribute
    */
-  private PrintRequestAttribute getAttribute(Class category) {
-    // check
-    if (!PrintRequestAttribute.class.isAssignableFrom(category))
-      throw new IllegalArgumentException("only PrintRequestAttributes allowed");
+  private PrintRequestAttribute getAttribute(Class<? extends PrintRequestAttribute> category) {
     // check our attributes first
     Object result = (PrintRequestAttribute)attributes.get(category);
     if (result instanceof PrintRequestAttribute)
@@ -371,67 +356,11 @@ public class PrintTask extends Action2 implements Printable, Trackable {
     return (PrintRequestAttribute)result;
   }
   
-  /**
-   * @see genj.util.swing.Action2#preExecute()
-   */
-  protected boolean preExecute() {
-
-    // show dialog
-    PrintWidget widget = new PrintWidget(this);
-
-    // prepare actions
-    Action[] actions = { 
-        new Action2(RESOURCES, "print"),
-        Action2.cancel() 
-    };
-
-    // show it in dialog
-    int choice = DialogHelper.openDialog(title, DialogHelper.QUESTION_MESSAGE, widget, actions, owner);
-
-    // keep settings
-    registry.put(attributes);
-
-    // check choice
-    if (choice != 0 || getPages().width == 0 || getPages().height == 0)
-      return false;
-
-    // file output?
-    String file = EnvironmentChecker.getProperty(this, "genj.print.file", null, "Print file output");
-    if (file!=null)
-      attributes.add(new Destination(new File(file).toURI()));
-    
-    // setup progress dlg
-//    progress = WindowManager.getInstance(owner).openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), Action2.cancelOnly(), owner);
-
-    // continue
-    return true;
-  }
-
-  /**
-   * @see genj.util.swing.Action2#execute()
-   */
-  public void actionPerformed(ActionEvent event) {
-    try {
-      service.createPrintJob().print(new SimpleDoc(this, FLAVOR, null), attributes);
-    } catch (PrintException e) {
-      throwable = e;
-    }
-  }
-
-  /**
-   * @see genj.util.swing.Action2#postExecute(boolean)
-   */
-  protected boolean postExecute(boolean preExecuteResult) {
-//    // close progress
-//    WindowManager.close(progress);
-    // something we should know about?
-    if (throwable != null) {
-      LOG.log(Level.WARNING, "print() threw error", throwable);
-      return false;
-    }
-    // finished
-    return true;
-  }
+//    try {
+//      service.createPrintJob().print(new SimpleDoc(this, FLAVOR, null), attributes);
+//    } catch (PrintException e) {
+//      throwable = e;
+//    }
 
   /**
    * @see genj.util.Trackable#cancelTrackable()
@@ -450,7 +379,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
    * @see genj.util.Trackable#getState()
    */
   public String getState() {
-    return RESOURCES.getString("progress", new String[] { "" + (page + 1), "" + (getPages().width * getPages().height) });
+    return RESOURCES.getString("progress", (page + 1), (getPages().width * getPages().height) );
   }
 
   /**
@@ -478,7 +407,7 @@ public class PrintTask extends Action2 implements Printable, Trackable {
     ug.translate(printable.getX(), printable.getY()); 
 
     // draw content
-    renderer.renderPage((Graphics2D)graphics, new Point(col, row), new Dimension2d(printable), dpi, false);
+    renderer.renderPage((Graphics2D)graphics, new Point(col, row), new Dimension2d(printable), dpi);
     
     // next
     return PAGE_EXISTS;
