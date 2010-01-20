@@ -30,7 +30,6 @@ import java.awt.font.FontRenderContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import javax.swing.AbstractCellEditor;
@@ -82,7 +81,7 @@ public class OptionsWidget extends JPanel {
   /**
    * Constructor
    */
-  public OptionsWidget(String title, List options) {
+  public OptionsWidget(String title, List<? extends Option> options) {
 
     this.title = title;
 
@@ -132,7 +131,7 @@ public class OptionsWidget extends JPanel {
   /**
    * Set options to display
    */
-  public void setOptions(List set) {
+  public void setOptions(List<? extends Option> set) {
 
     // stop editing
     stopEditing();
@@ -141,24 +140,21 @@ public class OptionsWidget extends JPanel {
     tree.clearSelection();
 
     // check options - we don't keep any without ui
-    ListIterator it = set.listIterator();
-    while (it.hasNext()) {
-      Option option = (Option)it.next();
-      if (option.getUI(this)==null)
-        it.remove();
+    List<Option> options = new ArrayList<Option>();
+    for (Option option : set) {
+      if (option.getUI(this)!=null)
+        options.add(option);
     }
 
     // calculate longest width of option name
     FontRenderContext ctx = new FontRenderContext(null,false,false);
     Font font = tree.getFont();
     widthOf1stColumn = 0;
-    for (int i = 0; i < set.size(); i++) {
-      Option option = (Option)set.get(i);
+    for (Option option : options) 
       widthOf1stColumn = Math.max(widthOf1stColumn, 4+(int)Math.ceil(font.getStringBounds(option.getName(), ctx).getWidth()));
-    }
 
     // tell to model
-    model.setOptions(set);
+    model.setOptions(options);
 
     // unfold all
     for (int i=0;i<tree.getRowCount();i++)
@@ -240,6 +236,7 @@ public class OptionsWidget extends JPanel {
       if (panel.getComponentCount()>1)
         panel.remove(1);
       labelForName.setText(value.toString());
+      labelForName.setPreferredSize(null);
       return panel;
     }
 
@@ -306,8 +303,8 @@ public class OptionsWidget extends JPanel {
   private class Model extends AbstractTreeModel {
 
     /** top-level children */
-    private List categories = new ArrayList();
-    private Map cat2options = new HashMap();
+    private List<String> categories = new ArrayList<String>();
+    private Map<String,List<Option>> cat2options = new HashMap<String,List<Option>>();
 
     /**
      * the parent of options is the root (this)
@@ -316,12 +313,12 @@ public class OptionsWidget extends JPanel {
       throw new IllegalArgumentException();
     }
 
-    private List getCategory(String cat) {
+    private List<Option> getCategory(String cat) {
       if (cat==null)
         cat = title;
-      List result = (List)cat2options.get(cat);
+      List<Option> result = cat2options.get(cat);
       if (result==null) {
-        result = new ArrayList();
+        result = new ArrayList<Option>();
         cat2options.put(cat, result);
         categories.add(cat);
       }
@@ -331,16 +328,14 @@ public class OptionsWidget extends JPanel {
     /**
      * Set options to display
      */
-    private void setOptions(List set) {
+    private void setOptions(List<Option> set) {
 
       // parse anew
       cat2options.clear();
       categories.clear();
 
-      for (int i = 0; i < set.size(); i++) {
-        Option option = (Option)set.get(i);
+      for (Option option : set) 
         getCategory(option.getCategory()).add(option);
-      }
 
       // notify
       fireTreeStructureChanged(this, new Object[] {this}, null, null);
