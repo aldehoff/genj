@@ -148,26 +148,6 @@ import swingx.docking.Docked;
       }
     });
 
-    // .. a button for printing View
-    // FIXME docket show print button
-    // try {
-    // Printer printer =
-    // (Printer)Class.forName(view.getClass().getName()+"Printer").newInstance();
-    // try {
-    // printer.setView(view);
-    // PrintTask print = new PrintTask(printer, viewHandle.getTitle(), view, new
-    // PrintRegistry(viewHandle.getRegistry(), "print"));
-    // print.setTip(ViewManager.RESOURCES, "view.print.tip");
-    // bh.create(print);
-    // } catch (Throwable t) {
-    // ViewManager.LOG.log(Level.WARNING,
-    // "can't setup printing for printer "+printer.getClass().getName());
-    // ViewManager.LOG.log(Level.FINE,
-    // "throwable while setting up "+printer.getClass().getName(), t);
-    // }
-    // } catch (Throwable t) {
-    // }
-
     if (toolbar.get()) {
       docked.addToolSeparator();
       docked.addTool(new ActionCloseView());

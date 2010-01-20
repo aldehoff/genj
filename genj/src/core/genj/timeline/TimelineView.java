@@ -34,7 +34,7 @@ import genj.util.WordBuffer;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
-import genj.view.ActionScreenshot;
+import genj.view.ScreenshotAction;
 import genj.view.ContextProvider;
 import genj.view.SelectionSink;
 import genj.view.SettingsAction;
@@ -363,7 +363,7 @@ public class TimelineView extends View {
     toolbar.add(sliderCmPerYear);
     
     toolbar.add(new Settings());
-    toolbar.add(new ActionScreenshot(content));
+    toolbar.add(new ScreenshotAction(content));
     
   }
 

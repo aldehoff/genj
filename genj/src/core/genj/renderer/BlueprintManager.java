@@ -67,7 +67,6 @@ public class BlueprintManager {
   
   /**
    * Singleton access
-   * TODO maybe this should better be in the options
    */
   public static BlueprintManager getInstance() {
     if (instance==null)

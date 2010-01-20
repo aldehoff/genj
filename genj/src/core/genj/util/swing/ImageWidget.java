@@ -239,7 +239,7 @@ public class ImageWidget extends JPanel {
       // show it
       Graphics2D g2d = (Graphics2D)g;
       
-      // TODO ImageWidget - do the dpi math
+      // TODO ImageWidget - do the dpi math for correct screen rendering
       // zoom==0 means "to fit"
       double scale;
       if (zoom==0) {

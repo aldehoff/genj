@@ -195,12 +195,6 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
       return result;
     }
     
-    @Override
-    protected void refresh() {
-      // TODO Auto-generated method stub
-      super.refresh();
-    }
-    
     private boolean dupe() {
       return gedcom.getEntity(existing.getId())!=null;
     }
