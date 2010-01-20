@@ -19,15 +19,17 @@ import java.util.List;
  * author               = Nils Meier
  * version              = 1.0
  * category             = Utilities
- * updated              = $Date: 2010-01-08 23:12:04 $
+ * updated              = $Date: 2010-01-20 08:52:19 $
  * name                 = Recompile Reports
  * name.de              = Reports rekompilieren 
  * name.fr              = Compilation des Rapports
  *
- * info = This report recompiles all reports in GenJ's report directory (./report). After a restart of GenJ 
- *  or by pressing the reload button in ReportView recompiled reports can be reloaded into GenJ.\n\n
- *  For the compilation to succeed GenJ needs to be run inside a JDK's Java Virtual Machine, not in 
- *  a JRE's Java Virtual Machine.
+ * info = <h1><center>Recompile Reports</center></h1><p>This report recompiles all reports 
+ *  in GenJ's report directory (./report). After a restart of GenJ 
+ *  or by pressing the reload button in ReportView, recompiled reports can be reloaded into GenJ.</p>
+ *  <p>For the compilation to succeed GenJ needs to be run inside a JDK's Java Virtual Machine, not in 
+ *  a JRE's Java Virtual Machine.</p>
+ *  
  * info.de = Dieser Report kompiliert alle Reports im GenJ Reportverzeichnis (./report). Nach Neustart von 
  *  GenJ oder einem Klick auf den Schalter 'Neu Einladen' in ReportView können kompilierte Reports neu eingeladen werden.\n\n
  *  Die Kompilierung funktioniert nur, wenn GenJ in einer JDK Java Virtual Machine, nicht in einer JRE JVM, läuft.
