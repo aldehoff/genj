@@ -113,50 +113,55 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
       Action2.Group tools = new ActionProvider.ToolsActionGroup();
       result.add(tools);
 
-      Action2.Group sosa = new Action2.Group("Sosa Plugin");
+      Action2.Group sosa = new Action2.Group(RESOURCES.getString("plugin"));
       tools.add(sosa);
 
-      Root root = new Root(engine, context);
-      Index index = new Index(engine, context);
-      Enable enable = new Enable(engine, root, index);
-
-      sosa.add(root);
-      sosa.add(index);
-      sosa.add(enable);
+      sosa.add(new Root(engine, context));
+      sosa.add(new Index(engine, context));
+      sosa.add(new Maintain(engine));
+      sosa.add(new Remove(engine,context.getGedcom()));
 
     }
   }
   
   private class Root extends Action2 {
     public Root(Indexation engine, Context context) {
-      setText("Set Root");
-      setEnabled(engine.isEnabled() && context.getEntities().size()==1 && (context.getEntity() instanceof Indi));
+      boolean enabled = engine.isEnabled(); 
+      if (context.getEntities().size()==1 && (context.getEntity() instanceof Indi)) {
+        setText(RESOURCES.getString("action.root.indi", context.getEntity()));
+      } else {
+        setText(RESOURCES.getString("action.root"));
+        enabled = false;
+      }
+      setEnabled(enabled);
     }
   }
 
-  private class Enable extends Action2 {
+  private class Maintain extends Action2 {
     private Indexation index;
-    private Action2[] actions;
-    public Enable(Indexation index, Action2... actions) {
+    public Maintain(Indexation index) {
       this.index = index;
-      this.actions = actions;
-      setText(index.isEnabled() ? "Disable" : "Enable");
+      setText(RESOURCES.getString("action.maintain"));
+      setSelected(index.isEnabled());
     }
     @Override
     public void actionPerformed(ActionEvent e) {
       boolean set = !index.isEnabled();
       index.setEnabled(set);
-      setText(set ? "Disable" : "Enable");
-      for (Action2 a : actions)
-        a.setEnabled(set);
     }
   }
 
   
   private class Index extends Action2 {
     public Index(Indexation engine, Context context) {
-      setText("Recalculate Index");
-      setEnabled(engine.isEnabled() && engine.getRoot()!=null);
+      setText(RESOURCES.getString("action.reindex"));
+      setEnabled(engine.getRoot()!=null);
+    }
+  }
+  
+  private class Remove extends Action2 {
+    public Remove(Indexation engine, Gedcom gedcom) {
+      setText(RESOURCES.getString("action.remove"));
     }
   }
 }
