@@ -379,6 +379,7 @@ public class ReportView extends View {
           Desktop.getDesktop().open(file);
         } catch (IOException e) {
           Logger.getLogger("genj.report").log(Level.INFO, "can't open "+file, e);
+          output.add("*** can't open file "+file);
         }
         return;
       }
@@ -424,26 +425,21 @@ public class ReportView extends View {
       Action[] actions = Action2.okCancel();
       FormatOptionsWidget options = new FormatOptionsWidget(doc, foRegistry);
       options.connect(actions[0]);
-      if (0 != DialogHelper.openDialog(title, DialogHelper.QUESTION_MESSAGE, options, actions, this))
-        return;
-
-      // grab formatter and output file
+      
+      int rc = DialogHelper.openDialog(title, DialogHelper.QUESTION_MESSAGE, options, actions, this);
       Format formatter = options.getFormat();
-      File file = null;
-      String progress = null;
-      if (formatter.getFileExtension() == null)
+      File file = options.getFile();
+      if (rc!=0 || formatter.getFileExtension() == null || file == null) {
+        showResult(null);
         return;
-
-      file = options.getFile();
-      if (file == null)
-        return;
-      file.getParentFile().mkdirs();
-
+      }
+      
       // store options
       options.remember(foRegistry);
 
       // format and write
       try {
+        file.getParentFile().mkdirs();
         formatter.format(doc, file);
       } catch (Throwable t) {
         LOG.log(Level.WARNING, "formatting " + doc + " failed", t);
