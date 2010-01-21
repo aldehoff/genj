@@ -19,22 +19,53 @@
  */
 package genj.renderer;
 
-import java.awt.Point;
+import java.awt.Graphics2D;
 import java.awt.RenderingHints.Key;
 
 /**
- * a rendering hint for hinting at dpi
+ * Dots per inch
  */
-public class DPIHintKey extends Key {
-  
+public class DPI {
+
   public final static Key KEY = new DPIHintKey();
 
-  private DPIHintKey() {
-    super(0);
+  private int horizontal, vertical;
+  
+  public int horizontal() {
+    return horizontal;
   }
+  
+  public int vertical() {
+    return vertical;
+  }
+  
+  public DPI(int horizontal, int vertical) {
+    this.horizontal = horizontal;
+    this.vertical = vertical;
+  }
+  
+  /**
+   * resolve DPI From graphics
+   */
+  public static DPI get(Graphics2D graphics) {
+    DPI dpi = (DPI)graphics.getRenderingHint(KEY);
+    if (dpi==null)
+      dpi = Options.getInstance().getDPI();
+    return dpi;
+  }
+ 
+  /**
+   * a rendering hint for hinting at dpi
+   */
+  private static class DPIHintKey extends Key {
+    
+    private DPIHintKey() {
+      super(0);
+    }
 
-  @Override
-  public boolean isCompatibleValue(Object val) {
-    return val instanceof Point;
-  }
+    @Override
+    public boolean isCompatibleValue(Object val) {
+      return val instanceof DPI;
+    }
+  }  
 }

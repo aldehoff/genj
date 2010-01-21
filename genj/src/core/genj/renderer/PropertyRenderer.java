@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -40,7 +40,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
@@ -403,7 +402,7 @@ public class PropertyRenderer {
         return EMPTY_DIM;
 
       // ask it for size
-      return img.getSizeInPoints(EntityRenderer.getDPI(graphics));
+      return img.getSizeInPoints(DPI.get(graphics));
         
     }
     
@@ -424,14 +423,14 @@ public class PropertyRenderer {
       
       // calculate factor - the image's dpi might be
       // different than that of the rendered surface
-      Point dpi = EntityRenderer.getDPI(g);
-      Point idpi = img.getResolution();
+      DPI dpi = DPI.get(g);
+      DPI idpi = img.getResolution();
       double
        scalex = 1,
        scaley = 1;
       if (idpi!=null) {
-       scalex *= (double)dpi.x/idpi.x;
-       scaley *= (double)dpi.y/idpi.y;
+       scalex *= (double)dpi.horizontal()/idpi.horizontal();
+       scaley *= (double)dpi.vertical()/idpi.vertical();
       }
        
       // check bounds - the image might still be too

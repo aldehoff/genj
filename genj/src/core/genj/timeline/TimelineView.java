@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
+import genj.renderer.DPI;
 import genj.renderer.Options;
 import genj.renderer.RenderSelectionHintKey;
 import genj.util.Registry;
@@ -34,8 +35,8 @@ import genj.util.WordBuffer;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
-import genj.view.ScreenshotAction;
 import genj.view.ContextProvider;
+import genj.view.ScreenshotAction;
 import genj.view.SelectionSink;
 import genj.view.SettingsAction;
 import genj.view.ToolBar;
@@ -78,7 +79,7 @@ import javax.swing.event.ChangeListener;
 public class TimelineView extends View {
 
   /** the units we use */
-  private final Point DPI;
+  private final DPI DPI;
   private final Point2D DPC;
   
   /** resources */
@@ -156,8 +157,8 @@ public class TimelineView extends View {
     // remember
     DPI = Options.getInstance().getDPI();
     DPC = new Point2D.Float(
-      DPI.x / 2.54F,
-      DPI.y / 2.54F
+      DPI.horizontal() / 2.54F,
+      DPI.vertical() / 2.54F
     );
 
     // read some stuff from registry

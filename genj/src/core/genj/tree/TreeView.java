@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -32,6 +32,7 @@ import genj.print.PrintRenderer;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.ChooseBlueprintAction;
+import genj.renderer.DPI;
 import genj.renderer.EntityRenderer;
 import genj.renderer.Options;
 import genj.renderer.RenderSelectionHintKey;
@@ -143,10 +144,10 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   public TreeView() {
     
     // remember
-    Point dpi = Options.getInstance().getDPI();
+    DPI dpi = Options.getInstance().getDPI();
     DPMM = new Point2D.Float(
-      dpi.x / 2.54F / 10,
-      dpi.y / 2.54F / 10
+      dpi.horizontal() / 2.54F / 10,
+      dpi.vertical() / 2.54F / 10
     );
     
     // grab colors

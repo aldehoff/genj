@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,12 +19,11 @@
  */
 package genj.tree;
 
+import genj.print.Page;
 import genj.print.PrintRenderer;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.geom.Dimension2D;
 
 /**
  * A print renderer for tree */
@@ -33,9 +32,9 @@ public class TreeViewPrinter implements PrintRenderer {
   public boolean yes;
   
   /**
-   * @see genj.print.Printer#calcSize(Dimension2D, Point)
+   * @see genj.print.PrintRenderer#getPages(Page)
    */
-  public Dimension calcSize(Dimension2D pageSize, Point dpi) {
+  public Dimension getPages(Page page) {
     
     // FIXME calc tree print size
     
@@ -48,9 +47,9 @@ public class TreeViewPrinter implements PrintRenderer {
   }
 
   /**
-   * @see genj.print.PrintRenderer#renderPage(Graphics2D, Point, Dimension2D, Point)
+   * @see genj.print.PrintRenderer#renderPage(Graphics2D, Page)
    */
-  public void renderPage(Graphics2D g, Point page, Dimension2D pageSize, Point dpi) {
+  public void renderPage(Graphics2D g, Page page) {
     
     // FIXME print render tree
     

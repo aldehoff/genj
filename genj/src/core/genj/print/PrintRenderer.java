@@ -21,8 +21,6 @@ package genj.print;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.geom.Dimension2D;
 
 /**
  * Printing Renderer
@@ -35,15 +33,13 @@ public interface PrintRenderer {
    * @param dpi resolution
    * @result dimension expressing number of pages horizontally&vertically
    */
-  public Dimension calcSize(Dimension2D pageSize, Point dpi);
+  public Dimension getPages(Page page);
   
   /**
    * Render page content 
    * @param g graphics context to render on - (0,0) in graphics space is the top-left
    * @param page page to render (x,y)
-   * @param pageSize size of page in inches
-   * @param dpi resolution 
    */  
-  public void renderPage(Graphics2D g, Point page, Dimension2D pageSize, Point dpi);
+  public void renderPage(Graphics2D g, Page page);
   
 } //PrintRenderer

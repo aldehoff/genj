@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@ import genj.option.Option;
 import genj.option.OptionListener;
 import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
+import genj.renderer.DPI;
 import genj.renderer.Options;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -39,6 +40,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.print.PrintService;
 import javax.print.ServiceUI;
@@ -50,22 +52,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * A PrintDialog */
-public class PrintWidget extends JTabbedPane implements OptionListener {
+public class PrintWidget extends JTabbedPane {
   
   /*package*/ final static Resources RESOURCES = Resources.get(PrintWidget.class);
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.print");
   
-  /** task */
   private PrintTask task;
-  
-  /** services to choose from */
   private ChoiceWidget services;
-
-  /** a preview */
+  private ZoomWidget zoom;
   private Preview preview;
-
+  private Apply apply = new Apply();
+  
   /**
    * Constructor   */
   public PrintWidget(PrintTask task) {
@@ -84,6 +86,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     String LAYOUT_TEMPLATE = 
       "<col>"+
       "<row><lprinter/><printers wx=\"1\"/><settings/></row>"+
+      "<row><zoom/></row>"+
       "<row><lpreview/></row>"+
       "<row><preview wx=\"1\" wy=\"1\"/></row>"+
       "</col>";
@@ -92,7 +95,7 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     JPanel page = new JPanel(new NestedBlockLayout(LAYOUT_TEMPLATE));
     
     // 'printer'
-    page.add("lprinter", new JLabel(RESOURCES.getString("printer")));
+    page.add(new JLabel(RESOURCES.getString("printer")));
     
     // choose service
     services = new ChoiceWidget(task.getServices(), task.getService());
@@ -105,18 +108,21 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
           task.setService((PrintService)services.getSelectedItem());
       }
     });
-    page.add("printers", services);
+    page.add(services);
 
     // settings
-    page.add("settings", new JButton(new Settings()));
+    page.add(new JButton(new Settings()));
     
-    // 'preview'
-    page.add("lpreview", new JLabel(RESOURCES.getString("preview")));
-    
-    // the actual preview
+    // zoom & alignment
+    zoom = new ZoomWidget();
+    zoom.addChangeListener(apply);
+    page.add(zoom);
+
+    // preview
+    page.add(new JLabel(RESOURCES.getString("preview")));
     preview = new Preview();
     
-    page.add("preview", new JScrollPane(preview));
+    page.add(new JScrollPane(preview));
     
     // done
     return page;    
@@ -125,15 +131,8 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
   private JComponent createSecondPage() {
     List<PropertyOption> options = PropertyOption.introspect(task.getRenderer());
     for (int i = 0; i < options.size(); i++) 
-      ((Option)options.get(i)).addOptionListener(this);
+      ((Option)options.get(i)).addOptionListener(apply);
     return new OptionsWidget(task.getTitle(), options);
-  }
-  
-  /**
-   * option change callback
-   */
-  public void optionChanged(Option option) {
-    task.invalidate();
   }
   
   /**
@@ -143,9 +142,9 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     
     private float 
       padd = 0.1F, // inch
-      zoom = 0.25F; // 25%
+      percent = 0.25F; // 25%
 
-    private Point dpiScreen = Options.getInstance().getDPI();
+    private DPI dpiScreen = Options.getInstance().getDPI();
     
     /**
      * @see javax.swing.JComponent#getPreferredSize()
@@ -155,8 +154,8 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
       Dimension pages = task.getPages(); 
       Rectangle2D page = task.getPage(pages.width-1,pages.height-1, padd);
       return new Dimension(
-        (int)((page.getMaxX())*dpiScreen.x*zoom),
-        (int)((page.getMaxY())*dpiScreen.y*zoom)
+        (int)((page.getMaxX())*dpiScreen.horizontal()*percent),
+        (int)((page.getMaxY())*dpiScreen.vertical()*percent)
       );
     }
 
@@ -164,6 +163,12 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
     protected void paintComponent(Graphics g) {
+      
+      Object scaling = zoom.getValue();
+      if (scaling==null)
+        scaling = 1.0D;
+      
+      LOG.fine("Scaling is "+scaling);
       
       // fill background
       g.setColor(Color.gray);
@@ -253,5 +258,22 @@ public class PrintWidget extends JTabbedPane implements OptionListener {
     }
     
   } //Settings
+
+  /**
+   * Apply changed settings
+   */
+  private class Apply implements ChangeListener, OptionListener{
+    
+    public void stateChanged(ChangeEvent e) {
+      apply();
+    }
+    public void optionChanged(Option option) {
+      apply();
+    }
+    private void apply() {
+      task.invalidate();
+      preview.repaint();
+    }
+  }
   
 } //PrintWidget

@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -33,7 +33,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Dimension2D;
@@ -222,7 +221,7 @@ public class EntityRenderer {
       // see http://www.3rd-evolution.de/tkrammer/docs/java_font_size.html
       // While Java assumes 72 dpi screen resolution Windows uses 96 dpi or 120 dpi depending on your font size setting in the display properties. 
       if (!EnvironmentChecker.isMac()) {
-        float factor = getDPI(graphics).y/72F; 
+        float factor = DPI.get(graphics).vertical()/72F; 
         font = font.deriveFont(factor*font.getSize2D());
       }
       return font;
@@ -764,14 +763,4 @@ public class EntityRenderer {
     
   } //PropertyView
 
-  /**
-   * resolve DPI From graphics
-   */
-  public static Point getDPI(Graphics2D graphics) {
-    Point dpi = (Point)graphics.getRenderingHint(DPIHintKey.KEY);
-    if (dpi==null)
-      dpi = Options.getInstance().getDPI();
-    return dpi;
-  }
- 
 } //EntityRenderer

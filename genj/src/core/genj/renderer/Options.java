@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -30,7 +30,6 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.ScreenResolutionScale;
 
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ public class Options extends OptionProvider {
   private Font defaultFont = new Font("SansSerif", 0, 11);
 
   /** the current screen resolution */
-  private Point dpi = new Point(
+  private DPI dpi = new DPI(
     Toolkit.getDefaultToolkit().getScreenResolution(),
     Toolkit.getDefaultToolkit().getScreenResolution()
   );
@@ -87,7 +86,7 @@ public class Options extends OptionProvider {
   /**
    * Accessor - DPI
    */
-  public Point getDPI() {
+  public DPI getDPI() {
     return dpi;
   }
 
@@ -108,14 +107,16 @@ public class Options extends OptionProvider {
 
     /** callback - persist */
     public void persist() {
-      Registry.get(this).put("dpi", dpi);
+      Registry.get(this).put("dpi.h", dpi.horizontal());
+      Registry.get(this).put("dpi.v", dpi.vertical());
     }
 
     /** callback - restore */
     public void restore() {
-      Point set = Registry.get(this).get("dpi", (Point)null);
-      if (set!=null)
-        dpi = set;
+      int h = Registry.get(this).get("dpi.h", 0);
+      int v = Registry.get(this).get("dpi.v", 0);
+      if (h>0&&v>0)
+        dpi = new DPI(h,v);
     }
 
     /** callback - edit option */

@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import genj.renderer.DPI;
 import genj.util.ByteArray;
 import genj.util.Dimension2d;
 import genj.util.ImageSniffer;
@@ -27,7 +28,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MediaTracker;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -57,7 +57,7 @@ public class ImageIcon extends javax.swing.ImageIcon {
   private final static ImageFilter GRAYSCALE_FILTER = new BufferedImageFilter(new GrayscaleFilter());
 
   /** dpi */
-  private Point dpi = null;
+  private DPI dpi = null;
 
   /** cached overlayed icons */
   private Map<Object, ImageIcon> overlays = new WeakHashMap<Object, ImageIcon>();
@@ -125,7 +125,7 @@ public class ImageIcon extends javax.swing.ImageIcon {
    * 
    * @return resolution in dpi or null if not known
    */
-  public Point getResolution() {
+  public DPI getResolution() {
     return dpi;
   }
 
@@ -138,17 +138,17 @@ public class ImageIcon extends javax.swing.ImageIcon {
     // check whether we have a resolution
     if (dpi == null)
       return null;
-    return new Dimension2d((double) getIconWidth() / dpi.x, (double) getIconHeight() / dpi.y);
+    return new Dimension2d((double) getIconWidth() / dpi.horizontal(), (double) getIconHeight() / dpi.vertical());
   }
 
   /**
    * Size in points of give target space resolution
    */
-  public Dimension getSizeInPoints(Point dpiTarget) {
+  public Dimension getSizeInPoints(DPI dpiTarget) {
     Dimension2D sizeInInches = getSizeInInches();
     if (sizeInInches == null)
       return new Dimension(getIconWidth(), getIconHeight());
-    return new Dimension((int) (sizeInInches.getWidth() * dpiTarget.x), (int) (sizeInInches.getHeight() * dpiTarget.y));
+    return new Dimension((int) (sizeInInches.getWidth() * dpiTarget.horizontal()), (int) (sizeInInches.getHeight() * dpiTarget.vertical()));
   }
 
   /**

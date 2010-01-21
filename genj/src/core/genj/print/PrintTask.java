@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,6 +19,7 @@
  */
 package genj.print;
 
+import genj.renderer.DPI;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
@@ -29,7 +30,6 @@ import genj.util.swing.UnitGraphics;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
@@ -198,9 +198,9 @@ import javax.print.attribute.standard.OrientationRequested;
   /**
    * Resolve resolution (in inches)
    */
-  /*package*/ Point getResolution() {
+  /*package*/ DPI getResolution() {
     // In java printing the resolution is always 72dpi
-    return new Point(72,72);
+    return new DPI (72,72);
 //    PrinterResolution resolution = (PrinterResolution)getAttribute(PrinterResolution.class);
 //    return new Point(
 //      resolution.getCrossFeedResolution(PrinterResolution.DPI),
@@ -289,8 +289,10 @@ import javax.print.attribute.standard.OrientationRequested;
    * Compute pages
    */
   /*package*/ Dimension getPages() {
-    if (cachedPages==null)
-      cachedPages = renderer.calcSize(new Dimension2d(getPrintable()), getResolution());
+    if (cachedPages==null) {
+      Rectangle2D printable = getPrintable();
+      cachedPages = renderer.getPages(new Page(printable.getWidth(), printable.getHeight(), getResolution()));
+    }
     return cachedPages;
   }
   
@@ -397,17 +399,17 @@ import javax.print.attribute.standard.OrientationRequested;
     page = pageIndex;
 
     // prepare current page/clip
-    Point dpi = getResolution();
+    DPI dpi = getResolution();
     
     Rectangle2D printable = getPrintable();
-    UnitGraphics ug = new UnitGraphics(graphics, dpi.x, dpi.y);
+    UnitGraphics ug = new UnitGraphics(graphics, dpi.horizontal(), dpi.vertical());
     ug.pushClip(0,0, printable);
 
     // translate for to top left on page
     ug.translate(printable.getX(), printable.getY()); 
 
     // draw content
-    renderer.renderPage((Graphics2D)graphics, new Point(col, row), new Dimension2d(printable), dpi);
+    renderer.renderPage((Graphics2D)graphics, new Page(col, row, printable.getWidth(), printable.getHeight(), getResolution()));
     
     // next
     return PAGE_EXISTS;
