@@ -20,7 +20,6 @@
 package genj.util.swing;
 
 import genj.util.ChangeSupport;
-import genj.util.EnvironmentChecker;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -53,8 +52,6 @@ import javax.swing.text.StringContent;
  * Our own JComboBox
  */
 public class ChoiceWidget extends JComboBox {
-  
-  private final static boolean IS_JAVA_15 = EnvironmentChecker.isJava15(null);
   
   private boolean blockAutoComplete = false;
   
@@ -449,8 +446,7 @@ public class ChoiceWidget extends JComboBox {
       // Java 1.5 doesn't cancel the popup on focus lost IF the value in the editor
       // equals the current selection in the model - @see
       // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5100422
-      if (IS_JAVA_15)
-        setPopupVisible(false);
+      // setPopupVisible(false);
     }
 
     /** check for enter - use as selection */
