@@ -110,12 +110,7 @@ public class AboutWidget extends JTabbedPane {
       text.setWrapStyleWord(true);
       text.setEditable(false);
 
-      String dir = EnvironmentChecker.getProperty(
-        this,
-        new String[]{ "user.dir" },
-        ".",
-        "get authors.txt"
-      );
+      String dir = EnvironmentChecker.getProperty("user.dir", ".", "get authors.txt");
       
       String path = dir + File.separatorChar + "doc" + File.separatorChar + "authors.txt";
       
@@ -176,12 +171,7 @@ public class AboutWidget extends JTabbedPane {
           
       // the text    
       JTextArea text = new JTextArea(DEFAULT_ROWS,DEFAULT_COLS);
-      String dir = EnvironmentChecker.getProperty(
-        this,
-        new String[]{ "user.dir" },
-        ".",
-        "read gpl.txt"
-      );
+      String dir = EnvironmentChecker.getProperty("user.dir",".","read gpl.txt");
       
       String path = dir + File.separatorChar + "doc" + File.separatorChar + "gpl.txt";
       readTextFile(text, path);

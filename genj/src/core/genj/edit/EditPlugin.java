@@ -144,7 +144,7 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
         
         // commit submitter as well
         Submitter submitter = (Submitter) gedcom.createEntity(Gedcom.SUBM);
-        submitter.setName(EnvironmentChecker.getProperty(this, "user.name", "?", "user name used as submitter in new gedcom"));
+        submitter.setName(EnvironmentChecker.getProperty("user.name", "?", "user name used as submitter in new gedcom"));
       }
     });
 

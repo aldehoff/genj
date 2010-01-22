@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.140 $ $Author: nmeier $ $Date: 2010-01-12 20:38:32 $
+ * $Revision: 1.141 $ $Author: nmeier $ $Date: 2010-01-22 18:23:50 $
  */
 package genj.report;
 
@@ -362,7 +362,7 @@ public abstract class Report implements Cloneable {
   public File getFileFromUser(String title, String button, boolean askForOverwrite, String extension) {
 
     // show filechooser
-    String dir = registry.get("file", EnvironmentChecker.getProperty(this, "user.home", ".", "looking for report dir to let the user choose from"));
+    String dir = registry.get("file", EnvironmentChecker.getProperty("user.home", ".", "looking for report dir to let the user choose from"));
     JFileChooser chooser = new JFileChooser(dir);
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setDialogTitle(title);
@@ -394,7 +394,7 @@ public abstract class Report implements Cloneable {
   public File getDirectoryFromUser(String title, String button) {
 
     // show directory chooser
-    String dir = registry.get("dir", EnvironmentChecker.getProperty(this, "user.home", ".", "looking for report dir to let the user choose from"));
+    String dir = registry.get("dir", EnvironmentChecker.getProperty("user.home", ".", "looking for report dir to let the user choose from"));
     JFileChooser chooser = new JFileChooser(dir);
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     chooser.setDialogTitle(title);

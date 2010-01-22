@@ -25,8 +25,8 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -50,13 +50,13 @@ public class FileChooserWidget extends JPanel {
   public final static String EXECUTABLES = "exe, bin, sh, cmd, bat";
   
   /** start directory */
-  private String directory = EnvironmentChecker.getProperty(this, "user.home", ".", "file chooser directory");
+  private String directory = EnvironmentChecker.getProperty("user.home", ".", "file chooser directory");
   
   /** an accessory if any */
   private JComponent accessory;
   
   /** action listeners */
-  private List listeners = new ArrayList();
+  private List<ActionListener> listeners = new CopyOnWriteArrayList<ActionListener>();
   
   /** action listener connector to text field */
   private ActionListener actionProxy = new ActionListener() {

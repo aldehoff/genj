@@ -58,7 +58,7 @@ public class FontChooser extends JPanel {
    * we render each and every of those fonts in the font-selection-list
    */
   private final static boolean isRenderWithFont = 
-    null == EnvironmentChecker.getProperty(FontChooser.class, "genj.debug.fontproblems", null, "supress font usage in font-selection-list");
+    null == EnvironmentChecker.getProperty("genj.debug.fontproblems", null, "supress font usage in font-selection-list");
     
 
   

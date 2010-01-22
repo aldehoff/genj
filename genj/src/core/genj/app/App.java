@@ -84,7 +84,7 @@ public class App {
       // allow command line override of debug level - set non-genj level a tad higher
       Logger root = Logger.getLogger("");
       try {
-        Level level = Level.parse(EnvironmentChecker.getProperty(App.class, "genj.debug.level", "INFO", "log-level for GenJ"));
+        Level level = Level.parse(EnvironmentChecker.getProperty("genj.debug.level", "INFO", "log-level for GenJ"));
         LOG.setLevel(level);
         if (Integer.MAX_VALUE!=level.intValue())
           root.setLevel(new Level("genj.debug.level+1", level.intValue()+1) {} );
@@ -103,13 +103,13 @@ public class App {
       LOG.info("Main");
       
       // prepare our registry
-      REGISTRY.setFile(new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", ".", "calculate dir for registry"), "genj.properties"));
+      REGISTRY.setFile(new File(EnvironmentChecker.getProperty("user.home.genj", ".", "calculate dir for registry"), "genj.properties"));
   
       // initialize options first
       OptionProvider.getAllOptions();
       
       // create our home directory
-      File home = new File(EnvironmentChecker.getProperty(App.class, "user.home.genj", null, "determining home directory"));
+      File home = new File(EnvironmentChecker.getProperty("user.home.genj", null, "determining home directory"));
       home.mkdirs();
       if (!home.exists()||!home.isDirectory()) 
         throw new IOException("Can't initialize home directoy "+home);
@@ -136,8 +136,8 @@ public class App {
       }
       
       // check VM version
-      if (!EnvironmentChecker.isJava16(App.class)) {
-        if (EnvironmentChecker.getProperty(App.class, "genj.forcevm", null, "Check force of VM")==null) {
+      if (!EnvironmentChecker.isJava16()) {
+        if (EnvironmentChecker.getProperty("genj.forcevm", null, "Check force of VM")==null) {
           LOG.severe("Need Java 1.6 to run GenJ");
           System.exit(1);
           return;

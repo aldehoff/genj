@@ -738,7 +738,7 @@ public class Workbench extends JPanel implements SelectionSink {
    * Let the user choose a file
    */
   private File chooseFile(String title, String action, JComponent accessory) {
-    FileChooser chooser = new FileChooser(Workbench.this, title, action, "ged", EnvironmentChecker.getProperty(Workbench.this, new String[] { "genj.gedcom.dir", "user.home" }, ".", "choose gedcom file"));
+    FileChooser chooser = new FileChooser(Workbench.this, title, action, "ged", EnvironmentChecker.getProperty(new String[] { "genj.gedcom.dir", "user.home" }, ".", "choose gedcom file"));
     chooser.setCurrentDirectory(new File(REGISTRY.get("last.dir", "user.home")));
     if (accessory != null)
       chooser.setAccessory(accessory);

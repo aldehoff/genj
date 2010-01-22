@@ -60,8 +60,8 @@ public class EnvironmentChecker {
   /**
    * Check for Java 1.6 and higher
    */
-  public static boolean isJava16(Object receipient) {
-    String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
+  public static boolean isJava16() {
+    String version = getProperty("java.version", "", "Checking Java VM version");
     return version.matches("1\\.[6789].*");
   }
   
@@ -69,14 +69,14 @@ public class EnvironmentChecker {
    * Check for Mac
    */
   public static boolean isMac() {
-    return getProperty(EnvironmentChecker.class, "mrj.version", null, "isMac()")!=null;
+    return getProperty("mrj.version", null, "isMac()")!=null;
   }
   
   /**
    * Check for Windows
    */
   public static boolean isWindows() {
-    return getProperty(EnvironmentChecker.class, "os.name", "", "isWindows()").indexOf("Windows")>-1;
+    return getProperty("os.name", "", "isWindows()").indexOf("Windows")>-1;
   }
   
   private static String getDatePattern(int format) {
@@ -95,7 +95,7 @@ public class EnvironmentChecker {
     // Go through system properties
     for (int i=0; i<SYSTEM_PROPERTIES.length; i++) {
       String key = SYSTEM_PROPERTIES[i];
-      String msg = key + " = "+getProperty(EnvironmentChecker.class, SYSTEM_PROPERTIES[i], "", "check system props");
+      String msg = key + " = "+getProperty(SYSTEM_PROPERTIES[i], "", "check system props");
       if (NOOVERRIDE.contains(key))
         msg += " (no override)";
       LOG.info(msg);
@@ -111,7 +111,7 @@ public class EnvironmentChecker {
       try {
         
       // check classpath
-      String cpath = getProperty(EnvironmentChecker.class, "java.class.path", "", "check classpath");
+      String cpath = getProperty("java.class.path", "", "check classpath");
       StringTokenizer tokens = new StringTokenizer(cpath,System.getProperty("path.separator"),false);
       while (tokens.hasMoreTokens()) {
         String entry = tokens.nextToken();
@@ -154,14 +154,14 @@ public class EnvironmentChecker {
   /**
    * Returns a (system) property
    */
-  public static String getProperty(Object receipient, String key, String fallback, String msg) {
-    return getProperty(receipient, new String[]{key}, fallback, msg);
+  public static String getProperty(String key, String fallback, String msg) {
+    return getProperty(new String[]{key}, fallback, msg);
   }
 
   /**
    * Returns a (system) property
    */
-  public static String getProperty(Object receipient, String[] keys, String fallback, String msg) {
+  public static String getProperty(String[] keys, String fallback, String msg) {
     // see if one key fits
     String key = null, val, postfix;
     try {

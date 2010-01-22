@@ -161,7 +161,7 @@ public class ReportValidate extends Report {
           gedcom.doMuteUnitOfWork(new UnitOfWork() {
             public void perform(Gedcom gedcom) throws GedcomException {
               Submitter sub = (Submitter)gedcom.createEntity(Gedcom.SUBM);
-              sub.setName(EnvironmentChecker.getProperty(ReportValidate.this, "user.name", "?", "using user.name for fixing missing submitter"));
+              sub.setName(EnvironmentChecker.getProperty("user.name", "?", "using user.name for fixing missing submitter"));
             }
           });
         }

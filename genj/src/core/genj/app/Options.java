@@ -88,7 +88,7 @@ public class Options extends OptionProvider {
     result.add("en");
 
     // look for development mode -Dgenj.language.dir or in  ./language/xy (except 'CVS')
-    File[] dirs = new File(EnvironmentChecker.getProperty(Options.class, "genj.language.dir", "./language", "Dev-time language directory switch")).listFiles();
+    File[] dirs = new File(EnvironmentChecker.getProperty("genj.language.dir", "./language", "Dev-time language directory switch")).listFiles();
     if (dirs!=null) {
       for (int i = 0; i < dirs.length; i++) {
         String dir = dirs[i].getName();
@@ -328,7 +328,7 @@ public class Options extends OptionProvider {
         setText("...");
       }
       public void actionPerformed(ActionEvent event) {
-        File user_home_genj = new File(EnvironmentChecker.getProperty(UserHomeGenJOption.this, "user.home.genj", null, "trying to open user.home.genj")) ;
+        File user_home_genj = new File(EnvironmentChecker.getProperty("user.home.genj", null, "trying to open user.home.genj")) ;
         try {
           Desktop.getDesktop().open(user_home_genj);
         } catch (IOException e) {

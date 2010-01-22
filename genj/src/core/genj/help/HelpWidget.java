@@ -111,7 +111,6 @@ class HelpWidget extends JPanel {
     
     // First we look in "genj.help.dir"
     String dir = EnvironmentChecker.getProperty(
-      this,
       new String[]{ "genj.help.dir", "user.dir/help"},
       ".",
       "read help"

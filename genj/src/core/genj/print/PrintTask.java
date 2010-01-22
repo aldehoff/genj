@@ -117,7 +117,7 @@ import javax.print.attribute.standard.OrientationRequested;
     registry.get(attributes);
     
     // file output preset?
-    String file = EnvironmentChecker.getProperty(this, "genj.print.file", null, "Print file output");
+    String file = EnvironmentChecker.getProperty("genj.print.file", null, "Print file output");
     if (file!=null)
       attributes.add(new Destination(new File(file).toURI()));
 
