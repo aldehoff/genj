@@ -56,33 +56,13 @@ public class EnvironmentChecker {
   
   private final static Set<String> NOOVERRIDE = new HashSet<String>();
   
-  /**
-   * Check for Java 1.4 and higher
-   */
-  public static boolean isJava14(Object receipient) {
-    String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
-    // o.k. this should be more flexible 8)
-    if (version.startsWith("1.1") || version.startsWith("1.2")  || version.startsWith("1.3"))
-      return false;
-    // we're good
-    return true;
-  }
   
-  /**
-   * Check for Java 1.5 and higher
-   */
-  public static boolean isJava15(Object receipient) {
-    String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
-    // o.k. this should be more flexible 8)
-    return version.startsWith("1.5") || version.startsWith("1.6");
-  }
-
   /**
    * Check for Java 1.6 and higher
    */
   public static boolean isJava16(Object receipient) {
     String version = getProperty(receipient, "java.version", "", "Checking Java VM version");
-    return version.startsWith("1.6");
+    return version.matches("1\\.[6789].*");
   }
   
   /**
