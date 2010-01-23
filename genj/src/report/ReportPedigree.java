@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.PropertyDate;
 import genj.report.Report;
 
 /**
@@ -17,6 +18,7 @@ public class ReportPedigree extends Report {
 	//translate strings for output  
 	private String textTitle = translate("title");
 	private String textSelect = translate("select");
+	private String textUnknown = translate("unknown");
 	
   public void start(Indi indi) {
 	   
@@ -53,6 +55,8 @@ public class ReportPedigree extends Report {
 	  int iGenerations;	  
 	  Object aGens[] = {2,3,4,5,6};
 	  int iPosition, iRow, iCol;
+	  int iDOBYear, iDODYear;
+	  String strDates;
 	  Indi iDiagIndi[] = new Indi[31];
 	  int iDiag[][] = {
 			  {-1,-1,-1,-2,15},
@@ -159,13 +163,23 @@ public class ReportPedigree extends Report {
 			  //get item to print
 			  iTemp = iDiag[iRow][iCol];
 			  if(iTemp<0){
-				  if(iTemp==-1)strRow=strRow + align(" ",25, 3);				 
-				  if(iTemp==-2)strRow=strRow + align("|-------------",25, 2);
-				  if(iTemp==-3)strRow=strRow + align("|             ",25, 2);
+				  if(iTemp==-1)strRow=strRow + align(" ",24, 3);				 
+				  if(iTemp==-2)strRow=strRow + align("|-------------",24, 2);
+				  if(iTemp==-3)strRow=strRow + align("|             ",24, 2);
 			  }
 			  	else {
-			  		if(iDiagIndi[iTemp].getName()=="") strRow=strRow + align("(unknown)",25,3);
-			  			else strRow=strRow + align(iDiagIndi[iTemp].getName(), 25, 3);  
+			  		if(iDiagIndi[iTemp].getName()=="") strRow=strRow + align("("+textUnknown+ ")",32,3);
+			  			else {
+			  				strDates="";
+			  				iDOBYear = getYear(iDiagIndi[iTemp].getBirthDate());
+			  				if(iDOBYear==-1) strDates = " (-";
+			  					else strDates = " ("+iDOBYear+"-";
+			  			    iDODYear = getYear(iDiagIndi[iTemp].getDeathDate());
+			  			    if(iDODYear==-1) strDates = strDates + ")";
+		  						else strDates = strDates + iDODYear + ")";
+			  				strRow=strRow + align(iDiagIndi[iTemp].getName()+strDates, 32, 3);
+
+			  			}
 			  	}
 		  }	  
 		  println(strRow);
@@ -175,7 +189,19 @@ public class ReportPedigree extends Report {
   }
   
   
-  
+public int getYear(PropertyDate someDate) {
+	  
+ 	  String strYear;
+	  
+	  //check for null, invalid or range-type birth date
+	  if ((someDate==null) || (!someDate.isValid()) || (someDate.isRange())) 
+		  return -1;
+	  
+	  //get year of time of birth
+	  strYear = (someDate.toString().trim());
+	  strYear = strYear.substring(strYear.length()-4);
+	  return Integer.parseInt(strYear);
+  }  
     
  
 
