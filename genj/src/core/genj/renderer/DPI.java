@@ -21,6 +21,7 @@ package genj.renderer;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints.Key;
+import java.awt.geom.Rectangle2D;
 
 /**
  * Dots per inch
@@ -28,6 +29,8 @@ import java.awt.RenderingHints.Key;
 public class DPI {
 
   public final static Key KEY = new DPIHintKey();
+
+  public final static double INCH = 2.54D;
 
   private int horizontal, vertical;
   
@@ -52,6 +55,20 @@ public class DPI {
     if (dpi==null)
       dpi = Options.getInstance().getDPI();
     return dpi;
+  }
+  
+  public Rectangle2D toPixel(Rectangle2D inches) {
+    return new Rectangle2D.Double(
+      inches.getX() * horizontal,
+      inches.getY() * vertical,
+      inches.getWidth() * horizontal,
+      inches.getHeight() * vertical
+    );
+  }
+  
+  @Override
+  public String toString() {
+    return horizontal+" by "+vertical+" dpi";
   }
  
   /**

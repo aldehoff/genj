@@ -19,30 +19,39 @@
  */
 package genj.print;
 
+import genj.option.Option;
+import genj.option.PropertyOption;
 import genj.renderer.DPI;
+import genj.renderer.RenderPreviewHintKey;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.WordBuffer;
-import genj.util.swing.UnitGraphics;
 
+import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Dimension2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.print.DocFlavor;
 import javax.print.PrintException;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
 import javax.print.attribute.Attribute;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttribute;
@@ -90,15 +99,16 @@ import javax.print.attribute.standard.OrientationRequested;
   private PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
   
   /** pages */
-  private Dimension cachedPages;
+  private Dimension pages;
+  private double zoomx = 1.0D, zoomy = 1.0D;
 
   /**
    * Constructor
    */
-  public PrintTask(String title, PrintRenderer setRenderer) throws PrintException {
-    
+  public PrintTask(String title, PrintRenderer renderer) throws PrintException {
+  
     // remember 
-    renderer = setRenderer;
+    this.renderer = renderer;
     this.title = title;
 
     // FIXME print registry per callee?    
@@ -124,7 +134,7 @@ import javax.print.attribute.standard.OrientationRequested;
     // done
   }
   
-  public String getTitle() {
+  /*package*/ String getTitle() {
     return title;
   }
 
@@ -166,14 +176,6 @@ import javax.print.attribute.standard.OrientationRequested;
   }
 
   /**
-   * Invalidate current state (in case parameters/options/service has changed)
-   */
-  /*package*/ void invalidate() {
-    // forget cached information
-    cachedPages = null;
-  }
-  
-  /**
    * Set current service
    */
   /*package*/ void setService(PrintService set) {
@@ -184,8 +186,6 @@ import javax.print.attribute.standard.OrientationRequested;
     service = set;
     // remember
     registry.put(service);
-    // reset state
-    invalidate();
   }
 
   /**
@@ -251,56 +251,63 @@ import javax.print.attribute.standard.OrientationRequested;
     );
   }
   
-  
-  /**
-   * Calculate page in inches
-   */
-  /*package*/ Rectangle2D getPage(int x, int y, float pad) {
-    
-    Dimension2D size = getPageSize();
-
-    return new Rectangle2D.Double(
-       pad + x*(size.getWidth ()+pad), 
-       pad + y*(size.getHeight()+pad), 
-       size.getWidth(), 
-       size.getHeight()
-    );
-  }
-  
   /**
    * Resolve page size (in inches)
    */
-  /*package*/ Dimension2D getPageSize() {
+  public Dimension2D getPageSize() {
     
     OrientationRequested orientation = (OrientationRequested)getAttribute(OrientationRequested.class);
     MediaSize media = MediaSize.getMediaSizeForName((MediaSizeName)getAttribute(Media.class));
     
     Dimension2D result = new Dimension2d();
-    
-    if (orientation==OrientationRequested.LANDSCAPE||orientation==OrientationRequested.REVERSE_LANDSCAPE)
+
+    double w,h;
+    if (orientation==OrientationRequested.LANDSCAPE||orientation==OrientationRequested.REVERSE_LANDSCAPE) {
       result.setSize(media.getY(MediaSize.INCH), media.getX(MediaSize.INCH));
-    else
+    } else
       result.setSize(media.getX(MediaSize.INCH), media.getY(MediaSize.INCH));
     
     return result;
   }
   
   /**
-   * Compute pages
+   * pages 
    */
-  /*package*/ Dimension getPages() {
-    if (cachedPages==null) {
-      Rectangle2D printable = getPrintable();
-      cachedPages = renderer.getPages(new Page(printable.getWidth(), printable.getHeight(), getResolution()));
-    }
-    return cachedPages;
+  /*package*/ void setPages(Dimension pages) {
+    
+    if (pages.width==0 || pages.height==0)
+      throw new IllegalArgumentException("0 not allowed");
+    
+    this.pages = pages;
+
+    Rectangle2D printable = getPrintable();
+    Dimension2D size = getSize();
+    
+    this.zoomx = pages.width*printable.getWidth()   / size.getWidth();
+    this.zoomy = pages.height*printable.getHeight() / size.getHeight();
   }
   
-  /**
-   * Renderer
-   */
-  /*package*/ PrintRenderer getRenderer() {
-    return renderer;
+  /*package*/ void setZoom(double zoom) {
+    this.zoomx = zoom;
+    this.zoomy = zoom;
+    this.pages = null;
+  }
+  
+  /*package*/ Dimension2D getSize() {
+    return renderer.getSize();
+  }
+  
+  /*package*/ Dimension getPages() {
+    if (pages==null) {
+      // ask renderer
+      Rectangle2D printable = getPrintable();
+      Dimension2D dim = renderer.getSize();
+      return new Dimension(
+        (int)Math.ceil(dim.getWidth ()*zoomx/printable.getWidth ()),
+        (int)Math.ceil(dim.getHeight()*zoomy/printable.getHeight())
+      );
+    }
+    return pages;
   }
   
   /**
@@ -357,12 +364,10 @@ import javax.print.attribute.standard.OrientationRequested;
     // done
     return (PrintRequestAttribute)result;
   }
-  
-//    try {
-//      service.createPrintJob().print(new SimpleDoc(this, FLAVOR, null), attributes);
-//    } catch (PrintException e) {
-//      throwable = e;
-//    }
+
+  /*package*/ List<? extends Option> getOptions() {
+    return PropertyOption.introspect(renderer);
+  }
 
   /**
    * @see genj.util.Trackable#cancelTrackable()
@@ -383,6 +388,29 @@ import javax.print.attribute.standard.OrientationRequested;
   public String getState() {
     return RESOURCES.getString("progress", (page + 1), (getPages().width * getPages().height) );
   }
+  
+  public void print() {
+    
+    // store current settings
+    registry.put(attributes);
+
+    // init print
+    try {
+      service.createPrintJob().print(new SimpleDoc(this, FLAVOR, null), attributes);
+    } catch (PrintException e) {
+      LOG.log(Level.WARNING, "print failed", e);
+    }
+    
+    // debug target?
+    String file = EnvironmentChecker.getProperty("genj.print.file", null, "Print file output");
+    if (file!=null)
+      try {
+        Desktop.getDesktop().open(new File(file));
+      } catch (IOException e) {
+        LOG.log(Level.FINE, "can't open "+file, e);
+      }
+    
+  }
 
   /**
    * callback - printable
@@ -397,22 +425,45 @@ import javax.print.attribute.standard.OrientationRequested;
       return NO_SUCH_PAGE;
 
     page = pageIndex;
+    
+    // draw content
+    printImpl((Graphics2D)graphics, row, col, (PrintRenderer)renderer);
+    
+    // next
+    return PAGE_EXISTS;
+  }
+  
+  
+  private void printImpl(Graphics2D graphics, int row, int col, PrintRenderer renderer) {
 
     // prepare current page/clip
     DPI dpi = getResolution();
     
-    Rectangle2D printable = getPrintable();
-    UnitGraphics ug = new UnitGraphics(graphics, dpi.horizontal(), dpi.vertical());
-    ug.pushClip(0,0, printable);
-
-    // translate for to top left on page
-    ug.translate(printable.getX(), printable.getY()); 
-
-    // draw content
-    renderer.renderPage((Graphics2D)graphics, new Page(col, row, printable.getWidth(), printable.getHeight(), getResolution()));
+    Rectangle2D pixels = dpi.toPixel(getPrintable());
+       
+    graphics.translate(pixels.getX()-col*pixels.getWidth(), pixels.getY()-row*pixels.getHeight()); 
     
-    // next
-    return PAGE_EXISTS;
+    Rectangle2D box = new Rectangle2D.Double(
+        col*pixels.getWidth(),
+        row*pixels.getHeight(),
+        pixels.getWidth(),
+        pixels.getHeight());
+    graphics.clip(box);
+
+    graphics.setColor(Color.RED);
+    graphics.draw(new Line2D.Double(box.getMinX(), box.getMinY(), box.getMaxX(), box.getMaxY()));
+    graphics.setColor(Color.LIGHT_GRAY);
+    graphics.draw(new Rectangle2D.Double(box.getMinX(),box.getMinY(), box.getWidth(), box.getHeight()));
+    
+    // render content
+    graphics.setRenderingHint(DPI.KEY, dpi);
+    
+    // FIXME preview for now
+    graphics.setRenderingHint(RenderPreviewHintKey.KEY, true);
+    
+    renderer.render(graphics);
+    
+    // done
   }
   
 } //PrintTask

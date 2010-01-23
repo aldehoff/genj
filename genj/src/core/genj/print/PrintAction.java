@@ -81,14 +81,14 @@ public abstract class PrintAction extends Action2 {
         DialogHelper.QUESTION_MESSAGE, 
         widget, actions, DialogHelper.getComponent(e));
 
-    // FIXME keep settings
-    // registry.put(attributes);
-
     // check choice
     if (choice != 0 || task.getPages().width == 0 || task.getPages().height == 0)
       return;
     
-    // kickoff print
+    widget.commit();
+    
+    // print
+    task.print();
 
     // FIXME setup progress dlg
     // progress = WindowManager.getInstance(owner).openNonModalDialog(null, title, WindowManager.INFORMATION_MESSAGE, new ProgressWidget(this, getThread()), Action2.cancelOnly(), owner);

@@ -19,66 +19,56 @@
  */
 package genj.tree;
 
-import genj.print.Page;
+import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
+import genj.renderer.DPI;
+import genj.util.swing.UnitGraphics;
+import gj.awt.geom.Dimension2D;
 
-import java.awt.Dimension;
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 /**
  * A print renderer for tree */
 public class TreeViewPrinter implements PrintRenderer {
   
-  public boolean yes;
+  public boolean test;
+  
+  private TreeView view;
   
   /**
-   * @see genj.print.PrintRenderer#getPages(Page)
+   * Constructor
    */
-  public Dimension getPages(Page page) {
-    
-    // FIXME calc tree print size
-    
-    return new Dimension();
-//    Rectangle mmbounds = tree.getModel().getBounds();
-//    return new Dimension(
-//      (int)Math.ceil(mmbounds.width*0.1F/2.54F / pageSizeInInches.getWidth()), 
-//      (int)Math.ceil(mmbounds.height*0.1F/2.54F  / pageSizeInInches.getHeight())
-//    );
+  public TreeViewPrinter(TreeView view) {
+    this.view = view;
+  }
+  
+  /**
+   * size of print in inches
+   */
+  public Dimension2D getSize() {
+    Rectangle mmbounds = view.getModel().getBounds();
+    return new Dimension2D.Double(mmbounds.width*0.1F/2.54F, mmbounds.height*0.1F/2.54F);
   }
 
   /**
-   * @see genj.print.PrintRenderer#renderPage(Graphics2D, Page)
+   * render on canvas
    */
-  public void renderPage(Graphics2D g, Page page) {
+  public void render(Graphics2D g) {
     
-    // FIXME print render tree
+    // prepare rendering on mm/10 space
+    DPI dpi = DPI.get(g);
+    UnitGraphics graphics = new UnitGraphics(g, dpi.horizontal()/DPI.INCH*0.1D, dpi.vertical()/DPI.INCH*0.1D);
     
-
-//    // translate to correct page and give a hint of renderable space in gray
-//    UnitGraphics ug = new UnitGraphics(g, dpi.x, dpi.y);
-//    ug.setColor(Color.LIGHT_GRAY);
-//    ug.draw(new Rectangle2D.Double(0,0,pageSizeInInches.getWidth(),pageSizeInInches.getHeight()),0,0);
-//    ug.translate(
-//      -page.x*pageSizeInInches.getWidth(), 
-//      -page.y*pageSizeInInches.getHeight()
-//    );
-//
-//    // prepare rendering on mm/10 space
-//    UnitGraphics graphics = new UnitGraphics(g, dpi.x/2.54F*0.1D, dpi.y/2.54F*0.1D);
-//    
-//    ContentRenderer renderer = new ContentRenderer();
-//    renderer.cArcs          = Color.black;
-//    renderer.cFamShape      = Color.black;
-//    renderer.cIndiShape     = Color.black;
-//
-//    if (!preview) {    
-//      renderer.indiRenderer   = tree.createEntityRenderer(Gedcom.INDI);
-//      renderer.famRenderer    =  tree.createEntityRenderer(Gedcom.FAM);
-//    }
-//    
-//    g.setRenderingHint(DPIHintKey.KEY, dpi);
-//    
-//    renderer.render(graphics, tree.getModel());
+    ContentRenderer renderer = new ContentRenderer();
+    renderer.cArcs          = Color.black;
+    renderer.cFamShape      = Color.black;
+    renderer.cIndiShape     = Color.black;
+    renderer.indiRenderer   = view.createEntityRenderer(Gedcom.INDI);
+    renderer.famRenderer    =  view.createEntityRenderer(Gedcom.FAM);
+    
+    renderer.render(graphics, view.getModel());
 
   }
 

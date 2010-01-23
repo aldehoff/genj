@@ -36,7 +36,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Widget for selecting zoom factor
  */
-public class ZoomWidget extends JPanel {
+public class ScalingWidget extends JPanel {
 
   private final static Pattern
     PERCENT = Pattern.compile("([0-9]{1,3})%"), // 10%,20%,100%,...
@@ -48,7 +48,7 @@ public class ZoomWidget extends JPanel {
   /**
    * Constructor
    */
-  public ZoomWidget() {
+  public ScalingWidget() {
     super(new BorderLayout());
     
     choice = new ChoiceWidget(new String[]{ "1x1", "50%", "75%", "100%"}, "100%" );
@@ -68,7 +68,7 @@ public class ZoomWidget extends JPanel {
     
     Matcher p = PERCENT.matcher(t);
     if (p.find())
-      return Double.parseDouble(p.group(1));
+      return Integer.parseInt(p.group(1))*0.01D;
     
     Matcher d = DIM.matcher(t);
     if (d.find())

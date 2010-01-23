@@ -22,22 +22,26 @@ package genj.print;
 import genj.option.Option;
 import genj.option.OptionListener;
 import genj.option.OptionsWidget;
-import genj.option.PropertyOption;
 import genj.renderer.DPI;
 import genj.renderer.Options;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
+import genj.util.swing.GraphicsHelper;
 import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.ScrollPaneWidget;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.logging.Logger;
@@ -48,7 +52,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -64,7 +67,7 @@ public class PrintWidget extends JTabbedPane {
   
   private PrintTask task;
   private ChoiceWidget services;
-  private ZoomWidget zoom;
+  private ScalingWidget scaling;
   private Preview preview;
   private Apply apply = new Apply();
   
@@ -79,6 +82,14 @@ public class PrintWidget extends JTabbedPane {
     add(RESOURCES.getString("settings"), createSecondPage());
     
     // done    
+  }
+  
+  public void commit() {
+    
+    if (services.getSelectedItem()!=null)
+      task.setService((PrintService)services.getSelectedItem());
+
+    // FIXME commit zoom
   }
   
   private JPanel createFirstPage() {
@@ -114,24 +125,24 @@ public class PrintWidget extends JTabbedPane {
     page.add(new JButton(new Settings()));
     
     // zoom & alignment
-    zoom = new ZoomWidget();
-    zoom.addChangeListener(apply);
-    page.add(zoom);
+    scaling = new ScalingWidget();
+    scaling.addChangeListener(apply);
+    page.add(scaling);
 
     // preview
     page.add(new JLabel(RESOURCES.getString("preview")));
     preview = new Preview();
     
-    page.add(new JScrollPane(preview));
+    page.add(new ScrollPaneWidget(preview));
     
     // done
     return page;    
   }
   
   private JComponent createSecondPage() {
-    List<PropertyOption> options = PropertyOption.introspect(task.getRenderer());
-    for (int i = 0; i < options.size(); i++) 
-      ((Option)options.get(i)).addOptionListener(apply);
+    List<? extends Option> options = task.getOptions();
+    for (Option option : options) 
+      option.addOptionListener(apply);
     return new OptionsWidget(task.getTitle(), options);
   }
   
@@ -140,23 +151,26 @@ public class PrintWidget extends JTabbedPane {
    */
   private class Preview extends JComponent implements Scrollable {
     
-    private float 
-      padd = 0.1F, // inch
-      percent = 0.25F; // 25%
-
-    private DPI dpiScreen = Options.getInstance().getDPI();
+    private float pad = 0.1F; // inch
+    private DPI dpi = new DPI(
+        (int)(Options.getInstance().getDPI().horizontal() * 0.20),
+        (int)(Options.getInstance().getDPI().vertical  () * 0.20)
+      );
     
     /**
      * @see javax.swing.JComponent#getPreferredSize()
      */
     public Dimension getPreferredSize() {
-      // calculate
+
       Dimension pages = task.getPages(); 
-      Rectangle2D page = task.getPage(pages.width-1,pages.height-1, padd);
-      return new Dimension(
-        (int)((page.getMaxX())*dpiScreen.horizontal()*percent),
-        (int)((page.getMaxY())*dpiScreen.vertical()*percent)
-      );
+      Dimension2D page = task.getPageSize();
+
+      Rectangle2D pixels = dpi.toPixel(new Rectangle2D.Double(0,0,
+          ((pages.width+1)*pad + pages.width*page.getWidth()),
+          ((pages.height+1)*pad + pages.height*page.getHeight())
+      ));
+
+      return new Dimension((int)Math.ceil(pixels.getWidth()), (int)Math.ceil(pixels.getHeight()));
     }
 
     /**
@@ -164,37 +178,40 @@ public class PrintWidget extends JTabbedPane {
      */
     protected void paintComponent(Graphics g) {
       
-      Object scaling = zoom.getValue();
-      if (scaling==null)
-        scaling = 1.0D;
-      
-      LOG.fine("Scaling is "+scaling);
-      
       // fill background
       g.setColor(Color.gray);
       g.fillRect(0,0,getWidth(),getHeight());
       g.setColor(Color.white);
       
-//      // render pages in app's dpi space
-//      PrintRenderer renderer = task.getRenderer();
-//      Dimension pages = task.getPages(); 
-//      UnitGraphics ug = new UnitGraphics(g, dpiScreen.x*zoom, dpiScreen.y*zoom);
-//      Rectangle2D clip = ug.getClip();
-//      for (int y=0;y<pages.height;y++) {
-//        for (int x=0;x<pages.width;x++) {
-//          // calculate layout
-//          Rectangle2D 
-//            page = task.getPage(x,y, padd), 
-//            imageable = task.getPrintable(page);
-//          // visible?
-//          if (!clip.intersects(page))
-//            continue;
-//          // draw page
-//          ug.setColor(Color.white);
-//          ug.draw(page, 0, 0, true);
-//          // draw number
-//          ug.setColor(Color.gray);
-//          ug.draw(String.valueOf(x+y*pages.width+1),page.getCenterX(),page.getCenterY(),0.5D,0.5D);
+      // render pages in app's dpi space
+      Graphics2D g2d = (Graphics2D)g;
+      Dimension pages = task.getPages(); 
+      Rectangle clip = g2d.getClipBounds();
+      for (int y=0;y<pages.height;y++) {
+        for (int x=0;x<pages.width;x++) {
+          
+          // calculate view
+          Rectangle2D page = dpi.toPixel(new Rectangle2D.Double(
+             pad + x*(task.getPageSize().getWidth ()+pad), 
+             pad + y*(task.getPageSize().getHeight()+pad), 
+             task.getPageSize().getWidth (), 
+             task.getPageSize().getHeight()
+          ));
+          
+          // visible?
+          if (!clip.intersects(page))
+            continue;
+          
+          // draw page
+          g2d.setColor(Color.white);
+          g2d.fill(page);
+          
+          // draw number
+          g.setColor(Color.gray);
+          g.setFont(new Font("Arial", Font.BOLD, 48));
+          GraphicsHelper.render(g2d, String.valueOf(x+y*pages.width+1), page.getCenterX(), page.getCenterY(), 0.5, 0.5);
+          
+          // draw preview
 //          ug.pushTransformation();
 //          ug.pushClip(imageable);
 //          ug.translate(imageable.getMinX(), imageable.getMinY());
@@ -202,9 +219,10 @@ public class PrintWidget extends JTabbedPane {
 //          renderer.renderPage(ug.getGraphics(), new Point(x,y), new Dimension2d(imageable), dpiScreen, true);
 //          ug.popTransformation();
 //          ug.popClip();
-//          // next   
-//        }
-//      }
+          // next   
+        }
+      }
+      
       // done
     }
 
@@ -246,10 +264,8 @@ public class PrintWidget extends JTabbedPane {
       // show settings
       Point pos = PrintWidget.this.getLocationOnScreen();
       PrintService choice = ServiceUI.printDialog(null, pos.x, pos.y, task.getServices(), task.getService(), null, task.getAttributes());
-      if (choice!=null) {
+      if (choice!=null) 
         services.setSelectedItem(choice);
-        task.invalidate();
-      }
 
       // update preview
       preview.revalidate();
@@ -271,7 +287,12 @@ public class PrintWidget extends JTabbedPane {
       apply();
     }
     private void apply() {
-      task.invalidate();
+      Object scale = scaling.getValue();
+      if (scale instanceof Dimension)
+        task.setPages((Dimension)scale);
+      if (scale instanceof Double)
+        task.setZoom((Double)scale);
+      preview.revalidate();
       preview.repaint();
     }
   }

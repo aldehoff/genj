@@ -17,28 +17,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package genj.print;
+package genj.renderer;
 
-import gj.awt.geom.Dimension2D;
-
-import java.awt.Graphics2D;
+import java.awt.RenderingHints.Key;
 
 /**
- * Printing Renderer
+ * A rendering hint for whether to render a preview
  */
-public interface PrintRenderer {
-  
-  /**
-   * Calculate the size required for printing
-   * @result size in inches of printed content horizontally&vertically
-   */
-  public Dimension2D getSize();
-  
-  /**
-   * Render content 
-   * @param g graphics context to render on - (0,0) in graphics space is the top-left
-   * @param page page to render (x,y)
-   */  
-  public void render(Graphics2D g);
-  
-} //PrintRenderer
+public class RenderPreviewHintKey extends Key {
+
+  public final static Key KEY = new RenderPreviewHintKey();
+
+  private RenderPreviewHintKey() {
+    super(0);
+  }
+
+  @Override
+  public boolean isCompatibleValue(Object val) {
+    return val instanceof Boolean;
+  }
+}

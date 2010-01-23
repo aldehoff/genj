@@ -171,7 +171,7 @@ public class PropertyRenderer {
       at.scale(scale, scale);
       w = (int)Math.ceil(w*scale);
     }
-    g.drawImage(img.getImage(), at, null);
+//    g.drawImage(img.getImage(), at, null);
     
     // patch bounds for skip
     bounds.x += w+IMAGE_GAP;

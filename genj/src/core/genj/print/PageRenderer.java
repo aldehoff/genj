@@ -19,26 +19,27 @@
  */
 package genj.print;
 
-import gj.awt.geom.Dimension2D;
-
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 
 /**
  * Printing Renderer
  */
-public interface PrintRenderer {
+public interface PageRenderer {
   
   /**
-   * Calculate the size required for printing
-   * @result size in inches of printed content horizontally&vertically
+   * Calculate the number of pages required for printing
+   * @param pageSize size of page in inches
+   * @param dpi resolution
+   * @result dimension expressing number of pages horizontally&vertically
    */
-  public Dimension2D getSize();
+  public Dimension getPages(Page page);
   
   /**
-   * Render content 
+   * Render page content 
    * @param g graphics context to render on - (0,0) in graphics space is the top-left
    * @param page page to render (x,y)
    */  
-  public void render(Graphics2D g);
+  public void renderPage(Graphics2D g, Page page);
   
 } //PrintRenderer

@@ -23,9 +23,9 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.renderer.EntityRenderer;
+import genj.renderer.RenderPreviewHintKey;
 import genj.util.swing.UnitGraphics;
 import gj.awt.geom.Path;
-import gj.model.Arc;
 import gj.model.Node;
 
 import java.awt.Color;
@@ -34,7 +34,6 @@ import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * The renderer knowing how to render the content of tree's model
@@ -80,10 +79,8 @@ public class ContentRenderer {
     // clip is the range we'll be looking in range
     Rectangle clip = g.getClip().getBounds();
     // loop
-    Iterator it = model.getNodesIn(clip).iterator();
-    while (it.hasNext()) {
+    for (Node node : model.getNodesIn(clip)) {
       // grab node and its shape
-      Node node = (Node)it.next();
       Shape shape = node.getShape();
       Point2D pos = node.getPosition();
       // no shape -> no rendering
@@ -113,8 +110,9 @@ public class ContentRenderer {
     // draw its shape
     g.setColor(getColor(content));
     g.draw(shape, x, y);
-    // draw its content
-    renderContent(g, x, y, shape, content);
+    // draw its content if not meant for speed
+    if (!Boolean.TRUE.equals(g.getGraphics().getRenderingHint(RenderPreviewHintKey.KEY)))
+      renderContent(g, x, y, shape, content);
     // done
   }
   
@@ -141,7 +139,8 @@ public class ContentRenderer {
     EntityRenderer renderer = null;
     if (content instanceof Indi) renderer = indiRenderer;
     if (content instanceof Fam ) renderer = famRenderer;
-    if (renderer==null) return;
+    if (renderer==null) 
+      return;
     // preserve clip&transformation
     Rectangle r2d = shape.getBounds();
     g.pushClip(x, y, r2d);
@@ -167,10 +166,7 @@ public class ContentRenderer {
     // prepare color
     g.setColor(cArcs);
     // loop
-    Iterator it = model.getArcsIn(clip).iterator();
-    while (it.hasNext()) {
-      // grab arc
-      Arc arc = (Arc)it.next();
+    for (TreeArc arc : model.getArcsIn(clip)) {
       // its path
       Path path = arc.getPath();
       if (path!=null) g.draw(path, 0, 0);

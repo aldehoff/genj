@@ -256,7 +256,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
   /**
    * Arcs by range
    */
-  public Collection getArcsIn(Rectangle range) {
+  public Collection<TreeArc> getArcsIn(Rectangle range) {
     return arcs;
   }
 

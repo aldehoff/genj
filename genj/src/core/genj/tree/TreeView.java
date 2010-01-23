@@ -43,6 +43,7 @@ import genj.util.swing.ButtonHelper;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
+import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
@@ -189,7 +190,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     // setup child components
     contentRenderer = new ContentRenderer();
     content = new Content();
-    JScrollPane scroll = new JScrollPane(new ViewPortAdapter(content));
+    JScrollPane scroll = new ScrollPaneWidget(new ViewPortAdapter(content));
     overview = new Overview(scroll);
     overview.setVisible(REGISTRY.get("overview", false));
     overview.setSize(REGISTRY.get("overview", new Dimension(64,64)));
@@ -1145,7 +1146,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     }
     @Override
     protected PrintRenderer getRenderer() {
-      return new TreeViewPrinter();
+      return new TreeViewPrinter(TreeView.this);
     }
   }
   
