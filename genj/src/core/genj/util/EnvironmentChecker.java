@@ -214,8 +214,10 @@ public class EnvironmentChecker {
   private static void setProperty(String key, String val) {
     String old = System.getProperty(key); 
     if (old==null) {
+      LOG.fine("Setting system property "+key);
       System.setProperty(key, val);
     } else {
+      LOG.fine("Not overriding system property "+key);
       NOOVERRIDE.add(key);
     }
   }
@@ -224,9 +226,6 @@ public class EnvironmentChecker {
    * read system properties from file
    */
   static {
-    
-    // set ipv4 stack by default (unless preset) as there are Java/ipv6 problems at least on Linux/64
-    setProperty("java.net.preferIPv4Stack", "true");
     
     try {
       EnvironmentChecker.loadSystemProperties(new FileInputStream(new File("system.properties")));

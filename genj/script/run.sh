@@ -32,7 +32,7 @@ if [ ! -x "$JAVA" ]; then
 fi
 
 # run it (we start the virtual machine with initially 32 MB and allocate a max of 512 MB)
-CMD="$JAVA -Xmx512m -Xms32m -jar run.jar $1 $2 $3 $4 $5 $6 $7 $8 $9"
+CMD="$JAVA -Xmx512m -Xms32m -Djava.net.preferIPv4Stack=true -jar run.jar $1 $2 $3 $4 $5 $6 $7 $8 $9"
 
 echo "*** INFO: Executing '$CMD'"
 
