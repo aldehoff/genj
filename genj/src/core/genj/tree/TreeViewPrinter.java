@@ -33,8 +33,6 @@ import java.awt.Rectangle;
  * A print renderer for tree */
 public class TreeViewPrinter implements PrintRenderer {
   
-  public boolean test;
-  
   private TreeView view;
   
   /**

@@ -28,13 +28,11 @@ import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.WordBuffer;
 
-import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Dimension2D;
-import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -439,7 +437,7 @@ import javax.print.attribute.standard.OrientationRequested;
     DPI dpi = DPI.get(graphics);
     
     Rectangle2D pixels = dpi.toPixel(getPrintable());
-       
+    
     graphics.translate(pixels.getX()-col*pixels.getWidth(), pixels.getY()-row*pixels.getHeight()); 
     
     Rectangle2D box = new Rectangle2D.Double(
@@ -449,10 +447,7 @@ import javax.print.attribute.standard.OrientationRequested;
         pixels.getHeight());
     graphics.clip(box);
 
-    graphics.setColor(Color.RED);
-    graphics.draw(new Line2D.Double(box.getMinX(), box.getMinY(), box.getMaxX(), box.getMaxY()));
-    graphics.setColor(Color.LIGHT_GRAY);
-    graphics.draw(new Rectangle2D.Double(box.getMinX(),box.getMinY(), box.getWidth(), box.getHeight()));
+    graphics.scale(zoomx, zoomy);
     
     renderer.render(graphics);
     
