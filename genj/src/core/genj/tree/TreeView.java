@@ -82,6 +82,7 @@ import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -756,7 +757,22 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     }
     
     public void mouseWheelMoved(MouseWheelEvent e) {
-      sliderZoom.setValue(sliderZoom.getValue() - e.getWheelRotation()*10);
+      
+      // zoom
+      if (e.isControlDown()) {
+        sliderZoom.setValue(sliderZoom.getValue() - e.getWheelRotation()*10);
+        return;
+      }
+      
+      // scroll
+      JViewport viewport = (JViewport)getParent().getParent();
+      Rectangle r = viewport.getVisibleRect();
+      if (e.isShiftDown()) 
+        r.x += e.getWheelRotation()*16;
+      else
+        r.y += e.getWheelRotation()*16;
+      viewport.scrollRectToVisible(r);
+      
     }
     
     /**
