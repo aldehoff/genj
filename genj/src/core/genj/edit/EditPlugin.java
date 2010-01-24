@@ -72,6 +72,7 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
+import genj.view.SelectionSink;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -147,6 +148,8 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
         submitter.setName(EnvironmentChecker.getProperty("user.name", "?", "user name used as submitter in new gedcom"));
       }
     });
+    
+    SelectionSink.Dispatcher.fireSelection(workbench, new Context(gedcom.getFirstEntity(Gedcom.INDI)), true);
 
     // done
   }
