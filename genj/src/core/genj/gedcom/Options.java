@@ -58,7 +58,7 @@ public class Options extends OptionProvider {
   public boolean isAddAge = false;
   
   /** option - whether to use "last,first" or "first last" */
-  public int nameFormat = 0;
+  public int nameFormat = 1;
   public final static String[] nameFormats = {
     RESOURCES.getString("option.nameFormat.first"),
     RESOURCES.getString("option.nameFormat.last")
