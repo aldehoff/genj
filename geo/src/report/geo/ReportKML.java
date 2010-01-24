@@ -93,8 +93,7 @@ public class ReportKML extends Report {
 		}
 		
 		// let the user know
-		getOptionFromUser(translate("done", new String[] { kml.getName(),
-				kml.getName(), kml.getParent() }), OPTION_OK);
+		getOptionFromUser(translate("done", kml.getName(), kml.getName(), kml.getParent() ), OPTION_OK);
 
 		// done
 	}

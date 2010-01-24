@@ -50,7 +50,7 @@ public class ReportSameValues extends Report {
       return null;
 
     // return a meaningfull text for that context
-    return translate("xname", new String[]{ ((Property)context).getPropertyName(), val } );
+    return translate("xname", ((Property)context).getPropertyName(), val );
   }
 
   /**
@@ -105,7 +105,7 @@ public class ReportSameValues extends Report {
     Collections.sort(result);
 
     // done
-    return new ContextList(gedcom, translate("xname",new String[]{ propName, val}), result);
+    return new ContextList(gedcom, translate("xname", propName, val ), result);
   }
 
 } //ReportSameValues

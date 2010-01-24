@@ -88,17 +88,17 @@ public class PropertyFamilySpouse extends PropertyXRef {
       throw new GedcomException(resources.getString("error.already.spouses", fam));
 
     if ((husband==indi)||(wife==indi))
-      throw new GedcomException(resources.getString("error.already.spouse", new String[]{ indi.toString(), fam.toString()}));
+      throw new GedcomException(resources.getString("error.already.spouse", indi.toString(), fam.toString()));
 
     Fam[] familiesWhereChild = indi.getFamiliesWhereChild();
     for (int i=0; i<familiesWhereChild.length; i++) {
       if (familiesWhereChild[i]==fam)
-        throw new GedcomException(resources.getString("error.already.child", new String[]{ indi.toString(), fam.toString()}));
+        throw new GedcomException(resources.getString("error.already.child", indi.toString(), fam.toString()));
     }
     
     // Make sure indi isn't already descendant of family 
     if (indi.isDescendantOf(fam)) 
-      throw new GedcomException(resources.getString("error.already.descendant", new String[]{ indi.toString(), fam.toString()}));
+      throw new GedcomException(resources.getString("error.already.descendant", indi.toString(), fam.toString()));
     
     // place as husband or wife according to gender
     if (indi.getSex()==PropertySex.UNKNOWN) 

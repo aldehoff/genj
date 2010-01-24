@@ -48,9 +48,7 @@ public class DelEntity extends AbstractChange {
    */
   protected String getConfirmMessage() {
     // You are about to delete {0} of type {1} from {2}! Deleting this ...
-    return resources.getString("confirm.del", new String[] { 
-      candidate.toString(), Gedcom.getName(candidate.getTag(),false), gedcom.getName() 
-    });
+    return resources.getString("confirm.del", candidate.toString(), Gedcom.getName(candidate.getTag(),false), gedcom.getName() );
   }
 
   /**

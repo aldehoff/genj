@@ -43,7 +43,7 @@ public class CreateAssociation extends CreateRelationship {
 
   /** description of what this does */
   public String getDescription() {
-    return resources.getString("create.association.with", new String[]{ Gedcom.getName(target.getTag()), target.getEntity().toString() });
+    return resources.getString("create.association.with", Gedcom.getName(target.getTag()), target.getEntity().toString() );
   }
 
   /** perform the change */

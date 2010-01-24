@@ -72,7 +72,7 @@ public class EntityBean extends PropertyBean {
     if (entity!=null) {
       PropertyChange change = entity.getLastChange();
       if (change!=null)
-        changed.setText(RESOURCES.getString("entity.change", new String[] {change.getDateDisplayValue(), change.getTimeDisplayValue()} ));      
+        changed.setText(RESOURCES.getString("entity.change", change.getDateDisplayValue(), change.getTimeDisplayValue() ));      
         changed.setVisible(true);
     }
     

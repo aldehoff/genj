@@ -227,7 +227,7 @@ public class ReportValidate extends Report {
         continue;
       // check if Gedcom grammar allows it
       if (!meta.allows(ctag)) {
-        String msg = translate("err.notgedcom", new String[]{ctag, prop.getGedcom().getGrammar().getVersion(), path.toString()});
+        String msg = translate("err.notgedcom", ctag, prop.getGedcom().getGrammar().getVersion(), path.toString() );
         issues.add(new ViewContext(child).setText(msg).setImage(MetaProperty.IMG_ERROR));
         continue;
       }

@@ -44,7 +44,7 @@ public class CreateSpouse extends CreateRelationship {
   public String getWarning(Entity target) {
     int n = spouse.getNoOfFams();
     if (n>0)
-      return resources.getString("create.spouse.warning", new String[]{ spouse.toString(), ""+n });
+      return resources.getString("create.spouse.warning", spouse.toString(), ""+n );
     return null;
   }
   

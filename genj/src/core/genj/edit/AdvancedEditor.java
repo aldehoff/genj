@@ -409,7 +409,7 @@ import javax.swing.tree.TreePath;
         String veto = p.getDeleteVeto();
         if (veto!=null) {
           // Removing property {0} from {1} leads to:\n{2}
-          result.append(resources.getString("del.warning", new String[] { p.getPropertyName(), p.getParent().getPropertyName(), veto  }));
+          result.append(resources.getString("del.warning", p.getPropertyName(), p.getParent().getPropertyName(), veto  ));
           result.append("\n");
         }
       }

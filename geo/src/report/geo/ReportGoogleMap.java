@@ -129,7 +129,7 @@ public class ReportGoogleMap extends Report {
       return;
 
     // let the user know
-    getOptionFromUser(translate("done", new String[] { html.getName(), xml.getName(), html.getParent() }), OPTION_OK );
+    getOptionFromUser(translate("done", html.getName(), xml.getName(), html.getParent() ), OPTION_OK );
 
     // done
   }

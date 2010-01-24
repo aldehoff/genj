@@ -111,7 +111,7 @@ public class PropertyFamilyChild extends PropertyXRef {
     // Make sure the child is not ancestor of the family (father,grandfather,grandgrandfather,...)
     // .. that would introduce a circle
     if (indi.isAncestorOf(fam))
-      throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ indi.toString(), fam.toString() }));
+      throw new GedcomException(resources.getString("error.already.ancestor", indi.toString(), fam.toString() ));
 
     // NM20070921 - since we're handling multiple references to FAMC in getFamiliesWhereChild now e.g.
     // 0 INDI

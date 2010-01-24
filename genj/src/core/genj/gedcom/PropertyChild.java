@@ -107,7 +107,7 @@ public class PropertyChild extends PropertyXRef {
     // Make sure the child is not ancestor of family already (father, mother, grandfather, grandgrandfather, ...) 
     // .. that would introduce a circle
     if (child.isAncestorOf(fam)) 
-      throw new GedcomException(resources.getString("error.already.ancestor", new String[]{ child.toString(), fam.toString()}));
+      throw new GedcomException(resources.getString("error.already.ancestor", child.toString(), fam.toString()));
 
     // NM20070921 - see PropertyFamilyChild.link()
     
@@ -135,7 +135,7 @@ public class PropertyChild extends PropertyXRef {
    * an externalized label we need in some ui actions
    */
   public static String getLabelChildAlreadyinFamily(Indi child, Fam fam) {
-    return resources.getString("error.already.child", new String[]{ child.toString(), fam.toString()});
+    return resources.getString("error.already.child", child.toString(), fam.toString());
   }
 
   /**

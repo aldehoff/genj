@@ -50,7 +50,7 @@ public class CreateXReference extends CreateRelationship {
   
   /** more about what we do */
   public String getDescription() {
-    return resources.getString("create.xref.desc", new String[]{ Gedcom.getName(targetType), source.getEntity().toString()});
+    return resources.getString("create.xref.desc", Gedcom.getName(targetType), source.getEntity().toString());
   }
 
   /** do the change */

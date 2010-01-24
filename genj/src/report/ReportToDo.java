@@ -209,7 +209,7 @@ public class ReportToDo extends Report {
 
     doc.nextTableRow(ROW_FORMAT_HEADER1);
     doc.nextTableCell("number-columns-spanned=6");
-    doc.addText( translate("titlefam", new String[] { fam.toString(), fam.getId() }) );
+    doc.addText( translate("titlefam", fam.toString(), fam.getId() ) );
 
     // //// Epoux
     tempIndi = fam.getHusband();
@@ -346,7 +346,7 @@ public class ReportToDo extends Report {
 
     doc.nextTableRow(ROW_FORMAT_HEADER1);
     doc.nextTableCell("number-columns-spanned=6");
-    doc.addText( translate("titleindi", new String[] { indi.getName(), indi.getId() }) );
+    doc.addText( translate("titleindi", indi.getName(), indi.getId() ) );
 
     doc.nextTableRow();
     doc.nextTableCell("number-columns-spanned=6,"+FORMAT_HEADER2);

@@ -197,7 +197,7 @@ public class PlaceBean extends PropertyBean {
     // we're using getDisplayValue() here
     // because like in PropertyRelationship's case there might be more
     // in the gedcom value than what we want to display (witness@INDI:BIRT)
-    return RESOURCES.getString("choice.global.confirm", new String[]{ ""+sameChoices.length, sameChoices[0].getDisplayValue(), getCommitValue() });
+    return RESOURCES.getString("choice.global.confirm", ""+sameChoices.length, sameChoices[0].getDisplayValue(), getCommitValue() );
   }
   
 } //PlaceBean

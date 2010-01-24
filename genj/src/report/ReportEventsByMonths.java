@@ -125,8 +125,7 @@ public class ReportEventsByMonths extends Report {
       //String label = Gedcom.getName(is.getName());
       String label = (String)labels.get(is.getName());
       // the chart title
-      String[] chartTitleParameters = {label, new Integer(inferiorYearLimit).toString(),new Integer(superiorYearLimit).toString()};
-      Chart chart = new Chart(translate("chart.title",chartTitleParameters), is, categories, false);
+      Chart chart = new Chart(translate("chart.title",label, new Integer(inferiorYearLimit).toString(),new Integer(superiorYearLimit).toString()), is, categories, false);
       
       charts.addTab(label, chart);
     }

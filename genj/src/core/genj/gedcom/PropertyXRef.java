@@ -84,9 +84,7 @@ public abstract class PropertyXRef extends Property {
     Entity entity = getGedcom().getEntity(getTargetType(), value);
     if (entity==null)
       // Can't find {0} {1} ({2} in {3})
-      throw new GedcomException(resources.getString("error.notfound", new String[]{
-          Gedcom.getName(getTargetType()), value
-        }));
+      throw new GedcomException(resources.getString("error.notfound", Gedcom.getName(getTargetType()), value));
     return entity;
   }
 
@@ -212,7 +210,7 @@ public abstract class PropertyXRef extends Property {
     value = value.trim();
     // check format
     if (!(value.startsWith("@")&&value.endsWith("@")))
-      throw new GedcomException(resources.getString("error.norefvalue", new String[]{ value, Gedcom.getName(getTag()) }));
+      throw new GedcomException(resources.getString("error.norefvalue", value, Gedcom.getName(getTag())));
     return super.init(meta, value);
   }
 

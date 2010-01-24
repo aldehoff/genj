@@ -55,7 +55,7 @@ import java.util.List;
       return;
 
     // found path1 but not path2!
-    String text = report.translate("err.exists.without", new String[]{ Gedcom.getName(prop1.getTag()), Gedcom.getName(path2.getLast()) });
+    String text = report.translate("err.exists.without", Gedcom.getName(prop1.getTag()), Gedcom.getName(path2.getLast()) );
     issues.add(new ViewContext(prop1).setText(text));
     
   }
