@@ -40,13 +40,16 @@ public abstract class PrintAction extends Action2 {
   private final static ImageIcon IMG = new ImageIcon(PrintAction.class, "images/Print.png");
   private final static Logger LOG = Logger.getLogger("genj.print");
   
+  private String title;
+  
   /**
    * Constructor
    */
   public PrintAction(String title) {
     setText(RES.getString("print"));
-    setTip(RES.getString("title", title));
+    setTip(getText());
     setImage(IMG);
+    this.title = RES.getString("title", title);
   }
   
   protected abstract PrintRenderer getRenderer();
@@ -59,10 +62,10 @@ public abstract class PrintAction extends Action2 {
     
     PrintTask task;
     try {
-      task = new PrintTask(getTip(), getRenderer());
+      task = new PrintTask(title, getRenderer());
     } catch (PrintException pe) {
       LOG.log(Level.INFO, "can't setup print task", pe);
-      DialogHelper.openDialog(getTip(), DialogHelper.ERROR_MESSAGE, pe.getMessage(), Action2.okOnly(), DialogHelper.getComponent(e));
+      DialogHelper.openDialog(title, DialogHelper.ERROR_MESSAGE, pe.getMessage(), Action2.okOnly(), DialogHelper.getComponent(e));
       return;
     }
     
@@ -77,7 +80,7 @@ public abstract class PrintAction extends Action2 {
     
     // show it in dialog
     int choice = DialogHelper.openDialog(
-        getTip(), 
+        title, 
         DialogHelper.QUESTION_MESSAGE, 
         widget, actions, DialogHelper.getComponent(e));
 
