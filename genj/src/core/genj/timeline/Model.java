@@ -63,7 +63,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
   
   /** default filter */
   private final static String[] DEFAULT_PATHS = new String[]{ 
-    "INDI:BIRT", "FAM:MARR", "INDI:RESI", "INDI:EMIG" 
+    "INDI:BIRT", "FAM:MARR", "INDI:EMIG" 
   };
     
   /** our levels */
