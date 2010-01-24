@@ -130,7 +130,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   private Map<String,EntityRenderer> tag2renderer = new HashMap<String, EntityRenderer>();
   
   /** our content's font */
-  private Font contentFont = new Font("SansSerif", 0, 12);
+  private Font contentFont = new Font("SansSerif", 0, 10);
   
   /** current centered position */
   private Point2D.Double center = new Point2D.Double(0,0);
