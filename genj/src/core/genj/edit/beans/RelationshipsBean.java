@@ -28,6 +28,7 @@ import genj.gedcom.Indi;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChild;
+import genj.gedcom.PropertyHusband;
 import genj.gedcom.PropertyWife;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
@@ -102,18 +103,18 @@ public class RelationshipsBean extends PropertyBean {
     // father and mother
     Property husband = fam.getProperty("HUSB");
     if (husband instanceof PropertyXRef && husband.isValid()) {
-      relationships.put(husband, "Father");
+      relationships.put(husband, PropertyHusband.LABEL_FATHER);
       rows.add(husband);
     }
     Property wife = fam.getProperty("WIFE");
     if (wife instanceof PropertyWife && wife.isValid()) {
-      relationships.put(wife, "Mother");
+      relationships.put(wife, PropertyWife.LABEL_MOTHER);
       rows.add(wife);
     }
     
     for (Property child : fam.getProperties("CHIL")) {
       if (child instanceof PropertyXRef && child.isValid()) {
-        relationships.put(child, "Child");
+        relationships.put(child, child.getPropertyName());
         rows.add(child);
       }
     }
@@ -139,12 +140,12 @@ public class RelationshipsBean extends PropertyBean {
     if (parental!=null) {
       Property husband = parental.getProperty("HUSB");
       if (husband instanceof PropertyXRef && husband.isValid()) {
-        relationships.put(husband, "Father");
+        relationships.put(husband, PropertyHusband.LABEL_FATHER);
         rows.add(husband);
       }
       Property wife = parental.getProperty("WIFE");
       if (wife instanceof PropertyWife && wife.isValid()) {
-        relationships.put(wife, "Mother");
+        relationships.put(wife, PropertyWife.LABEL_MOTHER);
         rows.add(wife);
       }
     }
@@ -153,18 +154,18 @@ public class RelationshipsBean extends PropertyBean {
     for (Fam spousal : indi.getFamiliesWhereSpouse()) {
       Property spouse = spousal.getProperty("HUSB");
       if (spouse instanceof PropertyXRef && spouse.isValid() && ((PropertyXRef)spouse).getTargetEntity()!=indi) {
-        relationships.put(spouse, "Husband");
+        relationships.put(spouse, spouse.getPropertyName());
         rows.add(spouse);
       } else {
         spouse = spousal.getProperty("WIFE");
         if (spouse instanceof PropertyXRef && spouse.isValid() && ((PropertyXRef)spouse).getTargetEntity()!=indi) {
-          relationships.put(spouse, "Wife");
+          relationships.put(spouse, spouse.getPropertyName());
           rows.add(spouse);
         }
       }
       for (PropertyChild child : spousal.getProperties(PropertyChild.class)) {
         if (child.isValid()) {
-          relationships.put(child, "Child");
+          relationships.put(child, child.getPropertyName());
           rows.add(child);
         }
       }
