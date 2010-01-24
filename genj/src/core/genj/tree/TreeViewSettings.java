@@ -84,7 +84,6 @@ public class TreeViewSettings extends JTabbedPane {
          "<check gx=\"1\"/>"+
          "<check gx=\"1\"/>"+
          "<check gx=\"1\"/>"+
-         "<check gx=\"1\"/>"+
          "<font gx=\"1\"/>"+
          "<row><label/><spinner/></row>"+
          "<row><label/><spinner/></row>"+
