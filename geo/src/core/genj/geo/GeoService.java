@@ -103,9 +103,9 @@ public class GeoService {
     List result = new ArrayList();
     
     String[] dirs  = {
-        EnvironmentChecker.getProperty(this, "user.home.genj/geo", "", "looking for user's geo files"),
-        EnvironmentChecker.getProperty(this, "all.home.genj/geo", "", "looking for shared geo files"),
-        EnvironmentChecker.getProperty(this, "genj.geo.dir", GEO_DIR, "looking for installed geo files")
+        EnvironmentChecker.getProperty("user.home.genj/geo", "", "looking for user's geo files"),
+        EnvironmentChecker.getProperty("all.home.genj/geo", "", "looking for shared geo files"),
+        EnvironmentChecker.getProperty("genj.geo.dir", GEO_DIR, "looking for installed geo files")
     };
     
     // loop directories
