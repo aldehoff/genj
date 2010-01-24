@@ -21,6 +21,9 @@ package genj.renderer;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints.Key;
+import java.awt.geom.Dimension2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -57,6 +60,13 @@ public class DPI {
     return dpi;
   }
   
+  public Dimension2D toPixel(Dimension2D inches) {
+    return new gj.awt.geom.Dimension2D.Double(
+        inches.getWidth() * horizontal,
+        inches.getHeight() * vertical
+    );
+  }
+  
   public Rectangle2D toPixel(Rectangle2D inches) {
     return new Rectangle2D.Double(
       inches.getX() * horizontal,
@@ -64,6 +74,14 @@ public class DPI {
       inches.getWidth() * horizontal,
       inches.getHeight() * vertical
     );
+  }
+  
+  public Line2D toPixel(Line2D inches) {
+    return new Line2D.Double(toPixel(inches.getP1()), toPixel(inches.getP2()));
+  }
+  
+  public Point2D toPixel(Point2D inches) {
+    return new Point2D.Double(inches.getX() * horizontal, inches.getY() * vertical);
   }
   
   @Override

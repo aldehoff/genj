@@ -24,6 +24,7 @@ import genj.option.OptionListener;
 import genj.option.OptionsWidget;
 import genj.renderer.DPI;
 import genj.renderer.Options;
+import genj.renderer.RenderPreviewHintKey;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
@@ -41,6 +42,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
@@ -151,10 +153,11 @@ public class PrintWidget extends JTabbedPane {
    */
   private class Preview extends JComponent implements Scrollable {
     
-    private float pad = 0.1F; // inch
+    private double zoom = 0.2D;
+    private int gap = 5; // pixels
     private DPI dpi = new DPI(
-        (int)(Options.getInstance().getDPI().horizontal() * 0.20),
-        (int)(Options.getInstance().getDPI().vertical  () * 0.20)
+        (int)(Options.getInstance().getDPI().horizontal() * zoom),
+        (int)(Options.getInstance().getDPI().vertical  () * zoom)
       );
     
     /**
@@ -163,14 +166,13 @@ public class PrintWidget extends JTabbedPane {
     public Dimension getPreferredSize() {
 
       Dimension pages = task.getPages(); 
-      Dimension2D page = task.getPageSize();
+      
+      Dimension2D page = dpi.toPixel(task.getPageSize());
 
-      Rectangle2D pixels = dpi.toPixel(new Rectangle2D.Double(0,0,
-          ((pages.width+1)*pad + pages.width*page.getWidth()),
-          ((pages.height+1)*pad + pages.height*page.getHeight())
-      ));
-
-      return new Dimension((int)Math.ceil(pixels.getWidth()), (int)Math.ceil(pixels.getHeight()));
+      return new Dimension(
+          (int)Math.ceil(pages.width*page.getWidth()   + pages.width *gap + gap), 
+          (int)Math.ceil(pages.height*page.getHeight() + pages.height*gap + gap)
+      );
     }
 
     /**
@@ -185,18 +187,23 @@ public class PrintWidget extends JTabbedPane {
       
       // render pages in app's dpi space
       Graphics2D g2d = (Graphics2D)g;
+      g2d.setRenderingHint(RenderPreviewHintKey.KEY, true);
+      g2d.setRenderingHint(DPI.KEY, dpi);
       Dimension pages = task.getPages(); 
+      Dimension2D pageSize = dpi.toPixel(task.getPageSize());
+      Rectangle2D printable = dpi.toPixel(task.getPrintable());
       Rectangle clip = g2d.getClipBounds();
+      AffineTransform at = g2d.getTransform();
       for (int y=0;y<pages.height;y++) {
         for (int x=0;x<pages.width;x++) {
           
           // calculate view
-          Rectangle2D page = dpi.toPixel(new Rectangle2D.Double(
-             pad + x*(task.getPageSize().getWidth ()+pad), 
-             pad + y*(task.getPageSize().getHeight()+pad), 
-             task.getPageSize().getWidth (), 
-             task.getPageSize().getHeight()
-          ));
+          Rectangle2D page = new Rectangle2D.Double(
+             gap + x*(pageSize.getWidth ()+gap), 
+             gap + y*(pageSize.getHeight()+gap), 
+             pageSize.getWidth (), 
+             pageSize.getHeight()
+          );
           
           // visible?
           if (!clip.intersects(page))
@@ -212,14 +219,16 @@ public class PrintWidget extends JTabbedPane {
           GraphicsHelper.render(g2d, String.valueOf(x+y*pages.width+1), page.getCenterX(), page.getCenterY(), 0.5, 0.5);
           
           // draw preview
-//          ug.pushTransformation();
-//          ug.pushClip(imageable);
-//          ug.translate(imageable.getMinX(), imageable.getMinY());
+          g2d.translate( gap + x*(page.getWidth()+gap), gap + y*(page.getHeight()+gap));
+          task.print(g2d, y, x);
 //          ug.getGraphics().scale(zoom,zoom);
 //          renderer.renderPage(ug.getGraphics(), new Point(x,y), new Dimension2d(imageable), dpiScreen, true);
 //          ug.popTransformation();
 //          ug.popClip();
-          // next   
+          
+          // restore transform for next   
+          g2d.setTransform(at);
+          g2d.setClip(clip);
         }
       }
       

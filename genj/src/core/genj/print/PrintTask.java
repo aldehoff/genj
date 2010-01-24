@@ -22,7 +22,6 @@ package genj.print;
 import genj.option.Option;
 import genj.option.PropertyOption;
 import genj.renderer.DPI;
-import genj.renderer.RenderPreviewHintKey;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
@@ -179,9 +178,6 @@ import javax.print.attribute.standard.OrientationRequested;
    * Set current service
    */
   /*package*/ void setService(PrintService set) {
-    // known?
-    if (service==set)
-      return;
     // keep
     service = set;
     // remember
@@ -254,7 +250,7 @@ import javax.print.attribute.standard.OrientationRequested;
   /**
    * Resolve page size (in inches)
    */
-  public Dimension2D getPageSize() {
+  /*package*/ Dimension2D getPageSize() {
     
     OrientationRequested orientation = (OrientationRequested)getAttribute(OrientationRequested.class);
     MediaSize media = MediaSize.getMediaSizeForName((MediaSizeName)getAttribute(Media.class));
@@ -298,16 +294,15 @@ import javax.print.attribute.standard.OrientationRequested;
   }
   
   /*package*/ Dimension getPages() {
-    if (pages==null) {
-      // ask renderer
-      Rectangle2D printable = getPrintable();
-      Dimension2D dim = renderer.getSize();
-      return new Dimension(
-        (int)Math.ceil(dim.getWidth ()*zoomx/printable.getWidth ()),
-        (int)Math.ceil(dim.getHeight()*zoomy/printable.getHeight())
-      );
-    }
-    return pages;
+    if (pages!=null) 
+      return pages;
+    // ask renderer
+    Rectangle2D printable = getPrintable();
+    Dimension2D dim = renderer.getSize();
+    return new Dimension(
+      (int)Math.ceil(dim.getWidth ()*zoomx/printable.getWidth ()),
+      (int)Math.ceil(dim.getHeight()*zoomy/printable.getHeight())
+    );
   }
   
   /**
@@ -389,7 +384,7 @@ import javax.print.attribute.standard.OrientationRequested;
     return RESOURCES.getString("progress", (page + 1), (getPages().width * getPages().height) );
   }
   
-  public void print() {
+  /*package*/ void print() {
     
     // store current settings
     registry.put(attributes);
@@ -411,7 +406,7 @@ import javax.print.attribute.standard.OrientationRequested;
       }
     
   }
-
+  
   /**
    * callback - printable
    */
@@ -426,18 +421,22 @@ import javax.print.attribute.standard.OrientationRequested;
 
     page = pageIndex;
     
+    // bring forward resolution
+    Graphics2D g2d = (Graphics2D)graphics;
+    g2d.setRenderingHint(DPI.KEY, getResolution());
+    
     // draw content
-    printImpl((Graphics2D)graphics, row, col, (PrintRenderer)renderer);
+    print((Graphics2D)graphics, row, col);
     
     // next
     return PAGE_EXISTS;
   }
   
   
-  private void printImpl(Graphics2D graphics, int row, int col, PrintRenderer renderer) {
+  /*package*/ void print(Graphics2D graphics, int row, int col) {
 
     // prepare current page/clip
-    DPI dpi = getResolution();
+    DPI dpi = DPI.get(graphics);
     
     Rectangle2D pixels = dpi.toPixel(getPrintable());
        
@@ -454,12 +453,6 @@ import javax.print.attribute.standard.OrientationRequested;
     graphics.draw(new Line2D.Double(box.getMinX(), box.getMinY(), box.getMaxX(), box.getMaxY()));
     graphics.setColor(Color.LIGHT_GRAY);
     graphics.draw(new Rectangle2D.Double(box.getMinX(),box.getMinY(), box.getWidth(), box.getHeight()));
-    
-    // render content
-    graphics.setRenderingHint(DPI.KEY, dpi);
-    
-    // FIXME preview for now
-    graphics.setRenderingHint(RenderPreviewHintKey.KEY, true);
     
     renderer.render(graphics);
     

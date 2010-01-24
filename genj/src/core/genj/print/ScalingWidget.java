@@ -20,6 +20,7 @@
 package genj.print;
 
 import genj.util.ChangeSupport;
+import genj.util.Resources;
 import genj.util.swing.ChoiceWidget;
 
 import java.awt.BorderLayout;
@@ -54,7 +55,7 @@ public class ScalingWidget extends JPanel {
     choice = new ChoiceWidget(new String[]{ "1x1", "50%", "75%", "100%"}, "100%" );
     choice.addChangeListener(new Validate());
     
-    add(new JLabel("Zoom"), BorderLayout.WEST);
+    add(new JLabel(Resources.get(this).getString("scaling")), BorderLayout.WEST);
     add(choice, BorderLayout.CENTER);
   }
   
