@@ -452,6 +452,7 @@ public class PropertyTableWidget extends JPanel  {
       panelShortcuts.getActionMap().clear();
       panelShortcuts.revalidate();
       panelShortcuts.repaint();
+      panelShortcuts.setMinimumSize(new Dimension(0,0));
       
       // anything we can offer? need ascending sorted column and at least 10 rows
       if (!sortableModel.isSorting())
