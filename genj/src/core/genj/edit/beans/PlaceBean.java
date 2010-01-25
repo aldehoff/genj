@@ -178,7 +178,12 @@ public class PlaceBean extends PropertyBean {
     choice.setIgnoreCase(true);
     choice.setEditable(true);
     choice.setValues(values);
-    choice.setText(value);
+//    if (value.length()>0) {
+      choice.setText(value);
+//    } else {
+//      choice.setText("["+Gedcom.getName(PropertyPlace.TAG)+"]");
+//      choice.setTemplate(true);
+//    }
     choice.addChangeListener(changeSupport);
     if (tip!=null&&tip.length()>0)
       choice.setToolTipText(tip);

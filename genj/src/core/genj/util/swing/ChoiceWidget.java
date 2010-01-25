@@ -52,7 +52,8 @@ import javax.swing.text.StringContent;
  * Our own JComboBox
  */
 public class ChoiceWidget extends JComboBox {
-  
+
+  private boolean isTemplate = false;
   private boolean blockAutoComplete = false;
   
   /** our own model */
@@ -62,7 +63,13 @@ public class ChoiceWidget extends JComboBox {
   private boolean isIgnoreCase = false;
   
   /** change support */
-  private ChangeSupport changeSupport = new ChangeSupport(this);
+  private ChangeSupport changeSupport = new ChangeSupport(this) {
+    @Override
+    public void fireChangeEvent() {
+      isTemplate = false;
+      super.fireChangeEvent();
+    }
+  };
   
   /** auto complete support */
   private AutoCompleteSupport autoComplete;
@@ -165,11 +172,20 @@ public class ChoiceWidget extends JComboBox {
   public void setSelectAllOnFocus(boolean set) {
     // ignored - currently LnF dependant
   }
-    
+
+  /**
+   * Marks current text editor state as template
+   */
+  public void setTemplate(boolean set) {
+    isTemplate = set;
+  }
+
   /**
    * Current text value
    */
   public String getText() {
+    if (isTemplate)
+      return "";
     if (isEditable()) 
       return getEditor().getItem().toString();
     return super.getSelectedItem().toString();
