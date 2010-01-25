@@ -152,6 +152,17 @@ public class ViewPortOverview extends JPanel {
      * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
      */
     public void mouseClicked(MouseEvent e) {
+      // center in position
+      
+      Rectangle shown = viewport.getViewRect();
+      Point2D zoom = getZoom();
+      int 
+        x = (int)(e.getPoint().x/zoom.getX()),
+        y = (int)(e.getPoint().y/zoom.getY());
+
+      // scroll
+      viewport.setViewPosition(new Point(x-shown.width/2,y-shown.height/2));
+      
     }
     /**
      * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
