@@ -22,10 +22,10 @@ package genj.tree;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
+import genj.renderer.EmptyHintKey;
 import genj.renderer.EntityRenderer;
 import genj.renderer.RenderPreviewHintKey;
 import genj.util.swing.UnitGraphics;
-import gj.awt.geom.Path;
 import gj.model.Node;
 
 import java.awt.Color;
@@ -76,9 +76,12 @@ public class ContentRenderer {
    * Render the nodes
    */
   private void renderNodes(UnitGraphics g, Model model) {
+    
     // clip is the range we'll be looking in range
     Rectangle clip = g.getClip().getBounds();
+    
     // loop
+    int count = 0;
     for (Node node : model.getNodesIn(clip)) {
       // grab node and its shape
       Shape shape = node.getShape();
@@ -94,9 +97,13 @@ public class ContentRenderer {
         r.getHeight() 
       )) continue;
       // render it
+      count++;
       renderNode(g, pos, shape, node.getContent());
       // next
     }
+    if (count>0)
+      g.getGraphics().setRenderingHint(EmptyHintKey.KEY, false);
+    
     // done
   }
   
@@ -104,6 +111,7 @@ public class ContentRenderer {
    * Render a node
    */
   private void renderNode(UnitGraphics g, Point2D pos, Shape shape, Object content) {
+    
     double 
       x = pos.getX(),
       y = pos.getY();
@@ -166,12 +174,12 @@ public class ContentRenderer {
     // prepare color
     g.setColor(cArcs);
     // loop
-    for (TreeArc arc : model.getArcsIn(clip)) {
-      // its path
-      Path path = arc.getPath();
-      if (path!=null) g.draw(path, 0, 0);
-      // next
-    }
+    Collection<TreeArc> arcs = model.getArcsIn(clip);
+    for (TreeArc arc : arcs) 
+      g.draw(arc.getPath(), 0, 0);
+    if (!arcs.isEmpty())
+      g.getGraphics().setRenderingHint(EmptyHintKey.KEY, false);
+
     // done
   }
   

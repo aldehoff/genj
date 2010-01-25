@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.print.PrintService;
 import javax.print.ServiceUI;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -72,6 +73,7 @@ public class PrintWidget extends JTabbedPane {
   private ScalingWidget scaling;
   private Preview preview;
   private Apply apply = new Apply();
+  private JCheckBox fit, empties;
   
   /**
    * Constructor   */
@@ -99,7 +101,7 @@ public class PrintWidget extends JTabbedPane {
     String LAYOUT_TEMPLATE = 
       "<col>"+
       "<row><lprinter/><printers wx=\"1\"/><settings/></row>"+
-      "<row><zoom/></row>"+
+      "<row><zoom/><fit/><empties/></row>"+
       "<row><lpreview/></row>"+
       "<row><preview wx=\"1\" wy=\"1\"/></row>"+
       "</col>";
@@ -126,10 +128,18 @@ public class PrintWidget extends JTabbedPane {
     // settings
     page.add(new JButton(new Settings()));
     
-    // zoom & alignment
+    // zoom & stuff
     scaling = new ScalingWidget();
     scaling.addChangeListener(apply);
     page.add(scaling);
+
+    fit = new JCheckBox(RESOURCES.getString("fit"), false);
+    fit.setEnabled(false);
+    fit.addChangeListener(apply);
+    page.add(fit);
+
+    empties = new JCheckBox(RESOURCES.getString("empties"), task.isPrintEmpties());
+    page.add(empties);
 
     // preview
     page.add(new JLabel(RESOURCES.getString("preview")));
@@ -221,14 +231,10 @@ public class PrintWidget extends JTabbedPane {
           // draw preview
           g2d.translate( gap + x*(page.getWidth()+gap), gap + y*(page.getHeight()+gap));
           task.print(g2d, y, x);
-//          ug.getGraphics().scale(zoom,zoom);
-//          renderer.renderPage(ug.getGraphics(), new Point(x,y), new Dimension2d(imageable), dpiScreen, true);
-//          ug.popTransformation();
-//          ug.popClip();
-          
-          // restore transform for next   
           g2d.setTransform(at);
           g2d.setClip(clip);
+          
+          // next   
         }
       }
       
@@ -297,10 +303,14 @@ public class PrintWidget extends JTabbedPane {
     }
     private void apply() {
       Object scale = scaling.getValue();
-      if (scale instanceof Dimension)
-        task.setPages((Dimension)scale);
-      if (scale instanceof Double)
+      if (scale instanceof Dimension) {
+        task.setPages((Dimension)scale, fit.isSelected());
+        fit.setEnabled(true);
+      }
+      if (scale instanceof Double) {
         task.setZoom((Double)scale);
+        fit.setEnabled(false);
+      }
       preview.revalidate();
       preview.repaint();
     }

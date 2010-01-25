@@ -22,6 +22,7 @@ package genj.print;
 import genj.option.Option;
 import genj.option.PropertyOption;
 import genj.renderer.DPI;
+import genj.renderer.EmptyHintKey;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
@@ -98,6 +99,7 @@ import javax.print.attribute.standard.OrientationRequested;
   /** pages */
   private Dimension pages;
   private double zoomx = 1.0D, zoomy = 1.0D;
+  private boolean printEmpties = false;
 
   /**
    * Constructor
@@ -109,7 +111,7 @@ import javax.print.attribute.standard.OrientationRequested;
     this.title = title;
 
     // FIXME print registry per callee?    
-    registry = PrintRegistry.get(this);    
+    registry = PrintRegistry.get(this);
     
     // restore last service
     PrintService service = registry.get(getDefaultService());
@@ -267,7 +269,7 @@ import javax.print.attribute.standard.OrientationRequested;
   /**
    * pages 
    */
-  /*package*/ void setPages(Dimension pages) {
+  /*package*/ void setPages(Dimension pages, boolean fit) {
     
     if (pages.width==0 || pages.height==0)
       throw new IllegalArgumentException("0 not allowed");
@@ -277,11 +279,22 @@ import javax.print.attribute.standard.OrientationRequested;
     Rectangle2D printable = getPrintable();
     Dimension2D size = getSize();
     
-    this.zoomx = Math.min(
-      pages.width*printable.getWidth()   / size.getWidth(),
-      pages.height*printable.getHeight() / size.getHeight()
-    );
-    this.zoomy = zoomx;
+    this.zoomx = pages.width*printable.getWidth()   / size.getWidth();
+    this.zoomy = pages.height*printable.getHeight() / size.getHeight();
+    
+    if (!fit) {
+      if (zoomx>zoomy) zoomx=zoomy;
+      if (zoomy>zoomx) zoomy=zoomx;
+    }
+  }
+  
+  /*package*/ boolean isPrintEmpties() {
+    return printEmpties;
+  }
+  
+  
+  /*package*/ void setPrintEmpties(boolean set) {
+    this.printEmpties  = set;
   }
   
   /*package*/ void setZoom(double zoom) {
@@ -429,6 +442,10 @@ import javax.print.attribute.standard.OrientationRequested;
     // draw content
     print((Graphics2D)graphics, row, col);
     
+    // check for content
+    if (EmptyHintKey.isEmpty(g2d))
+      return NO_SUCH_PAGE;
+    
     // next
     return PAGE_EXISTS;
   }
@@ -451,10 +468,12 @@ import javax.print.attribute.standard.OrientationRequested;
     graphics.clip(box);
 
     graphics.scale(zoomx, zoomy);
+
+    graphics.setRenderingHint(EmptyHintKey.KEY, true);
     
     renderer.render(graphics);
-    
+
     // done
   }
-  
+
 } //PrintTask

@@ -268,7 +268,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
    * Arcs by range
    */
   public Collection<TreeArc> getArcsIn(Rectangle range) {
-    return arcs;
+    List<TreeArc> result = new ArrayList<TreeArc>(arcs.size());
+    for (TreeArc arc : arcs) {
+      if (arc.getPath()!=null && arc.getPath().intersects(range))
+        result.add(arc);
+    }
+    return result;
   }
 
   /**
