@@ -28,6 +28,8 @@ import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.font.FontRenderContext;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -334,8 +336,18 @@ public class OptionsWidget extends JPanel {
       cat2options.clear();
       categories.clear();
 
-      for (Option option : set) 
-        getCategory(option.getCategory()).add(option);
+      for (Option option : set) {
+        List<Option> cat = getCategory(option.getCategory());
+        int i = Collections.binarySearch(cat, option, new Comparator<Option>() {
+          public int compare(Option o1, Option o2) {
+            return o1.getName().compareTo(o2.getName());
+          }
+        });
+        if (i>=0)
+          cat.add(option);
+        else
+          cat.add(-i-1, option);
+      }
 
       // notify
       fireTreeStructureChanged(this, new Object[] {this}, null, null);
