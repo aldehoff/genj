@@ -113,18 +113,29 @@ import java.util.concurrent.CopyOnWriteArrayList;
    * Accessor - current root
    */
   public void setRoot(Entity entity) {
-    // null, Indi or Fam 
-    if (!(entity==null || entity instanceof Indi ||entity instanceof Fam)) 
-      return;
+    
     // no change?
     if (root==entity) 
       return;
-    // keep as root
-    root = entity;
+    
+    // detach
+    if (root!=null) {
+      root.getGedcom().removeGedcomListener(callback);
+      root = null;
+    }
+    
+    // attach
+    if (entity instanceof Indi ||entity instanceof Fam) {
+      root = entity;
+      root.getGedcom().addGedcomListener(callback);
+    }
+    
     // start fresh
     bookmarks.clear();
+    
     // parse the current information
     update();
+    
     // done
   }
 

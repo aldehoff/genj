@@ -328,11 +328,11 @@ public class Workbench extends JPanel implements SelectionSink {
     }
     
     // tell everone
-    fireSelection(context, true);
-    
     for (WorkbenchListener listener: listeners)
       listener.gedcomOpened(this, gedcom);
   
+    fireSelection(context, true);
+    
     // done
   }
   
@@ -621,19 +621,19 @@ public class Workbench extends JPanel implements SelectionSink {
     
   } 
   
-  private void connect(List<Action> actions) {
+  private void connect(Gedcom gedcom, List<Action> actions) {
     for (Action action : actions) {
-      if (context.getGedcom()!=null && action instanceof GedcomListener)
-        context.getGedcom().addGedcomListener((GedcomListener)Spin.over(action));
+      if (gedcom!=null&&action instanceof GedcomListener)
+        gedcom.addGedcomListener((GedcomListener)Spin.over(action));
       if (action instanceof WorkbenchListener)
         addWorkbenchListener((WorkbenchListener)action);
     }
   }
   
-  private void disconnect(List<Action> actions) {
+  private void disconnect(Gedcom gedcom, List<Action> actions) {
     for (Action action : actions) {
-      if (context.getGedcom()!=null && action instanceof GedcomListener)
-        context.getGedcom().removeGedcomListener((GedcomListener)Spin.over(action));
+      if (gedcom!=null&&action instanceof GedcomListener)
+        gedcom.removeGedcomListener((GedcomListener)Spin.over(action));
       if (action instanceof WorkbenchListener)
         removeWorkbenchListener((WorkbenchListener)action);
     }
@@ -1162,14 +1162,14 @@ public class Workbench extends JPanel implements SelectionSink {
     private Menu() {
       
       addWorkbenchListener(this);
-      setup();
+      setup(null,null);
       
     }
     
-    private void setup() {
+    private void setup(Gedcom oldg, Gedcom newg) {
 
       // remove old
-      disconnect(actions);
+      disconnect(oldg, actions);
       actions.clear();
       removeAll();
       revalidate();
@@ -1187,7 +1187,7 @@ public class Workbench extends JPanel implements SelectionSink {
       file.add(new ActionClose());
       file.add(new ActionProvider.SeparatorAction());
       int i=0; for (String recent : REGISTRY.get("history", new ArrayList<String>())) try {
-        if (context.getGedcom()==null||!recent.equals(context.getGedcom().getOrigin().toString()))
+        if (newg==null||!recent.equals(newg.getOrigin().toString()))
           file.add(new ActionOpen(i++, new URL(recent)));
       } catch (MalformedURLException e) { }
       file.add(new ActionProvider.SeparatorAction());
@@ -1208,7 +1208,7 @@ public class Workbench extends JPanel implements SelectionSink {
 
 
       // merge providers' actions
-      if (context.getGedcom()!=null) {
+      if (newg!=null) {
         Action2.Group provided = new Action2.Group("ignore");
         for (ActionProvider provider : lookup(ActionProvider.class)) {
           provider.createActions(context, Purpose.MENU, provided);
@@ -1246,7 +1246,7 @@ public class Workbench extends JPanel implements SelectionSink {
       actions.addAll(mh.getActions());
       
       // connect
-      connect(actions);
+      connect(newg, actions);
       
       // Done
     }
@@ -1266,11 +1266,11 @@ public class Workbench extends JPanel implements SelectionSink {
     }
 
     public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
-      setup();
+      setup(gedcom, null);
     }
 
     public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
-      setup();
+      setup(null, gedcom);
     }
 
     public void processStarted(Workbench workbench, Trackable process) {
@@ -1280,7 +1280,7 @@ public class Workbench extends JPanel implements SelectionSink {
     }
 
     public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-      setup();
+      setup(context.getGedcom(), context.getGedcom());
     }
 
     public void viewClosed(Workbench workbench, View view) {
@@ -1311,13 +1311,13 @@ public class Workbench extends JPanel implements SelectionSink {
     private Toolbar() {
       setFloatable(false);
       addWorkbenchListener(this);
-      setup();
+      setup(null,null);
     }
     
-    private void setup() {
+    private void setup(Gedcom oldg, Gedcom newg) {
       
       // cleanup
-      disconnect(actions);
+      disconnect(oldg, actions);
       actions.clear();
       removeAll();
         
@@ -1328,7 +1328,7 @@ public class Workbench extends JPanel implements SelectionSink {
       
       
       // let providers speak
-      if (context.getGedcom()!=null) {
+      if (newg!=null) {
         Action2.Group actions = new Action2.Group("ignore");
         addSeparator();
         for (ActionProvider provider : lookup(ActionProvider.class)) {
@@ -1349,7 +1349,7 @@ public class Workbench extends JPanel implements SelectionSink {
       }
       
       // connect actions
-      connect(actions);
+      connect(newg, actions);
       
       // done
     }
@@ -1372,11 +1372,11 @@ public class Workbench extends JPanel implements SelectionSink {
     }
 
     public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
-      setup();
+      setup(gedcom, null);
     }
 
     public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
-      setup();
+      setup(null, gedcom);
     }
 
     public void processStarted(Workbench workbench, Trackable process) {
@@ -1386,7 +1386,7 @@ public class Workbench extends JPanel implements SelectionSink {
     }
 
     public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-      setup();
+      setup(context.getGedcom(), context.getGedcom());
     }
 
     public void viewClosed(Workbench workbench, View view) {

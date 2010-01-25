@@ -213,16 +213,16 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
   
   public void setContext(Context newContext, boolean isActionPerformed) {
     
+    callback.follow(newContext.getGedcom());
+    undo.follow(newContext.getGedcom());
+    redo.follow(newContext.getGedcom());
+    
     // new gedcom?
     if (newContext.getGedcom()==null) {
       sticky.setSelected(false);
       setEditor(null);
       return;
     }
-    
-    callback.follow(newContext.getGedcom());
-    undo.follow(newContext.getGedcom());
-    redo.follow(newContext.getGedcom());
     
     // new editor?
     if (newContext.getEntity()!=null && editor==null) {
