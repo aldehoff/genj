@@ -277,8 +277,11 @@ import javax.print.attribute.standard.OrientationRequested;
     Rectangle2D printable = getPrintable();
     Dimension2D size = getSize();
     
-    this.zoomx = pages.width*printable.getWidth()   / size.getWidth();
-    this.zoomy = pages.height*printable.getHeight() / size.getHeight();
+    this.zoomx = Math.min(
+      pages.width*printable.getWidth()   / size.getWidth(),
+      pages.height*printable.getHeight() / size.getHeight()
+    );
+    this.zoomy = zoomx;
   }
   
   /*package*/ void setZoom(double zoom) {
