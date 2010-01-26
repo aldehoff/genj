@@ -101,7 +101,7 @@ public class PrintWidget extends JTabbedPane {
     String LAYOUT_TEMPLATE = 
       "<col>"+
       "<row><lprinter/><printers wx=\"1\"/><settings/></row>"+
-      "<row><zoom/><fit/><empties/></row>"+
+      "<row><zoom/><fit/></row>"+
       "<row><lpreview/></row>"+
       "<row><preview wx=\"1\" wy=\"1\"/></row>"+
       "</col>";
@@ -137,9 +137,6 @@ public class PrintWidget extends JTabbedPane {
     fit.setEnabled(false);
     fit.addChangeListener(apply);
     page.add(fit);
-
-    empties = new JCheckBox(RESOURCES.getString("empties"), task.isPrintEmpties());
-    page.add(empties);
 
     // preview
     page.add(new JLabel(RESOURCES.getString("preview")));

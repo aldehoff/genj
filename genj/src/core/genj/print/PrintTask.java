@@ -110,9 +110,7 @@ import javax.print.attribute.standard.OrientationRequested;
     // remember 
     this.renderer = renderer;
     this.title = title;
-
-    // FIXME print registry per callee?    
-    registry = PrintRegistry.get(this);
+    this.registry = PrintRegistry.get(renderer);
     
     // restore last service
     PrintService service = registry.get(getDefaultService());
@@ -455,10 +453,6 @@ import javax.print.attribute.standard.OrientationRequested;
     
     // draw content
     print((Graphics2D)graphics, row, col);
-    
-    // check for content
-    if (EmptyHintKey.isEmpty(g2d))
-      return NO_SUCH_PAGE;
     
     // next
     return PAGE_EXISTS;
