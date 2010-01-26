@@ -298,8 +298,8 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
         Action2.Group edit = new EditActionGroup();
         if (context.getEntity()==null)
           createActions(context.getGedcom(), edit);
-        else if (context.getEntities().size()==1 && context.getEntity() instanceof Indi)
-          createActions((Indi)context.getEntity(), edit);
+        else if (context.getEntities().size()==1)
+          createActions(context.getEntity(), edit);
         result.add(edit);
           
         edit.add(new ActionProvider.SeparatorAction());
