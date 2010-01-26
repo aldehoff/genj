@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="GenJ" default="dist" basedir=".">
 
-  <taskdef name="izpack" classpath="./contrib/izpack/lib/standalone-compiler.jar" classname="com.izforge.izpack.ant.IzPackTask"/>
-
   <!--
    Initialization
    -->
@@ -17,6 +15,8 @@
           <replaceregex pattern="^version[\s]*=[\s]*$" replace="" flags="i"/>
     	</filterchain>
     </loadproperties>
+  	
+    <taskdef name="izpack" classpath="${izpack}/lib/standalone-compiler.jar" classname="com.izforge.izpack.ant.IzPackTask"/>
   	  	
   	<fail unless="version" message="no version information available - check build.properties"/>
   	<echo level="info">version = ${version}</echo>
@@ -64,17 +64,34 @@
   </target>
   
 	<!-- 
-	izpack packaging
+	izpack packaging 
 	-->
 	<target name="dist.installer" depends="init, dist.app, dist.geo">
 		
+		<!-- prepare installer descriptor -->
     <copy tofile="./build/installer.xml" file="./src/installer/installer.xml" overwrite="true">
       <filterset><filter token="version" value="${version}"/></filterset>
     </copy>
+
+    <!-- build jar installer -->
+    <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="${izpack}"/>
+    
+    <!-- build windows installer -->
+    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2exe/izpack2exe.exe">
+      <env key="path" path="${izpack}/utils/wrappers/izpack2exe"/>
+      <arg value='--file=genj_install-${version}.jar'/>
+      <arg value='--output=setup.exe'/>
+      <arg value='--no-upx'/>
+    </exec>
+  
+		<zip destfile="./build/dist/genj_win-${version}.zip">
+			<fileset file="./build/dist/setup.exe"/>
+		</zip>
 		
- 	
-    <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="./contrib/izpack"/>
-		
+		<delete file="./build/dist/setup.exe"/>
+
+    <!-- done -->
+
 	</target>
 	
   <!--

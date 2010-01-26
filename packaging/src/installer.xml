@@ -12,7 +12,7 @@
    <author name="individual" email=""/>
    <author name="contributors" email=""/>
   </authors>
-  <javaversion>1.4</javaversion>
+  <javaversion>1.6</javaversion>
   </info>
   
   <listeners>
@@ -33,7 +33,13 @@
  <native type="izpack" name="ShellLink.dll">
     <os family="windows"/>
  </native>
+ <native type="izpack" name="ShellLink_x64.dll">
+    <os family="windows"/>
+ </native>
  <native type="3rdparty" name="COIOSHelper.dll" stage="both">
+    <os family="windows"/>
+ </native>
+ <native type="3rdparty" name="COIOSHelper_x64.dll" stage="both">
     <os family="windows"/>
  </native>
  

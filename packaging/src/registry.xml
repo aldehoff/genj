@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <registry>
     <pack name="Application">
-        <!-- -------------------------------------------------------------
-             Register the Gedcom type in HKCU\software\classes\.
-             ------------------------------------------------------------- -->
+        <!-- Register the Gedcom type in HKCU\software\classes\. -->
         <key root="HKCU" keypath="software\classes\.ged"/>
         <value root="HKCU" keypath="software\classes\.ged"
             name="" string="Gedcom File"/>
