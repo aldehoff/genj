@@ -148,10 +148,17 @@ import swingx.docking.Docked;
       }
     });
 
-    if (toolbar.get()) {
-      docked.addToolSeparator();
-      docked.addTool(new ActionCloseView());
+    // stop toolbar if empty and less than 1024 in pixels?
+    try {
+      if (!toolbar.get() && Toolkit.getDefaultToolkit().getScreenSize().height<1024)
+        return;
+    } catch (Throwable t) {
+      // ignored
     }
+
+    if (toolbar.get())
+      docked.addToolSeparator();
+    docked.addTool(new ActionCloseView());
 
     // done
   }
