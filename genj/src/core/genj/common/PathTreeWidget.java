@@ -42,9 +42,12 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -71,13 +74,16 @@ public class PathTreeWidget extends JScrollPane {
    */
   public PathTreeWidget() {
 
+    Callback callback = new Callback();
+    
     // Prepare tree
     tree = new JTree(model);
     tree.setShowsRootHandles(false);
     tree.setRootVisible(false);
     tree.setCellRenderer(new Renderer());
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-    tree.addMouseListener(new Selector());
+    tree.addMouseListener(callback);
+    tree.addTreeWillExpandListener(callback);
 
     // Do a little bit of layouting
     setMinimumSize(new Dimension(160, 160));
@@ -388,9 +394,9 @@ public class PathTreeWidget extends JScrollPane {
   } //Listener
 
   /**
-   * Selector - mouse click selects
+   * Callback for mouse click selects and expand ops
    */
-  private class Selector extends MouseAdapter {
+  private class Callback extends MouseAdapter implements TreeWillExpandListener {
     /** 
      * callback for mouse click 
      */
@@ -402,6 +408,14 @@ public class PathTreeWidget extends JScrollPane {
       // last segment is the path we're interested in
       model.toggleSelection((TagPath)path.getLastPathComponent());
       // done
+    }
+
+    public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+      if (event.getPath().getPathCount()<3)
+        throw new ExpandVetoException(event);
+    }
+
+    public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
     }
   } //Selector
   
