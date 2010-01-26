@@ -26,6 +26,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.report.Report.Category;
+import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.Action2.Group;
@@ -49,7 +50,7 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
   private boolean showReportPickerOnOpen = true;
   
   private Workbench workbench;
-  private Action2.Group workbenchActions = new Action2.Group("Reports");
+  private Action2.Group workbenchActions = new Action2.Group(Resources.get(this).getString("report.reports"));
   
   public ReportPlugin(Workbench workbench) {
     this.workbench = workbench;
