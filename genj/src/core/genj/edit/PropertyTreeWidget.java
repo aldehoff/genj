@@ -27,6 +27,7 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
 import genj.io.PropertyReader;
 import genj.io.PropertyTransferable;
@@ -199,18 +200,35 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   }
   
   /**
-   * Expand 'under' path
+   * Expand by path
    */
-  public void expandAll(TreePath root) {
-    
-    //collapsePath(root);
-    expandPath(root);
-    
-    Model model = getPropertyModel();
-    Object node = root.getLastPathComponent();
-    for (int i=0;i<model.getChildCount(node);i++)
-      expandAll(root.pathByAddingChild(model.getChild(node, i)));
+  public void expand(TagPath path) {
+    rows: for (int row=getRowCount()-1;row>=0;row--) {
+      TreePath tp = getPathForRow(row);
+      if (path.length()==tp.getPathCount()) {
+        for (int i=0;i<path.length();i++) {
+          if (!path.get(i).equals( ((Property)tp.getPathComponent(i)).getTag() ))
+            continue rows;
+        }
+        expandRow(row);
+      }
+    }
   }
+    
+ 
+//  /**
+//   * Expand 'under' path
+//   */
+//  public void expandAll(TreePath root) {
+//    
+//    //collapsePath(root);
+//    expandPath(root);
+//    
+//    Model model = getPropertyModel();
+//    Object node = root.getLastPathComponent();
+//    for (int i=0;i<model.getChildCount(node);i++)
+//      expandAll(root.pathByAddingChild(model.getChild(node, i)));
+//  }
   
   /**
    * The current root
@@ -384,6 +402,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       return COPY | MOVE;
     }
 
+    @SuppressWarnings("unchecked")
     public int getDropActions(Transferable transferable, Object parent, int index) {
 
       try {
@@ -419,6 +438,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     /**
      * DND support - drop comes first.
      */
+    @SuppressWarnings("unchecked")
     public void drop(final Transferable transferable, final Object parent, final int index, final int action) throws IOException, UnsupportedFlavorException {
 
       final Property pparent = (Property)parent;
@@ -517,6 +537,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     /**
      * DND support - drag after drop!
      */
+    @SuppressWarnings("unchecked")
     public void drag(Transferable transferable, int action) throws UnsupportedFlavorException, IOException {
       
       // anything to drag?
@@ -733,5 +754,5 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     }
     protected abstract void performIO(Gedcom gedcom) throws IOException, UnsupportedFlavorException;
   }
-    
+
 } //PropertyTree
