@@ -49,7 +49,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
@@ -83,7 +82,7 @@ public class NavigatorView extends View {
   private GedcomListener callback = (GedcomListener)Spin.over(new GedcomListenerAdapter() {
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
       if (context!=null&&context.getEntity()==entity)
-        setContext(null, true);
+        setContext(new Context(gedcom), true);
     }
   });
   
@@ -162,16 +161,20 @@ public class NavigatorView extends View {
   public void setContext(Context newContext, boolean isActionPerformed) {
     
     // disconnect from old
-    if (context.getGedcom()!=null) 
+    if (context.getGedcom()!=null && context.getGedcom()!=newContext.getGedcom()) {
       context.getGedcom().removeGedcomListener(callback);
+      
+      // connect to new
+      if (newContext.getGedcom()!=null)
+        // connect to new
+        newContext.getGedcom().addGedcomListener(callback);
+    }
 
-    // keep new
-    context = new Context(newContext.getGedcom());
-    
-    // connect to new
-    if (context.getGedcom()!=null)
-      context.getGedcom().addGedcomListener(callback);
-    
+
+    // stay as is?
+    Indi old = (Indi)context.getEntity();
+    if (old!=null && context.getGedcom().contains(old) && !(newContext.getEntity() instanceof Indi) ) 
+      return;
     
     // entity to take?
     if (newContext.getEntity() instanceof Indi) {
@@ -207,7 +210,9 @@ public class NavigatorView extends View {
       }
       
     } else {
-      
+
+      context = new Context(newContext.getGedcom());
+
       for (Component c : popupPanel.getComponents())
         c.setEnabled(false);
       
