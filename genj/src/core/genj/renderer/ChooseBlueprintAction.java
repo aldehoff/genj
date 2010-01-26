@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -94,9 +95,11 @@ public abstract class ChooseBlueprintAction extends Action2 {
     blueprints.setSelectedValue(current, true);
     
     JPanel content = new JPanel(new NestedBlockLayout(
-        "<row><col><row><list wy=\"1\" gx=\"1\" gy=\"1\"/></row><row><add/><del/></row></col><col><editor wy=\"1\" wx=\"1\"/></col></row>"
+        "<col><for gx=\"1\"/><row><col><row><list wy=\"1\" gx=\"1\" gy=\"1\"/></row><row><add/><del/></row></col><col><editor wy=\"1\" wx=\"1\"/></col></row></col>"
      ));
+    
     ButtonHelper bh = new ButtonHelper();
+    content.add(new JLabel(RESOURCES.getString("blueprint.select.for", recipient.getPropertyName())));
     content.add(new JScrollPane(blueprints));
     content.add(bh.create(add));
     content.add(bh.create(del));
