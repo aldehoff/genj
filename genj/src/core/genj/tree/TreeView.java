@@ -1099,12 +1099,11 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
      */
     private ActionBookmark(Entity e, boolean local) {
       entity = e;
+      setImage(BOOKMARK_ICON);
       if (local) {
         setText(RESOURCES, "bookmark.add");
-        setImage(BOOKMARK_ICON);
       } else {
         setText(RESOURCES.getString("bookmark.in",TITLE));
-        setImage(Images.imgView);
       }
     } 
     /**
