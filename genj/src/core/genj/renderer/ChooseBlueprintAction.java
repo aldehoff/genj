@@ -20,6 +20,7 @@
 package genj.renderer;
 
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
@@ -99,7 +100,7 @@ public abstract class ChooseBlueprintAction extends Action2 {
      ));
     
     ButtonHelper bh = new ButtonHelper();
-    content.add(new JLabel(RESOURCES.getString("blueprint.select.for", recipient.getPropertyName())));
+    content.add(new JLabel(RESOURCES.getString("blueprint.select.for", Gedcom.getName(recipient.getTag(), true))));
     content.add(new JScrollPane(blueprints));
     content.add(bh.create(add));
     content.add(bh.create(del));
