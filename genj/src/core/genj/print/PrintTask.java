@@ -57,6 +57,7 @@ import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Destination;
 import javax.print.attribute.standard.JobName;
 import javax.print.attribute.standard.Media;
+import javax.print.attribute.standard.MediaName;
 import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
@@ -339,8 +340,13 @@ import javax.print.attribute.standard.OrientationRequested;
     if (result instanceof PrintRequestAttribute)
       return (PrintRequestAttribute)result;
     // make sure we know the media if this is not Media category
-    if (!Media.class.isAssignableFrom(category)) 
-      getAttribute(Media.class);
+    if (!Media.class.isAssignableFrom(category)) {
+      Media media = (Media)getAttribute(Media.class);
+      if (media==null) {
+        LOG.warning("falback media is A4");
+        attributes.add(MediaName.ISO_A4_WHITE);
+      }
+    }
     // now grab configured default for category
     result = service.getDefaultAttributeValue(category);
     // fallback to first supported
@@ -352,7 +358,7 @@ import javax.print.attribute.standard.OrientationRequested;
       if (result==null)
         LOG.warning( "Couldn't find supported PrintRequestAttribute for category "+category+" with "+toString(attributes));
       else if (result.getClass().isArray()&&result.getClass().getComponentType()==category) {
-	      LOG.finer( "Got PrintRequestAttribute values "+Arrays.toString((Object[])result)+" for category "+category);
+	      LOG.fine( "Got PrintRequestAttribute values "+Arrays.toString((Object[])result)+" for category "+category);
 	      
 	      // apparently some systems can return null values, e.g. 
 	      //    [null, (0.0,0.0)->(279.4,355.6)mm, (0.0,0.0)->(279.4,431.8)mm, (0.0,0.0)->(330.2,482.6)mm, (0.0,0.0)->(406.4,508.0)mm, (0.0,0.0)->(406.4,609.6)mm, (0.0,0.0)->(1188.861,1682.044)mm, (0.0,0.0)->(1682.044,2380.897)mm, (0.0,0.0)->(203.2,254.0)mm, (0.0,0.0)->(203.2,304.8)mm, (0.0,0.0)->(841.022,1188.861)mm, (0.0,0.0)->(594.078,841.022)mm, (0.0,0.0)->(420.158,594.078)mm, (0.0,0.0)->(297.039,420.158)mm, (0.0,0.0)->(209.903,297.039)mm, (0.0,0.0)->(148.519,209.903)mm, (0.0,0.0)->(215.9,279.4)mm, (0.0,0.0)->(279.4,431.8)mm, (0.0,0.0)->(431.8,558.8)mm, (0.0,0.0)->(558.8,863.6)mm, (0.0,0.0)->(863.6,1117.6)mm, (0.0,0.0)->(228.6,304.8)mm, (0.0,0.0)->(304.8,457.2)mm, (0.0,0.0)->(457.2,609.6)mm, (0.0,0.0)->(609.6,914.4)mm, (0.0,0.0)->(914.4,1219.2)mm, (0.0,0.0)->(916.869,1296.811)mm, (0.0,0.0)->(647.7,916.869)mm, (0.0,0.0)->(457.906,647.7)mm, (0.0,0.0)->(323.85,457.906)mm, (0.0,0.0)->(228.953,323.85)mm, (0.0,0.0)->(161.925,228.953)mm, (0.0,0.0)->(104.775,241.3)mm, (0.0,0.0)->(161.925,228.953)mm, (0.0,0.0)->(110.067,220.133)mm, (0.0,0.0)->(98.425,190.5)mm, (0.0,0.0)->(184.15,266.7)mm, (0.0,0.0)->(999.772,1413.933)mm, (0.0,0.0)->(706.967,999.772)mm, (0.0,0.0)->(499.886,706.967)mm, (0.0,0.0)->(352.778,499.886)mm, (0.0,0.0)->(249.767,352.778)mm, (0.0,0.0)->(175.683,249.767)mm, (0.0,0.0)->(1029.758,1455.914)mm, (0.0,0.0)->(727.781,1029.758)mm, (0.0,0.0)->(514.703,727.781)mm, (0.0,0.0)->(363.008,514.703)mm, (0.0,0.0)->(256.469,363.008)mm, (0.0,0.0)->(182.739,256.469)mm, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] 
@@ -367,9 +373,17 @@ import javax.print.attribute.standard.OrientationRequested;
         LOG.finer( "Got PrintRequestAttribute value "+result+" for category "+category);
 	    }
     }
+    // try to find yet another fallback for media printable area
+    if (result==null&&category==MediaPrintableArea.class) {
+      Dimension2D page = getPageSize();
+      result = new MediaPrintableArea(1,1,(float)page.getWidth()-2,(float)page.getHeight()-2, MediaPrintableArea.INCH);
+      LOG.warning( "Using fallback MediaPrintableArea "+result);
+    }
     // remember
     if (result!=null)
       attributes.add((PrintRequestAttribute)result);
+    else
+      LOG.warning( "Couldn't find any PrintRequestAttribute for category "+category+" with "+toString(attributes));
     // done
     return (PrintRequestAttribute)result;
   }
