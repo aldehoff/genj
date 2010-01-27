@@ -259,9 +259,9 @@ import javax.print.attribute.standard.OrientationRequested;
     double w,h;
     if (orientation==OrientationRequested.LANDSCAPE||orientation==OrientationRequested.REVERSE_LANDSCAPE) {
       result.setSize(media.getY(MediaSize.INCH), media.getX(MediaSize.INCH));
-    } else
+    } else {
       result.setSize(media.getX(MediaSize.INCH), media.getY(MediaSize.INCH));
-    
+    }    
     return result;
   }
   
@@ -338,13 +338,8 @@ import javax.print.attribute.standard.OrientationRequested;
     if (result instanceof PrintRequestAttribute)
       return (PrintRequestAttribute)result;
     // make sure we know the media if this is not Media category
-    if (!Media.class.isAssignableFrom(category)) {
-      Media media = (Media)getAttribute(Media.class);
-      if (media==null) {
-        LOG.warning("falback media is A4");
-        attributes.add(MediaName.ISO_A4_WHITE);
-      }
-    }
+    if (!Media.class.isAssignableFrom(category))
+      getAttribute(Media.class);
     // now grab configured default for category
     result = service.getDefaultAttributeValue(category);
     // fallback to first supported
@@ -371,6 +366,12 @@ import javax.print.attribute.standard.OrientationRequested;
         LOG.finer( "Got PrintRequestAttribute value "+result+" for category "+category);
 	    }
     }
+    // revert to media default if not available
+    if (result==null&&category==Media.class) {
+      result = MediaName.ISO_A4_WHITE;
+      LOG.warning("falback media is "+result);
+      attributes.add((Media)result);
+    }    
     // try to find yet another fallback for media printable area
     if (result==null&&category==MediaPrintableArea.class) {
       Dimension2D page = getPageSize();
