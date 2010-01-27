@@ -64,7 +64,7 @@
   </target>
   
 	<!-- 
-	izpack packaging 
+	izpack packaging
 	-->
 	<target name="dist.installer" depends="init, dist.app, dist.geo">
 		
@@ -89,6 +89,19 @@
 		</zip>
 		
 		<delete file="./build/dist/setup.exe"/>
+
+    <!-- build mac installer -->
+    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2app/izpack2app.exe">
+      <env key="path" path="${izpack}/utils/wrappers/izpack2app"/>
+      <arg value='genj_install-${version}.jar'/>
+      <arg value='genealogyj.app'/>
+    </exec>
+  
+    <zip destfile="./build/dist/genj_mac-${version}.zip">
+      <fileset dir="./build/dist/genealogyj.app"/>
+    </zip>
+
+    <delete dir="./build/dist/genealogyj.app"/>
 
     <!-- done -->
 
