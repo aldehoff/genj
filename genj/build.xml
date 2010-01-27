@@ -7,7 +7,8 @@
     <pathelement path ="./build/classes/core"/>
     <pathelement path ="./build/classes/tst"/>
     <fileset dir=".">
-        <include name="**/*.jar"/>
+        <include name="lib/*.jar"/>
+        <include name="contrib/**/*.jar"/>
     </fileset>
  	  <dirset dir="./language" includes="*"/>
  	  <dirset dir="./src" includes="*"/>
@@ -82,7 +83,7 @@
   <target name="compile.core" depends="init">
     <mkdir dir="./build/classes/core"/>
     <javac srcdir="src/core" destdir="./build/classes/core"
-           debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII" >
+           debug="${javac.debug}" optimize="on" deprecation="on" encoding="ASCII" >
       <classpath refid="project.class.path"/>
     </javac>
   </target>
