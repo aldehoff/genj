@@ -27,6 +27,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
+import genj.util.swing.MacAdapter;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -129,10 +130,9 @@ public class App {
       EnvironmentChecker.log();
       
       // patch up GenJ for Mac if applicable
-      if (EnvironmentChecker.isMac()) {
-        LOG.info("Setting up MacOs adjustments");
-        System.setProperty("apple.laf.useScreenMenuBar","true");
-        System.setProperty("com.apple.mrj.application.apple.menu.about.name","GenealogyJ");
+      if (MacAdapter.isMac()) {
+        MacAdapter.getInstance().install("GenealogyJ");
+        LOG.info("MacAdapter active");
       }
       
       // check VM version
@@ -196,7 +196,7 @@ public class App {
         });
         REGISTRY.get("frame", frame);
         frame.setVisible(true);
-
+        
         // Disclaimer - check version and registry value
         String version = Version.getInstance().getVersionString();
         if (!version.equals(REGISTRY.get("disclaimer",""))) {

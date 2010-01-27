@@ -37,5 +37,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/swingx-0.7.jar" sourcepath="C:/Documents and Settings/Netbook/My Documents/Workspace/swingx/trunk/swingx/src/main/java"/>
 	<classpathentry exported="true" kind="lib" path="lib/spin-1.5.jar"/>
+	<classpathentry kind="lib" path="lib/AppleJavaExtensions.jar"/>
 	<classpathentry kind="output" path="build/eclipse/lostnfound"/>
 </classpath>

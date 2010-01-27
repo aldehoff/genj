@@ -49,6 +49,7 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.FileChooser;
 import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.MacAdapter;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.ProgressWidget;
 import genj.view.ActionProvider;
@@ -162,6 +163,14 @@ public class Workbench extends JPanel implements SelectionSink {
 
     // hook up close view action
     new ActionCloseView();
+    
+    // hook up mac actions
+    if (MacAdapter.isMac()) {
+      MacAdapter.getInstance().setAboutListener(new ActionAbout());
+      MacAdapter.getInstance().setQuitListener(new ActionExit());
+      MacAdapter.getInstance().setPreferencesListener(new ActionOptions());
+    }
+    
     
     // Done
   }
@@ -1191,7 +1200,7 @@ public class Workbench extends JPanel implements SelectionSink {
           file.add(new ActionOpen(i++, new URL(recent)));
       } catch (MalformedURLException e) { }
       file.add(new ActionProvider.SeparatorAction());
-      if (!EnvironmentChecker.isMac())   // Mac's don't need exit actions in
+      if (!MacAdapter.isMac())   // Mac's don't need exit actions in
         file.add(new ActionExit()); // application menus apparently
       
       // Edit
@@ -1225,11 +1234,13 @@ public class Workbench extends JPanel implements SelectionSink {
       
       Action2.Group edit = new ActionProvider.EditActionGroup();
       edit.add(new ActionProvider.SeparatorAction());
-      edit.add(new ActionOptions());
+      if (!MacAdapter.isMac())
+        edit.add(new ActionOptions());
       groups.add(edit);
 
       Action2.Group help = new ActionProvider.HelpActionGroup();
-      help.add(new ActionAbout());
+      if (!MacAdapter.isMac())
+        help.add(new ActionAbout());
       groups.add(help);
 
       // Build menu
