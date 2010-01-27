@@ -203,8 +203,8 @@ public class ReportAges extends Report {
 /*********************************************************************************************************************
 author               = Daniel P. Kionka, Carsten Müssig <carsten.muessig@gmx.net>
 version              = 1.4
-category             = Analysis
-updated              = $Date: 2010-01-17 09:40:04 $
+category             = text
+updated              = $Date: 2010-01-27 18:45:43 $
 
 name                 = Ages
 name.de              = Alter
