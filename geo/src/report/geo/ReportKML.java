@@ -8,7 +8,6 @@ package geo;
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-import static java.text.MessageFormat.format;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
@@ -30,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,7 +46,7 @@ import java.util.TreeMap;
 /** This GenJ Report exports places for viewing online in Google Maps */
 public class ReportKML extends Report {
 
-	public boolean showIds = false;
+	public String idFormat = "<a href=\"index.html#{0}\">{0}</a>";
 	public int nrOfPrivateGenerations = 1;
 
 	public String reportName = translate("reportDefaultName", "{0}");
@@ -84,7 +84,7 @@ public class ReportKML extends Report {
 		try {
 			out = new BufferedWriter(new OutputStreamWriter(
 					new FileOutputStream(kml), Charset.forName("UTF8")));
-			detailedPlacemarkWriter = new DetailedPlacemarkWriter(out, showIds);
+			detailedPlacemarkWriter = new DetailedPlacemarkWriter(out, idFormat);
 			writeKML(indi);
 			out.close();
 		} catch (IOException e) {
@@ -131,7 +131,7 @@ public class ReportKML extends Report {
 				.write("<kml xmlns='http://earth.google.com/kml/2.2'>\n"
 						+ "\t<Document>\n"
 						+ "\t\t<name><![CDATA["
-						+ format(reportName, Names.getName(indi))
+						+ MessageFormat.format(reportName, Names.getName(indi))
 						+ "]]></name><visibility>1</visibility><open>1</open>\n"
 						+ "\t\t<description><![CDATA["
 						+ reportDescription
@@ -236,7 +236,7 @@ public class ReportKML extends Report {
 				for (int i = 1; sosaIndis.size() > 0; i++) {
 					if (i > nrOfPrivateGenerations) {
 						String label = translate("generation_" + (i - 1));
-						label = format(labelForGeneration, i, label);
+						label = MessageFormat.format(labelForGeneration, i, label);
 						folderWriter.write(indent, label, "");
 					}
 					nextGeneration(sosaIndis);
@@ -278,7 +278,7 @@ public class ReportKML extends Report {
 			final Collection<GeoLocation> locations) throws IOException {
 
 		Iterator<GeoLocation> iterator = sortPlaces(locations).iterator();
-		new CompactPlacemarkWriter(out, showIds).write//
+		new CompactPlacemarkWriter(out, idFormat).write//
 				(indent, iterator, byPlaceName, byPlaceDescription, false, null);
 	}
 
@@ -321,7 +321,7 @@ public class ReportKML extends Report {
 			new FolderWriter(out, false, 0) {
 				public void writeContent(String indent) throws IOException {
 				}
-			}.write(indent, sosaNr + " = " + processedIndis.get(indi) + ": " + indi.toString(showIds,false), "");
+			}.write(indent, sosaNr + " = " + processedIndis.get(indi) + ": " + format(indi, idFormat), "");
 			return;
 		}
 		processedIndis.put(indi,sosaNr);
@@ -336,7 +336,7 @@ public class ReportKML extends Report {
 				//detailedPlacemarkWriter.writeLine(getFamLocations(indi).iterator(), indent);
 				writeLineageParents(indent, sosaNr, indi, hide);
 			}
-		}.write(indent, sosaNr + ": " + indi.toString(showIds,false), "");
+		}.write(indent, sosaNr + ": " + format(indi, idFormat), "");
 	}
 
 	/** Writes the next generation of a lineage section */
@@ -351,7 +351,7 @@ public class ReportKML extends Report {
 	private void writeSosaIndi(String indent, final int sosaNr,
 			final Indi indi, boolean showBirthOfChildren) throws IOException {
 
-		String folderName = sosaNr + ": " + indi.toString(showIds,false);
+		String folderName = sosaNr + ": " + format(indi, idFormat);
 
 		Iterator<GeoLocation> locations = getLocations(indi,showBirthOfChildren);
 		if (locations != null) {
@@ -365,4 +365,14 @@ public class ReportKML extends Report {
 			}.write(indent, folderName, "");
 		}
 	}
+
+  public static String format(Entity entity, String idFormat) {
+    
+    if (idFormat.length()==0)
+      return entity.toString();
+
+    String s = entity.toString(true);
+    s = s.replace("("+entity.getId()+")", MessageFormat.format(idFormat, entity.getId()));
+    return s;
+  }
 }

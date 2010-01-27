@@ -29,7 +29,8 @@ public class Submitter extends Entity {
   /**
    * Name ...
    */
-  protected String getToStringPrefix(boolean hideIds, boolean showAsLink) {
+  @Override
+  protected String getToStringPrefix(boolean showIds) {
     return getName();
   }
   

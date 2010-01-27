@@ -8,10 +8,10 @@ import java.util.Iterator;
 
 public class CompactPlacemarkWriter extends PlacemarkWriter {
 
-	public CompactPlacemarkWriter(Writer out, boolean showIds) {
-		super(out, 1, showIds);
+	public CompactPlacemarkWriter(Writer out, String idFormat) {
+		super(out, 1, idFormat);
 	}
-	protected void writePlacemarkContent(String indent, GeoLocation location, boolean showIds)
+	protected void writePlacemarkContent(String indent, GeoLocation location, String idFormat)
 			throws IOException {
 		Names names = new Names(location);
 		Iterator<String> it = names.keys();

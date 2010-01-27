@@ -31,7 +31,8 @@ public class Media extends Entity {
   /**
    * Title ...
    */
-  protected String getToStringPrefix() {
+  @Override
+  protected String getToStringPrefix(boolean showIds) {
     return getTitle();
   }
   

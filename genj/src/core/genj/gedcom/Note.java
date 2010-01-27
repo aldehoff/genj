@@ -62,7 +62,8 @@ public class Note extends Entity implements MultiLineProperty {
   /**
    * Note ...
    */
-  protected String getToStringPrefix(boolean hideIds, boolean showAsLink) {
+  @Override
+  protected String getToStringPrefix(boolean showIds) {
     return delegate.getDisplayValue();
   }
 

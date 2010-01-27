@@ -27,7 +27,8 @@ public class Repository extends Entity {
   /**
    * Title ...
    */
-  protected String getToStringPrefix(boolean hideIds, boolean showAsLink) {
+  @Override
+  protected String getToStringPrefix(boolean showIds) {
     return getRepositoryName();
   }
 

@@ -17,12 +17,12 @@ abstract class PlacemarkWriter extends KmlWriter{
 
 	private final int folded;
 
-	private boolean showIds;
+	private String idFormat;
 	
-	PlacemarkWriter(Writer out, int folded, boolean showIds) {
+	PlacemarkWriter(Writer out, int folded, String idFormat) {
 		super(out);
 		this.folded = folded;
-		this.showIds = showIds;
+		this.idFormat = idFormat;
 	}
 
 	public void write(
@@ -88,12 +88,12 @@ abstract class PlacemarkWriter extends KmlWriter{
 				+ "<Placemark>" //
 				+ "<name>" + location.toString() + "</name>"
 				+ "<Snippet maxLines='1'/><description><![CDATA[\n");
-		writePlacemarkContent(indent + "\t", location, showIds);
+		writePlacemarkContent(indent + "\t", location, idFormat);
 		out.write(indent + "]]></description>");
 		writePoint(location);
 		out.write( "</Placemark>\n");
 	}
 
-	protected abstract void writePlacemarkContent(String indent, GeoLocation location, boolean showIds)
+	protected abstract void writePlacemarkContent(String indent, GeoLocation location, String idFormat)
 			throws IOException;
 }
