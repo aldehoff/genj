@@ -286,7 +286,6 @@
        <!-- some libraries -->
        <zipfileset dir="./build/lib" includes="run.jar"/>
        <zipfileset dir="./build" includes="lib/genj.jar"/>
-       <zipfileset dir="." includes="lib/Apple*.jar"/>
        <zipfileset dir="." includes="lib/graphj.jar"/>
        <zipfileset dir="." includes="lib/jcommon*.jar"/>
        <zipfileset dir="." includes="lib/jfreechart*.jar"/>
