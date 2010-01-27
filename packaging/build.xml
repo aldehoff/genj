@@ -69,20 +69,20 @@
 	<target name="dist.installer" depends="init, dist.app, dist.geo">
 		
 		<!-- prepare installer descriptor -->
-    <copy tofile="./build/installer.xml" file="./src/installer/installer.xml" overwrite="true">
-      <filterset><filter token="version" value="${version}"/></filterset>
-    </copy>
+	    <copy tofile="./build/installer.xml" file="./src/installer/installer.xml" overwrite="true">
+	      <filterset><filter token="version" value="${version}"/></filterset>
+	    </copy>
 
-    <!-- build jar installer -->
-    <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="${izpack}"/>
-    
-    <!-- build windows installer -->
-    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2exe/izpack2exe.exe">
-      <env key="path" path="${izpack}/utils/wrappers/izpack2exe"/>
-      <arg value='--file=genj_install-${version}.jar'/>
-      <arg value='--output=setup.exe'/>
-      <arg value='--no-upx'/>
-    </exec>
+	    <!-- build jar installer -->
+	    <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="${izpack}"/>
+	    
+	    <!-- build windows installer -->
+	    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2exe/izpack2exe.exe">
+	      <env key="path" path="${izpack}/utils/wrappers/izpack2exe"/>
+	      <arg value='--file=genj_install-${version}.jar'/>
+	      <arg value='--output=setup.exe'/>
+	      <arg value='--no-upx'/>
+	    </exec>
   
 		<zip destfile="./build/dist/genj_win-${version}.zip">
 			<fileset file="./build/dist/setup.exe"/>
@@ -90,20 +90,27 @@
 		
 		<delete file="./build/dist/setup.exe"/>
 
-    <!-- build mac installer -->
-    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2app/izpack2app.exe">
-      <env key="path" path="${izpack}/utils/wrappers/izpack2app"/>
-      <arg value='genj_install-${version}.jar'/>
-      <arg value='genealogyj.app'/>
-    </exec>
-  
-    <zip destfile="./build/dist/genj_mac-${version}.zip">
-      <fileset dir="./build/dist/genealogyj.app"/>
-    </zip>
+	    <!-- build mac installer -->
+		<property name="macapp" value="genj_install.app"/>
+		
+		<delete dir="./build/dist/${macapp}"/>
+		
+	    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2app/izpack2app.exe">
+	      <env key="path" path="${izpack}/utils/wrappers/izpack2app"/>
+	      <arg value='genj_install-${version}.jar'/>
+	      <arg value='${macapp}'/>
+	    </exec>
+	  
+	    <delete file="./build/dist/genj_mac-${version}.tar"/>
+	    	
+	    <tar destfile="./build/dist/genj_mac-${version}.tar">
+	      <zipfileset dir="./build/dist" includes="${macapp}/Contents/MacOS/JavaApplicationStub" filemode="755"/>
+	      <zipfileset dir="./build/dist" excludes="${macapp}/Contents/MacOS/JavaApplicationStub" includes="${macapp}/**"/>
+	    </tar>
+	
+	    <delete dir="./build/dist/${macapp}"/>
 
-    <delete dir="./build/dist/genealogyj.app"/>
-
-    <!-- done -->
+	    <!-- done -->
 
 	</target>
 	
