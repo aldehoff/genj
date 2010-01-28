@@ -253,11 +253,25 @@ import javax.print.attribute.standard.OrientationRequested;
     OrientationRequested orientation = (OrientationRequested)getAttribute(OrientationRequested.class);
     Media media = (Media)getAttribute(Media.class);
     
+    // try to find out media size for MediaSizeName
     MediaSize size = null;
-    if (media instanceof MediaSizeName)
+    if (media instanceof MediaSizeName) 
       size = MediaSize.getMediaSizeForName((MediaSizeName)media);
+
+    // hmm, might be sun.print.CustomMediaSizeName - try fallback: public MediaSizeName getStandardMedia()
     if (size==null) {
-      LOG.warning("got unknown MediaSizeName,MediaTray or MediaName "+media+" using default A4");
+      try {
+        size = MediaSize.getMediaSizeForName((MediaSizeName)media.getClass().getMethod("getStandardMedia").invoke(media));
+        LOG.fine("Got MediaSize "+size+" from "+media+".getStandardMedia()");
+      } catch (Throwable t) {
+        // ignored
+      }
+    }
+
+    // fallback to A4
+    if (size==null) {
+      LOG.warning("Need MediaSize, got unknown MediaSizeName, MediaTray or MediaName '"+media+"' - using A4");
+      attributes.add(MediaSizeName.ISO_A4);
       size = MediaSize.getMediaSizeForName(MediaSizeName.ISO_A4);
     }
     
@@ -377,10 +391,13 @@ import javax.print.attribute.standard.OrientationRequested;
     // revert to media default if not available
     if (result==null&&category==Media.class) {
       result = MediaSizeName.ISO_A4;
-      LOG.warning("falback media is "+result);
+      LOG.warning("fallback media is "+result);
       attributes.add((Media)result);
     }    
     // try to find yet another fallback for media printable area
+    // according to this bug in Java pre7
+    //   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6508532
+    // there can be null or [null] returned (as seen in Daniel's setup)
     if (result==null&&category==MediaPrintableArea.class) {
       Dimension2D page = getPageSize();
       result = new MediaPrintableArea(1,1,(float)page.getWidth()-2,(float)page.getHeight()-2, MediaPrintableArea.INCH);
