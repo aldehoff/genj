@@ -9,6 +9,7 @@ import genj.gedcom.Gedcom;
 import genj.report.Report;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -27,7 +28,7 @@ public class ReportExec extends Report {
     // get the name of the executable
     String cmd = getValueFromUser( "executables", translate("WhichExecutable"), new String[0]);
 
-    if(cmd == null)
+    if (cmd==null || cmd.length()==0)
       return;
 
     // run it
@@ -40,7 +41,7 @@ public class ReportExec extends Report {
         println(line);
       }
     } catch (IOException ioe) {
-      println(translate("Error")+ioe.getMessage());
+      println(translate("Error", ioe.getMessage()));
     }
 
     // done
