@@ -54,14 +54,6 @@ public class ReportSameValues extends Report {
   }
 
   /**
-   * We don't use STDOUT
-   * @see genj.report.Report#usesStandardOut()
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * Our entry point for choices
    */
   public ContextList start(PropertyChoiceValue choice) {

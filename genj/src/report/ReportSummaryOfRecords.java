@@ -53,28 +53,12 @@ public class ReportSummaryOfRecords extends Report {
   /** filter properties */
   public String filterProperties = "CHAN";
   
-  /**
-   * Overridden image - we're using the provided FO image
-   */
-  protected ImageIcon getImage() {
-    return Report.IMG_FO;
-  }
-
   public int getMaxImagesPerRecord() {
     return maxImagesPerRecord;
   }
 
   public void setMaxImagesPerRecord(int set) {
     maxImagesPerRecord = Math.max(0,set);
-  }
-
-  /**
-   * While we generate information on stdout it's not really
-   * necessary because we're returning a Document
-   * that is handled by the UI anyways
-   */
-  public boolean usesStandardOut() {
-    return false;
   }
 
   /**

@@ -71,20 +71,6 @@ public class ReportToDo extends Report {
          */
 
   /**
-   * Overriden image - we're using the provided FO image
-   */
-  protected ImageIcon getImage() {
-    return Report.IMG_FO;
-  }
-
-  /**
-   * we're not generating anything to stdout anymore aside from debugging ino
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * The report's entry point
    */
   public Document start(Gedcom gedcom) {

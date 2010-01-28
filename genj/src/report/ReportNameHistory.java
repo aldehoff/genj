@@ -66,13 +66,6 @@ public class ReportNameHistory extends Report {
   }
 
   /**
-   * no stdout necessary for this report
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * Main
    */
   public Chart start(Gedcom gedcom) {

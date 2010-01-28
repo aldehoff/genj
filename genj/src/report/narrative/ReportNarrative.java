@@ -82,21 +82,6 @@ public class ReportNarrative extends Report {
   private String sourceIndexTitle;
 
   /**
-   * The result is stored in files so we don't need the
-   * console to popup (even though we print some stuff for debugging)
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
-   * Overridden image - we use the fancy one for FormattedOutput
-   */
-  protected ImageIcon getImage() {
-    return Report.IMG_FO;
-  }
-
-  /**
    * The report's entry point
    */
   public Object start(Gedcom gedcom) {

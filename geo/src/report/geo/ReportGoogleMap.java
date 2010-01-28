@@ -51,13 +51,6 @@ public class ReportGoogleMap extends Report {
   public int mapHeight = 400;
 
   /**
-   * we're not a stdout report
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * Our main method for a gedcom file
    */
   public void start(Gedcom ged) {

@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Revision: 1.141 $ $Author: nmeier $ $Date: 2010-01-22 18:23:50 $
+ * $Revision: 1.142 $ $Author: nmeier $ $Date: 2010-01-28 02:51:13 $
  */
 package genj.report;
 
@@ -37,6 +37,7 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.DialogHelper;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,14 +50,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Action;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -67,6 +66,8 @@ import javax.swing.filechooser.FileFilter;
  * Base-class of all GenJ reports. Sub-classes that are compiled
  * and available in ./report will be loaded by GenJ automatically
  * and can be reloaded during runtime.
+ * 
+ * categories: text,utility,chart,graph
  */
 public abstract class Report implements Cloneable {
   
@@ -74,10 +75,16 @@ public abstract class Report implements Cloneable {
 
   protected final static Logger LOG = Logger.getLogger("genj.report");
 
-  protected final static ImageIcon
-    IMG_SHELL = new genj.util.swing.ImageIcon(ReportView.class,"ReportShell"),
-    IMG_FO    = new genj.util.swing.ImageIcon(ReportView.class,"ReportFO"  ),
-    IMG_GUI   = new genj.util.swing.ImageIcon(ReportView.class,"ReportGui"  );
+  protected final static Icon DEFAULT_ICON = new Icon() {
+    public int getIconHeight() {
+      return 16;
+    }
+    public int getIconWidth() {
+      return 16;
+    }
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+    }
+  };
 
   /** global report options */
   protected Options OPTIONS = Options.getInstance();
@@ -87,15 +94,6 @@ public abstract class Report implements Cloneable {
     OPTION_YESNO    = 0,
     OPTION_OKCANCEL = 1,
     OPTION_OK       = 2;
-
-  /** categories */
-  private static final Category DEFAULT_CATEGORY = new Category("Other", IMG_SHELL);
-  private static final Map<String,Category> CATEGORIES = new TreeMap<String,Category>();
-  
-  static {
-      // Default category when category isn't defined in properties file
-      CATEGORIES.put(DEFAULT_CATEGORY.getName(), DEFAULT_CATEGORY);
-  }
 
   private final static String[][] OPTION_TEXTS = {
     new String[]{Action2.TXT_YES, Action2.TXT_NO     },
@@ -125,7 +123,7 @@ public abstract class Report implements Cloneable {
   private List<PropertyOption> options;
 
   /** image */
-  private ImageIcon image;
+  private Icon icon;
 
   /** file */
   private File file;
@@ -228,64 +226,48 @@ public abstract class Report implements Cloneable {
   /**
    * An image
    */
-  protected ImageIcon getImage() {
+  public Icon getIcon() {
+    
+    // got it?
+    if (icon!=null)
+      return icon;
 
-    // resolve an image
-    if (image==null) try {
-      String file = getTypeName()+".png";
-      InputStream in = getClass().getResourceAsStream(file);
-      if (in==null) {
-        // fallback to gif if possible
-        file = getTypeName()+".gif";
-        in = getClass().getResourceAsStream(file);
+    // find category in report settings
+    String cat = translate("category");
+    if (cat.equals("category")||cat.length()==0) {
+      icon = DEFAULT_ICON;
+    } else {
+      // resolve an image
+      String file = "Category"+Character.toUpperCase(cat.charAt(0))+cat.substring(1)+".png";
+      try {
+        InputStream in = Report.class.getResourceAsStream(file);
+        icon = new genj.util.swing.ImageIcon(file, in);
+      } catch (Throwable t) {
+        icon = DEFAULT_ICON;
       }
-      image = new genj.util.swing.ImageIcon(file, in);
-    } catch (Throwable t) {
-      image = usesStandardOut() ? IMG_SHELL : IMG_GUI;
     }
-
+    
     // done
-    return image;
+    return icon;
   }
 
   /**
-   * Returns the report category. If the category is not defined in the report's
-   * properties file, the category is set to "Other".
+   * Returns the report category
    */
-  public Category getCategory() {
-    
+  public final String getCategory() {
     // find category in report settings
-    String key = translate("category");
-    if (key.equals("category"))
-        return DEFAULT_CATEGORY;
-
-    // try to find it
-    Category category = CATEGORIES.get(key);
-    if (category!=null)
-      return category;
-
-    // try to localize it with standard value
-    String name = COMMON_RESOURCES.getString("category."+key.toLowerCase(), key);
+    String cat = translate("category");
+    if (cat.equals("category")||cat.length()==0)
+      return "";
     
-    // create it
-    category = createCategory(key, name);
-    CATEGORIES.put(key ,category);
-    return category;
-  }
-
-  private Category createCategory(String key, String name) {
-      String file = "Category" + key + ".png";
-
-      InputStream in = Report.class.getResourceAsStream(file);
-      if (in == null)
-          in = getClass().getResourceAsStream(file);
-
-      ImageIcon image;
-      if (in != null)
-          image = new genj.util.swing.ImageIcon(file, in);
-      else
-          image = IMG_SHELL;
-      return new Category(name, image);
+    // try to translate
+    String result = COMMON_RESOURCES.getString("category."+cat, false);
+    if (result==null) {
+      LOG.fine("report's category "+cat+" doesn't exist");
+      return COMMON_RESOURCES.getString("category.utility");
+    }    
+    
+    return result;
   }
 
   /**
@@ -836,13 +818,6 @@ public abstract class Report implements Cloneable {
     return true;
   }
 
-  /**
-   * Returns true if this report uses STDOUT
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
     /**
      * Whether the report allows to be run on a given context - default
      * checks for methods called
@@ -883,28 +858,6 @@ public abstract class Report implements Cloneable {
       }
       // n/a
       return null;
-    }
-
-    /**
-     * Represents the report category.
-     */
-    public static class Category
-    {
-        private String name;
-        private ImageIcon image;
-
-        public Category(String name, ImageIcon image) {
-            this.name = name;
-            this.image = image;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public ImageIcon getImage() {
-            return image;
-        }
     }
 
     /**

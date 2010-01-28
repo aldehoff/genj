@@ -46,11 +46,4 @@ public class ReportExec extends Report {
     // done
   }
 
-  /**
-   * @see genj.report.Report#usesStandardOut()
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
 } //ReportExec

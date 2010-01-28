@@ -76,13 +76,6 @@ public class ReportEventsByMonths extends Report {
   }
 
   /**
-   * No STDOUT necessary
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * Report's main
    */
   public Object start(Gedcom gedcom) {

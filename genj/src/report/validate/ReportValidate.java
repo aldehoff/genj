@@ -91,13 +91,6 @@ public class ReportValidate extends Report {
   };
 
   /**
-   * @see genj.report.Report#usesStandardOut()
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * Start for argument properties
    */
   public ContextList start(Property[] props) {

@@ -86,20 +86,6 @@ public class ReportMultDesc extends Report {
   public int publicGen = 0;
 
   /**
-   * don't need stdout
-   */
-  public boolean usesStandardOut() {
-    return true;
-  }
-
-  /**
-   * use the fo image
-   */
-  protected ImageIcon getImage() {
-    return Report.IMG_FO;
-  }
-
-  /**
    * Main for argument individual
    */
   public Object start(Indi indi) {

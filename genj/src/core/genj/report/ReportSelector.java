@@ -25,7 +25,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 
@@ -33,7 +32,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
 
 /**
  * Select report from list, show details, show options
@@ -71,8 +69,8 @@ class ReportSelector extends JPanel {
       }
     });
     
-    if (list.getRowCount()>0)
-      list.setSelectionRow(0);
+    if (list.getModel().getSize()>0)
+      list.setSelectedIndex(0);
     
   }
   

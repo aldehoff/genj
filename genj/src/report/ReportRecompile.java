@@ -18,8 +18,8 @@ import java.util.List;
  * 
  * author               = Nils Meier
  * version              = 1.0
- * category             = utilities
- * updated              = $Date: 2010-01-27 18:47:15 $
+ * category             = utility
+ * updated              = $Date: 2010-01-28 02:51:13 $
  * name                 = Recompile Reports
  * name.de              = Reports rekompilieren 
  * name.fr              = Compilation des Rapports

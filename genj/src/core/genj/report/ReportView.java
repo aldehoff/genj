@@ -94,7 +94,12 @@ public class ReportView extends View {
   private final static String EOL = System.getProperty("line.separator");
 
   /** statics */
-  private final static ImageIcon imgStart = new ImageIcon(ReportView.class, "Start"), imgStop = new ImageIcon(ReportView.class, "Stop"), imgSave = new ImageIcon(ReportView.class, "Save"), imgConsole = new ImageIcon(ReportView.class, "ReportShell"), imgGui = new ImageIcon(ReportView.class, "ReportGui");
+  private final static ImageIcon 
+    imgStart = new ImageIcon(ReportView.class, "Start"), 
+    imgStop = new ImageIcon(ReportView.class, "Stop"), 
+    imgSave = new ImageIcon(ReportView.class, "Save"), 
+    imgConsole = new ImageIcon(ReportView.class, "ReportShell"), 
+    imgGui = new ImageIcon(ReportView.class, "ReportGui");
 
   /** gedcom this view is for */
   private Gedcom gedcom;

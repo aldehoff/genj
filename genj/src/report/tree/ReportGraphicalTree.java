@@ -94,13 +94,6 @@ public class ReportGraphicalTree extends Report
     }
 
     /**
-     * The result is stored in files
-     */
-    public boolean usesStandardOut() {
-        return false;
-    }
-
-    /**
      * The report's entry point
      */
     public Object start(Indi indi) {

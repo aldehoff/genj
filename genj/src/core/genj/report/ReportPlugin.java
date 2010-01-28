@@ -25,7 +25,6 @@ import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.report.Report.Category;
 import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
@@ -86,7 +85,31 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
         
       case MENU:
         workbenchActions.clear();
-        getActions(context.getGedcom(), context.getGedcom(), workbenchActions);
+
+        // Look through reports
+        Map<String, Action2.Group> categories = new HashMap<String, Action2.Group>();
+        for (Report report : ReportLoader.getInstance().getReports()) {
+          try {
+            ActionRun run = null;
+            if (context.getEntity()!=null&&report.accepts(context.getEntity())!=null)
+              run = new ActionRun(report.accepts(context.getEntity()), context.getEntity(), report);
+            if (run==null&&report.accepts(context.getGedcom())!=null)
+              run = new ActionRun(report.accepts(context.getGedcom()), context.getGedcom(), report);
+            if (run!=null) {
+              String cat = report.getCategory();
+              Action2.Group catgroup = categories.get(cat);
+              if (catgroup==null) {
+                catgroup = new Action2.Group(cat, report.getIcon(), true);
+                categories.put(cat, catgroup);
+                workbenchActions.add(catgroup);
+              }
+              catgroup.add(run);
+            }
+          } catch (Throwable t) {
+            ReportView.LOG.log(Level.WARNING, "Report "+report.getClass().getName()+" failed in accept()", t);
+          }
+        }
+        
         result.add(workbenchActions);
         break;
         
@@ -172,19 +195,19 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
   private void getActions(Object context, Gedcom gedcom, Action2.Group group) {
   
     // Look through reports
-    Map<Category, Action2.Group> categories = new HashMap<Category, Action2.Group>();
+    Map<String, Action2.Group> categories = new HashMap<String, Action2.Group>();
     for (Report report : ReportLoader.getInstance().getReports()) {
       try {
         String accept = report.accepts(context); 
         if (accept!=null) {
           ActionRun run = new ActionRun(accept, context, report);
-          if (report.getCategory()==null)
+          String cat = report.getCategory();
+          if (cat==null)
             group.add(run);
           else {
-            Category cat = report.getCategory();
             Action2.Group catgroup = categories.get(cat);
             if (catgroup==null) {
-              catgroup = new Action2.Group(cat.getName(), cat.getImage());
+              catgroup = new Action2.Group("Report ("+cat+")", report.getIcon());
               categories.put(cat, catgroup);
             }
             catgroup.add(run);
@@ -212,7 +235,6 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
     private Report report;
     /** constructor */
     private ActionRun(Report report) {
-      setImage(report.getImage());
       setText(report.getName());
     }
     /** constructor */
@@ -221,7 +243,6 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
       this.context = context;
       this.report = report;
       // show
-      setImage(report.getImage());
       setText(txt);
     }
     

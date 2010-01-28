@@ -54,13 +54,6 @@ public class ReportPlaceHistory extends Report {
   }
 
   /**
-   * no need for STDOUT
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * Report's main
    */
   public Chart start(Gedcom gedcom) {

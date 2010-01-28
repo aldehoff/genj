@@ -68,11 +68,6 @@ public class ReportKML extends Report {
 	private Writer out;
 	private DetailedPlacemarkWriter detailedPlacemarkWriter;
 
-	/** we're not a stdout report */
-	public boolean usesStandardOut() {
-		return false;
-	}
-
 	/** Our main method for one individual */
 	public void start(Indi indi) {
 

@@ -8,11 +8,6 @@ import genj.report.Report;
 
 /**
 
- 
-author    = Paul Robinson
-version   = 1.0 - 16 Jan 2010
-category  = Analysis
-name      = Contemporaries
 
 */
 public class ReportContemporaries extends Report {

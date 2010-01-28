@@ -174,22 +174,6 @@ public class ReportFlashList extends Report {
   private String recordKeyText = "";        // Text for the legend
 
   /**
-  * Overriden image - we're using the provided FO image
-  */
-  protected ImageIcon getImage() {
-    return Report.IMG_FO;
-  }
-
-  /**
-   * While we generate information on stdout it's not really
-   * necessary because we're returning a Document
-   * that is handled by the UI anyways
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * One of the report's entry point
    */
   public Document start(Gedcom gedcom) {

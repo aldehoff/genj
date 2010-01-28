@@ -46,11 +46,6 @@ public class ReportDemography extends Report {
     ageGroupSize = Math.max(1, Math.min(25, set));
   }
 
-  /** n/a */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
   /** main */
   public JPanel start(Gedcom gedcom) throws Exception {
 

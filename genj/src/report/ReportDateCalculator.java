@@ -40,14 +40,6 @@ public class ReportDateCalculator extends Report {
     }
 
   /**
-   * We don't use STDOUT
-   * @see genj.report.Report#usesStandardOut()
-   */
-  public boolean usesStandardOut() {
-    return false;
-  }
-
-  /**
    * Our entry point
    */
   public JLabel start(PropertyDate date) {
