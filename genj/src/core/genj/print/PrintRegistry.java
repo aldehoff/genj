@@ -102,9 +102,13 @@ public class PrintRegistry extends Registry {
     while (attributes.hasMoreTokens()) {
       String attribute = attributes.nextToken();
       try {
-        set.add(get((Class<Attribute>)Class.forName(attribute), null));
+        Attribute a = get((Class<Attribute>)Class.forName(attribute), null);
+        if (a!=null)
+          set.add(a);
+        else
+          PrintTask.LOG.log(Level.INFO, "Couldn't restore print attribute "+attribute);
       } catch (Throwable t) {
-        PrintTask.LOG.log(Level.INFO, "Couldn't restore print attribute "+attribute, t);
+        PrintTask.LOG.log(Level.WARNING, "Error restoring print attribute "+attribute, t);
       }
     }
     
