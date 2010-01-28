@@ -27,6 +27,7 @@
   
    Daniel Durand (French)
    Alex Evdokimenko (Russian)
+   Jean-Raymond Floquet (French)
    Nestor Garcia (Spanish)
    Mauricio Girardi (Brazilian Portuguese)
    Frantisek Grebenicek (Czech)
