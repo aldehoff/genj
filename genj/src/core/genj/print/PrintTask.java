@@ -57,7 +57,6 @@ import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Destination;
 import javax.print.attribute.standard.JobName;
 import javax.print.attribute.standard.Media;
-import javax.print.attribute.standard.MediaName;
 import javax.print.attribute.standard.MediaPrintableArea;
 import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
@@ -252,15 +251,23 @@ import javax.print.attribute.standard.OrientationRequested;
   /*package*/ Dimension2D getPageSize() {
     
     OrientationRequested orientation = (OrientationRequested)getAttribute(OrientationRequested.class);
-    MediaSize media = MediaSize.getMediaSizeForName((MediaSizeName)getAttribute(Media.class));
+    Media media = (Media)getAttribute(Media.class);
+    
+    MediaSize size = null;
+    if (media instanceof MediaSizeName)
+      size = MediaSize.getMediaSizeForName((MediaSizeName)media);
+    if (size==null) {
+      LOG.warning("got unknown MediaSizeName,MediaTray or MediaName "+media+" using default A4");
+      size = MediaSize.getMediaSizeForName(MediaSizeName.ISO_A4);
+    }
     
     Dimension2D result = new Dimension2d();
 
     double w,h;
     if (orientation==OrientationRequested.LANDSCAPE||orientation==OrientationRequested.REVERSE_LANDSCAPE) {
-      result.setSize(media.getY(MediaSize.INCH), media.getX(MediaSize.INCH));
+      result.setSize(size.getY(MediaSize.INCH), size.getX(MediaSize.INCH));
     } else {
-      result.setSize(media.getX(MediaSize.INCH), media.getY(MediaSize.INCH));
+      result.setSize(size.getX(MediaSize.INCH), size.getY(MediaSize.INCH));
     }    
     return result;
   }
@@ -350,7 +357,7 @@ import javax.print.attribute.standard.OrientationRequested;
       result = service.getSupportedAttributeValues(category, null, attributes);
       if (result==null)
         LOG.warning( "Couldn't find supported PrintRequestAttribute for category "+category+" with "+toString(attributes));
-      else if (result.getClass().isArray()&&result.getClass().getComponentType()==category) {
+      else if (result.getClass().isArray()) {
 	      LOG.fine( "Got PrintRequestAttribute values "+Arrays.toString((Object[])result)+" for category "+category);
 	      
 	      // apparently some systems can return null values, e.g. 
@@ -359,16 +366,17 @@ import javax.print.attribute.standard.OrientationRequested;
 
 	      Object[] os = (Object[])result;
 	      result = null;
-	      for (int i=0;result==null && i<os.length;i++) 
-	        result = os[i];
-	    } else {
-	      // according to http://java.sun.com/j2se/1.4.2/docs/guide/jps/spec/attributes.fm5.html the result can be an array or the single value
-        LOG.finer( "Got PrintRequestAttribute value "+result+" for category "+category);
-	    }
+	      for (int i=0;result==null && i<os.length;i++) {
+	        if (os[i]!=null && category.isAssignableFrom(os[i].getClass())) {
+	          result = os[i];
+	          break;
+	        }
+	      }
+      }
     }
     // revert to media default if not available
     if (result==null&&category==Media.class) {
-      result = MediaName.ISO_A4_WHITE;
+      result = MediaSizeName.ISO_A4;
       LOG.warning("falback media is "+result);
       attributes.add((Media)result);
     }    
@@ -379,10 +387,12 @@ import javax.print.attribute.standard.OrientationRequested;
       LOG.warning( "Using fallback MediaPrintableArea "+result);
     }
     // remember
-    if (result!=null)
+    if (result!=null) {
       attributes.add((PrintRequestAttribute)result);
-    else
+      LOG.fine( "PrintRequestAttribute for category "+category+" is "+result+" with "+toString(attributes));
+    } else {
       LOG.warning( "Couldn't find any PrintRequestAttribute for category "+category+" with "+toString(attributes));
+    }
     // done
     return (PrintRequestAttribute)result;
   }
