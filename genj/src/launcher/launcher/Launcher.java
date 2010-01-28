@@ -129,6 +129,9 @@ public class Launcher {
     
     try {
       
+      // cd into 'current' directoruy
+      cd(Launcher.class);
+      
       // prepare classloader
       String[] classpath = getLaunchClasspath();
       exportClasspath(classpath);
@@ -142,19 +145,16 @@ public class Launcher {
       // show splash screen
       showSplash();
       
-      // cd into 'current' directoruy
-      cd(Launcher.class);
-      
       // call main
       callMain(args, cl);
-      
-      // hide splash screen
-      hideSplash();
       
     } catch (Throwable t) {
       t.printStackTrace(System.err);
     }
 
+    // hide splash screen
+    hideSplash();
+    
     // nothing more to do here
   }
   
