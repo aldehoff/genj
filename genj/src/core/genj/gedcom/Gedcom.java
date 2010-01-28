@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
- * $Revision: 1.137 $ $Author: nmeier $ $Date: 2010-01-15 15:04:41 $
+ * $Revision: 1.138 $ $Author: nmeier $ $Date: 2010-01-28 14:48:13 $
  */
 package genj.gedcom;
 
@@ -145,7 +145,7 @@ public class Gedcom {
   private Submitter submitter;
   
   /** grammar version */
-  private Grammar grammar = Grammar.V55;
+  private Grammar grammar = Grammar.V551;
 
   /** origin of this Gedcom */
   private Origin origin;
