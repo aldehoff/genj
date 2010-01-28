@@ -281,11 +281,19 @@ public class Action2 extends AbstractAction {
   public static class Group extends Action2 implements Iterable<Action2> {
     
     private ArrayList<Action2> actions = new ArrayList<Action2>(4);
+    private boolean sort;
     
     /** constructor */
-    public Group(String text, ImageIcon imageIcon) {
+    public Group(String text, Icon icon, boolean sort) {
       super(text);
-      setImage(imageIcon);
+      setImage(icon);
+      this.sort = sort;
+    }
+    
+    /** constructor */
+    public Group(String text, Icon icon) {
+      super(text);
+      setImage(icon);
     }
     
     /** constructor */
@@ -299,28 +307,38 @@ public class Action2 extends AbstractAction {
     public Group(String text) {
     	this(text,null);
     }
-
+    
     public Group add(Action2 action) {
       // merge into known
       for (Action old : this) {
         if (old.equals(action)) {
-          if (old instanceof Action2.Group) 
-            ((Action2.Group) old).addAll((Action2.Group)action);
+          if (old instanceof Group) for (Action2 a : (Group)action)
+            ((Group)old).add(a);
           return this;
         }
       }
-      // or keep as is
+      // keep
+      if (sort) {
+        for (int i=0;i<actions.size();i++) {
+          if (actions.get(i).getText().compareTo(action.getText())>0) {
+            actions.add(i, action);
+            return this;
+          }
+        }
+      }
       actions.add(action);
       return this;
     }
 
-    public Group addAll(Group action) {
-      actions.addAll(action.actions);
+    public Group addAll(Group group) {
+      for (Action2 action : group)
+        add(action);
       return this;
     }
     
     public Group addAll(List<Action2> actions) {
-      this.actions.addAll(actions);
+      for (Action2 action : actions)
+        add(action);
       return this;
     }
     
