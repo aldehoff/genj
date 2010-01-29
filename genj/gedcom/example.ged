@@ -1,16 +1,16 @@
 0 HEAD
 1 SOUR GENJ
-2 VERS 2.3.x
+2 VERS 3.0
 2 NAME GenealogyJ
 2 CORP Nils Meier
 3 ADDR http://genj.sourceforge.net
 1 DEST ANY
-1 DATE 7 JUN 2005
-2 TIME 16:51:00
+1 DATE 28 JAN 2010
+2 TIME 19:38:07
 1 SUBM @B1@
 1 FILE example.ged
 1 GEDC
-2 VERS 5.5
+2 VERS 5.5.1
 2 FORM Lineage-Linked
 1 CHAR ANSEL
 1 LANG German
@@ -81,12 +81,9 @@
 2 DATE 10 DEC 1996
 2 PLAC Bonn, NRW
 2 TYPE Diplom Informatiker
+1 OBJE @M1@
 1 FAMC @F1@
-1 OBJE
-2 TITL Pilot Error
-2 FORM JPG
-2 FILE meiern.jpg
-1 NOTE @N3@
+1 NOTE @N1@
 1 RESI
 2 DATE FROM DEC 1996 TO JUL 2000
 2 ADDR Am Hackenbruch 26
@@ -144,7 +141,7 @@
 1 CHIL @I7@
 1 CHIL @I9@
 1 CHIL @I10@
-0 @N3@ NOTE The author of GenJ - please visit
+0 @N1@ NOTE The author of GenJ - please visit
 1 CONT http://genj.sourceforge.net
 1 CONT for more information about Genealogy J
 0 @I10@ INDI
@@ -154,4 +151,8 @@
 2 DATE 28 AUG 2004
 2 PLAC Bergisch Gladbach
 1 FAMC @F3@
+0 @M1@ OBJE
+1 FILE meiern.jpg
+2 FORM jpg
+2 TITL Nils in cockpit
 0 TRLR
