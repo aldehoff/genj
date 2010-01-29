@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +55,16 @@ public class BlueprintManager {
   private final static Resources RESOURCES = Resources.get(BlueprintManager.class);
   
   public final static String TXT_BLUEPRINT = RESOURCES.getString("blueprint");
+  
+  private final static String[][] DEFAULTS = {
+   { "INDI", "default", "complete", "verbose", "colors", "profession" },
+   { "FAM", "default", "complete" },
+   { "OBJE", "default", "complete", "55" },
+   { "NOTE", "default", "complete" },
+   { "SOUR", "default", "complete" },
+   { "SUBM", "default", "complete" },
+   { "REPO", "default", "complete" }
+  };
 
   /*package*/ final static Logger LOG = Logger.getLogger("genj.renderer");
 
@@ -79,18 +88,26 @@ public class BlueprintManager {
   private BlueprintManager() {
     
     // load readonly/predefined blueprints (from resources)
-    for (int t=0;t<Gedcom.ENTITIES.length;t++) {
+    for (int t=0;t<DEFAULTS.length;t++) {
       
-      String tag = Gedcom.ENTITIES[t];
+      String[] defaults = DEFAULTS[t];
       
-      StringTokenizer names = new StringTokenizer(RESOURCES.getString("blueprints."+tag,""));
-      while (names.hasMoreTokens()) {
-        String name = names.nextToken();
-        String html =  RESOURCES.getString("blueprints."+tag+"."+name);
+      String tag = defaults[0];
+
+      for (int i=1;i<defaults.length;i++) {
+        String key = defaults[i];
+        String name = RESOURCES.getString("blueprints."+key, false);
+        if (name==null)
+          name = key;
         try {
-          addBlueprint(new Blueprint(tag, name, html.toString(), true));
-        } catch (IOException e) {
-          // can't happen
+          addBlueprint(loadBlueprint(
+              getClass().getResourceAsStream("blueprints/"+tag+"/"+key+SUFFIX),
+              tag,
+              name,
+              true
+          ));
+        } catch (Throwable e) {
+          LOG.warning("can't read pre-defined blueprint "+tag+"/"+key);
         }
       }
       
