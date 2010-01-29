@@ -354,7 +354,7 @@ public class TableView extends View {
 
     /** gedcom callback */
     public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-      invalidate(gedcom, property.getEntity(), property.getPath());
+      invalidate(gedcom, property.getEntity(), added.getPath());
     }
 
     /** gedcom callback */
