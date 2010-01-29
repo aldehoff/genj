@@ -276,16 +276,21 @@ public class EnvironmentChecker {
     try {
       File user_home_genj;
       File home = new File(System.getProperty("user.home"));
-      if (isWindows()) {
+      
+      // existing .genj3 home?
+      File dotgenj = new File(home, ".genj3");
+      if (dotgenj.exists()&&dotgenj.isDirectory()) {
+        user_home_genj = dotgenj;
+      } else if (isWindows()) { // or windows
         File appdata = new File(System.getenv("APPDATA"));
         if (!appdata.exists())
           appdata = new File(home, "Application Data");
         user_home_genj = new File(appdata, "GenJ3");
-      } else if (isMac())
-        user_home_genj = new File(new File(home, "Library/Application Support"), "GenJ");
-      else 
-        user_home_genj = new File(home, ".genj3");
-      
+      } else if (isMac()) // or mac 
+        user_home_genj = new File(new File(home, "Library/Application Support"), "GenJ3");
+      else { // or unix
+        user_home_genj = dotgenj;
+      }      
       setProperty("user.home.genj", user_home_genj.getAbsolutePath());
 
     } catch (Throwable t) {
