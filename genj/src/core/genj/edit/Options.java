@@ -19,18 +19,15 @@
  */
 package genj.edit;
 
-import java.util.List;
-
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
+
+import java.util.List;
 
 /**
  * Global options for editor
  */
 public class Options extends OptionProvider {
-  
-  /** option - whether an editor should */
-  public boolean isOpenEditor = true;
   
   /** option - whether changes are auto commit */
   public boolean isAutoCommit = false;
