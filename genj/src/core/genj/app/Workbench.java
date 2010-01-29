@@ -1217,19 +1217,17 @@ public class Workbench extends JPanel implements SelectionSink {
 
 
       // merge providers' actions
-      if (newg!=null) {
-        Action2.Group provided = new Action2.Group("ignore");
-        for (ActionProvider provider : lookup(ActionProvider.class)) {
-          provider.createActions(context, Purpose.MENU, provided);
-          for (Action2 action : provided) {
-            if (action instanceof Action2.Group) {
-              groups.add(action);
-            } else {
-              LOG.warning("ActionProvider "+provider+" returned a non-group for menu");
-            }
+      Action2.Group provided = new Action2.Group("ignore");
+      for (ActionProvider provider : lookup(ActionProvider.class)) {
+        provider.createActions(context, Purpose.MENU, provided);
+        for (Action2 action : provided) {
+          if (action instanceof Action2.Group) {
+            groups.add(action);
+          } else {
+            LOG.warning("ActionProvider "+provider+" returned a non-group for menu");
           }
-          provided.clear();
         }
+        provided.clear();
       }
       
       Action2.Group edit = new ActionProvider.EditActionGroup();

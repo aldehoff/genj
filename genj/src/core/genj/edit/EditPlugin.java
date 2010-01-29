@@ -92,6 +92,7 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
   private final static Resources RESOURCES = Resources.get(EditPlugin.class);
   private final static Logger LOG = Logger.getLogger("genj.edit");
   
+  private String ACC_UNDO = "ctrl Z", ACC_REDO = "ctrl Y";
   private Workbench workbench;
   
   /**
@@ -290,6 +291,15 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
    * Actions for context
    */
   public void createActions(Context context, Purpose purpose, Group result) {
+
+    // take out shortcuts
+    Action2.uninstall(workbench, ACC_REDO);
+    Action2.uninstall(workbench, ACC_UNDO);
+    
+    // nothing without gedcom
+    if (context.getGedcom()==null)
+      return;
+    
     
     switch (purpose) {
       case MENU:
@@ -303,8 +313,8 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
         result.add(edit);
           
         edit.add(new ActionProvider.SeparatorAction());
-        edit.add(new Undo(context.getGedcom()));
-        edit.add(new Redo(context.getGedcom()));
+        edit.add(new Undo(context.getGedcom()).install(workbench, ACC_UNDO));
+        edit.add(new Redo(context.getGedcom()).install(workbench, ACC_REDO));
         
         break;
         

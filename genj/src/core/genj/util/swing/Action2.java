@@ -255,14 +255,30 @@ public class Action2 extends AbstractAction {
     public void actionPerformed(ActionEvent e) {};
   };
   
-  public void install(JComponent component, String shortcut) {
-    install(component,shortcut,JComponent.WHEN_IN_FOCUSED_WINDOW);
+  public Action2 install(JComponent component, String shortcut) {
+    return install(component,shortcut,JComponent.WHEN_IN_FOCUSED_WINDOW);
   }
   
-  public void install(JComponent component, String shortcut, int condition) {
+  public Action2 install(JComponent component, String shortcut, int condition) {
     InputMap inputs = component.getInputMap(condition);
     inputs.put(KeyStroke.getKeyStroke(shortcut), this);
     component.getActionMap().put(this, this);
+    return this;
+  }
+  
+  public static void uninstall(JComponent component, String shortcut) {
+    uninstall(component, component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW), shortcut);
+    uninstall(component, component.getInputMap(JComponent.WHEN_FOCUSED), shortcut);
+    uninstall(component, component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT), shortcut);
+  }
+  
+  private static void uninstall(JComponent component, InputMap map, String shortcut) {
+    KeyStroke key = KeyStroke.getKeyStroke(shortcut);
+    Object o = map.get(key);
+    if (o instanceof Action2) {
+      map.put(key, null);
+      component.getActionMap().remove(o);
+    }
   }
 
   public boolean isSelected() {

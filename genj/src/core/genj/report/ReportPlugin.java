@@ -79,6 +79,10 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
    */
   public void createActions(Context context, Purpose purpose, Group result) {
     
+    // nothing without gedcom
+    if (context.getGedcom()==null)
+      return;
+    
     switch (purpose) {
       case TOOLBAR:
         break;
