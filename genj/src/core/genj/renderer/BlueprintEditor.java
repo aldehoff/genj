@@ -38,8 +38,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.HashMap;
@@ -217,6 +219,9 @@ public class BlueprintEditor extends JSplitPane {
      * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
      */
     protected void paintComponent(Graphics g) {
+      
+      ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      
       // no html doing nothing
       if (source.getText().length()==0) return; 
       // fix bounds (border changes insets)

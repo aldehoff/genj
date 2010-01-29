@@ -608,7 +608,7 @@ public class EntityRenderer {
     // TODO Performance - can we improve property views through some caching of size&alignment?
     
     /** the tag path used */
-    private TagPath path = null;
+    private List<TagPath> paths = new ArrayList<TagPath>();
     
     /** the cached property we're displaying */
     private Property cachedProperty = null;
@@ -618,9 +618,6 @@ public class EntityRenderer {
     
     /** minimum/maximum percentage of the rendering space */
     private int min, max;
-    
-    /** valid or not */
-    private boolean isValid = false;
     
     /** 
      * Constructor
@@ -639,10 +636,11 @@ public class EntityRenderer {
       
       // grab path
       Object p = elem.getAttributes().getAttribute("path");
-      if (p!=null) try {
-        path = new TagPath(p.toString());
+      if (p!=null) for (String path : p.toString().split(",")) try {
+        paths.add(new TagPath(path));
       } catch (IllegalArgumentException e) {
-        // ignoring wrong path
+        if (LOG.isLoggable(Level.FINER))
+          LOG.log(Level.FINER, "got wrong path "+path);
       }
       
       // minimum?
@@ -671,13 +669,24 @@ public class EntityRenderer {
      */
     private Property getProperty() {
       // still looking for property?
-      if (!isValid&&entity!=null&path!=null) {
-        cachedProperty = entity.getProperty(path);
-        // valid now
-        isValid = true;
-      }      
-      // done
-      return cachedProperty;
+      if (cachedProperty!=null)
+        return cachedProperty;
+      
+      if (entity==null||paths.isEmpty())
+        return null;
+
+      Property result = null;
+      
+      for (TagPath path : paths) {
+        result = entity.getProperty(path);
+        if (result!=null)
+          break;
+      }
+      
+      if (paths.size()==1)
+        cachedProperty = result;
+      
+      return result;
     }
     
     /** 
@@ -685,13 +694,13 @@ public class EntityRenderer {
      */
     private PropertyRenderer getRenderer(Property prop) {
       // 20030404 if no property is found we cannot cache
-      // the renderer dervice from path.getLast() - there
+      // the renderer derived from path.getLast() - there
       // are defaults for certain tags preset in PropertyRenderer
       // but another call here with a different prop-type
       // might resolve to a different proxy
       
       // derive from property?
-      PropertyRenderer result = PropertyRendererFactory.DEFAULT.getRenderer(path, prop);
+      PropertyRenderer result = PropertyRendererFactory.DEFAULT.getRenderer(paths.get(0), prop);
 
       // check renderer/prop compatibility
       if (prop==null&&!result.isNullRenderer()) 
@@ -757,7 +766,8 @@ public class EntityRenderer {
     protected void invalidate() {
       // invalidate cached information that's depending
       // on the current entity's properties
-      isValid = false;
+      cachedProperty = null;
+      
       super.invalidate();
     }
     
