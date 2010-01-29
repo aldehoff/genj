@@ -423,7 +423,7 @@ import swingx.docking.Docked;
 
     /** constructor */
     protected ActionCloseView() {
-      setImage(Images.imgClose);
+      setImage(genj.view.Images.imgClose);
       setTip(Resources.get(this).getString("cc.tip.close_view", factory.getTitle()));
     }
 
