@@ -419,13 +419,8 @@ public class EntityRenderer {
     
     @Override
     public Graphics getGraphics() {
-      View view = this;
-      while (view!=null) {
-        if (view instanceof RootView)
-          return ((RootView)view).getGraphics();
-        view = view.getParent();
-      }
-      throw new IllegalStateException("can't find graphics for view");
+      graphics.setFont(getFont());
+      return graphics;
     }
     
     /**
@@ -442,7 +437,7 @@ public class EntityRenderer {
       // document's stylesheet and ask it for this view's
       // attributes
       if (font==null) {
-        font = doc.getFont(doc.getStyleSheet().getViewAttributes(this));
+        font = doc.getFont(getAttributes());
       }
       return font;
     }
@@ -746,7 +741,6 @@ public class EntityRenderer {
       if (renderer==null)
         return new Dimension(0,0);
       // calc span
-      graphics.setFont(getFont());
       Dimension2D d = renderer.getSize(property, attributes, (Graphics2D)getGraphics());
       // check max
       d = new Dimension2d(Math.min(d.getWidth(), root.width*max/100), d.getHeight());
