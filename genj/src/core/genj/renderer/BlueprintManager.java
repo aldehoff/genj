@@ -57,8 +57,8 @@ public class BlueprintManager {
   public final static String TXT_BLUEPRINT = RESOURCES.getString("blueprint");
   
   private final static String[][] DEFAULTS = {
-   { "INDI", "default", "complete", "verbose", "colorful", "professional", "simple", "pastel" },
-   { "FAM", "default", "complete", "simple", "pastel" },
+   { "INDI", "default", "complete", "verbose", "colorful", "professional", "simple", "pastel", "light" },
+   { "FAM", "default", "complete", "simple", "pastel", "light" },
    { "OBJE", "default", "complete", "55" },
    { "NOTE", "default", "complete" },
    { "SOUR", "default", "complete" },
