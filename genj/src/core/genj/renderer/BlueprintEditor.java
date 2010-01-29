@@ -94,6 +94,7 @@ public class BlueprintEditor extends JSplitPane {
    * Constructor   */
   public BlueprintEditor(Entity recipient) { 
     example = new Example(recipient);
+    grammar = recipient.getGedcom().getGrammar();
     // preview
     preview = new Preview();
     preview.setBorder(BorderFactory.createTitledBorder(resources.getString("blueprint.preview")));

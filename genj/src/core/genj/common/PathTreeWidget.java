@@ -60,8 +60,8 @@ public class PathTreeWidget extends JScrollPane {
   /** list listeners */
   private List<Listener> listeners = new ArrayList<Listener>();
   
-  /** gedcom */
-  private Gedcom  gedcom;
+  /** grammar */
+  private Grammar grammar = Grammar.V55;
   
   /** the tree we use for display */
   private JTree   tree;
@@ -91,6 +91,10 @@ public class PathTreeWidget extends JScrollPane {
     getViewport().setView(tree);
 
     // Done
+  }
+  
+  public void setGrammar(Grammar grammar) {
+    this.grammar = grammar;
   }
 
   /**
@@ -182,7 +186,7 @@ public class PathTreeWidget extends JScrollPane {
       if (value instanceof TagPath) {
         TagPath path = (TagPath)value; 
         setText( path.getLast() + " ("+Gedcom.getName(path.getLast())+")");
-        setIcon( Grammar.V55.getMeta(path).getImage() );
+        setIcon( grammar.getMeta(path).getImage() );
         checkbox.setSelected(model.getSelection().contains(value));
         panel.invalidate(); // make sure no preferred side is cached
       }      
@@ -198,7 +202,7 @@ public class PathTreeWidget extends JScrollPane {
   private class Model implements TreeModel {
     
     /** the tag-paths to choose from */
-    private TagPath[] paths = new TagPath[0];
+    private Set<TagPath> paths = new HashSet<TagPath>();
 
     /** the selection */
     private Set<TagPath> selection = new HashSet<TagPath>();
@@ -218,7 +222,9 @@ public class PathTreeWidget extends JScrollPane {
       selection = new HashSet<TagPath>(Arrays.asList(ss));
       
       // keep paths
-      paths = ps;
+      paths = new HashSet<TagPath>();
+      paths.addAll(Arrays.asList(ps));
+      paths.addAll(Arrays.asList(ss));
       
       // notify
       TreeModelEvent e = new TreeModelEvent(this, new Object[]{ this });
@@ -228,17 +234,10 @@ public class PathTreeWidget extends JScrollPane {
       // done
     }
     
-    private void ensure(TagPath path) {
-      for (int i=0;i<paths.length;i++) {
-        if (paths[i].equals(path))
-          return;
-      }
-      throw new IllegalArgumentException("path not a choice");
-    }
-    
     private void setSelected(TagPath path, boolean set) {
-      
-      ensure(path);
+
+      if (!paths.contains(path))
+        throw new IllegalArgumentException("path not a choice");
       
       // in/out
       if (set)
@@ -313,9 +312,9 @@ public class PathTreeWidget extends JScrollPane {
     private TagPath[] getChildrenOfNode(TagPath path) {
       // all paths starting with path
       List<TagPath> children = new ArrayList<TagPath>(8);
-      for (int p=0;p<paths.length;p++) {
-        if (paths[p].length()>path.length()&&paths[p].startsWith(path)) 
-          add(new TagPath(paths[p], path.length()+1), children);
+      for (TagPath p : paths) {
+        if (p.length()>path.length()&&p.startsWith(path)) 
+          add(new TagPath(p, path.length()+1), children);
       }
       for (TagPath sel : selection) {
         if (sel.length()>path.length()&&sel.startsWith(path)) 

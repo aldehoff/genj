@@ -27,6 +27,12 @@ import java.util.List;
  * Class for encapsulating multimedia entry in a gedcom file
  */
 public class Media extends Entity {
+  
+  private final static TagPath
+    TITLE55 = new TagPath("OBJE:TITL"),
+    TITLE551 = new TagPath("OBJE:FILE:TITL");
+  
+  private TagPath titlepath = TITLE55;
 
   /**
    * Title ...
@@ -40,7 +46,7 @@ public class Media extends Entity {
    * Overriden - special case for file association
    */
   public boolean addFile(File file) {
-    List pfiles = getProperties(PropertyBlob.class);
+    List<PropertyBlob> pfiles = getProperties(PropertyBlob.class);
     PropertyBlob pfile;
     if (pfiles.isEmpty()) {
       pfile = (PropertyBlob)addProperty("BLOB", "");
@@ -63,8 +69,19 @@ public class Media extends Entity {
    * Returns the title of this OBJE
    */
   public String getTitle() {
-    Property title = getProperty("TITL");
+    Property title = getProperty(titlepath);
     return title==null ? "" : title.getValue();
+  }
+  
+  @Override
+  void addNotify(Gedcom ged) {
+    super.addNotify(ged);
+    
+    if (getMetaProperty().allows("TITLE"))
+      titlepath = TITLE55;
+    else
+      titlepath = TITLE551;
+      
   }
 
 } //Media

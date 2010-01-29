@@ -46,12 +46,13 @@ import javax.swing.event.ListSelectionListener;
  */
 public class TableViewSettings extends JPanel {
 
-  private Grammar             grammar = Grammar.V55;
   private PathTreeWidget      pathTree;
   private ListSelectionWidget<TagPath> pathList;
   private Resources           resources = Resources.get(this);
 
   public TableViewSettings(final TableView view) {
+    
+    final Grammar grammar = view.getGedcom()!=null ? view.getGedcom().getGrammar() : Grammar.V55;
     
     // Create!
     GridBagHelper gh = new GridBagHelper(this);
@@ -74,6 +75,7 @@ public class TableViewSettings extends JPanel {
     String tag = view.getMode().getTag();
     TagPath[] selectedPaths = view.getMode(tag).getPaths();
     TagPath[] usedPaths     = grammar.getAllPaths(tag, Property.class);
+    pathTree.setGrammar(grammar);
     pathTree.setPaths(usedPaths, selectedPaths);
     pathTree.addListener(plistener);
 
@@ -124,13 +126,7 @@ public class TableViewSettings extends JPanel {
     gh.add(new JButton(dn)                                ,1,4,1,1,GridBagHelper.FILL_HORIZONTAL);
     gh.add(new JButton(del)                               ,2,4,1,1,GridBagHelper.FILL_HORIZONTAL);
 
-    
-    // check grammar
-    if (view.getTable().getModel()!=null)
-      grammar = view.getTable().getModel().getGedcom().getGrammar();
-
   }
-
 
   /**
    * Action - ActionUpDown

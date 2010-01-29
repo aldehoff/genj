@@ -92,9 +92,9 @@ public class Note extends Entity implements MultiLineProperty {
     return delegate.getValue();
   }
   
-  public List findProperties(Pattern tag, Pattern value) {
+  public List<Property> findProperties(Pattern tag, Pattern value) {
     // let super do its thing
-    List result = super.findProperties(tag, value);
+    List<Property> result = super.findProperties(tag, value);
     // don't let 'this' in there
     result.remove(this);
     // done
