@@ -266,19 +266,25 @@ public class EnvironmentChecker {
   }
   
   /**
-   * "user.home.genj" the genj application data directory ("C:/Documents and Settings/$USER/Application Data/genj" on windows, "~/.genj" otherwise)
+   * "user.home.genj" the genj application data directory 
+   *  C:/Documents and Settings/%USERNAME%/Application Data/genj on windows
+   *  ~/Library/Application Support/GenJ on Mac
+   *  ~/.genj otherwise
    */
   static {
 
     try {
       File user_home_genj;
       File home = new File(System.getProperty("user.home"));
-      File dotgenj = new File(home, ".genj3");
-      File appdata = new File(home, "Application Data");
-      if (!isWindows() || dotgenj.isDirectory() || !appdata.isDirectory())
-        user_home_genj = dotgenj;
-      else
+      if (isWindows()) {
+        File appdata = new File(System.getenv("APPDATA"));
+        if (!appdata.exists())
+          appdata = new File(home, "Application Data");
         user_home_genj = new File(appdata, "GenJ3");
+      } else if (isMac())
+        user_home_genj = new File(new File(home, "Library/Application Support"), "GenJ");
+      else 
+        user_home_genj = new File(home, ".genj3");
       
       setProperty("user.home.genj", user_home_genj.getAbsolutePath());
 
