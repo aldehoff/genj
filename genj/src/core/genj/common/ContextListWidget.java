@@ -40,6 +40,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -84,7 +85,7 @@ public class ContextListWidget extends JPanel implements ContextProvider {
     list.setCellRenderer(callback);
     list.addListSelectionListener(callback);
     
-    add(list, BorderLayout.CENTER);
+    add(new JScrollPane(list), BorderLayout.CENTER);
   }
 
   public String getTitle() {
