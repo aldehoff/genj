@@ -103,7 +103,8 @@ public class TableView extends View {
   }
   
   public Gedcom getGedcom() {
-    return propertyTable.getModel().getGedcom();
+    PropertyTableModel model = propertyTable.getModel();
+    return model!=null ? model.getGedcom() : null;
   }
   
   /*package*/ PropertyTableWidget getTable() {
