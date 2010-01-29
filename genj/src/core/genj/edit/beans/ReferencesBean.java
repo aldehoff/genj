@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChild;
+import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.PropertyFamilySpouse;
 import genj.gedcom.PropertyHusband;
@@ -52,14 +53,24 @@ public class ReferencesBean extends PropertyBean {
     // prepare a simple table
     table = new PropertyTableWidget() {
       @Override
-      protected String getDisplayValue(Property property, int row, int col) {
+      protected String getCellValue(Property property, int row, int col) {
         if (property instanceof PropertyXRef) {
           PropertyXRef ref = (PropertyXRef)property;
           if (ref.isTransient())
             ref = ref.getTarget();
           return Gedcom.getName(ref.getTag());
         }
-        return super.getDisplayValue(property, row, col);
+        if (property instanceof PropertyEvent) {
+          return property.getPropertyName();
+        }
+        if (col==0) {
+          return property.getPropertyName();
+        }
+        return property.toString();
+      }
+      @Override
+      protected boolean getCellAlignment(Property property, int row, int col) {
+        return true;
       }
     };
     table.setVisibleRowCount(5);
@@ -107,6 +118,7 @@ public class ReferencesBean extends PropertyBean {
     
     private List<PropertyXRef> rows;
     private TagPath[] columns = new TagPath[] {
+        new TagPath("..", Property.LABEL), 
         new TagPath(".", Gedcom.getName("REFN")), 
         new TagPath("*:..:..", "*"), 
       };

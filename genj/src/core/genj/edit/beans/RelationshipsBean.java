@@ -56,9 +56,9 @@ public class RelationshipsBean extends PropertyBean {
     // prepare a simple table
     table = new PropertyTableWidget() {
       @Override
-      protected String getDisplayValue(Property property, int row, int col) {
+      protected String getCellValue(Property property, int row, int col) {
         String relationship = relationships.get(property);
-        return relationship!=null ? relationship : super.getDisplayValue(property, row, col);
+        return relationship!=null ? relationship : super.getCellValue(property, row, col);
       }
     };
     table.setVisibleRowCount(5);

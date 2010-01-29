@@ -307,7 +307,7 @@ public class PropertyTableWidget extends JPanel  {
     }
   }
   
-  protected String getDisplayValue(Property property, int row, int col) {
+  protected String getCellValue(Property property, int row, int col) {
     if (property==null)
       return "";
     if (property instanceof Entity) 
@@ -315,6 +315,16 @@ public class PropertyTableWidget extends JPanel  {
     if (property instanceof PropertySex) 
       return Character.toString(((PropertySex)property).getDisplayValue().charAt(0));
     return property.getDisplayValue();
+  }
+  
+  protected boolean getCellAlignment(Property property, int row, int col) {
+    if (property instanceof Entity) 
+      return false;
+    if (property instanceof PropertyDate) 
+      return false;
+    if (property instanceof PropertyNumericValue) 
+      return false;
+    return true;
   }
   
   /**
@@ -768,16 +778,9 @@ public class PropertyTableWidget extends JPanel  {
       public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focs, int row, int col) {
         setPadding(1);
         // there's a property here
-        setText(getDisplayValue((Property)value, row, col));
+        setText(getCellValue((Property)value, row, col));
         // figure out alignment
-        int align = SwingConstants.LEFT;
-        if (value instanceof Entity) 
-          align = SwingConstants.RIGHT;
-        if (value instanceof PropertyDate) 
-          align = SwingConstants.RIGHT;
-        if (value instanceof PropertyNumericValue) 
-          align = SwingConstants.RIGHT;
-        setHorizontalAlignment(align);
+        setHorizontalAlignment(getCellAlignment((Property)value, row, col) ? SwingConstants.LEFT : SwingConstants.RIGHT);
         // background?
         if (selected) {
           setBackground(table.getSelectionBackground());
