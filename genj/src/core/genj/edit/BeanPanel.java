@@ -48,7 +48,9 @@ import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -309,11 +311,12 @@ public class BeanPanel extends JPanel {
    */
   private void createPropertiesTab(Property root, Set<String> beanifiedTags) {
     
-    JPanel tab = new JPanel(new GridLayout(0,2));
+    JPanel tab = new JPanel(new GridBagLayout());
     tab.setOpaque(false);
     
     MetaProperty[] nested = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
     Arrays.sort(nested);
+    int row = 0;
     for (MetaProperty meta : nested) {
       // ignore if we have a layout for a property specific tab
       if (getLayout(meta)!=null)
@@ -326,9 +329,20 @@ public class BeanPanel extends JPanel {
       // ignore if already beanified
       if (!beanifiedTags.add(meta.getTag()))
         continue;
-      tab.add(new JLabel(meta.getName(), meta.getImage(), SwingConstants.LEFT));
-      tab.add(createBean(root, new TagPath(root.getTag()+":"+meta.getTag()), meta, null));
+      tab.add(
+        new JLabel(meta.getName(), meta.getImage(), SwingConstants.LEFT),
+        new GridBagConstraints(0,row,1,1,1,0,GridBagConstraints.CENTER,1,new Insets(0,0,0,0),0,0)
+      );
+      tab.add(
+        createBean(root, new TagPath(root.getTag()+":"+meta.getTag()), meta, null),
+        new GridBagConstraints(1,row,1,1,1,0,GridBagConstraints.CENTER,1,new Insets(0,0,0,0),0,0)
+      );
+      row++;
     }
+    tab.add(
+        new JLabel(),
+        new GridBagConstraints(0,row,1,1,1,1,GridBagConstraints.CENTER,1,new Insets(0,0,0,0),0,0)
+      );
     
     tabs.addTab("", MetaProperty.IMG_CUSTOM, tab);
   }
