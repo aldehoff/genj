@@ -58,7 +58,7 @@ public class ReferencesBean extends PropertyBean {
           PropertyXRef ref = (PropertyXRef)property;
           if (ref.isTransient())
             ref = ref.getTarget();
-          return Gedcom.getName(ref.getTag());
+          return Gedcom.getName(ref.getTag()) + " (" + ref.getTargetEntity().getEntity().getId() +")";
         }
         if (property instanceof PropertyEvent) {
           return property.getPropertyName();
