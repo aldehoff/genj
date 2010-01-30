@@ -29,6 +29,7 @@ import genj.util.swing.UnitGraphics;
 import gj.model.Node;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -39,6 +40,8 @@ import java.util.Collection;
  * The renderer knowing how to render the content of tree's model
  */
 public class ContentRenderer {
+  
+  /*package*/ Font font = null;
 
   /** shape color for indis */
   /*package*/ Color cIndiShape = null;
@@ -62,6 +65,7 @@ public class ContentRenderer {
    * Render the content
    */
   public void render(UnitGraphics g, Model model) {  
+
     // translate to center
     Rectangle bounds = model.getBounds();
     g.translate(-bounds.getX(), -bounds.getY());
@@ -158,6 +162,7 @@ public class ContentRenderer {
     Rectangle r = g.getRectangle(r2d);
     r.x+=2;r.y+=2;r.width-=4;r.height-=4;
     g.setColor(Color.black);
+    g.setFont(font);
     renderer.render(g.getGraphics(), (Entity)content, r);
     // restore clip&transformation
     g.popTransformation();    

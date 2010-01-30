@@ -317,8 +317,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     if (contentFont.equals(set)) return;
     // remember
     contentFont = set;
-    // reset renderers
-    tag2renderer.clear();
     // show
     repaint();
   }
@@ -579,19 +577,12 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   private EntityRenderer getEntityRenderer(String tag) {
     EntityRenderer result = tag2renderer.get(tag);
     if (result==null) { 
-      result = createEntityRenderer(tag);
+      result = new EntityRenderer(getBlueprint(tag));
       tag2renderer.put(tag,result);
     }
     return result;
   }
   
-  /**
-   * Create a renderer
-   */
-  /*package*/ EntityRenderer createEntityRenderer(String tag) {
-    return new EntityRenderer(getBlueprint(tag), contentFont);
-  }
-
   /**
    * @see genj.io.Filter#accept(Property)
    */
@@ -850,6 +841,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
         selection = true;
       
       // init renderer
+      contentRenderer.font           = contentFont;
       contentRenderer.cIndiShape     = (Color)colors.get("indis");
       contentRenderer.cFamShape      = (Color)colors.get("fams");
       contentRenderer.cArcs          = (Color)colors.get("arcs");

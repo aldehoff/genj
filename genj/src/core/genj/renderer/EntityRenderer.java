@@ -50,6 +50,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Segment;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Position.Bias;
@@ -108,27 +109,16 @@ public class EntityRenderer {
   /** current graphics context */
   private Graphics2D graphics;
   
+  private Font plain,bold,italic;
+  
   /**
    * Constructor
    */  
   public EntityRenderer(Blueprint bp) {
-    this(bp, Options.getInstance().getDefaultFont());
-  }
     
-  /**
-   * Constructor
-   */  
-  public EntityRenderer(Blueprint bp, Font font) {
-
     // we wrap the html in html/body
     StringBuffer html = new StringBuffer();
-    html.append("<html><head><style type=\"text/css\">");
-    if (font!=null) {
-      html.append(" body { font-family: \""+font.getFamily()+"\"; font-size: "+font.getSize()+"pt; } "    );
-    }
-    html.append(" table { border-style: solid;}" );
-    html.append(" td  { border-style: solid;  }" );
-    html.append("</style></head><body>");
+    html.append("<html<body>");
     html.append(bp.getHTML());
     html.append("</body></html>");
 
@@ -169,10 +159,22 @@ public class EntityRenderer {
    */
   public void render(Graphics g, Entity e, Rectangle r) {
 
+    // keep the entity and graphics
+    entity = e;
+    graphics = (Graphics2D)g;
+    
+    // see http://www.3rd-evolution.de/tkrammer/docs/java_font_size.html
+    // While Java assumes 72 dpi screen resolution Windows uses 96 dpi or 120 dpi depending on your font size setting in the display properties. 
+    Font font = g.getFont();
+    if (!EnvironmentChecker.isMac()) {
+      float factor = DPI.get(graphics).vertical()/72F; 
+      font = font.deriveFont(factor*font.getSize2D());
+    }
+    this.plain = font;
+    this.bold = font.deriveFont(Font.BOLD);
+    this.italic = font.deriveFont(Font.ITALIC);
+
     try {
-      // keep the entity and graphics
-      entity = e;
-      graphics = (Graphics2D)g;
       
       // invalidate views 
       for (PropertyView pv : propViews) 
@@ -213,18 +215,18 @@ public class EntityRenderer {
    * Our own HTMLDocument
    */  
   private class MyHTMLDocument extends HTMLDocument {
+    
     /**
      * @see javax.swing.text.DefaultStyledDocument#getFont(javax.swing.text.AttributeSet)
      */
     public Font getFont(AttributeSet attr) {
-      Font font = super.getFont(attr);
-      // see http://www.3rd-evolution.de/tkrammer/docs/java_font_size.html
-      // While Java assumes 72 dpi screen resolution Windows uses 96 dpi or 120 dpi depending on your font size setting in the display properties. 
-      if (!EnvironmentChecker.isMac()) {
-        float factor = DPI.get(graphics).vertical()/72F; 
-        font = font.deriveFont(factor*font.getSize2D());
-      }
-      return font;
+      
+      Font result = plain;
+      if (StyleConstants.isBold(attr)) 
+        result = bold;
+      else if (StyleConstants.isItalic(attr))
+        result = italic;
+      return result;
     }
   } //MyHTMLDocument
   
@@ -352,6 +354,7 @@ public class EntityRenderer {
     MyView(Element elem) {
       super(elem);
     }
+
     /**
      * @see javax.swing.text.View#viewToModel(float, float, Shape, Bias[])
      */
@@ -364,6 +367,7 @@ public class EntityRenderer {
     public Shape modelToView(int pos, Shape a, Bias b) throws BadLocationException {
       throw new RuntimeException("modelToView() is not supported");
     }
+ 
     /**
      * @see javax.swing.text.View#getBreakWeight(int, float, float)
      */
@@ -392,6 +396,11 @@ public class EntityRenderer {
         preferredSpan = getPreferredSpan();
       }
       return (float)(axis==X_AXIS ? preferredSpan.getWidth() : preferredSpan.getHeight());
+    }
+    
+    @Override
+    public float getMinimumSpan(int axis) {
+      return getPreferredSpan(axis);
     }
     
     /**
@@ -423,25 +432,6 @@ public class EntityRenderer {
       return graphics;
     }
     
-    /**
-     * Get the preferred span
-     */
-    protected abstract Dimension2D getPreferredSpan();
-
-    /** 
-     * Returns the current font
-     */
-    protected Font getFont() {
-      // we cached the font so that it's retrieved only once
-      // instead of using this view's attributes we get the
-      // document's stylesheet and ask it for this view's
-      // attributes
-      if (font==null) {
-        font = doc.getFont(getAttributes());
-      }
-      return font;
-    }
-    
     /** 
      * Returns the current fg color
      */
@@ -458,12 +448,32 @@ public class EntityRenderer {
       return foreground;
     }
     
+    /** 
+     * Returns the current font
+     */
+    protected Font getFont() {
+      // we cached the font so that it's retrieved only once
+      // instead of using this view's attributes we get the
+      // document's stylesheet and ask it for this view's
+      // attributes
+      if (font==null) {
+        font = doc.getFont(doc.getStyleSheet().getViewAttributes(this));
+      }
+      return font;
+    }
+    
+    /**
+     * Get the preferred span
+     */
+    protected abstract Dimension2D getPreferredSpan();
+
     /**
      * Invalidates this views current state
      */
     protected void invalidate() {
-      // invalidate preferred span
+      // invalidate state
       preferredSpan = null;
+      font = null;
       // signal preference change through super
       super.preferenceChanged(this,true,true);
     }
@@ -480,14 +490,14 @@ public class EntityRenderer {
   /**
    * RootView onto a HTML Document
    */
-  private class RootView extends MyView {
-
+  private class RootView extends View {
+  
     /** the root of the html's view hierarchy */
     private View view;
     
     /** the size of the root view */
     private float width, height;
-
+  
     /**
      * Constructor
      */
@@ -495,28 +505,46 @@ public class EntityRenderer {
       
       // block super
       super(null);
-
+  
       // keep view
       this.view = view;
       view.setParent(this);
       
       // done
     }
-
+    
+    @Override
+    public float getPreferredSpan(int axis) {
+      throw new RuntimeException("getPreferredSpan() is not supported");
+    }
+    
+    /**
+     * @see javax.swing.text.View#viewToModel(float, float, Shape, Bias[])
+     */
+    public int viewToModel(float arg0, float arg1, Shape arg2, Bias[] arg3) {
+      throw new RuntimeException("viewToModel() is not supported");
+    }
+    /**
+     * @see javax.swing.text.View#modelToView(int, Shape, Bias)
+     */
+    public Shape modelToView(int pos, Shape a, Bias b) throws BadLocationException {
+      throw new RuntimeException("modelToView() is not supported");
+    }
+    
     /**
      * we don't have any attributes
      */
     public AttributeSet getAttributes() {
       return null;
     }
-
+  
     /**
      * we let the wrapped view do the painting
      */
     public void paint(Graphics g, Shape allocation) {
       view.paint(g, allocation);
     }
-
+  
     /** 
      * our document is the parsed html'
      */
@@ -545,16 +573,12 @@ public class EntityRenderer {
     }
 
     /**
-     * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
+     * we use our kit's view factory
      */
-    protected Dimension2D getPreferredSpan() {
-      return new Dimension2d(
-        (int)view.getPreferredSpan(X_AXIS),
-        (int)view.getPreferredSpan(Y_AXIS)
-      );
+    public ViewFactory getViewFactory() {
+      return factory;
     }
-
-  } //RootView
+  }
 
   /**
    * A view for translating text
@@ -719,6 +743,7 @@ public class EntityRenderer {
       // setup painting attributes and bounds
       g.setColor(super.getForeground());
       g.setFont(super.getFont());
+      //g.setFont(super.getFont());
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       // debug?
       if (isDebug) 
