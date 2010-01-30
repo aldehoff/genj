@@ -72,7 +72,8 @@ public class ScrollPaneWidget extends JScrollPane {
     public void mouseReleased(MouseEvent e) {
       ((JComponent)e.getSource()).setCursor(null);
     }
-    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
     public void mouseDragged(MouseEvent e) {
       Point v = viewport.getViewPosition();
       int dx = e.getPoint().x - start.x; 

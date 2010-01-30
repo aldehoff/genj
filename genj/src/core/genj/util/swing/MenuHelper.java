@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -150,7 +149,7 @@ public class MenuHelper  {
     
     // create a menu item
     JMenuItem result;
-    if (action.getValue(Action.SELECTED_KEY)!=null)
+    if (action.getValue(Action2.KEY_SELECTED)!=null)
       result = new JCheckBoxMenuItem();
     else
       result = new JMenuItem();

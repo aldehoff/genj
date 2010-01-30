@@ -43,7 +43,7 @@ import javax.swing.UIManager;
  */
 public class Action2 extends AbstractAction {
   
-  private final static String 
+  /*package*/ final static String 
     KEY_TEXT = Action.NAME,
     KEY_OLDTEXT = Action.NAME+".old",
     KEY_SHORT_TEXT = "shortname",
@@ -51,7 +51,7 @@ public class Action2 extends AbstractAction {
     KEY_ENABLED = "enabled",
     KEY_MNEMONIC = Action.MNEMONIC_KEY,
     KEY_ICON = Action.SMALL_ICON,
-    KEY_SELECTED = Action.SELECTED_KEY;
+    KEY_SELECTED = "SwingSelectedKey";
     
   private final static Logger LOG = Logger.getLogger("genj.actions");
   

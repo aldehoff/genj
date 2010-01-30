@@ -12,7 +12,7 @@
    <author name="individual" email=""/>
    <author name="contributors" email=""/>
   </authors>
-  <javaversion>1.6</javaversion>
+  <javaversion>1.5</javaversion>
   </info>
   
   <listeners>

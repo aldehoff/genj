@@ -328,8 +328,8 @@ public class Options extends OptionProvider {
         File user_home_genj = new File(EnvironmentChecker.getProperty("user.home.genj", null, "trying to open user.home.genj")) ;
         try {
           Desktop.getDesktop().open(user_home_genj);
-        } catch (IOException e) {
-          Logger.getLogger("genj.io").log(Level.INFO, "can't open user.home.genj", e);
+        } catch (Throwable t) {
+          Logger.getLogger("genj.io").log(Level.INFO, "can't open user.home.genj", t);
         }
       }
     }

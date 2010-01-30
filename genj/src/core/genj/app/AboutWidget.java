@@ -198,8 +198,8 @@ public class AboutWidget extends JTabbedPane {
     public void actionPerformed(ActionEvent event) {
       try {
         Desktop.getDesktop().open(App.LOGFILE);
-      } catch (IOException e) {
-        Logger.getLogger("genj.io").log(Level.INFO, "can't open logfile", e);
+      } catch (Throwable t) {
+        Logger.getLogger("genj.io").log(Level.INFO, "can't open logfile", t);
       }
     }
   }

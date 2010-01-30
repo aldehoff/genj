@@ -382,8 +382,8 @@ public class ReportView extends View {
       } else {
         try {
           Desktop.getDesktop().open(file);
-        } catch (IOException e) {
-          Logger.getLogger("genj.report").log(Level.INFO, "can't open "+file, e);
+        } catch (Throwable t) {
+          Logger.getLogger("genj.report").log(Level.INFO, "can't open "+file, t);
           output.add("*** can't open file "+file);
         }
         return;

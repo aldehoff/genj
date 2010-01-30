@@ -455,8 +455,8 @@ import javax.print.attribute.standard.OrientationRequested;
     if (file!=null)
       try {
         Desktop.getDesktop().open(new File(file));
-      } catch (IOException e) {
-        LOG.log(Level.FINE, "can't open "+file, e);
+      } catch (Throwable t) {
+        LOG.log(Level.FINE, "can't open "+file, t);
       }
     
   }

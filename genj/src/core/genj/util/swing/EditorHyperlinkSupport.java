@@ -63,7 +63,11 @@ public class EditorHyperlinkSupport implements HyperlinkListener {
   }
   
   protected void handleHyperlink(String link) throws IOException, URISyntaxException {
-    Desktop.getDesktop().browse(new URI(link));
+    try {
+      Desktop.getDesktop().browse(new URI(link));
+    } catch (Throwable t) {
+      LOG.log(Level.INFO, "can't browse link "+link, t);
+    }
   }
 
 }

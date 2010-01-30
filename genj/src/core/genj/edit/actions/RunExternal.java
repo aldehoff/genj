@@ -54,8 +54,8 @@ public class RunExternal extends Action2 {
       return;
     try {
       Desktop.getDesktop().open(file);
-    } catch (IOException e) {
-      Logger.getLogger("genj.edit.actions").log(Level.INFO, "can't open "+file, e);
+    } catch (Throwable t) {
+      Logger.getLogger("genj.edit.actions").log(Level.INFO, "can't open "+file, t);
     }
   }
   
