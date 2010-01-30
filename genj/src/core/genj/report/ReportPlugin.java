@@ -44,6 +44,7 @@ import java.util.logging.Level;
  */
 public class ReportPlugin implements ActionProvider, WorkbenchListener {
   
+  private final static Resources RESOURCES = Resources.get(ReportPlugin.class);
   private final static int MAX_HISTORY = 5;
 
   private boolean showReportPickerOnOpen = true;
@@ -211,7 +212,7 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
           else {
             Action2.Group catgroup = categories.get(cat);
             if (catgroup==null) {
-              catgroup = new Action2.Group("Report ("+cat+")", report.getIcon());
+              catgroup = new Action2.Group(RESOURCES.getString("title")+" ("+cat+")", report.getIcon());
               categories.put(cat, catgroup);
             }
             catgroup.add(run);
