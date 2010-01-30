@@ -317,14 +317,14 @@ public class DateWidget extends JPanel {
    * @see javax.swing.JComponent#requestFocus()
    */
   public void requestFocus() {
-    getComponent(1).requestFocus();
+    getComponent(0).requestFocus();
   }
 
   /**
    * @see javax.swing.JComponent#requestFocusInWindow()
    */
   public boolean requestFocusInWindow() {
-    return getComponent(1).requestFocusInWindow();
+    return getComponent(0).requestFocusInWindow();
   }
 
   /**
