@@ -34,6 +34,7 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
 import genj.util.ChangeSupport;
+import genj.util.Registry;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
@@ -80,6 +81,8 @@ import javax.swing.event.ChangeListener;
  * A panel for laying out beans for an entity
  */
 public class BeanPanel extends JPanel {
+  
+  private final static Registry REGISTRY = Registry.get(BeanPanel.class);
 
   private static final String
     PROXY_PROPERTY_ROOT = "beanpanel.bean.root",
@@ -287,6 +290,9 @@ public class BeanPanel extends JPanel {
         parse(detail, root, root, descriptor, beanifiedTags);
 
       if (isShowTabs) {
+        
+        String restoreTab = REGISTRY.get("tab", "0");
+
         // create tab for relationships of root
         createReferencesTabs(root);
         
@@ -298,6 +304,21 @@ public class BeanPanel extends JPanel {
   
         // create a tab for links to create new
         createLinkTab(root, beanifiedTags);
+
+        // restore visible tab
+        try {
+          tabs.setSelectedIndex(Integer.parseInt(restoreTab));
+        } catch (Throwable t) {
+          for (Component c : tabs.getComponents()) {
+            Property prop = (Property)((JComponent)c).getClientProperty(Property.class);
+            if (prop!=null&&prop.getTag().equals(restoreTab)) {
+              tabs.setSelectedComponent(c);
+              break;
+            }
+          }
+        }
+
+        // done
       }
     }
       
@@ -535,6 +556,20 @@ public class BeanPanel extends JPanel {
       // provide a context with delete
       return new ViewContext(prop).addAction(new DelTab(prop));
     }
+    @Override
+    protected void fireStateChanged() {
+      super.fireStateChanged();
+      // remember current tab
+      Component selection = tabs.getSelectedComponent();
+      if (selection!=null) {
+        Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
+        if (prop==null)
+          REGISTRY.put("tab", getSelectedIndex());
+        else
+          REGISTRY.put("tab", prop.getTag());
+      }
+    }
+    
   } //ContextTabbedPane
     
    /** An action for adding 'new tabs' */
