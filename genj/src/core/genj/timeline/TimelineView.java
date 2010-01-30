@@ -25,6 +25,7 @@ import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 import genj.gedcom.time.PointInTime;
 import genj.renderer.DPI;
 import genj.renderer.Options;
@@ -185,6 +186,16 @@ public class TimelineView extends View {
     // create/keep our sub-parts
     model = new Model();
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
+    
+    String[] ps = REGISTRY.get("paths", (String[])null);
+    if (ps!=null) {
+      List<TagPath> paths = new ArrayList<TagPath>(ps.length);
+      for (String p : ps) try {
+        paths.add(new TagPath(p));
+      } catch (Throwable t) {}
+      model.setPaths(paths);
+    }
+    
     content = new Content();
     ruler = new Ruler();
     
@@ -233,6 +244,7 @@ public class TimelineView extends View {
     REGISTRY.put("filter"     , model.getPaths());
     REGISTRY.put("centeryear" , (float)centeredYear);
     REGISTRY.put("color", colors);
+    REGISTRY.put("paths", model.getPaths());
     
     String[] ignored = new String[ignoredAlmanacCategories.size()];
     for (int i=0;i<ignored.length;i++)
@@ -710,5 +722,5 @@ public class TimelineView extends View {
     }
     
   }
-  
+
 } //TimelineView
