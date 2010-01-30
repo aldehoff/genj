@@ -576,7 +576,7 @@ public class ReportView extends View {
 
       // .. choose file
       JFileChooser chooser = new JFileChooser(".");
-      chooser.setDialogTitle("Save Output");
+      chooser.setDialogTitle(getTip());
       chooser.setFileFilter(new FileFilter() {
         @Override
         public boolean accept(File f) {
