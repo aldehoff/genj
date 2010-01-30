@@ -1562,7 +1562,6 @@ public class Workbench extends JPanel implements SelectionSink {
     @Override
     protected JDialog createDialog() {
       JDialog dialog = super.createDialog();
-      dialog.setUndecorated(true);
       if (context.getGedcom()!=null);
         updateTitle(dialog, context.getGedcom()!=null ? context.getGedcom().getName() : "");
       return dialog;
