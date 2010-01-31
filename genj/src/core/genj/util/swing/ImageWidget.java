@@ -166,7 +166,7 @@ public class ImageWidget extends JPanel {
         reader.read(0, reader.getDefaultReadParam());
         
       } catch (Throwable t) {
-        LOG.log(Level.FINE, "Loading "+source+" failed with "+t.getMessage(), t);
+        LOG.log(Level.FINER, "Loading "+source+" failed with "+t.getMessage(), t);
         
         // blank image
         keepCachedImage(source, null);
