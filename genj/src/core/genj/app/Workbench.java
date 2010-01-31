@@ -1062,11 +1062,15 @@ public class Workbench extends JPanel implements SelectionSink {
     public void processStarted(Workbench workbench, Trackable process) {
       remove(2);
       add(new ProgressWidget(process),BorderLayout.EAST);
+      revalidate();
+      repaint();
     }
 
     public void processStopped(Workbench workbench, Trackable process) {
       remove(2);
       add(heap,BorderLayout.EAST);
+      revalidate();
+      repaint();
     }
     
     private void update(Gedcom gedcom) {

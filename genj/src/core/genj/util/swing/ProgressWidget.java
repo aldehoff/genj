@@ -22,6 +22,7 @@ package genj.util.swing;
 import genj.util.Trackable;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,6 +48,8 @@ public class ProgressWidget extends JPanel {
   /** timer */
   private Timer timer;
   
+  private Dimension minPreferredSize;
+  
   /**
    * Constructor
    */
@@ -71,10 +74,23 @@ public class ProgressWidget extends JPanel {
         // update progress bar      
         progress.setValue(track.getProgress());
         progress.setString(track.getState());
+        revalidate();
+        repaint();
       }
     });
        
     // done
+  }
+  
+  @Override
+  public Dimension getPreferredSize() {
+    Dimension oldMin = minPreferredSize;
+    minPreferredSize = super.getPreferredSize();
+    if (oldMin!=null) {
+      minPreferredSize.width = Math.max(minPreferredSize.width+16, oldMin.width);
+      minPreferredSize.height= Math.max(minPreferredSize.height, oldMin.height);
+    }
+    return minPreferredSize;
   }
   
   /**
