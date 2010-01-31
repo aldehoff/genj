@@ -25,19 +25,17 @@
     <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
     <tstamp><format property="now.long" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
   	
-    <loadproperties srcfile="./build.properties">
-    	<filterchain>
-          <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]+([^\s]+)[\s]*\$$" replace="version=\1-${now.short}" flags="i" byline="true"/>
-          <replaceregex pattern="^version[\s]*=[\s]*\$Name:[\s]*\$$" replace="version=HEAD-${now.short}" flags="i" byline="true"/>
-          <replaceregex pattern="^version[\s]*=[\s]*$" replace="" flags="i"/>
-    	</filterchain>
-    </loadproperties>
+    <loadproperties srcfile="./build.properties"/>
 
   	<property name="version" value="${now.short}"/>
     <property name="build" value="${version} ${now.long} ${user.name}"/>
   	
     <echo level="info">version = ${version}</echo>
     <echo level="info">build = ${build}</echo>
+  	
+  	<echo file="./build/version.properties">
+  		version = ${version}
+    </echo>
     	
   	<echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>

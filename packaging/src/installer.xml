@@ -44,11 +44,11 @@
  </native>
  
  <resources>
-  <res id="LicencePanel.licence" src="./app/doc/gpl.txt"/>
-  <res id="shortcutSpec.xml" src="./src/installer/shortcuts.xml" />
-  <res id="Unix_shortcutSpec.xml" src="./src/installer/shortcuts-unix.xml" />
-  <res id="Installer.image" src="./src/installer/GenJ.png" />
-  <res src="./src/installer/registry.xml" id="RegistrySpec.xml"/>
+  <res id="LicencePanel.licence" src="@dir.genj@/doc/gpl.txt"/>
+  <res id="shortcutSpec.xml" src="./src/shortcuts.xml" />
+  <res id="Unix_shortcutSpec.xml" src="./src/shortcuts-unix.xml" />
+  <res id="Installer.image" src="./src/GenJ.png" />
+  <res src="./src/registry.xml" id="RegistrySpec.xml"/>
  </resources> 
 
  <panels>
@@ -66,7 +66,7 @@
   <pack name="Application" required="yes">
     <description>The minimum required for running GenealogyJ</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_app-@version@.zip" unpack="true"/>
-    <file targetdir="$INSTALL_PATH" src="src/installer/genj.ico"/>
+    <file targetdir="$INSTALL_PATH" src="src/genj.ico"/>
    </pack>
 
   <pack name="Geography View" required="no" preselected="yes">

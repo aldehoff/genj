@@ -5,25 +5,19 @@
 
   <path id="project.class.path">
     <pathelement path="contrib/jump/jump.jar"/>
-    <pathelement path="${dir.app}/build/classes/core"/>
-    <pathelement path="${dir.app}/build/classes/contrib"/>
-    <pathelement path="${dir.app}/lib/spin-1.5.jar"/>
+    <pathelement path="${dir.genj}/build/classes/core"/>
+    <pathelement path="${dir.genj}/build/classes/contrib"/>
+    <pathelement path="${dir.genj}/lib/spin-1.5.jar"/>
     <pathelement path="./build/classes/core"/>
   </path>
-
+	
   <!--
    Initialization
    -->
   <target name="init">
 
-    <fail unless="dir.app" message="Please specify dir.app in build.properties"/>
-    <echo level="info">Calling GenJ Application build in ${dir.app}</echo>
-    <ant dir="${dir.app}" target="compile"/>
-
-    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
-  	<property name="version" value="${now.short}"/>
-  	<echo level="info">version = ${version}</echo>
-
+    <fail unless="dir.genj" message="Please specify dir.genj in build.properties"/>
+  	
     <echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>
     <mkdir dir="./build/lib"/>
@@ -34,7 +28,7 @@
   <!--
    Compilation
    -->
-  <target name="compile" depends="init">
+  <target name="compile" depends="init, compile.genj">
 
     <mkdir dir="./build/classes/core"/>
     <javac srcdir="src/core" destdir="./build/classes/core"
@@ -49,6 +43,19 @@
     </javac>
 
   </target>
+	
+  <!--
+   Nested Project - genj
+   -->  
+  <target name="compile.genj" depends="init">
+  	
+    <echo level="info">Calling GenJ Application build in ${dir.genj}</echo>
+    <ant dir="${dir.genj}" inheritall="false" target="compile"/>
+	
+    <loadproperties srcfile="${dir.genj}/build/version.properties"/>
+    <echo level="info">version = ${version}</echo>
+  </target>
+
 
   <!--
    Cleaning

@@ -6,24 +6,18 @@
    -->
   <target name="init">
 
-    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
+    <loadproperties srcfile="build.properties"/>
+
+  	<fail unless="dir.izpack" message="need dir.izpack defined in build.properties"/>
+    <fail unless="dir.genj" message="need dir.genj defined in build.properties"/>
+    <fail unless="dir.geo" message="need dir.geo defined in build.properties"/>
   	
-    <loadproperties srcfile="./build.properties">
-    	<filterchain>
-          <replaceregex pattern="^version[\s]*=[\s]*\$[N][a][m][e]:[\s]+([^\s]+)[\s]*\$$" replace="version=\1-${now.short}" flags="i" byline="true"/>
-          <replaceregex pattern="^version[\s]*=[\s]*\$[N][a][m][e]:[\s]*\$$" replace="version=HEAD-${now.short}" flags="i" byline="true"/>
-          <replaceregex pattern="^version[\s]*=[\s]*$" replace="" flags="i"/>
-    	</filterchain>
-    </loadproperties>
-  	
-    <taskdef name="izpack" classpath="${izpack}/lib/standalone-compiler.jar" classname="com.izforge.izpack.ant.IzPackTask"/>
+    <taskdef name="izpack" classpath="${dir.izpack}/lib/standalone-compiler.jar" classname="com.izforge.izpack.ant.IzPackTask"/>
   	  	
-  	<fail unless="version" message="no version information available - check build.properties"/>
-  	<echo level="info">version = ${version}</echo>
-  		
   	<echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>
     <mkdir dir="./build/dist"/>
+    	
   </target>
   
   <!--
@@ -34,51 +28,53 @@
     <delete includeemptydirs="true" failonerror="false">
       <fileset dir="./build" excludes="eclipse/*"/>
     </delete>
-    <ant dir="./geo" inheritall="false" target="clean"/>
-    <ant dir="./app" inheritall="false" target="clean"/>
+    <ant dir="${dir.genj}" inheritall="false" target="clean"/>
+    <ant dir="${dir.geo}" inheritall="false" target="clean"/>
   </target>
   
   <!--
-   Nested Project - App
+   Nested Project - genj
    -->  
-  <target name="dist.app" depends="init">
-  	<ant dir="./app" inheritall="false" target="dist">
-      <property name="version" value="${version}"/>
-    </ant>
+  <target name="dist.genj" depends="init">
+  	<ant dir="${dir.genj}" inheritall="false" target="dist"/>
   	<move todir="./build/dist">
-  		<fileset dir="./app/build/dist/"/>
+  		<fileset dir="${dir.genj}/build/dist/"/>
   	</move>
+    <loadproperties srcfile="${dir.genj}/build/version.properties"/>
+    <echo level="info">version = ${version}</echo>
   </target>
   
   <!--
    Nested Project - Geo
    -->  
-  <target name="dist.geo" depends="dist.app">
-    <ant dir="./geo" inheritall="false" target="dist">
-      <property name="version" value="${version}"/>
-      <property name="dir.app" value="../app"/>
+  <target name="dist.geo" depends="init">
+    <ant dir="${dir.geo}" inheritall="false" target="dist">
+      <property name="dir.genj" value="${dir.genj}"/>
     </ant>
     <move todir="./build/dist">
-      <fileset dir="./geo/build/dist/"/>
+      <fileset dir="${dir.geo}/build/dist/"/>
     </move>
   </target>
   
 	<!-- 
 	izpack packaging
 	-->
-	<target name="dist.installer" depends="init, dist.app, dist.geo">
+	<target name="dist.installer" depends="init, dist.genj, dist.geo">
 		
 		<!-- prepare installer descriptor -->
-	    <copy tofile="./build/installer.xml" file="./src/installer/installer.xml" overwrite="true">
-	      <filterset><filter token="version" value="${version}"/></filterset>
+	    <copy tofile="./build/installer.xml" file="./src/installer.xml" overwrite="true">
+	      <filterset>
+	      	<filter token="version" value="${version}"/>
+          <filter token="dir.genj" value="${dir.genj}"/>
+	      </filterset>
 	    </copy>
 
 	    <!-- build jar installer -->
-	    <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="${izpack}"/>
+	    <izpack input="./build/installer.xml" output="./build/dist/genj_install-${version}.jar" installerType="standard" basedir="." izpackdir="${dir.izpack}"/>
 	    
 	    <!-- build windows installer -->
-	    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2exe/izpack2exe.exe">
-	      <env key="path" path="${izpack}/utils/wrappers/izpack2exe"/>
+	    <exec dir="${basedir}\build\dist" executable="${dir.izpack}/utils/wrappers/izpack2exe/izpack2exe.exe">
+	      <env key="path" path="${dir.izpack}/utils/wrappers/izpack2exe"/>
 	      <arg value='--file=genj_install-${version}.jar'/>
 	      <arg value='--output=setup.exe'/>
 	      <arg value='--no-upx'/>
@@ -95,8 +91,8 @@
 		
 		<delete dir="./build/dist/${macapp}"/>
 		
-	    <exec dir="${basedir}\build\dist" executable="${izpack}/utils/wrappers/izpack2app/izpack2app.exe">
-	      <env key="path" path="${izpack}/utils/wrappers/izpack2app"/>
+	    <exec dir="${basedir}\build\dist" executable="${dir.izpack}/utils/wrappers/izpack2app/izpack2app.exe">
+	      <env key="path" path="${dir.izpack}/utils/wrappers/izpack2app"/>
 	      <arg value='genj_install-${version}.jar'/>
 	      <arg value='${macapp}'/>
 	    </exec>
