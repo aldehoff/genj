@@ -10,5 +10,5 @@
 <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="gj.shell.Shell"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="&quot;${workspace_loc}/GraphJ/save/tree1.xml&quot; -maximized"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="GraphJ"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="graphj"/>
 </launchConfiguration>
