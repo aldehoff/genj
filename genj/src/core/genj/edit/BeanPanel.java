@@ -538,7 +538,9 @@ public class BeanPanel extends JPanel {
     tab.setOpaque(false);
     
     parse(tab, root, prop, descriptor, null);
-    tabs.addTab(meta.getName() + prop.format("{ $y}"), prop.getImage(false), tab, meta.getInfo());
+    
+    String name = prop.getValue(new TagPath(".:TYPE"), meta.getName());
+    tabs.addTab(name + prop.format("{ $y}"), prop.getImage(false), tab, meta.getInfo());
 
     // done
   }
