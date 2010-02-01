@@ -81,6 +81,12 @@ public class ReferencesBean extends PropertyBean {
   }
   
   @Override
+  public void removeNotify() {
+    REGISTRY.put("refcols", table.getColumnLayout());
+    super.removeNotify();
+  }
+  
+  @Override
   protected void commitImpl(Property property) {
     // noop
   }
@@ -96,6 +102,7 @@ public class ReferencesBean extends PropertyBean {
       model = getModel(prop);
       
     table.setModel(model);
+    table.setColumnLayout(REGISTRY.get("refcols",""));
   }
   
   private Model getModel(Property root) {

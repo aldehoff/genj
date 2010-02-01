@@ -69,6 +69,12 @@ public class RelationshipsBean extends PropertyBean {
   }
   
   @Override
+  public void removeNotify() {
+    REGISTRY.put("relcols", table.getColumnLayout());
+    super.removeNotify();
+  }
+  
+  @Override
   protected void commitImpl(Property property) {
     // noop
   }
@@ -87,6 +93,7 @@ public class RelationshipsBean extends PropertyBean {
       model = getModel((Fam)prop);
       
     table.setModel(model);
+    table.setColumnLayout(REGISTRY.get("relcols",""));
   }
   
   private Model getModel(Fam fam) {
