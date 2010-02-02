@@ -19,6 +19,7 @@ package launcher;
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
@@ -190,8 +191,12 @@ public class Launcher {
     private Image image;
     
     private Splash(Image image) {
-      super(null);
       
+      // Java 1.6 allows to pass a null-owner to the available java.awt.Window constructors
+      // while Java 1.5 doesn't. The no-owner arg constructor is only for java.awt.* package
+      // classes so to make this work in 1.5 we use a silent Frame as argument
+      super(new Frame());
+
       instance = this;
 
       // grab image and load it
