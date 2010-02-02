@@ -211,11 +211,13 @@ public class Options extends OptionProvider {
       Resources resources = getResources();
 
       // init 'em
-      languages = new String[codes.length];
-      for (int i=0;i<languages.length;i++) {
+      String[] ss = new String[codes.length];
+      for (int i=0;i<ss.length;i++) {
         String language = resources.getString("option.language."+codes[i], false);
-        languages[i] = language!=null ? language : codes[i];
+        ss[i] = language!=null ? language : codes[i];
       }
+      
+      languages = ss;
     }
     // done
     return languages;

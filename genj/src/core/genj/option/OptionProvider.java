@@ -56,14 +56,13 @@ public abstract class OptionProvider {
   /**
    * Static Accessor - all options available from OptionProviders
    */
-  public static List<Option> getAllOptions() {  
+  public synchronized static List<Option> getAllOptions() {  
 
     // known?
     if (options!=null)
       return options;    
   
-    // collect    
-    options = new ArrayList<Option>(32);
+    List<Option> ops = new ArrayList<Option>(32);
   
     // prepare options
     Iterator<OptionProvider> providers = lookupProviders();
@@ -76,13 +75,15 @@ public abstract class OptionProvider {
       for (Option option : provider.getOptions()) {
         try {
           option.restore();
-          options.add(option);
+          ops.add(option);
         } catch (Throwable t) {
           t.printStackTrace();
         }
       }
       // next provider
     }
+    
+    options = ops;
     
     // done
     return options;

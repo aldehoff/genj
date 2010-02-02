@@ -290,7 +290,7 @@ public class TableView extends View {
     public int getNumRows() {
       // cache entities if not there yet
       if (rows==null) 
-        rows = new ArrayList<Entity>(getGedcom().getEntities(mode.getTag()));
+        rows = new ArrayList<Entity>(super.getGedcom().getEntities(mode.getTag()));
       // ready 
       return rows.size();
     }

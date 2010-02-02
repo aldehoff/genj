@@ -9,8 +9,8 @@ import genj.gedcom.Gedcom;
 import genj.report.Report;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
@@ -32,9 +32,10 @@ public class ReportExec extends Report {
       return;
 
     // run it
+    BufferedReader in = null;
     try {
       Process process = Runtime.getRuntime().exec(cmd);
-      BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      in = new BufferedReader(new InputStreamReader(process.getInputStream()));
       while (true) {
         String line = in.readLine();
         if (line==null) break;
@@ -42,6 +43,8 @@ public class ReportExec extends Report {
       }
     } catch (IOException ioe) {
       println(translate("Error", ioe.getMessage()));
+    } finally {
+      try { in.close(); } catch (Throwable t) {};
     }
 
     // done

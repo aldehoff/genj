@@ -238,7 +238,7 @@ public class PropertyTest extends TestCase {
     
     Property birt = indi.addProperty("BIRT", "");
     Property date = birt.addProperty("DATE", "25 MAY 1970");
-    Property plac = birt.addProperty("PLAC", "Rendsburg");
+    birt.addProperty("PLAC", "Rendsburg");
     
     // normal: have date and place all public -> get all
     assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));

@@ -536,7 +536,6 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     }
     
     void remove(Property prop, Stack<Context> stack) {
-      List<Property> list = Collections.singletonList(prop);
       // parse stack
       for (ListIterator<Context> it = stack.listIterator(); it.hasNext(); ) {
         Context ctx = it.next();

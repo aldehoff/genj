@@ -405,7 +405,7 @@ public class SortableTableModel extends AbstractTableModel {
             Color color = c == null ? Color.GRAY : c.getBackground();             
             // In a compound sort, make each succesive triangle 20% 
             // smaller than the previous one. 
-            int dx = (int)(size/2*Math.pow(0.8, priority));
+            int dx = (int)(Math.pow(0.8, priority)*size/2);
             int dy = descending ? dx : -dx;
             // Align icon (roughly) with font baseline. 
             y = y + 5*size/6 + (descending ? -dy : 0);

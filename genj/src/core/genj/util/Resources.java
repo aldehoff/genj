@@ -53,7 +53,7 @@ public class Resources {
   private static Map instances = new HashMap();
 
   /** the mapping key, resource  */
-  private Map key2string;
+  private volatile Map key2string;
   private List keys;
 
   /** the package name this resource is for */

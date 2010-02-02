@@ -50,7 +50,7 @@ public class PropertyAssociation extends PropertyXRef {
     
     // check its parent
     Property parent = target.getParent();
-    if (target==null)
+    if (parent==null)
       return super.getDisplayValue();
     
     // collect some info e.g.

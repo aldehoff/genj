@@ -74,7 +74,7 @@ public class EntityView extends View implements ContextProvider {
   /** whether we do antialiasing */
   private boolean isAntialiasing = true;
   
-  private GedcomListener callback = new GedcomListenerAdapter() {
+  private transient GedcomListener callback = new GedcomListenerAdapter() {
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
       if (context.getEntity()==entity)
         setContext(new Context(context.getGedcom()), true);
@@ -195,7 +195,7 @@ public class EntityView extends View implements ContextProvider {
         isAntialiasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
       );
 
-    renderer.render(g, context!=null ? context.getEntity() : null, new Rectangle(0,0,bounds.width,bounds.height));
+    renderer.render(g, context.getEntity(), new Rectangle(0,0,bounds.width,bounds.height));
   }
 
   /** 

@@ -357,10 +357,6 @@ import swingx.docking.Docked;
       if (context==null||workbench==null)
         return null;
       
-      List<? extends Property> properties = context.getProperties();
-      List<? extends Entity> entities = context.getEntities();
-      Gedcom gedcom = context.getGedcom();
-
       // make sure any existing popup is cleared
       MenuSelectionManager.defaultManager().clearSelectedPath();
       

@@ -93,13 +93,10 @@ public class PropertyChild extends PropertyXRef {
     } catch (ClassCastException ex) {
       throw new GedcomException(resources.getString("error.noenclosingfam"));
     }
-    Indi father = fam.getHusband();
-    Indi mother = fam.getWife();
 
     // Prepare some VARs
     Property p;
     Property ps[];
-    Gedcom gedcom = getGedcom();
 
     // Look for child (not-existing -> Gedcom throws Exception)
     Indi child = (Indi)getCandidate();

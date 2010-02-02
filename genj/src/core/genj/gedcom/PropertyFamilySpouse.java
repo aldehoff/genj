@@ -75,7 +75,6 @@ public class PropertyFamilySpouse extends PropertyXRef {
 
     // Prepare some VARs
     Property p;
-    Gedcom gedcom = getGedcom();
 
     // Look for family (not-existing -> Gedcom throws Exception)
     Fam fam = (Fam)getCandidate();

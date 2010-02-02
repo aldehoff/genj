@@ -231,11 +231,8 @@ public class SelectEntityWidget extends JPanel {
     // fallback to none?
     if (set==null)
       listWidget.setSelectedItem(none!=null ? none : null);
-    // applicable?
-    if (!(set instanceof Entity)||!set.getTag().equals(type))
-      return;
-    // set it
-    listWidget.setSelectedItem(set);
+    else if (set.getTag().equals(type))
+      listWidget.setSelectedItem(set);
   }
   
   /**

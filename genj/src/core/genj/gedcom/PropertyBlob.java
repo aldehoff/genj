@@ -165,7 +165,7 @@ public class PropertyBlob extends Property implements MultiLineProperty, IconVal
   /**
    * Sets a property value line
    */
-  public void setValue(String value) {
+  public synchronized void setValue(String value) {
     
     String old = getValue();
 

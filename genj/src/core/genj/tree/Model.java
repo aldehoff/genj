@@ -396,7 +396,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
    * Whether we're hiding descendants of given entity
    */
   /*package*/ boolean isHideDescendants(Indi indi) {
-    return hideDescendants.contains(indi);
+    return hideDescendants.contains(indi.getTag());
   }
   
   /**

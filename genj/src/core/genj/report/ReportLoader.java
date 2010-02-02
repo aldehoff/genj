@@ -51,7 +51,7 @@ public class ReportLoader {
   private boolean isReportsInClasspath = false;
   
   /** a singleton */
-  private static ReportLoader singleton;
+  private volatile static ReportLoader singleton;
   
   /**
    * Clears the report loader's state effectively forcing a reload

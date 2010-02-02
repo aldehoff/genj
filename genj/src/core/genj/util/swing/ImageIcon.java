@@ -187,7 +187,6 @@ public class ImageIcon extends javax.swing.ImageIcon {
     if (result != null) 
       return result;
     
-    GrayscaleFilter filter = new GrayscaleFilter();
     ImageProducer prod = new FilteredImageSource(getImage().getSource(), GRAYSCALE_FILTER);
     Image grayImage = Toolkit.getDefaultToolkit().createImage(prod);
     result = new ImageIcon(grayImage);

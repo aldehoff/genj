@@ -35,6 +35,8 @@ public class Context {
 
   @Override
   public boolean equals(Object obj) {
+    if (!(obj instanceof Context))
+      return false;
     Context that = (Context)obj;
     return this.gedcom==that.gedcom && this.entities.equals(that.entities) 
       && this.properties.equals(that.properties);

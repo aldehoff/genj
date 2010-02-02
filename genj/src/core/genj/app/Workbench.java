@@ -443,9 +443,10 @@ public class Workbench extends JPanel implements SelectionSink {
       // .. make backup
       if (file.exists()) {
         File bak = new File(file.getAbsolutePath() + "~");
-        if (bak.exists())
-          bak.delete();
-        file.renameTo(bak);
+        if (bak.exists()&&!bak.delete())
+          throw new GedcomIOException("Couldn't delete backup file " + bak.getName(), -1);
+        if (!file.renameTo(bak))
+          throw new GedcomIOException("Couldn't create backup for " + file.getName(), -1);
       }
 
       // .. and now !finally! move from temp to result
@@ -1566,7 +1567,7 @@ public class Workbench extends JPanel implements SelectionSink {
     @Override
     protected JDialog createDialog() {
       JDialog dialog = super.createDialog();
-      if (context.getGedcom()!=null);
+      if (context.getGedcom()!=null)
         updateTitle(dialog, context.getGedcom()!=null ? context.getGedcom().getName() : "");
       return dialog;
     }

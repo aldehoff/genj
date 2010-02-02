@@ -59,7 +59,7 @@ public class FileBean extends PropertyBean {
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
   
-  private ActionListener doPreview = new ActionListener() {
+  private transient ActionListener doPreview = new ActionListener() {
     public void actionPerformed(ActionEvent e) {
       
       // remember directory

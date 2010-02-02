@@ -71,7 +71,7 @@ import spin.Spin;
   private BeanPanel beanPanel;
   private JPanel buttonPanel;
   
-  private GedcomListener callback = new Callback();
+  private transient GedcomListener callback = new Callback();
 
   /**
    * Constructor
@@ -244,7 +244,7 @@ import spin.Spin;
     while (focus!=null&&!(focus instanceof PropertyBean))
       focus = focus.getParent();
     
-    if (!(focus instanceof PropertyBean))
+    if (focus==null)
       return null;
     
     return SwingUtilities.isDescendingFrom(focus, this) ? (PropertyBean)focus : null;

@@ -189,7 +189,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * Sets this property's value
    */
-  public void setValue(String value) {
+  public synchronized void setValue(String value) {
 
     String old = getValue();
 

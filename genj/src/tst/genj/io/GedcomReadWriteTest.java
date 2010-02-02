@@ -161,6 +161,8 @@ public class GedcomReadWriteTest extends TestCase {
     while (true) {
       left.mark(256);
       lineLeft = left.readLine();
+      if (lineLeft==null)
+        throw new Error();
       if (lineLeft.startsWith("0")) break;
     }
     left.reset();
@@ -168,6 +170,8 @@ public class GedcomReadWriteTest extends TestCase {
     while (true) {
       right.mark(256);
       lineRight = right.readLine();
+      if (lineRight==null)
+        throw new Error();
       if (lineRight.startsWith("0")) break;
     }
     right.reset();

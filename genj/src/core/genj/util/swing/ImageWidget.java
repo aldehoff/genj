@@ -204,7 +204,6 @@ public class ImageWidget extends JPanel {
       if (cachedDimension==null) {
       
         // check image
-        int w = 0, h = 0;
         Image img = getCachedImage();
         if (img==null) {
           WORKER.add(this);
@@ -212,7 +211,7 @@ public class ImageWidget extends JPanel {
         }
 
         // calculate now and remember
-        cachedDimension = new Dimension(img.getWidth(null), h = img.getHeight(null));
+        cachedDimension = new Dimension(img.getWidth(null), img.getHeight(null));
         
       }
       
@@ -324,13 +323,13 @@ public class ImageWidget extends JPanel {
       if (getWidth()==0||getHeight()==0||!isVisible())
         return;
       
-      // calculate true width/height of updated area
-      width = width*periodX;
-      height = height*periodY;
       
       // show progress
       repaint();
       
+//      // calculate true width/height of updated area
+//      width = width*periodX;
+//      height = height*periodY;
 //      Graphics2D g2d = (Graphics2D)getGraphics();
 //      if (g2d==null)
 //        return;

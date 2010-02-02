@@ -148,8 +148,7 @@ public class BlueprintManager {
     // put it back to where it belongs
     File file = getBlueprintFile(blueprint); 
     File parent = file.getParentFile();
-    parent.mkdirs();
-    if (!parent.exists()||!parent.isDirectory())
+    if ( (!parent.exists()&&!parent.mkdirs()) ||!parent.isDirectory() )
       throw new IOException("Cannot create folder for blueprint "+blueprint.getName());
     
     readwrite(new StringReader(blueprint.getHTML()), new OutputStreamWriter(new FileOutputStream(file), "UTF8"));

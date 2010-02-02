@@ -1336,6 +1336,7 @@ private String put_given_name(Indi person,int length){
 	case 2:
 	    birthstr = "    ";
 	    deathstr = "    ";
+	    break;
 	case 1:
 	    if (death != null){
 		deathstr = year(death);

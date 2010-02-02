@@ -435,7 +435,8 @@ public class ImageSniffer {
    */
   private void skip(int num, InputStream in) throws IOException {
     read += num;
-    in.skip(num);
+    if (num!=in.skip(num))
+      throw new IOException("cannot skip");
   }
 
   /**

@@ -101,12 +101,6 @@ public class ReportDateCalculator extends Report {
     if (calendar!=age.getCalendar())
       return null;
 
-    // grab earlier values
-    int
-      y =  date.getYear (),
-      m = date.getMonth(),
-      d = date.getDay();
-
     // make sure years are not empty (could be on all UNKNOWN PIT)
     if (date.getYear()==PointInTime.UNKNOWN)
 	return null;

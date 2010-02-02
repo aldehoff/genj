@@ -164,7 +164,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     contentFont = REGISTRY.get("font", contentFont);
     
     // grab blueprints
-    BlueprintManager bpm = BlueprintManager.getInstance();
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
       String tag = Gedcom.ENTITIES[t];
       tag2blueprint.put(tag, REGISTRY.get("blueprint."+tag, ""));

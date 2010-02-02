@@ -105,8 +105,6 @@ public class PropertyFamilyChild extends PropertyXRef {
     
     // Look for family
     Fam fam = (Fam)getCandidate();
-    Indi father = fam.getHusband();
-    Indi mother = fam.getWife();
 
     // Make sure the child is not ancestor of the family (father,grandfather,grandgrandfather,...)
     // .. that would introduce a circle

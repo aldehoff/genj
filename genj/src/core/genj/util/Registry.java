@@ -106,9 +106,13 @@ public class Registry {
     // Load settings
     prefix = "";
     properties = new SortingProperties();
+    FileInputStream in = null;
     try {
-      properties.load(new FileInputStream(file));
+      in = new FileInputStream(file);
+      properties.load(in);
     } catch (Exception ex) {
+    } finally {
+      try { in.close(); } catch (Throwable t) {}
     }
   }
 
@@ -704,7 +708,10 @@ public class Registry {
       Registry registry = file2registry.get(file);
       try {
         LOG.fine("Storing registry in file "+file.getAbsolutePath());
-        file.getParentFile().mkdirs();
+        File dir = file.getParentFile();
+        if (!dir.exists()&&!dir.mkdirs())
+          throw new IOException("dir is bad "+dir);
+        
         FileOutputStream out = new FileOutputStream(file);
         registry.properties.store(out, registry.prefix);
         out.flush();

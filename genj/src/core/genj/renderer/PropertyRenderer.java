@@ -350,8 +350,6 @@ public class PropertyRenderer {
       
       // paint
       Graphics2D graphics = (Graphics2D)g;
-      Rectangle clip = g.getClipBounds();
-      
       Font font = g.getFont();
       FontRenderContext context = graphics.getFontRenderContext();
 

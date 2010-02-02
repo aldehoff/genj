@@ -42,8 +42,6 @@ import java.util.List;
    */
   /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
 
-    Entity entity = prop.getEntity();
-
     // check for property by path1
     Property prop1 = prop.getProperty(path1);
     if (prop1==null)

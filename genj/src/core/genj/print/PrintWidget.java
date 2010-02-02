@@ -198,7 +198,6 @@ public class PrintWidget extends JTabbedPane {
       g2d.setRenderingHint(DPI.KEY, dpi);
       Dimension pages = task.getPages(); 
       Dimension2D pageSize = dpi.toPixel(task.getPageSize());
-      Rectangle2D printable = dpi.toPixel(task.getPrintable());
       Rectangle clip = g2d.getClipBounds();
       AffineTransform at = g2d.getTransform();
       for (int y=0;y<pages.height;y++) {

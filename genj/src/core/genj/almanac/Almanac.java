@@ -80,7 +80,7 @@ public class Almanac {
   /** 
    * Singleton Accessor 
    */
-  public static Almanac getInstance() {
+  public static synchronized Almanac getInstance() {
     if (instance==null)
       instance = new Almanac();
     return instance;

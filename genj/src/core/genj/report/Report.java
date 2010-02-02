@@ -202,15 +202,12 @@ public abstract class Report implements Cloneable {
       // in the same package as the instance - problem is that this
       // won't work with our special way of resolving i18n in reports
       // so we have to do that manually
-      if (option instanceof PropertyOption) {
-        PropertyOption poption = (PropertyOption)option;
-        String oname = translateOption(poption.getProperty());
-        if (oname.length()>0) poption.setName(oname);
-        String toolTipKey = poption.getProperty() + ".tip";
-        String toolTip = translateOption(toolTipKey);
-        if (toolTip.length() > 0 && !toolTip.equals(toolTipKey))
-            poption.setToolTip(toolTip);
-      } 
+      String oname = translateOption(option.getProperty());
+      if (oname.length()>0) option.setName(oname);
+      String toolTipKey = option.getProperty() + ".tip";
+      String toolTip = translateOption(toolTipKey);
+      if (toolTip.length() > 0 && !toolTip.equals(toolTipKey))
+        option.setToolTip(toolTip);
       // set default category
       if (option.getCategory()==null)
         option.setCategory(getName());
@@ -511,10 +508,8 @@ public abstract class Report implements Cloneable {
       // to localize the name they base that on a properties file in the
       // same package as the instance - problem is that this won't work
       // with our special way of resolving i18n in reports
-      if (option instanceof PropertyOption) {
-        String oname = translate(prefix+"."+option.getName());
-        if (oname.length()>0) ((PropertyOption)option).setName(oname);
-      }
+      String oname = translate(prefix+"."+option.getName());
+      if (oname.length()>0) option.setName(oname);
     }
 
     // show to user and check for non-ok
@@ -666,9 +661,9 @@ public abstract class Report implements Cloneable {
    * @param prefix String in front of the indented text (can be null)
    */
     public static String getIndent(int level, int spacesPerLevel, String prefix) {
-        String oneLevel = "";
+        StringBuffer oneLevel = new StringBuffer();
         while(oneLevel.length() != spacesPerLevel)
-            oneLevel=oneLevel+" ";
+            oneLevel.append(" ");
         StringBuffer buffer = new StringBuffer(256);
         while (--level>0) {
             buffer.append(oneLevel);

@@ -145,7 +145,7 @@ public class ReportMissingInformation extends Report {
 
 		//check <chr> 
 		tempPlace = (PropertyPlace)indi.getProperty(new TagPath("INDI:CHR:PLAC"));
-		if((tempPlace == null) || (tempPlace.toString() =="")) {
+		if((tempPlace == null) || (tempPlace.toString().length()==0)) {
 			flagOk2 = false;
 		}		
 			

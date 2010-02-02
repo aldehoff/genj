@@ -355,7 +355,7 @@ import javax.print.attribute.standard.OrientationRequested;
    */
   private PrintRequestAttribute getAttribute(Class<? extends PrintRequestAttribute> category) {
     // check our attributes first
-    Object result = (PrintRequestAttribute)attributes.get(category);
+    Object result = attributes.get(category);
     if (result instanceof PrintRequestAttribute)
       return (PrintRequestAttribute)result;
     // make sure we know the media if this is not Media category

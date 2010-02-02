@@ -19,6 +19,7 @@
  */
 package genj.gedcom;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Stack;
 import java.util.regex.Pattern;
@@ -78,7 +79,7 @@ public class TagPath {
       // next token
       String tag = path[i];
       if (tag.length()==0) 
-        throw new IllegalArgumentException("Empty tag in '"+path+"' is not valid");
+        throw new IllegalArgumentException("Empty tag in '"+Arrays.toString(path)+"' is not valid");
 
       // remember
       set(i, tag);

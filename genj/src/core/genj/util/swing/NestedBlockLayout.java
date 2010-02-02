@@ -217,7 +217,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         throw new SAXException("unexpected /element");
 
       // pop last
-      Block block = (Block)stack.pop();
+      stack.pop();
       
       // are we done?
       if (stack.isEmpty())

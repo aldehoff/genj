@@ -111,8 +111,7 @@ public class App {
       
       // create our home directory
       File home = new File(EnvironmentChecker.getProperty("user.home.genj", null, "determining home directory"));
-      home.mkdirs();
-      if (!home.exists()||!home.isDirectory()) 
+      if ( !(home.exists()||home.mkdirs()) && !home.isDirectory()) 
         throw new IOException("Can't initialize home directoy "+home);
       
       // Setup File Logging and check environment

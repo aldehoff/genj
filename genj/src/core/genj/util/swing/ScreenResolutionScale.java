@@ -138,9 +138,7 @@ public class ScreenResolutionScale extends JComponent {
   private void paintLabel(Graphics graphcs) {
     graphcs.setColor(Color.black);
     FontMetrics fm = graphcs.getFontMetrics(); 
-    int
-      fh = fm.getHeight(),
-      fd = fh - fm.getDescent();
+    int fh = fm.getHeight();
     
     NumberFormat nf = NumberFormat.getInstance();
     nf.setMaximumFractionDigits(2);

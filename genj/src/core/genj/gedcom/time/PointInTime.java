@@ -488,7 +488,9 @@ public class PointInTime implements Comparable {
       if (calendar==GREGORIAN&&isComplete()) {
         java.util.Calendar c = java.util.Calendar.getInstance();
         c.set(year, month, day+1);
-        buffer.append(NUMERICDATEFORMAT.format(c.getTime()));
+        synchronized (NUMERICDATEFORMAT) {
+          buffer.append(NUMERICDATEFORMAT.format(c.getTime()));
+        }
         return buffer;
       }
       
@@ -508,7 +510,7 @@ public class PointInTime implements Comparable {
     if (year!=UNKNOWN) {
       if (month!=UNKNOWN) {
         if (day!=UNKNOWN) {
-          buffer.append(new Integer(day+1));
+          buffer.append(day+1);
         }
         buffer.append(format==FORMAT_GEDCOM ? calendar.getMonth(month) : calendar.getDisplayMonth(month, format==FORMAT_SHORT));
       }

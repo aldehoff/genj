@@ -50,7 +50,7 @@ class ReportSelector extends JPanel {
     
     super(new BorderLayout());
 
-    Resources res = Resources.get(this);
+    final Resources res = Resources.get(this);
     
     final JTabbedPane right = new JTabbedPane();
     right.add(res.getString("title"), detail);
@@ -64,8 +64,13 @@ class ReportSelector extends JPanel {
     list.setSelectionListener(new ReportSelectionListener() {
       public void valueChanged(Report report) {
         detail.setReport(report);
-        right.setTitleAt(0, report.getName());
-        options.setOptions(report!=null ? report.getOptions() : Collections.EMPTY_LIST);
+        if (report!=null) {
+          right.setTitleAt(0, report.getName());
+          options.setOptions(report.getOptions());
+        } else {
+          right.setTitleAt(0, res.getString("report.options"));
+          options.setOptions(Collections.EMPTY_LIST);          
+        }
       }
     });
     
