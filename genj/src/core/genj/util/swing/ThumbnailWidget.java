@@ -160,6 +160,9 @@ public class ThumbnailWidget extends JComponent {
       );
 
       // outline and text
+      g.setColor(Color.DARK_GRAY);
+      g2d.fill(new Rectangle(p.x+thumbBorder.left + thumbSize + thumbBorder.right, p.y+2, 2, thumbBorder.top  + thumbSize + thumbBorder.bottom));
+      g2d.fill(new Rectangle(p.x+2, p.y+thumbBorder.top + thumbSize + thumbBorder.bottom, thumbBorder.left + thumbSize + thumbBorder.right, 2));
       g.setColor(Color.WHITE);
       g2d.fill(new Rectangle(
         p.x, p.y,
