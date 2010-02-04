@@ -35,6 +35,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+
 /**
  * A property bean for managing multimedia files (and blobs) associated with properties 
  */
@@ -47,6 +49,7 @@ public class MediaBean extends PropertyBean {
    * Constructor
    */
   public MediaBean() {
+    setBorder(BorderFactory.createLoweredBevelBorder());
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new ScrollPaneWidget(thumbs));
     setPreferredSize(new Dimension(32,32));
