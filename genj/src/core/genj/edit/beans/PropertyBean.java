@@ -158,7 +158,8 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
       cache = new ArrayList<PropertyBean>();
       BEANCACHE.put(bean.getClass(), cache);
     }
-    cache.add(bean);
+    if (cache.size()<CACHE_PRELOAD)
+      cache.add(bean);
   }
 
   /**
