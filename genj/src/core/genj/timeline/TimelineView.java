@@ -33,6 +33,7 @@ import genj.renderer.RenderSelectionHintKey;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.WordBuffer;
+import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
 import genj.util.swing.ViewPortAdapter;
@@ -51,8 +52,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -200,9 +199,16 @@ public class TimelineView extends View {
     ruler = new Ruler();
     
     // all that fits in a scrollpane
-    scrollContent = new JScrollPane(new ViewPortAdapter(content));
+    scrollContent = new ScrollPaneWidget(new ViewPortAdapter(content));
     scrollContent.setColumnHeaderView(new ViewPortAdapter(ruler));
-    scrollContent.getHorizontalScrollBar().addAdjustmentListener(new ChangeCenteredYear());
+    scrollContent.getViewport().addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        // easy : translation and remember
+        int x = scrollContent.getViewport().getViewPosition().x + scrollContent.getViewport().getSize().width/2;
+        centeredYear = pixel2year(x);
+      }
+    });
    
     // layout
     setLayout(new BorderLayout());
@@ -422,6 +428,7 @@ public class TimelineView extends View {
     centeredYear = year;
     int x = (int)((year-model.min)*DPC.getX()*cmPerYear) - scrollContent.getViewport().getWidth()/2;
     scrollContent.getHorizontalScrollBar().setValue(x);
+    scrollContent.getHorizontalScrollBar().setUnitIncrement((int)(DPC.getX()*cmPerYear));
   }
   
   /**
@@ -653,43 +660,19 @@ public class TimelineView extends View {
   } //Content
   
   /**
-   * Listening to changes on the scrollpane
-   */
-  private class ChangeCenteredYear implements AdjustmentListener {
-    private boolean mute = false;
-    /** @see java.awt.event.AdjustmentListener#adjustmentValueChanged(AdjustmentEvent) */
-    public void adjustmentValueChanged(AdjustmentEvent e) {
-      // swing's scrollbar doesn't distinguish between user-input
-      // scrolling and propagated changes in its model (e.g. because of resize)
-      // we only update the centeredYear if getValueIsAdjusting()==true
-      if (scrollContent.getHorizontalScrollBar().getValueIsAdjusting()) {
-        // easy : translation and remember
-        int x = scrollContent.getHorizontalScrollBar().getValue() + scrollContent.getViewport().getWidth()/2;
-        centeredYear = pixel2year(x);
-      } else {
-        // no adjusting means we scroll back to 'our' remembered center
-        // that means scrolling with the bar's buttons will not work!
-        if (!mute) try {
-          mute = true;
-          scroll2year(centeredYear);
-        } finally {
-          mute = false;
-        }
-      }
-    }
-  } //ChangeScroll 
-  
-  /**
    * Listening to changes on cm per year (slider)
    */
   private class ChangeCmPerYear implements ChangeListener {
     /** @see javax.swing.event.ChangeListener#stateChanged(ChangeEvent) */
     public void stateChanged(ChangeEvent e) {
+      double center = centeredYear;
       // get the new value
       cmPerYear = MIN_CM_PER_YEAR + 
          Math.exp(sliderCmPerYear.getValue()*0.1)/Math.exp(10) * (MAX_CM_PER_YEAR-MIN_CM_PER_YEAR);
       // update model
       model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
+      // re-center
+      scroll2year(center);
       // done
     }
   } //ChangeCmPerYear
