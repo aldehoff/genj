@@ -27,15 +27,13 @@ import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ScrollPaneWidget;
+import genj.util.swing.ThumbnailWidget;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.JComponent;
 
 /**
  * A property bean for managing multimedia files (and blobs) associated with properties 
@@ -43,17 +41,14 @@ import javax.swing.JComponent;
 public class MediaBean extends PropertyBean {
   
   private final static ImageIcon IMG_PREV = Images.imgBack, IMG_NEXT = Images.imgForward;
-  
-  private int thumbSize = 48;
-  private List<PropertyFile> files = new ArrayList<PropertyFile>();
-  private Canvas canvas = new Canvas();
+  private ThumbnailWidget thumbs = new ThumbnailWidget();
   
   /**
    * Constructor
    */
   public MediaBean() {
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, new ScrollPaneWidget(canvas));
+    add(BorderLayout.CENTER, new ScrollPaneWidget(thumbs));
     setPreferredSize(new Dimension(32,32));
   }
 
@@ -64,12 +59,12 @@ public class MediaBean extends PropertyBean {
   @Override
   protected void setPropertyImpl(Property prop) {
     
-    files.clear();
-    
     // find all contained medias
+    List<File> files = new ArrayList<File>();
+    
     for (PropertyFile file : prop.getProperties(PropertyFile.class)) {
       if (file.getFile()!=null)
-        files.add(file);
+        files.add(file.getFile());
     }
     
     // find all referenced medias
@@ -78,58 +73,13 @@ public class MediaBean extends PropertyBean {
       if (entity instanceof Media) {
         PropertyFile file = ((Media)entity).getFile();
         if (file.getFile()!=null)
-          files.add(file);
+          files.add(file.getFile());
       }
     }
+    
+    thumbs.setFiles(files);
     
   }
   
-  private class Canvas extends JComponent {
-    
-    @Override
-    public Dimension getPreferredSize() {
-      int cols,rows;
-      if (files.isEmpty()) {
-        cols = 0;
-        rows = 0;
-      } else {
-        cols = (int)Math.ceil(Math.sqrt(files.size()));
-        rows = (int)Math.ceil(files.size()/(float)cols);
-      }
-      return new Dimension(cols*thumbSize,rows*thumbSize);
-    }
-    
-    @Override
-    public void paint(Graphics g) {
-      
-      Dimension d = getSize();
-      g.setColor(Color.WHITE);
-      g.fillRect(0, 0, d.width, d.height);
-      
-      if (files.isEmpty())
-        return;
-      
-      int cols = (int)Math.ceil(Math.sqrt(files.size()));
-      int rows = (int)Math.ceil(files.size()/(float)cols);
-      
-      int x = (d.width - (cols*thumbSize))/2;
-      int y = (d.height- (rows*thumbSize))/2;
-      
-      for (int r=0;r<rows;r++) {
-        for (int c=0;c<cols;c++) {
-          
-          if (r*cols+c==files.size()) break;
-          
-          g.setColor(Color.RED);
-          g.fillRect(x+c*thumbSize, y+r*thumbSize, thumbSize, thumbSize);
-          g.setColor(Color.BLUE);
-          g.drawRect(x+c*thumbSize, y+r*thumbSize, thumbSize, thumbSize);
-          
-        }
-      }
-      
-    } //paint
-    
-  } //Canvas
-
+  
 }
