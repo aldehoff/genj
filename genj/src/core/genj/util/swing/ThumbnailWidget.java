@@ -30,6 +30,8 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
@@ -78,43 +80,89 @@ public class ThumbnailWidget extends JComponent {
       repaint();
     }
   });
+  private Thumbnail selection = null;
 
   /**
    * Constructor
    */
   public ThumbnailWidget() {
     addMouseWheelListener(callback);
+    addMouseListener(callback);
   }
   
   /**
    * Set files to show
    */
   public void setFiles(List<File> files) {
+
+    // let folks know about selection
+    Thumbnail oldSelection = selection;
+    if (oldSelection!=null) {
+      selection = null;
+      firePropertyChange("selection", oldSelection, selection);
+    }    
+
+    // keep
+    int oldSize = thumbs.size();
     thumbs.clear();
     for (File file : files)
       thumbs.add(new Thumbnail(file));
+    
+    // show
     revalidate();
     repaint();
+    
+    // signal
+    firePropertyChange("thumbnails", oldSize, thumbs.size());
   }
-
+  
   /**
    * callbacks
    */
-  private class Callback implements MouseWheelListener {
+  private class Callback extends MouseAdapter implements MouseWheelListener {
     public void mouseWheelMoved(MouseWheelEvent e) {
       if (e.isControlDown()) {
-        thumbSize = Math.max(64, thumbSize -= e.getWheelRotation() * 10);
+        thumbSize = Math.max(64, thumbSize -= e.getWheelRotation() * 32);
         revalidate();
         repaint();
       } else {
         if (getParent() instanceof JViewport) {
           JViewport port = (JViewport)getParent();
           Point v = port.getViewPosition();
-          int dy = -(thumbSize+thumbBorder.top+thumbBorder.bottom+thumbPadding)*e.getWheelRotation();
-          v.y = Math.min(Math.max(0, v.y-dy), Math.max(0,getHeight()-port.getHeight())); 
+          v.y = Math.min(Math.max(0, v.y+port.getSize().height*e.getWheelRotation()), Math.max(0,getHeight()-port.getHeight())); 
           port.setViewPosition(v);
         }
       }
+    }
+    @Override
+    public void mousePressed(MouseEvent e) {
+      // change selection
+      Thumbnail old = selection;
+      Point p = e.getPoint();
+      for (Thumbnail thumb : thumbs) {
+        if (thumb.renderDest.contains(p)) {
+          // already selected?
+          if (selection==thumb)
+            break;
+          // select and end
+          selection = thumb;
+          repaint();
+          firePropertyChange("selection", old, selection);
+          return;
+        }
+      }
+    }
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      // double-click?
+      if (selection!=null&&selection.size.width>0&&selection.size.height>0&&e.getClickCount()==2&&getParent() instanceof JViewport) {
+        final JViewport port = (JViewport)getParent();
+        Dimension size = fit(selection.size, port.getSize());
+        thumbSize = Math.max(size.width, size.height);
+        revalidate();
+        repaint();
+      }
+      // done
     }
   }
 
@@ -165,26 +213,26 @@ public class ThumbnailWidget extends JComponent {
       g2d.fill(new Rectangle(p.x+thumbBorder.left + thumbSize + thumbBorder.right, p.y+2, 2, thumbBorder.top  + thumbSize + thumbBorder.bottom));
       g2d.fill(new Rectangle(p.x+2, p.y+thumbBorder.top + thumbSize + thumbBorder.bottom, thumbBorder.left + thumbSize + thumbBorder.right, 2));
       g.setColor(Color.WHITE);
-      g2d.fill(new Rectangle(
-        p.x, p.y,
-        thumbBorder.left + thumbSize + thumbBorder.right,
-        thumbBorder.top  + thumbSize + thumbBorder.bottom
-      ));
+      g2d.fill(new Rectangle(p.x, p.y, thumbBorder.left + thumbSize + thumbBorder.right, thumbBorder.top  + thumbSize + thumbBorder.bottom));
       g.setColor(Color.BLACK);
       GraphicsHelper.render(g2d, thumb.file.getName(), new Rectangle(
           p.x, p.y + thumbBorder.top+thumbSize, thumbBorder.left+thumbSize+thumbBorder.right, thumbBorder.bottom),
           0.5,0.5
       );
+      
+      // selection
+      if (thumb==selection) {
+        g.setColor(Color.BLUE);
+        g2d.draw(new Rectangle(p.x, p.y, thumbBorder.left + thumbSize + thumbBorder.right, thumbBorder.top  + thumbSize + thumbBorder.bottom));
+      }
 
       // content
       Rectangle content = new Rectangle(p.x + thumbBorder.left, p.y + thumbBorder.top, thumbSize,thumbSize);
-      if (g.getClipBounds().intersects(content)) {
-        if (!thumb.render(g2d, content)) {
-          // schedule for update
-          Validation v = new Validation(thumb);
-          if (!executorQueue.contains(v))
-            executor.execute(v);
-        }
+      if (!thumb.render(g2d, content)) {
+        // schedule for update
+        Validation v = new Validation(thumb);
+        if (!executorQueue.contains(v))
+          executor.execute(v);
       }
 
       // next
@@ -242,8 +290,8 @@ public class ThumbnailWidget extends JComponent {
     private Dimension size = new Dimension();
     private Dimension imageSize = new Dimension();
     private Rectangle imageView = new Rectangle();
-    private Dimension requestedSize = new Dimension();
-    private Rectangle requestedView = new Rectangle();
+    private Rectangle renderDest = new Rectangle();
+    private Rectangle renderSource = new Rectangle();
 
     public Thumbnail(File file) {
       this.file = file;
@@ -254,8 +302,8 @@ public class ThumbnailWidget extends JComponent {
       if (image.get() == null)
         return false;
       // bad size
-      if ( (imageSize.width<size.width&&imageSize.width<requestedSize.width) 
-          || (imageSize.height<size.height&&imageSize.height<requestedSize.height))
+      if ( (imageSize.width<size.width&&imageSize.width<renderDest.width) 
+          || (imageSize.height<size.height&&imageSize.height<renderDest.height))
         return false;
       // bad view?
       // TODO
@@ -265,14 +313,18 @@ public class ThumbnailWidget extends JComponent {
     synchronized boolean render(Graphics2D g, Rectangle bounds) {
 
       // we request as much as we can get
-      requestedSize.setSize(bounds.width, bounds.height);
+      renderDest.setBounds(bounds);
+
+      // clip saving us?
+      if (!g.getClipBounds().intersects(renderDest))
+        return true;
 
       // if we know how big the picture is we can figure out how much to view
       if (size.width <= 0 || size.height <= 0)
         return false;
 
       // now we can ask for a specific available view
-      requestedView.setBounds(0, 0, size.width, size.width);
+      renderSource.setBounds(0, 0, size.width, size.width);
 
       // something to render?
       Image img = image.get();
@@ -324,14 +376,14 @@ public class ThumbnailWidget extends JComponent {
           size.setSize(reader.getWidth(0), reader.getHeight(0));
 
           // anything requested?
-          if (requestedView.width == 0 || requestedView.height == 0)
+          if (renderSource.width == 0 || renderSource.height == 0)
             return;
 
           // match requested size
           if (param.canSetSourceRenderSize()) {
-            param.setSourceRenderSize(fit(size, requestedSize));
+            param.setSourceRenderSize(fit(size, renderSource.getSize()));
           } else {
-            param.setSourceSubsampling(Math.max(1, (int) Math.floor(size.width / requestedSize.width)), Math.max(1, (int) Math.floor(size.height / requestedSize.height)), 0, 0);
+            param.setSourceSubsampling(Math.max(1, (int) Math.floor(size.width / renderDest.width)), Math.max(1, (int) Math.floor(size.height / renderDest.height)), 0, 0);
           }
         }
 
