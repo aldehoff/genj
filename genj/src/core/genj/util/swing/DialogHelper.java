@@ -339,5 +339,22 @@ public class DialogHelper {
       for (Component c : ((Container)component).getComponents()) 
         setOpaque(c, set);
   }
+
+  /**
+   * Check containment
+   * @param component component to look for
+   * @param container container to look in
+   * @return true if component.getParent()*==container
+   */
+  public static boolean isContained(Component component, final Container container) {
+    return container==visitContainers(component, new ComponentVisitor() {
+      @Override
+      public Component visit(Component parent, Component child) {
+        if (parent==container)
+          return parent;
+        return null;
+      }
+    });
+  }
   
 } //AbstractWindowManager

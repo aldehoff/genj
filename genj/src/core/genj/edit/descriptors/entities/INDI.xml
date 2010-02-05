@@ -1,12 +1,12 @@
 <col>
  <row>
   <col>
-   <row><label path="INDI"/><bean path="INDI:NOTE" popup="true"/></row>
+   <row><label path="INDI"/></row>
    <row><bean path="INDI:NAME" wx="0.1"/><bean path="INDI:SEX"/></row>
-   <row><label path="INDI:BIRT"/><bean path="INDI:BIRT:NOTE" popup="true"/><bean path="INDI:BIRT:OBJE:FILE" popup="true"/></row>
+   <row><label path="INDI:BIRT"/></row>
    <row><bean path="INDI:BIRT:DATE"/></row>
    <row><bean path="INDI:BIRT:PLAC" wx="0.1"/></row>
-   <row><label path="INDI:DEAT"/><bean path="INDI:DEAT:NOTE" popup="true"/><bean path="INDI:DEAT:OBJE:FILE" popup="true"/></row>
+   <row><label path="INDI:DEAT"/></row>
    <row><bean path="INDI:DEAT:DATE"/></row>
    <row><bean path="INDI:DEAT:PLAC" wx="0.1"/> </row>
   </col>

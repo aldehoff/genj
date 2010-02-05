@@ -1,5 +1,5 @@
  <col>
-  <row><label path="REPO"/><bean path="REPO:NOTE" popup="true"/></row>
+  <row><label path="REPO"/></row>
   <row><label path="REPO:NAME"/><bean path="REPO:NAME" wx="0.1"/></row>
   <row><label path="REPO:ADDR"/></row>
   <row><bean path="REPO:ADDR" wx="0.2" wy="0.2"/></row>

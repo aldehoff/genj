@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -67,7 +68,7 @@ public class ThumbnailWidget extends JComponent {
   private final static BlockingQueue<Runnable> executorQueue = new LinkedBlockingDeque<Runnable>();
   private final static Executor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, executorQueue);
 
-  private int thumbSize = 48, thumbPadding = 10;
+  private int thumbSize = 64, thumbPadding = 10;
   private Insets thumbBorder = new Insets(4,4,24,4);
   private List<Thumbnail> thumbs = new ArrayList<Thumbnail>();
   private Callback callback = new Callback();
@@ -170,9 +171,10 @@ public class ThumbnailWidget extends JComponent {
         thumbBorder.top  + thumbSize + thumbBorder.bottom
       ));
       g.setColor(Color.BLACK);
-      GraphicsHelper.render(g2d, thumb.file.getName(), 
-          p.x + (thumbBorder.left+thumbSize+thumbBorder.right)/2, 
-          p.y + (thumbBorder.top +thumbSize) + thumbBorder.bottom/2, 0.5, 0.5);
+      GraphicsHelper.render(g2d, thumb.file.getName(), new Rectangle(
+          p.x, p.y + thumbBorder.top+thumbSize, thumbBorder.left+thumbSize+thumbBorder.right, thumbBorder.bottom),
+          0.5,0.5
+      );
 
       // content
       Rectangle content = new Rectangle(p.x + thumbBorder.left, p.y + thumbBorder.top, thumbSize,thumbSize);
@@ -236,7 +238,7 @@ public class ThumbnailWidget extends JComponent {
   private class Thumbnail implements IIOReadUpdateListener {
 
     private File file;
-    private Image image;
+    private SoftReference<Image> image = new SoftReference<Image>(null);
     private Dimension size = new Dimension();
     private Dimension imageSize = new Dimension();
     private Rectangle imageView = new Rectangle();
@@ -249,7 +251,7 @@ public class ThumbnailWidget extends JComponent {
 
     private synchronized boolean isValid() {
       // image at all?
-      if (image == null)
+      if (image.get() == null)
         return false;
       // bad size
       if ( (imageSize.width<size.width&&imageSize.width<requestedSize.width) 
@@ -273,7 +275,8 @@ public class ThumbnailWidget extends JComponent {
       requestedView.setBounds(0, 0, size.width, size.width);
 
       // something to render?
-      if (imageSize.width == 0 || imageSize.height == 0)
+      Image img = image.get();
+      if (img==null || imageSize.width == 0 || imageSize.height == 0)
         return false;
 
       // sanitize what's renderer
@@ -282,15 +285,15 @@ public class ThumbnailWidget extends JComponent {
       // render what we have
       Shape clip = g.getClip();
       g.clip(bounds);
-      draw(g, bounds.x, bounds.y, bounds.width, bounds.height, 0, 0, imageSize.width, imageSize.height);
+      draw(img, g, bounds.x, bounds.y, bounds.width, bounds.height, 0, 0, imageSize.width, imageSize.height);
       g.setClip(clip);
       
       // done
       return isValid();
     }
     
-    private void draw(Graphics2D g, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh) {
-      g.drawImage(image, (int) sx, (int) sy, (int) (sx + sw), (int) (sy + sh), (int) dx, (int) dy, (int) (dx + dw), (int) (dy + dh), null);
+    private void draw(Image img, Graphics2D g, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh) {
+      g.drawImage(img, (int) sx, (int) sy, (int) (sx + sw), (int) (sy + sh), (int) dx, (int) dy, (int) (dx + dw), (int) (dy + dh), null);
     }
 
     void validate() {
@@ -298,7 +301,7 @@ public class ThumbnailWidget extends JComponent {
       if (isValid()) 
         return;
 
-      LOG.fine("Loading " + file);
+      LOG.finer("Loading " + file);
 
       // load it
       InputStream in = null;
@@ -332,11 +335,11 @@ public class ThumbnailWidget extends JComponent {
           }
         }
 
-        Image newImage = reader.read(0, param);
+        Image img = reader.read(0, param);
         
         synchronized (this) {
-          image = newImage;
-          imageSize.setSize(image.getWidth(null), image.getHeight(null));
+          image = new SoftReference<Image>(img);
+          imageSize.setSize(img.getWidth(null), img.getHeight(null));
         }
 
       } catch (Throwable t) {
@@ -347,8 +350,8 @@ public class ThumbnailWidget extends JComponent {
 
         // setup fallback
         synchronized (this) {
-          image = IMG;
-          size.setSize(image.getWidth(null), image.getHeight(null));
+          image = new SoftReference<Image>(IMG);
+          size.setSize(IMG.getWidth(null), IMG.getHeight(null));
           imageSize.setSize(size);
           imageView.setBounds(0, 0, size.width, size.height);
         }
@@ -370,10 +373,10 @@ public class ThumbnailWidget extends JComponent {
       // done
     }
 
-    public synchronized void imageUpdate(ImageReader source, BufferedImage theImage, int minX, int minY, int width, int height, int periodX, int periodY, int[] bands) {
-      if (image==null) synchronized (this) {
-        image = theImage;
-        imageSize.setSize(image.getWidth(null), image.getHeight(null));
+    public synchronized void imageUpdate(ImageReader source, BufferedImage img, int minX, int minY, int width, int height, int periodX, int periodY, int[] bands) {
+      if (image.get()==null) synchronized (this) {
+        image = new SoftReference<Image>(img);
+        imageSize.setSize(img.getWidth(null), img.getHeight(null));
         repaint.start();
       }
     }

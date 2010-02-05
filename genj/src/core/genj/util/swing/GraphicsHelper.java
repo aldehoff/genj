@@ -21,11 +21,34 @@ package genj.util.swing;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
 
 public class GraphicsHelper {
 
+  /**
+   * render text
+   */
+  public static void render(Graphics2D graphics, String str, Rectangle2D box, double xalign, double yalign) {
+    
+    FontMetrics fm = graphics.getFontMetrics();
+    Rectangle2D r = fm.getStringBounds(str, graphics);
+    LineMetrics lm = fm.getLineMetrics(str, graphics);
+    
+    float
+      w = (float)r.getWidth(),
+      h = (float)r.getHeight();
+      
+    double x = Math.max(box.getX(), box.getCenterX() - w*xalign);
+    double y = Math.max(box.getY(), box.getCenterY() - h*yalign + h - lm.getDescent()); 
+    
+    Shape clip = graphics.getClip();
+    graphics.clip(box);
+    graphics.drawString(str, (float)x, (float)y);
+    graphics.setClip(clip);
+  }
+  
   /**
    * render text
    */

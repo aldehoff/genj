@@ -1,5 +1,5 @@
   <col>
-   <row><label path="OBJE"/><bean path="OBJE:NOTE" popup="true"/></row>
+   <row><label path="OBJE"/></row>
    <row><label path="OBJE:TITL" gedcom="5.5"/><bean path="OBJE:TITL" gedcom="5.5" wx="0.1"/></row>
    <row><label path="OBJE:FORM" gedcom="5.5"/><bean path="OBJE:FORM"  gedcom="5.5" wx="0.1"/></row>
    <row><bean path="OBJE:BLOB"  gedcom="5.5" wx="0.1" wy="0.2"/></row>
