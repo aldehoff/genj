@@ -66,7 +66,6 @@ public class ScrollPaneWidget extends JScrollPane {
     @Override
     public void mousePressed(MouseEvent e) {
       start.setLocation(e.getPoint());
-      ((JComponent)e.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
     @Override
     public void mouseReleased(MouseEvent e) {
@@ -75,6 +74,7 @@ public class ScrollPaneWidget extends JScrollPane {
     public void mouseMoved(MouseEvent e) {
     }
     public void mouseDragged(MouseEvent e) {
+      ((JComponent)e.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
       Point v = viewport.getViewPosition();
       int dx = e.getPoint().x - start.x; 
       int dy = e.getPoint().y - start.y;
