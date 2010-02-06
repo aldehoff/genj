@@ -322,10 +322,10 @@ public class App {
       result.append(".");
       result.append(record.getSourceMethodName());
       result.append(":");
-      String msg = record.getMessage();
+      String msg = record.getMessage().replace('\n', ',');
       Object[] parms = record.getParameters();
       if (parms==null||parms.length==0)
-        result.append(record.getMessage());
+        result.append(msg);
       else 
         result.append(MessageFormat.format(msg, parms));
       result.append(System.getProperty("line.separator"));
