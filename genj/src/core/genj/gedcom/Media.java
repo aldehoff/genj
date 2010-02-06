@@ -46,15 +46,20 @@ public class Media extends Entity {
    * Overriden - special case for file association
    */
   public boolean addFile(File file) {
-    List<PropertyBlob> pfiles = getProperties(PropertyBlob.class);
-    PropertyBlob pfile;
-    if (pfiles.isEmpty()) {
-      pfile = (PropertyBlob)addProperty("BLOB", "");
+
+    // check for blob
+    if (!getMetaProperty().allows("BLOB")) 
+      return super.addFile(file);
+      
+    List<PropertyBlob> blobs = getProperties(PropertyBlob.class);
+    PropertyBlob blob;
+    if (blobs.isEmpty()) {
+      blob = (PropertyBlob)addProperty("BLOB", "");
     } else {
-      pfile = (PropertyBlob)pfiles.get(0);
+      blob = (PropertyBlob)blobs.get(0);
     }
     // keep it
-    return pfile.addFile(file);
+    return blob.addFile(file);
   }
 
   /**
@@ -63,6 +68,14 @@ public class Media extends Entity {
   public PropertyFile getFile() {
     Property file = getProperty("FILE", true);
     return (file instanceof PropertyFile) ? (PropertyFile)file : null;    
+  }
+  
+  /**
+   * Returns the property file for this OBJE
+   */
+  public PropertyBlob getBlob() {
+    Property blob = getProperty("BLOB", true);
+    return (blob instanceof PropertyBlob) ? (PropertyBlob)blob : null;    
   }
   
   /**
