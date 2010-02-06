@@ -19,6 +19,8 @@
  */
 package genj.util.swing;
 
+import genj.io.InputSource;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -35,12 +37,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -65,7 +66,7 @@ import javax.swing.Timer;
  */
 public class ThumbnailWidget extends JComponent {
   
-  private final static Image IMG = new ImageIcon(ThumbnailWidget.class, "File.png").getImage();
+  public final static Image IMG = new ImageIcon(ThumbnailWidget.class, "File.png").getImage();
   private final static Logger LOG = Logger.getLogger("genj.util.swing");
   private final static BlockingQueue<Runnable> executorQueue = new LinkedBlockingDeque<Runnable>();
   private final static Executor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, executorQueue);
@@ -81,6 +82,7 @@ public class ThumbnailWidget extends JComponent {
     }
   });
   private Thumbnail selection = null;
+  private boolean pendingCenter = false;
 
   /**
    * Constructor
@@ -91,22 +93,36 @@ public class ThumbnailWidget extends JComponent {
   }
   
   /**
-   * Set files to show
+   * Clear all sources
    */
-  public void setFiles(List<File> files) {
+  public void clear() {
+    setSources(null);
+  }
+  
+  public void setSource(InputSource source) {
+    if (source==null)
+      clear();
+    else
+      setSources(Collections.singletonList(source));
+  }
+  
+  /**
+   * Set sources to show
+   */
+  public void setSources(List<InputSource> sources) {
 
-    // let folks know about selection
+    // unselect/let folks know about selection
     Thumbnail oldSelection = selection;
     if (oldSelection!=null) {
       selection = null;
-      firePropertyChange("selection", oldSelection, selection);
+      firePropertyChange("selection", oldSelection.getSource(), null);
     }    
 
     // keep
     int oldSize = thumbs.size();
     thumbs.clear();
-    for (File file : files)
-      thumbs.add(new Thumbnail(file));
+    if (sources!=null) for (InputSource source : sources)
+      thumbs.add(new Thumbnail(source));
     
     // show
     revalidate();
@@ -147,7 +163,7 @@ public class ThumbnailWidget extends JComponent {
           // select and end
           selection = thumb;
           repaint();
-          firePropertyChange("selection", old, selection);
+          firePropertyChange("selection", old!=null ? old.getSource() : null, selection.getSource());
           return;
         }
       }
@@ -158,6 +174,7 @@ public class ThumbnailWidget extends JComponent {
       if (selection!=null&&selection.size.width>0&&selection.size.height>0&&e.getClickCount()==2&&getParent() instanceof JViewport) {
         final JViewport port = (JViewport)getParent();
         Dimension size = fit(selection.size, port.getSize());
+        pendingCenter = true;
         thumbSize = Math.max(size.width, size.height);
         revalidate();
         repaint();
@@ -191,9 +208,6 @@ public class ThumbnailWidget extends JComponent {
     g.setColor(Color.LIGHT_GRAY);
     g.fillRect(0, 0, d.width, d.height);
 
-    if (thumbs.isEmpty())
-      return;
-
     int cols = (int) Math.ceil(Math.sqrt(thumbs.size()));
     int rows = (int) Math.ceil(thumbs.size() / (float) cols);
 
@@ -215,7 +229,7 @@ public class ThumbnailWidget extends JComponent {
       g.setColor(Color.WHITE);
       g2d.fill(new Rectangle(p.x, p.y, thumbBorder.left + thumbSize + thumbBorder.right, thumbBorder.top  + thumbSize + thumbBorder.bottom));
       g.setColor(Color.BLACK);
-      GraphicsHelper.render(g2d, thumb.file.getName(), new Rectangle(
+      GraphicsHelper.render(g2d, thumb.getName(), new Rectangle(
           p.x, p.y + thumbBorder.top+thumbSize, thumbBorder.left+thumbSize+thumbBorder.right, thumbBorder.bottom),
           0.5,0.5
       );
@@ -239,6 +253,17 @@ public class ThumbnailWidget extends JComponent {
       col = (++col) % cols;
       if (col == 0)
         row++;
+    }
+    
+    // a pending center?
+    if (pendingCenter && selection!=null && getParent() instanceof JViewport) {
+      pendingCenter = false;
+      JViewport port = (JViewport)getParent();
+      Point center = new Point(
+          (int)(selection.renderDest.getCenterX()) - port.getSize().width/2,
+          (int)(selection.renderDest.getCenterY()) - port.getSize().height/2
+        );
+      port.setViewPosition(center);
     }
 
   } // paint
@@ -285,7 +310,7 @@ public class ThumbnailWidget extends JComponent {
    */
   private class Thumbnail implements IIOReadUpdateListener {
 
-    private File file;
+    private InputSource source;
     private SoftReference<Image> image = new SoftReference<Image>(null);
     private Dimension size = new Dimension();
     private Dimension imageSize = new Dimension();
@@ -293,8 +318,16 @@ public class ThumbnailWidget extends JComponent {
     private Rectangle renderDest = new Rectangle();
     private Rectangle renderSource = new Rectangle();
 
-    public Thumbnail(File file) {
-      this.file = file;
+    public Thumbnail(InputSource source) {
+      this.source = source;
+    }
+    
+    String getName() {
+      return source.getName();
+    }
+    
+    InputSource getSource() {
+      return source;
     }
 
     private synchronized boolean isValid() {
@@ -344,7 +377,7 @@ public class ThumbnailWidget extends JComponent {
       return isValid();
     }
     
-    private void draw(Image img, Graphics2D g, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh) {
+    void draw(Image img, Graphics2D g, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh) {
       g.drawImage(img, (int) sx, (int) sy, (int) (sx + sw), (int) (sy + sh), (int) dx, (int) dy, (int) (dx + dw), (int) (dy + dh), null);
     }
 
@@ -353,19 +386,19 @@ public class ThumbnailWidget extends JComponent {
       if (isValid()) 
         return;
 
-      LOG.finer("Loading " + file);
+      LOG.finer("Loading " + source.getName());
 
       // load it
       InputStream in = null;
       ImageReader reader = null;
       try {
 
-        in = new FileInputStream(file);
+        in = source.open();
         ImageInputStream iin = ImageIO.createImageInputStream(in);
 
         Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
         if (!iter.hasNext())
-          throw new IOException("no suiteable image reader for " + file);
+          throw new IOException("no suiteable image reader for " + source.getName());
 
         reader = (ImageReader) iter.next();
         reader.setInput(iin, false, false);
@@ -396,9 +429,9 @@ public class ThumbnailWidget extends JComponent {
 
       } catch (Throwable t) {
         if (LOG.isLoggable(Level.FINER))
-          LOG.log(Level.FINER, "Loading " + file + " failed", t);
+          LOG.log(Level.FINER, "Loading " + source.getName() + " failed", t);
         else
-          LOG.log(Level.FINE, "Loading " + file + " failed");
+          LOG.log(Level.FINE, "Loading " + source.getName() + " failed");
 
         // setup fallback
         synchronized (this) {

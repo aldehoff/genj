@@ -26,6 +26,7 @@ import genj.gedcom.Media;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
+import genj.io.InputSource;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
@@ -39,13 +40,13 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.FocusManager;
 import javax.swing.JButton;
+import javax.swing.JToolBar;
 
 /**
  * A property bean for managing multimedia files (and blobs) associated with properties 
@@ -57,6 +58,7 @@ public class MediaBean extends PropertyBean {
   private FocusListener focusChange = new FocusListener();
   private JButton unfocus = new JButton();
   private Property focus = null;
+  private JToolBar tools = new JToolBar();
   
   /**
    * Constructor
@@ -64,10 +66,15 @@ public class MediaBean extends PropertyBean {
   public MediaBean() {
     setBorder(BorderFactory.createLoweredBevelBorder());
     setLayout(new BorderLayout());
+    add(BorderLayout.NORTH, tools);
     add(BorderLayout.CENTER, new ScrollPaneWidget(thumbs));
     setPreferredSize(new Dimension(32,32));
-    
+
+    // prepare unfocus action
     unfocus.setFocusable(false); 
+    tools.add(unfocus);
+    
+    // done
   }
   
   @Override
@@ -107,7 +114,7 @@ public class MediaBean extends PropertyBean {
     
     // clear?
     if (prop==null) {
-      thumbs.setFiles(new ArrayList<File>());
+      thumbs.clear();
       return;
     }
 
@@ -118,20 +125,22 @@ public class MediaBean extends PropertyBean {
     focus = prop;
     
     // update focus indicator
-    remove(unfocus);
     if (focus!=getProperty()) {
+      unfocus.setVisible(true);
       unfocus.setAction(new Unfocus(focus));
       add(BorderLayout.NORTH, unfocus);
+    } else {
+      unfocus.setVisible(false);
     }
-    revalidate();
-    repaint();
+    tools.revalidate();
+    tools.repaint();
     
     // find all contained medias
-    List<File> files = new ArrayList<File>();
+    List<InputSource> files = new ArrayList<InputSource>();
     
     for (PropertyFile file : focus.getProperties(PropertyFile.class)) {
       if (file.getFile()!=null)
-        files.add(file.getFile());
+        files.add(InputSource.get(file.getFile()));
     }
     
     // find all referenced medias
@@ -140,11 +149,11 @@ public class MediaBean extends PropertyBean {
       if (entity instanceof Media) {
         PropertyFile file = ((Media)entity).getFile();
         if (file.getFile()!=null)
-          files.add(file.getFile());
+          files.add(InputSource.get(file.getFile()));
       }
     }
     
-    thumbs.setFiles(files);
+    thumbs.setSources(files);
     
   }
   

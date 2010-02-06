@@ -23,10 +23,11 @@ import genj.edit.actions.RunExternal;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
+import genj.io.InputSource;
 import genj.util.Origin;
-import genj.util.swing.Action2;
 import genj.util.swing.FileChooserWidget;
-import genj.util.swing.ImageWidget;
+import genj.util.swing.ScrollPaneWidget;
+import genj.util.swing.ThumbnailWidget;
 import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
@@ -45,15 +46,15 @@ import java.util.List;
 import javax.swing.JCheckBox;
 
 /**
- * A Proxy knows how to generate interaction components that the user
+ * A proxy knows how to generate interaction components that the user
  * will use to change a property : FILE / BLOB
  */
 public class FileBean extends PropertyBean {
   
   /** preview */
-  private ImageWidget preview = new ImageWidget();
+  private ThumbnailWidget preview = new ThumbnailWidget();
   
-  /** a checkbox as accessory */
+  /** a check as accessory */
   private JCheckBox updateMeta = new JCheckBox(RESOURCES.getString("file.update"), true);
   
   /** file chooser  */
@@ -71,7 +72,7 @@ public class FileBean extends PropertyBean {
         preview.setSource(null);
         return;
       }
-      preview.setSource(new ImageWidget.FileSource(file));
+      preview.setSource(InputSource.get(file));
       
       // calculate relative
       String relative = getProperty().getGedcom().getOrigin().calcRelativeLocation(file.getAbsolutePath());
@@ -94,7 +95,7 @@ public class FileBean extends PropertyBean {
     add(chooser, BorderLayout.NORTH);      
     
     // setup review
-    add(preview, BorderLayout.CENTER);
+    add(new ScrollPaneWidget(preview), BorderLayout.CENTER);
     
     // setup a reasonable preferred size
     setPreferredSize(new Dimension(128,128));
@@ -144,7 +145,7 @@ public class FileBean extends PropertyBean {
       chooser.setFile(file.getValue());
 
       if (property.getValue().length()>0)
-        preview.setSource(new ImageWidget.RelativeSource(property.getGedcom().getOrigin(), property.getValue()));
+        preview.setSource(InputSource.get(property.getGedcom().getOrigin().getFile(file.getValue())));
       else
         preview.setSource(null);
       
@@ -161,12 +162,10 @@ public class FileBean extends PropertyBean {
       chooser.setTemplate(true);
 
       // .. preview
-      preview.setSource(new ImageWidget.ByteArraySource( ((PropertyBlob)property).getBlobData() ));
+      preview.setSource(InputSource.get(blob.getPropertyName(), ((PropertyBlob)property).getBlobData() ));
 
     }
       
-    preview.setZoom(REGISTRY.get("file.zoom", 0)/100F);
-    
     // Done
   }
 
@@ -186,7 +185,7 @@ public class FileBean extends PropertyBean {
 
     // update preview
     File file = getProperty().getGedcom().getOrigin().getFile(value);
-    preview.setSource(file!=null?new ImageWidget.FileSource(file):null);
+    preview.setSource(file!=null?InputSource.get(file):null);
     
     // done
   }
@@ -197,14 +196,6 @@ public class FileBean extends PropertyBean {
   public ViewContext getContext() {
     ViewContext result = super.getContext();
     if (result!=null) {
-      result.addAction(new ActionZoom( 10));
-      result.addAction(new ActionZoom( 25));
-      result.addAction(new ActionZoom( 50));
-      result.addAction(new ActionZoom(100));
-      result.addAction(new ActionZoom(150));
-      result.addAction(new ActionZoom(200));
-      result.addAction(new ActionZoom(  0));
-      
       PropertyFile file = (PropertyFile)getProperty();
       if (file!=null) 
         result.addAction(new RunExternal(file));
@@ -213,29 +204,6 @@ public class FileBean extends PropertyBean {
     return result;
   }
   
-  /**
-   * Action - zoom
-   */
-  private class ActionZoom extends Action2 {
-    /** the level of zoom */
-    private int zoom;
-    /**
-     * Constructor
-     */
-    protected ActionZoom(int zOOm) {
-      zoom = zOOm;
-      setText(zoom==0?RESOURCES.getString("file.zoom.fit"):zoom+"%");
-      setEnabled(zoom != (int)(preview.getZoom()*100));
-    }
-    /**
-     * @see genj.util.swing.Action2#execute()
-     */
-    public void actionPerformed(ActionEvent event) {
-      preview.setZoom(zoom/100F);
-      REGISTRY.put("file.zoom", zoom);
-    }
-  } //ActionZoom
-
   /**
    * Our DnD support
    */
@@ -257,7 +225,7 @@ public class FileBean extends PropertyBean {
         
         List<File> files = (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
         chooser.setFile(files.get(0));
-        preview.setSource(new ImageWidget.FileSource(files.get(0)));
+        preview.setSource(InputSource.get(files.get(0)));
         
         dtde.dropComplete(true);
         
