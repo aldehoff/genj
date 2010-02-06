@@ -170,21 +170,22 @@ public class ThumbnailWidget extends JComponent {
     
     @Override
     public void mouseClicked(MouseEvent e) {
-      // selection?
-      if (selection==null)
+      // double-click/viewport?
+      if (e.getClickCount()!=2||!(getParent() instanceof JViewport))
         return;
-      // double-click?
-      if (e.getClickCount()!=2)
-        return;
+      JViewport port = (JViewport)getParent();
       // check thumbs
       Thumbnail thumb = getThumb(e.getPoint());
-      if (selection==thumb&&selection.size.width>0&&selection.size.height>0&&getParent() instanceof JViewport) {
-        final JViewport port = (JViewport)getParent();
+      if (selection!=null&&selection==thumb&&selection.size.width>0&&selection.size.height>0) {
         Dimension size = fit(selection.size, port.getSize());
         thumbSize = Math.max(size.width, size.height);
         pendingCenter = true;
       } else {
-        thumbSize = 32;
+        Dimension rc = getRowsCols();
+        Dimension dim = port.getSize();
+        int sizex = Math.max(32, port.getSize().width / rc.width -thumbBorder.left-thumbBorder.right);
+        int sizey = Math.max(32, port.getSize().height/ rc.height-thumbBorder.top-thumbBorder.bottom);
+        thumbSize = Math.min(sizex, sizey);
       }
       revalidate();
       repaint();
@@ -203,18 +204,19 @@ public class ThumbnailWidget extends JComponent {
 
   @Override
   public Dimension getPreferredSize() {
-    int cols, rows;
-    if (thumbs.isEmpty()) {
-      cols = 0;
-      rows = 0;
-    } else {
-      cols = (int) Math.ceil(Math.sqrt(thumbs.size()));
-      rows = (int) Math.ceil(thumbs.size() / (float) cols);
-    }
+    Dimension rowsCols = getRowsCols();
     return new Dimension(
-      cols*(thumbSize+thumbBorder.left+thumbBorder.right+thumbPadding), 
-      rows*(thumbSize+thumbBorder.top+thumbBorder.bottom+thumbPadding)
+      rowsCols.width*(thumbSize+thumbBorder.left+thumbBorder.right+thumbPadding), 
+      rowsCols.height*(thumbSize+thumbBorder.top+thumbBorder.bottom+thumbPadding)
     );
+  }
+  
+  private Dimension getRowsCols() {
+    if (thumbs.isEmpty())
+      return new Dimension();
+    int cols = (int) Math.ceil(Math.sqrt(thumbs.size()));
+    int rows = (int) Math.ceil(thumbs.size() / (float) cols);
+    return new Dimension(cols,rows);
   }
 
   @Override
