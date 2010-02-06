@@ -66,13 +66,13 @@ import javax.swing.Timer;
  */
 public class ThumbnailWidget extends JComponent {
   
-  public final static Image IMG = new ImageIcon(ThumbnailWidget.class, "File.png").getImage();
+  public final static ImageIcon IMG = new ImageIcon(ThumbnailWidget.class, "File.png");
   private final static Logger LOG = Logger.getLogger("genj.util.swing");
   private final static BlockingQueue<Runnable> executorQueue = new LinkedBlockingDeque<Runnable>();
   private final static Executor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, executorQueue);
 
   private int thumbSize = 64, thumbPadding = 10;
-  private Insets thumbBorder = new Insets(4,4,24,4);
+  private Insets thumbBorder = new Insets(4,4,32,4);
   private List<Thumbnail> thumbs = new ArrayList<Thumbnail>();
   private Callback callback = new Callback();
   private Timer repaint = new Timer(100, new ActionListener() {
@@ -138,49 +138,67 @@ public class ThumbnailWidget extends JComponent {
   private class Callback extends MouseAdapter implements MouseWheelListener {
     public void mouseWheelMoved(MouseWheelEvent e) {
       if (e.isControlDown()) {
+        // zoom
         thumbSize = Math.max(64, thumbSize -= e.getWheelRotation() * 32);
         revalidate();
         repaint();
       } else {
+        // scroll
         if (getParent() instanceof JViewport) {
           JViewport port = (JViewport)getParent();
           Point v = port.getViewPosition();
           v.y = Math.min(Math.max(0, v.y+port.getSize().height*e.getWheelRotation()), Math.max(0,getHeight()-port.getHeight())); 
           port.setViewPosition(v);
         }
+        return;
       }
     }
+    
     @Override
     public void mousePressed(MouseEvent e) {
       // change selection
       Thumbnail old = selection;
-      Point p = e.getPoint();
-      for (Thumbnail thumb : thumbs) {
-        if (thumb.renderDest.contains(p)) {
-          // already selected?
-          if (selection==thumb)
-            break;
-          // select and end
-          selection = thumb;
-          repaint();
-          firePropertyChange("selection", old!=null ? old.getSource() : null, selection.getSource());
-          return;
-        }
-      }
+      Thumbnail thumb = getThumb(e.getPoint());
+      // none or already selected?
+      if (thumb==null||old==thumb)
+        return;
+      // select and end
+      selection = thumb;
+      repaint();
+      firePropertyChange("selection", old!=null ? old.getSource() : null, selection.getSource());
     }
+    
     @Override
     public void mouseClicked(MouseEvent e) {
+      // selection?
+      if (selection==null)
+        return;
       // double-click?
-      if (selection!=null&&selection.size.width>0&&selection.size.height>0&&e.getClickCount()==2&&getParent() instanceof JViewport) {
+      if (e.getClickCount()!=2)
+        return;
+      // check thumbs
+      Thumbnail thumb = getThumb(e.getPoint());
+      if (selection==thumb&&selection.size.width>0&&selection.size.height>0&&getParent() instanceof JViewport) {
         final JViewport port = (JViewport)getParent();
         Dimension size = fit(selection.size, port.getSize());
-        pendingCenter = true;
         thumbSize = Math.max(size.width, size.height);
-        revalidate();
-        repaint();
+        pendingCenter = true;
+      } else {
+        thumbSize = 32;
       }
+      revalidate();
+      repaint();
       // done
     }
+  }
+  
+  private Thumbnail getThumb(Point pos) {
+    for (Thumbnail thumb : thumbs) {
+      if (thumb.renderDest.contains(pos)) {
+        return thumb;
+      }
+    }
+    return null;
   }
 
   @Override
@@ -260,8 +278,8 @@ public class ThumbnailWidget extends JComponent {
       pendingCenter = false;
       JViewport port = (JViewport)getParent();
       Point center = new Point(
-          (int)(selection.renderDest.getCenterX()) - port.getSize().width/2,
-          (int)(selection.renderDest.getCenterY()) - port.getSize().height/2
+          (int)(Math.max(0, selection.renderDest.getCenterX() - port.getSize().width/2)),
+          (int)(Math.max(0, selection.renderDest.getCenterY() - port.getSize().height/2))
         );
       port.setViewPosition(center);
     }
@@ -435,8 +453,8 @@ public class ThumbnailWidget extends JComponent {
 
         // setup fallback
         synchronized (this) {
-          image = new SoftReference<Image>(IMG);
-          size.setSize(IMG.getWidth(null), IMG.getHeight(null));
+          image = new SoftReference<Image>(IMG.getImage());
+          size.setSize(IMG.getIconWidth(), IMG.getIconHeight());
           imageSize.setSize(size);
           imageView.setBounds(0, 0, size.width, size.height);
         }

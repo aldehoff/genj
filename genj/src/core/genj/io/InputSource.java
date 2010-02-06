@@ -43,9 +43,13 @@ public abstract class InputSource {
   public abstract InputStream open() throws IOException;
   
   public static InputSource get(File file) {
-    return new FileInput(file.getName(), file);
+    return get(file.getName(), file);
   }
 
+  public static InputSource get(String name, File file) {
+    return new FileInput(name, file);
+  }
+  
   public static InputSource get(String name, byte[] bytes) {
     return new ByteInput(name, bytes);
   }

@@ -20,33 +20,25 @@
 package genj.edit.beans;
 
 import genj.edit.Images;
-import genj.gedcom.Context;
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Media;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
 import genj.io.InputSource;
-import genj.util.swing.Action2;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.ThumbnailWidget;
-import genj.view.ContextProvider;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.FocusManager;
-import javax.swing.JButton;
-import javax.swing.JToolBar;
 
 /**
  * A property bean for managing multimedia files (and blobs) associated with properties 
@@ -55,158 +47,69 @@ public class MediaBean extends PropertyBean {
   
   private final static ImageIcon IMG_PREV = Images.imgBack, IMG_NEXT = Images.imgForward;
   private ThumbnailWidget thumbs = new ThumbnailWidget();
-  private FocusListener focusChange = new FocusListener();
-  private JButton unfocus = new JButton();
-  private Property focus = null;
-  private JToolBar tools = new JToolBar();
   
   /**
    * Constructor
    */
   public MediaBean() {
+    
     setBorder(BorderFactory.createLoweredBevelBorder());
     setLayout(new BorderLayout());
-    add(BorderLayout.NORTH, tools);
     add(BorderLayout.CENTER, new ScrollPaneWidget(thumbs));
     setPreferredSize(new Dimension(32,32));
 
-    // prepare unfocus action
-    unfocus.setFocusable(false); 
-    tools.add(unfocus);
-    
     // done
   }
   
-  @Override
-  public void addNotify() {
-    super.addNotify();
-    
-    FocusManager.getCurrentManager().addPropertyChangeListener("focusOwner", focusChange);
-  }
-  
-  @Override
-  public void removeNotify() {
-    FocusManager.getCurrentManager().removePropertyChangeListener("focusOwner", focusChange);
-    
-    super.removeNotify();
-  }
-
   @Override
   protected void commitImpl(Property property) {
   }
 
   @Override
   protected void setPropertyImpl(Property prop) {
-    setFocus(prop);
-  }
-  
-  public void restoreFocus() {
-    if (getProperty()==null)
-      throw new IllegalArgumentException("restore w/o prop");
-    setFocus(getProperty());
-  }
-  
-  public void setFocus(Property prop) {
-
-    // noop?
-    if (focus==prop)
-      return;
-    
     // clear?
     if (prop==null) {
       thumbs.clear();
-      return;
-    }
-
-    // valid?
-    if (prop!=getProperty()&&prop.getParent()!=getProperty())
-      throw new IllegalArgumentException("prop not sub");
-    
-    focus = prop;
-    
-    // update focus indicator
-    if (focus!=getProperty()) {
-      unfocus.setVisible(true);
-      unfocus.setAction(new Unfocus(focus));
-      add(BorderLayout.NORTH, unfocus);
     } else {
-      unfocus.setVisible(false);
+      thumbs.setSources(scan(prop));
     }
-    tools.revalidate();
-    tools.repaint();
+  }
+  
+  private List<InputSource> scan(Property property) {
     
-    // find all contained medias
     List<InputSource> files = new ArrayList<InputSource>();
     
-    for (PropertyFile file : focus.getProperties(PropertyFile.class)) {
-      if (file.getFile()!=null)
-        files.add(InputSource.get(file.getFile()));
+    // find all contained medias
+    for (PropertyFile file : property.getProperties(PropertyFile.class)) {
+      if (file.getFile()!=null) {
+        files.add(InputSource.get(getTag(file)+file.getFile().getName(), file.getFile()));
+      }
     }
     
     // find all referenced medias
-    for (PropertyXRef ref : focus.getProperties(PropertyXRef.class)) {
+    for (PropertyXRef ref : property.getProperties(PropertyXRef.class)) {
       Entity entity = ref.getTargetEntity();
       if (entity instanceof Media) {
-        PropertyFile file = ((Media)entity).getFile();
-        if (file.getFile()!=null)
-          files.add(InputSource.get(file.getFile()));
+        Media media = (Media)entity;
+        PropertyFile file = media.getFile();
+        if (file!=null&&file.getFile()!=null)
+          files.add(InputSource.get(getTag(ref)+file.getFile().getName(), file.getFile()));
+        PropertyBlob blob = media.getBlob();
+        if (blob!=null)
+          files.add(InputSource.get(getTag(ref)+media.getTitle(), blob.getBlobData()));
       }
     }
-    
-    thumbs.setSources(files);
-    
+
+    return files;
   }
   
-  private class FocusListener implements PropertyChangeListener {
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-      Property newFocus = getFocus((Component)evt.getNewValue());
-      if (newFocus==null)
-        restoreFocus();
-      else
-        setFocus(newFocus);
-    }
-    
-    private Property getFocus(Component c) {
-      // new focus?
-      if (c==null)
-        return null;
-      // in sibling to this bean?
-      if (!DialogHelper.isContained(c, getParent().getParent()))
-        return null;
-      // getting a context?
-      Context context = new ContextProvider.Lookup(c).getContext();
-      if (context==null)
-        return null;
-      // resolving to a single property?
-      if (context.getProperties().size()!=1) 
-        return null;
-      // context a sub-property of current root?
-      Property prop = context.getProperty();
-      while (true) {
-        if (prop==null) 
-          return null;
-        Property parent = prop.getParent();
-        if (parent==getProperty())
-          break;
-        prop = parent;
-      }
-      // property allows OBJE?
-      if (!prop.getMetaProperty().allows("OBJE")) 
-        return null;
-      // got it
-      return prop;
-    }
+  private String getTag(Property prop) {
+    TagPath path = prop.getPath();
+    if (path.length()<4)
+      return "";
+    for (int i=0;i<path.length()-2;i++)
+      prop = prop.getParent();
+    return prop.getPropertyName()+prop.format("{ $y}")+"\n";
   }
   
-  private class Unfocus extends Action2 {
-    public Unfocus(Property focus) {
-      setText(focus.getPropertyName());
-      setImage(focus.getImage(false));
-    }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      restoreFocus();
-    }
-  }
 }
