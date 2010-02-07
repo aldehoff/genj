@@ -37,6 +37,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
@@ -66,7 +68,11 @@ import javax.swing.Timer;
  */
 public class ThumbnailWidget extends JComponent {
   
-  public final static ImageIcon IMG = new ImageIcon(ThumbnailWidget.class, "File.png");
+  public final static ImageIcon 
+    IMG_THUMBNAIL = new ImageIcon(ThumbnailWidget.class, "File.png"),
+    IMG_ZOOM_FIT = new ImageIcon(ThumbnailWidget.class, "ZoomFit.png"),
+    IMG_ZOOM_ALL = new ImageIcon(ThumbnailWidget.class, "ZoomAll.png");
+  
   private final static Logger LOG = Logger.getLogger("genj.util.swing");
   private final static BlockingQueue<Runnable> executorQueue = new LinkedBlockingDeque<Runnable>();
   private final static Executor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, executorQueue);
@@ -83,6 +89,7 @@ public class ThumbnailWidget extends JComponent {
   });
   private Thumbnail selection = null;
   private boolean pendingCenter = false;
+  private Action2 zoomFit = new Fit(), zoomAll = new All();
 
   /**
    * Constructor
@@ -92,6 +99,14 @@ public class ThumbnailWidget extends JComponent {
     addMouseListener(callback);
     
     setBackground(Color.LIGHT_GRAY);
+  }
+  
+  public Action2 getFitAction() {
+    return zoomFit;
+  }
+  
+  public Action2 getAllAction() {
+    return zoomAll;
   }
   
   /**
@@ -131,7 +146,7 @@ public class ThumbnailWidget extends JComponent {
     repaint();
     
     // signal
-    firePropertyChange("thumbnails", oldSize, thumbs.size());
+    firePropertyChange("content", oldSize, thumbs.size());
   }
   
   /**
@@ -175,24 +190,36 @@ public class ThumbnailWidget extends JComponent {
       // double-click/viewport?
       if (e.getClickCount()!=2||!(getParent() instanceof JViewport))
         return;
-      JViewport port = (JViewport)getParent();
       // check thumbs
       Thumbnail thumb = getThumb(e.getPoint());
-      if (selection!=null&&selection==thumb&&selection.size.width>0&&selection.size.height>0) {
-        Dimension size = fit(selection.size, port.getSize());
-        thumbSize = Math.max(size.width, size.height);
-        pendingCenter = true;
-      } else {
-        Dimension rc = getRowsCols();
-        Dimension dim = port.getSize();
-        int sizex = Math.max(32, port.getSize().width / rc.width -thumbBorder.left-thumbBorder.right);
-        int sizey = Math.max(32, port.getSize().height/ rc.height-thumbBorder.top-thumbBorder.bottom);
-        thumbSize = Math.min(sizex, sizey);
-      }
-      revalidate();
-      repaint();
+      if (selection!=null&&selection==thumb)
+        showSelection();
       // done
     }
+  }
+  
+  public void showSelection() {
+    if (!(getParent() instanceof JViewport) || selection==null || selection.size.width==0 || selection.size.height==0)
+      return;
+    JViewport port = (JViewport)getParent();
+    Dimension size = fit(selection.size, port.getSize());
+    thumbSize = Math.max(size.width, size.height);
+    pendingCenter = true;
+    revalidate();
+    repaint();
+  }
+  
+  public void showAll() {
+    if (!(getParent() instanceof JViewport))
+      return;
+    JViewport port = (JViewport)getParent();
+    Dimension rc = getRowsCols();
+    Dimension dim = port.getSize();
+    int sizex = Math.max(32, port.getSize().width / rc.width -thumbBorder.left-thumbBorder.right);
+    int sizey = Math.max(32, port.getSize().height/ rc.height-thumbBorder.top-thumbBorder.bottom);
+    thumbSize = Math.min(sizex, sizey);
+    revalidate();
+    repaint();
   }
   
   private Thumbnail getThumb(Point pos) {
@@ -457,8 +484,8 @@ public class ThumbnailWidget extends JComponent {
 
         // setup fallback
         synchronized (this) {
-          image = new SoftReference<Image>(IMG.getImage());
-          size.setSize(IMG.getIconWidth(), IMG.getIconHeight());
+          image = new SoftReference<Image>(IMG_THUMBNAIL.getImage());
+          size.setSize(IMG_THUMBNAIL.getIconWidth(), IMG_THUMBNAIL.getIconHeight());
           imageSize.setSize(size);
           imageView.setBounds(0, 0, size.width, size.height);
         }
@@ -504,5 +531,43 @@ public class ThumbnailWidget extends JComponent {
     }
 
   } // Thumbnail
+
+  /**
+   * zoom
+   */
+  private class Fit extends Action2 implements PropertyChangeListener {
+    public Fit() {
+      setImage(IMG_ZOOM_FIT);
+      setEnabled(false);
+      ThumbnailWidget.this.addPropertyChangeListener("selection", this);
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showSelection();
+    }
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+      setEnabled(selection!=null);
+    }
+  }
+
+  /**
+   * zoom
+   */
+  private class All extends Action2 implements PropertyChangeListener {
+    public All() {
+      setImage(IMG_ZOOM_ALL);
+      setEnabled(false);
+      ThumbnailWidget.this.addPropertyChangeListener("content", this);
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showAll();
+    }
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+      setEnabled(!thumbs.isEmpty());
+    }
+  }
 
 }

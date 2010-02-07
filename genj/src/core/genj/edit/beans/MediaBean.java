@@ -30,7 +30,6 @@ import genj.gedcom.TagPath;
 import genj.io.InputSource;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ImageIcon;
 import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.ThumbnailWidget;
 
@@ -48,7 +47,6 @@ import javax.swing.JToolBar;
  */
 public class MediaBean extends PropertyBean {
   
-  private final static ImageIcon IMG_PREV = Images.imgBack, IMG_NEXT = Images.imgForward;
   private final static Resources RES = Resources.get(MediaBean.class);
   
   private ThumbnailWidget thumbs = new ThumbnailWidget();
@@ -73,6 +71,8 @@ public class MediaBean extends PropertyBean {
     // some actions
     add(new Add());
     add(new Del());
+    add(thumbs.getFitAction());
+    add(thumbs.getAllAction());
 
     // done
   }
@@ -136,14 +136,14 @@ public class MediaBean extends PropertyBean {
 
   private class Add extends Action2 {
     public Add() {
-      setImage(ThumbnailWidget.IMG.getOverLayed(Images.imgNew));
+      setImage(ThumbnailWidget.IMG_THUMBNAIL.getOverLayed(Images.imgNew));
       setTip(RES.getString("file.add"));
     }
   }
   
   private class Del extends Action2 {
     public Del() {
-      setImage(ThumbnailWidget.IMG.getGrayedOut().getOverLayed(Images.imgDel));
+      setImage(ThumbnailWidget.IMG_THUMBNAIL.getGrayedOut().getOverLayed(Images.imgDel));
       setTip(RES.getString("file.del"));
     }
   }
