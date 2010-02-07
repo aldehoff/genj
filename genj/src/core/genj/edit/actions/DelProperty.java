@@ -42,7 +42,7 @@ public class DelProperty extends AbstractChange {
    * Constructor
    */
   public DelProperty(Property property) {
-    super(property.getGedcom(), Images.imgDelEntity, resources.getString("delete"));
+    super(property.getGedcom(), Images.imgDel, resources.getString("delete"));
     candidates.add(property);
   }
 
@@ -50,7 +50,7 @@ public class DelProperty extends AbstractChange {
    * Constructor
    */
   public DelProperty(List<? extends Property> properties) {
-    super(properties.get(0).getGedcom(), Images.imgDelEntity, resources.getString("delete"));
+    super(properties.get(0).getGedcom(), Images.imgDel, resources.getString("delete"));
     candidates.addAll(properties);
   }
 

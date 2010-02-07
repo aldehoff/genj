@@ -90,6 +90,8 @@ public class ThumbnailWidget extends JComponent {
   public ThumbnailWidget() {
     addMouseWheelListener(callback);
     addMouseListener(callback);
+    
+    setBackground(Color.LIGHT_GRAY);
   }
   
   /**
@@ -225,7 +227,7 @@ public class ThumbnailWidget extends JComponent {
     Graphics2D g2d = (Graphics2D) g;
 
     Dimension d = getSize();
-    g.setColor(Color.LIGHT_GRAY);
+    g.setColor(getBackground());
     g.fillRect(0, 0, d.width, d.height);
 
     int cols = (int) Math.ceil(Math.sqrt(thumbs.size()));

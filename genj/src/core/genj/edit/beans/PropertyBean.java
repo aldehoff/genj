@@ -35,6 +35,7 @@ import genj.gedcom.PropertyXRef;
 import genj.renderer.BlueprintManager;
 import genj.renderer.EntityRenderer;
 import genj.util.ChangeSupport;
+import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.view.ContextProvider;
@@ -86,21 +87,25 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     Property.class              , SimpleValueBean.class  // last!
   };
   
+  private final static boolean isCache = "true".equals(EnvironmentChecker.getProperty("genj.edit.beans.cache", "true", "checking if bean cache is enabled or not"));
+  
   private final static Map<Class<? extends PropertyBean>,List<PropertyBean>> BEANCACHE = createBeanCache();
   
   @SuppressWarnings("unchecked")
   private static Map<Class<? extends PropertyBean>,List<PropertyBean>> createBeanCache() {
     LOG.fine("Initializing bean cache");
+    
     Map<Class<? extends PropertyBean>,List<PropertyBean>> result = new HashMap<Class<? extends PropertyBean>,List<PropertyBean>>();
-    for (int i=0;i<PROPERTY2BEANTYPE.length;i+=2) {
-        try {
-          List<PropertyBean> cache = new ArrayList<PropertyBean>(CACHE_PRELOAD);
-          for (int j=0;j<CACHE_PRELOAD;j++)
-            cache.add((PropertyBean)PROPERTY2BEANTYPE[i+1].newInstance());
-          result.put((Class<? extends PropertyBean>)PROPERTY2BEANTYPE[i+1], cache);
-        } catch (Throwable t) {
-          LOG.log(Level.WARNING, "can't instantiate bean "+PROPERTY2BEANTYPE[i+1], t);
-        }
+    
+    if (isCache) for (int i=0;i<PROPERTY2BEANTYPE.length;i+=2) {
+      try {
+        List<PropertyBean> cache = new ArrayList<PropertyBean>(CACHE_PRELOAD);
+        for (int j=0;j<CACHE_PRELOAD;j++)
+          cache.add((PropertyBean)PROPERTY2BEANTYPE[i+1].newInstance());
+        result.put((Class<? extends PropertyBean>)PROPERTY2BEANTYPE[i+1], cache);
+      } catch (Throwable t) {
+        LOG.log(Level.WARNING, "can't instantiate bean "+PROPERTY2BEANTYPE[i+1], t);
+      }
     }
     return result;
   }
@@ -153,6 +158,10 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   public static void recycle(PropertyBean bean) {
     if (bean.getParent()!=null)
       throw new IllegalArgumentException("bean still has parent");
+    
+    if (!isCache)
+      return;
+    
     List<PropertyBean> cache = BEANCACHE.get(bean.getClass());
     if (cache==null) {
       cache = new ArrayList<PropertyBean>();

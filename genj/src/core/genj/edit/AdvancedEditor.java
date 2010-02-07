@@ -576,7 +576,7 @@ import javax.swing.tree.TreePath;
     protected Add(Property parent) {
       this.parent = parent;
       setText(resources.getString("action.add")+" ...");
-      setImage(Images.imgNew);
+      setImage(Images.imgAdd);
     }
     /** run */
     public void actionPerformed(ActionEvent event) {

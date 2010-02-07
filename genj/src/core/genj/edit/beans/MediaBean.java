@@ -21,7 +21,6 @@ package genj.edit.beans;
 
 import genj.edit.Images;
 import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
 import genj.gedcom.Media;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
@@ -29,6 +28,8 @@ import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.io.InputSource;
+import genj.util.Resources;
+import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.ThumbnailWidget;
@@ -39,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JToolBar;
 
 /**
  * A property bean for managing multimedia files (and blobs) associated with properties 
@@ -46,19 +49,38 @@ import javax.swing.BorderFactory;
 public class MediaBean extends PropertyBean {
   
   private final static ImageIcon IMG_PREV = Images.imgBack, IMG_NEXT = Images.imgForward;
+  private final static Resources RES = Resources.get(MediaBean.class);
+  
   private ThumbnailWidget thumbs = new ThumbnailWidget();
+  private JToolBar actions = new JToolBar();
   
   /**
    * Constructor
    */
   public MediaBean() {
     
-    setBorder(BorderFactory.createLoweredBevelBorder());
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, new ScrollPaneWidget(thumbs));
+
+    ScrollPaneWidget scroll = new ScrollPaneWidget(thumbs);
+    setBorder(BorderFactory.createLoweredBevelBorder());
+
+    add(BorderLayout.NORTH , actions);
+    add(BorderLayout.CENTER, scroll);
+    
     setPreferredSize(new Dimension(32,32));
+    actions.setFloatable(false);
+    
+    // some actions
+    add(new Add());
+    add(new Del());
 
     // done
+  }
+  
+  private void add(Action2 action) {
+    JButton b = new JButton(action);
+    b.setFocusable(false);
+    actions.add(b);
   }
   
   @Override
@@ -111,5 +133,18 @@ public class MediaBean extends PropertyBean {
       prop = prop.getParent();
     return prop.getPropertyName()+prop.format("{ $y}")+"\n";
   }
+
+  private class Add extends Action2 {
+    public Add() {
+      setImage(ThumbnailWidget.IMG.getOverLayed(Images.imgNew));
+      setTip(RES.getString("file.add"));
+    }
+  }
   
+  private class Del extends Action2 {
+    public Del() {
+      setImage(ThumbnailWidget.IMG.getGrayedOut().getOverLayed(Images.imgDel));
+      setTip(RES.getString("file.del"));
+    }
+  }
 }

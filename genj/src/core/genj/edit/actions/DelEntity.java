@@ -39,7 +39,7 @@ public class DelEntity extends AbstractChange {
    * Constructor
    */
   public DelEntity(Entity entity) {
-    super(entity.getGedcom(), Images.imgDelEntity, resources.getString("delete"));
+    super(entity.getGedcom(), Images.imgDel, resources.getString("delete"));
     candidate = entity;
   }
   

@@ -54,7 +54,7 @@ public abstract class AbstractChange extends Action2 {
   private Context selection;
   
   /** image *new* */
-  protected final static ImageIcon imgNew = Images.imgNewEntity;
+  protected final static ImageIcon imgNew = Images.imgNew;
   
   private JTextArea confirm;
 

@@ -470,7 +470,7 @@ public class BeanPanel extends JPanel {
     JPanel linksTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
     linksTab.setPreferredSize(new Dimension(64,64));
     linksTab.setOpaque(false);
-    tabs.addTab("", Images.imgNew, linksTab);
+    tabs.addTab("", Images.imgAdd, linksTab);
     MetaProperty[] nested = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
     Arrays.sort(nested);
     for (int i=0;i<nested.length;i++) {
