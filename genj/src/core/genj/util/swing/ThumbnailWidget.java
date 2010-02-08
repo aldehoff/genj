@@ -61,6 +61,7 @@ import javax.imageio.event.IIOReadUpdateListener;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 /**
@@ -157,15 +158,36 @@ public class ThumbnailWidget extends JComponent {
       if (e.isControlDown()) {
         // zoom
         thumbSize = Math.max(64, thumbSize -= e.getWheelRotation() * 32);
+        
+        // zoom in?
+        if (e.getWheelRotation()<0 && getParent() instanceof JViewport) {
+          
+          final JViewport port = (JViewport)getParent();
+          Point mouse = e.getPoint();
+          Dimension size = getSize();
+          final float centerx = mouse.x / (float)size.width;
+          final float centery = mouse.y / (float)size.height;
+
+          SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+              center(new Point(
+                (int)(getSize().width * centerx),
+                (int)(getSize().height* centery)
+              ));
+            }
+          });
+        }          
         revalidate();
         repaint();
       } else {
         // scroll
         if (getParent() instanceof JViewport) {
           JViewport port = (JViewport)getParent();
-          Point v = port.getViewPosition();
-          v.y = Math.min(Math.max(0, v.y+port.getSize().height*e.getWheelRotation()), Math.max(0,getHeight()-port.getHeight())); 
-          port.setViewPosition(v);
+          center(new Point(
+            (int)port.getViewRect().getCenterX(),
+            (int)port.getViewRect().getCenterY()+port.getSize().height*e.getWheelRotation()            
+          ));
         }
         return;
       }
@@ -305,17 +327,27 @@ public class ThumbnailWidget extends JComponent {
     }
     
     // a pending center?
-    if (pendingCenter && selection!=null && getParent() instanceof JViewport) {
+    if (pendingCenter) {
       pendingCenter = false;
-      JViewport port = (JViewport)getParent();
-      Point center = new Point(
-          (int)(Math.max(0, selection.renderDest.getCenterX() - port.getSize().width/2)),
-          (int)(Math.max(0, selection.renderDest.getCenterY() - port.getSize().height/2))
-        );
-      port.setViewPosition(center);
+      if (selection!=null) 
+        center(new Point((int)selection.renderDest.getCenterX(), (int)selection.renderDest.getCenterY()));
     }
 
   } // paint
+  
+  private void center(Point pos) {
+    
+    if (!(getParent() instanceof JViewport))
+      return;
+    
+    JViewport port = (JViewport)getParent();
+    
+    port.setViewPosition(new Point(
+      (int)(Math.min(getSize().width-port.getSize().width, Math.max(0, pos.x - port.getSize().width/2))),
+      (int)(Math.min(getSize().height-port.getSize().height, Math.max(0, pos.y - port.getSize().height/2)))
+    ));
+    
+  }
   
   class Validation implements Runnable {
     
