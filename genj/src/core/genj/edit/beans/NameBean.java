@@ -22,6 +22,8 @@ package genj.edit.beans;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import genj.edit.Options;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyName;
 import genj.util.swing.Action2;
@@ -122,13 +124,30 @@ public class NameBean extends PropertyBean {
   @Override
   protected void commitImpl(Property property) {
 
+    PropertyName p = (PropertyName) property;
+    
     // ... calc texts
     String first = cFirst.getText().trim();
     String last  = cLast .getText().trim();
     String suff  = tSuff .getText().trim();
+    
+    Gedcom ged = p.getGedcom();
+    if (ged!=null) {
+      switch (Options.getInstance().correctName) {
+      // John DOE
+      case 2:
+        last = last.toUpperCase(ged.getLocale());
+        cLast.setText(last);
+      // John Doe
+      case 1:
+        if (first.length()>0) {
+          first = Character.toString(first.charAt(0)).toUpperCase(ged.getLocale()) + first.substring(1);
+          cFirst.setText(first);
+        }
+      }
+    }
 
     // ... store changed value
-    PropertyName p = (PropertyName) property;
     p.setName( first, last, suff, cAll.isSelected());
 
     // Done

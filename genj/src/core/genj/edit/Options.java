@@ -21,6 +21,7 @@ package genj.edit;
 
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
+import genj.util.Resources;
 
 import java.util.List;
 
@@ -29,11 +30,22 @@ import java.util.List;
  */
 public class Options extends OptionProvider {
   
+  private final static Resources RES = Resources.get(Options.class);
+  
   /** option - whether changes are auto commit */
   public boolean isAutoCommit = false;
   
   /** option - whether to split jurisdictions into their components when editing places */
   public boolean isSplitJurisdictions = true;
+  
+  /** option - whether we correct names */
+  public int correctName = 0;
+  
+  public final static String[] correctNames = { 
+    RES.getString("option.correctName.none"),
+    RES.getString("option.correctName.caps"),
+    RES.getString("option.correctName.allcaps")
+  };
   
   /** 'singleton' */
   private static Options instance = new Options();
