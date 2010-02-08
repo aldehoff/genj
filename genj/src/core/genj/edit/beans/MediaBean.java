@@ -51,6 +51,7 @@ public class MediaBean extends PropertyBean {
   
   private ThumbnailWidget thumbs = new ThumbnailWidget();
   private JToolBar actions = new JToolBar();
+  private Action2 add = new Add(), del = new Del();
   
   /**
    * Constructor
@@ -69,8 +70,8 @@ public class MediaBean extends PropertyBean {
     actions.setFloatable(false);
     
     // some actions
-    add(new Add());
-    add(new Del());
+    add(add);
+    add(del);
     add(thumbs.getFitAction());
     add(thumbs.getAllAction());
 
@@ -92,8 +93,12 @@ public class MediaBean extends PropertyBean {
     // clear?
     if (prop==null) {
       thumbs.clear();
+      add.setEnabled(false);
+      del.setEnabled(false);
     } else {
       thumbs.setSources(scan(prop));
+      add.setEnabled(true);
+      del.setEnabled(true);
     }
   }
   
@@ -137,14 +142,28 @@ public class MediaBean extends PropertyBean {
   private class Add extends Action2 {
     public Add() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getOverLayed(Images.imgNew));
-      setTip(RES.getString("file.add"));
+    }
+    @Override
+    public void setEnabled(boolean set) {
+      super.setEnabled(set);
+      if (set)
+        setTip(RES.getString("file.add", getProperty().getPropertyName()));
+      else
+        setTip("");
     }
   }
   
   private class Del extends Action2 {
     public Del() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getGrayedOut().getOverLayed(Images.imgDel));
-      setTip(RES.getString("file.del"));
+    }
+    @Override
+    public void setEnabled(boolean set) {
+      super.setEnabled(set);
+      if (set)
+        setTip(RES.getString("file.del", getProperty().getPropertyName()));
+      else
+        setTip("");
     }
   }
 }

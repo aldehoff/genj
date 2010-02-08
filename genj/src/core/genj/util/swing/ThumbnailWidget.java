@@ -142,12 +142,12 @@ public class ThumbnailWidget extends JComponent {
     if (sources!=null) for (InputSource source : sources)
       thumbs.add(new Thumbnail(source));
     
-    // show
-    revalidate();
-    repaint();
-    
     // signal
     firePropertyChange("content", oldSize, thumbs.size());
+    
+    // show
+    showAll();
+    
   }
   
   /**
@@ -234,14 +234,28 @@ public class ThumbnailWidget extends JComponent {
   public void showAll() {
     if (!(getParent() instanceof JViewport))
       return;
-    JViewport port = (JViewport)getParent();
+    showAllImpl(true);
+  }
+  
+  private void showAllImpl(boolean tryLater) {
     Dimension rc = getRowsCols();
-    Dimension dim = port.getSize();
-    int sizex = Math.max(32, port.getSize().width / rc.width -thumbBorder.left-thumbBorder.right);
-    int sizey = Math.max(32, port.getSize().height/ rc.height-thumbBorder.top-thumbBorder.bottom);
-    thumbSize = Math.min(sizex, sizey);
-    revalidate();
-    repaint();
+    if (rc.width==0||rc.height==0)
+      return;
+    
+    Dimension port = ((JViewport)getParent()).getSize();
+    if (port.width==0||port.height==0) {
+      if (tryLater) SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          showAllImpl(false);
+        }
+      });
+    } else {
+      int sizex = Math.max(32, port.width / rc.width -thumbBorder.left-thumbBorder.right);
+      int sizey = Math.max(32, port.height/ rc.height-thumbBorder.top-thumbBorder.bottom);
+      thumbSize = Math.min(sizex, sizey);
+      revalidate();
+      repaint();
+    }
   }
   
   private Thumbnail getThumb(Point pos) {
