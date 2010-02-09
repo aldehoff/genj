@@ -81,6 +81,8 @@ public class DateWidget extends JPanel {
    */
   public DateWidget(PointInTime pit) {
 
+    setOpaque(false);
+
     calendar = pit.getCalendar();
 
     // create calendar switches

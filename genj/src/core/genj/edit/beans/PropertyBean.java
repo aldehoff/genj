@@ -188,6 +188,11 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /** change support */
   protected ChangeSupport changeSupport = new ChangeSupport(this);
   
+  /** constructor */
+  protected PropertyBean() {
+    setOpaque(false);  
+  }
+  
   /**
    * tell bean to prefer the horizontal instead of the vertical
    */
