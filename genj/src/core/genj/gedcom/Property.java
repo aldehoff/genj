@@ -814,12 +814,42 @@ public abstract class Property implements Comparable<Property> {
   }
 
   /**
-   * The default toString() returns the display value of this property
+   * The default string representation returns the property name, date and place information and display value (if available)
    */
+  @Override
   public String toString() {
-    return getDisplayValue();
+    
+    WordBuffer result = new WordBuffer(" ");
+    result.append(getPropertyName());
+    
+    String val = getDisplayValue();
+    if (val.length()>0) 
+      result.append(val);
+    
+    Property date = getProperty("DATE");
+    if (date instanceof PropertyDate && date.isValid()) 
+      result.append(date.getDisplayValue());
+
+    Property plac = getProperty("PLAC");
+    if (plac!=null) {
+      String s = plac.getDisplayValue();
+      if (s.length()>0) 
+        result.append(plac.getDisplayValue());
+    } else {
+      Property addr = getProperty("ADDR");
+      if (addr!=null) {
+        Property city = addr.getProperty("CITY");
+        if (city!=null) {
+          String s = city.getDisplayValue();
+          if (s.length()>0) 
+            result.append(s);
+        }
+      }
+    }
+    return result.toString();
   }
-  
+
+
   /**
    * Returns a value at given path or fallback
    */
