@@ -247,9 +247,7 @@ public class PropertyFile extends Property implements IconValueAvailable {
   /**
    * The files location (if externally accessible)    */
   public File getFile() {
-    File result = getGedcom().getOrigin().getFile(file);
-    if (result==null||!result.exists()||!result.isFile()) return null;
-    return result;
+    return getGedcom().getOrigin().getFile(file);
   }
 
   /**
