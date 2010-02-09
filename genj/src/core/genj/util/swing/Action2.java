@@ -236,6 +236,11 @@ public class Action2 extends AbstractAction {
   }
   
   /** convenience factory */
+  public static Action[] andCancel(Action ok) {
+    return new Action[]{ ok, cancel() };
+  }
+  
+  /** convenience factory */
   public static Action[] okAnd(Action action) {
     return new Action[]{ ok(), action };
   }
