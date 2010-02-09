@@ -20,6 +20,7 @@
 package genj.edit.beans;
 
 import genj.edit.Images;
+import genj.edit.actions.RunExternal;
 import genj.gedcom.Entity;
 import genj.gedcom.Media;
 import genj.gedcom.Property;
@@ -28,30 +29,50 @@ import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.io.InputSource;
+import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
+import genj.util.swing.FileChooserWidget;
+import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.ThumbnailWidget;
+import genj.view.ContextProvider;
+import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * A property bean for managing multimedia files (and blobs) associated with properties 
  */
-public class MediaBean extends PropertyBean {
+public class MediaBean extends PropertyBean implements ContextProvider {
   
   private final static Resources RES = Resources.get(MediaBean.class);
   
   private ThumbnailWidget thumbs = new ThumbnailWidget();
   private JToolBar actions = new JToolBar();
   private Action2 add = new Add(), del = new Del();
+  //private List<Property> removals = new ArrayList<Property>();
   
   /**
    * Constructor
@@ -78,6 +99,19 @@ public class MediaBean extends PropertyBean {
     // done
   }
   
+  @Override
+  public ViewContext getContext() {
+    Property p = getProperty();
+    if (p==null)
+      return null; 
+    InputSource source = thumbs.getSelection();
+    if (!(source instanceof InputSource.FileInput))
+      return null;
+    ViewContext result = new ViewContext(p);
+    result.addAction(new RunExternal(((InputSource.FileInput)source).getFile()));
+    return result;
+  }
+  
   private void add(Action2 action) {
     JButton b = new JButton(action);
     b.setFocusable(false);
@@ -90,6 +124,7 @@ public class MediaBean extends PropertyBean {
 
   @Override
   protected void setPropertyImpl(Property prop) {
+    
     // clear?
     if (prop==null) {
       thumbs.clear();
@@ -109,7 +144,7 @@ public class MediaBean extends PropertyBean {
     // find all contained medias
     for (PropertyFile file : property.getProperties(PropertyFile.class)) {
       if (file.getFile()!=null) {
-        files.add(InputSource.get(getTag(file)+file.getFile().getName(), file.getFile()));
+        files.add(InputSource.get(file.getFile().getName(), file.getFile()));
       }
     }
     
@@ -120,50 +155,132 @@ public class MediaBean extends PropertyBean {
         Media media = (Media)entity;
         PropertyFile file = media.getFile();
         if (file!=null&&file.getFile()!=null)
-          files.add(InputSource.get(getTag(ref)+file.getFile().getName(), file.getFile()));
+          files.add(InputSource.get(file.getFile().getName(), file.getFile()));
         PropertyBlob blob = media.getBlob();
         if (blob!=null)
-          files.add(InputSource.get(getTag(ref)+media.getTitle(), blob.getBlobData()));
+          files.add(InputSource.get(media.getTitle(), blob.getBlobData()));
       }
     }
 
     return files;
   }
   
-  private String getTag(Property prop) {
-    TagPath path = prop.getPath();
-    if (path.length()<4)
-      return "";
-    for (int i=0;i<path.length()-2;i++)
-      prop = prop.getParent();
-    return prop.getPropertyName()+prop.format("{ $y}")+"\n";
-  }
-
-  private class Add extends Action2 {
+  private class Add extends Action2 implements ListSelectionListener, ChangeListener {
+    
+    private FileChooserWidget chooser;
+    private JList targets;
+    private Action ok;
+    
     public Add() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getOverLayed(Images.imgNew));
     }
     @Override
     public void setEnabled(boolean set) {
+      // only if there are targets
+      if (set&&getTargets().isEmpty())
+        set = false;
+      // let through
       super.setEnabled(set);
+      // update tip
       if (set)
         setTip(RES.getString("file.add", getProperty().getPropertyName()));
       else
         setTip("");
     }
-  }
+    
+    private List<Property> getTargets() {
+      List<Property> result = new ArrayList<Property>();
+      Property p = getProperty(); 
+      if (p!=null) {
+        if (p.getMetaProperty().allows("OBJE"))
+          result.add(p);
+        for (Property c : p.getProperties())
+          if (c.getMetaProperty().allows("OBJE"))
+            result.add(c);
+      }
+      return result;
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      
+      // ask user
+      chooser = new FileChooserWidget();
+      Origin origin = getProperty().getGedcom().getOrigin();
+      chooser.setDirectory(origin.getFile()!=null ? origin.getFile().getParent() : null);
+      
+      targets = new JList(getTargets().toArray());
+      targets.setVisibleRowCount(5);
+
+      JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><file gx=\"1\"/><l2 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
+      options.add(new JLabel(RES.getString("file.title")));
+      options.add(chooser);
+      options.add(new JLabel(RES.getString("file.add", "...")));
+      options.add(new JScrollPane(targets));
+
+      ok = Action2.ok();
+
+      targets.addListSelectionListener(this);
+      chooser.addChangeListener(this);
+      
+      if (targets.getModel().getSize()>0)
+        targets.setSelectedIndex(0);
+      
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), DialogHelper.getComponent(e)))
+        return;
+      
+      // TODO add it
+      for (Object target : targets.getSelectedValues()) {
+      }
+
+      // done
+    }
+    
+    private File getFile() {
+      Origin origin = getProperty().getGedcom().getOrigin();
+      return origin.getFile(chooser.getFile().toString());
+    }
+    
+    private void validate() {
+      File file =  getFile();
+      ok.setEnabled(targets.getSelectedIndices().length>0 && file!=null && file.exists());
+    }
+    
+    public void valueChanged(ListSelectionEvent e) {
+      validate();
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+      validate();
+    }
+  } //Add
   
-  private class Del extends Action2 {
+  private class Del extends Action2 implements PropertyChangeListener {
     public Del() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getGrayedOut().getOverLayed(Images.imgDel));
+      thumbs.addPropertyChangeListener(this);
+    }
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+      setEnabled(getProperty()!=null);
     }
     @Override
     public void setEnabled(boolean set) {
+      if (thumbs.getSelection()==null)
+        set = false;
       super.setEnabled(set);
       if (set)
         setTip(RES.getString("file.del", getProperty().getPropertyName()));
       else
         setTip("");
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      // anything to remove?
+      InputSource source = thumbs.getSelection();
+      if (source==null)
+        return;
+      // TODO remove!
     }
   }
 }

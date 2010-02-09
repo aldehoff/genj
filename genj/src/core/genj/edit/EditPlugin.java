@@ -158,7 +158,7 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
   /** 
    * Frederic - a test action showing cross-gedcom work 
    */
-  private class CopyIndividual extends AbstractChange {
+  private static class CopyIndividual extends AbstractChange {
     
     private Gedcom source;
     private Indi existing;
@@ -480,7 +480,8 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
    * Create actions for PropertyFile
    */
   private void createActions(Action2.Group group, PropertyFile file) {
-    group.add(new RunExternal(file));
+    if (file.getFile()!=null)
+      group.add(new RunExternal(file.getFile()));
   }
 
 }

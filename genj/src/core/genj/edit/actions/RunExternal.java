@@ -25,7 +25,6 @@ import genj.util.swing.Action2;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,10 +39,11 @@ public class RunExternal extends Action2 {
   /**
    * Constructor
    */
-  public RunExternal(PropertyFile f) {
-    file = f.getFile();
-    super.setImage(f.getImage(false));
+  public RunExternal(File file) {
+    this.file = file;
+    super.setImage(PropertyFile.DEFAULT_IMAGE);
     super.setText("Open");
+    setEnabled(file.exists());
   }
   
   /**

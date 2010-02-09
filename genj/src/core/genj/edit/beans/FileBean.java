@@ -198,7 +198,7 @@ public class FileBean extends PropertyBean {
     if (result!=null) {
       PropertyFile file = (PropertyFile)getProperty();
       if (file!=null) 
-        result.addAction(new RunExternal(file));
+        result.addAction(new RunExternal(file.getFile()));
     }
     // all done
     return result;
