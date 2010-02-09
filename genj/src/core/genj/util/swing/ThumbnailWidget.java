@@ -63,6 +63,7 @@ import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 
 /**
  * A widget for showing image thumbnails
@@ -98,7 +99,7 @@ public class ThumbnailWidget extends JComponent {
   public ThumbnailWidget() {
     addMouseWheelListener(callback);
     addMouseListener(callback);
-    
+    ToolTipManager.sharedInstance().registerComponent(this);
     setBackground(Color.LIGHT_GRAY);
   }
   
@@ -116,6 +117,14 @@ public class ThumbnailWidget extends JComponent {
   public void clear() {
     setSources(null);
   }
+
+  /**
+   * Current selection
+   * @return selection or null
+   */
+  public InputSource getSelection() {
+    return selection!=null ? selection.source : null;
+  }
   
   public void setSource(InputSource source) {
     if (source==null)
@@ -129,12 +138,8 @@ public class ThumbnailWidget extends JComponent {
    */
   public void setSources(List<InputSource> sources) {
 
-    // unselect/let folks know about selection
-    Thumbnail oldSelection = selection;
-    if (oldSelection!=null) {
-      selection = null;
-      firePropertyChange("selection", oldSelection.getSource(), null);
-    }    
+    if (selection!=null)
+      unselect(selection.source);
 
     // keep
     int oldSize = thumbs.size();
@@ -148,6 +153,78 @@ public class ThumbnailWidget extends JComponent {
     // show
     showAll();
     
+  }
+
+  /**
+   * add a source
+   */
+  public void addSource(InputSource source) {
+    
+    // keep
+    int oldSize = thumbs.size();
+    Thumbnail thumb = new Thumbnail(source);
+    thumbs.add(thumb);
+    firePropertyChange("content", oldSize, thumbs.size());
+    
+    // select
+    Thumbnail old = selection;
+    selection = thumb;
+    firePropertyChange("selection", old!=null ? old.getSource() : null, selection.getSource());
+    
+    // show
+    showSelection();
+  }
+  
+  @Override
+  public String getToolTipText() {
+    // TODO Auto-generated method stub
+    return super.getToolTipText();
+  }
+  
+  @Override
+  public String getToolTipText(MouseEvent event) {
+    Thumbnail thumb = getThumb(event.getPoint());
+    return thumb!=null ? getToolTipText(thumb.source) : null;
+  }
+  
+  /**
+   * resolve tooltip for source
+   */
+  public String getToolTipText(InputSource source) {
+    return source.getName();
+  }
+  
+  /**
+   * remove a source
+   */
+  public void removeSource(InputSource source) {
+    
+    unselect(source);
+    
+    // keep
+    int oldSize = thumbs.size();
+    for (Thumbnail thumb : new ArrayList<Thumbnail>(thumbs)) {
+      if (thumb.source==source)
+        thumbs.remove(thumb);
+    }
+    
+    // signal
+    firePropertyChange("content", oldSize, thumbs.size());
+    
+    // show
+    revalidate();
+    repaint();
+    showAll();
+    
+  }
+  
+  private void unselect(InputSource source) {
+    if (selection==null || selection.source!=source)
+      return;
+    // unselect/let folks know about selection
+    Thumbnail oldSelection = selection;
+    selection = null;
+    firePropertyChange("selection", oldSelection.getSource(), null);
   }
   
   /**
@@ -239,7 +316,7 @@ public class ThumbnailWidget extends JComponent {
   
   private void showAllImpl(boolean tryLater) {
     Dimension rc = getRowsCols();
-    if (rc.width==0||rc.height==0)
+    if (rc.width==0||rc.height==0) 
       return;
     
     Dimension port = ((JViewport)getParent()).getSize();
@@ -615,5 +692,5 @@ public class ThumbnailWidget extends JComponent {
       setEnabled(!thumbs.isEmpty());
     }
   }
-
+  
 }
