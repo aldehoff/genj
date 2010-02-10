@@ -109,13 +109,8 @@ public class App {
       // initialize options first
       OptionProvider.getAllOptions();
       
-      // create our home directory
-      File home = new File(EnvironmentChecker.getProperty("user.home.genj", null, "determining home directory"));
-      if ( !(home.exists()||home.mkdirs()) && !home.isDirectory()) 
-        throw new IOException("Can't initialize home directoy "+home);
-      
       // Setup File Logging and check environment
-      LOGFILE = new File(home, "genj.log");
+      LOGFILE = EnvironmentChecker.getLog();
       Handler handler = new FileHandler(LOGFILE.getAbsolutePath(), Options.getInstance().getMaxLogSizeKB()*1024, 1, true);
       handler.setLevel(Level.ALL);
       handler.setFormatter(new LogFormatter());

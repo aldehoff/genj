@@ -27,6 +27,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyFile;
 import genj.gedcom.UnitOfWork;
 import genj.io.Filter;
 import genj.io.GedcomEncodingException;
@@ -61,6 +62,7 @@ import genj.view.ActionProvider.Purpose;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -1034,6 +1036,25 @@ public class Workbench extends JPanel implements SelectionSink {
   } // ActionOptions
 
   /**
+   * Action - Log file
+   */
+  private class ActionLog extends Action2 {
+    /** constructor */
+    protected ActionLog() {
+      setText("Log");
+      setImage(PropertyFile.DEFAULT_IMAGE);
+    }
+
+    /** run */
+    public void actionPerformed(ActionEvent event) {
+      try {
+        Desktop.getDesktop().open(EnvironmentChecker.getLog());
+      } catch (Throwable t) {
+      }
+    }
+  } // ActionLog
+  
+  /**
    * a little status tracker
    */
   private class StatusBar extends JPanel implements GedcomMetaListener, WorkbenchListener {
@@ -1242,6 +1263,7 @@ public class Workbench extends JPanel implements SelectionSink {
       groups.add(edit);
 
       Action2.Group help = new ActionProvider.HelpActionGroup();
+      help.add(new ActionLog());
       if (!MacAdapter.isMac())
         help.add(new ActionAbout());
       groups.add(help);

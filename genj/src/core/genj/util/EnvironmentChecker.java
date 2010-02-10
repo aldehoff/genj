@@ -157,6 +157,18 @@ public class EnvironmentChecker {
   public static String getProperty(String key, String fallback, String msg) {
     return getProperty(new String[]{key}, fallback, msg);
   }
+  
+  /**
+   * Logfile
+   */
+  public static File getLog() {
+    
+    File home = new File(getProperty("user.home.genj", null, "log file"));
+    if ( !(home.exists()||home.mkdirs()) && !home.isDirectory()) 
+      throw new Error("Can't initialize home directoy "+home);
+    
+    return new File(home, "genj.log");
+  }
 
   /**
    * Returns a (system) property
