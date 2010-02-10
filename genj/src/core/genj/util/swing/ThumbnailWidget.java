@@ -70,6 +70,8 @@ import javax.swing.ToolTipManager;
  */
 public class ThumbnailWidget extends JComponent {
   
+  private final static int MIN_THUMBNAIL = 32;
+  
   public final static ImageIcon 
     IMG_THUMBNAIL = new ImageIcon(ThumbnailWidget.class, "File.png"),
     IMG_ZOOM_FIT = new ImageIcon(ThumbnailWidget.class, "ZoomFit.png"),
@@ -80,7 +82,7 @@ public class ThumbnailWidget extends JComponent {
   private final static Executor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, executorQueue);
 
   private int thumbSize = 64, thumbPadding = 10;
-  private Insets thumbBorder = new Insets(4,4,32,4);
+  private Insets thumbBorder = new Insets(4,4,20,4);
   private List<Thumbnail> thumbs = new ArrayList<Thumbnail>();
   private Callback callback = new Callback();
   private Timer repaint = new Timer(100, new ActionListener() {
@@ -90,7 +92,10 @@ public class ThumbnailWidget extends JComponent {
     }
   });
   private Thumbnail selection = null;
-  private Action2 zoomFit = new Fit(), zoomAll = new All();
+  private Action2 
+    zoomFit = new Fit(), 
+    zoomAll = new All(),
+    zoomOne = new One();
   private Point topLeft = new Point(0,0);
 
   /**
@@ -106,6 +111,10 @@ public class ThumbnailWidget extends JComponent {
   
   public Action2 getFitAction() {
     return zoomFit;
+  }
+  
+  public Action2 getOneAction() {
+    return zoomOne;
   }
   
   public Action2 getAllAction() {
@@ -263,7 +272,7 @@ public class ThumbnailWidget extends JComponent {
         Dimension dim = getDimension();
         double x = (mouse.x-topLeft.x)/(double)dim.width;
         double y = (mouse.y-topLeft.y)/(double)dim.height;
-        thumbSize = Math.max(getShowAllThumbSize(), thumbSize - e.getWheelRotation() * 32);
+        thumbSize = Math.max(getShowAllThumbSize(), thumbSize - e.getWheelRotation() * Math.max(MIN_THUMBNAIL, thumbSize/2) );
         dim = getDimension();
         scrollTo(-(int)(x*dim.width-mouse.x), -(int)(y*dim.height-mouse.y));
         return;
@@ -296,8 +305,12 @@ public class ThumbnailWidget extends JComponent {
       start.setLocation(e.getPoint());
       
       Thumbnail thumb = getThumb(e.getPoint());
-      if (thumb!=null)
-        select(thumb);
+      if (thumb!=null) {
+        if (selection==thumb && e.isControlDown())
+          select(null);
+        else
+          select(thumb);
+      }
     }
     
     @Override
@@ -311,6 +324,18 @@ public class ThumbnailWidget extends JComponent {
         showSelection();
       // done
     }
+  }
+  
+  /**
+   * Show currently selected thumbnail 1:1
+   */
+  public void showOne() {
+    if (selection==null||selection.size.width==0||selection.size.height==0)
+      return;
+    thumbSize = Math.max(selection.size.width, selection.size.height);
+    topLeft.setLocation(0,0);
+    Rectangle r = getRectangle(selection);
+    scrollTo(-(r.x+(r.width-getWidth())/2),-(r.y+(r.height-getHeight())/2));
   }
   
   /**
@@ -350,9 +375,9 @@ public class ThumbnailWidget extends JComponent {
   private int getShowAllThumbSize() {
     Dimension rc = getRowsCols();
     if (rc.width==0||rc.height==0) 
-      return 32;
-    int sizex = Math.max(32, getWidth ()/rc.width  - thumbBorder.left-thumbBorder.right-thumbPadding);
-    int sizey = Math.max(32, getHeight()/rc.height - thumbBorder.top-thumbBorder.bottom-thumbPadding);
+      return MIN_THUMBNAIL;
+    int sizex = Math.max(MIN_THUMBNAIL, getWidth ()/rc.width  - thumbBorder.left-thumbBorder.right-thumbPadding);
+    int sizey = Math.max(MIN_THUMBNAIL, getHeight()/rc.height - thumbBorder.top-thumbBorder.bottom-thumbPadding);
     return Math.min(sizex, sizey);
   }
   
@@ -647,12 +672,17 @@ public class ThumbnailWidget extends JComponent {
             return;
 
           // match requested size
+          // FIXME image reading should also only read requested area instead of whole picture
           if (param.canSetSourceRenderSize()) {
             param.setSourceRenderSize(fit(size, renderSource.getSize()));
           } else {
             param.setSourceSubsampling(Math.max(1, (int) Math.floor(size.width / renderDest.width)), Math.max(1, (int) Math.floor(size.height / renderDest.height)), 0, 0);
           }
         }
+        
+        // at this point we could grab the resolution (if available) from the image read
+        //XPath PATH_HPIXEL = XPathFactory.newInstance().newXPath().compile("javax_imageio_1.0/Dimension/HorizontalPixelSize[@HorizontalPixelSize]");
+        //String hpixel = PATH_HPIXEL.evaluate(reader.getImageMetadata(0).getAsTree("javax_imageio_1.0"));
 
         Image img = reader.read(0, param);
         
@@ -729,6 +759,25 @@ public class ThumbnailWidget extends JComponent {
     @Override
     public void actionPerformed(ActionEvent e) {
       showSelection();
+    }
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+      setEnabled(selection!=null);
+    }
+  }
+
+  /**
+   * zoom
+   */
+  private class One extends Action2 implements PropertyChangeListener {
+    public One() {
+      setText("1:1");
+      setEnabled(false);
+      ThumbnailWidget.this.addPropertyChangeListener("selection", this);
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showOne();
     }
     @Override
     public void propertyChange(PropertyChangeEvent evt) {

@@ -107,7 +107,9 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     // some actions
     add(add);
     add(del);
+    actions.addSeparator();
     add(thumbs.getFitAction());
+    add(thumbs.getOneAction());
     add(thumbs.getAllAction());
 
     // done
