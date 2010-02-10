@@ -90,7 +90,6 @@ public class ThumbnailWidget extends JComponent {
     }
   });
   private Thumbnail selection = null;
-  private boolean pendingCenter = false;
   private Action2 zoomFit = new Fit(), zoomAll = new All();
 
   /**
@@ -175,25 +174,6 @@ public class ThumbnailWidget extends JComponent {
     showSelection();
   }
   
-  @Override
-  public String getToolTipText() {
-    // TODO Auto-generated method stub
-    return super.getToolTipText();
-  }
-  
-  @Override
-  public String getToolTipText(MouseEvent event) {
-    Thumbnail thumb = getThumb(event.getPoint());
-    return thumb!=null ? getToolTipText(thumb.source) : null;
-  }
-  
-  /**
-   * resolve tooltip for source
-   */
-  public String getToolTipText(InputSource source) {
-    return source.getName();
-  }
-  
   /**
    * remove a source
    */
@@ -218,6 +198,25 @@ public class ThumbnailWidget extends JComponent {
     
   }
   
+  @Override
+  public String getToolTipText() {
+    // TODO Auto-generated method stub
+    return super.getToolTipText();
+  }
+  
+  @Override
+  public String getToolTipText(MouseEvent event) {
+    Thumbnail thumb = getThumb(event.getPoint());
+    return thumb!=null ? getToolTipText(thumb.source) : null;
+  }
+  
+  /**
+   * resolve tooltip for source
+   */
+  public String getToolTipText(InputSource source) {
+    return source.getName();
+  }
+  
   private void unselect(InputSource source) {
     if (selection==null || selection.source!=source)
       return;
@@ -235,26 +234,6 @@ public class ThumbnailWidget extends JComponent {
       if (e.isControlDown()) {
         // zoom
         thumbSize = Math.max(64, thumbSize -= e.getWheelRotation() * 32);
-        
-        // zoom in?
-        if (e.getWheelRotation()<0 && getParent() instanceof JViewport) {
-          
-          final JViewport port = (JViewport)getParent();
-          Point mouse = e.getPoint();
-          Dimension size = getSize();
-          final float centerx = mouse.x / (float)size.width;
-          final float centery = mouse.y / (float)size.height;
-
-          SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-              center(new Point(
-                (int)(getSize().width * centerx),
-                (int)(getSize().height* centery)
-              ));
-            }
-          });
-        }          
         revalidate();
         repaint();
       } else {
@@ -272,16 +251,9 @@ public class ThumbnailWidget extends JComponent {
     
     @Override
     public void mousePressed(MouseEvent e) {
-      // change selection
-      Thumbnail old = selection;
       Thumbnail thumb = getThumb(e.getPoint());
-      // none or already selected?
-      if (thumb==null||old==thumb)
-        return;
-      // select and end
-      selection = thumb;
-      repaint();
-      firePropertyChange("selection", old!=null ? old.getSource() : null, selection.getSource());
+      if (thumb!=null)
+        select(thumb);
     }
     
     @Override
@@ -303,7 +275,6 @@ public class ThumbnailWidget extends JComponent {
     JViewport port = (JViewport)getParent();
     Dimension size = fit(selection.size, port.getSize());
     thumbSize = Math.max(size.width, size.height);
-    pendingCenter = true;
     revalidate();
     repaint();
   }
@@ -333,6 +304,20 @@ public class ThumbnailWidget extends JComponent {
       revalidate();
       repaint();
     }
+  }
+  
+  private void select(Thumbnail thumb) {
+    
+    Thumbnail old = selection;
+    if (old==thumb)
+      return;
+    
+    // change selection
+    selection = thumb;
+
+    // show
+    repaint();
+    firePropertyChange("selection", old!=null ? old.getSource() : null, selection!=null ? selection.getSource() : null);
   }
   
   private Thumbnail getThumb(Point pos) {
@@ -417,13 +402,6 @@ public class ThumbnailWidget extends JComponent {
         row++;
     }
     
-    // a pending center?
-    if (pendingCenter) {
-      pendingCenter = false;
-      if (selection!=null) 
-        center(new Point((int)selection.renderDest.getCenterX(), (int)selection.renderDest.getCenterY()));
-    }
-
   } // paint
   
   private void center(Point pos) {

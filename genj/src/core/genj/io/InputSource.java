@@ -72,6 +72,16 @@ public abstract class InputSource {
       return new FileInputStream(file);
     }
     
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof FileInput && ((FileInput)obj).file.equals(file);
+    }
+    
+    @Override
+    public int hashCode() {
+      return file.hashCode();
+    }
+    
   }
   
   public static class ByteInput extends InputSource {
@@ -86,6 +96,16 @@ public abstract class InputSource {
     @Override
     public InputStream open() {
       return new ByteArrayInputStream(bytes);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof ByteInput && ((ByteInput)obj).bytes.equals(bytes);
+    }
+    
+    @Override
+    public int hashCode() {
+      return bytes.hashCode();
     }
     
   }

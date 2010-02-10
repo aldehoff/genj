@@ -21,14 +21,13 @@ package genj.edit.beans;
 
 import genj.edit.Images;
 import genj.edit.actions.RunExternal;
-import genj.gedcom.Entity;
 import genj.gedcom.Media;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
-import genj.gedcom.TagPath;
 import genj.io.InputSource;
+import genj.util.DefaultValueMap;
 import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -47,7 +46,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -69,10 +72,23 @@ public class MediaBean extends PropertyBean implements ContextProvider {
   
   private final static Resources RES = Resources.get(MediaBean.class);
   
-  private ThumbnailWidget thumbs = new ThumbnailWidget();
+  private Map<InputSource,Set<Property>> input2properties = 
+    new DefaultValueMap<InputSource,Set<Property>>(new HashMap<InputSource,Set<Property>>(), new HashSet<Property>());
+  
+  private ThumbnailWidget thumbs = new ThumbnailWidget() {
+    public String getToolTipText(InputSource source) {
+      StringBuffer result = new StringBuffer();
+      result.append("<html><body>");
+      int i=0; for (Property prop : input2properties.get(source)) {
+        if (i++>0) result.append("<br>");
+        result.append(prop.toString());
+      }
+      result.append("</body></html>");
+      return result.toString();
+    }
+  };
   private JToolBar actions = new JToolBar();
   private Action2 add = new Add(), del = new Del();
-  //private List<Property> removals = new ArrayList<Property>();
   
   /**
    * Constructor
@@ -125,44 +141,66 @@ public class MediaBean extends PropertyBean implements ContextProvider {
   @Override
   protected void setPropertyImpl(Property prop) {
     
+    input2properties.clear();
+    
     // clear?
     if (prop==null) {
       thumbs.clear();
       add.setEnabled(false);
       del.setEnabled(false);
     } else {
-      thumbs.setSources(scan(prop));
+      
+      scan(prop);
+      
+      thumbs.setSources(new ArrayList<InputSource>(input2properties.keySet()));
+      
       add.setEnabled(true);
       del.setEnabled(true);
     }
   }
   
-  private List<InputSource> scan(Property property) {
+  private void scan(Property root) {
     
-    List<InputSource> files = new ArrayList<InputSource>();
-    
-    // find all contained medias
-    for (PropertyFile file : property.getProperties(PropertyFile.class)) {
-      if (file.getFile()!=null) {
-        files.add(InputSource.get(file.getFile().getName(), file.getFile()));
-      }
+    // check OBJEs
+    for (int i=0;i<root.getNoOfProperties(); i++) {
+      Property child = root.getProperty(i);
+      if (!"OBJE".equals(child.getTag()))
+        scan(child);
+      else
+        scan(root, child);
     }
     
-    // find all referenced medias
-    for (PropertyXRef ref : property.getProperties(PropertyXRef.class)) {
-      Entity entity = ref.getTargetEntity();
-      if (entity instanceof Media) {
-        Media media = (Media)entity;
-        PropertyFile file = media.getFile();
-        if (file!=null&&file.getFile()!=null)
-          files.add(InputSource.get(file.getFile().getName(), file.getFile()));
-        PropertyBlob blob = media.getBlob();
-        if (blob!=null)
-          files.add(InputSource.get(media.getTitle(), blob.getBlobData()));
-      }
-    }
+    // done
+  }
+  
+  private void scan(Property parent, Property OBJE) {
 
-    return files;
+    // TODO - what if the file was loaded remotely?
+    
+    // a OBJE reference?
+    if (OBJE instanceof PropertyXRef && ((PropertyXRef)OBJE).getTargetEntity() instanceof Media) {
+      Media media = (Media)((PropertyXRef)OBJE).getTargetEntity();
+      PropertyFile pfile = media.getFile();
+      if (pfile!=null&&pfile.getFile()!=null){
+        input2properties.get(InputSource.get(pfile.getFile())).add(parent);
+        return;
+      }
+      PropertyBlob blob = media.getBlob();
+      if (blob!=null)
+        input2properties.get(InputSource.get(media.getTitle(), blob.getBlobData())).add(parent);
+      return;
+    }
+      
+    // an inline OBJE|FILE?
+    Property FILE = OBJE.getProperty("FILE");
+    if (FILE instanceof PropertyFile) {
+      File file = ((PropertyFile)FILE).getFile();
+      if (file!=null) 
+        input2properties.get(InputSource.get(file)).add(parent);
+      return;
+    }
+    
+    // unusable OBJE
   }
   
   private class Add extends Action2 implements ListSelectionListener, ChangeListener {
