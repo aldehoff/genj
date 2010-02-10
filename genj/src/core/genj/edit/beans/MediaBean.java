@@ -34,7 +34,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.NestedBlockLayout;
-import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.ThumbnailWidget;
 import genj.view.ContextProvider;
 import genj.view.ViewContext;
@@ -97,11 +96,10 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     
     setLayout(new BorderLayout());
 
-    ScrollPaneWidget scroll = new ScrollPaneWidget(thumbs);
     setBorder(BorderFactory.createLoweredBevelBorder());
 
     add(BorderLayout.NORTH , actions);
-    add(BorderLayout.CENTER, scroll);
+    add(BorderLayout.CENTER, thumbs);
     
     setPreferredSize(new Dimension(32,32));
     actions.setFloatable(false);

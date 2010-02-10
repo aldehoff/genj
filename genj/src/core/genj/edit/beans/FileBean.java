@@ -26,12 +26,10 @@ import genj.gedcom.PropertyFile;
 import genj.io.InputSource;
 import genj.util.Origin;
 import genj.util.swing.FileChooserWidget;
-import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.ThumbnailWidget;
 import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
@@ -95,10 +93,7 @@ public class FileBean extends PropertyBean {
     add(chooser, BorderLayout.NORTH);      
     
     // setup review
-    add(new ScrollPaneWidget(preview), BorderLayout.CENTER);
-    
-    // setup a reasonable preferred size
-    setPreferredSize(new Dimension(128,128));
+    add(preview, BorderLayout.CENTER);
     
     // setup drag'n'drop
     new DropTarget(this, new DropHandler());
