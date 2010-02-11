@@ -24,6 +24,7 @@ import genj.edit.actions.RunExternal;
 import genj.gedcom.Media;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
+import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
 import genj.io.InputSource;
@@ -45,6 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -136,6 +139,8 @@ public class MediaBean extends PropertyBean implements ContextProvider {
   
   @Override
   protected void commitImpl(Property property) {
+    
+    // FIXME commit media changes
   }
 
   @Override
@@ -203,11 +208,17 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     // unusable OBJE
   }
   
+  private Property[] list(Collection<Property> props) {
+    Property[] result = props.toArray(new Property[0]);
+    Arrays.sort(result, new PropertyComparator(".:DATE"));
+    return result;
+  }
+  
   private class Add extends Action2 implements ListSelectionListener, ChangeListener {
     
-    private FileChooserWidget chooser;
-    private JList targets;
+    private JList to;
     private Action ok;
+    FileChooserWidget chooser;
     
     public Add() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getOverLayed(Images.imgNew));
@@ -215,7 +226,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     @Override
     public void setEnabled(boolean set) {
       // only if there are targets
-      if (set&&getTargets().isEmpty())
+      if (set&&candidates().length==0)
         set = false;
       // let through
       super.setEnabled(set);
@@ -226,7 +237,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
         setTip("");
     }
     
-    private List<Property> getTargets() {
+    private Property[] candidates() {
       List<Property> result = new ArrayList<Property>();
       Property p = getProperty(); 
       if (p!=null) {
@@ -236,41 +247,53 @@ public class MediaBean extends PropertyBean implements ContextProvider {
           if (c.getMetaProperty().allows("OBJE"))
             result.add(c);
       }
-      return result;
+      return list(result);
     }
     
     @Override
     public void actionPerformed(ActionEvent e) {
       
       // ask user
-      chooser = new FileChooserWidget();
       Origin origin = getProperty().getGedcom().getOrigin();
+      chooser = new FileChooserWidget();
+      ThumbnailWidget preview = new ThumbnailWidget();
+      preview.setPreferredSize(new Dimension(128,128));
+      chooser.setAccessory(preview);
       chooser.setDirectory(origin.getFile()!=null ? origin.getFile().getParent() : null);
       
-      targets = new JList(getTargets().toArray());
-      targets.setVisibleRowCount(5);
+      to = new JList(candidates());
+      to.setVisibleRowCount(5);
 
       JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><file gx=\"1\"/><l2 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
       options.add(new JLabel(RES.getString("file.title")));
       options.add(chooser);
       options.add(new JLabel(RES.getString("file.add", "...")));
-      options.add(new JScrollPane(targets));
+      options.add(new JScrollPane(to));
 
       ok = Action2.ok();
 
-      targets.addListSelectionListener(this);
+      to.addListSelectionListener(this);
       chooser.addChangeListener(this);
       
-      if (targets.getModel().getSize()>0)
-        targets.setSelectedIndex(0);
+      if (to.getModel().getSize()>0)
+        to.setSelectedIndex(0);
+      
+      validate();
       
       if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), DialogHelper.getComponent(e)))
         return;
-      
-      // TODO add it
-      for (Object target : targets.getSelectedValues()) {
-      }
 
+      // already known?
+      InputSource source = InputSource.get(getFile());
+      if (!input2properties.containsKey(source))
+        thumbs.addSource(source);
+      Set<Property> props = input2properties.get(source); 
+      for (Object prop : to.getSelectedValues())
+        props.add((Property)prop);
+
+      // mark
+      MediaBean.this.changeSupport.fireChangeEvent();
+      
       // done
     }
     
@@ -281,7 +304,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     
     private void validate() {
       File file =  getFile();
-      ok.setEnabled(targets.getSelectedIndices().length>0 && file!=null && file.exists());
+      ok.setEnabled(to.getSelectedIndices().length>0 && file!=null && file.exists());
     }
     
     public void valueChanged(ListSelectionEvent e) {
@@ -293,7 +316,11 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     }
   } //Add
   
-  private class Del extends Action2 implements PropertyChangeListener {
+  private class Del extends Action2 implements PropertyChangeListener,ListSelectionListener {
+    
+    private JList from;
+    private Action ok;
+    
     public Del() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getGrayedOut().getOverLayed(Images.imgDel));
       thumbs.addPropertyChangeListener(this);
@@ -318,7 +345,36 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       InputSource source = thumbs.getSelection();
       if (source==null)
         return;
-      // TODO remove!
+      // ask user
+      from = new JList(list(input2properties.get(source)));
+      from.setVisibleRowCount(5);
+      if (from.getModel().getSize()>0)
+        from.getSelectionModel().setSelectionInterval(0,from.getModel().getSize());
+
+      JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
+      options.add(new JLabel(RES.getString("file.del", "...")));
+      options.add(new JScrollPane(from));
+
+      ok = Action2.ok();
+
+      from.addListSelectionListener(this);
+        
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), DialogHelper.getComponent(e)))
+        return;
+      
+      // remove
+      thumbs.removeSource(source);
+      input2properties.remove(source);
+      
+      // mark
+      MediaBean.this.changeSupport.fireChangeEvent();
+      
+      // done
     }
+    
+    public void valueChanged(ListSelectionEvent e) {
+      ok.setEnabled(from.getSelectedIndices().length>0);
+    }
+    
   }
 }
