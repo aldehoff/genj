@@ -20,6 +20,7 @@
 package genj.util.swing;
 
 import genj.io.InputSource;
+import genj.io.InputSource.FileInput;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -60,10 +61,12 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.event.IIOReadUpdateListener;
 import javax.imageio.stream.ImageInputStream;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
+import javax.swing.filechooser.FileSystemView;
 
 /**
  * A widget for showing image thumbnails
@@ -344,8 +347,11 @@ public class ThumbnailWidget extends JComponent {
   public void showSelection() {
     if (selection==null)
       return;
-    Dimension size = fit(selection.size, getSize());
-    thumbSize = Math.max(size.width, size.height);
+    // known size?
+    if (selection.size.width>0&&selection.size.height>0) {
+      Dimension size = fit(selection.size, getSize());
+      thumbSize = Math.max(size.width, size.height);
+    }
     topLeft.setLocation(0,0);
     Rectangle r = getRectangle(selection);
     scrollTo(-(r.x+(r.width-getWidth())/2),-(r.y+thumbBorder.top));
@@ -459,6 +465,19 @@ public class ThumbnailWidget extends JComponent {
     int cols = (int) Math.ceil(Math.sqrt(thumbs.size()));
     int rows = (int) Math.ceil(thumbs.size() / (float) cols);
     return new Dimension(cols,rows);
+  }
+  
+  private Image getFallback(InputSource source) {
+    
+    ImageIcon result = IMG_THUMBNAIL;
+    
+    if (source instanceof FileInput) {
+      Icon icon = FileSystemView.getFileSystemView().getSystemIcon( ((FileInput)source).getFile() );
+      if (icon!=null)
+        result = new ImageIcon(icon);
+    }
+    
+    return result.getImage();
   }
 
   @Override
@@ -699,8 +718,9 @@ public class ThumbnailWidget extends JComponent {
 
         // setup fallback
         synchronized (this) {
-          image = new SoftReference<Image>(IMG_THUMBNAIL.getImage());
-          size.setSize(IMG_THUMBNAIL.getIconWidth(), IMG_THUMBNAIL.getIconHeight());
+          Image i = getFallback(source);
+          image = new SoftReference<Image>(i);
+          size.setSize(i.getWidth(null), i.getHeight(null));
           imageSize.setSize(size);
           imageView.setBounds(0, 0, size.width, size.height);
         }
