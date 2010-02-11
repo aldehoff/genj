@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import javax.swing.Icon;
+
 /**
  * Improved ImageIcon <il> <li>can be read conveniently as resource for object
  * or class <li>knows about image resolution </il>
@@ -67,6 +69,19 @@ public class ImageIcon extends javax.swing.ImageIcon {
    */
   public ImageIcon(Image copy) {
     super(copy);
+  }
+  
+  /**
+   * from icon
+   */
+  public ImageIcon(Icon icon) {
+    if (icon instanceof javax.swing.ImageIcon)
+      setImage( ((javax.swing.ImageIcon)icon).getImage() );
+    else {
+      BufferedImage image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+      icon.paintIcon(null, image.getGraphics(), 0, 0);
+      setImage(image);
+    }
   }
 
   /**
