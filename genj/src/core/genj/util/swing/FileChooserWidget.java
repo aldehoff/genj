@@ -19,16 +19,20 @@
  */
 package genj.util.swing;
 
+import genj.io.InputSource;
 import genj.util.EnvironmentChecker;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 
@@ -211,7 +215,7 @@ public class FileChooserWidget extends JPanel {
   /**
    * Choose with file dialog
    */
-  private class Choose extends Action2 {
+  private class Choose extends Action2 implements PropertyChangeListener {
     
     /** constructor */
     private Choose() {
@@ -224,6 +228,7 @@ public class FileChooserWidget extends JPanel {
       // create and show chooser      
       FileChooser fc = new FileChooser(FileChooserWidget.this, getName(), Action2.TXT_OK, extensions, directory);
       fc.setAccessory(accessory);
+      fc.addPropertyChangeListener(this);
       fc.showDialog();
       
       // check result
@@ -237,6 +242,16 @@ public class FileChooserWidget extends JPanel {
       }
       
       // done
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+      
+      if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(evt.getPropertyName())) {
+        File file = (File)evt.getNewValue();
+        if (accessory instanceof ThumbnailWidget)
+          ((ThumbnailWidget)accessory).setSource(file!=null ? InputSource.get(file) : null);
+      }
     }
     
   } //Choose
