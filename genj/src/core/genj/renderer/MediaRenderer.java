@@ -31,7 +31,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.geom.Dimension2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +59,7 @@ public class MediaRenderer {
   /**
    * size override 
    */
-  public static Dimension2D getSize(Property root, Graphics graphics) {
+  public static Dimension getSize(Property root, Graphics graphics) {
     
     // check cache against newly resolved source
     InputSource source = getSource(root);

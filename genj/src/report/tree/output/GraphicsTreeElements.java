@@ -11,16 +11,17 @@ package tree.output;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
+import genj.renderer.MediaRenderer;
 import genj.report.Options;
-import genj.util.swing.ImageIcon;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
@@ -308,18 +309,13 @@ public class GraphicsTreeElements implements TreeElements {
         // Determine photo size
         int imageWidth = 0;
         int imageHeight = indibox.height;
-        ImageIcon icon = null;
         if (draw_images) {
-            PropertyFile file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
-            if (file != null) {
-                icon = file.getValueAsIcon();
-                if (icon != null) {
-                    imageWidth = icon.getIconWidth() * indibox.height / icon.getIconHeight();
-                    if (imageWidth > MAX_IMAGE_WIDTH) {
-                        imageWidth = MAX_IMAGE_WIDTH;
-                        imageHeight = icon.getIconHeight() * imageWidth / icon.getIconWidth();
-                    }
-                }
+          Dimension d = MediaRenderer.getSize(i, graphics);
+          if (d.width>0&&d.height>0)
+            imageWidth = d.width * indibox.height / d.height;
+            if (imageWidth > MAX_IMAGE_WIDTH) {
+                imageWidth = MAX_IMAGE_WIDTH;
+                imageHeight = d.height * imageWidth / d.width;
             }
         }
         int dataWidth = indibox.width - imageWidth;
@@ -472,7 +468,9 @@ public class GraphicsTreeElements implements TreeElements {
                 scale = IMAGE_SCALE_FACTOR;
             }
 
-            graphics.drawImage(icon.getImage(), (int)(x + dataWidth*scale), (int)(y), (int)(imageWidth*scale), (int)(imageHeight*scale), null);
+            MediaRenderer.render(graphics, 
+                new Rectangle((int)(x + dataWidth*scale), (int)(y), (int)(imageWidth*scale), (int)(imageHeight*scale)), 
+                i);
 
             if (high_quality_images)
                 graphics.setTransform(transform);
@@ -799,18 +797,14 @@ public class GraphicsTreeElements implements TreeElements {
         // Image
         if(draw_images)
         {
-            PropertyFile file = (PropertyFile)i.getProperty(new TagPath("INDI:OBJE:FILE"));
-            if(file != null)
-            {
-                ImageIcon icon = file.getValueAsIcon();
-                if(icon != null) {
-                    int newWidth = icon.getIconWidth() * DEFAULT_INDIBOX_HEIGHT / icon.getIconHeight();
-                    if (newWidth < MAX_IMAGE_WIDTH)
-                        indibox.width += newWidth;
-                    else
-                        indibox.width += MAX_IMAGE_WIDTH;
-                }
-            }
+          Dimension d = MediaRenderer.getSize(i, graphics);
+          if(d.width>0&&d.height>0) {
+              int newWidth = d.width * DEFAULT_INDIBOX_HEIGHT / d.height;
+              if (newWidth < MAX_IMAGE_WIDTH)
+                  indibox.width += newWidth;
+              else
+                  indibox.width += MAX_IMAGE_WIDTH;
+          }
         }
     }
 
