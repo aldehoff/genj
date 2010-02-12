@@ -25,18 +25,20 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
+import genj.io.InputSource;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.geom.Dimension2D;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,45 +55,67 @@ public class MediaRenderer {
 
   private final static Logger LOG = Logger.getLogger("genj.renderer");
   
+  private final static Map<Property, CacheEntry> CACHE = new WeakHashMap<Property, CacheEntry>();
+  
   /**
    * size override 
    */
   public static Dimension2D getSize(Property root, Graphics graphics) {
+    
+    // check cache against newly resolved source
+    InputSource source = getSource(root);
+    if (source==null)
+      return new Dimension();
+    
+    CacheEntry cached = CACHE.get(root);
+    if (cached!=null&&cached.source.equals(source))
+      return cached.size;
+
+    cached = new CacheEntry();
+    cached.source = source;
+    cached.size = new Dimension();
+    CACHE.put(root, cached);
+    
+    // read new
+    InputStream in = null;
     try {
-      InputStream in = getIn(root);
+      in = source.open();
       if (in!=null) {
+        LOG.finer("Reading size from "+source);
         ImageInputStream iin = ImageIO.createImageInputStream(in);
         Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
         if (iter.hasNext()) {
           ImageReader reader = iter.next();
           try {
             reader.setInput(iin, false, false);
-            return new Dimension(reader.getWidth(0), reader.getHeight(0));
+            cached.size.setSize(reader.getWidth(0), reader.getHeight(0));
           } finally {
             reader.dispose();
           }
         }
       }
     } catch (IOException ioe) {
-      LOG.log(Level.FINER, "Can't get image dimension for "+root, ioe);
+      LOG.log(Level.FINER, "Can't get image dimension for "+root+"/"+source, ioe);
+    } finally {
+      try { in.close(); } catch (Throwable t) {}
     }
-
-    return new Dimension();
+    
+    return cached.size;
   }
   
-  private static InputStream getIn(Property prop) throws IOException {
+  public static InputSource getSource(Property prop) {
     
     // a file?
     if (prop instanceof PropertyFile) {
       File file = ((PropertyFile)prop).getFile();
       if (file.exists())
-        return new FileInputStream(file);
+        return InputSource.get(file);
       return null;
     }
 
     // a blob?
     if (prop instanceof PropertyBlob)
-      return new ByteArrayInputStream(((PropertyBlob)prop).getBlobData());
+      return InputSource.get(prop.toString(), ((PropertyBlob)prop).getBlobData());
     
     // contained OBJE?
     for (int i=0;i<prop.getNoOfProperties(); i++) {
@@ -104,10 +128,10 @@ public class MediaRenderer {
           Media m = (Media)e;
           PropertyBlob BLOB = m.getBlob();
           if (BLOB!=null)
-            return new ByteArrayInputStream(BLOB.getBlobData());
+            return InputSource.get(prop.toString(), BLOB.getBlobData());
           PropertyFile FILE = m.getFile();
           if (FILE!=null&&FILE.getFile()!=null&&FILE.getFile().exists())
-            return new FileInputStream(FILE.getFile());
+            return InputSource.get(FILE.getFile());
         }
       }
       
@@ -117,7 +141,7 @@ public class MediaRenderer {
         if (file instanceof PropertyFile) {
           PropertyFile FILE = ((PropertyFile)file);
           if (FILE!=null&&FILE.getFile()!=null&&FILE.getFile().exists())
-            return new FileInputStream(FILE.getFile());
+            return InputSource.get(FILE.getFile());
         }
       }
       
@@ -131,39 +155,89 @@ public class MediaRenderer {
    * render override
    */
   public static void render(Graphics g, Rectangle bounds, Property root) {
-    InputStream in = null;
-    try {
-      in = getIn(root);
-      if (in!=null) {
-        ImageInputStream iin = ImageIO.createImageInputStream(in);
-        Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
-        if (iter.hasNext()) {
-          ImageReader reader = iter.next();
-          try {
-            reader.setInput(iin, false, false);
-            int w = reader.getWidth(0);
-            int h = reader.getHeight(0);
-            ImageReadParam param = reader.getDefaultReadParam();
-            param.setSourceSubsampling(Math.max(1, (int) Math.floor(w/bounds.width)), Math.max(1, (int) Math.floor(h/bounds.height)), 0, 0);
-            Image img = reader.read(0, param);
-            g.drawImage(img,
-                bounds.x,bounds.y,bounds.x+bounds.width,bounds.y+bounds.height,
-                0,0,img.getWidth(null),img.getHeight(null),
-                null
-                );
-          } finally {
-            reader.dispose();
-          }
+
+    Image image = null;
+    
+    // check cache against newly resolved source
+    InputSource source = getSource(root);
+    if (source==null)
+      return;
+    
+    CacheEntry cached = CACHE.get(root);
+    if (cached!=null) {
+      if (cached.source.equals(source)) {
+        
+        // no can do?
+        if (cached.size.width==0||cached.size.height==0)
           return;
+        
+        // image good enough?
+        image = cached.image.get();
+        if (image!=null) {
+          if ( (cached.size.width>=bounds.width&&image.getWidth(null)<bounds.width) 
+             ||(cached.size.height>=bounds.height&&image.getHeight(null)<bounds.height))
+          image = null;
         }
       }
-    } catch (IOException ioe) {
-      LOG.log(Level.FINER, "Can't render image for "+root, ioe);
-    } finally {
-      if (in!=null) try { in.close(); } catch (IOException e) {}
+    } else {
+      cached = new CacheEntry();
+      cached.source = source;
     }
     
+    // load it if need-be
+    if (image==null) {
+      
+      InputStream in = null;
+      try {
+        in = source.open();
+        if (in!=null) {
+          LOG.finer("Reading image from "+source+" for "+bounds.getSize());
+          
+          ImageInputStream iin = ImageIO.createImageInputStream(in);
+          Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
+          if (iter.hasNext()) {
+            ImageReader reader = iter.next();
+            try {
+              reader.setInput(iin, false, false);
+              cached.size.setSize(reader.getWidth(0), reader.getHeight(0));
+              ImageReadParam param = reader.getDefaultReadParam();
+              param.setSourceSubsampling(
+                Math.max(1, (int) Math.floor(cached.size.width/bounds.width)), 
+                Math.max(1, (int) Math.floor(cached.size.height/bounds.height))
+                , 0, 0);
+              image = reader.read(0, param);
+              
+              cached.image = new SoftReference<Image>(image);
+            } finally {
+              reader.dispose();
+            }
+          }
+        }
+      } catch (IOException ioe) {
+        LOG.log(Level.FINER, "Can't get image for "+root+"/"+source, ioe);
+        cached.size.setSize(0, 0);
+      } finally {
+        if (in!=null) try { in.close(); } catch (IOException e) {}
+      }
+    }
+    
+    // render what we have
+    if (image!=null)
+      g.drawImage(image,
+        bounds.x,bounds.y,bounds.x+bounds.width,bounds.y+bounds.height,
+        0,0,image.getWidth(null),image.getHeight(null),
+        null
+      );
+    
     // done
+  }
+  
+  private static class CacheEntry {
+    
+    InputSource source;
+    Dimension size;
+    SoftReference<Image> image = new SoftReference<Image>(null);
+    
   }
 
 }

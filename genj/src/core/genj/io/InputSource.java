@@ -82,6 +82,11 @@ public abstract class InputSource {
       return file.hashCode();
     }
     
+    @Override
+    public String toString() {
+      return "file name="+getName()+" file="+file.toString();
+    }
+    
   }
   
   public static class ByteInput extends InputSource {
@@ -106,6 +111,11 @@ public abstract class InputSource {
     @Override
     public int hashCode() {
       return bytes.hashCode();
+    }
+    
+    @Override
+    public String toString() {
+      return "byte array size="+bytes.length+" name="+getName();
     }
     
   }
