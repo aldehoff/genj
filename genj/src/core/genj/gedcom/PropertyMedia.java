@@ -19,16 +19,15 @@
  */
 package genj.gedcom;
 
-import genj.util.swing.ImageIcon;
-import java.util.List;
 
 /**
  * Gedcom Property : MEDIA
- * Property wrapping a reference to a multiMedia object - this object
- * can contain BLOBs with in-line information. We discourage the use
- * of this entity in GenJ and encourage in-line OBJE properties instead.
+ * Property wrapping a reference to a multiMedia object - in Gedcom 5.5 this 
+ * record contains BLOBs with in-line information. We discourage the use
+ * of this entity in GenJ and encourage either to switch to 5.5.1 which allows
+ * in-line FILE or use inline OBJE properties instead.
  */
-public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
+public class PropertyMedia extends PropertyXRef {
 
   /**
    * This will be called once when instantiation has
@@ -80,12 +79,4 @@ public class PropertyMedia extends PropertyXRef implements IconValueAvailable {
     return Gedcom.OBJE;
   }
 
-  /**
-   * Returns an ImgIcon if existing in one of the sub-properties
-   */
-  public ImageIcon getValueAsIcon() {
-    List<IconValueAvailable> ps = super.getProperties(IconValueAvailable.class);
-    return ps.isEmpty() ? null : ps.get(0).getValueAsIcon();
-  }
-  
 } //PropertyMedia

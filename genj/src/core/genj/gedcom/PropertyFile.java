@@ -26,12 +26,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.SoftReference;
 
 /**
  * Gedcom Property : FILE
  */
-public class PropertyFile extends Property implements IconValueAvailable {
+public class PropertyFile extends Property {
 
   /** standard image */
   public final static ImageIcon DEFAULT_IMAGE = Grammar.V55.getMeta(new TagPath("INDI:OBJE:FILE")).getImage();
@@ -44,9 +43,6 @@ public class PropertyFile extends Property implements IconValueAvailable {
 
   /** whether file-name is relative or absolute */
   private boolean isRelativeChecked = false;
-
-  /** the image */
-  private Object valueAsIcon = null;
 
   /**
    * Returns the tag of this property
@@ -94,43 +90,6 @@ public class PropertyFile extends Property implements IconValueAvailable {
     return file;
   }
 
-  /**
-   * Tries to return the data of the referenced file as an icon
-   */
-  public synchronized ImageIcon getValueAsIcon() {
-
-    // ever loaded?
-    if (valueAsIcon instanceof SoftReference) {
-      
-      // check reference
-      ImageIcon result = (ImageIcon)((SoftReference)valueAsIcon).get();
-      if (result!=null)
-        return result;
-     
-      // reference was cut
-      valueAsIcon = null;   
-    }
-
-    // never loaded or cut reference? 
-    if (valueAsIcon==null) {
-      
-      // load it
-      ImageIcon result = loadValueAsIcon();
-      
-      // remember
-      if (result!=null)
-        valueAsIcon = new SoftReference(result);
-      else
-        valueAsIcon = new Object(); // NULL
-
-      // done    
-      return result;
-    }
-
-    // checked and never loaded
-    return null;
-  }
-  
   /**
    * Tries to Load the date of the referenced file 
    */
@@ -197,9 +156,6 @@ public class PropertyFile extends Property implements IconValueAvailable {
     file = value.replace('\\','/');
     isRelativeChecked = false;
     
-    // Reinit our icon calculation
-    valueAsIcon = null;
-
     // 20030518 don't automatically update TITL/FORM
     // will be prompted in ProxyFile
     
