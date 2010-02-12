@@ -77,6 +77,8 @@ import javax.swing.text.html.parser.ParserDelegator;
  */
 public class BlueprintRenderer {
 
+  private final static ImageIcon BROKEN = new ImageIcon(BlueprintEditor.class, "Broken.png");
+  
   private final static Logger LOG = Logger.getLogger("genj.renderer");
   
   public static final String HINT_KEY_TXT = "txt";
@@ -232,7 +234,14 @@ public class BlueprintRenderer {
   public void setDebug(boolean set) {
     isDebug = set;
   }
-
+  
+  /**
+   * Default implementation to lookup property from entity
+   */
+  protected Property getProperty(Entity entity, TagPath path) {
+    return entity.getProperty(path);
+  }
+  
   /**
    * Our own HTMLDocument
    */  
@@ -690,15 +699,30 @@ public class BlueprintRenderer {
     @Override
     protected Dimension2D getPreferredSpan() {
       Dimension2D size = MediaRenderer.getSize(entity, graphics);
+      
+      if (isDebug && size.getWidth()==0&&size.getHeight()==0)
+        return BROKEN.getSizeInPoints(DPI.get(graphics));
+      
       double maxWidth = root.width*max/100;
       if (size.getWidth()>maxWidth)
         return new Dimension2d(maxWidth, size.getHeight() * maxWidth/size.getWidth());
+      
       return size;
     }
 
     @Override
     public void paint(Graphics g, Shape allocation) {
-      MediaRenderer.render(g, allocation.getBounds(), entity);
+      
+      Rectangle r = allocation.getBounds();
+
+      if (isDebug) {
+        Dimension2D size = MediaRenderer.getSize(entity, graphics);
+        if (size.getWidth()==0&&size.getHeight()==0) {
+          BROKEN.paintIcon(g, r.x, r.y);
+          return;
+        }
+      }
+      MediaRenderer.render(g, r, entity);
     }
     
   }
@@ -764,12 +788,9 @@ public class BlueprintRenderer {
       // still looking for property?
       if (cachedProperty!=null)
         return cachedProperty;
-      
       if (entity==null||path==null)
         return null;
-
-      cachedProperty = entity.getProperty(path);
-      
+      cachedProperty = BlueprintRenderer.this.getProperty(entity, path);
       return cachedProperty;
     }
     

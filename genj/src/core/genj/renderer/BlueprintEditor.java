@@ -64,6 +64,19 @@ import javax.swing.event.DocumentListener;
 /**
  * An editor component for changing a rendering scheme */
 public class BlueprintEditor extends JSplitPane {
+  
+  /** faked values */
+  private final static Map<String,String> SAMPLES = new HashMap<String, String>();
+  
+  static {
+    SAMPLES.put("NAME", "John /Doe/");
+    SAMPLES.put("SEX" , "M");
+    SAMPLES.put("DATE", "01 JAN 1900");
+    SAMPLES.put("PLAC", "Nice Place");
+    SAMPLES.put("ADDR", "Long Address");
+    SAMPLES.put("CITY", "Big City");
+    SAMPLES.put("POST", "12345");
+  }
 
   /** the text are for the html */
   private JTextArea source;
@@ -84,7 +97,7 @@ public class BlueprintEditor extends JSplitPane {
   private AbstractButton bInsert;
   
   /** an example entity we use */
-  private Example example; 
+  private Entity example; 
   
   /** whether we've changed */
   private boolean isChanged = false;
@@ -95,7 +108,7 @@ public class BlueprintEditor extends JSplitPane {
   /**
    * Constructor   */
   public BlueprintEditor(Entity recipient) { 
-    example = new Example(recipient);
+    example = recipient;
     grammar = recipient.getGedcom().getGrammar();
     // preview
     preview = new Preview();
@@ -236,7 +249,30 @@ public class BlueprintEditor extends JSplitPane {
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       // render content
       g.setFont(getFont());
-      BlueprintRenderer renderer = new BlueprintRenderer(new Blueprint(source.getText()));
+      BlueprintRenderer renderer = new BlueprintRenderer(new Blueprint(source.getText())) {
+        @Override
+        protected Property getProperty(Entity entity, TagPath path) {
+          
+          // try to lookup from entity
+          Property result = super.getProperty(entity, path);
+          if (result!=null) 
+            return result;
+
+          // generate a sample value
+          String sample = SAMPLES.get(path.getLast());
+          if (sample==null)
+            sample = Gedcom.getName(path.getLast());
+            
+          MetaProperty meta = grammar.getMeta(path, false);
+          if (PropertyXRef.class.isAssignableFrom(meta.getType()))
+            sample = "@...@";
+          try {
+            return meta.create(sample);
+          } catch (GedcomException e) {
+            return new PropertySimpleReadOnly(path.getLast(), sample);
+          }
+        }
+      };
       renderer.setDebug(isChanged);
       renderer.render(g, example, bounds);
       // done
@@ -274,71 +310,5 @@ public class BlueprintEditor extends JSplitPane {
       // done
     }
   } //ActionInsert
-
-  /**
-   * Example
-   */
-  private class Example extends Entity  {
-    
-    private Entity proxied;
-    
-    /** faked values */
-    private Map<String,String> tag2value = new HashMap<String, String>();
-    
-    /**
-     * Constructor
-     */
-    private Example(Entity proxied) {
-      this.proxied = proxied;
-      
-      tag2value.put("NAME", "John /Doe/");
-      tag2value.put("SEX" , "M");
-      tag2value.put("DATE", "01 JAN 1900");
-      tag2value.put("PLAC", "Nice Place");
-      tag2value.put("ADDR", "Long Address");
-      tag2value.put("CITY", "Big City");
-      tag2value.put("POST", "12345");
-    }
-    /**
-     * @see genj.gedcom.Indi#getId()
-     */
-    public String getId() {
-      return proxied.getId();
-    }
-    /**
-     * @see genj.gedcom.PropertyIndi#getTag()
-     */
-    public String getTag() {
-      return proxied.getTag();
-    }
-    /**
-     * @see genj.gedcom.Property#getProperty(genj.gedcom.TagPath)
-     */
-    public Property getProperty(TagPath path) {
-      // safety check for root-tag
-      if (!path.get(0).equals(getTag())) 
-        return null;
-      // this?
-      if (path.length()==1)
-        return proxied;
-      // available?
-      Property result = proxied.getProperty(path);
-      if (result!=null&&result.getValue().length()>0)
-        return result;
-      // fake it
-      String value = tag2value.get(path.getLast());
-      if (value==null) 
-        value = Gedcom.getName(path.getLast());
-      MetaProperty meta = grammar.getMeta(path, false);
-      if (PropertyXRef.class.isAssignableFrom(meta.getType()))
-        value = "@...@";
-      try {
-        return meta.create(value);
-      } catch (GedcomException e) {
-        return new PropertySimpleReadOnly(path.getLast(), value.toString());
-      }
-    }
-    
-  } //ExampleIndi
   
 } //RenderingSchemeEditor
