@@ -32,11 +32,6 @@ public interface PropertyRendererFactory {
   /** 
    * factory
    */
-  public PropertyRenderer getRenderer(Property prop);
-  
-  /** 
-   * factory
-   */
-  public PropertyRenderer getRenderer(TagPath path, Property prop);  
+  public PropertyRenderer getRenderer(Property root, TagPath propertyPath, Property property, String rendererType);  
   
 }

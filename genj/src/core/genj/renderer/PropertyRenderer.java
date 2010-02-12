@@ -20,12 +20,9 @@
 package genj.renderer;
 
 import genj.gedcom.Entity;
-import genj.gedcom.IconValueAvailable;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
@@ -33,9 +30,7 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.util.Dimension2d;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.UnitGraphics;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -47,11 +42,14 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * A property renderer knows how to render a property into a graphics context
  */
 public class PropertyRenderer {
+  
+  protected final static Logger LOG = Logger.getLogger("genj.renderer");
 
   public final static PropertyRenderer DEFAULT = new PropertyRenderer();
 
@@ -59,13 +57,6 @@ public class PropertyRenderer {
   
   private final static int IMAGE_GAP = 4;
   
-  /** an empty dimension */
-  private final static Dimension EMPTY_DIM = new Dimension(0,0);
-  
-  /** an replacement for a 'broken' image */  
-  private final static ImageIcon broken = 
-    new ImageIcon(PropertyRenderer.class, "Broken");
-
   public static final String HINT_KEY_TXT = "txt";
   public static final String HINT_KEY_IMG = "img";
   public static final String HINT_KEY_SHORT = "short";
@@ -76,7 +67,7 @@ public class PropertyRenderer {
   /**
    * acceptable check
    */
-  public boolean accepts(TagPath path, Property prop) {
+  public boolean accepts(Property root, TagPath path, Property prop) {
     // we take everything
     return true;
   }
@@ -88,15 +79,12 @@ public class PropertyRenderer {
    * @param preference rendering preference
    * @param dpi resolution or null  
    */
-  public final Dimension2D getSize(Property prop, Map<String,String> attributes, Graphics2D graphics) {
-    return getSizeImpl(prop, attributes, graphics);
+  public Dimension2D getSize(Property root, TagPath path, Property prop, Map<String,String> attributes, Graphics2D graphics) {
+    if (prop==null)
+      return new Dimension();
+    return getSize(prop, prop.getDisplayValue(), attributes, graphics);
   }
-  
-  protected Dimension2D getSizeImpl(Property prop, Map<String,String> attributes, Graphics2D graphics) {
-    return getSizeImpl(prop, prop.getDisplayValue(), attributes, graphics);
-
-  }
-  protected Dimension2D getSizeImpl(Property prop, String txt, Map<String,String> attributes, Graphics2D graphics) {
+  protected Dimension2D getSize(Property prop, String txt, Map<String,String> attributes, Graphics2D graphics) {
     
     double 
       w = 0,
@@ -130,31 +118,29 @@ public class PropertyRenderer {
    * @param preference rendering preference
    * @param dpi resolution or null  
    */
-  public final void render(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
-    renderImpl(g,bounds,prop,attributes);
-  }
-  
-  protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
-    renderImpl(g,bounds,prop,prop.getDisplayValue(),attributes);
+  public void render(Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
+    if (prop==null)
+      return;
+    render(g,bounds,prop,prop.getDisplayValue(),attributes);
   }
   
   /**
    * Implementation for rendering img/txt 
    */
-  protected void renderImpl(Graphics2D g, Rectangle bounds, Property prop, String txt, Map<String,String> attributes) {
+  protected void render(Graphics2D g, Rectangle bounds, Property prop, String txt, Map<String,String> attributes) {
     // image?
     if (HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) 
-      renderImpl(g, bounds, prop.getImage(false));
+      render(g, bounds, prop.getImage(false));
     // text?
     if (!HINT_VALUE_FALSE.equals(attributes.get(HINT_KEY_TXT))) 
-      renderImpl(g, bounds, txt, attributes);
+      render(g, bounds, txt, attributes);
     // done
   }
   
   /**
    * Implementation for rendering img
    */
-  protected void renderImpl(Graphics2D g, Rectangle bounds, ImageIcon img) {
+  protected void render(Graphics2D g, Rectangle bounds, ImageIcon img) {
     
     // no space?
     if (bounds.getHeight()==0||bounds.getWidth()==0)
@@ -181,7 +167,7 @@ public class PropertyRenderer {
   /**
    * Implementation for rendering txt
    */
-  protected void renderImpl(Graphics2D g, Rectangle bounds, String txt, Map<String,String> attributes) {
+  protected void render(Graphics2D g, Rectangle bounds, String txt, Map<String,String> attributes) {
     
     // check for empty string
     if (txt.length()==0)
@@ -202,34 +188,27 @@ public class PropertyRenderer {
   }
   
   /**
-   * Whether this renderer wants to paint NULL
-   */
-  protected boolean isNullRenderer() {
-    return false;
-  }
-  
-  /**
    * Place
    */
   /*package*/ static class RenderPlace extends PropertyRenderer {
     
     /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
+    public boolean accepts(Property root, TagPath path, Property prop) {
       return prop instanceof PropertyPlace;
     }
 
     /** 
      * size override
      */
-    public Dimension2D getSizeImpl(Property prop, Map<String,String> attributes, Graphics2D graphics) {
-      return super.getSizeImpl(prop, getText(prop, attributes), attributes, graphics);
+    public Dimension2D getSize(Property root, TagPath path, Property prop, Map<String,String> attributes, Graphics2D graphics) {
+      return super.getSize(prop, getText(prop, attributes), attributes, graphics);
     }
 
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
-      super.renderImpl(g, bounds, prop, getText(prop, attributes), attributes);
+    public void render( Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
+      super.render(g, bounds, prop, getText(prop, attributes), attributes);
     }
     
     private String getText(Property prop, Map<String,String> attributes) {
@@ -264,24 +243,24 @@ public class PropertyRenderer {
   /*package*/ static class RenderSex extends PropertyRenderer {
     
     /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
+    public boolean accepts(Property root, TagPath path, Property prop) {
       return prop instanceof PropertySex;
     }
 
     /** 
      * size override
      */
-    public Dimension2D getSizeImpl(Property prop, Map<String,String> attributes, Graphics2D graphics) {
+    public Dimension2D getSize(Property root, TagPath path, Property prop, Map<String,String> attributes, Graphics2D graphics) {
       patch(attributes);
-      return super.getSizeImpl(prop, value(prop, attributes), attributes, graphics);
+      return super.getSize(prop, value(prop, attributes), attributes, graphics);
     }
 
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
+    public void render( Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
       patch(attributes);
-      super.renderImpl(g, bounds, prop, value(prop, attributes) ,attributes);
+      super.render(g, bounds, prop, value(prop, attributes) ,attributes);
     }
     
     private String value(Property sex, Map<String,String> attributes) {
@@ -305,18 +284,18 @@ public class PropertyRenderer {
   /*package*/ static class RenderMLE extends PropertyRenderer {
   
     /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
+    public boolean accepts(Property root, TagPath path, Property prop) {
       return prop instanceof PropertyMultilineValue;
     }
 
     /**
      * size override
      */
-    public Dimension2D getSizeImpl(Property prop, Map<String,String> attributes, Graphics2D graphics) {
+    public Dimension2D getSize(Property root, TagPath path, Property prop, Map<String,String> attributes, Graphics2D graphics) {
       
       //.gotta be multiline
       if (!(prop instanceof MultiLineProperty))
-        return super.getSizeImpl(prop, attributes, graphics);
+        return super.getSize(root, path, prop, attributes, graphics);
       
       // count 'em
       FontMetrics fm = graphics.getFontMetrics();
@@ -337,11 +316,11 @@ public class PropertyRenderer {
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
+    public void render( Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
       
       // gotta be multiline
       if (!(prop instanceof MultiLineProperty)) {
-        super.renderImpl(g, bounds, prop, attributes);
+        super.render(g, bounds, root, path, prop, attributes);
         return;
       }
       
@@ -378,129 +357,28 @@ public class PropertyRenderer {
   } //MLE
 
   /**
-   * File
-   */
-  /*package*/ static class RenderFile extends PropertyRenderer {
-
-    /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
-      return prop instanceof PropertyFile 
-      || prop instanceof PropertyBlob 
-      || (path!=null&&path.getLast().equals("FILE"));
-    }
-
-    /**
-     * size override 
-     */
-    public Dimension2D getSizeImpl(Property prop, Map<String,String> attributes, Graphics2D graphics) {
-      
-      // try to resolve image
-      ImageIcon img = getImage(prop, attributes);
-      if (img==null) 
-        return EMPTY_DIM;
-
-      // ask it for size
-      return img.getSizeInPoints(DPI.get(graphics));
-        
-    }
-    
-    /**
-     * render override
-     */
-    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
-      
-      // grab the image
-      ImageIcon img = getImage(prop, attributes);
-      if (img==null) return;
-      
-      // get unit graphics up
-      UnitGraphics ug = new UnitGraphics(g, 1, 1);
-      ug.pushTransformation();
-      ug.setColor(Color.black);
-      ug.translate(bounds.x, bounds.y);
-      
-      // calculate factor - the image's dpi might be
-      // different than that of the rendered surface
-      DPI dpi = DPI.get(g);
-      DPI idpi = img.getResolution();
-      double
-       scalex = 1,
-       scaley = 1;
-      if (idpi!=null) {
-       scalex *= (double)dpi.horizontal()/idpi.horizontal();
-       scaley *= (double)dpi.vertical()/idpi.vertical();
-      }
-       
-      // check bounds - the image might still be too
-      // big - in that case we simply scale down to
-      // maximum allowed
-      double 
-        w = img.getIconWidth ()*scalex,
-        h = img.getIconHeight()*scaley;
-      if (bounds.width<w||bounds.height<h) {
-        double zoom = Math.min(
-          bounds.width/w, bounds.height/h
-        );
-        scalex *= zoom;
-        scaley *= zoom;
-      }        
-        
-      // scale and draw
-      ug.scale(scalex, scaley);
-      ug.draw(img, 0, 0, 0, 0);
-      
-      // restore graphics
-      ug.popTransformation();
-         
-      // done
-    }
-
-    /**
-     * Helper to get the image of PropertyFile
-     */
-    private ImageIcon getImage(Property prop, Map<String,String> attributes) {
-      // check file for image
-      ImageIcon result = null;
-      if (prop instanceof IconValueAvailable) 
-        result = ((IconValueAvailable)prop).getValueAsIcon();
-      // fallback
-      if (result==null&&HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) return broken;
-      // done
-      return result;
-    }  
-  
-    /**
-     * @see genj.renderer.PropertyRenderer#isNullRenderer()
-     */
-    protected boolean isNullRenderer() {
-      return true;
-    }
-
-  } //File
-
-  /**
    * Entity
    */
   /*package*/ static class RenderEntity extends PropertyRenderer {
   
     /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
+    public boolean accepts(Property root, TagPath path, Property prop) {
       return prop instanceof Entity;
     }
 
     /**
      * size override
      */
-    public Dimension2D getSizeImpl(Property prop, Map<String,String> attributes, Graphics2D graphics) {
-      return super.getSizeImpl(prop, ((genj.gedcom.Entity)prop).getId(), attributes, graphics);
+    public Dimension2D getSize(Property root, TagPath path, Property prop, Map<String,String> attributes, Graphics2D graphics) {
+      return super.getSize(prop, ((genj.gedcom.Entity)prop).getId(), attributes, graphics);
     }
   
     /**
      * render override
      */
-    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
+    public void render(Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
       attributes.put("align", "right");
-      super.renderImpl(g, bounds, prop, ((genj.gedcom.Entity)prop).getId(), attributes);
+      super.render(g, bounds, prop, ((genj.gedcom.Entity)prop).getId(), attributes);
     }
     
   } //Entity
@@ -511,7 +389,7 @@ public class PropertyRenderer {
   /*package*/ static class RenderXRef extends PropertyRenderer {
     
     /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
+    public boolean accepts(Property root, TagPath path, Property prop) {
       return prop instanceof PropertyXRef;
     }
 
@@ -525,22 +403,22 @@ public class PropertyRenderer {
   /*package*/ static class RenderSecret extends PropertyRenderer {
   
     /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
+    public boolean accepts(Property root, TagPath path, Property prop) {
       return prop!=null && prop.isSecret();
     }
 
     /**
      * size override
      */
-    public Dimension2D getSizeImpl(Property prop, Map<String,String> attributes, Graphics2D graphics) {
-      return super.getSizeImpl(prop, STARS, attributes, graphics);
+    public Dimension2D getSize(Property root, TagPath path, Property prop, Map<String,String> attributes, Graphics2D graphics) {
+      return super.getSize(prop, STARS, attributes, graphics);
     }
   
     /**
      * render override
      */
-    public void renderImpl( Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
-      super.renderImpl(g, bounds, prop, STARS, attributes);
+    public void render( Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
+      super.render(g, bounds, prop, STARS, attributes);
     }
     
   } //Secret
@@ -551,16 +429,16 @@ public class PropertyRenderer {
   /*package*/ static class RenderDate extends PropertyRenderer {
     
     /** acceptance */
-    public boolean accepts(TagPath path, Property prop) {
+    public boolean accepts(Property root, TagPath path, Property prop) {
       return prop instanceof PropertyDate;
     }
 
     /**
      * render override - make it right aligned
      */
-    public void renderImpl(Graphics2D g, Rectangle bounds, Property prop, Map<String,String> attributes) {
+    public void render(Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
       attributes.put("align", "right");
-      super.renderImpl(g, bounds, prop, attributes);
+      super.render(g, bounds, root, path, prop, attributes);
     }
     
   } //Date

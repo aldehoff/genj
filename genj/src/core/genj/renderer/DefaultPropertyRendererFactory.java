@@ -23,7 +23,6 @@ import genj.gedcom.Property;
 import genj.gedcom.TagPath;
 import genj.renderer.PropertyRenderer.RenderDate;
 import genj.renderer.PropertyRenderer.RenderEntity;
-import genj.renderer.PropertyRenderer.RenderFile;
 import genj.renderer.PropertyRenderer.RenderMLE;
 import genj.renderer.PropertyRenderer.RenderPlace;
 import genj.renderer.PropertyRenderer.RenderSecret;
@@ -38,7 +37,7 @@ import genj.renderer.PropertyRenderer.RenderXRef;
   /** cached renderer instances */
   private static PropertyRenderer[] renderers = new PropertyRenderer[]{
     new RenderSecret(),
-    new RenderFile(),
+    new MediaRenderer(),
     new RenderPlace(),
     new RenderMLE(),
     new RenderXRef(),
@@ -47,6 +46,8 @@ import genj.renderer.PropertyRenderer.RenderXRef;
     new RenderEntity(),
     PropertyRenderer.DEFAULT
   };
+  
+  private static MediaRenderer MEDIA_RENDERER = new MediaRenderer();
   
   /**
    * Constructor
@@ -57,19 +58,16 @@ import genj.renderer.PropertyRenderer.RenderXRef;
   /** 
    * factory
    */
-  public PropertyRenderer getRenderer(Property prop) {
-    return getRenderer(null, prop);
-  }
-  
-  /** 
-   * factory
-   */
-  public PropertyRenderer getRenderer(TagPath path, Property prop) {
+  public PropertyRenderer getRenderer(Property root, TagPath propertyPath, Property property, String rendererType) {
+    
+    // try type
+    if ("media".equals(rendererType))
+      return MEDIA_RENDERER;
     
     // loop over known renderers
     for (int i=0;i<renderers.length;i++) {
       PropertyRenderer renderer = renderers[i];
-      if (renderer.accepts(path, prop))
+      if (renderer.accepts(root, propertyPath, property))
         return renderer;
     }
 

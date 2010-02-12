@@ -568,6 +568,7 @@ public class EntityRenderer {
       try {
         view.setSize(width, height);
       } catch (Throwable t) {
+        LOG.log(Level.FINE, "unexpected", t);
       }
       // done
     }
@@ -609,13 +610,13 @@ public class EntityRenderer {
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       g.setFont(getFont());
       g.setColor(getForeground());
-      PropertyRenderer.DEFAULT.renderImpl((Graphics2D)g,r,txt,new HashMap<String, String>());
+      PropertyRenderer.DEFAULT.render((Graphics2D)g,r,txt,new HashMap<String, String>());
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension2D getPreferredSpan() {
-      return PropertyRenderer.DEFAULT.getSizeImpl(null, txt, new HashMap<String, String>(), (Graphics2D)getGraphics());
+      return PropertyRenderer.DEFAULT.getSize(null, txt, new HashMap<String, String>(), (Graphics2D)getGraphics());
     }
   } //LocalizeView
 
@@ -624,19 +625,14 @@ public class EntityRenderer {
    */
   private class PropertyView extends MyView {
     
-    // TODO Performance - can we improve property views through some caching of size&alignment?
-    
-    /** the tag path used */
-    private List<TagPath> paths = new ArrayList<TagPath>();
-    
-    /** the cached property we're displaying */
-    private Property cachedProperty = null;
-    
-    /** the attributes */
+    /** configuration */
     private Map<String,String> attributes;
-    
-    /** minimum/maximum percentage of the rendering space */
+    private TagPath path = null;
     private int min, max;
+    
+    /** cached information */
+    private Property cachedProperty = null;
+    private Dimension2D cachedSize = null;
     
     /** 
      * Constructor
@@ -655,8 +651,8 @@ public class EntityRenderer {
       
       // grab path
       Object p = elem.getAttributes().getAttribute("path");
-      if (p!=null) for (String path : p.toString().split(",")) try {
-        paths.add(new TagPath(path));
+      if (p!=null) try {
+        path = new TagPath((String)p);
       } catch (IllegalArgumentException e) {
         if (LOG.isLoggable(Level.FINER))
           LOG.log(Level.FINER, "got wrong path "+path);
@@ -691,42 +687,24 @@ public class EntityRenderer {
       if (cachedProperty!=null)
         return cachedProperty;
       
-      if (entity==null||paths.isEmpty())
+      if (entity==null||path==null)
         return null;
 
-      Property result = null;
+      cachedProperty = entity.getProperty(path);
       
-      for (TagPath path : paths) {
-        result = entity.getProperty(path);
-        if (result!=null)
-          break;
-      }
-      
-      if (paths.size()==1)
-        cachedProperty = result;
-      
-      return result;
+      return cachedProperty;
     }
     
     /** 
      * Get Renderer
      */
-    private PropertyRenderer getRenderer(Property prop) {
-      // 20030404 if no property is found we cannot cache
-      // the renderer derived from path.getLast() - there
-      // are defaults for certain tags preset in PropertyRenderer
-      // but another call here with a different prop-type
-      // might resolve to a different proxy
-      
-      // derive from property?
-      PropertyRenderer result = PropertyRendererFactory.DEFAULT.getRenderer(paths.get(0), prop);
-
-      // check renderer/prop compatibility
-      if (prop==null&&!result.isNullRenderer()) 
-        return null;
-      
-      // done
-      return result;
+    private PropertyRenderer getRenderer() {
+      return PropertyRendererFactory.DEFAULT.getRenderer(
+          entity, 
+          path, 
+          getProperty(), 
+          (String)getAttributes().getAttribute("renderer")
+      );
     }
     
     
@@ -735,11 +713,10 @@ public class EntityRenderer {
      */
     public void paint(Graphics g, Shape allocation) {
       Graphics2D graphics = (Graphics2D)g;
-      // property and renderer
-      Property property = getProperty();
-      PropertyRenderer renderer = getRenderer(property);
-      // no renderer - no paint
-      if (renderer==null) return;
+      // renderer
+      PropertyRenderer renderer = getRenderer();
+      if (renderer==null) 
+        return;
       // setup painting attributes and bounds
       g.setColor(super.getForeground());
       g.setFont(super.getFont());
@@ -751,7 +728,7 @@ public class EntityRenderer {
       // clip and render
       Shape old = graphics.getClip();
       graphics.clip(r);
-      renderer.render(graphics, r, property, attributes);
+      renderer.render(graphics, r, entity, path, getProperty(), attributes);
       g.setClip(old);
       // done
     }
@@ -759,17 +736,23 @@ public class EntityRenderer {
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension2D getPreferredSpan() {
+      // cached?
+      if (cachedSize!=null)
+        return cachedSize;
       // property and renderer
-      Property property = getProperty();
-      PropertyRenderer renderer = getRenderer(property);
-      // no renderer - no spane
-      if (renderer==null)
-        return new Dimension(0,0);
-      // calc span
-      Dimension2D d = renderer.getSize(property, attributes, (Graphics2D)getGraphics());
-      // check max
-      d = new Dimension2d(Math.min(d.getWidth(), root.width*max/100), d.getHeight());
-      return d;
+      PropertyRenderer renderer = getRenderer();
+      // calculate span
+      if (renderer!=null) {
+        // calculate span
+        Dimension2D d = renderer.getSize(entity, path, getProperty(), attributes, (Graphics2D)getGraphics());
+        double w = Math.min(d.getWidth(), root.width*max/100);
+        double h = d.getHeight() * w/d.getWidth();
+        // check max
+        cachedSize = new Dimension2d(w, h);
+      } else {
+        cachedSize = new Dimension(0,0);
+      }
+      return cachedSize;
     }
     /**
      * @see javax.swing.text.View#getMinimumSpan(int)
@@ -786,7 +769,7 @@ public class EntityRenderer {
       // invalidate cached information that's depending
       // on the current entity's properties
       cachedProperty = null;
-      
+      cachedSize = null;
       super.invalidate();
     }
     
