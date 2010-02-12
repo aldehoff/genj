@@ -187,11 +187,11 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       Media media = (Media)((PropertyXRef)OBJE).getTargetEntity();
       PropertyFile pfile = media.getFile();
       if (pfile!=null&&pfile.getFile()!=null){
-        input2properties.get(InputSource.get(pfile.getFile())).add(parent);
+        input2properties.get(InputSource.get(media.getTitle(), pfile.getFile())).add(parent);
         return;
       }
       PropertyBlob blob = media.getBlob();
-      if (blob!=null)
+      if (blob!=null) 
         input2properties.get(InputSource.get(media.getTitle(), blob.getBlobData())).add(parent);
       return;
     }
@@ -201,7 +201,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     if (FILE instanceof PropertyFile) {
       File file = ((PropertyFile)FILE).getFile();
       if (file!=null) 
-        input2properties.get(InputSource.get(file)).add(parent);
+        input2properties.get(InputSource.get(OBJE.getPropertyValue("TITL"), file)).add(parent);
       return;
     }
     

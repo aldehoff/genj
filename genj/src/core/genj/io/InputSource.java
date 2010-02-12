@@ -59,7 +59,7 @@ public abstract class InputSource {
     private File file;
 
     public FileInput(String name, File file) {
-      super(name);
+      super(name.length()>0 ? name : file.getName() );
       this.file = file;
     }
     
