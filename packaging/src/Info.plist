@@ -27,7 +27,9 @@
 		<key>JVMVersion</key>
 		<string>1.5+</string>
 		<key>ClassPath</key>
-			<string>$JAVAROOT/run.jar</string>
+		<string>$JAVAROOT/run.jar</string>
+		<key>user.dir</key>
+		<string>$JAVAROOT</string>
 		<key>Properties</key>
 		<dict>
 			<key>apple.laf.useScreenMenuBar</key>

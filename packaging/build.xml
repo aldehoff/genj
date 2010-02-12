@@ -104,7 +104,7 @@
 			<fileset dir="${dir.izpack}/utils/wrappers/izpack2app/Mac-App-Template"/>
 		</copy>
 
-		<unzip dest="./build/dist/${macapp}/Contents/Resources">
+		<unzip dest="./build/dist/${macapp}/Contents/Resources/Java">
 			<fileset dir="./build/dist" includes="genj_*-${version}.zip" excludes="genj_win-${version}.zip"/>
 		</unzip>
 		
