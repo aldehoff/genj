@@ -105,6 +105,9 @@ public class ThumbnailWidget extends JComponent {
    * Constructor
    */
   public ThumbnailWidget() {
+    
+    setRequestFocusEnabled(true);
+    
     addMouseWheelListener(callback);
     addMouseListener(callback);
     addMouseMotionListener(callback);
@@ -305,6 +308,8 @@ public class ThumbnailWidget extends JComponent {
     @Override
     public void mousePressed(MouseEvent e) {
       
+      ThumbnailWidget.this.requestFocusInWindow();
+      
       start.setLocation(e.getPoint());
       
       Thumbnail thumb = getThumb(e.getPoint());
@@ -348,13 +353,13 @@ public class ThumbnailWidget extends JComponent {
     if (selection==null)
       return;
     // known size?
-    if (selection.size.width>0&&selection.size.height>0) {
-      Dimension size = fit(selection.size, getSize());
-      thumbSize = Math.max(size.width, size.height);
-    }
+    if (selection.size.width==0||selection.size.height==0)
+      return;
+    Dimension size = fit(selection.size, getSize());
+    thumbSize = Math.max(size.width, size.height);
     topLeft.setLocation(0,0);
     Rectangle r = getRectangle(selection);
-    scrollTo(-(r.x+(r.width-getWidth())/2),-(r.y+thumbBorder.top));
+    scrollTo( -(r.x+thumbBorder.left+(thumbSize-size.width)/2), -(r.y+thumbBorder.top+(thumbSize-size.height)/2) );
   }
   
   /**
