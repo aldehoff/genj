@@ -236,7 +236,7 @@ public class BlueprintEditor extends JSplitPane {
       g.fillRect(bounds.x,bounds.y,bounds.width,bounds.height);
       // render content
       g.setFont(getFont());
-      EntityRenderer renderer = new EntityRenderer(new Blueprint(source.getText()));
+      BlueprintRenderer renderer = new BlueprintRenderer(new Blueprint(source.getText()));
       renderer.setDebug(isChanged);
       renderer.render(g, example, bounds);
       // done

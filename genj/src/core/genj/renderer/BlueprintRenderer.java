@@ -22,10 +22,17 @@ package genj.renderer;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyBlob;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyPlace;
+import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
+import genj.util.swing.ImageIcon;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -35,6 +42,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -64,9 +75,20 @@ import javax.swing.text.html.parser.ParserDelegator;
 /**
  * A renderer for entities - blueprint necessary
  */
-public class EntityRenderer {
+public class BlueprintRenderer {
 
   private final static Logger LOG = Logger.getLogger("genj.renderer");
+  
+  public static final String HINT_KEY_TXT = "txt";
+  public static final String HINT_KEY_IMG = "img";
+  public static final String HINT_KEY_SHORT = "short";
+
+  public static final String HINT_VALUE_TRUE = "yes";
+  public static final String HINT_VALUE_FALSE = "no";
+  
+  private final static String STARS = "*****";
+  
+  private final static int IMAGE_GAP = 4;
   
   // this will initialize and load the html32 dtd
   // "/javax/swing/text/html/parser/html32.bdtd"
@@ -97,8 +119,8 @@ public class EntityRenderer {
   /** the entity we're looking at */
   private Entity entity;
   
-  /** all PropertyViews we know */
-  private List<PropertyView> propViews = new ArrayList<PropertyView>(16);
+  /** all views that need to be invalidated per repaint */
+  private List<MyView> volatileViews = new ArrayList<MyView>(64);
   
   /** all TableViews we know */
   private List<View> tableViews = new ArrayList<View>(4);
@@ -114,7 +136,7 @@ public class EntityRenderer {
   /**
    * Constructor
    */  
-  public EntityRenderer(Blueprint bp) {
+  public BlueprintRenderer(Blueprint bp) {
     
     // we wrap the html in html/body
     StringBuffer html = new StringBuffer();
@@ -177,7 +199,7 @@ public class EntityRenderer {
     try {
       
       // invalidate views 
-      for (PropertyView pv : propViews) 
+      for (MyView pv : volatileViews) 
         pv.invalidate();
       
       // and make sure TableView's update their grid
@@ -312,7 +334,7 @@ public class EntityRenderer {
       // check if the element is "prop"
       if ("prop".equals(name)) {
         PropertyView result = new PropertyView(elem);
-        propViews.add(result);
+        volatileViews.add(result);
         return result;
         
       }
@@ -320,6 +342,13 @@ public class EntityRenderer {
       // maybe its "name" or "i18n"
       if ("name".equals(name)||"i18n".equals(name)) {
         return new I18NView(elem);
+      }
+      
+      // a media item?
+      if ("media".equals(name)) {
+        MediaView result = new MediaView(elem);
+        volatileViews.add(result);
+        return result;
       }
         
       // default to super
@@ -485,6 +514,19 @@ public class EntityRenderer {
       return factory;
     }
 
+    protected void render(String txt, Graphics2D g, Rectangle r) {
+      
+      // check for empty string
+      if (txt.length()==0)
+        return;
+      
+      // prepare layout
+      TextLayout layout = new TextLayout(txt, g.getFont(), g.getFontRenderContext());
+      
+      // draw it
+      layout.draw(g, (float)r.getX(), (float)r.getY()+layout.getAscent());
+    }    
+    
   } //MyView
 
   /**
@@ -610,16 +652,57 @@ public class EntityRenderer {
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
       g.setFont(getFont());
       g.setColor(getForeground());
-      PropertyRenderer.DEFAULT.render((Graphics2D)g,r,txt,new HashMap<String, String>());
+      render(txt,(Graphics2D)g,r);
     }
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
     protected Dimension2D getPreferredSpan() {
-      return PropertyRenderer.DEFAULT.getSize(null, txt, new HashMap<String, String>(), (Graphics2D)getGraphics());
+      FontMetrics fm = graphics.getFontMetrics(getFont());
+      return new Dimension(
+        fm.stringWidth(txt),
+        fm.getAscent() + fm.getDescent()
+      );
     }
   } //LocalizeView
 
+  /**
+   * A view that renders available media
+   */
+  private class MediaView extends MyView {
+
+    private int max;
+    
+    /** 
+     * Constructor
+     */
+    MediaView(Element elem) {
+      super(elem);
+
+      // minimum?
+      try {
+        max = Integer.parseInt((String)elem.getAttributes().getAttribute("max"));
+      } catch (Throwable t) {
+        max = 25;
+      }
+    }
+    
+    @Override
+    protected Dimension2D getPreferredSpan() {
+      Dimension2D size = MediaRenderer.getSize(entity, graphics);
+      double maxWidth = root.width*max/100;
+      if (size.getWidth()>maxWidth)
+        return new Dimension2d(maxWidth, size.getHeight() * maxWidth/size.getWidth());
+      return size;
+    }
+
+    @Override
+    public void paint(Graphics g, Shape allocation) {
+      MediaRenderer.render(g, allocation.getBounds(), entity);
+    }
+    
+  }
+  
   /**
    * A view that wraps a property and its value
    */
@@ -628,7 +711,6 @@ public class EntityRenderer {
     /** configuration */
     private Map<String,String> attributes;
     private TagPath path = null;
-    private int min, max;
     
     /** cached information */
     private Property cachedProperty = null;
@@ -657,10 +739,6 @@ public class EntityRenderer {
         if (LOG.isLoggable(Level.FINER))
           LOG.log(Level.FINER, "got wrong path "+path);
       }
-      
-      // minimum?
-      min = getAttribute("min", 1, 100, 1);
-      max = getAttribute("max", 1, 100, 100);
       
       // done
     }
@@ -695,43 +773,162 @@ public class EntityRenderer {
       return cachedProperty;
     }
     
-    /** 
-     * Get Renderer
-     */
-    private PropertyRenderer getRenderer() {
-      return PropertyRendererFactory.DEFAULT.getRenderer(
-          entity, 
-          path, 
-          getProperty(), 
-          (String)getAttributes().getAttribute("renderer")
-      );
-    }
-    
-    
     /**
      * @see javax.swing.text.View#paint(Graphics, Shape)
      */
     public void paint(Graphics g, Shape allocation) {
-      Graphics2D graphics = (Graphics2D)g;
-      // renderer
-      PropertyRenderer renderer = getRenderer();
-      if (renderer==null) 
+      
+      Property prop = getProperty();
+      if (prop==null)
         return;
+      
+      Graphics2D graphics = (Graphics2D)g;
+      
       // setup painting attributes and bounds
       g.setColor(super.getForeground());
       g.setFont(super.getFont());
-      //g.setFont(super.getFont());
+      
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
+      
       // debug?
       if (isDebug) 
         graphics.draw(r);
+      
       // clip and render
       Shape old = graphics.getClip();
       graphics.clip(r);
-      renderer.render(graphics, r, entity, path, getProperty(), attributes);
+      render(prop, graphics, r);
       g.setClip(old);
+      
       // done
     }
+    
+    private void render(Property prop, Graphics2D g, Rectangle r) {
+      if (prop instanceof MultiLineProperty) {
+        render((MultiLineProperty)prop, g, r);
+        return;
+      }
+      if (prop instanceof PropertyFile||prop instanceof PropertyBlob) {
+        MediaRenderer.render(g, r, prop);
+        return;
+      }
+      // image?
+      if (HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) 
+        render(prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), g, r);
+      // text?
+      if (!HINT_VALUE_FALSE.equals(attributes.get(HINT_KEY_TXT))) 
+        render(getText(prop), g, r);
+    }
+    
+    private void render(MultiLineProperty mle, Graphics2D g, Rectangle r) {
+      // get lines
+      MultiLineProperty.Iterator line = mle.getLineIterator();
+      
+      // paint
+      Graphics2D graphics = (Graphics2D)g;
+      Font font = g.getFont();
+      FontRenderContext context = graphics.getFontRenderContext();
+
+      float 
+        x = (float)r.getX(),
+        y = (float)r.getY();
+      
+      do {
+
+        // analyze line
+        String txt = line.getValue();
+        LineMetrics lm = font.getLineMetrics(txt, context);
+        y += lm.getHeight();
+        
+        // draw line
+        graphics.drawString(txt, x, y - lm.getDescent());
+        
+        // .. break if line doesn't fit anymore
+        if (y>r.getMaxY()) 
+          break;
+        
+      } while (line.next());
+      
+      // done
+    }
+    
+    private void render(ImageIcon img, Graphics2D g, Rectangle bounds) {
+      
+      // no space?
+      if (bounds.getHeight()==0||bounds.getWidth()==0)
+        return;
+      
+      // draw image with maximum height of a character
+      int 
+        w = img.getIconWidth(),
+        max = g.getFontMetrics().getHeight();
+      
+      AffineTransform at = AffineTransform.getTranslateInstance(bounds.getX(), bounds.getY());
+      if (max<img.getIconHeight()) {
+        float scale = max/(float)img.getIconHeight();
+        at.scale(scale, scale);
+        w = (int)Math.ceil(w*scale);
+      }
+      g.drawImage(img.getImage(), at, null);
+      
+      // patch bounds for skip
+      bounds.x += w+IMAGE_GAP;
+      bounds.width -= w+IMAGE_GAP;
+    }
+        
+    
+    private String getText(Property prop) {
+      if (prop instanceof Entity)
+        return getText((Entity)prop);
+      if (prop.isPrivate())
+        return STARS;
+      if (prop instanceof PropertyPlace)
+        return getText((PropertyPlace)prop);
+      if (prop instanceof PropertySex)
+        return getText((PropertySex)prop);
+      
+      return prop.getDisplayValue();
+    }
+    
+    private String getText(Entity entity) {
+      return entity.getId();
+    }
+    
+    private String getText(PropertySex sex) {
+      
+      if (!attributes.containsKey(HINT_KEY_TXT))
+        attributes.put(HINT_KEY_TXT, HINT_VALUE_FALSE);
+      if (!attributes.containsKey(HINT_KEY_IMG))
+        attributes.put(HINT_KEY_IMG, HINT_VALUE_TRUE);
+        
+      String result = sex.getDisplayValue();
+      if (result.length()>0 && HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_SHORT)))
+        result = result.substring(0,1);
+      return result;
+    }
+    
+    private String getText(PropertyPlace place) {
+      Object j = attributes.get("jurisdiction");
+      // index?
+      if (j!=null) {
+        
+        // 0 = first available
+        if ("0".equals(j))
+          return place.getFirstAvailableJurisdiction();
+
+        // i>0
+        String result = null;
+        try {
+            result = place.getJurisdiction(Integer.parseInt(j.toString()));
+        } catch (Throwable t) {
+        }
+        return result==null ? "" : result;
+      }
+      
+      // all
+      return place.getFirstAvailableJurisdiction();
+    }
+    
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
      */
@@ -739,29 +936,71 @@ public class EntityRenderer {
       // cached?
       if (cachedSize!=null)
         return cachedSize;
-      // property and renderer
-      PropertyRenderer renderer = getRenderer();
-      // calculate span
-      if (renderer!=null) {
-        // calculate span
-        Dimension2D d = renderer.getSize(entity, path, getProperty(), attributes, (Graphics2D)getGraphics());
-        double w = Math.min(d.getWidth(), root.width*max/100);
-        double h = d.getHeight() * w/d.getWidth();
-        // check max
-        cachedSize = new Dimension2d(w, h);
-      } else {
-        cachedSize = new Dimension(0,0);
-      }
+      // check property
+      cachedSize = getSize();
       return cachedSize;
     }
-    /**
-     * @see javax.swing.text.View#getMinimumSpan(int)
-     */
-    public float getMinimumSpan(int axis) {
-      float pref = getPreferredSpan(axis);
-      if (axis==Y_AXIS) return pref;
-      return Math.min(pref, root.width*min/100);
+    
+    private Dimension2D getSize() {
+      Property prop = getProperty();
+      if (prop==null)
+        return new Dimension();
+      if (prop instanceof MultiLineProperty)
+        return getSize((MultiLineProperty)prop);
+      if (prop instanceof PropertyFile || prop instanceof PropertyBlob)
+        return MediaRenderer.getSize(prop, getGraphics());
+      return getSize(prop);
     }
+    
+    private Dimension2D getSize(Property prop) {
+      
+      String txt = getText(prop);
+      
+      double 
+        w = 0,
+        h = 0;
+      
+      // calculate text size (the default size we use)
+      graphics.setFont(super.getFont());
+      FontMetrics fm = graphics.getFontMetrics();
+      if (!HINT_VALUE_FALSE.equals(attributes.get(HINT_KEY_TXT))&&txt.length()>0) {
+        w += fm.stringWidth(txt);
+        h = Math.max(h, fm.getAscent() + fm.getDescent());
+      }
+      // add image size
+      if (HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) {
+        ImageIcon img = prop.getImage(false);
+        float max = fm.getHeight();
+        float scale = 1F;
+        if (max<img.getIconHeight()) 
+          scale = max/img.getIconHeight();
+        w += (int)Math.ceil(img.getIconWidth()*scale) + IMAGE_GAP;
+        h = Math.max(h, fm.getHeight());
+      }
+      
+      // done
+      return new Dimension2d(w,h);
+    }
+    
+    private Dimension2D getSize(MultiLineProperty mle) {
+      
+      // count 'em
+      graphics.setFont(super.getFont());
+      FontMetrics fm = graphics.getFontMetrics();
+      int lines = 0;
+      double width = 0;
+      double height = 0;
+      MultiLineProperty.Iterator line = mle.getLineIterator();
+      do {
+        lines++;
+        width = Math.max(width, fm.stringWidth(line.getValue()));
+        height += fm.getHeight();
+      } while (line.next());
+      
+      // done
+      return new Dimension2d(width, height);
+    }
+    
     /**
      * Invalidates this views current state
      */

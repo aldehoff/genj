@@ -23,7 +23,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Indi;
 import genj.renderer.EmptyHintKey;
-import genj.renderer.EntityRenderer;
+import genj.renderer.BlueprintRenderer;
 import genj.renderer.RenderPreviewHintKey;
 import genj.util.swing.UnitGraphics;
 import gj.model.Node;
@@ -59,7 +59,7 @@ public class ContentRenderer {
   /*package*/ Collection<? extends Entity> selected = new ArrayList<Entity>(0);
   
   /** the entity renderer we're using */
-  /*package*/ EntityRenderer indiRenderer, famRenderer;
+  /*package*/ BlueprintRenderer indiRenderer, famRenderer;
   
   /**
    * Render the content
@@ -148,7 +148,7 @@ public class ContentRenderer {
   private void renderContent(UnitGraphics g, double x, double y, Shape shape, Object content) {
     
     // safety check
-    EntityRenderer renderer = null;
+    BlueprintRenderer renderer = null;
     if (content instanceof Indi) renderer = indiRenderer;
     if (content instanceof Fam ) renderer = famRenderer;
     if (renderer==null) 

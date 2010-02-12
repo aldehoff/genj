@@ -19,6 +19,7 @@
  */
 package genj.renderer;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints.Key;
 import java.awt.geom.Dimension2D;
@@ -53,8 +54,8 @@ public class DPI {
   /**
    * resolve DPI From graphics
    */
-  public static DPI get(Graphics2D graphics) {
-    DPI dpi = (DPI)graphics.getRenderingHint(KEY);
+  public static DPI get(Graphics graphics) {
+    DPI dpi = (DPI)((Graphics2D)graphics).getRenderingHint(KEY);
     if (dpi==null)
       dpi = Options.getInstance().getDPI();
     return dpi;

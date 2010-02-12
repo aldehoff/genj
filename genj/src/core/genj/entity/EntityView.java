@@ -28,7 +28,7 @@ import genj.gedcom.Property;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.ChooseBlueprintAction;
-import genj.renderer.EntityRenderer;
+import genj.renderer.BlueprintRenderer;
 import genj.renderer.Options;
 import genj.util.Registry;
 import genj.util.Resources;
@@ -63,7 +63,7 @@ public class EntityView extends View implements ContextProvider {
   private final static Registry REGISTRY = Registry.get(EntityView.class);
   
   /** the renderer we're using */      
-  private EntityRenderer renderer = null;
+  private BlueprintRenderer renderer = null;
   
   /** our current context */
   /*package*/ Context context = new Context();
@@ -155,7 +155,7 @@ public class EntityView extends View implements ContextProvider {
       Blueprint blueprint;
       if (e==null) blueprint = BLUEPRINT_SELECT;
       else blueprint = getBlueprint(e.getTag()); 
-      renderer = new EntityRenderer(blueprint);
+      renderer = new BlueprintRenderer(blueprint);
       
     }
     

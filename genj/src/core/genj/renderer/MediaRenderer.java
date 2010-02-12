@@ -25,11 +25,9 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
-import genj.gedcom.TagPath;
-import genj.util.swing.ImageIcon;
 
 import java.awt.Dimension;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.geom.Dimension2D;
@@ -39,8 +37,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -48,31 +46,19 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 /**
- * A renderer of media
+ * A renderer of media - it can find suitable media information to render, offers quick size access and best offer
+ * scaling results with caching
  */
-public class MediaRenderer extends PropertyRenderer {
+public class MediaRenderer {
 
-  /** an replacement for a 'broken' image */  
-  private final static ImageIcon DEFAULT_IMAGE = 
-    new ImageIcon(PropertyRenderer.class, "Broken");
-
-  /** 
-   * acceptance test - we accept FILE and BLOB here even though we can render
-   * an available media under a given root as well - that has to be initiated 
-   * explicitly through the PropertyRendererFactory (<prop renderer=media>)
-   */
-  public boolean accepts(Property root, TagPath path, Property prop) {
-    return prop instanceof PropertyFile 
-      || prop instanceof PropertyBlob 
-      || (path!=null&&path.getLast().equals("FILE"));
-  }
-
+  private final static Logger LOG = Logger.getLogger("genj.renderer");
+  
   /**
    * size override 
    */
-  public Dimension2D getSize(Property root, TagPath path, Property prop, Map<String,String> attributes, Graphics2D graphics) {
+  public static Dimension2D getSize(Property root, Graphics graphics) {
     try {
-      InputStream in = getIn(path!=null ? prop : root);
+      InputStream in = getIn(root);
       if (in!=null) {
         ImageInputStream iin = ImageIO.createImageInputStream(in);
         Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
@@ -87,13 +73,13 @@ public class MediaRenderer extends PropertyRenderer {
         }
       }
     } catch (IOException ioe) {
-      LOG.log(Level.FINER, "Can't get image dimension for "+prop, ioe);
+      LOG.log(Level.FINER, "Can't get image dimension for "+root, ioe);
     }
 
-    return DEFAULT_IMAGE.getSizeInPoints(DPI.get(graphics));
+    return new Dimension();
   }
   
-  private InputStream getIn(Property prop) throws IOException {
+  private static InputStream getIn(Property prop) throws IOException {
     
     // a file?
     if (prop instanceof PropertyFile) {
@@ -144,10 +130,10 @@ public class MediaRenderer extends PropertyRenderer {
   /**
    * render override
    */
-  public void render(Graphics2D g, Rectangle bounds, Property root, TagPath path, Property prop, Map<String,String> attributes) {
+  public static void render(Graphics g, Rectangle bounds, Property root) {
     InputStream in = null;
     try {
-      in = getIn(path!=null ? prop : root);
+      in = getIn(root);
       if (in!=null) {
         ImageInputStream iin = ImageIO.createImageInputStream(in);
         Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
@@ -172,17 +158,11 @@ public class MediaRenderer extends PropertyRenderer {
         }
       }
     } catch (IOException ioe) {
-      LOG.log(Level.FINER, "Can't render image for "+prop, ioe);
+      LOG.log(Level.FINER, "Can't render image for "+root, ioe);
     } finally {
       if (in!=null) try { in.close(); } catch (IOException e) {}
     }
     
-    g.drawImage(DEFAULT_IMAGE.getImage(),
-      bounds.x,bounds.y,bounds.x+bounds.width,bounds.y+bounds.height,
-      0,0,DEFAULT_IMAGE.getIconWidth(),DEFAULT_IMAGE.getIconHeight(),
-      null
-    );
-        
     // done
   }
 

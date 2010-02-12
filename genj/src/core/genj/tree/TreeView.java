@@ -33,7 +33,7 @@ import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
 import genj.renderer.ChooseBlueprintAction;
 import genj.renderer.DPI;
-import genj.renderer.EntityRenderer;
+import genj.renderer.BlueprintRenderer;
 import genj.renderer.Options;
 import genj.renderer.RenderSelectionHintKey;
 import genj.util.Registry;
@@ -127,7 +127,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   private Map<String,String> tag2blueprint = new HashMap<String,String>();
   
   /** our renderers */
-  private Map<String,EntityRenderer> tag2renderer = new HashMap<String, EntityRenderer>();
+  private Map<String,BlueprintRenderer> tag2renderer = new HashMap<String, BlueprintRenderer>();
   
   /** our content's font */
   private Font contentFont = new Font("SansSerif", 0, 10);
@@ -573,10 +573,10 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
   /**
    * Resolve a renderer
    */
-  private EntityRenderer getEntityRenderer(String tag) {
-    EntityRenderer result = tag2renderer.get(tag);
+  private BlueprintRenderer getEntityRenderer(String tag) {
+    BlueprintRenderer result = tag2renderer.get(tag);
     if (result==null) { 
-      result = new EntityRenderer(getBlueprint(tag));
+      result = new BlueprintRenderer(getBlueprint(tag));
       tag2renderer.put(tag,result);
     }
     return result;

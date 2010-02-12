@@ -33,7 +33,7 @@ import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.renderer.BlueprintManager;
-import genj.renderer.EntityRenderer;
+import genj.renderer.BlueprintRenderer;
 import genj.util.ChangeSupport;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
@@ -314,7 +314,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     /** entity */
     private Entity entity;
     /** the blueprint renderer we're using */
-    private EntityRenderer renderer;
+    private BlueprintRenderer renderer;
     /**
      * Constructor
      */
@@ -338,7 +338,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     protected void setEntity(Entity ent) {
       entity = ent;
       if (entity!=null)
-        renderer = new EntityRenderer(BlueprintManager.getInstance().getBlueprint(entity.getTag(), "Edit"));
+        renderer = new BlueprintRenderer(BlueprintManager.getInstance().getBlueprint(entity.getTag(), "Edit"));
       repaint();
     }
   } //Preview

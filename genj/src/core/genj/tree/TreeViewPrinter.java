@@ -22,7 +22,7 @@ package genj.tree;
 import genj.gedcom.Gedcom;
 import genj.print.PrintRenderer;
 import genj.renderer.DPI;
-import genj.renderer.EntityRenderer;
+import genj.renderer.BlueprintRenderer;
 import genj.util.swing.UnitGraphics;
 import gj.awt.geom.Dimension2D;
 
@@ -65,8 +65,8 @@ public class TreeViewPrinter implements PrintRenderer {
     renderer.cArcs          = Color.black;
     renderer.cFamShape      = Color.black;
     renderer.cIndiShape     = Color.black;
-    renderer.indiRenderer   = new EntityRenderer(view.getBlueprint(Gedcom.INDI));
-    renderer.famRenderer    = new EntityRenderer(view.getBlueprint(Gedcom.FAM));
+    renderer.indiRenderer   = new BlueprintRenderer(view.getBlueprint(Gedcom.INDI));
+    renderer.famRenderer    = new BlueprintRenderer(view.getBlueprint(Gedcom.FAM));
     
     renderer.render(graphics, view.getModel());
 
