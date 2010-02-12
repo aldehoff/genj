@@ -695,7 +695,7 @@ public class Workbench extends JPanel implements SelectionSink {
     if (view==null)
       return;
     
-    dockingPane.removeDockable(factory);
+    dockingPane.putDockable(factory, null);
 
     // tell others
     fireViewClosed(view);
