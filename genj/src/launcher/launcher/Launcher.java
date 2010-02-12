@@ -76,39 +76,6 @@ import launcher.ipc.Server;
  *   java -jar thejar.jar
  * </pre>
  */
-
-/*
-      // Check if we can talk to another GenJ instance
-      int port = 2505;
-      try {
-        StringBuffer msg = new StringBuffer();
-        for (int i = 0; i < args.length; i++) msg.append(args[i]).append("\n");
-        msg.append("\n");
-        if (!"OK".equals(new Client().send(port, msg.toString()))) 
-          throw new RuntimeException("no ack");
-        LOG.fine("Sent application arguments to 2nd Genj instance");
-        return;
-      } catch (Throwable t) {
-        LOG.log(Level.FINE, "No 2nd GenJ instance willing to talk", t);
-      }
-      
-      // Be the first instance of GenJ 
-      try {
-        new Server(port, new CallHandler() {
-          public String handleCall(String msg) {
-            StringTokenizer lines = new StringTokenizer(msg, "\n");
-            while (lines.hasMoreTokens()) 
-              LOG.info("got message from 2nd GenJ instance: "+lines.nextToken());
-            return "OK";
-          }
-        });
-      } catch (IOException e) {
-        LOG.log(Level.WARNING, "couldn't register as 1st GenJ listening on port "+port, e);
-      }
-
-
- */
-
 public class Launcher {
 
   private final static Logger LOG = Logger.getLogger("launcher");
@@ -140,8 +107,8 @@ public class Launcher {
       Thread.currentThread().setContextClassLoader(cl);
       
       // setup IPC connection
-      if (!setupIPC(args, cl))
-        return;
+//      if (!setupIPC(args, cl))
+//        return;
       
       // show splash screen
       showSplash();
