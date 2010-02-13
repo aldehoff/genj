@@ -184,6 +184,8 @@ public class FileChooserWidget extends JPanel {
     // from here on but sometimes that undersirable since file might
     // not contain a valid full path in the first place
     text.setText(file!=null ? file.getPath() : "");
+    if (file!=null&&file.getParentFile().isDirectory())
+      setDirectory(file.getParentFile().toString());
   }
   
   /**
@@ -227,12 +229,18 @@ public class FileChooserWidget extends JPanel {
 
       // create and show chooser      
       FileChooser fc = new FileChooser(FileChooserWidget.this, getName(), Action2.TXT_OK, extensions, directory);
+      
       fc.setAccessory(accessory);
       fc.addPropertyChangeListener(this);
+      
+      File file = getFile();
+      if (file.isFile())
+        fc.setSelectedFile(file);
+      
       fc.showDialog();
       
       // check result
-      File file = fc.getSelectedFile();
+      file = fc.getSelectedFile();
       if (file!=null)  {
         setFile(file);
         directory = file.getParent();
