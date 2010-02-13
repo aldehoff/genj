@@ -385,12 +385,22 @@ public class BlueprintRenderer {
     
     /** the cached preferred span */
     private Dimension2D preferredSpan = null;
+
+    /** max span percent 0-100 */
+    private int max;
     
     /**
      * Constructor
      */
     MyView(Element elem) {
       super(elem);
+      
+      // minimum?
+      try {
+        max = Integer.parseInt((String)elem.getAttributes().getAttribute("max"));
+      } catch (Throwable t) {
+        max = 100;
+      }
     }
 
     /**
@@ -432,6 +442,11 @@ public class BlueprintRenderer {
       // check cached preferred Span
       if (preferredSpan==null) {
         preferredSpan = getPreferredSpan();
+        
+        double maxWidth = root.width*max/100;
+        if (preferredSpan.getWidth()>maxWidth)
+          preferredSpan = new Dimension2d(maxWidth, preferredSpan.getHeight() * maxWidth/preferredSpan.getWidth());
+        
       }
       return (float)(axis==X_AXIS ? preferredSpan.getWidth() : preferredSpan.getHeight());
     }
@@ -679,34 +694,36 @@ public class BlueprintRenderer {
    * A view that renders available media
    */
   private class MediaView extends MyView {
-
-    private int max;
     
+    private TagPath path2root = null;
+
     /** 
      * Constructor
      */
     MediaView(Element elem) {
       super(elem);
 
-      // minimum?
-      try {
-        max = Integer.parseInt((String)elem.getAttributes().getAttribute("max"));
-      } catch (Throwable t) {
-        max = 25;
+      Object p = elem.getAttributes().getAttribute("path");
+      if (p!=null) try {
+        path2root = new TagPath((String)p);
+      } catch (IllegalArgumentException e) {
+        if (LOG.isLoggable(Level.FINER))
+          LOG.log(Level.FINER, "got wrong path "+p);
       }
+    }
+    
+    private Property getRoot() {
+      Property result = null;
+      if (path2root!=null)
+        result = entity.getProperty(path2root);
+      return result !=null ? result : entity;
     }
     
     @Override
     protected Dimension2D getPreferredSpan() {
-      Dimension2D size = MediaRenderer.getSize(entity, graphics);
-      
+      Dimension2D size = MediaRenderer.getSize(getRoot(), graphics);
       if (isDebug && size.getWidth()==0&&size.getHeight()==0)
         return BROKEN.getSizeInPoints(DPI.get(graphics));
-      
-      double maxWidth = root.width*max/100;
-      if (size.getWidth()>maxWidth)
-        return new Dimension2d(maxWidth, size.getHeight() * maxWidth/size.getWidth());
-      
       return size;
     }
 
@@ -716,13 +733,13 @@ public class BlueprintRenderer {
       Rectangle r = allocation.getBounds();
 
       if (isDebug) {
-        Dimension2D size = MediaRenderer.getSize(entity, graphics);
+        Dimension2D size = MediaRenderer.getSize(getRoot(), graphics);
         if (size.getWidth()==0&&size.getHeight()==0) {
           BROKEN.paintIcon(g, r.x, r.y);
           return;
         }
       }
-      MediaRenderer.render(g, r, entity);
+      MediaRenderer.render(g, r, getRoot());
     }
     
   }
@@ -761,7 +778,7 @@ public class BlueprintRenderer {
         path = new TagPath((String)p);
       } catch (IllegalArgumentException e) {
         if (LOG.isLoggable(Level.FINER))
-          LOG.log(Level.FINER, "got wrong path "+path);
+          LOG.log(Level.FINER, "got wrong path "+p);
       }
       
       // done
