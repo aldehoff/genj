@@ -425,7 +425,7 @@ public class ThumbnailWidget extends JComponent {
     thumbSize = Math.max(size.width, size.height);
     topLeft.setLocation(0,0);
     Rectangle r = getRectangle(selection);
-    scrollTo( -(r.x+thumbBorder.left+(thumbSize-size.width)/2), -(r.y+thumbBorder.top+(thumbSize-size.height)/2) );
+    scrollTo( -(r.x+thumbBorder.left-(getWidth()-size.width)/2), -(r.y+thumbBorder.top+(getHeight()-size.height)/2) );
   }
   
   /**
