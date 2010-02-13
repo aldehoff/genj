@@ -81,7 +81,7 @@ class ReportDetail extends JPanel {
     tpInfo.setFont(new JTextField().getFont()); //don't use standard clunky text area font
     tpInfo.addHyperlinkListener(new EditorHyperlinkSupport(tpInfo));
     JScrollPane spInfo = new JScrollPane(tpInfo);
-    gh.add(new JLabel(res.getString("report.info")),2,3);
+    //gh.add(new JLabel(res.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,GridBagHelper.GROWFILL_BOTH);
 
     tpInfo.setText("Some very long info on report from file");
