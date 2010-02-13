@@ -88,6 +88,12 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       result.append("</body></html>");
       return result.toString();
     }
+    @Override
+    protected void handleDrop(List<File> files) {
+      if (files.size()==1) {
+        new Add(files.get(0)).actionPerformed(null);
+      }
+    }
   };
   private JToolBar actions = new JToolBar();
   private Action2 add = new Add(), del = new Del();
@@ -218,10 +224,18 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     
     private JList to;
     private Action ok;
-    FileChooserWidget chooser;
+    private FileChooserWidget chooser = new FileChooserWidget();
     
-    public Add() {
+    Add(File file) {
+      chooser.setFile(file);
+    }
+    Add() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getOverLayed(Images.imgNew));
+      
+      if (getProperty()!=null) {
+        Origin origin = getProperty().getGedcom().getOrigin();
+        chooser.setDirectory(origin.getFile()!=null ? origin.getFile().getParent() : null);
+      }
     }
     @Override
     public void setEnabled(boolean set) {
@@ -254,12 +268,9 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     public void actionPerformed(ActionEvent e) {
       
       // ask user
-      Origin origin = getProperty().getGedcom().getOrigin();
-      chooser = new FileChooserWidget();
       ThumbnailWidget preview = new ThumbnailWidget();
       preview.setPreferredSize(new Dimension(128,128));
       chooser.setAccessory(preview);
-      chooser.setDirectory(origin.getFile()!=null ? origin.getFile().getParent() : null);
       
       to = new JList(candidates());
       to.setVisibleRowCount(5);
@@ -280,7 +291,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       
       validate();
       
-      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), DialogHelper.getComponent(e)))
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), MediaBean.this))
         return;
 
       // already known?
@@ -290,7 +301,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       Set<Property> props = input2properties.get(source); 
       for (Object prop : to.getSelectedValues())
         props.add((Property)prop);
-
+      
       // mark
       MediaBean.this.changeSupport.fireChangeEvent();
       
@@ -303,7 +314,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     }
     
     private void validate() {
-      File file =  getFile();
+      File file = getFile();
       ok.setEnabled(to.getSelectedIndices().length>0 && file!=null && file.exists());
     }
     

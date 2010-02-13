@@ -30,11 +30,6 @@ import genj.util.swing.ThumbnailWidget;
 import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -49,14 +44,23 @@ import javax.swing.JCheckBox;
  */
 public class FileBean extends PropertyBean {
   
-  /** preview */
-  private ThumbnailWidget preview = new ThumbnailWidget();
-  
   /** a check as accessory */
   private JCheckBox updateMeta = new JCheckBox(RESOURCES.getString("file.update"), true);
   
   /** file chooser  */
   private FileChooserWidget chooser = new FileChooserWidget();
+  
+  /** preview */
+  private ThumbnailWidget preview = new ThumbnailWidget() {
+    @Override
+    protected void handleDrop(List<File> files) {
+      if (files.size()==1) {
+        File file = files.get(0);
+        chooser.setFile(file);
+        setSource(InputSource.get(file));
+      }
+    }
+  };
   
   private transient ActionListener doPreview = new ActionListener() {
     public void actionPerformed(ActionEvent e) {
@@ -94,9 +98,6 @@ public class FileBean extends PropertyBean {
     
     // setup review
     add(preview, BorderLayout.CENTER);
-    
-    // setup drag'n'drop
-    new DropTarget(this, new DropHandler());
     
     // done
     defaultFocus = chooser;
@@ -199,36 +200,5 @@ public class FileBean extends PropertyBean {
     return result;
   }
   
-  /**
-   * Our DnD support
-   */
-  private class DropHandler extends DropTargetAdapter {
-    
-    /** callback - dragged  */
-    public void dragEnter(DropTargetDragEvent dtde) {
-      if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
-        dtde.acceptDrag(dtde.getDropAction());
-      else
-        dtde.rejectDrag();
-    }
-     
-    /** callback - dropped */
-    @SuppressWarnings("unchecked")
-    public void drop(DropTargetDropEvent dtde) {
-      try {
-        dtde.acceptDrop(dtde.getDropAction());
-        
-        List<File> files = (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-        chooser.setFile(files.get(0));
-        preview.setSource(InputSource.get(files.get(0)));
-        
-        dtde.dropComplete(true);
-        
-      } catch (Throwable t) {
-        dtde.dropComplete(false);
-      }
-    }
-    
-  }
 
 } //FileBean

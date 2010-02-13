@@ -32,6 +32,12 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -41,6 +47,7 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
@@ -87,7 +94,6 @@ public class ThumbnailWidget extends JComponent {
   private int thumbSize = 64, thumbPadding = 10;
   private Insets thumbBorder = new Insets(4,4,20,4);
   private List<Thumbnail> thumbs = new ArrayList<Thumbnail>();
-  private Callback callback = new Callback();
   private Timer repaint = new Timer(100, new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -107,10 +113,13 @@ public class ThumbnailWidget extends JComponent {
   public ThumbnailWidget() {
     
     setRequestFocusEnabled(true);
+
+    EventHandler handler = new EventHandler();
+    addMouseWheelListener(handler);
+    addMouseListener(handler);
+    addMouseMotionListener(handler);
+    new DropTarget(this, handler);
     
-    addMouseWheelListener(callback);
-    addMouseListener(callback);
-    addMouseMotionListener(callback);
     ToolTipManager.sharedInstance().registerComponent(this);
     setBackground(Color.LIGHT_GRAY);
   }
@@ -188,7 +197,7 @@ public class ThumbnailWidget extends JComponent {
     firePropertyChange("selection", old!=null ? old.getSource() : null, selection.getSource());
     
     // show
-    showSelection();
+    showAll();
   }
   
   /**
@@ -263,11 +272,18 @@ public class ThumbnailWidget extends JComponent {
       topLeft.y = Math.max( -(d.height-getHeight()), Math.min( 0, y));
     repaint();
   }
+
+  /**
+   * Drop file callback
+   */
+  protected void handleDrop(List<File> files) {
+    // inop
+  }
   
   /**
    * callbacks
    */
-  private class Callback extends MouseAdapter implements MouseWheelListener {
+  private class EventHandler extends MouseAdapter implements MouseWheelListener, DropTargetListener {
     
     private Point start = new Point();
     
@@ -332,7 +348,43 @@ public class ThumbnailWidget extends JComponent {
         showSelection();
       // done
     }
-  }
+    
+    /** callback - dragged  */
+    public void dragEnter(DropTargetDragEvent dtde) {
+      if (dtde.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
+        dtde.acceptDrag(dtde.getDropAction());
+      else
+        dtde.rejectDrag();
+    }
+     
+    /** callback - dropped */
+    @SuppressWarnings("unchecked")
+    public void drop(DropTargetDropEvent dtde) {
+      try {
+        dtde.acceptDrop(dtde.getDropAction());
+        
+        handleDrop((List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor));
+        
+        dtde.dropComplete(true);
+        
+      } catch (Throwable t) {
+        dtde.dropComplete(false);
+      }
+    }
+
+    @Override
+    public void dragExit(DropTargetEvent dte) {
+    }
+
+    @Override
+    public void dragOver(DropTargetDragEvent dtde) {
+    }
+
+    @Override
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+    }
+      
+  } //EventHandler
   
   /**
    * Show currently selected thumbnail 1:1
@@ -340,10 +392,24 @@ public class ThumbnailWidget extends JComponent {
   public void showOne() {
     if (selection==null||selection.size.width==0||selection.size.height==0)
       return;
+    
+    Point center = new Point(
+      getWidth()/2,
+      getHeight()/2
+    );
+    
+    Rectangle r = getRectangle(selection);
+    double cx = 0.5, cy = 0.5;
+    if (r.contains(center)) {
+      cx = (center.x-r.x) / r.getWidth ();
+      cy = (center.y-r.y) / r.getHeight();
+    }
+    
     thumbSize = Math.max(selection.size.width, selection.size.height);
     topLeft.setLocation(0,0);
-    Rectangle r = getRectangle(selection);
-    scrollTo(-(r.x+(r.width-getWidth())/2),-(r.y+(r.height-getHeight())/2));
+    r = getRectangle(selection);
+    
+    scrollTo(-(int)(r.x+r.width*cx-getWidth()/2),-(int)(r.y+r.height*cy-getHeight()/2));
   }
   
   /**
