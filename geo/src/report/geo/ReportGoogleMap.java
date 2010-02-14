@@ -265,12 +265,12 @@ public class ReportGoogleMap extends Report {
       Property prop = location.getProperty(p);
       Property date = prop.getProperty("DATE", true);
       if (date!=null) {
-        out.write(date.toString());
+        out.write(date.getDisplayValue());
         out.write(" ");
       }
       out.write(Gedcom.getName(prop.getTag()));
       out.write(" ");
-      out.write(prop.getEntity().toString());
+      out.write(prop.getEntity().getDisplayValue());
     }
     
   }

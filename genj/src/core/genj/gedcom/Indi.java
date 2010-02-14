@@ -249,7 +249,7 @@ public class Indi extends Entity {
       return "";
 
     // Return string value
-    return p.toString();
+    return p.getDisplayValue();
   }
 
   /**
@@ -263,7 +263,7 @@ public class Indi extends Entity {
     }
 
     // Return string value
-    return p.toString();
+    return p.getDisplayValue();
   }
 
   /**

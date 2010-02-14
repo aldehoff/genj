@@ -84,15 +84,15 @@ public class ReportDirectoryTool extends Report {
 				  if(individuals[loop].getProperty(new TagPath("INDI:OCCU"))==null)
 					  strOccu="";
 				  else {
-					  strOccu = individuals[loop].getProperty(new TagPath("INDI:OCCU")).toString();
+					  strOccu = individuals[loop].getProperty(new TagPath("INDI:OCCU")).getDisplayValue();
 					  flagHasOccu = true;
 				  }
 				  			  
 				  if((flagHasOccu) && (individuals[loop].getProperty(new TagPath("INDI:OCCU:DATE"))!=null))
-					  strOccu += " " + individuals[loop].getProperty(new TagPath("INDI:OCCU:DATE")).toString();
+					  strOccu += " " + individuals[loop].getProperty(new TagPath("INDI:OCCU:DATE")).getDisplayValue();
 
 				  if((flagHasOccu) && (individuals[loop].getProperty(new TagPath("INDI:OCCU:PLAC"))!=null))
-					  strOccu += " " + individuals[loop].getProperty(new TagPath("INDI:OCCU:PLAC")).toString();
+					  strOccu += " " + individuals[loop].getProperty(new TagPath("INDI:OCCU:PLAC")).getDisplayValue();
 				  				  
 				  
 				  if(strOccu.length()>0) strOccu = "[" + strOccu + "]";
@@ -116,7 +116,7 @@ public class ReportDirectoryTool extends Report {
 		  return -1;
 	  
 	  //get year of time of birth
-	  strYear = (someDate.toString().trim());
+	  strYear = (someDate.getDisplayValue().trim());
 	  strYear = strYear.substring(strYear.length()-4);
 	  return Integer.parseInt(strYear);
   }

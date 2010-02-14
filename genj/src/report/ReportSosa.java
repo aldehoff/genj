@@ -289,7 +289,7 @@ public class ReportSosa extends Report {
                    listOfNotes.add(sText);
                 String sNote = "";
                 Property sProp = source.getPropertyByPath(NOTE);
-                if (sProp != null) sNote = sProp.toString();
+                if (sProp != null) sNote = sProp.getValue();
                 if ((sNote != null) && (sNote.trim().length() > 0))
                    listOfNotes.add(sNote);
                 globalSrcNotes.put(source, listOfNotes);
@@ -299,13 +299,13 @@ public class ReportSosa extends Report {
              // husband and wife would get it and it would be redundant!)
              String strNote = "";
              Property sProp2 = propSrc.getPropertyByPath(NOTE);
-             if (sProp2 != null) strNote = sProp2.toString();
+             if (sProp2 != null) strNote = sProp2.getValue();
              if ((strNote != null) && (strNote.trim().length() > 0) && (!isAlreadyIn(listOfNotes, strNote))) {
                 listOfNotes.add(descStr+strNote);
                 }
              strNote = "";
              sProp2 = propSrc.getPropertyByPath(DATA);
-             if (sProp2 != null) strNote = sProp2.toString();
+             if (sProp2 != null) strNote = sProp2.getValue();
              if ((strNote != null) && (strNote.trim().length() > 0) && (!isAlreadyIn(listOfNotes, strNote))) {
                 listOfNotes.add(descStr+strNote);
                 }

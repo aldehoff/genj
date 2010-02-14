@@ -139,13 +139,13 @@ public class ReportMissingInformation extends Report {
 		//check <bapt> 
 		tempPlace = (PropertyPlace)indi.getProperty(new TagPath("INDI:BAPM:PLAC"));
 		//tempPlace2 = (PropertyPlace)indi.getProperty(new TagPath("INDI:CHR:PLAC"));
-		if((tempPlace == null) || (tempPlace.toString() == "")) {
+		if((tempPlace == null) || (tempPlace.getValue() == "")) {
 			flagOk1 = false;
 		}
 
 		//check <chr> 
 		tempPlace = (PropertyPlace)indi.getProperty(new TagPath("INDI:CHR:PLAC"));
-		if((tempPlace == null) || (tempPlace.toString().length()==0)) {
+		if((tempPlace == null) || (tempPlace.getValue().length()==0)) {
 			flagOk2 = false;
 		}		
 			

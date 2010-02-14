@@ -66,7 +66,7 @@ public class ReferencesBean extends PropertyBean {
         if (col==0) {
           return property.getPropertyName();
         }
-        return property.toString();
+        return property.getDisplayValue();
       }
       @Override
       protected boolean getCellAlignment(Property property, int row, int col) {

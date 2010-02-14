@@ -258,12 +258,12 @@ import swingx.tree.AbstractTreeModel;
         Property prop = (Property)value;
         Property date = prop.getProperty("DATE", true);
         if (date!=null) {
-          sb.append(date.toString());
+          sb.append(date.getDisplayValue());
           sb.append(" ");
         }
         sb.append(Gedcom.getName(prop.getTag()));
         sb.append(" ");
-        sb.append(prop.getEntity().toString());
+        sb.append(prop.getEntity().getDisplayValue());
         setText(sb.toString());
         setIcon(prop.getImage(false));
       }

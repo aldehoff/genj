@@ -81,8 +81,11 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     public String getToolTipText(InputSource source) {
       StringBuffer result = new StringBuffer();
       result.append("<html><body>");
+      result.append("<b>");
+      result.append(source.getName());
+      result.append("</b><br/>");
       int i=0; for (Property prop : input2properties.get(source)) {
-        if (i++>0) result.append("<br>");
+        if (i++>0) result.append("<br/>");
         result.append(prop.toString());
       }
       result.append("</body></html>");

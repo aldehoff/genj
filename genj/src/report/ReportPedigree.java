@@ -198,7 +198,7 @@ public int getYear(PropertyDate someDate) {
 		  return -1;
 	  
 	  //get year of time of birth
-	  strYear = (someDate.toString().trim());
+	  strYear = (someDate.getDisplayValue().trim());
 	  strYear = strYear.substring(strYear.length()-4);
 	  return Integer.parseInt(strYear);
   }  
