@@ -125,6 +125,31 @@ public class Context {
     this(entity.getGedcom());
     entities.add(entity);
   }
+  
+  /**
+   * A context minus the given entity
+   */
+  public Context remove(Entity entity) {
+    List<Entity> ents = new ArrayList<Entity>(entities);
+    ents.remove(entity);
+    List<Property> props = new ArrayList<Property>(properties.size());
+    for (Property prop : properties) {
+      Entity ent = prop.getEntity();
+      if (ent!=entity&&ent!=null)
+        props.add(prop);
+    }
+    return new Context(gedcom, ents, props);
+  }
+
+  /**
+   * A context minus the given property
+   */
+  public Context remove(Property property) {
+    List<Entity> ents = new ArrayList<Entity>(entities);
+    List<Property> props = new ArrayList<Property>(properties);
+    props.remove(property);
+    return new Context(gedcom, ents, props);
+  }
 
   /**
    * Accessor

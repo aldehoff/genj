@@ -1183,7 +1183,7 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * Our MenuBar
    */
-  private class Menu extends JMenuBar implements SelectionSink, WorkbenchListener {
+  private class Menu extends JMenuBar implements SelectionSink, WorkbenchListener, GedcomListener {
     
     private List<Action> actions = new ArrayList<Action>();
     
@@ -1203,13 +1203,16 @@ public class Workbench extends JPanel implements SelectionSink {
     
     private void setup(Gedcom oldg, Gedcom newg) {
 
-      // remove old
+      // tear down
+      if (oldg!=null)
+        oldg.removeGedcomListener(this);
       disconnect(oldg, actions);
       actions.clear();
       removeAll();
       revalidate();
       repaint();
 
+      // build up
       Action2.Group groups = new Action2.Group("ignore");
       
       // File
@@ -1282,6 +1285,8 @@ public class Workbench extends JPanel implements SelectionSink {
       actions.addAll(mh.getActions());
       
       // connect
+      if (newg!=null)
+        newg.addGedcomListener(this);
       connect(newg, actions);
       
       // Done
@@ -1330,6 +1335,30 @@ public class Workbench extends JPanel implements SelectionSink {
 
     public boolean workbenchClosing(Workbench workbench) {
       return true;
+    }
+
+    @Override
+    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
+    }
+
+    @Override
+    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      context = context.remove(entity);
+      setup(gedcom,gedcom);
+    }
+
+    @Override
+    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
+    }
+
+    @Override
+    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
+    }
+
+    @Override
+    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
+      context = context.remove(deleted);
+      setup(gedcom,gedcom);
     }
     
   } // Menu

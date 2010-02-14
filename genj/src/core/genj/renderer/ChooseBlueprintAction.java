@@ -56,6 +56,10 @@ public abstract class ChooseBlueprintAction extends Action2 {
   private BlueprintEditor editor;
   
   protected ChooseBlueprintAction(Entity recipient, Blueprint current) {
+    
+    if (recipient==null)
+      throw new IllegalArgumentException("recipient==null");
+    
     this.recipient = recipient;
     this.current = current;
     setText(RESOURCES.getString("blueprint.select"));
