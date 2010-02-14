@@ -6,12 +6,14 @@ import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
 
-import java.util.Arrays;
+import java.util.logging.Logger;
 
 /**
  * The engine keeping track of and maintaining index information 
  */
-public abstract class Indexation implements GedcomMetaListener {
+public abstract class Index implements GedcomMetaListener {
+  
+  final static protected Logger LOG = Logger.getLogger("genj.plugin.sosa");
   
   private Indi root = null;
   
@@ -22,7 +24,15 @@ public abstract class Indexation implements GedcomMetaListener {
   }
   
   public void setEnabled(boolean set) {
+    
+    if (isEnabled==set)
+      return;
+    
+    if (root!=null)
+      root.getGedcom().removeGedcomListener(this);
     isEnabled = set;
+    if (root!=null)
+      root.getGedcom().removeGedcomListener(this);
   }
 
   
@@ -56,7 +66,7 @@ public abstract class Indexation implements GedcomMetaListener {
       Indi indi = (Indi)entity;
       
       /* we delete all _SOSA properties of INDI */
-      for (Property prop : Arrays.asList(indi.getProperties(getTag())))
+      for (Property prop : indi.getProperties(getTag()))
         indi.delProperty(prop);
     }
   }
@@ -83,6 +93,10 @@ public abstract class Indexation implements GedcomMetaListener {
   }
 
   public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+    if (entity==root) {
+      LOG.fine("Index root has been deleted");
+      root = null;
+    }
   }
 
   public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
@@ -93,5 +107,5 @@ public abstract class Indexation implements GedcomMetaListener {
 
   public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
   }
-
+  
 }

@@ -12,11 +12,14 @@ import genj.app.WorkbenchListener;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Indi;
+import genj.gedcom.UnitOfWork;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
@@ -37,7 +40,7 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
   private final static Logger LOG = Logger.getLogger("genj.plugin.sosa");
   private final static Registry REGISTRY = Registry.get(SosaPlugin.class);
 
-  private Map<Gedcom, Indexation> gedcom2indexation = new HashMap<Gedcom, Indexation>();
+  private Map<Gedcom, Index> gedcom2indexation = new HashMap<Gedcom, Index>();
 
   private Workbench workbench;
 
@@ -55,7 +58,7 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
 
   public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
     // store indexer state
-    Indexation index = gedcom2indexation.remove(gedcom);
+    Index index = gedcom2indexation.remove(gedcom);
     Indi root = index.getRoot();
     index.setRoot(null);
     REGISTRY.put(gedcom.getName()+".on", index.isEnabled());
@@ -67,7 +70,7 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
   public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
     
     // init/restore indexer
-    Indexation index = new SosaIndexation();
+    Index index = new SosaIndex();
     
     Entity root = gedcom.getEntity(Gedcom.INDI, REGISTRY.get(gedcom.getName()+".root", "noroot"));
     if (root instanceof Indi)
@@ -114,7 +117,7 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
     if (purpose == Purpose.MENU && context.getGedcom()!=null) {
       
       // we might not have been told that the file is opened before we're asked for actions so we check for that
-      Indexation engine = gedcom2indexation.get(context.getGedcom());
+      Index engine = gedcom2indexation.get(context.getGedcom());
       if (engine==null)
         return;
       
@@ -125,7 +128,7 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
       tools.add(sosa);
 
       sosa.add(new Root(engine, context));
-      sosa.add(new Index(engine, context));
+      sosa.add(new Reindex(engine, context));
       sosa.add(new Maintain(engine));
       sosa.add(new Remove(engine,context.getGedcom()));
 
@@ -134,8 +137,8 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
   
   private class Root extends Action2 {
     private Indi root;
-    private Indexation index;
-    public Root(Indexation index, Context context) {
+    private Index index;
+    public Root(Index index, Context context) {
       this.index = index;
       boolean enabled = index.isEnabled(); 
       if (context.getEntities().size()==1 && (context.getEntity() instanceof Indi)) {
@@ -149,13 +152,23 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
     }
     @Override
     public void actionPerformed(ActionEvent e) {
+      
+      // double-check if there's already a root set
+      if (index.getRoot()!=null&&0!=DialogHelper.openDialog(
+          "Sosa", 
+          DialogHelper.QUESTION_MESSAGE, 
+          "Are you sure you want to move index-root from "+index.getRoot()+" to "+root+"?", 
+          Action2.okCancel(), workbench)) 
+        return;
+      
+      // do it
       index.setRoot(root);
     }
   }
 
   private class Maintain extends Action2 {
-    private Indexation index;
-    public Maintain(Indexation index) {
+    private Index index;
+    public Maintain(Index index) {
       this.index = index;
       setText(RESOURCES.getString("action.maintain"));
       setSelected(index.isEnabled());
@@ -169,28 +182,39 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
   }
 
   
-  private class Index extends Action2 {
-    private Indexation engine;
-    public Index(Indexation engine, Context context) {
+  private class Reindex extends Action2 implements UnitOfWork {
+    private Index engine;
+    public Reindex(Index engine, Context context) {
+      this.engine = engine;
       setText(RESOURCES.getString("action.reindex"));
       setEnabled(engine.getRoot()!=null);
     }
     @Override
     public void actionPerformed(ActionEvent e) {
+      if (engine.getRoot()==null)
+        DialogHelper.openDialog("Sosa", DialogHelper.INFORMATION_MESSAGE, "Please select a Sosa root first", Action2.okOnly(), workbench);
+      else
+        engine.getRoot().getGedcom().doMuteUnitOfWork(this);
+    }
+    public void perform(Gedcom gedcom) throws GedcomException {
       engine.reindex();
     }
   }
   
-  private class Remove extends Action2 {
-    private Indexation engine;
+  private class Remove extends Action2 implements UnitOfWork {
+    private Index engine;
     private Gedcom gedcom;
-    public Remove(Indexation engine, Gedcom gedcom) {
+    public Remove(Index engine, Gedcom gedcom) {
+      this.engine = engine;
       setText(RESOURCES.getString("action.remove"));
       this.gedcom = gedcom;
       setEnabled(gedcom!=null);
     }
     @Override
     public void actionPerformed(ActionEvent e) {
+      gedcom.doMuteUnitOfWork(this);
+    }
+    public void perform(Gedcom gedcom) throws GedcomException {
       engine.remove(gedcom);
     }
   }
