@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,6 +157,27 @@ public abstract class Property implements Comparable<Property> {
     }
     // keep it
     return pfile.addFile(file);
+  }
+  
+  /**
+   * Associates a media object with this proprty
+   */
+  public boolean addMedia(Media media) {
+    // OBJE? 
+    if (!getMetaProperty().allows("OBJE")) 
+      return false;
+    // add reference
+    PropertyMedia xref = new PropertyMedia();
+    addProperty(xref);
+    xref.setValue(media.getId());
+    try {
+      xref.link();
+    } catch (GedcomException e) {
+      Gedcom.LOG.log(Level.FINE, "unexpected", e);
+      delProperty(xref);
+      return false;
+    }
+    return true;
   }
   
   /**

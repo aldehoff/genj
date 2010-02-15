@@ -21,13 +21,18 @@ package genj.edit.beans;
 
 import genj.edit.Images;
 import genj.edit.actions.RunExternal;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Media;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
 import genj.io.InputSource;
+import genj.io.InputSource.FileInput;
 import genj.util.DefaultValueMap;
 import genj.util.Origin;
 import genj.util.Resources;
@@ -35,6 +40,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.NestedBlockLayout;
+import genj.util.swing.TextFieldWidget;
 import genj.util.swing.ThumbnailWidget;
 import genj.view.ContextProvider;
 import genj.view.ViewContext;
@@ -48,6 +54,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -74,7 +81,12 @@ public class MediaBean extends PropertyBean implements ContextProvider {
   
   private final static Resources RES = Resources.get(MediaBean.class);
   
-  private Map<InputSource,Set<Property>> input2properties = 
+  private Set<Property> OBJEsToRemove = new HashSet<Property>();
+  
+  private Map<FileInput,Set<Property>> propsNeedingOBJEs = 
+    new DefaultValueMap<FileInput,Set<Property>>(new HashMap<FileInput,Set<Property>>(), new HashSet<Property>());
+  
+  private Map<InputSource,Set<Property>> currentOBJEs = 
     new DefaultValueMap<InputSource,Set<Property>>(new HashMap<InputSource,Set<Property>>(), new HashSet<Property>());
   
   private ThumbnailWidget thumbs = new ThumbnailWidget() {
@@ -84,7 +96,11 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       result.append("<b>");
       result.append(source.getName());
       result.append("</b><br/>");
-      int i=0; for (Property prop : input2properties.get(source)) {
+      int i=0; for (Property obje : currentOBJEs.get(source)) {
+        if (i++>0) result.append("<br/>");
+        result.append(obje.getParent().toString());
+      }
+      for (Property prop : propsNeedingOBJEs.get(source)) {
         if (i++>0) result.append("<br/>");
         result.append(prop.toString());
       }
@@ -148,14 +164,56 @@ public class MediaBean extends PropertyBean implements ContextProvider {
   
   @Override
   protected void commitImpl(Property property) {
+
+    // remove OBJEs marked for removal
+    for (Property obje : OBJEsToRemove)
+      obje.getParent().delProperty(obje);
+    OBJEsToRemove.clear();
     
-    // FIXME commit media changes
+    // add new OBJEs for props that need them
+    Gedcom gedcom = property.getGedcom();
+    boolean inline = !property.getGedcom().getGrammar().getMeta(new TagPath("OBJE")).allows("FILE");
+    for (FileInput source : propsNeedingOBJEs.keySet()) {
+      Media media = null;
+      for (Property prop : propsNeedingOBJEs.get(source))  {
+        if (inline)
+          prop.addFile(source.getFile());
+        else 
+          prop.addMedia(media==null ? media=createMedia(gedcom, source) : media);
+      }
+    }
+    propsNeedingOBJEs.clear();
+    
+    // done
+  }
+  
+  private Media createMedia(Gedcom gedcom, FileInput source) {
+    
+    // look for existing medias
+    for (Entity e : gedcom.getEntities(Gedcom.OBJE)) {
+      Media media = (Media)e;
+      if (source.getName().equals(media.getTitle()) && source.getFile().equals(media.getFile()))
+        return media;
+    }
+    
+    // craete new
+    Media media;
+    try {
+      media = (Media)gedcom.createEntity(Gedcom.OBJE);
+    } catch (GedcomException e) {
+      throw new Error("unexpected problem creating OBJE record", e);
+    }
+    media.addFile(source.getFile());
+    // got it
+    return media;
   }
 
   @Override
   protected void setPropertyImpl(Property prop) {
     
-    input2properties.clear();
+    OBJEsToRemove.clear();
+    propsNeedingOBJEs.clear();
+    currentOBJEs.clear();
     
     // clear?
     if (prop==null) {
@@ -166,7 +224,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       
       scan(prop);
       
-      thumbs.setSources(new ArrayList<InputSource>(input2properties.keySet()));
+      thumbs.setSources(new ArrayList<InputSource>(currentOBJEs.keySet()));
       
       add.setEnabled(true);
       del.setEnabled(true);
@@ -196,12 +254,12 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       Media media = (Media)((PropertyXRef)OBJE).getTargetEntity();
       PropertyFile pfile = media.getFile();
       if (pfile!=null&&pfile.getFile()!=null){
-        input2properties.get(InputSource.get(media.getTitle(), pfile.getFile())).add(parent);
+        currentOBJEs.get(InputSource.get(media.getTitle(), pfile.getFile())).add(OBJE);
         return;
       }
       PropertyBlob blob = media.getBlob();
       if (blob!=null) 
-        input2properties.get(InputSource.get(media.getTitle(), blob.getBlobData())).add(parent);
+        currentOBJEs.get(InputSource.get(media.getTitle(), blob.getBlobData())).add(OBJE);
       return;
     }
       
@@ -210,7 +268,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     if (FILE instanceof PropertyFile) {
       File file = ((PropertyFile)FILE).getFile();
       if (file!=null) 
-        input2properties.get(InputSource.get(OBJE.getPropertyValue("TITL"), file)).add(parent);
+        currentOBJEs.get(InputSource.get(OBJE.getPropertyValue("TITL"), file)).add(OBJE);
       return;
     }
     
@@ -277,10 +335,14 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       
       to = new JList(candidates());
       to.setVisibleRowCount(5);
+      
+      TextFieldWidget title = new TextFieldWidget();
 
-      JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><file gx=\"1\"/><l2 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
-      options.add(new JLabel(RES.getString("file.title")));
+      JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><file gx=\"1\"/><l2 gx=\"1\"/><title gx=\"1\"/><l3 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
+      options.add(new JLabel(RES.getString("file.choose")));
       options.add(chooser);
+      options.add(new JLabel(RES.getString("file.title")));
+      options.add(title);
       options.add(new JLabel(RES.getString("file.add", "...")));
       options.add(new JScrollPane(to));
 
@@ -297,11 +359,13 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), MediaBean.this))
         return;
 
-      // already known?
-      InputSource source = InputSource.get(getFile());
-      if (!input2properties.containsKey(source))
+      // tell thumbnail widget
+      FileInput source = new FileInput(title.getText(), getFile());
+      if (!currentOBJEs.containsKey(source)&&!propsNeedingOBJEs.containsKey(source))
         thumbs.addSource(source);
-      Set<Property> props = input2properties.get(source); 
+      
+      // keep track of all sources
+      Set<Property> props = propsNeedingOBJEs.get(source); 
       for (Object prop : to.getSelectedValues())
         props.add((Property)prop);
       
@@ -359,11 +423,32 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       InputSource source = thumbs.getSelection();
       if (source==null)
         return;
+
+      // buils and sort choices
+      List<Property> properties = new ArrayList<Property>();
+      properties.addAll(currentOBJEs.get(source));
+      properties.addAll(propsNeedingOBJEs.get(source));
+      
+      Collections.sort(properties, new PropertyComparator(".:DATE") {
+        @Override
+        public int compare(Property a, Property b) {
+          if ("OBJE".equals(a.getTag())) a = a.getParent();
+          if ("OBJE".equals(b.getTag())) b = b.getParent();
+          return super.compare(a, b);
+        }
+      });
+      
+      List<Property> choices = new ArrayList<Property>();
+      for (Property prop : properties) {
+        if ("OBJE".equals(prop.getTag())) choices.add(prop.getParent());
+        else choices.add(prop);
+      }
+        
       // ask user
-      from = new JList(list(input2properties.get(source)));
+      from = new JList(choices.toArray());
       from.setVisibleRowCount(5);
-      if (from.getModel().getSize()>0)
-        from.getSelectionModel().setSelectionInterval(0,from.getModel().getSize());
+      if (!choices.isEmpty()) 
+        from.setSelectionInterval(0, choices.size()-1);
 
       JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
       options.add(new JLabel(RES.getString("file.del", "...")));
@@ -376,10 +461,21 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), DialogHelper.getComponent(e)))
         return;
       
-      // remove
-      thumbs.removeSource(source);
-      input2properties.remove(source);
-      
+      // remove props from source
+      Set<Property> objes = currentOBJEs.get(source); 
+      Set<Property> needing = propsNeedingOBJEs.get(source);
+      int[] is = from.getSelectedIndices();
+      for (int i=0;i<is.length;i++) {
+        Property prop = properties.get(is[i]);
+        if (objes.remove(prop))
+          OBJEsToRemove.add(prop);
+        needing.remove(prop);
+      }
+
+      // remove source if unused
+      if (objes.isEmpty()&&needing.isEmpty()) 
+        thumbs.removeSource(source);
+
       // mark
       MediaBean.this.changeSupport.fireChangeEvent();
       

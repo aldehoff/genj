@@ -77,7 +77,10 @@ public abstract class InputSource {
     
     @Override
     public boolean equals(Object obj) {
-      return obj instanceof FileInput && ((FileInput)obj).file.equals(file);
+      if (!(obj instanceof FileInput))
+        return false;
+      FileInput that = (FileInput)obj;
+      return that.file.equals(this.file) && that.getName().equals(this.getName());
     }
     
     @Override
