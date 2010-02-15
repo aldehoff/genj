@@ -86,6 +86,14 @@ public class Entity extends Property {
   public Entity getEntity() {
     return this;
   }
+  
+  public boolean isConnected() {
+    for (PropertyXRef xref : getProperties(PropertyXRef.class)) {
+      if (xref.isValid())
+        return true;
+    }
+    return false;
+  }
 
   /**
    * Changes an entity's ID
