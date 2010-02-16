@@ -85,7 +85,7 @@ public class DefaultValueMap<Key,Value> implements Map<Key, Value> {
   }
 
   public void putAll(Map<? extends Key, ? extends Value> m) {
-    putAll(m);
+    delegate.putAll(m);
   }
 
   public Value remove(Object key) {
