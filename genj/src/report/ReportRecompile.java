@@ -109,13 +109,13 @@ public class ReportRecompile extends Report {
       Object javac = Class.forName("com.sun.tools.javac.Main").newInstance();
       rc = javac.getClass().getMethod("compile", new Class[]{ new String[0].getClass(), PrintWriter.class } )
             .invoke(javac, new Object[]{ args.toArray(new String[args.size()]), getOut() });
-    } catch (Exception e) {
+    } catch (Throwable t) {
       println(translate("javac.jre", System.getProperty("java.home")));
       return;
     }
     
     // done
-    if (new Integer(0).equals(rc))
+    if (Integer.valueOf(0).equals(rc))
       println(translate("javac.success", new Object[]{ ""+sources, reports}));
     else {
       println("---");
