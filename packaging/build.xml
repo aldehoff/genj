@@ -93,29 +93,30 @@
 
     </target>
 
-	<target name="dist.installer.mac" depends="version, dist.genj">
+	<target name="dist.installer.mac" depends="version, dist.genj, dist.geo">
 
 	    <!-- build mac application package -->
 		<property name="macapp" value="GenealogyJ.app"/>
 		
-		<delete dir="./build/dist/${macapp}"/>
+		<delete dir="build/dist/${macapp}"/>
+			
+	    <mkdir dir="build/dist/${macapp}"/>
+	    <mkdir dir="build/dist/${macapp}/Contents"/>
+	    <mkdir dir="build/dist/${macapp}/Contents/MacOS"/>
+        <mkdir dir="build/dist/${macapp}/Contents/Resources"/>
+        <mkdir dir="build/dist/${macapp}/Contents/Resources/Java"/>
 		
-		<copy todir="./build/dist/${macapp}">
-			<fileset dir="${dir.izpack}/utils/wrappers/izpack2app/Mac-App-Template"/>
-		</copy>
-
-		<unzip dest="./build/dist/${macapp}/Contents/Resources/Java">
-			<fileset dir="./build/dist" includes="genj_*-${version}.zip" excludes="genj_win-${version}.zip"/>
-		</unzip>
-		
-	    <copy todir="./build/dist/${macapp}/Contents" file="./src/Info.plist" overwrite="true">
+		<echo file="./build/dist/${macapp}/Contents/PkgInfo">APPL????</echo>
+		<copy todir="./build/dist/${macapp}/Contents" file="src/mac/Info.plist">
 	      <filterset>
 	      	<filter token="version" value="${version}"/>
 	      </filterset>
-	    </copy>
-		
-		<delete file="./build/dist/${macapp}/Contents/Resources/izpack.icns"/>
-		<copy file="./src/genj.icns" todir="./build/dist/${macapp}/Contents/Resources"/>
+		</copy>
+		<copy todir="./build/dist/${macapp}/Contents/MacOS" file="src/mac/JavaApplicationStub"/>
+		<copy todir="./build/dist/${macapp}/Contents/Resources" file="src/mac/genj.icns"/>
+		<unzip dest="./build/dist/${macapp}/Contents/Resources/Java">
+			<fileset dir="./build/dist" includes="genj_*-${version}.zip" excludes="genj_win-${version}.zip"/>
+		</unzip>
 		
 	    <delete file="./build/dist/genj_mac-${version}.tar"/>
 	    	
