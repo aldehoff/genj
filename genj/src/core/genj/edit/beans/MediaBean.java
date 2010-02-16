@@ -192,8 +192,13 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     // look for existing medias
     for (Entity e : gedcom.getEntities(Gedcom.OBJE)) {
       Media media = (Media)e;
-      if (source.getName().equals(media.getTitle()) && source.getFile().equals(media.getFile()))
-        return media;
+      // non-empty title not matching?
+      if (source.getName().length()>0&&!source.getName().equals(media.getTitle()))
+        continue;
+      // file not matching?
+      if (!source.getFile().equals(media.getFile()))
+        continue;
+      return media;
     }
     
     // craete new
@@ -204,6 +209,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       throw new Error("unexpected problem creating OBJE record", e);
     }
     media.addFile(source.getFile());
+    media.setTitle(source.getName());
     // got it
     return media;
   }
@@ -252,9 +258,9 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     // a OBJE reference?
     if (OBJE instanceof PropertyXRef && ((PropertyXRef)OBJE).getTargetEntity() instanceof Media) {
       Media media = (Media)((PropertyXRef)OBJE).getTargetEntity();
-      PropertyFile pfile = media.getFile();
-      if (pfile!=null&&pfile.getFile()!=null){
-        currentOBJEs.get(InputSource.get(media.getTitle(), pfile.getFile())).add(OBJE);
+      File file = media.getFile();
+      if (file!=null){
+        currentOBJEs.get(InputSource.get(media.getTitle(), file)).add(OBJE);
         return;
       }
       PropertyBlob blob = media.getBlob();

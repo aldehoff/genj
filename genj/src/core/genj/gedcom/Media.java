@@ -63,11 +63,11 @@ public class Media extends Entity {
   }
 
   /**
-   * Returns the property file for this OBJE
+   * Returns the file (if exists) for this OBJE
    */
-  public PropertyFile getFile() {
+  public File getFile() {
     Property file = getProperty("FILE", true);
-    return (file instanceof PropertyFile) ? (PropertyFile)file : null;    
+    return (file instanceof PropertyFile) ? ((PropertyFile)file).getFile() : null;    
   }
   
   /**
@@ -95,6 +95,10 @@ public class Media extends Entity {
     else
       titlepath = TITLE551;
       
+  }
+
+  public void setTitle(String title) {
+    setValue(titlepath, title);
   }
 
 } //Media

@@ -128,9 +128,9 @@ public class MediaRenderer {
           PropertyBlob BLOB = m.getBlob();
           if (BLOB!=null)
             return InputSource.get(prop.toString(), BLOB.getBlobData());
-          PropertyFile FILE = m.getFile();
-          if (FILE!=null&&FILE.getFile()!=null&&FILE.getFile().exists())
-            return InputSource.get(FILE.getFile());
+          File file = m.getFile();
+          if (file!=null)
+            return InputSource.get(file);
         }
       }
       

@@ -62,6 +62,33 @@ import org.xml.sax.helpers.DefaultHandler;
  * <!ATTLIST * ay CDATA>
  * </pre>
  * wx,wy are weight arguments - gx,gy are grow arguments
+ * 
+ * examples:
+ * <pre> [col][row][A][B][C][/row][row][D][E][/row]F[/col]
+ *  +----------+
+ *  | A B C    |
+ *  | DDDDDD E |
+ *  | FFFFFFFF |
+ *  +----------+
+ * </pre> 
+ *  
+ * <pre> [row][A][col][row]BC[/row]EF[/col][/row]
+ *  +----------+
+ *  | A B C    |
+ *  | A EEEE   |
+ *  | A FFFFFF |
+ *  +----------+
+ * </pre> 
+ *  
+ * <pre> [table][row][A][B][C][/row][row][D][E][/row][row][F][G][H][/row][/table]
+ *  +----------+
+ *  | A B    C |
+ *  | D EEEE   |
+ *  | F GG   H |
+ *  +----------+
+ * </pre> 
+ * 
+ * Note: table doesn't support the notion of span yet
  */
 public class NestedBlockLayout implements LayoutManager2, Cloneable {
   
