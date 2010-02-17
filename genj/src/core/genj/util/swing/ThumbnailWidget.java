@@ -294,7 +294,7 @@ public class ThumbnailWidget extends JComponent {
         Dimension dim = getDimension();
         double x = (mouse.x-topLeft.x)/(double)dim.width;
         double y = (mouse.y-topLeft.y)/(double)dim.height;
-        thumbSize = Math.max(getShowAllThumbSize(), thumbSize - e.getWheelRotation() * Math.max(MIN_THUMBNAIL, thumbSize/2) );
+        thumbSize = Math.max(Math.min(getShowAllThumbSize(),getMinThumbSize()), thumbSize - e.getWheelRotation() * Math.max(MIN_THUMBNAIL, thumbSize/2) );
         dim = getDimension();
         scrollTo(-(int)(x*dim.width-mouse.x), -(int)(y*dim.height-mouse.y));
         return;
@@ -445,8 +445,21 @@ public class ThumbnailWidget extends JComponent {
   }
   
   private void showAllImpl() {
-    thumbSize = getShowAllThumbSize();
+    if (thumbs.size()==1)
+      thumbSize = Math.min(getShowAllThumbSize(), getMinThumbSize());
+    else
+      thumbSize = getShowAllThumbSize();
     scrollTo(0,0);
+  }
+  
+  private int getMinThumbSize() {
+    int min = Integer.MAX_VALUE;
+    // check against thumbs
+    for (Thumbnail thumb :thumbs) {
+      if (thumb.size.width>0&&thumb.size.height>0) 
+        min = Math.min(min, Math.max(thumb.size.width, thumb.size.height));
+    }
+    return min;
   }
   
   private int getShowAllThumbSize() {
