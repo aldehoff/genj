@@ -565,7 +565,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private Point2D.Double cellWeight = new Point2D.Double();
     
     /** cached alignment */
-    private Point2D.Double cellAlign = new Point2D.Double(0.5,0.5);
+    private Point2D.Double cellAlign = new Point2D.Double(0,0.5);
 
     /** constructor */
     private Cell(String text) {
@@ -701,15 +701,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // make sure it's not more than maximum
       Dimension pref = preferred();
       Dimension max = component.getMaximumSize();
-      if (grow.x!=0) 
-        max.width = avail.width;
-      else if (cellWeight.x==0) 
-        max.width = pref.width;
-        
-      if (grow.y!=0) 
-        max.height = avail.height;
-      else if (cellWeight.y==0)
-        max.height = pref.height;
       
       // share space
       int extraX = avail.width-max.width;

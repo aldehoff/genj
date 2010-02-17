@@ -19,9 +19,6 @@
  */
 package genj.edit.beans;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import genj.edit.Options;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -31,6 +28,10 @@ import genj.util.swing.ChoiceWidget;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
+
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -91,14 +92,30 @@ public class NameBean extends PropertyBean {
     cAll.setVisible(false);
     cAll.setRequestFocusEnabled(false);
     
-    add(new JLabel(PropertyName.getLabelForFirstName()));
+    JLabel lFirst= new JLabel(PropertyName.getLabelForFirstName());
+    JLabel lLast = new JLabel(PropertyName.getLabelForLastName());
+    JLabel lSuff = new JLabel(PropertyName.getLabelForSuffix());
+    
+    Dimension dFirst = lFirst.getPreferredSize();
+    Dimension dLast  = lLast .getPreferredSize();
+    Dimension dSuff  = lSuff .getPreferredSize();
+    
+    dFirst.width = Math.max(dFirst.width, Math.max(dLast.width, dSuff.width));
+    dLast.width  = dFirst.width;
+    dSuff.width  = dLast.width;
+    
+    lFirst.setPreferredSize(dFirst);
+    lLast.setPreferredSize(dLast);
+    lSuff.setPreferredSize(dSuff);
+    
+    add(lFirst);
     add(cFirst);
 
-    add(new JLabel(PropertyName.getLabelForLastName()));
+    add(lLast);
     add(cLast);
     add(cAll);
 
-    add(new JLabel(PropertyName.getLabelForSuffix()));
+    add(lSuff);
     add(tSuff);
 
     // listen to selection of global and ask for confirmation

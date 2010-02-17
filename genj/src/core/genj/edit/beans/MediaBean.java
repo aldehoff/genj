@@ -344,7 +344,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       
       TextFieldWidget title = new TextFieldWidget();
 
-      JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><file gx=\"1\"/><l2 gx=\"1\"/><title gx=\"1\"/><l3 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
+      JPanel options = new JPanel(new NestedBlockLayout("<col><l1/><file gx=\"1\"/><l2/><title gx=\"1\"/><l3/><targets gx=\"1\" gy=\"1\"/></col>"));
       options.add(new JLabel(RES.getString("file.choose")));
       options.add(chooser);
       options.add(new JLabel(RES.getString("file.title")));

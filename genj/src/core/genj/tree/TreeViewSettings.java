@@ -137,7 +137,7 @@ public class TreeViewSettings extends JTabbedPane {
       }
     });
     
-    JPanel bPanel = new JPanel(new NestedBlockLayout("<col><list wx=\"1\" wy=\"1\"/><row><up wx=\"1\"/><dn wx=\"1\"/><del wx=\"1\"/></row></col>"));
+    JPanel bPanel = new JPanel(new NestedBlockLayout("<col><list wx=\"1\" wy=\"1\"/><row><up/><dn/><del/></row></col>"));
     bPanel.add(new JScrollPane(bList));
     bPanel.add(new JButton(up));
     bPanel.add(new JButton(down));

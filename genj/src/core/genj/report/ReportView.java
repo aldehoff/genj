@@ -145,7 +145,7 @@ public class ReportView extends View {
     b.setRequestFocusEnabled(false);
     b.setOpaque(false);
     
-    JPanel welcome = new JPanel(new NestedBlockLayout("<col><row><a wx=\"1\" wy=\"1\"/><b/><c wx=\"1\"/></row></col>"));
+    JPanel welcome = new JPanel(new NestedBlockLayout("<col><row><a wx=\"1\" ax=\"1\" wy=\"1\"/><b/><c wx=\"1\"/></row></col>"));
     welcome.setBackground(output.getBackground());
     welcome.setOpaque(true);
     welcome.add(new JLabel(pre, SwingConstants.RIGHT));

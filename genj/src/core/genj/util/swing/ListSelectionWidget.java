@@ -257,7 +257,7 @@ public class ListSelectionWidget<T> extends JComponent {
     /** Constructor */
     private Renderer() {
       check.setOpaque(false);
-      panel.setOpaque(false);
+      panel.setOpaque(true);
       panel.setLayout(new BorderLayout());
       panel.add(check,"West");
       panel.add(this,"Center");
@@ -274,6 +274,7 @@ public class ListSelectionWidget<T> extends JComponent {
       if (selection==null) 
         return this;
       // update 
+      panel.setBackground(super.getBackground());
       check.setSelected( selection.contains(value) );
       return panel;
     }
