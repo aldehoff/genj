@@ -155,7 +155,7 @@ public class VisibilityGraph implements Graph2D, WeightedGraph {
   }
 
   public Routing getRouting(Edge edge) {
-    return LayoutHelper.getRouting(edge, this);
+    return LayoutHelper.getRouting(edge.getStart(), edge.getEnd(), this);
   }
 
   public Point2D getPosition(Vertex vertex) {

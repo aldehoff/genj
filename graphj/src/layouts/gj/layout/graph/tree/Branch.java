@@ -34,8 +34,6 @@ import static gj.geom.ShapeHelper.getCenter;
 import static gj.util.LayoutHelper.getChildren;
 import static gj.util.LayoutHelper.getNeighbours;
 import static gj.util.LayoutHelper.translate;
-import gj.geom.ConvexHull;
-import gj.geom.Geometry;
 import gj.layout.Graph2D;
 import gj.layout.GraphNotSupportedException;
 import gj.layout.LayoutContext;
@@ -69,7 +67,7 @@ import java.util.Set;
   
   /** shape of branch */
   private Point2D top;
-  private ConvexHull shape;
+  private GeneralPath shape;
   private double orientation;
   
   /** constructor for a parent and its children */
@@ -121,7 +119,7 @@ import java.util.Set;
     // no children?
     if (branches.isEmpty()) {
       // simple shape for a leaf
-      shape = getConvexHull(graph2d.getShape(parent));
+      shape = new GeneralPath(getConvexHull(graph2d.getShape(parent)));
       // done
       return;
     }
@@ -175,45 +173,45 @@ import java.util.Set;
     //
     //         rrr
     //         r r  
-    //         rrr  
-    //          |    
-    //    b     |     c
-    //   -+-----+-----+-a
+    //    l    rrr    r
+    //   -+-----+-----+-t
     //    |     |     |
+    //   -+-----+-----+-b
     //    |111  |  NNN|    
     //    |1 1  |  N N|
     //    |111  |  NNN|
     //    |     |     |
-    //
+    //          c
     //
     
-    Point2D a = getPoint(branches.get(0).top(), layoutAxis-HALF_RADIAN, layout.getDistanceBetweenGenerations());
-    Point2D b = getMax(graph2d.getShape(branches.get(0).root), layoutAxis+QUARTER_RADIAN); 
-    Point2D c = getMax(graph2d.getShape(branches.get(branches.size()-1).root), layoutAxis-QUARTER_RADIAN);
+    Point2D b = branches.get(0).top();
+    Point2D t = getPoint(b, layoutAxis-HALF_RADIAN, layout.getDistanceBetweenGenerations());
+    Point2D l = getMax(graph2d.getShape(branches.get(0).root), layoutAxis+QUARTER_RADIAN); 
+    Point2D r = getMax(graph2d.getShape(branches.get(branches.size()-1).root), layoutAxis-QUARTER_RADIAN);
     
     switch (layout.getAlignmentOfParents()) {
       default: case Center:
-        graph2d.setShape(parent, createShape(graph2d.getShape(parent), getPoint(b, c, 0.5)));
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), getPoint(l, r, 0.5)));
         break;
       case Left:
-        graph2d.setShape(parent, createShape(graph2d.getShape(parent), b, layoutAxis, -1));
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), l, layoutAxis, -1));
         break;
       case Right:
-        graph2d.setShape(parent, createShape(graph2d.getShape(parent), c, layoutAxis, +1));
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), r, layoutAxis, +1));
         break;
       case LeftOffset:
-        b = getPoint(b, layoutAxis+QUARTER_RADIAN, layout.getDistanceInGeneration());
-        graph2d.setShape(parent, createShape(graph2d.getShape(parent), b, layoutAxis, +1));
+        l = getPoint(l, layoutAxis+QUARTER_RADIAN, layout.getDistanceInGeneration());
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), l, layoutAxis, +1));
         break;
       case RightOffset:
-        c = getPoint(c, layoutAxis-QUARTER_RADIAN, layout.getDistanceInGeneration());
-        graph2d.setShape(parent, createShape(graph2d.getShape(parent), c, layoutAxis, -1));
+        r = getPoint(r, layoutAxis-QUARTER_RADIAN, layout.getDistanceInGeneration());
+        graph2d.setShape(parent, createShape(graph2d.getShape(parent), r, layoutAxis, -1));
         break;
     }
     
     graph2d.setShape(
       parent,
-      createShape(graph2d.getShape(parent), a, QUARTER_RADIAN, -1)
+      createShape(graph2d.getShape(parent), t, QUARTER_RADIAN, -1)
     );
     
     // calculate new shape with sub-branches' shapes
@@ -222,28 +220,11 @@ import java.util.Set;
     for (Branch branch : branches)
       gp.append(branch.shape, false);
     
-    // .. add buffer for edges
-    Point2D b1,b2;
-    switch (layout.getAlignmentOfParents()) {
-      case LeftOffset:
-        b1 = Geometry.getIntersection(c, layoutAxis, getCenter(graph2d.getShape(parent)), layoutAxis-QUARTER_RADIAN);
-        b2 = b1;
-        break;
-      case RightOffset:
-        b1 = Geometry.getIntersection(b, layoutAxis, getCenter(graph2d.getShape(parent)), layoutAxis-QUARTER_RADIAN);
-        b2 = b1;
-        break;
-      default:
-        b1 = Geometry.getIntersection(b, layoutAxis, a, layoutAxis-QUARTER_RADIAN);
-        b2 = Geometry.getIntersection(c, layoutAxis, a, layoutAxis-QUARTER_RADIAN);
-        break;
-    }
-    gp.lineTo(b2.getX(), b2.getY());
-    gp.lineTo(b1.getX(), b1.getY());
-    
-    // .. and convert to convex hull
-    // TODO using convex hull for branch merging leads to wide graphs - consider using a different merge mechanism
-    shape = getConvexHull(gp);
+    gp.append(layout.getEdgeLayout().routing(graph2d, parent, false, branches.get(0).root, 0, 1, layout), false);
+    gp.append(layout.getEdgeLayout().routing(graph2d, parent, false, branches.get(branches.size()-1).root, 0, 1, layout), false);
+
+    // TODO scan resulting shape and get rid of inner (hidden) lines for performance
+    shape = gp;
    
     // done
   }

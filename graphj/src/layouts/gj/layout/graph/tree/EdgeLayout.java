@@ -47,8 +47,8 @@ import java.util.List;
 public enum EdgeLayout {
   
   Polyline { 
-    @Override protected Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout) {
-      return getRouting(edge, graph2d);
+    @Override protected Routing routing(Graph2D graph2d, Vertex parent, boolean reversed, Vertex child, int i, int j, TreeLayout layout) {
+      return getRouting(parent, child, graph2d);
     }
   },
   
@@ -68,23 +68,24 @@ public enum EdgeLayout {
       return Port.None;
     }
 
-    @Override protected Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout) {
+    @Override protected Routing routing(Graph2D graph2d, Vertex parent, boolean reversed, Vertex child, int i, int j, TreeLayout layout) {
 
       // FIXME ports are wrong for re-ordered children
       // FIXME port polyline count for destinations isn't correct for acyclic DAGs
 
       Port side = side(layout);
-      if (edge.getEnd().equals(parent))
+      if (reversed)
         side = side.opposite();
       return getRouting(
-          graph2d.getShape(edge.getStart()), getPort(graph2d.getShape(edge.getStart()), i, j, side           ),
-          graph2d.getShape(edge.getEnd  ()), getPort(graph2d.getShape(edge.getEnd  ()), 0, 1, side.opposite())
+          graph2d.getShape(parent), getPort(graph2d.getShape(parent), i, j, side           ),
+          graph2d.getShape(child ), getPort(graph2d.getShape(child ), 0, 1, side.opposite()),
+          reversed
       );
     }
   },
   
   Orthogonal {
-    @Override protected Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout) {
+    @Override protected Routing routing(Graph2D graph2d, Vertex parent, boolean reversed, Vertex child, int i, int j, TreeLayout layout) {
       
       double layoutAxis = getRadian(layout.getOrientation());
       
@@ -106,12 +107,12 @@ public enum EdgeLayout {
               Geometry.getIntersection(e, layoutAxis, c, layoutAxis-Geometry.QUARTER_RADIAN),
               e};
       }
-      return getRouting(points, graph2d.getShape(parent), graph2d.getShape(child), !edge.getStart().equals(parent));
+      return getRouting(points, graph2d.getShape(parent), graph2d.getShape(child), reversed);
     }
   };
   
   /** the layout specific routing */
-  protected abstract Routing routing(Graph2D graph2d, Vertex parent, Edge edge, Vertex child, int i, int j, TreeLayout layout);
+  protected abstract Routing routing(Graph2D graph2d, Vertex parent, boolean reversed, Vertex child, int i, int j, TreeLayout layout);
 
   /** apply */
   protected void apply(Graph2D graph2d, Branch branch, TreeLayout layout, LayoutContext context)  throws GraphNotSupportedException {
@@ -143,7 +144,7 @@ public enum EdgeLayout {
     // a contained child?
     for (Branch sub : branch.getBranches()) {
       if (sub.getRoot().equals(child)) {
-        graph2d.setRouting(edge, routing(graph2d, parent, edge, child, i, j, layout));
+        graph2d.setRouting(edge, routing(graph2d, parent, edge.getStart().equals(child), child, i, j, layout));
         return;
       }
     }

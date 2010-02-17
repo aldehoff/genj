@@ -72,7 +72,7 @@ public class DefaultGraph implements Graph2D {
     
     Routing result = edge2path.get(edge);
     if (result==null) {
-      result = LayoutHelper.getRouting(edge, this);
+      result = LayoutHelper.getRouting(edge.getStart(), edge.getEnd(), this);
       edge2path.put(edge, result);
     }
     return result;

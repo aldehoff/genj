@@ -271,7 +271,7 @@ public class LayoutHelper {
    * Calculate a shape for an arc
    */
   public static void setRouting(Edge edge, Graph2D graph2d) {
-    graph2d.setRouting(edge, getRouting(edge, graph2d));
+    graph2d.setRouting(edge, getRouting(edge.getStart(), edge.getEnd(), graph2d));
   }
   
   /**
@@ -287,8 +287,8 @@ public class LayoutHelper {
   /**
    * path for given edge
    */
-  public static Routing getRouting(Edge edge, Graph2D graph2d) {
-    return getRouting(graph2d.getShape(edge.getStart()), graph2d.getShape(edge.getEnd()));
+  public static Routing getRouting(Vertex from, Vertex to, Graph2D graph2d) {
+    return getRouting(graph2d.getShape(from), graph2d.getShape(to));
   }
 
   /**
