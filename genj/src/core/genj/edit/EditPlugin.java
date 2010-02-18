@@ -114,6 +114,9 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
     if (!gedcom.getEntities(Gedcom.INDI).isEmpty()) 
       return;
 
+    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, RESOURCES.getString("wizard.empty", gedcom.getName()), Action2.okCancel(), workbench)) 
+      return;
+    
     try {
       wizardFirst(workbench, gedcom);
     } catch (Throwable t) {
@@ -122,27 +125,31 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
     
   }
   
+  private Indi adamOrEve;
+  
   private void wizardFirst(Workbench workbench, Gedcom gedcom) throws GedcomException {
     
-    // create sample work
-    final Indi adamOrEve = (Indi)new Gedcom(gedcom.getOrigin()).createEntity("INDI");
-    adamOrEve.setSex(PropertySex.MALE);
+    // create indi
+    gedcom.doUnitOfWork(new UnitOfWork() {
+      public void perform(Gedcom gedcom) throws GedcomException {
+        adamOrEve = (Indi)gedcom.createEntity("INDI");
+        adamOrEve.setSex(PropertySex.MALE);
+      }
+    });
     
     // let user edit it
     final BeanPanel panel = new BeanPanel();
     panel.setShowTabs(false);
     panel.setRoot(adamOrEve);
-    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), workbench)) 
+    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), workbench)) {
+      gedcom.undoUnitOfWork();
       return;
+    }      
     
     gedcom.doMuteUnitOfWork(new UnitOfWork() {
       public void perform(Gedcom gedcom) throws GedcomException {
-        
-        // commit changes to work 
+        // commit changes 
         panel.commit();
-        
-        // copy changes to original
-        gedcom.createEntity(Gedcom.INDI).copyProperties(adamOrEve.getProperties(), true);
         
         // commit submitter as well
         Submitter submitter = (Submitter) gedcom.createEntity(Gedcom.SUBM);
