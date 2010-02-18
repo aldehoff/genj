@@ -51,9 +51,10 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * A layout that arranges components in nested blocks of rows and columns
  * <pre>
- * <!ELEMENT row (col*|*)>
- * <!ELEMENT col (row*|*)>
- * <!ELEMENT *>
+ * <!ELEMENT row (col*|ANY*)>
+ * <!ELEMENT col (row*|ANY*)>
+ * <!ELEMENT table (row*|ANY*)>
+ * <!ELEMENT ANY>
  * <!ATTLIST * wx CDATA>
  * <!ATTLIST * wy CDATA>
  * <!ATTLIST * gx CDATA>
@@ -233,6 +234,9 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // column?
       if ("col".equals(element))
         return new Column();
+      // table?
+      if ("table".equals(element))
+        return new Table(attrs);
       // a cell!
       return new Cell(element, attrs, padding);
     }
@@ -262,7 +266,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     Dimension preferred;
 
     /** weight/growth */
-    Point2D.Double weight;
+    Point weight;
     Point grow;
     
     /** subs */
@@ -321,7 +325,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** weight */
-    abstract Point2D weight();
+    abstract Point weight();
     
     /** grow */
     Point grow() {
@@ -381,8 +385,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
 
     /** add a sub */
     Block add(Block sub) {
-      if (sub instanceof Row)
-        throw new IllegalArgumentException("row can't contain row");
       super.add(sub);
       return sub;
     }
@@ -407,18 +409,18 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** weight */
     @Override
-    Point2D weight() {
+    Point weight() {
       
       // known?
       if (weight!=null)
         return weight;
       
       // calculate
-      weight = new Point2D.Double();
+      weight = new Point();
       for (int i=0;i<subs.size();i++) {
         Block sub = (Block)subs.get(i);
-        weight.x += sub.weight().getX();
-        weight.y = Math.max(weight.y, sub.weight().getY());
+        weight.x += sub.weight().x;
+        weight.y = Math.max(weight.y, sub.weight().y);
       }      
       
       // done
@@ -467,8 +469,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** add a sub */
     Block add(Block sub) {
-      if (sub instanceof Column)
-        throw new IllegalArgumentException("column can't contain column");
       super.add(sub);
       return sub;
     }
@@ -492,18 +492,18 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** weight */
-    Point2D weight() {
+    Point weight() {
       
       // known?
       if (weight!=null)
         return weight;
       
       // calculate
-      weight = new Point2D.Double();
+      weight = new Point();
       for (int i=0;i<subs.size();i++) {
-        Point2D sub = ((Block)subs.get(i)).weight();
-        weight.x = Math.max(weight.x, sub.getX());
-        weight.y += sub.getY();
+        Point sub = ((Block)subs.get(i)).weight();
+        weight.x = Math.max(weight.x, sub.x);
+        weight.y += sub.y;
       }      
       
       // done
@@ -562,7 +562,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private int cellPadding;
     
     /** cached weight */
-    private Point2D.Double cellWeight = new Point2D.Double();
+    private Point cellWeight = new Point();
     
     /** cached alignment */
     private Point2D.Double cellAlign = new Point2D.Double(0,0.5);
@@ -586,10 +586,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // look for weight info
       String wx = getAttribute("wx");
       if (wx!=null)
-        cellWeight.x = Float.parseFloat(wx);
+        cellWeight.x = Integer.parseInt(wx);
       String wy = getAttribute("wy");
       if (wy!=null)
-        cellWeight.y = Float.parseFloat(wy);
+        cellWeight.y = Integer.parseInt(wy);
       
       // look for alignment info
       String ax = getAttribute("ax");
@@ -685,8 +685,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** weight */
     @Override
-    Point2D weight() {
-      return component==null ? new Point2D.Double() : cellWeight;
+    Point weight() {
+      return component==null ? new Point() : cellWeight;
     }
     
     /** layout */
@@ -851,4 +851,145 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
   }
 
+  /**
+   * a table
+   */
+  private static class Table extends Block {
+
+    private ArrayList<Integer> rowHeights = new ArrayList<Integer>();
+    private ArrayList<Integer> colWidths = new ArrayList<Integer>();
+    private ArrayList<Integer> rowWeights = new ArrayList<Integer>();
+    private ArrayList<Integer> colWeights = new ArrayList<Integer>();
+    
+    /** constructor */
+    private Table(Attributes attributes) {
+      
+      // look for weight info
+      weight = new Point();
+      String wx = attributes.getValue("wx");
+      if (wx!=null)
+        weight.x = Integer.parseInt(wx);
+      String wy = attributes.getValue("wy");
+      if (wy!=null)
+        weight.y = Integer.parseInt(wy);
+      
+      // look for grow info
+      grow = new Point();
+      String gx = attributes.getValue("gx");
+      if (gx!=null)
+        grow.x = Integer.parseInt(gx)>0 ? 1 : 0;
+      else if (weight.x>0)
+        grow.x = 1;
+      String gy = attributes.getValue("gy");
+      if (gy!=null)
+        grow.y = Integer.parseInt(gy)>0 ? 1 : 0;
+      else if (weight.getY()>0)
+        grow.y = 1;
+
+      // done
+    }
+    
+    private void calcGrid() {
+      rowHeights.clear();
+      colWidths.clear();
+      rowWeights.clear();
+      colWeights.clear();
+      for (int r=0;r<subs.size();r++) {
+        Block row = subs.get(r);
+        if (row instanceof Row) {
+          for (int c=0;c<row.subs.size();c++) {
+            Dimension d = row.subs.get(c).preferred();
+            grow(colWidths, c, d.width);
+            grow(rowHeights, r, d.height);
+            Point w = row.subs.get(c).weight();
+            grow(colWeights, c, w.x);
+            grow(rowWeights, r, w.y);
+          }
+        } else {
+          Dimension d = row.preferred();
+          grow(colWidths, 0, d.width);
+          grow(rowHeights, r, d.height);
+          Point w = row.weight();
+          grow(colWeights, 0, w.x);
+          grow(rowWeights, r, w.y);
+        }
+      }
+    }
+    
+    @Override
+    void layout(Rectangle in) {
+
+      // calculate preferred grid & size
+      Dimension preferred = preferred();
+      
+      // calculate extras
+      float xWeightMultiplier = 0;
+      if (in.width>preferred.width) {
+        int w = 0;
+        for (int i=0;i<colWeights.size();i++)
+          w += colWeights.get(i);
+        xWeightMultiplier = (in.width-preferred.width)/(float)w;
+      }
+      float yWeightMultiplier = 0;
+      if (in.height>preferred.height) {
+        int h = 0;
+        for (int i=0;i<rowWeights.size();i++)
+          h += rowWeights.get(i);
+        yWeightMultiplier = (in.height-preferred.height)/(float)h;
+      }
+      
+      // layout subs
+      Rectangle avail = new Rectangle(in.x, in.y, in.width, in.height);
+      for (int r=0;r<subs.size();r++) {
+        
+        Block row = subs.get(r);
+        
+        if (row instanceof Row) {
+          int x = avail.x;
+          for (int c=0;c<row.subs.size();c++) {
+            int w = colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
+            row.subs.get(c).layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
+            x += w;
+          }
+        } else {
+          int w = colWidths.get(0) + (int)(colWeights.get(0)*xWeightMultiplier);
+          ((Row)row).layout(new Rectangle(avail.x, avail.y, w, rowHeights.get(r)));
+        }
+        
+        // next row
+        avail.y += rowHeights.get(r);
+      }
+
+      // done
+    }
+    
+    private void grow(ArrayList<Integer> values, int i, Integer value) {
+      while (values.size()<i+1)
+        values.add(0);
+      values.set(i, Math.max(values.get(i), value));
+    }
+    
+    @Override
+    Dimension preferred() {
+      
+      // calculate preferred grid
+      calcGrid();
+      
+      // add it up
+      Dimension result = new Dimension(0,0);
+      for (int c=0;c<colWidths.size();c++)
+        result.width += colWidths.get(c);
+      for (int r=0;r<rowHeights.size();r++)
+        result.height += rowHeights.get(r);
+      
+      // done
+      return result;
+    }
+
+    @Override
+    Point weight() {
+      return weight;
+    }
+  }
+  
 } //ColumnLayout

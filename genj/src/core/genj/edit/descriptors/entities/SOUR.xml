@@ -2,11 +2,11 @@
   <col>
    <row><label path="SOUR"/></row>
    <row><label path="SOUR:AUTH"/></row>
-   <row><bean path="SOUR:AUTH" wx="0.1" wy="0.1"/></row>
+   <row><bean path="SOUR:AUTH" wy="1"/></row>
    <row><label path="SOUR:TITL"/></row>
-   <row><bean path="SOUR:TITL" wx="0.1" wy="0.1"/></row>
+   <row><bean path="SOUR:TITL" wy="1"/></row>
    <row><label path="SOUR:TEXT"/></row>
-   <row><bean path="SOUR:TEXT" wx="0.1" wy="0.1"/></row>
+   <row><bean path="SOUR:TEXT" wy="1"/></row>
   </col> 
   <col>
    <bean path="." type="genj.edit.beans.MediaBean" wx="1" wy="1"/>

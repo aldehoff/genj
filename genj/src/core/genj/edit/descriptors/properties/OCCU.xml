@@ -1,5 +1,5 @@
 <col>
- <row><bean path=".:NOTE" popup="true"/><label path="."/><bean path="." wx="0.1"/></row>
+ <row><bean path=".:NOTE" popup="true"/><label path="."/><bean path="." wx="1"/></row>
  <row><bean path=".:DATE" dir="horizontal"/></row>
- <row><bean path=".:PLAC" wx="0.1"/></row>
+ <row><bean path=".:PLAC" wx="1"/></row>
 </col>

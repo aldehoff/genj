@@ -1,9 +1,9 @@
 <col>
  <row><bean path=".:NOTE" popup="true"/><bean path=".:DATE" dir="horizontal"/></row>
- <row><label path=".:ADDR"/> / <label path=".:PLAC"/><bean path=".:PLAC" wx="0.1"/></row>
- <row><bean path=".:ADDR" wx="0.1"/></row>
- <row><label path=".:ADDR:CITY"/><bean path=".:ADDR:CITY" wx="0.1"/></row>
- <row><label path=".:ADDR:POST"/><bean path=".:ADDR:POST" wx="0.1"/>
-      <label path=".:ADDR:STAE"/><bean path=".:ADDR:STAE" wx="0.1"/>
-      <label path=".:ADDR:CTRY"/><bean path=".:ADDR:CTRY" wx="0.1"/></row>
+ <row><label path=".:ADDR"/> / <label path=".:PLAC"/><bean path=".:PLAC" wx="1"/></row>
+ <row><bean path=".:ADDR" wx="1"/></row>
+ <row><label path=".:ADDR:CITY"/><bean path=".:ADDR:CITY" wx="1"/></row>
+ <row><label path=".:ADDR:POST"/><bean path=".:ADDR:POST" wx="1"/>
+      <label path=".:ADDR:STAE"/><bean path=".:ADDR:STAE" wx="1"/>
+      <label path=".:ADDR:CTRY"/><bean path=".:ADDR:CTRY" wx="1"/></row>
 </col>

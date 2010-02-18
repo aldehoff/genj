@@ -45,7 +45,9 @@ import javax.swing.event.ChangeListener;
  */
 public class NameBean extends PropertyBean {
 
-  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<col><row><l/><v wx=\"1\"/></row><row><l/><v wx=\"1\"/><check/></row><row><l/><v wx=\"1\"/></row></col>");
+  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout(
+      "<table><row><l/><v wx=\"1\"/></row><row><l/><row><v wx=\"1\"/><check/></row></row><row><l/><v/></row></table>"
+  );
   
   /** our components */
   private Property[] sameLastNames = new Property[0];
@@ -95,18 +97,6 @@ public class NameBean extends PropertyBean {
     JLabel lFirst= new JLabel(PropertyName.getLabelForFirstName());
     JLabel lLast = new JLabel(PropertyName.getLabelForLastName());
     JLabel lSuff = new JLabel(PropertyName.getLabelForSuffix());
-    
-    Dimension dFirst = lFirst.getPreferredSize();
-    Dimension dLast  = lLast .getPreferredSize();
-    Dimension dSuff  = lSuff .getPreferredSize();
-    
-    dFirst.width = Math.max(dFirst.width, Math.max(dLast.width, dSuff.width));
-    dLast.width  = dFirst.width;
-    dSuff.width  = dLast.width;
-    
-    lFirst.setPreferredSize(dFirst);
-    lLast.setPreferredSize(dLast);
-    lSuff.setPreferredSize(dSuff);
     
     add(lFirst);
     add(cFirst);
