@@ -172,8 +172,11 @@ public class DialogHelper {
     final Registry registry = Registry.get(caller.getClassName());
     final String key = caller.getMethodName() + ".dialog";
     Dimension bounds = registry.get(key, (Dimension)null);
-    if (bounds!=null) 
+    if (bounds!=null) {
+      bounds.width = Math.max(bounds.width, dlg.getWidth());
+      bounds.height = Math.max(bounds.height, dlg.getHeight());
       dlg.setBounds(new Rectangle(bounds).intersection(screen));
+    }
     dlg.setLocationRelativeTo(source);
 
     // hook up to the dialog being hidden by the optionpane - that's what is being called after the user selected a button (setValue())
