@@ -51,16 +51,16 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * A layout that arranges components in nested blocks of rows and columns
  * <pre>
- * <!ELEMENT row (col*|ANY*)>
- * <!ELEMENT col (row*|ANY*)>
- * <!ELEMENT table (row*|ANY*)>
- * <!ELEMENT ANY>
- * <!ATTLIST * wx CDATA>
- * <!ATTLIST * wy CDATA>
- * <!ATTLIST * gx CDATA>
- * <!ATTLIST * gy CDATA>
- * <!ATTLIST * ax CDATA>
- * <!ATTLIST * ay CDATA>
+ * <!ELEMENT row (col*|T*)>
+ * <!ELEMENT col (row*|T*)>
+ * <!ELEMENT table (row*|T*)>
+ * <!ELEMENT T>
+ * <!ATTLIST T wx CDATA>
+ * <!ATTLIST T wy CDATA>
+ * <!ATTLIST T gx CDATA>
+ * <!ATTLIST T gy CDATA>
+ * <!ATTLIST T ax CDATA>
+ * <!ATTLIST T ay CDATA>
  * </pre>
  * wx,wy are weight arguments - gx,gy are grow arguments
  * 
@@ -236,7 +236,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         return new Column();
       // table?
       if ("table".equals(element))
-        return new Table(attrs);
+        return new Table();
       // a cell!
       return new Cell(element, attrs, padding);
     }
@@ -856,44 +856,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   private static class Table extends Block {
 
-    private ArrayList<Integer> rowHeights = new ArrayList<Integer>();
-    private ArrayList<Integer> colWidths = new ArrayList<Integer>();
-    private ArrayList<Integer> rowWeights = new ArrayList<Integer>();
-    private ArrayList<Integer> colWeights = new ArrayList<Integer>();
-    
-    /** constructor */
-    private Table(Attributes attributes) {
-      
-      // look for weight info
-      weight = new Point();
-      String wx = attributes.getValue("wx");
-      if (wx!=null)
-        weight.x = Integer.parseInt(wx);
-      String wy = attributes.getValue("wy");
-      if (wy!=null)
-        weight.y = Integer.parseInt(wy);
-      
-      // look for grow info
-      grow = new Point();
-      String gx = attributes.getValue("gx");
-      if (gx!=null)
-        grow.x = Integer.parseInt(gx)>0 ? 1 : 0;
-      else if (weight.x>0)
-        grow.x = 1;
-      String gy = attributes.getValue("gy");
-      if (gy!=null)
-        grow.y = Integer.parseInt(gy)>0 ? 1 : 0;
-      else if (weight.getY()>0)
-        grow.y = 1;
-
-      // done
-    }
+    private ArrayList<Integer> rowHeights;
+    private ArrayList<Integer> colWidths;
+    private ArrayList<Integer> rowWeights;
+    private ArrayList<Integer> colWeights;
     
     private void calcGrid() {
-      rowHeights.clear();
-      colWidths.clear();
-      rowWeights.clear();
-      colWeights.clear();
+      
+      if (rowHeights!=null)
+        return;
+      
+      rowHeights = new ArrayList<Integer>();
+      colWidths = new ArrayList<Integer>();
+      rowWeights = new ArrayList<Integer>();
+      colWeights = new ArrayList<Integer>();
+      
       for (int r=0;r<subs.size();r++) {
         Block row = subs.get(r);
         if (row instanceof Row) {
@@ -921,6 +898,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
 
       // calculate preferred grid & size
       Dimension preferred = preferred();
+      calcGrid();
       
       // calculate extras
       float xWeightMultiplier = 0;
@@ -988,7 +966,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
 
     @Override
     Point weight() {
-      return weight;
+      if (weight!=null)
+        return weight;
+      
+      // calculate preferred grid
+      calcGrid();
+      
+      // add it up
+      Point result = new Point(0,0);
+      for (int c=0;c<colWeights.size();c++)
+        result.x += colWeights.get(c);
+      for (int r=0;r<rowWeights.size();r++)
+        result.y += rowWeights.get(r);
+      
+      // done
+      return result;
     }
   }
   
