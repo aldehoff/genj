@@ -129,7 +129,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     add(BorderLayout.NORTH , actions);
     add(BorderLayout.CENTER, thumbs);
     
-    setPreferredSize(new Dimension(32,32));
+    setPreferredSize(new Dimension(128,128));
     actions.setFloatable(false);
     
     // some actions
