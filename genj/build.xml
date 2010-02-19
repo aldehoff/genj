@@ -21,21 +21,30 @@
    Initialization
    -->
   <target name="init">
+  	
+  	<echo append="No" file="build/revision.properties">revision=</echo>
+  	<exec failifexecutionfails="true" failonerror="true" executable="svnversion" spawn="false" dir="." output="build/revision.properties" append="Yes">
+  	  <arg line="-n"/>
+	</exec>	
+  	<loadproperties srcfile="build/revision.properties"/>
 
-    <tstamp><format property="now.short" pattern="yyyyMMdd"/></tstamp>
-    <tstamp><format property="now.long" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
-  	
-    <loadproperties srcfile="./build.properties"/>
+  	<condition property="revision-ok">
+       <matches pattern="^[0-9]*$" string="${revision}"/>
+    </condition>
+  		
+    <fail unless="revision-ok" message="Working copy is not a single, unmodified revision but ${revision} - check for uncommitted changes or update to HEAD"/>
 
-  	<property name="version" value="${now.short}"/>
-    <property name="build" value="${version} ${now.long} ${user.name}"/>
+    <tstamp><format property="now" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
   	
-    <echo level="info">version = ${version}</echo>
-    <echo level="info">build = ${build}</echo>
+    <loadproperties srcfile="build.properties"/>
+
+  	<property name="version" value="${revision}"/>
+    <property name="build" value="${version} (${revision}) ${now} ${user.name}"/>
   	
-  	<echo file="./build/version.properties">
-  		version = ${version}
-    </echo>
+    <echo level="info">version=${version}</echo>
+    <echo level="info">build=${build}</echo>
+  	
+  	<echo file="./build/version.properties">version = ${version}</echo>
     	
   	<echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>

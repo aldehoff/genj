@@ -554,7 +554,10 @@ public class Workbench extends JPanel implements SelectionSink {
     try {
       // no known key means load default
       if (restore==null)
-        restore = new File("gedcom/example.ged").toURI().toURL().toString();
+      	// we're intentionally not going through toURI.toURL here since
+      	// that would add space-to-%20 conversion which kills our relative
+      	// file check operations down the line
+        restore = new File("gedcom/example.ged").toURL().toString();
       // known key needs value
       if (restore.length()>0)
         openGedcom(new URL(restore));
