@@ -84,6 +84,7 @@ public class ReportSosa extends Report {
   public boolean reportResi = true; 
   public boolean reportPlaceOfResi = true;
   public boolean reportDateOfResi = true;
+  public boolean reportIndiNumber = true;
 
   /** option - Information to display for each event */
   public boolean showAllPlaceJurisdictions = false;
@@ -318,7 +319,9 @@ public class ReportSosa extends Report {
      * dump individual's name
      */
     String getName(Indi indi, int sosa, PrivacyPolicy privacy) {
-      return (sosa>0?sosa+" ":"") + privacy.getDisplayValue(indi, "NAME") + " (" + indi.getId() + ")";
+      if(reportIndiNumber)return (sosa>0?sosa+" ":"") + privacy.getDisplayValue(indi, "NAME") + " (" + indi.getId() + ")";
+      	else return (sosa>0?sosa+" ":"") + privacy.getDisplayValue(indi, "NAME");
+      
     }
 
     /**
