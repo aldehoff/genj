@@ -22,11 +22,9 @@
    -->
   <target name="init">
   	
-  	<echo append="No" file="build/revision.properties">revision=</echo>
-  	<exec failifexecutionfails="true" failonerror="true" executable="svnversion" spawn="false" dir="." output="build/revision.properties" append="Yes">
+  	<exec failifexecutionfails="true" failonerror="true" executable="svnversion" spawn="false" dir="." outputproperty="revision">
   	  <arg line="-n"/>
-	</exec>	
-  	<loadproperties srcfile="build/revision.properties"/>
+  	</exec>	
 
   	<condition property="revision-ok">
        <matches pattern="^[0-9]*$" string="${revision}"/>
@@ -180,40 +178,6 @@
 	</zip>
 
   </target>
-
-  <!--
-   Distribution - a language's help
-   -->
-  <target name="dist.language.help" if="dir">
-  	
-  	<property name="dir.help" value="${dir}/help"/>
-  	
-    <!-- create ./help -->
-    <mkdir dir="${dir.help}"/>
-    <copy todir="${dir.help}/images">
-      <fileset dir="./help/images"/>
-    </copy>
-    <copy todir="${dir.help}">
-      <fileset dir="./help" includes="${language}/**/*.html"/>
-      <filterset>
-        <filtersfile file="./help/${language}/resources.properties"/>
-      </filterset>
-    </copy>
-    <copy todir="${dir.help}">
-      <fileset dir="./help" includes="${language}/**/*.png, ${language}/**/*.jpg"/>
-    </copy>
-    <copy todir="${dir.help}/${language}">
-      <fileset dir="./help" includes="*.xml, *.html"/>
-      <filterset>
-        <filtersfile file="./help/${language}/resources.properties"/>
-      </filterset>
-    </copy>
-  
-    <!-- prepare ./lib/jhbasic.jar -->
-    <mkdir dir="${dir}/lib"/>
-  	<copy todir="${dir}/lib" file="./lib/jhbasic.jar"/>
-
-  </target>
 	
   <!--
    Distribution - a language
@@ -225,16 +189,9 @@
       <fileset dir="./language/${language}"/>
     </jar>
 
-  	<!-- create help for that language (won't be filled if n/a) -->
-    <delete dir="./build/help"/>
-    <mkdir dir="./build/help"/>
-  	<available file="./help/${language}" property="dir" value="./build/help"/>
-    <antcall target="dist.language.help"/>
-
     <!-- create genj_ll-xyz.zip -->
     <zip zipfile="./build/dist/genj_${language}-${version}.zip" update="True">
       <fileset dir="./build" includes="lib/genj_${language}.jar"/>
-      <fileset dir="./build/help" includes="**"/>
       <fileset dir="." includes="contrib/wikipedia/${language}.wikipedia.zip"/>
       <fileset dir="." includes="contrib/wikipedia/license.txt"/>
       <fileset dir="." includes="contrib/almanac/${language}.almanac"/>

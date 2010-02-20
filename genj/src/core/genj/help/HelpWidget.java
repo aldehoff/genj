@@ -19,24 +19,25 @@
  */
 package genj.help;
 
-import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
-import java.io.File;
-import java.net.URL;
-import java.util.Locale;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.help.HelpSet;
-import javax.help.JHelp;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
+import javax.swing.JScrollPane;
+import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.ImageView;
 
 /**
  * A bridge to javax Help System
@@ -45,24 +46,34 @@ class HelpWidget extends JPanel {
 
   private final static Logger LOG = Logger.getLogger("genj.help");
   private final static Resources RESOURCES = Resources.get(HelpWidget.class);
+  
+  private JEditorPane content;
 
   /**
    * Constructor
    */
   public HelpWidget() {
     
-    // simple layout
-    super(new BorderLayout());
+    // setup
+    HTMLDocument doc = new HTMLDocument();
+    doc.setAsynchronousLoadPriority(1);
     
-    // create center component
-    JComponent pCenter = getContent();
-    if (pCenter==null) {
-      pCenter = new JLabel(RESOURCES.getString("help.missing", Locale.getDefault().getLanguage().toLowerCase()), SwingConstants.CENTER);
-      pCenter.setBorder(new EmptyBorder(16,16,16,16));
-    }
+    content = new JEditorPane();
+    content.setBackground(Color.WHITE);
+    content.setEditable(false);
+    content.setEditorKit(new Kit());
+    content.setDocument(doc);
     
     // layout
-    add(pCenter, BorderLayout.CENTER);    
+    setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, new JScrollPane(content));
+
+    // load
+    try {
+      content.setPage("http://genj.sourceforge.net/wiki/en/manual/overview?do=export_xhtmlbody");
+    } catch (Throwable t) {
+      
+    }
     
     // done
   }
@@ -75,56 +86,34 @@ class HelpWidget extends JPanel {
   }
   
   /**
-   * Initialization of help
+   * our editor kit w/custom factory
    */
-  private JComponent getContent() {
+  private static class Kit extends HTMLEditorKit {
     
-    // Open the Help Set        
-    String file = calcHelpBase() + "/helpset.xml";
-    LOG.info("Trying to use help in " + file );
+    private static Factory factory = new Factory();
     
-    // safety check
-    if (!new File(file).exists()) {
-      LOG.log(Level.WARNING, "No help found in "+file);
-      return null;
+    @Override
+    public ViewFactory getViewFactory() {
+      return factory;
     }
-
-    // Load and init through bridge
-    try {
-      // without jumping through these hoops I'm getting java.lang.NoClassDefFoundError: javax/help/JHelp
-      // if HelpWidget.class is loaded :(
-      HelpSet set = (HelpSet)HelpSet.class.getConstructor(new Class[]{ClassLoader.class, URL.class})
-        .newInstance(new Object[]{null,new URL("file","", file)});
-      return (JComponent)JHelp.class.getConstructor(new Class[]{set.getClass()}).newInstance(new Object[]{set});
-    } catch (Throwable t) {
-      LOG.log(Level.WARNING, "Problem reading help", t);
+  
+    private static class Factory extends HTMLFactory {
+      @Override
+      public View create(Element elem) {
+        Object o = elem.getAttributes().getAttribute(StyleConstants.NameAttribute);
+        if (o instanceof HTML.Tag) {
+          // patch img border=0
+          if (o==HTML.Tag.IMG) {
+            MutableAttributeSet atts = (MutableAttributeSet)elem.getAttributes();
+            atts.addAttribute(HTML.Attribute.BORDER, "0");
+            ImageView img = new ImageView(elem);
+            return img;
+          }
+        }
+        // fallback
+        return super.create(elem);
+      }
     }
-    
-    // default - none
-    return null;
   }
-
-  /**
-   * Calculate help-directory location 'help'
-   */
-  private String calcHelpBase() {
     
-    // First we look in "genj.help.dir"
-    String dir = EnvironmentChecker.getProperty(
-      new String[]{ "genj.help.dir", "user.dir/help"},
-      ".",
-      "read help"
-    );
-    
-    // Then we check for local language
-    String local = dir+"/"+Locale.getDefault().getLanguage();
-    if (new File(local).exists()) {
-      return local;
-    }
-    
-    // ... otherwise fallback to 'en' language
-    return dir+"/en";
-    
-  }
-
 } //HelpWidget

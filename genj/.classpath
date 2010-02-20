@@ -6,7 +6,6 @@
 	<classpathentry kind="src" output="build/eclipse/contrib" path="src/contrib"/>
 	<classpathentry kind="src" output="build/eclipse/tst" path="src/tst"/>
 	<classpathentry exported="true" kind="lib" path="images"/>
-	<classpathentry exported="true" kind="lib" path="lib/jhbasic.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/graphj.jar"/>
 	<classpathentry exported="true" kind="lib" path="language/en"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
