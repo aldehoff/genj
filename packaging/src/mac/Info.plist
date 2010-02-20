@@ -30,7 +30,12 @@
 		<string>$JAVAROOT/run.jar</string>
 		<key>user.dir</key>
 		<string>$JAVAROOT</string>
-		<key>Properties</key>
+    <key>VMOptions</key>
+    <array>
+        <string>-Xms32M</string>
+        <string>-Xmx512M</string>
+    </array>
+    <key>Properties</key>
 		<dict>
 			<key>apple.laf.useScreenMenuBar</key>
 			<string>true</string>
