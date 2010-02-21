@@ -63,6 +63,32 @@ public class CachingStreamHandler extends URLStreamHandler {
     return new Connection(url);
   }
   
+  protected File getCacheEntry(URL url) {
+    String host = url.getHost();
+    String file = url.getFile();
+    String dir = ""; 
+    int d = file.lastIndexOf('/');
+    if (d>0) {
+      dir = file.substring(0,d);
+      file = file.substring(d+1);
+    }
+    String hash = "";
+    int q = file.indexOf('?');
+    if (q>0) {
+      hash = '-'+Integer.toString(Math.abs(file.substring(q).hashCode()));
+      file = file.substring(0,q);
+    }
+    if (file.startsWith("/"))
+      file = file.substring(1);
+    String ext = "";
+    int e = file.lastIndexOf('.');
+    if (e>=0) {
+      ext = file.substring(e);
+      file = file.substring(0, e);
+    }
+    return new File(cache, host+'/'+dir+'/'+file+hash+ext);
+  }
+  
   /**
    * A connection to the wiki
    */
@@ -82,29 +108,7 @@ public class CachingStreamHandler extends URLStreamHandler {
       // look into cache first
       if (cache!=null) {
         URL url = getURL();
-        String host = url.getHost();
-        String file = url.getFile();
-        String dir = ""; 
-        int d = file.lastIndexOf('/');
-        if (d>0) {
-          dir = file.substring(0,d);
-          file = file.substring(d+1);
-        }
-        String hash = "";
-        int q = file.indexOf('?');
-        if (q>0) {
-          hash = '-'+Integer.toString(Math.abs(file.substring(q).hashCode()));
-          file = file.substring(0,q);
-        }
-        if (file.startsWith("/"))
-          file = file.substring(1);
-        String ext = "";
-        int e = file.lastIndexOf('.');
-        if (e>=0) {
-          ext = file.substring(e);
-          file = file.substring(0, e);
-        }
-        File cached = new File(cache, host+'/'+dir+'/'+file+hash+ext);
+        File cached = getCacheEntry(url);
         if (cached.exists()) {
           if (cached.lastModified() > System.currentTimeMillis() - EXPIRE_MILLIS) {
             LOG.fine("Using cached copy of wiki file "+getURL());
@@ -134,12 +138,27 @@ public class CachingStreamHandler extends URLStreamHandler {
       this.cached = cached;
     }
     
+    /**
+     * Lazy open
+     */
     private void open() throws IOException {
-      if (con!=null)
+      
+      if (in!=null)
         return;
       
-      con = url.openConnection();
-      in = con.getInputStream();
+      try {
+        con = url.openConnection();
+        in = con.getInputStream();
+      } catch (IOException e) {
+        // try to fall back to cached version
+        if (cached.exists()) {
+          LOG.fine("Falling back to cached copy of wiki file "+url);
+          in = new FileInputStream(cached);
+          con = null;
+          return;
+        }
+        throw e;
+      }
       
       try {
         tmp = new File(cached.getAbsolutePath()+".tmp");
@@ -189,7 +208,8 @@ public class CachingStreamHandler extends URLStreamHandler {
         }
         tmp.delete();
       }
-      in.close();
+      if (in!=null)
+        in.close();
     }
   }
   
