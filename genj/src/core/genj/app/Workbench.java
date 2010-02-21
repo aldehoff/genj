@@ -548,6 +548,7 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * Restores last loaded gedcom file
    */
+  @SuppressWarnings("deprecation")
   public void restoreGedcom() {
 
     String restore = REGISTRY.get("restore.url", (String)null);
@@ -1269,6 +1270,7 @@ public class Workbench extends JPanel implements SelectionSink {
       groups.add(edit);
 
       Action2.Group help = new ActionProvider.HelpActionGroup();
+      help.add(new ActionProvider.SeparatorAction());
       help.add(new ActionLog());
       if (!MacAdapter.isMac())
         help.add(new ActionAbout());

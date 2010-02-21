@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2002 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,16 +19,23 @@
  */
 package genj.help;
 
+import genj.io.CachingStreamHandler;
 import genj.util.Resources;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
+import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.text.Element;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -46,8 +53,15 @@ class HelpWidget extends JPanel {
 
   private final static Logger LOG = Logger.getLogger("genj.help");
   private final static Resources RESOURCES = Resources.get(HelpWidget.class);
+  private final static CachingStreamHandler CACHE = new CachingStreamHandler("help");
+  
+  final static String BASE = "http://genj.sourceforge.net/wiki/en/manual/";
+  final static String WELCOME = "welcome";
+  final static String MANUAL = "overview";
+  final static String EXPORT = "?do=export_xhtmlbody";
   
   private JEditorPane content;
+  private String page = WELCOME;
 
   /**
    * Constructor
@@ -63,19 +77,28 @@ class HelpWidget extends JPanel {
     content.setEditable(false);
     content.setEditorKit(new Kit());
     content.setDocument(doc);
+    content.addHyperlinkListener(new Hyperlinker());
     
     // layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(content));
 
-    // load
-    try {
-      content.setPage("http://genj.sourceforge.net/wiki/en/manual/overview?do=export_xhtmlbody");
-    } catch (Throwable t) {
-      
-    }
-    
     // done
+  }
+  
+  String getPage() {
+    return page;
+  }
+  
+  void setPage(String page) {
+    try {
+      String old = this.page;
+      this.page = page;
+      content.setPage(new URL(null, BASE+page+EXPORT, CACHE));
+      firePropertyChange("url", old, page);
+    } catch (Throwable t) {
+      LOG.log(Level.WARNING, "can't set help content", t);
+    }
   }
   
   /**
@@ -106,6 +129,7 @@ class HelpWidget extends JPanel {
           if (o==HTML.Tag.IMG) {
             MutableAttributeSet atts = (MutableAttributeSet)elem.getAttributes();
             atts.addAttribute(HTML.Attribute.BORDER, "0");
+            atts.addAttribute(HTML.Attribute.ALIGN, "middle");
             ImageView img = new ImageView(elem);
             return img;
           }
@@ -113,6 +137,46 @@ class HelpWidget extends JPanel {
         // fallback
         return super.create(elem);
       }
+    }
+  }
+
+  /**
+   * link mgmt
+   */
+  private class Hyperlinker implements HyperlinkListener {
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+      
+      // clicks only
+      if (e.getEventType()!=EventType.ACTIVATED)
+        return;
+      
+      String s = e.getDescription();
+      
+      // a genj action?
+      if (s.startsWith("genj:")) {
+        LOG.info("Click on "+s);
+        return;
+      }
+      
+      // an internal link?
+      URL url = e.getURL();
+      s = url.toString();
+      if (s.startsWith(BASE)) {
+        // don't go where there's a ? already
+        if (s.indexOf('?')>0)
+          return;
+        setPage(s.substring(BASE.length()));
+        return;
+      }      
+      
+      // try an external link
+      if (url!=null) try {
+        Desktop.getDesktop().browse(url.toURI());
+      } catch (Throwable t) {
+        LOG.info("can't open external url "+s);
+      }
+     
+      // done
     }
   }
     

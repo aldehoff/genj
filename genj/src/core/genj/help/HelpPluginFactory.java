@@ -3,8 +3,10 @@ package genj.help;
 import genj.app.PluginFactory;
 import genj.app.Workbench;
 import genj.gedcom.Context;
+import genj.gedcom.Gedcom;
 import genj.util.Resources;
 import genj.util.swing.Action2;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 
@@ -23,24 +25,30 @@ public class HelpPluginFactory implements PluginFactory, ActionProvider {
   public void createActions(Context context, Purpose purpose, Group result) {
     if (purpose == Purpose.MENU) {
       Action2.Group help = new ActionProvider.HelpActionGroup();
-      help.add(new ActionHelp());
+      help.add(new Page(HelpWidget.WELCOME, Gedcom.getImage()));
+      help.add(new Page(HelpWidget.MANUAL, HelpView.IMG));
       result.add(help);
     }
   }
 
   /**
-   * Action - help
+   * Action - manual
    */
-  private class ActionHelp extends Action2 {
+  private class Page extends Action2 {
+    
+    private String page;
+    
     /** constructor */
-    protected ActionHelp() {
-      setText(Resources.get(this).getString("help.content"));
-      setImage(HelpView.IMG);
+    protected Page(String page, ImageIcon img) {
+      setText(Resources.get(this).getString("help."+page));
+      setImage(img);
+      this.page = page;
     }
 
     /** run */
     public void actionPerformed(ActionEvent event) {
-      workbench.openView(HelpViewFactory.class, new Context());
+      HelpView view = (HelpView)workbench.openView(HelpViewFactory.class, new Context());
+      view.setPage(page);
     }
   } // ActionHelp
 
