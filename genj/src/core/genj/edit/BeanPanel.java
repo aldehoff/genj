@@ -26,15 +26,13 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyComparator;
-import genj.gedcom.PropertyNumericValue;
-import genj.gedcom.PropertySimpleValue;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.LinkWidget;
@@ -49,9 +47,6 @@ import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -82,6 +77,7 @@ import javax.swing.event.ChangeListener;
  */
 public class BeanPanel extends JPanel {
   
+  private final static Resources RES = Resources.get(BeanPanel.class);
   private final static Registry REGISTRY = Registry.get(BeanPanel.class);
 
   private static final String
@@ -296,9 +292,6 @@ public class BeanPanel extends JPanel {
         // create tab for relationships of root
         createReferencesTabs(root);
         
-        // create a tab for properties of root w/o descriptor
-        createPropertiesTab(root, beanifiedTags);
-    
         // create tabs for properties of root w/descriptor
         createEventTabs(root, beanifiedTags);
   
@@ -328,47 +321,6 @@ public class BeanPanel extends JPanel {
   }
 
   /**
-   * create a tab for (simple) properties that we don't have descriptors for
-   */
-  private void createPropertiesTab(Property root, Set<String> beanifiedTags) {
-    
-    JPanel tab = new JPanel(new GridBagLayout());
-    tab.setOpaque(false);
-    
-    MetaProperty[] nested = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
-    Arrays.sort(nested);
-    int row = 0;
-    for (MetaProperty meta : nested) {
-      // ignore if we have a layout for a property specific tab
-      if (getLayout(meta)!=null)
-        continue;
-      // ignore if not editable simple/choice value
-      if (meta.getType()!=PropertySimpleValue.class
-        &&meta.getType()!=PropertyChoiceValue.class
-        &&meta.getType()!=PropertyNumericValue.class)
-        continue;
-      // ignore if already beanified
-      if (!beanifiedTags.add(meta.getTag()))
-        continue;
-      tab.add(
-        new JLabel(meta.getName(), meta.getImage(), SwingConstants.LEFT),
-        new GridBagConstraints(0,row,1,1,1,0,GridBagConstraints.CENTER,1,new Insets(0,0,0,0),0,0)
-      );
-      tab.add(
-        createBean(root, new TagPath(root.getTag()+":"+meta.getTag()), meta, null),
-        new GridBagConstraints(1,row,1,1,1,0,GridBagConstraints.CENTER,1,new Insets(0,0,0,0),0,0)
-      );
-      row++;
-    }
-    tab.add(
-        new JLabel(),
-        new GridBagConstraints(0,row,1,1,1,1,GridBagConstraints.CENTER,1,new Insets(0,0,0,0),0,0)
-      );
-    
-    tabs.addTab("", MetaProperty.IMG_CUSTOM, tab);
-  }
-  
-  /**
    * Parse descriptor for beans into panel
    */
   private void parse(JPanel panel, Property root, Property property, NestedBlockLayout descriptor, Set<String> beanifiedTags)  {
@@ -378,7 +330,7 @@ public class BeanPanel extends JPanel {
     // fill cells with beans
     for (NestedBlockLayout.Cell cell : descriptor.getCells()) {
       JComponent comp = createComponent(root, property, cell, beanifiedTags);
-      if (comp!=null) 
+      if (comp!=null)
         panel.add(comp, cell);
     }
     
@@ -398,27 +350,49 @@ public class BeanPanel extends JPanel {
       return null;
     
     // text?
-    if ("text".equals(element)) {
+    if ("text".equals(element)) 
       return new JLabel(cell.getAttribute("value"));
-    }
     
-    // prepare some info and state
-    TagPath path = new TagPath(cell.getAttribute("path"));
-    MetaProperty meta = property.getMetaProperty().getNestedRecursively(path, false);
+    // a folder handle?
+    if ("fold".equals(element)) {
+      String key = cell.getAttribute("key");
+      String label = "";
+      if (key!=null)
+        label = RES.getString(key);
+      else {
+        key = cell.getAttribute("path");
+        if (key!=null)
+          label = Gedcom.getName(new TagPath(key).getLast());
+        else
+          throw new IllegalArgumentException("fold needs key or path");
+      }
+      return new NestedBlockLayout.Handle(label, REGISTRY);
+    }
     
     // a label?
     if ("label".equals(element)) {
 
-      JLabel label;
+      String key = cell.getAttribute("key");
+      if (key!=null)
+        return new JLabel(RES.getString(key));
+      
+      String path = cell.getAttribute("path");
+      if (path==null)
+        throw new IllegalArgumentException("label without key or path");
+
+      MetaProperty meta = property.getMetaProperty().getNestedRecursively(new TagPath(path), false);
       if (Entity.class.isAssignableFrom(meta.getType())) 
-        label = new JLabel(meta.getName() + ' ' + ((Entity)root).getId(), null, SwingConstants.LEFT);
+        return new JLabel(meta.getName() + ' ' + ((Entity)root).getId(), null, SwingConstants.LEFT);
       else
-        label = new JLabel(meta.getName(cell.isAttribute("plural")), null, SwingConstants.LEFT);
-      return label;
+        return new JLabel(meta.getName(cell.isAttribute("plural")), null, SwingConstants.LEFT);
     }
     
     // a bean?
     if ("bean".equals(element)) {
+      
+      TagPath path = new TagPath(cell.getAttribute("path"));
+      MetaProperty meta = property.getMetaProperty().getNestedRecursively(path, false);
+      
       // create bean
       PropertyBean bean = createBean(property, path, meta, cell.getAttribute("type"));
       if (bean==null)
@@ -429,8 +403,8 @@ public class BeanPanel extends JPanel {
       // track it
       if (beanifiedTags!=null&&property==root&&path.length()>1)
         beanifiedTags.add(path.get(1));
-      // finally wrap in popup if requested?
-      return cell.getAttribute("popup")==null ? bean : (JComponent)new PopupBean(bean);
+
+      return bean;
     }
 
 

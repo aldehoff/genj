@@ -19,13 +19,23 @@
  */
 package genj.util.swing;
 
+import genj.util.Registry;
+
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +50,9 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -55,6 +68,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <!ELEMENT col (row*|T*)>
  * <!ELEMENT table (row*|T*)>
  * <!ELEMENT T>
+ * <!ATTLIST col drawer CDATA>
  * <!ATTLIST T wx CDATA>
  * <!ATTLIST T wy CDATA>
  * <!ATTLIST T gx CDATA>
@@ -287,12 +301,12 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** remove */
-    boolean remove(Component component) {
+    boolean removeContent(Component component) {
 
       // look for it
       for (int i=0;i<subs.size();i++) {
         Block sub = (Block)subs.get(i);
-        if (sub.remove(component)) {
+        if (sub.removeContent(component)) {
           invalidate(false);
           return true;
         }
@@ -361,19 +375,16 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return collect;
     }
     
-    /** cell by element name */
-    Cell getCell(String element) {
+    /** set cell content */
+    Cell setContent(Object key, Component component) {
       // look for it in our subs
-      Cell result = null;
-      for (int i=0;result==null&&i<subs.size();i++) {
-
-        // a sub at a time
-        Block sub = (Block)subs.get(i);
-        result = sub.getCell(element);
-        
-        // next
+      for (Block sub : subs) {
+        Cell cell = sub.setContent(key, component);
+        if (cell!=null)
+          return cell;
       }
-      return result;
+        
+      return null;
     }
 
   } //Block
@@ -465,16 +476,39 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   /**
    * a column
    */
-  private static class Column extends Block {
+  private static class Column extends Block implements MouseListener {
     
-    /** add a sub */
-    Block add(Block sub) {
-      super.add(sub);
-      return sub;
+    private Handle handle = null;
+    
+    /** cloning */
+    protected Object clone()  {
+      Column clone = (Column)super.clone();
+      clone.handle = null;
+      return clone;
     }
-
+    
+    boolean removeContent(Component component) {
+      if (handle==component)
+        handle=null;
+      return super.removeContent(component);
+    }
+    
+    Cell setContent(Object key, Component component) {
+      
+      Cell result = super.setContent(key, component);
+      
+      if (result!=null&&subs.contains(result)&&component instanceof Handle) 
+        handle = (Handle)component;
+      
+      return result;
+    }
+    
     /** preferred size */
     Dimension preferred() {
+      
+      if (handle!=null&&handle.isFolded)
+        return handle.getPreferredSize();
+      
       // known?
       if (preferred!=null)
         return preferred;
@@ -491,8 +525,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return preferred;
     }
     
+    Point grow() {
+      return handle!=null&&handle.isFolded ? new Point() : super.grow();
+    }
+    
     /** weight */
     Point weight() {
+      
+      if (handle!=null&&handle.isFolded)
+        return new Point();
       
       // known?
       if (weight!=null)
@@ -512,13 +553,20 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** layout */
     void layout(Rectangle in) {
+
+      // closed?
+      if (handle!=null&&handle.isFolded) {
+        for (Block sub : subs) 
+          sub.layout(new Rectangle(0,0));
+        handle.setBounds(in);
+        return;
+      }
       
       // compute spare space vertically
       double weight = 0;
       int spare = in.height;
       int grow = 0;
-      for (int i=0;i<subs.size();i++) {
-        Block sub = (Block)subs.get(i);
+      for (Block sub : subs) {
         spare -= sub.preferred().height;
         weight += sub.weight().getY();
         grow += sub.grow().y;
@@ -540,6 +588,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         avail.y += avail.height;
       }
       
+    }
+
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
     }
     
   } //Column
@@ -628,20 +691,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       preferred = null;
     }
     
-    /** set contained content */
-    void setContent(Component component) {
-      this.component = component;
-    }
-    
-    /** returns nested block layout */
-    public Collection<NestedBlockLayout> getNestedLayouts() {
-      ArrayList<NestedBlockLayout> result = new ArrayList<NestedBlockLayout>(subs.size());
-      for (int i = 0; i < subs.size(); i++) {
-        result.add(new NestedBlockLayout((Block)subs.get(i)));
-      }
-      return result;
-    }
-    
     /** element */
     public String getElement() {
       return element;
@@ -658,7 +707,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** remove */
-    boolean remove(Component component) {
+    boolean removeContent(Component component) {
       if (this.component==component) {
         this.component = null;
         invalidate(false);
@@ -677,10 +726,11 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         preferred = new Dimension();
       else {
 	      preferred = new Dimension(component.getPreferredSize());
-	      preferred.width += cellPadding*2;
-	      preferred.height += cellPadding*2;
+          Dimension max = component.getMaximumSize();
+	      preferred.width = Math.min(max.width,preferred.width) + cellPadding*2;
+	      preferred.height = Math.min(max.height,preferred.height) + cellPadding*2;
       }
-	    return preferred;
+      return preferred;
     }
     
     /** weight */
@@ -699,18 +749,14 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       Rectangle avail = new Rectangle(in.x+cellPadding, in.y+cellPadding, in.width-cellPadding*2, in.height-cellPadding*2);
       
       // make sure it's not more than maximum
-      Dimension pref = preferred();
       Dimension max = component.getMaximumSize();
-      
-      // share space
-      int extraX = avail.width-max.width;
-      if (extraX>0) {
+      if (avail.width>max.width) {
+        int extraX = avail.width-max.width;
         avail.x += extraX * cellAlign.x;
         avail.width = max.width;
       }
-      
-      int extraY = avail.height-max.height;
-      if (extraY>0) {
+      if (avail.height>max.height) {
+        int extraY = avail.height-max.height;
         avail.y += extraY * cellAlign.y;
         avail.height = max.height;
       }
@@ -719,9 +765,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       component.setBounds(avail);
     }
     
-    /** cell by element name */
-    Cell getCell(String elem) {
-      return ( (elem==null&&component==null) || element.equals(elem)) ? this : null;
+    /** set cell content*/
+    @Override
+    Cell setContent(Object key, Component component) {
+      if (  (key instanceof Cell&&key!=this)
+         || (key instanceof String&&!element.equals(key))
+         || (key==null&&this.component!=null))
+        return null;
+      this.component = component;
+      return this;
     }
     
     /** all cells */
@@ -737,19 +789,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   public void addLayoutComponent(Component comp, Object key) {
 
-    // a cell?
-    if (key instanceof Cell) {
-      ((Cell)key).setContent(comp);
+    Cell cell = root.setContent(key, comp);
+    if (cell!=null)
       return;
-    }
     
-    // lookup cell
-    Cell cell = root.getCell(key!=null ? key.toString() : null);
-    if (cell!=null) {
-      cell.setContent(comp);
-      return;
-    }
-  
     // no match
     if (key==null)
       throw new IllegalArgumentException("no available descriptor element - element qualifier required");
@@ -770,7 +813,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    * @param comp the removed component
    */
   public void removeLayoutComponent(Component comp) {
-    root.remove(comp);
+    root.removeContent(comp);
   }
 
   /**
@@ -850,7 +893,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       throw new Error(e);
     }
   }
-
+  
   /**
    * a table
    */
@@ -925,12 +968,12 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         if (row instanceof Row) {
           int x = avail.x;
           for (int c=0;c<row.subs.size();c++) {
-            int w = colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
+            int w = avail.width<preferred.width ? avail.width/row.subs.size() : colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
             row.subs.get(c).layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
             x += w;
           }
         } else {
-          int w = colWidths.get(0) + (int)(colWeights.get(0)*xWeightMultiplier);
+          int w = avail.width<preferred.width ? avail.width : colWidths.get(0) + (int)(colWeights.get(0)*xWeightMultiplier);
           ((Row)row).layout(new Rectangle(avail.x, avail.y, w, rowHeights.get(r)));
         }
         
@@ -982,6 +1025,102 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // done
       return result;
     }
+    
+    @Override
+    void invalidate(boolean recurse) {
+      super.invalidate(recurse);
+      
+      rowHeights = null;
+      colWidths = null;
+      rowWeights = null;
+      colWeights = null;
+    }
+  }
+  
+  /**
+   * A widget that operates folders
+   */
+  public static class Handle extends JLabel {
+    
+    private final static Icon FOLDED = new Symbol(8, false);
+    private final static Icon UNFOLDED = new Symbol(8, true);
+    private boolean isFolded = false;
+    private Registry registry;
+    
+    /**
+     * Constructor
+     */
+    public Handle(String label, Registry registry) {
+      super(label);
+      this.registry = registry;
+      this.isFolded = registry.get("fold."+label, false);
+      setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+      addMouseListener(new Mouser());
+    }
+
+    public Icon getIcon() {
+      return isFolded ? FOLDED : UNFOLDED;
+    }
+    
+    private class Mouser extends MouseAdapter {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        
+        isFolded = !isFolded;
+
+        registry.put("fold."+getText(), isFolded);
+
+        Component parent = getParent();
+        if (parent instanceof JComponent)
+          ((JComponent)parent).revalidate();
+        else {
+          parent.invalidate();
+          parent.validate();
+        }
+        
+        // done
+      }
+    }
+    
+    private static class Symbol implements Icon {
+      
+      private int size;
+      private GeneralPath shape = new GeneralPath();
+
+      public Symbol(int size, boolean open) {
+          this.size = size;
+          if (open) {
+            shape.moveTo(0, size/4);
+            shape.lineTo(size, size/4);
+            shape.lineTo(size/2, size*3/4);
+            shape.closePath();
+          } else {
+            shape.moveTo(size/4, 0);
+            shape.lineTo(size/4, size);
+            shape.lineTo(size*3/4, size/2);
+            shape.closePath();
+          }
+      }
+
+      public void paintIcon(Component c, Graphics g, int x, int y) {
+          Color color = c == null ? Color.GRAY : c.getForeground();
+          g.setColor(color);
+          int dy = (c.getHeight()-size)/2;
+          g.translate(0, dy);
+          ((Graphics2D)g).fill(shape);
+          g.translate(0, -dy);
+      }
+
+      public int getIconWidth() {
+        return size;
+      }
+
+      public int getIconHeight() {
+        return size;
+      }
+      
+    } // Symbol
+
   }
   
 } //ColumnLayout

@@ -1,14 +1,31 @@
 <col>
  <row>
   <col>
-   <row><label path="INDI"/><bean path="INDI:NOTE" popup="true"/></row>
+   <row><label path="INDI"/></row>
    <row><bean path="INDI:NAME" gx="1"/></row>
-   <row><label path="INDI:BIRT"/><bean path="INDI:SEX" gx="1" ax="1"/></row>
+   <row><bean path="INDI:SEX" gx="1" ax="1"/></row>
+   <row><label path="INDI:BIRT"/></row>
    <row><bean path="INDI:BIRT:DATE"/></row>
    <row><bean path="INDI:BIRT:PLAC" gx="1"/></row>
-   <row><label path="INDI:DEAT"/></row>
-   <row><bean path="INDI:DEAT:DATE"/></row>
-   <row><bean path="INDI:DEAT:PLAC" gx="1"/> </row>
+    <label path="INDI:DEAT"/>
+    <bean path="INDI:DEAT:DATE"/>
+    <bean path="INDI:DEAT:PLAC" gx="1"/>
+   <col>
+    <fold path="INDI:NOTE"/>
+    <bean path="INDI:NOTE" gx="1" gy="1"/>
+   </col>
+   <col>
+    <fold key="xproperties"/>
+    <table>
+	 <row><label path="INDI:EDUC"/><bean path="INDI:EDUC"/></row>
+	 <row><label path="INDI:IDNO"/><bean path="INDI:IDNO"/></row>
+	 <row><label path="INDI:NATI"/><bean path="INDI:NATI"/></row>
+	 <row><label path="INDI:REFN"/><bean path="INDI:REFN"/></row>
+	 <row><label path="INDI:RELI"/><bean path="INDI:RELI"/></row>
+	 <row><label path="INDI:SSN" /><bean path="INDI:SSN" /></row>
+	 <row><label path="INDI:TITL"/><bean path="INDI:TITL"/></row>
+    </table>
+   </col>
   </col>
   <col>
    <bean path="." type="genj.edit.beans.MediaBean" wx="1" wy="1"/>
