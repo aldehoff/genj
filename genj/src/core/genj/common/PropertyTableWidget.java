@@ -347,8 +347,6 @@ public class PropertyTableWidget extends JPanel  {
       getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
       getTableHeader().setReorderingAllowed(false);
       
-      setRowHeight((int)Math.ceil(Options.getInstance().getDefaultFont().getLineMetrics("", new FontRenderContext(null,false,false)).getHeight())+getRowMargin());
-      
       getColumnModel().getSelectionModel().addListSelectionListener(this);
       // 20091208 JTable already implements and add itself as listener
       //getSelectionModel().addListSelectionListener(this);
@@ -772,11 +770,19 @@ public class PropertyTableWidget extends JPanel  {
      */
     private class Renderer extends HeadlessLabel implements TableCellRenderer {
       
+      Renderer() {
+        setPadding(2);
+      }
+      
       /**
        * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
        */
       public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focs, int row, int col) {
-        setPadding(1);
+
+        setFont(table.getFont());
+        if (getRowHeight()!=getPreferredSize().height)
+          setRowHeight(getPreferredSize().height);
+        
         // there's a property here
         setText(getCellValue((Property)value, row, col));
         // figure out alignment

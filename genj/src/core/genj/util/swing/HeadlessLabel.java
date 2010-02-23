@@ -23,6 +23,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 
 import javax.swing.Icon;
@@ -150,6 +152,9 @@ public class HeadlessLabel extends JComponent {
     // gap?
     if (txt.length()>0&&icon!=null) 
       width += iconTextGap;
+    // padding
+    width += padding+padding;
+    height += padding+padding;
     // done
     return new Dimension(width, height);
   }
@@ -159,36 +164,36 @@ public class HeadlessLabel extends JComponent {
    */
   public void paint(Graphics g) {
     Font font = getFont();
-    Dimension size = getSize();
-    int x = 0, y = 0;
+    Rectangle box = new Rectangle(new Point(), getSize());
     // fill background
     if (isOpaque) {
       g.setColor(getBackground());
-      g.fillRect(x,y,size.width,size.height);
+      g.fillRect(box.x, box.y, box.width, box.height);
     }
     // padding?
     if (padding>0) {
-      x+=padding;
-      y+=padding;
-      size.width-=padding+padding;
-      size.height-=padding+padding;
+      box.x+=padding;
+      box.y+=padding;
+      box.width-=padding+padding;
+      box.height-=padding+padding;
     }
     // render icon
     if (icon!=null) {
       int
         w = icon.getIconWidth(),
         h = icon.getIconHeight();
-      icon.paintIcon(null, g, 0, (int)(iconLocation*(size.height - h)));
-      x += w+iconTextGap;
-      size.width -= w+iconTextGap;
+      icon.paintIcon(null, g, 0, (int)(iconLocation*(box.height - h)));
+      box.x += w+iconTextGap;
+      box.width -= w+iconTextGap;
     }
-    // fix-up right-alignment
-    if (horizontalAlignment==SwingConstants.RIGHT) 
-      x += size.width - getFontMetrics(font).stringWidth(txt);
     // render text
     g.setColor(getForeground());
     g.setFont(font);
-    g.drawString(txt, x, getFontMetrics(font).getMaxAscent());       
+    
+    if (horizontalAlignment==SwingConstants.RIGHT)
+      GraphicsHelper.render((Graphics2D)g, txt, box.getMaxX(), box.getCenterY(), 1, 0.5);
+    else
+      GraphicsHelper.render((Graphics2D)g, txt, box.getMinX(), box.getCenterY(), 0, 0.5);
     // done
   }
   
