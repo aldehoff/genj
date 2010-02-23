@@ -49,6 +49,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 
 /**
  * Helper for interacting with Dialogs and Windows
@@ -156,6 +158,9 @@ public class DialogHelper {
         return parent ==null ? child : null;
       }
     });
+    
+    // patch opaqueness of content
+    patchOpaque(content, true);
 
     // create an option pane
     JOptionPane optionPane = new Content(messageType, content, actions);
@@ -333,14 +338,24 @@ public class DialogHelper {
   }
 
   /**
-   * Set a component and all its contained components to opaque
+   * scan for JTabbedPanes and make their contained components opaque
    */
-  public static void setOpaque(Component component, boolean set) {
-    if (component instanceof JComponent)
-      ((JComponent)component).setOpaque(set);
-    if (component instanceof Container)
-      for (Component c : ((Container)component).getComponents()) 
-        setOpaque(c, set);
+  private static void patchOpaque(Component component, boolean set) {
+
+    if (component instanceof JTabbedPane)
+      set = false;
+    
+    if (component instanceof JComponent && !(component instanceof JTextField) && !(component instanceof JScrollPane)) {
+      if (!set)
+        ((JComponent)component).setOpaque(set);
+    }
+    
+    if (component instanceof Container && !(component instanceof JScrollPane)) {
+      for (Component c : ((Container)component).getComponents()) {
+        patchOpaque(c, set);
+      }
+    }
+    
   }
 
   /**

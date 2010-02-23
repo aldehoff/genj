@@ -146,10 +146,6 @@ public class TimelineViewSettings extends JTabbedPane {
     add(resources.getString("page.colors"), colorWidget);
     add(resources.getString("page.almanac"), almanacsList);
 
-    // fixup looks
-    DialogHelper.setOpaque(colorWidget, false);
-    DialogHelper.setOpaque(panelMain, false);
-    
     // done
   }
   

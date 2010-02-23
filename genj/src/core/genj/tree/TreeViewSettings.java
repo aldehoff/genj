@@ -148,9 +148,6 @@ public class TreeViewSettings extends JTabbedPane {
     add(RESOURCES.getString("page.colors"), colors);
     add(RESOURCES.getString("page.bookmarks"), bPanel);
 
-    DialogHelper.setOpaque(options, false);
-    DialogHelper.setOpaque(colors, false);
-    
     // done
   }
 
