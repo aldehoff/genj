@@ -244,13 +244,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private Block getBlock(String element, Attributes attrs) {
       // row?
       if ("row".equals(element)) 
-        return new Row();
+        return new Row(attrs);
       // column?
       if ("col".equals(element))
-        return new Column();
+        return new Column(attrs);
       // table?
       if ("table".equals(element))
-        return new Table();
+        return new Table(attrs);
       // a cell!
       return new Cell(element, attrs, padding);
     }
@@ -286,6 +286,22 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** subs */
     ArrayList<Block> subs = new ArrayList<Block>(16);
     
+    Block(Attributes attributes) {
+      
+      grow = new Point();
+      
+      
+      // look for grow info
+      if (attributes!=null) {
+        String gx = attributes.getValue("gx");
+        if (gx!=null)
+          grow.x = Integer.parseInt(gx)>0 ? 1 : 0;
+        String gy = attributes.getValue("gy");
+        if (gy!=null)
+          grow.y = Integer.parseInt(gy)>0 ? 1 : 0;
+      }
+    }
+
     /** copy */
     protected Object clone() {
       try {
@@ -330,7 +346,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // clear state
       preferred = null;
       weight = null;
-      grow = null;
 
       // recurse
       if (recurse) for (int i=0;i<subs.size();i++) {
@@ -341,24 +356,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** weight */
     abstract Point weight();
     
-    /** grow */
+    /** grow within parent */
     Point grow() {
-      
-      // known?
-      if (grow!=null)
-        return grow;
-      
-      // calculate
-      grow = new Point();
-      for (Block block : subs) {
-        Point sub = block.grow();
-        if (sub.x==1)
-          grow.x=1;
-        if (sub.y==1)
-          grow.y=1;
-      }      
-      
-      // done
       return grow;
     }
     
@@ -394,6 +393,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   private static class Row extends Block {
 
+    Row(Attributes attr) {
+      super(attr);
+    }
+    
     /** add a sub */
     Block add(Block sub) {
       super.add(sub);
@@ -479,6 +482,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   private static class Column extends Block implements MouseListener {
     
     private Handle handle = null;
+    
+    Column(Attributes attr) {
+      super(attr);
+    }
     
     /** cloning */
     protected Object clone()  {
@@ -632,12 +639,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
 
     /** constructor */
     private Cell(String text) {
+      super(null);
       this.element = "text";
       attrs.put("value", text);
     }
     
     /** constructor */
     private Cell(String element, Attributes attributes, int padding) {
+      
+      super(attributes);
       
       // keep key
       this.element = element;
@@ -648,11 +658,17 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       
       // look for weight info
       String wx = getAttribute("wx");
-      if (wx!=null)
+      if (wx!=null) {
         cellWeight.x = Integer.parseInt(wx);
+        if (attributes.getValue("gx")==null)
+          grow.x = 1;
+      }
       String wy = getAttribute("wy");
-      if (wy!=null)
+      if (wy!=null) {
         cellWeight.y = Integer.parseInt(wy);
+        if (attributes.getValue("gy")==null)
+          grow.y = 1;
+      }
       
       // look for alignment info
       String ax = getAttribute("ax");
@@ -661,19 +677,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       String ay = getAttribute("ay");
       if (ay!=null)
         cellAlign.y = Float.parseFloat(ay);
-      
-      // look for grow info
-      grow = new Point();
-      String gx = getAttribute("gx");
-      if (gx!=null)
-        grow.x = Integer.parseInt(gx)>0 ? 1 : 0;
-      else if (cellWeight.getX()>0)
-        grow.x = 1;
-      String gy = getAttribute("gy");
-      if (gy!=null)
-        grow.y = Integer.parseInt(gy)>0 ? 1 : 0;
-      else if (cellWeight.getY()>0)
-        grow.y = 1;
 
       // done
     }
@@ -903,6 +906,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private ArrayList<Integer> colWidths;
     private ArrayList<Integer> rowWeights;
     private ArrayList<Integer> colWeights;
+    
+    Table(Attributes attrs) {
+      super(attrs);
+    }
     
     private void calcGrid() {
       
