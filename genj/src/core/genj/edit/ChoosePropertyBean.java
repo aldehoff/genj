@@ -25,16 +25,17 @@ import genj.util.GridBagHelper;
 import genj.util.Resources;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -59,7 +60,7 @@ public class ChoosePropertyBean extends JComponent {
   private JScrollPane spInfo;
   private JTextPane tpInfo;
   private Property parent;
-  private List listeners = new ArrayList();
+  private List<ActionListener> listeners = new CopyOnWriteArrayList<ActionListener>();
   private Callback callback = new Callback();
 
   /**
@@ -98,6 +99,7 @@ public class ChoosePropertyBean extends JComponent {
     tpInfo = new JTextPane();
     tpInfo.setText("");
     tpInfo.setEditable(false);
+    tpInfo.setPreferredSize(new Dimension(256,256));
     spInfo = new JScrollPane(tpInfo);
     gh.add(spInfo,2,2,1,1,GridBagHelper.GROWFILL_BOTH);
 
@@ -182,11 +184,10 @@ public class ChoosePropertyBean extends JComponent {
   /**
    * Internal Callback
    */
-  private class Callback extends MouseAdapter implements ItemListener, ListSelectionListener, Comparator  {
+  private class Callback extends MouseAdapter implements ItemListener, ListSelectionListener, Comparator<MetaProperty>  {
     
     /** compare meta properties for alphabetic sorting */
-    public int compare(Object o1, Object o2) {
-      MetaProperty m1 = (MetaProperty)o1, m2 = (MetaProperty)o2;
+    public int compare(MetaProperty m1, MetaProperty m2) {
       return m1.getTag().compareTo(m2.getTag());
     }
     
@@ -194,10 +195,8 @@ public class ChoosePropertyBean extends JComponent {
     public void mouseClicked(MouseEvent event) {
       if (event.getClickCount()>1) {
         ActionEvent e = new ActionEvent(ChoosePropertyBean.this, 0, null);
-        ActionListener[] as = (ActionListener[])listeners.toArray(new ActionListener[listeners.size()]);
-        for (int i = 0; i < as.length; i++) {
-          as[i].actionPerformed(e);
-        }
+        for (ActionListener al : listeners) 
+          al.actionPerformed(e);
       }
     }
     
