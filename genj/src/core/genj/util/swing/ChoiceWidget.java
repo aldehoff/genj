@@ -202,7 +202,9 @@ public class ChoiceWidget extends JComboBox {
       blockAutoComplete = true;
       
       try {
-        getTextEditor().setText(text);
+        JTextField t = getTextEditor();
+        t.setText(text);
+        t.setCaretPosition(0);
       } catch (Throwable t) {
         
         try {

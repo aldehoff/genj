@@ -19,14 +19,14 @@
  */
 package genj.report;
 
-import java.awt.Color;
-import java.awt.Insets;
-
 import genj.util.GridBagHelper;
 import genj.util.Resources;
 import genj.util.swing.EditorHyperlinkSupport;
 
-import javax.swing.BorderFactory;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Insets;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -80,8 +80,8 @@ class ReportDetail extends JPanel {
     tpInfo.setEditorKit(editorKit);
     tpInfo.setFont(new JTextField().getFont()); //don't use standard clunky text area font
     tpInfo.addHyperlinkListener(new EditorHyperlinkSupport(tpInfo));
+    tpInfo.setPreferredSize(new Dimension(256,256));
     JScrollPane spInfo = new JScrollPane(tpInfo);
-    //gh.add(new JLabel(res.getString("report.info")),2,3);
     gh.add(spInfo,2,4,2,1,GridBagHelper.GROWFILL_BOTH);
 
     tpInfo.setText("Some very long info on report from file");

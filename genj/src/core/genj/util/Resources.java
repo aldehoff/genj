@@ -201,7 +201,7 @@ public class Resources {
             if (open<0)
               continue;
             comment = true;
-            line = line.substring(open+2);
+            line = line.substring(open+2).trim();
           }        
         }
         
@@ -239,10 +239,10 @@ public class Resources {
         
         // break down key and value
         int i = trimmed.indexOf('=');
-        if (i<0) 
+        if (i<=0) 
           continue;
         key = trimmed.substring(0, i).trim();
-        if (key.indexOf(' ')>0)
+        if (!literate&&!Character.isJavaIdentifierStart(line.charAt(0)))
           continue;
         val = trim(trimmed.substring(i+1));
         keys.add(key);
