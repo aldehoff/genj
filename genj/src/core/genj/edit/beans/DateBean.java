@@ -107,6 +107,10 @@ public class DateBean extends PropertyBean {
   
   @Override
   public Dimension getPreferredSize() {
+    
+    if (isPreferredSizeSet()) 
+      return super.getPreferredSize();
+    
     Dimension result = new Dimension();
     for (int y=0;y<preferredLayout.length;y++) {
       Dimension line = new Dimension();
