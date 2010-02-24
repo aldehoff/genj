@@ -28,6 +28,8 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -51,7 +53,7 @@ import javax.swing.JFrame;
 /**
  * Registry - betterfied java.util.Properties
  */
-public class Registry {
+public class Registry implements PropertyChangeListener {
   
   private final static Logger LOG = Logger.getLogger("genj.util");
   
@@ -423,9 +425,9 @@ public class Registry {
       return def;
 
     // boolean value
-    if (result.equals("1"))
+    if (result.equals("1") || result.equals("true"))
       return true;
-    if (result.equals("0"))
+    if (result.equals("0") || result.equals("false"))
       return false;
 
     // Done
@@ -657,7 +659,7 @@ public class Registry {
   /**
    * Remembers a boolean value
    */
-  public void put(String key, boolean value) {
+  public void put(String key, Boolean value) {
 
     // Remember
     put(key,(value?"1":"0"));
@@ -754,5 +756,21 @@ public class Registry {
       return result.elements();
     }
   };
+  
+  public void propertyChange(PropertyChangeEvent evt) {
+    String key = evt.getPropertyName();
+    Object val = evt.getNewValue();
+    if (val==null) {
+      remove(key);
+      return;
+    }
+    
+    try {
+      getClass().getMethod("put", String.class, val.getClass())
+      .invoke(this, key, val);
+    } catch (Throwable t) {
+      put(key, val.toString());
+    }
+  }
 
 } //Registry
