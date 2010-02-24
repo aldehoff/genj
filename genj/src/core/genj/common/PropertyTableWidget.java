@@ -28,7 +28,6 @@ import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyNumericValue;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
-import genj.renderer.Options;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.HeadlessLabel;
@@ -50,7 +49,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +102,7 @@ public class PropertyTableWidget extends JPanel  {
     // create table comp
     table = new Table();
     setModel(propertyModel);
-    
+
     // create panel for shortcuts
     panelShortcuts = new JPanel();
     
@@ -334,6 +332,7 @@ public class PropertyTableWidget extends JPanel  {
     
     private PropertyTableModel propertyModel;
     private SortableTableModel sortableModel = new SortableTableModel();
+    private int defaultRowHeight;
     
     /**
      * Constructor
@@ -350,7 +349,11 @@ public class PropertyTableWidget extends JPanel  {
       getColumnModel().getSelectionModel().addListSelectionListener(this);
       // 20091208 JTable already implements and add itself as listener
       //getSelectionModel().addListSelectionListener(this);
-      
+
+      Renderer r = new Renderer();
+      r.setFont(getFont());
+      defaultRowHeight = r.getPreferredSize().height;
+
       // prep sortable model
       setModel(sortableModel);
       sortableModel.setTableHeader(getTableHeader());
@@ -576,8 +579,12 @@ public class PropertyTableWidget extends JPanel  {
       Dimension d = super.getPreferredScrollableViewportSize();
       if (visibleRowCount>0) {
         d.height = 0; 
-        for(int row=0; row<visibleRowCount && row<getModel().getRowCount(); row++) 
+        for(int row=0; row<visibleRowCount; row++) {
+          if (row<getModel().getRowCount())
             d.height += getRowHeight(row); 
+          else
+            d.height += defaultRowHeight; 
+        }
       }
       return d;
     }
