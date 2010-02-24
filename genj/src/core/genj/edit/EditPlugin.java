@@ -139,7 +139,6 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
     
     // let user edit it
     final BeanPanel panel = new BeanPanel();
-    panel.setShowTabs(false);
     panel.setRoot(adamOrEve);
     if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), workbench)) {
       gedcom.undoUnitOfWork();

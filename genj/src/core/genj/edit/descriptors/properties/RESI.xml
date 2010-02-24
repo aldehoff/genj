@@ -6,5 +6,5 @@
  <row><label path=".:ADDR:POST"/><bean path=".:ADDR:POST" wx="1"/>
       <label path=".:ADDR:STAE"/><bean path=".:ADDR:STAE" wx="1"/>
       <label path=".:ADDR:CTRY"/><bean path=".:ADDR:CTRY" wx="1"/></row>
- <col><fold path=".:NOTE"/><bean path=".:NOTE" gx="1" gy="1"/></col>
+ <col><fold key="NOTE"/><bean path=".:NOTE" gx="1" gy="1"/></col>
 </col>

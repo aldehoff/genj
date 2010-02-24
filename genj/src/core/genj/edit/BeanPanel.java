@@ -20,40 +20,29 @@
 package genj.edit;
 
 import genj.edit.beans.PropertyBean;
-import genj.edit.beans.ReferencesBean;
-import genj.edit.beans.RelationshipsBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
-import genj.gedcom.UnitOfWork;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.LinkWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
-import genj.view.ContextProvider;
-import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -92,12 +81,6 @@ public class BeanPanel extends JPanel {
   
   /** beans */
   private List<PropertyBean> beans = new ArrayList<PropertyBean>(32);
-  
-  /** content */
-  private JPanel detail = new JPanel();
-  private JTabbedPane tabs = new ContextTabbedPane();
-
-  private boolean isShowTabs = true;
   
   /**
    * Find a descriptor 
@@ -151,11 +134,6 @@ public class BeanPanel extends JPanel {
   }
   
   public BeanPanel() {
-    
-    // layout
-    setLayout(new BorderLayout());
-    add(detail, BorderLayout.CENTER);
-    add(tabs, BorderLayout.SOUTH);
     
     // make user focus root
     setFocusTraversalPolicy(new FocusPolicy());
@@ -242,25 +220,12 @@ public class BeanPanel extends JPanel {
         return bean;
     }
     
-    // check tabs specifically (there might be no properties yet)
-    for (Component c : tabs.getComponents()) {
-      JComponent jc = (JComponent)c;
-      if (jc.getClientProperty(Property.class)==prop) 
-        return jc;
-    }
-    
     // otherwise use first bean
     return (PropertyBean)beans.get(0);
     
     // done
   }
   
-  /** switch on detail */
-  public void setShowTabs(boolean set) {
-    isShowTabs = set;
-    tabs.setVisible(set);
-  }
-
   /** set context */
   public void setRoot(Property root) {
     
@@ -271,8 +236,8 @@ public class BeanPanel extends JPanel {
       PropertyBean.recycle(bean);
     }
     beans.clear();
-    detail.removeAll();
-    tabs.removeAll();
+    
+    removeAll();
 
     // something to layout?
     if (root!=null) {
@@ -283,36 +248,7 @@ public class BeanPanel extends JPanel {
       // layout from descriptor
       NestedBlockLayout descriptor = getLayout(root.getMetaProperty());
       if (descriptor!=null) 
-        parse(detail, root, root, descriptor, beanifiedTags);
-
-      if (isShowTabs) {
-        
-        String restoreTab = REGISTRY.get("tab", "0");
-
-        // create tab for relationships of root
-        createReferencesTabs(root);
-        
-        // create tabs for properties of root w/descriptor
-        createEventTabs(root, beanifiedTags);
-  
-        // create a tab for links to create new
-        createLinkTab(root, beanifiedTags);
-
-        // restore visible tab
-        try {
-          tabs.setSelectedIndex(Integer.parseInt(restoreTab));
-        } catch (Throwable t) {
-          for (Component c : tabs.getComponents()) {
-            Property prop = (Property)((JComponent)c).getClientProperty(Property.class);
-            if (prop!=null&&prop.getTag().equals(restoreTab)) {
-              tabs.setSelectedComponent(c);
-              break;
-            }
-          }
-        }
-
-        // done
-      }
+        parse(root, root, descriptor, beanifiedTags);
     }
       
     // done
@@ -323,15 +259,15 @@ public class BeanPanel extends JPanel {
   /**
    * Parse descriptor for beans into panel
    */
-  private void parse(JPanel panel, Property root, Property property, NestedBlockLayout descriptor, Set<String> beanifiedTags)  {
+  private void parse(Property root, Property property, NestedBlockLayout descriptor, Set<String> beanifiedTags)  {
 
-    panel.setLayout(descriptor);
+    setLayout(descriptor);
     
     // fill cells with beans
     for (NestedBlockLayout.Cell cell : descriptor.getCells()) {
       JComponent comp = createComponent(root, property, cell, beanifiedTags);
       if (comp!=null)
-        panel.add(comp, cell);
+        add(comp, cell);
     }
     
     // done
@@ -356,17 +292,14 @@ public class BeanPanel extends JPanel {
     // a folder handle?
     if ("fold".equals(element)) {
       String key = cell.getAttribute("key");
-      String label = "";
-      if (key!=null)
-        label = RES.getString(key);
-      else {
-        key = cell.getAttribute("path");
-        if (key!=null)
-          label = Gedcom.getName(new TagPath(key).getLast());
-        else
-          throw new IllegalArgumentException("fold needs key or path");
-      }
-      return new NestedBlockLayout.Handle(label, REGISTRY);
+      String label = RES.getString(key,false);
+      if (label==null) label = Gedcom.getName(key);
+      NestedBlockLayout.Handle result = new NestedBlockLayout.Handle(label);
+      
+      Registry r = new Registry(REGISTRY, root.getTag()+'.'+key);
+      result.setFolded(r.get("folded", false));
+      result.addPropertyChangeListener("folded", r);
+      return result;
     }
     
     // a label?
@@ -442,182 +375,177 @@ public class BeanPanel extends JPanel {
     return bean;
   }
   
-  private void createReferencesTabs(Property root) {
-    tabs.addTab("", RelationshipsBean.IMG , new RelationshipsBean().setProperty(root));
-    tabs.addTab("", ReferencesBean.IMG , new ReferencesBean().setProperty(root));
-  }
-
-  private void createLinkTab(Property root, Set<String> beanifiedTags) {
-    
-    // 'create' a tab with links to create sub-property that we have a descriptor for
-    JPanel linksTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    linksTab.setPreferredSize(new Dimension(64,64));
-    linksTab.setOpaque(false);
-    tabs.addTab("", Images.imgAdd, linksTab);
-    MetaProperty[] nested = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
-    Arrays.sort(nested);
-    for (int i=0;i<nested.length;i++) {
-      MetaProperty meta = nested[i];
-      // if there's a descriptor for it
-      NestedBlockLayout descriptor = getLayout(meta);
-      if (descriptor==null||descriptor.getCells().isEmpty())
-        continue;
-      // .. and if there's no other already with isSingleton
-      if (beanifiedTags.contains(meta.getTag())&&meta.isSingleton())
-        continue;
-      // create a button for it
-      linksTab.add(new LinkWidget(new AddTab(root, meta)));
-    }
-  }
+//  private void createLinkTab(Property root, Set<String> beanifiedTags) {
+//    
+//    // 'create' a tab with links to create sub-property that we have a descriptor for
+//    JPanel linksTab = new JPanel(new FlowLayout(FlowLayout.LEFT));
+//    linksTab.setPreferredSize(new Dimension(64,64));
+//    linksTab.setOpaque(false);
+//    tabs.addTab("", Images.imgAdd, linksTab);
+//    MetaProperty[] nested = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN);
+//    Arrays.sort(nested);
+//    for (int i=0;i<nested.length;i++) {
+//      MetaProperty meta = nested[i];
+//      // if there's a descriptor for it
+//      NestedBlockLayout descriptor = getLayout(meta);
+//      if (descriptor==null||descriptor.getCells().isEmpty())
+//        continue;
+//      // .. and if there's no other already with isSingleton
+//      if (beanifiedTags.contains(meta.getTag())&&meta.isSingleton())
+//        continue;
+//      // create a button for it
+//      linksTab.add(new LinkWidget(new AddTab(root, meta)));
+//    }
+//  }
   
-  /**
-   * Create tabs for events
-   */
-  private void createEventTabs(Property root, Set<String> beanifiedTags) {
-    
-    // don't create tabs for already visited tabs unless it's a secondary
-    Set<String> skippedOnceTags = new HashSet<String>();
-    Property[] props = root.getProperties();
-    Arrays.sort(props, new PropertyComparator(".:DATE"));
-    for (Property prop : props) {
-      // check tag - skipped or covered already?
-      String tag = prop.getTag();
-      if (skippedOnceTags.add(tag)&&beanifiedTags.contains(tag)) 
-        continue;
-      beanifiedTags.add(tag);
-      // create a tab for it
-      createEventTab(root, prop);
-      // next
-    }
-    // done
-  }
-  
-  /**
-   * Create a tab
-   */
-  private void createEventTab(Property root, Property prop) {
-     
-    // don't do xrefs
-    if (prop instanceof PropertyXRef)
-      return;
-     
-    // got a descriptor for it?
-    MetaProperty meta = prop.getMetaProperty();
-    NestedBlockLayout descriptor = getLayout(meta);
-    if (descriptor==null) 
-      return;
-     
-    // create the panel
-    JPanel tab = new JPanel();
-    tab.putClientProperty(Property.class, prop);
-    tab.setOpaque(false);
-    
-    parse(tab, root, prop, descriptor, null);
-    
-    String name = prop.getValue(new TagPath(".:TYPE"), meta.getName());
-    tabs.addTab(name + prop.format("{ $y}"), prop.getImage(false), tab, meta.getInfo());
-
-    // done
-  }
-   
-  private class ContextTabbedPane extends JTabbedPane implements ContextProvider {
-    private ContextTabbedPane() {
-      super(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
-    }
-    public ViewContext getContext() {
-      // check if tab for property
-      Component selection = tabs.getSelectedComponent();
-      Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
-      if (prop==null)
-        return null;
-      // provide a context with delete
-      return new ViewContext(prop).addAction(new DelTab(prop));
-    }
-    @Override
-    protected void fireStateChanged() {
-      super.fireStateChanged();
-      // remember current tab
-      Component selection = tabs.getSelectedComponent();
-      if (selection!=null) {
-        Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
-        if (prop==null)
-          REGISTRY.put("tab", getSelectedIndex());
-        else
-          REGISTRY.put("tab", prop.getTag());
-      }
-    }
-    
-  } //ContextTabbedPane
-    
-   /** An action for adding 'new tabs' */
-   private class AddTab extends Action2 {
-     
-     private MetaProperty meta;
-     private Property root;
-     private Property property;
-     
-     /** constructor */
-     private AddTab(Property root, MetaProperty meta) {
-       // remember
-       this.meta = meta;
-       this.root = root;
-       // looks
-       setText(meta.getName());
-       setImage(meta.getImage());
-       setTip(meta.getInfo());
-     }
-   
-     /** callback initiate create */
-     public void actionPerformed(ActionEvent event) {
-       
-       root.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
-         public void perform(Gedcom gedcom) {
-           
-           // commit bean changes
-           if (BeanPanel.this.changeSupport.hasChanged())
-             commit();
-           
-           // add property for tab
-           property = root.addProperty(meta.getTag(), "");
-         }
-       });
-       
-       // send selection
-       select(property);
-       
-       // done
-     }
-     
-   } //AddTab
-   
-   /**
-    * A remove tab action
-    */
-   private class DelTab extends Action2 {
-     private Property prop;
-     private DelTab(Property prop) {
-       setText(EditView.RESOURCES.getString("action.del", prop.getPropertyName()));
-       setImage(Images.imgCut);
-       this.prop = prop;
-     }
-    public void actionPerformed(ActionEvent event) {
-      prop.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
-        public void perform(Gedcom gedcom) {
-          
-          // commit bean changes
-          if (BeanPanel.this.changeSupport.hasChanged())
-            commit();
-          
-          // delete property
-          prop.getParent().delProperty(prop);
-          
-        }
-      });
-      
-
-      // done
-    }
-  }
+//  /**
+//   * Create tabs for events
+//   */
+//  private void createEventTabs(Property root, Set<String> beanifiedTags) {
+//    
+//    // don't create tabs for already visited tabs unless it's a secondary
+//    Set<String> skippedOnceTags = new HashSet<String>();
+//    Property[] props = root.getProperties();
+//    Arrays.sort(props, new PropertyComparator(".:DATE"));
+//    for (Property prop : props) {
+//      // check tag - skipped or covered already?
+//      String tag = prop.getTag();
+//      if (skippedOnceTags.add(tag)&&beanifiedTags.contains(tag)) 
+//        continue;
+//      beanifiedTags.add(tag);
+//      // create a tab for it
+//      createEventTab(root, prop);
+//      // next
+//    }
+//    // done
+//  }
+//  
+//  /**
+//   * Create a tab
+//   */
+//  private void createEventTab(Property root, Property prop) {
+//     
+//    // don't do xrefs
+//    if (prop instanceof PropertyXRef)
+//      return;
+//     
+//    // got a descriptor for it?
+//    MetaProperty meta = prop.getMetaProperty();
+//    NestedBlockLayout descriptor = getLayout(meta);
+//    if (descriptor==null) 
+//      return;
+//     
+//    // create the panel
+//    JPanel tab = new JPanel();
+//    tab.putClientProperty(Property.class, prop);
+//    tab.setOpaque(false);
+//    
+//    parse(tab, root, prop, descriptor, null);
+//    
+//    String name = prop.getValue(new TagPath(".:TYPE"), meta.getName());
+//    tabs.addTab(name + prop.format("{ $y}"), prop.getImage(false), tab, meta.getInfo());
+//
+//    // done
+//  }
+//   
+//  private class ContextTabbedPane extends JTabbedPane implements ContextProvider {
+//    private ContextTabbedPane() {
+//      super(JTabbedPane.TOP, JTabbedPane.WRAP_TAB_LAYOUT);
+//    }
+//    public ViewContext getContext() {
+//      // check if tab for property
+//      Component selection = tabs.getSelectedComponent();
+//      Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
+//      if (prop==null)
+//        return null;
+//      // provide a context with delete
+//      return new ViewContext(prop).addAction(new DelTab(prop));
+//    }
+//    @Override
+//    protected void fireStateChanged() {
+//      super.fireStateChanged();
+//      // remember current tab
+//      Component selection = tabs.getSelectedComponent();
+//      if (selection!=null) {
+//        Property prop = (Property)((JComponent)selection).getClientProperty(Property.class);
+//        if (prop==null)
+//          REGISTRY.put("tab", getSelectedIndex());
+//        else
+//          REGISTRY.put("tab", prop.getTag());
+//      }
+//    }
+//    
+//  } //ContextTabbedPane
+//    
+//   /** An action for adding 'new tabs' */
+//   private class AddTab extends Action2 {
+//     
+//     private MetaProperty meta;
+//     private Property root;
+//     private Property property;
+//     
+//     /** constructor */
+//     private AddTab(Property root, MetaProperty meta) {
+//       // remember
+//       this.meta = meta;
+//       this.root = root;
+//       // looks
+//       setText(meta.getName());
+//       setImage(meta.getImage());
+//       setTip(meta.getInfo());
+//     }
+//   
+//     /** callback initiate create */
+//     public void actionPerformed(ActionEvent event) {
+//       
+//       root.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
+//         public void perform(Gedcom gedcom) {
+//           
+//           // commit bean changes
+//           if (BeanPanel.this.changeSupport.hasChanged())
+//             commit();
+//           
+//           // add property for tab
+//           property = root.addProperty(meta.getTag(), "");
+//         }
+//       });
+//       
+//       // send selection
+//       select(property);
+//       
+//       // done
+//     }
+//     
+//   } //AddTab
+//   
+//   /**
+//    * A remove tab action
+//    */
+//   private class DelTab extends Action2 {
+//     private Property prop;
+//     private DelTab(Property prop) {
+//       setText(EditView.RESOURCES.getString("action.del", prop.getPropertyName()));
+//       setImage(Images.imgCut);
+//       this.prop = prop;
+//     }
+//    public void actionPerformed(ActionEvent event) {
+//      prop.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
+//        public void perform(Gedcom gedcom) {
+//          
+//          // commit bean changes
+//          if (BeanPanel.this.changeSupport.hasChanged())
+//            commit();
+//          
+//          // delete property
+//          prop.getParent().delProperty(prop);
+//          
+//        }
+//      });
+//      
+//
+//      // done
+//    }
+//  }
 
   /**
    * A proxy for a property - it can be used as a container
