@@ -30,6 +30,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
+import javax.swing.SwingUtilities;
+
 /**
  * help in workbench
  */
@@ -47,7 +49,14 @@ public class HelpView extends View {
     
     back = new Back();
     forward = new Forward();
-    
+   
+    SwingUtilities.invokeLater(new Runnable() {
+      @Override
+      public void run() {
+        if (content.getPage()==null)
+          content.setPage(HelpWidget.MANUAL);
+      }
+    });
   }
 
   public void setPage(String page) {

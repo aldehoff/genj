@@ -61,7 +61,7 @@ class HelpWidget extends JPanel {
   final static String EXPORT = "?do=export_xhtmlbody";
   
   private JEditorPane content;
-  private String page = WELCOME;
+  private String page = null;
 
   /**
    * Constructor
