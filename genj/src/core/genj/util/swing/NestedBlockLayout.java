@@ -19,8 +19,6 @@
  */
 package genj.util.swing;
 
-import genj.util.Registry;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -1052,17 +1050,22 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     private final static Icon FOLDED = new Symbol(8, false);
     private final static Icon UNFOLDED = new Symbol(8, true);
     private boolean isFolded = false;
-    private Registry registry;
     
     /**
      * Constructor
      */
-    public Handle(String label, Registry registry) {
+    public Handle(String label) {
       super(label);
-      this.registry = registry;
-      this.isFolded = registry.get("fold."+label, false);
       setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
       addMouseListener(new Mouser());
+    }
+    
+    public void setFolded(boolean set) {
+      isFolded = set;
+    }
+    
+    public boolean isFolded() {
+      return isFolded;
     }
 
     public Icon getIcon() {
@@ -1074,8 +1077,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       public void mouseClicked(MouseEvent e) {
         
         isFolded = !isFolded;
-
-        registry.put("fold."+getText(), isFolded);
+        
+        firePropertyChange("folded", !isFolded, isFolded);
 
         Component parent = getParent();
         if (parent instanceof JComponent)
