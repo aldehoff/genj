@@ -19,11 +19,16 @@
  */
 package genj.util.swing;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
+
+import javax.swing.Icon;
 
 public class GraphicsHelper {
 
@@ -76,4 +81,37 @@ public class GraphicsHelper {
     graphics.drawString(str, (float)x, (float)y);
   }
   
+  public static Icon getIcon(int size, Shape shape) {
+    return new ShapeAsIcon(size, shape);
+  }
+  
+  /**
+   * A shape as icon
+   */
+  private static class ShapeAsIcon implements Icon {
+
+    private Dimension size;
+    private Shape shape;
+
+    private ShapeAsIcon(int size, Shape shape) {
+      this.size = new Dimension(size, size);
+      this.shape = shape;
+    }
+
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+      g.setColor(c.getForeground());
+      g.translate(x, y);
+      ((Graphics2D) g).fill(shape);
+      g.translate(-x, -y);
+    }
+
+    public int getIconWidth() {
+      return size.width;
+    }
+
+    public int getIconHeight() {
+      return size.height;
+    }
+
+  }
 }

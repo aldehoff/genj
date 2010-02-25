@@ -19,15 +19,27 @@
  */
 package genj.edit.beans;
 
+import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableWidget;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.TagPath;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A complex bean displaying events of an individual or family
  */
 public class EventsBean extends PropertyBean {
+
+  private static TagPath[] COLUMNS = {
+    new TagPath("."),
+    new TagPath("."),
+    new TagPath(".:DATE"),
+    new TagPath(".:PLAC")
+  };
   
   private PropertyTableWidget table;
   
@@ -37,7 +49,15 @@ public class EventsBean extends PropertyBean {
     table = new PropertyTableWidget() {
       @Override
       protected String getCellValue(Property property, int row, int col) {
-        return property.getPropertyName();
+        if (col==0)
+          return property.getPropertyName();
+        if (col==1) {
+          String val = property.getDisplayValue();
+          if (val.length()==0)
+            val = property.getPropertyValue("TYPE");
+          return val;
+        }
+        return super.getCellValue(property, row, col);
       }
     };
     table.setVisibleRowCount(5);
@@ -52,6 +72,58 @@ public class EventsBean extends PropertyBean {
 
   @Override
   protected void setPropertyImpl(Property prop) {
+    if (prop==null)
+      table.setModel(null);
+    else
+      table.setModel(new Model(prop));
+  }
+  
+  private class Model extends AbstractPropertyTableModel {
+    
+    private List<Property> events = new ArrayList<Property>();
+    
+    Model(Property root) {
+      
+      super(root.getGedcom());
+      
+      // scan for events
+      for (Property child : root.getProperties()) {
+        if (child.getMetaProperty().allows("DATE"))
+          events.add(child);
+      }
+      
+      // done
+    }
+    
+    @Override
+    public String getName(int col) {
+      if (col==0)
+        return Gedcom.getName("EVEN");
+      if (col==1)
+        return Gedcom.getName("TYPE");
+      return super.getName(col);
+    }
+    
+    @Override
+    public int getNumCols() {
+      return COLUMNS.length;
+    }
+
+    @Override
+    public int getNumRows() {
+      return events.size();
+    }
+
+    @Override
+    public TagPath getPath(int col) {
+      return COLUMNS[col];
+    }
+
+    @Override
+    public Property getProperty(int row) {
+      return events.get(row);
+    }
+    
   }
 
 }

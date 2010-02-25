@@ -294,10 +294,12 @@ public class BeanPanel extends JPanel {
       String key = cell.getAttribute("key");
       String label = RES.getString(key,false);
       if (label==null) label = Gedcom.getName(key);
-      NestedBlockLayout.Handle result = new NestedBlockLayout.Handle(label);
+      
+      String indent = cell.getAttribute("indent");
+      NestedBlockLayout.Expander result = new NestedBlockLayout.Expander(label, indent!=null ? Integer.parseInt(indent) : 1);
       
       Registry r = new Registry(REGISTRY, root.getTag()+'.'+key);
-      result.setFolded(r.get("folded", false));
+      result.setCollapsed(r.get("folded", false));
       result.addPropertyChangeListener("folded", r);
       return result;
     }
