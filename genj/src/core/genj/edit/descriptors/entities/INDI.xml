@@ -16,30 +16,30 @@
  </row>
  <col>
   <fold key="NOTE"/>
-  <bean path="INDI:NOTE" gx="1" gy="1"/>
+  <bean path="INDI:NOTE" gx="1" gy="1" wy="1"/>
  </col>
  <col>
   <fold key="relationships"/>
-  <bean path="." type="genj.edit.beans.RelationshipsBean" gy="1" gx="1"/>
+  <bean path="." type="genj.edit.beans.RelationshipsBean" gy="1" gx="1" wy="1"/>
  </col>
  <col>
   <fold key="events"/>
-  <bean path="." type="genj.edit.beans.EventsBean" gy="1" gx="1"/>
+  <bean path="." type="genj.edit.beans.EventsBean" gy="1" gx="1" wy="1"/>
  </col>
  <col>
   <fold key="references"/>
-  <bean path="." type="genj.edit.beans.ReferencesBean" gy="1" gx="1"/>
+  <bean path="." type="genj.edit.beans.ReferencesBean" gy="1" gx="1" wy="1"/>
  </col>
  <col>
   <fold key="xproperties"/>
-  <table>
+  <table wy="1">
    <row><label path="INDI:EDUC"/><bean path="INDI:EDUC" wx="1"/></row>
-   <row><label path="INDI:IDNO"/><bean path="INDI:IDNO" wx="1"/></row>
-   <row><label path="INDI:NATI"/><bean path="INDI:NATI" wx="1"/></row>
-   <row><label path="INDI:REFN"/><bean path="INDI:REFN" wx="1"/></row>
-   <row><label path="INDI:RELI"/><bean path="INDI:RELI" wx="1"/></row>
-   <row><label path="INDI:SSN" /><bean path="INDI:SSN"  wx="1"/></row>
    <row><label path="INDI:TITL"/><bean path="INDI:TITL" wx="1"/></row>
+   <row><label path="INDI:RELI"/><bean path="INDI:RELI" wx="1"/></row>
+   <row><label path="INDI:NATI"/><bean path="INDI:NATI" wx="1"/></row>
+   <row><label path="INDI:IDNO"/><bean path="INDI:IDNO" wx="1"/></row>
+   <row><label path="INDI:REFN"/><bean path="INDI:REFN" wx="1"/></row>
+   <row><label path="INDI:SSN" /><bean path="INDI:SSN"  wx="1"/></row>
   </table>
  </col>
 </col>
