@@ -32,4 +32,6 @@ public interface ToolBar {
 	public void add(JComponent component);
 	
 	public void addSeparator();
+	
+	public void clear();
 }

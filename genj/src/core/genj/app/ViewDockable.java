@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,7 +74,10 @@ import swingx.docking.Docked;
   private View view;
   private Workbench workbench;
   private boolean ignoreSelectionChanged = false;
-
+  
+  private Tools toolbar = new Tools();
+  
+  
   /**
    * Constructor
    */
@@ -126,37 +128,8 @@ import swingx.docking.Docked;
     view.setContext(workbench.getContext(), true);
     
     // only if ToolBarSupport and no bar installed
-    final AtomicBoolean toolbar = new AtomicBoolean(false);
-    
-    view.populate(new ToolBar() {
-      public void add(Action action) {
-        docked.addTool(action);
-        toolbar.set(true);
-      }
-
-      public void add(JComponent component) {
-        docked.addTool(component);
-        component.setFocusable(false);
-        toolbar.set(true);
-      }
-
-      public void addSeparator() {
-        docked.addToolSeparator();
-        toolbar.set(true);
-      }
-    });
-
-    // stop toolbar if empty and less than 1024 in pixels?
-    try {
-      if (!toolbar.get() && Toolkit.getDefaultToolkit().getScreenSize().height<1024)
-        return;
-    } catch (Throwable t) {
-      // ignored
-    }
-
-    if (toolbar.get())
-      docked.addToolSeparator();
-    docked.addTool(new ActionCloseView());
+    toolbar.clear();
+    view.populate(toolbar);
 
     // done
   }
@@ -416,5 +389,47 @@ import swingx.docking.Docked;
 
   public void processStopped(Workbench workbench, Trackable process) {
   }
+
+  /**
+   * Toolbar proxy
+   */
+  private class Tools implements ToolBar, Runnable {
+    
+    boolean empty = true;
   
+    public void add(Action action) {
+      getDocked().addTool(action);
+      empty = false;
+    }
+    public void add(JComponent component) {
+      getDocked().addTool(component);
+      component.setFocusable(false);
+      empty = false;
+    }
+    public void addSeparator() {
+      if (!empty)
+        getDocked().addToolSeparator();
+    }
+    public void clear() {
+      empty = true;
+      getDocked().clearTools();
+      SwingUtilities.invokeLater(this);
+    }
+    
+    public void run() {
+      // our way of adding our close tool as last
+      // stop toolbar if empty and less than 1024 in pixels?
+      try {
+        if (empty && Toolkit.getDefaultToolkit().getScreenSize().height<1024)
+          return;
+      } catch (Throwable t) {
+        // ignored
+      }
+
+      addSeparator();
+      add(new ActionCloseView());
+    }
+
+  };
+
 } //ViewDockable
