@@ -513,7 +513,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
       Entity entity = context.getEntity();
       if (entity instanceof Indi||entity instanceof Fam) { 
         // create an action for our tree
-        result.add(new ActionRoot(entity));
+        result.add(new ActionRoot(entity, true));
         result.add(new ActionBookmark(entity, false));
       }
     }
@@ -773,8 +773,9 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
       Entity entity = context.getEntity();
       if (entity instanceof Indi) {
         result.addAction(new ActionBookmark((Indi)context.getEntity(), true));
+        result.addAction(new ActionRoot((Indi)context.getEntity(), false));
       }
-      if (entity!=null)
+      if (entity!=null) {
         result.addAction(new ChooseBlueprintAction(entity, getBlueprint(entity.getTag())) {
           @Override
           protected void commit(Entity recipient, Blueprint blueprint) {
@@ -783,6 +784,7 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
             repaint();
           }
         });
+      }
       result.addAction(new ActionChooseRoot());
       return result;
     }
@@ -962,9 +964,9 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     /**
      * Constructor
      */
-    private ActionRoot(Entity entity) {
+    private ActionRoot(Entity entity, boolean in) {
       root = entity;
-      setText(RESOURCES.getString("root",TITLE));
+      setText(RESOURCES.getString(in ? "root.in" : "root",TITLE));
       setImage(Images.imgView);
     }
     

@@ -19,15 +19,19 @@
  */
 package genj.report;
 
+import genj.option.Option;
 import genj.option.OptionsWidget;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.util.Collections;
+import java.util.ArrayList;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -57,7 +61,14 @@ class ReportSelector extends JPanel {
     right.add(res.getString("report.options"), options);
     detail.setOpaque(false);
     
-    add(new JLabel(res.getString("report.reports")), BorderLayout.NORTH);
+    JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    top.add(new JLabel(res.getString("report.reports")));
+    JButton reload = new JButton(new ActionReload());
+    reload.setFocusable(false);
+    reload.setMargin(new Insets(0,0,0,0));
+    top.add(reload);
+    
+    add(top, BorderLayout.NORTH);
     add(new JScrollPane(list), BorderLayout.WEST);
     add(right, BorderLayout.CENTER);
     
@@ -69,7 +80,7 @@ class ReportSelector extends JPanel {
           options.setOptions(report.getOptions());
         } else {
           right.setTitleAt(0, res.getString("report.options"));
-          options.setOptions(Collections.EMPTY_LIST);          
+          options.setOptions(new ArrayList<Option>());          
         }
       }
     });

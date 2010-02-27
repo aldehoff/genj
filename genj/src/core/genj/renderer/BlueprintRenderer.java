@@ -946,26 +946,30 @@ public class BlueprintRenderer {
     }
     
     private String getText(PropertyPlace place) {
-      Object j = attributes.get("jurisdiction");
-      // index?
-      if (j!=null) {
-        
-        // 0 = first available
-        if ("0".equals(j))
-          return place.getFirstAvailableJurisdiction();
+        Object j = attributes.get("jurisdiction");
+        // index?
+        if (j!=null) {
+         
+          // 0 = first available
+          if ("0".equals(j))
+            return place.getFirstAvailableJurisdiction();
 
-        // i>0
-        String result = null;
-        try {
-            result = place.getJurisdiction(Integer.parseInt(j.toString()));
-        } catch (Throwable t) {
+          // all = first available
+          if ("all".equals(j))
+            return place.getDisplayValue();
+
+          // i>0
+          String result = null;
+          try {
+              result = place.getJurisdiction(Integer.parseInt(j.toString())-1);
+          } catch (Throwable t) {
+          }
+          return result==null ? "" : result;
         }
-        return result==null ? "" : result;
+       
+        // default is first only
+        return place.getFirstAvailableJurisdiction();
       }
-      
-      // all
-      return place.getFirstAvailableJurisdiction();
-    }
     
     /**
      * @see genj.renderer.EntityRenderer.MyView#getPreferredSpan()
