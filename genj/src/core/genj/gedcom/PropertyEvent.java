@@ -20,11 +20,14 @@
 package genj.gedcom;
 
 import genj.gedcom.time.Delta;
+import genj.util.swing.ImageIcon;
 
 /**
  * Gedcom Property : EVENT
  */
 public class PropertyEvent extends Property {
+  
+  public static ImageIcon IMG = Grammar.V55.getMeta(new TagPath("INDI:EVEN")).getImage();
   
   /** our Tag */
   private String tag;

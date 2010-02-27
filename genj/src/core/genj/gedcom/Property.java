@@ -389,6 +389,13 @@ public abstract class Property implements Comparable<Property> {
   /**
    * Returns the image which is associated with this property.
    */
+  public ImageIcon getImage() {
+    return getImage(false);
+  }
+  
+  /**
+   * Returns the image which is associated with this property.
+   */
   public ImageIcon getImage(boolean checkValid) {
     
     // valid or not ?
