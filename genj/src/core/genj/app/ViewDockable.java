@@ -128,8 +128,9 @@ import swingx.docking.Docked;
     view.setContext(workbench.getContext(), true);
     
     // only if ToolBarSupport and no bar installed
-    toolbar.clear();
+    toolbar.beginUpdate();
     view.populate(toolbar);
+    toolbar.endUpdate();
 
     // done
   }
@@ -393,39 +394,41 @@ import swingx.docking.Docked;
   /**
    * Toolbar proxy
    */
-  private class Tools implements ToolBar, Runnable {
+  private class Tools implements ToolBar {
     
-    boolean empty = true;
-  
+    boolean isEmpty = true;
+    boolean hasDefaults = false;
+    
     public void add(Action action) {
       getDocked().addTool(action);
-      empty = false;
+      isEmpty = false;
     }
     public void add(JComponent component) {
       getDocked().addTool(component);
       component.setFocusable(false);
-      empty = false;
+      isEmpty = false;
     }
     public void addSeparator() {
-      if (!empty)
+      if (!isEmpty)
         getDocked().addToolSeparator();
     }
-    public void clear() {
-      empty = true;
+    public void beginUpdate() {
+      hasDefaults = false;
+      isEmpty = true;
       getDocked().clearTools();
-      SwingUtilities.invokeLater(this);
     }
-    
-    public void run() {
+    public void endUpdate() {
+      if (hasDefaults)
+        return;
+      hasDefaults = true;
       // our way of adding our close tool as last
       // stop toolbar if empty and less than 1024 in pixels?
       try {
-        if (empty && Toolkit.getDefaultToolkit().getScreenSize().height<1024)
+        if (isEmpty && Toolkit.getDefaultToolkit().getScreenSize().height<1024)
           return;
       } catch (Throwable t) {
         // ignored
       }
-
       addSeparator();
       add(new ActionCloseView());
     }

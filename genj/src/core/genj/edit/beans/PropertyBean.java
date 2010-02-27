@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -90,7 +91,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   private final static boolean isCache = "true".equals(EnvironmentChecker.getProperty("genj.edit.beans.cache", "true", "checking if bean cache is enabled or not"));
   
   private final static Map<Class<? extends PropertyBean>,List<PropertyBean>> BEANCACHE = createBeanCache();
-  
+
   @SuppressWarnings("unchecked")
   private static Map<Class<? extends PropertyBean>,List<PropertyBean>> createBeanCache() {
     LOG.fine("Initializing bean cache");
@@ -192,7 +193,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   protected PropertyBean() {
     setOpaque(false);  
   }
-  
+
   /**
    * tell bean to prefer the horizontal instead of the vertical
    */
@@ -305,6 +306,13 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
       defaultFocus.requestFocus();
     else 
       super.requestFocus();
+  }
+  
+  /**
+   * Provide available actions
+   */
+  public List<Action> getActions() {
+    return new ArrayList<Action>();
   }
   
   /**

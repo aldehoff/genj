@@ -33,5 +33,7 @@ public interface ToolBar {
 	
 	public void addSeparator();
 	
-	public void clear();
+	public void beginUpdate();
+	
+	public void endUpdate();
 }

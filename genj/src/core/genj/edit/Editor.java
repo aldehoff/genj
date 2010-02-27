@@ -22,12 +22,18 @@ package genj.edit;
 import genj.gedcom.Context;
 import genj.view.ViewContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.Action;
 import javax.swing.JPanel;
 
 /**
  * The base class for our two editors basic and advanced
  */
 /*package*/ abstract class Editor extends JPanel {
+  
+  protected List<Action> actions = new ArrayList<Action>();
 
   /** 
    * Accessor - current 
@@ -43,5 +49,12 @@ import javax.swing.JPanel;
    * commit changes
    */
   public abstract void commit();
+  
+  /**
+   * Editor's actions
+   */
+  public List<Action> getActions() {
+    return actions;
+  }
   
 } //Editor

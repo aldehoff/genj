@@ -175,6 +175,14 @@ public class BeanPanel extends JPanel {
     
     // done
   }
+  
+  /**
+   * Beans in panel
+   */
+  public List<PropertyBean> getBeans() {
+    return beans;
+  }
+
 
   /**
    * Select a property's bean

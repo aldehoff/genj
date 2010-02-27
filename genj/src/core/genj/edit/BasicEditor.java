@@ -141,7 +141,10 @@ import spin.Spin;
   /**
    * Callback - set current context
    */
+  @Override
   public void setContext(Context context) {
+    
+    actions.clear();
     
     // clear?
     if (context.getGedcom()==null) {
@@ -162,7 +165,11 @@ import spin.Spin;
         beanPanel.select(context.getProperty());
       
     }
-
+    
+    // look for actions
+    for (PropertyBean bean : beanPanel.getBeans())
+      actions.addAll(bean.getActions());
+    
     // done
   }
   

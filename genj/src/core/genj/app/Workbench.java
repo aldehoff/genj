@@ -129,6 +129,7 @@ public class Workbench extends JPanel implements SelectionSink {
   private Context context = new Context();
   private DockingPane dockingPane = new WorkbenchPane();
   private Menu menu = new Menu();
+  private BreadcrumbWidget breadcrumb = new BreadcrumbWidget(this);
   private Toolbar toolbar = new Toolbar();
   private Runnable runOnExit;
   private StatusBar statusBar = new StatusBar();
@@ -1417,6 +1418,10 @@ public class Workbench extends JPanel implements SelectionSink {
           }
         }
       }
+      
+      // add breadcrumb
+      addSeparator();
+      add(breadcrumb);
       
       // connect actions
       connect(newg, actions);

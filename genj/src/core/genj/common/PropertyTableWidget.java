@@ -67,6 +67,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -102,6 +103,7 @@ public class PropertyTableWidget extends JPanel  {
     // create table comp
     table = new Table();
     setModel(propertyModel);
+    setCellSelection(true);
 
     // create panel for shortcuts
     panelShortcuts = new JPanel();
@@ -112,6 +114,10 @@ public class PropertyTableWidget extends JPanel  {
     add(BorderLayout.EAST, panelShortcuts);
     
     // done
+  }
+  
+  public void setCellSelection(boolean set) {
+    table.setCellSelection(set);
   }
   
   /**
@@ -153,6 +159,10 @@ public class PropertyTableWidget extends JPanel  {
    */
   public int getRow(Property property) {
     return table.getRow(property);
+  }
+  
+  public int[] getSelectedRows() {
+    return table.getSelectedRows();
   }
   
   /**
@@ -222,6 +232,20 @@ public class PropertyTableWidget extends JPanel  {
       ignoreSelection = false;
     }
     
+  }
+
+  /**
+   * add listener
+   */
+  public void addListSelectionListener(ListSelectionListener listener) {
+    table.getSelectionModel().addListSelectionListener(listener);
+  }
+  
+  /**
+   * remove listener
+   */
+  public void removeListSelectionListener(ListSelectionListener listener) {
+    table.getSelectionModel().removeListSelectionListener(listener);
   }
   
   /**
@@ -341,9 +365,6 @@ public class PropertyTableWidget extends JPanel  {
 
       setPropertyTableModel(null);
       setDefaultRenderer(Object.class, new Renderer());
-      getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-      getColumnModel().setColumnSelectionAllowed(true);
-      getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
       getTableHeader().setReorderingAllowed(false);
       
       getColumnModel().getSelectionModel().addListSelectionListener(this);
@@ -392,6 +413,12 @@ public class PropertyTableWidget extends JPanel  {
       });
       
       // done
+    }
+    
+    void setCellSelection(boolean set) {
+      getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+      getColumnModel().setColumnSelectionAllowed(set);
+      getColumnModel().getSelectionModel().setSelectionMode(set ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);
     }
     
     /** create a shortcut */

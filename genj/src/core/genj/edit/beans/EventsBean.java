@@ -21,13 +21,20 @@ package genj.edit.beans;
 
 import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableWidget;
+import genj.edit.Images;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
+import genj.util.swing.Action2;
 
 import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.Action;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * A complex bean displaying events of an individual or family
@@ -42,6 +49,8 @@ public class EventsBean extends PropertyBean {
   };
   
   private PropertyTableWidget table;
+  
+  private List<Action> actions = new ArrayList<Action>();
   
   public EventsBean() {
     
@@ -62,9 +71,51 @@ public class EventsBean extends PropertyBean {
     };
     table.setVisibleRowCount(5);
     
+    actions.add(new Add());
+    actions.add(new Del());
+    
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
+
   }
+  
+  @Override
+  public List<Action> getActions() {
+    return actions;
+  }
+  
+  @Override
+  public void removeNotify() {
+    REGISTRY.put("eventcols", table.getColumnLayout());
+    super.removeNotify();
+  }
+  
+  /**
+   * add an event
+   */
+  private class Add extends Action2 {
+    Add() {
+      setImage(PropertyEvent.IMG.getOverLayed(Images.imgNew));
+      setTip(RESOURCES.getString("even.add"));
+    }
+  } //Add
+
+  /**
+   * del an event
+   */
+  private class Del extends Action2 implements ListSelectionListener {
+    Del() {
+      setImage(PropertyEvent.IMG.getOverLayed(Images.imgDel));
+      setTip(RESOURCES.getString("even.del"));
+      table.addListSelectionListener(this);
+      valueChanged(null);
+    }
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+      setEnabled(table.getSelectedRows().length>0);
+    }
+  } //Del
 
   @Override
   protected void commitImpl(Property property) {
@@ -72,10 +123,12 @@ public class EventsBean extends PropertyBean {
 
   @Override
   protected void setPropertyImpl(Property prop) {
-    if (prop==null)
+    if (prop==null) {
       table.setModel(null);
-    else
-      table.setModel(new Model(prop));
+      return;
+    }
+    table.setModel(new Model(prop));
+    table.setColumnLayout(REGISTRY.get("eventcols",""));
   }
   
   private class Model extends AbstractPropertyTableModel {
@@ -100,7 +153,7 @@ public class EventsBean extends PropertyBean {
       if (col==0)
         return Gedcom.getName("EVEN");
       if (col==1)
-        return Gedcom.getName("TYPE");
+        return RESOURCES.getString("even.detail");
       return super.getName(col);
     }
     

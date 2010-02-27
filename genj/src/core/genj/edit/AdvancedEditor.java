@@ -224,6 +224,7 @@ import javax.swing.tree.TreePath;
    * Accessor - current context 
    * @param context context to switch to
    */
+  @Override
   public void setContext(Context context) {
     
     // clear?
@@ -257,7 +258,6 @@ import javax.swing.tree.TreePath;
     if (bean!=null && view.isGrabFocus())
       bean.requestFocusInWindow();
     
-  
     // Done
   }
 

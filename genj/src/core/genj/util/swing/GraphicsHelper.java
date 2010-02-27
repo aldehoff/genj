@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -26,6 +27,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.font.LineMetrics;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
@@ -65,7 +67,7 @@ public class GraphicsHelper {
   /**
    * render text
    */
-  public static void render(Graphics2D graphics, String str, double x, double y, double xalign, double yalign) {
+  public static Rectangle2D render(Graphics2D graphics, String str, double x, double y, double xalign, double yalign) {
     
     FontMetrics fm = graphics.getFontMetrics();
     Rectangle2D r = fm.getStringBounds(str, graphics);
@@ -74,15 +76,26 @@ public class GraphicsHelper {
     float
       w = (float)r.getWidth(),
       h = (float)r.getHeight();
-      
+
     x = x- w*xalign;
-    y = y - h*yalign + h - lm.getDescent(); 
+    y = y - h*yalign; 
       
-    graphics.drawString(str, (float)x, (float)y);
+    graphics.drawString(str, (float)x, (float)y + h - lm.getDescent());
+    
+    return new Rectangle2D.Double(x,y,w,h);
   }
   
   public static Icon getIcon(int size, Shape shape) {
     return new ShapeAsIcon(size, shape);
+  }
+  
+  public static Icon getIcon(double... shape) {
+    GeneralPath path = new GeneralPath();
+    path.moveTo(shape[0],shape[1]);
+    for (int i=2;i<shape.length;i+=2) 
+      path.lineTo(shape[i+0], shape[i+1]);
+    path.closePath();
+    return new ShapeAsIcon(path);
   }
   
   /**
@@ -93,13 +106,16 @@ public class GraphicsHelper {
     private Dimension size;
     private Shape shape;
 
+    private ShapeAsIcon(Shape shape) {
+      this.size = shape.getBounds().getSize();
+      this.shape = shape;
+    }
     private ShapeAsIcon(int size, Shape shape) {
       this.size = new Dimension(size, size);
       this.shape = shape;
     }
 
     public void paintIcon(Component c, Graphics g, int x, int y) {
-      g.setColor(c.getForeground());
       g.translate(x, y);
       ((Graphics2D) g).fill(shape);
       g.translate(-x, -y);
