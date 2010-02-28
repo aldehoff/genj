@@ -29,6 +29,7 @@ import genj.util.swing.GraphicsHelper;
 import genj.view.SelectionSink;
 import genj.view.View;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -55,6 +56,7 @@ public class BreadcrumbWidget extends JComponent {
   
   private List<Entity> history = new ArrayList<Entity>();
   private List<Integer> xs = new ArrayList<Integer>(); 
+  private int highlight = -1;
   private EventHandler events = new EventHandler();
   
   /**
@@ -87,7 +89,7 @@ public class BreadcrumbWidget extends JComponent {
     Graphics2D g2d = (Graphics2D)g;
     
     xs.clear();
-    
+ 
     int y = r.height/2;
     int x = PAD;
     for (int i=0;i<history.size(); i++) {
@@ -101,18 +103,25 @@ public class BreadcrumbWidget extends JComponent {
         x += STEP.getIconWidth() + PAD;
       }
 
+      float fade = i==highlight ? 1F : Math.max(0, (1-x/(float)r.getWidth()));
+
       ImageIcon icon = e.getImage();
       Image img = icon.getImage();
-      double s = 0.75D;
-      g.drawImage(img, x, y-(int)(icon.getIconHeight()*s/2), (int)(icon.getIconWidth()*s), (int)(icon.getIconHeight()*s), null);
-      x += (int)(icon.getIconWidth()*s) + PAD;
+      g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, fade));
+      g.drawImage(img, x, y-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight(), null);
+      x += icon.getIconWidth() + PAD;
 
-      g.setColor(new Color(c.getRed(),c.getGreen(),c.getBlue(), 255 - (i*32)));
-      x += (int)GraphicsHelper.render(g2d, e.toString(false), x, y, 0, 0.5).getWidth() + PAD;
+      Rectangle box = GraphicsHelper.render(g2d, e.toString(false), x, y, 0, 0.5);
+      
+      if (i==highlight)
+        g.drawLine(box.x, box.y+box.height, box.x+box.width, box.y+box.height);
+        
+      x += (int)box.width + PAD;
       
       if (x>r.width) {
+        g2d.setComposite(AlphaComposite.SrcOver);
         g.setColor(getBackground());
-        g.drawRect(last, 0, x-last, r.height);
+        g.fillRect(last, 0, x-last, r.height);
         break;
       }
       
@@ -127,15 +136,33 @@ public class BreadcrumbWidget extends JComponent {
 
     @Override
     public void mouseMoved(MouseEvent e) {
-      if (xs.size()>0&&e.getPoint().x<xs.get(xs.size()-1))
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-      else
-        setCursor(null);
+      for (int i=0; i<xs.size(); i++) {
+        if (e.getPoint().x<xs.get(i)) {
+          setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+          highlight = i;
+          repaint();
+          return;
+        }
+      }
+      if (highlight>=0) {
+        highlight = -1;
+        repaint();
+      }
+      setCursor(null);
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+      if (highlight>=0) {
+        highlight = -1;
+        repaint();
+      }
     }
     
     public void mouseClicked(MouseEvent e) {
       for (int i=0; i<xs.size(); i++) {
         if (e.getPoint().x<xs.get(i)) {
+          highlight = -1;
           SelectionSink.Dispatcher.fireSelection(BreadcrumbWidget.this, new Context(history.get(history.size()-1-i)), true);
           return;
         }
@@ -224,6 +251,9 @@ public class BreadcrumbWidget extends JComponent {
       history.remove(i);
       xs.clear();
       repaint();
+      
+      if (i==history.size()&&!history.isEmpty())
+        SelectionSink.Dispatcher.fireSelection(BreadcrumbWidget.this, new Context(history.get(history.size()-1)), true);
     }
 
     @Override

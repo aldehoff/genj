@@ -19,12 +19,12 @@
  */
 package genj.util.swing;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.geom.GeneralPath;
@@ -67,22 +67,21 @@ public class GraphicsHelper {
   /**
    * render text
    */
-  public static Rectangle2D render(Graphics2D graphics, String str, double x, double y, double xalign, double yalign) {
+  public static Rectangle render(Graphics2D graphics, String str, double x, double y, double xalign, double yalign) {
     
     FontMetrics fm = graphics.getFontMetrics();
     Rectangle2D r = fm.getStringBounds(str, graphics);
     LineMetrics lm = fm.getLineMetrics(str, graphics);
     
-    float
-      w = (float)r.getWidth(),
-      h = (float)r.getHeight();
-
+    float h = (float)r.getHeight();
+    float w = (float)r.getWidth();
+    
     x = x- w*xalign;
     y = y - h*yalign; 
       
     graphics.drawString(str, (float)x, (float)y + h - lm.getDescent());
     
-    return new Rectangle2D.Double(x,y,w,h);
+    return new Rectangle((int)x,(int)y,(int)w,(int)h);
   }
   
   public static Icon getIcon(int size, Shape shape) {
