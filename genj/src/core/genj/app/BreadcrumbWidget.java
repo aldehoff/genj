@@ -25,6 +25,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.util.Trackable;
+import genj.util.swing.Action2;
 import genj.util.swing.GraphicsHelper;
 import genj.view.SelectionSink;
 import genj.view.View;
@@ -37,6 +38,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -58,6 +60,8 @@ public class BreadcrumbWidget extends JComponent {
   private List<Integer> xs = new ArrayList<Integer>(); 
   private int highlight = -1;
   private EventHandler events = new EventHandler();
+  private Back back = new Back();
+  private Forward forward = new Forward();
   
   /**
    * Constructor
@@ -66,6 +70,44 @@ public class BreadcrumbWidget extends JComponent {
     workbench.addWorkbenchListener(events);
     addMouseListener(events);
     addMouseMotionListener(events);
+    
+  }
+  
+  private void fireSelection(Entity e) {
+    SelectionSink.Dispatcher.fireSelection(BreadcrumbWidget.this, new Context(e), true);
+  }
+
+  /** back */
+  private class Back extends Action2 {
+    public Back() {
+      install(BreadcrumbWidget.this, "alt LEFT");
+    }
+    public void actionPerformed(ActionEvent evt) {
+      
+      if (history.size()<2)
+        return;
+      
+      Entity e = history.remove(history.size()-1);
+      history.add(0,e);
+      repaint();
+      fireSelection(history.get(history.size()-1));
+
+    }
+  }
+  
+  /** forward */
+  private class Forward extends Action2 {
+    public Forward() {
+      install(BreadcrumbWidget.this, "alt RIGHT");
+    }
+    public void actionPerformed(ActionEvent evt) {
+      if (history.size()<2)
+        return;
+      Entity e = history.remove(0);
+      history.add(e);
+      repaint();
+      fireSelection(history.get(history.size()-1));
+    }
   }
   
   @Override
@@ -163,7 +205,7 @@ public class BreadcrumbWidget extends JComponent {
       for (int i=0; i<xs.size(); i++) {
         if (e.getPoint().x<xs.get(i)) {
           highlight = -1;
-          SelectionSink.Dispatcher.fireSelection(BreadcrumbWidget.this, new Context(history.get(history.size()-1-i)), true);
+          fireSelection(history.get(history.size()-1-i));
           return;
         }
       }
@@ -253,7 +295,7 @@ public class BreadcrumbWidget extends JComponent {
       repaint();
       
       if (i==history.size()&&!history.isEmpty())
-        SelectionSink.Dispatcher.fireSelection(BreadcrumbWidget.this, new Context(history.get(history.size()-1)), true);
+        fireSelection(history.get(history.size()-1));
     }
 
     @Override
