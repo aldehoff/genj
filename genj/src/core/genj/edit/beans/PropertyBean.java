@@ -157,12 +157,16 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
    * recycle an unused bean
    */
   public static void recycle(PropertyBean bean) {
+    
     if (bean.getParent()!=null)
       throw new IllegalArgumentException("bean still has parent");
-    
     if (!isCache)
       return;
     
+//    Component c = FocusManager.getCurrentManager().getFocusOwner();
+//    if (c!=null&&!c.isDisplayable()) 
+//      return true;
+
     List<PropertyBean> cache = BEANCACHE.get(bean.getClass());
     if (cache==null) {
       cache = new ArrayList<PropertyBean>();
@@ -294,7 +298,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     // delegate to default focus
     if (defaultFocus!=null)
       return defaultFocus.requestFocusInWindow();
-    return super.requestFocusInWindow();
+    return false;
   }
 
   /** 

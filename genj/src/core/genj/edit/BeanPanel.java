@@ -35,6 +35,7 @@ import genj.util.swing.PopupWidget;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -49,12 +50,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -188,49 +187,25 @@ public class BeanPanel extends JPanel {
    * Select a property's bean
    */
   public void select(Property prop) {
-    
-    // find bean
-    JComponent bean = find(prop);
-    if (bean==null) 
-      return;
 
-    // bring forward in a tabbed pane
-    Component parent = bean;
-    while (true) {
-      if (parent.getParent() instanceof JTabbedPane) {
-        ((JTabbedPane)parent.getParent()).setSelectedComponent(parent);
-      }
-      parent = parent.getParent();
-      if (parent==null||parent==this)
-        break;
-    }        
-
-    // request now
-    if (!bean.requestFocusInWindow())
-      Logger.getLogger("genj.edit").fine("requestFocusInWindow()==false");
-    
-    // done
-  }
-  
-  private JComponent find(Property prop) {
     if (prop==null||beans.isEmpty())
-      return null;
-    
+      return;
+      
     // look for appropriate bean showing prop
     for (PropertyBean bean : beans) {
-      if (bean.getProperty()==prop) 
-        return bean;
+      if (bean.getProperty()==prop && bean.requestFocusInWindow()) 
+        return;
     }
-    
+      
     // check if one of the beans' properties is contained in prop
     for (PropertyBean bean : beans) {
-      if (bean.isDisplayable() && bean.getProperty()!=null && bean.getProperty().isContained(prop)) 
-        return bean;
+      if (bean.isDisplayable() && bean.getProperty()!=null && bean.getProperty().isContained(prop) && bean.requestFocusInWindow()) 
+        return;
     }
-    
+      
     // otherwise use first bean
-    return (PropertyBean)beans.get(0);
-    
+    beans.get(0).requestFocusInWindow();
+      
     // done
   }
   
@@ -238,13 +213,13 @@ public class BeanPanel extends JPanel {
   public void setRoot(Property root) {
     
     // clean up first
-    for (PropertyBean bean : beans) {
+    List<PropertyBean> bs = new ArrayList<PropertyBean>(beans);
+    beans.clear(); // clear first to let focus policy not look for any before/after/default lookups
+    for (PropertyBean bean : bs) {
       bean.removeChangeListener(changeSupport);
       bean.getParent().remove(bean);
       PropertyBean.recycle(bean);
     }
-    beans.clear();
-    
     removeAll();
 
     // something to layout?
@@ -601,6 +576,18 @@ public class BeanPanel extends JPanel {
       protected boolean accept(Component c) {
         return super.accept(c);
       }
+    }
+    @Override
+    public Component getComponentAfter(Container container, Component component) {
+      return beans.isEmpty() ? null : super.getComponentAfter(container, component);
+    }
+    @Override
+    public Component getComponentBefore(Container container, Component component) {
+      return beans.isEmpty() ? null : super.getComponentBefore(container, component);
+    }
+    @Override
+    public Component getDefaultComponent(Container container) {
+      return beans.isEmpty() ? null : super.getDefaultComponent(container);
     }
   } //FocusPolicy
   

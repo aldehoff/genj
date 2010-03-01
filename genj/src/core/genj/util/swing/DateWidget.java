@@ -232,9 +232,6 @@ public class DateWidget extends JPanel {
     // update our visible status
     updateStatus();
 
-    // focus
-    getComponent(1).requestFocusInWindow();
-
     // done
   }
 
