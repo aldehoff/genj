@@ -220,7 +220,7 @@ public class Launcher {
     if (main==null) {
 
       // instantiate class and run main
-      Class clazz = cl.loadClass( getLaunchClass());
+      Class<?> clazz = cl.loadClass( getLaunchClass());
       main = clazz.getMethod("main", new Class[]{String[].class});
       
     }
@@ -322,7 +322,7 @@ public class Launcher {
    * @param  clazz  class to get containing jar file for
    * @return success or not 
    */
-  private static boolean cd(Class clazz) {
+  private static boolean cd(Class<?> clazz) {
     
     try {         
       
@@ -360,7 +360,7 @@ public class Launcher {
    * @param  clazz  class to get URL for
    * @return the URL this class was loaded from
    */
-  private static URL getClassURL(Class clazz) {
+  private static URL getClassURL(Class<?> clazz) {
     String resourceName = "/" + clazz.getName().replace('.', '/') + ".class";
     return clazz.getResource(resourceName);
   }
@@ -430,7 +430,7 @@ public class Launcher {
   private static String[] getLaunchClasspath() throws MalformedURLException {
 
     String classpath = expandSystemProperties(getManifest().getMainAttributes().getValue(LAUNCH_CLASSPATH));
-    List result = new ArrayList();
+    List<String> result = new ArrayList<String>();
     
     // collect a list of classloader URLs
     StringTokenizer tokens = new StringTokenizer(classpath, ",", false);
@@ -447,7 +447,7 @@ public class Launcher {
     return (String[])result.toArray(new String[result.size()]);
   }
   
-  private static void buildClasspath(File file, List result) throws MalformedURLException {
+  private static void buildClasspath(File file, List<String> result) throws MalformedURLException {
     
     // a simple file?
     if (!file.isDirectory() && file.getName().endsWith(".jar")) {
@@ -479,8 +479,8 @@ public class Launcher {
     try {
 
       // find all manifest files
-      Stack manifests = new Stack();
-      for (Enumeration e = Launcher.class.getClassLoader().getResources(MANIFEST); e.hasMoreElements(); )
+      Stack<URL> manifests = new Stack<URL>();
+      for (Enumeration<URL> e = Launcher.class.getClassLoader().getResources(MANIFEST); e.hasMoreElements(); )
         manifests.add(e.nextElement());
       
       // it has to have the runnable attribute
