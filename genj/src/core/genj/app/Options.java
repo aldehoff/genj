@@ -33,8 +33,7 @@ import java.awt.Desktop;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
@@ -81,7 +80,7 @@ public class Options extends OptionProvider {
 
     // Check available language libraries
     // prepare result with default "en"
-    TreeSet result = new TreeSet();
+    TreeSet<String> result = new TreeSet<String>();
     result.add("en");
 
     // look for development mode -Dgenj.language.dir or in  ./language/xy (except 'CVS')
@@ -180,9 +179,7 @@ public class Options extends OptionProvider {
 
     // set swing resource strings (ok, cancel, etc.)
     Resources resources = Resources.get(this);
-    Iterator keys = resources.getKeys().iterator();
-    while (keys.hasNext()) {
-      String key = (String)keys.next();
+    for (String key : resources.getKeys()) {
       if (key.indexOf(SWING_RESOURCES_KEY_PREFIX)==0) {
         UIManager.put(
           key.substring(SWING_RESOURCES_KEY_PREFIX.length()),
@@ -272,9 +269,9 @@ public class Options extends OptionProvider {
   /**
    * Provider callback
    */
-  public List getOptions() {
+  public List<? extends Option> getOptions() {
     // bean property options of instance
-    List result = PropertyOption.introspect(instance);
+    List<Option> result = new ArrayList<Option>(PropertyOption.introspect(instance));
     // add an otion for user.home.dir
     result.add(new UserHomeGenJOption());
     // done

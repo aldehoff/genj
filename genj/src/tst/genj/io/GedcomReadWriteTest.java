@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +34,7 @@ public class GedcomReadWriteTest extends TestCase {
   /**
    * test read/write with encrypted content
    */
+  @SuppressWarnings("deprecation")
   public void testEncryptDecrypt() throws IOException, GedcomException {
     
     // we don't need log output for this
@@ -46,10 +46,8 @@ public class GedcomReadWriteTest extends TestCase {
     
     // set everything to private
     ged.setPassword("password");
-    for (Iterator ents = ged.getEntities().iterator(); ents.hasNext(); ) {
-      Entity ent = (Entity)ents.next();
+    for (Entity ent : ged.getEntities()) 
       ent.setPrivate(true, true);
-    }
     
     // write it encrypted
     File temp = File.createTempFile("test", ".ged");
@@ -123,6 +121,7 @@ public class GedcomReadWriteTest extends TestCase {
   /**
    * Read a file / write it / compare
    */
+  @SuppressWarnings("deprecation")
   public void testReadWrite() throws IOException, GedcomException {
     
     // we don't need log output for this
@@ -145,13 +144,13 @@ public class GedcomReadWriteTest extends TestCase {
     
   }
   
-  private List diff(File file1, File file2) throws IOException {
+  private List<String> diff(File file1, File file2) throws IOException {
     return diff(file1, new FileInputStream(file2));
   }
     
-  private List diff(File file1, InputStream file2) throws IOException {
+  private List<String> diff(File file1, InputStream file2) throws IOException {
     
-    List result = new ArrayList();
+    List<String> result = new ArrayList<String>();
     
     BufferedReader left = new BufferedReader(new InputStreamReader(new FileInputStream(file1)));
     BufferedReader right = new BufferedReader(new InputStreamReader(file2));

@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.option.Option;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
 import genj.util.Resources;
@@ -60,7 +61,7 @@ public class Options extends OptionProvider {
   /**
    * provided options
    */
-  public List getOptions() {
+  public List<? extends Option> getOptions() {
     return PropertyOption.introspect(instance);
   }
 

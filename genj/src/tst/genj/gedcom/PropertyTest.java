@@ -59,7 +59,7 @@ public class PropertyTest extends TestCase {
     
     // prepare indi with 1 to 10 props
     indi.delProperties();
-    final List list = new ArrayList();
+    final List<Property> list = new ArrayList<Property>();
     for (int i=0; i<10; i++) {
       list.add(indi.addProperty("foo", ""+i));
     }
@@ -191,11 +191,11 @@ public class PropertyTest extends TestCase {
   private class Tracker implements GedcomListener {
     
     int changes = 0;
-    List entitiesAdded = new ArrayList();
-    List entitiesDeleted = new ArrayList();
-    List propertiesAdded = new ArrayList();
-    List propertiesDeleted = new ArrayList();
-    List propertiesChanged = new ArrayList();
+    List<Entity> entitiesAdded = new ArrayList<Entity>();
+    List<Entity> entitiesDeleted = new ArrayList<Entity>();
+    List<Property> propertiesAdded = new ArrayList<Property>();
+    List<Property> propertiesDeleted = new ArrayList<Property>();
+    List<Property> propertiesChanged = new ArrayList<Property>();
 
     public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
       changes++;

@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -99,13 +98,13 @@ public class ResourcesTest extends TestCase {
     
     System.out.println("Diffing en against "+translation);
     try  {
-      List diffs = new ResourcesTest().diff("en", translation);
+      List<String> diffs = new ResourcesTest().diff("en", translation);
       if (diffs.isEmpty())
         System.out.println("No differences found - Good Job!");
       else {
         System.out.println(diffs.size()+" differences found:");
-        for (Iterator it=diffs.iterator();it.hasNext();)
-          System.out.println(it.next());
+        for (String s : diffs)
+          System.out.println(s);
       }      
     } catch (IOException e) {
       System.out.println("IOException during diff: "+e.getMessage());
@@ -115,21 +114,20 @@ public class ResourcesTest extends TestCase {
   /**
    * Diff directories
    */
-  private List diff(String original, String translation) throws IOException {
+  private List<String> diff(String original, String translation) throws IOException {
     return diffResources(loadResources(original), loadResources(translation));
   }
   
   /** 
    * Diff resources of the original vs the translation
    */
-  private List diffResources(Map originals, Map translations) {
+  private List<String> diffResources(Map<String,Resources> originals, Map<String,Resources> translations) {
     
-    List diffs = new ArrayList();
+    List<String> diffs = new ArrayList<String>();
 
     // go package by package
-    for (Iterator packages = originals.keySet().iterator(); packages.hasNext(); ) {
+    for (String pckg : originals.keySet()) {
       // grab package info and resources in original and translation
-      String pckg = (String)packages.next();
       Resources original = (Resources)originals.get(pckg);
       Resources translation = (Resources)translations.get(pckg);
       if (translation==null)
@@ -144,11 +142,10 @@ public class ResourcesTest extends TestCase {
   
   private final static Pattern PATTERN_IGNORE = Pattern.compile(".*[A-Z]{2}.*");
   
-  private void diffResource(String pckg, Resources original, Resources translation, List diffs) {
+  private void diffResource(String pckg, Resources original, Resources translation, List<String> diffs) {
     // go key bey key
-    for (Iterator keys = original.getKeys().iterator(); keys.hasNext(); ) {
+    for (String key : original.getKeys()) {
       // grab key, original value and translated value
-      String key = (String)keys.next();
       String val1 = (String)original.getString(key);
       String val2 = (String)translation.getString(key, false);
       // ignore key?
@@ -171,9 +168,7 @@ public class ResourcesTest extends TestCase {
       // next key
     }
     // check for unnecessary keys in translation
-    for (Iterator keys = translation.getKeys().iterator(); keys.hasNext(); ) {
-      // grab key and check against original
-      String key = (String)keys.next();
+    for (String key : translation.getKeys()) {
       // any uppercase in it and we assume it's something special
       if (!key.toLowerCase().equals(key))
         continue;
@@ -189,11 +184,11 @@ public class ResourcesTest extends TestCase {
    * Load language resources for given language
    * @return mapping of package to Resources
    */
-  private Map loadResources(String language)  throws IOException {
-    return loadResources(new File(dir, language),  "", new TreeMap());
+  private Map<String,Resources> loadResources(String language)  throws IOException {
+    return loadResources(new File(dir, language),  "", new TreeMap<String,Resources>());
   }
   
-  private Map loadResources(File dir, String pckg, Map result) throws IOException {
+  private Map<String,Resources> loadResources(File dir, String pckg, Map<String,Resources> result) throws IOException {
     
     // check files in dir
     File[] resources = dir.listFiles();

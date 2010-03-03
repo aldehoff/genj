@@ -83,7 +83,7 @@ public class PropertyTagPathTest extends TestCase {
     assertProperty(husband, "."                                , husband);
     assertProperty(husband, "INDI:BIRT:DATE:..:..:BIRT:DATE", husband.getProperty(new TagPath("INDI:BIRT:DATE")));
 
-    final Set wifes = new HashSet();
+    final Set<Property> wifes = new HashSet<Property>();
     new TagPath("INDI:FAMS:*:..:WIFE:*:..").iterate(husband, new PropertyVisitor() { 
       protected boolean leaf(Property leaf) {
         wifes.add(leaf);

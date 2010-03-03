@@ -50,17 +50,17 @@ import java.util.logging.Logger;
 public class Resources {
   
   /** keep track of loaded resources */
-  private static Map instances = new HashMap();
+  private static Map<String, Resources> instances = new HashMap<String, Resources>();
 
   /** the mapping key, resource  */
-  private volatile Map key2string;
-  private List keys;
+  private volatile Map<String, String> key2string;
+  private List<String> keys;
 
   /** the package name this resource is for */
   private String pkg;
 
   /** cached message formats */
-  private WeakHashMap msgFormats = new WeakHashMap();
+  private WeakHashMap<String, MessageFormat> msgFormats = new WeakHashMap<String, MessageFormat>();
   
   /**
    * Constructor for empty resources
@@ -74,8 +74,8 @@ public class Resources {
    */
   public Resources(InputStream in) {
     
-    key2string = new HashMap();
-    keys = new ArrayList(1000);
+    key2string = new HashMap<String, String>();
+    keys = new ArrayList<String>(1000);
     
     if (in!=null) try {
       load(in);
@@ -109,7 +109,7 @@ public class Resources {
    * Calc package for instance
    */
   private static String calcPackage(Object object) {
-    Class clazz = object instanceof Class ? (Class)object : object.getClass();
+    Class<?> clazz = object instanceof Class<?> ? (Class<?>)object : object.getClass();
     String name = clazz.getName();
     int last = name.lastIndexOf('.');
     return last<0 ? "" : name.substring(0, last);
@@ -168,7 +168,7 @@ public class Resources {
   /**
    * Loads key/value pairs from inputstream with unicode content
    */
-  private static void load(InputStream in, List keys, Map key2string, boolean literate) throws IOException {
+  private static void load(InputStream in, List<String> keys, Map<String,String> key2string, boolean literate) throws IOException {
     
     if (in==null)
       throw new IOException("can't load resources from null");
@@ -273,7 +273,7 @@ public class Resources {
   /**
    * Lazy getter for resource map
    */
-  private Map getKey2String() {
+  private Map<String,String> getKey2String() {
     
     // easy if already initialized - outside synchronization
     if (key2string!=null)
@@ -288,8 +288,8 @@ public class Resources {
       
       // load resources for current locale now
       Locale locale = Locale.getDefault();
-      Map tmpKey2Val = new HashMap();    
-      List tmpKeys = new ArrayList(100);
+      Map<String,String> tmpKey2Val = new HashMap<String,String>();    
+      List<String> tmpKeys = new ArrayList<String>(100);
 
       // loading english first (primary language)
       try {
@@ -387,7 +387,7 @@ public class Resources {
   /**
    * Returns the available Keys
    */
-  public List getKeys() {
+  public List<String> getKeys() {
     // initialize first
     getKey2String();
     return keys;
