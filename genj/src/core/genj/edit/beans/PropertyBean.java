@@ -89,10 +89,10 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   private final static Map<Class<? extends PropertyBean>,List<PropertyBean>> BEANCACHE = createBeanCache();
   
   /** the context to edit */
-  private Property root;
-  private TagPath path;
-  private Property property;
-  private List<? extends PropertyBean> session;
+  protected Property root;
+  protected TagPath path;
+  protected Property property;
+  protected List<? extends PropertyBean> session;
   
   /** the default focus */
   protected JComponent defaultFocus = null;
@@ -228,6 +228,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     this.root = root;
     this.path = path;
     this.property = property;
+    this.session = session;
 
     setPropertyImpl(property);
     

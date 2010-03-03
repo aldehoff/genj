@@ -330,6 +330,7 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
       REGISTRY.put("advanced", selected);
       if (getContext()!=null)
         setEditor(selected ? new AdvancedEditor(getContext().getGedcom(), EditView.this) : new BasicEditor(getContext().getGedcom(), EditView.this));
+      populate(toolbar);
       return super.setSelected(selected);
     }
   } //Advanced
