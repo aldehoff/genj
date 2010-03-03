@@ -57,8 +57,8 @@ public class BlueprintManager {
   public final static String TXT_BLUEPRINT = RESOURCES.getString("blueprint");
   
   private final static String[][] DEFAULTS = {
-   { "INDI", "default", "complete", "verbose", "colorful", "professional", "simple", "pastel", "light" },
-   { "FAM", "default", "complete", "simple", "pastel", "light" },
+   { "INDI", "default", "complete", "verbose", "colorful", "professional", "simple", "pastel", "light", "small" },
+   { "FAM", "default", "complete", "simple", "pastel", "light", "small" },
    { "OBJE", "default", "complete", "55" },
    { "NOTE", "default", "complete" },
    { "SOUR", "default", "complete" },
@@ -293,7 +293,7 @@ public class BlueprintManager {
       if (other.getName().equalsIgnoreCase(blueprint.getName())) {
         // don't allow if read only
         if (other.isReadOnly())
-          throw new IOException("Can't override read-only blueprint");
+          throw new IOException("Can't overwrite read-only blueprint");
         // remove
         it.remove();
         break;
