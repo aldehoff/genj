@@ -72,15 +72,19 @@ public class AgeBean extends PropertyBean {
   public void setPropertyImpl(Property prop) {
     
     PropertyAge age = (PropertyAge)prop;
-    if (age==null)
-      return;
+    
+    String txt = age==null? "" : age.getValue(); 
 
     // update components
-    choice.setText(age.getValue());
+    choice.setText(txt);
 
-    Delta delta = Delta.get(age.getEarlier(), age.getLater());
-    newAge = delta==null ? null : delta.getValue();
-    update.setEnabled(newAge!=null);
+    if (age!=null) {
+      Delta delta = Delta.get(age.getEarlier(), age.getLater());
+      newAge = delta==null ? null : delta.getValue();
+      update.setEnabled(newAge!=null);
+    } else {
+      update.setEnabled(false);
+    }
     
     // Done
   }

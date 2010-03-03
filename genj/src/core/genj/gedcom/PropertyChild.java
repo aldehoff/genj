@@ -40,14 +40,16 @@ public class PropertyChild extends PropertyXRef {
   /**
    * Empty Constructor
    */
-  public PropertyChild() {
+  /*package*/ PropertyChild() {
+    super("CHIL");
   }
   
   /**
-   * Constructor
+   * need tag-argument constructor for all properties
    */
-  protected PropertyChild(String target) {
-    setValue(target);
+  /*package*/ PropertyChild(String tag) {
+    super(tag);
+    assertTag("CHIL");
   }
   
   /**
@@ -68,14 +70,6 @@ public class PropertyChild extends PropertyXRef {
     if (getTargetEntity()==null) 
       return null;
     return resources.getString("prop.chil.veto");
-  }
-
-  /**
-   * Returns the Gedcom-Tag of this property
-   * @return tag as <code>String</code>
-   */
-  public String getTag() {
-    return "CHIL";
   }
 
   /**
@@ -109,7 +103,7 @@ public class PropertyChild extends PropertyXRef {
     // NM20070921 - see PropertyFamilyChild.link()
     
     // Connect back from child (maybe using back reference)
-    List famcs = child.getProperties(PropertyFamilyChild.class);
+    List<PropertyFamilyChild> famcs = child.getProperties(PropertyFamilyChild.class);
     for (int i=0, j=famcs.size(); i<j; i++) {
       
       PropertyFamilyChild pfc = (PropertyFamilyChild)famcs.get(i);

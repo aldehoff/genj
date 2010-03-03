@@ -31,11 +31,16 @@ public class Entity extends Property {
   /** the id */
   private String id;
   
-  /** the tag */
-  private String tag;
-  
   /** just in case someone's using a value */
   private String value;
+  
+  /**
+   * need tag,id-arguments constructor for all entities
+   */
+  protected Entity(String tag, String id) {
+    super(tag);
+    this.id = id;
+  }
   
   /**
    * Lifecycle - callback after being added to Gedcom
@@ -123,14 +128,6 @@ public class Entity extends Property {
   }
   
   /**
-   * Initialize entity
-   */
-  /*package*/ void init(String setTag, String setId) {
-    tag = setTag;
-    id = setId;
-  }
-  
-  /**
    * @see genj.gedcom.Property#toString()
    */
   public final String toString() {
@@ -153,13 +150,6 @@ public class Entity extends Property {
 
   protected String getToStringPrefix(boolean showIds) {
     return getTag();
-  }
-  
-  /**
-   * @see genj.gedcom.Property#getTag()
-   */
-  public String getTag() {
-    return tag;
   }
   
   /**

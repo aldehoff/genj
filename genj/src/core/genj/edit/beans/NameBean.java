@@ -167,9 +167,9 @@ public class NameBean extends PropertyBean {
     PropertyName name = (PropertyName)prop;
     if (name==null) {
       sameLastNames = new Property[0];
-      cLast.setValues(new PropertyName[0]);
+      cLast.setValues(PropertyName.getLastNames(getRoot().getGedcom(), true));
       cLast.setText("");
-      cFirst.setValues(new PropertyName[0]);
+      cFirst.setValues(PropertyName.getFirstNames(getRoot().getGedcom(), true));
       cFirst.setText("");
     } else {
       // keep track of who has the same last name

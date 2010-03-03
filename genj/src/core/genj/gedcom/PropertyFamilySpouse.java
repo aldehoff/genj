@@ -28,7 +28,16 @@ public class PropertyFamilySpouse extends PropertyXRef {
   /**
    * Empty Constructor
    */
-  public PropertyFamilySpouse() {
+  /*package*/ PropertyFamilySpouse() {
+    super("FAMS");
+  }
+  
+  /**
+   * need tag-argument constructor for all properties
+   */
+  /*package*/ PropertyFamilySpouse(String tag) {
+    super(tag);
+    assertTag("FAMS");
   }
   
   /**
@@ -48,13 +57,6 @@ public class PropertyFamilySpouse extends PropertyXRef {
    */
   public Fam getFamily() {
     return (Fam)getTargetEntity();
-  }
-
-  /**
-   * Returns the Gedcom-Tag of this property
-   */
-  public String getTag() {
-    return "FAMS";
   }
 
   /**

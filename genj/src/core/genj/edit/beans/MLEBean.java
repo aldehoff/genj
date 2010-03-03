@@ -20,7 +20,6 @@
 package genj.edit.beans;
 
 import genj.gedcom.Property;
-import genj.gedcom.PropertyMultilineValue;
 import genj.util.swing.TextAreaWidget;
 
 import java.awt.BorderLayout;
@@ -62,14 +61,7 @@ public class MLEBean extends PropertyBean {
    * Set context to edit
    */
   public void setPropertyImpl(Property property) {
-
-    if (property==null)
-      return;
-    
-    // show value
-    tarea.setText(property.getValue());
-
-    // done
+    tarea.setText(property!=null ? property.getValue() : "");
   }
 
 } //MLEBean

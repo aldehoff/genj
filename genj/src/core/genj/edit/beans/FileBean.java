@@ -108,11 +108,8 @@ public class FileBean extends PropertyBean {
    */
   public void setPropertyImpl(Property property) {
 
-    if (property==null)
-      return;
-    
     // calc directory
-    Origin origin = property.getGedcom().getOrigin();
+    Origin origin = getRoot().getGedcom().getOrigin();
     String dir = origin.getFile()!=null ? origin.getFile().getParent() : null;
     
     // check if showing file chooser makes sense
@@ -131,6 +128,8 @@ public class FileBean extends PropertyBean {
       defaultFocus = null;
     }
 
+    preview.setSource(null);
+    
     // case FILE
     if (property instanceof PropertyFile) {
 
@@ -142,8 +141,6 @@ public class FileBean extends PropertyBean {
 
       if (property.getValue().length()>0)
         preview.setSource(InputSource.get(property.getGedcom().getOrigin().getFile(file.getValue())));
-      else
-        preview.setSource(null);
       
       // done
     }

@@ -29,12 +29,16 @@ public class PropertyEvent extends Property {
   
   public static ImageIcon IMG = Grammar.V55.getMeta(new TagPath("INDI:EVEN")).getImage();
   
-  /** our Tag */
-  private String tag;
-  
   /** whether the event is known to have happened */
   private boolean knownToHaveHappened;
 
+  /**
+   * need tag-argument constructor for all properties
+   */
+  public PropertyEvent(String tag) {
+    super(tag);
+  }
+  
   /**
    * Returns the date of the event
    */
@@ -63,26 +67,6 @@ public class PropertyEvent extends Property {
   public String getDateAsString() {
     Property date = getProperty("DATE");
     return date!=null ? date.getValue() : "";
-  }
-
-  /**
-   * Returns the tag of this property
-   */
-  public String getTag() {
-    return tag;
-  }
-
-  /**
-   * @see genj.gedcom.Property#setTag(java.lang.String)
-   */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    // remember tag
-    tag = meta.getTag();
-    // remember Y
-    if (value.toLowerCase().equals("y"))
-      knownToHaveHappened = true;
-    // continue with super 
-    return super.init(meta,value);
   }
 
   /**

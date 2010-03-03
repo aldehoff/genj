@@ -29,9 +29,11 @@ import genj.util.WordBuffer;
 public class PropertyAssociation extends PropertyXRef {
   
   /**
-   * Empty Constructor
+   * need tag-argument constructor for all properties
    */
-  public PropertyAssociation() {
+  /*package*/ PropertyAssociation(String tag) {
+    super(tag);
+    assertTag("ASSO");
   }
 
   /**
@@ -94,13 +96,6 @@ public class PropertyAssociation extends PropertyXRef {
     if (getTargetEntity()==null) 
       return null;
     return resources.getString("prop.asso.veto");
-  }
-
-  /**
-   * Returns the Gedcom-Tag of this property
-   */
-  public String getTag() {
-    return "ASSO";
   }
 
   /**

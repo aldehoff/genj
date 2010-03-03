@@ -25,6 +25,14 @@ package genj.gedcom;
 public class Repository extends Entity {
 
   /**
+   * need tag,id-arguments constructor for all entities
+   */
+  public Repository(String tag, String id) {
+    super(tag, id);
+    assertTag(Gedcom.REPO);
+  }
+  
+  /**
    * Title ...
    */
   @Override

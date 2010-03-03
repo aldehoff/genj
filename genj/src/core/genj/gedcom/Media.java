@@ -35,6 +35,14 @@ public class Media extends Entity {
   private TagPath titlepath = TITLE55;
 
   /**
+   * need tag,id-arguments constructor for all entities
+   */
+  public Media(String tag, String id) {
+    super(tag, id);
+    assertTag(Gedcom.OBJE);
+  }
+  
+  /**
    * Title ...
    */
   @Override

@@ -30,7 +30,16 @@ public class PropertyFamilyChild extends PropertyXRef {
   /**
    * Empty Constructor
    */
-  public PropertyFamilyChild() {
+  /*package*/ PropertyFamilyChild() {
+    super("FAMC");
+  }
+  
+  /**
+   * need tag-argument constructor for all properties
+   */
+  /*package*/ PropertyFamilyChild(String tag) {
+    super(tag);
+    assertTag("FAMC");
   }
   
   /**
@@ -77,16 +86,6 @@ public class PropertyFamilyChild extends PropertyXRef {
     return (Fam)getTargetEntity();
   }
 
-  
-  
-
-  /**
-   * Returns the Gedcom-Tag of this property
-   */
-  public String getTag() {
-    return "FAMC";
-  }
-
   /**
    * Links reference to entity (if not already done)
    * @exception GedcomException when property has no parent property,
@@ -119,9 +118,8 @@ public class PropertyFamilyChild extends PropertyXRef {
     // we can allow multiple famc pointing at the same family
     
     // Connect back from family (maybe using invalid back reference) 
-    List childs = fam.getProperties(PropertyChild.class);
-    for (int i=0,j=childs.size();i<j;i++) {
-      PropertyChild prop = (PropertyChild)childs.get(i);
+    List<PropertyChild> childs = fam.getProperties(PropertyChild.class);
+    for (PropertyChild prop : childs) {
       if (prop.isCandidate(indi)) {
         link(prop);
         return;

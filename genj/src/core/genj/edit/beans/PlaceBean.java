@@ -20,6 +20,7 @@
 package genj.edit.beans;
 
 import genj.edit.Options;
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
 import genj.util.GridBagHelper;
@@ -112,10 +113,6 @@ public class PlaceBean extends PropertyBean {
     // propagate change
     ((PropertyPlace)property).setValue(getCommitValue(), global.isSelected());
     
-    // reset
-    // TODO this will force a focus change - we should really just reset the choices
-    setProperty(property);
-  
   }
 
   /**
@@ -128,32 +125,36 @@ public class PlaceBean extends PropertyBean {
     rows = 0;
     defaultFocus = null;
     
+    Gedcom ged = getRoot().getGedcom();
     PropertyPlace place = (PropertyPlace)prop;
+    String value;
+    String formatAsString;
+    String[] jurisdictions;
+    
     if (place==null) {
       sameChoices = new Property[0];
-      createChoice(null, "", new String[0], "");
-      
+      value = "";
+      jurisdictions = new String[0];
+      formatAsString = ged.getPlaceFormat();
     } else {
-      
       sameChoices = place.getSameChoices();
       /*
         thought about using getDisplayValue() here but the problem is that getAllJurisdictions()
         works on values (PropertyChoiceValue stuff) - se we have to use getValue() here
        */
-      // secret info?
-      String value = place.isSecret() ? "" : place.getValue();
+      value = place.isSecret() ? "" : place.getValue();
+      formatAsString = place.getFormatAsString();
+      jurisdictions = place.getJurisdictions();
+    }
    
-      // either a simple value or broken down into comma separated jurisdictions
-      if (!Options.getInstance().isSplitJurisdictions || place.getFormatAsString().length()==0) {
-        createChoice(null, value, place.getAllJurisdictions(-1,true), place.getFormatAsString());
-      } else {
-        String[] format = place.getFormat();
-        String[] jurisdictions = place.getJurisdictions();
-        for (int i=0;i<Math.max(format.length, jurisdictions.length); i++) {
-          createChoice(i<format.length ? format[i] : "?", i<jurisdictions.length ? jurisdictions[i] : "", place.getAllJurisdictions(i, true), null);
-        }
+    // either a simple value or broken down into comma separated jurisdictions
+    if (!Options.getInstance().isSplitJurisdictions || formatAsString.length()==0) {
+      createChoice(null, value, PropertyPlace.getAllJurisdictions(ged, -1, true), formatAsString);
+    } else {
+      String[] format = PropertyPlace.getFormat(ged);
+      for (int i=0;i<Math.max(format.length, jurisdictions.length); i++) {
+        createChoice(i<format.length ? format[i] : "?", i<jurisdictions.length ? jurisdictions[i] : "", PropertyPlace.getAllJurisdictions(ged, i, true), null);
       }
-
     }
     
     // add 'change all'

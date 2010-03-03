@@ -107,23 +107,23 @@ public class SexBean extends PropertyBean {
    * Set context to edit
    */
   public void setPropertyImpl(Property prop) {
-    PropertySex sex = (PropertySex)prop;
-    if (sex==null)
-      return;
     
     // show it
     defaultFocus = male;
     group.clearSelection();
-    switch (sex.getSex()) {
-      case PropertySex.MALE:
-        male.setSelected(true);
-        defaultFocus = male;
-        break;
-      case PropertySex.FEMALE:
-        female.setSelected(true);
-        defaultFocus = female;
-        break;
-    }
+    
+    PropertySex sex = (PropertySex)prop;
+    if (sex!=null) 
+      switch (sex.getSex()) {
+        case PropertySex.MALE:
+          male.setSelected(true);
+          defaultFocus = male;
+          break;
+        case PropertySex.FEMALE:
+          female.setSelected(true);
+          defaultFocus = female;
+          break;
+      }
 
     // Done
   }

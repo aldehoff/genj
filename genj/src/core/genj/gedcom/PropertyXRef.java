@@ -41,7 +41,8 @@ public abstract class PropertyXRef extends Property {
   /**
    * Empty Constructor
    */
-  protected PropertyXRef() {
+  protected PropertyXRef(String tag) {
+    super(tag);
   }
 
   /**
@@ -201,20 +202,6 @@ public abstract class PropertyXRef extends Property {
   }
   
   /**
-   * @see genj.gedcom.Property#setTag(java.lang.String)
-   */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    meta.assertTag(getTag());
-    // 20070104 since values are not trimmed by loaders we do this here - a value of '@..@ ' (note
-    // the trailing space) should be accepted
-    value = value.trim();
-    // check format
-    if (!(value.startsWith("@")&&value.endsWith("@")))
-      throw new GedcomException(resources.getString("error.norefvalue", value, Gedcom.getName(getTag())));
-    return super.init(meta, value);
-  }
-
-  /**
    * This property as a verbose string
    */
   public String toString() {
@@ -250,11 +237,10 @@ public abstract class PropertyXRef extends Property {
    * a PropertyXRef
    */
   public static Entity[] getReferences(Entity ent) {
-    List result = new ArrayList(10);
+    List<Entity> result = new ArrayList<Entity>(10);
     // loop through pxrefs
-    List ps = ent.getProperties(PropertyXRef.class);
-    for (int p=0; p<ps.size(); p++) {
-    	PropertyXRef px = (PropertyXRef)ps.get(p);
+    List<PropertyXRef> ps = ent.getProperties(PropertyXRef.class);
+    for (PropertyXRef px : ps) {
       Property target = px.getTarget(); 
       if (target!=null) result.add(target.getEntity());
     }

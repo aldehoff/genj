@@ -47,6 +47,13 @@ public class PropertyPlace extends PropertyChoiceValue {
   public final static String
     TAG = "PLAC",
     FORM = "FORM";
+  
+  /**
+   * need tag-argument constructor for all properties
+   */
+  public PropertyPlace(String tag) {
+    super(tag);
+  }
 
   /**
    * Overridden - special trim
@@ -135,9 +142,17 @@ public class PropertyPlace extends PropertyChoiceValue {
   public String[] getFormat() {
     return toJurisdictions(getFormatAsString());
   }
+  
+  /**
+   * Accessor - format
+   */
+  public static String[] getFormat(Gedcom gedcom) {
+    return toJurisdictions(gedcom.getPlaceFormat());
+  }
 
-  private String[] toJurisdictions(String value) {
-    ArrayList result = new ArrayList(10);
+
+  private static String[] toJurisdictions(String value) {
+    ArrayList<String> result = new ArrayList<String>(10);
     String lastToken = JURISDICTION_SEPARATOR;
     for (StringTokenizer tokens = new StringTokenizer( value, ",", true); tokens.hasMoreTokens(); ) {
       String token = tokens.nextToken();
@@ -189,7 +204,7 @@ public class PropertyPlace extends PropertyChoiceValue {
     String jurisdiction = getJurisdiction(hierarchyLevel);
     if (jurisdiction==null)
       return null;
-    Collection places = getGedcom().getReferenceSet(TAG+"."+hierarchyLevel).getReferences(jurisdiction);
+    Collection<Property> places = getGedcom().getReferenceSet(TAG+"."+hierarchyLevel).getReferences(jurisdiction);
     return (PropertyPlace[])places.toArray(new PropertyPlace[places.size()]);
   }
 
@@ -208,8 +223,8 @@ public class PropertyPlace extends PropertyChoiceValue {
    * @param hierarchyLevel either a zero-based level or -1 for whole place values
    */
   public static String[] getAllJurisdictions(Gedcom gedcom, int hierarchyLevel, boolean sort) {
-    ReferenceSet refset = gedcom.getReferenceSet( hierarchyLevel<0 ? TAG : TAG+"."+hierarchyLevel);
-    Collection jurisdictions = refset.getKeys(sort ? gedcom.getCollator() : null);
+    ReferenceSet<String,Property> refset = gedcom.getReferenceSet( hierarchyLevel<0 ? TAG : TAG+"."+hierarchyLevel);
+    Collection<String> jurisdictions = refset.getKeys(sort ? gedcom.getCollator() : null);
     return (String[])jurisdictions.toArray(new String[jurisdictions.size()]);
   }
 
@@ -279,7 +294,7 @@ public class PropertyPlace extends PropertyChoiceValue {
       return -1;
 
     // look for a city key in the hierarchy
-    Set cityKeys = Options.getInstance().placeHierarchyCityKeys;
+    Set<String> cityKeys = Options.getInstance().placeHierarchyCityKeys;
     String[] format = getFormat();
     for (int i=0; i<format.length;i++) {
       if (cityKeys.contains(format[i].toLowerCase()))

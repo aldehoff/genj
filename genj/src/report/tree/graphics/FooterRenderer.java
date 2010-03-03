@@ -95,7 +95,6 @@ public class FooterRenderer implements GraphicsRenderer
             break;
         case 3:
             PropertyChange currentTime = new PropertyChange();
-            currentTime.setTime(System.currentTimeMillis());
             displayDate = currentTime.getDisplayValue();
             break;
         }

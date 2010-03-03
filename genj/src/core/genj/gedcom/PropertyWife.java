@@ -37,13 +37,15 @@ public class PropertyWife extends PropertyXRef {
    * Empty Constructor
    */
   public PropertyWife() {
+    super("FAM");
   }
   
   /**
-   * Constructor
+   * need tag-argument constructor for all properties
    */
-  protected PropertyWife(String target) {
-    setValue(target);
+  protected PropertyWife(String tag) {
+    super(tag);
+    assertTag("WIFE");
   }
 
   /**
@@ -56,13 +58,6 @@ public class PropertyWife extends PropertyXRef {
     if (getTargetEntity()==null) 
       return null;
     return resources.getString("prop.wife.veto");
-  }
-
-  /**
-   * Returns the Gedcom-Tag of this property
-   */
-  public String getTag() {
-    return TAG;
   }
 
   /**

@@ -85,15 +85,12 @@ public class EventBean extends PropertyBean {
    */
   public void setPropertyImpl(Property prop) {
 
-    if (prop==null)
-      return;
     PropertyEvent event = (PropertyEvent)prop;
-    PropertyDate date = event.getDate(true);
+    Boolean known = null;
     
-    // show age of individual?
-    if (event.getEntity() instanceof Indi) {
-    
+    if (event!=null && event.getEntity() instanceof Indi) {
       Indi indi = (Indi)event.getEntity();
+      PropertyDate date = event.getDate(true);
       
       // Calculate label & age
       String ageat = "even.age";
@@ -114,17 +111,16 @@ public class EventBean extends PropertyBean {
       
       lAgeAt.setVisible(true);
       tAge.setVisible(true);
+      
+      // show event-has-happened?
+      if (!"EVEN".equals(event.getTag())) 
+        known = event.isKnownToHaveHappened();
+      
     } else {
       lAgeAt.setVisible(false);
       tAge.setVisible(false);
     }
 
-    // show event-has-happened?
-    Boolean known = null;
-    
-    if (!"EVEN".equals(event.getTag())) 
-      known = event.isKnownToHaveHappened();
-    
     if (known!=null) {
       cKnown.setSelected(known.booleanValue());
       cKnown.setVisible(true);

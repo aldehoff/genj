@@ -34,6 +34,14 @@ public class Note extends Entity implements MultiLineProperty {
   private PropertyMultilineValue delegate;
   
   /**
+   * need tag,id-arguments constructor for all entities
+   */
+  public Note(String tag, String id) {
+    super(tag, id);
+    assertTag(Gedcom.NOTE);
+  }
+  
+  /**
    * Notification to entity that it has been added to a Gedcom
    */
   /*package*/ void addNotify(Gedcom ged) {

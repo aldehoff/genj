@@ -32,6 +32,7 @@ import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.TagPath;
 import genj.renderer.BlueprintManager;
 import genj.renderer.BlueprintRenderer;
 import genj.util.ChangeSupport;
@@ -66,13 +67,10 @@ import javax.swing.event.ChangeListener;
 public abstract class PropertyBean extends JPanel implements ContextProvider {
   
   private final static int CACHE_PRELOAD = 10;
-  
   protected final static Resources RESOURCES = Resources.get(PropertyBean.class); 
   protected final static Logger LOG = Logger.getLogger("genj.edit.beans");
   protected final static Registry REGISTRY = Registry.get(PropertyBean.class); 
-
-  // TODO beans could be resolved dynamically to allow plugin overrides
-  private final static Class<?>[] PROPERTY2BEANTYPE = {
+  private final static Class<?>[] PROPERTY2BEANTYPE = { // TODO beans could be resolved dynamically to allow plugin overrides
     Entity.class                , EntityBean.class,
     PropertyPlace.class         , PlaceBean.class, // before choice!
     PropertyAge.class           , AgeBean.class,
@@ -87,10 +85,21 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     PropertyXRef.class          , XRefBean.class,
     Property.class              , SimpleValueBean.class  // last!
   };
-  
   private final static boolean isCache = "true".equals(EnvironmentChecker.getProperty("genj.edit.beans.cache", "true", "checking if bean cache is enabled or not"));
-  
   private final static Map<Class<? extends PropertyBean>,List<PropertyBean>> BEANCACHE = createBeanCache();
+  
+  /** the context to edit */
+  private Property root;
+  private TagPath path;
+  private Property property;
+  private List<? extends PropertyBean> session;
+  
+  /** the default focus */
+  protected JComponent defaultFocus = null;
+  
+  /** change support */
+  protected ChangeSupport changeSupport = new ChangeSupport(this);
+
 
   @SuppressWarnings("unchecked")
   private static Map<Class<? extends PropertyBean>,List<PropertyBean>> createBeanCache() {
@@ -158,15 +167,21 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
    */
   public static void recycle(PropertyBean bean) {
     
+    // safety check - still in use?
     if (bean.getParent()!=null)
       throw new IllegalArgumentException("bean still has parent");
+    
+    // clear state (gc)
+    bean.root = null;
+    bean.path = null;
+    bean.property = null;
+    bean.session = null;
+
+    // ignore cache?
     if (!isCache)
       return;
-    
-//    Component c = FocusManager.getCurrentManager().getFocusOwner();
-//    if (c!=null&&!c.isDisplayable()) 
-//      return true;
 
+    // cache it
     List<PropertyBean> cache = BEANCACHE.get(bean.getClass());
     if (cache==null) {
       cache = new ArrayList<PropertyBean>();
@@ -183,16 +198,6 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     return Collections.unmodifiableSet(BEANCACHE.keySet());
   }
 
-  
-  /** the property to edit */
-  private Property property;
-  
-  /** the default focus */
-  protected JComponent defaultFocus = null;
-  
-  /** change support */
-  protected ChangeSupport changeSupport = new ChangeSupport(this);
-  
   /** constructor */
   protected PropertyBean() {
     setOpaque(false);  
@@ -208,11 +213,23 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * set property to look at
    */
-  public final PropertyBean setProperty(Property prop) {
+  public final PropertyBean setContext(Property property) {
+    return setContext(property, new TagPath("."), property, new ArrayList<PropertyBean>());
+  }
+  
+  /**
+   * set property to look at
+   */
+  public final PropertyBean setContext(Property root, TagPath path, Property property, List<PropertyBean> session) {
     
-    property = prop;
+    if (root==null||path==null)
+      throw new IllegalArgumentException("root and path cannot be null");
+    
+    this.root = root;
+    this.path = path;
+    this.property = property;
 
-    setPropertyImpl(prop);
+    setPropertyImpl(property);
     
     changeSupport.setChanged(false);
     
@@ -232,6 +249,20 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     // (otherwise other code that relies on properties being
     // part of an entity might break)
     return property==null||property.getEntity()==null ? null : new ViewContext(property);
+  }
+  
+  /**
+   * Current Root
+   */
+  public final Property getRoot() {
+    return root;
+  }
+  
+  /**
+   * Current Path
+   */
+  public final TagPath getPath() {
+    return path;
   }
   
   /**
@@ -266,15 +297,9 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
    * Commit any changes made by the user
    */
   public final void commit() {
-    commit(property);
-  }
-  
-  /**
-   * Commit any changes made by the user switching target property
-   */
-  public final void commit(Property property) {
-    // remember property
-    this.property = property;
+    // still need target?
+    if (property==null)
+      property = root.setValue(path, "");
     // let impl do its thing
     commitImpl(property);
     // clear changed

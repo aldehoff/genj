@@ -28,28 +28,17 @@ package genj.gedcom;
  * in-line FILE or use inline OBJE properties instead.
  */
 public class PropertyMedia extends PropertyXRef {
-
+  
   /**
-   * This will be called once when instantiation has
-   * happend - it's our chance to substitute this with
-   * a read-only value if no reference applicable
+   * need tag-argument constructor for all properties
    */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    // expecting NOTE
-    meta.assertTag("OBJE");
-    // ONLY for @..@!!!
-    if (value.startsWith("@")&&value.endsWith("@"))
-      return super.init(meta,value);
-    // switch to ro value
-    return new PropertySimpleReadOnly().init(meta, value);
+  /*package*/ PropertyMedia(String tag) {
+    super(tag);
+    assertTag("OBJE");
   }
 
-
-  /**
-   * Returns the tag of this property
-   */
-  public String getTag() {
-    return "OBJE";
+  /*package*/ PropertyMedia() {
+    super("OBJE");
   }
 
   /**

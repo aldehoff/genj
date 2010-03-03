@@ -42,7 +42,7 @@ public abstract class Property implements Comparable<Property> {
     UNSUPPORTED_TAG = "Unsupported Tag";
   
   private static final Pattern FORMAT_PATTERN = Pattern.compile("\\{(.*?)\\$(.)(.*?)\\}");
-    
+  
   /** parent of this property */
   private Property parent=null;
   
@@ -65,8 +65,13 @@ public abstract class Property implements Comparable<Property> {
   /** a localized label */
   public final static String LABEL = resources.getString("prop");
 
-  /** the meta information */
-  private MetaProperty meta = null;
+  /** the tag */
+  private String tag = null;
+
+  
+  protected Property(String tag) {
+    this.tag = tag;
+  }
 
   /**
    * Lifecycle - callback after being added to parent.
@@ -322,7 +327,6 @@ public abstract class Property implements Comparable<Property> {
     // remove it now
     children.remove(pos);
     removed.parent = null;
-    removed.meta = null;
 
     // propagate change (see addNotify() for motivation why propagate is here)
     propagatePropertyDeleted(this, pos, removed);
@@ -793,23 +797,10 @@ public abstract class Property implements Comparable<Property> {
   /**
    * Returns the Gedcom-Tag of this property
    */
-  public abstract String getTag();
-
-  /**
-   * Initializes this poperty giving it a chance to inspect
-   * support for tag and value, eventually returning a 
-   * different type that is better suited for the SPECIFIC
-   * combination.
-   */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    // remember meta
-    this.meta = meta;
-    // assuming concrete sub-type handles tag - keep value
-    setValue(value);
-    // we stay around
-    return this;
+  public final String getTag() {
+    return tag;
   }
-  
+
   /**
    * Returns the value of this property as string (this is a Gedcom compliant value)
    */
@@ -1000,9 +991,7 @@ public abstract class Property implements Comparable<Property> {
    * Resolve meta property
    */
   public MetaProperty getMetaProperty() {
-    if (meta==null)
-      meta = getGedcom().getGrammar().getMeta(getPath());    
-    return meta;
+    return getGedcom().getGrammar().getMeta(getPath());    
   }
 
   /**
@@ -1242,6 +1231,11 @@ public abstract class Property implements Comparable<Property> {
       // next
     }
     // done
+  }
+  
+  protected void assertTag(String tag) {
+    if (!this.tag.equals(tag)) 
+      throw new Error("Tag should be "+tag+" but is "+this.tag);
   }
   
 } //Property

@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -593,7 +592,7 @@ public class Gedcom {
    */
   protected void propagateEntityIDChanged(final Entity entity, final String old) throws GedcomException {
     
-    Map id2entity = getEntityMap(entity.getTag());
+    Map<String, Entity> id2entity = getEntityMap(entity.getTag());
     
     // known?
     if (!id2entity.containsValue(entity))
@@ -647,7 +646,7 @@ public class Gedcom {
     // some entities (event definitions for example) don't have an
     // id - we'll keep them in our global list but not mapped id->entity
     if (id.length()>0) {
-      Map id2entity = getEntityMap(entity.getTag());
+      Map<String, Entity> id2entity = getEntityMap(entity.getTag());
       if (id2entity.containsKey(id))
         throw new GedcomException(resources.getString("error.entity.dupe", id));
       
@@ -700,7 +699,7 @@ public class Gedcom {
     maxIDLength = Math.max(id.length(), maxIDLength);
 
     // lookup a type - all well known types need id
-    Class clazz = (Class)E2TYPE.get(tag);
+    Class<? extends Entity> clazz = (Class<? extends Entity>)E2TYPE.get(tag);
     if (clazz!=null) {
       if (id.length()==0)
         throw new GedcomException(resources.getString("entity.error.noid", tag));
@@ -711,14 +710,11 @@ public class Gedcom {
     // Create entity
     Entity result; 
     try {
-      result = (Entity)clazz.newInstance();
+      result = (Entity)clazz.getDeclaredConstructor(String.class, String.class).newInstance(tag, id);
     } catch (Throwable t) {
-      throw new RuntimeException("Can't instantiate "+clazz);
+      throw new RuntimeException("Can't instantiate "+clazz, t);
     }
 
-    // initialize
-    result.init(tag, id);
-    
     // keep it
     addEntity(result);
 
@@ -738,7 +734,7 @@ public class Gedcom {
     if (id.length()>0) {
       
       // Lookup entity map
-      Map id2entity = getEntityMap(which.getTag());
+      Map<String,Entity> id2entity = getEntityMap(which.getTag());
   
       // id exists ?
       if (!id2entity.containsKey(id))
@@ -778,9 +774,8 @@ public class Gedcom {
    * Returns all properties for given path
    */
   public Property[] getProperties(TagPath path) {
-    ArrayList result = new ArrayList(100);
-    for (Iterator it=getEntities(path.getFirst()).iterator(); it.hasNext(); ) {
-      Entity ent = (Entity)it.next();
+    ArrayList<Property> result = new ArrayList<Property>(100);
+    for (Entity ent : getEntities(path.getFirst())) {
       Property[] props = ent.getProperties(path);
       for (int i = 0; i < props.length; i++) result.add(props[i]);
     }
@@ -819,8 +814,8 @@ public class Gedcom {
   /**
    * Returns entities of given type sorted by comparator (can be null)
    */
-  public Entity[] getEntities(String tag, Comparator comparator) {
-    Collection ents = getEntityMap(tag).values();
+  public Entity[] getEntities(String tag, Comparator<Property> comparator) {
+    Collection<Entity> ents = getEntityMap(tag).values();
     Entity[] result = (Entity[])ents.toArray(new Entity[ents.size()]);
     // sort by comparator or entity
     if (comparator!=null) 
@@ -836,8 +831,8 @@ public class Gedcom {
    */
   public Entity getEntity(String id) {
     // loop all types
-    for (Iterator tags=tag2id2entity.keySet().iterator();tags.hasNext();) {
-      Entity result = (Entity)getEntityMap((String)tags.next()).get(id);
+    for (Map<String,Entity> ents : tag2id2entity.values()) {
+      Entity result = ents.get(id);
       if (result!=null)
         return result;
     }
@@ -857,8 +852,8 @@ public class Gedcom {
   /**
    * Returns a type for given tag
    */
-  public static Class getEntityType(String tag) {
-    Class result =(Class)E2TYPE.get(tag);
+  public static Class<? extends Entity> getEntityType(String tag) {
+    Class<? extends Entity> result = (Class<? extends Entity>)E2TYPE.get(tag);
     if (result==null)
       throw new IllegalArgumentException("no such type");
     return result;
@@ -869,8 +864,7 @@ public class Gedcom {
    */
   public Entity getFirstEntity(String tag) {
     // loop over entities and return first of given type
-    for (Iterator it = allEntities.iterator(); it.hasNext(); ) {
-      Entity e = (Entity)it.next();
+    for (Entity e : allEntities) {
       if (e.getTag().equals(tag))
         return e;
     }
@@ -884,7 +878,7 @@ public class Gedcom {
   public String getNextAvailableID(String entity) {
     
     // Lookup current entities of type
-    Map id2entity = getEntityMap(entity);
+    Map<String, Entity> id2entity = getEntityMap(entity);
     
     // Look for an available ID
     // 20080121 if there's no entity yet we start with '1' 

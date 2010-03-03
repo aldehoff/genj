@@ -31,10 +31,19 @@ import java.util.logging.Level;
  */
 public class PropertyBlob extends Property implements MultiLineProperty {
   
-  private final static String TAG = "BLOB";
-
   /** the content (either base64 or raw bytes) */
   private Object content = "";
+  
+  public PropertyBlob() {
+    super("BLOB");
+  }
+
+  /**
+   * need tag-argument constructor for all properties
+   */
+  public PropertyBlob(String tag) {
+    super(tag);
+  }
 
   /**
    * Returns the data of this Blob
@@ -62,21 +71,6 @@ public class PropertyBlob extends Property implements MultiLineProperty {
   public String getTitle() {
     Entity e = getEntity();
     return (e instanceof Media) ? ((Media)e).getTitle() : getTag();
-  }
-
-  /**
-   * Returns the tag of this property
-   */
-  public String getTag() {
-    return TAG;
-  }
-  
-  /**
-   * @see genj.gedcom.Property#setTag(java.lang.String)
-   */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    meta.assertTag(TAG);
-    return super.init(meta,value);
   }
 
   /**
@@ -257,7 +251,7 @@ public class PropertyBlob extends Property implements MultiLineProperty {
     
     /** current tag */
     public String getTag() {
-      return offset==0 ? TAG : "CONT";
+      return offset==0 ? getTag() : "CONT";
     }
 
     /** Returns the next line of this iterator */

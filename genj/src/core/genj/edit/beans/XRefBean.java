@@ -51,7 +51,8 @@ public class XRefBean extends PropertyBean {
   public ViewContext getContext() {
     // super knows
     ViewContext result = super.getContext();
-    result.addAction(new Swivel());
+    if (result!=null)
+      result.addAction(new Swivel());
     return result;
   }
 

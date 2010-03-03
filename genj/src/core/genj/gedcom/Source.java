@@ -29,6 +29,14 @@ package genj.gedcom;
 public class Source extends Entity {
 
   /**
+   * need tag,id-arguments constructor for all entities
+   */
+  public Source(String tag, String id) {
+    super(tag, id);
+    assertTag(Gedcom.SOUR);
+  }
+  
+  /**
    * Title ...
    */
   @Override

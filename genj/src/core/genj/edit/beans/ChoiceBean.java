@@ -134,14 +134,14 @@ public class ChoiceBean extends PropertyBean {
     // Note: we're using getDisplayValue() here because like in PropertyRelationship's 
     // case there might be more in the gedcom value than what we want to display 
     // e.g. witness@INDI:BIRT
-
+    
     if (choice!=null) {
       choices.setValues(choice.getChoices(true));
       choices.setText(choice.isSecret() ? "" : choice.getDisplayValue());
       sameChoices = choice.getSameChoices();
     } else {
+      choices.setValues(PropertyChoiceValue.getSameChoices(getRoot().getGedcom(), getPath().getLast(), true));
       choices.setText("");
-      choices.setValues(new String[0]);
       sameChoices = new Property[0];
     }
       

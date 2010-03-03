@@ -27,6 +27,14 @@ public class Submitter extends Entity {
   private final static TagPath PATH_NAME =new TagPath("SUBM:NAME");
 
   /**
+   * need tag,id-arguments constructor for all entities
+   */
+  public Submitter(String tag, String id) {
+    super(tag, id);
+    assertTag(Gedcom.SUBM);
+  }
+  
+  /**
    * Name ...
    */
   @Override

@@ -35,30 +35,19 @@ public class PropertyFile extends Property {
   /** standard image */
   public final static ImageIcon DEFAULT_IMAGE = Grammar.V55.getMeta(new TagPath("INDI:OBJE:FILE")).getImage();
 
-  /** expected tag */
-  private final static String TAG = "FILE";
-  
   /** the file-name */
   private String  file;
 
   /** whether file-name is relative or absolute */
   private boolean isRelativeChecked = false;
+  
+  /**
+   * need tag-argument constructor for all properties
+   */
+  public PropertyFile(String tag) {
+    super(tag);
+  }
 
-  /**
-   * Returns the tag of this property
-   */
-  public String getTag() {
-    return TAG;
-  }
-  
-  /**
-   * @see genj.gedcom.Property#setTag(java.lang.String)
-   */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    meta.assertTag(TAG);
-    return super.init(meta, value);
-  }
-  
   /**
    * Overriden - file association is easy for a PropertyFile
    */

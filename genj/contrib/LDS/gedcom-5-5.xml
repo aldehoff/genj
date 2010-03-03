@@ -22,7 +22,7 @@
    <SPFX type="PropertySimpleValue" img="Name"/>
    <SURN type="PropertySimpleValue" img="Name"/>
    <NSFX type="PropertySimpleValue" img="Name"/>
-   <SOUR type="PropertySource" img="Source">
+   <SOUR type="PropertySource|PropertyMultilineValue" img="Source">
     <PAGE xref="1" type="PropertySimpleValue" img="Attribute" cardinality="0:1"/>
     <EVEN xref="1" type="PropertyChoiceValue" img="Blob" cardinality="0:1">
      <ROLE type="PropertyChoiceValue" img="Blob"/>
@@ -32,17 +32,17 @@
      <TEXT type="PropertyMultilineValue" img="Blob"/>
     </DATA>
     <QUAY xref="1" type="PropertySimpleValue" img="Blob" cardinality="0:1"/>
-    <OBJE xref="1" type="PropertyMedia" img="Media">
+    <OBJE xref="1" type="PropertyMedia|PropertySimpleReadOnly" img="Media">
      <TITL default="1" xref="0" type="PropertySimpleValue" img="Attribute" cardinality="0:1"/>
      <FORM default="1" hide="1" xref="0" type="PropertyChoiceValue" img="Format" cardinality="1:1"/>
      <FILE default="1" xref="0" type="PropertyFile" img="Disk" cardinality="0:M">
      </FILE>
-     <NOTE default="1" xref="0" type="PropertyNote" img="Note" cardinality="0:1"/>
+     <NOTE default="1" xref="0" type="PropertyNote|PropertyMultilineValue" img="Note" cardinality="0:1"/>
     </OBJE>
     <TEXT xref="0" type="PropertyMultilineValue" img="Note" cardinality="0:1"/>
-    <NOTE type="PropertyNote" img="Note"/>
+    <NOTE type="PropertyNote|PropertyMultilineValue" img="Note"/>
    </SOUR>
-   <NOTE type="PropertyNote" img="Note">
+   <NOTE type="PropertyNote|PropertyMultilineValue" img="Note">
     <SOUR super="INDI:NAME:SOUR"/>
    </NOTE>
   </NAME>
@@ -277,7 +277,7 @@
   <OBJE super="INDI:OBJE"/>
   <NOTE super="INDI:NOTE"/>
   <REPO hide="1" type="PropertyRepository" img="Repository">
-   <NOTE xref="1" type="PropertyNote" img="Note"/>
+   <NOTE xref="1" type="PropertyNote|PropertyMultilineValue" img="Note"/>
    <CALN xref="1" type="PropertySimpleValue" img="Attribute">
     <MEDI type="PropertyChoiceValue" img="Attribute"/>
    </CALN>

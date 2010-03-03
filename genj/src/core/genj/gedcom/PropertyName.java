@@ -37,11 +37,9 @@ public class PropertyName extends Property {
   public static final int PREFIX_LAST = 1;
   public static final int IGNORE_PREFIX = 2;
 
-  public final static String TAG =  "NAME";
-  
   private final static String 
-    KEY_LASTNAME = TAG+".last",
-    KEY_FIRSTNAME = TAG+".first";
+    KEY_LASTNAME = "NAME.last",
+    KEY_FIRSTNAME = "NAME.first";
   
   /** the first + last name */
   private String
@@ -53,23 +51,25 @@ public class PropertyName extends Property {
   private String nameAsString;
 
   /**
+   * need tag-argument constructor for all properties
+   */
+  /*package*/ PropertyName(String tag) {
+    super(tag);
+  }
+  
+  /**
    * Empty Constructor
    */
   public PropertyName() {
+    super("NAME");
   }
   
   /**
    * Constructor
    */
   public PropertyName(String first, String last) {
+    this();
     setName(first, last);
-  }
-  
-  /**
-   * Constructor
-   */
-  public PropertyName(String name) {
-    setValue(name);
   }
   
   /**
@@ -173,21 +173,6 @@ public class PropertyName extends Property {
     if (firstName.length()==0) 
       return lastName;
     return lastName + ", " + firstName;
-  }
-
-  /**
-   * the tag
-   */
-  public String getTag() {
-    return TAG;
-  }
-  
-  /**
-   * @see genj.gedcom.Property#setTag(java.lang.String)
-   */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    meta.assertTag(TAG);
-    return super.init(meta,value);
   }
 
   /**

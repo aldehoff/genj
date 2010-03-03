@@ -30,8 +30,6 @@ import genj.util.WordBuffer;
  */
 public class PropertyDate extends Property {
 
-  /*package*/ public final static String TAG = "DATE";
-
   /** time values */
   private PIT 
     start = new PIT(),
@@ -64,15 +62,21 @@ public class PropertyDate extends Property {
   };
   
   /**
-   * Constructor
+   * need tag-argument constructor for all properties
    */
-  public PropertyDate() {
+  public PropertyDate(String tag) {
+    super(tag);
   }
 
+  public PropertyDate() {
+    super("DATE");
+  }
+  
   /**
    * Constructor
    */
   public PropertyDate(int year) {
+    super("DATE");
     getStart().set(PointInTime.UNKNOWN, PointInTime.UNKNOWN, year);
   }
 
@@ -109,13 +113,6 @@ public class PropertyDate extends Property {
    */
   public Format getFormat() {
     return format;
-  }
-
-  /**
-   * Accessor Tag
-   */
-  public String getTag() {
-    return TAG;
   }
 
   /**
@@ -242,14 +239,6 @@ public class PropertyDate extends Property {
     if (old!=null) propagatePropertyChanged(this, old);
 
     // done
-  }
-
-  /**
-   * @see genj.gedcom.Property#setTag(java.lang.String)
-   */
-  /*package*/ Property init(MetaProperty meta, String value) throws GedcomException {
-    meta.assertTag(TAG);
-    return super.init(meta, value);
   }
 
   /**

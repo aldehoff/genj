@@ -68,10 +68,6 @@ public class BeanPanel extends JPanel {
   private final static Resources RES = Resources.get(BeanPanel.class);
   private final static Registry REGISTRY = Registry.get(BeanPanel.class);
 
-  private static final String
-    PROXY_PROPERTY_ROOT = "beanpanel.bean.root",
-    PROXY_PROPERTY_PATH = "beanpanel.bean.path";
-
   /** keep a cache of descriptors */
   private static Map<String, NestedBlockLayout> DESCRIPTORCACHE = new HashMap<String, NestedBlockLayout>();
 
@@ -152,24 +148,12 @@ public class BeanPanel extends JPanel {
    */
   public void commit() {
     
-    // loop over beans 
+    // commit beans' changes
     for (PropertyBean bean : beans) {
-      // check next
-      if (bean.hasChanged()&&bean.getProperty()!=null) {
-        
-        // re-resolve the property we're going to commit too (bean might have been looking at a proxy)
-        Property root = (Property)bean.getClientProperty(PROXY_PROPERTY_ROOT);
-        TagPath path = (TagPath)bean.getClientProperty(PROXY_PROPERTY_PATH);
-        Property prop = root.getProperty(path,false);
-        if (prop==null)
-          prop = root.setValue(path, "");
-        
-        // commit its changes
-        bean.commit(prop);
-        // next
-      }
+      if (bean.hasChanged()) 
+        bean.commit();
     }
-    
+  
     changeSupport.setChanged(false);
     
     // done
@@ -341,21 +325,23 @@ public class BeanPanel extends JPanel {
     // try to resolve existing prop (first possible path to avoid merging of branches)
     Property prop = root.getProperty(path, false);
     
-    // addressed property doesn't exist yet? create a proxy that mirrors
-    // the root and provides the necessary context
-    if (prop==null||prop instanceof PropertyXRef) 
-      prop = new PropertyProxy(root).setValue(path, "");
+    // we don't want to look at links but inline stuff
+    if (prop instanceof PropertyXRef)
+      prop = null;
     
     // create bean for property
-    PropertyBean bean = beanOverride==null ? PropertyBean.getBean(prop.getClass()) : PropertyBean.getBean(beanOverride);
-    bean.setProperty(prop);
+    PropertyBean bean;
+    if (beanOverride!=null)
+      bean = PropertyBean.getBean(beanOverride);
+    else if (prop!=null)
+      bean = PropertyBean.getBean(prop.getClass());
+    else 
+      bean = PropertyBean.getBean(root.getMetaProperty().getNestedRecursively(path, false).getType(""));
+      
+    bean.setContext(root, path, prop, beans);
     bean.addChangeListener(changeSupport);
     beans.add(bean);
 
-    // remember path
-    bean.putClientProperty(PROXY_PROPERTY_ROOT, root);
-    bean.putClientProperty(PROXY_PROPERTY_PATH, path);
-    
     // done
     return bean;
   }
@@ -532,31 +518,6 @@ public class BeanPanel extends JPanel {
 //    }
 //  }
 
-  /**
-   * A proxy for a property - it can be used as a container
-   * for temporary sub-properties that are not committed to
-   * the proxied context 
-   */
-  private class PropertyProxy extends Property {
-    private Property proxied;
-    /** constructor */
-    private PropertyProxy(Property prop) {
-      this.proxied = prop;
-    }
-    public Property getProxied() {
-      return proxied;
-    }
-    public boolean isContained(Property in) {
-      return proxied==in ? true : proxied.isContained(in);
-    }
-    public Gedcom getGedcom() { return proxied.getGedcom(); }
-    public String getValue() { throw new IllegalArgumentException(); };
-    public void setValue(String val) { throw new IllegalArgumentException(); };
-    public String getTag() { return proxied.getTag(); }
-    public TagPath getPath() { return proxied.getPath(); }
-    public MetaProperty getMetaProperty() { return proxied.getMetaProperty(); }
-  }
-     
   /**
    * The default container FocusTravelPolicy works based on
    * x/y coordinates which doesn't work well with the column
