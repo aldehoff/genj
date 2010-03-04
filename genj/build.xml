@@ -21,29 +21,6 @@
    Initialization
    -->
   <target name="init">
-  	
-  	<exec failifexecutionfails="true" failonerror="true" executable="svnversion" spawn="false" dir="." outputproperty="revision">
-  	  <arg line="-n"/>
-  	</exec>	
-
-  	<condition property="revision-ok">
-       <matches pattern="^[0-9]*$" string="${revision}"/>
-    </condition>
-  		
-    <fail unless="revision-ok" message="Working copy is not a single, unmodified revision but ${revision} - check for uncommitted changes or update to HEAD"/>
-
-    <tstamp><format property="now" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
-  	
-    <loadproperties srcfile="build.properties"/>
-
-  	<property name="version" value="${revision}"/>
-    <property name="build" value="${version} (${revision}) ${now} ${user.name}"/>
-  	
-    <echo level="info">version=${version}</echo>
-    <echo level="info">build=${build}</echo>
-  	
-  	<echo file="./build/version.properties">version = ${version}</echo>
-    	
   	<echo level="info">Creating output directories</echo>
     <mkdir dir="./build"/>
     <mkdir dir="./build/run"/>
@@ -135,15 +112,40 @@
    Version
    -->
   <target name="version" depends="init">
+      	
     <echo level="info">Generating version number</echo>
+    	
+  	<exec failifexecutionfails="true" failonerror="true" executable="svnversion" spawn="false" dir="." outputproperty="revision">
+  	  <arg line="-n"/>
+  	</exec>	
+
+  	<condition property="revision-ok">
+       <matches pattern="^[0-9]*$" string="${revision}"/>
+    </condition>
+  		
+    <fail unless="revision-ok" message="Working copy is not a single, unmodified revision but ${revision} - check for uncommitted changes or update to HEAD"/>
+  	
+    <tstamp><format property="now" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
+  	
+    <loadproperties srcfile="build.properties"/>
+
+  	<property name="version" value="${revision}"/>
+    <property name="build" value="${version} (${revision}) ${now} ${user.name}"/>
+  	
+    <echo level="info">version=${version}</echo>
+    <echo level="info">build=${build}</echo>
+  	
+  	<echo file="./build/version.properties">version = ${version}</echo>
+        	
     <mkdir dir="./build/version/genj"/>
     <echo file="./build/version/genj/resources.properties">version=${version}${line.separator}build=${build}</echo>
+    	
   </target>
 
   <!--
    JavaDoc
    -->
-  <target name="javadoc" depends="init">
+  <target name="javadoc" depends="init, version">
     <echo level="info">Generating API documentation</echo>
   	<delete dir="./build/javadoc"/>
     <mkdir dir="./build/javadoc"/>
@@ -171,7 +173,7 @@
   <!--
    Distribution - javadocs
    -->
-  <target name="dist.javadoc" depends="javadoc" if="javadoc">
+  <target name="dist.javadoc" depends="javadoc, version" if="javadoc">
   	
     <zip zipfile="./build/dist/genj_javadoc-${version}.zip" update="True">
       <fileset dir="./build" includes="javadoc/**"/>
@@ -182,7 +184,7 @@
   <!--
    Distribution - a language
    -->
-  <target name="dist.language">
+  <target name="dist.language" depends="version">
   	
     <!-- zip all resources_xx.properties files into genj_ll.jar -->
     <jar jarfile="./build/lib/genj_${language}.jar" update="True">
@@ -307,7 +309,7 @@
        <sysproperty key="genj.language.dir" value="${basedir}/language"/>
     </java>
   </target>
-  
+  		
   <!--
    Run Applet
    -->
@@ -365,7 +367,7 @@
   <!--
    About
    -->
-  <target name="about">
+  <target name="about" depends="version">
     <echo level="info">GenJ - Build ${version}</echo>
     <echo level="info">Please specify one of the basic options: clean, run or dist</echo>
   </target>
