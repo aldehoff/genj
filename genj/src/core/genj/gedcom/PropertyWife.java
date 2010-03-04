@@ -37,7 +37,7 @@ public class PropertyWife extends PropertyXRef {
    * Empty Constructor
    */
   public PropertyWife() {
-    super("FAM");
+    super("WIFE");
   }
   
   /**
