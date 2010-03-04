@@ -128,7 +128,7 @@ import java.util.logging.Logger;
   }
   
   private List<String> split(String tags) {
-    String[] ss = tags.split(",");
+    String[] ss = tags.split(",|\\s");
     ArrayList<String> result = new ArrayList<String>(ss.length);
     for (String s : ss) {
       s = s.trim();
