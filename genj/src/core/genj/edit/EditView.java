@@ -21,10 +21,10 @@ package genj.edit;
 
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
-import genj.gedcom.PropertyXRef;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
+import genj.util.swing.ButtonHelper;
 import genj.util.swing.DialogHelper;
 import genj.view.ContextProvider;
 import genj.view.SelectionSink;
@@ -34,6 +34,7 @@ import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 
@@ -41,7 +42,10 @@ import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Component for editing genealogic entity properties
@@ -55,7 +59,11 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
   private Mode     mode = new Mode();
   private Sticky sticky = new Sticky();
   private Focus focus = new Focus();
+  private OK ok = new OK();
+  private Cancel cancel = new Cancel();
+  
   private Editor editor;
+  private JPanel buttons;
   private ToolBar toolbar;
   
   /**
@@ -64,6 +72,14 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
   public EditView() {
     
     super(new BorderLayout());
+    
+    buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons);
+    bh.create(ok).setFocusable(false);    
+    bh.create(cancel).setFocusable(false);
+    
+    setLayout(new BorderLayout());
+    add(BorderLayout.SOUTH, buttons);
     
     // check for current modes
     mode.setSelected(REGISTRY.get("advanced", false));
@@ -94,18 +110,22 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     Context old = null;
     if (set!=null) {
       
-      // force commit
-      commit();
-  
       // preserve old context 
       old = editor!=null ? editor.getContext() : null;
+      
+      // force commit
+      if (ok.isEnabled()&&!old.getGedcom().isWriteLocked()&&isCommitChanges())
+        commit();
+  
     }
     
     // clear old editor
     if (editor!=null) {
+      editor.removeChangeListener(ok);
+      editor.removeChangeListener(cancel);
       editor.setContext(new Context());
+      remove(editor);
       editor = null;
-      removeAll();
     }
       
     // set new and restore context
@@ -114,6 +134,8 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
       add(editor, BorderLayout.CENTER);
       if (old!=null)
         editor.setContext(old);
+      editor.addChangeListener(ok);
+      editor.addChangeListener(cancel);
     }
     
     // show
@@ -173,8 +195,15 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
   
   @Override
   public void commit() {
-    if (editor!=null)
-      editor.commit();
+    if (editor!=null) {
+      try {
+        editor.commit();
+      } finally {
+        ok.setEnabled(false);
+        cancel.setEnabled(false);
+        buttons.setVisible(false);
+      }
+    }
   }
   
   public void setContext(Context newContext, boolean isActionPerformed) {
@@ -184,8 +213,15 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
       sticky.setSelected(false);
       setEditor(null);
       populate(toolbar);
+      ok.setEnabled(false);
+      cancel.setEnabled(false);
+      buttons.setVisible(false);
       return;
     }
+    
+    // commit?
+    if (ok.isEnabled()&&!editor.getContext().getGedcom().isWriteLocked()&&isCommitChanges()) 
+      commit();
     
     // new editor?
     if (newContext.getEntity()!=null && editor==null) {
@@ -198,17 +234,15 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
         
     }
 
-    if (newContext.getProperty() instanceof PropertyXRef) {
-      PropertyXRef xref = (PropertyXRef)newContext.getProperty();
-      xref = xref.getTarget();
-      if (xref!=null)
-        newContext = new Context(xref);
-    }
-
     // anything we can refocus our editor to?
-    if (editor!=null && newContext.getEntity()!=null && (!sticky.isSelected()||isActionPerformed)) 
+    if (editor!=null && newContext.getEntity()!=null && (!sticky.isSelected()||isActionPerformed||newContext instanceof Editor.Selection)) 
       editor.setContext(newContext);
   
+    // start with a fresh edit
+    ok.setEnabled(false);
+    cancel.setEnabled(false);
+    buttons.setVisible(false);
+    
     // done
     populate(toolbar);
   }
@@ -335,4 +369,58 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     }
   } //Advanced
 
+  /**
+   * A ok action
+   */
+  private class OK extends Action2 implements ChangeListener {
+
+    /** constructor */
+    private OK() {
+      setText(Action2.TXT_OK);
+    }
+
+    /** cancel current proxy */
+    public void actionPerformed(ActionEvent event) {
+      commit();
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+      setEnabled(true);
+      buttons.setVisible(true);
+      buttons.revalidate();
+    }
+
+  } //OK
+
+  /**
+   * A cancel action
+   */
+  private class Cancel extends Action2 implements ChangeListener {
+
+    /** constructor */
+    private Cancel() {
+      setText(Action2.TXT_CANCEL);
+    }
+
+    /** cancel current proxy */
+    public void actionPerformed(ActionEvent event) {
+      // disable ok&cancel
+      ok.setEnabled(false);
+      cancel.setEnabled(false);
+      buttons.setVisible(false);
+
+      // re-set for cancel
+      Context ctx = editor.getContext();
+      editor.setContext(new Context());
+      editor.setContext(ctx);
+    }
+    
+    public void stateChanged(ChangeEvent e) {
+      setEnabled(true);
+      buttons.setVisible(true);
+      buttons.revalidate();
+    }
+
+  } //Cancel
+  
 } //EditView

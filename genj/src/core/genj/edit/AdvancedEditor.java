@@ -36,7 +36,6 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextAreaWidget;
@@ -48,7 +47,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -76,8 +74,6 @@ import javax.swing.JSplitPane;
 import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -99,8 +95,6 @@ import javax.swing.tree.TreePath;
   private final static Clipboard clipboard = initClipboard();
   
   private final static Registry REGISTRY = Registry.get(AdvancedEditor.class);
-  
-  private boolean ignoreSelection = false;
   
   private Set<TagPath> expands = new HashSet<TagPath>();
 
@@ -134,11 +128,6 @@ import javax.swing.tree.TreePath;
 
   /** view */
   private EditView view;
-
-  /** actions */
-  private Action2    
-    ok   = new OK(), 
-    cancel = new Cancel();
 
   /** interaction callback */
   private Callback callback;
@@ -227,16 +216,15 @@ import javax.swing.tree.TreePath;
   @Override
   public void setContext(Context context) {
     
+    // reset changes
+    changes.setChanged(false);
+    
     // clear?
-    if (context.getGedcom()==null) {
+    if (context.getGedcom()==null||context.getEntities().isEmpty()) {
       tree.setRoot(null);
       return;
     }
     
-    // ignore?
-    if (ignoreSelection||context.getEntities().isEmpty())
-      return;
-
     // clear current selection
     tree.clearSelection();
 
@@ -258,6 +246,48 @@ import javax.swing.tree.TreePath;
     if (bean!=null && view.isGrabFocus())
       bean.requestFocusInWindow();
     
+    // current root
+    Property root = tree.getRoot();
+    if (root!=null) {
+      Gedcom gedcom = root.getGedcom();
+      // ask user for commit if
+      if (changes.hasChanged()&&!gedcom.isWriteLocked()&&view.isCommitChanges()) 
+        commit();
+    }
+
+    // Clean up
+    if (bean!=null) 
+      bean.removeChangeListener(changes);
+    bean = null;
+    editPane.removeAll();
+    editPane.revalidate();
+    editPane.repaint();
+    
+    // show bean for single selection
+    if (context.getProperties().size()!=1)
+      return;
+    
+    Property prop = context.getProperty();
+    try {
+
+      // get a bean for property
+      bean = PropertyBean.getBean(prop.getClass()).setContext(prop);
+      
+      // add bean to center of editPane 
+      editPane.add(bean, BorderLayout.CENTER);
+
+      // and a label to the top
+      final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
+      editPane.add(label, BorderLayout.NORTH);
+
+      // listen to it
+      changes.setChanged(false);
+      bean.addChangeListener(changes);
+
+    } catch (Throwable t) {
+      EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
+    }
+    
     // Done
   }
 
@@ -270,22 +300,18 @@ import javax.swing.tree.TreePath;
 
   @Override
   public void commit() {
-    if (ok.isEnabled()) {
-      Property root = tree.getRoot();
-      if (root==null)
-        return;
-      Gedcom gedcom = root.getGedcom();
-  
-      if (bean!=null) 
-        gedcom.doMuteUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) {
-            bean.commit();
-          }
-        });
+    Property root = tree.getRoot();
+    if (root==null)
+      return;
+    Gedcom gedcom = root.getGedcom();
 
-      ok.setEnabled(false);
-      cancel.setEnabled(false);
-    }
+    if (bean!=null) 
+      gedcom.doMuteUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
+          bean.commit();
+        }
+      });
+
   }
   
   /**
@@ -631,131 +657,17 @@ import javax.swing.tree.TreePath;
   } //Add
     
   /**
-   * A ok action
-   */
-  private class OK extends Action2 {
-  
-    /** constructor */
-    private OK() {
-      setText(Action2.TXT_OK);
-      setEnabled(false);
-    }
-    
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      commit();
-    }
-  
-  } //OK
-  
-  /**
-   * A cancel action
-   */
-  private class Cancel extends Action2 {
-  
-    /** constructor */
-    private Cancel() {
-      setText(Action2.TXT_CANCEL);
-      setEnabled(false);
-    }
-  
-    /** cancel current proxy */
-    public void actionPerformed(ActionEvent event) {
-      // disable ok&cancel
-      ok.setEnabled(false);
-      cancel.setEnabled(false);
-      // simulate a selection change
-      List<Property> selection = tree.getSelection();
-      tree.clearSelection();
-      tree.setSelection(selection);
-    }
-  
-  } //Cancel
-  
-  /**
    * Handling selection of properties
    */
-  private class Callback implements TreeSelectionListener, TreeWillExpandListener, ChangeListener {
+  private class Callback implements TreeSelectionListener, TreeWillExpandListener {
     
     /**
      * callback - selection in tree has changed
      */
     public void valueChanged(TreeSelectionEvent e) {
-
-      // current root
-      Property root = tree.getRoot();
-      if (root!=null) {
-        Gedcom gedcom = root.getGedcom();
-        // ask user for commit if
-        if (ok.isEnabled()&&!gedcom.isWriteLocked()&&view.isCommitChanges()) 
-          commit();
-      }
-
-      // Clean up
-      if (bean!=null) 
-        bean.removeChangeListener(this);
-      bean = null;
-      editPane.removeAll();
-      editPane.revalidate();
-      editPane.repaint();
-      
-      // can show bean if single selection
       List<Property> selection = tree.getSelection();
-      if (selection.size()==1) {
-        Property prop = selection.get(0);
-        try {
-  
-          // get a bean for property
-          bean = PropertyBean.getBean(prop.getClass()).setContext(prop);
-          
-          // add bean to center of editPane 
-          editPane.add(bean, BorderLayout.CENTER);
-  
-          // and a label to the top
-          final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
-          editPane.add(label, BorderLayout.NORTH);
-  
-          // and actions to the bottom
-          if (bean.isEditable()) {
-            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            ButtonHelper bh = new ButtonHelper().setInsets(0).setContainer(buttons);
-            bh.create(ok).setFocusable(false);
-            bh.create(cancel).setFocusable(false);
-            editPane.add(buttons, BorderLayout.SOUTH);
-          }
-          
-          // listen to it
-          bean.addChangeListener(this);
-  
-        } catch (Throwable t) {
-          EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
-        }
-        
-        // start without ok and cancel
-        ok.setEnabled(false);
-        cancel.setEnabled(false);
-
-      }
-      
-      // tell to others
-      if (!selection.isEmpty()) try {
-        ignoreSelection = true;
-        ViewContext context = new ViewContext(gedcom, new ArrayList<Entity>(), selection);
-
-        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, context, false);
-      } finally {
-        ignoreSelection = false;
-      }
-  
-      // Done
-    }
-
-    /**
-     * callback for state change - enable buttons
-     */
-    public void stateChanged(ChangeEvent e) {
-      ok.setEnabled(true);
-      cancel.setEnabled(true);
+      if (!selection.isEmpty()) 
+        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Selection(gedcom, selection), false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
@@ -795,7 +707,9 @@ import javax.swing.tree.TreePath;
       //  - a bean is still displayed at the moment
       //  - next component is not part of that bean
       if (bean!=null&&!SwingUtilities.isDescendingFrom(result, bean)) {
-        tree.setSelectionRow( (tree.getSelectionRows()[0]+1) % tree.getRowCount());
+        int[] selection = tree.getSelectionRows();
+        if (selection!=null&&selection.length>0)
+          tree.setSelectionRow( (selection[0]+1) % tree.getRowCount());
       }
       // done for me
       return result;

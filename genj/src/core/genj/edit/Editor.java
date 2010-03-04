@@ -20,6 +20,10 @@
 package genj.edit;
 
 import genj.gedcom.Context;
+import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Property;
+import genj.util.ChangeSupport;
 import genj.view.ViewContext;
 
 import java.util.ArrayList;
@@ -27,12 +31,14 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 
 /**
  * The base class for our two editors basic and advanced
  */
 /*package*/ abstract class Editor extends JPanel {
   
+  protected ChangeSupport changes = new ChangeSupport(this);
   protected List<Action> actions = new ArrayList<Action>();
 
   /** 
@@ -56,5 +62,21 @@ import javax.swing.JPanel;
   public List<Action> getActions() {
     return actions;
   }
+
+  public void addChangeListener(ChangeListener listener) {
+    changes.addChangeListener(listener);
+  }
   
+  public void removeChangeListener(ChangeListener listener) {
+    changes.removeChangeListener(listener);
+  }
+  
+  /*package*/ class Selection extends Context {
+    
+    Selection(Gedcom gedcom, List<Property> selection) {
+      super(gedcom, new ArrayList<Entity>(), selection);
+    }
+
+  }
+
 } //Editor

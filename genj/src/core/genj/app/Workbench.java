@@ -28,6 +28,7 @@ import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.UnitOfWork;
 import genj.io.Filter;
 import genj.io.GedcomEncodingException;
@@ -620,11 +621,18 @@ public class Workbench extends JPanel implements SelectionSink {
       return;
     }
     
+    // following a link?
+    if (isActionPerformed && context.getProperties().size()==1) {
+      Property p = context.getProperty();
+      if (p instanceof PropertyXRef)
+        context = new Context(((PropertyXRef) p).getTarget());
+    }
+    
     // already known?
     if (!isActionPerformed && this.context.equals(context))
       return;
     
-    LOG.fine("fireSelection("+context+","+isActionPerformed+")");
+    LOG.finer("fireSelection("+context+","+isActionPerformed+")");
     
     // remember 
     this.context = context;
