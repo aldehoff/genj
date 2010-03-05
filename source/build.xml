@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Source" default="dist" basedir=".">
+
+  <property file="build.properties"/>
+
+  <path id="project.class.path">
+    <pathelement path="${dir.genj}/build/classes/core"/>
+    <pathelement path="./build/classes/core"/>
+  </path>
+	
+  <!--
+   Initialization
+   -->
+  <target name="init">
+
+    <fail unless="dir.genj" message="Please specify dir.genj in build.properties"/>
+  	
+    <echo level="info">Creating output directories</echo>
+    <mkdir dir="./build"/>
+    <mkdir dir="./build/lib"/>
+    <mkdir dir="./build/dist"/>
+    
+  </target>
+
+  <!--
+   Compilation
+   -->
+  <target name="compile" depends="init, compile.genj">
+
+    <mkdir dir="./build/classes/core"/>
+    <javac srcdir="src/core" destdir="./build/classes/core"
+    	target="1.5" debug="${javac.debug}" optimize="off" deprecation="on" encoding="ASCII">
+      <classpath refid="project.class.path"/>
+    </javac>
+
+  </target>
+	
+  <!--
+   Nested Project - genj
+   -->  
+  <target name="compile.genj" depends="init">
+  	
+    <echo level="info">Calling GenJ Application build in ${dir.genj}</echo>
+    <ant dir="${dir.genj}" inheritall="false" target="compile"/>
+	
+    <loadproperties srcfile="${dir.genj}/build/version.properties"/>
+    <echo level="info">version = ${version}</echo>
+  </target>
+
+
+  <!--
+   Cleaning
+   -->
+  <target name="clean">
+    <echo level="info">Cleaning output directories</echo>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="./build" excludes="eclipse/**"/>
+   	</delete>
+  </target>
+
+  <!--
+   Distribution
+   -->
+  <target name="dist" depends="compile">
+
+   <!-- create geo.jar -->
+   <delete file="./build/lib/source.jar"/>
+   <jar jarfile="./build/lib/source.jar" update="True">
+     <fileset dir="./build/classes/core" includes="**/*.class"/>
+     <fileset dir="./images"/>
+     <fileset dir="./language/en"/>
+     <fileset dir="./language/fr"/>
+     <fileset dir="./src/core" includes="META-INF/**"/>
+    <fileset dir="./src/core" includes="**/*.properties"/>
+   </jar>
+    
+   <!-- create genj_source-xyz.zip -->
+   <zip zipfile="./build/dist/genj_source-${version}.zip" update="True">
+     <zipfileset dir="./build" includes="lib/source.jar"/>
+   </zip>
+  	
+  </target>
+
+</project>
