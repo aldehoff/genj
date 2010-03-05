@@ -377,6 +377,7 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     /** constructor */
     private OK() {
       setText(Action2.TXT_OK);
+      setEnabled(false);
     }
 
     /** cancel current proxy */
@@ -400,6 +401,7 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     /** constructor */
     private Cancel() {
       setText(Action2.TXT_CANCEL);
+      setEnabled(false);
     }
 
     /** cancel current proxy */
