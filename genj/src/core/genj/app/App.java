@@ -20,6 +20,7 @@
 package genj.app;
 
 import genj.Version;
+import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
 import genj.option.OptionProvider;
 import genj.util.EnvironmentChecker;
@@ -202,6 +203,15 @@ public class App {
 
         // connect
         workbench.addWorkbenchListener(new WorkbenchAdapter() {
+          @Override
+          public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
+            if (context.getEntities().size()==1)
+              frame.setTitle(context.getGedcom().getName()+" - "+context.getEntity()+" - "+RESOURCES.getString("app.title"));
+            else if (context.getGedcom()!=null)
+              frame.setTitle(context.getGedcom().getName()+" - "+RESOURCES.getString("app.title"));
+            else
+              frame.setTitle(RESOURCES.getString("app.title"));
+          }
           @Override
         	public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
             frame.setTitle(RESOURCES.getString("app.title"));
