@@ -287,11 +287,8 @@ import javax.swing.tree.TreePath;
       bean.addChangeListener(changes);
       
       // focus?
-      if (view.isGrabFocus()) SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-          bean.requestFocus();
-        }
-      });
+      if (view.isGrabFocus()) 
+        bean.requestFocus();
 
     } catch (Throwable t) {
       EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
