@@ -138,15 +138,15 @@ public class PopupWidget extends JButton {
   
     // calc position
     int x=0, y=0;
-    
-    if (!(getParent() instanceof JToolBar)) {
+
+    if (!(JToolBar.class.isAssignableFrom(getParent().getClass()))) {
       x += getWidth();
     } else {
       JToolBar bar = (JToolBar)getParent();
       if (JToolBar.VERTICAL==bar.getOrientation()) {
         x += bar.getLocation().x==0 ? getWidth() : -popup.getPreferredSize().width;
       } else {
-        y += bar.getLocation().y==0 ? getHeight() : -popup.getPreferredSize().height;
+        y += bar.getLocation().y<getHeight() ? getHeight() : -popup.getPreferredSize().height;
       }
     }
     

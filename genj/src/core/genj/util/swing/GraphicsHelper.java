@@ -19,6 +19,7 @@
  */
 package genj.util.swing;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -84,17 +85,24 @@ public class GraphicsHelper {
     return new Rectangle((int)x,(int)y,(int)w,(int)h);
   }
   
+  public static Icon getIcon(int size, Shape shape, Color color) {
+    return new ShapeAsIcon(size, shape, color);
+  }
+  
   public static Icon getIcon(int size, Shape shape) {
-    return new ShapeAsIcon(size, shape);
+    return new ShapeAsIcon(size, shape, null);
   }
   
   public static Icon getIcon(double... shape) {
+    return getIcon(null, shape);
+  }
+  public static Icon getIcon(Color color, double... shape) {
     GeneralPath path = new GeneralPath();
     path.moveTo(shape[0],shape[1]);
     for (int i=2;i<shape.length;i+=2) 
       path.lineTo(shape[i+0], shape[i+1]);
     path.closePath();
-    return new ShapeAsIcon(path);
+    return new ShapeAsIcon(path, color);
   }
   
   /**
@@ -104,17 +112,22 @@ public class GraphicsHelper {
 
     private Dimension size;
     private Shape shape;
+    private Color color;
 
-    private ShapeAsIcon(Shape shape) {
+    private ShapeAsIcon(Shape shape, Color color) {
+      this.color = color;
       this.size = shape.getBounds().getSize();
       this.shape = shape;
     }
-    private ShapeAsIcon(int size, Shape shape) {
+    private ShapeAsIcon(int size, Shape shape, Color color) {
+      this.color = color;
       this.size = new Dimension(size, size);
       this.shape = shape;
     }
 
     public void paintIcon(Component c, Graphics g, int x, int y) {
+      if (color!=null)
+        g.setColor(color);
       g.translate(x, y);
       ((Graphics2D) g).fill(shape);
       g.translate(-x, -y);

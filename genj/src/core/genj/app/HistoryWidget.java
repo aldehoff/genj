@@ -27,10 +27,13 @@ import genj.gedcom.Property;
 import genj.util.swing.Action2;
 import genj.util.swing.GraphicsHelper;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.PopupWidget;
 import genj.view.SelectionSink;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +41,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JToolBar;
 
 /**
@@ -46,14 +49,15 @@ import javax.swing.JToolBar;
  */
 public class HistoryWidget extends JToolBar {
   
-  private final static Icon PICK =  GraphicsHelper.getIcon(0, 0, 8, 0, 4, 4);
+  private final static Icon POPUP =  GraphicsHelper.getIcon(Color.BLACK, 0, 0, 8, 0, 4, 4);
   
   private List<Entity> history = new ArrayList<Entity>();
-  private int highlight = -1;
+  private int index = -1;
+  
   private EventHandler events = new EventHandler();
   private Back back = new Back();
   private Forward forward = new Forward();
-  private Pick pick = new Pick();
+  private Popup pick = new Popup();
   
   /**
    * Constructor
@@ -64,7 +68,7 @@ public class HistoryWidget extends JToolBar {
     setLayout(new FlowLayout(FlowLayout.LEFT,0,0));
     add(back);
     add(forward);
-    add(new JLabel(PICK));
+    add(pick);
    
     setFloatable(false);
   }
@@ -81,14 +85,43 @@ public class HistoryWidget extends JToolBar {
   }
   
   private void update() {
-    boolean b = history.size()>1;
-    forward.setEnabled(b);
-    back.setEnabled(b);
-    pick.setEnabled(b);
+    forward.setEnabled(index<history.size()-1);
+    back.setEnabled(index>0);
+    pick.setEnabled(history.size()>1);
   }
   
   /** back */
-  private class Pick extends Action2 {
+  private class Popup extends PopupWidget {
+    Popup() {
+      super(POPUP);
+    }
+    @Override
+    public void showPopup() {
+      removeItems();
+      for (int i=0;i<history.size();i++) {
+        JMenuItem item = new JMenuItem(new Jump(i));
+        if (index==i)
+          item.setFont(item.getFont().deriveFont(Font.BOLD));
+        addItem(item);
+      }
+      super.showPopup();
+    }
+  }
+  
+  private class Jump extends Action2 {
+    private int i;
+    public Jump(int i) {
+      this.i = i;
+      Entity entity = history.get(i);
+      setImage(entity.getImage());
+      setText(entity.toString());
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      index = i;
+      update();
+      fireSelection(history.get(i));
+    }
   }
   
   /** back */
@@ -98,16 +131,11 @@ public class HistoryWidget extends JToolBar {
       install(HistoryWidget.this, "alt LEFT");
     }
     public void actionPerformed(ActionEvent evt) {
-      
-      if (history.size()<2)
+      if (index<1)
         return;
-      
-      Entity e = history.remove(history.size()-1);
-      history.add(0,e);
-      
+      index--;
       update();
-      fireSelection(history.get(history.size()-1));
-
+      fireSelection(history.get(index));
     }
   }
   
@@ -118,12 +146,11 @@ public class HistoryWidget extends JToolBar {
       setImage(new ImageIcon(this,"images/Forward.png"));
     }
     public void actionPerformed(ActionEvent evt) {
-      if (history.size()<2)
+      if (index==history.size()-1)
         return;
-      Entity e = history.remove(0);
-      history.add(e);
+      index++;
       update();
-      fireSelection(history.get(history.size()-1));
+      fireSelection(history.get(index));
     }
   }
   
@@ -154,16 +181,13 @@ public class HistoryWidget extends JToolBar {
         return;
 
       // don't add twice to tail
-      if (!history.isEmpty() && history.get(history.size()-1) == e)
+      if (!history.isEmpty() && history.get(index) == e)
         return;
 
-      // pull forward
-      int i = history.indexOf(e);
-      if (i>=0) 
-        history.remove(i);
-
       // add
-      history.add(e);
+      while (history.size()>index+1)
+        history.remove(history.size()-1);
+      history.add(++index, e);
       
       // trim
       while (history.size()>50)
@@ -185,10 +209,14 @@ public class HistoryWidget extends JToolBar {
         return;
       
       history.remove(i);
-      update();
       
-      if (i==history.size()&&!history.isEmpty())
-        fireSelection(history.get(history.size()-1));
+      i--;
+      if (i<0&&history.size()>0)
+        i++;
+      if (i>=0)
+        fireSelection(history.get(i));
+      
+      update();
     }
 
     @Override
