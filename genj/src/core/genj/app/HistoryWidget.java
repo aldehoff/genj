@@ -190,8 +190,10 @@ public class HistoryWidget extends JToolBar {
       history.add(++index, e);
       
       // trim
-      while (history.size()>50)
+      while (history.size()>16) {
+        index--;
         history.remove(0);
+      }
       
       update();
       
