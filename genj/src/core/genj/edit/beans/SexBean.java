@@ -79,10 +79,18 @@ public class SexBean extends PropertyBean {
   }
   
   private class ActionHandler implements ActionListener {
+    private JRadioButton last;
     public void actionPerformed(ActionEvent e) {
       if ( (e.getModifiers()&ActionEvent.CTRL_MASK)!=0 ) {
         group.clearSelection();
+        last = null;
       } else {
+        if (last==e.getSource()) {
+          last = last==male ? female : male;
+          last.setSelected(true);
+        } else {
+          last = (JRadioButton)e.getSource();
+        }
         if (getProperty()!=null&&getSex()==((PropertySex)getProperty()).getSex())
           return;
       }
@@ -116,11 +124,11 @@ public class SexBean extends PropertyBean {
     if (sex!=null) 
       switch (sex.getSex()) {
         case PropertySex.MALE:
-          male.setSelected(true);
+          male.doClick();
           defaultFocus = male;
           break;
         case PropertySex.FEMALE:
-          female.setSelected(true);
+          female.doClick();
           defaultFocus = female;
           break;
       }
