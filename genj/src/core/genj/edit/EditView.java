@@ -87,7 +87,6 @@ public class EditView extends View implements ContextProvider  {
     // Done
   }
   
-
   /**
    * Set editor to use
    */
@@ -222,7 +221,7 @@ public class EditView extends View implements ContextProvider  {
     }
 
     // anything we can refocus our editor to?
-    if (editor!=null && newContext.getEntity()!=null && (!sticky.isSelected()||isActionPerformed||newContext instanceof Editor.Selection)) 
+    if (editor!=null && newContext.getEntity()!=null && (!sticky.isSelected()||isActionPerformed) ) 
       editor.setContext(newContext);
   
     // start with a fresh edit

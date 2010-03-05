@@ -27,6 +27,7 @@ import genj.gedcom.Property;
 import genj.gedcom.UnitOfWork;
 import genj.util.Registry;
 import genj.view.ContextProvider;
+import genj.view.SelectionSink;
 import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
@@ -39,7 +40,7 @@ import javax.swing.SwingUtilities;
 /**
  * The basic version of an editor for a entity. Tries to hide Gedcom complexity from the user while being flexible in what it offers to edit information pertaining to an entity.
  */
-/* package */class BasicEditor extends Editor implements ContextProvider {
+/* package */class BasicEditor extends Editor implements SelectionSink, ContextProvider {
 
   final static Registry REGISTRY = Registry.get(BasicEditor.class);
   
@@ -74,6 +75,14 @@ import javax.swing.SwingUtilities;
     // done
   }
   
+  /**
+   * By being a selection sink ourselves we can morph any outgoing context into our own marker
+   */
+  public void fireSelection(Context context, boolean isActionPerformed) {
+    if (isActionPerformed)
+      SelectionSink.Dispatcher.fireSelection(getParent(), context, isActionPerformed);
+  }
+
   /**
    * Callback - our current context
    */

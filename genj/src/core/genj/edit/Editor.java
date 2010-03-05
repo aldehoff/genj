@@ -20,9 +20,6 @@
 package genj.edit;
 
 import genj.gedcom.Context;
-import genj.gedcom.Entity;
-import genj.gedcom.Gedcom;
-import genj.gedcom.Property;
 import genj.util.ChangeSupport;
 import genj.view.ViewContext;
 
@@ -69,14 +66,6 @@ import javax.swing.event.ChangeListener;
   
   public void removeChangeListener(ChangeListener listener) {
     changes.removeChangeListener(listener);
-  }
-  
-  /*package*/ class Selection extends Context {
-    
-    Selection(Gedcom gedcom, List<Property> selection) {
-      super(gedcom, new ArrayList<Entity>(), selection);
-    }
-
   }
 
 } //Editor

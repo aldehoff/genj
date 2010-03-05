@@ -671,7 +671,7 @@ import javax.swing.tree.TreePath;
       if (ignoreSelection) 
         return;
       List<Property> selection = tree.getSelection();
-      SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Selection(gedcom, selection), false);
+      SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Context(gedcom, new ArrayList<Entity>(), selection), false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
