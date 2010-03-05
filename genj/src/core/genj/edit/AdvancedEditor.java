@@ -97,6 +97,8 @@ import javax.swing.tree.TreePath;
   private final static Registry REGISTRY = Registry.get(AdvancedEditor.class);
   
   private Set<TagPath> expands = new HashSet<TagPath>();
+  
+  private boolean ignoreSelection = false;
 
   /**
    * Initialize clipboard - trying system falling back to private
@@ -131,7 +133,7 @@ import javax.swing.tree.TreePath;
 
   /** interaction callback */
   private Callback callback;
-
+  
   /**
    * Initialize
    */
@@ -225,6 +227,8 @@ import javax.swing.tree.TreePath;
       return;
     }
     
+    ignoreSelection = true;
+    
     // clear current selection
     tree.clearSelection();
 
@@ -236,16 +240,6 @@ import javax.swing.tree.TreePath;
         expand(path);
     }
 
-    // set selection
-    List<? extends Property> props = context.getProperties();
-    if (props.isEmpty()&&entity.getNoOfProperties()>0) 
-      props = Collections.singletonList(entity.getProperty(0)); 
-    tree.setSelection(props);
-    
-    // 20060301 set focus since selection change won't do that anymore
-    if (bean!=null && view.isGrabFocus())
-      bean.requestFocusInWindow();
-    
     // current root
     Property root = tree.getRoot();
     if (root!=null) {
@@ -263,11 +257,19 @@ import javax.swing.tree.TreePath;
     editPane.revalidate();
     editPane.repaint();
     
-    // show bean for single selection
-    if (context.getProperties().size()!=1)
-      return;
+    // set selection
+    List<? extends Property> props = context.getProperties();
+    if (props.isEmpty()&&entity.getNoOfProperties()>0) 
+      props = Collections.singletonList(entity.getProperty(0)); 
     
-    Property prop = context.getProperty();
+    tree.setSelection(props);
+    
+    ignoreSelection = false;
+    
+    // show bean for single selection
+    if (props.size()!=1)
+      return;
+    Property prop = props.get(0);
     try {
 
       // get a bean for property
@@ -283,6 +285,13 @@ import javax.swing.tree.TreePath;
       // listen to it
       changes.setChanged(false);
       bean.addChangeListener(changes);
+      
+      // focus?
+      if (view.isGrabFocus()) SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          bean.requestFocus();
+        }
+      });
 
     } catch (Throwable t) {
       EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
@@ -647,10 +656,7 @@ import javax.swing.tree.TreePath;
       }
       tree.setSelectionPath(new TreePath(tree.getPathFor(newProp)));
       
-      // bean we can give focus to (in case of single selection)?
-      if (bean!=null && view.isGrabFocus())
-        bean.requestFocusInWindow();
-      
+    
       // done
     }
 
@@ -665,9 +671,10 @@ import javax.swing.tree.TreePath;
      * callback - selection in tree has changed
      */
     public void valueChanged(TreeSelectionEvent e) {
+      if (ignoreSelection) 
+        return;
       List<Property> selection = tree.getSelection();
-      if (!selection.isEmpty()) 
-        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Selection(gedcom, selection), false);
+      SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Selection(gedcom, selection), false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
@@ -737,6 +744,9 @@ import javax.swing.tree.TreePath;
     /** constructor */
     private Tree() {
       super(gedcom);
+      // this makes the tree not grab focus on selection changes with mouse
+      // thus not killing our grabFocus functionality
+      setRequestFocusEnabled(false);
       // shortcuts
       new Cut().install(this, ACC_CUT, JComponent.WHEN_FOCUSED);
       new Copy().install(this, ACC_COPY, JComponent.WHEN_FOCUSED);
