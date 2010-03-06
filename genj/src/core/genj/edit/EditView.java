@@ -21,6 +21,8 @@ package genj.edit;
 
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
+import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomListenerAdapter;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -60,10 +62,12 @@ public class EditView extends View implements ContextProvider  {
   private Focus focus = new Focus();
   private OK ok = new OK();
   private Cancel cancel = new Cancel();
+  private Callback callback = new Callback();
   
   private Editor editor;
   private JPanel buttons;
   private ToolBar toolbar;
+  private Gedcom gedcom;
   
   /**
    * Constructor
@@ -192,10 +196,16 @@ public class EditView extends View implements ContextProvider  {
     }
   }
   
-  public void setContext(Context newContext, boolean isActionPerformed) {
+  public void setContext(Context context, boolean isActionPerformed) {
     
-    // new gedcom?
-    if (newContext.getGedcom()==null) {
+    // disconnect from last gedcom?
+    if (context.getGedcom()!=gedcom && gedcom!=null) {
+      gedcom.removeGedcomListener(callback);
+      gedcom=null;
+    }
+    
+    // clear?
+    if (context.getGedcom()==null) {
       sticky.setSelected(false);
       setEditor(null);
       populate(toolbar);
@@ -205,24 +215,30 @@ public class EditView extends View implements ContextProvider  {
       return;
     }
     
+    // connect to gedcom?
+    if (context.getGedcom()!=gedcom) {
+      gedcom = context.getGedcom();
+      gedcom.addGedcomListener(callback);
+    }
+    
     // commit?
     if (ok.isEnabled()&&!editor.getContext().getGedcom().isWriteLocked()&&isCommitChanges()) 
       commit();
     
     // new editor?
-    if (newContext.getEntity()!=null && editor==null) {
+    if (context.getEntity()!=null && editor==null) {
 
       sticky.setSelected(false);
       if (mode.isSelected())
-        setEditor(new AdvancedEditor(newContext.getGedcom(), this));
+        setEditor(new AdvancedEditor(context.getGedcom(), this));
       else
-        setEditor(new BasicEditor(newContext.getGedcom(), this));
+        setEditor(new BasicEditor(context.getGedcom(), this));
         
     }
 
     // anything we can refocus our editor to?
-    if (editor!=null && newContext.getEntity()!=null && (!sticky.isSelected()||isActionPerformed) ) 
-      editor.setContext(newContext);
+    if (editor!=null && context.getEntity()!=null && (!sticky.isSelected()||isActionPerformed) ) 
+      editor.setContext(context);
   
     // start with a fresh edit
     ok.setEnabled(false);
@@ -410,5 +426,13 @@ public class EditView extends View implements ContextProvider  {
     }
 
   } //Cancel
+  
+  private class Callback extends GedcomListenerAdapter {
+    @Override
+    public void gedcomWriteLockReleased(Gedcom gedcom) {
+      if (editor!=null)
+        setContext(editor.getContext(), true);
+    }
+  }
   
 } //EditView

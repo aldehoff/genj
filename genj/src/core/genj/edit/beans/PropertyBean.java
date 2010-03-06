@@ -303,6 +303,8 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
       property = root.setValue(path, "");
     // let impl do its thing
     commitImpl(property);
+    // reset state (this is important for e.g. choice values)
+    setPropertyImpl(property);
     // clear changed
     changeSupport.setChanged(false);
     // nothing more

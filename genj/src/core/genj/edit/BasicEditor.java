@@ -56,6 +56,8 @@ import javax.swing.SwingUtilities;
   /** current panels */
   private BeanPanel beanPanel;
   
+  private boolean isIgnoreSetContext = false;
+  
   /**
    * Constructor
    */
@@ -104,6 +106,9 @@ import javax.swing.SwingUtilities;
   @Override
   public void setContext(Context context) {
     
+    if (isIgnoreSetContext)
+      return;
+    
     actions.clear();
     
     // clear?
@@ -140,12 +145,17 @@ import javax.swing.SwingUtilities;
   public void commit() {
     
     // commit changes (without listing to the change itself)
-    gedcom.doMuteUnitOfWork(new UnitOfWork() {
-      public void perform(Gedcom gedcom) {
-        beanPanel.commit();
-      }
-    });
-
+    try {
+      isIgnoreSetContext = true;
+      gedcom.doMuteUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
+          beanPanel.commit();
+        }
+      });
+    } finally {
+      isIgnoreSetContext = false;
+    }
+    
     // lookup current focus now (any temporary props are committed now)
     PropertyBean focussedBean = getFocus();
     Property focus = focussedBean !=null ? focussedBean.getProperty() : null;
