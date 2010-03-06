@@ -63,21 +63,7 @@ public class EventsBean extends PropertyBean {
   public EventsBean() {
     
     // prepare a simple table
-    table = new PropertyTableWidget() {
-      @Override
-      protected String getCellValue(Property property, int row, int col) {
-        if (col==0) {
-          String result = property.getPropertyName();
-          String val = property.getDisplayValue();
-          if (val.length()==0)
-            val = property.getPropertyValue("TYPE");
-          if (val.length()>0)
-            result += " ("+val+")";
-          return  result;
-        }
-        return super.getCellValue(property, row, col);
-      }
-    };
+    table = new PropertyTableWidget();
     table.setVisibleRowCount(5);
     
     actions.add(new Add());
@@ -216,10 +202,10 @@ public class EventsBean extends PropertyBean {
     }
     
     @Override
-    public String getName(int col) {
+    public String getColName(int col) {
       if (col==0)
         return Gedcom.getName("EVEN");
-      return super.getName(col);
+      return super.getColName(col);
     }
     
     @Override
@@ -233,15 +219,28 @@ public class EventsBean extends PropertyBean {
     }
 
     @Override
-    public TagPath getPath(int col) {
+    public TagPath getColPath(int col) {
       return COLUMNS[col];
     }
 
     @Override
-    public Property getProperty(int row) {
+    public Property getRowRoot(int row) {
       return events.get(row);
     }
     
+    @Override
+    public String getCellValue(Property property, int row, int col) {
+      if (col==0) {
+        String result = property.getPropertyName();
+        String val = property.getDisplayValue();
+        if (val.length()==0)
+          val = property.getPropertyValue("TYPE");
+        if (val.length()>0)
+          result += " ("+val+")";
+        return  result;
+      }
+      return super.getCellValue(property, row, col);
+    }
   }
 
 }

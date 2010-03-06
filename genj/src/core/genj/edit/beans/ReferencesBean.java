@@ -51,28 +51,7 @@ public class ReferencesBean extends PropertyBean {
   public ReferencesBean() {
     
     // prepare a simple table
-    table = new PropertyTableWidget() {
-      @Override
-      protected String getCellValue(Property property, int row, int col) {
-        if (property instanceof PropertyXRef) {
-          PropertyXRef ref = (PropertyXRef)property;
-          if (ref.isTransient())
-            ref = ref.getTarget();
-          return Gedcom.getName(ref.getTag()) + " (" + ref.getTargetEntity().getEntity().getId() +")";
-        }
-        if (property instanceof PropertyEvent) {
-          return property.getPropertyName();
-        }
-        if (col==0) {
-          return property.getPropertyName();
-        }
-        return property.getDisplayValue();
-      }
-      @Override
-      protected boolean getCellAlignment(Property property, int row, int col) {
-        return true;
-      }
-    };
+    table = new PropertyTableWidget();
     table.setVisibleRowCount(5);
     
     setLayout(new BorderLayout());
@@ -143,13 +122,34 @@ public class ReferencesBean extends PropertyBean {
       return rows.size();
     }
 
-    public TagPath getPath(int col) {
+    public TagPath getColPath(int col) {
       return columns[col];
     }
 
-    public Property getProperty(int row) {
+    public Property getRowRoot(int row) {
       return rows.get(row);
     }
 
+    @Override
+    public String getCellValue(Property property, int row, int col) {
+      if (property instanceof PropertyXRef) {
+        PropertyXRef ref = (PropertyXRef)property;
+        if (ref.isTransient())
+          ref = ref.getTarget();
+        return Gedcom.getName(ref.getTag()) + " (" + ref.getTargetEntity().getEntity().getId() +")";
+      }
+      if (property instanceof PropertyEvent) {
+        return property.getPropertyName();
+      }
+      if (col==0) {
+        return property.getPropertyName();
+      }
+      return property.getDisplayValue();
+    }
+    
+    @Override
+    public int getCellAlignment(Property property, int row, int col) {
+      return LEFT;
+    }
   }
 } 

@@ -296,12 +296,12 @@ public class TableView extends View {
     }
     
     /** path for colum */
-    public TagPath getPath(int col) {
+    public TagPath getColPath(int col) {
       return mode.getPaths()[col];
     }
 
     /** property for row */
-    public Property getProperty(int row) {
+    public Property getRowRoot(int row) {
       
       // init rows
       getNumRows();

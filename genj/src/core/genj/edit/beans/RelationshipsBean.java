@@ -54,13 +54,7 @@ public class RelationshipsBean extends PropertyBean {
   public RelationshipsBean() {
     
     // prepare a simple table
-    table = new PropertyTableWidget() {
-      @Override
-      protected String getCellValue(Property property, int row, int col) {
-        String relationship = relationships.get(property);
-        return relationship!=null ? relationship : super.getCellValue(property, row, col);
-      }
-    };
+    table = new PropertyTableWidget();
     table.setVisibleRowCount(5);
     
     setLayout(new BorderLayout());
@@ -200,13 +194,18 @@ public class RelationshipsBean extends PropertyBean {
       return rows.size();
     }
     
-    public TagPath getPath(int col) {
+    public TagPath getColPath(int col) {
       return columns[col];
     }
 
-    public Property getProperty(int row) {
+    public Property getRowRoot(int row) {
       return rows.get(row);
     }
     
+    @Override
+    public String getCellValue(Property property, int row, int col) {
+      String relationship = relationships.get(property);
+      return relationship!=null ? relationship : super.getCellValue(property, row, col);
+    }
   }
 } 

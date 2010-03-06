@@ -25,8 +25,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
-import genj.gedcom.PropertyNumericValue;
-import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
@@ -65,7 +63,6 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -329,26 +326,6 @@ public class PropertyTableWidget extends JPanel  {
     }
   }
   
-  protected String getCellValue(Property property, int row, int col) {
-    if (property==null)
-      return "";
-    if (property instanceof Entity) 
-      return ((Entity)property).getId();
-    if (property instanceof PropertySex) 
-      return Character.toString(((PropertySex)property).getDisplayValue().charAt(0));
-    return property.getDisplayValue();
-  }
-  
-  protected boolean getCellAlignment(Property property, int row, int col) {
-    if (property instanceof Entity) 
-      return false;
-    if (property instanceof PropertyDate) 
-      return false;
-    if (property instanceof PropertyNumericValue) 
-      return false;
-    return true;
-  }
-  
   /**
    * Table Content
    */
@@ -528,7 +505,7 @@ public class PropertyTableWidget extends JPanel  {
         return -1;
       SortableTableModel model = (SortableTableModel)getModel();
       for (int i=0;i<model.getRowCount();i++) {
-        if (propertyModel.getProperty(model.modelIndex(i))==property)
+        if (propertyModel.getRowRoot(model.modelIndex(i))==property)
           return i;
       }
       return -1;
@@ -580,7 +557,7 @@ public class PropertyTableWidget extends JPanel  {
             continue;
           Property prop = (Property)getValueAt(r,c);
           if (prop==null)
-            prop = propertyModel.getProperty(model.modelIndex(r));
+            prop = propertyModel.getRowRoot(model.modelIndex(r));
           // keep it
           if (before.contains(prop)) 
             properties.add(prop);
@@ -650,7 +627,7 @@ public class PropertyTableWidget extends JPanel  {
           
           // add representation for each row that wasn't represented by a property
           if (!rowRepresented)
-            properties.add(propertyModel.getProperty(model.modelIndex(rows[r])));
+            properties.add(propertyModel.getRowRoot(model.modelIndex(rows[r])));
           
           // next selected row
         }
@@ -733,7 +710,7 @@ public class PropertyTableWidget extends JPanel  {
        *  patched column name
        */
       public String getColumnName(int col) {
-        return model!=null ? model.getName(col) : "";
+        return model!=null ? model.getColName(col) : "";
       }
       
       /** num columns */
@@ -748,7 +725,7 @@ public class PropertyTableWidget extends JPanel  {
       
       /** path in column */
       private TagPath getPath(int col) {
-        return model!=null ? model.getPath(col) : null;
+        return model!=null ? model.getColPath(col) : null;
       }
       
       /** context */
@@ -762,7 +739,7 @@ public class PropertyTableWidget extends JPanel  {
           return new Context(prop);
         
         // selected row at least?
-        Property root = model.getProperty(row);
+        Property root = model.getRowRoot(row);
         if (root!=null)
           return new Context(root.getEntity());
 
@@ -779,7 +756,7 @@ public class PropertyTableWidget extends JPanel  {
         
         Property prop = cells[row][col];
         if (prop==null) {
-          prop = model.getProperty(row).getProperty(model.getPath(col));
+          prop = model.getRowRoot(row).getProperty(model.getColPath(col));
           cells[row][col] = prop;
         }
         return prop;
@@ -794,7 +771,7 @@ public class PropertyTableWidget extends JPanel  {
        * get property by row
        */
       private Property getProperty(int row) {
-        return model.getProperty(row);
+        return model.getRowRoot(row);
       }
       
     } //Model
@@ -817,10 +794,16 @@ public class PropertyTableWidget extends JPanel  {
         if (getRowHeight()!=getPreferredSize().height)
           setRowHeight(getPreferredSize().height);
         
-        // there's a property here
-        setText(getCellValue((Property)value, row, col));
-        // figure out alignment
-        setHorizontalAlignment(getCellAlignment((Property)value, row, col) ? SwingConstants.LEFT : SwingConstants.RIGHT);
+        // figure out value and alignment
+        if (propertyModel instanceof AbstractPropertyTableModel) {
+          AbstractPropertyTableModel m = (AbstractPropertyTableModel)propertyModel;
+          setText(m.getCellValue((Property)value, row, col));
+          setHorizontalAlignment(m.getCellAlignment((Property)value, row, col));
+        } else {
+          setText(AbstractPropertyTableModel.getDefaultCellValue((Property)value, row, col));
+          setHorizontalAlignment(AbstractPropertyTableModel.getDefaultCellAlignment((Property)value, row, col));
+        }
+        
         // background?
         if (selected) {
           setBackground(table.getSelectionBackground());

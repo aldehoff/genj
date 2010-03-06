@@ -23,9 +23,14 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyNumericValue;
+import genj.gedcom.PropertySex;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.SwingConstants;
 
 import spin.Spin;
 
@@ -33,6 +38,11 @@ import spin.Spin;
  * A default base-type for property models
  */
 public abstract class AbstractPropertyTableModel implements PropertyTableModel, GedcomListener {
+  
+  protected final static int 
+    LEFT = SwingConstants.LEFT,
+    CENTER = SwingConstants.CENTER,
+    RIGHT = SwingConstants.RIGHT;
   
   private List<PropertyTableModelListener> listeners = new CopyOnWriteArrayList<PropertyTableModelListener>();
   private Gedcom gedcom = null;
@@ -70,8 +80,8 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
   /**
    * Column name
    */
-  public String getName(int col) {
-    return getPath(col).getName();    
+  public String getColName(int col) {
+    return getColPath(col).getName();    
   }
   
   /**
@@ -133,4 +143,31 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
     // ignored
   }
 
+  public String getCellValue(Property property, int row, int col) {
+    return getDefaultCellValue(property, row, col);
+  }
+  
+  /*package*/ static String getDefaultCellValue(Property property, int ro, int col) {
+    if (property==null)
+      return "";
+    if (property instanceof Entity) 
+      return ((Entity)property).getId();
+    if (property instanceof PropertySex) 
+      return Character.toString(((PropertySex)property).getDisplayValue().charAt(0));
+    return property.getDisplayValue();
+  }
+  
+  public int getCellAlignment(Property property, int row, int col) {
+    return getDefaultCellAlignment(property, row, col);
+  }
+  
+  /*package*/ static int getDefaultCellAlignment(Property property, int row, int col) {
+    if (property instanceof Entity) 
+      return RIGHT;
+    if (property instanceof PropertyDate) 
+      return RIGHT;
+    if (property instanceof PropertyNumericValue) 
+      return RIGHT;
+    return LEFT;
+  }
 }
