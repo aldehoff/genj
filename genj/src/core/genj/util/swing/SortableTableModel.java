@@ -279,7 +279,7 @@ public class SortableTableModel extends AbstractTableModel {
         public int compareTo(Row other) {
             int row1 = modelIndex;
             int row2 = other.modelIndex;
-
+            
             for (Directive directive : sortingColumns) {
                 int column = directive.column;
                 Object o1 = tableModel.getValueAt(row1, column);
@@ -294,11 +294,13 @@ public class SortableTableModel extends AbstractTableModel {
                 } else if (o2 == null) {
                     comparison = 1;
                 } else {
-                  comparison = compare(o1,o2);
+                  if (tableModel instanceof RowComparator) 
+                    comparison = ((RowComparator)tableModel).compare(o1, o2, column);
+                  else
+                    comparison = compare(o1,o2);
                 }
-                if (comparison != 0) {
-                    return directive.direction == DESCENDING ? -comparison : comparison;
-                }
+                if (comparison != 0) 
+                  return directive.direction == DESCENDING ? -comparison : comparison;
             }
             return 0;
         }
@@ -498,5 +500,9 @@ public class SortableTableModel extends AbstractTableModel {
         public int getDirection() {
           return direction;
         }
+    }
+    
+    public static interface RowComparator {
+      public int compare(Object valueA, Object valueB, int col);
     }
 }

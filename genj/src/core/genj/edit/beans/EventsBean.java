@@ -229,16 +229,26 @@ public class EventsBean extends PropertyBean {
     }
     
     @Override
+    public int compare(Property valueA, Property valueB, int col) {
+      if (col==0) 
+        return toString(valueA).compareTo(toString(valueB));
+      return super.compare(valueA, valueB, col);
+    }
+    
+    private String toString(Property prop) {
+      String result = prop.getPropertyName();
+      String val = prop.getDisplayValue();
+      if (val.length()==0)
+        val = prop.getPropertyValue("TYPE");
+      if (val.length()>0)
+        result += " ("+val+")";
+      return  result;
+    }
+    
+    @Override
     public String getCellValue(Property property, int row, int col) {
-      if (col==0) {
-        String result = property.getPropertyName();
-        String val = property.getDisplayValue();
-        if (val.length()==0)
-          val = property.getPropertyValue("TYPE");
-        if (val.length()>0)
-          result += " ("+val+")";
-        return  result;
-      }
+      if (col==0) 
+        return toString(property);
       return super.getCellValue(property, row, col);
     }
   }

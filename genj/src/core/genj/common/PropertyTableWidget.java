@@ -640,7 +640,7 @@ public class PropertyTableWidget extends JPanel  {
     /**
      * The logical model
      */
-    private class Model extends AbstractTableModel implements PropertyTableModelListener {
+    private class Model extends AbstractTableModel implements PropertyTableModelListener, SortableTableModel.RowComparator {
       
       /** our model */
       private PropertyTableModel model;
@@ -704,6 +704,13 @@ public class PropertyTableWidget extends JPanel  {
         // stop listening ?
         if (model!=null&&getListeners(TableModelListener.class).length==0)
           model.removeListener(this);
+      }
+      
+      @Override
+      public int compare(Object valueA, Object valueB, int col) {
+        if (propertyModel instanceof AbstractPropertyTableModel)
+          return ((AbstractPropertyTableModel)propertyModel).compare((Property)valueA,(Property)valueB, col);
+        return AbstractPropertyTableModel.defaultCompare((Property)valueA,(Property)valueB, col);
       }
       
       /**

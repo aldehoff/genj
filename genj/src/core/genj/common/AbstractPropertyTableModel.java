@@ -170,4 +170,12 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
       return RIGHT;
     return LEFT;
   }
+
+  public int compare(Property valueA, Property valueB, int col) {
+    return defaultCompare(valueA, valueB, col);
+  }
+
+  /*package*/ static int defaultCompare(Property valueA, Property valueB, int col) {
+    return valueA.compareTo(valueB);
+  }
 }
