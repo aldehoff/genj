@@ -668,7 +668,8 @@ import javax.swing.tree.TreePath;
      * callback - selection in tree has changed
      */
     public void valueChanged(TreeSelectionEvent e) {
-      if (ignoreSelection) 
+      // ignore override + model change check
+      if (ignoreSelection||tree.getRoot()==null) 
         return;
       List<Property> selection = tree.getSelection();
       SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Context(gedcom, new ArrayList<Entity>(), selection), false);
