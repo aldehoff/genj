@@ -261,6 +261,7 @@ public class SearchView extends View {
       
       stop();
       results.clear();
+      labelCount.setText("");
       actionStart.setEnabled(false);
       
       context.getGedcom().removeGedcomListener((GedcomListener)Spin.over(results));
