@@ -191,7 +191,7 @@ public class Indi extends Entity {
     for (int i=0,j=siblings.length;i<j;i++) {
       if (siblings[i]==this)
         break;
-      result.add(0, siblings[i]);
+      result.add(siblings[i]);
     }
     
     // done
