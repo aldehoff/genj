@@ -373,6 +373,7 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
       case TOOLBAR:
         result.add(new Undo(context.getGedcom()));
         result.add(new Redo(context.getGedcom()));
+        result.add(new ActionProvider.SeparatorAction());
         break;
     }
 

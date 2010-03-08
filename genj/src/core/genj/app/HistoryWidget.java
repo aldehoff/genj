@@ -64,13 +64,17 @@ public class HistoryWidget extends JToolBar {
    */
   public HistoryWidget(Workbench workbench) {
     workbench.addWorkbenchListener(events);
-    
     setLayout(new FlowLayout(FlowLayout.LEFT,0,0));
     add(back);
     add(forward);
     add(pick);
    
     setFloatable(false);
+  }
+  
+  @Override
+  public Dimension getMaximumSize() {
+    return getPreferredSize();
   }
   
   @Override
@@ -152,11 +156,6 @@ public class HistoryWidget extends JToolBar {
       update();
       fireSelection(history.get(index));
     }
-  }
-  
-  @Override
-  public Dimension getMinimumSize() {
-    return getPreferredSize();
   }
   
   private class EventHandler extends WorkbenchAdapter implements GedcomListener {

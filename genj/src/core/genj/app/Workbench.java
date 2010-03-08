@@ -130,7 +130,7 @@ public class Workbench extends JPanel implements SelectionSink {
   private Context context = new Context();
   private DockingPane dockingPane = new WorkbenchPane();
   private Menu menu = new Menu();
-  private HistoryWidget breadcrumb = new HistoryWidget(this);
+  private HistoryWidget history = new HistoryWidget(this);
   private Toolbar toolbar = new Toolbar();
   private Runnable runOnExit;
   private StatusBar statusBar = new StatusBar();
@@ -1405,7 +1405,6 @@ public class Workbench extends JPanel implements SelectionSink {
       add(new ActionOpen());
       add(new ActionSave(false));
       
-      
       // let providers speak
       if (newg!=null) {
         Action2.Group actions = new Action2.Group("ignore");
@@ -1427,10 +1426,9 @@ public class Workbench extends JPanel implements SelectionSink {
         }
       }
       
-      // add breadcrumb
-      addSeparator();
-      add(breadcrumb);
-      
+      // add history
+      add(history);
+            
       // connect actions
       connect(newg, actions);
       
