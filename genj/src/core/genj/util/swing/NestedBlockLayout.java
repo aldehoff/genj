@@ -475,21 +475,39 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** set cell content */
     List<Block> setContent(Object key, Component component, List<Block> path) {
       
+      int lastKeyMatch = -1;
+      
       // look for it in our subs
-      for (Block sub : subs) {
+      for (int i=0; i<subs.size(); i++) {
+        
+        Block sub = subs.get(i);
+
+        if (sub instanceof Cell && key instanceof String && key.equals(((Cell)sub).element)) 
+          lastKeyMatch = i;
+
+        // try to set
         if (!sub.setContent(key, component, path).isEmpty()) {
           path.add(this);
-          
           if (component instanceof Expander) {
             int indent = ((Expander)component).getIndent();
             if (indent<path.size() && path.get(indent)==this)
               expander = (Expander)component;
           }
-          break;
+          return path;
         }
+        
       }
 
-      // done
+      // last chance fallback case - clone cell?
+      if (lastKeyMatch>=0) {
+        Block clone = subs.get(lastKeyMatch).clone();
+        subs.add(lastKeyMatch+1, clone);
+        clone.setContent(key, component, path);
+        path.add(this);
+        return path;
+      }
+
+      // not found
       return path;
     }
 
@@ -772,9 +790,12 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     List<Block> setContent(Object key, Component component, List<Block> path) {
       
       if (  (key instanceof Cell&&key!=this)
-         || (key instanceof String&&!element.equals(key))
+         || (key instanceof String&&(!element.equals(key)||this.component!=null))
          || (key==null&&this.component!=null))
         return path;
+      
+      if (this.component!=null)
+        throw new IllegalArgumentException("can't set component twice");
       
       this.component = component;
       path.add(this);
