@@ -164,6 +164,7 @@ public class HistoryWidget extends JToolBar {
     @Override
     public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
       history.clear();
+      index = -1;
       update();
       gedcom.removeGedcomListener(this);
     }
