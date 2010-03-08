@@ -185,7 +185,7 @@ public class EditView extends View implements ContextProvider  {
   
   @Override
   public void commit() {
-    if (editor!=null) {
+    if (ok.isEnabled()) {
       try {
         editor.commit();
       } finally {
