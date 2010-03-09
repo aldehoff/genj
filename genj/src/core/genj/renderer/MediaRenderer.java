@@ -107,7 +107,7 @@ public class MediaRenderer {
     // a file?
     if (prop instanceof PropertyFile) {
       File file = ((PropertyFile)prop).getFile();
-      if (file.exists())
+      if (file!=null && file.exists())
         return InputSource.get(file);
       return null;
     }

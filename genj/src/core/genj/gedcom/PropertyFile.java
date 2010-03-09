@@ -192,7 +192,8 @@ public class PropertyFile extends Property {
   /**
    * The files location (if externally accessible)    */
   public File getFile() {
-    return getGedcom().getOrigin().getFile(file);
+    Gedcom gedcom = getGedcom();
+    return gedcom!=null ? gedcom.getOrigin().getFile(file) : null;
   }
 
   /**
