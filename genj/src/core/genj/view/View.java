@@ -23,6 +23,7 @@ import genj.gedcom.Context;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Window;
 
@@ -39,6 +40,7 @@ public abstract class View extends JPanel implements SelectionListener {
    */
   public View() {
     super(new BorderLayout()); 
+    setMinimumSize(new Dimension());
   }
   
   /**
