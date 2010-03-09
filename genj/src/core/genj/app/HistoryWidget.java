@@ -211,6 +211,8 @@ public class HistoryWidget extends JToolBar {
         return;
       
       history.remove(i);
+      if (index>=i)
+        index--;
       
       i--;
       if (i<0&&history.size()>0)
