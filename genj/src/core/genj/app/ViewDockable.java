@@ -26,6 +26,7 @@ import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.MenuHelper;
+import genj.util.swing.ToolbarWidget;
 import genj.util.swing.DialogHelper.ComponentVisitor;
 import genj.view.ActionProvider;
 import genj.view.ContextProvider;
@@ -400,7 +401,7 @@ import swingx.docking.Docked;
     boolean hasDefaults = false;
     
     public void add(Action action) {
-      getDocked().addTool(action);
+      ToolbarWidget.patch(getDocked().addTool(action));
       isEmpty = false;
     }
     public void add(JComponent component) {

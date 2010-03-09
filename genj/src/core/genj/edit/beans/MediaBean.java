@@ -42,6 +42,7 @@ import genj.util.swing.FileChooserWidget;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TextFieldWidget;
 import genj.util.swing.ThumbnailWidget;
+import genj.util.swing.ToolbarWidget;
 import genj.view.ContextProvider;
 import genj.view.ViewContext;
 
@@ -63,12 +64,10 @@ import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -114,7 +113,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       }
     }
   };
-  private JToolBar actions = new JToolBar();
+  private ToolbarWidget actions = new ToolbarWidget();
   private Action2 add = new Add(), del = new Del();
   
   /**
@@ -133,12 +132,12 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     actions.setFloatable(false);
     
     // some actions
-    add(add);
-    add(del);
+    actions.add(add);
+    actions.add(del);
     actions.addSeparator();
-    add(thumbs.getFitAction());
-    add(thumbs.getOneAction());
-    add(thumbs.getAllAction());
+    actions.add(thumbs.getFitAction());
+    actions.add(thumbs.getOneAction());
+    actions.add(thumbs.getAllAction());
 
     // done
   }
@@ -154,12 +153,6 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     ViewContext result = new ViewContext(p);
     result.addAction(new RunExternal(((InputSource.FileInput)source).getFile()));
     return result;
-  }
-  
-  private void add(Action2 action) {
-    JButton b = new JButton(action);
-    b.setFocusable(false);
-    actions.add(b);
   }
   
   @Override

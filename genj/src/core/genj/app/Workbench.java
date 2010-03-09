@@ -54,6 +54,7 @@ import genj.util.swing.ImageIcon;
 import genj.util.swing.MacAdapter;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.ProgressWidget;
+import genj.util.swing.ToolbarWidget;
 import genj.view.ActionProvider;
 import genj.view.SelectionSink;
 import genj.view.View;
@@ -93,7 +94,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
 import org.xml.sax.SAXException;
@@ -1380,7 +1380,7 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * our toolbar
    */
-  private class Toolbar extends JToolBar implements WorkbenchListener {
+  private class Toolbar extends ToolbarWidget implements WorkbenchListener {
 
     private List<Action> actions = new ArrayList<Action>();
     
@@ -1442,11 +1442,8 @@ public class Workbench extends JPanel implements SelectionSink {
       // no mnemonic (e.g. alt-o triggering Open action), no text
       action.putValue(Action.MNEMONIC_KEY, null);
       action.putValue(Action.NAME, null);
-      // non focus button
-      JButton button = new JButton(action);
-      button.setFocusable(false);
-      super.add(button);
-      return button;
+      // super stuff
+      return super.add(action);
     }
 
     public void commitRequested(Workbench workbench) {

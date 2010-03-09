@@ -43,6 +43,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JToggleButton;
+
 /**
  * Component for showing entities of a gedcom file in a tabular way
  */
@@ -187,9 +190,16 @@ public class TableView extends View {
    */
   public void populate(ToolBar toolbar) {
 	  
+    ButtonGroup group = new ButtonGroup();
+    
     for (int i=0, j=1;i<Gedcom.ENTITIES.length;i++) {
       String tag = Gedcom.ENTITIES[i];
-      toolbar.add(new SwitchMode(getMode(tag)));
+      SwitchMode m = new SwitchMode(getMode(tag));
+      JToggleButton b = new JToggleButton(m);
+      toolbar.add(b);
+      group.add(b);
+      if (currentMode==m.mode)
+        m.setSelected(true);
     }
     
     toolbar.add(new Settings());
@@ -255,12 +265,18 @@ public class TableView extends View {
       setTip(resources.getString("mode.tip", Gedcom.getName(mode.getTag(),true)));
       setImage(Gedcom.getEntityImage(mode.getTag()));
     }
-    /** run */
-    public void actionPerformed(ActionEvent event) {
-      setMode(mode);
-      
-      // save current type
-      REGISTRY.put("mode", mode.getTag());
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      setSelected(true);
+    }
+    @Override
+    public boolean setSelected(boolean selected) {
+      if (selected) {
+        setMode(mode);
+        // save current type
+        REGISTRY.put("mode", mode.getTag());
+      }
+      return super.setSelected(selected);
     }
   } //ActionMode
   
