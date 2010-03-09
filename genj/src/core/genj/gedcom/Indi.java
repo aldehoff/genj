@@ -229,6 +229,7 @@ public class Indi extends Entity {
       if (husband!=null)
         parents.add(husband);
       Indi wife = fam.getWife();
+      if (wife!=null)
         parents.add(wife);
     }
     return parents;
