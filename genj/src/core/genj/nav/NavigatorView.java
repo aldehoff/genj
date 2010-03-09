@@ -19,6 +19,10 @@
  */
 package genj.nav;
 
+import genj.edit.actions.CreateChild;
+import genj.edit.actions.CreateParent;
+import genj.edit.actions.CreateSibling;
+import genj.edit.actions.CreateSpouse;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Fam;
@@ -35,6 +39,7 @@ import genj.view.View;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -42,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -66,15 +72,6 @@ public class NavigatorView extends View {
       +"<col><grandchildren/><grandchild/></col>"
       +"</col>");
   
-//  private final static ImageIcon
-//    imgYSiblings = new ImageIcon(NavigatorView.class,"YSiblings"),
-//    imgOSiblings = new ImageIcon(NavigatorView.class,"OSiblings"),
-//    imgChildren  = new ImageIcon(NavigatorView.class,"Children"),
-//    imgFather    = new ImageIcon(NavigatorView.class,"Father"),
-//    imgMother    = new ImageIcon(NavigatorView.class,"Mother"),
-//    imgMPartner  = Indi.IMG_MALE,
-//    imgFPartner  = Indi.IMG_FEMALE;
-
   private GedcomListener callback = (GedcomListener)Spin.over(new GedcomListenerAdapter() {
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
       if (context!=null&&context.getEntity()==entity)
@@ -134,17 +131,17 @@ public class NavigatorView extends View {
 
     Indi husband = fam.getHusband();
     if (husband!=null)
-      add("parent"       , new JLabel(INDENT+husband.toString()));
+      add("parent"       , indi(husband));
     Indi wife = fam.getWife();
     if (wife!=null)
-      add("parent"       , new JLabel(INDENT+wife.toString()));
+      add("parent"       , indi(wife));
     if (husband==null||wife==null)
-      add("parent"       , new JLabel(INDENT+"<create>"));
+      add("parent"       , create(new CreateParent(fam)));
 
     Indi[] children = fam.getChildren();
     for (Indi child : children)
-      add("child"       , new JLabel(INDENT+child.toString()));
-    add("child"         , new JLabel(INDENT+"<create>"));
+      add("child"       , indi(child));
+    add("child"         , create(new CreateChild(fam, true)));
     
   }    
   
@@ -164,35 +161,45 @@ public class NavigatorView extends View {
     List<Indi> grandparents = getParents(indi.getParents());
     for (Indi grandparent : grandparents)
       add("grandparent"       , indi(grandparent));
-    if (grandparents.size()<4)
-      add("grandparent"       , new JLabel(INDENT+"<create>"));
 
     List<Indi> parents = indi.getParents();
     for (Indi parent : parents)
       add("parent"       , indi(parent));
     if (parents.size()<2)
-      add("parent"       , new JLabel(INDENT+"<create>"));
+      add("parent"       , create(new CreateParent(indi)));
     
     Indi[] siblings = indi.getSiblings(false);
     for (Indi sibling : siblings)
       add("sibling"       , indi(sibling));
-    add("sibling"       , new JLabel(INDENT+"<create>"));
+    add("sibling"       , create(new CreateSibling(indi, true)));
 
     Indi[] spouses = indi.getPartners();
     for (Indi spouse : spouses)
       add("spouse"       , indi(spouse));
-    add("spouse"       , new JLabel(INDENT+"<create>"));
+    if (spouses.length==0)
+      add("spouse"       , create(new CreateSpouse(indi)));
 
     Indi[] children = indi.getChildren();
     for (Indi child : children)
       add("child"       , indi(child));
-    add("child"         , new JLabel(INDENT+"<create>"));
+    add("child"         , create(new CreateChild(indi, true)));
     
     List<Indi> grandchildren = getChildren(Arrays.asList(children));
     for (Indi grandchild : grandchildren)
       add("grandchild"  , indi(grandchild));
-    add("grandchild"   , new JLabel(INDENT+"<create>"));
     
+  }
+  
+  private JLabel create(Action action) {
+    JLabel result = new JLabel("["+RES.getString("create")+"]");
+    Color c = result.getForeground();
+    result.setForeground(new Color(c.getRed(), c.getGreen(), c.getBlue(), 128));
+    result.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+    result.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    result.putClientProperty(Action.class, action);
+    result.addMouseListener(CLICK);
+    result.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    return result;
   }
   
   private List<Indi> getParents(List<Indi> parents) {
@@ -213,16 +220,23 @@ public class NavigatorView extends View {
     JLabel result = new JLabel(indi.toString(), indi.getImage(), SwingConstants.LEFT);
     result.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
     result.putClientProperty(Indi.class, indi);
-    result.addMouseListener(JUMP);
+    result.addMouseListener(CLICK);
     result.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     return result;
   }
 
-  private final static MouseListener JUMP = new MouseAdapter() {
+  private final static MouseListener CLICK = new MouseAdapter() {
     @Override
     public void mouseClicked(MouseEvent e) {
-      Indi target = (Indi)((JLabel)e.getComponent()).getClientProperty(Indi.class);
-      SelectionSink.Dispatcher.fireSelection(DialogHelper.getComponent(e), new Context(target), false);
+      
+      JLabel label = (JLabel)e.getComponent();
+      Indi target = (Indi)label.getClientProperty(Indi.class);
+      if (target!=null)
+        SelectionSink.Dispatcher.fireSelection(DialogHelper.getComponent(e), new Context(target), false);
+      Action action = (Action)label.getClientProperty(Action.class);
+      if (action!=null)
+        action.actionPerformed(new ActionEvent(e.getSource(), 0, "", e.getModifiers()));
+
     }
   };
 
