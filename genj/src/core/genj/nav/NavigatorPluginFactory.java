@@ -111,7 +111,7 @@ public class NavigatorPluginFactory implements PluginFactory, ActionProvider {
     @Override
     public void actionPerformed(ActionEvent e) {
       if (target!=null)
-        SelectionSink.Dispatcher.fireSelection(DialogHelper.getComponent(e), new Context(target), true);
+        SelectionSink.Dispatcher.fireSelection(DialogHelper.getComponent(e), new Context(target), false);
     }
   }
   

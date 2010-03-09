@@ -28,18 +28,23 @@ import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.Indi;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.view.SelectionSink;
 import genj.view.View;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
+import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 import spin.Spin;
 
@@ -69,7 +74,6 @@ public class NavigatorView extends View {
 //    imgMother    = new ImageIcon(NavigatorView.class,"Mother"),
 //    imgMPartner  = Indi.IMG_MALE,
 //    imgFPartner  = Indi.IMG_FEMALE;
-
 
   private GedcomListener callback = (GedcomListener)Spin.over(new GedcomListenerAdapter() {
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
@@ -159,34 +163,34 @@ public class NavigatorView extends View {
     
     List<Indi> grandparents = getParents(indi.getParents());
     for (Indi grandparent : grandparents)
-      add("grandparent"       , new JLabel(INDENT+grandparent.toString()));
+      add("grandparent"       , indi(grandparent));
     if (grandparents.size()<4)
       add("grandparent"       , new JLabel(INDENT+"<create>"));
 
     List<Indi> parents = indi.getParents();
     for (Indi parent : parents)
-      add("parent"       , new JLabel(INDENT+parent.toString()));
+      add("parent"       , indi(parent));
     if (parents.size()<2)
       add("parent"       , new JLabel(INDENT+"<create>"));
     
     Indi[] siblings = indi.getSiblings(false);
     for (Indi sibling : siblings)
-      add("sibling"       , new JLabel(INDENT+sibling.toString()));
+      add("sibling"       , indi(sibling));
     add("sibling"       , new JLabel(INDENT+"<create>"));
 
     Indi[] spouses = indi.getPartners();
     for (Indi spouse : spouses)
-      add("spouse"       , new JLabel(INDENT+spouse.toString()));
+      add("spouse"       , indi(spouse));
     add("spouse"       , new JLabel(INDENT+"<create>"));
 
     Indi[] children = indi.getChildren();
     for (Indi child : children)
-      add("child"       , new JLabel(INDENT+child.toString()));
+      add("child"       , indi(child));
     add("child"         , new JLabel(INDENT+"<create>"));
     
     List<Indi> grandchildren = getChildren(Arrays.asList(children));
     for (Indi grandchild : grandchildren)
-      add("grandchild"  , new JLabel(INDENT+grandchild.toString()));
+      add("grandchild"  , indi(grandchild));
     add("grandchild"   , new JLabel(INDENT+"<create>"));
     
   }
@@ -205,24 +209,21 @@ public class NavigatorView extends View {
     return result;
   }
   
-  /**
-   * Jump to another indi
-   */
-  private class Jump extends Action2 {
-    /** the target */
-    private Indi target;
-    /** constructor */
-    private Jump(Indi taRget) {
-      // remember
-      target = taRget;
-      // our looks
-      setText(target.toString());
-      setImage(target.getImage(false));
+  private JLabel indi(Indi indi) {
+    JLabel result = new JLabel(indi.toString(), indi.getImage(), SwingConstants.LEFT);
+    result.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+    result.putClientProperty(Indi.class, indi);
+    result.addMouseListener(JUMP);
+    result.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    return result;
+  }
+
+  private final static MouseListener JUMP = new MouseAdapter() {
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      Indi target = (Indi)((JLabel)e.getComponent()).getClientProperty(Indi.class);
+      SelectionSink.Dispatcher.fireSelection(DialogHelper.getComponent(e), new Context(target), false);
     }
-    /** do it */
-    public void actionPerformed(ActionEvent event) {
-      SelectionSink.Dispatcher.fireSelection(event, new Context(target));
-    }
-  } //Jump
+  };
 
 } //NavigatorView
