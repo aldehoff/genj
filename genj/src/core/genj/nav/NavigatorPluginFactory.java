@@ -78,17 +78,17 @@ public class NavigatorPluginFactory implements PluginFactory, ActionProvider {
   private abstract class Goto extends Action2 {
     protected Indi target;
     
-    public Goto(String key, List<Indi> targets) {
-      init(key,targets);
+    public Goto(String key, List<Indi> targets, ImageIcon img, int max) {
+      init(key,targets,img,max);
     }
       
-    public Goto(String key, List<Indi> targets, List<Indi> moreTargets) {
+    public Goto(String key, List<Indi> targets, List<Indi> moreTargets, ImageIcon img, int max) {
       targets = new ArrayList<Indi>(targets);
       targets.addAll(moreTargets);
-      init(key,targets);
+      init(key,targets,img,max);
     }
     
-    private void init(String key, List<Indi> targets) {
+    private void init(String key, List<Indi> targets, ImageIcon img, int max) {
       
       StringBuffer tip = new StringBuffer();
       tip.append("<html>");
@@ -102,11 +102,12 @@ public class NavigatorPluginFactory implements PluginFactory, ActionProvider {
           tip.append("</b>");
       }
       setTip(tip.toString());
-      setEnabled(!targets.isEmpty());
-
+      setImage(img);
       if (!targets.isEmpty())
         target = targets.get(0);
-      
+      else
+        setEnabled(false);
+        
     }
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -117,29 +118,25 @@ public class NavigatorPluginFactory implements PluginFactory, ActionProvider {
   
   private class Parents extends Goto {
     public Parents(Indi indi) {
-      super("parents", indi.getParents());
-      setImage(PARENTS);
+      super("parents", indi.getParents(),PARENTS, 2);
     }
   }
 
   private class Siblings extends Goto {
     public Siblings(Indi indi) {
-      super("siblings", Arrays.asList(indi.getYoungerSiblings()), Arrays.asList(indi.getOlderSiblings()));
-      setImage(SIBLINGS);
+      super("siblings", Arrays.asList(indi.getYoungerSiblings()), Arrays.asList(indi.getOlderSiblings()),SIBLINGS,-1);
     }
   }
 
   private class Spouses extends Goto {
     public Spouses(Indi indi) {
-      super("spouses", Arrays.asList(indi.getPartners()));
-      setImage(indi.getSex() == PropertySex.FEMALE ? HUSBAND : WIFE);
+      super("spouses", Arrays.asList(indi.getPartners()), indi.getSex() == PropertySex.FEMALE ? HUSBAND : WIFE,-1);
     }
   }
   
   private class Children extends Goto {
     public Children(Indi indi) {
-      super("children", Arrays.asList(indi.getChildren()));
-      setImage(CHILDREN);
+      super("children", Arrays.asList(indi.getChildren()),CHILDREN,-1);
     }
   }
 
