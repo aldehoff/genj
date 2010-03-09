@@ -556,8 +556,9 @@ public class ThumbnailWidget extends JComponent {
     ImageIcon result = IMG_THUMBNAIL;
     
     if (source instanceof FileInput) {
-   	  try {
-        Icon icon = FileSystemView.getFileSystemView().getSystemIcon( ((FileInput)source).getFile() );
+      File file = ((FileInput)source).getFile();
+   	  if (file.isFile()) try {
+        Icon icon = FileSystemView.getFileSystemView().getSystemIcon( file );
         if (icon!=null)
           result = new ImageIcon(icon);
    	  } catch (Throwable t) {
