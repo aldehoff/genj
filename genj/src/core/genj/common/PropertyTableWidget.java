@@ -614,7 +614,7 @@ public class PropertyTableWidget extends JPanel  {
       
       // one row one col?
       List<Property> properties = new ArrayList<Property>();
-      int[] rows = getSelectedRows();
+      int[] rows = super.getSelectedRows();
       if (rows.length>0) {
         int[] cols = getSelectedColumns();
 
