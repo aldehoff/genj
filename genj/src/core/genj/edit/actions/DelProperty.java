@@ -53,13 +53,33 @@ public class DelProperty extends AbstractChange {
     super(properties.get(0).getGedcom(), Images.imgDel, resources.getString("delete"));
     candidates.addAll(properties);
   }
-
+  
+  @Override
+  protected String getConfirmMessage() {
+    StringBuffer txt = new StringBuffer();
+    txt.append(getText());
+    txt.append(" (");
+    txt.append(candidates.size());
+    txt.append(")\n");
+    int i=0; for (Property prop : candidates)  {
+      if (i++>3) {
+        txt.append("...");
+        break;
+      }
+      txt.append(prop.toString());
+      txt.append("\n");
+    }
+    return txt.toString();
+  }
+  
   /**
    * Perform the delete
    */
   protected Context execute(Gedcom gedcom, ActionEvent event) throws GedcomException {
+    
     for (Property prop : candidates) 
       prop.getParent().delProperty(prop);
+    
     return null;
   }
   

@@ -225,20 +225,24 @@ public class EditView extends View implements ContextProvider  {
     if (ok.isEnabled()&&!editor.getContext().getGedcom().isWriteLocked()&&isCommitChanges()) 
       commit();
     
-    // new editor?
-    if (context.getEntity()!=null && editor==null) {
+    // set
+    if (context.getEntities().size()==1) {
 
-      sticky.setSelected(false);
-      if (mode.isSelected())
-        setEditor(new AdvancedEditor(context.getGedcom(), this));
-      else
-        setEditor(new BasicEditor(context.getGedcom(), this));
-        
+      if (editor==null) {
+        sticky.setSelected(false);
+        if (mode.isSelected())
+          setEditor(new AdvancedEditor(context.getGedcom(), this));
+        else
+          setEditor(new BasicEditor(context.getGedcom(), this));
+      }
+      
+      if (!sticky.isSelected()||isActionPerformed)
+        editor.setContext(context);
+      
+    } else {
+      if (editor!=null)
+        editor.setContext(new Context(context.getGedcom()));
     }
-
-    // anything we can refocus our editor to?
-    if (editor!=null && context.getEntity()!=null && (!sticky.isSelected()||isActionPerformed) ) 
-      editor.setContext(context);
   
     // start with a fresh edit
     ok.setEnabled(false);
