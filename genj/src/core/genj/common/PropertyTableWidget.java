@@ -38,7 +38,6 @@ import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
@@ -63,7 +62,6 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -80,8 +78,8 @@ public class PropertyTableWidget extends JPanel  {
   
   private final static Logger LOG = Logger.getLogger("genj.common");
   
-  private Table table;
   private JPanel panelShortcuts;
+  private Table table;
   private boolean ignoreSelection  = false;
   private int visibleRowCount = -1;
   
@@ -97,14 +95,16 @@ public class PropertyTableWidget extends JPanel  {
    */
   public PropertyTableWidget(PropertyTableModel propertyModel) {
     
+    // create panel for shortcuts
+    panelShortcuts = new JPanel();
+    panelShortcuts.setMinimumSize(new Dimension());
+    panelShortcuts.setLayout(new BoxLayout(panelShortcuts, BoxLayout.Y_AXIS));
+    
     // create table comp
     table = new Table();
     setModel(propertyModel);
     setCellSelection(true);
 
-    // create panel for shortcuts
-    panelShortcuts = new JPanel();
-    
     // setup layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));
@@ -383,7 +383,7 @@ public class PropertyTableWidget extends JPanel  {
           if (e.getLastRow()==Integer.MAX_VALUE) createShortcuts();
         }
       });
-      addComponentListener(new ComponentAdapter() {
+      panelShortcuts.addComponentListener(new ComponentAdapter() {
         public void componentResized(ComponentEvent e) {
           createShortcuts();
         }
@@ -407,33 +407,28 @@ public class PropertyTableWidget extends JPanel  {
     }
     
     /** create a shortcut */
-    Action2 createShortcut(String txt, final int y, final Container container) {
-      
-      Action2 shortcut = new Action2(txt.toUpperCase()) {
+    Action2 createShortcut(String txt, final int y) {
+      return new Action2(txt.toUpperCase()) {
         public void actionPerformed(ActionEvent event) {
           int x = 0;
           try { x = ((JViewport)table.getParent()).getViewPosition().x; } catch (Throwable t) {};
           table.scrollRectToVisible(new Rectangle(x, y, 1, getParent().getHeight()));
         }
       };
-      
-      LinkWidget link = new LinkWidget(shortcut);
-      link.setAlignmentX(0.5F);
-      link.setBorder(new EmptyBorder(0,1,0,1));
-      container.add(link);
-      
-      return shortcut;
     }
     
     /** generate */
     void createShortcuts(int col, JComponent container) {
 
-      if (propertyModel==null)
+      if (propertyModel==null||container.getHeight()==0)
         return;
+      
       TableModel model = getModel();
       Collator collator = propertyModel.getGedcom().getCollator();
 
-      // loop over rows
+      // loop over rows and create actions
+      List<Action2> actions = new ArrayList<Action2>(26);
+      
       String cursor = "";
       for (int r=0;r<model.getRowCount();r++) {
         Property prop = (Property)model.getValueAt(r, col);
@@ -450,14 +445,35 @@ public class PropertyTableWidget extends JPanel  {
         if (collator.compare(cursor, value)>=0)
           continue;
         cursor = value;
+
+        // action
+        Action2 action = createShortcut(value, table.getCellRect(r, col, true).y);
+        actions.add(action);
         
-        Action2 shortcut = createShortcut(value, table.getCellRect(r, col, true).y, container);
-      
-        // create key binding
+        // key binding
         InputMap imap = container.getInputMap(WHEN_IN_FOCUSED_WINDOW);
         ActionMap amap = container.getActionMap();
-        imap.put(KeyStroke.getKeyStroke(value.charAt(0)), shortcut);
-        amap.put(shortcut, shortcut);
+        imap.put(KeyStroke.getKeyStroke(value.charAt(0)), action);
+        amap.put(action, action);
+      }
+      
+      // generate buttons
+      if (actions.isEmpty())
+        return;
+      
+      LinkWidget sample = new LinkWidget("Sample", null);
+      int h = sample.getPreferredSize().height;
+      int n = Math.min(actions.size(), (container.getHeight() - h) / h);
+      for (int i=0;i<n;i++) {
+        LinkWidget link = new LinkWidget(actions.get(i*actions.size()/n));
+        link.setAlignmentX(0.5F);
+        container.add(link);
+      }
+      
+      if (n<actions.size()) {
+        LinkWidget link = new LinkWidget(actions.get(actions.size()-1));
+        link.setAlignmentX(0.5F);
+        container.add(link);
       }
       
       // done
@@ -470,16 +486,15 @@ public class PropertyTableWidget extends JPanel  {
       
       // remove old shortcuts
       panelShortcuts.removeAll();
-      panelShortcuts.setLayout(new BoxLayout(panelShortcuts, BoxLayout.Y_AXIS));
       panelShortcuts.getInputMap(WHEN_IN_FOCUSED_WINDOW).clear();
       panelShortcuts.getActionMap().clear();
       panelShortcuts.revalidate();
       panelShortcuts.repaint();
-      panelShortcuts.setMinimumSize(new Dimension(0,0));
       
       // anything we can offer? need ascending sorted column and at least 10 rows
       if (!sortableModel.isSorting())
         return;
+      
       SortableTableModel.Directive directive = (SortableTableModel.Directive)sortableModel.getDirectives().get(0);
       if (directive.getDirection()<=0)
         return;
