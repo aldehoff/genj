@@ -1078,6 +1078,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   public static class Expander extends JLabel {
     
+    private String expandedLabel, collapsedLabel;
     private final static Icon FOLDED = GraphicsHelper.getIcon(8, collapsed(8));
     private final static Icon UNFOLDED = GraphicsHelper.getIcon(8, open(8));
     private boolean isCollapsed = false;
@@ -1104,6 +1105,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /**
      * Constructor
      */
+    public Expander(String expandedLabel, String collapsedLabel) {
+      this(expandedLabel, collapsedLabel, 1);
+    }
+    
+    /**
+     * Constructor
+     */
     public Expander(String label) {
       this(label, 1);
     }
@@ -1112,7 +1120,16 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
      * Constructor
      */
     public Expander(String label, int indent) {
-      super(label);
+      this(label, label, indent);
+      
+    }
+    /**
+     * Constructor
+     */
+    public Expander(String expandedLabel, String collapsedLabel, int indent) {
+      super(expandedLabel);
+      this.collapsedLabel = collapsedLabel;
+      this.expandedLabel = expandedLabel;
       this.indent = Math.max(1, indent);
       setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
       addMouseListener(new Mouser());
@@ -1124,9 +1141,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     public void setCollapsed(boolean set) {
       isCollapsed = set;
+      setText(isCollapsed ? collapsedLabel : expandedLabel);
     }
     
-    public boolean setCollapsed() {
+    public boolean isCollapsed() {
       return isCollapsed;
     }
 
@@ -1138,7 +1156,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       @Override
       public void mouseClicked(MouseEvent e) {
         
-        isCollapsed = !isCollapsed;
+        setCollapsed(!isCollapsed);
         
         firePropertyChange("folded", !isCollapsed, isCollapsed);
 
