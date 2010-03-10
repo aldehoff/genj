@@ -392,6 +392,14 @@ public class PropertyTableWidget extends JPanel  {
       // done
     }
     
+    @Override
+    public int[] getSelectedRows() {
+      int[] rows = super.getSelectedRows();
+      for (int r=0;r<rows.length;r++)
+        rows[r] = sortableModel.modelIndex(rows[r]);
+      return rows;
+    }
+    
     void setCellSelection(boolean set) {
       getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
       getColumnModel().setColumnSelectionAllowed(set);
