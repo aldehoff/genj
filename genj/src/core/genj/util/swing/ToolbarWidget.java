@@ -37,6 +37,7 @@ public class ToolbarWidget extends JToolBar {
   public static JButton patch(JButton button) {
     // no focus please
     button.setRequestFocusEnabled(false);
+    button.setFocusable(false);
 
     // patch disable image
     Icon i = button.getIcon();
