@@ -421,6 +421,7 @@ public class EditView extends View implements ContextProvider  {
       Context ctx = editor.getContext();
       editor.setContext(new Context());
       editor.setContext(ctx);
+      populate(toolbar);
     }
     
     public void stateChanged(ChangeEvent e) {
