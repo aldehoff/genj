@@ -37,6 +37,7 @@ import genj.util.swing.NestedBlockLayout;
 import genj.view.SelectionSink;
 import genj.view.View;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
@@ -50,6 +51,8 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import spin.Spin;
@@ -81,13 +84,16 @@ public class NavigatorView extends View {
   
   /** the current context */
   private Context context = new Context();
+  
+  private JPanel content = new JPanel(LAYOUT);
 
   /**
    * Constructor
    */
   public NavigatorView() {
-    setLayout(LAYOUT);
-    setBackground(Color.WHITE);
+    setLayout(new BorderLayout());
+    add(BorderLayout.CENTER, new JScrollPane(content, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER));
+    content.setBackground(Color.WHITE);
   }
 
   /**
@@ -102,7 +108,7 @@ public class NavigatorView extends View {
       this.context = new Context();
     }
     
-    removeAll();
+    content.removeAll();
     
     // person or family?
     if (context.getEntities().size()==1) {
@@ -123,24 +129,24 @@ public class NavigatorView extends View {
     Registry r = new Registry(REG, key);
     expander.setCollapsed(r.get("folded", false));
     expander.addPropertyChangeListener("folded", r);
-    add(key, expander);
+    content.add(key, expander);
   }
   
   private void setFam(Fam fam) {
 
     Indi husband = fam.getHusband();
     if (husband!=null)
-      add("parent"       , indi(husband));
+      content.add("parent"       , indi(husband));
     Indi wife = fam.getWife();
     if (wife!=null)
-      add("parent"       , indi(wife));
+      content.add("parent"       , indi(wife));
     if (husband==null||wife==null)
-      add("parent"       , create(new CreateParent(fam)));
+      content.add("parent"       , create(new CreateParent(fam)));
 
     Indi[] children = fam.getChildren();
     for (Indi child : children)
-      add("child"       , indi(child));
-    add("child"         , create(new CreateChild(fam, true)));
+      content.add("child"       , indi(child));
+    content.add("child"         , create(new CreateChild(fam, true)));
     
     addExpander("parents", husband!=null||wife!=null);
     addExpander("children", children.length>0);
@@ -155,38 +161,38 @@ public class NavigatorView extends View {
     List<Indi> grandparents = getParents(indi.getParents());
     addExpander("grandparents", !grandparents.isEmpty());
     for (Indi grandparent : grandparents)
-      add("grandparent", indi(grandparent));
+      content.add("grandparent", indi(grandparent));
 
     List<Indi> parents = indi.getParents();
     addExpander("parents", !parents.isEmpty());
     for (Indi parent : parents)
-      add("parent", indi(parent));
+      content.add("parent", indi(parent));
     if (parents.size()<2)
-      add("parent", create(new CreateParent(indi)));
+      content.add("parent", create(new CreateParent(indi)));
     
     Indi[] siblings = indi.getSiblings(false);
     addExpander("siblings", siblings.length>0);
     for (Indi sibling : siblings)
-      add("sibling", indi(sibling));
-    add("sibling", create(new CreateSibling(indi, true)));
+      content.add("sibling", indi(sibling));
+    content.add("sibling", create(new CreateSibling(indi, true)));
 
     Indi[] spouses = indi.getPartners();
     addExpander("spouses", spouses.length>0);
     for (Indi spouse : spouses)
-      add("spouse", indi(spouse));
+      content.add("spouse", indi(spouse));
     if (spouses.length==0)
-      add("spouse", create(new CreateSpouse(indi)));
+      content.add("spouse", create(new CreateSpouse(indi)));
 
     Indi[] children = indi.getChildren();
     addExpander("children", children.length>0);
     for (Indi child : children)
-      add("child", indi(child));
-    add("child", create(new CreateChild(indi, true)));
+      content.add("child", indi(child));
+    content.add("child", create(new CreateChild(indi, true)));
     
     List<Indi> grandchildren = getChildren(Arrays.asList(children));
     addExpander("grandchildren",!grandchildren.isEmpty());
     for (Indi grandchild : grandchildren)
-      add("grandchild", indi(grandchild));
+      content.add("grandchild", indi(grandchild));
     
   }
   
