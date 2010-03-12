@@ -1,14 +1,11 @@
-<row>
   <col>
    <row><label path="SOUR"/></row>
-   <row><label path="SOUR:AUTH"/></row>
-   <row><bean path="SOUR:AUTH" wy="1"/></row>
    <row><label path="SOUR:TITL"/></row>
-   <row><bean path="SOUR:TITL" wy="1"/></row>
+   <row><bean path="SOUR:TITL" wx="1"/></row>
+   <row><label path="SOUR:AUTH"/></row>
+   <row><bean path="SOUR:AUTH" wx="1"/></row>
    <row><label path="SOUR:TEXT"/></row>
-   <row><bean path="SOUR:TEXT" wy="1"/></row>
-  </col> 
-  <col>
+   <row><bean path="SOUR:TEXT" wx="1" wy="1"/></row>
    <bean path="." type="genj.edit.beans.MediaBean" wx="1" wy="1"/>
+   <bean path="." type="genj.edit.beans.ReferencesBean" gx="1"/>
   </col>
-</row>  

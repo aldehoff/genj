@@ -25,7 +25,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChild;
-import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.PropertyFamilySpouse;
 import genj.gedcom.PropertyHusband;
@@ -132,19 +131,25 @@ public class ReferencesBean extends PropertyBean {
 
     @Override
     public String getCellValue(Property property, int row, int col) {
-      if (property instanceof PropertyXRef) {
-        PropertyXRef ref = (PropertyXRef)property;
-        if (ref.isTransient())
-          ref = ref.getTarget();
-        return Gedcom.getName(ref.getTag()) + " (" + ref.getTargetEntity().getEntity().getId() +")";
+
+      switch (col) {
+        // first column - the owning parent 
+        case 0: 
+          return property!=getProperty() ? property.getPropertyName() : ""; 
+        
+        // 2nd column - the name of the reference xref - specially treat foreign xrefs
+        case 1:
+          if (property instanceof PropertyXRef) {
+            PropertyXRef ref = (PropertyXRef)property;
+            if (ref.isTransient())
+              property = ref.getTarget().getParent();
+          }
+          return property.getPropertyName();
+
+        // 3rd column - the referenced entity
+        default:
+          return property.toString();
       }
-      if (property instanceof PropertyEvent) {
-        return property.getPropertyName();
-      }
-      if (col==0) {
-        return property.getPropertyName();
-      }
-      return property.getDisplayValue();
     }
     
     @Override
