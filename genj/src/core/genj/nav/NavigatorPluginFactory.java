@@ -63,8 +63,13 @@ public class NavigatorPluginFactory implements PluginFactory, ActionProvider {
     if (purpose != Purpose.TOOLBAR)
       return;
 
-    if (context.getEntities().size()!=1||!(context.getEntity() instanceof Indi))
+    if (context.getEntities().size()!=1||!(context.getEntity() instanceof Indi)) {
+      into.add(new Goto(PARENTS));
+      into.add(new Goto(SIBLINGS));
+      into.add(new Goto(HUSBAND));
+      into.add(new Goto(CHILDREN));
       return;
+    }
     
     Indi indi = (Indi)context.getEntity();
     
@@ -75,8 +80,13 @@ public class NavigatorPluginFactory implements PluginFactory, ActionProvider {
     
   }
   
-  private abstract class Goto extends Action2 {
+  private class Goto extends Action2 {
     protected Indi target;
+    
+    public Goto(ImageIcon img) {
+      setImage(img);
+      setEnabled(false);
+    }
     
     public Goto(String key, List<Indi> targets, ImageIcon img, int max) {
       init(key,targets,img,max);
