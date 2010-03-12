@@ -139,7 +139,7 @@ public class Entity extends Property {
     StringBuffer buf = new StringBuffer();
     buf.append(getToStringPrefix(showIds));
     if (buf.length()==0)
-      buf.append(getTag());
+      buf.append(getPropertyName());
     if (showIds) {
       buf.append(" (");
       buf.append(getId());
@@ -149,7 +149,7 @@ public class Entity extends Property {
   }
 
   protected String getToStringPrefix(boolean showIds) {
-    return getTag();
+    return getPropertyName();
   }
   
   /**
