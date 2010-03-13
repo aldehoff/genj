@@ -98,7 +98,8 @@ import javax.swing.tree.TreePath;
   
   private Set<TagPath> expands = new HashSet<TagPath>();
   
-  private boolean ignoreSelection = false;
+  private boolean ignoreTreeSelection = false;
+  private boolean pickFirstAvailableProperty = true;
 
   /**
    * Initialize clipboard - trying system falling back to private
@@ -218,7 +219,13 @@ import javax.swing.tree.TreePath;
   @Override
   public void setContext(Context context) {
     
-    // reset changes
+    // Clean up
+    if (bean!=null) 
+      bean.removeChangeListener(changes);
+    bean = null;
+    editPane.removeAll();
+    editPane.revalidate();
+    editPane.repaint();
     changes.setChanged(false);
     
     // clear?
@@ -227,7 +234,7 @@ import javax.swing.tree.TreePath;
       return;
     }
     
-    ignoreSelection = true;
+    ignoreTreeSelection = true;
     
     // clear current selection
     tree.clearSelection();
@@ -249,22 +256,17 @@ import javax.swing.tree.TreePath;
         commit();
     }
 
-    // Clean up
-    if (bean!=null) 
-      bean.removeChangeListener(changes);
-    bean = null;
-    editPane.removeAll();
-    editPane.revalidate();
-    editPane.repaint();
-    
     // set selection
     List<? extends Property> props = context.getProperties();
-    if (props.isEmpty()&&entity.getNoOfProperties()>0) 
-      props = Collections.singletonList(entity.getProperty(0)); 
-    
+    if (props.isEmpty()) {
+      if (pickFirstAvailableProperty&&entity.getNoOfProperties()>0)
+        props = Collections.singletonList(entity.getProperty(0)); 
+      else
+        props = Collections.singletonList(entity);
+    }
     tree.setSelection(props);
     
-    ignoreSelection = false;
+    ignoreTreeSelection = false;
     
     // show bean for single selection
     if (props.size()!=1)
@@ -669,10 +671,15 @@ import javax.swing.tree.TreePath;
      */
     public void valueChanged(TreeSelectionEvent e) {
       // ignore override + model change check
-      if (ignoreSelection||tree.getRoot()==null) 
+      if (ignoreTreeSelection||tree.getRoot()==null) 
         return;
       List<Property> selection = tree.getSelection();
-      SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Context(gedcom, new ArrayList<Entity>(), selection), false);
+      try {
+        pickFirstAvailableProperty = false;
+        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection), false);
+      } finally {
+        pickFirstAvailableProperty = true;
+      }
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
