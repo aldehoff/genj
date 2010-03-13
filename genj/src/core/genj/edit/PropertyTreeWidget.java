@@ -96,13 +96,15 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     setToggleClickCount(Integer.MAX_VALUE);
     addMouseListener(new MouseAdapter() {
       public void mousePressed(MouseEvent e) {
-        // make sure something is selected but don't screw current multi-selection
-        TreePath path = getPathForLocation(e.getX(), e.getY());
-        if (path!=null&&getSelection().contains(path.getLastPathComponent()))
+        // default JTree doesn't react to right-mouse clicks -  we're trying harder
+        if (e.getButton()==1)
           return;
+        // something selectable?
+        TreePath path = getPathForLocation(e.getX(), e.getY());
         if (path==null)
-          clearSelection();
-        else
+          return;
+        // make sure it's selected
+        if (!getSelection().contains(path.getLastPathComponent()))
           setSelection(Collections.singletonList((Property)path.getLastPathComponent()));
       }
     });
