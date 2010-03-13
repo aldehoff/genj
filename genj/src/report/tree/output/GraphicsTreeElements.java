@@ -199,6 +199,11 @@ public class GraphicsTreeElements implements TreeElements {
     public int max_names_per_line = 2;
 
     public String[] max_names_per_lines = { "nolimit", "1", "2", "3" };
+    
+    /**
+     * How to render places
+     */
+    public boolean all_jurisdictions = false;
 
     /**
      * Whether to display the title of an individual
@@ -416,7 +421,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (birthPlace != null) {
-                graphics.drawString(birthPlace.getFirstAvailableJurisdiction(), x + 13, currentY);
+                graphics.drawString(getPlaceValue(birthPlace), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
         }
@@ -429,7 +434,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (deathPlace != null) {
-                graphics.drawString(deathPlace.getFirstAvailableJurisdiction(), x + 13, currentY);
+                graphics.drawString(getPlaceValue(deathPlace), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (deathDate == null && deathPlace == null)
@@ -539,7 +544,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (marriagePlace != null) {
-                graphics.drawString(marriagePlace.getFirstAvailableJurisdiction(), x + 25, currentY);
+                graphics.drawString(getPlaceValue(marriagePlace), x + 25, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (marriageDate == null && marriagePlace == null)
@@ -554,7 +559,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (divorcePlace != null) {
-                graphics.drawString(divorcePlace.getFirstAvailableJurisdiction(), x + 25, currentY);
+                graphics.drawString(getPlaceValue(divorcePlace), x + 25, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (divorceDate == null && divorcePlace == null)
@@ -658,6 +663,10 @@ public class GraphicsTreeElements implements TreeElements {
             return BOX_COLORS[-((-gen - 1) % COLOR_GENERATIONS) + COLOR_GENERATIONS - 1];
         // else (gen > 0)
         return BOX_COLORS[(gen - 1) % COLOR_GENERATIONS + COLOR_GENERATIONS + 1];
+    }
+    
+    private String getPlaceValue(PropertyPlace place) {
+      return all_jurisdictions ? place.getDisplayValue() : place.getFirstAvailableJurisdiction();
     }
 
     /**
@@ -770,12 +779,12 @@ public class GraphicsTreeElements implements TreeElements {
 
         if (draw_places) {
             if (birthPlace != null) {
-                width = getTextWidth(birthPlace.getFirstAvailableJurisdiction(), DETAILS_FONT);
+                width = getTextWidth(getPlaceValue(birthPlace), DETAILS_FONT);
                 if (width + 13+TEXT_MARGIN > indibox.width)
                     indibox.width = width + 13+TEXT_MARGIN;
             }
             if (deathPlace != null) {
-                width = getTextWidth(deathPlace.getFirstAvailableJurisdiction(), DETAILS_FONT);
+                width = getTextWidth(getPlaceValue(deathPlace), DETAILS_FONT);
                 if (width + 13+TEXT_MARGIN > indibox.width)
                     indibox.width = width + 13+TEXT_MARGIN;
             }
@@ -847,12 +856,12 @@ public class GraphicsTreeElements implements TreeElements {
 
         if (draw_places) {
             if (marriagePlace != null) {
-                int width = getTextWidth(marriagePlace.getFirstAvailableJurisdiction(), DETAILS_FONT);
+                int width = getTextWidth(getPlaceValue(marriagePlace), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }
             if (draw_divorce && divorcePlace != null) {
-                int width = getTextWidth(divorcePlace.getFirstAvailableJurisdiction(), DETAILS_FONT);
+                int width = getTextWidth(getPlaceValue(divorcePlace), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }
