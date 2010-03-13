@@ -57,12 +57,10 @@ public class DelProperty extends AbstractChange {
   @Override
   protected String getConfirmMessage() {
     StringBuffer txt = new StringBuffer();
-    txt.append(getText());
-    txt.append(" (");
-    txt.append(candidates.size());
-    txt.append(")\n");
+    txt.append(resources.getString("confirm.del.props", candidates.size()));
+    txt.append("\n");
     int i=0; for (Property prop : candidates)  {
-      if (i++>3) {
+      if (i++>16) {
         txt.append("...");
         break;
       }
