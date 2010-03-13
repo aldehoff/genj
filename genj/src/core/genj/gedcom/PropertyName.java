@@ -163,6 +163,24 @@ public class PropertyName extends Property {
   public String getSuffix() {
     return suffix;
   }
+  
+  /**
+   * nested nickname
+   */
+  public String getNick() {
+    return getPropertyValue("NICK");
+  }
+  
+  public void setNick(String nick) {
+    Property n = getProperty("NICK");
+    if (n==null) {
+      if (nick.length()==0)
+        return;
+      n = addProperty("NICK", nick);
+    } else {
+      n.setValue(nick);
+    }
+  }
 
   /**
    * the name (e.g. "Meier, Nils")

@@ -45,14 +45,19 @@ import javax.swing.event.ChangeListener;
 public class NameBean extends PropertyBean {
 
   private final static NestedBlockLayout LAYOUT = new NestedBlockLayout(
-      "<table><row><l/><v wx=\"1\"/></row><row><l/><row><v wx=\"1\"/><check/></row></row><row><l/><v/></row></table>"
+      "<table>"+
+       "<row><l/><v wx=\"1\"/></row>"+
+       "<row><l/><row><v wx=\"1\"/><check/></row></row>"+
+       "<row><l/><v/></row>"+
+       "<row><l/><v/></row>"+
+      "</table>"
   );
   
   /** our components */
   private Property[] sameLastNames = new Property[0];
   private ChoiceWidget cLast, cFirst;
   private JCheckBox cAll;
-  private TextFieldWidget tSuff;
+  private TextFieldWidget tSuff, tNick;
 
   /**
    * Calculate message for replace all last names
@@ -87,25 +92,26 @@ public class NameBean extends PropertyBean {
     cFirst.setIgnoreCase(true);
     tSuff  = new TextFieldWidget("", 10); 
     tSuff.addChangeListener(changeSupport);
+    tNick = new TextFieldWidget("", 10); 
+    tNick.addChangeListener(changeSupport);
 
     cAll = new JCheckBox();
     cAll.setBorder(new EmptyBorder(1,1,1,1));
     cAll.setVisible(false);
     cAll.setRequestFocusEnabled(false);
     
-    JLabel lFirst= new JLabel(PropertyName.getLabelForFirstName());
-    JLabel lLast = new JLabel(PropertyName.getLabelForLastName());
-    JLabel lSuff = new JLabel(PropertyName.getLabelForSuffix());
-    
-    add(lFirst);
+    add(new JLabel(PropertyName.getLabelForFirstName()));
     add(cFirst);
 
-    add(lLast);
+    add(new JLabel(PropertyName.getLabelForLastName()));
     add(cLast);
     add(cAll);
 
-    add(lSuff);
+    add(new JLabel(PropertyName.getLabelForSuffix()));
     add(tSuff);
+
+    add(new JLabel(Gedcom.getName("NICK")));
+    add(tNick);
 
     // listen to selection of global and ask for confirmation
     cAll.addActionListener(new ActionListener() {
@@ -136,6 +142,7 @@ public class NameBean extends PropertyBean {
     String first = cFirst.getText().trim();
     String last  = cLast .getText().trim();
     String suff  = tSuff .getText().trim();
+    String nick  = tNick .getText().trim();
     
     Gedcom ged = p.getGedcom();
     if (ged!=null) {
@@ -155,6 +162,8 @@ public class NameBean extends PropertyBean {
 
     // ... store changed value
     p.setName( first, last, suff, cAll.isSelected());
+   
+    p.setNick( nick );
 
     // Done
   }
@@ -171,6 +180,8 @@ public class NameBean extends PropertyBean {
       cLast.setText("");
       cFirst.setValues(PropertyName.getFirstNames(getRoot().getGedcom(), true));
       cFirst.setText("");
+      tSuff.setText("");
+      tNick.setText("");
     } else {
       // keep track of who has the same last name
       sameLastNames = name.getSameLastNames();
@@ -180,6 +191,7 @@ public class NameBean extends PropertyBean {
       cFirst.setValues(name.getFirstNames(true));
       cFirst.setText(name.getFirstName()); 
       tSuff.setText(name.getSuffix()); 
+      tNick.setText(name.getNick());
     }
     
     cAll.setVisible(false);
