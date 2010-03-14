@@ -123,9 +123,9 @@ public class NavigatorView extends View {
     repaint();
   }
   
-  private void addExpander(String key, boolean more) {
+  private void addExpander(String key, int count) {
     String label = RES.getString(key);
-    NestedBlockLayout.Expander expander = new NestedBlockLayout.Expander(label,more?label+"...":label);
+    NestedBlockLayout.Expander expander = new NestedBlockLayout.Expander(label,label+" ("+count+")");
     Registry r = new Registry(REG, key);
     expander.setCollapsed(r.get("folded", false));
     expander.addPropertyChangeListener("folded", r);
@@ -134,12 +134,17 @@ public class NavigatorView extends View {
   
   private void setFam(Fam fam) {
 
+    int count = 0;
     Indi husband = fam.getHusband();
-    if (husband!=null)
+    if (husband!=null) {
       content.add("parent"       , indi(husband));
+      count++;
+    }
     Indi wife = fam.getWife();
-    if (wife!=null)
+    if (wife!=null) {
       content.add("parent"       , indi(wife));
+      count++;
+    }
     if (husband==null||wife==null)
       content.add("parent"       , create(new CreateParent(fam)));
 
@@ -148,8 +153,8 @@ public class NavigatorView extends View {
       content.add("child"       , indi(child));
     content.add("child"         , create(new CreateChild(fam, true)));
     
-    addExpander("parents", husband!=null||wife!=null);
-    addExpander("children", children.length>0);
+    addExpander("parents", count);
+    addExpander("children", children.length);
   }    
   
   private void setIndi(Indi indi) {
@@ -159,38 +164,38 @@ public class NavigatorView extends View {
     context.getGedcom().addGedcomListener(callback);
     
     List<Indi> grandparents = getParents(indi.getParents());
-    addExpander("grandparents", !grandparents.isEmpty());
+    addExpander("grandparents", grandparents.size());
     for (Indi grandparent : grandparents)
       content.add("grandparent", indi(grandparent));
 
     List<Indi> parents = indi.getParents();
-    addExpander("parents", !parents.isEmpty());
+    addExpander("parents", parents.size());
     for (Indi parent : parents)
       content.add("parent", indi(parent));
     if (parents.size()<2)
       content.add("parent", create(new CreateParent(indi)));
     
     Indi[] siblings = indi.getSiblings(false);
-    addExpander("siblings", siblings.length>0);
+    addExpander("siblings", siblings.length);
     for (Indi sibling : siblings)
       content.add("sibling", indi(sibling));
     content.add("sibling", create(new CreateSibling(indi, true)));
 
     Indi[] spouses = indi.getPartners();
-    addExpander("spouses", spouses.length>0);
+    addExpander("spouses", spouses.length);
     for (Indi spouse : spouses)
       content.add("spouse", indi(spouse));
     if (spouses.length==0)
       content.add("spouse", create(new CreateSpouse(indi)));
 
     Indi[] children = indi.getChildren();
-    addExpander("children", children.length>0);
+    addExpander("children", children.length);
     for (Indi child : children)
       content.add("child", indi(child));
     content.add("child", create(new CreateChild(indi, true)));
     
     List<Indi> grandchildren = getChildren(Arrays.asList(children));
-    addExpander("grandchildren",!grandchildren.isEmpty());
+    addExpander("grandchildren", grandchildren.size());
     for (Indi grandchild : grandchildren)
       content.add("grandchild", indi(grandchild));
     
