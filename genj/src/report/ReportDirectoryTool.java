@@ -17,6 +17,7 @@ public class ReportDirectoryTool extends Report {
 	//translate strings for output  
 	private String textTitle = translate("title");
 	private String textDate = translate("date"); 
+	private String textAge = translate("age"); 
 	private String textSelect = translate("select");
 
 	
@@ -97,7 +98,7 @@ public class ReportDirectoryTool extends Report {
 				  
 				  if(strOccu.length()>0) strOccu = "[" + strOccu + "]";
 			  
-				  println(individuals[loop] + " Age " + iAge + " " + strOccu);
+				  println(individuals[loop] + textAge + " " + iAge + " " + strOccu);
 			  }
 		  
 		  }

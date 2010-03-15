@@ -204,41 +204,38 @@ public class ReportAges extends Report {
 author               = Daniel P. Kionka, Carsten Müssig <carsten.muessig@gmx.net>
 version              = 1.4
 category             = text
-updated              = $Date: 2010-01-27 18:45:43 $
+updated              = $Date: 2010-02-11 15:19:43 $
 
 name                 = Ages
 name.de              = Alter
 name.fr              = Ages
 name.es              = Edad
-name.pl              = Wiek osoby
+name.pl              = Wieki życia
 
-info = <h1><center>Age at Events</center></h1><p>This report prints out the age of an individual at different events during their life. Use the options to turn these events on/off.</p>
-info.de = <h1><center>Age at Events</center></h1><p>Alter einer Person zu verschiedenen Zeitpunkten ausgeben. Die Zeitpunkte können in den Optionen gewählt werden.</p>
-info.fr = <h1><center>Les Ages au cours de la vie</center></h1><p>
- Aprés avoir choisi la personne sur laquelle vous voulez lancer ce 
- script, vous obtiendrez l'âge d'une personne à différentes époques 
- de sa vie.</p><p>Ainsi on trouvera :</p>
+
+info = <h1><center>Ages at different Events</center></h1><p>This report prints out the age of an individual at different events during their life. Use the options to turn these events on/off.</p>
+info.de = <h1><center>Alter zu verschiedenen Zeitpunkten</center></h1><p>Alter einer Person zu verschiedenen Zeitpunkten ausgeben. Die Zeitpunkte können in den Optionen gewählt werden.</p>
+info.fr = <h1><center>Les âges au cours de la vie</center></h1><p>
+ Après avoir choisi la personne sur laquelle vous voulez lancer ce rapport, vous obtiendrez l'âge d'une personne à différentes époques de sa vie.</p>
+ <p>Ainsi on trouvera :</p>
  <ul>
   <li>La date de sa naissance,</li>
   <li>L'âge à son baptême,</li>
   <li>L'âge à son mariage,</li>
   <li>L'âge à son divorce,</li>
   <li>L'âge à la naissance de chacun de ses enfants,</li>
-  <li>L'âge lors de son emigration,</li>
+  <li>L'âge lors de son émigration,</li>
   <li>L'âge lors de son immigration,</li>
   <li>L'âge lors de sa naturalisation,</li>
   <li>L'âge qu'elle avait à son décès,</li>
   <li>Le temps écoulé depuis sa naissance.</li>
  </ul>
- <p>Utilisez les options pour visualiser tel ou tel évènement (actif : 
- oui/non).</p>
- <p>Bien sûr si tel ou tel évènement ne s'est pas produit, ou si une 
- date n'est pas renseignée, l'information correspondante ne sera pas 
- affichée.</p>
+ <p>Utilisez les options pour visualiser tel ou tel évènement (actif : oui/non).</p>
+ <p>Bien sûr, si tel ou tel évènement ne s'est pas produit, ou si une date n'est pas renseignée, l'information correspondante ne sera pas affichée.</p>
  
-info.es = <h1><center>Age at Events</center></h1><p>Este informe imprime la edad de un individuo en diferentes momentos. 
+info.es = <h1><center>Edades de la vida</center></h1><p>Este informe imprime la edad de un individuo en diferentes momentos. 
  Use las opciones para incluir o no esos momentos</p>
-info.pl = <h1><center>Age at Events</center></h1><p>Ten raport wyświetla wiek osoby podczas różnych wydarzeń. 
+info.pl = <h1><center>Wieki życia</center></h1><p>Ten raport wyświetla wiek osoby podczas różnych wydarzeń. 
  Zdarzenia te można wybrać na zakładce ustawień.</p>
 
 reportMarriageAge    = Report age at marriage
@@ -267,7 +264,7 @@ reportConfirmationAge.pl = Wyświetl wiek podczas bierzmowania
 
 reportAgeAtEmigration    = Report age at emigration
 reportAgeAtEmigration.de = Alter bei Auswanderung ausgeben
-reportAgeAtEmigration.fr = Indication de l'âge lors de l'emigration
+reportAgeAtEmigration.fr = Indication de l'âge lors de l'émigration
 reportAgeAtEmigration.es = Informe de la edad de la emigración
 reportAgeAtEmigration.pl = Wyświetl wiek podczas emigracji
 
@@ -278,7 +275,7 @@ reportAgeAtImmigration.es = Informe de la edad de la inmigración
 reportAgeAtImmigration.pl = Wyświetl wiek podczas imigracji
 
 reportAgeAtNaturalization    = Report age at naturalization
-reportAgeAtNaturalization.de = Alter bein Einbürgerung ausgeben
+reportAgeAtNaturalization.de = Alter bei Einbürgerung ausgeben
 reportAgeAtNaturalization.fr = Indication de l'âge lors de la naturalisation
 reportAgeAtNaturalization.es = Informe de la edad de la naturalización
 reportAgeAtNaturalization.pl = Wyświetl wiek podczas naturalizacji
