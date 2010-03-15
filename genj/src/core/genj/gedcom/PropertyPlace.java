@@ -304,5 +304,43 @@ public class PropertyPlace extends PropertyChoiceValue {
     // don't know
     return -1;
   }
+  
+  /**
+   * Display value for a place where format is one of 
+   * <pre>
+   *  null      1st available
+   *  ""        1st available
+   *  "all"     all jurisdictions
+   *  "0,1 (3)" 1st, 2nd (3rd)
+   * @return format format
+   */
+  public String format(String format) {
+      
+      if (format == null)
+       return getFirstAvailableJurisdiction();
+      
+      String f = format.trim();
+      
+      if (f.equals(""))
+        return getFirstAvailableJurisdiction();
+      
+      if (f.equals("all"))
+         return getDisplayValue();
+
+      // parse format
+      StringBuffer result = new StringBuffer();
+      String[] jurisdictions = getJurisdictions();
+      for (int i=0 ; i < f.length(); i++) {
+        char c = f.charAt(i);
+        if (Character.isDigit(c)) {
+          int j = Character.digit(c,10);
+          if (j<jurisdictions.length)
+            result.append(jurisdictions[j].trim());
+        } else {
+          result.append(c);
+        }
+      }
+      return result.toString();
+  }
 
 } //PropertyPlace
