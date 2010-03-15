@@ -48,7 +48,7 @@ import javax.swing.text.PlainDocument;
  */
 public class DateWidget extends JPanel {
 
-  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<row><x/><x/><x/><x/></row>");
+  private final static NestedBlockLayout LAYOUT = new NestedBlockLayout("<row><x pad=\"0\"/><x/><x/><x pad=\"0\"/></row>");
 
   /** components */
   private PopupWidget widgetCalendar;

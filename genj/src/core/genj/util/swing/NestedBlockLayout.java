@@ -248,7 +248,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       if ("table".equals(element))
         return new Table(attrs);
       // a cell!
-      return new Cell(element, attrs, padding);
+      return new Cell(element, attrs);
     }
     
     public void endElement(java.lang.String uri, java.lang.String localName, java.lang.String qName) throws org.xml.sax.SAXException {
@@ -272,8 +272,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   private static abstract class Block implements Cloneable {
     
+    Insets padding = this instanceof Cell ? new Insets(1,1,1,1) : new Insets(0,0,0,0);
+    
     /** preferred size of column */
-    Dimension preferred;
+    private Dimension preferred;
 
     /** weight/growth */
     Point weight;
@@ -291,6 +293,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         String gy = attributes.getValue("gy");
         if (gy!=null)
           grow.y = Integer.parseInt(gy)>0 ? 1 : 0;
+      }
+      
+      // look for padding
+      String pad = attributes.getValue("pad");
+      if (pad!=null) {
+        String[] pads = pad.split(",");
+        switch (pads.length) {
+        case 0: break;
+        case 1: padding.set(Integer.parseInt(pads[0]), Integer.parseInt(pads[0]), Integer.parseInt(pads[0]), Integer.parseInt(pads[0])); break;
+        case 2: padding.set(Integer.parseInt(pads[0]), Integer.parseInt(pads[1]), Integer.parseInt(pads[0]), Integer.parseInt(pads[1])); break;
+        case 3: padding.set(Integer.parseInt(pads[0]), Integer.parseInt(pads[1]), Integer.parseInt(pads[2]), Integer.parseInt(pads[1])); break;
+        case 4: padding.set(Integer.parseInt(pads[0]), Integer.parseInt(pads[1]), Integer.parseInt(pads[2]), Integer.parseInt(pads[3])); break;
+        default: 
+          throw new IllegalArgumentException("invalid padding "+pad+" given ("+attributes+")");
+        }
       }
     }
 
@@ -325,10 +342,28 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** preferred size */
-    abstract Dimension preferred();
+    final Dimension preferred() {
+      if (preferred==null) {
+        preferred = preferredImpl();
+        preferred.width += padding.left + padding.right;
+        preferred.height += padding.top+ padding.bottom;
+      }
+      return preferred;
+    }
+    
+    abstract Dimension preferredImpl();
       
     /** layout */
-    abstract void layout(Rectangle in);
+    final void layout(Rectangle in) {
+      Rectangle avail = new Rectangle(in);
+      avail.x += padding.left;
+      avail.width -= padding.left+padding.right;
+      avail.y += padding.top;
+      avail.height -= padding.top+padding.bottom;
+      layoutImpl(avail);
+    }
+    
+    abstract void layoutImpl(Rectangle in);
     
     /** all cells */
     abstract Collection<Cell> getCells(Collection<Cell> collect);
@@ -410,7 +445,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   private static abstract class Folder extends Block {
     
-    private transient Expander expander = null;
+    protected transient Expander expander = null;
     
     /** subs */
     ArrayList<Block> subs = new ArrayList<Block>(16);
@@ -512,14 +547,11 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
 
     /** preferred size */
-    final Dimension preferred() {
+    final Dimension preferredImpl() {
       if (expander!=null&&expander.isCollapsed)
         return expander.getPreferredSize();
       // known?
-      if (preferred!=null)
-        return preferred;
-      preferred = preferredFolder();
-      return preferred;
+      return preferredFolder();
     }
     
     abstract Dimension preferredFolder();
@@ -548,7 +580,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     abstract Point weightFolder();
     
     /** layout */
-    final void layout(Rectangle in) {
+    final void layoutImpl(Rectangle in) {
 
       // closed?
       if (expander!=null&&expander.isCollapsed) {
@@ -618,7 +650,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       for (int i=0;i<subs.size();i++) {
         
         Block sub = (Block)subs.get(i);
-        
+        avail.x = in.x;
         avail.width = in.width;
         avail.height = sub.preferred().height + (int)(sub.weight().getY() * weightFactor) + (sub.grow().y*growFactor);
         
@@ -645,9 +677,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** wrapped component */
     private Component component;
     
-    /** padding */
-    private int cellPadding;
-    
     /** cached weight */
     private Point cellWeight = new Point();
     
@@ -662,13 +691,12 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** constructor */
-    private Cell(String element, Attributes attributes, int padding) {
+    private Cell(String element, Attributes attributes) {
       
       super(attributes);
       
       // keep key
       this.element = element;
-      this.cellPadding = padding;
       
       for (int i=0,j=attributes.getLength();i<j;i++) 
         attrs.put(attributes.getQName(i), attributes.getValue(i));
@@ -705,12 +733,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return clone;
     }
     
-    @Override
-    void invalidate(boolean arg0) {
-      // component info only
-      preferred = null;
-    }
-    
     /** element */
     public String getElement() {
       return element;
@@ -737,20 +759,15 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** preferred */
-    Dimension preferred() {
-      // known?
-      if (preferred!=null)
-        return preferred;
+    Dimension preferredImpl() {
       // calc
       if (component==null||!component.isVisible())
-        preferred = new Dimension();
-      else {
-	      preferred = new Dimension(component.getPreferredSize());
-          Dimension max = component.getMaximumSize();
-	      preferred.width = Math.min(max.width,preferred.width) + cellPadding*2;
-	      preferred.height = Math.min(max.height,preferred.height) + cellPadding*2;
-      }
-      return preferred;
+        return new Dimension();
+      Dimension result = new Dimension(component.getPreferredSize());
+      Dimension max = component.getMaximumSize();
+      result.width = Math.min(max.width, result.width);
+      result.height = Math.min(max.height, result.height);
+      return result;
     }
     
     /** weight */
@@ -760,13 +777,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     /** layout */
-    void layout(Rectangle in) {
+    void layoutImpl(Rectangle in) {
       
       if (component==null)
         return;
       
       // calculate what's available
-      Rectangle avail = new Rectangle(in.x+cellPadding, in.y+cellPadding, in.width-cellPadding*2, in.height-cellPadding*2);
+      Rectangle avail = new Rectangle(in.x, in.y, in.width, in.height);
       
       // make sure it's not more than maximum
       Dimension max = component.getMaximumSize();

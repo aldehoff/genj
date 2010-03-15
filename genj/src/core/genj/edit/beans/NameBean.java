@@ -47,7 +47,7 @@ public class NameBean extends PropertyBean {
   private final static NestedBlockLayout LAYOUT = new NestedBlockLayout(
       "<table>"+
        "<row><l/><v wx=\"1\"/></row>"+
-       "<row><l/><row><v wx=\"1\"/><check/></row></row>"+
+       "<row><l/><row><v wx=\"1\"/><check pad=\"0\"/></row></row>"+
        "<row><l/><v/></row>"+
        "<row><l/><v/></row>"+
       "</table>"
