@@ -103,7 +103,8 @@ public class PropertyTableWidget extends JPanel  {
     // create table comp
     table = new Table();
     setModel(propertyModel);
-    setCellSelection(true);
+    setRowSelection(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    setColSelection(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
     // setup layout
     setLayout(new BorderLayout());
@@ -112,9 +113,28 @@ public class PropertyTableWidget extends JPanel  {
     
     // done
   }
+ 
+  /**
+   * Column selection
+   * @set one of 
+   * ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
+   * ListSelectionModel.SINGLE_SELECTION
+   * ListSelectionModel.SINGLE_INTERVAL_SELECTION
+   * -1
+   */
+  public void setColSelection(int set) {
+    table.setColSelection(set);
+  }
   
-  public void setCellSelection(boolean set) {
-    table.setCellSelection(set);
+  /**
+   * Column selection
+   * @set one of 
+   * ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
+   * ListSelectionModel.SINGLE_SELECTION
+   * ListSelectionModel.SINGLE_INTERVAL_SELECTION
+   */
+  public void setRowSelection(int set) {
+    table.setRowSelection(set);
   }
   
   /**
@@ -160,6 +180,11 @@ public class PropertyTableWidget extends JPanel  {
   
   public int[] getSelectedRows() {
     return table.getSelectedRows();
+  }
+  
+  public Property getSelectedRow() {
+    int i = table.getSelectedRow();
+    return i<0 ? null : table.getRowRoot(i);
   }
   
   /**
@@ -400,10 +425,14 @@ public class PropertyTableWidget extends JPanel  {
       return rows;
     }
     
-    void setCellSelection(boolean set) {
-      getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-      getColumnModel().setColumnSelectionAllowed(set);
-      getColumnModel().getSelectionModel().setSelectionMode(set ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);
+    void setRowSelection(int set) {
+      getSelectionModel().setSelectionMode(set);
+    }
+    
+    void setColSelection(int set) {
+      getColumnModel().setColumnSelectionAllowed(set>=0);
+      if (set>=0)
+        getColumnModel().getSelectionModel().setSelectionMode(set);
     }
     
     /** create a shortcut */
@@ -519,7 +548,11 @@ public class PropertyTableWidget extends JPanel  {
       // not found
       return -1;
     }
-    
+
+    Property getRowRoot(int index) {
+      return propertyModel.getRowRoot(sortableModel.modelIndex(index));
+    }
+
     /**
      * look up a row
      */

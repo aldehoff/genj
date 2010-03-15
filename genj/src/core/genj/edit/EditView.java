@@ -29,6 +29,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DialogHelper;
 import genj.view.ContextProvider;
+import genj.view.SelectionSink;
 import genj.view.ToolBar;
 import genj.view.View;
 import genj.view.ViewContext;
@@ -51,7 +52,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends View implements ContextProvider  {
+public class EditView extends View implements ContextProvider, SelectionSink  {
   
   /*package*/ final static Logger LOG = Logger.getLogger("genj.edit");
   private final static Registry REGISTRY = Registry.get(EditView.class);
@@ -63,6 +64,7 @@ public class EditView extends View implements ContextProvider  {
   private OK ok = new OK();
   private Cancel cancel = new Cancel();
   private Callback callback = new Callback();
+  private boolean isIgnoreSetContext = false;
   
   private Editor editor;
   private JPanel buttons;
@@ -89,6 +91,17 @@ public class EditView extends View implements ContextProvider  {
     focus.setSelected(REGISTRY.get("focus", false));
 
     // Done
+  }
+  
+  @Override
+  public void fireSelection(Context context, boolean isActionPerformed) {
+    if (!isActionPerformed)
+      isIgnoreSetContext = true;
+    try {
+      Dispatcher.fireSelection(this, context, isActionPerformed);
+    } finally {
+      isIgnoreSetContext = false;
+    }
   }
   
   /**
@@ -197,6 +210,10 @@ public class EditView extends View implements ContextProvider  {
   }
   
   public void setContext(Context context, boolean isActionPerformed) {
+    
+    // ignore it?
+    if (isIgnoreSetContext)
+      return;
     
     // disconnect from last gedcom?
     if (context.getGedcom()!=gedcom && gedcom!=null) {

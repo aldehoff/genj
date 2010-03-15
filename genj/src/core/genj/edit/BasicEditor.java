@@ -78,11 +78,12 @@ import javax.swing.SwingUtilities;
   }
   
   /**
-   * By being a selection sink ourselves we can morph any outgoing context into our own marker
+   * By being a selection sink ourselves we can make sure that non-context-entity
+   * properties don't leak through
    */
   public void fireSelection(Context context, boolean isActionPerformed) {
-    if (isActionPerformed)
-      SelectionSink.Dispatcher.fireSelection(getParent(), context, isActionPerformed);
+    if (isActionPerformed || (context.getEntities().size()==1 && context.getEntity()==currentEntity))
+      SelectionSink.Dispatcher.fireSelection(this, context, isActionPerformed);
   }
 
   /**

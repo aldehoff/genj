@@ -21,12 +21,10 @@ package genj.edit.beans;
 
 import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableWidget;
-import genj.edit.Images;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
-import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 
@@ -38,8 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.Action;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.ListSelectionModel;
 
 /**
  * A complex bean displaying events of an individual or family
@@ -66,8 +63,7 @@ public class EventsBean extends PropertyBean {
     table = new PropertyTableWidget();
     table.setVisibleRowCount(5);
     
-    actions.add(new Add());
-    actions.add(new Del());
+    actions.add(new Edit());
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
@@ -86,62 +82,23 @@ public class EventsBean extends PropertyBean {
   }
   
   /**
-   * add an event
+   * modify events
    */
-  private class Add extends Action2 {
-    Add() {
-      setImage(PropertyEvent.IMG.getOverLayed(Images.imgNew));
-      setTip(RESOURCES.getString("even.add"));
-    }
-  } //Add
-
-  /**
-   * del an event
-   */
-  private class Del extends Action2 implements ListSelectionListener {
-    Del() {
-      setImage(PropertyEvent.IMG.getOverLayed(Images.imgDel));
-      setTip(RESOURCES.getString("even.del"));
-      table.addListSelectionListener(this);
-      setEnabled(false);
+  private class Edit extends Action2 {
+    Edit() {
+      setImage(PropertyEvent.IMG);
+      setTip(RESOURCES.getString("even.edit"));
+      table.setColSelection(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+      table.setRowSelection(ListSelectionModel.SINGLE_SELECTION);
     }
 
-    @Override
-    public void valueChanged(ListSelectionEvent e) {
-      
-      // make sure a selected event to be deleted is not shown in another bean atm
-      List<Property> selections = model.getEvents(table.getSelectedRows());
-      for (PropertyBean bean : session) {
-        if (bean.property!=null) for (Property selection : selections) {
-          if (selection.contains(bean.property)) {
-            setEnabled(false);
-            return;
-          }
-        }
-      }
-      
-      setEnabled(selections.size()>0);
-    }
-    
     @Override
     public void actionPerformed(ActionEvent e) {
       
-      int[] rows = table.getSelectedRows();
-      List<Property> selection = ((Model)table.getModel()).getEvents(rows);     
+      Property event = table.getSelectedRow();
       
-      WordBuffer msg = new WordBuffer("\n");
-      msg.append(RESOURCES.getString("even.del.confirm"));
-      for (Property event : selection)
-        msg.append(event);
-      
-      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, msg.toString(), Action2.okCancel(), EventsBean.this))
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, ""+event, Action2.okOnly(), EventsBean.this))
         return;
-      
-      for (Property event : selection)
-        model.remove(event);
-
-      deletes.addAll(selection);
-      
       
       // changed
       EventsBean.this.changeSupport.fireChangeEvent();
