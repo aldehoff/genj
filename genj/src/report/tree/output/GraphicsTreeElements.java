@@ -199,11 +199,6 @@ public class GraphicsTreeElements implements TreeElements {
     public int max_names_per_line = 2;
 
     public String[] max_names_per_lines = { "nolimit", "1", "2", "3" };
-    
-    /**
-     * How to render places
-     */
-    public boolean all_jurisdictions = false;
 
     /**
      * Whether to display the title of an individual
@@ -228,7 +223,12 @@ public class GraphicsTreeElements implements TreeElements {
     public boolean draw_places = true;
 
     /**
-     * Whether to display places of birth and death.
+	* Format to display places
+	*/
+	public String place_display_format = "";
+
+    /**
+     * Whether to display dates of birth and death.
      */
     public boolean draw_dates = true;
 
@@ -284,7 +284,6 @@ public class GraphicsTreeElements implements TreeElements {
      */
     public boolean swap_names = false;
 
-
     /**
      * The graphics object to paint on.
      */
@@ -295,8 +294,8 @@ public class GraphicsTreeElements implements TreeElements {
      */
     public void setGraphics(Graphics2D graphics) {
         this.graphics = graphics;
-    }
-
+	}
+ 
     /**
      * Outputs an individual box.
      * @param i  individual
@@ -306,7 +305,8 @@ public class GraphicsTreeElements implements TreeElements {
      */
     public void drawIndiBox(IndiBox indibox, int x, int y, int gen) {
 
-        // Don't draw if it's not visible
+        
+		// Don't draw if it's not visible
         if (!graphics.hitClip(x, y, indibox.width, indibox.height))
             return;
 
@@ -421,7 +421,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (birthPlace != null) {
-                graphics.drawString(getPlaceValue(birthPlace), x + 13, currentY);
+                graphics.drawString(((PropertyPlace)birthPlace).format(place_display_format), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
         }
@@ -434,7 +434,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (deathPlace != null) {
-                graphics.drawString(getPlaceValue(deathPlace), x + 13, currentY);
+				graphics.drawString(((PropertyPlace)deathPlace).format(place_display_format), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (deathDate == null && deathPlace == null)
@@ -544,7 +544,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (marriagePlace != null) {
-                graphics.drawString(getPlaceValue(marriagePlace), x + 25, currentY);
+               graphics.drawString(((PropertyPlace)marriagePlace).format(place_display_format), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (marriageDate == null && marriagePlace == null)
@@ -559,7 +559,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (divorcePlace != null) {
-                graphics.drawString(getPlaceValue(divorcePlace), x + 25, currentY);
+               graphics.drawString(((PropertyPlace)divorcePlace).format(place_display_format), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (divorceDate == null && divorcePlace == null)
@@ -663,10 +663,6 @@ public class GraphicsTreeElements implements TreeElements {
             return BOX_COLORS[-((-gen - 1) % COLOR_GENERATIONS) + COLOR_GENERATIONS - 1];
         // else (gen > 0)
         return BOX_COLORS[(gen - 1) % COLOR_GENERATIONS + COLOR_GENERATIONS + 1];
-    }
-    
-    private String getPlaceValue(PropertyPlace place) {
-      return all_jurisdictions ? place.getDisplayValue() : place.getFirstAvailableJurisdiction();
     }
 
     /**
@@ -779,12 +775,12 @@ public class GraphicsTreeElements implements TreeElements {
 
         if (draw_places) {
             if (birthPlace != null) {
-                width = getTextWidth(getPlaceValue(birthPlace), DETAILS_FONT);
+                width = getTextWidth(((PropertyPlace) birthPlace).format(place_display_format), DETAILS_FONT);
                 if (width + 13+TEXT_MARGIN > indibox.width)
                     indibox.width = width + 13+TEXT_MARGIN;
             }
             if (deathPlace != null) {
-                width = getTextWidth(getPlaceValue(deathPlace), DETAILS_FONT);
+                width = getTextWidth(((PropertyPlace) deathPlace).format(place_display_format), DETAILS_FONT);
                 if (width + 13+TEXT_MARGIN > indibox.width)
                     indibox.width = width + 13+TEXT_MARGIN;
             }
@@ -856,12 +852,12 @@ public class GraphicsTreeElements implements TreeElements {
 
         if (draw_places) {
             if (marriagePlace != null) {
-                int width = getTextWidth(getPlaceValue(marriagePlace), DETAILS_FONT);
+                int width = getTextWidth(((PropertyPlace) marriagePlace).format(place_display_format), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }
             if (draw_divorce && divorcePlace != null) {
-                int width = getTextWidth(getPlaceValue(divorcePlace), DETAILS_FONT);
+                int width = getTextWidth(((PropertyPlace) divorcePlace).format(place_display_format), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }
