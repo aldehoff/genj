@@ -285,15 +285,17 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       
       grow = new Point();
       
+      // additional info?
+      if (attributes==null)
+        return;
+      
       // look for grow info
-      if (attributes!=null) {
-        String gx = attributes.getValue("gx");
-        if (gx!=null)
-          grow.x = Integer.parseInt(gx)>0 ? 1 : 0;
-        String gy = attributes.getValue("gy");
-        if (gy!=null)
-          grow.y = Integer.parseInt(gy)>0 ? 1 : 0;
-      }
+      String gx = attributes.getValue("gx");
+      if (gx!=null)
+        grow.x = Integer.parseInt(gx)>0 ? 1 : 0;
+      String gy = attributes.getValue("gy");
+      if (gy!=null)
+        grow.y = Integer.parseInt(gy)>0 ? 1 : 0;
       
       // look for padding
       String pad = attributes.getValue("pad");
@@ -370,7 +372,16 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     
     /** set cell content */
     abstract List<Block> setContent(Object key, Component component, List<Block> path);    
-
+    
+    @Override
+    public String toString() {
+      StringBuffer result = new StringBuffer();
+      toString(result);
+      return result.toString();
+    }
+    
+    protected abstract void toString(StringBuffer result);
+    
   } //Block
   
   /**
@@ -437,7 +448,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       }
       
     }
-    
+
   } //Row
   
   /**
@@ -460,6 +471,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       subs.add(block);
       invalidate(false);
       return block;
+    }
+    
+    protected void toString(StringBuffer result) {
+      result.append("<row>");
+      for (int i=0;i<subs.size();i++)
+        subs.get(i).toString(result);
+      result.append("</row>");
     }
     
     /** copy */
@@ -770,6 +788,13 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       return result;
     }
     
+    @Override
+    protected void toString(StringBuffer result) {
+      result.append("<cell ");
+      result.append(attrs);
+      result.append("/>");
+    }
+    
     /** weight */
     @Override
     Point weight() {
@@ -907,8 +932,11 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    * our preferred layout size
    */
   public Dimension preferredLayoutSize(Container parent) {
-    invalidated = false;
-    return root.preferred();
+    Dimension result = root.preferred();
+    Insets insets = parent.getInsets();
+    result.width += insets.left + insets.right;
+    result.height += insets.top + insets.bottom;
+    return result;
   }
   
   /**
@@ -1023,13 +1051,14 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
           int x = avail.x;
           List<Block> subs = ((Row)row).subs;
           for (int c=0;c<subs.size();c++) {
-            int w = avail.width<preferred.width ? avail.width/subs.size() : colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
+            //int w = avail.width<preferred.width ? avail.width/subs.size() : colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
+            int w = Math.min( avail.x+avail.width-x, colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier));
             subs.get(c).layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
             x += w;
           }
         } else {
           int w = avail.width<preferred.width ? avail.width : colWidths.get(0) + (int)(colWeights.get(0)*xWeightMultiplier);
-          ((Row)row).layout(new Rectangle(avail.x, avail.y, w, rowHeights.get(r)));
+          row.layout(new Rectangle(avail.x, avail.y, w, rowHeights.get(r)));
         }
         
         // next row
