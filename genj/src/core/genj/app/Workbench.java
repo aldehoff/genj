@@ -390,7 +390,18 @@ public class Workbench extends JPanel implements SelectionSink {
       return false;
     }
   
-    return saveGedcomImpl(gedcom, filters);
+    // save
+    if (!saveGedcomImpl(gedcom, filters))
+    	return false;
+    
+    // close and reset
+    if (!closeGedcom())
+    	return false;
+
+    // new set
+    setGedcom(gedcom);
+    
+    return true;
   }
   
   /**

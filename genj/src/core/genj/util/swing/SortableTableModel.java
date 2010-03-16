@@ -308,8 +308,10 @@ public class SortableTableModel extends AbstractTableModel {
 
     @SuppressWarnings(value = "unchecked")
     private int compare(Object o1, Object o2) {
-      if (o1 instanceof Comparable)
+      if (o1 instanceof Comparable) try {
         return ((Comparable)o1).compareTo(o2);
+      } catch (Throwable t) {
+      }
       return 0;
     }
 
