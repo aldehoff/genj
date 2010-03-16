@@ -21,12 +21,16 @@ package genj.edit.beans;
 
 import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableWidget;
+import genj.edit.BeanPanel;
+import genj.edit.Images;
+import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
+import genj.view.SelectionSink;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -36,12 +40,15 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * A complex bean displaying events of an individual or family
  */
-public class EventsBean extends PropertyBean {
+public class EventsBean extends PropertyBean implements SelectionSink {
 
   private static TagPath[] COLUMNS = {
     new TagPath("."),
@@ -55,6 +62,7 @@ public class EventsBean extends PropertyBean {
   private Model model;
   private PropertyTableWidget table;
   
+  private BeanPanel beans = new BeanPanel();
   private List<Action> actions = new ArrayList<Action>();
   
   public EventsBean() {
@@ -62,11 +70,17 @@ public class EventsBean extends PropertyBean {
     // prepare a simple table
     table = new PropertyTableWidget();
     table.setVisibleRowCount(5);
+    table.setColSelection(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    table.setRowSelection(ListSelectionModel.SINGLE_SELECTION);
     
-    actions.add(new Edit());
+    beans.setBorder(BorderFactory.createEmptyBorder(0,8,0,0));
+    
+    actions.add(new Add());
+    actions.add(new Del());
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
+    add(BorderLayout.SOUTH, beans);
 
   }
   
@@ -81,31 +95,28 @@ public class EventsBean extends PropertyBean {
     super.removeNotify();
   }
   
-  /**
-   * modify events
-   */
-  private class Edit extends Action2 {
-    Edit() {
-      setImage(PropertyEvent.IMG);
-      setTip(RESOURCES.getString("even.edit"));
-      table.setColSelection(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-      table.setRowSelection(ListSelectionModel.SINGLE_SELECTION);
-    }
+  @Override
+  public void fireSelection(Context context, boolean isActionPerformed) {
+    
+    // event being selected?
+    Property prop = context.getProperty();
+    while (prop!=null && prop.getParent()!=getProperty())
+      prop = prop.getParent();
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      
-      Property event = table.getSelectedRow();
-      
-      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, ""+event, Action2.okOnly(), EventsBean.this))
-        return;
-      
-      // changed
-      EventsBean.this.changeSupport.fireChangeEvent();
-      
-    }
-  } //Del
+    // blank out if not editable
+    if (prop!=null) {
+      for (PropertyBean bean : session) {
+        if (bean.property!=null && prop.contains(bean.property)) {
+          prop=null;
+          break;
+        }
+      }
+    }    
 
+    // set it
+    beans.setRoot(prop);
+  }
+  
   @Override
   protected void commitImpl(Property property) {
   }
@@ -119,7 +130,6 @@ public class EventsBean extends PropertyBean {
     model = prop==null ? null : new Model(prop);
     
     table.setModel(model);
-    
     table.setColumnLayout(REGISTRY.get("eventcols",""));
   }
   
@@ -210,4 +220,65 @@ public class EventsBean extends PropertyBean {
     }
   }
 
+  /**
+   * add an event
+   */
+  private class Add extends Action2 {
+    Add() {
+      setImage(PropertyEvent.IMG.getOverLayed(Images.imgNew));
+      setTip(RESOURCES.getString("even.add"));
+    }
+  } //Add
+
+  /**
+   * del an event
+   */
+  private class Del extends Action2 implements ListSelectionListener {
+    Del() {
+      setImage(PropertyEvent.IMG.getOverLayed(Images.imgDel));
+      setTip(RESOURCES.getString("even.del"));
+      table.addListSelectionListener(this);
+      setEnabled(false);
+    }
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+
+      // make sure the selected event can be deleted 
+      Property row = table.getSelectedRow();
+      if (row==null) {
+        setEnabled(false);
+        return;
+      }
+      
+      for (PropertyBean bean : session) {
+        if (bean.property!=null && row.contains(bean.property)) {
+          setEnabled(false);
+          return;
+        }
+      }
+      
+      setEnabled(true);
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      
+      Property event = table.getSelectedRow();
+      
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
+          RESOURCES.getString("even.del.confirm", event),
+          Action2.okCancel(), EventsBean.this))
+        return;
+      
+      beans.setRoot(null);
+      
+      model.remove(event);
+      deletes.add(event);
+      
+      // changed
+      EventsBean.this.changeSupport.fireChangeEvent();
+      
+    }
+  } //Del
 }
