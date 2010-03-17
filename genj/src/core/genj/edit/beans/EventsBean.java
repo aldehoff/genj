@@ -53,6 +53,7 @@ public class EventsBean extends PropertyBean implements SelectionSink {
 
   private static TagPath[] COLUMNS = {
     new TagPath("."),
+    new TagPath("."),
     new TagPath(".:DATE"),
     new TagPath(".:PLAC")
   };
@@ -192,6 +193,8 @@ public class EventsBean extends PropertyBean implements SelectionSink {
     public String getColName(int col) {
       if (col==0)
         return Gedcom.getName("EVEN");
+      if (col==1)
+        return RESOURCES.getString("even.detail");
       return super.getColName(col);
     }
     
@@ -218,24 +221,23 @@ public class EventsBean extends PropertyBean implements SelectionSink {
     @Override
     public int compare(Property valueA, Property valueB, int col) {
       if (col==0) 
-        return toString(valueA).compareTo(toString(valueB));
+        return valueA.getPropertyName().compareTo(valueB.getPropertyName());
+      if (col==1)
+        return detail(valueA).compareTo(detail(valueB));
       return super.compare(valueA, valueB, col);
     }
     
-    private String toString(Property prop) {
-      String result = prop.getPropertyName();
+    private String detail(Property prop) {
       String val = prop.getDisplayValue();
-      if (val.length()==0)
-        val = prop.getPropertyValue("TYPE");
-      if (val.length()>0)
-        result += " ("+val+")";
-      return  result;
+      return val.length()>0 ? val : prop.getPropertyValue("TYPE");
     }
     
     @Override
     public String getCellValue(Property property, int row, int col) {
       if (col==0) 
-        return toString(property);
+        return property.getPropertyName();
+      if (col==1)
+        return detail(property);
       return super.getCellValue(property, row, col);
     }
   }
