@@ -583,7 +583,7 @@ public abstract class Report implements Cloneable {
    * containing simple key=value pairs can lookup internationalized
    * text-values with this method.
    * @param key the key to lookup in [ReportName].properties
-   * @param value an object value to replace %1 in value with
+   * @param values values to replace %[0..] in resource strings
    */
   public final String translate(String key, Object... values) {
 
