@@ -280,6 +280,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     /** weight/growth */
     Point weight;
     Point grow;
+    int cols = 1;
     
     Block(Attributes attributes) {
       
@@ -288,6 +289,14 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // additional info?
       if (attributes==null)
         return;
+      
+      // look for cols info
+      String c = attributes.getValue("cols");
+      if (c!=null) {
+        cols = Integer.parseInt(c);
+        if (cols<=0)
+          throw new IllegalArgumentException("cols<=0");
+      }      
       
       // look for grow info
       String gx = attributes.getValue("gx");
@@ -995,27 +1004,34 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       rowWeights = new ArrayList<Integer>();
       colWeights = new ArrayList<Integer>();
       
+      // do one run for single col cells
       for (int r=0;r<subs.size();r++) {
         Block row = subs.get(r);
         if (row instanceof Row) {
           List<Block> subs = ((Row)row).subs;
-          for (int c=0;c<subs.size();c++) {
-            Dimension d = subs.get(c).preferred();
-            grow(colWidths, c, d.width);
+          Block sub;
+          for (int c=0;c<subs.size();c += sub.cols) {
+            sub = subs.get(c);
+            Dimension d = sub.preferred();
+            if (sub.cols==1) 
+              grow(colWidths, c, d.width);
             grow(rowHeights, r, d.height);
-            Point w = subs.get(c).weight();
+            Point w = sub.weight();
             grow(colWeights, c, w.x);
             grow(rowWeights, r, w.y);
           }
         } else {
           Dimension d = row.preferred();
-          grow(colWidths, 0, d.width);
+          if (row.cols==1) 
+            grow(colWidths, 0, d.width);
           grow(rowHeights, r, d.height);
           Point w = row.weight();
           grow(colWeights, 0, w.x);
           grow(rowWeights, r, w.y);
         }
       }
+      
+      // TODO do another run for multi col cells
     }
     
     @Override
@@ -1050,14 +1066,22 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         if (row instanceof Row) {
           int x = avail.x;
           List<Block> subs = ((Row)row).subs;
-          for (int c=0;c<subs.size();c++) {
-            //int w = avail.width<preferred.width ? avail.width/subs.size() : colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
-            int w = Math.min( avail.x+avail.width-x, colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier));
-            subs.get(c).layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
+          Block sub;
+          for (int c=0;c<subs.size();) {
+            sub = subs.get(c);
+            int w = 0;
+            for (int i=0;i<sub.cols;i++,c++) 
+              w += colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
+            w = Math.min( avail.x+avail.width-x, w);
+            sub.layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
             x += w;
           }
+          
         } else {
-          int w = avail.width<preferred.width ? avail.width : colWidths.get(0) + (int)(colWeights.get(0)*xWeightMultiplier);
+          int w = 0;
+          for (int c=0;c<row.cols;c++) 
+            w += colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
+          w = Math.min( avail.x+avail.width-avail.x, w);
           row.layout(new Rectangle(avail.x, avail.y, w, rowHeights.get(r)));
         }
         
