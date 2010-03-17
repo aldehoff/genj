@@ -26,6 +26,7 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
 import genj.gedcom.TagPath;
+import genj.io.BasicTransferable;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.HeadlessLabel;
@@ -41,6 +42,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -62,6 +64,7 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -82,6 +85,7 @@ public class PropertyTableWidget extends JPanel  {
   private Table table;
   private boolean ignoreSelection  = false;
   private int visibleRowCount = -1;
+  private TransferHandler transferer;
   
   /**
    * Constructor
@@ -415,6 +419,13 @@ public class PropertyTableWidget extends JPanel  {
       });
       
       // done
+    }
+    
+    @Override
+    public TransferHandler getTransferHandler() {
+      if (transferer==null)
+        transferer = new Transferer();
+      return transferer;
     }
     
     @Override
@@ -882,7 +893,59 @@ public class PropertyTableWidget extends JPanel  {
       
     } //PropertyTableCellRenderer
     
-  } //Content
+    private class Transferer extends TransferHandler {
+
+      /**
+       * Create a Transferable to use as the source for a data transfer.
+       * 
+       * @param c
+       *          The component holding the data to be transfered. This argument is provided to enable sharing of TransferHandlers by multiple components.
+       * @return The representation of the data to be transfered.
+       * 
+       */
+      protected Transferable createTransferable(JComponent c) {
+        
+        // ourselves?
+        if (c!=Table.this) 
+          return null;
+        
+        // loop
+        int[] cols = table.getSelectedColumns();
+        int[] rows = table.getSelectedRows();
+
+        if (rows == null || cols == null || rows.length == 0 || cols.length == 0) 
+          return null;
+
+        StringBuffer plainBuf = new StringBuffer();
+        StringBuffer htmlBuf = new StringBuffer();
+
+        htmlBuf.append("<html>\n<body>\n<table>\n");
+
+        for (int row = 0; row < rows.length; row++) {
+          htmlBuf.append("<tr>\n");
+          for (int col = 0; col < cols.length; col++) {
+            Property obj = (Property)table.getValueAt(rows[row], cols[col]);
+            String val = ((obj == null) ? "" : obj.getDisplayValue());
+            plainBuf.append(val + "\t");
+            htmlBuf.append("  <td>" + val + "</td>\n");
+          }
+          // we want a newline at the end of each line and not a tab
+          plainBuf.deleteCharAt(plainBuf.length() - 1).append("\n");
+          htmlBuf.append("</tr>\n");
+        }
+
+        // remove the last newline
+        plainBuf.deleteCharAt(plainBuf.length() - 1);
+        htmlBuf.append("</table>\n</body>\n</html>");
+
+        return new BasicTransferable(plainBuf.toString(), htmlBuf.toString());
+      }
+
+      public int getSourceActions(JComponent c) {
+        return c==Table.this ? COPY : NONE;
+      }
+    }
+  } //Table
 
   
   
@@ -954,5 +1017,6 @@ public class PropertyTableWidget extends JPanel  {
 //      // done
 //    }
 //  } //DateShortcutGenerator
+  
   
 } //PropertyTableWidget
