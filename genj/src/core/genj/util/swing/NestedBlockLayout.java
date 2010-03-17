@@ -39,6 +39,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -483,10 +484,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     }
     
     protected void toString(StringBuffer result) {
-      result.append("<row>");
+      result.append("<"+getClass().getSimpleName()+">");
       for (int i=0;i<subs.size();i++)
         subs.get(i).toString(result);
-      result.append("</row>");
+      result.append("</"+getClass().getSimpleName()+">");
     }
     
     /** copy */
@@ -1007,31 +1008,57 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       // do one run for single col cells
       for (int r=0;r<subs.size();r++) {
         Block row = subs.get(r);
-        if (row instanceof Row) {
-          List<Block> subs = ((Row)row).subs;
-          Block sub;
-          for (int c=0;c<subs.size();c += sub.cols) {
-            sub = subs.get(c);
-            Dimension d = sub.preferred();
-            if (sub.cols==1) 
-              grow(colWidths, c, d.width);
-            grow(rowHeights, r, d.height);
-            Point w = sub.weight();
-            grow(colWeights, c, w.x);
-            grow(rowWeights, r, w.y);
-          }
-        } else {
-          Dimension d = row.preferred();
-          if (row.cols==1) 
-            grow(colWidths, 0, d.width);
+        
+        List<Block> cells;
+        
+        if (row instanceof Row) 
+          cells = ((Row)row).subs;
+        else
+          cells = Collections.singletonList(row);
+        
+        Block cell;
+        for (int c=0;c<cells.size();c += cell.cols) {
+          cell = cells.get(c);
+          Dimension d = cell.preferred();
+          if (cell.cols==1) 
+            grow(colWidths, c, d.width);
           grow(rowHeights, r, d.height);
-          Point w = row.weight();
-          grow(colWeights, 0, w.x);
+          Point w = cell.weight();
+          if (cell.cols==1)
+            grow(colWeights, c, w.x);
           grow(rowWeights, r, w.y);
         }
       }
       
-      // TODO do another run for multi col cells
+      // do another run for multi col cells
+      for (int r=0;r<subs.size();r++) {
+        Block row = subs.get(r);
+        List<Block> cells;
+        if (row instanceof Row) 
+          cells = ((Row)row).subs;
+        else
+          cells = Collections.singletonList(row);
+          
+        Block cell;
+        for (int c=0;c<cells.size();c += cell.cols) {
+          cell = cells.get(c);
+          Dimension d = cell.preferred();
+          if (cell.cols==1)
+            continue;
+          
+          int w = 0;
+          if (c+cell.cols>colWidths.size())
+            throw new IllegalArgumentException("cols out of bounds for "+cell);
+          for (int j=0;j<cell.cols;j++)
+            w += colWidths.get(c+j);
+          
+          // increase spanned cells equally (plus fudge factor on first column)
+          if (w<d.width) for (int j=0;j<cell.cols;j++) 
+            grow(colWidths, c+j, colWidths.get(c+j)+(d.width-w)/cell.cols + (j>0?0:(d.width-w)%cell.cols) );
+          }
+      }
+      
+      // done
     }
     
     @Override
@@ -1063,26 +1090,23 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
         
         Block row = subs.get(r);
         
-        if (row instanceof Row) {
-          int x = avail.x;
-          List<Block> subs = ((Row)row).subs;
-          Block sub;
-          for (int c=0;c<subs.size();) {
-            sub = subs.get(c);
-            int w = 0;
-            for (int i=0;i<sub.cols;i++,c++) 
-              w += colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
-            w = Math.min( avail.x+avail.width-x, w);
-            sub.layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
-            x += w;
-          }
-          
-        } else {
+        List<Block> cells;
+        
+        if (row instanceof Row) 
+          cells = ((Row)row).subs;
+        else
+          cells = Collections.singletonList(row);
+        
+        int x = avail.x;
+        Block sub;
+        for (int c=0;c<cells.size();) {
+          sub = cells.get(c);
           int w = 0;
-          for (int c=0;c<row.cols;c++) 
+          for (int i=0;i<sub.cols;i++,c++) 
             w += colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
-          w = Math.min( avail.x+avail.width-avail.x, w);
-          row.layout(new Rectangle(avail.x, avail.y, w, rowHeights.get(r)));
+          w = Math.min( avail.x+avail.width-x, w);
+          sub.layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
+          x += w;
         }
         
         // next row
