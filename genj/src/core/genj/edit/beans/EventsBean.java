@@ -33,6 +33,7 @@ import genj.util.swing.DialogHelper;
 import genj.view.SelectionSink;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -62,7 +63,15 @@ public class EventsBean extends PropertyBean implements SelectionSink {
   private Model model;
   private PropertyTableWidget table;
   
-  private BeanPanel beans = new BeanPanel();
+  private BeanPanel beans = new BeanPanel() {
+    private Dimension minPreferredSize = new Dimension();
+    public Dimension getPreferredSize() {
+      Dimension d = super.getPreferredSize();
+      minPreferredSize.width = Math.max(minPreferredSize.width, d.width);
+      minPreferredSize.height = Math.max(minPreferredSize.height, d.height);
+      return minPreferredSize;
+    }
+  };
   private List<Action> actions = new ArrayList<Action>();
   
   public EventsBean() {
@@ -70,17 +79,17 @@ public class EventsBean extends PropertyBean implements SelectionSink {
     // prepare a simple table
     table = new PropertyTableWidget();
     table.setVisibleRowCount(5);
-    table.setColSelection(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+    table.setColSelection(-1);
     table.setRowSelection(ListSelectionModel.SINGLE_SELECTION);
     
-    beans.setBorder(BorderFactory.createEmptyBorder(0,8,0,0));
+    beans.setBorder(BorderFactory.createEmptyBorder(8,8,0,0));
     
     actions.add(new Add());
     actions.add(new Del());
     
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, table);
     add(BorderLayout.SOUTH, beans);
+    add(BorderLayout.CENTER, table);
 
   }
   
@@ -142,9 +151,20 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       super(root.getGedcom());
       
       // scan for events
-      for (Property child : root.getProperties()) {
-        if (child.getMetaProperty().allows("DATE"))
-          events.add(child);
+      scan: for (Property child : root.getProperties()) {
+        
+        // TODO just checking for something with a date atm
+        if (!child.getMetaProperty().allows("DATE"))
+          continue;
+        
+        // editable?
+        for (PropertyBean bean : session) {
+          if (bean.property!=null && child.contains(bean.property)) 
+            continue scan;
+        }
+
+        // keep
+        events.add(child);
       }
       
       // done
@@ -243,22 +263,8 @@ public class EventsBean extends PropertyBean implements SelectionSink {
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
-
-      // make sure the selected event can be deleted 
       Property row = table.getSelectedRow();
-      if (row==null) {
-        setEnabled(false);
-        return;
-      }
-      
-      for (PropertyBean bean : session) {
-        if (bean.property!=null && row.contains(bean.property)) {
-          setEnabled(false);
-          return;
-        }
-      }
-      
-      setEnabled(true);
+      setEnabled(row!=null);
     }
     
     @Override

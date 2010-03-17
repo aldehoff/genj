@@ -1,4 +1,5 @@
 <table>
- <row><label path="."/><row><bean path="." wx="1"/><label path=".:DATE"/><bean path=".:DATE" dir="horizontal"/></row></row>
+ <row><label path="."/><bean path="." wx="1"/></row>
+ <row><label path=".:DATE"/><bean path=".:DATE" dir="h"/></row>
  <row><label path=".:PLAC"/><bean path=".:PLAC" wx="1"/></row>
 </table>

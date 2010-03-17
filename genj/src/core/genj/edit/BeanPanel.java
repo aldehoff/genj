@@ -300,7 +300,8 @@ public class BeanPanel extends JPanel {
       if (bean==null)
         return null;
       // patch it
-      if ("horizontal".equals(cell.getAttribute("dir")))
+      String dir = cell.getAttribute("dir");
+      if (dir!=null&&dir.startsWith("h"))
         bean.setPreferHorizontal(true);
       // track it
       if (beanifiedTags!=null&&property==root&&path.length()>1)

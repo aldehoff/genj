@@ -1,9 +1,13 @@
- <table>
-  <row><label path=".:DATE"/><bean path=".:DATE" dir="horizontal"/></row>
-  <row><label path=".:ADDR"/><bean path=".:ADDR" wx="1" wy="1"/></row>
-  <row><label path=".:ADDR:CITY"/><bean path=".:ADDR:CITY" wx="1"/></row>
-  <row><label path=".:ADDR:POST"/><bean path=".:ADDR:POST" wx="1"/></row>
-  <row><label path=".:ADDR:STAE"/><bean path=".:ADDR:STAE" wx="1"/></row>
-  <row><label path=".:ADDR:CTRY"/><bean path=".:ADDR:CTRY" wx="1"/></row>
- </table>
+<table>
+ <row><label path=".:DATE"/><bean path=".:DATE" dir="h" cols="2"/></row>
+ <row>
+  <label path=".:ADDR"/><bean path=".:ADDR" wx="1" wy="1"/>
+  <table>
+   <row><label path=".:ADDR:CITY"/><bean path=".:ADDR:CITY" wx="1"/></row>
+   <row><label path=".:ADDR:POST"/><bean path=".:ADDR:POST" wx="1"/></row>
+   <row><label path=".:ADDR:STAE"/><bean path=".:ADDR:STAE" wx="1"/></row>
+   <row><label path=".:ADDR:CTRY"/><bean path=".:ADDR:CTRY" wx="1"/></row>
+  </table>
+ </row>
+</table>
  
