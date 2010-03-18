@@ -1046,16 +1046,25 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
           if (cell.cols==1)
             continue;
           
-          int w = 0;
+          int spannedWeight = 0;
+          int spannedWidth = 0;
           if (c+cell.cols>colWidths.size())
             throw new IllegalArgumentException("cols out of bounds for "+cell);
-          for (int j=0;j<cell.cols;j++)
-            w += colWidths.get(c+j);
+          for (int j=0;j<cell.cols;j++) {
+            spannedWidth += colWidths.get(c+j);
+            spannedWeight += colWeights.get(c+j);
+          }
           
           // increase spanned cells equally (plus fudge factor on first column)
-          if (w<d.width) for (int j=0;j<cell.cols;j++) 
-            grow(colWidths, c+j, colWidths.get(c+j)+(d.width-w)/cell.cols + (j>0?0:(d.width-w)%cell.cols) );
+          if (spannedWidth<d.width) {
+            int missing = d.width-spannedWidth;
+            for (int j=0;j<cell.cols;j++) {
+              int share = spannedWeight>0 ? missing*colWeights.get(c+j)/spannedWeight : missing/cell.cols;
+              grow( colWidths, c+j, colWidths.get(c+j) + share );
+            }
           }
+          
+        }
       }
       
       // done
