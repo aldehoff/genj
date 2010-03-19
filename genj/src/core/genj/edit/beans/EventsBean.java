@@ -26,24 +26,30 @@ import genj.edit.ChoosePropertyBean;
 import genj.edit.Images;
 import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
+import genj.gedcom.UnitOfWork;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
+import genj.util.swing.NestedBlockLayout;
 import genj.view.SelectionSink;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -65,17 +71,9 @@ public class EventsBean extends PropertyBean implements SelectionSink {
   
   private Model model;
   private PropertyTableWidget table;
-  
-  private BeanPanel beans = new BeanPanel() {
-    private Dimension minPreferredSize = new Dimension();
-    public Dimension getPreferredSize() {
-      Dimension d = super.getPreferredSize();
-      minPreferredSize.width = Math.max(minPreferredSize.width, d.width);
-      minPreferredSize.height = Math.max(minPreferredSize.height, d.height);
-      return minPreferredSize;
-    }
-  };
+  private Map<Property, BeanPanel> panels = new HashMap<Property, BeanPanel>();
   private List<Action> actions = new ArrayList<Action>();
+  private JPanel detail = new Detail();
   
   public EventsBean() {
     
@@ -85,14 +83,12 @@ public class EventsBean extends PropertyBean implements SelectionSink {
     table.setColSelection(-1);
     table.setRowSelection(ListSelectionModel.SINGLE_SELECTION);
     
-    beans.setBorder(BorderFactory.createEmptyBorder(8,8,0,0));
-    
     actions.add(new Add());
     actions.add(new Del());
     
     setLayout(new BorderLayout());
-    add(BorderLayout.SOUTH, beans);
     add(BorderLayout.CENTER, table);
+    add(BorderLayout.SOUTH, detail);
 
   }
   
@@ -125,12 +121,50 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       }
     }    
 
-    // set it
-    beans.setRoot(prop);
+    // show it
+    detail.removeAll();
+    
+    if (prop!=null) {
+      BeanPanel panel = panels.get(prop);
+      if (panel==null)  {
+        panel = new BeanPanel();   
+        panel.setBorder(BorderFactory.createEmptyBorder(8,8,0,0));
+        panels.put(prop, panel);
+        panel.setRoot(prop);
+        panel.addChangeListener(changeSupport);
+      }
+      detail.add(panel);
+    }
+    
+    revalidate();
+    repaint();
   }
   
   @Override
   protected void commitImpl(Property property) {
+    
+    // commit all changes
+    for (BeanPanel panel : panels.values())
+      panel.commit();
+    
+    // remove all deletees
+    for (Property del : deletes) {
+      
+      BeanPanel panel = panels.get(del);
+      if (panel!=null) {
+        panel.removeChangeListener(changeSupport);
+        panels.remove(del);
+      }
+      
+      // safety check
+      if (property.contains(del))
+        property.delProperty(del);
+      
+    }
+
+    // clear state
+    deletes.clear();
+    
   }
   
   private boolean isEvent(MetaProperty meta) {
@@ -152,14 +186,20 @@ public class EventsBean extends PropertyBean implements SelectionSink {
 
   @Override
   protected void setPropertyImpl(Property prop) {
-
+    
     deletes.clear();
     adds.clear();
+    
+    for (BeanPanel panel : panels.values())
+      panel.removeChangeListener(changeSupport);
+    panels.clear();
+    detail.removeAll();
     
     model = prop==null ? null : new Model(prop);
     
     table.setModel(model);
     table.setColumnLayout(REGISTRY.get("eventcols",""));
+    
   }
   
   private class Model extends AbstractPropertyTableModel {
@@ -188,6 +228,11 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       for (int i=0;i<indices.length;i++)
         result.add(events.get(indices[i]));
       return result;
+    }
+    
+    private void add(Property event) {
+      events.add(event);
+      fireRowsAdded(events.size()-1, events.size()-1);
     }
     
     private void remove(Property event) {
@@ -257,7 +302,11 @@ public class EventsBean extends PropertyBean implements SelectionSink {
   /**
    * add an event
    */
-  private class Add extends Action2 {
+  private class Add extends Action2 implements UnitOfWork {
+    
+    private String add;
+    private Property added;
+    
     Add() {
       setImage(PropertyEvent.IMG.getOverLayed(Images.imgNew));
       setTip(RESOURCES.getString("even.add"));
@@ -266,21 +315,36 @@ public class EventsBean extends PropertyBean implements SelectionSink {
     @Override
     public void actionPerformed(ActionEvent event) {
       
-      MetaProperty[] metas = getProperty().getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
+      Property root = getProperty();
+      
+      MetaProperty[] metas = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
       List<MetaProperty> choices = new ArrayList<MetaProperty>(metas.length);
       for (MetaProperty meta : metas) {
         if (isEvent(meta))
           choices.add(meta);
       }
-      ChoosePropertyBean choose = new ChoosePropertyBean(choices.toArray(new MetaProperty[choices.size()]));
+      final ChoosePropertyBean choose = new ChoosePropertyBean(choices.toArray(new MetaProperty[choices.size()]));
       choose.setSingleSelection(true);
       if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
           choose, Action2.okCancel(), EventsBean.this))
         return;
       
-      // changed
-      EventsBean.this.changeSupport.fireChangeEvent();
+      add = choose.getSelectedTags()[0];
       
+      root.getGedcom().doMuteUnitOfWork(this);
+
+      model.add(added);
+      
+      table.select(new Context(added));
+      
+      // this is not a classical change as the commit already happened at this point
+      // we need the property as a root for our events
+      //EventsBean.this.changeSupport.fireChangeEvent();
+      
+    }
+    
+    public void perform(Gedcom gedcom) throws GedcomException {
+      added = root.addProperty(add, "");
     }
   } //Add
 
@@ -310,9 +374,12 @@ public class EventsBean extends PropertyBean implements SelectionSink {
           RESOURCES.getString("even.del.confirm", event),
           Action2.okCancel(), EventsBean.this))
         return;
-      
-      beans.setRoot(null);
-      
+
+      // hide
+      detail.removeAll();
+      panels.remove(event);
+
+      // remove
       model.remove(event);
       deletes.add(event);
       
@@ -321,4 +388,19 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       
     }
   } //Del
+  
+  private class Detail extends JPanel {
+    private Dimension minPreferredSize = new Dimension();
+    public Detail() {
+      super(new NestedBlockLayout("<row><detail gx=\"1\" gy=\"1\"/></row>"));
+    }
+    @Override
+    public Dimension getPreferredSize() {
+      Dimension d = super.getPreferredSize();
+      minPreferredSize.width = Math.max(minPreferredSize.width, d.width);
+      minPreferredSize.height = Math.max(minPreferredSize.height, d.height);
+      return minPreferredSize;
+    }
+  } //Unshrinkable
+  
 }

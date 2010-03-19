@@ -24,7 +24,6 @@ import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.gedcom.UnitOfWork;
 import genj.util.Registry;
 import genj.view.ContextProvider;
 import genj.view.SelectionSink;
@@ -148,11 +147,7 @@ import javax.swing.SwingUtilities;
     // commit changes (without listing to the change itself)
     try {
       isIgnoreSetContext = true;
-      gedcom.doMuteUnitOfWork(new UnitOfWork() {
-        public void perform(Gedcom gedcom) {
-          beanPanel.commit();
-        }
-      });
+      beanPanel.commit();
     } finally {
       isIgnoreSetContext = false;
     }

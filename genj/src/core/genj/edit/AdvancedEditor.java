@@ -251,9 +251,8 @@ import javax.swing.tree.TreePath;
     Property root = tree.getRoot();
     if (root!=null) {
       Gedcom gedcom = root.getGedcom();
-      // ask user for commit if
-      if (changes.hasChanged()&&!gedcom.isWriteLocked()&&view.isCommitChanges()) 
-        commit();
+      // commit
+      view.commit();
     }
 
     // set selection
@@ -314,11 +313,7 @@ import javax.swing.tree.TreePath;
     Gedcom gedcom = root.getGedcom();
 
     if (bean!=null) 
-      gedcom.doMuteUnitOfWork(new UnitOfWork() {
-        public void perform(Gedcom gedcom) {
-          bean.commit();
-        }
-      });
+      bean.commit();
 
   }
   

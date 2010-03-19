@@ -39,6 +39,7 @@ public class SexBean extends PropertyBean {
   /** members */
   private JRadioButton male = new JRadioButton(PropertySex.getLabelForSex(PropertySex.MALE));
   private JRadioButton female = new JRadioButton(PropertySex.getLabelForSex(PropertySex.FEMALE));
+  private JRadioButton last;
   private ButtonGroup group = new ButtonGroup();
   
   /**
@@ -79,7 +80,6 @@ public class SexBean extends PropertyBean {
   }
   
   private class ActionHandler implements ActionListener {
-    private JRadioButton last;
     public void actionPerformed(ActionEvent e) {
       if ( (e.getModifiers()&ActionEvent.CTRL_MASK)!=0 ) {
         group.clearSelection();
@@ -117,6 +117,7 @@ public class SexBean extends PropertyBean {
   public void setPropertyImpl(Property prop) {
     
     // show it
+    last = null;
     defaultFocus = male;
     group.clearSelection();
     

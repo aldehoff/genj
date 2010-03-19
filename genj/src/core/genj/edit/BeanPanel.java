@@ -67,14 +67,11 @@ public class BeanPanel extends JPanel {
   
   private final static Resources RES = Resources.get(BeanPanel.class);
   private final static Registry REGISTRY = Registry.get(BeanPanel.class);
-
+  
   /** keep a cache of descriptors */
   private static Map<String, NestedBlockLayout> DESCRIPTORCACHE = new HashMap<String, NestedBlockLayout>();
 
-  /** change support */
   protected ChangeSupport changeSupport = new ChangeSupport(this);
-  
-  /** beans */
   private List<PropertyBean> beans = new ArrayList<PropertyBean>(32);
   
   /**
