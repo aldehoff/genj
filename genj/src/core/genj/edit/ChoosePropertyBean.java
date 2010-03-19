@@ -21,8 +21,8 @@ package genj.edit;
 
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.util.GridBagHelper;
 import genj.util.Resources;
+import genj.util.swing.NestedBlockLayout;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -40,12 +40,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -53,36 +55,52 @@ import javax.swing.event.ListSelectionListener;
  * A bean that allows to choose a property from a list of properties
  */
 public class ChoosePropertyBean extends JComponent {
+  
+  private final static Resources RESOURCES = Resources.get(ChoosePropertyBean.class);
 
-  private JRadioButton rbChoose,rbNew;
-  private JTextField tfNew;
+  private JRadioButton rbChoose,rbCustom;
+  private JTextField tfCustom;
   private JList lChoose;
-  private JScrollPane spInfo;
   private JTextPane tpInfo;
-  private Property parent;
   private List<ActionListener> listeners = new CopyOnWriteArrayList<ActionListener>();
   private Callback callback = new Callback();
 
   /**
    * Constructor
    */
-  public ChoosePropertyBean(Property pArent, Resources resources) {
+  public ChoosePropertyBean(Property parent) {
     
     // keep parent and calculate possible properties
-    parent = pArent;
     MetaProperty[] defs = parent.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
+    
     Arrays.sort(defs, callback);
-        
+    
+    init(defs, true);
+  }    
+  
+  /**
+   * Constructor
+   */
+  public ChoosePropertyBean(MetaProperty[] defs) {
+    init(defs, false);
+  }
+  
+  private void init(MetaProperty[] defs, boolean allowCustom) {
+    
     // Layout
-    GridBagHelper gh = new GridBagHelper(this);
+    setLayout(new NestedBlockLayout("<col><label1/><row><tags/><info gx=\"1\" gy=\"1\"/></row><label2/><tag/></col>"));
 
     // Checkbox for known props
-    rbChoose = new JRadioButton(resources.getString("choose.known"),defs.length>0);
+    rbChoose = new JRadioButton(RESOURCES.getString("choose.known"),defs.length>0);
     rbChoose.setEnabled(defs.length>0);
     rbChoose.addItemListener(callback);
     rbChoose.setAlignmentX(0);
-    gh.add(rbChoose,1,1,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
-
+    
+    if (allowCustom)
+      add(rbChoose);
+    else
+      add(new JLabel(RESOURCES.getString("choose.known")));
+    
     // .. List of tags
     lChoose = new JList(defs);
     lChoose.setVisibleRowCount(4);
@@ -90,41 +108,45 @@ public class ChoosePropertyBean extends JComponent {
     lChoose.setCellRenderer(new MetaDefRenderer());
     lChoose.addListSelectionListener(callback);
     lChoose.addMouseListener(callback);
-    JScrollPane sp = new JScrollPane(lChoose);
-    // 20030527 grrrrrrr why is this necessary
-    sp.setMinimumSize(sp.getPreferredSize());
-    gh.add(sp,1,2,1,1,GridBagHelper.GROWFILL_VERTICAL);
+    add(new JScrollPane(lChoose));
 
     // .. Info field
     tpInfo = new JTextPane();
     tpInfo.setText("");
     tpInfo.setEditable(false);
     tpInfo.setPreferredSize(new Dimension(256,256));
-    spInfo = new JScrollPane(tpInfo);
-    gh.add(spInfo,2,2,1,1,GridBagHelper.GROWFILL_BOTH);
+    add(new JScrollPane(tpInfo));
 
     // RadioButton for new props
-    rbNew = new JRadioButton(resources.getString("choose.new"),defs.length==0);
-    rbNew.addItemListener(callback);
-    rbNew.setAlignmentX(0);
-    gh.add(rbNew,1,3,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
+    rbCustom = new JRadioButton(RESOURCES.getString("choose.new"),defs.length==0);
+    rbCustom.addItemListener(callback);
+    rbCustom.setAlignmentX(0);
+    if (allowCustom)
+      add(rbCustom);
 
     ButtonGroup group = new ButtonGroup();
     group.add(rbChoose);
-    group.add(rbNew);
+    group.add(rbCustom);
 
     // Create Lower Part
-    tfNew = new JTextField();
-    tfNew.setEnabled(defs.length==0);
-    tfNew.setAlignmentX(0);
-    gh.add(tfNew,1,4,2,1, GridBagHelper.GROWFILL_HORIZONTAL);
+    tfCustom = new JTextField();
+    tfCustom.setEnabled(defs.length==0);
+    tfCustom.setAlignmentX(0);
+    if (allowCustom)
+      add(tfCustom);
 
     // Pre select
-    if (defs.length>0) {
+    if (defs.length>0) 
       lChoose.setSelectedIndex(0);
-    }
     
     // Done
+  }
+  
+  /**
+   * Multi-selection vs single-selection
+   */
+  public void setSingleSelection(boolean set) {
+    lChoose.setSelectionMode(set ? ListSelectionModel.SINGLE_SELECTION : ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
   }
 
   /**
@@ -145,7 +167,7 @@ public class ChoosePropertyBean extends JComponent {
     }
     
     // single entered tag
-    String tag = tfNew.getText();
+    String tag = tfCustom.getText();
     return tag!=null ? new String[] { tag } : new String[0];
   }
 
@@ -206,14 +228,14 @@ public class ChoosePropertyBean extends JComponent {
     public void itemStateChanged(ItemEvent e) {
       if (e.getSource() == rbChoose) {
         lChoose.setEnabled(true);
-        tfNew.setEnabled(false);
+        tfCustom.setEnabled(false);
         lChoose.requestFocusInWindow();
       }
-      if (e.getSource() == rbNew) {
+      if (e.getSource() == rbCustom) {
         lChoose.clearSelection();
         lChoose.setEnabled(false);
-        tfNew.setEnabled(true);
-        tfNew.requestFocusInWindow();
+        tfCustom.setEnabled(true);
+        tfCustom.requestFocusInWindow();
       }
     }
 

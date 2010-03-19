@@ -161,9 +161,8 @@ public class MetaProperty implements Comparable<MetaProperty> {
 
       // default only?
       if ((filter&WHERE_DEFAULT)!=0) {
-        String isDefault = sub.getAttribute("default");
-        if (isDefault==null||"0".equals(isDefault))
-        continue;
+        if (!sub.isDefault())
+          continue;
       }
         
       // hidden at all (a.k.a cardinality == 0)?
@@ -220,6 +219,11 @@ public class MetaProperty implements Comparable<MetaProperty> {
   public boolean isVersion(String version) {
     String v = getAttribute("gedcom");
     return v==null || v.equals(version);
+  }
+  
+  public boolean isDefault() {
+    String isDefault = getAttribute("default");
+    return isDefault!=null&&"1".equals(isDefault);
   }
   
   /**

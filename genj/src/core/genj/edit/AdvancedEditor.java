@@ -618,7 +618,7 @@ import javax.swing.tree.TreePath;
       // need to let user select tags to add?
       if (tags==null) {
         JLabel label = new JLabel(resources.getString("add.choose"));
-        ChoosePropertyBean choose = new ChoosePropertyBean(parent, resources);
+        ChoosePropertyBean choose = new ChoosePropertyBean(parent);
         JCheckBox check = new JCheckBox(resources.getString("add.default_too"),addDefaults);
         int option = DialogHelper.openDialog(resources.getString("add.title"),DialogHelper.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(),AdvancedEditor.this); 
         if (option!=0)

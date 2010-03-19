@@ -22,9 +22,11 @@ package genj.edit.beans;
 import genj.common.AbstractPropertyTableModel;
 import genj.common.PropertyTableWidget;
 import genj.edit.BeanPanel;
+import genj.edit.ChoosePropertyBean;
 import genj.edit.Images;
 import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
+import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
@@ -130,6 +132,23 @@ public class EventsBean extends PropertyBean implements SelectionSink {
   @Override
   protected void commitImpl(Property property) {
   }
+  
+  private boolean isEvent(MetaProperty meta) {
+    
+    // crude filter
+    if (!PropertyEvent.class.isAssignableFrom(meta.getType())
+       && !meta.getTag().equals("RESI") 
+       && !meta.getTag().equals("OCCU"))
+      return false;
+    
+    // overedited?
+    for (PropertyBean bean : session) {
+      if (bean.path.contains(meta.getTag()))
+        return false;
+    }
+
+    return true;
+  }
 
   @Override
   protected void setPropertyImpl(Property prop) {
@@ -152,18 +171,11 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       super(root.getGedcom());
       
       // scan for events
-      scan: for (Property child : root.getProperties()) {
-        
-        // TODO just checking for something with a date atm
-        if (!child.getMetaProperty().allows("DATE"))
+      for (Property child : root.getProperties()) {
+
+        if (!isEvent(child.getMetaProperty()))
           continue;
         
-        // editable?
-        for (PropertyBean bean : session) {
-          if (bean.property!=null && child.contains(bean.property)) 
-            continue scan;
-        }
-
         // keep
         events.add(child);
       }
@@ -249,6 +261,26 @@ public class EventsBean extends PropertyBean implements SelectionSink {
     Add() {
       setImage(PropertyEvent.IMG.getOverLayed(Images.imgNew));
       setTip(RESOURCES.getString("even.add"));
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent event) {
+      
+      MetaProperty[] metas = getProperty().getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
+      List<MetaProperty> choices = new ArrayList<MetaProperty>(metas.length);
+      for (MetaProperty meta : metas) {
+        if (isEvent(meta))
+          choices.add(meta);
+      }
+      ChoosePropertyBean choose = new ChoosePropertyBean(choices.toArray(new MetaProperty[choices.size()]));
+      choose.setSingleSelection(true);
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
+          choose, Action2.okCancel(), EventsBean.this))
+        return;
+      
+      // changed
+      EventsBean.this.changeSupport.fireChangeEvent();
+      
     }
   } //Add
 
