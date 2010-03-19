@@ -41,6 +41,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -175,13 +176,6 @@ public class PropertyTableWidget extends JPanel  {
     table.setAutoResizeMode(on ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
   }
   
-  /**
-   * Resolve row for property
-   */
-  public int getRow(Property property) {
-    return table.getRow(property);
-  }
-  
   public int[] getSelectedRows() {
     return table.getSelectedRows();
   }
@@ -232,25 +226,24 @@ public class PropertyTableWidget extends JPanel  {
       ListSelectionModel cols = table.getColumnModel().getSelectionModel();
       table.clearSelection();
       
-      int r=-1,c=-1;
+      Point cell = new Point();
       for (Property prop : props) {
   
-        r = getRow(prop.getEntity());
-        if (r<0)
+        cell = table.getCell(prop);
+        if (cell.y<0)
           continue;
-        c = table.getCol(r, prop);
 
         // change selection
-        rows.addSelectionInterval(r,r);
-        if (c>=0)
-          cols.addSelectionInterval(c,c);
+        rows.addSelectionInterval(cell.y,cell.y);
+        if (cell.x>=0)
+          cols.addSelectionInterval(cell.x,cell.x);
       }
       
       // scroll to last selection
-      if (r>=0) {
+      if (cell.y>=0) {
         Rectangle visible = table.getVisibleRect();
-        Rectangle scrollto = table.getCellRect(r,c,true);
-        if (c<0) scrollto.x = visible.x;
+        Rectangle scrollto = table.getCellRect(cell.y,cell.x,true);
+        if (cell.x<0) scrollto.x = visible.x;
         table.scrollRectToVisible(scrollto);
       }
 
@@ -544,38 +537,31 @@ public class PropertyTableWidget extends JPanel  {
       // done
     }
     
-    /**
-     * look up a column for given property
-     */
-    int getCol(int row, Property property) {
+    
+    Point getCell(Property property) {
       
-      // find col
-      TableModel model = getModel();
-      for (int i=0, j=model.getColumnCount(); i<j; i++) {
-        if (model.getValueAt(row,i)==property)
-          return i;
+      Point p = new Point(-1,-1);
+      
+      if (propertyModel==null)
+        return p;
+      
+      SortableTableModel model = (SortableTableModel)getModel();
+      for (int i=0;i<model.getRowCount();i++) {
+        
+        int r = model.modelIndex(i);
+
+        for (int j=0; j<model.getColumnCount(); j++) {
+          if (model.getValueAt(r, j)==property)
+            return new Point(j,r);
+        }
+
       }
       
-      // not found
-      return -1;
+      return p;
     }
 
     Property getRowRoot(int index) {
       return propertyModel.getRowRoot(sortableModel.modelIndex(index));
-    }
-
-    /**
-     * look up a row
-     */
-    int getRow(Property property) {
-      if (propertyModel==null)
-        return -1;
-      SortableTableModel model = (SortableTableModel)getModel();
-      for (int i=0;i<model.getRowCount();i++) {
-        if (propertyModel.getRowRoot(model.modelIndex(i))==property)
-          return i;
-      }
-      return -1;
     }
 
     /**
