@@ -331,15 +331,15 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       
       add = choose.getSelectedTags()[0];
       
+      EventsBean.this.changeSupport.fireChangeEvent();
+      
       root.getGedcom().doMuteUnitOfWork(this);
 
       model.add(added);
       
-      table.select(new Context(added));
-      
-      // this is not a classical change as the commit already happened at this point
-      // we need the property as a root for our events
-      //EventsBean.this.changeSupport.fireChangeEvent();
+      // this doesn't work right now since the editor is re-setting
+      // after the unit of work is done
+      // table.select(new Context(added));
       
     }
     
