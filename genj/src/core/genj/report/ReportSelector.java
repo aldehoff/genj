@@ -26,6 +26,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -59,7 +60,11 @@ class ReportSelector extends JPanel {
     final JTabbedPane right = new JTabbedPane();
     right.add(res.getString("title"), detail);
     right.add(res.getString("report.options"), options);
+    
     detail.setOpaque(false);
+    
+    detail.setPreferredSize(new Dimension(320,200));
+    options.setPreferredSize(new Dimension(320,200));
     
     JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
     top.add(new JLabel(res.getString("report.reports")));
@@ -71,7 +76,8 @@ class ReportSelector extends JPanel {
     add(top, BorderLayout.NORTH);
     add(new JScrollPane(list), BorderLayout.WEST);
     add(right, BorderLayout.CENTER);
-    
+
+    list.setVisibleRowCount(8);
     list.setSelectionListener(new ReportSelectionListener() {
       public void valueChanged(Report report) {
         detail.setReport(report);
