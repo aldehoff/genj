@@ -206,7 +206,7 @@ version              = 1.4
 category             = text
 updated              = $Date: 2010-02-11 15:19:43 $
 
-name                 = Ages
+name                 = Age at Events
 name.de              = Alter
 name.fr              = Ages
 name.es              = Edad
