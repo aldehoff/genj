@@ -269,15 +269,16 @@ public class Options extends OptionProvider {
   /**
    * Provider callback
    */
+
   public List<? extends Option> getOptions() {
     // bean property options of instance
     List<Option> result = new ArrayList<Option>(PropertyOption.introspect(instance));
     // add an otion for user.home.dir
-    result.add(new UserHomeGenJOption());
+    //result.add(new UserHomeGenJOption());
     // done
     return result;
   }
-
+  /*
   private static class UserHomeGenJOption extends Option implements OptionUI {
 
     public String getName() {
@@ -318,11 +319,13 @@ public class Options extends OptionProvider {
 
     /**
      * Action for UI
-     */
+     
+    
     private class Open extends Action2 {
       Open() {
         setText("...");
       }
+     
       public void actionPerformed(ActionEvent event) {
         File user_home_genj = new File(EnvironmentChecker.getProperty("user.home.genj", null, "trying to open user.home.genj")) ;
         try {
@@ -331,7 +334,9 @@ public class Options extends OptionProvider {
           Logger.getLogger("genj.io").log(Level.INFO, "can't open user.home.genj", t);
         }
       }
+     
     }
+   
   }
-
+*/
 } //Options
