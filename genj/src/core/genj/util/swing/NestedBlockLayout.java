@@ -614,7 +614,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
       if (expander!=null&&expander.isCollapsed) {
         for (Block sub : subs) 
           sub.layout(new Rectangle(0,0));
-        expander.setBounds(in);
+        Dimension d = expander.getPreferredSize();
+        expander.setBounds(in.x,in.y,d.width,d.height);
         return;
       }
 
