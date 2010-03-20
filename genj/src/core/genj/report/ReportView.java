@@ -36,7 +36,6 @@ import genj.view.SelectionSink;
 import genj.view.ToolBar;
 import genj.view.View;
 import genj.view.ViewContext;
-import genj.view.ViewContext.ContextList;
 
 import java.awt.CardLayout;
 import java.awt.Desktop;
@@ -57,6 +56,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -343,6 +343,7 @@ public class ReportView extends View {
     }
   }
   
+  @SuppressWarnings("unchecked")
   /**
    * show result of a report run
    */
@@ -404,8 +405,11 @@ public class ReportView extends View {
     }
 
     // context list?
-    if (object instanceof ViewContext.ContextList) {
-      object = new ContextListWidget((ContextList)object);
+    if (object instanceof List<?>) {
+      try {
+        object = new ContextListWidget((List<Context>)object);
+      } catch (Throwable t) {
+      }
     }
 
     // component?
@@ -563,10 +567,14 @@ public class ReportView extends View {
       // user looking at a context-list?
       if (result.isVisible() && result.getViewport().getView() instanceof ContextListWidget) {
         ContextListWidget list = (ContextListWidget)result.getViewport().getView();
-        genj.fo.Document doc = new genj.fo.Document(list.getTitle());
-        doc.startSection(list.getTitle());
-        for (ViewContext c : list.getContexts()) {
-          doc.addText(c.getEntity()+":"+c.getText());
+        String title = REGISTRY.get("lastreport", "Report");
+        genj.fo.Document doc = new genj.fo.Document(title);
+        doc.startSection(title);
+        for (Context c : list.getContexts()) {
+          if (c instanceof ViewContext)
+            doc.addText(c.getEntity()+":"+((ViewContext)c).getText());
+          else
+            doc.addText(c.toString());
           doc.nextParagraph();
         }
         showResult(doc);

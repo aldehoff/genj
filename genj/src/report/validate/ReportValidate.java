@@ -19,11 +19,9 @@ import genj.report.Report;
 import genj.util.EnvironmentChecker;
 import genj.util.swing.Action2;
 import genj.view.ViewContext;
-import genj.view.ViewContext.ContextList;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -93,13 +91,13 @@ public class ReportValidate extends Report {
   /**
    * Start for argument properties
    */
-  public ContextList start(Property[] props) {
+  public List<ViewContext> start(Property[] props) {
 
-    List issues = new ArrayList();
+    List<ViewContext> issues = new ArrayList<ViewContext>();
 
     if (props.length>0) {
       Gedcom gedcom = props[0].getGedcom();
-      List tests = createTests(gedcom);
+      List<Test> tests = createTests(gedcom);
 
       for (int i=0;i<props.length;i++) {
         TagPath path = props[i].getPath();
@@ -116,16 +114,16 @@ public class ReportValidate extends Report {
   /**
    * Start for argument entity
    */
-  public ContextList start(Entity entity) {
+  public List<ViewContext> start(Entity entity) {
     return start(new Entity[]{ entity });
   }
 
-  public ContextList start(Entity[] entities) {
+  public List<ViewContext> start(Entity[] entities) {
 
     Gedcom gedcom = entities[0].getGedcom();
-    List tests = createTests(gedcom);
+    List<Test> tests = createTests(gedcom);
 
-    List issues = new ArrayList();
+    List<ViewContext> issues = new ArrayList<ViewContext>();
     for (int i=0;i<entities.length;i++) {
       TagPath path = new TagPath(entities[i].getTag());
       test(entities[i], path, entities[i].getGedcom().getGrammar().getMeta(path), tests, issues);
@@ -138,11 +136,11 @@ public class ReportValidate extends Report {
   /**
    * Start for argument gedcom
    */
-  public ContextList start(final Gedcom gedcom) {
+  public List<ViewContext> start(final Gedcom gedcom) {
 
     // prepare tests
-    List tests = createTests(gedcom);
-    List issues = new ArrayList();
+    List<Test> tests = createTests(gedcom);
+    List<ViewContext> issues = new ArrayList<ViewContext>();
 
     // test if there's a submitter
     if (gedcom.getSubmitter()==null) {
@@ -164,8 +162,7 @@ public class ReportValidate extends Report {
 
     // Loop through entities and test 'em
     for (int t=0;t<Gedcom.ENTITIES.length;t++) {
-      for (Iterator es=gedcom.getEntities(Gedcom.ENTITIES[t]).iterator();es.hasNext();) {
-        Entity e = (Entity)es.next();
+      for (Entity e : gedcom.getEntities(Gedcom.ENTITIES[t])) {
         TagPath path = new TagPath(e.getTag());
         test(e, path, gedcom.getGrammar().getMeta(path), tests, issues);
       }
@@ -178,7 +175,7 @@ public class ReportValidate extends Report {
   /**
    * show validation results
    */
-  private ContextList results(Gedcom gedcom, List<ViewContext> issues) {
+  private List<ViewContext> results(Gedcom gedcom, List<ViewContext> issues) {
 
     // any fixes proposed at all?
     if (issues.size()==0) {
@@ -187,13 +184,13 @@ public class ReportValidate extends Report {
     }
 
     // wrap
-    return new ContextList(gedcom, translate("issues", Integer.toString(issues.size())), issues);
+    return issues;
   }
 
   /**
    * Test a property (recursively)
    */
-  private void test(Property prop, TagPath path, MetaProperty meta, List tests, List issues) {
+  private void test(Property prop, TagPath path, MetaProperty meta, List<Test> tests, List<ViewContext> issues) {
     // test tests
     for (int i=0, j=tests.size(); i<j; i++) {
       Test tst = (Test)tests.get(i);
@@ -234,9 +231,9 @@ public class ReportValidate extends Report {
   /**
    * Create the tests we're using
    */
-  private List createTests(Gedcom gedcom) {
+  private List<Test> createTests(Gedcom gedcom) {
 
-    List result = new ArrayList();
+    List<Test> result = new ArrayList<Test>();
 
     // ******************** SPECIALIZED TESTS *******************************
 

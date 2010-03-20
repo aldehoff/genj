@@ -19,159 +19,55 @@
  */
 package genj.edit.beans;
 
-import genj.common.AbstractPropertyTableModel;
-import genj.common.PropertyTableWidget;
-import genj.edit.BeanPanel;
 import genj.edit.ChoosePropertyBean;
 import genj.edit.Images;
-import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyEvent;
-import genj.gedcom.TagPath;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
-import genj.util.swing.NestedBlockLayout;
-import genj.view.SelectionSink;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 
 /**
  * A complex bean displaying events of an individual or family
  */
-public class EventsBean extends PropertyBean implements SelectionSink {
+public class EventsBean extends PropertyBean {
 
-  private static TagPath[] COLUMNS = {
-    new TagPath("."),
-    new TagPath("."),
-    new TagPath(".:DATE"),
-    new TagPath(".:PLAC")
-  };
-
-  private Set<Property> deletes = new HashSet<Property>();
-  private String add = null;
-  
-  private Model model;
-  private PropertyTableWidget table;
-  private Map<Property, BeanPanel> panels = new HashMap<Property, BeanPanel>();
-  private List<Action> actions = new ArrayList<Action>();
-  private JPanel detail = new Detail();
+  private JTable table;
   
   public EventsBean() {
     
     // prepare a simple table
-    table = new PropertyTableWidget();
-    table.setVisibleRowCount(5);
-    table.setColSelection(-1);
-    table.setRowSelection(ListSelectionModel.SINGLE_SELECTION);
-    
-    actions.add(new Add());
-    actions.add(new Del());
+    table = new JTable(new Events(null));
+    table.setPreferredScrollableViewportSize(new Dimension(32,32));
+    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     
     setLayout(new BorderLayout());
-    add(BorderLayout.CENTER, table);
-    add(BorderLayout.SOUTH, detail);
+    add(BorderLayout.CENTER, new JScrollPane(table));
 
   }
   
   @Override
-  public List<Action> getActions() {
-    return actions;
-  }
-  
-  @Override
-  public void removeNotify() {
-    REGISTRY.put("eventcols", table.getColumnLayout());
-    super.removeNotify();
-  }
-  
-  @Override
-  public void fireSelection(Context context, boolean isActionPerformed) {
-    
-    // event being selected?
-    Property prop = context.getProperty();
-    while (prop!=null && prop.getParent()!=getProperty())
-      prop = prop.getParent();
-
-    // blank out if not editable
-    if (prop!=null) {
-      for (PropertyBean bean : session) {
-        if (bean.property!=null && prop.contains(bean.property)) {
-          prop=null;
-          break;
-        }
-      }
-    }    
-
-    // show it
-    detail.removeAll();
-    
-    if (prop!=null) {
-      BeanPanel panel = panels.get(prop);
-      if (panel==null)  {
-        panel = new BeanPanel();   
-        panel.setBorder(BorderFactory.createEmptyBorder(8,8,0,0));
-        panels.put(prop, panel);
-        panel.setRoot(prop);
-        panel.addChangeListener(changeSupport);
-      }
-      detail.add(panel);
-    }
-    
-    revalidate();
-    repaint();
+  public List<? extends Action> getActions() {
+    return Collections.singletonList(new Add());
   }
   
   @Override
   protected void commitImpl(Property property) {
-    
-    // commit all changes
-    for (BeanPanel panel : panels.values())
-      panel.commit();
-    
-    // remove all deletees
-    for (Property del : deletes) {
-      
-      BeanPanel panel = panels.get(del);
-      if (panel!=null) {
-        panel.removeChangeListener(changeSupport);
-        panels.remove(del);
-      }
-      
-      // safety check
-      if (property.contains(del))
-        property.delProperty(del);
-      
-    }
-    deletes.clear();
-
-    // add the added
-    if (add!=null) {
-      Property added = property.addProperty(add, "");
-      model.add(added);
-      Context ctx = new Context(added);
-      table.select(ctx);
-      fireSelection(ctx,false);
-      add = null;
-    }
-    
-    // done
   }
   
   private boolean isEvent(MetaProperty meta) {
@@ -193,119 +89,78 @@ public class EventsBean extends PropertyBean implements SelectionSink {
 
   @Override
   protected void setPropertyImpl(Property prop) {
-    
-    deletes.clear();
-    add = null;
-    
-    for (BeanPanel panel : panels.values())
-      panel.removeChangeListener(changeSupport);
-    panels.clear();
-    detail.removeAll();
-    
-    model = prop==null ? null : new Model(prop);
-    
-    table.setModel(model);
-    table.setColumnLayout(REGISTRY.get("eventcols",""));
-    
+    table.setModel(new Events(prop));
   }
   
-  private class Model extends AbstractPropertyTableModel {
+  private class Events extends AbstractTableModel {
     
-    private List<Property> events = new ArrayList<Property>();
+    private final String[] COLS = {
+      Gedcom.getName("EVEN"), 
+      RESOURCES.getString("even.detail"),
+      Gedcom.getName("DATE"),
+      Gedcom.getName("PLAC"),
+      Gedcom.getName("NOTE"),
+      Gedcom.getName("SOUR", true)
+    };
     
-    Model(Property root) {
-      
-      super(root.getGedcom());
+    private List<Property> rows = new ArrayList<Property>();
+    
+    Events(Property root) {
       
       // scan for events
-      for (Property child : root.getProperties()) {
+      if (root!=null) for (Property child : root.getProperties()) {
 
         if (!isEvent(child.getMetaProperty()))
           continue;
         
         // keep
-        events.add(child);
+        rows.add(child);
       }
+      
+      Collections.sort(rows, new PropertyComparator(".:BIRT"));
       
       // done
     }
     
-    private List<Property> getEvents(int[] indices) {
-      List<Property> result = new ArrayList<Property>(indices.length);
-      for (int i=0;i<indices.length;i++)
-        result.add(events.get(indices[i]));
-      return result;
+    @Override
+    public int getColumnCount() {
+      return COLS.length;
     }
     
-    private void add(Property event) {
-      events.add(event);
-      fireRowsAdded(events.size()-1, events.size()-1);
+    @Override
+    public int getRowCount() {
+      return rows.size();
     }
     
-    private void remove(Property event) {
-      for (int i=0;i<events.size();i++) {
-        if (events.get(i)==event) {
-          events.remove(i);
-          fireRowsDeleted(i, i);
-          return;
-        }
+    @Override
+    public String getColumnName(int column) {
+      return COLS[column];
+    }
+    
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+      Property event = rows.get(rowIndex);
+      switch (columnIndex) {
+        case 0:
+          return event.getPropertyName();
+        case 1:
+          String val = event.getDisplayValue();
+          if (val.length()>0)
+            return val;
+          return event.getPropertyValue("TYPE");
+        case 2:
+          return event.getPropertyDisplayValue("DATE");
+        case 3:
+          return event.getPropertyDisplayValue("PLAC");
+        case 4:
+          return "yes";
+        case 5:
+          return "no";
       }
-      throw new IllegalArgumentException("no such event to remove");
-    }
-    
-    @Override
-    public String getColName(int col) {
-      if (col==0)
-        return Gedcom.getName("EVEN");
-      if (col==1)
-        return RESOURCES.getString("even.detail");
-      return super.getColName(col);
-    }
-    
-    @Override
-    public int getNumCols() {
-      return COLUMNS.length;
-    }
-
-    @Override
-    public int getNumRows() {
-      return events.size();
-    }
-
-    @Override
-    public TagPath getColPath(int col) {
-      return COLUMNS[col];
-    }
-
-    @Override
-    public Property getRowRoot(int row) {
-      return events.get(row);
-    }
-    
-    @Override
-    public int compare(Property valueA, Property valueB, int col) {
-      if (col==0) 
-        return valueA.getPropertyName().compareTo(valueB.getPropertyName());
-      if (col==1)
-        return detail(valueA).compareTo(detail(valueB));
-      return super.compare(valueA, valueB, col);
-    }
-    
-    private String detail(Property prop) {
-      String val = prop.getDisplayValue();
-      return val.length()>0 ? val : prop.getPropertyValue("TYPE");
-    }
-    
-    @Override
-    public String getCellValue(Property property, int row, int col) {
-      if (col==0) 
-        return property.getPropertyName();
-      if (col==1)
-        return detail(property);
-      return super.getCellValue(property, row, col);
+      throw new IllegalArgumentException("no such column "+columnIndex);
     }
   }
-
+  
   /**
    * add an event
    */
@@ -333,7 +188,7 @@ public class EventsBean extends PropertyBean implements SelectionSink {
           choose, Action2.okCancel(), EventsBean.this))
         return;
       
-      add = choose.getSelectedTags()[0];
+      String add = choose.getSelectedTags()[0];
       
       EventsBean.this.changeSupport.fireChangeEvent(new CommitRequired(EventsBean.this));
             
@@ -341,59 +196,45 @@ public class EventsBean extends PropertyBean implements SelectionSink {
     
   } //Add
 
-  /**
-   * del an event
-   */
-  private class Del extends Action2 implements ListSelectionListener {
-    Del() {
-      setImage(PropertyEvent.IMG.getOverLayed(Images.imgDel));
-      setTip(RESOURCES.getString("even.del"));
-      table.addListSelectionListener(this);
-      setEnabled(false);
-    }
-
-    @Override
-    public void valueChanged(ListSelectionEvent e) {
-      Property row = table.getSelectedRow();
-      setEnabled(row!=null);
-    }
-    
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      
-      Property event = table.getSelectedRow();
-      
-      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
-          RESOURCES.getString("even.del.confirm", event),
-          Action2.okCancel(), EventsBean.this))
-        return;
-
-      // hide
-      detail.removeAll();
-      panels.remove(event);
-
-      // remove
-      model.remove(event);
-      deletes.add(event);
-      
-      // changed
-      EventsBean.this.changeSupport.fireChangeEvent();
-      
-    }
-  } //Del
-  
-  private class Detail extends JPanel {
-    private Dimension minPreferredSize = new Dimension();
-    public Detail() {
-      super(new NestedBlockLayout("<row><detail gx=\"1\" gy=\"1\"/></row>"));
-    }
-    @Override
-    public Dimension getPreferredSize() {
-      Dimension d = super.getPreferredSize();
-      minPreferredSize.width = Math.max(minPreferredSize.width, d.width);
-      minPreferredSize.height = Math.max(minPreferredSize.height, d.height);
-      return minPreferredSize;
-    }
-  } //Unshrinkable
+//  /**
+//   * del an event
+//   */
+//  private class Del extends Action2 implements ListSelectionListener {
+//    Del() {
+//      setImage(PropertyEvent.IMG.getOverLayed(Images.imgDel));
+//      setTip(RESOURCES.getString("even.del"));
+//      table.addListSelectionListener(this);
+//      setEnabled(false);
+//    }
+//
+//    @Override
+//    public void valueChanged(ListSelectionEvent e) {
+//      Property row = table.getSelectedRow();
+//      setEnabled(row!=null);
+//    }
+//    
+//    @Override
+//    public void actionPerformed(ActionEvent e) {
+//      
+//      Property event = table.getSelectedRow();
+//      
+//      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
+//          RESOURCES.getString("even.del.confirm", event),
+//          Action2.okCancel(), EventsBean.this))
+//        return;
+//
+//      // hide
+//      detail.removeAll();
+//      panels.remove(event);
+//
+//      // remove
+//      model.remove(event);
+//      deletes.add(event);
+//      
+//      // changed
+//      EventsBean.this.changeSupport.fireChangeEvent();
+//      
+//    }
+//  } //Del
   
 }

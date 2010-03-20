@@ -10,7 +10,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 import genj.view.ViewContext;
-import genj.view.ViewContext.ContextList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,7 @@ public class ReportCommonAncestor extends Report {
   /**
    * our main method for an argument individual
    */
-  public ContextList start(Indi indi) {
+  public List<ViewContext> start(Indi indi) {
     // ask for other
     Indi other = (Indi)getEntityFromUser(translate("select"), indi.getGedcom(), Gedcom.INDI);
     if (other==null)
@@ -53,7 +52,7 @@ public class ReportCommonAncestor extends Report {
   /**
    * our main method for an argument of a bunch of individuals
    */
-  public ContextList start(Indi[] indis) {
+  public List<ViewContext> start(Indi[] indis) {
 
     // first and second
     Indi indi = indis[0];
@@ -69,7 +68,7 @@ public class ReportCommonAncestor extends Report {
     }
 
     // prepare the result
-    ContextList result = new ContextList(indi.getGedcom(), getName());
+    List<ViewContext> result = new ArrayList<ViewContext>();
     result.add(new ViewContext(translate("result.first", indi), new Context(indi)));
     result.add(new ViewContext(translate("result.second", other), new Context(other)));
     result.add(new ViewContext(translate("result.ancestor", ancestor), new Context(ancestor)));

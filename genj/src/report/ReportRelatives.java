@@ -11,7 +11,6 @@ import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 import genj.view.ViewContext;
-import genj.view.ViewContext.ContextList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,17 +88,17 @@ public class ReportRelatives extends Report {
   /**
    * Reports main
    */
-  public ContextList start(Indi indi) {
+  public List<ViewContext> start(Indi indi) {
 
     // prepare map of relationships
-    Map key2relative = new HashMap();
+    Map<String,Relative> key2relative = new HashMap<String,Relative>();
     for (int i=0; i<RELATIVES.length;i++) {
       Relative relative = RELATIVES[i];
       key2relative.put(relative.key, relative);
     }
 
     // Loop over relative descriptions
-    ContextList result = new ContextList(indi.getGedcom(), translate("title", indi));
+    List<ViewContext> result = new ArrayList<ViewContext>();
     result.add(new ViewContext(indi));
     
     for (int i=0; i<RELATIVES.length; i++) {
@@ -116,11 +115,11 @@ public class ReportRelatives extends Report {
   /**
    * Find all relatives of given roots and expression
    */
-  private List<Indi>  find(List roots, String expression, int sex, Map key2relative) {
+  private List<Indi> find(List<Indi> roots, String expression, int sex, Map<String,Relative> key2relative) {
 
     List<Indi>  result = new ArrayList<Indi>();
     for (int i=0;i<roots.size();i++) {
-      result.addAll(find((Property)roots.get(i), expression, sex, key2relative));
+      result.addAll(find(roots.get(i), expression, sex, key2relative));
     }
 
     return result;
@@ -130,7 +129,7 @@ public class ReportRelatives extends Report {
   /**
    * Find all relatives of given root and expression
    */
-  private List<Indi> find(Property root, String expression, int sex, Map key2relative) {
+  private List<Indi> find(Property root, String expression, int sex, Map<String,Relative> key2relative) {
 
     // any 'OR's?
     int or = expression.indexOf('|');

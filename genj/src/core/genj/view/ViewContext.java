@@ -178,46 +178,5 @@ public class ViewContext extends Context implements Comparable<ViewContext> {
       return 1;
     return this.txt.compareTo(that.txt);
   }
-
-  /**
-   * marker list
-   */
-  public static class ContextList extends ArrayList<ViewContext> {
-    
-    private String title;
-    private Gedcom gedcom;
-    
-    public ContextList(Gedcom gedcom, String title) {
-      this.gedcom = gedcom;
-      this.title = title;
-    }
-    
-    public ContextList(Gedcom gedcom, String title, List<ViewContext> items) {
-      this(gedcom, title);
-      addAll(items);
-    }
-    
-    @Override
-    public void add(int index, ViewContext c) {
-      if (c.getGedcom()!=gedcom)
-        throw new IllegalArgumentException(gedcom+"!="+c.getGedcom());
-      super.add(index, c);
-    }
-    
-    @Override
-    public boolean add(ViewContext c) {
-      if (c.getGedcom()!=gedcom)
-        throw new IllegalArgumentException(gedcom+"!="+c.getGedcom());
-      return super.add(c);
-    }
-    
-    public String getTitle() {
-      return title;
-    }
-
-    public Gedcom getGedcom() {
-      return gedcom;
-    }
-  }
   
 } //Context

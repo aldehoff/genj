@@ -12,7 +12,6 @@ import genj.gedcom.PropertyChoiceValue;
 import genj.gedcom.PropertyName;
 import genj.report.Report;
 import genj.view.ViewContext;
-import genj.view.ViewContext.ContextList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,21 +55,21 @@ public class ReportSameValues extends Report {
   /**
    * Our entry point for choices
    */
-  public ContextList start(PropertyChoiceValue choice) {
+  public List<ViewContext> start(PropertyChoiceValue choice) {
     return find(choice.getGedcom(), choice.getPropertyName(), choice.getSameChoices(), choice.getDisplayValue());
   }
 
   /**
    * Our entry point for names
    */
-  public ContextList start(PropertyName name) {
+  public List<ViewContext> start(PropertyName name) {
     return find(name.getGedcom(), name.getPropertyName(), name.getSameLastNames(), name.getLastName());
   }
 
   /**
    * our main logic
    */
-  private ContextList find(Gedcom gedcom, String propName, Property[] sameProps, String val) {
+  private List<ViewContext> find(Gedcom gedcom, String propName, Property[] sameProps, String val) {
 
     if (val==null||val.length()==0)
       return null;
@@ -97,7 +96,7 @@ public class ReportSameValues extends Report {
     Collections.sort(result);
 
     // done
-    return new ContextList(gedcom, translate("xname", propName, val ), result);
+    return result;
   }
 
 } //ReportSameValues

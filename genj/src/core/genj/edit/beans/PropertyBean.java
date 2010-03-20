@@ -342,7 +342,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Provide available actions
    */
-  public List<Action> getActions() {
+  public List<? extends Action> getActions() {
     return new ArrayList<Action>();
   }
   

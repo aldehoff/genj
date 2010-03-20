@@ -299,7 +299,7 @@ public class Workbench extends JPanel implements SelectionSink {
         dockingPane.putDockable("warnings", new GedcomDockable(
             RES.getString("cc.open.warnings", context.getGedcom().getName()), 
             Images.imgOpen,
-            new ContextListWidget(context.getGedcom(), warnings))
+            new ContextListWidget(warnings))
         );
       }
     } catch (GedcomIOException ex) {
