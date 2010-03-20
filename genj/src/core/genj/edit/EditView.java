@@ -19,6 +19,7 @@
  */
 package genj.edit;
 
+import genj.edit.beans.PropertyBean;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -435,6 +436,9 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
       setEnabled(true);
       buttons.setVisible(true);
       buttons.revalidate();
+      
+      if (PropertyBean.CommitRequired.class.isAssignableFrom(e.getClass()))
+        commitImpl(false);
     }
 
   } //OK
@@ -465,6 +469,10 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     }
     
     public void stateChanged(ChangeEvent e) {
+      
+      if (PropertyBean.CommitRequired.class.isAssignableFrom(e.getClass()))
+        return;
+      
       setEnabled(true);
       buttons.setVisible(true);
       buttons.revalidate();

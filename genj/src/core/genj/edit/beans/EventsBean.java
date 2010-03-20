@@ -26,12 +26,10 @@ import genj.edit.ChoosePropertyBean;
 import genj.edit.Images;
 import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
-import genj.gedcom.UnitOfWork;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
@@ -67,7 +65,7 @@ public class EventsBean extends PropertyBean implements SelectionSink {
   };
 
   private Set<Property> deletes = new HashSet<Property>();
-  private Set<Property> adds = new HashSet<Property>();
+  private String add = null;
   
   private Model model;
   private PropertyTableWidget table;
@@ -161,10 +159,19 @@ public class EventsBean extends PropertyBean implements SelectionSink {
         property.delProperty(del);
       
     }
-
-    // clear state
     deletes.clear();
+
+    // add the added
+    if (add!=null) {
+      Property added = property.addProperty(add, "");
+      model.add(added);
+      Context ctx = new Context(added);
+      table.select(ctx);
+      fireSelection(ctx,false);
+      add = null;
+    }
     
+    // done
   }
   
   private boolean isEvent(MetaProperty meta) {
@@ -188,7 +195,7 @@ public class EventsBean extends PropertyBean implements SelectionSink {
   protected void setPropertyImpl(Property prop) {
     
     deletes.clear();
-    adds.clear();
+    add = null;
     
     for (BeanPanel panel : panels.values())
       panel.removeChangeListener(changeSupport);
@@ -302,10 +309,7 @@ public class EventsBean extends PropertyBean implements SelectionSink {
   /**
    * add an event
    */
-  private class Add extends Action2 implements UnitOfWork {
-    
-    private String add;
-    private Property added;
+  private class Add extends Action2 {
     
     Add() {
       setImage(PropertyEvent.IMG.getOverLayed(Images.imgNew));
@@ -331,22 +335,10 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       
       add = choose.getSelectedTags()[0];
       
-      EventsBean.this.changeSupport.fireChangeEvent();
-      
-      root.getGedcom().doMuteUnitOfWork(this);
-      
-      
-      // TODO a unit of work will make the editor reset its
-      // bean content so the selection will be wiped out
-      // and this bean might be removed/recycled/readded
-      //model.add(added);
-      //table.select(new Context(added));
-      
+      EventsBean.this.changeSupport.fireChangeEvent(new CommitRequired(EventsBean.this));
+            
     }
     
-    public void perform(Gedcom gedcom) throws GedcomException {
-      added = root.addProperty(add, "");
-    }
   } //Add
 
   /**

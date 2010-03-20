@@ -94,13 +94,18 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
   public void fireChangeEvent() {
     fireChangeEvent(source);
   }
-  protected void fireChangeEvent(Object source) {
+  
+  public void fireChangeEvent(Object source) {
+    fireChangeEvent(new ChangeEvent(source));
+  }
+  
+  public void fireChangeEvent(ChangeEvent event) {
+    
     hasChanged = true;
     
     if (!mute) {
-      ChangeEvent e = new ChangeEvent(source);
       for (ChangeListener listener : listeners)
-        listener.stateChanged(e);
+        listener.stateChanged(event);
     }
   }
   
@@ -108,7 +113,7 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
    * callback - change event = fire change event
    */
   public void stateChanged(ChangeEvent e) {
-    fireChangeEvent(e.getSource());
+    fireChangeEvent(e);
   }
 
   /**
