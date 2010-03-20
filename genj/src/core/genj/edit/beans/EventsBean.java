@@ -333,13 +333,14 @@ public class EventsBean extends PropertyBean implements SelectionSink {
       
       EventsBean.this.changeSupport.fireChangeEvent();
       
-      root.getGedcom().doMuteUnitOfWork(this);
-
       model.add(added);
       
-      // this doesn't work right now since the editor is re-setting
-      // after the unit of work is done
-      // table.select(new Context(added));
+      table.select(new Context(added));
+      
+      // TODO a unit of work will make the editor reset its
+      // bean content so the selection will be wiped out
+      // and this bean might be removed/recycled/readded
+      root.getGedcom().doMuteUnitOfWork(this);
       
     }
     
