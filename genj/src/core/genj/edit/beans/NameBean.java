@@ -162,8 +162,10 @@ public class NameBean extends PropertyBean {
 
     // ... store changed value
     p.setName( first, last, suff, cAll.isSelected());
-   
     p.setNick( nick );
+    
+    // start fresh
+    setPropertyImpl(p);
 
     // Done
   }

@@ -113,6 +113,9 @@ public class PlaceBean extends PropertyBean {
     // propagate change
     ((PropertyPlace)property).setValue(getCommitValue(), global.isSelected());
     
+    // reset
+    setPropertyImpl(property);
+    
   }
 
   /**

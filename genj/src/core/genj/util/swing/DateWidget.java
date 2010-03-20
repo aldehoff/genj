@@ -61,7 +61,7 @@ public class DateWidget extends JPanel {
 
   /** change support */
   private ChangeSupport changeSupport = new ChangeSupport(this) {
-    protected void fireChangeEvent(Object source) {
+    public void fireChangeEvent(Object source) {
       // update our status
       updateStatus();
       // continue
