@@ -99,7 +99,6 @@ import javax.swing.tree.TreePath;
   private Set<TagPath> expands = new HashSet<TagPath>();
   
   private boolean ignoreTreeSelection = false;
-  private boolean pickFirstAvailableProperty = true;
 
   /**
    * Initialize clipboard - trying system falling back to private
@@ -258,10 +257,8 @@ import javax.swing.tree.TreePath;
     // set selection
     List<? extends Property> props = context.getProperties();
     if (props.isEmpty()) {
-      if (pickFirstAvailableProperty&&entity.getNoOfProperties()>0)
+      if (entity.getNoOfProperties()>0)
         props = Collections.singletonList(entity.getProperty(0)); 
-      else
-        props = Collections.singletonList(entity);
     }
     tree.setSelection(props);
     
@@ -669,12 +666,9 @@ import javax.swing.tree.TreePath;
       if (ignoreTreeSelection||tree.getRoot()==null) 
         return;
       List<Property> selection = tree.getSelection();
-      try {
-        pickFirstAvailableProperty = false;
-        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection), false);
-      } finally {
-        pickFirstAvailableProperty = true;
-      }
+      Context ctx = new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection);
+      setContext(ctx);
+      SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
