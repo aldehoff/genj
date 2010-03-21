@@ -588,7 +588,7 @@ public class ReportView extends View {
       chooser.setFileFilter(new FileFilter() {
         @Override
         public boolean accept(File f) {
-          return f.getName().endsWith(".txt");
+          return f.isDirectory() || f.getName().endsWith(".txt");
         }
 
         @Override
