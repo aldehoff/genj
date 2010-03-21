@@ -34,8 +34,12 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +48,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -71,14 +74,19 @@ public class EventsBean extends PropertyBean {
   NOTE = Grammar.V551.getMeta(new TagPath("NOTE")).getImage();
 
   private JTable table;
-  private Object commit;
+  private Runnable commit;
+  private Mouser mouser = new Mouser();
   
   public EventsBean() {
     
     // prepare a simple table
     table = new JTable(new Events(null), columns());
     table.setPreferredScrollableViewportSize(new Dimension(32,32));
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    //table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    table.setRowSelectionAllowed(false);
+    table.setColumnSelectionAllowed(false);
+    table.addMouseListener(mouser);
+    table.addMouseMotionListener(mouser);
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(table));
@@ -104,19 +112,18 @@ public class EventsBean extends PropertyBean {
   @Override
   protected void commitImpl(Property property) {
     
-    if (commit instanceof String) {
-      Property event = property.addProperty((String)commit, "");
+    if (commit!=null) {
+      Runnable r = commit;
       commit = null;
-      ((Events)table.getModel()).add(event);
+      r.run();
     }
+
+  }
+  
+  private void requestCommit(Runnable commit) {
+    this.commit = commit;
     
-    if (commit instanceof Property) {
-      Property event = (Property)commit;
-      if (event.getParent()!=null)
-        event.getParent().delProperty(event);
-      ((Events)table.getModel()).del(event);
-    }
-    
+    changeSupport.fireChangeEvent(new CommitRequired(this));
   }
   
   private boolean isEvent(MetaProperty meta) {
@@ -142,6 +149,34 @@ public class EventsBean extends PropertyBean {
     commit = null;
     
     table.setModel(new Events(prop));
+  }
+  
+  private class Mouser extends MouseAdapter implements MouseMotionListener {
+    
+    private Property getProperty(MouseEvent e) {
+      int row = table.rowAtPoint(e.getPoint());
+      return row<0 ? null : ((Events)table.getModel()).rows.get(row);
+    }
+    
+    private Col getColumn(MouseEvent e) {
+      int col = table.columnAtPoint(e.getPoint());
+      return col<0 ? null : COLS[col];
+    }
+    
+    @Override
+    public void mouseMoved(MouseEvent e) {
+      Cursor cursor = null;
+      if (getColumn(e) instanceof ActionCol && getProperty(e)!=null)
+        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+      table.setCursor(cursor);
+    }
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      Col col = getColumn(e);
+      Property prop = getProperty(e);
+      if (col instanceof ActionCol && prop!=null)
+        ((ActionCol)col).perform(prop, EventsBean.this);
+    }
   }
   
   private class Events extends AbstractTableModel {
@@ -220,7 +255,7 @@ public class EventsBean extends PropertyBean {
     @Override
     public void actionPerformed(ActionEvent event) {
       
-      Property root = getProperty();
+      final Property root = getProperty();
       
       MetaProperty[] metas = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
       List<MetaProperty> choices = new ArrayList<MetaProperty>(metas.length);
@@ -234,54 +269,17 @@ public class EventsBean extends PropertyBean {
           choose, Action2.okCancel(), EventsBean.this))
         return;
       
-      commit = choose.getSelectedTags()[0];
+      final String add = choose.getSelectedTags()[0];
       
-      EventsBean.this.changeSupport.fireChangeEvent(new CommitRequired(EventsBean.this));
+      requestCommit(new Runnable() {
+        public void run() {
+          ((Events)table.getModel()).add(root.addProperty(add, ""));
+        }
+      });
             
     }
     
   } //Add
-
-//  /**
-//   * del an event
-//   */
-//  private class Del extends Action2 implements ListSelectionListener {
-//    Del() {
-//      setImage(PropertyEvent.IMG.getOverLayed(Images.imgDel));
-//      setTip(RESOURCES.getString("even.del"));
-//      table.addListSelectionListener(this);
-//      setEnabled(false);
-//    }
-//
-//    @Override
-//    public void valueChanged(ListSelectionEvent e) {
-//      Property row = table.getSelectedRow();
-//      setEnabled(row!=null);
-//    }
-//    
-//    @Override
-//    public void actionPerformed(ActionEvent e) {
-//      
-//      Property event = table.getSelectedRow();
-//      
-//      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
-//          RESOURCES.getString("even.del.confirm", event),
-//          Action2.okCancel(), EventsBean.this))
-//        return;
-//
-//      // hide
-//      detail.removeAll();
-//      panels.remove(event);
-//
-//      // remove
-//      model.remove(event);
-//      deletes.add(event);
-//      
-//      // changed
-//      EventsBean.this.changeSupport.fireChangeEvent();
-//      
-//    }
-//  } //Del
 
   private static abstract class Col {
     protected Class<?> type;
@@ -346,11 +344,15 @@ public class EventsBean extends PropertyBean {
     }
   }
   
-  private static class NoteCol extends Col {
-    NoteCol() {
+  private abstract static class ActionCol extends Col {
+    ActionCol() {
       type = Icon.class;
       max = Gedcom.getImage().getIconWidth();
     }
+    abstract void perform(Property property, EventsBean bean);
+  }
+  
+  private static class NoteCol extends ActionCol {
     @Override
     Object getValue(Property event) {
       for (Property note : event.getProperties("NOTE")) {
@@ -361,13 +363,12 @@ public class EventsBean extends PropertyBean {
       }
       return NOTE.getGrayedOut();
     }
+    @Override
+    void perform(Property property, EventsBean bean) {
+    }
   }
  
-  private static class SourceCol extends Col {
-    SourceCol() {
-      type = Icon.class;
-      max = Gedcom.getImage().getIconWidth();
-    }
+  private static class SourceCol extends ActionCol {
     @Override
     Object getValue(Property event) {
       for (Property source : event.getProperties("SOUR")) {
@@ -375,26 +376,43 @@ public class EventsBean extends PropertyBean {
       }
       return SOURCE.getGrayedOut();
     }
-  }
-  private static class EditCol extends Col {
-    EditCol() {
-      type = Icon.class;
-      max = Gedcom.getImage().getIconWidth();
-    }
     @Override
-    Object getValue(Property event) {
-      return Images.imgAdvanced;
+    void perform(Property property, EventsBean bean) {
     }
   }
   
-  private static class DelCol extends Col {
-    DelCol() {
-      type = Icon.class;
-      max = Gedcom.getImage().getIconWidth();
+  private static class EditCol extends ActionCol {
+    @Override
+    Object getValue(Property event) {
+      return Images.imgView;
     }
+    @Override
+    void perform(Property property, EventsBean bean) {
+    }
+  }
+  
+  private static class DelCol extends ActionCol {
     @Override
     Object getValue(Property event) {
       return Images.imgDel;
+    }
+    @Override
+    void perform(final Property property, final EventsBean bean) {
+
+      if (0!=DialogHelper.openDialog(RESOURCES.getString("even.del"), DialogHelper.QUESTION_MESSAGE, 
+          RESOURCES.getString("even.del.confirm", property),
+          Action2.okCancel(), bean))
+        return;
+
+      bean.requestCommit(new Runnable() {
+        public void run() {
+          if (property.getParent()!=null) {
+            property.getParent().delProperty(property);
+            ((Events)bean.table.getModel()).del(property);
+          }
+        }
+      });
+
     }
   }
 }
