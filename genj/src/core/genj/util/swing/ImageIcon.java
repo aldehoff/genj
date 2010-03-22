@@ -41,6 +41,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
+import java.awt.image.RGBImageFilter;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -211,6 +212,33 @@ public class ImageIcon extends javax.swing.ImageIcon {
     overlays.put("grayedout", result);
     
     return result;
+  }
+  
+  public ImageIcon getTransparent(final int threshold) {
+    
+    // already known?
+    ImageIcon result = overlays.get(Integer.toString(threshold));
+    if (result != null) 
+      return result;
+ 
+    if (threshold<0||threshold>255)
+      throw new IllegalArgumentException("!(0<=threshold<=255)");
+    
+    ImageProducer prod = new FilteredImageSource(getImage().getSource(), new RGBImageFilter() {
+      @Override
+      public int filterRGB(int x, int y, int rgb) {
+        int alpha = (rgb >> 24) & 0xff;
+        alpha = alpha * threshold / 255;
+        return (rgb&0x00FFFFFF) | (alpha<<24);
+      }
+    });
+    result = new ImageIcon(Toolkit.getDefaultToolkit().createImage(prod));
+    result.dpi = dpi;
+    result.setDescription(getDescription());
+    overlays.put(Integer.toString(threshold), result);
+    
+    return result;
+    
   }
 
   /**

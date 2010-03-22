@@ -71,8 +71,10 @@ public class EventsBean extends PropertyBean {
   };
   
   private final static ImageIcon 
-  SOURCE = Grammar.V551.getMeta(new TagPath("SOUR")).getImage(),
-  NOTE = Grammar.V551.getMeta(new TagPath("NOTE")).getImage();
+    SOURCE = Grammar.V551.getMeta(new TagPath("SOUR")).getImage(),
+    NOSOURCE = SOURCE.getTransparent(64),
+    NOTE = Grammar.V551.getMeta(new TagPath("NOTE")).getImage(),
+    NONOTE = NOTE.getTransparent(64);
 
   private JTable table;
   private Runnable commit;
@@ -81,7 +83,13 @@ public class EventsBean extends PropertyBean {
   public EventsBean() {
     
     // prepare a simple table
-    table = new JTable(new Events(null), columns());
+    table = new JTable(new Events(null), columns()) {
+      @Override
+      public String getToolTipText(MouseEvent event) {
+        Col col = mouser.getColumn(event);
+        return col!=null ? col.getTip() : null;
+      }
+    };
     table.setPreferredScrollableViewportSize(new Dimension(32,32));
     //table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.setRowSelectionAllowed(false);
@@ -317,6 +325,9 @@ public class EventsBean extends PropertyBean {
     int getMax() {
       return max;
     }
+    String getTip() {
+      return null;
+    }
   }
   
   private class EventCol extends Col {
@@ -365,17 +376,26 @@ public class EventsBean extends PropertyBean {
   }
   
   private abstract class ActionCol extends Col {
-    ActionCol() {
-      type = Icon.class;
-      max = Gedcom.getImage().getIconWidth();
+    private String tip;
+    ActionCol(String tip) {
+      this.tip = tip;
+      this.type = Icon.class;
+      this.max = Gedcom.getImage().getIconWidth();
     }
     abstract void perform(Property property);
     boolean performs(Property property) {
       return true;
     }
+    @Override
+    String getTip() {
+      return tip;
+    }
   }
   
   private class NoteCol extends ActionCol {
+    public NoteCol() {
+      super(Gedcom.getName("NOTE"));
+    }
     @Override
     Object getValue(Property event) {
       for (Property note : event.getProperties("NOTE")) {
@@ -384,7 +404,7 @@ public class EventsBean extends PropertyBean {
         if (note.getValue().length()>0)
           return NOTE;
       }
-      return NOTE.getGrayedOut();
+      return NONOTE;
     }
     @Override
     void perform(Property property) {
@@ -392,12 +412,15 @@ public class EventsBean extends PropertyBean {
   }
  
   private class SourceCol extends ActionCol {
+    public SourceCol() {
+      super(Gedcom.getName("SOUR"));
+    }
     @Override
     Object getValue(Property event) {
       for (Property source : event.getProperties("SOUR")) {
         return SOURCE;
       }
-      return SOURCE.getGrayedOut();
+      return NOSOURCE;
     }
     @Override
     void perform(Property property) {
@@ -405,6 +428,9 @@ public class EventsBean extends PropertyBean {
   }
   
   private class EditCol extends ActionCol {
+    public EditCol() {
+      super(RESOURCES.getString("even.edit"));
+    }
     @Override
     Object getValue(Property event) {
       return isEditable(event) ? Images.imgView : null;
@@ -430,6 +456,9 @@ public class EventsBean extends PropertyBean {
   }
   
   private class DelCol extends ActionCol {
+    public DelCol() {
+      super(RESOURCES.getString("even.del"));
+    }
     @Override
     Object getValue(Property event) {
       return isEditable(event) ? Images.imgDel : null;
