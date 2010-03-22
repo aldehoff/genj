@@ -27,6 +27,7 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.HeadlessException;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -165,23 +166,13 @@ public class DialogHelper {
     // create an option pane
     final JOptionPane optionPane = new Content(messageType, content, actions);
     
-    // create the dialog
+    // create the dialog and content
     final JDialog dlg = optionPane.createDialog(source, title);
     dlg.setResizable(true);
     dlg.setModal(true);
     dlg.pack();
     dlg.setMinimumSize(content.getMinimumSize());
-    
-    content.addComponentListener(new ComponentAdapter() {
-      @Override
-      public void componentResized(ComponentEvent e) {
-        Dimension c = dlg.getContentPane().getSize();
-        Dimension m = dlg.getContentPane().getMinimumSize();
-        if (m.width>c.width || m.height>c.height) 
-          dlg.pack();
-      }
-    });
-    
+
     // restore bounds
     StackTraceElement caller = getCaller();
     final Registry registry = Registry.get(caller.getClassName());
@@ -232,6 +223,8 @@ public class DialogHelper {
    */
   private static class Content extends JOptionPane {
     
+    private JDialog dlg;
+    
     /** constructor */
     private Content(int messageType, JComponent content, Action[] actions) {
       super(new JLabel(),messageType, JOptionPane.DEFAULT_OPTION, null, new String[0] );
@@ -253,6 +246,25 @@ public class DialogHelper {
         setInitialValue(options[0]);
       
       // done
+    }
+    
+    @Override
+    public JDialog createDialog(Component parentComponent, String title) throws HeadlessException {
+      dlg = super.createDialog(parentComponent, title);
+      return dlg;
+    }
+    
+    public void doLayout() {
+      
+      super.doLayout();
+
+      // check min size on dialgo
+      if (dlg!=null) {
+        Dimension c = dlg.getContentPane().getSize();
+        Dimension m = dlg.getContentPane().getMinimumSize();
+        if (m.width>c.width || m.height>c.height) 
+          dlg.pack();
+      }
     }
    
     /** an option in our option-pane */
