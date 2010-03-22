@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.edit.BeanPanel;
 import genj.edit.ChoosePropertyBean;
 import genj.edit.Images;
 import genj.gedcom.Gedcom;
@@ -58,7 +59,7 @@ import javax.swing.table.TableColumnModel;
  */
 public class EventsBean extends PropertyBean {
   
-  private final static Col[] COLS = {
+  private Col[] COLS = {
       new EventCol(),
       new DetailCol(),
       new ValueCol("DATE"),
@@ -93,6 +94,10 @@ public class EventsBean extends PropertyBean {
 
   }
   
+  private Events getModel() {
+    return (Events)table.getModel();
+  }
+  
   private TableColumnModel columns() {
     DefaultTableColumnModel result = new DefaultTableColumnModel();
     for (int i=0; i<COLS.length; i++) {
@@ -117,10 +122,10 @@ public class EventsBean extends PropertyBean {
       commit = null;
       r.run();
     }
-
+    
   }
   
-  private void requestCommit(Runnable commit) {
+  private void commit(Runnable commit) {
     this.commit = commit;
     
     changeSupport.fireChangeEvent(new CommitRequired(this));
@@ -133,6 +138,14 @@ public class EventsBean extends PropertyBean {
        && !meta.getTag().equals("RESI") 
        && !meta.getTag().equals("OCCU"))
       return false;
+    
+    return true;
+  }
+
+  private boolean isEditable(Property property) {
+    return isEditable(property.getMetaProperty());
+  }
+  private boolean isEditable(MetaProperty meta) {
     
     // overedited?
     for (PropertyBean bean : session) {
@@ -155,7 +168,7 @@ public class EventsBean extends PropertyBean {
     
     private Property getProperty(MouseEvent e) {
       int row = table.rowAtPoint(e.getPoint());
-      return row<0 ? null : ((Events)table.getModel()).rows.get(row);
+      return row<0 ? null : getModel().rows.get(row);
     }
     
     private Col getColumn(MouseEvent e) {
@@ -166,7 +179,9 @@ public class EventsBean extends PropertyBean {
     @Override
     public void mouseMoved(MouseEvent e) {
       Cursor cursor = null;
-      if (getColumn(e) instanceof ActionCol && getProperty(e)!=null)
+      Col col = getColumn(e);
+      Property prop = getProperty(e);
+      if (prop!=null && col instanceof ActionCol && ((ActionCol)col).performs(prop)) 
         cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
       table.setCursor(cursor);
     }
@@ -174,8 +189,8 @@ public class EventsBean extends PropertyBean {
     public void mouseClicked(MouseEvent e) {
       Col col = getColumn(e);
       Property prop = getProperty(e);
-      if (col instanceof ActionCol && prop!=null)
-        ((ActionCol)col).perform(prop, EventsBean.this);
+      if (prop!=null && col instanceof ActionCol && ((ActionCol)col).performs(prop))
+        ((ActionCol)col).perform(prop);
     }
   }
   
@@ -194,10 +209,15 @@ public class EventsBean extends PropertyBean {
         // keep
         rows.add(child);
       }
-      
+
+      sort();
+    }
+    
+    void sort() {
+      if (rows.isEmpty())
+        return;
       Collections.sort(rows, new PropertyComparator(".:DATE"));
-      
-      // done
+      fireTableRowsUpdated(0, rows.size()-1);
     }
     
     void add(Property event) {
@@ -260,7 +280,7 @@ public class EventsBean extends PropertyBean {
       MetaProperty[] metas = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
       List<MetaProperty> choices = new ArrayList<MetaProperty>(metas.length);
       for (MetaProperty meta : metas) {
-        if (isEvent(meta))
+        if (isEvent(meta) && isEditable(meta))
           choices.add(meta);
       }
       final ChoosePropertyBean choose = new ChoosePropertyBean(choices.toArray(new MetaProperty[choices.size()]));
@@ -271,9 +291,9 @@ public class EventsBean extends PropertyBean {
       
       final String add = choose.getSelectedTags()[0];
       
-      requestCommit(new Runnable() {
+      commit(new Runnable() {
         public void run() {
-          ((Events)table.getModel()).add(root.addProperty(add, ""));
+          getModel().add(root.addProperty(add, ""));
         }
       });
             
@@ -281,7 +301,7 @@ public class EventsBean extends PropertyBean {
     
   } //Add
 
-  private static abstract class Col {
+  private abstract class Col {
     protected Class<?> type;
     protected int max = Integer.MAX_VALUE;
     Col() {
@@ -299,7 +319,7 @@ public class EventsBean extends PropertyBean {
     }
   }
   
-  private static class EventCol extends Col {
+  private class EventCol extends Col {
     @Override
     String getName() {
       return Gedcom.getName("EVEN");
@@ -310,7 +330,7 @@ public class EventsBean extends PropertyBean {
     }
   }
   
-  private static class ValueCol extends Col {
+  private class ValueCol extends Col {
     private String tag, name;
     ValueCol(String tag) {
       this(tag, Gedcom.getName(tag));
@@ -330,7 +350,7 @@ public class EventsBean extends PropertyBean {
     
   }
   
-  private static class DetailCol extends Col {
+  private class DetailCol extends Col {
     @Override
     String getName() {
       return RESOURCES.getString("even.detail");
@@ -344,15 +364,18 @@ public class EventsBean extends PropertyBean {
     }
   }
   
-  private abstract static class ActionCol extends Col {
+  private abstract class ActionCol extends Col {
     ActionCol() {
       type = Icon.class;
       max = Gedcom.getImage().getIconWidth();
     }
-    abstract void perform(Property property, EventsBean bean);
+    abstract void perform(Property property);
+    boolean performs(Property property) {
+      return true;
+    }
   }
   
-  private static class NoteCol extends ActionCol {
+  private class NoteCol extends ActionCol {
     @Override
     Object getValue(Property event) {
       for (Property note : event.getProperties("NOTE")) {
@@ -364,11 +387,11 @@ public class EventsBean extends PropertyBean {
       return NOTE.getGrayedOut();
     }
     @Override
-    void perform(Property property, EventsBean bean) {
+    void perform(Property property) {
     }
   }
  
-  private static class SourceCol extends ActionCol {
+  private class SourceCol extends ActionCol {
     @Override
     Object getValue(Property event) {
       for (Property source : event.getProperties("SOUR")) {
@@ -377,42 +400,60 @@ public class EventsBean extends PropertyBean {
       return SOURCE.getGrayedOut();
     }
     @Override
-    void perform(Property property, EventsBean bean) {
+    void perform(Property property) {
     }
   }
   
-  private static class EditCol extends ActionCol {
+  private class EditCol extends ActionCol {
     @Override
     Object getValue(Property event) {
-      return Images.imgView;
+      return isEditable(event) ? Images.imgView : null;
     }
     @Override
-    void perform(Property property, EventsBean bean) {
+    void perform(Property property) {
+      final BeanPanel panel = new BeanPanel();
+      panel.setRoot(property);
+      if (0!=DialogHelper.openDialog(RESOURCES.getString("even.edit"), DialogHelper.QUESTION_MESSAGE, 
+          panel, Action2.okCancel(), EventsBean.this))
+        return;
+      commit(new Runnable() {
+        public void run() {
+          panel.commit();
+          getModel().sort();
+        }
+      });
+    }
+    @Override
+    boolean performs(Property event) {
+      return isEditable(event);
     }
   }
   
-  private static class DelCol extends ActionCol {
+  private class DelCol extends ActionCol {
     @Override
     Object getValue(Property event) {
-      return Images.imgDel;
+      return isEditable(event) ? Images.imgDel : null;
     }
     @Override
-    void perform(final Property property, final EventsBean bean) {
+    void perform(final Property property) {
 
       if (0!=DialogHelper.openDialog(RESOURCES.getString("even.del"), DialogHelper.QUESTION_MESSAGE, 
           RESOURCES.getString("even.del.confirm", property),
-          Action2.okCancel(), bean))
+          Action2.okCancel(), EventsBean.this))
         return;
 
-      bean.requestCommit(new Runnable() {
+      commit(new Runnable() {
         public void run() {
           if (property.getParent()!=null) {
             property.getParent().delProperty(property);
-            ((Events)bean.table.getModel()).del(property);
+            getModel().del(property);
           }
         }
       });
-
+    }
+    @Override
+    boolean performs(Property event) {
+      return isEditable(event);
     }
   }
 }
