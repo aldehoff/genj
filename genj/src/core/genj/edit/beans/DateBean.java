@@ -25,17 +25,14 @@ import genj.gedcom.time.PointInTime;
 import genj.util.swing.Action2;
 import genj.util.swing.DateWidget;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
 import genj.util.swing.TextFieldWidget;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 /**
@@ -44,18 +41,20 @@ import javax.swing.JLabel;
 public class DateBean extends PropertyBean {
 
   private final static ImageIcon PIT = new ImageIcon(PropertyBean.class, "/genj/gedcom/images/Time");
-  
+  private final static NestedBlockLayout 
+    H = new NestedBlockLayout("<row><date1/><choose/><label2/><date2/><phrase/></row>"),
+    V = new NestedBlockLayout("<table><row><date1/><choose/></row><row><label2/><date2/></row><row><phrase cols=\"2\"/></row></table>");
+
   /** members */
   private PropertyDate.Format format; 
   private DateWidget date1, date2;
   private PopupWidget choose;
   private JLabel label2;
   private TextFieldWidget phrase;
-  private JComponent[][] preferredLayout;
   
   public DateBean() {
 
-    setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    setLayout(V.copy());
     setAlignmentX(0);
 
     // prepare format change actions
@@ -94,38 +93,10 @@ public class DateBean extends PropertyBean {
   @Override
   public void setPreferHorizontal(boolean set) {
     
-    if (set) {
-      preferredLayout = new JComponent[1][0];
-      preferredLayout[0] = new JComponent[] { date1, choose, label2, date2,phrase };
-    } else {
-      preferredLayout = new JComponent[3][0];
-      preferredLayout[0] = new JComponent[] { date1, choose };
-      preferredLayout[1] = new JComponent[] { label2, date2 };
-      preferredLayout[2] = new JComponent[] { phrase };
-    }
-  }
-  
-  @Override
-  public Dimension getPreferredSize() {
-    
-    if (isPreferredSizeSet()) 
-      return super.getPreferredSize();
-    
-    Dimension result = new Dimension();
-    for (int y=0;y<preferredLayout.length;y++) {
-      Dimension line = new Dimension();
-      for (int x=0;x<preferredLayout[y].length;x++) {
-        Component c = preferredLayout[y][x];
-        if (c.isVisible()) {
-          Dimension pref = c.getPreferredSize();
-          line.width += pref.width;
-          line.height = Math.max(line.height, pref.height);
-        }
-      }      
-      result.width = Math.max(result.width, line.width);
-      result.height += line.height;
-    }
-    return result;
+    setLayout(set ? H.copy() : V.copy());
+    PropertyDate.Format f = format;
+    format = null;
+    setFormat(f);
   }
   
   /**
