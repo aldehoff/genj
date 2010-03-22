@@ -21,6 +21,7 @@ package genj.util.swing;
 
 import genj.util.ChangeSupport;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +55,6 @@ import javax.swing.text.StringContent;
 public class ChoiceWidget extends JComboBox {
 
   private boolean isTemplate = false;
-  private boolean blockAutoComplete = false;
   
   /** our own model */
   private Model model = new Model();
@@ -140,10 +140,10 @@ public class ChoiceWidget extends JComboBox {
    */
   public void setValues(Object[] set) {
     try {
-      blockAutoComplete = true;
+      autoComplete.disable();
       model.setValues(set);
     } finally {
-      blockAutoComplete = false;
+      autoComplete.enable();
     }
   }
 
@@ -199,7 +199,7 @@ public class ChoiceWidget extends JComboBox {
       throw new IllegalArgumentException("setText && !isEditable n/a");
     model.setSelectedItem(null);
     try {
-      blockAutoComplete = true;
+      autoComplete.disable();
       
       try {
         JTextField t = getTextEditor();
@@ -237,7 +237,7 @@ public class ChoiceWidget extends JComboBox {
       }
       
     } finally {
-      blockAutoComplete = false;
+      autoComplete.enable();
     }
     
   }
@@ -299,14 +299,38 @@ public class ChoiceWidget extends JComboBox {
   /**
    * @see javax.swing.JComboBox#setEditor(javax.swing.ComboBoxEditor)
    */
-  public void setEditor(ComboBoxEditor set) {
+  public void setEditor(final ComboBoxEditor editor) {
 
     // we're only allowing text fields
-    if (!(set.getEditorComponent() instanceof JTextField))
+    if (!(editor.getEditorComponent() instanceof JTextField))
       throw new IllegalArgumentException("Only JTextEditor editor components are allowed");
     
-    // keep it
-    super.setEditor(set);
+    // wrap it
+    super.setEditor(new ComboBoxEditor() {
+      public void setItem(Object anObject) {
+        try {
+          autoComplete.disable();
+          editor.setItem(anObject); 
+        } finally {
+          autoComplete.enable();
+        }
+      }
+      public void selectAll() {
+        editor.selectAll();
+      }
+      public void removeActionListener(ActionListener l) {
+        editor.removeActionListener(l);
+      }
+      public Object getItem() {
+        return editor.getItem();
+      }
+      public Component getEditorComponent() {
+        return editor.getEditorComponent();
+      }
+      public void addActionListener(ActionListener l) {
+        editor.addActionListener(l);
+      }
+    });
     
     // add our auto-complete hook
     if (autoComplete==null) 
@@ -337,6 +361,7 @@ public class ChoiceWidget extends JComboBox {
 
     private JTextField text;
     private Timer timer = new Timer(250, this);
+    private boolean enabled = true;
     
     /**
      * Constructor
@@ -345,6 +370,15 @@ public class ChoiceWidget extends JComboBox {
       // setup timer
       timer.setRepeats(false);
       // done
+    }
+    
+    private void disable() {
+      enabled = false;
+      timer.stop();
+    }
+    
+    private void enable() {
+      enabled = true;
     }
     
     private void attach(JTextField set) {
@@ -381,7 +415,7 @@ public class ChoiceWidget extends JComboBox {
     public void removeUpdate(DocumentEvent e) {
       changeSupport.fireChangeEvent();
       // add a auto-complete callback
-      if (!blockAutoComplete&&isEditable())
+      if (enabled&&isEditable())
         timer.start();
     }
       
@@ -391,7 +425,7 @@ public class ChoiceWidget extends JComboBox {
     public void changedUpdate(DocumentEvent e) {
       changeSupport.fireChangeEvent();
       // add a auto-complete callback
-      if (!blockAutoComplete&&isEditable())
+      if (enabled&&isEditable())
         timer.start();
     }
       
@@ -403,7 +437,7 @@ public class ChoiceWidget extends JComboBox {
     public void insertUpdate(DocumentEvent e) {
       changeSupport.fireChangeEvent();
       // add a auto-complete callback
-      if (!blockAutoComplete&&isEditable())
+      if (enabled&&isEditable())
         timer.start();
     }
       
@@ -428,9 +462,12 @@ public class ChoiceWidget extends JComboBox {
       }
       
       // restore the original text & selection
-      blockAutoComplete = true;
-      text.setText(prefix);
-      blockAutoComplete = false;
+      try {
+        disable();
+        text.setText(prefix);
+      } finally {
+        enable();
+      }
       text.setCaretPosition(caretPos);
       
       // show where we're at in case of a partial match
@@ -536,9 +573,12 @@ public class ChoiceWidget extends JComboBox {
       // remember
       selection = seLection;
       // propagate to editor
-      blockAutoComplete = true;
-      getEditor().setItem(selection);
-      blockAutoComplete = false;
+      try {
+        autoComplete.disable();
+        getEditor().setItem(selection);
+      } finally {
+        autoComplete.enable();
+      }
       // notify about item state change
       fireItemStateChanged(new ItemEvent(ChoiceWidget.this, ItemEvent.ITEM_STATE_CHANGED, selection, ItemEvent.SELECTED));
       // and notify of data change - apparently the JComboBox
