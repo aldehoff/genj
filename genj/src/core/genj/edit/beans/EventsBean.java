@@ -49,6 +49,8 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
@@ -437,17 +439,30 @@ public class EventsBean extends PropertyBean {
     }
     @Override
     void perform(Property property) {
+      
       final BeanPanel panel = new BeanPanel();
       panel.setRoot(property);
-      if (0!=DialogHelper.openDialog(RESOURCES.getString("even.edit"), DialogHelper.QUESTION_MESSAGE, 
-          panel, Action2.okCancel(), EventsBean.this))
-        return;
-      commit(new Runnable() {
-        public void run() {
-          panel.commit();
-          getModel().sort();
+      
+      final Action[] actions = Action2.okCancel();
+      actions[0].setEnabled(false);
+      
+      panel.addChangeListener(new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+          actions[0].setEnabled(true);
         }
       });
+      
+      if (0==DialogHelper.openDialog(RESOURCES.getString("even.edit"), DialogHelper.QUESTION_MESSAGE, panel, actions, EventsBean.this)) {
+        commit(new Runnable() {
+          public void run() {
+            panel.commit();
+            getModel().sort();
+          }
+        });
+      }
+      
+      panel.setRoot(null);
+      
     }
     @Override
     boolean performs(Property event) {
