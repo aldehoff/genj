@@ -150,7 +150,7 @@ public class DialogHelper {
   /**
    * Dialog implementation
    */
-  private static Object openDialogImpl(String title, int messageType,  JComponent content, Action[] actions, Component source) {
+  private static Object openDialogImpl(String title, int messageType, final JComponent content, Action[] actions, Component source) {
 
     // find window for source
     source = visitOwners(source, new ComponentVisitor() {
@@ -163,7 +163,7 @@ public class DialogHelper {
     patchOpaque(content, true);
 
     // create an option pane
-    JOptionPane optionPane = new Content(messageType, content, actions);
+    final JOptionPane optionPane = new Content(messageType, content, actions);
     
     // create the dialog
     final JDialog dlg = optionPane.createDialog(source, title);
@@ -171,6 +171,16 @@ public class DialogHelper {
     dlg.setModal(true);
     dlg.pack();
     dlg.setMinimumSize(content.getMinimumSize());
+    
+    content.addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentResized(ComponentEvent e) {
+        Dimension c = dlg.getContentPane().getSize();
+        Dimension m = dlg.getContentPane().getMinimumSize();
+        if (m.width>c.width || m.height>c.height) 
+          dlg.pack();
+      }
+    });
     
     // restore bounds
     StackTraceElement caller = getCaller();
