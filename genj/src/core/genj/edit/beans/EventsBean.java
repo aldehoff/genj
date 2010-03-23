@@ -35,6 +35,7 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -46,13 +47,16 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -91,10 +95,15 @@ public class EventsBean extends PropertyBean {
         Col col = mouser.getColumn(event);
         return col!=null ? col.getTip() : null;
       }
+      @Override
+      public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+        Component result = super.prepareRenderer(renderer, row, column);
+        if (result instanceof JComponent) ((JComponent)result).setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+        return result;
+      }
     };
     table.setPreferredScrollableViewportSize(new Dimension(32,32));
-    //table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setRowSelectionAllowed(false);
+    table.setRowSelectionAllowed(true);
     table.setColumnSelectionAllowed(false);
     table.addMouseListener(mouser);
     table.addMouseMotionListener(mouser);
