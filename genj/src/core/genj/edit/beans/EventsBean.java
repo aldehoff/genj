@@ -48,7 +48,6 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -390,7 +389,7 @@ public class EventsBean extends PropertyBean {
     private String tip;
     ActionCol(String tip) {
       this.tip = tip;
-      this.type = Icon.class;
+      this.type = ImageIcon.class; // don't return interface - see http://bugs.sun.com/view_bug.do?bug_id=6830678
       this.max = Gedcom.getImage().getIconWidth();
     }
     abstract void perform(Property property);
