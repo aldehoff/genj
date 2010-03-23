@@ -262,8 +262,16 @@ public class DialogHelper {
       if (dlg!=null) {
         Dimension c = dlg.getContentPane().getSize();
         Dimension m = dlg.getContentPane().getMinimumSize();
-        if (m.width>c.width || m.height>c.height) 
-          dlg.pack();
+        
+        Dimension size = dlg.getSize();
+        boolean set = false;
+        if ( (set|=m.width>c.width))
+          size.width += m.width-c.width;
+        if ( (set|=m.height>c.height) ) 
+          size.height += m.height-c.height;
+
+        if (set)
+          dlg.setSize(size);
       }
     }
    
