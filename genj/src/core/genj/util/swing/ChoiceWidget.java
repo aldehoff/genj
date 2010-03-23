@@ -305,6 +305,9 @@ public class ChoiceWidget extends JComboBox {
     if (!(editor.getEditorComponent() instanceof JTextField))
       throw new IllegalArgumentException("Only JTextEditor editor components are allowed");
     
+    // patch editor's columns - this is an arbitrary minimum value for now (Swing's default is 9)
+    ((JTextField)editor.getEditorComponent()).setColumns(4);
+    
     // wrap it
     super.setEditor(new ComboBoxEditor() {
       public void setItem(Object anObject) {

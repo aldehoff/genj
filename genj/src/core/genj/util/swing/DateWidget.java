@@ -91,7 +91,7 @@ public class DateWidget extends JPanel {
       switches.add(new SwitchCalendar(PointInTime.CALENDARS[s]));
 
     // initialize Sub-components
-    widgetYear = new TextFieldWidget("", 5 + 1);
+    widgetYear = new TextFieldWidget("", 4);
     widgetYear.setSelectAllOnFocus(true);
     widgetYear.addChangeListener(changeSupport);
 
@@ -100,7 +100,7 @@ public class DateWidget extends JPanel {
     widgetMonth.setSelectAllOnFocus(true);
     widgetMonth.addChangeListener(changeSupport);
 
-    widgetDay = new TextFieldWidget("", 2 + 1);
+    widgetDay = new TextFieldWidget("", 2);
     widgetDay.setSelectAllOnFocus(true);
     widgetDay.addChangeListener(changeSupport);
 
