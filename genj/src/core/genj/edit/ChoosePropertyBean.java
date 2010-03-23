@@ -72,9 +72,6 @@ public class ChoosePropertyBean extends JComponent {
     
     // keep parent and calculate possible properties
     MetaProperty[] defs = parent.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
-    
-    Arrays.sort(defs, callback);
-    
     init(defs, true);
   }    
   
@@ -86,6 +83,8 @@ public class ChoosePropertyBean extends JComponent {
   }
   
   private void init(MetaProperty[] defs, boolean allowCustom) {
+    
+    Arrays.sort(defs, callback);
     
     // Layout
     setLayout(new NestedBlockLayout("<col><label1/><row><tags/><info gx=\"1\" gy=\"1\"/></row><label2/><tag/></col>"));
@@ -196,7 +195,7 @@ public class ChoosePropertyBean extends JComponent {
     public Component getListCellRendererComponent(JList list,Object value,int index,boolean isSelected,boolean cellHasFocus) {
       super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
         MetaProperty def = (MetaProperty)value;
-        setText(def.getTag()+" ("+def.getName()+")");
+        setText(def.getName()+" ("+def.getTag()+")");
         setIcon(def.getImage());
       return this;
     }
@@ -210,7 +209,7 @@ public class ChoosePropertyBean extends JComponent {
     
     /** compare meta properties for alphabetic sorting */
     public int compare(MetaProperty m1, MetaProperty m2) {
-      return m1.getTag().compareTo(m2.getTag());
+      return m1.getName().compareTo(m2.getName());
     }
     
     /** check double clicks */
