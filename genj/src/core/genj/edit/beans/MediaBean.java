@@ -170,7 +170,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       Media media = null;
       for (Property prop : propsNeedingOBJEs.get(source))  {
         if (inline)
-          prop.addFile(source.getFile());
+          prop.addFile(source.getFile(), source.getName());
         else 
           prop.addMedia(media==null ? media=createMedia(gedcom, source) : media);
       }

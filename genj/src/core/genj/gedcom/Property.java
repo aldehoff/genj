@@ -144,13 +144,16 @@ public abstract class Property implements Comparable<Property> {
    * @return success or not
    */
   public boolean addFile(File file) {
+    return addFile(file, "");
+  }
+  public boolean addFile(File file, String title) {
     // FILE not allowed here? 
     if (!getMetaProperty().allows("FILE")) {
       // OBJE neither? 
       if (!getMetaProperty().allows("OBJE")) 
         return false;
       // let new OBJE handle this
-      return addProperty("OBJE", "").addFile(file);
+      return addProperty("OBJE", "").addFile(file, title);
     }
     // need to add it?
     List<PropertyFile> pfiles = getProperties(PropertyFile.class);
@@ -160,6 +163,13 @@ public abstract class Property implements Comparable<Property> {
     } else {
       pfile = (PropertyFile)pfiles.get(0);
     }
+    // set title
+    Property ptitle = getProperty("TITL");
+    if (ptitle!=null)
+      ptitle.setValue(title);
+    else if (title.length()>0)
+      addProperty("TITL", title);
+      
     // keep it
     return pfile.addFile(file);
   }
