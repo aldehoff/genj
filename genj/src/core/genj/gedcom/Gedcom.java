@@ -980,7 +980,7 @@ public class Gedcom {
       
       if (lock!=null)
         throw new GedcomException("Cannot obtain write lock");
-      lock = new Lock(uow);
+      lock = new Lock();
 
       // hook up updater for changes
       updater = new PropertyChange.Monitor();
@@ -1358,21 +1358,8 @@ public class Gedcom {
   /**
    * Our locking mechanism is based on one writer at a time
    */
-  private class Lock implements UnitOfWork {
-    UnitOfWork uow;
+  private class Lock {
     List<Undo> undos = new ArrayList<Undo>();
-    
-    Lock() {
-      this.uow = this;
-    }
-    
-    Lock(UnitOfWork uow) {
-      this.uow = uow;
-    }
-    
-    public void perform(Gedcom gedcom) {
-      // it's just a fake UOW for undo/redos
-    }
     
     void addChange(Undo run) {
       undos.add(run);
