@@ -217,6 +217,10 @@ import javax.swing.tree.TreePath;
    */
   @Override
   public void setContext(Context context) {
+    setContextImpl(context, true);
+  }
+  
+  private void setContextImpl(Context context, boolean pickFirstProperty) {
     
     // Clean up
     if (bean!=null) 
@@ -257,8 +261,10 @@ import javax.swing.tree.TreePath;
     // set selection
     List<? extends Property> props = context.getProperties();
     if (props.isEmpty()) {
-      if (entity.getNoOfProperties()>0)
+      if (pickFirstProperty&&entity.getNoOfProperties()>0)
         props = Collections.singletonList(entity.getProperty(0)); 
+      else
+        props = Collections.singletonList(entity); 
     }
     tree.setSelection(props);
     
@@ -667,7 +673,7 @@ import javax.swing.tree.TreePath;
         return;
       List<Property> selection = tree.getSelection();
       Context ctx = new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection);
-      setContext(ctx);
+      setContextImpl(ctx, false);
       SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
     }
 
