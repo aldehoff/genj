@@ -206,19 +206,30 @@ public class HistoryWidget extends JToolBar {
 
     @Override
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
+      
+      // affects history?
       int i = history.indexOf(entity);
       if (i<0)
         return;
-      
+
+      // remove it
       history.remove(i);
       if (index>=i)
         index--;
-      
+
+      // go to previous (or next if only thing available)
       i--;
       if (i<0&&history.size()>0)
         i++;
       if (i>=0)
         fireSelection(history.get(i));
+      
+      // fallback to first available person
+      if (i<0) {
+        Entity first = gedcom.getFirstEntity(Gedcom.INDI);
+        if (first!=null)
+          fireSelection(first);
+      }
       
       update();
     }

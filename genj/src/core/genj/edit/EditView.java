@@ -482,8 +482,6 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
   
   private class Callback extends GedcomListenerAdapter {
     
-    private Context ctx;
-    
     @Override
     public void gedcomWriteLockAcquired(Gedcom gedcom) {
       
@@ -491,14 +489,6 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
       if (!isChangeSource)
         commitImpl(false);
       
-      // track our context
-      ctx = getContext();
-      
-    }
-    
-    @Override
-    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-      ctx.remove(entity);
     }
     
     @Override
@@ -506,6 +496,7 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
       
       // foreign change while we're looking?
       if (editor!=null && !isChangeSource) {
+        Context ctx = editor.getContext();
         editor.setContext(new Context());
         editor.setContext(ctx);
         populate(toolbar);

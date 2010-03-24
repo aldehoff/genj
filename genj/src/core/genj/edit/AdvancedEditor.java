@@ -233,7 +233,12 @@ import javax.swing.tree.TreePath;
     
     // clear?
     if (context.getGedcom()==null||context.getEntities().isEmpty()) {
-      tree.setRoot(null);
+      try {
+        ignoreTreeSelection = true;
+        tree.setRoot(null);
+      } finally {
+        ignoreTreeSelection = false;
+      }
       return;
     }
     
@@ -674,7 +679,8 @@ import javax.swing.tree.TreePath;
       List<Property> selection = tree.getSelection();
       Context ctx = new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection);
       setContextImpl(ctx, false);
-      SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
+      if (!selection.isEmpty())
+        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
