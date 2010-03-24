@@ -22,7 +22,7 @@ import tree.graphics.TitleRenderer;
 public class RendererFactory {
     public TreeRendererBase renderer;
     public GraphicsRenderer rotateRenderer;
-    public GraphicsRenderer titleRenderer;
+    public TitleRenderer titleRenderer;
     public FooterRenderer footerRenderer;
 
     public RendererFactory(Translator translator)
@@ -38,6 +38,7 @@ public class RendererFactory {
         renderer.setElements(elements);
         renderer.setFirstIndi(firstIndi);
         footerRenderer.setFirstIndi(firstIndi);
+        titleRenderer.setIndi(firstIndi);
 
         return footerRenderer;
     }
