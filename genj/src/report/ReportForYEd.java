@@ -11,6 +11,8 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyPlace;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Options;
@@ -28,18 +30,26 @@ import java.text.MessageFormat;
 
 public class ReportForYEd extends Report {
 
-	private static final String MARRIAGE_SYMBOL = Options.getInstance()
+	private static final String FILE_EXTENSION = "graphml";
+
+	private static final String SYMBOL_MARRIAGE = Options.getInstance()
 			.getMarriageSymbol();
+	private static final String SYMBOL_DIVORCE = Options.getInstance()
+			.getDivorceSymbol();
+	private static final String SYMBOL_BIRTH = Options.getInstance()
+			.getBirthSymbol();
+	private static final String SYMBOL_DEATH = Options.getInstance()
+			.getDeathSymbol();
+
+	private static final TagPath TAG_MARRIAGE = new TagPath("FAM:MARR");
+	private static final TagPath TAG_DIVORCE = new TagPath("FAM:DIV");
+	private static final TagPath TAG_BIRTH = new TagPath("FAM:BIRT");
+	private static final TagPath TAG_DEATH = new TagPath("FAM:DEAT");
 
 	private static final Charset UTF8 = Charset.forName("UTF8");
 
 	public String indiUrl = getString("indiUrlDefault");
 	public String familyUrl = getString("familyUrlDefault");
-
-	public String familyColor = getString("familyColorDefault");
-	public String maleColor = getString("maleColorDefault");
-	public String femaleColor = getString("femaleColorDefault");
-	public String sexlessColor = getString("sexlessColorDefault");
 
 	private final String indiColors[] = createIndiColors();
 
@@ -51,8 +61,8 @@ public class ReportForYEd extends Report {
 	private final String xmlHead = getString("XmlHead");
 	private final String xmlTail = getString("XmlTail");
 
-	int edgeCount = 0;
-	File reportFile;
+	private int edgeCount = 0;
+	private File reportFile;
 
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
@@ -62,7 +72,6 @@ public class ReportForYEd extends Report {
 			return;
 		println("creating: " + reportFile.getAbsoluteFile());
 
-		/* no filtering as you can easily select (and delete) generations ancestor or descendants with yEd */
 		out.write(xmlHead);
 		for (final Entity entity : gedcom.getEntities(Gedcom.FAM)) {
 			out.write(createNode((Fam) entity));
@@ -72,20 +81,23 @@ public class ReportForYEd extends Report {
 			out.write(createEdges((Indi) entity));
 		}
 		out.write(xmlTail);
+
 		out.flush();
 		out.close();
 		println("ready with: " + reportFile.getAbsoluteFile());
 	}
 
 	private String[] createIndiColors() {
+
 		final String[] result = new String[3];
-		result[PropertySex.MALE] = maleColor;
-		result[PropertySex.FEMALE] = femaleColor;
-		result[PropertySex.UNKNOWN] = sexlessColor;
+		result[PropertySex.MALE] = "#CCCCFF";
+		result[PropertySex.FEMALE] = "#FF99CC";
+		result[PropertySex.UNKNOWN] = "#CCCCCC";
 		return result;
 	}
 
 	private String createEdges(final Indi indi) {
+
 		String s = "";
 		for (final Fam fam : indi.getFamiliesWhereSpouse()) {
 			s += MessageFormat.format(xmlEdge, edgeCount++, indi.getId(), fam
@@ -99,64 +111,118 @@ public class ReportForYEd extends Report {
 	}
 
 	private String createNode(final Fam family) {
+
 		final String id = family.getId();
-		return MessageFormat.format(xmlFamily, id, createLabel(family), createLink(id, familyUrl),
-				familyColor, popUp(createPopUpContent(family)));
+		return MessageFormat.format(xmlFamily, id, createLabel(family),
+				createLink(id, familyUrl),
+				createPopUpContainer(createPopUpContent(family)));
 	}
 
 	private String createNode(final Indi indi) {
+
 		final String id = indi.getId();
-		return MessageFormat.format(xmlIndi, id, createLabel(indi), createLink(id, indiUrl),
-				indiColors[indi.getSex()], popUp(null));
+		return MessageFormat.format(xmlIndi, id, createLabel(indi), createLink(
+				id, indiUrl), indiColors[indi.getSex()],
+				createPopUpContainer(createPopUpContent(indi)));
 	}
 
 	private String createLabel(final Fam family) {
-		//TODO wrap in html and add divorce
-		return showEvent(Options.getInstance().getMarriageSymbol(),family.getProperty(new TagPath("FAM:MARR")));
+
+		final String mariage = showEvent(SYMBOL_MARRIAGE,
+				(PropertyEvent) family.getProperty(TAG_MARRIAGE));
+		final String divorce = showEvent(SYMBOL_DIVORCE, (PropertyEvent) family
+				.getProperty(TAG_DIVORCE));
+
+		if (mariage == null && divorce == null)
+			return "";
+		if (mariage != null && divorce != null)
+			return MessageFormat.format("<html><body>{0}<br>{1}</body></html>",
+					mariage, divorce).replaceAll(">", "&gt;").replaceAll("<",
+					"&lt;");
+		if (mariage != null)
+			return mariage;
+		if (divorce != null)
+			return divorce;
+		return mariage;
 	}
 
 	private String createLabel(final Indi indi) {
-		//TODO wrap in html and add events and optionally image and profession
-		return indi.getName();
+		final String name = indi.getPropertyDisplayValue("NAME");
+		String birth = showEvent(SYMBOL_BIRTH, (PropertyEvent) indi
+				.getProperty(TAG_BIRTH));
+		String death = showEvent(SYMBOL_DEATH, (PropertyEvent) indi
+				.getProperty(TAG_DEATH));
+		if (name == null && birth == null && death == null)
+			return "";
+		if (birth == null && death == null)
+			return name;
+		if (birth == null)
+			birth = "";
+		if (death == null)
+			death = "";
+		// TODO debug why events don't appear; profession and image; optional dates and places
+		return MessageFormat.format(
+				"<html><body>{0}<br>{1}<br>{2}</body></html>", name, birth,
+				death).replaceAll(">", "&gt;").replaceAll("<", "&lt;");
 	}
-	
-	/** MARR/DIV/BIRTH/DEATH are all events with a symbol date and/or place */
-	private String showEvent(final String symbol,final Property marriage) {
-		//TODO configuration options: show dates/places
-		return marriage == null ? "" : marriage.getDisplayValue();
+
+	private String showEvent(final String symbol, final PropertyEvent event) {
+
+		if (event == null)
+			return null;
+		final Property date = event.getDate(true);
+		final Property place = event.getProperty("PLAC");
+		if (date == null && place == null)
+			return null;
+		return symbol
+				+ " "
+				+ (date == null ? "" : date.getDisplayValue())
+				+ " "
+				+ (place == null ? "" : place.getDisplayValue().replaceAll(
+						",.*", ""));
 	}
-	
-	private String createPopUpContent(Fam family) {
+
+	private String createPopUpContent(final Fam family) {
 		// by default the label is used as pop up
-		// TODO may be some day someone wants something else
 		return null;
 	}
-	
+
+	private String createPopUpContent(final Indi indi) {
+		// by default the label is used as pop up
+		return null;
+	}
+
 	private String createLink(final String id, final String urlFormat) {
+
 		if (urlFormat == null)
 			return "";
 		final String link = MessageFormat.format(urlFormat, id);
 		return MessageFormat.format(xmlLinkContainer, link);
 	}
 
-	private String popUp(final String content) {
+	private String createPopUpContainer(final String content) {
+
 		if (content == null)
 			return "";
 		return MessageFormat.format(xmlPopUpContainer, content);
 	}
 
 	private String getString(final String key) {
+
 		return getResources().getString(key);
 	}
 
 	private Writer createWriter() throws FileNotFoundException {
 
 		reportFile = getFileFromUser(translate("name"), translate("save"),
-				true, "graphml");
+				true, FILE_EXTENSION);
 		if (reportFile == null)
 			return null;
-
-		final FileOutputStream fileOutputStream = new FileOutputStream(reportFile);
+		if (!reportFile.getName().toLowerCase().endsWith("." + FILE_EXTENSION)) {
+			reportFile = new File(reportFile.getPath() + "." + FILE_EXTENSION);
+		}
+		final FileOutputStream fileOutputStream = new FileOutputStream(
+				reportFile);
 		final OutputStreamWriter streamWriter = new OutputStreamWriter(
 				fileOutputStream, UTF8);
 		return new BufferedWriter(streamWriter);
