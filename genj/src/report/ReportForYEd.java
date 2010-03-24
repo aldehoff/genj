@@ -11,7 +11,6 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertySex;
 import genj.gedcom.TagPath;
 import genj.report.Options;
@@ -61,18 +60,21 @@ public class ReportForYEd extends Report {
 		final Writer out = createWriter();
 		if (out == null)
 			return;
+		println("creating: " + reportFile.getAbsoluteFile());
 
+		/* no filtering as you can easily select (and delete) generations ancestor or descendants with yEd */
 		out.write(xmlHead);
 		for (final Entity entity : gedcom.getEntities(Gedcom.FAM)) {
-			out.write(createFamily((Fam) entity));
+			out.write(createNode((Fam) entity));
 		}
 		for (final Entity entity : gedcom.getEntities(Gedcom.INDI)) {
-			out.write(createIndi((Indi) entity));
+			out.write(createNode((Indi) entity));
 			out.write(createEdges((Indi) entity));
 		}
 		out.write(xmlTail);
+		out.flush();
 		out.close();
-		println("ready: " + reportFile.getAbsoluteFile());
+		println("ready with: " + reportFile.getAbsoluteFile());
 	}
 
 	private String[] createIndiColors() {
@@ -96,22 +98,41 @@ public class ReportForYEd extends Report {
 		return s;
 	}
 
-	private String createFamily(final Fam family) {
+	private String createNode(final Fam family) {
 		final String id = family.getId();
-		final Property marriage = family.getProperty(new TagPath("FAM:MARR"));
-		final String label = marriage == null ? "" : marriage.getDisplayValue();
-		return MessageFormat.format(xmlFamily, id, label, link(id, familyUrl),
-				familyColor, popUp(null));
+		return MessageFormat.format(xmlFamily, id, createLabel(family), createLink(id, familyUrl),
+				familyColor, popUp(createPopUpContent(family)));
 	}
 
-	private String createIndi(final Indi indi) {
+	private String createNode(final Indi indi) {
 		final String id = indi.getId();
-		final String label = indi.getName();
-		return MessageFormat.format(xmlIndi, id, label, link(id, indiUrl),
+		return MessageFormat.format(xmlIndi, id, createLabel(indi), createLink(id, indiUrl),
 				indiColors[indi.getSex()], popUp(null));
 	}
 
-	private String link(final String id, final String urlFormat) {
+	private String createLabel(final Fam family) {
+		//TODO wrap in html and add divorce
+		return showEvent(Options.getInstance().getMarriageSymbol(),family.getProperty(new TagPath("FAM:MARR")));
+	}
+
+	private String createLabel(final Indi indi) {
+		//TODO wrap in html and add events and optionally image and profession
+		return indi.getName();
+	}
+	
+	/** MARR/DIV/BIRTH/DEATH are all events with a symbol date and/or place */
+	private String showEvent(final String symbol,final Property marriage) {
+		//TODO configuration options: show dates/places
+		return marriage == null ? "" : marriage.getDisplayValue();
+	}
+	
+	private String createPopUpContent(Fam family) {
+		// by default the label is used as pop up
+		// TODO may be some day someone wants something else
+		return null;
+	}
+	
+	private String createLink(final String id, final String urlFormat) {
 		if (urlFormat == null)
 			return "";
 		final String link = MessageFormat.format(urlFormat, id);
