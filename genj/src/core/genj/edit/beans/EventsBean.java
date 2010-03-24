@@ -285,6 +285,8 @@ public class EventsBean extends PropertyBean {
    */
   private class Add extends Action2 {
     
+    private Property added;
+    
     Add() {
       setImage(PropertyEvent.IMG.getOverLayed(Images.imgNew));
       setTip(RESOURCES.getString("even.add"));
@@ -311,9 +313,13 @@ public class EventsBean extends PropertyBean {
       
       commit(new Runnable() {
         public void run() {
-          getModel().add(root.addProperty(add, ""));
+          added = root.addProperty(add, "");
+          getModel().add(added);
         }
       });
+
+      if (added!=null)
+        new EditCol().perform(added);
             
     }
     
