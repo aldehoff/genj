@@ -187,12 +187,13 @@ public class MediaRenderer {
     if (image==null) {
       
       InputStream in = null;
+      ImageInputStream iin = null;
       try {
         in = source.open();
         if (in!=null) {
           LOG.finer("Reading image from "+source+" for "+bounds.getSize());
           
-          ImageInputStream iin = ImageIO.createImageInputStream(in);
+          iin = ImageIO.createImageInputStream(in);
           Iterator<ImageReader> iter = ImageIO.getImageReaders(iin);
           if (iter.hasNext()) {
             ImageReader reader = iter.next();
@@ -216,6 +217,7 @@ public class MediaRenderer {
         LOG.log(Level.FINER, "Can't get image for "+root+"/"+source, ioe);
         cached.size.setSize(0, 0);
       } finally {
+        if (iin!=null) try { iin.close(); } catch (IOException e) {}
         if (in!=null) try { in.close(); } catch (IOException e) {}
       }
     }
