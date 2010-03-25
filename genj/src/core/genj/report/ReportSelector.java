@@ -48,7 +48,7 @@ class ReportSelector extends JPanel {
   
   private ReportDetail detail = new ReportDetail();
   private ReportList list = new ReportList(ReportLoader.getInstance().getReports(), false);
-  private OptionsWidget options = new OptionsWidget(getName());
+  private OptionsWidget options = new OptionsWidget("");
 
   /** Constructor */
   public ReportSelector() {

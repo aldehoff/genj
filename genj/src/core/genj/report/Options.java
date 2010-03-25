@@ -23,6 +23,7 @@ package genj.report;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.PrivacyPolicy;
+import genj.option.Option;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
 
@@ -224,7 +225,7 @@ public class Options extends OptionProvider {
     /**
      * callback - provide options during system init
      */
-    public List getOptions() {
+    public List<? extends Option> getOptions() {
       // load report async
       new Thread(new Runnable() {
         public void run() {

@@ -20,8 +20,8 @@
 package genj.option;
 
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 
@@ -31,7 +31,7 @@ import java.util.List;
  */
 public abstract class Option {
 
-  private List listeners;
+  private List<OptionListener> listeners;
 
   private String category;
 
@@ -80,7 +80,7 @@ public abstract class Option {
    */
   public void addOptionListener(OptionListener listener) {
     if (listeners==null)
-      listeners = new ArrayList(4);
+      listeners = new CopyOnWriteArrayList<OptionListener>();
     listeners.add(listener);
   }
 

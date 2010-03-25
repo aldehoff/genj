@@ -25,14 +25,14 @@ import genj.option.OptionProvider;
 import genj.option.PropertyOption;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.Action2;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.ScreenResolutionScale;
 
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JComponent;
 
 /**
  * Blueprint/Renderer Options
@@ -120,11 +120,14 @@ public class Options extends OptionProvider {
     }
 
     /** callback - edit option */
-    protected void edit() {
-      ScreenResolutionScale scale = new ScreenResolutionScale(dpi);
-      int rc = DialogHelper.openDialog(getName(), DialogHelper.QUESTION_MESSAGE, scale, Action2.okCancel(), widget);
-      if (rc==0)
-        dpi = scale.getDPI();
+    @Override
+    protected JComponent getEditor() {
+      return new ScreenResolutionScale(dpi);
+    }
+    
+    @Override
+    protected void commit(JComponent editor) {
+      dpi = ((ScreenResolutionScale)editor).getDPI();
     }
 
   } //ScreenResolutionOption

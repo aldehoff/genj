@@ -48,6 +48,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -120,7 +121,7 @@ public abstract class Report implements Cloneable {
   private Resources resources;
 
   /** options */
-  private List<PropertyOption> options;
+  private List<Option> options;
 
   /** image */
   private Icon icon;
@@ -176,48 +177,70 @@ public abstract class Report implements Cloneable {
     if (options==null)
       return;
     // save 'em
-    for (PropertyOption option : options)
-      option.persist(registry);
+    for (Option option : options)
+      if (option instanceof PropertyOption)
+        ((PropertyOption)option).persist(registry);
+      else
+        option.persist();
     // done
+  }
+  
+  protected Registry getRegistry() {
+    return registry;
   }
 
   /**
    * Get report's options
    */
-  public List<? extends Option> getOptions() {
+  public final List<? extends Option> getOptions() {
 
     // already calculated
     if (options!=null)
       return options;
 
+    options = new ArrayList<Option>();
+    
     // calculate options
     // 20091205 going recursive here is new to support Przemek's case of settings on report's components
-    options = PropertyOption.introspect(this, true);
+    List<PropertyOption> props = PropertyOption.introspect(this, true);
 
     // restore options values
-    for (PropertyOption option : options) {
+    for (PropertyOption prop : props) {
       // restore old value
-      option.restore(registry);
+      prop.restore(registry);
       // options do try to localize the name and tool tip based on a properties file
       // in the same package as the instance - problem is that this
       // won't work with our special way of resolving i18n in reports
       // so we have to do that manually
-      String oname = translateOption(option.getProperty());
-      if (oname.length()>0) option.setName(oname);
-      String toolTipKey = option.getProperty() + ".tip";
+      String oname = translateOption(prop.getProperty());
+      if (oname.length()>0) prop.setName(oname);
+      String toolTipKey = prop.getProperty() + ".tip";
       String toolTip = translateOption(toolTipKey);
       if (toolTip.length() > 0 && !toolTip.equals(toolTipKey))
-        option.setToolTip(toolTip);
+        prop.setToolTip(toolTip);
       // set default category
+      if (prop.getCategory()==null)
+        prop.setCategory(getName());
+      else
+        prop.setCategory(translateOption(prop.getCategory()));
+
+      // remember
+      options.add(prop);
+    }
+    
+    // add custom
+    for (Option option : getCustomOptions()) {
       if (option.getCategory()==null)
         option.setCategory(getName());
-      else
-        option.setCategory(translateOption(option.getCategory()));
-
+      options.add(option);
     }
 
     // done
-    return options;
+    return props;
+  }
+  
+  protected List<? extends Option> getCustomOptions() {
+    return Collections.emptyList();
   }
 
   /**

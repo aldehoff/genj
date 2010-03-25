@@ -21,10 +21,11 @@
  */
 package genj.option;
 
-import java.awt.event.ActionEvent;
-
 import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
+import genj.util.swing.DialogHelper;
+
+import java.awt.event.ActionEvent;
 
 import javax.swing.JComponent;
 
@@ -47,10 +48,22 @@ public abstract class CustomOption extends Option {
     return ui;
   }
   
+  protected void edit() {
+    JComponent editor = getEditor();
+    int rc = DialogHelper.openDialog(getName(), DialogHelper.QUESTION_MESSAGE, editor, Action2.okCancel(), widget);
+    if (rc==0)
+      commit(editor);
+  }
+  
   /** 
    * implementation requirement - edit visually 
    */
-  protected abstract void edit();
+  protected abstract JComponent getEditor();
+    
+  /** 
+   * implementation requirement - commit edit
+   */
+  protected abstract void commit(JComponent editor);
     
   /** 
    * Custom UI is a button only
