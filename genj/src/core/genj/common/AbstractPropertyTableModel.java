@@ -168,6 +168,8 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
       return RIGHT;
     if (property instanceof PropertyNumericValue) 
       return RIGHT;
+    if (property instanceof PropertySex) 
+      return CENTER;
     return LEFT;
   }
 

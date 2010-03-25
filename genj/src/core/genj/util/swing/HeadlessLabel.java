@@ -74,6 +74,10 @@ public class HeadlessLabel extends JComponent {
       case SwingConstants.RIGHT:
         horizontalAlignment = SwingConstants.RIGHT;
         icon = null;
+        break;
+      case SwingConstants.CENTER:
+        horizontalAlignment = SwingConstants.CENTER;
+        icon = null;
       break;
     }
     
@@ -189,11 +193,18 @@ public class HeadlessLabel extends JComponent {
     // render text
     g.setColor(getForeground());
     g.setFont(font);
-    
-    if (horizontalAlignment==SwingConstants.RIGHT)
-      GraphicsHelper.render((Graphics2D)g, txt, box.getMaxX(), box.getCenterY(), 1, 0.5);
-    else
-      GraphicsHelper.render((Graphics2D)g, txt, box.getMinX(), box.getCenterY(), 0, 0.5);
+
+    switch (horizontalAlignment) {
+      case SwingConstants.RIGHT:
+        GraphicsHelper.render((Graphics2D)g, txt, box.getMaxX(), box.getCenterY(), 1, 0.5);
+        break;
+      case SwingConstants.LEFT:
+        GraphicsHelper.render((Graphics2D)g, txt, box.getMinX(), box.getCenterY(), 0, 0.5);
+        break;
+      case SwingConstants.CENTER:
+        GraphicsHelper.render((Graphics2D)g, txt, box.getCenterX(), box.getCenterY(), 0.5, 0.5);
+        break;
+    }
     // done
   }
   
