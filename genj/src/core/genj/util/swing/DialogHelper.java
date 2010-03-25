@@ -224,10 +224,13 @@ public class DialogHelper {
   private static class Content extends JOptionPane {
     
     private JDialog dlg;
+    private JComponent content;
     
     /** constructor */
     private Content(int messageType, JComponent content, Action[] actions) {
       super(new JLabel(),messageType, JOptionPane.DEFAULT_OPTION, null, new String[0] );
+      
+      this.content = content;
       
       // wrap content in a JPanel - the OptionPaneUI has some code that
       // depends on this to stretch it :(
@@ -258,10 +261,10 @@ public class DialogHelper {
       
       super.doLayout();
 
-      // check min size on dialgo
+      // check min size on dialog
       if (dlg!=null) {
-        Dimension c = dlg.getContentPane().getSize();
-        Dimension m = dlg.getContentPane().getMinimumSize();
+        Dimension c = content.getSize();
+        Dimension m = content.getMinimumSize();
         
         Dimension size = dlg.getSize();
         boolean set = false;
