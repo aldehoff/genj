@@ -236,7 +236,7 @@ public abstract class Report implements Cloneable {
     }
 
     // done
-    return props;
+    return options;
   }
   
   protected List<? extends Option> getCustomOptions() {
