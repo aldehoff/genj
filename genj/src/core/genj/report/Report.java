@@ -232,6 +232,7 @@ public abstract class Report implements Cloneable {
     for (Option option : getCustomOptions()) {
       if (option.getCategory()==null)
         option.setCategory(getName());
+      option.restore();
       options.add(option);
     }
 
