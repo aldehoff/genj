@@ -816,11 +816,12 @@ public class ThumbnailWidget extends JComponent {
         }
 
       } finally {
-        repaint.stop();
+        try { reader.removeIIOReadUpdateListener(this); } catch (Throwable t) {}
+        try { reader.reset(); } catch (Throwable t) {}
         try { reader.dispose(); } catch (Throwable t) {}
         try { iin.close(); } catch (Throwable t) { }
         try { in.close(); } catch (Throwable t) { }
-
+        repaint.stop();
         repaint();
       }
 
