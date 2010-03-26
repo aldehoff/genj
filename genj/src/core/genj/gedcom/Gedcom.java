@@ -805,6 +805,20 @@ public class Gedcom {
   }
 
   /**
+   * Returns entities of given type FAM
+   */
+  public Collection<Fam> getFamilies() {
+	    return (Collection<Fam>) getEntities(FAM);
+  }
+
+  /**
+   * Returns entities of given type INDI
+   */
+  public Collection<Indi> getIndis() {
+    return (Collection<Indi>) getEntities(INDI);
+  }
+
+  /**
    * Returns entities of given type sorted by given path (can be empty or null)
    */
   public Entity[] getEntities(String tag, String sortPath) {

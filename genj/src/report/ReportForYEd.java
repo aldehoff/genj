@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.Collection;
 
 public class ReportForYEd extends Report {
 
@@ -54,18 +55,25 @@ public class ReportForYEd extends Report {
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
 
+		generateReport(gedcom.getFamilies(), gedcom.getIndis());
+	}
+
+	private void generateReport(Collection<Fam> families, Collection<Indi> indis)
+			throws FileNotFoundException, IOException {
+		
 		final Writer out = createWriter();
 		if (out == null)
 			return;
 		println("creating: " + reportFile.getAbsoluteFile());
 
 		out.write(XML_HEAD);
-		for (final Entity entity : gedcom.getEntities(Gedcom.FAM)) {
-			out.write(createNode((Fam) entity));
+		for (final Fam fam : families) {
+			out.write(createNode(fam));
 		}
-		for (final Entity entity : gedcom.getEntities(Gedcom.INDI)) {
-			out.write(createNode((Indi) entity));
-			out.write(createEdges((Indi) entity));
+		for (final Indi indi : indis) {
+			out.write(createNode( indi));
+			out.write(createIndiToFam(indi,families));
+			out.write(createFamToIndi(indi,families));
 		}
 		out.write(XML_TAIL);
 
@@ -83,16 +91,24 @@ public class ReportForYEd extends Report {
 		return result;
 	}
 
-	private String createEdges(final Indi indi) {
+	private String createIndiToFam(final Indi indi, Collection<Fam> families) {
 
 		String s = "";
 		for (final Fam fam : indi.getFamiliesWhereSpouse()) {
-			s += MessageFormat.format(XML_EDGE, edgeCount++, indi.getId(), fam
-					.getId());
+			if (families.contains(fam))
+				s += MessageFormat.format(XML_EDGE, edgeCount++, indi.getId(),
+						fam.getId());
 		}
+		return s;
+	}
+
+	private String createFamToIndi(final Indi indi, Collection<Fam> families) {
+
+		String s = "";
 		for (final Fam fam : indi.getFamiliesWhereChild()) {
-			s += MessageFormat.format(XML_EDGE, edgeCount++, fam.getId(), indi
-					.getId());
+			if (families.contains(fam))
+				s += MessageFormat.format(XML_EDGE, edgeCount++, fam.getId(),
+						indi.getId());
 		}
 		return s;
 	}
