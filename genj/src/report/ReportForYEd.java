@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashSet;
 
 public class ReportForYEd extends Report {
 
@@ -61,6 +62,43 @@ public class ReportForYEd extends Report {
 		generateReport(gedcom.getFamilies(), gedcom.getIndis());
 	}
 
+	public void start(final Indi indi) throws IOException {
+
+		final Collection<Indi> indis = new HashSet<Indi>();
+		final Collection<Fam> fams = new HashSet<Fam>();
+		addParents(indis,indi);
+		addChildren(indis,indi);
+		for (Indi member:indis){
+			for (Fam fam:member.getFamiliesWhereSpouse()) {	
+//				if (indi.getSex()==PropertySex.FEMALE ) {
+//					if ( fams.contains(fam.getHusband())) 
+						fams.add(fam);
+//				} else 
+//					if ( fams.contains(fam.getWife())) 
+//						fams.add(fam);
+			}
+		}
+		generateReport(fams, indis);
+	}
+	
+	private void addParents (final Collection<Indi> indis,Indi indi){
+		if (indi==null)return;
+		indis.add(indi);
+		for (Indi parent:indi.getParents()) {			
+			addParents(indis,parent);
+		}
+	}
+	
+	private void addChildren (final Collection<Indi> indis,Indi indi){
+		if (indi==null)return;
+		indis.add(indi);
+		for (Fam fam:indi.getFamiliesWhereSpouse()) {			
+			for (Indi child:fam.getChildren()){
+				addChildren(indis,child);
+			}
+		}
+	}
+	
 	private void generateReport(final Collection<Fam> families,
 			final Collection<Indi> indis) throws FileNotFoundException,
 			IOException {
@@ -71,11 +109,13 @@ public class ReportForYEd extends Report {
 		println("creating: " + reportFile.getAbsoluteFile());
 
 		out.write(XML_HEAD);
+		for (final Indi indi : indis) {
+			out.write(createNode(indi));
+		}
 		for (final Fam fam : families) {
 			out.write(createNode(fam));
 		}
 		for (final Indi indi : indis) {
-			out.write(createNode(indi));
 			out.write(createIndiToFam(indi, families));
 			out.write(createFamToIndi(indi, families));
 		}
