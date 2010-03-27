@@ -119,12 +119,6 @@
   	  <arg line="-n"/>
   	</exec>	
 
-  	<condition property="revision-ok">
-       <matches pattern="^[0-9]*$" string="${revision}"/>
-    </condition>
-  		
-    <fail unless="revision-ok" message="Working copy is not a single, unmodified revision but ${revision} - check for uncommitted changes or update to HEAD"/>
-  	
     <tstamp><format property="now" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
   	
     <loadproperties srcfile="build.properties"/>
