@@ -421,7 +421,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (birthPlace != null) {
-                graphics.drawString(((PropertyPlace)birthPlace).format(place_display_format), x + 13, currentY);
+                graphics.drawString(((PropertyPlace)birthPlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
         }
@@ -434,7 +434,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (deathPlace != null) {
-				graphics.drawString(((PropertyPlace)deathPlace).format(place_display_format), x + 13, currentY);
+				graphics.drawString(((PropertyPlace)deathPlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (deathDate == null && deathPlace == null)
@@ -544,7 +544,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (marriagePlace != null) {
-               graphics.drawString(((PropertyPlace)marriagePlace).format(place_display_format), x + 13, currentY);
+               graphics.drawString(((PropertyPlace)marriagePlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (marriageDate == null && marriagePlace == null)
@@ -559,7 +559,7 @@ public class GraphicsTreeElements implements TreeElements {
                 currentY += LINE_HEIGHT;
             }
             if (divorcePlace != null) {
-               graphics.drawString(((PropertyPlace)divorcePlace).format(place_display_format), x + 13, currentY);
+               graphics.drawString(((PropertyPlace)divorcePlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), x + 13, currentY);
                 currentY += LINE_HEIGHT;
             }
             if (divorceDate == null && divorcePlace == null)
@@ -775,12 +775,12 @@ public class GraphicsTreeElements implements TreeElements {
 
         if (draw_places) {
             if (birthPlace != null) {
-                width = getTextWidth(((PropertyPlace) birthPlace).format(place_display_format), DETAILS_FONT);
+                width = getTextWidth(((PropertyPlace) birthPlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), DETAILS_FONT);
                 if (width + 13+TEXT_MARGIN > indibox.width)
                     indibox.width = width + 13+TEXT_MARGIN;
             }
             if (deathPlace != null) {
-                width = getTextWidth(((PropertyPlace) deathPlace).format(place_display_format), DETAILS_FONT);
+                width = getTextWidth(((PropertyPlace) deathPlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), DETAILS_FONT);
                 if (width + 13+TEXT_MARGIN > indibox.width)
                     indibox.width = width + 13+TEXT_MARGIN;
             }
@@ -852,12 +852,12 @@ public class GraphicsTreeElements implements TreeElements {
 
         if (draw_places) {
             if (marriagePlace != null) {
-                int width = getTextWidth(((PropertyPlace) marriagePlace).format(place_display_format), DETAILS_FONT);
+                int width = getTextWidth(((PropertyPlace) marriagePlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }
             if (draw_divorce && divorcePlace != null) {
-                int width = getTextWidth(((PropertyPlace) divorcePlace).format(place_display_format), DETAILS_FONT);
+                int width = getTextWidth(((PropertyPlace) divorcePlace).format(place_display_format).replaceAll("^(,|(, ))*","").trim(), DETAILS_FONT);
                 if (width + 25+TEXT_MARGIN > fambox.width)
                     fambox.width = width + 25+TEXT_MARGIN;
             }

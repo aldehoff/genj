@@ -37,6 +37,7 @@ public class ReportForYEd extends Report {
 	public boolean showPlaces = true;
 	public boolean showOccupation = true;
 	public String imageExtensions = "jpg jpeg gif png";
+	public String place_display_format = "";
 
 	private final String XML_LINK_CONTAINER = getString("LinkContainer");
 	private final String XML_POPUP_CONTAINER = getString("PopUpContainer");
@@ -211,8 +212,7 @@ public class ReportForYEd extends Report {
 				+ " "
 				+ (date == null || !showDates ? "" : date.getDisplayValue())
 				+ " "
-				+ (place == null || !showPlaces ? "" : place.getDisplayValue()
-						.replaceAll(",.*", ""));
+				+ (place == null || !showPlaces ? "" : place.format(place_display_format).replaceAll("^(,|(, ))*","").trim());
 	}
 
 	private String createPopUpContent(final Fam family) {
