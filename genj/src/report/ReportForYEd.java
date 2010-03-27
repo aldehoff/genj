@@ -29,8 +29,10 @@ import java.util.Collection;
 
 public class ReportForYEd extends Report {
 
-	public int imageWidth = 100;
-	public int imageHeight = 150;
+	public int famImageWidth = 100;
+	public int famImageHeight = 150;
+	public int indiImageWidth = 100;
+	public int indiImageHeight = 150;
 	public String indiUrl = getString("indiUrlDefault");
 	public String familyUrl = getString("familyUrlDefault");
 	public boolean showDates = true;
@@ -59,9 +61,10 @@ public class ReportForYEd extends Report {
 		generateReport(gedcom.getFamilies(), gedcom.getIndis());
 	}
 
-	private void generateReport(Collection<Fam> families, Collection<Indi> indis)
-			throws FileNotFoundException, IOException {
-		
+	private void generateReport(final Collection<Fam> families,
+			final Collection<Indi> indis) throws FileNotFoundException,
+			IOException {
+
 		final Writer out = createWriter();
 		if (out == null)
 			return;
@@ -72,9 +75,9 @@ public class ReportForYEd extends Report {
 			out.write(createNode(fam));
 		}
 		for (final Indi indi : indis) {
-			out.write(createNode( indi));
-			out.write(createIndiToFam(indi,families));
-			out.write(createFamToIndi(indi,families));
+			out.write(createNode(indi));
+			out.write(createIndiToFam(indi, families));
+			out.write(createFamToIndi(indi, families));
 		}
 		out.write(XML_TAIL);
 
@@ -92,7 +95,8 @@ public class ReportForYEd extends Report {
 		return result;
 	}
 
-	private String createIndiToFam(final Indi indi, Collection<Fam> families) {
+	private String createIndiToFam(final Indi indi,
+			final Collection<Fam> families) {
 
 		String s = "";
 		for (final Fam fam : indi.getFamiliesWhereSpouse()) {
@@ -103,7 +107,8 @@ public class ReportForYEd extends Report {
 		return s;
 	}
 
-	private String createFamToIndi(final Indi indi, Collection<Fam> families) {
+	private String createFamToIndi(final Indi indi,
+			final Collection<Fam> families) {
 
 		String s = "";
 		for (final Fam fam : indi.getFamiliesWhereChild()) {
@@ -130,9 +135,9 @@ public class ReportForYEd extends Report {
 				createPopUpContainer(createPopUpContent(indi)));
 	}
 
-	private String getImage(final Entity entity) {
+	private String getImage(final Entity entity, int width, int height) {
 
-		if (imageHeight == 0 || imageWidth == 0)
+		if (width == 0 || height == 0)
 			return null;
 		final Property property = entity.getPropertyByPath("INDI:OBJE:FILE");
 		if (property == null)
@@ -140,14 +145,16 @@ public class ReportForYEd extends Report {
 		final String value = property.getValue();
 		final String extension = value.toLowerCase().replaceAll(".*\\.", "");
 		if (imageExtensions.contains(extension)) {
-			return value;
+			return MessageFormat.format(
+					"<img src=\"{3}\" width=\"{4}\" heigth=\"{5}\">", value,
+					width, height);
 		}
 		return null;
 	}
 
 	private String createLabel(final Fam family) {
 
-		final String image = getImage(family);
+		final String image = getImage(family, famImageWidth, famImageHeight);
 		final String mariage = showEvent(OPTIONS.getMarriageSymbol(),
 				(PropertyEvent) family.getProperty("MARR"));
 		final String divorce = showEvent(OPTIONS.getDivorceSymbol(),
@@ -158,18 +165,18 @@ public class ReportForYEd extends Report {
 		final String format;
 		if (image != null) {
 			format = "<html><body><table><tr>"
-					+ "<td>{0}<br>{1}</td>"
-					+ "<td><img src='{3}' width='{4}' heigth='{5}'></td>"
+					+ "<td>{0}<br>{1}</td><td>{3}</td>"
 					+ "</tr></table></body></html>";
 		} else {
 			format = "<html><body>{0}<br>{1}</body></html>";
 		}
-		return wrap(format, mariage, divorce, image, imageWidth, imageHeight);
+		return wrap(format, mariage, divorce, image, famImageWidth,
+				famImageHeight);
 	}
 
 	private String createLabel(final Indi indi) {
 
-		final String image = getImage(indi);
+		final String image = getImage(indi, indiImageWidth, indiImageHeight);
 		final String name = indi.getPropertyDisplayValue("NAME");
 		final String occu = indi.getPropertyDisplayValue("OCCU");
 
@@ -181,21 +188,20 @@ public class ReportForYEd extends Report {
 		final String format;
 		if (image != null) {
 			format = "<html><body><table><tr>"
-					+ "<td>{0}<br>{1}<br>{2}<br>{3}</td>"
-					+ "<td><img src=\"{4}\" width=\"{5}\" heigth=\"{6}\"></td>"
+					+ "<td>{0}<br>{1}<br>{2}<br>{3}</td><td>{4}</td>"
 					+ "</tr></table></body></html>";
-		} else if (showOccupation) {
+		} else if (showOccupation && occu != null && !occu.trim().equals("")) {
 			format = "<html><body>{0}<br>{1}<br>{2}<br>{3}</body></html>";
-		} else if (showDates || showPlaces) {
+		} else if (!birth.equals("") || !death.equals("")) {
 			format = "<html><body>{0}<br>{1}<br>{2}</body></html>";
 		} else {
-			format = "<html><body>{0}</body></html>";
+			format = "{0}";
 		}
-		return wrap(format, name, birth, death, occu, image, imageWidth,
-				imageHeight);
+		return wrap(format, name, birth, death, occu, image);
 	}
 
 	private String wrap(final String format, final Object... args) {
+
 		return MessageFormat.format(format, args).replaceAll(">", "&gt;")
 				.replaceAll("<", "&lt;");
 	}
@@ -208,11 +214,15 @@ public class ReportForYEd extends Report {
 		final Property place = event.getProperty("PLAC");
 		if (date == null && place == null)
 			return "";
-		return symbol
+		final String string = (date == null || !showDates ? "" : date
+				.getDisplayValue())
 				+ " "
-				+ (date == null || !showDates ? "" : date.getDisplayValue())
-				+ " "
-				+ (place == null || !showPlaces ? "" : place.format(place_display_format).replaceAll("^(,|(, ))*","").trim());
+				+ (place == null || !showPlaces ? "" : place.format(
+						place_display_format).replaceAll("^(,|(, ))*", "")
+						.trim());
+		if (string.trim().equals(""))
+			return "";
+		return symbol + " " + string;
 	}
 
 	private String createPopUpContent(final Fam family) {
