@@ -62,43 +62,64 @@ public class ReportForYEd extends Report {
 		generateReport(gedcom.getFamilies(), gedcom.getIndis());
 	}
 
+	/** main */
 	public void start(final Indi indi) throws IOException {
 
 		final Collection<Indi> indis = new HashSet<Indi>();
 		final Collection<Fam> fams = new HashSet<Fam>();
-		addParents(indis,indi);
-		addChildren(indis,indi);
-		for (Indi member:indis){
-			for (Fam fam:member.getFamiliesWhereSpouse()) {	
-//				if (indi.getSex()==PropertySex.FEMALE ) {
-//					if ( fams.contains(fam.getHusband())) 
-						fams.add(fam);
-//				} else 
-//					if ( fams.contains(fam.getWife())) 
-//						fams.add(fam);
-			}
-		}
+		buildCollections(indi, indis, fams);
 		generateReport(fams, indis);
 	}
-	
-	private void addParents (final Collection<Indi> indis,Indi indi){
-		if (indi==null)return;
+
+	/** main */
+	public void start(final Fam fam) throws IOException {
+
+		final Collection<Indi> indis = new HashSet<Indi>();
+		final Collection<Fam> fams = new HashSet<Fam>();
+		buildCollections(fam.getHusband(), indis, fams);
+		buildCollections(fam.getWife(), indis, fams);
+		generateReport(fams, indis);
+	}
+
+	private void buildCollections(final Indi indi,
+			final Collection<Indi> indis, final Collection<Fam> fams)
+			throws FileNotFoundException, IOException {
+		collectAncestors(indis, fams, indi);
+		collectDecendants(indis, fams, indi);
+	}
+
+	private void collectAncestors(final Collection<Indi> indis,
+			final Collection<Fam> fams, final Indi indi) {
+		
+		if (indi == null)
+			return;
 		indis.add(indi);
-		for (Indi parent:indi.getParents()) {			
-			addParents(indis,parent);
+		for (final Fam fam : indi.getFamiliesWhereChild()) {
+			fams.add(fam);
+			collectAncestors(indis, fams, fam.getHusband());
+			collectAncestors(indis, fams, fam.getWife());
 		}
 	}
-	
-	private void addChildren (final Collection<Indi> indis,Indi indi){
-		if (indi==null)return;
-		indis.add(indi);
-		for (Fam fam:indi.getFamiliesWhereSpouse()) {			
-			for (Indi child:fam.getChildren()){
-				addChildren(indis,child);
+
+	/** also sons-in-law and doughters-in-law are also added to the collection */
+	private void collectDecendants(final Collection<Indi> indis,
+			final Collection<Fam> fams, final Indi indi) {
+		
+		if (indi == null)
+			return;
+		indis.add(indi); // (un)married children
+		for (final Fam fam : indi.getFamiliesWhereSpouse()) {
+			// married children and their spouses
+			indis.add(fam.getHusband());
+			indis.add(fam.getWife());
+			fams.add(fam);
+			for (final Indi child : fam.getChildren()) {
+				collectDecendants(indis, fams, child);
 			}
 		}
 	}
-	
+
+	/** Start after collecting the entities for the report */
 	private void generateReport(final Collection<Fam> families,
 			final Collection<Indi> indis) throws FileNotFoundException,
 			IOException {
@@ -162,20 +183,22 @@ public class ReportForYEd extends Report {
 	private String createNode(final Fam family) {
 
 		final String id = family.getId();
-		return MessageFormat.format(XML_FAMILY, id, createLabel(family),
-				createLink(id, familyUrl),
-				createPopUpContainer(createPopUpContent(family)));
+		final String label = createLabel(family);
+		return MessageFormat.format(XML_FAMILY, id, label, createLink(id,
+				familyUrl), createPopUpContainer(null));
 	}
 
 	private String createNode(final Indi indi) {
 
 		final String id = indi.getId();
-		return MessageFormat.format(XML_INDI, id, createLabel(indi),
+		final String label = createLabel(indi);
+		return MessageFormat.format(XML_INDI, id, label,
 				createLink(id, indiUrl), INDI_COLORS[indi.getSex()],
-				createPopUpContainer(createPopUpContent(indi)));
+				createPopUpContainer(null));
 	}
 
-	private String getImage(final Entity entity, int width, int height) {
+	private String getImage(final Entity entity, final int width,
+			final int height) {
 
 		if (width == 0 || height == 0)
 			return null;
@@ -265,16 +288,6 @@ public class ReportForYEd extends Report {
 		return symbol + " " + string;
 	}
 
-	private String createPopUpContent(final Fam family) {
-		// by default the label is used as pop up
-		return null;
-	}
-
-	private String createPopUpContent(final Indi indi) {
-		// by default the label is used as pop up
-		return null;
-	}
-
 	private String createLink(final String id, final String urlFormat) {
 
 		if (urlFormat == null)
@@ -283,6 +296,10 @@ public class ReportForYEd extends Report {
 		return MessageFormat.format(XML_LINK_CONTAINER, link);
 	}
 
+	/**
+	 * @param content
+	 *            text only, no HTML
+	 */
 	private String createPopUpContainer(final String content) {
 
 		if (content == null)
