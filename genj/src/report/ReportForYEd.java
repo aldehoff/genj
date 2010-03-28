@@ -90,7 +90,7 @@ public class ReportForYEd extends Report {
 
 	private void collectAncestors(final Collection<Indi> indis,
 			final Collection<Fam> fams, final Indi indi) {
-		
+
 		if (indi == null)
 			return;
 		indis.add(indi);
@@ -104,7 +104,7 @@ public class ReportForYEd extends Report {
 	/** also sons-in-law and doughters-in-law are also added to the collection */
 	private void collectDecendants(final Collection<Indi> indis,
 			final Collection<Fam> fams, final Indi indi) {
-		
+
 		if (indi == null)
 			return;
 		indis.add(indi); // (un)married children
@@ -184,17 +184,17 @@ public class ReportForYEd extends Report {
 
 		final String id = family.getId();
 		final String label = createLabel(family);
-		return MessageFormat.format(XML_FAMILY, id, label, createLink(id,
-				familyUrl), createPopUpContainer(null));
+		return MessageFormat.format(XML_FAMILY, id, escape(label), createLink(id,
+				familyUrl), createPopUpContainer(label));
 	}
 
 	private String createNode(final Indi indi) {
 
 		final String id = indi.getId();
 		final String label = createLabel(indi);
-		return MessageFormat.format(XML_INDI, id, label,
+		return MessageFormat.format(XML_INDI, id, escape(label),
 				createLink(id, indiUrl), INDI_COLORS[indi.getSex()],
-				createPopUpContainer(null));
+				createPopUpContainer(label));
 	}
 
 	private String getImage(final Entity entity, final int width,
@@ -265,8 +265,12 @@ public class ReportForYEd extends Report {
 
 	private String wrap(final String format, final Object... args) {
 
-		return MessageFormat.format(format, args).replaceAll(">", "&gt;")
-				.replaceAll("<", "&lt;");
+		return MessageFormat.format(format, args);
+	}
+
+	private String escape(final String content) {
+
+		return content.replaceAll(">", "&gt;").replaceAll("<", "&lt;");
 	}
 
 	private String showEvent(final String symbol, final PropertyEvent event) {
