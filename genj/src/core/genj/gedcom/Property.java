@@ -933,9 +933,8 @@ public abstract class Property implements Comparable<Property> {
 
   /**
    * Compares this property to another property
-   * @return -1 this &lt; property <BR>
-   *          0 this = property <BR>
-   *          1 this &gt; property
+   * @return  a negative integer, zero, or a positive integer as this object
+   *      is less than, equal to, or greater than the specified object.
    */
   public int compareTo(Property that) {
     // no gedcom available?

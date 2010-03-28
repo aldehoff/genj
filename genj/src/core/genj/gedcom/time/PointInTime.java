@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat;
 /**
  * A point in time - either hebrew, roman, frenchr, gregorian or julian
  */
-public class PointInTime implements Comparable {
+public class PointInTime implements Comparable<PointInTime> {
   
   public final static int
     FORMAT_GEDCOM = 0,
@@ -392,16 +392,10 @@ public class PointInTime implements Comparable {
   }
     
   /**
-   * compare to other
-   */  
-  public int compareTo(Object o) {
-    return compareTo((PointInTime)o);
-  }    
-
-  /**
-   * compare to other
-   * @param other the pit to compare to
-   */  
+   * Compares this point in time to another
+   * @return  a negative integer, zero, or a positive integer as this object
+   *      is less than, equal to, or greater than the specified object.
+   */
   public int compareTo(PointInTime other) {
     
     // check valid
