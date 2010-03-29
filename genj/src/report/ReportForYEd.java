@@ -25,8 +25,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 public class ReportForYEd extends Report {
 
@@ -59,6 +61,11 @@ public class ReportForYEd extends Report {
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
 
+//		final List<? extends Entity> indis = Arrays.asList(gedcom.getEntities(Gedcom.INDI, "INDI:OBJE"));
+//		final Collection<Fam> fams = new HashSet<Fam>();
+//		for (Indi indi:indis){
+//			
+//		}
 		generateReport(gedcom.getFamilies(), gedcom.getIndis());
 	}
 
@@ -131,6 +138,7 @@ public class ReportForYEd extends Report {
 
 		out.write(XML_HEAD);
 		for (final Indi indi : indis) {
+			// TODO sort by birth date
 			out.write(createNode(indi));
 		}
 		for (final Fam fam : families) {
@@ -185,7 +193,7 @@ public class ReportForYEd extends Report {
 		final String id = family.getId();
 		final String label = createLabel(family);
 		return MessageFormat.format(XML_FAMILY, id, escape(label), createLink(id,
-				familyUrl), createPopUpContainer(label));
+				familyUrl), createPopUpContainer(label),label.contains( "<html>")?"42.0":"27.0");
 	}
 
 	private String createNode(final Indi indi) {
@@ -223,13 +231,15 @@ public class ReportForYEd extends Report {
 		final String divorce = showEvent(OPTIONS.getDivorceSymbol(),
 				(PropertyEvent) family.getProperty("DIV"));
 
-		if (mariage == null && divorce == null && image == null)
+		if (mariage.equals("") && divorce.equals("") && image==null)
 			return "";
 		final String format;
 		if (image != null) {
 			format = "<html><body><table><tr>"
 					+ "<td>{0}<br>{1}</td><td>{3}</td>"
 					+ "</tr></table></body></html>";
+		} else if ( divorce.equals("") || mariage.equals("")) {
+			format = "{0}{1}";
 		} else {
 			format = "<html><body>{0}<br>{1}</body></html>";
 		}
