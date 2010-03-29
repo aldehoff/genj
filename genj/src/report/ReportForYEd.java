@@ -11,8 +11,12 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyComparator;
+import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
+import genj.gedcom.time.Delta;
+import genj.gedcom.time.PointInTime;
 import genj.report.Options;
 import genj.report.Report;
 
@@ -25,8 +29,11 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -125,6 +132,7 @@ public class ReportForYEd extends Report {
 			}
 		}
 	}
+	private static final PointInTime pit = new PointInTime(1,1,2200);
 
 	/** Start after collecting the entities for the report */
 	private void generateReport(final Collection<Fam> families,
@@ -136,23 +144,45 @@ public class ReportForYEd extends Report {
 			return;
 		println("creating: " + reportFile.getAbsoluteFile());
 
-		out.write(XML_HEAD);
-		for (final Indi indi : indis) {
-			// TODO sort by birth date
-			out.write(createNode(indi));
+		out.write(XML_HEAD+"\n");
+		for (final Indi indi : sortByBirthDate(indis)) {
+			out.write(createNode(indi)+"\n");
+			println(indi.getBirthAsString());
 		}
 		for (final Fam fam : families) {
-			out.write(createNode(fam));
+			out.write(createNode(fam)+"\n");
 		}
 		for (final Indi indi : indis) {
-			out.write(createIndiToFam(indi, families));
-			out.write(createFamToIndi(indi, families));
+			out.write(createIndiToFam(indi, families)+"\n");
+			out.write(createFamToIndi(indi, families)+"\n");
 		}
-		out.write(XML_TAIL);
+		out.write(XML_TAIL+"\n");
 
 		out.flush();
 		out.close();
 		println("ready with: " + reportFile.getAbsoluteFile());
+	}
+
+	private List<Indi> sortByBirthDate(final Collection<Indi> indis) {
+		// hoping this could influence yEd's layout, but it seems not
+		final List<Indi> sortedIndis = new ArrayList<Indi> (indis);
+		Collections.sort(sortedIndis,new Comparator<Indi>(){
+
+			@Override
+			public int compare(final Indi i1, final Indi i2) {
+				
+				final Delta p1 = i1.getAge(pit );
+				final Delta p2 = i2.getAge(pit );
+			    
+			    // null?
+			    if (p1==p2  ) return  0;
+			    if (p1==null) return  1;
+			    if (p2==null) return -1;
+			    
+			    // let p's compare themselves
+			    return -p1.compareTo(p2);
+			}});
+		return sortedIndis;
 	}
 
 	private static String[] createIndiColors() {
@@ -192,8 +222,9 @@ public class ReportForYEd extends Report {
 
 		final String id = family.getId();
 		final String label = createLabel(family);
+		final String height = label.contains( "<html>")?"42.0":"27.0";
 		return MessageFormat.format(XML_FAMILY, id, escape(label), createLink(id,
-				familyUrl), createPopUpContainer(label),label.contains( "<html>")?"42.0":"27.0");
+				familyUrl), createPopUpContainer(label),height);
 	}
 
 	private String createNode(final Indi indi) {
