@@ -11,8 +11,6 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyComparator;
-import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.Delta;
@@ -30,7 +28,6 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,6 +47,9 @@ public class ReportForYEd extends Report {
 	public boolean showOccupation = true;
 	public String imageExtensions = "jpg jpeg gif png";
 	public String place_display_format = "";
+	public String filterTag = "_YED";
+	public String filterContent = "";
+	public boolean filterActive = false;
 
 	private final String XML_LINK_CONTAINER = getString("LinkContainer");
 	private final String XML_POPUP_CONTAINER = getString("PopUpContainer");
@@ -68,12 +68,23 @@ public class ReportForYEd extends Report {
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
 
-//		final List<? extends Entity> indis = Arrays.asList(gedcom.getEntities(Gedcom.INDI, "INDI:OBJE"));
-//		final Collection<Fam> fams = new HashSet<Fam>();
-//		for (Indi indi:indis){
-//			
-//		}
-		generateReport(gedcom.getFamilies(), gedcom.getIndis());
+		if (!filterActive) {
+			generateReport(gedcom.getFamilies(), gedcom.getIndis());
+			return;
+		}
+		final Collection<Indi> indis = new HashSet<Indi> ();
+		final Collection<Fam> fams = new HashSet<Fam> ();
+		for (Indi indi:gedcom.getIndis()){
+			String value = indi.getPropertyValue(filterTag);
+			if (value != null && value.contains(filterContent) ){
+				indis.add(indi);
+				for (Fam fam : indi.getFamiliesWhereSpouse()) {
+					fams.add(fam);
+				}
+			}
+		}
+		indis.remove(null);
+		generateReport(fams, indis);
 	}
 
 	/** main */
@@ -139,20 +150,21 @@ public class ReportForYEd extends Report {
 			final Collection<Indi> indis) throws FileNotFoundException,
 			IOException {
 
+		final List<Indi> sortedIndis = sortByAge(indis);
+
 		final Writer out = createWriter();
 		if (out == null)
 			return;
 		println("creating: " + reportFile.getAbsoluteFile());
 
 		out.write(XML_HEAD+"\n");
-		for (final Indi indi : sortByBirthDate(indis)) {
+		for (final Indi indi : sortedIndis) {
 			out.write(createNode(indi)+"\n");
-			println(indi.getBirthAsString());
 		}
 		for (final Fam fam : families) {
 			out.write(createNode(fam)+"\n");
 		}
-		for (final Indi indi : indis) {
+		for (final Indi indi : sortedIndis) {
 			out.write(createIndiToFam(indi, families)+"\n");
 			out.write(createFamToIndi(indi, families)+"\n");
 		}
@@ -163,7 +175,7 @@ public class ReportForYEd extends Report {
 		println("ready with: " + reportFile.getAbsoluteFile());
 	}
 
-	private List<Indi> sortByBirthDate(final Collection<Indi> indis) {
+	private List<Indi> sortByAge(final Collection<Indi> indis) {
 		// hoping this could influence yEd's layout, but it seems not
 		final List<Indi> sortedIndis = new ArrayList<Indi> (indis);
 		Collections.sort(sortedIndis,new Comparator<Indi>(){
