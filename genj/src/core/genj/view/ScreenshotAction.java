@@ -35,6 +35,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -82,20 +84,26 @@ public class ScreenshotAction extends Action2 {
         r = rVisible;
     }
     
-    // Create image
-    BufferedImage image = new BufferedImage(r.width, r.height, BufferedImage.TYPE_INT_RGB);
-    Graphics2D g = image.createGraphics();
-    g.setRenderingHint(RenderSelectionHintKey.KEY, false);
-    g.setClip(0, 0, r.width, r.height);
-    g.translate(-r.x, -r.y);
-    component.paint(g);
-    g.dispose();
-
-    // copy
-    ImageTransferable imageSelection = new ImageTransferable(image);
-    Toolkit toolkit = Toolkit.getDefaultToolkit();
-    toolkit.getSystemClipboard().setContents(imageSelection, null);
-
+    // Create image & copy
+    try {
+      BufferedImage image = new BufferedImage(r.width, r.height, BufferedImage.TYPE_INT_RGB);
+      Graphics2D g = image.createGraphics();
+      g.setRenderingHint(RenderSelectionHintKey.KEY, false);
+      g.setClip(0, 0, r.width, r.height);
+      g.translate(-r.x, -r.y);
+      component.paint(g);
+      g.dispose();
+      ImageTransferable imageSelection = new ImageTransferable(image);
+      Toolkit toolkit = Toolkit.getDefaultToolkit();
+      toolkit.getSystemClipboard().setContents(imageSelection, null);
+    } catch (OutOfMemoryError oom) {
+      long max = Runtime.getRuntime().maxMemory()/1024/1000;
+      String msg = RES.getString("screenshot.oom", r.width*r.height*4/1024/1000, max, String.valueOf(max));
+      Logger.getLogger("genj.view").log(Level.WARNING, msg, oom);
+      DialogHelper.openDialog(getTip(), DialogHelper.ERROR_MESSAGE, msg, Action2.okOnly(), DialogHelper.getComponent(e));
+    }
+    
+    
     // done
   }
   
