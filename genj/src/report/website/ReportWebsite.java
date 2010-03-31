@@ -1,11 +1,11 @@
 package website;
 /**
- * A report for making a complete dump to html
+ * A report for making a website with all information
  * 
  * author   = Erik Melkersson, erik.melkersson@gmail.com
  * version  = 0.2 beta
  * category = Chart
- * name     = Complete html-dump
+ * name     = Website
  */
 import genj.option.CustomOption;
 import genj.option.Option;
