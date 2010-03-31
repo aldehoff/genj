@@ -36,6 +36,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.EventObject;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.Action;
@@ -44,6 +45,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -52,6 +54,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 /**
  * Helper for interacting with Dialogs and Windows
@@ -123,14 +130,49 @@ public class DialogHelper {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
    */
+  public static String openDialog(String title, int messageType, String txt, List<String> values, Component source) {
+
+    // prepare list and label
+    JLabel lb = new JLabel(txt);
+    final JList list = new JList(values.toArray(new String[values.size()]));
+    list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    final Action[] actions = Action2.okCancel();
+    list.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent e) {
+        actions[0].setEnabled(list.getSelectedIndex()>=0);
+      }
+    });
+    
+    // delegate
+    int rc = openDialog(title, messageType, new JComponent[]{ lb, new JScrollPane(list)}, actions, source);
+    
+    // analyze
+    return rc==0?(String)list.getSelectedValue() : null;
+    
+  }
+  
+  /**
+   * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
+   */
   public static String openDialog(String title, int messageType,  String txt, String value, Component source) {
 
     // prepare text field and label
-    TextFieldWidget tf = new TextFieldWidget(value, 24);
     JLabel lb = new JLabel(txt);
+    final TextFieldWidget tf = new TextFieldWidget(value, 24);
+    final Action[] actions = Action2.okCancel();
+    tf.getDocument().addDocumentListener(new DocumentListener() {
+      public void changedUpdate(DocumentEvent e) {
+      }
+      public void insertUpdate(DocumentEvent e) {
+        actions[0].setEnabled(tf.getText().length()>0);
+      }
+      public void removeUpdate(DocumentEvent e) {
+        insertUpdate(e);
+      }
+    });
     
     // delegate
-    int rc = openDialog(title, messageType, new JComponent[]{ lb, tf}, Action2.okCancel(), source);
+    int rc = openDialog(title, messageType, new JComponent[]{ lb, tf}, actions, source);
     
     // analyze
     return rc==0?tf.getText().trim():null;
