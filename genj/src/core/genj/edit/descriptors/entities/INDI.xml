@@ -34,16 +34,4 @@
   <fold key="references"/>
   <bean path="." type="genj.edit.beans.ReferencesBean" gy="1" gx="1" wy="1" pad="8"/>
  </col>
- <col>
-  <fold key="xproperties"/>
-  <table wy="1" pad="1,8,1,1">
-   <row><label path="INDI:EDUC"/><bean path="INDI:EDUC" wx="1"/></row>
-   <row><label path="INDI:TITL"/><bean path="INDI:TITL" wx="1"/></row>
-   <row><label path="INDI:RELI"/><bean path="INDI:RELI" wx="1"/></row>
-   <row><label path="INDI:NATI"/><bean path="INDI:NATI" wx="1"/></row>
-   <row><label path="INDI:IDNO"/><bean path="INDI:IDNO" wx="1"/></row>
-   <row><label path="INDI:REFN"/><bean path="INDI:REFN" wx="1"/></row>
-   <row><label path="INDI:SSN" /><bean path="INDI:SSN"  wx="1"/></row>
-  </table>
- </col>
 </col>

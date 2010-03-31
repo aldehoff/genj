@@ -117,9 +117,13 @@ public class BeanPanel extends JPanel {
       return result;
       
     // fallback to property type
-    result = getLayout("descriptors/properties/" + meta.getType().getSimpleName() +".xml");
-    if (result!=null)
-      return result;
+    Class<?> type = meta.getType();
+    while (type!=null) {
+      result = getLayout("descriptors/properties/" + type.getSimpleName() +".xml");
+      if (result!=null)
+        return result;
+      type = type.getSuperclass();
+    }
     
     // not found
     return null;

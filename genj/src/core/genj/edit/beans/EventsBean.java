@@ -152,12 +152,12 @@ public class EventsBean extends PropertyBean {
   private boolean isEvent(MetaProperty meta) {
     
     // crude filter
-    if (!PropertyEvent.class.isAssignableFrom(meta.getType())
-       && !meta.getTag().equals("RESI") 
-       && !meta.getTag().equals("OCCU"))
-      return false;
-    
-    return true;
+    while (meta!=null) {
+      if (PropertyEvent.class.isAssignableFrom(meta.getType()))
+        return true;
+      meta = meta.getSuper();
+    }
+    return false;
   }
 
   private boolean isEditable(Property property) {

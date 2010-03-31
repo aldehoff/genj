@@ -25,11 +25,4 @@
   <fold key="references"/>
   <bean path="." type="genj.edit.beans.ReferencesBean" gy="1" gx="1" wy="1" pad="8"/>
  </col>
- <col>
-  <fold key="xproperties"/>
-  <table wy="1" pad="8">
-   <row><label path="FAM:NCHI"/><bean path="FAM:NCHI" wx="1"/></row>
-   <row><label path="FAM:REFN"/><bean path="FAM:REFN" wx="1"/></row>
-  </table>
- </col>
 </col> 
