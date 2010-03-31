@@ -240,7 +240,7 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
     private Report report;
     /** constructor */
     private ActionRun(Report report) {
-      setText(report.getName());
+      this(report.getName(), null, report);
     }
     /** constructor */
     private ActionRun(String txt, Object context, Report report) {
@@ -249,6 +249,15 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
       this.report = report;
       // show
       setText(txt);
+      
+      StringBuffer tip = new StringBuffer();
+      tip.append("<html><body><table width=320><tr><td>");
+      String info = report.getInfo();
+      int br = info.indexOf("</p>");
+      if (br>0) info = info.substring(0, br+4);
+      tip.append(info);
+      tip.append("</td></tr></table>");
+      setTip(tip.toString());
     }
     
     /** callback */
