@@ -221,7 +221,7 @@ public class ReportWebsite extends Report {
 		div1.appendChild(html.h2(translate("personIndex")));
 		String lastLetter = "";
 		for (Entity indi : indis) { 
-			String letter = ((Indi)indi).getName().substring(0, 1); // Get first letter
+			String letter = ((Indi)indi).getLastName().substring(0, 1); // Get first letter of last name
 			if (! letter.equals(lastLetter)) {
 				div1.appendChild(html.link(listPersonFileName + "#" + letter, letter));				
 				div1.appendChild(html.text(", "));				
@@ -310,7 +310,7 @@ public class ReportWebsite extends Report {
 		String lastLetter = "";
 		for (Entity indi : indis) { 
 			String text = getName((Indi)indi);
-			String letter = text.substring(0, 1); // Get first letter
+			String letter = ((Indi)indi).getLastName().substring(0, 1); // Get first letter of last name
 			if (! letter.equals(lastLetter)) {
 				div1.appendChild(html.anchor(letter));
 				div1.appendChild(html.h2(letter));
