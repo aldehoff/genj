@@ -65,8 +65,7 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
   public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
   }
   
-  public boolean workbenchClosing(Workbench workbench) {
-    return true;
+  public void workbenchClosing(Workbench workbench) {
   }
   
   public void gedcomClosed(Workbench workbench, Gedcom gedcom) {

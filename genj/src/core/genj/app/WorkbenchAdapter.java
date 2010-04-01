@@ -47,8 +47,7 @@ public class WorkbenchAdapter implements WorkbenchListener {
 	public void viewOpened(Workbench workbench, View view) {
 	}
 
-	public boolean workbenchClosing(Workbench workbench) {
-		return true;
+	public void workbenchClosing(Workbench workbench) {
 	}
 
   public void processStarted(Workbench workbench, Trackable process) {

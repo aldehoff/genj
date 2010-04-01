@@ -118,9 +118,8 @@ public class LayoutPlugin extends WorkbenchAdapter implements PluginFactory, Act
   }
 
   @Override
-  public boolean workbenchClosing(Workbench workbench) {
+  public void workbenchClosing(Workbench workbench) {
     save();
-    return true;
   }
   
   private File dir() {

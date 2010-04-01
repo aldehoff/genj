@@ -70,8 +70,7 @@ public abstract class View extends JPanel implements SelectionListener {
   /**
    * prepare to close
    */
-  public boolean closing() {
-    return true;
+  public void closing() {
   }
 
   /**

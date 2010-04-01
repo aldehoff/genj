@@ -239,8 +239,7 @@ import spin.Spin;
   public void viewOpened(Workbench workbench, View view) {
   }
   
-  public boolean workbenchClosing(Workbench workbench) {
-    return true;
+  public void workbenchClosing(Workbench workbench) {
   }
   
   private class ActionProxy implements Action {

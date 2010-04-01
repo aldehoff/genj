@@ -496,8 +496,7 @@ public class Workbench extends JPanel implements SelectionSink {
     
     // tell about it
     for (WorkbenchListener l : listeners)
-      if (!l.workbenchClosing(this))
-        return;
+      l.workbenchClosing(this);
     
     // close all dockets
     for (Object key : dockingPane.getDockableKeys()) 
@@ -804,8 +803,7 @@ public class Workbench extends JPanel implements SelectionSink {
     public void viewOpened(Workbench workbench, View view) {
     }
 
-    public boolean workbenchClosing(Workbench workbench) {
-      return true;
+    public void workbenchClosing(Workbench workbench) {
     }
     
     public void processStarted(Workbench workbench, Trackable process) {
@@ -1134,8 +1132,7 @@ public class Workbench extends JPanel implements SelectionSink {
     public void viewOpened(Workbench workbench, View view) {
     }
 
-    public boolean workbenchClosing(Workbench workbench) {
-      return true;
+    public void workbenchClosing(Workbench workbench) {
     }
   }
   
@@ -1199,8 +1196,7 @@ public class Workbench extends JPanel implements SelectionSink {
     public void viewRestored(Workbench workbench, View view) {
     }
 
-    public boolean workbenchClosing(Workbench workbench) {
-      return true;
+    public void workbenchClosing(Workbench workbench) {
     }
   }
 

@@ -57,9 +57,9 @@ public interface WorkbenchListener {
   
   /** 
    * notification that workbench is closing
-   * @return whether to continue with close operation or not
+   * @return whether to veto the close operation (false=continue)
    */
-  public boolean workbenchClosing(Workbench workbench);
+  public void workbenchClosing(Workbench workbench);
   
   /** 
    * notification that gedcom was closed

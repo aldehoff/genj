@@ -167,8 +167,8 @@ import swingx.docking.Docked;
   /**
    * WorkbenchListener callback - workbench signals closing 
    */
-  public boolean workbenchClosing(Workbench workbench) {
-    return view.closing();
+  public void workbenchClosing(Workbench workbench) {
+    view.closing();
   }
   
   /**
