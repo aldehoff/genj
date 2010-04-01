@@ -319,7 +319,7 @@ import swingx.docking.Docked;
       List<Action2> groups = new ArrayList<Action2>(8);
       List<Action2> singles = new ArrayList<Action2>(8);
       Map<Action2.Group,Action2.Group> lookup = new HashMap<Action2.Group,Action2.Group>();
-      for (Action2 action : getProvidedActions(workbench.lookup(ActionProvider.class), context)) {
+      for (Action2 action : getProvidedActions(workbench.getProviders(ActionProvider.class), context)) {
         if (action instanceof Action2.Group) {
           Action2.Group group = lookup.get(action);
           if (group!=null) {

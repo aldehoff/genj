@@ -1,4 +1,4 @@
-#Sun Dec 06 22:02:23 EST 2009
+#Wed Mar 31 21:49:16 EDT 2010
 eclipse.preferences.version=1
 encoding//language/cs/genj/almanac/resources_cs.properties=UTF-8
 encoding//language/cs/genj/app/resources_cs.properties=UTF-8
@@ -31,6 +31,7 @@ encoding//language/de/genj/fo/resources_de.properties=UTF-8
 encoding//language/de/genj/gedcom/resources_de.properties=UTF-8
 encoding//language/de/genj/gedcom/time/resources_de.properties=UTF-8
 encoding//language/de/genj/io/resources_de.properties=UTF-8
+encoding//language/de/genj/layout/resources_de.properties=UTF-8
 encoding//language/de/genj/nav/resources_de.properties=UTF-8
 encoding//language/de/genj/print/resources_de.properties=UTF-8
 encoding//language/de/genj/renderer/resources_de.properties=UTF-8
@@ -113,6 +114,7 @@ encoding//language/fr/genj/fo/resources_fr.properties=UTF-8
 encoding//language/fr/genj/gedcom/resources_fr.properties=UTF-8
 encoding//language/fr/genj/gedcom/time/resources_fr.properties=UTF-8
 encoding//language/fr/genj/io/resources_fr.properties=UTF-8
+encoding//language/fr/genj/layout/resources_fr.properties=UTF-8
 encoding//language/fr/genj/nav/resources_fr.properties=UTF-8
 encoding//language/fr/genj/print/resources_fr.properties=UTF-8
 encoding//language/fr/genj/renderer/resources_fr.properties=UTF-8

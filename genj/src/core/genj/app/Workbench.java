@@ -1,7 +1,7 @@
 /**
  * GenJ - GenealogyJ
  *
- * Copyright (C) 1997 - 2009 Nils Meier <nils@meiers.net>
+ * Copyright (C) 1997 - 2010 Nils Meier <nils@meiers.net>
  *
  * This piece of code is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -24,10 +24,7 @@ import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.GedcomListener;
-import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.UnitOfWork;
 import genj.io.Filter;
@@ -37,8 +34,6 @@ import genj.io.GedcomReader;
 import genj.io.GedcomReaderContext;
 import genj.io.GedcomReaderFactory;
 import genj.io.GedcomWriter;
-import genj.option.OptionProvider;
-import genj.option.OptionsWidget;
 import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Registry;
@@ -49,31 +44,21 @@ import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.FileChooser;
-import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MacAdapter;
-import genj.util.swing.MenuHelper;
-import genj.util.swing.ProgressWidget;
-import genj.util.swing.ToolbarWidget;
-import genj.view.ActionProvider;
 import genj.view.SelectionSink;
 import genj.view.View;
 import genj.view.ViewContext;
 import genj.view.ViewFactory;
-import genj.view.ActionProvider.Purpose;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -85,16 +70,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -111,8 +91,14 @@ import swingx.docking.persistence.XMLPersister;
  * The central component of the GenJ application
  */
 public class Workbench extends JPanel implements SelectionSink {
+  
+  private final static ImageIcon
+    IMG_CLOSE     = new ImageIcon(Workbench.class,"images/Close.png"),
+    IMG_NEW       = new ImageIcon(Workbench.class,"images/New.png"),
+    IMG_OPEN      = new ImageIcon(Workbench.class,"images/Open.png"),
+    IMG_EXIT      = new ImageIcon(Workbench.class,"images/Exit.png"),
+    IMG_SAVE      = new ImageIcon(Workbench.class,"images/Save.png");
 
-  private final static Logger LOG = Logger.getLogger("genj.app");
   private final static String 
     ACC_SAVE = "ctrl S", 
     ACC_NEW = "ctrl N", 
@@ -120,8 +106,9 @@ public class Workbench extends JPanel implements SelectionSink {
     ACC_CLOSE = "ctrl W";
 
   
-  private final static Resources RES = Resources.get(Workbench.class);
-  private final static Registry REGISTRY = Registry.get(Workbench.class);
+  /*package*/ final static Logger LOG = Logger.getLogger("genj.app");
+  /*package*/ final static Resources RES = Resources.get(Workbench.class);
+  /*package*/ final static Registry REGISTRY = Registry.get(Workbench.class);
 
   /** members */
   private List<WorkbenchListener> listeners = new CopyOnWriteArrayList<WorkbenchListener>();
@@ -129,11 +116,10 @@ public class Workbench extends JPanel implements SelectionSink {
   private List<ViewFactory> viewFactories = ServiceLookup.lookup(ViewFactory.class);
   private Context context = new Context();
   private DockingPane dockingPane = new WorkbenchPane();
-  private Menu menu = new Menu();
-  private HistoryWidget history = new HistoryWidget(this);
-  private Toolbar toolbar = new Toolbar();
+  private Menu menu = new Menu(this);
+  private Toolbar toolbar = new Toolbar(this);
   private Runnable runOnExit;
-  private StatusBar statusBar = new StatusBar();
+  private StatusBar statusBar = new StatusBar(this);
   
   /**
    * Constructor
@@ -157,13 +143,6 @@ public class Workbench extends JPanel implements SelectionSink {
     add(toolbar, BorderLayout.NORTH);
     add(dockingPane, BorderLayout.CENTER);
     add(statusBar, BorderLayout.SOUTH);
-
-    // restore layout
-    String layout = REGISTRY.get("restore.layout", (String)null);
-    if (layout!=null)
-      new LayoutPersister(dockingPane, new StringReader(layout)).load();
-    else
-      new LayoutPersister(dockingPane, new InputStreamReader(getClass().getResourceAsStream("layout.xml"))).load();
 
     // hook up close view action
     new ActionCloseView();
@@ -190,6 +169,20 @@ public class Workbench extends JPanel implements SelectionSink {
         return null;
       }
     });
+  }
+  
+  /**
+   * get current layout
+   */
+  public void saveLayout(Writer writer) {
+    new LayoutPersister(dockingPane, writer).save();
+  }
+  
+  /**
+   * set current layout
+   */
+  public void loadLayout(Reader reader) {
+    new LayoutPersister(dockingPane, reader).load();
   }
   
   /**
@@ -298,7 +291,7 @@ public class Workbench extends JPanel implements SelectionSink {
       if (!warnings.isEmpty()) {
         dockingPane.putDockable("warnings", new GedcomDockable(
             RES.getString("cc.open.warnings", context.getGedcom().getName()), 
-            Images.imgOpen,
+            IMG_OPEN,
             new ContextListWidget(warnings))
         );
       }
@@ -501,12 +494,6 @@ public class Workbench extends JPanel implements SelectionSink {
     if (!closeGedcom())
       return;
     
-    // store layout
-    StringWriter layout = new StringWriter();
-    new LayoutPersister(dockingPane, layout).save();
-    LOG.fine("Storing layout "+layout);
-    REGISTRY.put("restore.layout", layout.toString());
-    
     // close all dockets
     for (Object key : dockingPane.getDockableKeys()) 
       dockingPane.removeDockable(key);
@@ -584,7 +571,7 @@ public class Workbench extends JPanel implements SelectionSink {
    * Lookup providers
    */
   @SuppressWarnings("unchecked")
-  /*package*/ <T> List<T> lookup(Class<T> type) {
+  public <T> List<T> getProviders(Class<T> type) {
     
     List<T> result = new ArrayList<T>();
     
@@ -593,15 +580,22 @@ public class Workbench extends JPanel implements SelectionSink {
       Dockable dockable = dockingPane.getDockable(key);
       if (dockable instanceof DefaultDockable) {
         DefaultDockable vd = (DefaultDockable)dockable;
-        if (type.isAssignableFrom(vd.getContent().getClass()))
+        if (type.isAssignableFrom(vd.getContent().getClass()) && !result.contains(vd.getContent()))
           result.add((T)vd.getContent());
       }
     }
     
     // check all plugins
     for (Object plugin : plugins) {
-      if (type.isAssignableFrom(plugin.getClass()))
+      if (type.isAssignableFrom(plugin.getClass())&&!result.contains(plugin))
         result.add((T)plugin);
+    }
+    
+    // check all listeners
+    for (WorkbenchListener l : listeners) {
+      l = SafeProxy.unwrap(l);
+      if (type.isAssignableFrom(l.getClass())&&!result.contains(l))
+        result.add((T)l);
     }
     
     // sort by priority
@@ -657,24 +651,6 @@ public class Workbench extends JPanel implements SelectionSink {
     
   } 
   
-  private void connect(Gedcom gedcom, List<Action> actions) {
-    for (Action action : actions) {
-      if (gedcom!=null&&action instanceof GedcomListener)
-        gedcom.addGedcomListener((GedcomListener)Spin.over(action));
-      if (action instanceof WorkbenchListener)
-        addWorkbenchListener((WorkbenchListener)action);
-    }
-  }
-  
-  private void disconnect(Gedcom gedcom, List<Action> actions) {
-    for (Action action : actions) {
-      if (gedcom!=null&&action instanceof GedcomListener)
-        gedcom.removeGedcomListener((GedcomListener)Spin.over(action));
-      if (action instanceof WorkbenchListener)
-        removeWorkbenchListener((WorkbenchListener)action);
-    }
-  }
-  
   private void fireViewOpened(View view) {
     // tell 
     for (WorkbenchListener listener : listeners)
@@ -699,6 +675,13 @@ public class Workbench extends JPanel implements SelectionSink {
 
   public void removeWorkbenchListener(WorkbenchListener listener) {
     listeners.remove(SafeProxy.harden(listener));
+  }
+
+  /**
+   * access known view factories
+   */
+  public List<? extends ViewFactory> getViewFactories() {
+    return viewFactories;
   }
 
   /**
@@ -828,33 +811,16 @@ public class Workbench extends JPanel implements SelectionSink {
       setEnabled(true);
     }
   }
-
-  /**
-   * Action - about
-   */
-  private class ActionAbout extends Action2 {
-    /** constructor */
-    protected ActionAbout() {
-      setText(RES, "cc.menu.about");
-      setImage(Images.imgAbout);
-    }
-
-    /** run */
-    public void actionPerformed(ActionEvent event) {
-      DialogHelper.openDialog(RES.getString("cc.menu.about"), DialogHelper.INFORMATION_MESSAGE, new AboutWidget(), Action2.okOnly(), Workbench.this);
-      // done
-    }
-  } // ActionAbout
-
+  
   /**
    * Action - exit
    */
-  private class ActionExit extends WorkbenchAction {
+  /*package*/ class ActionExit extends WorkbenchAction {
     
     /** constructor */
-    protected ActionExit() {
+    /*package*/ ActionExit() {
       setText(RES, "cc.menu.exit");
-      setImage(Images.imgExit);
+      setImage(IMG_EXIT);
     }
     
     @Override
@@ -866,12 +832,12 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * Action - close and exit
    */
-  private class ActionClose extends WorkbenchAction {
+  /*package*/ class ActionClose extends WorkbenchAction {
     
     /** constructor */
-    protected ActionClose() {
+    /*package*/ ActionClose() {
       setText(RES, "cc.menu.close");
-      setImage(Images.imgClose);
+      setImage(IMG_CLOSE);
     }
     
     /** run */
@@ -883,13 +849,13 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * Action - new
    */
-  private class ActionNew extends WorkbenchAction {
+  /*package*/ class ActionNew extends WorkbenchAction {
 
     /** constructor */
-    ActionNew() {
+    /*package*/ ActionNew() {
       setText(RES, "cc.menu.new");
       setTip(RES, "cc.tip.create_file");
-      setImage(Images.imgNew);
+      setImage(IMG_NEW);
       install(Workbench.this, ACC_NEW, JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
@@ -903,15 +869,15 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * Action - open
    */
-  private class ActionOpen extends WorkbenchAction {
+  /*package*/ class ActionOpen extends WorkbenchAction {
     
     private URL url;
 
     /** constructor - good for button or menu item */
-    protected ActionOpen() {
+    /*package*/ ActionOpen() {
       setTip(RES, "cc.tip.open_file");
       setText(RES, "cc.menu.open");
-      setImage(Images.imgOpen);
+      setImage(IMG_OPEN);
       install(Workbench.this, ACC_OPEN, JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
     
@@ -938,7 +904,7 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * Action - Save
    */
-  private class ActionSave extends WorkbenchAction {
+  /*package*/ class ActionSave extends WorkbenchAction {
     /** whether to ask user */
     private boolean saveAs;
     /** gedcom */
@@ -961,7 +927,7 @@ public class Workbench extends JPanel implements SelectionSink {
     /**
      * Constructor for saving gedcom 
      */
-    protected ActionSave(boolean saveAs) {
+    /*package*/ ActionSave(boolean saveAs) {
       // remember
       this.saveAs = saveAs;
       // text
@@ -974,7 +940,7 @@ public class Workbench extends JPanel implements SelectionSink {
       }
       setTip(RES, "cc.tip.save_file");
       // setup
-      setImage(Images.imgSave);
+      setImage(IMG_SAVE);
       setEnabled(context.getGedcom()!=null);
     }
 
@@ -1020,12 +986,12 @@ public class Workbench extends JPanel implements SelectionSink {
   /**
    * Action - Open View
    */
-  private class ActionOpenView extends Action2 {
+  /*package*/ class ActionOpenView extends Action2 {
     /** which ViewFactory */
     private ViewFactory factory;
 
     /** constructor */
-    protected ActionOpenView(ViewFactory vw) {
+    /*package*/ ActionOpenView(ViewFactory vw) {
       factory = vw;
       setText(factory.getTitle());
       setTip(RES.getString("cc.tip.open_view", factory.getTitle()));
@@ -1037,460 +1003,6 @@ public class Workbench extends JPanel implements SelectionSink {
       openViewImpl(factory, context);
     }
   } // ActionOpenView
-
-  /**
-   * Action - Options
-   */
-  private class ActionOptions extends Action2 {
-    /** constructor */
-    protected ActionOptions() {
-      setText(RES.getString("cc.menu.options"));
-      setImage(OptionsWidget.IMAGE);
-    }
-
-    /** run */
-    public void actionPerformed(ActionEvent event) {
-      // create widget for options
-      OptionsWidget widget = new OptionsWidget(getText());
-      widget.setOptions(OptionProvider.getAllOptions());
-      // open dialog
-      DialogHelper.openDialog(getText(), DialogHelper.INFORMATION_MESSAGE, widget, Action2.okOnly(), Workbench.this);
-      // done
-    }
-  } // ActionOptions
-
-  /**
-   * Action - Log file
-   */
-  private class ActionLog extends Action2 {
-    /** constructor */
-    protected ActionLog() {
-      setText("Log");
-      setImage(PropertyFile.DEFAULT_IMAGE);
-    }
-
-    /** run */
-    public void actionPerformed(ActionEvent event) {
-      try {
-        Desktop.getDesktop().open(EnvironmentChecker.getLog());
-      } catch (Throwable t) {
-      }
-    }
-  } // ActionLog
-  
-  /**
-   * a little status tracker
-   */
-  private class StatusBar extends JPanel implements GedcomMetaListener, WorkbenchListener {
-
-    private int commits;
-
-    private JLabel[] label = new JLabel[Gedcom.ENTITIES.length];
-    private JLabel changes = new JLabel("", SwingConstants.RIGHT);
-    private HeapStatusWidget heap = new HeapStatusWidget();
-    
-    StatusBar() {
-
-      super(new BorderLayout());
-
-      JPanel panel = new JPanel();
-      for (int i = 0; i < Gedcom.ENTITIES.length; i++) {
-        label[i] = new JLabel("0", Gedcom.getEntityImage(Gedcom.ENTITIES[i]), SwingConstants.LEFT);
-        panel.add(label[i]);
-      }
-      add(panel, BorderLayout.WEST);
-      add(changes, BorderLayout.CENTER);
-      add(heap, BorderLayout.EAST);
-
-      addWorkbenchListener(this);
-    }
-
-    public void processStarted(Workbench workbench, Trackable process) {
-      remove(2);
-      add(new ProgressWidget(process),BorderLayout.EAST);
-      revalidate();
-      repaint();
-    }
-
-    public void processStopped(Workbench workbench, Trackable process) {
-      remove(2);
-      add(heap,BorderLayout.EAST);
-      revalidate();
-      repaint();
-    }
-    
-    private void update(Gedcom gedcom) {
-      
-      for (int i=0;i<Gedcom.ENTITIES.length;i++)  {
-        String tag = Gedcom.ENTITIES[i];
-        int es = gedcom.getEntities(tag).size();
-        int ps = gedcom.getPropertyCount(tag);
-        if (ps==0) {
-          label[i].setText(Integer.toString(es));
-          label[i].setToolTipText(Gedcom.getName(tag, true));
-        } else {
-          label[i].setText(es + "/" + ps);
-          label[i].setToolTipText(Gedcom.getName(tag, true)+" ("+RES.getString("cc.tip.record_inline")+")");
-        }
-      }
-      
-      changes.setText(commits>0?RES.getString("stat.commits", new Integer(commits)):"");
-    }
-    
-    public void gedcomWriteLockReleased(Gedcom gedcom) {
-      commits++;
-      update(gedcom);
-    }
-
-    public void gedcomHeaderChanged(Gedcom gedcom) {
-    }
-
-    public void gedcomBeforeUnitOfWork(Gedcom gedcom) {
-    }
-
-    public void gedcomAfterUnitOfWork(Gedcom gedcom) {
-    }
-
-    public void gedcomWriteLockAcquired(Gedcom gedcom) {
-    }
-
-    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
-    }
-
-    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-    }
-
-    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-    }
-
-    public void gedcomPropertyChanged(Gedcom gedcom, Property prop) {
-    }
-
-    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property removed) {
-    }
-
-    public void commitRequested(Workbench workbench) {
-    }
-
-    public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
-      gedcom.removeGedcomListener((GedcomListener)Spin.over(this));
-      commits = 0;
-      for (int i=0;i<Gedcom.ENTITIES.length;i++) 
-        label[i].setText("-");
-      changes.setText("");
-    }
-
-
-    public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
-      gedcom.addGedcomListener((GedcomListener)Spin.over(this));
-      update(gedcom);
-    }
-
-    public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-    }
-
-    public void viewClosed(Workbench workbench, View view) {
-    }
-    
-    public void viewRestored(Workbench workbench, View view) {
-    }
-
-    public void viewOpened(Workbench workbench, View view) {
-    }
-
-    public boolean workbenchClosing(Workbench workbench) {
-      return true;
-    }
-
-  } // Stats
-
-  /**
-   * Our MenuBar
-   */
-  private class Menu extends JMenuBar implements SelectionSink, WorkbenchListener, GedcomListener {
-    
-    private List<Action> actions = new ArrayList<Action>();
-    
-    // we need to play delegate for selectionsink since the menu is not a child 
-    // of Workbench but the window's root-pane - selections bubbling up the
-    // window hierarchy are otherwise running into null-ness
-    public void fireSelection(Context context, boolean isActionPerformed) {
-      Workbench.this.fireSelection(context, isActionPerformed);
-    }
-    
-    private Menu() {
-      
-      addWorkbenchListener(this);
-      setup(null,null);
-      
-    }
-    
-    private void setup(Gedcom oldg, Gedcom newg) {
-
-      // tear down
-      if (oldg!=null)
-        oldg.removeGedcomListener(this);
-      disconnect(oldg, actions);
-      actions.clear();
-      removeAll();
-      revalidate();
-      repaint();
-
-      // build up
-      Action2.Group groups = new Action2.Group("ignore");
-      
-      // File
-      Action2.Group file = new ActionProvider.FileActionGroup();
-      groups.add(file);
-      file.add(new ActionNew());
-      file.add(new ActionOpen());
-      file.add(new ActionSave(false));
-      file.add(new ActionSave(true));
-      file.add(new ActionClose());
-      file.add(new ActionProvider.SeparatorAction());
-      int i=0; for (String recent : REGISTRY.get("history", new ArrayList<String>())) try {
-        if (newg==null||!recent.equals(newg.getOrigin().toString()))
-          file.add(new ActionOpen(i++, new URL(recent)));
-      } catch (MalformedURLException e) { }
-      file.add(new ActionProvider.SeparatorAction());
-      if (!MacAdapter.isMac())   // Mac's don't need exit actions in
-        file.add(new ActionExit()); // application menus apparently
-      
-      // Edit
-      groups.add(new ActionProvider.EditActionGroup());
-      
-      // Views
-      Action2.Group views = new ActionProvider.ViewActionGroup();
-      groups.add(views);
-      for (ViewFactory factory : viewFactories) 
-        views.add(new ActionOpenView(factory));
-
-      // Tools
-      groups.add(new ActionProvider.ToolsActionGroup());
-
-
-      // merge providers' actions
-      Action2.Group provided = new Action2.Group("ignore");
-      for (ActionProvider provider : lookup(ActionProvider.class)) {
-        provider.createActions(context, Purpose.MENU, provided);
-        for (Action2 action : provided) {
-          if (action instanceof Action2.Group) {
-            groups.add(action);
-          } else {
-            LOG.warning("ActionProvider "+provider+" returned a non-group for menu");
-          }
-        }
-        provided.clear();
-      }
-      
-      Action2.Group edit = new ActionProvider.EditActionGroup();
-      edit.add(new ActionProvider.SeparatorAction());
-      if (!MacAdapter.isMac())
-        edit.add(new ActionOptions());
-      groups.add(edit);
-
-      Action2.Group help = new ActionProvider.HelpActionGroup();
-      help.add(new ActionProvider.SeparatorAction());
-      help.add(new ActionLog());
-      if (!MacAdapter.isMac())
-        help.add(new ActionAbout());
-      groups.add(help);
-
-      // Build menu
-      MenuHelper mh = new MenuHelper().pushMenu(this);
-      for (Action2 group : groups) {
-        Action2.Group subgroup = (Action2.Group)group;
-        if (subgroup.size()>0) {
-          mh.createMenu(subgroup);
-          mh.popMenu();
-        }
-      }
-      
-      // remember actions
-      actions.addAll(mh.getActions());
-      
-      // connect
-      if (newg!=null)
-        newg.addGedcomListener(this);
-      connect(newg, actions);
-      
-      // Done
-    }
-    
-    // 20060209 don't use a glue component to move help all the way over to the right
-    // (Reminder: according to Stephane this doesn't work on MacOS Tiger)
-    // java.lang.ArrayIndexOutOfBoundsException: 3 > 2::
-    // at java.util.Vector.insertElementAt(Vector.java:557)::
-    // at apple.laf.ScreenMenuBar.add(ScreenMenuBar.java:266)::
-    // at apple.laf.ScreenMenuBar.addSubmenu(ScreenMenuBar.java:207)::
-    // at apple.laf.ScreenMenuBar.addNotify(ScreenMenuBar.java:53)::
-    // at java.awt.Frame.addNotify(Frame.java:478)::
-    // at java.awt.Window.pack(Window.java:436)::
-    // http://lists.apple.com/archives/java-dev/2005/Aug/msg00060.html
-    
-    public void commitRequested(Workbench workbench) {
-    }
-
-    public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
-      setup(gedcom, null);
-    }
-
-    public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
-      setup(null, gedcom);
-    }
-
-    public void processStarted(Workbench workbench, Trackable process) {
-    }
-
-    public void processStopped(Workbench workbench, Trackable process) {
-    }
-
-    public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-      setup(context.getGedcom(), context.getGedcom());
-    }
-
-    public void viewClosed(Workbench workbench, View view) {
-    }
-    
-    public void viewRestored(Workbench workbench, View view) {
-    }
-
-    public void viewOpened(Workbench workbench, View view) {
-    }
-
-    public boolean workbenchClosing(Workbench workbench) {
-      return true;
-    }
-
-    @Override
-    public void gedcomEntityAdded(Gedcom gedcom, Entity entity) {
-    }
-
-    @Override
-    public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
-      context = context.remove(entity);
-      setup(gedcom,gedcom);
-    }
-
-    @Override
-    public void gedcomPropertyAdded(Gedcom gedcom, Property property, int pos, Property added) {
-    }
-
-    @Override
-    public void gedcomPropertyChanged(Gedcom gedcom, Property property) {
-    }
-
-    @Override
-    public void gedcomPropertyDeleted(Gedcom gedcom, Property property, int pos, Property deleted) {
-      context = context.remove(deleted);
-      setup(gedcom,gedcom);
-    }
-    
-  } // Menu
-
-  /**
-   * our toolbar
-   */
-  private class Toolbar extends ToolbarWidget implements WorkbenchListener {
-
-    private List<Action> actions = new ArrayList<Action>();
-    
-    /**
-     * Constructor
-     */
-    private Toolbar() {
-      setFloatable(false);
-      addWorkbenchListener(this);
-      setup(null,null);
-    }
-    
-    private void setup(Gedcom oldg, Gedcom newg) {
-      
-      // cleanup
-      disconnect(oldg, actions);
-      actions.clear();
-      removeAll();
-        
-      // defaults
-      add(new ActionNew());
-      add(new ActionOpen());
-      add(new ActionSave(false));
-      
-      // let providers speak
-      if (newg!=null) {
-        Action2.Group actions = new Action2.Group("ignore");
-        addSeparator();
-        for (ActionProvider provider : lookup(ActionProvider.class)) {
-          actions.clear();
-          provider.createActions(context, Purpose.TOOLBAR, actions);
-          for (Action2 action : actions) {
-            if (action instanceof Action2.Group)
-              LOG.warning("ActionProvider "+provider+" returned a group for toolbar");
-            else {
-              if (action instanceof ActionProvider.SeparatorAction)
-                toolbar.addSeparator();
-              else {
-                add(action);
-              }
-            }
-          }
-        }
-      }
-      
-      // add history
-      add(history);
-            
-      // connect actions
-      connect(newg, actions);
-      
-      // done
-    }
-    
-    @Override
-    public JButton add(Action action) {
-      // remember
-      actions.add(action);
-      // no mnemonic (e.g. alt-o triggering Open action), no text
-      action.putValue(Action.MNEMONIC_KEY, null);
-      action.putValue(Action.NAME, null);
-      // super stuff
-      return super.add(action);
-    }
-
-    public void commitRequested(Workbench workbench) {
-    }
-
-    public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
-      setup(gedcom, null);
-    }
-
-    public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
-      setup(null, gedcom);
-    }
-
-    public void processStarted(Workbench workbench, Trackable process) {
-    }
-
-    public void processStopped(Workbench workbench, Trackable process) {
-    }
-
-    public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-      setup(context.getGedcom(), context.getGedcom());
-    }
-
-    public void viewClosed(Workbench workbench, View view) {
-    }
-    
-    public void viewRestored(Workbench workbench, View view) {
-    }
-
-    public void viewOpened(Workbench workbench, View view) {
-    }
-
-    public boolean workbenchClosing(Workbench workbench) {
-      return true;
-    }
-  }
 
   /**
    * layout persist/restore
