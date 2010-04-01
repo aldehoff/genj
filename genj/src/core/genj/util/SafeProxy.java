@@ -34,6 +34,15 @@ import java.util.logging.Logger;
  * A proxy for calling interfaces without exceptions coming through
  */
 public class SafeProxy {
+  
+  @SuppressWarnings("unchecked")
+  public static <T> T unwrap(T object) {
+    try {
+      return ((SafeHandler<T>)Proxy.getInvocationHandler(object)).impl;
+    } catch (Throwable t) {
+      throw new IllegalArgumentException("not wrapped");
+    }
+  }
 
   /**
    * harden an implementation of interfaces against exceptions 
