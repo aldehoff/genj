@@ -494,6 +494,11 @@ public class Workbench extends JPanel implements SelectionSink {
     if (!closeGedcom())
       return;
     
+    // tell about it
+    for (WorkbenchListener l : listeners)
+      if (!l.workbenchClosing(this))
+        return;
+    
     // close all dockets
     for (Object key : dockingPane.getDockableKeys()) 
       dockingPane.removeDockable(key);
