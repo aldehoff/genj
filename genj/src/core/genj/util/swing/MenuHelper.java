@@ -22,10 +22,9 @@ package genj.util.swing;
 import genj.util.MnemonicAndText;
 import genj.view.ActionProvider.SeparatorAction;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -38,7 +37,6 @@ import javax.swing.JPopupMenu;
  */
 public class MenuHelper  {
 
-  private List<Action2> actions = new ArrayList<Action2>(16);
   private Stack<JComponent> menus = new Stack<JComponent>();  // JMenu or JPopupMenu or JMenuBar
   
   /** Setters */    
@@ -121,11 +119,7 @@ public class MenuHelper  {
     // done
   }
   
-  public List<Action2> getActions() {
-    return actions;
-  }
-  
-  public JMenuItem createItem(Action2 action) {
+  public final JMenuItem createItem(Action action) {
     
     // an action group?
     if (action instanceof Action2.Group) {
@@ -133,7 +127,8 @@ public class MenuHelper  {
       if (group.size()==0)
         return null;
       JMenu sub = new JMenu(action);
-      sub.setMnemonic(action.getMnemonic());
+      if (action instanceof Action2)
+        sub.setMnemonic(((Action2)action).getMnemonic());
       pushMenu(sub);
       createItems(group);
       popMenu();
@@ -153,16 +148,19 @@ public class MenuHelper  {
       result = new JCheckBoxMenuItem();
     else
       result = new JMenuItem();
-    result.setAction(action);
-    result.setMnemonic(action.getMnemonic());
-    
-    actions.add(action);
+    set(action, result);
+    if (action instanceof Action2)
+      result.setMnemonic(((Action2)action).getMnemonic());
     
     // add it to current menu on stack  
     menus.peek().add(result);
       
     // done
     return result;
+  }
+  
+  protected void set(Action action, JMenuItem item) {
+    item.setAction(action);
   }
 
   /**
