@@ -55,7 +55,7 @@ public class RelationshipsBean extends PropertyBean {
     
     // prepare a simple table
     table = new PropertyTableWidget();
-    table.setVisibleRowCount(5);
+    table.setVisibleRowCount(2);
     
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, table);
