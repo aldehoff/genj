@@ -481,9 +481,14 @@ public class ReportWebsite extends Report {
 					}
 					Element notesP = processNotes(fam, linkPrefix, html);
 					if (notesP != null) div1.appendChild(notesP);
+					
+					Element images = processObjects(fam, linkPrefix, indiDir, html, true);
+					if (images != null)	div1.appendChild(images);
+					handledTags.add("OBJE");
+					
 					reportUnhandledProperties(fam, new String[]{"HUSB", "WIFE", "CHIL", "CHAN", "NOTE", "SOUR", 
 							"ENGA", "MARR", "MARB", "MARC", "MARL", "MARS", "EVEN", "ANUL", "CENS", "DIV", "DIVF",
-							"NCHI"});
+							"NCHI", "OBJE"});
 				}
 				Indi[] children = fam.getChildren(true);
 				if (children.length > 0) {
@@ -514,10 +519,11 @@ public class ReportWebsite extends Report {
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 
 		// OBJE - Images etc
-		Element divImages = html.div("left");
-		processObjects(indi, linkPrefix, indiDir, divImages, html);
-		if (divImages.hasChildNodes()) {
-			divImages.insertBefore(html.h2(translate("images")), divImages.getFirstChild());
+		Element p = processObjects(indi, linkPrefix, indiDir, html, false);
+		if (p != null) {
+			Element divImages = html.div("left");
+			divImages.appendChild(html.h2(translate("images")));
+			divImages.appendChild(p);
 			bodyNode.appendChild(divImages);
 			personsWithImage.add(indi); // Add to the list of persons displayed in the gallery
 		}
@@ -581,9 +587,8 @@ public class ReportWebsite extends Report {
 		handledTags.add("REPO");
 		
 		// OBJE - Images etc
-		Element images = html.p();
-		processObjects(source, linkPrefix, sourceDir, images, html);
-		if (images.hasChildNodes()) {			
+		Element images = processObjects(source, linkPrefix, sourceDir, html, false);
+		if (images != null) {			
 			div1.appendChild(html.h2(translate("images")));
 			div1.appendChild(images);
 		}
@@ -732,10 +737,22 @@ public class ReportWebsite extends Report {
 		handledTags.add("XREF");
 	}
 
-	protected void processObjects(Property prop, String linkPrefix, File dstDir,
-			Element appendTo, Html html) {
+	/**
+	 * Handles images in OBJE-properties
+	 * @param prop The Property containing the OBJE-properties
+	 * @param linkPrefix
+	 * @param dstDir
+	 * @param html
+	 * @param smallThumbs Making the thumbs really small (intended for family images)
+	 * @return paragraph with images, or null
+	 */
+	protected Element processObjects(Property prop, String linkPrefix, File dstDir,
+			Html html, boolean smallThumbs) {
 		Property[] objects = prop.getProperties("OBJE");
-		if (objects.length == 0) return;
+		if (objects.length == 0) return null;
+		Element p = html.p();
+		int imgSize = 200;
+		if (smallThumbs) imgSize = 100;
 		for (int i = 0; i < objects.length; i++){
 			// Get the title
 			Property titleProp = objects[i].getProperty("TITL");
@@ -759,11 +776,11 @@ public class ReportWebsite extends Report {
 					try {
 						copyFile(srcFile, dstFile);
 						// Create a thumb
-						makeThumb(dstFile, 200, 200, thumbFile);
+						makeThumb(dstFile, imgSize, imgSize, thumbFile);
 						// For the ancestor tree on other pages
 						if (i == 0) makeThumb(dstFile, 50, 70, new File(dstFile.getParentFile(), "tree.jpg"));
 						// Make img-reference to the image
-						appendTo.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
+						p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
 					} catch (IOException e) {
 						println("  Error in copying file or making thumb: " + 
 								srcFile.getName() + e.getMessage());
@@ -776,6 +793,8 @@ public class ReportWebsite extends Report {
 				println("  OBJE without FILE is currently not handled");
 			}
 		}
+		if (p.hasChildNodes()) return p;
+		return null;
 	}
 
 	/**
