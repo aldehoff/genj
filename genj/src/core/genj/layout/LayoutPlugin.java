@@ -238,6 +238,10 @@ public class LayoutPlugin extends WorkbenchAdapter implements PluginFactory, Act
       String layout = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, RES.getString("layout.name"), choices, DialogHelper.getComponent(e));
       if (layout==null)
         return;
+      
+      File file = new File(dir(), layout+".xml");
+      if (file.exists() && !file.delete())
+        return;
 
       layouts.remove(layout);
       
