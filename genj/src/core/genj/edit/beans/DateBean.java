@@ -42,8 +42,8 @@ public class DateBean extends PropertyBean {
 
   private final static ImageIcon PIT = new ImageIcon(PropertyBean.class, "/genj/gedcom/images/Time");
   private final static NestedBlockLayout 
-    H = new NestedBlockLayout("<row><date1/><choose/><label2/><date2/><phrase/></row>"),
-    V = new NestedBlockLayout("<table><row><date1/><choose/></row><row><label2/><date2/></row><row><phrase cols=\"2\"/></row></table>");
+    H = new NestedBlockLayout("<row><choose/><date1/><label2/><date2/><phrase/></row>"),
+    V = new NestedBlockLayout("<table><row><choose/><date1/></row><row><label2/><date2/></row><row><phrase cols=\"2\"/></row></table>");
 
   /** members */
   private PropertyDate.Format format; 
@@ -62,23 +62,28 @@ public class DateBean extends PropertyBean {
     for (int i=0;i<PropertyDate.FORMATS.length;i++)
       actions.add(new ChangeFormat(PropertyDate.FORMATS[i]));
 
-    // .. first date
-    date1 = new DateWidget();
-    date1.addChangeListener(changeSupport);
-
     // .. the chooser (making sure the preferred size is pre-computed to fit-it-all)
     choose = new PopupWidget();
     choose.addItems(actions);
+    add(choose);
     
+    // .. first date
+    date1 = new DateWidget();
+    date1.addChangeListener(changeSupport);
+    add(date1);
+
     // .. second date
     label2 = new JLabel();
+    add(label2);
     
     date2 = new DateWidget();
     date2.addChangeListener(changeSupport);
+    add(date2);
     
     // phrase
     phrase = new TextFieldWidget("",10);
     phrase.addChangeListener(changeSupport);
+    add(phrase);
     
     // do the layout and format
     setPreferHorizontal(false);
@@ -97,6 +102,9 @@ public class DateBean extends PropertyBean {
     PropertyDate.Format f = format;
     format = null;
     setFormat(f);
+    
+    revalidate();
+    repaint();
   }
   
   /**
@@ -120,23 +128,6 @@ public class DateBean extends PropertyBean {
     // already?
     if (format==set)
       return;
-    
-    // setup order of components
-    if (set==PropertyDate.FORMATS[0]) {
-      removeAll();
-      add(date1);
-      add(choose);
-      add(label2);
-      add(date2);
-      add(phrase);
-    } else {
-      removeAll();
-      add(choose);
-      add(date1);
-      add(label2);
-      add(date2);
-      add(phrase);
-    }
     
     // signal
     changeSupport.fireChangeEvent();
