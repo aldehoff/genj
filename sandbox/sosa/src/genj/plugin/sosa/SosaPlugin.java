@@ -1,14 +1,13 @@
 /**
- * This GenJ SosaPlugin Source is Freeware Code
+ * This source file is part of a GenJ Plugin and copyright of the respective authors.
  *
  * This source is distributed in the hope that it will be useful for creating custom GenJ plugins, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-//il faut transmettre les instances des autres menus actions dans le setChangeMenuaction class
 package genj.plugin.sosa;
 
 import genj.app.Workbench;
-import genj.app.WorkbenchListener;
+import genj.app.WorkbenchAdapter;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -17,13 +16,11 @@ import genj.gedcom.Indi;
 import genj.gedcom.UnitOfWork;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
-import genj.view.View;
 
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
@@ -31,9 +28,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * A sample plugin that manages Sosa Indexation of individuals
+ * A sample plugin that manages Sosa Index of individuals
  */
-public class SosaPlugin implements WorkbenchListener, ActionProvider {
+public class SosaPlugin extends WorkbenchAdapter implements ActionProvider {
 
   private final static ImageIcon IMG = new ImageIcon(SosaPlugin.class, "/Sosa.gif");
   private final static Resources RESOURCES = Resources.get(SosaPlugin.class);
@@ -50,10 +47,6 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
   public SosaPlugin(Workbench workbench) {
     this.workbench = workbench;
     workbench.addWorkbenchListener(this);
-  }
-
-  public void commitRequested(Workbench workbench) {
-    // we have nothing to commit
   }
 
   public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
@@ -81,35 +74,6 @@ public class SosaPlugin implements WorkbenchListener, ActionProvider {
     
     // attach to gedcom
     gedcom.addGedcomListener(index);
-  }
-
-  public void processStarted(Workbench workbench, Trackable process) {
-    // don't care
-  }
-
-  public void processStopped(Workbench workbench, Trackable process) {
-    // don't care
-  }
-
-  public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-    // don't care
-  }
-
-  public void viewClosed(Workbench workbench, View view) {
-    // don't care
-  }
-
-  public void viewOpened(Workbench workbench, View view) {
-    // don't care
-  }
-
-  public void viewRestored(Workbench workbench, View view) {
-    // don't care
-  }
-
-  public boolean workbenchClosing(Workbench workbench) {
-    // fine with me
-    return true;
   }
 
   public void createActions(Context context, Purpose purpose, Group result) {
