@@ -41,8 +41,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -123,6 +125,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   
   /** one root row is holds all the columns */
   private Block root;
+  private Set<Component> components = new HashSet<Component>();
   
   /** padding */
   private int padding = 1;
@@ -873,17 +876,21 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    * Component/Layout lifecycle callback
    */
   public void addLayoutComponent(Component comp, Object key) {
+    
+    if (components.contains(comp))
+      throw new IllegalArgumentException("already added");
 
     List<Block> path = root.setContent(key, comp, new ArrayList<Block>());
-    if (!path.isEmpty())
+    if (!path.isEmpty()) {
+      components.add(comp);
       return;
+    }
     
     // no match
     if (key==null)
       throw new IllegalArgumentException("no available descriptor element - element qualifier required");
     throw new IllegalArgumentException("element qualifier doesn't match any descriptor element");
-
-    // done
+    
   }
 
   /**
@@ -899,6 +906,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
    */
   public void removeLayoutComponent(Component comp) {
     root.removeContent(comp);
+    components.remove(comp);
   }
 
   /**
@@ -936,6 +944,11 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     if (!invalidated) {
       root.invalidate(true);
       invalidated = true;
+      
+      // pickup any leftover components from a layout switch
+      for (Component c : target.getComponents()) 
+        if (!components.contains(c))
+          addLayoutComponent(c, null);
     }
   }
 
@@ -976,6 +989,8 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     try {
       NestedBlockLayout clone = (NestedBlockLayout)super.clone();
       clone.root = (Block)clone.root.clone();
+      clone.components = new HashSet<Component>();
+      clone.invalidated = false;
       return clone;
     } catch (CloneNotSupportedException e) {
       throw new Error(e);
