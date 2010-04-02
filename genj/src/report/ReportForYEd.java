@@ -36,20 +36,85 @@ import java.util.List;
 
 public class ReportForYEd extends Report {
 
-	public int famImageWidth = 100;
-	public int famImageHeight = 150;
-	public int indiImageWidth = 100;
-	public int indiImageHeight = 150;
-	public String indiUrl = getString("indiUrlDefault");
-	public String familyUrl = getString("familyUrlDefault");
-	public boolean showDates = true;
-	public boolean showPlaces = true;
+	public class Events {
+
+		public boolean showDates = true;
+		public boolean showPlaces = true;
+		public String place_display_format = "";
+
+		private String format(final String symbol, final PropertyEvent event) {
+
+			if (event == null || !(showDates || showPlaces))
+				return "";
+			final Property date = event.getDate(true);
+			final Property place = event.getProperty("PLAC");
+			if (date == null && place == null)
+				return "";
+			final String string = (date == null || !showDates ? "" : date
+					.getDisplayValue())
+					+ " "
+					+ (place == null || !showPlaces ? "" : place.format(
+							place_display_format).replaceAll("^(,|(, ))*", "")
+							.trim());
+			if (string.trim().equals(""))
+				return "";
+			return symbol + " " + string;
+		}
+	}
+
+	public class Images {
+
+		public String famImage = translate("imageSnippetDefault");
+		public String indiImage = translate("imageSnippetDefault");
+		public String imageExtensions = "jpg jpeg gif png";
+
+		private String format(final Entity entity, final String htmlFormat) {
+
+			if (htmlFormat == null || htmlFormat.equals(""))
+				return null;
+			final Property property = entity
+					.getPropertyByPath("INDI:OBJE:FILE");
+			if (property == null)
+				return null;
+			final String value = property.getValue();
+			if (value == null || value.equals(""))
+				return null;
+			final String extension = value.toLowerCase()
+					.replaceAll(".*\\.", "");
+			if (imageExtensions.contains(extension)) {
+				return MessageFormat.format(htmlFormat.replaceAll("'", "\""),
+						value);
+			}
+			return null;
+		}
+	}
+
+	public class Filter {
+
+		public String tag = "_YED";
+		public String content = "";
+		public boolean active = false;
+	}
+
+	public class Links {
+
+		public String indi = translate("indiUrlDefault");
+		public String family = translate("familyUrlDefault");
+
+		private String format(final String id, final String urlFormat) {
+
+			if (urlFormat == null)
+				return "";
+			final String link = MessageFormat.format(urlFormat, id);
+			return MessageFormat.format(XML_LINK_CONTAINER, link);
+		}
+	}
+
 	public boolean showOccupation = true;
-	public String imageExtensions = "jpg jpeg gif png";
-	public String place_display_format = "";
-	public String filterTag = "_YED";
-	public String filterContent = "";
-	public boolean filterActive = false;
+	public Events events = new Events();
+	public Images images = new Images();
+	public Links links = new Links();
+	public Filter filter = new Filter();
 
 	private final String XML_LINK_CONTAINER = getString("LinkContainer");
 	private final String XML_POPUP_CONTAINER = getString("PopUpContainer");
@@ -68,15 +133,15 @@ public class ReportForYEd extends Report {
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
 
-		if (!filterActive) {
+		if (!filter.active) {
 			generateReport(gedcom.getFamilies(), gedcom.getIndis());
 			return;
 		}
-		final Collection<Indi> indis = new HashSet<Indi> ();
-		final Collection<Fam> fams = new HashSet<Fam> ();
-		for (Indi indi:gedcom.getIndis()){
-			String value = indi.getPropertyValue(filterTag);
-			if (value != null && value.contains(filterContent) ){
+		final Collection<Indi> indis = new HashSet<Indi>();
+		final Collection<Fam> fams = new HashSet<Fam>();
+		for (Indi indi : gedcom.getIndis()) {
+			String value = indi.getPropertyValue(filter.tag);
+			if (value != null && value.contains(filter.content)) {
 				indis.add(indi);
 				for (Fam fam : indi.getFamiliesWhereSpouse()) {
 					fams.add(fam);
@@ -143,7 +208,8 @@ public class ReportForYEd extends Report {
 			}
 		}
 	}
-	private static final PointInTime pit = new PointInTime(1,1,2200);
+
+	private static final PointInTime pit = new PointInTime(1, 1, 2200);
 
 	/** Start after collecting the entities for the report */
 	private void generateReport(final Collection<Fam> families,
@@ -157,18 +223,18 @@ public class ReportForYEd extends Report {
 			return;
 		println("creating: " + reportFile.getAbsoluteFile());
 
-		out.write(XML_HEAD+"\n");
+		out.write(XML_HEAD + "\n");
 		for (final Indi indi : sortedIndis) {
-			out.write(createNode(indi)+"\n");
+			out.write(createNode(indi) + "\n");
 		}
 		for (final Fam fam : families) {
-			out.write(createNode(fam)+"\n");
+			out.write(createNode(fam) + "\n");
 		}
 		for (final Indi indi : sortedIndis) {
-			out.write(createIndiToFam(indi, families)+"\n");
-			out.write(createFamToIndi(indi, families)+"\n");
+			out.write(createIndiToFam(indi, families) + "\n");
+			out.write(createFamToIndi(indi, families) + "\n");
 		}
-		out.write(XML_TAIL+"\n");
+		out.write(XML_TAIL + "\n");
 
 		out.flush();
 		out.close();
@@ -177,23 +243,27 @@ public class ReportForYEd extends Report {
 
 	private List<Indi> sortByAge(final Collection<Indi> indis) {
 		// hoping this could influence yEd's layout, but it seems not
-		final List<Indi> sortedIndis = new ArrayList<Indi> (indis);
-		Collections.sort(sortedIndis,new Comparator<Indi>(){
+		final List<Indi> sortedIndis = new ArrayList<Indi>(indis);
+		Collections.sort(sortedIndis, new Comparator<Indi>() {
 
 			@Override
 			public int compare(final Indi i1, final Indi i2) {
-				
-				final Delta p1 = i1.getAge(pit );
-				final Delta p2 = i2.getAge(pit );
-			    
-			    // null?
-			    if (p1==p2  ) return  0;
-			    if (p1==null) return  1;
-			    if (p2==null) return -1;
-			    
-			    // let p's compare themselves
-			    return -p1.compareTo(p2);
-			}});
+
+				final Delta p1 = i1.getAge(pit);
+				final Delta p2 = i2.getAge(pit);
+
+				// null?
+				if (p1 == p2)
+					return 0;
+				if (p1 == null)
+					return 1;
+				if (p2 == null)
+					return -1;
+
+				// let p's compare themselves
+				return -p1.compareTo(p2);
+			}
+		});
 		return sortedIndis;
 	}
 
@@ -234,78 +304,55 @@ public class ReportForYEd extends Report {
 
 		final String id = family.getId();
 		final String label = createLabel(family);
-		final String height = label.contains( "<html>")?"42.0":"27.0";
-		return MessageFormat.format(XML_FAMILY, id, escape(label), createLink(id,
-				familyUrl), createPopUpContainer(label),height);
+		final String height = label.contains("<html>") ? "42.0" : "27.0";
+		return MessageFormat.format(XML_FAMILY, id, escape(label), links
+				.format(id, links.family), createPopUpContainer(label), height);
 	}
 
 	private String createNode(final Indi indi) {
 
 		final String id = indi.getId();
 		final String label = createLabel(indi);
-		return MessageFormat.format(XML_INDI, id, escape(label),
-				createLink(id, indiUrl), INDI_COLORS[indi.getSex()],
+		return MessageFormat.format(XML_INDI, id, escape(label), links.format(
+				id, links.indi), INDI_COLORS[indi.getSex()],
 				createPopUpContainer(label));
-	}
-
-	private String getImage(final Entity entity, final int width,
-			final int height) {
-
-		if (width == 0 || height == 0)
-			return null;
-		final Property property = entity.getPropertyByPath("INDI:OBJE:FILE");
-		if (property == null)
-			return null;
-		final String value = property.getValue();
-		final String extension = value.toLowerCase().replaceAll(".*\\.", "");
-		if (imageExtensions.contains(extension)) {
-			return MessageFormat.format(
-					"<img src=\"{3}\" width=\"{4}\" heigth=\"{5}\">", value,
-					width, height);
-		}
-		return null;
 	}
 
 	private String createLabel(final Fam family) {
 
-		final String image = getImage(family, famImageWidth, famImageHeight);
-		final String mariage = showEvent(OPTIONS.getMarriageSymbol(),
+		final String image = images.format(family, images.famImage);
+		final String mariage = events.format(OPTIONS.getMarriageSymbol(),
 				(PropertyEvent) family.getProperty("MARR"));
-		final String divorce = showEvent(OPTIONS.getDivorceSymbol(),
+		final String divorce = events.format(OPTIONS.getDivorceSymbol(),
 				(PropertyEvent) family.getProperty("DIV"));
 
-		if (mariage.equals("") && divorce.equals("") && image==null)
+		if (mariage.equals("") && divorce.equals("") && image == null)
 			return "";
 		final String format;
 		if (image != null) {
-			format = "<html><body><table><tr>"
-					+ "<td>{0}<br>{1}</td><td>{3}</td>"
-					+ "</tr></table></body></html>";
-		} else if ( divorce.equals("") || mariage.equals("")) {
+			format = "<html><table><tr><td><p>{0}<br>{1}</p></td><td>{2}</td></tr></table></body></html>";
+		} else if (divorce.equals("") || mariage.equals("")) {
 			format = "{0}{1}";
 		} else {
 			format = "<html><body>{0}<br>{1}</body></html>";
 		}
-		return wrap(format, mariage, divorce, image, famImageWidth,
-				famImageHeight);
+		return wrap(format, mariage, divorce, image);
 	}
 
 	private String createLabel(final Indi indi) {
 
-		final String image = getImage(indi, indiImageWidth, indiImageHeight);
+		final String image = images.format(indi, images.indiImage);
 		final String name = indi.getPropertyDisplayValue("NAME");
 		final String occu = indi.getPropertyDisplayValue("OCCU");
 
-		final String birth = showEvent(OPTIONS.getBirthSymbol(),
+		final String birth = events.format(OPTIONS.getBirthSymbol(),
 				(PropertyEvent) indi.getProperty("BIRT"));
-		final String death = showEvent(OPTIONS.getDeathSymbol(),
+		final String death = events.format(OPTIONS.getDeathSymbol(),
 				(PropertyEvent) indi.getProperty("DEAT"));
 
 		final String format;
 		if (image != null) {
-			format = "<html><body><table><tr>"
-					+ "<td>{0}<br>{1}<br>{2}<br>{3}</td><td>{4}</td>"
-					+ "</tr></table></body></html>";
+			format = "<html><table><tr><td><p>{0}<br>{1}<br>{2}<br>{3}</p></td><td>{4}</td></tr></table></body></html>";
 		} else if (showOccupation && occu != null && !occu.trim().equals("")) {
 			format = "<html><body>{0}<br>{1}<br>{2}<br>{3}</body></html>";
 		} else if (!birth.equals("") || !death.equals("")) {
@@ -324,33 +371,6 @@ public class ReportForYEd extends Report {
 	private String escape(final String content) {
 
 		return content.replaceAll(">", "&gt;").replaceAll("<", "&lt;");
-	}
-
-	private String showEvent(final String symbol, final PropertyEvent event) {
-
-		if (event == null || !(showDates || showPlaces))
-			return "";
-		final Property date = event.getDate(true);
-		final Property place = event.getProperty("PLAC");
-		if (date == null && place == null)
-			return "";
-		final String string = (date == null || !showDates ? "" : date
-				.getDisplayValue())
-				+ " "
-				+ (place == null || !showPlaces ? "" : place.format(
-						place_display_format).replaceAll("^(,|(, ))*", "")
-						.trim());
-		if (string.trim().equals(""))
-			return "";
-		return symbol + " " + string;
-	}
-
-	private String createLink(final String id, final String urlFormat) {
-
-		if (urlFormat == null)
-			return "";
-		final String link = MessageFormat.format(urlFormat, id);
-		return MessageFormat.format(XML_LINK_CONTAINER, link);
 	}
 
 	/**
