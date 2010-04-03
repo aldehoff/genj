@@ -82,8 +82,7 @@ public class ReportForYEd extends Report {
 			final String extension = value.toLowerCase()
 					.replaceAll(".*\\.", "");
 			if (imageExtensions.contains(extension)) {
-				return MessageFormat.format(htmlFormat.replaceAll("'", "\""),
-						value);
+				return MessageFormat.format(htmlFormat, value);
 			}
 			return null;
 		}
@@ -365,7 +364,7 @@ public class ReportForYEd extends Report {
 
 	private String wrap(final String format, final Object... args) {
 
-		return MessageFormat.format(format, args);
+		return MessageFormat.format(format, args).replaceAll("'", "\"");
 	}
 
 	private String escape(final String content) {
