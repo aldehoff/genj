@@ -6,6 +6,7 @@
   <col cols="2">
   <fold key="ADDR" collapsed="1"/>
   <table>
+   <row><bean path=".:ADDR" wx="1" cols="4"/></row>
    <row><label path=".:ADDR:CITY"/><bean path=".:ADDR:CITY" wx="1"/>
         <label path=".:ADDR:POST"/><bean path=".:ADDR:POST" wx="1"/></row>
    <row><label path=".:ADDR:CTRY"/><bean path=".:ADDR:CTRY" wx="1"/>

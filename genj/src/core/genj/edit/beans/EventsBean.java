@@ -30,6 +30,7 @@ import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.TagPath;
+import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
@@ -387,7 +388,24 @@ public class EventsBean extends PropertyBean {
       String val = event.getDisplayValue();
       if (val.length()>0)
         return val;
-      return event.getPropertyValue("TYPE");
+      String type = event.getPropertyDisplayValue("TYPE");
+      if (type.length()>0)
+        return type;
+      String plac = event.getPropertyDisplayValue("PLAC");
+      if (plac.length()>0)
+        return plac;
+      Property addr = event.getProperty("ADDR");
+      if (addr!=null) {
+        WordBuffer buf = new WordBuffer(",");
+        buf.append(addr.getDisplayValue());
+        buf.append(addr.getPropertyDisplayValue("CITY"));
+        buf.append(addr.getPropertyDisplayValue("POST"));
+        buf.append(addr.getPropertyDisplayValue("CTRY"));
+        buf.append(addr.getPropertyDisplayValue("STAE"));
+        if (buf.length()>0)
+          return buf.toString();
+      }
+      return "";
     }
   }
   
