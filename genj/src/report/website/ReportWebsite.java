@@ -220,8 +220,10 @@ public class ReportWebsite extends Report {
 		Element div1 = html.div("left");
 		div1.appendChild(html.h2(translate("personIndex")));
 		String lastLetter = "";
-		for (Entity indi : indis) { 
-			String letter = ((Indi)indi).getLastName().substring(0, 1); // Get first letter of last name
+		for (Entity indi : indis) {
+			String lastname = ((Indi)indi).getLastName();  
+			String letter = "?";
+			if (lastname != null && !lastname.isEmpty()) letter = lastname.substring(0, 1); // Get first letter of last name
 			if (! letter.equals(lastLetter)) {
 				div1.appendChild(html.link(listPersonFileName + "#" + letter, letter));				
 				div1.appendChild(html.text(", "));				
@@ -309,14 +311,15 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(div1);
 		String lastLetter = "";
 		for (Entity indi : indis) { 
-			String text = getName((Indi)indi);
-			String letter = ((Indi)indi).getLastName().substring(0, 1); // Get first letter of last name
+			String lastname = ((Indi)indi).getLastName();  
+			String letter = "?";
+			if (lastname != null && !lastname.isEmpty()) letter = lastname.substring(0, 1); // Get first letter of last name
 			if (! letter.equals(lastLetter)) {
 				div1.appendChild(html.anchor(letter));
 				div1.appendChild(html.h2(letter));
 				lastLetter = letter;
 			}
-			text += " (";
+			String text = getName((Indi)indi) + " (";
 			if (!isPrivate((Indi)indi)) {
 				PropertyDate birth = ((Indi)indi).getBirthDate();
 				if (birth != null && birth.getStart().isValid()) text += birth.getStart().getYear();
@@ -459,12 +462,14 @@ public class ReportWebsite extends Report {
 				} else {
 					h2.appendChild(html.text(translate("unknown")));
 				}
-				Element p = html.p();
-				div1.appendChild(p);
+				// Notes on the link to family
+				Element notesFAMS = processNotes(pfs, linkPrefix, html);
+				if (notesFAMS != null) div1.appendChild(notesFAMS);
+				
 				if (! isPrivate) {
 					Element sourceSup = processSources(fam, linkPrefix, html);
 					if (sourceSup != null) {
-						p.appendChild(sourceSup);
+						h2.appendChild(sourceSup);
 					}
 					// Event tags
 					for (String tag : new String[] {"ENGA", "MARR", "MARB", "MARC", "MARL", "MARS", "EVEN", "ANUL", "CENS", "DIV", "DIVF"}) {
@@ -511,10 +516,25 @@ public class ReportWebsite extends Report {
 		if (isPrivate) return html;
 
 		Element div2 = html.div("right");
-		String[] indiAttrTags = new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL", "CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"};
-		for (int i = 0; i < indiAttrTags.length; i++) {
-			processOtherEventTag(indiAttrTags[i], indi, linkPrefix, div2, html);
-			handledTags.add(indiAttrTags[i]);  
+		for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL", "CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"}) {
+			processOtherEventTag(tag, indi, linkPrefix, div2, html);
+			handledTags.add(tag);  
+		}
+		for (String tag : new String[]{"SUBM", "ALIA", "ANCI", "DESI"}) {
+			Property[] refs = indi.getProperties(tag);
+			if (refs.length > 0) {
+				div2.appendChild(html.h2(Gedcom.getName(tag)));
+				Element p = html.p();
+				for (Property ref : refs) {
+					if (ref instanceof PropertyXRef) {
+						getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
+						if (p.hasChildNodes()) div2.appendChild(p);
+						reportUnhandledProperties(ref, null); // There should not be anything here
+					} else {
+						println(tag + " is not reference:" + ref.toString());
+					}
+				}
+			}
 		}
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 
@@ -538,7 +558,7 @@ public class ReportWebsite extends Report {
 	}
 
 	/**
-	 * Create a document for each individual
+	 * Create a document for each source
 	 */
 	protected Html createSourceDoc(Source source, File sourceDir) {
 		List<String> handledTags = new ArrayList<String>();
@@ -710,33 +730,40 @@ public class ReportWebsite extends Report {
 		Element p = html.p();
 		appendTo.appendChild(p);
 		for (PropertyXRef ref : refs) {
-			if (ref.isValid()) {
-				Entity refEnt = ref.getTargetEntity();
-				if (refEnt instanceof Indi) {
-					// Make a link to it if indi
-					p.appendChild(html.link(linkPrefix + addressTo(refEnt.getId()), getName((Indi)refEnt)));
-					p.appendChild(html.br());
-				} else if (refEnt instanceof Fam) {
-					// make a link to the man & wife, if family
-					Indi husb = ((Fam)refEnt).getHusband();
-					if (husb != null) {
-						p.appendChild(html.link(linkPrefix + addressTo(husb.getId()), getName(husb)));
-						p.appendChild(html.br());
-					}
-					Indi wife = ((Fam)refEnt).getWife();
-					if (wife != null) {
-						p.appendChild(html.link(linkPrefix + addressTo(wife.getId()), getName(wife)));
-						p.appendChild(html.br());
-					}
-				} else {
-					p.appendChild(html.link(linkPrefix + addressTo(refEnt.getId()), refEnt.toString()));
-					p.appendChild(html.br());
-				}
-			}
+			getReferenceLink(ref, p, linkPrefix, html, true);
 		}
 		handledTags.add("XREF");
 	}
 
+	protected void getReferenceLink(PropertyXRef ref, Element appendTo,
+			String linkPrefix, Html html, boolean addNewline) {
+		if (ref.isValid()) {
+			Entity refEnt = ref.getTargetEntity();
+			if (refEnt instanceof Indi) {
+				// Make a link to it if indi
+				appendTo.appendChild(html.link(linkPrefix + addressTo(refEnt.getId()), getName((Indi)refEnt)));
+				if (addNewline) appendTo.appendChild(html.br());
+			} else if (refEnt instanceof Fam) {
+				// make a link to the man & wife, if family
+				Indi husb = ((Fam)refEnt).getHusband();
+				Indi wife = ((Fam)refEnt).getWife();
+				if (husb != null) {
+					appendTo.appendChild(html.link(linkPrefix + addressTo(husb.getId()), getName(husb)));
+					if (addNewline || wife != null) appendTo.appendChild(html.br());
+				}
+				if (wife != null) {
+					appendTo.appendChild(html.link(linkPrefix + addressTo(wife.getId()), getName(wife)));
+					if (addNewline) appendTo.appendChild(html.br());
+				}
+			} else {
+				appendTo.appendChild(html.link(linkPrefix + addressTo(refEnt.getId()), refEnt.toString()));
+				if (addNewline) appendTo.appendChild(html.br());
+			}
+		}
+	}
+
+	
+	
 	/**
 	 * Handles images in OBJE-properties
 	 * @param prop The Property containing the OBJE-properties
@@ -854,9 +881,16 @@ public class ReportWebsite extends Report {
 		appendTo.appendChild(html.h2(translate("other")));
 		PropertyChange lastUpdate = (PropertyChange)prop.getProperty("CHAN");
 		if (lastUpdate != null) {
-			appendTo.appendChild(html.p(translate("dataUpdated") + 
-					" " + lastUpdate.getDisplayValue()));
+			Element p = html.p(translate("dataUpdated") + 
+					" " + lastUpdate.getDisplayValue());
+			appendTo.appendChild(p);
 			handledTags.add("CHAN");
+			Element chanNotes = processNotes(prop, linkPrefix, html);
+			if (notes != null) {
+				p.appendChild(html.text(" "));
+				p.appendChild(chanNotes);
+			}
+			reportUnhandledProperties(lastUpdate, new String[] {"NOTE"});
 		}
 		appendTo.appendChild(html.p(translate("pageCreated") + 
 				" " + (new PropertyChange()).getDisplayValue()));
