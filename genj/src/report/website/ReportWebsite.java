@@ -428,27 +428,29 @@ public class ReportWebsite extends Report {
 		
 		// Display parents
 		div1.appendChild(html.h2(translate("parents")));
-		Element parentP = html.p();
-		div1.appendChild(parentP);
-		Fam family = indi.getFamilyWhereBiologicalChild();
-		if (family == null) {
-			parentP.appendChild(html.text(translate("unknown")));
+		List<PropertyFamilyChild> famRefs = indi.getProperties(PropertyFamilyChild.class);
+		if (famRefs.isEmpty()) {
+			div1.appendChild(html.p(translate("unknown")));
 		} else {
-			Indi father = family.getHusband();
-			if (father != null) {
-				parentP.appendChild(html.link(linkPrefix + addressTo(father.getId()), 
-						getName(father)));
-			}
-			Indi mother = family.getWife();
-			if (mother != null) {
-				if (father != null) parentP.appendChild(html.br()); 
-				parentP.appendChild(html.link(linkPrefix + addressTo(mother.getId()), 
-						getName(mother)));
+			for (PropertyFamilyChild famRef : famRefs) {
+				Fam fam = famRef.getFamily();
+				Element p = html.p();
+				div1.appendChild(p);
+				Boolean bio = famRef.isBiological();
+				if (! (bio == null || bio.booleanValue())) {
+				    Property pedi = famRef.getProperty("PEDI");
+				    if (pedi!=null) {
+				    	p.appendChild(html.text(pedi.getValue() + ": "));
+				    	p.appendChild(html.br());
+				    }
+				}
+				getReferenceLink(famRef, p, linkPrefix, html, true);
+				Element notes = processNotes(famRef, linkPrefix, html);
+				if (notes != null) p.appendChild(notes);
+				reportUnhandledProperties(famRef, new String[]{"PEDI", "NOTE"});
 			}
 		}
 		handledTags.add("FAMC");
-
-		// XXX foster parents here...
 
 		// Find spouses and children
 		List<PropertyFamilySpouse> famss = indi.getProperties(PropertyFamilySpouse.class);
