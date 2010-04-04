@@ -39,6 +39,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class ReportWebsite extends Report {
 	//public boolean reportPrivateData = false;
@@ -416,11 +417,11 @@ public class ReportWebsite extends Report {
 			reportUnhandledProperties(indi.getProperty("SEX"), null);
 			// get birth/death
 			Element birth = processEventDetail((PropertyEvent)indi.getProperty("BIRT"), 
-					linkPrefix, html, true); 
+					linkPrefix, indiDir, html, true); 
 			if (birth != null) div1.appendChild(birth);
 			handledTags.add("BIRT");
 			Element death = processEventDetail((PropertyEvent)indi.getProperty("DEAT"), 
-					linkPrefix, html, true); 
+					linkPrefix, indiDir, html, true); 
 			if (death != null) div1.appendChild(death);
 			handledTags.add("DEAT");  
 		}
@@ -474,7 +475,7 @@ public class ReportWebsite extends Report {
 					// Event tags
 					for (String tag : new String[] {"ENGA", "MARR", "MARB", "MARC", "MARL", "MARS", "EVEN", "ANUL", "CENS", "DIV", "DIVF"}) {
 						for (Property event : fam.getProperties(tag)) {
-							div1.appendChild(processEventDetail(event, linkPrefix, html, true));
+							div1.appendChild(processEventDetail(event, linkPrefix, indiDir, html, true));
 						}
 					}
 					// Single tags
@@ -516,8 +517,9 @@ public class ReportWebsite extends Report {
 		if (isPrivate) return html;
 
 		Element div2 = html.div("right");
-		for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL", "CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"}) {
-			processOtherEventTag(tag, indi, linkPrefix, div2, html);
+		for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL",
+				"CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"}) {
+			processOtherEventTag(tag, indi, linkPrefix, indiDir, div2, html);
 			handledTags.add(tag);  
 		}
 		for (String tag : new String[]{"SUBM", "ALIA", "ANCI", "DESI"}) {
@@ -535,7 +537,30 @@ public class ReportWebsite extends Report {
 					}
 				}
 			}
+			handledTags.add(tag);  
 		}
+		Property[] refs = indi.getProperties("ASSO");
+		if (refs.length > 0) {
+			div2.appendChild(html.h2(Gedcom.getName("ASSO")));
+			for (Property ref : refs) {
+				if (ref instanceof PropertyXRef) {
+					Property relation = ref.getProperty("RELA"); // Must exist according to spec
+					Element p = html.p(relation.getDisplayValue() + ": ");
+					getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
+					if (p.hasChildNodes()) div2.appendChild(p);
+					Element notes = processNotes(ref, linkPrefix, html);
+					if (notes != null) p.appendChild(notes);
+					Element sources = processSources(ref, linkPrefix, html);
+					if (sources != null) p.appendChild(sources);
+					reportUnhandledProperties(ref, new String[] {"RELA", "NOTE", "SOUR"});
+				} else {
+					println("ASSO is not reference:" + ref.toString());
+				}
+			}
+			handledTags.add("ASSO");  
+		}
+		
+		
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 
 		// OBJE - Images etc
@@ -939,20 +964,36 @@ public class ReportWebsite extends Report {
 	}
 	
 	protected void processOtherEventTag(String tag, Property prop, String linkPrefix,
-			Element appendTo, Html html) {
+			File dstDir, Element appendTo, Html html) {
 		Property[] subProp = prop.getProperties(tag);
 		if (subProp.length == 0) return;
 		appendTo.appendChild(html.h2(Gedcom.getName(tag)));
 		for (int i = 0; i < subProp.length; i++){
-			appendTo.appendChild(processEventDetail(subProp[i], linkPrefix, html, false));
+			appendTo.appendChild(processEventDetail(subProp[i], linkPrefix, dstDir, html, false));
 		}
 	}
 
 	/** 
-	 * Handles both EVEN and some other types BIRT, DEAT, BURY 
+	 * Handles both EVEN and some other types BIRT, DEAT, BURY, etc
+	 * EVENT_DETAIL: =
+	 *  X n  TYPE <EVENT_DESCRIPTOR>  {0:1}
+	 *  X n  DATE <DATE_VALUE>  {0:1}
+	 *  X n  <<PLACE_STRUCTURE>>  {0:1}
+	 *  X n  <<ADDRESS_STRUCTURE>>  {0:1}
+	 *   n  AGE <AGE_AT_EVENT>  {0:1}
+	 *   n  AGNC <RESPONSIBLE_AGENCY>  {0:1}
+	 *   n  CAUS <CAUSE_OF_EVENT>  {0:1}
+	 *  X n  <<SOURCE_CITATION>>  {0:M}
+	 *   n  <<MULTIMEDIA_LINK>>  {0:M}
+	 *  X n  <<NOTE_STRUCTURE>>  {0:M}
+	 *
+	 *  For full support: (also handle)
+	 *    FAMC @<XREF:FAM>@  {0:1}  (BIRT/CHR/ADOP)
+	 *         +1 ADOP <ADOPTED_BY_WHICH_PARENT>  {0:1}   (ADOP)
 	 */
+	
 	protected Element processEventDetail(Property event, String linkPrefix, 
-			Html html, boolean displayTagDescription) {
+			File dstDir, Html html, boolean displayTagDescription) {
 		if (event == null) return null;
 		Element p = html.p();
 
@@ -988,14 +1029,54 @@ public class ReportWebsite extends Report {
 			p.appendChild(html.br());
 			p.appendChild(note);
 		}
-		// MULTIMEDIA XXX
-		// AGE - AGE_AT_EVENT XXX
-		// AGNC XXX
-		// CAUS XXX
-		reportUnhandledProperties(event, new String[]{"DATE", "PLAC", "TYPE", "NOTE", "SOUR", "ADDR"});
+		// AGE, AGNC, CAUS
+		for (String tag : new String[] {"AGE", "AGNC", "CAUS"}) {
+			Property tagProp = event.getProperty(tag);
+			if (tagProp != null) p.appendChild(html.text(Gedcom.getName(tag) + " " + tagProp.getDisplayValue()));
+		}
+		// FAMC, FAMC:ADOP (for those events supporting that)
+		Property famRef = event.getProperty("FAMC");
+		if (famRef != null) { 
+			if (famRef instanceof PropertyXRef) {
+				Fam fam = (Fam)((PropertyXRef)famRef).getTargetEntity();
+				Property adoptedBy = famRef.getProperty("ADOP");
+				if (adoptedBy != null) makeLinkToFamily(p, fam, adoptedBy.getValue(), linkPrefix, html);
+				else makeLinkToFamily(p, fam, null, linkPrefix, html);
+			} else {
+				println(event.getTag() + ":FAMC is not a reference:" + event.getValue());
+			}
+		}
+		// OBJE - MULTIMEDIA
+		Element pObj = processObjects(event, linkPrefix, dstDir, html, true);
+		if (pObj != null && pObj.hasChildNodes()) {
+			NodeList nl = pObj.getChildNodes();
+			for (int i = 0; i < nl.getLength(); i++) p.appendChild(nl.item(i));
+		}
+		
+		reportUnhandledProperties(event, new String[]{"DATE", "PLAC", "TYPE", "NOTE", "SOUR", "ADDR", "AGE", "AGNC", "CAUS", "FAMC"});
 		return p;
 	}
 
+	protected void makeLinkToFamily(Element appendTo, Fam fam, String memberOfFamily, String linkPrefix, Html html) {
+		Indi husb = fam.getHusband();
+		Indi wife = fam.getWife();
+		if (memberOfFamily == null || memberOfFamily.equals("BOTH")) {
+			if (husb != null) {
+				appendTo.appendChild(html.link(linkPrefix + addressTo(husb.getId()), getName(husb)));
+				if (wife != null) appendTo.appendChild(html.text(" " + translate("and") + " "));
+			}
+			if (wife != null) appendTo.appendChild(html.link(linkPrefix + addressTo(wife.getId()), getName(wife)));
+		} else {
+			if (memberOfFamily.equals("WIFE")) {
+				if (wife != null) appendTo.appendChild(html.link(linkPrefix + addressTo(wife.getId()), getName(wife)));
+			} else if (memberOfFamily.equals("HUSB")) {
+				if (husb != null) appendTo.appendChild(html.link(linkPrefix + addressTo(husb.getId()), getName(husb)));
+			} else {
+				println("Invalid value on member of family:" + memberOfFamily);
+			}
+		}
+	}
+	
 	protected Element processPlace(Property place, String linkPrefix, Html html) {
 		if (place == null) return null;
 		Element span = html.span("place", place.getValue());
