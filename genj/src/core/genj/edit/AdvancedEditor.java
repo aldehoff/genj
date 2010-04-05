@@ -710,7 +710,8 @@ import javax.swing.tree.TreePath;
       Context ctx = new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection);
       if (!selection.isEmpty())
         SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
-      setContextImpl(ctx, false);
+      if (ctx.getProperties().size()!=1)
+        setContextImpl(ctx, false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
