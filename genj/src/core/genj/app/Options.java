@@ -22,32 +22,25 @@ package genj.app;
 import genj.lnf.LnF;
 import genj.option.Option;
 import genj.option.OptionProvider;
-import genj.option.OptionUI;
-import genj.option.OptionsWidget;
 import genj.option.PropertyOption;
 import genj.util.EnvironmentChecker;
 import genj.util.Resources;
-import genj.util.swing.Action2;
 
-import java.awt.Desktop;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.UIManager;
 
 /**
  * Application options
  */
 public class Options extends OptionProvider {
+  
+  private final static Logger LOG = Logger.getLogger("genj.app");
 
   /** constants */
   private final static String SWING_RESOURCES_KEY_PREFIX = "swing.";
@@ -84,17 +77,17 @@ public class Options extends OptionProvider {
     result.add("en");
 
     // look for development mode -Dgenj.language.dir or in  ./language/xy (except 'CVS')
-    File[] dirs = new File(EnvironmentChecker.getProperty("genj.language.dir", "./language", "Dev-time language directory switch")).listFiles();
+    File[] dirs = new File(EnvironmentChecker.getProperty("genj.language.dir", "language", "Dev-time language directory switch")).listFiles();
     if (dirs!=null) {
       for (int i = 0; i < dirs.length; i++) {
         String dir = dirs[i].getName();
-        if (!"CVS".equals(dir))
-          result.add(dir);
+        LOG.fine("Found language directory "+dirs[i].getAbsolutePath());
+        result.add(dir);
       }
     }
 
     // look for language libraries (./lib/genj_pt_BR.jar)
-    File[] libs = new File("./lib").listFiles();
+    File[] libs = new File("lib").listFiles();
     if (libs!=null)
       for (int l=0;l<libs.length;l++) {
         File lib = libs[l];
@@ -102,6 +95,8 @@ public class Options extends OptionProvider {
         String name = lib.getName();
         if (!name.startsWith("genj_")) continue;
         if (!name.endsWith  (".jar" )) continue;
+        LOG.fine("Found language archive "+lib.getAbsolutePath());
+        
         result.add(name.substring(5, name.length()-4));
       }
 
