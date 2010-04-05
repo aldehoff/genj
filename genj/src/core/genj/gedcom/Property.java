@@ -415,7 +415,7 @@ public abstract class Property implements Comparable<Property> {
     // valid or not ?
     if (!checkValid||isValid()) {
       if (image==null) 
-        image = getMetaProperty().getImage(); 
+        image = getGedcom()!=null ? getMetaProperty().getImage() : MetaProperty.IMG_CUSTOM; 
       return image;
     }
     
