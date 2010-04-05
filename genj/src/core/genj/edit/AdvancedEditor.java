@@ -28,6 +28,7 @@ import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
 import genj.io.PropertyReader;
@@ -65,12 +66,15 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
 import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -287,9 +291,18 @@ import javax.swing.tree.TreePath;
       // add bean to center of editPane 
       editPane.add(bean, BorderLayout.CENTER);
 
-      // and a label to the top
-      final JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
-      editPane.add(label, BorderLayout.NORTH);
+      // and a label/button for the top
+      JToolBar header = new JToolBar();
+      header.setFloatable(false);
+      if (prop instanceof PropertyXRef) {
+        JButton follow = new JButton(new Follow((PropertyXRef)prop));
+        header.add(follow);
+      } else { 
+        JLabel label = new JLabel(Gedcom.getName(prop.getTag()), prop.getImage(false), SwingConstants.LEFT);
+        label.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        header.add(label);
+      }
+      editPane.add(header, BorderLayout.NORTH);
 
       // listen to it
       changes.setChanged(false);
@@ -590,6 +603,22 @@ import javax.swing.tree.TreePath;
     }
   
   } //Paste
+  
+  /**
+   * Action - follow
+   */
+  private class Follow extends Action2 {
+    private PropertyXRef xref;
+    public Follow(PropertyXRef xref) {
+      this.xref = xref;
+      setText(Gedcom.getName(xref.getTag()));
+      setImage(xref.getImage(false));
+    }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, new Context(xref), true);
+    }
+  }
   
   /**
    * Action - add
