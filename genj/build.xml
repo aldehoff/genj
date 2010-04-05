@@ -301,6 +301,7 @@
        <jvmarg line="${java.jvmargs}"/>
        <sysproperty key="genj.gedcom.dir" value="${basedir}/gedcom"/>
        <sysproperty key="genj.language.dir" value="${basedir}/language"/>
+      <sysproperty key="genj.report.dir" value="${basedir}/build/classes/report"/>
     </java>
   </target>
   		
