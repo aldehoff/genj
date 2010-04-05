@@ -62,6 +62,23 @@ public class ReportForYEd extends Report {
 		}
 	}
 
+	public class Gender {
+		public String unknown = "";
+		public String male = "\u2642";
+		public String female = "\u2640";
+		private final String[] snippets = new String[3];
+
+		public Gender() {
+			snippets[PropertySex.UNKNOWN] = unknown;
+			snippets[PropertySex.MALE] = male;
+			snippets[PropertySex.FEMALE] = female;
+		}
+
+		private String format(final Indi indi) {
+			return snippets[indi.getSex()];
+		}
+	}
+
 	public class Images {
 
 		public String famImage = translate("imageSnippetDefault");
@@ -72,8 +89,9 @@ public class ReportForYEd extends Report {
 
 			if (htmlFormat == null || htmlFormat.equals(""))
 				return null;
-			final Property property = entity
-					.getPropertyByPath("INDI:OBJE:FILE");
+			final Property property = entity instanceof Indi ? entity
+					.getPropertyByPath("INDI:OBJE:FILE") : entity
+					.getPropertyByPath("FAM:OBJE:FILE");
 			if (property == null)
 				return null;
 			final String value = property.getValue();
@@ -114,6 +132,7 @@ public class ReportForYEd extends Report {
 	public Images images = new Images();
 	public Links links = new Links();
 	public Filter filter = new Filter();
+	public Gender gender = new Gender();
 
 	private final String XML_LINK_CONTAINER = getString("LinkContainer");
 	private final String XML_POPUP_CONTAINER = getString("PopUpContainer");
@@ -138,11 +157,11 @@ public class ReportForYEd extends Report {
 		}
 		final Collection<Indi> indis = new HashSet<Indi>();
 		final Collection<Fam> fams = new HashSet<Fam>();
-		for (Indi indi : gedcom.getIndis()) {
-			String value = indi.getPropertyValue(filter.tag);
+		for (final Indi indi : gedcom.getIndis()) {
+			final String value = indi.getPropertyValue(filter.tag);
 			if (value != null && value.contains(filter.content)) {
 				indis.add(indi);
-				for (Fam fam : indi.getFamiliesWhereSpouse()) {
+				for (final Fam fam : indi.getFamiliesWhereSpouse()) {
 					fams.add(fam);
 				}
 			}
@@ -237,7 +256,9 @@ public class ReportForYEd extends Report {
 
 		out.flush();
 		out.close();
-		println("ready with: " + reportFile.getAbsoluteFile());
+		println(MessageFormat.format("{0} persons {1} families on: {2}",
+				sortedIndis.size(), families.size(), reportFile
+						.getAbsoluteFile()));
 	}
 
 	private List<Indi> sortByAge(final Collection<Indi> indis) {
@@ -341,6 +362,7 @@ public class ReportForYEd extends Report {
 	private String createLabel(final Indi indi) {
 
 		final String image = images.format(indi, images.indiImage);
+		final String sex = gender.format(indi);
 		final String name = indi.getPropertyDisplayValue("NAME");
 		final String occu = indi.getPropertyDisplayValue("OCCU");
 
@@ -351,15 +373,17 @@ public class ReportForYEd extends Report {
 
 		final String format;
 		if (image != null) {
-			format = "<html><table><tr><td><p>{0}<br>{1}<br>{2}<br>{3}</p></td><td>{4}</td></tr></table></body></html>";
+			format = "<html><table><tr><td>{5}<p>{0}<br>{1}<br>{2}<br>{3}</p></td><td>{4}</td></tr></table></body></html>";
 		} else if (showOccupation && occu != null && !occu.trim().equals("")) {
-			format = "<html><body>{0}<br>{1}<br>{2}<br>{3}</body></html>";
+			format = "<html><body>{5}<p>{0}<br>{1}<br>{2}<br>{3}</p></body></html>";
 		} else if (!birth.equals("") || !death.equals("")) {
-			format = "<html><body>{0}<br>{1}<br>{2}</body></html>";
+			format = "<html><body>{5}<p>{0}<br>{1}<br>{2}</p></body></html>";
+		} else if (!sex.equals("")) {
+			format = "<html><body>{5}<p>{0}</p></body></html>";
 		} else {
 			format = "{0}";
 		}
-		return wrap(format, name, birth, death, occu, image);
+		return wrap(format, name, birth, death, occu, image, sex);
 	}
 
 	private String wrap(final String format, final Object... args) {
