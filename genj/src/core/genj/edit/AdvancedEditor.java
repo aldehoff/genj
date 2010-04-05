@@ -280,9 +280,10 @@ import javax.swing.tree.TreePath;
     ignoreTreeSelection = false;
     
     // show bean for single selection
-    if (props.size()!=1)
+    if (props.size()==0)
       return;
-    Property prop = props.get(0);
+    
+    Property prop = props.get(props.size()-1);
     try {
 
       // get a bean for property
@@ -707,9 +708,9 @@ import javax.swing.tree.TreePath;
         return;
       List<Property> selection = tree.getSelection();
       Context ctx = new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection);
-      setContextImpl(ctx, false);
       if (!selection.isEmpty())
         SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
+      setContextImpl(ctx, false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {

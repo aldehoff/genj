@@ -31,7 +31,6 @@ import genj.util.swing.Action2;
 import genj.util.swing.ButtonHelper;
 import genj.util.swing.DialogHelper;
 import genj.view.ContextProvider;
-import genj.view.SelectionSink;
 import genj.view.ToolBar;
 import genj.view.View;
 import genj.view.ViewContext;
@@ -55,7 +54,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Component for editing genealogic entity properties
  */
-public class EditView extends View implements ContextProvider, SelectionSink  {
+public class EditView extends View implements ContextProvider{
   
   /*package*/ final static Logger LOG = Logger.getLogger("genj.edit");
   private final static Registry REGISTRY = Registry.get(EditView.class);
@@ -96,17 +95,6 @@ public class EditView extends View implements ContextProvider, SelectionSink  {
     focus.setSelected(REGISTRY.get("focus", false));
 
     // Done
-  }
-  
-  @Override
-  public void fireSelection(Context context, boolean isActionPerformed) {
-    if (!isActionPerformed)
-      isIgnoreSetContext = true;
-    try {
-      Dispatcher.fireSelection(this, context, isActionPerformed);
-    } finally {
-      isIgnoreSetContext = false;
-    }
   }
   
   /**
