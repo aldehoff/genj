@@ -110,7 +110,9 @@ public class ReportForYEd extends Report {
 
 		public String tag = "_YED";
 		public String content = "";
-		public boolean active = false;
+		public boolean active = true;
+		public boolean descendants = true;
+		public boolean ancestors = true;
 	}
 
 	public class Links {
@@ -157,12 +159,36 @@ public class ReportForYEd extends Report {
 		}
 		final Collection<Indi> indis = new HashSet<Indi>();
 		final Collection<Fam> fams = new HashSet<Fam>();
+		
+		for (final Fam fam : gedcom.getFamilies()) {
+			final String value = fam.getPropertyValue(filter.tag);
+			if (value != null && value.contains(filter.content)) {
+				fams.add(fam);
+				indis.add(fam.getHusband());
+				indis.add(fam.getWife());
+				if (filter.descendants) {
+					collectDecendants(indis, fams, fam.getHusband());
+					collectDecendants(indis, fams, fam.getWife());
+				}
+				if (filter.ancestors) {
+					collectAncestors(indis, fams, fam.getHusband());
+					collectAncestors(indis, fams, fam.getWife());
+				}
+			}
+		}
+		
 		for (final Indi indi : gedcom.getIndis()) {
 			final String value = indi.getPropertyValue(filter.tag);
 			if (value != null && value.contains(filter.content)) {
 				indis.add(indi);
 				for (final Fam fam : indi.getFamiliesWhereSpouse()) {
 					fams.add(fam);
+				}
+				if (filter.descendants) {
+					collectDecendants(indis, fams, indi);
+				}
+				if (filter.descendants) {
+					collectAncestors(indis, fams, indi);
 				}
 			}
 		}
@@ -233,6 +259,8 @@ public class ReportForYEd extends Report {
 	private void generateReport(final Collection<Fam> families,
 			final Collection<Indi> indis) throws FileNotFoundException,
 			IOException {
+		println(MessageFormat.format("{0} persons {1} families",
+				indis.size(), families.size()) );
 
 		final List<Indi> sortedIndis = sortByAge(indis);
 
@@ -256,9 +284,7 @@ public class ReportForYEd extends Report {
 
 		out.flush();
 		out.close();
-		println(MessageFormat.format("{0} persons {1} families on: {2}",
-				sortedIndis.size(), families.size(), reportFile
-						.getAbsoluteFile()));
+		println("ready");
 	}
 
 	private List<Indi> sortByAge(final Collection<Indi> indis) {
