@@ -11,7 +11,7 @@ import genj.option.CustomOption;
 import genj.option.Option;
 import genj.report.Report;
 import genj.gedcom.*;
-
+import genj.gedcom.MultiLineProperty.Iterator;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -80,7 +79,13 @@ public class ReportWebsite extends Report {
     /** Collecting data to the index */
     protected List<Indi> personsWithImage = null;
     
-	/**
+    /** Used for handling note and sources on a person/item */
+    protected Element sourceDiv = null;
+    protected int sourceCounter = 0;
+    protected Element noteDiv = null;
+    protected int noteCounter = 0;
+
+    /**
 	 * Main for argument Gedcom
 	 */
 	public void start(Gedcom gedcom) throws Exception {
@@ -376,7 +381,8 @@ public class ReportWebsite extends Report {
 	 */
 	protected Html createIndiDoc(Indi indi, File indiDir) {
 		List<String> handledTags = new ArrayList<String>();
-		
+		resetNoteAndSourceList();
+				
 		String linkPrefix = relativeLinkPrefix(indi.getId());
 
 		Html html = new Html(getName(indi), linkPrefix);
@@ -398,11 +404,9 @@ public class ReportWebsite extends Report {
 			Element h1 = html.h1(getName(indi));
 			bodyNode.appendChild(h1);
 			// SOUR - Sources
-			Element sources = processSources(name, linkPrefix, html);
-			if (sources != null) h1.appendChild(sources);
+			processSourceRefs(h1, name, linkPrefix, indiDir, html);
 			// NOTE
-			Element note = processNote(name.getProperty("NOTE"), linkPrefix, html);
-			if (note != null) bodyNode.appendChild(html.p(note));
+			processNoteRefs(h1, name, linkPrefix, indiDir, html);
 			reportUnhandledProperties(indi.getProperty("NAME"), new String[]{"SOUR","NOTE"});
 		} else {
 			bodyNode.appendChild(html.h1("("+translate("unknown")+")"));
@@ -450,8 +454,7 @@ public class ReportWebsite extends Report {
 				    }
 				}
 				getReferenceLink(famRef, p, linkPrefix, html, true);
-				Element notes = processNotes(famRef, linkPrefix, html);
-				if (notes != null) p.appendChild(notes);
+				processNoteRefs(p, name, linkPrefix, indiDir, html);
 				reportUnhandledProperties(famRef, new String[]{"PEDI", "NOTE"});
 			}
 		}
@@ -471,14 +474,10 @@ public class ReportWebsite extends Report {
 					h2.appendChild(html.text(translate("unknown")));
 				}
 				// Notes on the link to family
-				Element notesFAMS = processNotes(pfs, linkPrefix, html);
-				if (notesFAMS != null) div1.appendChild(notesFAMS);
+				processSourceRefs(div1, name, linkPrefix, indiDir, html);
 				
 				if (! isPrivate) {
-					Element sourceSup = processSources(fam, linkPrefix, html);
-					if (sourceSup != null) {
-						h2.appendChild(sourceSup);
-					}
+					processSourceRefs(h2, name, linkPrefix, indiDir, html);
 					// Event tags
 					for (String tag : new String[] {"ENGA", "MARR", "MARB", "MARC", "MARL", "MARS", "EVEN", "ANUL", "CENS", "DIV", "DIVF"}) {
 						for (Property event : fam.getProperties(tag)) {
@@ -492,8 +491,7 @@ public class ReportWebsite extends Report {
 							div1.appendChild(html.text(Gedcom.getName(tag) + ": " + singleTag.getDisplayValue()));
 						}
 					}
-					Element notesP = processNotes(fam, linkPrefix, html);
-					if (notesP != null) div1.appendChild(notesP);
+					processNoteRefs(div1, fam, linkPrefix, indiDir, html);
 					
 					Element images = processObjects(fam, linkPrefix, indiDir, html, true);
 					if (images != null)	div1.appendChild(images);
@@ -555,10 +553,8 @@ public class ReportWebsite extends Report {
 					Element p = html.p(relation.getDisplayValue() + ": ");
 					getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
 					if (p.hasChildNodes()) div2.appendChild(p);
-					Element notes = processNotes(ref, linkPrefix, html);
-					if (notes != null) p.appendChild(notes);
-					Element sources = processSources(ref, linkPrefix, html);
-					if (sources != null) p.appendChild(sources);
+					processNoteRefs(p, ref, linkPrefix, indiDir, html);
+					processSourceRefs(p, ref, linkPrefix, indiDir, html);
 					reportUnhandledProperties(ref, new String[] {"RELA", "NOTE", "SOUR"});
 				} else {
 					println("ASSO is not reference:" + ref.toString());
@@ -583,7 +579,8 @@ public class ReportWebsite extends Report {
 
 		Element divBottom = html.div("bottom");
 		bodyNode.appendChild(divBottom);
-		processNumberNoteSourceChangeRest(indi, linkPrefix, divBottom, html, handledTags);
+		processNumberNoteSourceChangeRest(indi, linkPrefix, divBottom, indiDir, html, handledTags);
+		addNoteAndSourceList(bodyNode);
 		
 		makeFooter(bodyNode, html);
 		return html;
@@ -594,6 +591,7 @@ public class ReportWebsite extends Report {
 	 */
 	protected Html createSourceDoc(Source source, File sourceDir) {
 		List<String> handledTags = new ArrayList<String>();
+		resetNoteAndSourceList();
 		
 		String linkPrefix = relativeLinkPrefix(source.getId());
 
@@ -631,8 +629,9 @@ public class ReportWebsite extends Report {
 				reportUnhandledProperties(caln, new String[] {"MEDI"});
 			}
 			// Handle notes
-			Element notes = processNotes(repo, linkPrefix, html);
-			if (notes != null) div1.appendChild(notes);
+			processNoteRefs(div1, repo, linkPrefix, sourceDir, html);
+			/* XXXElement notes = processNotes(repo, linkPrefix, html);
+			if (notes != null) div1.appendChild(notes);*/
 			
 			reportUnhandledProperties(repo, new String[] {"NOTE", "CALN"});
 		}
@@ -652,7 +651,8 @@ public class ReportWebsite extends Report {
 		
 		Element divBottom = html.div("bottom");
 		bodyNode.appendChild(divBottom);
-		processNumberNoteSourceChangeRest(source, linkPrefix, divBottom, html, handledTags);
+		processNumberNoteSourceChangeRest(source, linkPrefix, divBottom, sourceDir, html, handledTags);
+		addNoteAndSourceList(bodyNode);
 
 		makeFooter(bodyNode, html);
 		return html;
@@ -661,6 +661,7 @@ public class ReportWebsite extends Report {
 	protected Html createRepoDoc(Repository repo, File parentFile) {
 		List<String> handledTags = new ArrayList<String>();
 		String linkPrefix = relativeLinkPrefix(repo.getId());
+		resetNoteAndSourceList();
 
 		Html html = new Html(Gedcom.getName("REPO") + " " + repo.getId() + ": " + repo.toString(), linkPrefix);
 		Document doc = html.getDoc();
@@ -701,7 +702,8 @@ public class ReportWebsite extends Report {
 		
 		Element divBottom = html.div("bottom");
 		bodyNode.appendChild(divBottom);
-		processNumberNoteSourceChangeRest(repo, linkPrefix, divBottom, html, handledTags);
+		processNumberNoteSourceChangeRest(repo, linkPrefix, divBottom, parentFile, html, handledTags);
+		addNoteAndSourceList(bodyNode);
 
 		makeFooter(bodyNode, html);
 		return html;
@@ -872,21 +874,22 @@ public class ReportWebsite extends Report {
 	 * @param html
 	 */
 	protected void processNumberNoteSourceChangeRest(Property prop, String linkPrefix,
-			Element appendTo, Html html, List<String> handledTags) {
+			Element appendTo, File destDir, Html html, List<String> handledTags) {
 
 		// SOUR
-		Element sources = processSources(prop, linkPrefix, html);
-		if (sources != null) {
+		Element sourceP = html.p(); 
+		processSourceRefs(sourceP, prop, linkPrefix, destDir, html);
+		if (sourceP.hasChildNodes()) {
 			appendTo.appendChild(html.h2(Gedcom.getName("SOUR", true)));
-			appendTo.appendChild(sources);
+			appendTo.appendChild(sourceP);
 		}
 		handledTags.add("SOUR");
-		
-		// NOTE
-		Element notes = processNotes(prop, linkPrefix, html);
-		if (notes != null) {
+
+		Element noteP = html.p(); 
+		processNoteRefs(noteP, prop, linkPrefix, destDir, html);
+		if (noteP.hasChildNodes()) {
 			appendTo.appendChild(html.h2(Gedcom.getName("NOTE", true)));
-			appendTo.appendChild(notes);
+			appendTo.appendChild(noteP);
 		}
 		handledTags.add("NOTE");
 		
@@ -917,11 +920,7 @@ public class ReportWebsite extends Report {
 					" " + lastUpdate.getDisplayValue());
 			appendTo.appendChild(p);
 			handledTags.add("CHAN");
-			Element chanNotes = processNotes(prop, linkPrefix, html);
-			if (notes != null) {
-				p.appendChild(html.text(" "));
-				p.appendChild(chanNotes);
-			}
+			processNoteRefs(p, lastUpdate, linkPrefix, destDir, html);
 			reportUnhandledProperties(lastUpdate, new String[] {"NOTE"});
 		}
 		appendTo.appendChild(html.p(translate("pageCreated") + 
@@ -932,7 +931,6 @@ public class ReportWebsite extends Report {
 		Element otherProperties = getAllProperties(prop, html, handledTags);
 		if (otherProperties != null)
 		appendTo.appendChild(otherProperties);
-
 
 	}
 
@@ -1022,20 +1020,15 @@ public class ReportWebsite extends Report {
 		if (date != null) 
 			p.appendChild(html.text(date.getDisplayValue() + " "));
 		// PLAC - PLACE STRUCTURE
-		Element place = processPlace(event.getProperty("PLAC"), linkPrefix, html);
+		Element place = processPlace(event.getProperty("PLAC"), linkPrefix, dstDir, html);
 		if (place != null) p.appendChild(place);
 		// ADDRESS_STRUCTURE
 		Element address = processAddress(event.getProperty("ADDR"), html);
 		if (address != null) p.appendChild(address);
 		// SOUR - Sources
-		Element sources = processSources(event, linkPrefix, html);
-		if (sources != null) p.appendChild(sources);
+		processSourceRefs(p, event, linkPrefix, dstDir, html);
 		// NOTE
-		Element note = processNote(event.getProperty("NOTE"), linkPrefix, html);
-		if (note != null) {
-			p.appendChild(html.br());
-			p.appendChild(note);
-		}
+		processNoteRefs(p, event, linkPrefix, dstDir, html);
 		// AGE, AGNC, CAUS
 		for (String tag : new String[] {"AGE", "AGNC", "CAUS"}) {
 			Property tagProp = event.getProperty(tag);
@@ -1084,18 +1077,13 @@ public class ReportWebsite extends Report {
 		}
 	}
 	
-	protected Element processPlace(Property place, String linkPrefix, Html html) {
+	protected Element processPlace(Property place, String linkPrefix, File dstDir, Html html) {
 		if (place == null) return null;
 		Element span = html.span("place", placeDisplayFormat.equals("all") ? place.getValue() : place.format(placeDisplayFormat).replaceAll("^(,|(, ))*", "").trim());
 		// SOUR - Sources
-		Element sources = processSources(place, linkPrefix, html);
-		if (sources != null) span.appendChild(sources);
+		processSourceRefs(span, place, linkPrefix, dstDir, html);
 		// NOTE
-		Element note = processNote(place.getProperty("NOTE"), linkPrefix, html);
-		if (note != null) {
-			span.appendChild(html.br());
-			span.appendChild(note);
-		}
+		processNoteRefs(span, place, linkPrefix, dstDir, html);
 		// MAP - Geografic position
 		Property map = place.getProperty("MAP");
 		if (map != null && reportLinksToMap) {
@@ -1131,24 +1119,30 @@ public class ReportWebsite extends Report {
 	 * Handles all SOUR-stuff in prop 
 	 * @return a <sup> element or null
 	 */
-	protected Element processSources(Property prop, String linkPrefix, Html html) {
+	/*protected Element processSources(Property prop, String linkPrefix, Html html) {
 		Property[] sources = prop.getProperties("SOUR");
 		if (sources.length > 0) {
 			Element sup = html.sup("source");
-			for (int i = 0; i < sources.length; i++) {
-				Source source = (Source)((PropertySource)sources[i]).getTargetEntity();
-				if (i > 0) sup.appendChild(html.text(", "));
-				sup.appendChild(html.link(linkPrefix + addressTo(source.getId()), 
-						source.getId()));
-				// It may contain subtags according to gedcom spec
-				reportUnhandledProperties(sources[i], null);
+			for (Property sourceRef : sources) {
+				if (sourceRef instanceof PropertySource) { 
+					Source source = (Source)((PropertySource)sourceRef).getTargetEntity();
+					if (sup.hasChildNodes()) sup.appendChild(html.text(", "));
+					sup.appendChild(html.link(linkPrefix + addressTo(source.getId()), 
+							source.getId()));
+					reportUnhandledProperties(sourceRef, null);
+				} else {
+					// Direct source desc
+					sup.appendChild(html.text(sourceRef.getDisplayValue()));
+					Property text = sourceRef.getProperties()
+					reportUnhandledProperties(sourceRef, null);
+				}
 			}
 			return sup;
 		}
 		return null;
-	}
+	}*/
 
-	protected Element processNotes(Property prop, String linkPrefix, Html html) {
+	/*protected Element processNotes(Property prop, String linkPrefix, Html html) {
 		Property[] notes = prop.getProperties("NOTE");
 		if (notes.length > 0) {
 			Element p = html.p(Gedcom.getName("NOTE", true) + ": ");
@@ -1158,20 +1152,198 @@ public class ReportWebsite extends Report {
 			return p;
 		}
 		return null;
+	}*/
+
+	/**
+	 * Adds references in the source list and adds a superscript-link on appendTo 
+	 */
+	protected void processSourceRefs(Element appendTo, Property prop, String linkPrefix, File dstDir, Html html) {
+		Property[] sourceRefs = prop.getProperties("SOUR");
+		if (sourceRefs.length > 0) {
+	    	if (sourceDiv == null) {
+	    		sourceDiv = html.div("left");
+	    		sourceCounter = 1;
+	    	}
+			Element sup = html.sup("source");
+			for (Property sourceRef : sourceRefs) {
+				if (sup.hasChildNodes()) sup.appendChild(html.text(", "));
+				sup.appendChild(addSourceRef(sourceRef, linkPrefix, dstDir, html));
+			}
+			appendTo.appendChild(sup);
+		}
+	}
+
+	/**
+	 * Adds the source to the list and return an internal link (#S[n]) to it
+	 * @param sourceRef
+	 * @return
+	 */
+	protected Element addSourceRef(Property sourceRef, String linkPrefix, File dstDir, Html html) {
+		int number = sourceCounter++;
+		Element p = html.p();
+		sourceDiv.appendChild(p);
+		Element anchor = html.anchor("S" + number);
+		p.appendChild(anchor);
+		anchor.appendChild(html.text("S" + number + ": "));
+	
+		if (sourceRef instanceof PropertySource) {
+			// Reference
+			// Link to source
+			Source source = (Source)((PropertySource)sourceRef).getTargetEntity();
+			p.appendChild(html.link(linkPrefix + addressTo(source.getId()), source.toString()));
+			// PAGE
+			Property page = sourceRef.getProperty("PAGE");
+			if (page != null) {
+				p.appendChild(html.text(" " + Gedcom.getName("PAGE") + ": " + 
+						page.getDisplayValue()));
+	       		reportUnhandledProperties(page, null);
+			}
+			// EVEN
+			Property even = sourceRef.getProperty("EVEN");
+			if (even != null) {
+				p.appendChild(html.text(" " + Gedcom.getName("EVEN") + ": " +
+						even.getDisplayValue()));
+				Property role = even.getProperty("ROLE");
+				if (role != null) {
+					p.appendChild(html.text(" " + Gedcom.getName("ROLE") + ": " +
+						role.getDisplayValue()));
+	           		reportUnhandledProperties(role, null);
+				}
+	       		reportUnhandledProperties(even, new String[] {"ROLE"});
+			}
+			// DATA
+			Property data = sourceRef.getProperty("DATA");
+			if (data != null) {
+				p.appendChild(html.text(" " + Gedcom.getName("DATA") + ": " +
+						data.getDisplayValue()));
+				Property date = data.getProperty("DATE");
+				if (date != null) p.appendChild(html.text(" " + date.getDisplayValue()));
+				Property text = data.getProperty("TEXT");
+	   			if (text != null) p.appendChild(html.text(" " + text.getDisplayValue()));
+	   			reportUnhandledProperties(data, new String[] {"DATE", "TEXT"});
+			}
+			// QUAY
+			Property quay = sourceRef.getProperty("QUAY");
+			if (quay != null) {
+				p.appendChild(html.text(" " + Gedcom.getName("QUAY") + ": " + 
+						page.getDisplayValue())); // XXX Check out what this turns into (0..3) should be translated into something readable
+	       		reportUnhandledProperties(quay, null);
+			}
+			// OBJE, in new paragraph
+			Element pObj = processObjects(sourceRef, linkPrefix, dstDir, html, true);
+			if (pObj != null) sourceDiv.appendChild(pObj);
+					
+	   		reportUnhandledProperties(sourceRef, new String[] {"PAGE", "EVEN", "DATA", "QUAY", "OBJE", "NOTE"});
+		} else {
+			// Direct source text
+			appendDisplayValue(p, sourceRef, false, html);
+			for (Property text : sourceRef.getProperties("TEXT")) {
+				Element sp = html.p();
+				sourceDiv.appendChild(sp);
+				sp.appendChild(html.text(Gedcom.getName("TEXT") + ": "));
+				appendDisplayValue(sp, text, false, html);
+			}
+	   		reportUnhandledProperties(sourceRef, new String[] {"TEXT", "NOTE"});
+		}
+		// Notes
+		processNoteRefs(p, sourceRef, linkPrefix, dstDir, html);  
+		return html.link("#S" + number, "S" + number);
+	}
+
+	/**
+	 * Adds references in the notes list and adds a superscript-link on appendTo 
+	 */
+	protected void processNoteRefs(Element appendTo, Property prop, String linkPrefix, File dstDir, Html html) {
+		Property[] noteRefs = prop.getProperties("NOTE");
+		if (noteRefs.length > 0) {
+	    	if (noteDiv == null) {
+	    		noteDiv = html.div("left");
+	    		noteCounter = 1;
+	    	}
+			Element sup = html.sup("note");
+			for (Property noteRef : noteRefs) {
+				if (sup.hasChildNodes()) sup.appendChild(html.text(", "));
+				sup.appendChild(addNoteRef(noteRef, linkPrefix, dstDir, html));
+			}
+			appendTo.appendChild(sup);
+		}
+	}
+
+	/**
+	 * Handles a note, adds it to the note-list
+	 * @param noteRef
+	 * @param linkPrefix
+	 * @param dstDir
+	 * @param html
+	 * @return
+	 */
+	protected Element addNoteRef(Property noteRef, String linkPrefix, File dstDir,
+			Html html) {
+		int number = noteCounter++;
+		Element p = html.p();
+		noteDiv.appendChild(p);
+		Element anchor = html.anchor("N" + number);
+		p.appendChild(anchor);
+		anchor.appendChild(html.text("N" + number + ": "));
+		
+		if (noteRef instanceof PropertyNote) {
+			// Reference
+			Note note = (Note)((PropertyNote)noteRef).getTargetEntity();
+			p.appendChild(html.link(linkPrefix + addressTo(note.getId()), note.toString()));
+		} else {
+			// Direct text
+			appendDisplayValue(p, noteRef, false, html);
+		}
+		// Sources
+		processSourceRefs(p, noteRef, linkPrefix, dstDir, html);
+	
+		reportUnhandledProperties(noteRef, new String[]{"SOUR"});
+		return html.link("#N" + number, "N" + number);
+	}
+
+	/**
+	 * Handle the value of multiline properties
+	 * @param appendTo
+	 * @param prop
+	 * @param ignoreNewLine
+	 * @param html
+	 */
+	protected void appendDisplayValue(Element appendTo, Property prop, boolean ignoreNewLine, Html html) {
+		if (prop instanceof MultiLineProperty) {
+			Iterator lineIter = ((MultiLineProperty)prop).getLineIterator();
+			boolean firstLine = true;
+			do {
+				if (! firstLine && ! ignoreNewLine) appendTo.appendChild(html.br());
+				appendTo.appendChild(html.text(lineIter.getValue()));
+				firstLine = false;
+			} while (lineIter.next());
+		} else {
+			appendTo.appendChild(html.text(prop.getDisplayValue()));
+		}
+	}
+
+	protected void resetNoteAndSourceList() {
+		sourceDiv = null;
+		noteDiv = null;
+	}
+
+	protected void addNoteAndSourceList(Element appendTo) {
+		if (noteDiv != null) appendTo.appendChild(noteDiv);
+		if (sourceDiv != null) appendTo.appendChild(sourceDiv);
 	}
 
 	/**
 	 * Handles a note
 	 * @return A <span>-element
 	 */
-	protected Element processNote(Property note, String linkPrefix, Html html) {
+/*	protected Element processNote(Property note, String linkPrefix, Html html) {
 		if (note == null) return null;
 		Element noteEl = html.spanNewlines("note", note.getDisplayValue());
 		Element sourcesEl = processSources(note, linkPrefix, html);
 		if (sourcesEl != null) noteEl.appendChild(sourcesEl);
 		reportUnhandledProperties(note, new String[]{"SOUR"});
 		return noteEl;
-	}
+	}*/
 
 	protected void addDecendantTree(Element whereToAdd, Indi indi, String relation, String linkPrefix, Html html) {
 		if (indi == null) return;
