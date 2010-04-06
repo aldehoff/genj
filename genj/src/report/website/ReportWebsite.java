@@ -55,6 +55,7 @@ public class ReportWebsite extends Report {
     public boolean displaySosaStradonitz = false;
 	protected HashMap<String, String> sosaStradonitzNumber = null; 
     public boolean displayGenJFooter = true;
+	public String placeDisplayFormat = "all";
 
 	/** Base source file of the css */
 	protected static final String cssBaseFile = "html/style.css";
@@ -1081,7 +1082,7 @@ public class ReportWebsite extends Report {
 	
 	protected Element processPlace(Property place, String linkPrefix, Html html) {
 		if (place == null) return null;
-		Element span = html.span("place", place.getValue());
+		Element span = html.span("place", placeDisplayFormat.equals("all") ? place.getValue() : place.format(placeDisplayFormat).replaceAll("^(,|(, ))*", "").trim());
 		// SOUR - Sources
 		Element sources = processSources(place, linkPrefix, html);
 		if (sources != null) span.appendChild(sources);
