@@ -91,7 +91,11 @@ public class ReportWebsite extends Report {
 		// Ask for info
 		
 		File dir = getDirectoryFromUser(translate("qOutputDir"), translate("qOk"));
-		if (dir == null) return; // Operation canceled by user
+		if (dir == null) 
+		  return; // Operation canceled by user
+		
+		// make sure directory exists
+		dir.mkdirs();
 		
 		// Ask if ok to overwrite if there were files
 		if (dir.list().length > 0) {
