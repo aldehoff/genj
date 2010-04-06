@@ -368,6 +368,8 @@ public class ReportView extends View {
       CharArrayWriter buf = new CharArrayWriter(256);
       ((Throwable) object).printStackTrace(new PrintWriter(buf));
       output.add("*** exception caught" + '\n' + buf);
+      
+      LOG.log(Level.WARNING, "Exception caught ", (Throwable)object);
       return;
     }
 
