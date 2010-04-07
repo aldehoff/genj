@@ -11,6 +11,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.Media;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Note;
 import genj.gedcom.Property;
@@ -179,6 +180,22 @@ public class ReportWebsite extends Report {
 			println("Exporting repository " + repo.getId());
 			File indiFile = makeDirFor(repo.getId(), dir);
 			createRepoDoc((Repository)repo, indiFile.getParentFile()).toFile(indiFile);
+		}
+
+	    // Iterate over all media objects
+		Entity[] objects = gedcom.getEntities(Gedcom.OBJE, "");
+		for(Entity object : objects) {
+			println("Exporting object " + object.getId());
+			File indiFile = makeDirFor(object.getId(), dir);
+			createObjectDoc((Media)object, indiFile.getParentFile()).toFile(indiFile);
+		}
+
+	    // Iterate over all notes
+		Entity[] notes = gedcom.getEntities(Gedcom.NOTE, "");
+		for(Entity note : notes) {
+			println("Exporting note " + note.getId());
+			File indiFile = makeDirFor(note.getId(), dir);
+			createNoteDoc((Note)note, indiFile.getParentFile()).toFile(indiFile);
 		}
 
 		// Make a start page and indexes
@@ -404,7 +421,7 @@ public class ReportWebsite extends Report {
 	 * Create a document for each individual
 	 */
 	protected Html createIndiDoc(Indi indi, File indiDir) {
-		List<String> handledTags = new ArrayList<String>();
+		List<String> handledProperties = new ArrayList<String>();
 		resetNoteAndSourceList();
 				
 		String linkPrefix = relativeLinkPrefix(indi.getId());
@@ -427,48 +444,102 @@ public class ReportWebsite extends Report {
 		if (name != null) {
 			Element h1 = html.h1(getName(indi));
 			bodyNode.appendChild(h1);
-			// SOUR - Sources
 			processSourceRefs(h1, name, linkPrefix, indiDir, html);
-			// NOTE
 			processNoteRefs(h1, name, linkPrefix, indiDir, html);
+			// XXX NAME have more sub properties
 			reportUnhandledProperties(indi.getProperty("NAME"), new String[]{"SOUR","NOTE"});
 		} else {
 			bodyNode.appendChild(html.h1("("+translate("unknown")+")"));
 		}
-		handledTags.add("NAME");
+		handledProperties.add("NAME");
 
 		// Find out how much we may display		
 		boolean isPrivate = isPrivate(indi); 
 		
 		Element div1 = html.div("left");
+		bodyNode.appendChild(div1);
 		if (! isPrivate) {
 			div1.appendChild(html.h2(translate("facts")));
 			// get sex
 			div1.appendChild(html.p(Gedcom.getName("SEX") + ": " + 
 					PropertySex.getLabelForSex(indi.getSex())));
-			handledTags.add("SEX");
+			handledProperties.add("SEX");
 			reportUnhandledProperties(indi.getProperty("SEX"), null);
 			// get birth/death
 			Element birth = processEventDetail((PropertyEvent)indi.getProperty("BIRT"), 
 					linkPrefix, indiDir, html, true); 
 			if (birth != null) div1.appendChild(birth);
-			handledTags.add("BIRT");
+			handledProperties.add("BIRT");
 			Element death = processEventDetail((PropertyEvent)indi.getProperty("DEAT"), 
 					linkPrefix, indiDir, html, true); 
 			if (death != null) div1.appendChild(death);
-			handledTags.add("DEAT");  
+			handledProperties.add("DEAT");  
+
+			for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL",
+					"CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"}) {
+				processOtherEventTag(tag, indi, linkPrefix, indiDir, div1, html);
+				handledProperties.add(tag);  
+			}
+			for (String tag : new String[]{"SUBM", "ALIA", "ANCI", "DESI"}) {
+				Property[] refs = indi.getProperties(tag);
+				if (refs.length > 0) {
+					div1.appendChild(html.h2(Gedcom.getName(tag)));
+					Element p = html.p();
+					for (Property ref : refs) {
+						if (ref instanceof PropertyXRef) {
+							getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
+							if (p.hasChildNodes()) div1.appendChild(p);
+							reportUnhandledProperties(ref, null); // There should not be anything here
+						} else {
+							println(tag + " is not reference:" + ref.toString());
+						}
+					}
+				}
+				handledProperties.add(tag);  
+			}
+			Property[] refs = indi.getProperties("ASSO");
+			if (refs.length > 0) {
+				div1.appendChild(html.h2(Gedcom.getName("ASSO")));
+				for (Property ref : refs) {
+					if (ref instanceof PropertyXRef) {
+						Property relation = ref.getProperty("RELA"); // Must exist according to spec
+						Element p = html.p(relation.getDisplayValue() + ": ");
+						getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
+						if (p.hasChildNodes()) div1.appendChild(p);
+						processNoteRefs(p, ref, linkPrefix, indiDir, html);
+						processSourceRefs(p, ref, linkPrefix, indiDir, html);
+						reportUnhandledProperties(ref, new String[] {"RELA", "NOTE", "SOUR"});
+					} else {
+						println("ASSO is not reference:" + ref.toString());
+					}
+				}
+				handledProperties.add("ASSO");  
+			}
+			
+			// OBJE - Images etc
+			Element p = processObjects(indi, linkPrefix, indiDir, html, false);
+			if (p != null) {
+				div1.appendChild(p);
+				personsWithImage.add(indi); // Add to the list of persons displayed in the gallery
+			}
+			handledProperties.add("OBJE");
 		}
 		
+		// *** Family div ***
+		
+		Element div2 = html.div("right");
+		bodyNode.appendChild(div2);
+		
 		// Display parents
-		div1.appendChild(html.h2(translate("parents")));
+		div2.appendChild(html.h2(translate("parents")));
 		List<PropertyFamilyChild> famRefs = indi.getProperties(PropertyFamilyChild.class);
 		if (famRefs.isEmpty()) {
-			div1.appendChild(html.p(translate("unknown")));
+			div2.appendChild(html.p(translate("unknown")));
 		} else {
 			for (PropertyFamilyChild famRef : famRefs) {
 				Fam fam = famRef.getFamily();
 				Element p = html.p();
-				div1.appendChild(p);
+				div2.appendChild(p);
 				Boolean bio = famRef.isBiological();
 				if (! (bio == null || bio.booleanValue())) {
 				    Property pedi = famRef.getProperty("PEDI");
@@ -478,18 +549,18 @@ public class ReportWebsite extends Report {
 				    }
 				}
 				getReferenceLink(famRef, p, linkPrefix, html, true);
-				processNoteRefs(p, name, linkPrefix, indiDir, html);
+				processNoteRefs(p, famRef, linkPrefix, indiDir, html);
 				reportUnhandledProperties(famRef, new String[]{"PEDI", "NOTE"});
 			}
 		}
-		handledTags.add("FAMC");
+		handledProperties.add("FAMC");
 
 		// Find spouses and children
 		List<PropertyFamilySpouse> famss = indi.getProperties(PropertyFamilySpouse.class);
 		if (!famss.isEmpty()) {
 			for (PropertyFamilySpouse pfs : famss) {
 				Element h2 = html.h2(Gedcom.getName("FAM") + " - ");
-				div1.appendChild(h2);
+				div2.appendChild(h2);
 				Fam fam = pfs.getFamily();
 				Indi spouse = fam.getOtherSpouse(indi);
 				if (spouse != null) {
@@ -497,29 +568,28 @@ public class ReportWebsite extends Report {
 				} else {
 					h2.appendChild(html.text(translate("unknown")));
 				}
-				// Notes on the link to family
-				processSourceRefs(div1, name, linkPrefix, indiDir, html);
+				processSourceRefs(div2, pfs, linkPrefix, indiDir, html);
 				
 				if (! isPrivate) {
-					processSourceRefs(h2, name, linkPrefix, indiDir, html);
+					processSourceRefs(h2, fam, linkPrefix, indiDir, html);
 					// Event tags
 					for (String tag : new String[] {"ENGA", "MARR", "MARB", "MARC", "MARL", "MARS", "EVEN", "ANUL", "CENS", "DIV", "DIVF"}) {
 						for (Property event : fam.getProperties(tag)) {
-							div1.appendChild(processEventDetail(event, linkPrefix, indiDir, html, true));
+							div2.appendChild(processEventDetail(event, linkPrefix, indiDir, html, true));
 						}
 					}
 					// Single tags
 					for (String tag : new String[] {"NCHI"}) {
 						Property singleTag = fam.getProperty(tag);
 						if (singleTag != null) {
-							div1.appendChild(html.text(Gedcom.getName(tag) + ": " + singleTag.getDisplayValue()));
+							div2.appendChild(html.text(Gedcom.getName(tag) + ": " + singleTag.getDisplayValue()));
 						}
 					}
-					processNoteRefs(div1, fam, linkPrefix, indiDir, html);
+					processNoteRefs(div2, fam, linkPrefix, indiDir, html);
 					
 					Element images = processObjects(fam, linkPrefix, indiDir, html, true);
-					if (images != null)	div1.appendChild(images);
-					handledTags.add("OBJE");
+					if (images != null)	div2.appendChild(images);
+					handledProperties.add("OBJE");
 					
 					reportUnhandledProperties(fam, new String[]{"HUSB", "WIFE", "CHIL", "CHAN", "NOTE", "SOUR", 
 							"ENGA", "MARR", "MARB", "MARC", "MARL", "MARS", "EVEN", "ANUL", "CENS", "DIV", "DIVF",
@@ -527,83 +597,21 @@ public class ReportWebsite extends Report {
 				}
 				Indi[] children = fam.getChildren(true);
 				if (children.length > 0) {
-					div1.appendChild(html.p(Gedcom.getName("CHIL", true) + ":"));
+					div2.appendChild(html.p(Gedcom.getName("CHIL", true) + ":"));
 					Element childrenList = doc.createElement("ul");
 					for (Indi child : children) {
 						Element childEl = doc.createElement("li");
 						childEl.appendChild(html.link(linkPrefix + addressTo(child.getId()), getName(child)));
 						childrenList.appendChild(childEl);
 					}
-					div1.appendChild(childrenList);
+					div2.appendChild(childrenList);
 				}
 				reportUnhandledProperties(pfs, null);
 			}
 		}
-		handledTags.add("FAMS");
-		bodyNode.appendChild(div1);
+		handledProperties.add("FAMS");
 
-		// If the person is alive (or not confirmed dead), we have displayed enough
-		if (isPrivate) return html;
-
-		Element div2 = html.div("right");
-		for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL",
-				"CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"}) {
-			processOtherEventTag(tag, indi, linkPrefix, indiDir, div2, html);
-			handledTags.add(tag);  
-		}
-		for (String tag : new String[]{"SUBM", "ALIA", "ANCI", "DESI"}) {
-			Property[] refs = indi.getProperties(tag);
-			if (refs.length > 0) {
-				div2.appendChild(html.h2(Gedcom.getName(tag)));
-				Element p = html.p();
-				for (Property ref : refs) {
-					if (ref instanceof PropertyXRef) {
-						getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
-						if (p.hasChildNodes()) div2.appendChild(p);
-						reportUnhandledProperties(ref, null); // There should not be anything here
-					} else {
-						println(tag + " is not reference:" + ref.toString());
-					}
-				}
-			}
-			handledTags.add(tag);  
-		}
-		Property[] refs = indi.getProperties("ASSO");
-		if (refs.length > 0) {
-			div2.appendChild(html.h2(Gedcom.getName("ASSO")));
-			for (Property ref : refs) {
-				if (ref instanceof PropertyXRef) {
-					Property relation = ref.getProperty("RELA"); // Must exist according to spec
-					Element p = html.p(relation.getDisplayValue() + ": ");
-					getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
-					if (p.hasChildNodes()) div2.appendChild(p);
-					processNoteRefs(p, ref, linkPrefix, indiDir, html);
-					processSourceRefs(p, ref, linkPrefix, indiDir, html);
-					reportUnhandledProperties(ref, new String[] {"RELA", "NOTE", "SOUR"});
-				} else {
-					println("ASSO is not reference:" + ref.toString());
-				}
-			}
-			handledTags.add("ASSO");  
-		}
-		
-		
-		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
-
-		// OBJE - Images etc
-		Element p = processObjects(indi, linkPrefix, indiDir, html, false);
-		if (p != null) {
-			Element divImages = html.div("left");
-			divImages.appendChild(html.h2(translate("images")));
-			divImages.appendChild(p);
-			bodyNode.appendChild(divImages);
-			personsWithImage.add(indi); // Add to the list of persons displayed in the gallery
-		}
-		handledTags.add("OBJE");
-
-		Element divBottom = html.div("bottom");
-		bodyNode.appendChild(divBottom);
-		processNumberNoteSourceChangeRest(indi, linkPrefix, divBottom, indiDir, html, handledTags);
+		processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indiDir, html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		
 		makeFooter(bodyNode, html);
@@ -614,7 +622,7 @@ public class ReportWebsite extends Report {
 	 * Create a document for each source
 	 */
 	protected Html createSourceDoc(Source source, File sourceDir) {
-		List<String> handledTags = new ArrayList<String>();
+		List<String> handledProperties = new ArrayList<String>();
 		resetNoteAndSourceList();
 		
 		String linkPrefix = relativeLinkPrefix(source.getId());
@@ -632,9 +640,9 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(html.h1(source.getTitle()));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
-		handledTags.add("TITL");
+		handledProperties.add("TITL");
 
-		processSimpleTags(source, new String[] {"TEXT", "AUTH", "ABBR", "PUBL"}, div1, html, handledTags);
+		processSimpleTags(source, new String[] {"TEXT", "AUTH", "ABBR", "PUBL"}, div1, html, handledProperties);
 
 		// REPO
 		for (PropertyRepository repo : source.getProperties(PropertyRepository.class)) {
@@ -659,7 +667,7 @@ public class ReportWebsite extends Report {
 			
 			reportUnhandledProperties(repo, new String[] {"NOTE", "CALN"});
 		}
-		handledTags.add("REPO");
+		handledProperties.add("REPO");
 		
 		// OBJE - Images etc
 		Element images = processObjects(source, linkPrefix, sourceDir, html, false);
@@ -667,23 +675,21 @@ public class ReportWebsite extends Report {
 			div1.appendChild(html.h2(translate("images")));
 			div1.appendChild(images);
 		}
-		handledTags.add("OBJE");
+		handledProperties.add("OBJE");
 		
 		Element div2 = html.div("right");
 		bodyNode.appendChild(div2);
-		processReferences(source, linkPrefix, div2, html, handledTags);
+		processReferences(source, linkPrefix, div2, html, handledProperties);
 		
-		Element divBottom = html.div("bottom");
-		bodyNode.appendChild(divBottom);
-		processNumberNoteSourceChangeRest(source, linkPrefix, divBottom, sourceDir, html, handledTags);
+		processNumberNoteSourceChangeRest(source, linkPrefix, div1, sourceDir, html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 
 		makeFooter(bodyNode, html);
 		return html;
 	}
 
-	protected Html createRepoDoc(Repository repo, File parentFile) {
-		List<String> handledTags = new ArrayList<String>();
+	protected Html createRepoDoc(Repository repo, File repoDir) {
+		List<String> handledProperties = new ArrayList<String>();
 		String linkPrefix = relativeLinkPrefix(repo.getId());
 		resetNoteAndSourceList();
 
@@ -700,7 +706,7 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(html.h1(repo.toString()));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
-		handledTags.add("NAME");
+		handledProperties.add("NAME");
 
 		// ADDR
 		Property addr = repo.getProperty("ADDR");
@@ -715,20 +721,65 @@ public class ReportWebsite extends Report {
 			}
 			reportUnhandledProperties(addr, new String[] {"ADR1", "ADR2", "CITY", "STAE", "POST", "CTRY"});
 		}
-		handledTags.add("ADDR");
+		handledProperties.add("ADDR");
 
-		processSimpleTags(repo, new String[] {"PHON"}, div1, html, handledTags); 
+		processSimpleTags(repo, new String[] {"PHON"}, div1, html, handledProperties); 
 
 		// References
 		Element div2 = html.div("right");
 		bodyNode.appendChild(div2);
-		processReferences(repo, linkPrefix, div2, html, handledTags);
+		processReferences(repo, linkPrefix, div2, html, handledProperties);
 		
-		Element divBottom = html.div("bottom");
-		bodyNode.appendChild(divBottom);
-		processNumberNoteSourceChangeRest(repo, linkPrefix, divBottom, parentFile, html, handledTags);
+		processNumberNoteSourceChangeRest(repo, linkPrefix, div1, repoDir, html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 
+		makeFooter(bodyNode, html);
+		return html;
+	}
+
+	protected Html createObjectDoc(Media object, File objectDir) {
+		List<String> handledProperties = new ArrayList<String>();
+		String linkPrefix = relativeLinkPrefix(object.getId());
+		resetNoteAndSourceList();
+
+		Html html = new Html(Gedcom.getName("OBJE") + " " + object.getId() + ": " + object.toString(), linkPrefix);
+		Document doc = html.getDoc();
+		Element bodyNode = html.getBody();
+
+		Element div1 = html.div("left");
+		bodyNode.appendChild(div1);
+		
+		processSimpleTag(object, "TITL", div1, html, handledProperties);
+		processSimpleTag(object, "FORM", div1, html, handledProperties);
+		
+		/* XXX
+	    +1 BLOB        {1:1}
+	      +2 CONT <ENCODED_MULTIMEDIA_LINE>  {1:M}
+	    +1 OBJE @<XREF:OBJE>@ {0:1}
+		 */
+
+		processNumberNoteSourceChangeRest(object, linkPrefix, div1, objectDir, html, handledProperties);
+		addNoteAndSourceList(bodyNode);
+		makeFooter(bodyNode, html);
+		return html;
+	}
+	
+	protected Html createNoteDoc(Note note, File objectDir) {
+		List<String> handledProperties = new ArrayList<String>();
+		String linkPrefix = relativeLinkPrefix(note.getId());
+		resetNoteAndSourceList();
+
+		Html html = new Html(Gedcom.getName("NOTE") + " " + note.getId() + ": " + note.toString(), linkPrefix);
+		Document doc = html.getDoc();
+		Element bodyNode = html.getBody();
+
+		Element div1 = html.div("left");
+		bodyNode.appendChild(div1);
+
+		this.appendDisplayValue(div1, note, false, html);
+		
+		processNumberNoteSourceChangeRest(note, linkPrefix, div1, objectDir, html, handledProperties);
+		addNoteAndSourceList(bodyNode);
 		makeFooter(bodyNode, html);
 		return html;
 	}
@@ -781,7 +832,7 @@ public class ReportWebsite extends Report {
 	}
 	
 	protected void processReferences(Property ent, String linkPrefix,
-			Element appendTo, Html html, List<String> handledTags) {
+			Element appendTo, Html html, List<String> handledProperties) {
 		// List who is referencing this source, not part of the source file but exists when running the code  
 		List<PropertyXRef> refs = ent.getProperties(PropertyXRef.class);
 		appendTo.appendChild(html.h2(translate("references")));
@@ -790,7 +841,7 @@ public class ReportWebsite extends Report {
 		for (PropertyXRef ref : refs) {
 			getReferenceLink(ref, p, linkPrefix, html, true);
 		}
-		handledTags.add("XREF");
+		handledProperties.add("XREF");
 	}
 
 	protected void getReferenceLink(PropertyXRef ref, Element appendTo,
@@ -898,7 +949,7 @@ public class ReportWebsite extends Report {
 	 * @param html
 	 */
 	protected void processNumberNoteSourceChangeRest(Property prop, String linkPrefix,
-			Element appendTo, File destDir, Html html, List<String> handledTags) {
+			Element appendTo, File destDir, Html html, List<String> handledProperties) {
 
 		// SOUR
 		Element sourceP = html.p(); 
@@ -907,7 +958,7 @@ public class ReportWebsite extends Report {
 			appendTo.appendChild(html.h2(Gedcom.getName("SOUR", true)));
 			appendTo.appendChild(sourceP);
 		}
-		handledTags.add("SOUR");
+		handledProperties.add("SOUR");
 
 		Element noteP = html.p(); 
 		processNoteRefs(noteP, prop, linkPrefix, destDir, html);
@@ -915,12 +966,12 @@ public class ReportWebsite extends Report {
 			appendTo.appendChild(html.h2(Gedcom.getName("NOTE", true)));
 			appendTo.appendChild(noteP);
 		}
-		handledTags.add("NOTE");
+		handledProperties.add("NOTE");
 		
 		/*  +1 RFN <PERMANENT_RECORD_FILE_NUMBER>  {0:1}
 		 *  +1 AFN <ANCESTRAL_FILE_NUMBER>  {0:1}
 		 *  +1 RIN <AUTOMATED_RECORD_ID>  {0:1}		 */
-		processSimpleTags(prop, new String[] {"RFN", "AFN", "RIN"}, appendTo, html, handledTags);
+		processSimpleTags(prop, new String[] {"RFN", "AFN", "RIN"}, appendTo, html, handledProperties);
 		/*  +1 REFN <USER_REFERENCE_NUMBER>  {0:M}
 		 *   +2 TYPE <USER_REFERENCE_TYPE>  {0:1}  */
 		Property[] refns = prop.getProperties("REFN");
@@ -933,7 +984,7 @@ public class ReportWebsite extends Report {
 				appendTo.appendChild(p);
 				reportUnhandledProperties(refn, new String[] {"TYPE"});
 			}
-			handledTags.add("REFN");
+			handledProperties.add("REFN");
 		}
 
 		// CHAN
@@ -943,7 +994,7 @@ public class ReportWebsite extends Report {
 			Element p = html.p(translate("dataUpdated") + 
 					" " + lastUpdate.getDisplayValue());
 			appendTo.appendChild(p);
-			handledTags.add("CHAN");
+			handledProperties.add("CHAN");
 			processNoteRefs(p, lastUpdate, linkPrefix, destDir, html);
 			reportUnhandledProperties(lastUpdate, new String[] {"NOTE"});
 		}
@@ -951,8 +1002,8 @@ public class ReportWebsite extends Report {
 				" " + (new PropertyChange()).getDisplayValue()));
 		
 		// Add all other attributes
-		reportUnhandledProperties(prop, (String[])handledTags.toArray(new String[0])); 
-		Element otherProperties = getAllProperties(prop, html, handledTags);
+		reportUnhandledProperties(prop, (String[])handledProperties.toArray(new String[0])); 
+		Element otherProperties = getAllProperties(prop, html, handledProperties);
 		if (otherProperties != null)
 		appendTo.appendChild(otherProperties);
 
@@ -964,11 +1015,11 @@ public class ReportWebsite extends Report {
 	 * @param tags
 	 * @param appendTo
 	 * @param html
-	 * @param handledTags
+	 * @param handledProperties
 	 */
-	protected void processSimpleTags(Property prop, String[] tags, Element appendTo, Html html, List<String> handledTags) {
+	protected void processSimpleTags(Property prop, String[] tags, Element appendTo, Html html, List<String> handledProperties) {
 		for (String tag : tags) {
-			processSimpleTag(prop, tag, appendTo, html, handledTags);
+			processSimpleTag(prop, tag, appendTo, html, handledProperties);
 		}
 	}
 
@@ -978,9 +1029,9 @@ public class ReportWebsite extends Report {
 	 * @param tag
 	 * @param appendTo
 	 * @param html
-	 * @param handledTags
+	 * @param handledProperties
 	 */
-	protected void processSimpleTag(Property prop, String tag, Element appendTo, Html html, List<String> handledTags) {
+	protected void processSimpleTag(Property prop, String tag, Element appendTo, Html html, List<String> handledProperties) {
 		Property[] subProps = prop.getProperties(tag);
 		if (subProps.length > 0) {
 			appendTo.appendChild(html.h2(Gedcom.getName(tag)));
@@ -989,7 +1040,7 @@ public class ReportWebsite extends Report {
 				reportUnhandledProperties(subProp, null);
 			}
 		}
-		handledTags.add(tag);
+		handledProperties.add(tag);
 	}
 	
 	protected void processOtherEventTag(String tag, Property prop, String linkPrefix,
@@ -1504,11 +1555,12 @@ public class ReportWebsite extends Report {
 	protected String addressToDir(String id) {
 		StringBuffer address = new StringBuffer();
 		// Check the type of object
-		String prefix = "unknown";
 		String type = id.substring(0, 1);
+		String prefix = type.toLowerCase();
 		if (type.equals("I")) {	prefix = "indi"; }
 		if (type.equals("S")) {	prefix = "source"; }
 		if (type.equals("R")) {	prefix = "repository"; }
+		if (type.equals("O")) {	prefix = "object"; }
 		address.append(prefix);
 		// Get the id-number
 		String idString = id.substring(1); // Remove leading I
