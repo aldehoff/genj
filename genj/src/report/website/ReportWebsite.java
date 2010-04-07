@@ -7,11 +7,32 @@ package website;
  * category = Chart
  * name     = Website
  */
+import genj.gedcom.Entity;
+import genj.gedcom.Fam;
+import genj.gedcom.Gedcom;
+import genj.gedcom.Indi;
+import genj.gedcom.MultiLineProperty;
+import genj.gedcom.Note;
+import genj.gedcom.Property;
+import genj.gedcom.PropertyChange;
+import genj.gedcom.PropertyComparator;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyEvent;
+import genj.gedcom.PropertyFamilyChild;
+import genj.gedcom.PropertyFamilySpouse;
+import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyNote;
+import genj.gedcom.PropertyRepository;
+import genj.gedcom.PropertySex;
+import genj.gedcom.PropertySource;
+import genj.gedcom.PropertyXRef;
+import genj.gedcom.Repository;
+import genj.gedcom.Source;
+import genj.gedcom.MultiLineProperty.Iterator;
 import genj.option.CustomOption;
 import genj.option.Option;
 import genj.report.Report;
-import genj.gedcom.*;
-import genj.gedcom.MultiLineProperty.Iterator;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -23,6 +44,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,10 +54,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -1542,19 +1566,17 @@ public class ReportWebsite extends Report {
 	}
 
 	protected void copyFile(File src, File dst) throws IOException {
-		FileInputStream in = null;
-		FileOutputStream out = null;
-		try {
-			in = new FileInputStream(src);
-			out = new FileOutputStream(dst);
-			byte[] buffer = new byte[4096];
-			int bytesRead;
-			while ((bytesRead = in.read(buffer)) != -1)
-				out.write(buffer, 0, bytesRead); // write
-		} finally {
-			if (in != null) in.close();
-			if (out != null) out.close();
-		}
+		 FileChannel source = null;
+		 FileChannel destination = null;
+		 try {
+		  source = new FileInputStream(src).getChannel();
+		  destination = new FileOutputStream(dst).getChannel();
+		  destination.transferFrom(source, 0, source.size());
+		 } finally {
+		   if (source!=null) try { source.close(); } catch (Throwable t){};
+       if (destination!=null) try { destination.close(); } catch (Throwable t){};
+	   }
+		
 	}
 
 	protected void copyTextFileModify(String inFile, String outFile, HashMap<String,String> translator, boolean append) throws IOException {
