@@ -14,6 +14,8 @@ h1 {
 	width: 800px;
 	text-align: center;
 	font-size: 160%;
+	margin-bottom: 2ex;
+	margin-top: 2ex;
 }
 h2 {
 	font-size: 120%;
@@ -27,7 +29,8 @@ a {
 a:visited {
 	color: #{cssVistedLinkColor};
 }
-div.left,div.right,div.bottom {
+/*,div.bottom*/
+div.left,div.right {
 	border: 1px #{cssBorderColor} solid;
 	margin: 3px;
 	padding: 6px;
@@ -39,10 +42,10 @@ div.left,div.right {
 	float: left;
 	width: 380px;
 }
-div.bottom {
+/*div.bottom {
 	clear: both;
 	width: 780px;
-}
+}*/
 span.note {
 	font-style: italic;
 }
