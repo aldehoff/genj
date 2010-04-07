@@ -461,10 +461,13 @@ public class ReportWebsite extends Report {
 		if (! isPrivate) {
 			div1.appendChild(html.h2(translate("facts")));
 			// get sex
-			div1.appendChild(html.p(Gedcom.getName("SEX") + ": " + 
-					PropertySex.getLabelForSex(indi.getSex())));
+			Property sex = indi.getProperty("SEX");
+			if (sex != null) {
+				div1.appendChild(html.p(Gedcom.getName("SEX") + ": " + 
+						PropertySex.getLabelForSex(indi.getSex())));
+				reportUnhandledProperties(sex, null);
+			}
 			handledProperties.add("SEX");
-			reportUnhandledProperties(indi.getProperty("SEX"), null);
 			// get birth/death
 			Element birth = processEventDetail((PropertyEvent)indi.getProperty("BIRT"), 
 					linkPrefix, indiDir, html, true); 
