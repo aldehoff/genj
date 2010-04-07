@@ -159,7 +159,6 @@ public class ReportWebsite extends Report {
 		
 	    // Iterate over all individuals
 		Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
-		//Collection<Indi> indis = gedcom.getIndis();
 		for(Entity indi : indis) {
 			println("Exporting person " + indi.getId() + " " + getName((Indi)indi));
 			File indiFile = makeDirFor(indi.getId(), dir);
@@ -187,7 +186,7 @@ public class ReportWebsite extends Report {
 		for(Entity object : objects) {
 			println("Exporting object " + object.getId());
 			File indiFile = makeDirFor(object.getId(), dir);
-			createObjectDoc((Media)object, indiFile.getParentFile()).toFile(indiFile);
+			createMultimediaDoc((Media)object, indiFile.getParentFile()).toFile(indiFile);
 		}
 
 	    // Iterate over all notes
@@ -287,7 +286,7 @@ public class ReportWebsite extends Report {
 		Element div2 = html.div("right");
 		div2.appendChild(html.h2(translate("personGallery")));
 		for (Indi indi : personsWithImage) { 
-			div2.appendChild(html.link(addressTo(indi.getId()), html.img(addressToDir(indi.getId()) + "tree.jpg", getName(indi))));				
+			div2.appendChild(html.link(addressTo(indi.getId()), html.img(addressToDir(indi.getId()) + "gallery.jpg", getName(indi))));				
 		}
 		bodyNode.appendChild(div2);
 
@@ -520,7 +519,7 @@ public class ReportWebsite extends Report {
 			}
 			
 			// OBJE - Images etc
-			Element p = processObjects(indi, linkPrefix, indiDir, html, false);
+			Element p = processMultimediaLink(indi, linkPrefix, indiDir, html, false, true);
 			if (p != null) {
 				div1.appendChild(p);
 				personsWithImage.add(indi); // Add to the list of persons displayed in the gallery
@@ -590,7 +589,7 @@ public class ReportWebsite extends Report {
 					}
 					processNoteRefs(div2, fam, linkPrefix, indiDir, html);
 					
-					Element images = processObjects(fam, linkPrefix, indiDir, html, true);
+					Element images = processMultimediaLink(fam, linkPrefix, indiDir, html, true, false);
 					if (images != null)	div2.appendChild(images);
 					handledProperties.add("OBJE");
 					
@@ -673,7 +672,7 @@ public class ReportWebsite extends Report {
 		handledProperties.add("REPO");
 		
 		// OBJE - Images etc
-		Element images = processObjects(source, linkPrefix, sourceDir, html, false);
+		Element images = processMultimediaLink(source, linkPrefix, sourceDir, html, false, false);
 		if (images != null) {			
 			div1.appendChild(html.h2(translate("images")));
 			div1.appendChild(images);
@@ -740,7 +739,7 @@ public class ReportWebsite extends Report {
 		return html;
 	}
 
-	protected Html createObjectDoc(Media object, File objectDir) {
+	protected Html createMultimediaDoc(Media object, File objectDir) {
 		List<String> handledProperties = new ArrayList<String>();
 		String linkPrefix = relativeLinkPrefix(object.getId());
 		resetNoteAndSourceList();
@@ -755,11 +754,18 @@ public class ReportWebsite extends Report {
 		processSimpleTag(object, "TITL", div1, html, handledProperties);
 		processSimpleTag(object, "FORM", div1, html, handledProperties);
 		
-		/* XXX
+		/* XXX Only in 5.5, not in 5.5.1
 	    +1 BLOB        {1:1}
 	      +2 CONT <ENCODED_MULTIMEDIA_LINE>  {1:M}
 	    +1 OBJE @<XREF:OBJE>@ {0:1}
 		 */
+
+		/* XXX FILE, 5.5.1
+		+1 FILE <MULTIMEDIA_FILE_REFN> {1:M} p.54
+		  +2 FORM <MULTIMEDIA_FORMAT> {1:1} p.54
+		    +3 TYPE <SOURCE_MEDIA_TYPE> {0:1} p.62
+		  +2 TITL <DESCRIPTIVE_TITLE> {0:1} p.48
+		*/
 
 		processNumberNoteSourceChangeRest(object, linkPrefix, div1, objectDir, html, handledProperties);
 		addNoteAndSourceList(bodyNode);
@@ -885,8 +891,8 @@ public class ReportWebsite extends Report {
 	 * @param smallThumbs Making the thumbs really small (intended for family images)
 	 * @return paragraph with images, or null
 	 */
-	protected Element processObjects(Property prop, String linkPrefix, File dstDir,
-			Html html, boolean smallThumbs) {
+	protected Element processMultimediaLink(Property prop, String linkPrefix, File dstDir,
+			Html html, boolean smallThumbs, boolean makeGalleryImage) {
 		Property[] objects = prop.getProperties("OBJE");
 		if (objects.length == 0) return null;
 		Element p = html.p();
@@ -896,28 +902,40 @@ public class ReportWebsite extends Report {
 			// Get the title
 			Property titleProp = objects[i].getProperty("TITL");
 			String title = null;
-			if (titleProp != null) title = titleProp.getValue(); // XXX title is not used
+			if (titleProp != null) title = titleProp.getValue();
 			// Get form of object
 			Property formProp = objects[i].getProperty("FORM");
 			if (formProp != null) {
 				if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
 					println("  Currently unsupported FORM in OBJE:" + formProp.getValue());
 				}
+				reportUnhandledProperties(formProp, null);
 			}
-			// Find image
+			// Find file
+			// XXX May have several FILE properties in 5.5.1 and FORM is a sub prop to FILE 
 			PropertyFile file = (PropertyFile)objects[i].getProperty("FILE");
 			if (file != null) {
+				reportUnhandledProperties(file, null);
 				// Copy the file to dstDir
 				File srcFile = file.getFile();
 				if (srcFile != null) {
 					File dstFile = new File(dstDir, srcFile.getName());
 					File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
 					try {
-						copyFile(srcFile, dstFile);
-						// Create a thumb
-						makeThumb(dstFile, imgSize, imgSize, thumbFile);
-						// For the ancestor tree on other pages
-						if (i == 0) makeThumb(dstFile, 50, 70, new File(dstFile.getParentFile(), "tree.jpg"));
+						if (!dstFile.exists() || !thumbFile.exists() || 
+								srcFile.lastModified() > dstFile.lastModified()) {
+							copyFile(srcFile, dstFile);
+							// Create a thumb
+							makeThumb(dstFile, imgSize, imgSize, thumbFile);
+						}
+						// For the gallery
+						if (makeGalleryImage) {
+							File galleryImage = new File(dstFile.getParentFile(), "gallery.jpg");
+							if (!galleryImage.exists() || srcFile.lastModified() > galleryImage.lastModified())
+								makeThumb(dstFile, 50, 70, galleryImage);
+							makeGalleryImage = false;
+						}
+						
 						// Make img-reference to the image
 						p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
 					} catch (IOException e) {
@@ -934,8 +952,8 @@ public class ReportWebsite extends Report {
 		}
 		if (p.hasChildNodes()) return p;
 		return null;
-	}
-
+	}	
+	
 	/**
 	 * Handle:
 	 *  +1 <<SOURCE_CITATION>>  {0:M}
@@ -1125,7 +1143,7 @@ public class ReportWebsite extends Report {
 			}
 		}
 		// OBJE - MULTIMEDIA
-		Element pObj = processObjects(event, linkPrefix, dstDir, html, true);
+		Element pObj = processMultimediaLink(event, linkPrefix, dstDir, html, true, false);
 		if (pObj != null && pObj.hasChildNodes()) {
 			NodeList nl = pObj.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) p.appendChild(nl.item(i));
@@ -1308,7 +1326,7 @@ public class ReportWebsite extends Report {
 	       		reportUnhandledProperties(quay, null);
 			}
 			// OBJE, in new paragraph
-			Element pObj = processObjects(sourceRef, linkPrefix, dstDir, html, true);
+			Element pObj = processMultimediaLink(sourceRef, linkPrefix, dstDir, html, true, false);
 			if (pObj != null) sourceDiv.appendChild(pObj);
 					
 	   		reportUnhandledProperties(sourceRef, new String[] {"PAGE", "EVEN", "DATA", "QUAY", "OBJE", "NOTE"});
