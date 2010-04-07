@@ -40,6 +40,7 @@ import genj.view.View;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -50,6 +51,8 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -70,7 +73,9 @@ public class NavigatorView extends View {
       +"<col><grandparents/><grandparent/></col>"
       +"<col><parents/><parent/></col>"
       +"<col><siblings/><sibling/></col>"
+      +"<line/>"
       +"<col><spouses/><spouse/></col>"
+      +"<line/>"
       +"<col><children/><child/></col>"
       +"<col><grandchildren/><grandchild/></col>"
       +"</col>");
@@ -109,18 +114,29 @@ public class NavigatorView extends View {
     }
     
     content.removeAll();
-    
+
     // person or family?
     if (context.getEntities().size()==1) {
       if (context.getEntity() instanceof Indi)
         setIndi((Indi)context.getEntity());
       if (context.getEntity() instanceof Fam)
         setFam((Fam)context.getEntity());
+      
+      addLine("line");
+      addLine("line");
     }
 
     // show
     revalidate();
     repaint();
+  }
+  
+  private void addLine(String key) {
+    JComponent line = new Box.Filler(new Dimension(1,1), new Dimension(1,1), new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    Color c = content.getForeground();
+    line.setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue(), 128));
+    line.setOpaque(true);
+    content.add(key, line);
   }
   
   private void addExpander(String key, int count) {
