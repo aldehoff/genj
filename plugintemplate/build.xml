@@ -77,7 +77,7 @@
 
     <replace dir="." value="${plugin}" token="plugintemplate">
       <include name=".project" />
-      <include name="plugintemplate.launch" />
+      <include name="${plugin}.launch" />
       <include name="src/**/genj.app.PluginFactory"/>
       <include name="src/**/*.java"/>
       <include name="src/**/*.properties"/>
