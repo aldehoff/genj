@@ -21,8 +21,10 @@ package genj.edit.beans;
 
 import genj.edit.BeanPanel;
 import genj.edit.ChoosePropertyBean;
+import genj.edit.EditView;
 import genj.edit.Images;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
@@ -30,10 +32,12 @@ import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.TagPath;
+import genj.gedcom.UnitOfWork;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.DialogHelper.ComponentVisitor;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -144,10 +148,29 @@ public class EventsBean extends PropertyBean {
     
   }
   
-  private void commit(Runnable commit) {
-    this.commit = commit;
+  private void commit(final Runnable commit) {
     
-    changeSupport.fireChangeEvent(new CommitRequired(this));
+    changeSupport.fireChangeEvent();
+    
+    EditView view = (EditView)DialogHelper.visitContainers(this, new ComponentVisitor() {
+      @Override
+      public Component visit(Component component, Component child) {
+        return component instanceof EditView ? component : null;
+      }
+    });
+    
+    if (view!=null) {
+      this.commit = commit;
+      view.commit(false);
+    } else {
+      if (root!=null)
+        root.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) throws GedcomException {
+            commit.run();
+          }
+        });
+    }
+    
   }
   
   private boolean isEvent(MetaProperty meta) {

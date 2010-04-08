@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -167,6 +168,15 @@ public class BeanPanel extends JPanel {
     return beans;
   }
 
+  /**
+   * Actions related to panel
+   */
+  public List<? extends Action> getActions() {
+    ArrayList<Action> result = new ArrayList<Action>();
+    for (PropertyBean bean : beans)
+      result.addAll(bean.getActions());
+    return result;
+  }
 
   /**
    * Select a property's bean

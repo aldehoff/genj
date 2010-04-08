@@ -134,9 +134,8 @@ import javax.swing.SwingUtilities;
       }      
     }
     
-    // look for actions
-    for (PropertyBean bean : beanPanel.getBeans())
-      actions.addAll(bean.getActions());
+    // grab actions
+    actions.addAll(beanPanel.getActions());
     
     // done
   }

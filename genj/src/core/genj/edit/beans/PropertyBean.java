@@ -59,7 +59,6 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -382,15 +381,4 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     }
   } //Preview
   
-  /**
-   * Special change event signalling 
-   */
-  public static class CommitRequired extends ChangeEvent {
-
-    public CommitRequired(Object source) {
-      super(source);
-    }
-    
-  }
-
 } //Proxy

@@ -74,6 +74,7 @@ import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 import genj.view.SelectionSink;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
@@ -81,7 +82,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Action;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 
 /**
  * our editing plugin
@@ -114,7 +117,7 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
     if (!gedcom.getEntities(Gedcom.INDI).isEmpty()) 
       return;
 
-    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, RESOURCES.getString("wizard.empty", gedcom.getName()), Action2.okCancel(), workbench)) 
+    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, RESOURCES.getString("wizard.empty", gedcom.getName()), Action2.yesNo(), workbench)) 
       return;
     
     try {
@@ -138,10 +141,22 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
     });
     
     // let user edit it
+    JToolBar tools = new JToolBar();
+    tools.setFloatable(false);
+    
     final BeanPanel panel = new BeanPanel();
     panel.setRoot(adamOrEve);
-    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), workbench)) {
-      gedcom.undoUnitOfWork();
+    
+    for (Action action : panel.getActions())
+      tools.add(action);
+    
+    JPanel content = new JPanel(new BorderLayout());
+    content.add(BorderLayout.CENTER, panel);
+    content.add(BorderLayout.NORTH , tools);
+    
+    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, content, Action2.okCancel(), workbench)) {
+      while (gedcom.canUndo())
+        gedcom.undoUnitOfWork(false);
       return;
     }      
     

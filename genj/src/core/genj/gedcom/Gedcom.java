@@ -807,6 +807,7 @@ public class Gedcom {
   /**
    * Returns entities of given type FAM
    */
+  @SuppressWarnings("unchecked")
   public Collection<Fam> getFamilies() {
 	    return (Collection<Fam>) getEntities(FAM);
   }
@@ -814,6 +815,7 @@ public class Gedcom {
   /**
    * Returns entities of given type INDI
    */
+  @SuppressWarnings("unchecked")
   public Collection<Indi> getIndis() {
     return (Collection<Indi>) getEntities(INDI);
   }
@@ -1060,6 +1062,13 @@ public class Gedcom {
    * Performs an undo
    */
   public void undoUnitOfWork() {
+    undoUnitOfWork(true);
+  }
+  
+  /**
+   * Performs an undo
+   */
+  public void undoUnitOfWork(boolean keepRedo) {
     
     // there?
     if (undoHistory.isEmpty())
@@ -1090,7 +1099,8 @@ public class Gedcom {
     synchronized (writeSemaphore) {
 
       // keep redos
-      redoHistory.add(lock.undos);
+      if (keepRedo)
+        redoHistory.add(lock.undos);
       
       // let listeners know
       propagateWriteLockReleased();

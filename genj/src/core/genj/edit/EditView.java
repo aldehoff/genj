@@ -19,7 +19,6 @@
  */
 package genj.edit;
 
-import genj.edit.beans.PropertyBean;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
@@ -154,10 +153,10 @@ public class EditView extends View implements ContextProvider{
   
   @Override
   public void commit() {
-    commitImpl(true);
+    commit(true);
   }
   
-  private void commitImpl(boolean ask) {
+  public void commit(boolean ask) {
 
     // changes?
     if (!ok.isEnabled())
@@ -417,16 +416,13 @@ public class EditView extends View implements ContextProvider{
 
     /** cancel current proxy */
     public void actionPerformed(ActionEvent event) {
-      commitImpl(false);
+      commit(false);
     }
     
     public void stateChanged(ChangeEvent e) {
       setEnabled(true);
       buttons.setVisible(true);
       buttons.revalidate();
-      
-      if (PropertyBean.CommitRequired.class.isAssignableFrom(e.getClass()))
-        commitImpl(false);
     }
 
   } //OK
@@ -457,10 +453,6 @@ public class EditView extends View implements ContextProvider{
     }
     
     public void stateChanged(ChangeEvent e) {
-      
-      if (PropertyBean.CommitRequired.class.isAssignableFrom(e.getClass()))
-        return;
-      
       setEnabled(true);
       buttons.setVisible(true);
       buttons.revalidate();
@@ -475,7 +467,7 @@ public class EditView extends View implements ContextProvider{
       
       // changes we have to commit?
       if (!isChangeSource)
-        commitImpl(false);
+        commit(false);
       
     }
     
