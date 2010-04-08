@@ -1,37 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Plugin" default="dist" basedir=".">
-	
-	<target name="init">
-    <mkdir dir="build"/>
-	</target>
-  
+
+  <target name="init">
+    <mkdir dir="build" />
+  </target>
+
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="build"
-           debug="${javac.debug}" target="1.6" optimize="on" deprecation="on" encoding="ASCII" >
-      <classpath path="../genj/build/classes/core"/>
+    <javac srcdir="src" destdir="build" debug="${javac.debug}" target="1.6" optimize="on" deprecation="on" encoding="ASCII">
+      <classpath path="../genj/build/classes/core" />
     </javac>
   </target>
 
   <target name="clean" depends="init">
     <delete includeemptydirs="true" failonerror="false">
-      <fileset dir="./build"/>
-   	</delete>
+      <fileset dir="./build" />
+    </delete>
   </target>
 
   <target name="dist" depends="init,compile">
-  	
-  	<copy todir="build">
-  	  <fileset dir="src"><exclude name="*.class"/></fileset>
-  	</copy>
+
+    <copy todir="build">
+      <fileset dir="src">
+        <exclude name="*.class" />
+      </fileset>
+    </copy>
   </target>
-  		
-	<target name="create">
 
-		<fail unless="create" message="missing plugin create argument (-Dcreate=Foo)"/>
-		<property name="noexport" value=".svn"/>
-		
-    <fail if="noexport" message="plugin cannot be (re-)created unless repository is exported (svn export)"/>
+  <target name="create">
 
-	</target>
+    <available file=".svn" property="noexport" />
+    <fail if="noexport" message="plugin cannot be (re-)created unless repository is exported (svn export)" />
+
+    <available file="../plugintemplate" property="unnamed"/>
+    <fail if="unnamed" message="rename plugin project folder to new plugin name" />
+
+    <available file="build.properties" property="created"/>
+    <fail if="created" message="plugin already created" />
+
+    <echo file="plugin.properties" append="false">plugin=${basedir}</echo>
+    <replaceregexp file="plugin.properties" match="(plugin=).*\\(.*)" replace="\1\2"/>
+      <loadproperties srcfile="plugin.properties"/>
+
+    <fail unless="plugin" message="plugin name still not defined" />
+
+    <echo>Creating plugin ${plugin}</echo>
+      
+    <replace dir="." value="${plugin}" token="plugintemplate">
+      <include name=".project" />
+      <include name="plugintemplate.launch" />
+      <include name="src/**/genj.app.PluginFactory"/>
+      <include name="src/**/*.java"/>
+      <include name="src/**/*.properties"/>
+    </replace>
+
+    <replace value='default="dist"' token='default="dist"' file="build.xml"/>
+
+    <move file="src/plugintemplate" tofile="src/${plugin}" verbose="off"/>
+    <move file="plugintemplate.launch" tofile="${plugin}.launch" verbose="off"/>
+
+    <echo>Building distribution bits</echo>
+  	
+  	<antcall target="dist"/>
+  	
+    <echo>Plugin ready for deployment</echo>
+    <echo>(1) place build/${plugin}.jar into GENJHOME/lib</echo>
+    <echo>(2) run foo.launch from inside eclipse</echo>
+      
+  </target>
 
 </project>
