@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Plugin" default="create" basedir=".">
+<project name="Plugin" default="package" basedir=".">
+
+  <property name="genj" value="${basedir}/../genj"/>
 
   <target name="init">
 
-        <loadproperties srcfile="plugin.properties"/>
-    <fail unless="plugin" message="plugin not created yet - run build create"/>
-
-    <available file="../genj" property="gotgenj" />
-    <fail unless="gotgenj" message="genj module needs to be colocated to ${basedir}/${plugin}" />
-
     <mkdir dir="build" />
+
+    <echo file="plugin.properties" append="false">plugin=${basedir}</echo>
+    <replaceregexp file="plugin.properties" match="(plugin=).*\\(.*)" replace="\1\2"/>
+    <loadproperties srcfile="plugin.properties"/>
+
+    <condition property="created" value="created">
+      <and>
+        <not>
+          <equals arg1="${plugin}" arg2="plugintemplate"/>
+        </not>
+        <available file="${plugin}.launch"/>
+      </and>
+    </condition>
+
+    <available file="${genj}" property="gotgenj" />
+    <fail unless="gotgenj" message="genj module needs to be colocated in ${basedir}/genj" />
+
   </target>
 
-  <target name="compile" depends="init">
-    <echo>../genj/build/classes/core</echo>
+  <target name="compile" depends="init, create">
+
+    <ant dir="${genj}" target="compile.core"/>
+
     <javac srcdir="src" destdir="build" debug="${javac.debug}" target="1.6" optimize="on" deprecation="on" encoding="ASCII">
-      <classpath path="${basedir}/../genj/build/classes/core" />
+      <classpath path="${genj}/build/classes/core" />
     </javac>
   </target>
 
@@ -25,33 +40,40 @@
     </delete>
   </target>
 
-  <target name="dist" depends="init,compile">
+  <target name="package" depends="init,compile">
 
     <copy todir="build">
       <fileset dir="src">
         <exclude name="*.class" />
       </fileset>
     </copy>
+
+    <jar basedir="build" destfile="build/${plugin}.jar" excludes="${plugin}.jar"/>
+
+    <echo>Plugin ready for deployment</echo>
+    <echo>+ either place build/${plugin}.jar into GENJHOME/lib and restart GenJ or</echo>
+    <echo>+ start ${plugin}.launch from inside eclipse</echo>
+
   </target>
 
-  <target name="create">
-
-    <available file=".svn" property="noexport" />
-    <fail if="noexport" message="plugin cannot be (re-)created unless repository is exported (svn export)" />
+  <target name="create" unless="created">
 
     <available file="../plugintemplate" property="unnamed"/>
-    <fail if="unnamed" message="rename plugin project folder to new plugin name" />
+    <fail if="unnamed" message="rename plugin project folder to plugin name (not plugintemplate)" />
 
-    <available file="plugin.properties" property="created"/>
-    <fail if="created" message="plugin already created" />
+    <available file=".svn" property="noexport" />
+    <fail if="noexport" message="plugin cannot be created unless repository is exported (svn export)" />
 
-    <echo file="plugin.properties" append="false">plugin=${basedir}</echo>
-    <replaceregexp file="plugin.properties" match="(plugin=).*\\(.*)" replace="\1\2"/>
-    <loadproperties srcfile="plugin.properties"/>
+    <condition property="first" value="yes">
+      <and>
+        <available file="src/plugintemplate"/>
+        <available file="plugintemplate.launch"/>
+      </and>
+    </condition>
+    <fail unless="first" message="Plugin cannot be created twice"/>
 
-    <fail unless="plugin" message="plugin name still not defined" />
-
-    <echo>Creating plugin ${plugin}</echo>
+    <move file="src/plugintemplate" tofile="src/${plugin}" verbose="off"/>
+    <move file="plugintemplate.launch" tofile="${plugin}.launch" verbose="off"/>
 
     <replace dir="." value="${plugin}" token="plugintemplate">
       <include name=".project" />
@@ -61,18 +83,6 @@
       <include name="src/**/*.properties"/>
     </replace>
 
-    <replace token='default="create"' value='default="dist"' file="build.xml"/>
-
-    <move file="src/plugintemplate" tofile="src/${plugin}" verbose="off"/>
-    <move file="plugintemplate.launch" tofile="${plugin}.launch" verbose="off"/>
-
-    <echo>Building distribution bits</echo>
-
-    <ant antfile="build.xml" target="dist"/>
-
-    <echo>Plugin ready for deployment</echo>
-    <echo>(1) place build/${plugin}.jar into GENJHOME/lib</echo>
-    <echo>(2) run foo.launch from inside eclipse</echo>
 
   </target>
 
