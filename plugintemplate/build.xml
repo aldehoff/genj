@@ -58,9 +58,6 @@
 
   <target name="create" unless="created">
 
-    <available file="../plugintemplate" property="unnamed"/>
-    <fail if="unnamed" message="rename plugin project folder to plugin name (not plugintemplate)" />
-
     <available file=".svn" property="noexport" />
     <fail if="noexport" message="plugin cannot be created unless repository is exported (svn export)" />
 
