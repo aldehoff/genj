@@ -1326,7 +1326,7 @@ public class ReportWebsite extends Report {
 			Property quay = sourceRef.getProperty("QUAY");
 			if (quay != null) {
 				p.appendChild(html.text(" " + Gedcom.getName("QUAY") + ": " + 
-						page.getDisplayValue())); // XXX Check out what this turns into (0..3) should be translated into something readable
+						quay.getDisplayValue())); // XXX Check out what this turns into (0..3) should be translated into something readable
 	       		reportUnhandledProperties(quay, null);
 			}
 			// OBJE, in new paragraph
