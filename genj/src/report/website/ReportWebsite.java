@@ -1287,7 +1287,10 @@ public class ReportWebsite extends Report {
 			// Reference
 			// Link to source
 			Source source = (Source)((PropertySource)sourceRef).getTargetEntity();
-			p.appendChild(html.link(linkPrefix + addressTo(source.getId()), source.toString()));
+			if (source != null)
+				p.appendChild(html.link(linkPrefix + addressTo(source.getId()), source.toString()));
+			else 
+				p.appendChild(html.text("(" + translate("unknown") + ")"));
 			// PAGE
 			Property page = sourceRef.getProperty("PAGE");
 			if (page != null) {
