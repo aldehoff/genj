@@ -14,6 +14,3 @@ div.mm div.l3,div.mf div.l3,div.fm div.l3,div.ff div.l3 {left: -2em;}
 div.mm div.l4,div.mf div.l4,div.fm div.l4,div.ff div.l4 {left: -2em;}
 div.mmm div.l1,div.mmf div.l1,div.mfm div.l1,div.mff div.l1,div.fmm div.l1,div.fmf div.l1,div.ffm div.l1,div.fff div.l1 {left: -1em;}
 div.mmm div.l2,div.mmf div.l2,div.mfm div.l2,div.mff div.l2,div.fmm div.l2,div.fmf div.l2,div.ffm div.l2,div.fff div.l2 {left: -1em;}
-
-/* Links back */
-div.backlink {left: 50em;}

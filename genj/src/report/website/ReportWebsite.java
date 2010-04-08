@@ -33,7 +33,6 @@ import genj.gedcom.MultiLineProperty.Iterator;
 import genj.option.CustomOption;
 import genj.option.Option;
 import genj.report.Report;
-
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -55,12 +54,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -332,6 +329,7 @@ public class ReportWebsite extends Report {
 		Html html = new Html(name, "");
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
+		bodyNode.appendChild(backlink(null, "", html));
 		bodyNode.appendChild(html.h1(name));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
@@ -347,8 +345,8 @@ public class ReportWebsite extends Report {
 			div1.appendChild(html.link(addressTo(source.getId()), text));
 			div1.appendChild(html.br());
 		}				
-		html.toFile(startFile);
 		makeFooter(bodyNode, html);
+		html.toFile(startFile);
 	}
 
 	protected void makePersonIndex(File dir, Entity[] indis) {
@@ -357,6 +355,7 @@ public class ReportWebsite extends Report {
 		Html html = new Html(translate("personIndex"), "");
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
+		bodyNode.appendChild(backlink(null, "", html));
 		bodyNode.appendChild(html.h1(translate("personIndex")));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
@@ -384,8 +383,8 @@ public class ReportWebsite extends Report {
 			div1.appendChild(html.link(addressTo(indi.getId()), text));
 			div1.appendChild(html.br());
 		}				
-		html.toFile(startFile);
 		makeFooter(bodyNode, html);
+		html.toFile(startFile);
 	}
 
 	protected class EntityComparator implements Comparator<Entity> {
@@ -429,13 +428,6 @@ public class ReportWebsite extends Report {
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 
-		// Link to start and index-page
-		Element divlink = html.div("backlink");
-		bodyNode.appendChild(divlink);
-		divlink.appendChild(html.link(linkPrefix + reportIndexFileName, translate("startPage")));
-		divlink.appendChild(html.br());
-		divlink.appendChild(html.link(linkPrefix + listPersonFileName, translate("personIndex")));
-		
 		// Add a decendant tree
 		addDecendantTree(bodyNode, indi, "", linkPrefix, html);
 
@@ -616,6 +608,8 @@ public class ReportWebsite extends Report {
 		processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indiDir, html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		
+		// Link to start and index-page
+		bodyNode.appendChild(backlink(listPersonFileName, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
@@ -633,12 +627,8 @@ public class ReportWebsite extends Report {
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 		
-		Element divlink = html.div("backlink");
-		bodyNode.appendChild(divlink);
-		divlink.appendChild(html.link(linkPrefix + reportIndexFileName, translate("startPage")));
-		divlink.appendChild(html.br());
-		divlink.appendChild(html.link(linkPrefix + listSourceFileName, translate("sourceIndex")));
-		
+		bodyNode.appendChild(backlink(listSourceFileName, linkPrefix, html));
+			
 		bodyNode.appendChild(html.h1(source.getTitle()));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
@@ -699,11 +689,8 @@ public class ReportWebsite extends Report {
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 		
-		Element divlink = html.div("backlink");
-		bodyNode.appendChild(divlink);
-		divlink.appendChild(html.link(linkPrefix + reportIndexFileName, translate("startPage")));
-		divlink.appendChild(html.br());
-		divlink.appendChild(html.link(linkPrefix + listRepositoryFileName, translate("repositoryIndex")));
+		// Link to start and index-page
+		bodyNode.appendChild(backlink(listRepositoryFileName, linkPrefix, html));
 		
 		bodyNode.appendChild(html.h1(repo.toString()));
 		Element div1 = html.div("left");
@@ -748,6 +735,8 @@ public class ReportWebsite extends Report {
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 
+		bodyNode.appendChild(backlink(null, linkPrefix, html));
+
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
 		
@@ -782,6 +771,8 @@ public class ReportWebsite extends Report {
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 
+		bodyNode.appendChild(backlink(null, linkPrefix, html));
+
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
 
@@ -791,6 +782,16 @@ public class ReportWebsite extends Report {
 		addNoteAndSourceList(bodyNode);
 		makeFooter(bodyNode, html);
 		return html;
+	}
+
+	protected Element backlink(String indexFileName, String linkPrefix, Html html) {
+		Element divlink = html.div("backlink");
+		divlink.appendChild(html.link(linkPrefix + reportIndexFileName, translate("startPage")));
+		if (indexFileName != null) {
+			divlink.appendChild(html.text(" "));
+			divlink.appendChild(html.link(linkPrefix + indexFileName, translate("indexPage")));
+		}
+		return divlink;
 	}
 
 	protected void makeFooter(Element appendTo, Html html) {

@@ -29,7 +29,6 @@ a {
 a:visited {
 	color: #{cssVistedLinkColor};
 }
-/*,div.bottom*/
 div.left,div.right {
 	border: 1px #{cssBorderColor} solid;
 	margin: 3px;
@@ -42,10 +41,6 @@ div.left,div.right {
 	float: left;
 	width: 380px;
 }
-/*div.bottom {
-	clear: both;
-	width: 780px;
-}*/
 span.note {
 	font-style: italic;
 }
@@ -57,20 +52,18 @@ a img {
 }
 
 div.backlink {
+	position: fixed;
 	top: 0.5ex;
-	position: absolute;
-	-moz-border-radius: 3px 3px;
-	border: 1px solid #{cssBorderColor};
+	right: 1em;
+	font-style: italic;
 }
 
 div.footer {
 	font-size: 80%;
 	font-style: italic;
+	position: fixed;
 	bottom: 0.5ex;
 	right: 1em;
-	position: fixed;
-	-moz-border-radius: 3px 3px;
-	border: 1px solid #{cssBorderColor};
 }
 
 
@@ -79,10 +72,10 @@ div.anc {
 	background-image: url("bkgr.png");
 	background-repeat: repeat-y;
 	position: absolute;
-	border: 1px solid #{cssBorderColor};
 	width: 20em;
 	height: 4.6ex;
 	-moz-border-radius: 3px 3px;
+	border: 1px solid #{cssBorderColor};
 }
 div.anc a {
 	text-decoration: none;
