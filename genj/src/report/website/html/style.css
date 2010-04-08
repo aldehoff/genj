@@ -30,12 +30,12 @@ a:visited {
 	color: #{cssVistedLinkColor};
 }
 div.left,div.right {
-	border: 1px #{cssBorderColor} solid;
 	margin: 3px;
 	padding: 6px;
 	background-image: url("bkgr.png");
     background-repeat: repeat-y;
 	-moz-border-radius: 3px 3px;
+	border: 1px #{cssBorderColor} solid;
 }
 div.left,div.right {
 	float: left;
@@ -102,7 +102,7 @@ div.ff {top: 38.5ex;}
 div.m {top: 8.5ex;}
 div.f {top: 32.5ex;}
 div.ident {top: 20.5ex;}
-p.treemargin {	margin-top: 46ex; }
+p.treeMargin {	margin-top: 46ex; }
 
 /* Lines in the tree */ /* Gen 0 */
 div.ident div.l2 {
@@ -152,4 +152,18 @@ div.mmm div.l2,div.mmf div.l2,div.mfm div.l2,div.mff div.l2,div.fmm div.l2,div.f
 	top: 0.8ex;
 	width: 0px;
 	height: 3ex;
+}
+
+@media print {
+  div.backlink {
+    display: none;
+  }
+  a {
+    text-decoration: none;
+    color: #{cssTextColor};
+  } 
+  a:visited {
+    text-decoration: none;
+    color: #{cssTextColor};
+  } 
 }
