@@ -147,7 +147,8 @@ import spin.Spin;
       views.add(workbench.new ActionOpenView(factory));
     
     // Tools
-    groups.add(new ActionProvider.ToolsActionGroup());
+    Action2.Group tools = new ActionProvider.ToolsActionGroup();
+    groups.add(tools);
     
     // merge providers' actions
     Action2.Group provided = new Action2.Group("ignore");
@@ -157,7 +158,7 @@ import spin.Spin;
         if (action instanceof Action2.Group) {
           groups.add(action);
         } else {
-          LOG.warning("ActionProvider "+provider+" returned a non-group for menu");
+          tools.add(action);
         }
       }
       provided.clear();
