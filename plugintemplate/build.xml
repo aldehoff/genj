@@ -7,9 +7,9 @@
 
     <mkdir dir="build" />
 
-    <echo file="plugin.properties" append="false">plugin=${basedir}</echo>
-    <replaceregexp file="plugin.properties" match="(plugin=).*\\(.*)" replace="\1\2"/>
-    <loadproperties srcfile="plugin.properties"/>
+    <echo file="build/plugin.properties" append="false">plugin=${basedir}</echo>
+    <replaceregexp file="build/plugin.properties" match="(plugin=).*\\(.*)" replace="\1\2"/>
+    <loadproperties srcfile="build/plugin.properties"/>
 
     <condition property="created" value="created">
       <and>
@@ -48,7 +48,10 @@
       </fileset>
     </copy>
 
-    <jar basedir="build" destfile="build/${plugin}.jar" excludes="${plugin}.jar"/>
+    <jar basedir="build" destfile="build/${plugin}.jar">
+    	<fileset dir="build" includes="${plugin}/**"/>
+       	<fileset dir="build" includes="META-INF/**"/>
+  	</jar>
 
     <echo>Plugin ready for deployment</echo>
     <echo>+ either place build/${plugin}.jar into GENJHOME/lib and restart GenJ or</echo>
