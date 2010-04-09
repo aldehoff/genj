@@ -126,14 +126,18 @@ public class ImageIcon extends javax.swing.ImageIcon {
    * Alternative Constructor
    */
   public ImageIcon(Class<?> from, String resource) {
-    this(from.getName() + '#' + resource, from.getResourceAsStream(patchPNG(resource)));
+    this(from.getName() + '#' + resource, from.getResourceAsStream(patchPNG(resource)), true);
   }
 
   /**
    * Alternative Constructor
    */
   public ImageIcon(String name, InputStream in) {
-    this(name, read(name, in));
+    this(name, in, false);
+  }
+  
+  private ImageIcon(String name, InputStream in, boolean close) {
+    this(name, read(name, in, close));
   }
 
   /**
@@ -179,7 +183,7 @@ public class ImageIcon extends javax.swing.ImageIcon {
   /**
    * Reads image data from input stream
    */
-  private static byte[] read(String name, InputStream in) {
+  private static byte[] read(String name, InputStream in, boolean close) {
     // check null (e.g. if resource wasn't found)
     if (in == null)
       throw new IllegalArgumentException("no stream for " + name);
@@ -190,6 +194,8 @@ public class ImageIcon extends javax.swing.ImageIcon {
       throw new IllegalArgumentException("can't read " + name + ": " + ex.getMessage());
     } catch (InterruptedException e) {
       throw new IllegalStateException("interrupted while reading " + name);
+    } finally {
+      if (close) try { in.close(); } catch (IOException e) {}
     }
   }
 

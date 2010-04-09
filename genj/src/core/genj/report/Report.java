@@ -260,11 +260,14 @@ public abstract class Report implements Cloneable {
     } else {
       // resolve an image
       String file = "Category"+Character.toUpperCase(cat.charAt(0))+cat.substring(1)+".png";
+      InputStream in = null;
       try {
-        InputStream in = Report.class.getResourceAsStream(file);
+        in = Report.class.getResourceAsStream(file);
         icon = new genj.util.swing.ImageIcon(file, in);
       } catch (Throwable t) {
         icon = DEFAULT_ICON;
+      } finally {
+        if (in!=null) try { in.close(); } catch (IOException e) {}
       }
     }
     

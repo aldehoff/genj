@@ -21,8 +21,6 @@ package genj.gedcom;
 
 import genj.util.swing.ImageIcon;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,61 +77,6 @@ public class PropertyFile extends Property {
     return file;
   }
 
-  /**
-   * Tries to Load the date of the referenced file 
-   */
-  private synchronized ImageIcon loadValueAsIcon() {
-
-    ImageIcon result = null;
-
-    // Check File for Image ?
-    if (file!=null&&file.trim().length()>0) {
-
-      // Open InputStream
-      InputStream in = null;
-      try {
-        
-        // read image - this might be big
-        in = getGedcom().getOrigin().open(file);
-        long size = in.available();
-        result = new ImageIcon(file, in);
-        
-        // make sure the result makes sense
-        int w = result.getIconWidth();
-        int h = result.getIconHeight();
-        if (w<=0||h<=0)
-          throw new IllegalArgumentException();
-          
-        // scale down if too big
-        int max = getMaxValueAsIconSize(false);
-        if (max>0 && size>max) {
-          
-          double ratio = w / (double)h;
-          int maxarea = Math.max(32*32, max/4);
-          
-          w = (int)(Math.sqrt(maxarea * ratio   ));
-          h = (int)(Math.sqrt(maxarea / ratio ));
-            
-          BufferedImage thumb = new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);
-          Graphics2D g = (Graphics2D)thumb.getGraphics();
-          g.drawImage(result.getImage(), 0, 0, w, h, null);
-          result = new ImageIcon(thumb);
-        }
-        
-      } catch (Throwable t) {
-        result = null;
-      } finally {
-        // cleanup
-        if (in!=null) try { in.close(); } catch (IOException ioe) {};
-      }
-      
-      // done
-    }
-
-    // done
-    return result;
-  }
-  
   /**
    * Sets this property's value
    */
