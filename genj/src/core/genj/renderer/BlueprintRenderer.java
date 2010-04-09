@@ -387,7 +387,7 @@ public class BlueprintRenderer {
     private Dimension2D preferredSpan = null;
 
     /** max span percent 0-100 */
-    private int max;
+    private int max = 0;
     
     /**
      * Constructor
@@ -399,7 +399,6 @@ public class BlueprintRenderer {
       try {
         max = Integer.parseInt((String)elem.getAttributes().getAttribute("max"));
       } catch (Throwable t) {
-        max = 100;
       }
     }
 
@@ -443,10 +442,11 @@ public class BlueprintRenderer {
       if (preferredSpan==null) {
         preferredSpan = getPreferredSpan();
         
-        double maxWidth = root.width*max/100;
-        if (preferredSpan.getWidth()>maxWidth)
-          preferredSpan = new Dimension2d(maxWidth, preferredSpan.getHeight() * maxWidth/preferredSpan.getWidth());
-        
+        if (max>0) {
+          double maxWidth = root.width*max/100;
+          if (preferredSpan.getWidth()>maxWidth)
+            preferredSpan = new Dimension2d(maxWidth, preferredSpan.getHeight() * maxWidth/preferredSpan.getWidth());
+        }        
       }
       return (float)(axis==X_AXIS ? preferredSpan.getWidth() : preferredSpan.getHeight());
     }
