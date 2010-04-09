@@ -48,10 +48,7 @@
       </fileset>
     </copy>
 
-    <jar basedir="build" destfile="build/${plugin}.jar">
-    	<fileset dir="build" includes="${plugin}/**"/>
-       	<fileset dir="build" includes="META-INF/**"/>
-  	</jar>
+    <jar basedir="build" destfile="build/${plugin}.jar" includes="${plugin}/**,META-INF/**"/>
 
     <echo>Plugin ready for deployment</echo>
     <echo>+ either place build/${plugin}.jar into GENJHOME/lib and restart GenJ or</echo>
