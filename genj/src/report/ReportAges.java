@@ -213,7 +213,7 @@ name.es              = Edad
 name.pl              = Wieki życia
 
 
-info = <h1><center>Ages at different Events</center></h1><p>This report prints out the age of an individual at different events during their life. Use the options to turn these events on/off.</p>
+info = <h1><center>Age at Events</center></h1><p>This report prints out the age of an individual at different events during their life. Use the options to turn these events on/off.</p>
 info.de = <h1><center>Alter zu verschiedenen Zeitpunkten</center></h1><p>Alter einer Person zu verschiedenen Zeitpunkten ausgeben. Die Zeitpunkte können in den Optionen gewählt werden.</p>
 info.fr = <h1><center>Les âges au cours de la vie</center></h1><p>
  Après avoir choisi la personne sur laquelle vous voulez lancer ce rapport, vous obtiendrez l'âge d'une personne à différentes époques de sa vie.</p>
