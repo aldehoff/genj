@@ -22,6 +22,7 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertyFamilyChild;
 import genj.gedcom.PropertyFamilySpouse;
 import genj.gedcom.PropertyFile;
+import genj.gedcom.PropertyMedia;
 import genj.gedcom.PropertyNote;
 import genj.gedcom.PropertyRepository;
 import genj.gedcom.PropertySex;
@@ -743,19 +744,70 @@ public class ReportWebsite extends Report {
 		processSimpleTag(object, "TITL", div1, html, handledProperties);
 		processSimpleTag(object, "FORM", div1, html, handledProperties);
 		
-		/* XXX Only in 5.5, not in 5.5.1
+		/* XXX BLOBs not handled yet 
+		 * Only in 5.5, not in 5.5.1
 	    +1 BLOB        {1:1}
 	      +2 CONT <ENCODED_MULTIMEDIA_LINE>  {1:M}
 	    +1 OBJE @<XREF:OBJE>@ {0:1}
 		 */
 
-		/* XXX FILE, 5.5.1
+		/* Handle FILE, 5.5.1
 		+1 FILE <MULTIMEDIA_FILE_REFN> {1:M} p.54
 		  +2 FORM <MULTIMEDIA_FORMAT> {1:1} p.54
 		    +3 TYPE <SOURCE_MEDIA_TYPE> {0:1} p.62
 		  +2 TITL <DESCRIPTIVE_TITLE> {0:1} p.48
 		*/
+		Element p = html.p();
+		for (PropertyFile file : object.getProperties(PropertyFile.class)) {
+			// Get title
+			String title = null;
+			Property titleProp = file.getProperty("TITL");
+			if (titleProp != null) {
+				title = titleProp.getDisplayValue();
+				reportUnhandledProperties(titleProp, null);
+			}
+			// Get form of object
+			Property formProp = object.getProperty("FORM");
+			if (formProp != null) {
+				if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
+					println(" Currently unsupported FORM in OBJE:" + formProp.getValue());
+				}
+				Property type = formProp.getProperty("TYPE");
+				if (type != null) {
+					// XXX What to do with type?
+					reportUnhandledProperties(type, null);
+				}
+				reportUnhandledProperties(formProp, new String[] {"TYPE"});
+			}
+			
+			int imgSize = 100;
+			// Copy the file to dstDir
+			File srcFile = file.getFile();
+			if (srcFile != null) {
+				File dstFile = new File(objectDir, srcFile.getName());
+				File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
+				try {
+					if (!dstFile.exists() || !thumbFile.exists() || 
+							srcFile.lastModified() > dstFile.lastModified()) {
+						copyFile(srcFile, dstFile);
+						// Create a thumb
+						makeThumb(dstFile, imgSize, imgSize, thumbFile);
+					}
 
+					// Make img-reference to the image
+					p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
+				} catch (IOException e) {
+					println(" Error in copying file or making thumb: " + 
+							srcFile.getName() + e.getMessage());
+				}
+			} else {
+				println(" FILE ref but no file was found");
+			}
+			reportUnhandledProperties(file, new String[] {"TITL", "FORM"});
+		}
+		if (p.hasChildNodes()) div1.appendChild(p);
+		handledProperties.add("FILE");
+		
 		processNumberNoteSourceChangeRest(object, linkPrefix, div1, objectDir, html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		makeFooter(bodyNode, html);
@@ -900,55 +952,73 @@ public class ReportWebsite extends Report {
 		int imgSize = 200;
 		if (smallThumbs) imgSize = 100;
 		for (int i = 0; i < objects.length; i++){
-			// Get the title
-			Property titleProp = objects[i].getProperty("TITL");
-			String title = null;
-			if (titleProp != null) title = titleProp.getValue();
-			// Get form of object
-			Property formProp = objects[i].getProperty("FORM");
-			if (formProp != null) {
-				if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
-					println("  Currently unsupported FORM in OBJE:" + formProp.getValue());
-				}
-				reportUnhandledProperties(formProp, null);
-			}
-			// Find file
-			// XXX May have several FILE properties in 5.5.1 and FORM is a sub prop to FILE 
-			PropertyFile file = (PropertyFile)objects[i].getProperty("FILE");
-			if (file != null) {
-				reportUnhandledProperties(file, null);
-				// Copy the file to dstDir
-				File srcFile = file.getFile();
-				if (srcFile != null) {
-					File dstFile = new File(dstDir, srcFile.getName());
-					File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
-					try {
-						if (!dstFile.exists() || !thumbFile.exists() || 
-								srcFile.lastModified() > dstFile.lastModified()) {
-							copyFile(srcFile, dstFile);
-							// Create a thumb
-							makeThumb(dstFile, imgSize, imgSize, thumbFile);
-						}
-						// For the gallery
-						if (makeGalleryImage) {
-							File galleryImage = new File(dstFile.getParentFile(), "gallery.jpg");
-							if (!galleryImage.exists() || srcFile.lastModified() > galleryImage.lastModified())
-								makeThumb(dstFile, 50, 70, galleryImage);
-							makeGalleryImage = false;
-						}
-						
-						// Make img-reference to the image
-						p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
-					} catch (IOException e) {
-						println("  Error in copying file or making thumb: " + 
-								srcFile.getName() + e.getMessage());
+			if (objects[i] instanceof PropertyMedia) {
+				Media media = (Media)((PropertyMedia)objects[i]).getTargetEntity();
+				if (media != null) {
+					if (media.getFile() != null) {
+						// XXX Ugly code: 
+						// Assume just one image, even though gedcom 551 says it can be multiple
+						// The GenJ code seems to assume just one.
+						p.appendChild(html.link(linkPrefix + this.addressToDir(media.getId()) + media.getFile().getName(), 
+								html.img(linkPrefix + this.addressToDir(media.getId()) + "thumb_" + media.getFile().getName(), media.getTitle())));
+					} else {
+						println(" Media references are not handled yet...");
 					}
-					reportUnhandledProperties(objects[i], new String[]{"FILE", "TITL", "FORM"});
+					reportUnhandledProperties(objects[i], null);
 				} else {
-					println("  FILE ref but no file was found");
+					println(" Invalid media reference to non existing object:" + objects[i].getValue());
 				}
 			} else {
-				println("  OBJE without FILE is currently not handled");
+				// Get the title
+				Property titleProp = objects[i].getProperty("TITL");
+				String title = null;
+				if (titleProp != null) title = titleProp.getValue();
+				// Get form of object
+				Property formProp = objects[i].getProperty("FORM");
+				if (formProp != null) {
+					if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
+						println(" Currently unsupported FORM in OBJE:" + formProp.getValue());
+					}
+					reportUnhandledProperties(formProp, null);
+				}
+				// Find file
+				// XXX May have several FILE properties in 5.5.1 and FORM is a sub prop to FILE 
+				PropertyFile file = (PropertyFile)objects[i].getProperty("FILE");
+				if (file != null) {
+					reportUnhandledProperties(file, null);
+					// Copy the file to dstDir
+					File srcFile = file.getFile();
+					if (srcFile != null) {
+						File dstFile = new File(dstDir, srcFile.getName());
+						File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
+						try {
+							if (!dstFile.exists() || !thumbFile.exists() || 
+									srcFile.lastModified() > dstFile.lastModified()) {
+								copyFile(srcFile, dstFile);
+								// Create a thumb
+								makeThumb(dstFile, imgSize, imgSize, thumbFile);
+							}
+							// For the gallery
+							if (makeGalleryImage) {
+								File galleryImage = new File(dstFile.getParentFile(), "gallery.jpg");
+								if (!galleryImage.exists() || srcFile.lastModified() > galleryImage.lastModified())
+									makeThumb(dstFile, 50, 70, galleryImage);
+								makeGalleryImage = false;
+							}
+
+							// Make img-reference to the image
+							p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
+						} catch (IOException e) {
+							println(" Error in copying file or making thumb: " + 
+									srcFile.getName() + e.getMessage());
+						}
+						reportUnhandledProperties(objects[i], new String[]{"FILE", "TITL", "FORM"});
+					} else {
+						println(" FILE ref but no file was found");
+					}
+				} else {
+					println(" OBJE without FILE is currently not handled");
+				}
 			}
 		}
 		if (p.hasChildNodes()) return p;
@@ -974,19 +1044,23 @@ public class ReportWebsite extends Report {
 			Element appendTo, File destDir, Html html, List<String> handledProperties) {
 
 		// SOUR
-		Element sourceP = html.p(); 
-		processSourceRefs(sourceP, prop, linkPrefix, destDir, html);
-		if (sourceP.hasChildNodes()) {
-			appendTo.appendChild(html.h2(Gedcom.getName("SOUR", true)));
-			appendTo.appendChild(sourceP);
+		if (! prop.getTag().equals("SOUR")) {
+			Element sourceP = html.p(); 
+			processSourceRefs(sourceP, prop, linkPrefix, destDir, html);
+			if (sourceP.hasChildNodes()) {
+				appendTo.appendChild(html.h2(Gedcom.getName("SOUR", true)));
+				appendTo.appendChild(sourceP);
+			}
 		}
 		handledProperties.add("SOUR");
 
-		Element noteP = html.p(); 
-		processNoteRefs(noteP, prop, linkPrefix, destDir, html);
-		if (noteP.hasChildNodes()) {
-			appendTo.appendChild(html.h2(Gedcom.getName("NOTE", true)));
-			appendTo.appendChild(noteP);
+		if (! prop.getTag().equals("NOTE")) {
+			Element noteP = html.p(); 
+			processNoteRefs(noteP, prop, linkPrefix, destDir, html);
+			if (noteP.hasChildNodes()) {
+				appendTo.appendChild(html.h2(Gedcom.getName("NOTE", true)));
+				appendTo.appendChild(noteP);
+			}
 		}
 		handledProperties.add("NOTE");
 		
@@ -1643,17 +1717,17 @@ public class ReportWebsite extends Report {
 	}
 
 	protected void copyFile(File src, File dst) throws IOException {
-		 FileChannel source = null;
-		 FileChannel destination = null;
-		 try {
-		  source = new FileInputStream(src).getChannel();
-		  destination = new FileOutputStream(dst).getChannel();
-		  destination.transferFrom(source, 0, source.size());
-		 } finally {
-		   if (source!=null) try { source.close(); } catch (Throwable t){};
-       if (destination!=null) try { destination.close(); } catch (Throwable t){};
-	   }
-		
+		FileChannel source = null;
+		FileChannel destination = null;
+		try {
+			source = new FileInputStream(src).getChannel();
+			destination = new FileOutputStream(dst).getChannel();
+			destination.transferFrom(source, 0, source.size());
+		} finally {
+			if (source!=null) try { source.close(); } catch (Throwable t){};
+			if (destination!=null) try { destination.close(); } catch (Throwable t){};
+		}
+
 	}
 
 	protected void copyTextFileModify(String inFile, String outFile, HashMap<String,String> translator, boolean append) throws IOException {
