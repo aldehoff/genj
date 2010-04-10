@@ -432,17 +432,20 @@ public class ReportWebsite extends Report {
 		// Add a decendant tree
 		addDecendantTree(bodyNode, indi, "", linkPrefix, html);
 
-		Property name = indi.getProperty("NAME");
-		if (name != null) {
-			Element h1 = html.h1(getName(indi));
+		Property[] names = indi.getProperties("NAME");
+		for (Property name : names) {
+			Element h1 = html.h1(getName(indi, name));
 			bodyNode.appendChild(h1);
 			processSourceRefs(h1, name, linkPrefix, indiDir, html);
 			processNoteRefs(h1, name, linkPrefix, indiDir, html);
-			// XXX NAME have more sub properties
-			reportUnhandledProperties(indi.getProperty("NAME"), new String[]{"SOUR","NOTE"});
-		} else {
-			bodyNode.appendChild(html.h1("("+translate("unknown")+")"));
+			Property nick = name.getProperty("NICK");
+			if (nick != null) {
+				bodyNode.appendChild(html.p(Gedcom.getName("NICK") + ": " + nick.getDisplayValue()));
+			}
+			// XXX NAME have more sub properties, but advanced name handling seems to be a little mess...
+			reportUnhandledProperties(name, new String[]{"SOUR", "NOTE", "NICK"});
 		}
+		if (names == null) bodyNode.appendChild(html.h1("("+translate("unknown")+")"));
 		handledProperties.add("NAME");
 
 		// Find out how much we may display		
@@ -859,6 +862,13 @@ public class ReportWebsite extends Report {
 
 	protected String getName(Indi indi) {
 		String name = indi.getName();
+		if (sosaStradonitzNumber.get(indi.getId()) != null) { 
+			name += " (" + sosaStradonitzNumber.get(indi.getId()) + ")";
+		}
+		return name;
+	}
+	protected String getName(Indi indi, Property nameProp) {
+		String name = nameProp.getDisplayValue();
 		if (sosaStradonitzNumber.get(indi.getId()) != null) { 
 			name += " (" + sosaStradonitzNumber.get(indi.getId()) + ")";
 		}
