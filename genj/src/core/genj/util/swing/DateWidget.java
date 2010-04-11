@@ -61,11 +61,12 @@ public class DateWidget extends JPanel {
 
   /** change support */
   private ChangeSupport changeSupport = new ChangeSupport(this) {
-    public void fireChangeEvent(Object source) {
+    @Override
+    public void fireChangeEvent(javax.swing.event.ChangeEvent event) {
       // update our status
       updateStatus();
       // continue
-      super.fireChangeEvent(source);
+      super.fireChangeEvent(event);
     }
   };
 
@@ -295,7 +296,7 @@ public class DateWidget extends JPanel {
     if (value == null) {
       // show 'X' on disabled button
       widgetCalendar.setEnabled(false);
-      widgetCalendar.setIcon(MetaProperty.IMG_ERROR);
+      widgetCalendar.setDisabledIcon(MetaProperty.IMG_ERROR);
     } else {
       // show current calendar on enabled button
       widgetCalendar.setEnabled(true);

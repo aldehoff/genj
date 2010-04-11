@@ -95,7 +95,7 @@ public class ChangeSupport implements DocumentListener, ChangeListener, ActionLi
     fireChangeEvent(source);
   }
   
-  public void fireChangeEvent(Object source) {
+  public final void fireChangeEvent(Object source) {
     fireChangeEvent(new ChangeEvent(source));
   }
   
