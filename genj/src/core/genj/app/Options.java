@@ -87,11 +87,11 @@ public class Options extends OptionProvider {
     }
 
     // look for language libraries (./lib/genj_pt_BR.jar)
-    File[] libs = new File("lib").listFiles();
+    File dir = new File("lib");
+    LOG.fine("Looking for language archives in "+dir.getAbsolutePath());
+    File[] libs = dir.listFiles();
     if (libs!=null)
-      for (int l=0;l<libs.length;l++) {
-        File lib = libs[l];
-        if (!lib.isFile()) continue;
+      for (File lib : libs) {
         String name = lib.getName();
         if (!name.startsWith("genj_")) continue;
         if (!name.endsWith  (".jar" )) continue;
