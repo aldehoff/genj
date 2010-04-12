@@ -192,7 +192,17 @@ public class FileChooserWidget extends JPanel {
    * Get current file
    */
   public File getFile() {
-    return new File(text.getText());
+    
+    File file = new File(text.getText().trim());
+    String name = file.getName();
+    
+    if (extensions!=null&&name.indexOf(".")<0&&extensions.indexOf(',')<0) {
+      String ext = extensions.trim();
+      if (name.length()>0&&!name.endsWith("."+ext))
+        file = new File(file.getParentFile(), name+"."+ext);
+    }
+    
+    return file;
   }
   
   /** 
@@ -242,6 +252,13 @@ public class FileChooserWidget extends JPanel {
       // check result
       file = fc.getSelectedFile();
       if (file!=null)  {
+        
+        if (extensions!=null && extensions.indexOf(',')<0) {
+          String ext = extensions.trim();
+          if (!file.getName().endsWith("."+ext))
+            file = new File(file.getParentFile(), file.getName()+"."+ext);
+        }
+        
         setFile(file);
         directory = file.getParent();
         
