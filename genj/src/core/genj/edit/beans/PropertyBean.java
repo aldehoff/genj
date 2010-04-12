@@ -274,6 +274,13 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   }
   
   /**
+   * Whether the bean is valid and can be committed as of current state
+   */
+  public boolean isCommittable() {
+    return true;
+  }
+  
+  /**
    * Whether the bean has changed since first listener was attached
    */
   public boolean hasChanged() {

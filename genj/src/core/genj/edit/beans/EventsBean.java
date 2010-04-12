@@ -503,7 +503,7 @@ public class EventsBean extends PropertyBean {
       
       panel.addChangeListener(new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-          actions[0].setEnabled(true);
+          actions[0].setEnabled(panel.isCommittable());
         }
       });
       

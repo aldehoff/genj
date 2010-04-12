@@ -181,6 +181,11 @@ public class DateBean extends PropertyBean {
     // done
   }
   
+  @Override
+  public boolean isCommittable() {
+    return date1.getValue()!=null && date2.getValue()!=null;
+  }
+  
   /**
    * Action for format change
    */

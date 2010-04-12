@@ -144,7 +144,17 @@ public class BeanPanel extends JPanel {
   public void removeChangeListener(ChangeListener listener) {
     changeSupport.removeChangeListener(listener);
   }
-    
+
+  /**
+   * Courtesy check whether the beans in the panel can all be committed
+   */
+  public boolean isCommittable() {
+    for (PropertyBean bean : getBeans())
+      if (!bean.isCommittable())
+        return false;
+    return true;
+  }
+
   /**
    * commit beans - transaction has to be running already
    */
