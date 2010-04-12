@@ -62,6 +62,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class ReportWebsite extends Report {
@@ -761,21 +762,7 @@ public class ReportWebsite extends Report {
 		handledProperties.add("NAME");
 
 		// ADDR
-		Property addr = repo.getProperty("ADDR");
-		if (addr != null) {
-			div1.appendChild(html.h2(Gedcom.getName("ADDR")));
-			div1.appendChild(html.p(addr.getDisplayValue()));
-			for (String subTag : new String[] {"ADR1", "ADR2", "CITY", "STAE", "POST", "CTRY"}) {
-				Property subProp = addr.getProperty(subTag);
-				if (subProp != null) {
-					div1.appendChild(html.p(Gedcom.getName(subTag) + ": " + subProp.getDisplayValue()));
-				}
-			}
-			reportUnhandledProperties(addr, new String[] {"ADR1", "ADR2", "CITY", "STAE", "POST", "CTRY"});
-		}
-		handledProperties.add("ADDR");
-
-		processSimpleTags(repo, new String[] {"PHON"}, div1, html, handledProperties); 
+		processAddresses(div1, repo, html, handledProperties, true);
 
 		// References
 		Element div2 = html.div("right");
@@ -928,12 +915,7 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(div1);
 
 		// ADDRESS_STRUCTURE
-		Element address = processAddress(submitter.getProperty("ADDR"), html);
-		if (address != null) {
-			div1.appendChild(html.h2(Gedcom.getName("ADDR")));
-			div1.appendChild(html.p(address));
-		}
-		handledProperties.add("ADDR");
+		processAddresses(div1, submitter, html, handledProperties, true);
 
 		// LANG
 		processSimpleTag(submitter, "LANG", div1, html, handledProperties);
@@ -1317,8 +1299,8 @@ public class ReportWebsite extends Report {
 		Element place = processPlace(event.getProperty("PLAC"), linkPrefix, dstDir, html);
 		if (place != null) p.appendChild(place);
 		// ADDRESS_STRUCTURE
-		Element address = processAddress(event.getProperty("ADDR"), html);
-		if (address != null) p.appendChild(address);
+		List<String> handledProperties = new ArrayList<String>(); // XXX Use this instead? (addr can handle mote props)
+		processAddresses(p, event, html, handledProperties, false);
 		// SOUR - Sources
 		processSourceRefs(p, event, linkPrefix, dstDir, html);
 		// NOTE
@@ -1364,7 +1346,7 @@ public class ReportWebsite extends Report {
 			for (int i = 0; i < nl.getLength(); i++) p.appendChild(nl.item(i));
 		}
 		
-		reportUnhandledProperties(event, new String[]{"DATE", "PLAC", "TYPE", "NOTE", "SOUR", "ADDR", "AGE", "AGNC", "CAUS", "FAMC"});
+		reportUnhandledProperties(event, new String[]{"DATE", "PLAC", "TYPE", "NOTE", "SOUR", "ADDR", "PHON", "EMAIL", "FAX", "WWW", "AGE", "AGNC", "CAUS", "FAMC"});
 		return p;
 	}
 
@@ -1413,59 +1395,60 @@ public class ReportWebsite extends Report {
 		return span;
 	}
 
-	protected Element processAddress(Property address, Html html) {
-		if (address == null) return null;
-		Element span = html.span("address");
-		// Direct text
-		appendDisplayValue(span, address, false, html);
-		// The specified sub properties, city etc
-		String[] subTags = new String[]{"ADR1", "ADR2", "CITY", "STAE", "POST", "CTRY"};
-		for (int i = 0; i < subTags.length; i++) {
-			Property subProp = address.getProperty(subTags[i]);
-			if (subProp != null) span.appendChild(html.text(", " + subProp.getDisplayValue()));
-		}
-		reportUnhandledProperties(address, subTags);
-		return span;
-	}
+	final String[] addressOtherProperties = new String[] {"PHON", "EMAIL", "FAX", "WWW"}; 
 
-	/** 
-	 * Handles all SOUR-stuff in prop 
-	 * @return a <sup> element or null
-	 */
-	/*protected Element processSources(Property prop, String linkPrefix, Html html) {
-		Property[] sources = prop.getProperties("SOUR");
-		if (sources.length > 0) {
-			Element sup = html.sup("source");
-			for (Property sourceRef : sources) {
-				if (sourceRef instanceof PropertySource) { 
-					Source source = (Source)((PropertySource)sourceRef).getTargetEntity();
-					if (sup.hasChildNodes()) sup.appendChild(html.text(", "));
-					sup.appendChild(html.link(linkPrefix + addressTo(source.getId()), 
-							source.getId()));
-					reportUnhandledProperties(sourceRef, null);
-				} else {
-					// Direct source desc
-					sup.appendChild(html.text(sourceRef.getDisplayValue()));
-					Property text = sourceRef.getProperties()
-					reportUnhandledProperties(sourceRef, null);
+	protected boolean processAddressesHasData(Property prop) {
+		if (prop.getProperty("ADDR") != null) return true;
+		for (String tag : addressOtherProperties) {
+			if (prop.getProperty(tag) != null) return true;
+		}
+		return false;
+	}
+	
+	protected void processAddresses(Element appendTo, Property prop, Html html, List<String> handledProperties, boolean bigDisplayWithHeading) {
+		if (! processAddressesHasData(prop)) return;
+		if (bigDisplayWithHeading) appendTo.appendChild(html.h2(Gedcom.getName("ADDR")));
+
+		Element span = html.span("address");
+		if (! bigDisplayWithHeading) appendTo.appendChild(span);
+		
+		Property address = prop.getProperty("ADDR");
+		if (address != null) {
+			// Direct text
+			appendDisplayValue(span, address, ! bigDisplayWithHeading, html);
+			// The specified sub properties, city etc
+			final String[] addressSubProperties = new String[]{"ADR1", "ADR2", "ADR3", "CITY", "STAE", "POST", "CTRY"};
+			for (String subTag : addressSubProperties) {
+				Property subProp = address.getProperty(subTag);
+				if (subProp != null) {
+					if (bigDisplayWithHeading) span.appendChild(html.br());
+					else span.appendChild(html.text(", ")); 
+					span.appendChild(html.text(subProp.getDisplayValue()));
+					reportUnhandledProperties(subProp, null);
 				}
 			}
-			return sup;
+			reportUnhandledProperties(address, addressSubProperties);
 		}
-		return null;
-	}*/
+		if (bigDisplayWithHeading && span.hasChildNodes()) appendTo.appendChild(html.p(span));
+		handledProperties.add("ADDR");
 
-	/*protected Element processNotes(Property prop, String linkPrefix, Html html) {
-		Property[] notes = prop.getProperties("NOTE");
-		if (notes.length > 0) {
-			Element p = html.p(Gedcom.getName("NOTE", true) + ": ");
-			for (int i = 0; i < notes.length; i++) {
-				p.appendChild(processNote(notes[i], linkPrefix, html));
+		for (String tag : addressOtherProperties) {
+			for (Property subProp : prop.getProperties(tag)) {
+				Node value = html.text(subProp.getDisplayValue());
+				if (tag.equals("EMAIL")) value = html.link("mailto:" + subProp.getDisplayValue(), subProp.getDisplayValue());
+				if (tag.equals("WWW")) value = html.link(subProp.getDisplayValue(), subProp.getDisplayValue());
+				if (bigDisplayWithHeading) {
+					Element p = html.p(Gedcom.getName(tag) + ": ");
+					p.appendChild(value);
+					appendTo.appendChild(p);
+				} else {
+					span.appendChild(html.text(", "));
+					span.appendChild(value);
+				}
 			}
-			return p;
+			handledProperties.add(tag);
 		}
-		return null;
-	}*/
+	}
 
 	/**
 	 * Adds references in the source list and adds a superscript-link on appendTo 
