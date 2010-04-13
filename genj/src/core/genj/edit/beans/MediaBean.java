@@ -25,6 +25,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Media;
+import genj.gedcom.Options;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
 import genj.gedcom.PropertyComparator;
@@ -165,7 +166,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     
     // add new OBJEs for props that need them
     Gedcom gedcom = property.getGedcom();
-    boolean inline = !property.getGedcom().getGrammar().getMeta(new TagPath("OBJE")).allows("FILE");
+    boolean inline = Options.getInstance().isUseInline || !property.getGedcom().getGrammar().getMeta(new TagPath("OBJE")).allows("FILE");
     for (FileInput source : propsNeedingOBJEs.keySet()) {
       Media media = null;
       for (Property prop : propsNeedingOBJEs.get(source))  {

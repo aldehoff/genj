@@ -48,14 +48,17 @@ public class Options extends OptionProvider {
   /** option - whether to convert last names to uppercase */
   public boolean isUpperCaseNames = false;
   
-  /** option - wether to set wife lastname when indi is created */
+  /** option - whether to set wife's last name when person is created */
   public boolean setWifeLastname = true;
   
-  /** option - wether to add GIVN|SURN information on name changes */
+  /** option - whether to add GIVN|SURN information on name changes */
   public boolean isAddGivenSurname = false;
   
-  /** option - wether to main AGE information for events */
+  /** option - whether to main AGE information for events */
   public boolean isAddAge = false;
+  
+  /** option - whether to prefer inline over records for notes and medias */
+  public boolean isUseInline = false;
   
   /** option - whether to use "last,first" or "first last" */
   public int nameFormat = 1;
