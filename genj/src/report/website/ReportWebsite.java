@@ -600,7 +600,7 @@ public class ReportWebsite extends Report {
 				Fam fam = pfs.getFamily();
 				if (fam == null) {
 					println(" Reference to invalid family: " + pfs.getValue());
-					continue; // XXX or shall it be break?
+					continue;
 				}
 				Indi spouse = fam.getOtherSpouse(indi);
 				if (spouse != null) {
@@ -1345,7 +1345,7 @@ public class ReportWebsite extends Report {
 		List<String> handledProperties = new ArrayList<String>(); // XXX Use this instead? (addr can handle mote props)
 		processAddresses(p, event, html, handledProperties, false);
 
-		// XXX RESN (5.5.1)
+		// XXX RESN (In gedcom 5.5.1)
 		
 		// SOUR - Sources
 		processSourceRefs(p, event, linkPrefix, dstDir, html);
