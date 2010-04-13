@@ -452,8 +452,29 @@ public class ReportWebsite extends Report {
 			if (nick != null) {
 				bodyNode.appendChild(html.p(Gedcom.getName("NICK") + ": " + nick.getDisplayValue()));
 			}
-			// XXX NAME have more sub properties, but advanced name handling seems to be a little mess...
-			reportUnhandledProperties(name, new String[]{"SOUR", "NOTE", "NICK"});
+			String constructedName = constructName(name); //NPFX, GIVN, SPFX, SURN, NSFX
+			if (constructedName != null) bodyNode.appendChild(html.p(constructedName));
+
+			for (String subTag : new String[] {"FONE", "ROMN"}) {
+				Property fone = name.getProperty(subTag);
+				if (fone != null) {
+					String type = "";
+					Property typeProp = fone.getProperty("TYPE"); // Should be here according to spec
+					if (typeProp != null) type = typeProp.getDisplayValue(); 
+					Element p = html.p(Gedcom.getName(subTag) + " " + type + ": " + typeProp.getDisplayValue());
+					bodyNode.appendChild(p);
+					Property foneNick = name.getProperty("NICK");
+					String constructedFoneName = constructName(fone); //NPFX, GIVN, SPFX, SURN, NSFX
+					if (constructedFoneName != null) p.appendChild(html.text(", " + constructedName));
+					if (foneNick != null) p.appendChild(html.text(", " + 
+							Gedcom.getName("NICK") + " " + foneNick.getDisplayValue()));
+					processSourceRefs(p, fone, linkPrefix, indiDir, html);
+					processNoteRefs(p, fone, linkPrefix, indiDir, html);
+					reportUnhandledProperties(foneNick, new String[] {"TYPE", "SOUR", "NOTE", "NICK", "NPFX", "GIVN", "SPFX", "SURN", "NSFX"});
+				}
+			}
+
+			reportUnhandledProperties(name, new String[]{"SOUR", "NOTE", "NICK", "NPFX", "GIVN", "SPFX", "SURN", "NSFX"});
 		}
 		if (names == null) bodyNode.appendChild(html.h1("("+translate("unknown")+")"));
 		handledProperties.add("NAME");
@@ -661,6 +682,23 @@ public class ReportWebsite extends Report {
 		return html;
 	}
 
+	/**
+	 * Construct a name based on PERSONAL_NAME_PIECES
+	 * NICK is not inserted here
+	 */
+	protected String constructName(Property nameProp) {
+		StringBuffer sb = new StringBuffer();
+		for (String tag : new String[] {"NPFX", "GIVN", "SPFX", "SURN", "NSFX"}) {
+			for (Property subProp : nameProp.getProperties(tag)) {
+				if (sb.length() > 0) sb.append(' ');
+				sb.append(subProp.getDisplayValue());
+			}
+		}
+		if (sb.length() > 0) return sb.toString();
+		else return null;
+	}
+	
+	
 	/**
 	 * Create a document for each source
 	 */
@@ -1385,6 +1423,18 @@ public class ReportWebsite extends Report {
 		processSourceRefs(span, place, linkPrefix, dstDir, html);
 		// NOTE
 		processNoteRefs(span, place, linkPrefix, dstDir, html);
+		// Variants of the name of the place
+		for (String subTag : new String[] {"FONE", "ROMN"}) {
+			Property fone = place.getProperty(subTag);
+			if (fone != null) {
+				String type = "";
+				Property typeProp = fone.getProperty("TYPE"); // Should be here according to spec
+				if (typeProp != null) type = typeProp.getDisplayValue(); 
+				span.appendChild(html.text(Gedcom.getName(subTag) + " " + type + ": " + 
+						(placeDisplayFormat.equals("all") ? fone.getValue() : fone.format(placeDisplayFormat).replaceAll("^(,|(, ))*", "").trim())));
+				reportUnhandledProperties(fone, new String[] {"TYPE"});
+			}
+		}
 		// MAP - Geografic position
 		Property map = place.getProperty("MAP");
 		if (map != null && reportLinksToMap) {
