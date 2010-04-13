@@ -19,6 +19,8 @@
  */
 package export;
 
+import java.util.Date;
+
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,17 +48,22 @@ import genj.util.swing.NestedBlockLayout;
       "<row><living cols=\"2\"/></row>"+
     "</table>";
 
-  private DateWidget eventsBefore = new DateWidget(PointInTime.getNow()), bornbEFORE = new DateWidget(PointInTime.getNow());
-  private JCheckBox living = new JCheckBox(RESOURCES.getString("data.living"), true);
-
+  private DateWidget eventsBefore, bornBefore;
+  private JCheckBox living;
+  
   DataFilter(Gedcom gedcom) {
     
     super(new NestedBlockLayout(LAYOUT));
     
+    PointInTime tomorrow = PointInTime.getNow().add(1,0,0);
+    eventsBefore = new DateWidget(tomorrow);
+    bornBefore = new DateWidget(tomorrow);
+    living = new JCheckBox(RESOURCES.getString("data.living"), true);
+
     add(new JLabel(RESOURCES.getString("data.even")));
     add(eventsBefore);
     add(new JLabel(RESOURCES.getString("data.born")));
-    add(bornbEFORE);
+    add(bornBefore);
     add(living);
     
   }
