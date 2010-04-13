@@ -483,7 +483,7 @@ public class ReportWebsite extends Report {
 			if (death != null) div1.appendChild(death);
 			handledProperties.add("DEAT");  
 
-			for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL",
+			for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL", "FACT",
 					"ADOP", "CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"}) {
 				processOtherEventTag(tag, indi, linkPrefix, indiDir, div1, html);
 				handledProperties.add(tag);  
@@ -555,6 +555,11 @@ public class ReportWebsite extends Report {
 				    	p.appendChild(html.text(pedi.getValue() + ": "));
 				    	p.appendChild(html.br());
 				    }
+				}
+				Property status = famRef.getProperty("STAT");
+				if (status != null) {
+			    	p.appendChild(html.text(Gedcom.getName("STAT") + ": " + status.getDisplayValue()));
+			    	p.appendChild(html.br());
 				}
 				getReferenceLink(famRef, p, linkPrefix, html, true);
 				processNoteRefs(p, famRef, linkPrefix, indiDir, html);
@@ -817,7 +822,7 @@ public class ReportWebsite extends Report {
 				reportUnhandledProperties(titleProp, null);
 			}
 			// Get form of object
-			Property formProp = object.getProperty("FORM");
+			Property formProp = file.getProperty("FORM");
 			if (formProp != null) {
 				if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
 					println(" Currently unsupported FORM in OBJE:" + formProp.getValue());
@@ -1096,7 +1101,7 @@ public class ReportWebsite extends Report {
 				PropertyFile file = (PropertyFile)objects[i].getProperty("FILE");
 				if (file != null) {
 					// Get form of object 5.5.1 style
-					formProp = objects[i].getProperty("FORM");
+					formProp = file.getProperty("FORM");
 					if (formProp != null) {
 						if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
 							println(" Currently unsupported FORM in OBJE:" + formProp.getValue());
@@ -1301,12 +1306,15 @@ public class ReportWebsite extends Report {
 		// ADDRESS_STRUCTURE
 		List<String> handledProperties = new ArrayList<String>(); // XXX Use this instead? (addr can handle mote props)
 		processAddresses(p, event, html, handledProperties, false);
+
+		// XXX RESN (5.5.1)
+		
 		// SOUR - Sources
 		processSourceRefs(p, event, linkPrefix, dstDir, html);
 		// NOTE
 		processNoteRefs(p, event, linkPrefix, dstDir, html);
 		// AGE, AGNC, CAUS
-		for (String tag : new String[] {"AGE", "AGNC", "CAUS"}) {
+		for (String tag : new String[] {"AGE", "AGNC", "CAUS", "RELI"}) {
 			Property tagProp = event.getProperty(tag);
 			if (tagProp != null) {
 				p.appendChild(html.text(Gedcom.getName(tag) + " " + tagProp.getDisplayValue()));
