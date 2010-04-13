@@ -220,11 +220,30 @@ public class PointInTime implements Comparable<PointInTime> {
     set(UNKNOWN,UNKNOWN,UNKNOWN);
   }
   
+  
   /**
    * Calculate day of week
    */
   public String getDayOfWeek(boolean localize) throws GedcomException {
     return calendar.getDayOfWeek(this, localize);
+  }
+  
+  public PointInTime add(int d, int m, int y) {
+    java.util.Calendar c = java.util.Calendar.getInstance();
+    c.set(java.util.Calendar.DAY_OF_MONTH, day!=UNKNOWN ? day+1 : 1);
+    c.set(java.util.Calendar.MONTH, month!=UNKNOWN ? month : 0);
+    c.set(java.util.Calendar.YEAR, year!=UNKNOWN ? year : 0);
+    
+    c.add(java.util.Calendar.DAY_OF_MONTH, d);
+    c.add(java.util.Calendar.MONTH, m);
+    c.add(java.util.Calendar.YEAR, y);
+    
+    set(c.get(java.util.Calendar.DAY_OF_MONTH)-1,
+        c.get(java.util.Calendar.MONTH),
+        c.get(java.util.Calendar.YEAR)
+        );
+    
+    return this;
   }
   
   /**
