@@ -273,7 +273,7 @@ public class BlueprintEditor extends JSplitPane {
           }
         }
       };
-      renderer.setDebug(isChanged);
+      renderer.setDebug(true);
       renderer.render(g, example, bounds);
       // done
     }
