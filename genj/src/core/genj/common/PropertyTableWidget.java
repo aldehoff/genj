@@ -212,16 +212,6 @@ public class PropertyTableWidget extends JPanel  {
         props = ps;
       }
         
-//      if (props.isEmpty()) {
-//        List<Property> all = new ArrayList<Property>();
-//        List<? extends Entity> ents = context.getEntities();
-//        for (int i = 0; i < ents.size(); i++) {
-//          all.addAll(ents.get(i).getProperties(Property.class));
-//          all.add(ents.get(i));
-//        }
-//        props = all;
-//      }
-      
       ListSelectionModel rows = table.getSelectionModel();
       ListSelectionModel cols = table.getColumnModel().getSelectionModel();
       table.clearSelection();
@@ -229,14 +219,20 @@ public class PropertyTableWidget extends JPanel  {
       Point cell = new Point();
       for (Property prop : props) {
   
+        // add cell selection
         cell = table.getCell(prop);
-        if (cell.y<0)
+        if (cell.y>=0) {
+          rows.addSelectionInterval(cell.y,cell.y);
+          if (cell.x>=0)
+            cols.addSelectionInterval(cell.x,cell.x);
+        } else {
+          int row = table.getRow(prop);
+          if (row>=0)
+            rows.addSelectionInterval(row,row);
+          cols.addSelectionInterval(0,table.getColumnCount()-1);
           continue;
+        }
 
-        // change selection
-        rows.addSelectionInterval(cell.y,cell.y);
-        if (cell.x>=0)
-          cols.addSelectionInterval(cell.x,cell.x);
       }
       
       // scroll to last selection
@@ -535,6 +531,16 @@ public class PropertyTableWidget extends JPanel  {
       createShortcuts(directive.getColumn(), panelShortcuts);
 
       // done
+    }
+    
+    int getRow(Property prop) {
+     
+      PropertyTableModel model = getPropertyTableModel();
+      for (int i=0;i<model.getNumRows();i++) {
+        if (model.getRowRoot(i).contains(prop))
+          return ((SortableTableModel)getModel()).viewIndex(i);
+      }
+      return -1;
     }
     
     

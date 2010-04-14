@@ -225,6 +225,10 @@ public class SortableTableModel extends AbstractTableModel {
     public int modelIndex(int viewIndex) {
         return getViewToModel()[viewIndex].modelIndex;
     }
+    
+    public int viewIndex(int modelIndex) {
+      return getModelToView()[modelIndex];
+    }
 
     private int[] getModelToView() {
         if (modelToView == null) {
