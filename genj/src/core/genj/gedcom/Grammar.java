@@ -234,5 +234,25 @@ public class Grammar {
         stack.pop();
     }
   } //Parser
+
+  /**
+   * check if a tag path is valid 
+   */
+  public boolean isValid(TagPath path) {
+    
+    String tag = path.get(0);
+    MetaProperty root = (MetaProperty)tag2root.get(tag);
+    if (root==null)
+      return false;
+    
+    for (int i=1;i<path.length();i++) {
+      tag = path.get(i);
+      if (!root.allows(tag))
+        return false;
+      root = root.getNested(tag, false);
+    }
+    
+    return true;
+  }
   
 } //Grammar
