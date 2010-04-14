@@ -34,6 +34,7 @@ import genj.util.Dimension2d;
 import genj.util.EnvironmentChecker;
 import genj.util.swing.ImageIcon;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -42,6 +43,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.font.TextLayout;
@@ -91,6 +93,8 @@ public class BlueprintRenderer {
   private final static String STARS = "*****";
   
   private final static int IMAGE_GAP = 4;
+  
+  private final static Stroke DEBUG_STROKE = new BasicStroke(1.0f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 10.0f, new float[]{ 1,2 }, 0.0f);
   
   // this will initialize and load the html32 dtd
   // "/javax/swing/text/html/parser/html32.bdtd"
@@ -823,18 +827,23 @@ public class BlueprintRenderer {
       Graphics2D graphics = (Graphics2D)g;
       
       // setup painting attributes and bounds
-      g.setColor(super.getForeground());
-      g.setFont(super.getFont());
-      
       Rectangle r = (allocation instanceof Rectangle) ? (Rectangle)allocation : allocation.getBounds();
+      Color fg = super.getForeground();
       
       // debug?
-      if (isDebug) 
+      if (isDebug) {
+        Stroke stroke = graphics.getStroke();
+        graphics.setStroke(DEBUG_STROKE);
+        g.setColor(new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 32));
         graphics.draw(r);
+        graphics.setStroke(stroke);
+      }
       
       // clip and render
       Shape old = graphics.getClip();
       graphics.clip(r);
+      g.setColor(fg);
+      g.setFont(super.getFont());
       render(prop, graphics, r);
       g.setClip(old);
       
@@ -842,6 +851,8 @@ public class BlueprintRenderer {
     }
     
     private void render(Property prop, Graphics2D g, Rectangle r) {
+//      if (prop==null)
+//        return;
       if (prop instanceof MultiLineProperty) {
         render((MultiLineProperty)prop, g, r);
         return;
