@@ -21,7 +21,6 @@ package genj.common;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Grammar;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
@@ -62,6 +61,7 @@ public class SelectEntityWidget extends JPanel {
   private String type = Gedcom.INDI;
   
   /** entities to choose from */
+  private Gedcom gedcom;
   private Entity[] list;
   private Object none;
   
@@ -84,6 +84,7 @@ public class SelectEntityWidget extends JPanel {
     "FAM:WIFE:*:..:NAME",
     "OBJE", 
     "OBJE:TITL", 
+    "OBJE:FILE:TITL", 
     "NOTE", 
     "NOTE:NOTE", 
     "SOUR", 
@@ -103,6 +104,7 @@ public class SelectEntityWidget extends JPanel {
   public SelectEntityWidget(Gedcom gedcom, String type, String none) {
 
     // remember and lookup
+    this.gedcom = gedcom;
     this.type = type;
     this.none = none;
     
@@ -116,12 +118,15 @@ public class SelectEntityWidget extends JPanel {
     }
 
     // assemble sorts
+    
     sorts = new ArrayList<TagPath>(SORTS.length);
     for (int i=0;i<SORTS.length;i++) {
       String path = SORTS[i];
       if (!path.startsWith(type))
         continue;
       TagPath p = new TagPath(path);
+      if (!gedcom.getGrammar().isValid(p))
+        continue;
       sorts.add(p);
       if (sort==null||path.equals(REGISTRY.get("select.sort."+type, ""))) sort = p;
     }
@@ -251,10 +256,10 @@ public class SelectEntityWidget extends JPanel {
   
   private MetaProperty getMeta(TagPath tagPath) {
     MetaProperty meta;
-    if (tagPath.length()>1)
-      meta = Grammar.V55.getMeta(new TagPath(tagPath, 2));
+    if (tagPath.length()>1&&!tagPath.getLast().equals("TITL"))
+      meta = gedcom.getGrammar().getMeta(new TagPath(tagPath, 2));
     else
-      meta = Grammar.V55.getMeta(tagPath);
+      meta = gedcom.getGrammar().getMeta(tagPath);
     return meta;
   }
   
