@@ -16,7 +16,8 @@ import org.w3c.dom.Node;
 public class Html {
 	Document doc = null;
 	Element body = null;
-
+	Element headNode;
+	
 	public Html(String title, String linkPrefix) {
 		String sPublicId = "-//W3C//DTD XHTML 1.0 Strict//EN";
 		String sSystemId = "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd";
@@ -34,7 +35,7 @@ public class Html {
 
 		// add head, title and body
 		//Text name = doc.createTextNode(indi.getName());
-		Element headNode = doc.createElement("head");
+		headNode = doc.createElement("head");
 		Element titleNode = doc.createElement("title");
 		titleNode.appendChild(doc.createTextNode(title));
 		body = doc.createElement("body");
@@ -55,12 +56,42 @@ public class Html {
 		headNode.appendChild(meta);
 	}
 
+	public void addJSFile(String url) {
+		Element script = doc.createElement("script");
+		script.setAttribute("type", "text/javascript");
+		script.setAttribute("src", url);
+		script.appendChild(text(" "));
+		headNode.appendChild(script);
+	}
+	
 	public Document getDoc() {
 		return doc;
 	}
 
 	public Element getBody() {
 		return body;
+	}
+
+	public Element form(String id, String onSubmit) {
+		Element form = doc.createElement("form");
+		form.setAttribute("id", id);
+		form.setAttribute("onSubmit", onSubmit);
+		return form;
+	}
+
+	public Element input(String id, String name) {
+		Element input = doc.createElement("input");
+		input.setAttribute("id", id);
+		input.setAttribute("name", name);
+		return input;
+	}
+
+	public Element button(String value, String onClick) {
+		Element input = doc.createElement("input");
+		input.setAttribute("type", "button");
+		input.setAttribute("value", value);
+		input.setAttribute("onClick", onClick);
+		return input;
 	}
 
 	public Element anchor(String anchor) {
@@ -114,6 +145,12 @@ public class Html {
 		}		
 	}
 	
+	public Element divId(String id) {
+		Element div = tag("div");
+		div.setAttribute("id", id);
+		return div;
+	}
+
 	public Element div(String className) {
 		Element div = tag("div");
 		div.setAttribute("class", className);

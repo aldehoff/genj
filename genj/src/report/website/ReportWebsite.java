@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.channels.FileChannel;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -155,7 +156,7 @@ public class ReportWebsite extends Report {
 		copyBackgroundImage(dir);
 		
 		// Make a css file with current settings
-		makeCss(dir, translator);
+		makeCssAndJs(dir, translator);
 		
 	    // Iterate over all individuals
 		Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
@@ -215,6 +216,7 @@ public class ReportWebsite extends Report {
 			makeEntityIndex(dir, sources, "sourceIndex", listSourceFileName);
 		if (repos.length > 0)
 			makeEntityIndex(dir, repos, "repositoryIndex", listRepositoryFileName);
+		makeSearchDataPage(dir, indis);
 	}
 
 	protected void makeSosaStradonitzNumbering(Indi person, int number) {
@@ -268,6 +270,31 @@ public class ReportWebsite extends Report {
 		}
 	}
 
+	protected void makeSearchDataPage(File dir, Entity[] indis) throws IOException {
+		println("Making search data file");
+		File file = new File(dir, "searchData.js");
+		BufferedWriter out = null;
+		try {
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8")); 
+			out.write("var searchValues = [");
+			boolean first = true;
+			for (Entity indi : indis) {
+				if (!first) {
+					out.write(",");
+					out.newLine();
+				}
+				first = false;
+				String displayName = ((Indi)indi).getName().replace('"', ' ');
+				String simpleName = displayName.toLowerCase();
+				out.write("[\"" + simpleName + "\",\"" + indi.getId().substring(1) + "\",\"" + displayName + "\"]");
+				// XXX sosa-number too
+			}
+			out.write("];");
+		} finally {
+			if (out != null) out.close();
+		}
+	}
+	
 	protected void makeStartpage(File dir, Entity[] indis, Entity[] sources, Entity[] repos) {
 		println("Making start-page");
 		File startFile = new File(dir.getAbsolutePath() + File.separator + reportIndexFileName);
@@ -277,6 +304,7 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(html.h1(reportTitle));
 		bodyNode.appendChild(html.pNewlines(reportWelcomeText));
 		Element div1 = html.div("left");
+		bodyNode.appendChild(div1);
 		div1.appendChild(html.h2(translate("personIndex")));
 		String lastLetter = "";
 		for (Entity indi : indis) {
@@ -289,7 +317,36 @@ public class ReportWebsite extends Report {
 				lastLetter = letter;
 			}
 		}
-		bodyNode.appendChild(div1);
+		// Search form
+		// In head
+		html.addJSFile("search.js");
+		html.addJSFile("searchData.js");
+		// Here
+		Element searchForm = html.form(null, "displayResult();"); //id, onsubmit
+		searchForm.appendChild(html.text("Name "));
+		searchForm.appendChild(html.input("searchName", "name")); // id, name
+		searchForm.appendChild(html.button("Search", "displayResult();")); // value, onclick
+		div1.appendChild(searchForm);
+		Element divResult = html.divId("searchResult");
+		divResult.appendChild(html.text(" "));
+		div1.appendChild(divResult);
+/*		<form onsubmit="displayResult();">
+		  Name <input id="searchName" name="name"/>
+		  <input onclick="displayResult();" type="button" value="Search"/>
+		</form>
+		<div id="searchResult" style="display:none;"></div>*/
+		// XXX Generate a file with search results, searchData.js (lowercased and utf8)
+		
+		
+/*		<a href="#" onclick="displaySimple();">Simple</a> 
+		<a href="#" onclick="displayAdvanced();">Advanced</a>
+		<div id="searchSimple"><form onsubmit="displayResult();">Name <input id="searchName" name="name"/><input onclick="displayResult();" type="button" value="Search"/></form></div>
+		<div id="searchAdvanced" style="display:none;"><form>
+		First name <input name="firstname"/><br />
+		Surname <input name="surname"/><br />
+		</form></div>
+		<div id="searchResult" style="display:none;"></div>*/
+		
 
 		Element div2 = html.div("right");
 		div2.appendChild(html.h2(translate("personGallery")));
@@ -1796,6 +1853,8 @@ public class ReportWebsite extends Report {
 		addColorToMap(translator, "cssLinkColor", cssLinkColor);
 		addColorToMap(translator, "cssVistedLinkColor", cssVistedLinkColor);
 		addColorToMap(translator, "cssBorderColor", cssBorderColor);
+		translator.put("indexFile", reportIndexFileName); // Lägg till värden för js-fil
+		translator.put("noSearchResults", translate("noSearchResults")); // Lägg till värden för js-fil
 		return translator;
 	}
 
@@ -1812,12 +1871,14 @@ public class ReportWebsite extends Report {
 	 * @param dir The output directory
 	 * @throws IOException in case of file error
 	 */
-	protected void makeCss(File dir, HashMap<String, String> translator) throws IOException {
+	protected void makeCssAndJs(File dir, HashMap<String, String> translator) throws IOException {
 		println("Making css-file");
 		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + cssBaseFile,
 				dir.getAbsolutePath() + File.separator + "style.css", translator, false);	
 		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + cssTreeFile[treeType],
 				dir.getAbsolutePath() + File.separator + "style.css", translator, true);	
+		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + "html/search.js",
+				dir.getAbsolutePath() + File.separator + "search.js", translator, true);	
 	}
 
 	/**
