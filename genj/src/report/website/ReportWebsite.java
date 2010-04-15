@@ -322,7 +322,7 @@ public class ReportWebsite extends Report {
 		html.addJSFile("search.js");
 		html.addJSFile("searchData.js");
 		// Here
-		Element searchForm = html.form(null, "displayResult();"); //id, onsubmit
+		Element searchForm = html.form(null, "return displayResult();"); //id, onsubmit
 		searchForm.appendChild(html.text("Name "));
 		searchForm.appendChild(html.input("searchName", "name")); // id, name
 		searchForm.appendChild(html.button("Search", "displayResult();")); // value, onclick
