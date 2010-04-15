@@ -27,7 +27,7 @@ function displayResult() {
 			if (match) {
 				var link = document.createElement("a");
 				link.setAttribute("href", makeLinkToIndi(searchValues[i][1]));
-				link.appendChild(document.createTextNode(searchValues[i][0]));
+				link.appendChild(document.createTextNode(searchValues[i][2]));
 				result.appendChild(link);
 				result.appendChild(document.createElement("br"));
 				found = true;

@@ -323,9 +323,9 @@ public class ReportWebsite extends Report {
 		html.addJSFile("searchData.js");
 		// Here
 		Element searchForm = html.form(null, "return displayResult();"); //id, onsubmit
-		searchForm.appendChild(html.text("Name "));
+		searchForm.appendChild(html.text(Gedcom.getName("NAME")+" "));
 		searchForm.appendChild(html.input("searchName", "name")); // id, name
-		searchForm.appendChild(html.button("Search", "displayResult();")); // value, onclick
+		searchForm.appendChild(html.button(translate("searchButton"), "displayResult();")); // value, onclick
 		div1.appendChild(searchForm);
 		Element divResult = html.divId("searchResult");
 		divResult.appendChild(html.text(" "));
@@ -1973,7 +1973,8 @@ public class ReportWebsite extends Report {
 		BufferedWriter out = null;
 		try {
 			in = new BufferedReader(new FileReader(inFile));
-			out = new BufferedWriter(new FileWriter(outFile, append));
+//			out = new BufferedWriter(new FileWriter(outFile, append));
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile, append), "UTF-8")); 
 			String buffer = in.readLine();
 			while (buffer != null) {
 				Matcher m = replacePattern.matcher(buffer);
