@@ -2,6 +2,10 @@ function displayResult() {
 	var result = document.getElementById('searchResult');
 
 	var searchString = document.getElementById('searchName').value.toLowerCase();
+	var searchStrings = searchString.split(" ");
+	if (searchStrings.length > 1) {
+		searchString = searchStrings[0];
+	}
 	
 	// Clear previous result
 	while (result.hasChildNodes()) { 
@@ -11,12 +15,23 @@ function displayResult() {
 	var found = false;
 	for (i = 0; i < searchValues.length; i++) {
 		if (searchValues[i][0].match(searchString)) {
-			var link = document.createElement("a");
-			link.setAttribute("href", makeLinkToIndi(searchValues[i][1]));
-			link.appendChild(document.createTextNode(searchValues[i][2]));
-			result.appendChild(link);
-			result.appendChild(document.createElement("br"));
-			found = true;
+			var match = true;
+			if (searchStrings.length > 1) {
+				for(j = 1; j < searchStrings.length; j++){
+					if (! searchValues[i][0].match(searchStrings[j])) {
+						match = false;
+						continue;
+					}
+				}
+			}
+			if (match) {
+				var link = document.createElement("a");
+				link.setAttribute("href", makeLinkToIndi(searchValues[i][1]));
+				link.appendChild(document.createTextNode(searchValues[i][0]));
+				result.appendChild(link);
+				result.appendChild(document.createElement("br"));
+				found = true;
+			}
 		}
 	}
 	if (! found) {

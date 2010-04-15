@@ -275,7 +275,7 @@ public class ReportWebsite extends Report {
 		File file = new File(dir, "searchData.js");
 		BufferedWriter out = null;
 		try {
-			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8")); 
+			out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, false), "UTF-8")); 
 			out.write("var searchValues = [");
 			boolean first = true;
 			for (Entity indi : indis) {
@@ -330,13 +330,6 @@ public class ReportWebsite extends Report {
 		Element divResult = html.divId("searchResult");
 		divResult.appendChild(html.text(" "));
 		div1.appendChild(divResult);
-/*		<form onsubmit="displayResult();">
-		  Name <input id="searchName" name="name"/>
-		  <input onclick="displayResult();" type="button" value="Search"/>
-		</form>
-		<div id="searchResult" style="display:none;"></div>*/
-		// XXX Generate a file with search results, searchData.js (lowercased and utf8)
-		
 		
 /*		<a href="#" onclick="displaySimple();">Simple</a> 
 		<a href="#" onclick="displayAdvanced();">Advanced</a>
@@ -1878,7 +1871,7 @@ public class ReportWebsite extends Report {
 		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + cssTreeFile[treeType],
 				dir.getAbsolutePath() + File.separator + "style.css", translator, true);	
 		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + "html/search.js",
-				dir.getAbsolutePath() + File.separator + "search.js", translator, true);	
+				dir.getAbsolutePath() + File.separator + "search.js", translator, false);	
 	}
 
 	/**
