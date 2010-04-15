@@ -19,8 +19,6 @@
  */
 package export;
 
-import java.util.Date;
-
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,10 +44,16 @@ import genj.util.swing.NestedBlockLayout;
       "<row><even/><event wx=\"1\"/></row>"+
       "<row><born/><born wx=\"1\"/></row>"+
       "<row><living cols=\"2\"/></row>"+
+      "<row><notes/></row>"+
+      "<row><medias/></row>"+
+      "<row><sources/></row>"+
     "</table>";
 
   private DateWidget eventsBefore, bornBefore;
   private JCheckBox living;
+  private JCheckBox notes = new JCheckBox(Gedcom.getName("NOTE", true), true);
+  private JCheckBox medias = new JCheckBox(Gedcom.getName("OBJE", true), true);
+  private JCheckBox sources = new JCheckBox(Gedcom.getName("SOUR", true), true);
   
   DataFilter(Gedcom gedcom) {
     
@@ -65,7 +69,10 @@ import genj.util.swing.NestedBlockLayout;
     add(new JLabel(RESOURCES.getString("data.born")));
     add(bornBefore);
     add(living);
-    
+
+    add(notes);
+    add(medias);
+    add(sources);
   }
   
   public String name() {

@@ -97,12 +97,10 @@ public class Plugin extends WorkbenchAdapter implements ActionProvider {
       
       RelationshipFilter rela = new RelationshipFilter(gedcom);
       DataFilter data = new DataFilter(gedcom);
-      TypeFilter type = new TypeFilter(gedcom);
       
       JTabbedPane filters =  new JTabbedPane(JTabbedPane.TOP);
       filters.addTab(rela.name(), rela);
       filters.addTab(data.name(), data);
-      filters.addTab(type.name(), type);
       
       JPanel content = new JPanel(new NestedBlockLayout(
         "<col wx=\"1\" wy=\"1\">"+
