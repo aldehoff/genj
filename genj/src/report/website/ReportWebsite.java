@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.channels.FileChannel;
@@ -81,6 +80,8 @@ public class ReportWebsite extends Report {
 	protected HashMap<String, String> sosaStradonitzNumber = null; 
     public boolean displayGenJFooter = true;
 	public String placeDisplayFormat = "all";
+
+    public boolean removeAllFiles = false;
 
 	/** Base source file of the css */
 	protected static final String cssBaseFile = "html/style.css";
@@ -151,6 +152,7 @@ public class ReportWebsite extends Report {
 		}
 		
 		// Start modifying things
+		if (removeAllFiles) deleteDirContent(dir, false);
 		
 		// Copy the correct background image
 		copyBackgroundImage(dir);
@@ -220,6 +222,14 @@ public class ReportWebsite extends Report {
 		println("Report done!");
 	}
 
+	protected void deleteDirContent(File dir, boolean deleteThisDir) {
+		for(String name : dir.list()) {
+			File curr = new File(dir, name);
+			if (curr.isDirectory()) deleteDirContent(curr, true);
+			else curr.delete();
+		}
+	}
+	
 	protected void makeSosaStradonitzNumbering(Indi person, int number) {
 		sosaStradonitzNumber.put(person.getId(), Integer.toString(number));
 		Fam fam = person.getFamilyWhereBiologicalChild();
