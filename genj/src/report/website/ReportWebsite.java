@@ -1223,7 +1223,8 @@ public class ReportWebsite extends Report {
 							println(" Error in copying file or making thumb: " + 
 									srcFile.getName() + e.getMessage());
 						}
-						reportUnhandledProperties(objects[i], new String[]{"FILE", "TITL", "FORM"});
+						processNoteRefs(p, objects[i], linkPrefix, dstDir, html);
+						reportUnhandledProperties(objects[i], new String[]{"FILE", "TITL", "FORM", "NOTE"});
 					} else {
 						println(" FILE ref but no file was found");
 					}
