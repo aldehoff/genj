@@ -217,6 +217,7 @@ public class ReportWebsite extends Report {
 		if (repos.length > 0)
 			makeEntityIndex(dir, repos, "repositoryIndex", listRepositoryFileName);
 		makeSearchDataPage(dir, indis);
+		println("Report done!");
 	}
 
 	protected void makeSosaStradonitzNumbering(Indi person, int number) {
