@@ -212,7 +212,7 @@ public class ReportWebsite extends Report {
 		Arrays.sort(indis, new PropertyComparator("INDI:NAME"));
 		Arrays.sort(sources, new EntityComparator());
 		Arrays.sort(repos, new EntityComparator());
-		makeStartpage(dir, indis, sources, repos);
+		makeStartpage(gedcom, dir, indis, sources, repos);
 		makePersonIndex(dir, indis);
 		if (sources.length > 0)
 			makeEntityIndex(dir, sources, "sourceIndex", listSourceFileName);
@@ -306,7 +306,7 @@ public class ReportWebsite extends Report {
 		}
 	}
 	
-	protected void makeStartpage(File dir, Entity[] indis, Entity[] sources, Entity[] repos) {
+	protected void makeStartpage(Gedcom gedcom, File dir, Entity[] indis, Entity[] sources, Entity[] repos) {
 		println("Making start-page");
 		File startFile = new File(dir.getAbsolutePath() + File.separator + reportIndexFileName);
 		Html html = new Html(reportTitle, "");
@@ -316,15 +316,24 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(html.pNewlines(reportWelcomeText));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
+		
+		div1.appendChild(html.h2(Gedcom.getName("INDI", true)));
+		div1.appendChild(html.p(translate("indexPersonText1", 
+				new Object[]{indis.length, gedcom.getEntities(Gedcom.FAM, "").length})));
+		if (displaySosaStradonitz)
+			div1.appendChild(html.p(translate("indexSosaDescriptionText"))); // XXX add values
+
 		div1.appendChild(html.h2(translate("personIndex")));
+		Element indiP = html.p();
+		div1.appendChild(indiP);
 		String lastLetter = "";
 		for (Entity indi : indis) {
 			String lastname = ((Indi)indi).getLastName();  
 			String letter = "?";
 			if (lastname != null && !lastname.isEmpty()) letter = lastname.substring(0, 1); // Get first letter of last name
 			if (! letter.equals(lastLetter)) {
-				div1.appendChild(html.link(listPersonFileName + "#" + letter, letter));				
-				div1.appendChild(html.text(", "));				
+				indiP.appendChild(html.link(listPersonFileName + "#" + letter, letter));				
+				indiP.appendChild(html.text(", "));				
 				lastLetter = letter;
 			}
 		}
@@ -333,10 +342,11 @@ public class ReportWebsite extends Report {
 		html.addJSFile("search.js");
 		html.addJSFile("searchData.js");
 		// Here
-		Element searchForm = html.form(null, "return displayResult();"); //id, onsubmit
-		searchForm.appendChild(html.text(Gedcom.getName("NAME")+" "));
-		searchForm.appendChild(html.input("searchName", "name")); // id, name
-		searchForm.appendChild(html.button(translate("searchButton"), "displayResult();")); // value, onclick
+		Element searchForm = html.form(null, "javascript:displayResult();", "return displayResult();"); //id, onsubmit
+		Element searchP = html.p(Gedcom.getName("NAME") + " ");
+		searchForm.appendChild(searchP);
+		searchP.appendChild(html.input("searchName", "name")); // id, name
+		searchP.appendChild(html.button(translate("searchButton"), "displayResult();")); // value, onclick
 		div1.appendChild(searchForm);
 		Element divResult = html.divId("searchResult");
 		divResult.appendChild(html.text(" "));
@@ -350,45 +360,58 @@ public class ReportWebsite extends Report {
 		Surname <input name="surname"/><br />
 		</form></div>
 		<div id="searchResult" style="display:none;"></div>*/
-		
 
-		Element div2 = html.div("right");
-		div2.appendChild(html.h2(translate("personGallery")));
+		div1.appendChild(html.h2(translate("personGallery")));
 		for (Indi indi : personsWithImage) { 
-			div2.appendChild(html.link(addressTo(indi.getId()), html.img(addressToDir(indi.getId()) + "gallery.jpg", getName(indi))));				
+			div1.appendChild(html.link(addressTo(indi.getId()), html.img(addressToDir(indi.getId()) + "gallery.jpg", getName(indi))));				
 		}
-		bodyNode.appendChild(div2);
 
+		Element div2 = html.div("left");
+		bodyNode.appendChild(div2);
+		
 		if (sources.length > 0) {
-			Element div3 = html.div("left");
-			div3.appendChild(html.h2(translate("sourceIndex")));
+			div2.appendChild(html.h2(translate("sourceIndex")));
+			Element sourceP = html.p();
+			div2.appendChild(sourceP);
 			lastLetter = "";
 			for (Entity source : sources) { 
 				String letter = source.toString().substring(0, 1); // Get first letter
 				if (! letter.equals(lastLetter)) {
-					div3.appendChild(html.link(listSourceFileName + "#" + letter, letter));				
-					div3.appendChild(html.text(", "));				
+					sourceP.appendChild(html.link(listSourceFileName + "#" + letter, letter));				
+					sourceP.appendChild(html.text(", "));				
 					lastLetter = letter;
 				}
 			}
-			bodyNode.appendChild(div3);
+			bodyNode.appendChild(div2);
 		}
 
 		if (repos.length > 0) {
-			Element div4 = html.div("left");
-			div4.appendChild(html.h2(translate("repositoryIndex")));
+			div2.appendChild(html.h2(translate("repositoryIndex")));
+			Element repoP = html.p();
+			div2.appendChild(repoP);
 			lastLetter = "";
 			for (Entity repo : repos) { 
 				String letter = repo.toString().substring(0, 1); // Get first letter
 				if (! letter.equals(lastLetter)) {
-					div4.appendChild(html.link(listRepositoryFileName + "#" + letter, letter));				
-					div4.appendChild(html.text(", "));				
+					repoP.appendChild(html.link(listRepositoryFileName + "#" + letter, letter));				
+					repoP.appendChild(html.text(", "));				
 					lastLetter = letter;
 				}
 			}
-			bodyNode.appendChild(div4);
+			bodyNode.appendChild(div2);
 			
 		}
+
+		// Info on who created the data
+		Submitter subm = gedcom.getSubmitter();
+		if (subm != null) {
+			div2.appendChild(html.h2(translate("dataGatheredBy")));
+			Element p = html.p(subm.getName());
+			div2.appendChild(p);
+			processAddresses(p, subm, html, new ArrayList<String>(), false);
+		}
+		div2.appendChild(html.p(translate("pageCreated") + 
+				" " + (new PropertyChange()).getDisplayValue())); 
 		
 		makeFooter(bodyNode, html);
 		html.toFile(startFile);

@@ -11,6 +11,9 @@ function displayResult() {
 	while (result.hasChildNodes()) { 
 		result.removeChild(result.lastChild);
 	}
+	var resultP = document.createElement("p");
+	result.appendChild(resultP);
+
 	// Find and display result
 	var found = false;
 	for (i = 0; i < searchValues.length; i++) {
@@ -28,14 +31,14 @@ function displayResult() {
 				var link = document.createElement("a");
 				link.setAttribute("href", makeLinkToIndi(searchValues[i][1]));
 				link.appendChild(document.createTextNode(searchValues[i][2]));
-				result.appendChild(link);
-				result.appendChild(document.createElement("br"));
+				resultP.appendChild(link);
+				resultP.appendChild(document.createElement("br"));
 				found = true;
 			}
 		}
 	}
 	if (! found) {
-		result.appendChild(document.createTextNode("{noSearchResults}"));
+		resultP.appendChild(document.createTextNode("{noSearchResults}"));
 	}
 
 	// Display it

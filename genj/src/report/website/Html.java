@@ -72,10 +72,11 @@ public class Html {
 		return body;
 	}
 
-	public Element form(String id, String onSubmit) {
+	public Element form(String id, String action, String onsubmit) {
 		Element form = doc.createElement("form");
-		form.setAttribute("id", id);
-		form.setAttribute("onSubmit", onSubmit);
+		if (id != null) form.setAttribute("id", id);
+		if (action != null) form.setAttribute("action", action);
+		if (onsubmit != null) form.setAttribute("onsubmit", onsubmit);
 		return form;
 	}
 
@@ -86,11 +87,11 @@ public class Html {
 		return input;
 	}
 
-	public Element button(String value, String onClick) {
+	public Element button(String value, String onclick) {
 		Element input = doc.createElement("input");
 		input.setAttribute("type", "button");
 		input.setAttribute("value", value);
-		input.setAttribute("onClick", onClick);
+		input.setAttribute("onclick", onclick);
 		return input;
 	}
 
