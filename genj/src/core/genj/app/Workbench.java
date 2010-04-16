@@ -82,7 +82,6 @@ import org.xml.sax.SAXParseException;
 import spin.Spin;
 import swingx.docking.DefaultDockable;
 import swingx.docking.Dockable;
-import swingx.docking.Docked;
 import swingx.docking.DockingPane;
 import swingx.docking.dock.TabbedDock;
 import swingx.docking.persistence.XMLPersister;
@@ -289,7 +288,7 @@ public class Workbench extends JPanel implements SelectionSink {
       for (WorkbenchListener l : listeners) l.processStarted(this, reader);
       setGedcom(reader.read());
       if (!warnings.isEmpty()) {
-        dockingPane.putDockable("warnings", new GedcomDockable(
+        dockingPane.putDockable("warnings", new GedcomDockable(this,
             RES.getString("cc.open.warnings", context.getGedcom().getName()), 
             IMG_OPEN,
             new ContextListWidget(warnings))
@@ -712,7 +711,13 @@ public class Workbench extends JPanel implements SelectionSink {
     fireViewClosed(view);
 
   }
-  
+
+  /*package*/ void closeDockable(Dockable dockable) {
+    for (Object key : dockingPane.getDockableKeys())
+      if (dockingPane.getDockable(key)==dockable)
+        dockingPane.putDockable(key, null);
+  }
+
   /**
    * (re)open a view
    */
@@ -1075,64 +1080,6 @@ public class Workbench extends JPanel implements SelectionSink {
       } catch (Exception ex) {
         LOG.log(Level.WARNING, "unable to save layout", ex);
       }
-    }
-  }
-  
-  /**
-   * A dockable for showing gedcom related info - no view yet, something we want to close if gedcom goes away
-   */
-  private class GedcomDockable extends DefaultDockable implements WorkbenchListener {
-    
-    private GedcomDockable(String title, ImageIcon img, JComponent content) {
-      setContent(content);
-      setTitle(title);
-      setIcon(img);
-    }
-    
-    @Override
-    public void docked(Docked docked) {
-      super.docked(docked);
-      addWorkbenchListener(this);
-    }
-    
-    @Override
-    public void undocked() {
-      super.undocked();
-      removeWorkbenchListener(this);
-    }
-
-    public void commitRequested(Workbench workbench) {
-    }
-
-    public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
-      for (Object key : dockingPane.getDockableKeys())
-        if (dockingPane.getDockable(key)==this)
-          dockingPane.putDockable(key, null);
-      return;
-    }
-
-    public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
-    }
-
-    public void processStarted(Workbench workbench, Trackable process) {
-    }
-
-    public void processStopped(Workbench workbench, Trackable process) {
-    }
-
-    public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-    }
-
-    public void viewClosed(Workbench workbench, View view) {
-    }
-    
-    public void viewRestored(Workbench workbench, View view) {
-    }
-
-    public void viewOpened(Workbench workbench, View view) {
-    }
-
-    public void workbenchClosing(Workbench workbench) {
     }
   }
   

@@ -25,13 +25,18 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomMetaListener;
 import genj.gedcom.Property;
+import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.Trackable;
+import genj.util.swing.Action2;
 import genj.util.swing.HeapStatusWidget;
 import genj.util.swing.ProgressWidget;
+import genj.util.swing.Action2.Group;
+import genj.view.ActionProvider;
 import genj.view.View;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -42,9 +47,10 @@ import spin.Spin;
 /**
  * a little status tracker
  */
-/*package*/ class StatusBar extends JPanel implements GedcomMetaListener, WorkbenchListener {
+/*package*/ class StatusBar extends JPanel implements GedcomMetaListener, WorkbenchListener, ActionProvider {
 
   private final static Resources RES = Resources.get(StatusBar.class);
+  private final static Registry REGISTRY = Registry.get(StatusBar.class);
 
   private int commits;
 
@@ -64,6 +70,8 @@ import spin.Spin;
     add(panel, BorderLayout.WEST);
     add(changes, BorderLayout.CENTER);
     add(heap, BorderLayout.EAST);
+    
+    setVisible(REGISTRY.get("visible", true));
 
     workbench.addWorkbenchListener(this);
   }
@@ -73,6 +81,9 @@ import spin.Spin;
     add(new ProgressWidget(process),BorderLayout.EAST);
     revalidate();
     repaint();
+    
+    setVisible(true);
+
   }
 
   public void processStopped(Workbench workbench, Trackable process) {
@@ -80,6 +91,8 @@ import spin.Spin;
     add(heap,BorderLayout.EAST);
     revalidate();
     repaint();
+    
+    setVisible(REGISTRY.get("visible", true));
   }
   
   private void update(Gedcom gedcom) {
@@ -163,5 +176,30 @@ import spin.Spin;
 
   public void workbenchClosing(Workbench workbench) {
   }
+  
+  public void createActions(Context context, Purpose purpose, Group into) {
+    
+    Action2.Group views = new ActionProvider.ViewActionGroup();
+    views.add(new Visible());
+    into.add(views);
+    
+  }
+  
+  private class Visible extends Action2 {
 
-} // Stats
+    /** constructor */
+    protected Visible() {
+      setText(RES, "statusbar");
+      setSelected(REGISTRY.get("visible", true));
+    }
+
+    /** run */
+    public void actionPerformed(ActionEvent event) {
+      boolean set = !REGISTRY.get("visible", true);
+      REGISTRY.put("visible", set);
+      setVisible(set);
+    }
+    
+  }
+
+} // StatusBar

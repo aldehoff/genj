@@ -4,13 +4,16 @@ import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.GedcomListenerAdapter;
+import genj.util.Registry;
+import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.ToolbarWidget;
+import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 import genj.view.View;
-import genj.view.ActionProvider.Purpose;
 
+import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
@@ -23,8 +26,10 @@ import spin.Spin;
 /**
  * our toolbar
  */
-/*package*/ class Toolbar extends ToolbarWidget implements WorkbenchListener {
+/*package*/ class Toolbar extends ToolbarWidget implements WorkbenchListener, ActionProvider {
   
+  private final static Resources RES = Resources.get(Toolbar.class);
+  private final static Registry REGISTRY = Registry.get(Toolbar.class);
   private final static Logger LOG = Logger.getLogger("genj.app");
 
   private Workbench workbench;
@@ -49,6 +54,8 @@ import spin.Spin;
     history = new HistoryWidget(workbench);
     setFloatable(false);
     setup(null);
+
+    setVisible(REGISTRY.get("visible", true));
   }
   
   private void remove(Action action) {
@@ -159,4 +166,28 @@ import spin.Spin;
 
   public void workbenchClosing(Workbench workbench) {
   }
+  
+  public void createActions(Context context, Purpose purpose, Group into) {
+    Action2.Group views = new ActionProvider.ViewActionGroup();
+    views.add(new Visible());
+    into.add(views);
+  }
+  
+  private class Visible extends Action2 {
+
+    /** constructor */
+    protected Visible() {
+      setText(RES, "toolbar");
+      setSelected(REGISTRY.get("visible", true));
+    }
+
+    /** run */
+    public void actionPerformed(ActionEvent event) {
+      boolean set = !REGISTRY.get("visible", true);
+      REGISTRY.put("visible", set);
+      setVisible(set);
+    }
+    
+  }
+
 }

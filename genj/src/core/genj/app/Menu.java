@@ -145,6 +145,7 @@ import spin.Spin;
     groups.add(views);
     for (ViewFactory factory : workbench.getViewFactories()) 
       views.add(workbench.new ActionOpenView(factory));
+    views.add(new ActionProvider.SeparatorAction());
     
     // Tools
     Action2.Group tools = new ActionProvider.ToolsActionGroup();
@@ -176,7 +177,7 @@ import spin.Spin;
     if (!MacAdapter.isMac())
       help.add(new ActionAbout());
     groups.add(help);
-
+    
     // Build menu
     MenuHelper mh = new MenuHelper() {
       @Override
