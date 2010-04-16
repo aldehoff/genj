@@ -71,7 +71,7 @@ public class TableView extends View {
       modes.put(Gedcom.SUBM, new Mode(Gedcom.SUBM, new String[]{"SUBM","SUBM:NAME" }));
       modes.put(Gedcom.REPO, new Mode(Gedcom.REPO, new String[]{"REPO","REPO:NAME", "REPO:NOTE"}));
     };
-  
+    
   /** current type we're showing */
   private Mode currentMode;
   
@@ -145,6 +145,9 @@ public class TableView extends View {
    * Sets the type of entities to look at
    */
   /*package*/ void setMode(Mode set) {
+    
+    REGISTRY.put("mode", set.getTag());
+    
     PropertyTableModel currentModel = propertyTable.getModel();
     
     // give mode a change to grab what it wants to preserve
@@ -180,10 +183,31 @@ public class TableView extends View {
       propertyTable.setModel(new Model(context.getGedcom(), currentMode));
       propertyTable.setColumnLayout(currentMode.layout);
     }
+    
+    // pick good mode
+    Mode mode = getModeFor(context);
+    if (mode!=currentMode)
+      mode.setSelected(true);
 
     // select
     propertyTable.select(context);
   }
+
+  private Mode getModeFor(Context context) {
+    // any entity matching current mode?
+    for (Entity entity : context.getEntities()) {
+      if (currentMode.tag.equals(entity.getTag()))
+        return currentMode;
+    }
+    // pick better
+    for (Entity entity : context.getEntities()) {
+      Mode m = modes.get(entity.getTag());
+      if (m!=null)
+        return m;
+    }
+    // leave as is
+    return currentMode;
+  }    
   
   /**
    * @see genj.view.ToolBarSupport#populate(JToolBar)
@@ -194,12 +218,12 @@ public class TableView extends View {
     
     for (int i=0, j=1;i<Gedcom.ENTITIES.length;i++) {
       String tag = Gedcom.ENTITIES[i];
-      SwitchMode m = new SwitchMode(getMode(tag));
-      JToggleButton b = new JToggleButton(m);
+      Mode mode = getMode(tag);
+      JToggleButton b = new JToggleButton(mode);
       toolbar.add(b);
       group.add(b);
-      if (currentMode==m.mode)
-        m.setSelected(true);
+      if (currentMode==mode)
+        mode.setSelected(true);
     }
     
     toolbar.add(new Settings());
@@ -249,36 +273,9 @@ public class TableView extends View {
         if (currentMode == getMode(Gedcom.ENTITIES[i])) 
           break;
       }
-      setMode(getMode(Gedcom.ENTITIES[next]));
+      getMode(Gedcom.ENTITIES[next]).setSelected(true);
     }
   } //NextMode
-  
-  /**
-   * Action - flip view to entity type
-   */
-  private class SwitchMode extends Action2 {
-    /** the mode this action triggers */
-    private Mode mode;
-    /** constructor */
-    SwitchMode(Mode mode) {
-      this.mode = mode;
-      setTip(resources.getString("mode.tip", Gedcom.getName(mode.getTag(),true)));
-      setImage(Gedcom.getEntityImage(mode.getTag()));
-    }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      setSelected(true);
-    }
-    @Override
-    public boolean setSelected(boolean selected) {
-      if (selected) {
-        setMode(mode);
-        // save current type
-        REGISTRY.put("mode", mode.getTag());
-      }
-      return super.setSelected(selected);
-    }
-  } //ActionMode
   
   /** 
    * A PropertyTableModelWrapper
@@ -407,7 +404,7 @@ public class TableView extends View {
   /**
    * A mode is a configuration for a set of entities
    */
-  /*package*/ class Mode {
+  /*package*/ class Mode extends Action2 {
     
     /** attributes */
     private String tag;
@@ -421,6 +418,22 @@ public class TableView extends View {
       tag      = t;
       defaults = d;
       paths    = TagPath.toArray(defaults);
+
+      // look
+      setTip(resources.getString("mode.tip", Gedcom.getName(tag,true)));
+      setImage(Gedcom.getEntityImage(tag));
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      setSelected(true);
+    }
+    
+    @Override
+    public boolean setSelected(boolean selected) {
+      if (selected) 
+        setMode(this);
+      return super.setSelected(selected);
     }
     
     /** load properties from registry */
