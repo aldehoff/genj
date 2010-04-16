@@ -117,13 +117,14 @@ public class NavigatorView extends View {
 
     // person or family?
     if (context.getEntities().size()==1) {
-      if (context.getEntity() instanceof Indi)
+      if (context.getEntity() instanceof Indi) {
         setIndi((Indi)context.getEntity());
+        addLine("line");
+        addLine("line");
+      }
       if (context.getEntity() instanceof Fam)
         setFam((Fam)context.getEntity());
       
-      addLine("line");
-      addLine("line");
     }
 
     // show
