@@ -179,10 +179,11 @@ import spin.Spin;
   
   public void createActions(Context context, Purpose purpose, Group into) {
     
-    Action2.Group views = new ActionProvider.ViewActionGroup();
-    views.add(new Visible());
-    into.add(views);
-    
+    if (purpose==Purpose.MENU) {
+      Action2.Group views = new ActionProvider.ViewActionGroup();
+      views.add(new Visible());
+      into.add(views);
+    }    
   }
   
   private class Visible extends Action2 {
