@@ -87,10 +87,13 @@ public class Options extends OptionProvider {
     }
 
     // look for language libraries (./lib/genj_pt_BR.jar)
-    File dir = new File("lib");
-    LOG.fine("Looking for language archives in "+dir.getAbsolutePath());
+    // NOTE without getAbsoluteFile() the user.home directory change
+    // in the launcher doesn't pull here (native code apparently doesn't
+    // follow/respect the user.dir change)
+    File dir = new File("lib").getAbsoluteFile();
     File[] libs = dir.listFiles();
-    if (libs!=null)
+    if (libs!=null) {
+      LOG.fine("Looking for language archives in "+dir.getAbsolutePath());
       for (File lib : libs) {
         String name = lib.getName();
         if (!name.startsWith("genj_")) continue;
@@ -99,7 +102,10 @@ public class Options extends OptionProvider {
         
         result.add(name.substring(5, name.length()-4));
       }
-
+    } else {
+      LOG.fine("No language archives in "+dir.getAbsolutePath());
+    }
+    
     // done
     return (String[])result.toArray(new String[result.size()]);
   }
