@@ -127,9 +127,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   private Block root;
   private Set<Component> components = new HashSet<Component>();
   
-  /** padding */
-  private int padding = 1;
-  
   /**
    * Constructor
    */
@@ -360,8 +357,10 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
     final Dimension preferred() {
       if (preferred==null) {
         preferred = preferredImpl();
-        preferred.width += padding.left + padding.right;
-        preferred.height += padding.top+ padding.bottom;
+        if (preferred.width>0&&preferred.height>0) {
+          preferred.width += padding.left + padding.right;
+          preferred.height += padding.top+ padding.bottom;
+        }        
       }
       return preferred;
     }
