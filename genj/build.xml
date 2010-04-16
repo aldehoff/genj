@@ -118,12 +118,13 @@
       	
     <echo level="info">Generating version number</echo>
     	
-  	<exec failifexecutionfails="true" failonerror="true" executable="svnversion" spawn="false" dir="." output="./build/revision.properties">
+  	<exec failifexecutionfails="false" failonerror="true" executable="svnversion" spawn="false" dir="." output="./build/revision.properties">
   	  <arg line="-n"/>
   	</exec>	
     <loadfile property="revision" srcfile="./build/revision.properties">
       <filterchain><replacestring from=":" to="_"/></filterchain>
     </loadfile>
+  	<property name="revision" value="x.y"/>
 
     <tstamp><format property="now" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
 
