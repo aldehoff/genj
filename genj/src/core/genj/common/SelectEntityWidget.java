@@ -338,7 +338,7 @@ public class SelectEntityWidget extends JPanel {
     private Sort(TagPath path) {
       tagPath = path;
       setImage(getPathImage(path));
-      setTip(getPathText(path));
+      setText(getPathText(path));
     }      
     
     /**
