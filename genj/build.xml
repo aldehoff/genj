@@ -121,7 +121,7 @@
   	<exec failifexecutionfails="false" failonerror="true" executable="svnversion" spawn="false" dir="." output="./build/revision.properties">
   	  <arg line="-n"/>
   	</exec>	
-    <loadfile property="revision" srcfile="./build/revision.properties">
+    <loadfile failonerror="false" property="revision" srcfile="./build/revision.properties">
       <filterchain><replacestring from=":" to="_"/></filterchain>
     </loadfile>
   	<property name="revision" value="x.y"/>
