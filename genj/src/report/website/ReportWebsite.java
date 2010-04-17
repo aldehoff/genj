@@ -976,7 +976,12 @@ public class ReportWebsite extends Report {
 							srcFile.lastModified() > dstFile.lastModified()) {
 						copyFile(srcFile, dstFile);
 						// Create a thumb
-						makeThumb(dstFile, imgSize, imgSize, thumbFile);
+						try {
+							makeThumb(dstFile, imgSize, imgSize, thumbFile);
+						} catch (RuntimeException e) {
+							println("Failed maiking thumb of:" + dstFile.getPath() + " Error:" + e.getMessage());
+							throw e;
+						}
 					}
 
 					// Make img-reference to the image
@@ -1485,7 +1490,7 @@ public class ReportWebsite extends Report {
 			for (int i = 0; i < nl.getLength(); i++) p.appendChild(nl.item(i));
 		}
 		
-		reportUnhandledProperties(event, new String[]{"DATE", "PLAC", "TYPE", "NOTE", "SOUR", "ADDR", "PHON", "EMAIL", "FAX", "WWW", "AGE", "AGNC", "CAUS", "FAMC"});
+		reportUnhandledProperties(event, new String[]{"DATE", "PLAC", "TYPE", "NOTE", "SOUR", "ADDR", "PHON", "EMAIL", "FAX", "WWW", "AGE", "AGNC", "CAUS", "FAMC", "OBJE"});
 		return p;
 	}
 
