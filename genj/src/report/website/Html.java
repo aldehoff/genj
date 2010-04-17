@@ -200,6 +200,12 @@ public class Html {
 		return tag("h2", text);
 	}
 
+	public Element h2(String imageUrl, String text) {
+		Element h2 = tag("h2", img(imageUrl, ""));
+		h2.appendChild(text(" " + text));
+		return h2;
+	}
+
 	public Element li(String text) {
 		return tag("li", text);
 	}

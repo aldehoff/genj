@@ -249,13 +249,13 @@ public class ReportWebsite extends Report {
 		File sourceFile = new File(getFile().getParentFile(), boxBackgroundImages[boxBackground]);
 		File dstFile = new File(dir, "bkgr.png");
 		copyFile(sourceFile, dstFile);
-		// Icons
-		// XXX Copy icons from the genj-images dir. (Not in source).
-		// Place them before text in headings.
-		//copyFile(new File(getFile().getParentFile(), "../../../images/genj/gedcom/images/Source.png"),
-		//		new File(dir, "Source.png"));
-		
-		
+		// Copy icons from the genj-images dir.
+		copyFile(new File("images/genj/gedcom/images/Indi.png"),
+				new File(dir, "Indi.png"));
+		copyFile(new File("images/genj/gedcom/images/Source.png"),
+				new File(dir, "Source.png"));
+		copyFile(new File("images/genj/gedcom/images/Repository.png"),
+				new File(dir, "Repository.png"));
 	}
 
 	/**
@@ -325,7 +325,7 @@ public class ReportWebsite extends Report {
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
 		
-		div1.appendChild(html.h2(Gedcom.getName("INDI", true)));
+		div1.appendChild(html.h2("Indi.png", Gedcom.getName("INDI", true)));
 		div1.appendChild(html.p(translate("indexPersonText1", 
 				new Object[]{indis.length, gedcom.getEntities(Gedcom.FAM, "").length})));
 		if (displaySosaStradonitz)
@@ -378,7 +378,7 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(div2);
 		
 		if (sources.length > 0) {
-			div2.appendChild(html.h2(translate("sourceIndex")));
+			div2.appendChild(html.h2("Source.png", translate("sourceIndex")));
 			Element sourceP = html.p();
 			div2.appendChild(sourceP);
 			lastLetter = "";
@@ -394,7 +394,7 @@ public class ReportWebsite extends Report {
 		}
 
 		if (repos.length > 0) {
-			div2.appendChild(html.h2(translate("repositoryIndex")));
+			div2.appendChild(html.h2("Repository.png", translate("repositoryIndex")));
 			Element repoP = html.p();
 			div2.appendChild(repoP);
 			lastLetter = "";
