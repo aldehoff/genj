@@ -227,9 +227,11 @@ public class PropertyTableWidget extends JPanel  {
             cols.addSelectionInterval(cell.x,cell.x);
         } else {
           int row = table.getRow(prop);
-          if (row>=0)
+          if (row>=0) {
             rows.addSelectionInterval(row,row);
-          cols.addSelectionInterval(0,table.getColumnCount()-1);
+            cols.addSelectionInterval(0,table.getColumnCount()-1);
+            cell.y=row;
+          }
           continue;
         }
 
