@@ -20,13 +20,12 @@
 package genj.report;
 
 import genj.app.Workbench;
-import genj.app.WorkbenchListener;
+import genj.app.WorkbenchAdapter;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.util.Resources;
-import genj.util.Trackable;
 import genj.util.swing.Action2;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
@@ -42,7 +41,7 @@ import java.util.logging.Level;
 /** 
  * Plugin 
  */
-public class ReportPlugin implements ActionProvider, WorkbenchListener {
+public class ReportPlugin extends WorkbenchAdapter implements ActionProvider {
   
   private final static Resources RESOURCES = Resources.get(ReportPlugin.class);
   private final static int MAX_HISTORY = 5;
@@ -58,22 +57,8 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
     workbench.addWorkbenchListener(this);
 
   }
+  
     
-  public void commitRequested(Workbench workbench) {
-  }
-  
-  public void selectionChanged(Workbench workbench, Context context, boolean isActionPerformed) {
-  }
-  
-  public void workbenchClosing(Workbench workbench) {
-  }
-  
-  public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
-  }
-  
-  public void gedcomOpened(Workbench workbench, Gedcom gedcom) {
-  }
-  
   /**
    * actions we provide
    */
@@ -276,16 +261,9 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
 
   public void viewOpened(Workbench workbench, View view) {
     if (view instanceof ReportView) {
-      ReportView reportView = (ReportView)view;
-      reportView.setPlugin(this);
       if (showReportPickerOnOpen)
-        reportView.startReport();
+        ((ReportView)view).startReport();
     }
-  }
-  
-  public void viewRestored(Workbench workbench, View view) {
-    if (view instanceof ReportView)
-      ((ReportView)view).setPlugin(this);
   }
   
   /*package*/ void setEnabled(boolean set) {
@@ -293,9 +271,4 @@ public class ReportPlugin implements ActionProvider, WorkbenchListener {
       workbenchActions.setEnabled(set);
   }
 
-  public void processStarted(Workbench workbench, Trackable process) {
-  }
-
-  public void processStopped(Workbench workbench, Trackable process) {
-  }
 }

@@ -82,7 +82,7 @@ import swingx.docking.Docked;
   /**
    * Constructor
    */
-  public ViewDockable(Workbench workbench, ViewFactory factory) {
+  /*package*/ ViewDockable(Workbench workbench, ViewFactory factory) {
 
     this.workbench = workbench;
     this.factory = factory;
@@ -100,6 +100,23 @@ import swingx.docking.Docked;
     setContent(view);
     setTitle(title);
     setIcon(factory.getImage());
+    
+    // listen to workbench
+    workbench.addWorkbenchListener(this);
+    
+    // set context
+    view.setContext(workbench.getContext(), true);
+    
+  }
+  
+  /*package*/ void dispose() {
+    
+    // don't listen to workbench
+    workbench.removeWorkbenchListener(this);
+
+    // clear context for cleanup
+    view.setContext(new Context(), true);
+
   }
   
   public static ViewDockable getDockable(View view) {
@@ -122,31 +139,12 @@ import swingx.docking.Docked;
   public void docked(final Docked docked) {
     super.docked(docked);
     
-    // listen to workbench
-    workbench.addWorkbenchListener(this);
-    
-    // set context
-    view.setContext(workbench.getContext(), true);
-    
     // only if ToolBarSupport and no bar installed
     toolbar.beginUpdate();
     view.populate(toolbar);
     toolbar.endUpdate();
 
     // done
-  }
-
-  @Override
-  public void undocked() {
-
-    // don't listen to workbench
-    workbench.removeWorkbenchListener(this);
-
-    // clear context for cleanup
-    view.setContext(new Context(), true);
-
-    // continue
-    super.undocked();
   }
 
   /**
@@ -380,9 +378,6 @@ import swingx.docking.Docked;
   public void viewClosed(Workbench workbench, View view) {
   }
   
-  public void viewRestored(Workbench workbench, View view) {
-  }
-
   public void viewOpened(Workbench workbench, View view) {
   }
 
@@ -405,20 +400,28 @@ import swingx.docking.Docked;
       isEmpty = false;
     }
     public void add(JComponent component) {
+      if (getDocked()==null)
+        return;
       getDocked().addTool(component);
       component.setFocusable(false);
       isEmpty = false;
     }
     public void addSeparator() {
+      if (getDocked()==null)
+        return;
       if (!isEmpty)
         getDocked().addToolSeparator();
     }
     public void beginUpdate() {
+      if (getDocked()==null)
+        return;
       hasDefaults = false;
       isEmpty = true;
       getDocked().clearTools();
     }
     public void endUpdate() {
+      if (getDocked()==null)
+        return;
       if (hasDefaults)
         return;
       hasDefaults = true;

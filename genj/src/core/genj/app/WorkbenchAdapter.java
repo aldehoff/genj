@@ -41,9 +41,6 @@ public class WorkbenchAdapter implements WorkbenchListener {
 	public void viewClosed(Workbench workbench, View view) {
 	}
 	
-	public void viewRestored(Workbench workbench, View view) {
-	}
-
 	public void viewOpened(Workbench workbench, View view) {
 	}
 

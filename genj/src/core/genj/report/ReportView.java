@@ -70,7 +70,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 
@@ -117,9 +116,6 @@ public class ReportView extends View {
   /** resources */
   /* package */static final Resources RESOURCES = Resources.get(ReportView.class);
 
-  /** plugin */
-  private ReportPlugin plugin = null;
-
   /**
    * Constructor
    */
@@ -164,10 +160,6 @@ public class ReportView extends View {
     super.removeNotify();
     // save report options
     ReportLoader.getInstance().saveOptions();
-  }
-
-  /* package */void setPlugin(ReportPlugin plugin) {
-    this.plugin = plugin;
   }
 
   /**
@@ -217,8 +209,8 @@ public class ReportView extends View {
     // set running
     actionStart.setEnabled(false);
     actionStop.setEnabled(true);
-    if (plugin != null)
-      plugin.setEnabled(false);
+    
+    ReportPluginFactory.getInstance().setEnabled(false);
 
     // kick it off
     new Thread(new Runner(gedcom, context, report, (Runner.Callback) Spin.over(new RunnerCallback()))).start();
@@ -254,8 +246,7 @@ public class ReportView extends View {
       // let report happend again
       actionStart.setEnabled(gedcom != null);
       actionStop.setEnabled(false);
-      if (plugin != null)
-        plugin.setEnabled(true);
+      ReportPluginFactory.getInstance().setEnabled(true);
 
       // handle result
       showResult(result);
@@ -303,13 +294,9 @@ public class ReportView extends View {
   @Override
   public void setContext(Context context, boolean isActionPerformed) {
 
-    // lifecycle of a view sadly means it gets a context.gedcom==null when undocked/docked
-    // To not blow away a perfectly valid output during those UI ops we're kicking off
-    // a delayed clear here that checks for a gedcom change (one at a time only)
-    if (getClientProperty(CheckGedcom.class)==null) 
-      SwingUtilities.invokeLater(new CheckGedcom(gedcom));
-    
     // keep
+    if (gedcom!=context.getGedcom())
+      clear();
     gedcom = context.getGedcom();
     
     // enable if none running and data available
@@ -317,22 +304,6 @@ public class ReportView extends View {
 
   }
   
-  private class CheckGedcom implements Runnable {
-    private Gedcom old;
-    public CheckGedcom(Gedcom current) {
-      old = current;
-      // one at the time - me now
-      putClientProperty(CheckGedcom.class, this);
-    }
-    public void run() {
-      // one at the time - not me anymore
-      putClientProperty(CheckGedcom.class, null);
-      // old gedcom gone by now?
-      if (gedcom!=old) 
-        clear();
-    }
-  }
-
   /**
    * show welcome/console/output
    */

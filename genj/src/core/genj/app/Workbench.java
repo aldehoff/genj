@@ -660,12 +660,6 @@ public class Workbench extends JPanel implements SelectionSink {
       listener.viewOpened(this, view);
   }
 
-  private void fireViewRestored(View view) {
-    // tell 
-    for (WorkbenchListener listener : listeners)
-      listener.viewRestored(this, view);
-  }
-  
   private void fireViewClosed(View view) {
     // tell plugins
     for (WorkbenchListener listener : listeners)
@@ -706,9 +700,6 @@ public class Workbench extends JPanel implements SelectionSink {
       return;
     
     dockingPane.putDockable(factory, null);
-
-    // tell others
-    fireViewClosed(view);
 
   }
 
@@ -756,9 +747,8 @@ public class Workbench extends JPanel implements SelectionSink {
     }
     dockingPane.putDockable(factory.getClass(), dockable);
 
-    // tell others
     fireViewOpened(dockable.getView());
-
+    
     return dockable.getView();
   }
 
@@ -802,9 +792,6 @@ public class Workbench extends JPanel implements SelectionSink {
     public void viewClosed(Workbench workbench, View view) {
     }
     
-    public void viewRestored(Workbench workbench, View view) {
-    }
-
     public void viewOpened(Workbench workbench, View view) {
     }
 
@@ -1017,8 +1004,6 @@ public class Workbench extends JPanel implements SelectionSink {
    */
   private class LayoutPersister extends XMLPersister {
     
-    private List<ViewDockable> dockables = new ArrayList<ViewDockable>();
-    
     LayoutPersister(DockingPane dockingPane, Reader layout) {
       super(dockingPane, layout, "1");
     }
@@ -1038,19 +1023,6 @@ public class Workbench extends JPanel implements SelectionSink {
       return key;
     }
     
-    @Override
-    protected Dockable resolveDockable(Object key) {
-      for (ViewFactory vf : viewFactories) {
-        if (vf.getClass().equals(key)) {
-          ViewDockable vd = new ViewDockable(Workbench.this, vf);
-          dockables.add(vd);
-          return vd;
-        }
-      }
-      LOG.finer("can't find view factory for docking key"+key);
-      return null;
-    }
-    
     @SuppressWarnings("unchecked")
     @Override
     protected String formatKey(Object key) throws SAXException {
@@ -1066,11 +1038,6 @@ public class Workbench extends JPanel implements SelectionSink {
       } catch (Exception ex) {
         LOG.log(Level.WARNING, "unable to load layout", ex);
       }
-      
-      // tell others now
-      for (ViewDockable vd : dockables)
-        fireViewRestored(vd.getView());
-  
     }
   
     @Override
@@ -1116,6 +1083,27 @@ public class Workbench extends JPanel implements SelectionSink {
 
     public void commitRequested(Workbench workbench) {
     }
+    
+    @Override
+    protected Dockable createDockable(Object key) {
+      for (ViewFactory vf : viewFactories) {
+        if (vf.getClass().equals(key)) {
+          ViewDockable vd = new ViewDockable(Workbench.this, vf);
+          return vd;
+        }
+      }
+      LOG.finer("can't find view factory for docking key"+key);
+      return null;
+    }
+    
+    @Override
+    protected void dismissDockable(Dockable dockable) {
+      if (dockable instanceof ViewDockable) {
+        ViewDockable vd = (ViewDockable)dockable;
+        vd.dispose();
+        fireViewClosed(vd.getView());
+      }
+    }
 
     public void gedcomClosed(Workbench workbench, Gedcom gedcom) {
       updateTitles("");
@@ -1138,9 +1126,6 @@ public class Workbench extends JPanel implements SelectionSink {
     }
 
     public void viewOpened(Workbench workbench, View view) {
-    }
-
-    public void viewRestored(Workbench workbench, View view) {
     }
 
     public void workbenchClosing(Workbench workbench) {
