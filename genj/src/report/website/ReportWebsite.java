@@ -305,8 +305,9 @@ public class ReportWebsite extends Report {
 				first = false;
 				String displayName = ((Indi)indi).getName().replace('"', ' ');
 				String simpleName = displayName.toLowerCase();
-				out.write("[\"" + simpleName + "\",\"" + indi.getId().substring(1) + "\",\"" + displayName + "\"]");
-				// XXX sosa-number too
+				String sosaId = sosaStradonitzNumber.get(indi.getId());
+				if (sosaId == null) sosaId = "";
+				out.write("[\"" + simpleName + "\",\"" + indi.getId().substring(1) + "\",\"" + displayName + "\",\"" + sosaId + "\"]");
 			}
 			out.write("];");
 		} finally {
@@ -1352,9 +1353,13 @@ public class ReportWebsite extends Report {
 			handledProperties.add("CHAN");
 			processNoteRefs(p, lastUpdate, linkPrefix, destDir, html);
 			reportUnhandledProperties(lastUpdate, new String[] {"NOTE"});
+			p.appendChild(html.br()); 
+			p.appendChild(html.text(translate("pageCreated") + 
+					" " + (new PropertyChange()).getDisplayValue()));
+		} else {
+			appendTo.appendChild(html.p(translate("pageCreated") + 
+					" " + (new PropertyChange()).getDisplayValue()));
 		}
-		appendTo.appendChild(html.p(translate("pageCreated") + 
-				" " + (new PropertyChange()).getDisplayValue()));
 		
 		// Add all other attributes
 		reportUnhandledProperties(prop, (String[])handledProperties.toArray(new String[0])); 
