@@ -145,7 +145,7 @@ public class ReportWebsite extends Report {
 		// Try to make a translator for css values
 		HashMap<String,String> translator;
 		try {
-			translator = makeCssColorSettings();
+			translator = makeCssAndJSSettings();
 		} catch (InvalidParameterException e) {
 			getOptionFromUser(e.getMessage(), OPTION_OK);
 			return;
@@ -155,7 +155,7 @@ public class ReportWebsite extends Report {
 		if (removeAllFiles) deleteDirContent(dir, false);
 		
 		// Copy the correct background image
-		copyBackgroundImage(dir);
+		copyImages(dir);
 		
 		// Make a css file with current settings
 		makeCssAndJs(dir, translator);
@@ -244,10 +244,18 @@ public class ReportWebsite extends Report {
 	/**
 	 * Copy the correct background image 
 	 */
-	protected void copyBackgroundImage(File dir) throws IOException {
+	protected void copyImages(File dir) throws IOException {
+		// Background
 		File sourceFile = new File(getFile().getParentFile(), boxBackgroundImages[boxBackground]);
 		File dstFile = new File(dir, "bkgr.png");
 		copyFile(sourceFile, dstFile);
+		// Icons
+		// XXX Copy icons from the genj-images dir. (Not in source).
+		// Place them before text in headings.
+		//copyFile(new File(getFile().getParentFile(), "../../../images/genj/gedcom/images/Source.png"),
+		//		new File(dir, "Source.png"));
+		
+		
 	}
 
 	/**
@@ -1874,15 +1882,15 @@ public class ReportWebsite extends Report {
 	/**
 	 * Check color settings
 	 */
-	protected HashMap<String, String> makeCssColorSettings() {
+	protected HashMap<String, String> makeCssAndJSSettings() {
 		HashMap<String, String> translator = new HashMap<String, String>();
 		addColorToMap(translator, "cssTextColor", cssTextColor);
 		addColorToMap(translator, "cssBackgroundColor", cssBackgroundColor);
 		addColorToMap(translator, "cssLinkColor", cssLinkColor);
 		addColorToMap(translator, "cssVistedLinkColor", cssVistedLinkColor);
 		addColorToMap(translator, "cssBorderColor", cssBorderColor);
-		translator.put("indexFile", reportIndexFileName); // Lägg till värden för js-fil
-		translator.put("noSearchResults", translate("noSearchResults")); // Lägg till värden för js-fil
+		translator.put("indexFile", reportIndexFileName);
+		translator.put("noSearchResults", translate("noSearchResults"));
 		return translator;
 	}
 
