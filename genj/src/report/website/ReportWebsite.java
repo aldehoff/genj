@@ -575,9 +575,11 @@ public class ReportWebsite extends Report {
 		// Find out how much we may display		
 		boolean isPrivate = isPrivate(indi); 
 		
-		Element div1 = html.div("left");
-		bodyNode.appendChild(div1);
+		Element div1 = null;
 		if (! isPrivate) {
+			div1 = html.div("left");
+			bodyNode.appendChild(div1);
+
 			div1.appendChild(html.h2(translate("facts")));
 			// get sex
 			Property sex = indi.getProperty("SEX");
@@ -730,12 +732,12 @@ public class ReportWebsite extends Report {
 					for (String tag : new String[]{"SUBM"}) {
 						Property[] refs = indi.getProperties(tag);
 						if (refs.length > 0) {
-							div1.appendChild(html.h2(Gedcom.getName(tag)));
+							div2.appendChild(html.h2(Gedcom.getName(tag)));
 							Element p = html.p();
 							for (Property ref : refs) {
 								if (ref instanceof PropertyXRef) {
 									getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
-									if (p.hasChildNodes()) div1.appendChild(p);
+									if (p.hasChildNodes()) div2.appendChild(p);
 									reportUnhandledProperties(ref, null); // There should not be anything here
 								} else {
 									println(tag + " is not reference:" + ref.toString());
@@ -766,7 +768,8 @@ public class ReportWebsite extends Report {
 		}
 		handledProperties.add("FAMS");
 
-		processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indiDir, html, handledProperties);
+		if (!isPrivate)
+			processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indiDir, html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		
 		// Link to start and index-page
