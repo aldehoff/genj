@@ -270,6 +270,7 @@ public class ReportWebsite extends Report {
 	private class TextAreaOption extends CustomOption {
 		private JTextArea text = new JTextArea(reportWelcomeText);
 		protected JComponent getEditor() {
+			text.setLineWrap(true);
 			return new JScrollPane(text);
 		}
 		protected void commit(JComponent editor) {
