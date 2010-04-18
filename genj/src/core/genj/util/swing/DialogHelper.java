@@ -75,8 +75,16 @@ public class DialogHelper {
     WARNING_MESSAGE = JOptionPane.WARNING_MESSAGE,
     QUESTION_MESSAGE = JOptionPane.QUESTION_MESSAGE,
     PLAIN_MESSAGE = JOptionPane.PLAIN_MESSAGE;
+  
+  public static void showError(String title, String msg, Throwable t, Object source) {
+    openDialog(title, DialogHelper.ERROR_MESSAGE, msg, Action2.okOnly(), source);
+  }
 
-  public static int openDialog(String title, int messageType,  String txt, Action[] actions, Component source) {
+  public static void showInfo(String title, String msg, Object source) {
+    openDialog(title, DialogHelper.INFORMATION_MESSAGE, msg, Action2.okOnly(), source);
+  }
+  
+  public static int openDialog(String title, int messageType,  String txt, Action[] actions, Object source) {
     
     // analyze the text
     int maxLine = 40;
@@ -113,7 +121,7 @@ public class DialogHelper {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
-  public static int openDialog(String title, int messageType,  JComponent[] content, Action[] actions, Component source) {
+  public static int openDialog(String title, int messageType,  JComponent[] content, Action[] actions, Object source) {
     // assemble content into Box (don't use Box here because
     // Box extends Container in pre JDK 1.4)
     JPanel box = new JPanel();
@@ -130,7 +138,7 @@ public class DialogHelper {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
    */
-  public static String openDialog(String title, int messageType, String txt, List<String> values, Component source) {
+  public static String openDialog(String title, int messageType, String txt, List<String> values, Object source) {
 
     // prepare list and label
     JLabel lb = new JLabel(txt);
@@ -154,7 +162,7 @@ public class DialogHelper {
   /**
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.lang.String, java.lang.String, javax.swing.JComponent)
    */
-  public static String openDialog(String title, int messageType,  String txt, String value, Component source) {
+  public static String openDialog(String title, int messageType,  String txt, String value, Object source) {
 
     // prepare text field and label
     JLabel lb = new JLabel(txt);
@@ -178,7 +186,7 @@ public class DialogHelper {
     return rc==0?tf.getText().trim():null;
   }
 
-  public static int openDialog(String title, int messageType,  JComponent content, Action[] actions, Component source) {
+  public static int openDialog(String title, int messageType,  JComponent content, Action[] actions, Object source) {
     // check options - default to OK
     if (actions==null) 
       actions = Action2.okOnly();
@@ -193,14 +201,18 @@ public class DialogHelper {
   /**
    * Dialog implementation
    */
-  private static Object openDialogImpl(String title, int messageType, final JComponent content, Action[] actions, Component source) {
+  private static Object openDialogImpl(String title, int messageType, final JComponent content, Action[] actions, Object source) {
 
     // find window for source
-    source = visitOwners(source, new ComponentVisitor() {
-      public Component visit(Component parent, Component child) {
-        return parent ==null ? child : null;
-      }
-    });
+    Component parent = null;
+    if (source instanceof Component)
+      parent = (Component)source;
+    else if (source instanceof EventObject && ((EventObject)source).getSource() instanceof Component)
+      parent = visitOwners( (Component)((EventObject)source).getSource(), new ComponentVisitor() {
+        public Component visit(Component parent, Component child) {
+          return parent ==null ? child : null;
+        }
+      });
     
     // patch opaqueness of content
     patchOpaque(content, true);
@@ -209,7 +221,7 @@ public class DialogHelper {
     final JOptionPane optionPane = new Content(messageType, content, actions);
     
     // create the dialog and content
-    final JDialog dlg = optionPane.createDialog(source, title);
+    final JDialog dlg = optionPane.createDialog(parent, title);
     dlg.setResizable(true);
     dlg.setModal(true);
     dlg.pack();
@@ -218,14 +230,14 @@ public class DialogHelper {
     // restore bounds
     StackTraceElement caller = getCaller();
     final Registry registry = Registry.get(caller.getClassName());
-    final String key = caller.getMethodName() + ".dialog";
+    final String key = caller.getMethodName() + (caller.getLineNumber()>0?caller.getLineNumber():"") + ".dialog";
     Dimension bounds = registry.get(key, (Dimension)null);
     if (bounds!=null) {
       bounds.width = Math.max(bounds.width, dlg.getWidth());
       bounds.height = Math.max(bounds.height, dlg.getHeight());
       dlg.setBounds(new Rectangle(bounds).intersection(screen));
     }
-    dlg.setLocationRelativeTo(source);
+    dlg.setLocationRelativeTo(parent);
 
     // hook up to the dialog being hidden by the optionpane - that's what is being called after the user selected a button (setValue())
     dlg.addComponentListener(new ComponentAdapter() {
@@ -338,13 +350,6 @@ public class DialogHelper {
     } //Action2Button
     
   } // Content 
-  
-  public static Component getComponent(EventObject event) {
-    Object source = event.getSource();
-    if (!(source instanceof Component))
-      throw new IllegalArgumentException("Can't find component for event "+event);
-    return (Component)source;
-  }
   
   /**
    * Visit containers of a component recursively. This method follows the getParent()

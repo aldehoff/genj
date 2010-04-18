@@ -458,7 +458,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
 
       from.addListSelectionListener(this);
         
-      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), DialogHelper.getComponent(e)))
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), e))
         return;
       
       // remove props from source

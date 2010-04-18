@@ -77,7 +77,7 @@ public class ScreenshotAction extends Action2 {
       choices.add(viewport);
       choices.add(all);
       
-      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, choices, Action2.okCancel(), DialogHelper.getComponent(e)))
+      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, choices, Action2.okCancel(), e))
         return;
 
       if (viewport.isSelected())
@@ -100,7 +100,7 @@ public class ScreenshotAction extends Action2 {
       long max = Runtime.getRuntime().maxMemory()/1024/1000;
       String msg = RES.getString("screenshot.oom", r.width*r.height*4/1024/1000, max, String.valueOf(max));
       Logger.getLogger("genj.view").log(Level.WARNING, msg, oom);
-      DialogHelper.openDialog(getTip(), DialogHelper.ERROR_MESSAGE, msg, Action2.okOnly(), DialogHelper.getComponent(e));
+      DialogHelper.openDialog(getTip(), DialogHelper.ERROR_MESSAGE, msg, Action2.okOnly(), e);
     }
     
     

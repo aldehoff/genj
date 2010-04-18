@@ -62,7 +62,7 @@ import javax.swing.border.EmptyBorder;
 
   /** run */
   public void actionPerformed(ActionEvent event) {
-    DialogHelper.openDialog(RES.getString("cc.menu.about"), DialogHelper.INFORMATION_MESSAGE, new Content(), Action2.okOnly(), DialogHelper.getComponent(event));
+    DialogHelper.openDialog(RES.getString("cc.menu.about"), DialogHelper.INFORMATION_MESSAGE, new Content(), Action2.okOnly(), event);
   }
   
   private class Content extends JTabbedPane {

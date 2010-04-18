@@ -65,7 +65,7 @@ public abstract class PrintAction extends Action2 {
       task = new PrintTask(title, getRenderer());
     } catch (PrintException pe) {
       LOG.log(Level.INFO, "can't setup print task", pe);
-      DialogHelper.openDialog(title, DialogHelper.ERROR_MESSAGE, pe.getMessage(), Action2.okOnly(), DialogHelper.getComponent(e));
+      DialogHelper.openDialog(title, DialogHelper.ERROR_MESSAGE, pe.getMessage(), Action2.okOnly(), e);
       return;
     }
     
@@ -82,7 +82,7 @@ public abstract class PrintAction extends Action2 {
     int choice = DialogHelper.openDialog(
         title, 
         DialogHelper.QUESTION_MESSAGE, 
-        widget, actions, DialogHelper.getComponent(e));
+        widget, actions, e);
 
     // check choice
     if (choice != 0 || task.getPages().width == 0 || task.getPages().height == 0)

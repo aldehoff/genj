@@ -46,7 +46,7 @@ import java.awt.event.ActionEvent;
     OptionsWidget widget = new OptionsWidget(getText());
     widget.setOptions(OptionProvider.getAllOptions());
     // open dialog
-    DialogHelper.openDialog(getText(), DialogHelper.INFORMATION_MESSAGE, widget, Action2.okOnly(), DialogHelper.getComponent(event));
+    DialogHelper.openDialog(getText(), DialogHelper.INFORMATION_MESSAGE, widget, Action2.okOnly(), event);
     // done
   }
 }

@@ -115,7 +115,7 @@ public abstract class ChooseBlueprintAction extends Action2 {
         DialogHelper.QUESTION_MESSAGE, 
         content, 
         Action2.okOnly(), 
-        DialogHelper.getComponent(e));
+        e);
     
     editor.commit();
 
@@ -139,7 +139,7 @@ public abstract class ChooseBlueprintAction extends Action2 {
         DialogHelper.QUESTION_MESSAGE,
         RESOURCES.getString("blueprint.add.confirm"),
         "",
-        DialogHelper.getComponent(e)
+        e
       );
       if (name==null||name.length()==0) 
         return;
@@ -167,7 +167,7 @@ public abstract class ChooseBlueprintAction extends Action2 {
       Blueprint selection = (Blueprint)blueprints.getSelectedValue();
       if (selection==null||selection.isReadOnly())
         return;
-      if (0!=DialogHelper.openDialog(null,DialogHelper.WARNING_MESSAGE,RESOURCES.getString("blueprint.del.confirm", selection.getName()),Action2.okCancel(),DialogHelper.getComponent(e)))
+      if (0!=DialogHelper.openDialog(null,DialogHelper.WARNING_MESSAGE,RESOURCES.getString("blueprint.del.confirm", selection.getName()),Action2.okCancel(),e))
         return;
       
       try {

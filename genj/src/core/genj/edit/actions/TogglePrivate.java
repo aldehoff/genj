@@ -66,7 +66,7 @@ public class TogglePrivate extends AbstractChange {
             DialogHelper.WARNING_MESSAGE,
             "This Gedcom file contains encrypted information that has to be decrypted before changing private/public status of other information",
             Action2.okOnly(),
-            DialogHelper.getComponent(event));
+            event);
         return null;              
     }
       
@@ -78,7 +78,7 @@ public class TogglePrivate extends AbstractChange {
         DialogHelper.QUESTION_MESSAGE,
         AbstractChange.resources.getString("password", gedcom.getName()),
         "",
-        DialogHelper.getComponent(event) 
+        event 
       );
       
       // canceled?
@@ -92,7 +92,7 @@ public class TogglePrivate extends AbstractChange {
         DialogHelper.QUESTION_MESSAGE,
         AbstractChange.resources.getString("recursive"),
         Action2.yesNo(), 
-        DialogHelper.getComponent(event));
+        event);
 
     // change it
     gedcom.setPassword(pwd); 

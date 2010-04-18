@@ -32,7 +32,6 @@ import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.Indi;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.NestedBlockLayout;
 import genj.view.SelectionSink;
 import genj.view.View;
@@ -260,7 +259,7 @@ public class NavigatorView extends View {
       JLabel label = (JLabel)e.getComponent();
       Indi target = (Indi)label.getClientProperty(Indi.class);
       if (target!=null)
-        SelectionSink.Dispatcher.fireSelection(DialogHelper.getComponent(e), new Context(target), false);
+        SelectionSink.Dispatcher.fireSelection(e, new Context(target));
       Action action = (Action)label.getClientProperty(Action.class);
       if (action!=null)
         action.actionPerformed(new ActionEvent(e.getSource(), 0, "", e.getModifiers()));

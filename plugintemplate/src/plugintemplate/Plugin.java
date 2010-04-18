@@ -61,12 +61,7 @@ public class Plugin extends WorkbenchAdapter implements ActionProvider {
     @Override
     public void actionPerformed(ActionEvent event) {
       // show a simple hello dialog with an ok button only
-      DialogHelper.openDialog(
-          RESOURCES.getString("title"), 
-          DialogHelper.INFORMATION_MESSAGE, 
-          RESOURCES.getString("message"), 
-          Action2.okOnly(), 
-          DialogHelper.getComponent(event));
+      DialogHelper.showInfo(RESOURCES.getString("title"), RESOURCES.getString("message"), event);
     }
     
   }

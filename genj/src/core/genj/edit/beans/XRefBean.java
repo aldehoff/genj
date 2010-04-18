@@ -76,7 +76,7 @@ public class XRefBean extends PropertyBean {
           DialogHelper.QUESTION_MESSAGE, 
           select, 
           Action2.okCancel(), 
-          DialogHelper.getComponent(event)))
+          event))
         return;
 
       final Entity newTarget = select.getSelection();
@@ -104,7 +104,7 @@ public class XRefBean extends PropertyBean {
             DialogHelper.WARNING_MESSAGE, 
             ge.getMessage(), 
             Action2.okOnly(), 
-            DialogHelper.getComponent(event));
+            event);
         LOG.log(Level.FINER, ge.getMessage(), ge);
       }
       

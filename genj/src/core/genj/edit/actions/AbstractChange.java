@@ -121,7 +121,7 @@ public abstract class AbstractChange extends Action2 {
       };
       
       // Recheck with the user
-      int rc = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, getDialogContent(), actions, DialogHelper.getComponent(event) );
+      int rc = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, getDialogContent(), actions, event) ;
       if (rc!=0)
         return;
     }
@@ -134,7 +134,7 @@ public abstract class AbstractChange extends Action2 {
         }
       });
     } catch (Throwable t) {
-      DialogHelper.openDialog(null, DialogHelper.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), DialogHelper.getComponent(event));
+      DialogHelper.openDialog(null, DialogHelper.ERROR_MESSAGE, t.getMessage(), Action2.okOnly(), event);
     }
     
     // propagate selection

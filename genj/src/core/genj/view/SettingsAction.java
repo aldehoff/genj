@@ -49,7 +49,7 @@ public abstract class SettingsAction extends Action2 {
         DialogHelper.QUESTION_MESSAGE, 
         editor, 
         Action2.okOnly(), 
-        DialogHelper.getComponent(e));
+        e);
 
   }
   

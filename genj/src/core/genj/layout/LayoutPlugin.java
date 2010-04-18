@@ -205,7 +205,7 @@ public class LayoutPlugin extends WorkbenchAdapter implements PluginFactory, Act
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-      String layout = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, RES.getString("layout.name"), "", DialogHelper.getComponent(e));
+      String layout = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, RES.getString("layout.name"), "", e);
       if (layout==null||layouts.contains(layout))
         return;
 
@@ -234,7 +234,7 @@ public class LayoutPlugin extends WorkbenchAdapter implements PluginFactory, Act
     @Override
     public void actionPerformed(ActionEvent e) {
       
-      String layout = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, RES.getString("layout.name"), choices, DialogHelper.getComponent(e));
+      String layout = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, RES.getString("layout.name"), choices, e);
       if (layout==null)
         return;
       

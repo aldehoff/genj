@@ -26,7 +26,6 @@ import genj.gedcom.Indi;
 import genj.gedcom.PropertySex;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
@@ -122,7 +121,7 @@ public class NavigatorPluginFactory implements PluginFactory, ActionProvider {
     @Override
     public void actionPerformed(ActionEvent e) {
       if (target!=null)
-        SelectionSink.Dispatcher.fireSelection(DialogHelper.getComponent(e), new Context(target), false);
+        SelectionSink.Dispatcher.fireSelection(e, new Context(target));
     }
   }
   
