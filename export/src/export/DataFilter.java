@@ -19,23 +19,24 @@
  */
 package export;
 
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.time.PointInTime;
+import genj.io.Filter;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.DateWidget;
 import genj.util.swing.NestedBlockLayout;
 
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 /**
  * A data-based filter
  */
-/*package*/ class DataFilter extends JPanel implements ExportFilter {
+/*package*/ class DataFilter extends JPanel implements Filter {
   
   private final static Registry REGISTRY = Registry.get(DataFilter.class);
   private final static Resources RESOURCES = Resources.get(DataFilter.class);
@@ -75,7 +76,7 @@ import genj.util.swing.NestedBlockLayout;
     add(sources);
   }
   
-  public String name() {
+  public String getName() {
     return RESOURCES.getString("data");
   }
   

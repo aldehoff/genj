@@ -23,6 +23,7 @@ import genj.common.SelectEntityWidget;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.io.Filter;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
@@ -42,7 +43,7 @@ import javax.swing.border.BevelBorder;
 /**
  * A relationship-based filter
  */
-/*package*/ class RelationshipFilter extends JPanel implements ExportFilter {
+/*package*/ class RelationshipFilter extends JPanel implements Filter {
   
   private final static Registry REGISTRY = Registry.get(RelationshipFilter.class);
   private final static Resources RESOURCES = Resources.get(Plugin.class);
@@ -94,7 +95,7 @@ import javax.swing.border.BevelBorder;
     
   }
   
-  public String name() {
+  public String getName() {
     return RESOURCES.getString("rela");
   }
   

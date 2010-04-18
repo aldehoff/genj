@@ -23,6 +23,8 @@ import genj.app.Workbench;
 import genj.app.WorkbenchAdapter;
 import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
+import genj.io.Filter;
+import genj.io.GedcomWriter;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -34,6 +36,11 @@ import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JLabel;
@@ -83,7 +90,7 @@ public class Plugin extends WorkbenchAdapter implements ActionProvider {
   private class Export extends Action2 implements ChangeListener {
     
     private Gedcom gedcom;
-    private FileChooserWidget file = new FileChooserWidget("ged");
+    private FileChooserWidget fileChooser = new FileChooserWidget("ged");
     private Action[] okCancel = Action2.okCancel();
     
     Export(Gedcom gedcom) {
@@ -97,10 +104,13 @@ public class Plugin extends WorkbenchAdapter implements ActionProvider {
       
       RelationshipFilter rela = new RelationshipFilter(gedcom);
       DataFilter data = new DataFilter(gedcom);
+      List<Filter> filters = new ArrayList<Filter>();
+      filters.add(rela);
+      filters.add(data);
       
-      JTabbedPane filters =  new JTabbedPane(JTabbedPane.TOP);
-      filters.addTab(rela.name(), rela);
-      filters.addTab(data.name(), data);
+      JTabbedPane tabs =  new JTabbedPane(JTabbedPane.TOP);
+      tabs.addTab(rela.getName(), rela);
+      tabs.addTab(data.getName(), data);
       
       JPanel content = new JPanel(new NestedBlockLayout(
         "<col wx=\"1\" wy=\"1\">"+
@@ -109,25 +119,45 @@ public class Plugin extends WorkbenchAdapter implements ActionProvider {
         "</col>"
       ));
       content.add(new JLabel(RESOURCES.getString("file")));
-      content.add(file);
-      content.add(filters);
+      content.add(fileChooser);
+      content.add(tabs);
 
       // add ok verification
       okCancel[0].setEnabled(false);
-      file.addChangeListener(this);
+      fileChooser.addChangeListener(this);
       
       // restore
-      file.setFile(REGISTRY.get("file", ""));      
+      fileChooser.setFile(REGISTRY.get("file", ""));      
             
-      // show a simple hello dialog with an ok button only
-      DialogHelper.openDialog(
-          getText(), 
-          DialogHelper.INFORMATION_MESSAGE, 
-          content, 
-          okCancel,
-          DialogHelper.getComponent(event));
+      // show it
+      int ok = DialogHelper.openDialog(getText(), DialogHelper.INFORMATION_MESSAGE, content, okCancel, event);
+      if (ok!=0)
+        return;
+
+      // check exist
+      File file = fileChooser.getFile();
+      if (file.exists()) {
+        if (0!=DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, RESOURCES.getString("overwrite", file), Action2.okCancel(), event))
+          return;
+      }
+      REGISTRY.put("file", file.getAbsolutePath());      
+      
+      // open file and write
+      OutputStream out = null;
+      try {
+        out = new FileOutputStream(file);
+        GedcomWriter writer = new GedcomWriter(gedcom, out);
+        writer.setFilters(filters);
+        writer.write();
+      } catch (Throwable t) {
+        DialogHelper.showError(getText(), t.getMessage(), t, event);
+      } finally {
+        if (out!=null) try { out.close(); } catch (Throwable t) {};
+      }
       
       // done
+      DialogHelper.showInfo(getText(), RESOURCES.getString("done", file.getName()), event);
+      
     }
     
     @Override
@@ -135,7 +165,7 @@ public class Plugin extends WorkbenchAdapter implements ActionProvider {
       
       boolean ok = true;
       
-      if (file.getFile().getName().length()==0)
+      if (fileChooser.getFile().getName().length()==0)
         ok = false;            
       
       okCancel[0].setEnabled(ok);
