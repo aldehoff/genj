@@ -442,7 +442,7 @@ public class ReportWebsite extends Report {
 		for (Entity source : sources) { 
 			String text = source.toString();
 			String letter = text.substring(0, 1); // Get first letter
-			if (! letter.equals(lastLetter)) {
+			if (! letter.equalsIgnoreCase(lastLetter)) {
 				div1.appendChild(html.anchor(letter));
 				div1.appendChild(html.h2(letter));
 				lastLetter = letter;
@@ -469,7 +469,7 @@ public class ReportWebsite extends Report {
 			String lastname = ((Indi)indi).getLastName();  
 			String letter = "?";
 			if (lastname != null && !lastname.isEmpty()) letter = lastname.substring(0, 1); // Get first letter of last name
-			if (! letter.equals(lastLetter)) {
+			if (! letter.equalsIgnoreCase(lastLetter)) {
 				div1.appendChild(html.anchor(letter));
 				div1.appendChild(html.h2(letter));
 				lastLetter = letter;
