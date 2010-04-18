@@ -341,7 +341,7 @@ public class ReportWebsite extends Report {
 			String lastname = ((Indi)indi).getLastName();  
 			String letter = "?";
 			if (lastname != null && !lastname.isEmpty()) letter = lastname.substring(0, 1); // Get first letter of last name
-			if (! letter.equals(lastLetter)) {
+			if (! letter.equalsIgnoreCase(lastLetter)) {
 				indiP.appendChild(html.link(listPersonFileName + "#" + letter, letter));				
 				indiP.appendChild(html.text(", "));				
 				lastLetter = letter;
@@ -386,7 +386,7 @@ public class ReportWebsite extends Report {
 			lastLetter = "";
 			for (Entity source : sources) { 
 				String letter = source.toString().substring(0, 1); // Get first letter
-				if (! letter.equals(lastLetter)) {
+				if (! letter.equalsIgnoreCase(lastLetter)) {
 					sourceP.appendChild(html.link(listSourceFileName + "#" + letter, letter));				
 					sourceP.appendChild(html.text(", "));				
 					lastLetter = letter;
@@ -402,7 +402,7 @@ public class ReportWebsite extends Report {
 			lastLetter = "";
 			for (Entity repo : repos) { 
 				String letter = repo.toString().substring(0, 1); // Get first letter
-				if (! letter.equals(lastLetter)) {
+				if (! letter.equalsIgnoreCase(lastLetter)) {
 					repoP.appendChild(html.link(listRepositoryFileName + "#" + letter, letter));				
 					repoP.appendChild(html.text(", "));				
 					lastLetter = letter;
