@@ -42,10 +42,12 @@ import genj.util.SafeProxy;
 import genj.util.ServiceLookup;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
+import genj.util.swing.ChoiceWidget;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.FileChooser;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MacAdapter;
+import genj.util.swing.TextFieldWidget;
 import genj.view.SelectionSink;
 import genj.view.View;
 import genj.view.ViewContext;
@@ -70,10 +72,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.xml.sax.SAXException;
@@ -353,7 +358,17 @@ public class Workbench extends JPanel implements SelectionSink {
     fireCommit();
     
     // .. choose file
-    SaveOptionsWidget options = new SaveOptionsWidget(context.getGedcom());
+    Box options = new Box(BoxLayout.Y_AXIS);
+    options.add(new JLabel(RES.getString("save.options.encoding")));
+    ChoiceWidget comboEncodings = new ChoiceWidget(Gedcom.ENCODINGS, Gedcom.ANSEL);
+    comboEncodings.setEditable(false);
+    comboEncodings.setSelectedItem(context.getGedcom().getEncoding());
+    options.add(comboEncodings);
+    options.add(new JLabel(RES.getString("save.options.password")));
+    String pwd = context.getGedcom().getPassword();
+    TextFieldWidget textPassword = new TextFieldWidget(context.getGedcom().hasPassword() ? pwd : "", 10);
+    textPassword.setEditable(pwd!=Gedcom.PASSWORD_UNKNOWN);
+    options.add(textPassword);
     File file = chooseFile(RES.getString("cc.save.title"), RES.getString("cc.save.action"), options);
     if (file == null)
       return false;
@@ -369,10 +384,9 @@ public class Workbench extends JPanel implements SelectionSink {
     if (!file.getName().endsWith(".ged"))
       file = new File(file.getAbsolutePath() + ".ged");
     
-    Filter[] filters = options.getFilters();
     Gedcom gedcom = context.getGedcom();
-    gedcom.setPassword(options.getPassword());
-    gedcom.setEncoding(options.getEncoding());
+    gedcom.setPassword(textPassword.getText());
+    gedcom.setEncoding((String)comboEncodings.getSelectedItem());
     
     // .. create new origin
     try {
@@ -383,7 +397,7 @@ public class Workbench extends JPanel implements SelectionSink {
     }
   
     // save
-    if (!saveGedcomImpl(gedcom, filters))
+    if (!saveGedcomImpl(gedcom))
     	return false;
     
     // close and reset
@@ -408,14 +422,14 @@ public class Workbench extends JPanel implements SelectionSink {
     fireCommit();
     
     // do it
-    return saveGedcomImpl(context.getGedcom(), new Filter[0]);
+    return saveGedcomImpl(context.getGedcom());
     
   }
   
   /**
    * save gedcom file
    */
-  private boolean saveGedcomImpl(Gedcom gedcom, Filter[] filters) {
+  private boolean saveGedcomImpl(Gedcom gedcom) {
   
 //  // .. open progress dialog
 //  progress = WindowManager.openNonModalDialog(null, RES.getString("cc.save.saving", file.getName()), WindowManager.INFORMATION_MESSAGE, new ProgressWidget(gedWriter, getThread()), Action2.cancelOnly(), getTarget());
@@ -442,7 +456,6 @@ public class Workbench extends JPanel implements SelectionSink {
         DialogHelper.openDialog(gedcom.getName(), DialogHelper.ERROR_MESSAGE, RES.getString("cc.save.open_error", gedcom.getOrigin().getFile().getAbsolutePath()), Action2.okOnly(), Workbench.this);
         return false;
       }
-      writer.setFilters(filters);
 
       // .. write it
       writer.write();

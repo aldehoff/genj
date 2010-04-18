@@ -19,6 +19,7 @@
  */
 package genj.io;
 
+import genj.gedcom.Entity;
 import genj.gedcom.Property;
 
 /**
@@ -26,15 +27,11 @@ import genj.gedcom.Property;
  */
 public interface Filter {
 
-  /**
-   * Whether given property is "in" (not "out")
-   */  
-  public boolean checkFilter(Property property);
+  public String getName();
   
-  /**
-   * Name of filter
-   */
-  public String getFilterName();
+  public boolean veto(Property property);
+
+  public boolean veto(Entity entity);
   
 } //Filter
   

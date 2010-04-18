@@ -38,9 +38,10 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnmappableCharacterException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -63,7 +64,7 @@ public class GedcomWriter implements Trackable {
   private int line;
   private int entity;
   private boolean cancel = false;
-  private Filter[] filters = new Filter[0];
+  private ArrayList<Filter> filters = new ArrayList<Filter>();
   private Enigma enigma = null;
 
   /**
@@ -164,10 +165,8 @@ public class GedcomWriter implements Trackable {
    * Sets filters to use for checking whether to write 
    * entities/properties or not
    */
-  public void setFilters(Filter[] fs) {
-    if (fs == null)
-      fs = new Filter[0];
-    filters = fs;
+  public void setFilters(Collection<Filter> fs) {
+    filters.addAll(fs);
   }
   
   /**
@@ -187,7 +186,7 @@ public class GedcomWriter implements Trackable {
     if (gedcom==null)
       throw new IllegalStateException("can't call write() twice");
     
-    Collection ents = gedcom.getEntities(); 
+    List<Entity> ents = gedcom.getEntities(); 
     total = ents.size();
 
     // Out operation
@@ -255,15 +254,19 @@ public class GedcomWriter implements Trackable {
    * Write Entities information
    * @exception IOException
    */
-  private void writeEntities(Collection ents) throws IOException {
+  private void writeEntities(List<Entity> entities) throws IOException {
 
     // Loop through entities
-    for (Iterator it=ents.iterator();it.hasNext();) {
+    es: for (Entity e : entities) {
       // .. check op
-      if (cancel) throw new GedcomIOException("Operation cancelled", line);
+      if (cancel) 
+        throw new GedcomIOException("Operation cancelled", line);
+      // .. filtered?
+      for (Filter f : filters) {
+        if (f.veto(e))
+          continue es;
+      }
       // .. writing it and its subs
-      Entity e = (Entity)it.next();
-      
       try {
         line += new EntityWriter().write(0, e);
       } catch(UnmappableCharacterException unme) {
@@ -300,22 +303,19 @@ public class GedcomWriter implements Trackable {
     protected void writeProperty(int level, Property prop) throws IOException {
       
       // check against filters
-      Entity target = null;
-      if (prop instanceof PropertyXRef) {
-        Property p = ((PropertyXRef) prop).getTarget();
-        if (p != null)
-          target = p.getEntity();
-      }
-      for (int f = 0; f < filters.length; f++) {
-        if (filters[f].checkFilter(prop) == false)
-          return;
-        if (target != null)
-          if (filters[f].checkFilter(target) == false)
+      if (!prop.isTransient() ) {
+        Entity target = null;
+        if (prop instanceof PropertyXRef) 
+          target = ((PropertyXRef) prop).getTargetEntity();
+        
+        for (Filter f : filters) {
+          if (f.veto(prop) || (target!=null&&f.veto(target)))
             return;
+          
+        }
       }
-
       // cont
-        super.writeProperty(level, prop);
+      super.writeProperty(level, prop);
     }
      
     /** intercept value decoding to facilitate encryption */

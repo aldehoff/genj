@@ -25,15 +25,13 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Property;
-import genj.io.Filter;
 import genj.print.PrintAction;
 import genj.print.PrintRenderer;
 import genj.renderer.Blueprint;
 import genj.renderer.BlueprintManager;
+import genj.renderer.BlueprintRenderer;
 import genj.renderer.ChooseBlueprintAction;
 import genj.renderer.DPI;
-import genj.renderer.BlueprintRenderer;
 import genj.renderer.Options;
 import genj.renderer.RenderSelectionHintKey;
 import genj.util.Registry;
@@ -89,7 +87,7 @@ import javax.swing.event.ChangeListener;
 /**
  * TreeView
  */
-public class TreeView extends View implements ContextProvider, ActionProvider, Filter {
+public class TreeView extends View implements ContextProvider, ActionProvider {
   
   protected final static ImageIcon BOOKMARK_ICON = new ImageIcon(TreeView.class, "images/Bookmark");      
   protected final static Registry REGISTRY = Registry.get(TreeView.class);
@@ -582,54 +580,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider, F
     return result;
   }
   
-  /**
-   * @see genj.io.Filter#accept(Property)
-   */
-  public boolean checkFilter(Property prop) {
-    return false;
-//    // all non-entities are fine
-//    if (!(prop instanceof Entity))
-//      return true;
-//    Entity ent = (Entity)prop;
-//    Set ents = model.getEntities();
-//    // indi?
-//    if (ent instanceof Indi)
-//      return ents.contains(ent);
-//    // fam?
-//    if (ent instanceof Fam) {
-//      boolean b = ents.contains(ent);
-//      if (model.isFamilies()||b) return b;
-//      Fam fam = (Fam)ent;
-//      boolean 
-//        father = ents.contains(fam.getHusband()),
-//        mother = ents.contains(fam.getWife()),
-//        child = false;
-//      Indi[] children = fam.getChildren();
-//      for (int i = 0; child==false && i<children.length; i++) {
-//        if (ents.contains(children[i])) child = true;
-//      }
-//      // father and mother or parent and child
-//      return (father&&mother) || (father&&child) || (mother&&child);
-//    }
-//    // let submitter through if it's THE one
-//    if (model.getGedcom().getSubmitter()==ent)
-//      return true;
-//    // maybe a referenced other type?
-//    Entity[] refs = PropertyXRef.getReferences(ent);
-//    for (int r=0; r<refs.length; r++) {
-//      if (ents.contains(refs[r])) return true;
-//    }
-//    // not
-//    return false;
-  }
-
-  /**
-   * A string representation of this view as a filter
-   */
-  public String getFilterName() {
-    return model.getEntities().size()+" nodes in "+TITLE;
-  }
-
   /**
    * Overview
    */
