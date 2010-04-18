@@ -642,10 +642,7 @@ public class ReportWebsite extends Report {
 			
 			// OBJE - Images etc
 			Element p = processMultimediaLink(indi, linkPrefix, indiDir, html, false, true);
-			if (p != null) {
-				div1.appendChild(p);
-				personsWithImage.add(indi); // Add to the list of persons displayed in the gallery
-			}
+			if (p != null) div1.appendChild(p);
 			handledProperties.add("OBJE");
 		}
 		
@@ -955,11 +952,15 @@ public class ReportWebsite extends Report {
 				title = titleProp.getDisplayValue();
 				reportUnhandledProperties(titleProp, null);
 			}
+
+			boolean tryMakeThumb = true;
+			boolean thumbMade = false;
+			
 			// Get form of object
 			Property formProp = file.getProperty("FORM");
 			if (formProp != null) {
 				if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
-					println(" Currently unsupported FORM in OBJE:" + formProp.getValue());
+					tryMakeThumb = false;
 				}
 				Property type = formProp.getProperty("TYPE");
 				if (type != null) {
@@ -976,20 +977,26 @@ public class ReportWebsite extends Report {
 				File dstFile = new File(objectDir, srcFile.getName());
 				File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
 				try {
-					if (!dstFile.exists() || !thumbFile.exists() || 
-							srcFile.lastModified() > dstFile.lastModified()) {
+					if (!dstFile.exists() || srcFile.lastModified() > dstFile.lastModified()) {
 						copyFile(srcFile, dstFile);
-						// Create a thumb
-						try {
-							makeThumb(dstFile, imgSize, imgSize, thumbFile);
-						} catch (RuntimeException e) {
-							println("Failed maiking thumb of:" + dstFile.getPath() + " Error:" + e.getMessage());
-							throw e;
+					}
+					// Create a thumb
+					if (tryMakeThumb) {
+						if (!thumbFile.exists() || srcFile.lastModified() > thumbFile.lastModified()) {
+							try { 
+								makeThumb(dstFile, imgSize, imgSize, thumbFile);
+								thumbMade = true;
+							} catch (Exception e) {
+								println("Failed maiking thumb of:" + dstFile.getPath() + " Error:" + e.getMessage());
+							}
+						} else {
+							thumbMade = true;
 						}
 					}
 
-					// Make img-reference to the image
-					p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
+					// Make img/link-reference to the image
+					if (thumbMade) p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
+					else p.appendChild(html.link(dstFile.getName(), title));
 				} catch (IOException e) {
 					println(" Error in copying file or making thumb: " + 
 							srcFile.getName() + e.getMessage());
@@ -1210,6 +1217,7 @@ public class ReportWebsite extends Report {
 				Media media = (Media)((PropertyMedia)objects[i]).getTargetEntity();
 				if (media != null) {
 					if (media.getFile() != null) {
+						// XXX Check if the thumb exist first, otherwise just make a text link.
 						// XXX Ugly code: 
 						// Assume just one image, even though gedcom 551 says it can be multiple
 						// The GenJ code seems to assume just one.
@@ -1228,22 +1236,25 @@ public class ReportWebsite extends Report {
 				String title = null;
 				if (titleProp != null) title = titleProp.getValue();
 				// Get form of object
+				boolean tryMakeThumb = true;
+				boolean thumbExist = false;
+				
 				Property formProp = objects[i].getProperty("FORM"); // 5.5 style
 				if (formProp != null) {
 					if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
-						println(" Currently unsupported FORM in OBJE:" + formProp.getValue());
+						tryMakeThumb = false;
 					}
 					reportUnhandledProperties(formProp, null);
 				}
 				// Find file
-				// XXX May have several FILE properties in 5.5.1 and FORM is a sub prop to FILE 
+				// XXX May have several FILE properties in 5.5.1 
 				PropertyFile file = (PropertyFile)objects[i].getProperty("FILE");
 				if (file != null) {
 					// Get form of object 5.5.1 style
 					formProp = file.getProperty("FORM");
 					if (formProp != null) {
 						if (! formProp.getValue().matches("^jpe?g|gif|JPE?G|gif|PNG|png$")) {
-							println(" Currently unsupported FORM in OBJE:" + formProp.getValue());
+							tryMakeThumb = false;
 						}
 						reportUnhandledProperties(formProp, null);
 					}
@@ -1254,25 +1265,45 @@ public class ReportWebsite extends Report {
 						File dstFile = new File(dstDir, srcFile.getName());
 						File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
 						try {
-							if (!dstFile.exists() || !thumbFile.exists() || 
-									srcFile.lastModified() > dstFile.lastModified()) {
+							if (!dstFile.exists() || srcFile.lastModified() > dstFile.lastModified()) {
 								copyFile(srcFile, dstFile);
-								// Create a thumb
-								makeThumb(dstFile, imgSize, imgSize, thumbFile);
 							}
-							// For the gallery
-							if (makeGalleryImage) {
-								File galleryImage = new File(dstFile.getParentFile(), "gallery.jpg");
-								if (!galleryImage.exists() || srcFile.lastModified() > galleryImage.lastModified())
-									makeThumb(dstFile, 50, 70, galleryImage);
-								makeGalleryImage = false;
+							// Create a thumb
+							if (tryMakeThumb) {
+								if (!thumbFile.exists() || srcFile.lastModified() > thumbFile.lastModified()) {
+									try {
+										makeThumb(dstFile, imgSize, imgSize, thumbFile);
+										thumbExist = true;
+									} catch (Exception e) {
+										println("Making thumb of image failed: " + dstFile.getAbsolutePath() + 
+												" Error: " + e.getMessage());
+									}
+								} else {
+									thumbExist = true;
+								}
 							}
 
-							// Make img-reference to the image
-							p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
+							// For the gallery
+							if (makeGalleryImage && tryMakeThumb) {
+								File galleryImage = new File(dstFile.getParentFile(), "gallery.jpg");
+								try {
+									if (!galleryImage.exists() || srcFile.lastModified() > galleryImage.lastModified()) {
+										makeThumb(dstFile, 50, 70, galleryImage);
+									}
+									makeGalleryImage = false;
+									if (prop instanceof Indi) personsWithImage.add((Indi)prop); // Add to the list of persons displayed in the gallery
+								} catch (Exception e) {
+									println("Making gallery thumb of image failed: " + dstFile.getAbsolutePath() + 
+											" Error: " + e.getMessage());
+								}
+							}
+
+							// Make img-reference to the image or text-link to other
+							if (thumbExist)	p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
+							else p.appendChild(html.link(dstFile.getName(), title));
 						} catch (IOException e) {
-							println(" Error in copying file or making thumb: " + 
-									srcFile.getName() + e.getMessage());
+							println(" Error while copying file: " +	srcFile.getName() + 
+									" Error: " + e.getMessage());
 						}
 						processNoteRefs(p, objects[i], linkPrefix, dstDir, html);
 						reportUnhandledProperties(objects[i], new String[]{"FILE", "TITL", "FORM", "NOTE"});
