@@ -135,8 +135,9 @@ public class ReportWebsite extends Report {
 				return; // Operation canceled by user
 		}
 
+		Indi rootIndi = null;
 		if (displaySosaStradonitz) {
-			Indi rootIndi = (Indi)getEntityFromUser(translate("selectSosaStradonitzRoot"), gedcom, Gedcom.INDI);
+			rootIndi = (Indi)getEntityFromUser(translate("selectSosaStradonitzRoot"), gedcom, Gedcom.INDI);
 			makeSosaStradonitzNumbering(rootIndi, 1);
 		}
 		
@@ -212,7 +213,7 @@ public class ReportWebsite extends Report {
 		Arrays.sort(indis, new PropertyComparator("INDI:NAME"));
 		Arrays.sort(sources, new EntityComparator());
 		Arrays.sort(repos, new EntityComparator());
-		makeStartpage(gedcom, dir, indis, sources, repos);
+		makeStartpage(gedcom, dir, indis, sources, repos, rootIndi);
 		makePersonIndex(dir, indis);
 		if (sources.length > 0)
 			makeEntityIndex(dir, sources, "sourceIndex", listSourceFileName);
@@ -316,7 +317,7 @@ public class ReportWebsite extends Report {
 		}
 	}
 	
-	protected void makeStartpage(Gedcom gedcom, File dir, Entity[] indis, Entity[] sources, Entity[] repos) {
+	protected void makeStartpage(Gedcom gedcom, File dir, Entity[] indis, Entity[] sources, Entity[] repos, Indi rootIndi) {
 		println("Making start-page");
 		File startFile = new File(dir.getAbsolutePath() + File.separator + reportIndexFileName);
 		Html html = new Html(reportTitle, "");
@@ -330,8 +331,11 @@ public class ReportWebsite extends Report {
 		div1.appendChild(html.h2("Indi.png", Gedcom.getName("INDI", true)));
 		div1.appendChild(html.p(translate("indexPersonText1", 
 				new Object[]{indis.length, gedcom.getEntities(Gedcom.FAM, "").length})));
-		if (displaySosaStradonitz)
-			div1.appendChild(html.p(translate("indexSosaDescriptionText"))); // XXX add values
+		if (displaySosaStradonitz) {
+			Element p = html.p(translate("indexSosaDescriptionText") + " ");
+			p.appendChild(html.link(addressTo(rootIndi.getId()), getName(rootIndi)));
+			div1.appendChild(p);
+		}
 
 		div1.appendChild(html.h2(translate("personIndex")));
 		Element indiP = html.p();

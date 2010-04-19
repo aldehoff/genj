@@ -35,6 +35,7 @@ div.left,div.right {
 	background-image: url("bkgr.png");
     background-repeat: repeat-y;
 	-moz-border-radius: 3px 3px;
+	overflow: auto;
 	border: 1px #{cssBorderColor} solid;
 }
 div.left,div.right {
