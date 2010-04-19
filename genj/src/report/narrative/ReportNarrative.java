@@ -94,6 +94,25 @@ public class ReportNarrative extends Report {
     return start(indi);
   }
 
+  // For tests without user interaction
+  public Object startTest(Gedcom gedcom, String startingIndiTag) {
+    // Indi indi = (Indi)getStartingEntity(translate(resource), gedcom, Gedcom.INDI); // Remove while testing
+    Indi indi = (Indi) gedcom.getEntity(Gedcom.INDI, startingIndiTag); // Pale Black
+    return start(indi);
+
+  }
+
+  /**
+   * Starting point for ancestors or descendants.  Overridden in tests.
+   * @param msg Prompt if interactive
+   * @param gedcom Family tree
+   * @param tag z.B. INDI
+   * @return Entity from family tree
+   */
+  public Entity getStartingEntity(String msg, Gedcom gedcom, String tag) {
+    return getEntityFromUser(msg, gedcom, tag);
+  }
+
   /**
    * The report's entry point
    */
