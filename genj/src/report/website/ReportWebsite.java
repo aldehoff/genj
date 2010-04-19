@@ -112,6 +112,9 @@ public class ReportWebsite extends Report {
     protected Element noteDiv = null;
     protected int noteCounter = 0;
 
+    /** The output directory */
+    File destDir = null;
+    
     /**
 	 * Main for argument Gedcom
 	 */
@@ -122,15 +125,15 @@ public class ReportWebsite extends Report {
 
 		// Ask for info
 		
-		File dir = getDirectoryFromUser(translate("qOutputDir"), translate("qOk"));
-		if (dir == null) 
+		destDir = getDirectoryFromUser(translate("qOutputDir"), translate("qOk"));
+		if (destDir == null) 
 		  return; // Operation canceled by user
 		
 		// make sure directory exists
-		dir.mkdirs();
+		destDir.mkdirs();
 		
 		// Ask if ok to overwrite if there were files
-		if (dir.list().length > 0) {
+		if (destDir.list().length > 0) {
 			if (! getOptionFromUser(translate("qOverwrite"), OPTION_OKCANCEL)) 
 				return; // Operation canceled by user
 		}
@@ -153,73 +156,73 @@ public class ReportWebsite extends Report {
 		}
 		
 		// Start modifying things
-		if (removeAllFiles) deleteDirContent(dir, false);
+		if (removeAllFiles) deleteDirContent(destDir, false);
 		
 		// Copy the correct background image
-		copyImages(dir);
+		copyImages(destDir);
 		
 		// Make a css file with current settings
-		makeCssAndJs(dir, translator);
+		makeCssAndJs(destDir, translator);
 		
+	    // Iterate over all media objects, must be before individuals
+		Entity[] objects = gedcom.getEntities(Gedcom.OBJE, "");
+		for(Entity object : objects) {
+			println("Exporting object " + object.getId());
+			File objeFile = makeDirFor(object.getId());
+			createMultimediaDoc((Media)object).toFile(objeFile);
+		}
+
 	    // Iterate over all individuals
 		Entity[] indis = gedcom.getEntities(Gedcom.INDI, "");
 		for(Entity indi : indis) {
 			println("Exporting person " + indi.getId() + " " + getName((Indi)indi));
-			File indiFile = makeDirFor(indi.getId(), dir);
-			createIndiDoc((Indi)indi, indiFile.getParentFile()).toFile(indiFile);
+			File indiFile = makeDirFor(indi.getId());
+			createIndiDoc((Indi)indi).toFile(indiFile);
 		}
 		
 	    // Iterate over all sources
 		Entity[] sources = gedcom.getEntities(Gedcom.SOUR, "");
 		for(Entity source : sources) {
 			println("Exporting source " + source.getId());
-			File indiFile = makeDirFor(source.getId(), dir);
-			createSourceDoc((Source)source, indiFile.getParentFile()).toFile(indiFile);
+			File sourFile = makeDirFor(source.getId());
+			createSourceDoc((Source)source).toFile(sourFile);
 		}
 
 	    // Iterate over all sources
 		Entity[] repos = gedcom.getEntities(Gedcom.REPO, "");
 		for(Entity repo : repos) {
 			println("Exporting repository " + repo.getId());
-			File indiFile = makeDirFor(repo.getId(), dir);
-			createRepoDoc((Repository)repo, indiFile.getParentFile()).toFile(indiFile);
-		}
-
-	    // Iterate over all media objects
-		Entity[] objects = gedcom.getEntities(Gedcom.OBJE, "");
-		for(Entity object : objects) {
-			println("Exporting object " + object.getId());
-			File indiFile = makeDirFor(object.getId(), dir);
-			createMultimediaDoc((Media)object, indiFile.getParentFile()).toFile(indiFile);
+			File repoFile = makeDirFor(repo.getId());
+			createRepoDoc((Repository)repo).toFile(repoFile);
 		}
 
 	    // Iterate over all notes
 		Entity[] notes = gedcom.getEntities(Gedcom.NOTE, "");
 		for(Entity note : notes) {
 			println("Exporting note " + note.getId());
-			File indiFile = makeDirFor(note.getId(), dir);
-			createNoteDoc((Note)note, indiFile.getParentFile()).toFile(indiFile);
+			File noteFile = makeDirFor(note.getId());
+			createNoteDoc((Note)note).toFile(noteFile);
 		}
 
 	    // Iterate over all submitters
 		Entity[] submitters = gedcom.getEntities(Gedcom.SUBM, "");
 		for(Entity submitter : submitters) {
 			println("Exporting submitter " + submitter.getId());
-			File indiFile = makeDirFor(submitter.getId(), dir);
-			createSubmitterDoc((Submitter)submitter, indiFile.getParentFile()).toFile(indiFile);
+			File submFile = makeDirFor(submitter.getId());
+			createSubmitterDoc((Submitter)submitter).toFile(submFile);
 		}
 
 		// Make a start page and indexes
 		Arrays.sort(indis, new PropertyComparator("INDI:NAME"));
 		Arrays.sort(sources, new EntityComparator());
 		Arrays.sort(repos, new EntityComparator());
-		makeStartpage(gedcom, dir, indis, sources, repos, rootIndi);
-		makePersonIndex(dir, indis);
+		makeStartpage(gedcom, destDir, indis, sources, repos, rootIndi);
+		makePersonIndex(destDir, indis);
 		if (sources.length > 0)
-			makeEntityIndex(dir, sources, "sourceIndex", listSourceFileName);
+			makeEntityIndex(destDir, sources, "sourceIndex", listSourceFileName);
 		if (repos.length > 0)
-			makeEntityIndex(dir, repos, "repositoryIndex", listRepositoryFileName);
-		makeSearchDataPage(dir, indis);
+			makeEntityIndex(destDir, repos, "repositoryIndex", listRepositoryFileName);
+		makeSearchDataPage(destDir, indis);
 		println("Report done!");
 	}
 
@@ -510,7 +513,7 @@ public class ReportWebsite extends Report {
 	 * @return a File object with the directory
 	 * @throws Exception
 	 */
-	protected File makeDirFor(String id, File dir) throws Exception {
+	protected File makeDirFor(String id) throws Exception {
 		String path = addressTo(id);
 		// Create the directory
 		String fileSep = File.separator;
@@ -518,7 +521,7 @@ public class ReportWebsite extends Report {
 			fileSep = "\\\\"; // Fix for Windows backslash separator
 		}
 		path = path.replaceAll("/", fileSep);
-		File indiFile = new File(dir.getAbsolutePath() + File.separator + path);
+		File indiFile = new File(destDir.getAbsolutePath() + File.separator + path);
 		File indiDir = indiFile.getParentFile();
 		indiDir.mkdirs();
 		return indiFile;
@@ -527,7 +530,7 @@ public class ReportWebsite extends Report {
 	/**
 	 * Create a document for each individual
 	 */
-	protected Html createIndiDoc(Indi indi, File indiDir) {
+	protected Html createIndiDoc(Indi indi) {
 		List<String> handledProperties = new ArrayList<String>();
 		resetNoteAndSourceList();
 				
@@ -544,8 +547,8 @@ public class ReportWebsite extends Report {
 		for (Property name : names) {
 			Element h1 = html.h1(getName(indi, name));
 			bodyNode.appendChild(h1);
-			processSourceRefs(h1, name, linkPrefix, indiDir, html);
-			processNoteRefs(h1, name, linkPrefix, indiDir, html);
+			processSourceRefs(h1, name, linkPrefix, indi.getId(), html);
+			processNoteRefs(h1, name, linkPrefix, indi.getId(), html);
 			Property nick = name.getProperty("NICK");
 			if (nick != null) {
 				bodyNode.appendChild(html.p(Gedcom.getName("NICK") + ": " + nick.getDisplayValue()));
@@ -566,8 +569,8 @@ public class ReportWebsite extends Report {
 					if (constructedFoneName != null) p.appendChild(html.text(", " + constructedName));
 					if (foneNick != null) p.appendChild(html.text(", " + 
 							Gedcom.getName("NICK") + " " + foneNick.getDisplayValue()));
-					processSourceRefs(p, fone, linkPrefix, indiDir, html);
-					processNoteRefs(p, fone, linkPrefix, indiDir, html);
+					processSourceRefs(p, fone, linkPrefix, indi.getId(), html);
+					processNoteRefs(p, fone, linkPrefix, indi.getId(), html);
 					reportUnhandledProperties(foneNick, new String[] {"TYPE", "SOUR", "NOTE", "NICK", "NPFX", "GIVN", "SPFX", "SURN", "NSFX"});
 				}
 			}
@@ -596,17 +599,17 @@ public class ReportWebsite extends Report {
 			handledProperties.add("SEX");
 			// get birth/death
 			Element birth = processEventDetail((PropertyEvent)indi.getProperty("BIRT"), 
-					linkPrefix, indiDir, html, true); 
+					linkPrefix, indi.getId(), html, true); 
 			if (birth != null) div1.appendChild(birth);
 			handledProperties.add("BIRT");
 			Element death = processEventDetail((PropertyEvent)indi.getProperty("DEAT"), 
-					linkPrefix, indiDir, html, true); 
+					linkPrefix, indi.getId(), html, true); 
 			if (death != null) div1.appendChild(death);
 			handledProperties.add("DEAT");  
 
 			for (String tag : new String[]{"CAST", "DSCR", "EDUC", "IDNO", "NATI", "NCHI", "NMR", "OCCU", "PROP", "RELI", "RESI", "SSN", "TITL", "FACT",
 					"ADOP", "CHR", "CREM", "BURI", "BAPM", "BARM", "BASM", "BLES", "CHRA", "CONF", "FCOM", "ORDN", "NATU", "EMIG", "IMMI", "CENS", "PROB", "WILL", "GRAD", "RETI", "EVEN"}) {
-				processOtherEventTag(tag, indi, linkPrefix, indiDir, div1, html);
+				processOtherEventTag(tag, indi, linkPrefix, indi.getId(), div1, html);
 				handledProperties.add(tag);  
 			}
 			for (String tag : new String[]{"SUBM", "ALIA", "ANCI", "DESI"}) {
@@ -635,8 +638,8 @@ public class ReportWebsite extends Report {
 						Element p = html.p(relation.getDisplayValue() + ": ");
 						getReferenceLink((PropertyXRef)ref, p, linkPrefix, html, false);
 						if (p.hasChildNodes()) div1.appendChild(p);
-						processNoteRefs(p, ref, linkPrefix, indiDir, html);
-						processSourceRefs(p, ref, linkPrefix, indiDir, html);
+						processNoteRefs(p, ref, linkPrefix, indi.getId(), html);
+						processSourceRefs(p, ref, linkPrefix, indi.getId(), html);
 						reportUnhandledProperties(ref, new String[] {"RELA", "NOTE", "SOUR"});
 					} else {
 						println("ASSO is not reference:" + ref.toString());
@@ -646,7 +649,7 @@ public class ReportWebsite extends Report {
 			}
 			
 			// OBJE - Images etc
-			Element p = processMultimediaLink(indi, linkPrefix, indiDir, html, false, true);
+			Element p = processMultimediaLink(indi, linkPrefix, indi.getId(), html, false, true);
 			if (p != null) div1.appendChild(p);
 			handledProperties.add("OBJE");
 		}
@@ -680,7 +683,7 @@ public class ReportWebsite extends Report {
 			    	p.appendChild(html.br());
 				}
 				getReferenceLink(famRef, p, linkPrefix, html, true);
-				processNoteRefs(p, famRef, linkPrefix, indiDir, html);
+				processNoteRefs(p, famRef, linkPrefix, indi.getId(), html);
 				reportUnhandledProperties(famRef, new String[]{"PEDI", "NOTE"});
 			}
 		}
@@ -690,8 +693,6 @@ public class ReportWebsite extends Report {
 		List<PropertyFamilySpouse> famss = indi.getProperties(PropertyFamilySpouse.class);
 		if (!famss.isEmpty()) {
 			for (PropertyFamilySpouse pfs : famss) {
-				// XXX multimedia objects should be in family's directory 
-				// instead	of indiDir, i.e. replace indiDir within this loop
 				Element h2 = html.h2(Gedcom.getName("FAM") + " - ");
 				div2.appendChild(h2);
 				Fam fam = pfs.getFamily();
@@ -699,6 +700,7 @@ public class ReportWebsite extends Report {
 					println(" Reference to invalid family: " + pfs.getValue());
 					continue;
 				}
+
 				Indi spouse = fam.getOtherSpouse(indi);
 				if (spouse != null) {
 					h2.appendChild(html.link(linkPrefix + addressTo(spouse.getId()),getName(spouse)));
@@ -706,7 +708,7 @@ public class ReportWebsite extends Report {
 					h2.appendChild(html.text(translate("unknown")));
 				}
 				// Notes on the reference itself
-				processNoteRefs(h2, pfs, linkPrefix, indiDir, html);
+				processNoteRefs(h2, pfs, linkPrefix, fam.getId(), html);
 				
 				List<String>handledFamProperties = new ArrayList<String>();
 				handledFamProperties.add("HUSB");
@@ -715,7 +717,7 @@ public class ReportWebsite extends Report {
 					// Event tags
 					for (String tag : new String[] {"ENGA", "MARR", "MARB", "MARC", "MARL", "MARS", "EVEN", "ANUL", "CENS", "DIV", "DIVF"}) {
 						for (Property event : fam.getProperties(tag)) {
-							div2.appendChild(processEventDetail(event, linkPrefix, indiDir, html, true));
+							div2.appendChild(processEventDetail(event, linkPrefix, fam.getId(), html, true));
 						}
 						handledFamProperties.add(tag);
 					}
@@ -727,7 +729,7 @@ public class ReportWebsite extends Report {
 						}
 						handledFamProperties.add(tag);
 					}
-					Element images = processMultimediaLink(fam, linkPrefix, indiDir, html, true, false);
+					Element images = processMultimediaLink(fam, linkPrefix, fam.getId(), html, true, false);
 					if (images != null)	div2.appendChild(images);
 					handledFamProperties.add("OBJE");
 					handledFamProperties.add("CHIL"); //See below
@@ -752,7 +754,7 @@ public class ReportWebsite extends Report {
 					/* XXX Not yet handled 
 				    +1 <<LDS_SPOUSE_SEALING>>  {0:M}
 				    */
-					processNumberNoteSourceChangeRest(fam, linkPrefix, div2, indiDir, html, handledFamProperties);
+					processNumberNoteSourceChangeRest(fam, linkPrefix, div2, fam.getId(), html, handledFamProperties);
 				}
 				Indi[] children = fam.getChildren(true);
 				if (children.length > 0) {
@@ -771,7 +773,7 @@ public class ReportWebsite extends Report {
 		handledProperties.add("FAMS");
 
 		if (!isPrivate)
-			processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indiDir, html, handledProperties);
+			processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indi.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		
 		// Link to start and index-page
@@ -800,7 +802,7 @@ public class ReportWebsite extends Report {
 	/**
 	 * Create a document for each source
 	 */
-	protected Html createSourceDoc(Source source, File sourceDir) {
+	protected Html createSourceDoc(Source source) {
 		List<String> handledProperties = new ArrayList<String>();
 		resetNoteAndSourceList();
 		
@@ -834,7 +836,7 @@ public class ReportWebsite extends Report {
 				reportUnhandledProperties(caln, new String[] {"MEDI"});
 			}
 			// Handle notes
-			processNoteRefs(div1, repo, linkPrefix, sourceDir, html);
+			processNoteRefs(div1, repo, linkPrefix, source.getId(), html);
 			
 			reportUnhandledProperties(repo, new String[] {"NOTE", "CALN"});
 		}
@@ -855,7 +857,7 @@ public class ReportWebsite extends Report {
 					p.appendChild(html.text(date.getDisplayValue() + " "));
 				// PLAC
 				Property placeProp = event.getProperty("PLAC");
-				Element place = processPlace(placeProp, linkPrefix, sourceDir, html);
+				Element place = processPlace(placeProp, linkPrefix, source.getId(), html);
 				if (place != null) p.appendChild(place);
 				reportUnhandledProperties(event, new String[] {"DATE", "PLAC"});
 			}
@@ -863,13 +865,13 @@ public class ReportWebsite extends Report {
 			if (agency != null) {
 				div1.appendChild(html.p(Gedcom.getName("AGNC") + ": " + agency.getDisplayValue()));
 			}
-			this.processNoteRefs(div1, data, linkPrefix, sourceDir, html);
+			this.processNoteRefs(div1, data, linkPrefix, source.getId(), html);
 			reportUnhandledProperties(data, new String[] {"EVEN", "AGNC", "NOTE"});
 		}
 		handledProperties.add("DATA");
 		
 		// OBJE - Images etc
-		Element images = processMultimediaLink(source, linkPrefix, sourceDir, html, false, false);
+		Element images = processMultimediaLink(source, linkPrefix, source.getId(), html, false, false);
 		if (images != null) {			
 			div1.appendChild(html.h2(translate("images")));
 			div1.appendChild(images);
@@ -880,7 +882,7 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(div2);
 		processReferences(source, linkPrefix, div2, html, handledProperties);
 		
-		processNumberNoteSourceChangeRest(source, linkPrefix, div1, sourceDir, html, handledProperties);
+		processNumberNoteSourceChangeRest(source, linkPrefix, div1, source.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 
 		bodyNode.appendChild(backlink(listSourceFileName, linkPrefix, html));
@@ -888,7 +890,7 @@ public class ReportWebsite extends Report {
 		return html;
 	}
 
-	protected Html createRepoDoc(Repository repo, File repoDir) {
+	protected Html createRepoDoc(Repository repo) {
 		List<String> handledProperties = new ArrayList<String>();
 		String linkPrefix = relativeLinkPrefix(repo.getId());
 		resetNoteAndSourceList();
@@ -910,7 +912,7 @@ public class ReportWebsite extends Report {
 		processReferences(repo, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 		
-		processNumberNoteSourceChangeRest(repo, linkPrefix, div1, repoDir, html, handledProperties);
+		processNumberNoteSourceChangeRest(repo, linkPrefix, div1, repo.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 
 		bodyNode.appendChild(backlink(listRepositoryFileName, linkPrefix, html));
@@ -918,7 +920,7 @@ public class ReportWebsite extends Report {
 		return html;
 	}
 
-	protected Html createMultimediaDoc(Media object, File objectDir) {
+	protected Html createMultimediaDoc(Media object) {
 		List<String> handledProperties = new ArrayList<String>();
 		String linkPrefix = relativeLinkPrefix(object.getId());
 		resetNoteAndSourceList();
@@ -979,6 +981,7 @@ public class ReportWebsite extends Report {
 			// Copy the file to dstDir
 			File srcFile = file.getFile();
 			if (srcFile != null) {
+				File objectDir = new File(destDir, addressToDir(object.getId()));
 				File dstFile = new File(objectDir, srcFile.getName());
 				File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
 				try {
@@ -1019,14 +1022,14 @@ public class ReportWebsite extends Report {
 		processReferences(object, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 
-		processNumberNoteSourceChangeRest(object, linkPrefix, div1, objectDir, html, handledProperties);
+		processNumberNoteSourceChangeRest(object, linkPrefix, div1, object.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		bodyNode.appendChild(backlink(null, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
 	
-	protected Html createNoteDoc(Note note, File noteDir) {
+	protected Html createNoteDoc(Note note) {
 		List<String> handledProperties = new ArrayList<String>();
 		String linkPrefix = relativeLinkPrefix(note.getId());
 		resetNoteAndSourceList();
@@ -1048,14 +1051,14 @@ public class ReportWebsite extends Report {
 		processReferences(note, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 		
-		processNumberNoteSourceChangeRest(note, linkPrefix, div1, noteDir, html, handledProperties);
+		processNumberNoteSourceChangeRest(note, linkPrefix, div1, note.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		bodyNode.appendChild(backlink(null, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
 
-	protected Html createSubmitterDoc(Submitter submitter, File submitterDir) {
+	protected Html createSubmitterDoc(Submitter submitter) {
 		List<String> handledProperties = new ArrayList<String>();
 		String linkPrefix = relativeLinkPrefix(submitter.getId());
 		resetNoteAndSourceList();
@@ -1077,7 +1080,7 @@ public class ReportWebsite extends Report {
 		processSimpleTag(submitter, "LANG", div1, html, handledProperties);
 		
 		// OBJE - Images etc
-		Element images = processMultimediaLink(submitter, linkPrefix, submitterDir, html, true, false);
+		Element images = processMultimediaLink(submitter, linkPrefix, submitter.getId(), html, true, false);
 		if (images != null) div1.appendChild(images);
 		handledProperties.add("OBJE");
 		
@@ -1086,7 +1089,7 @@ public class ReportWebsite extends Report {
 		processReferences(submitter, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 
-		processNumberNoteSourceChangeRest(submitter, linkPrefix, div1, submitterDir, html, handledProperties);
+		processNumberNoteSourceChangeRest(submitter, linkPrefix, div1, submitter.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 		bodyNode.appendChild(backlink(null, linkPrefix, html));
 		makeFooter(bodyNode, html);
@@ -1210,8 +1213,10 @@ public class ReportWebsite extends Report {
 	 * @param smallThumbs Making the thumbs really small (intended for family images)
 	 * @return paragraph with images, or null
 	 */
-	protected Element processMultimediaLink(Property prop, String linkPrefix, File dstDir,
+	protected Element processMultimediaLink(Property prop, String linkPrefix, String id,
 			Html html, boolean smallThumbs, boolean makeGalleryImage) {
+		File currentObjectDir = new File(destDir, addressToDir(id));
+		if (!currentObjectDir.exists()) currentObjectDir.mkdirs(); //needed on for example family images 
 		Property[] objects = prop.getProperties("OBJE");
 		if (objects.length == 0) return null;
 		Element p = html.p();
@@ -1222,12 +1227,35 @@ public class ReportWebsite extends Report {
 				Media media = (Media)((PropertyMedia)objects[i]).getTargetEntity();
 				if (media != null) {
 					if (media.getFile() != null) {
-						// XXX Check if the thumb exist first, otherwise just make a text link.
-						// XXX Ugly code: 
-						// Assume just one image, even though gedcom 551 says it can be multiple
+						// Check if the thumb exist first, otherwise just make a text link.
+						File mediaDir = new File(destDir, addressToDir(media.getId()));
+						File thumbFile = new File(mediaDir, "thumb_" + media.getFile().getName());
+						// XXX Ugly code: Assume just one image, even though gedcom 551 says it can be multiple
 						// The GenJ code seems to assume just one.
-						p.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
-								html.img(linkPrefix + addressToDir(media.getId()) + "thumb_" + media.getFile().getName(), media.getTitle())));
+						if (thumbFile.exists()) {
+							p.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
+									html.img(linkPrefix + addressToDir(media.getId()) + "thumb_" + media.getFile().getName(), media.getTitle())));
+							// For the gallery
+							if (makeGalleryImage) {
+								File galleryImage = new File(currentObjectDir, "gallery.jpg");
+								File dstFile = media.getFile();
+								try {
+									if (!galleryImage.exists() || dstFile.lastModified() > galleryImage.lastModified()) {
+										makeThumb(dstFile, 50, 70, galleryImage);
+									}
+									makeGalleryImage = false;
+									if (prop instanceof Indi) personsWithImage.add((Indi)prop); // Add to the list of persons displayed in the gallery
+								} catch (Exception e) {
+									println("Making gallery thumb of image failed: " + dstFile.getAbsolutePath() + 
+											" Error: " + e.getMessage());
+								}
+							}
+						} else {
+							p.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
+									media.getTitle()));
+						}
+						processNoteRefs(p, media, linkPrefix, id, html);
+						processSourceRefs(p, media, linkPrefix, id, html);
 					} else {
 						println(" Media references are not handled yet...");
 					}
@@ -1267,7 +1295,7 @@ public class ReportWebsite extends Report {
 					// Copy the file to dstDir
 					File srcFile = file.getFile();
 					if (srcFile != null) {
-						File dstFile = new File(dstDir, srcFile.getName());
+						File dstFile = new File(currentObjectDir, srcFile.getName());
 						File thumbFile = new File(dstFile.getParentFile(), "thumb_" + dstFile.getName());
 						try {
 							if (!dstFile.exists() || srcFile.lastModified() > dstFile.lastModified()) {
@@ -1304,13 +1332,13 @@ public class ReportWebsite extends Report {
 							}
 
 							// Make img-reference to the image or text-link to other
-							if (thumbExist)	p.appendChild(html.link(dstFile.getName(), html.img(thumbFile.getName(), title)));
-							else p.appendChild(html.link(dstFile.getName(), title));
+							if (thumbExist)	p.appendChild(html.link(linkPrefix + addressToDir(id) + dstFile.getName(), html.img(linkPrefix + addressToDir(id) + thumbFile.getName(), title)));
+							else p.appendChild(html.link(linkPrefix + addressToDir(id) + dstFile.getName(), title));
 						} catch (IOException e) {
 							println(" Error while copying file: " +	srcFile.getName() + 
 									" Error: " + e.getMessage());
 						}
-						processNoteRefs(p, objects[i], linkPrefix, dstDir, html);
+						processNoteRefs(p, objects[i], linkPrefix, id, html);
 						reportUnhandledProperties(objects[i], new String[]{"FILE", "TITL", "FORM", "NOTE"});
 					} else {
 						println(" FILE ref but no file was found");
@@ -1340,12 +1368,12 @@ public class ReportWebsite extends Report {
 	 * @param html
 	 */
 	protected void processNumberNoteSourceChangeRest(Property prop, String linkPrefix,
-			Element appendTo, File destDir, Html html, List<String> handledProperties) {
+			Element appendTo, String id, Html html, List<String> handledProperties) {
 
 		// SOUR
 		if (! prop.getTag().equals("SOUR")) {
 			Element sourceP = html.p(); 
-			processSourceRefs(sourceP, prop, linkPrefix, destDir, html);
+			processSourceRefs(sourceP, prop, linkPrefix, id, html);
 			if (sourceP.hasChildNodes()) {
 				appendTo.appendChild(html.h2(Gedcom.getName("SOUR", true)));
 				appendTo.appendChild(sourceP);
@@ -1355,7 +1383,7 @@ public class ReportWebsite extends Report {
 
 		if (! prop.getTag().equals("NOTE")) {
 			Element noteP = html.p(); 
-			processNoteRefs(noteP, prop, linkPrefix, destDir, html);
+			processNoteRefs(noteP, prop, linkPrefix, id, html);
 			if (noteP.hasChildNodes()) {
 				appendTo.appendChild(html.h2(Gedcom.getName("NOTE", true)));
 				appendTo.appendChild(noteP);
@@ -1390,7 +1418,7 @@ public class ReportWebsite extends Report {
 					" " + lastUpdate.getDisplayValue());
 			appendTo.appendChild(p);
 			handledProperties.add("CHAN");
-			processNoteRefs(p, lastUpdate, linkPrefix, destDir, html);
+			processNoteRefs(p, lastUpdate, linkPrefix, id, html);
 			reportUnhandledProperties(lastUpdate, new String[] {"NOTE"});
 			p.appendChild(html.br()); 
 			p.appendChild(html.text(translate("pageCreated") + 
@@ -1446,12 +1474,12 @@ public class ReportWebsite extends Report {
 	}
 	
 	protected void processOtherEventTag(String tag, Property prop, String linkPrefix,
-			File dstDir, Element appendTo, Html html) {
+			String id, Element appendTo, Html html) {
 		Property[] subProp = prop.getProperties(tag);
 		if (subProp.length == 0) return;
 		appendTo.appendChild(html.h2(Gedcom.getName(tag)));
 		for (int i = 0; i < subProp.length; i++){
-			appendTo.appendChild(processEventDetail(subProp[i], linkPrefix, dstDir, html, false));
+			appendTo.appendChild(processEventDetail(subProp[i], linkPrefix, id, html, false));
 		}
 	}
 
@@ -1459,7 +1487,7 @@ public class ReportWebsite extends Report {
 	 * Handles both EVEN and some other types BIRT, DEAT, BURY, etc
 	 */
 	protected Element processEventDetail(Property event, String linkPrefix, 
-			File dstDir, Html html, boolean displayTagDescription) {
+			String id, Html html, boolean displayTagDescription) {
 		if (event == null) return null;
 		Element p = html.p();
 
@@ -1481,7 +1509,7 @@ public class ReportWebsite extends Report {
 		if (date != null) 
 			p.appendChild(html.text(date.getDisplayValue() + " "));
 		// PLAC - PLACE STRUCTURE
-		Element place = processPlace(event.getProperty("PLAC"), linkPrefix, dstDir, html);
+		Element place = processPlace(event.getProperty("PLAC"), linkPrefix, id, html);
 		if (place != null) p.appendChild(place);
 		// ADDRESS_STRUCTURE
 		List<String> handledProperties = new ArrayList<String>(); // XXX Use this instead? (addr can handle mote props)
@@ -1490,9 +1518,9 @@ public class ReportWebsite extends Report {
 		// XXX RESN (In gedcom 5.5.1)
 		
 		// SOUR - Sources
-		processSourceRefs(p, event, linkPrefix, dstDir, html);
+		processSourceRefs(p, event, linkPrefix, id, html);
 		// NOTE
-		processNoteRefs(p, event, linkPrefix, dstDir, html);
+		processNoteRefs(p, event, linkPrefix, id, html);
 		// AGE, AGNC, CAUS
 		for (String tag : new String[] {"AGE", "AGNC", "CAUS", "RELI"}) {
 			Property tagProp = event.getProperty(tag);
@@ -1528,7 +1556,7 @@ public class ReportWebsite extends Report {
 			}
 		}
 		// OBJE - MULTIMEDIA
-		Element pObj = processMultimediaLink(event, linkPrefix, dstDir, html, true, false);
+		Element pObj = processMultimediaLink(event, linkPrefix, id, html, true, false);
 		if (pObj != null && pObj.hasChildNodes()) {
 			NodeList nl = pObj.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) p.appendChild(nl.item(i));
@@ -1558,13 +1586,13 @@ public class ReportWebsite extends Report {
 		}
 	}
 	
-	protected Element processPlace(Property place, String linkPrefix, File dstDir, Html html) {
+	protected Element processPlace(Property place, String linkPrefix, String id, Html html) {
 		if (place == null) return null;
 		Element span = html.span("place", placeDisplayFormat.equals("all") ? place.getValue() : place.format(placeDisplayFormat).replaceAll("^(,|(, ))*", "").trim());
 		// SOUR - Sources
-		processSourceRefs(span, place, linkPrefix, dstDir, html);
+		processSourceRefs(span, place, linkPrefix, id, html);
 		// NOTE
-		processNoteRefs(span, place, linkPrefix, dstDir, html);
+		processNoteRefs(span, place, linkPrefix, id, html);
 		// Variants of the name of the place
 		for (String subTag : new String[] {"FONE", "ROMN"}) {
 			Property fone = place.getProperty(subTag);
@@ -1653,7 +1681,7 @@ public class ReportWebsite extends Report {
 	/**
 	 * Adds references in the source list and adds a superscript-link on appendTo 
 	 */
-	protected void processSourceRefs(Element appendTo, Property prop, String linkPrefix, File dstDir, Html html) {
+	protected void processSourceRefs(Element appendTo, Property prop, String linkPrefix, String id, Html html) {
 		Property[] sourceRefs = prop.getProperties("SOUR");
 		if (sourceRefs.length > 0) {
 	    	if (sourceDiv == null) {
@@ -1663,7 +1691,7 @@ public class ReportWebsite extends Report {
 			Element sup = html.sup("source");
 			for (Property sourceRef : sourceRefs) {
 				if (sup.hasChildNodes()) sup.appendChild(html.text(", "));
-				sup.appendChild(addSourceRef(sourceRef, linkPrefix, dstDir, html));
+				sup.appendChild(addSourceRef(sourceRef, linkPrefix, id, html));
 			}
 			appendTo.appendChild(sup);
 		}
@@ -1674,7 +1702,7 @@ public class ReportWebsite extends Report {
 	 * @param sourceRef
 	 * @return
 	 */
-	protected Element addSourceRef(Property sourceRef, String linkPrefix, File dstDir, Html html) {
+	protected Element addSourceRef(Property sourceRef, String linkPrefix, String id, Html html) {
 		int number = sourceCounter++;
 		Element p = html.p();
 		sourceDiv.appendChild(p);
@@ -1729,7 +1757,7 @@ public class ReportWebsite extends Report {
 	       		reportUnhandledProperties(quay, null);
 			}
 			// OBJE, in new paragraph
-			Element pObj = processMultimediaLink(sourceRef, linkPrefix, dstDir, html, true, false);
+			Element pObj = processMultimediaLink(sourceRef, linkPrefix, id, html, true, false);
 			if (pObj != null) sourceDiv.appendChild(pObj);
 					
 	   		reportUnhandledProperties(sourceRef, new String[] {"PAGE", "EVEN", "DATA", "QUAY", "OBJE", "NOTE"});
@@ -1745,14 +1773,14 @@ public class ReportWebsite extends Report {
 	   		reportUnhandledProperties(sourceRef, new String[] {"TEXT", "NOTE"});
 		}
 		// Notes
-		processNoteRefs(p, sourceRef, linkPrefix, dstDir, html);  
+		processNoteRefs(p, sourceRef, linkPrefix, id, html);  
 		return html.link("#S" + number, "S" + number);
 	}
 
 	/**
 	 * Adds references in the notes list and adds a superscript-link on appendTo 
 	 */
-	protected void processNoteRefs(Element appendTo, Property prop, String linkPrefix, File dstDir, Html html) {
+	protected void processNoteRefs(Element appendTo, Property prop, String linkPrefix, String id, Html html) {
 		Property[] noteRefs = prop.getProperties("NOTE");
 		if (noteRefs.length > 0) {
 	    	if (noteDiv == null) {
@@ -1762,7 +1790,7 @@ public class ReportWebsite extends Report {
 			Element sup = html.sup("note");
 			for (Property noteRef : noteRefs) {
 				if (sup.hasChildNodes()) sup.appendChild(html.text(", "));
-				sup.appendChild(addNoteRef(noteRef, linkPrefix, dstDir, html));
+				sup.appendChild(addNoteRef(noteRef, linkPrefix, id, html));
 			}
 			appendTo.appendChild(sup);
 		}
@@ -1776,7 +1804,7 @@ public class ReportWebsite extends Report {
 	 * @param html
 	 * @return
 	 */
-	protected Element addNoteRef(Property noteRef, String linkPrefix, File dstDir,
+	protected Element addNoteRef(Property noteRef, String linkPrefix, String id,
 			Html html) {
 		int number = noteCounter++;
 		Element p = html.p();
@@ -1794,7 +1822,7 @@ public class ReportWebsite extends Report {
 			appendDisplayValue(p, noteRef, false, html);
 		}
 		// Sources
-		processSourceRefs(p, noteRef, linkPrefix, dstDir, html);
+		processSourceRefs(p, noteRef, linkPrefix, id, html);
 	
 		reportUnhandledProperties(noteRef, new String[]{"SOUR"});
 		return html.link("#N" + number, "N" + number);
