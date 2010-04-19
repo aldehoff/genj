@@ -1812,7 +1812,7 @@ public class ReportWebsite extends Report {
 			Iterator lineIter = ((MultiLineProperty)prop).getLineIterator();
 			boolean firstLine = true;
 			do {
-				if (! firstLine && ! ignoreNewLine) appendTo.appendChild(html.br());
+				if (! firstLine && ! ignoreNewLine && lineIter.getTag().equals("CONT")) appendTo.appendChild(html.br());
 				appendTo.appendChild(html.text(lineIter.getValue()));
 				firstLine = false;
 			} while (lineIter.next());
