@@ -255,11 +255,11 @@ public class ReportWebsite extends Report {
 		copyFile(sourceFile, dstFile);
 		// Copy icons from the genj-images dir.
 		try {
-			copyFile(new File("images/genj/gedcom/images/Indi.png"),
+			copyFile(new File(getFile().getParentFile(), "html/Indi.png"),
 					new File(dir, "Indi.png"));
-			copyFile(new File("images/genj/gedcom/images/Source.png"),
+			copyFile(new File(getFile().getParentFile(), "html/Source.png"),
 					new File(dir, "Source.png"));
-			copyFile(new File("images/genj/gedcom/images/Repository.png"),
+			copyFile(new File(getFile().getParentFile(), "html/Repository.png"),
 					new File(dir, "Repository.png"));
 		} catch (Exception e) {
 			println(" Failed to copy icons. Error:" + e.getMessage());
