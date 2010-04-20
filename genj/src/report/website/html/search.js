@@ -46,6 +46,25 @@ function displayResult() {
 	return false; // Do not submit form...
 }
 
+function jumpToSosa() {
+	var sosaId = document.getElementById('searchSosa').value;
+	for (i = 0; i < searchValues.length; i++) {
+		if (searchValues[i][3] == sosaId) {
+			document.location.href = makeLinkToIndi(searchValues[i][1]);
+			return false;
+		}
+	}
+	var result = document.getElementById('searchResult');
+	// Write no hits found
+	while (result.hasChildNodes()) { 
+		result.removeChild(result.lastChild);
+	}
+	var resultP = document.createElement("p");
+	result.appendChild(resultP);
+	resultP.appendChild(document.createTextNode("{noSearchResults}"));
+	return false;
+}
+
 function makeLinkToIndi(id) {
 	var link = "";
 	var numbers = 2;

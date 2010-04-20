@@ -87,6 +87,12 @@ public class Html {
 		return input;
 	}
 
+	public Element input(String id, String name, int size) {
+		Element input = input(id, name);
+		input.setAttribute("size", Integer.toString(size));
+		return input;
+	}
+
 	public Element button(String value, String onclick) {
 		Element input = doc.createElement("input");
 		input.setAttribute("type", "button");

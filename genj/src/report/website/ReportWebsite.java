@@ -369,19 +369,18 @@ public class ReportWebsite extends Report {
 		searchP.appendChild(html.input("searchName", "name")); // id, name
 		searchP.appendChild(html.button(translate("searchButton"), "displayResult();")); // value, onclick
 		div1.appendChild(searchForm);
+		if (displaySosaStradonitz) {
+			Element searchSosaForm = html.form(null, "javascript:jumpToSosa();", "return jumpToSosa();"); //id, onsubmit
+			Element searchSosaP = html.p(translate("sosaNumber") + " ");
+			searchSosaForm.appendChild(searchSosaP);
+			searchSosaP.appendChild(html.input("searchSosa", "sosa", 5)); // id, name
+			searchSosaP.appendChild(html.button(translate("searchButton"), "jumpToSosa();")); // value, onclick
+			div1.appendChild(searchSosaForm);
+		}
 		Element divResult = html.divId("searchResult");
 		divResult.appendChild(html.text(" "));
 		div1.appendChild(divResult);
 		
-/*		<a href="#" onclick="displaySimple();">Simple</a> 
-		<a href="#" onclick="displayAdvanced();">Advanced</a>
-		<div id="searchSimple"><form onsubmit="displayResult();">Name <input id="searchName" name="name"/><input onclick="displayResult();" type="button" value="Search"/></form></div>
-		<div id="searchAdvanced" style="display:none;"><form>
-		First name <input name="firstname"/><br />
-		Surname <input name="surname"/><br />
-		</form></div>
-		<div id="searchResult" style="display:none;"></div>*/
-
 		div1.appendChild(html.h2(translate("personGallery")));
 		for (Indi indi : personsWithImage) { 
 			div1.appendChild(html.link(addressTo(indi.getId()), html.img(addressToDir(indi.getId()) + "gallery.jpg", getName(indi))));				
