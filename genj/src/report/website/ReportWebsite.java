@@ -254,12 +254,16 @@ public class ReportWebsite extends Report {
 		File dstFile = new File(dir, "bkgr.png");
 		copyFile(sourceFile, dstFile);
 		// Copy icons from the genj-images dir.
-		copyFile(new File("images/genj/gedcom/images/Indi.png"),
-				new File(dir, "Indi.png"));
-		copyFile(new File("images/genj/gedcom/images/Source.png"),
-				new File(dir, "Source.png"));
-		copyFile(new File("images/genj/gedcom/images/Repository.png"),
-				new File(dir, "Repository.png"));
+		try {
+			copyFile(new File("images/genj/gedcom/images/Indi.png"),
+					new File(dir, "Indi.png"));
+			copyFile(new File("images/genj/gedcom/images/Source.png"),
+					new File(dir, "Source.png"));
+			copyFile(new File("images/genj/gedcom/images/Repository.png"),
+					new File(dir, "Repository.png"));
+		} catch (Exception e) {
+			println(" Failed to copy icons. Error:" + e.getMessage());
+		}
 	}
 
 	/**
