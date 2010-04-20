@@ -659,8 +659,8 @@ public class ReportWebsite extends Report {
 			// RESN
 			processSimpleTag(indi, "RESN", div1, html, handledProperties);
 			
-			/* XXX Not yet handled
-		       +1 <<LDS_INDIVIDUAL_ORDINANCE>>  {0:M} - Weird things...
+			/* Ignoring
+		       +1 <<LDS_INDIVIDUAL_ORDINANCE>>  {0:M}
 			 */
 		}
 		
@@ -761,7 +761,7 @@ public class ReportWebsite extends Report {
 						handledFamProperties.add(tag);  
 					}
 
-					/* XXX Not yet handled 
+					/* Ignoring 
                        +1 <<LDS_SPOUSE_SEALING>>  {0:M}
 				    */
 					processNumberNoteSourceChangeRest(fam, linkPrefix, div2, fam.getId(), html, handledFamProperties);
@@ -1240,7 +1240,7 @@ public class ReportWebsite extends Report {
 						// Check if the thumb exist first, otherwise just make a text link.
 						File mediaDir = new File(destDir, addressToDir(media.getId()));
 						File thumbFile = new File(mediaDir, "thumb_" + media.getFile().getName());
-						// XXX Ugly code: Assume just one image, even though gedcom 551 says it can be multiple
+						// XXX Assume just one image, even though gedcom 551 says it can be multiple
 						// The GenJ code seems to assume just one.
 						if (thumbFile.exists()) {
 							p.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
@@ -1768,7 +1768,7 @@ public class ReportWebsite extends Report {
 			Property quay = sourceRef.getProperty("QUAY");
 			if (quay != null) {
 				p.appendChild(html.text(" " + Gedcom.getName("QUAY") + ": " + 
-						quay.getDisplayValue())); // XXX Check out what this turns into (0..3) should be translated into something readable
+						quay.getDisplayValue()));
 	       		reportUnhandledProperties(quay, null);
 			}
 			// OBJE, in new paragraph
