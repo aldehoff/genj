@@ -60,11 +60,10 @@ div.backlink {
 }
 
 div.footer {
+	clear: both;
 	font-size: 80%;
 	font-style: italic;
-	position: fixed;
-	bottom: 0.5ex;
-	right: 1em;
+	float: right;
 }
 
 
