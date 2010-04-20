@@ -655,6 +655,13 @@ public class ReportWebsite extends Report {
 			Element p = processMultimediaLink(indi, linkPrefix, indi.getId(), html, false, true);
 			if (p != null) div1.appendChild(p);
 			handledProperties.add("OBJE");
+
+			// RESN
+			processSimpleTag(indi, "RESN", div1, html, handledProperties);
+			
+			/* XXX Not yet handled
+		       +1 <<LDS_INDIVIDUAL_ORDINANCE>>  {0:M} - Weird things...
+			 */
 		}
 		
 		// *** Family div ***
@@ -725,7 +732,7 @@ public class ReportWebsite extends Report {
 						handledFamProperties.add(tag);
 					}
 					// Single tags
-					for (String tag : new String[] {"NCHI"}) {
+					for (String tag : new String[] {"NCHI", "RESN"}) {
 						Property singleTag = fam.getProperty(tag);
 						if (singleTag != null) {
 							div2.appendChild(html.text(Gedcom.getName(tag) + ": " + singleTag.getDisplayValue()));
@@ -755,7 +762,7 @@ public class ReportWebsite extends Report {
 					}
 
 					/* XXX Not yet handled 
-				    +1 <<LDS_SPOUSE_SEALING>>  {0:M}
+                       +1 <<LDS_SPOUSE_SEALING>>  {0:M}
 				    */
 					processNumberNoteSourceChangeRest(fam, linkPrefix, div2, fam.getId(), html, handledFamProperties);
 				}
@@ -1493,6 +1500,7 @@ public class ReportWebsite extends Report {
 			String id, Html html, boolean displayTagDescription) {
 		if (event == null) return null;
 		Element p = html.p();
+		List<String> handledProperties = new ArrayList<String>();
 
 		if (displayTagDescription) {
 			String description = "";
@@ -1504,6 +1512,7 @@ public class ReportWebsite extends Report {
 		if (type != null) {
 			p.appendChild(html.text(type.getDisplayValue() + " "));
 		}
+		handledProperties.add("TYPE");
 
 		p.appendChild(html.text(event.getDisplayValue() + " "));
 		
@@ -1511,26 +1520,27 @@ public class ReportWebsite extends Report {
 		PropertyDate date = (PropertyDate)event.getProperty("DATE");
 		if (date != null) 
 			p.appendChild(html.text(date.getDisplayValue() + " "));
+		handledProperties.add("DATE");
 		// PLAC - PLACE STRUCTURE
 		Element place = processPlace(event.getProperty("PLAC"), linkPrefix, id, html);
 		if (place != null) p.appendChild(place);
+		handledProperties.add("PLAC");
 		// ADDRESS_STRUCTURE
-		List<String> handledProperties = new ArrayList<String>(); // XXX Use this instead? (addr can handle mote props)
 		processAddresses(p, event, html, handledProperties, false);
-
-		// XXX RESN (In gedcom 5.5.1)
-		
 		// SOUR - Sources
 		processSourceRefs(p, event, linkPrefix, id, html);
+		handledProperties.add("SOUR");
 		// NOTE
 		processNoteRefs(p, event, linkPrefix, id, html);
-		// AGE, AGNC, CAUS
-		for (String tag : new String[] {"AGE", "AGNC", "CAUS", "RELI"}) {
+		handledProperties.add("NOTE");
+		// AGE, AGNC, CAUS, RELI, RESN
+		for (String tag : new String[] {"AGE", "AGNC", "CAUS", "RELI", "RESN"}) {
 			Property tagProp = event.getProperty(tag);
 			if (tagProp != null) {
 				p.appendChild(html.text(Gedcom.getName(tag) + " " + tagProp.getDisplayValue()));
-				this.reportUnhandledProperties(tagProp, null);
+				reportUnhandledProperties(tagProp, null);
 			}
+			handledProperties.add(tag);
 		}
 		// HUSB:AGE, WIFE:AGE, may exist on Family events
 		for (String tag : new String[] {"HUSB", "WIFE"}) {
@@ -1544,6 +1554,7 @@ public class ReportWebsite extends Report {
 				}
 				reportUnhandledProperties(tagProp, new String[]{"AGE"});
 			}
+			handledProperties.add(tag);
 		}
 		
 		// FAMC, FAMC:ADOP (for those events supporting that)
@@ -1558,14 +1569,15 @@ public class ReportWebsite extends Report {
 				println(event.getTag() + ":FAMC is not a reference:" + event.getValue());
 			}
 		}
+		handledProperties.add("FAMC");
 		// OBJE - MULTIMEDIA
 		Element pObj = processMultimediaLink(event, linkPrefix, id, html, true, false);
 		if (pObj != null && pObj.hasChildNodes()) {
 			NodeList nl = pObj.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) p.appendChild(nl.item(i));
 		}
-		
-		reportUnhandledProperties(event, new String[]{"DATE", "PLAC", "TYPE", "NOTE", "SOUR", "ADDR", "PHON", "EMAIL", "FAX", "WWW", "AGE", "AGNC", "CAUS", "FAMC", "OBJE"});
+		handledProperties.add("OBJE");
+		reportUnhandledProperties(event, handledProperties.toArray(new String[0]));
 		return p;
 	}
 
