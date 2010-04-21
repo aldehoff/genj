@@ -1983,6 +1983,7 @@ public class ReportWebsite extends Report {
 	 * @return true if equal, false if not equal or not sure
 	 */
 	protected boolean propertyStructEquals(Property a, Property b) {
+		if (! a.getClass().equals(b.getClass())) return false;
 		if (a.compareTo(b) != 0) return false; 
 		Property[] aProps = a.getProperties();  
 		Property[] bProps = b.getProperties();  
