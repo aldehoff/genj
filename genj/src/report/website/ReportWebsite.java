@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.channels.FileChannel;
 import java.security.InvalidParameterException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -214,15 +215,16 @@ public class ReportWebsite extends Report {
 		}
 
 		// Make a start page and indexes
+		Collator collator = gedcom.getCollator();
 		Arrays.sort(indis, new PropertyComparator("INDI:NAME"));
 		Arrays.sort(sources, new EntityComparator());
 		Arrays.sort(repos, new EntityComparator());
 		makeStartpage(gedcom, destDir, indis, sources, repos, rootIndi);
-		makePersonIndex(destDir, indis);
+		makePersonIndex(destDir, indis, collator);
 		if (sources.length > 0)
-			makeEntityIndex(destDir, sources, "sourceIndex", listSourceFileName);
+			makeEntityIndex(destDir, sources, "sourceIndex", listSourceFileName, collator);
 		if (repos.length > 0)
-			makeEntityIndex(destDir, repos, "repositoryIndex", listRepositoryFileName);
+			makeEntityIndex(destDir, repos, "repositoryIndex", listRepositoryFileName, collator);
 		makeSearchDataPage(destDir, indis);
 		println("Report done!");
 	}
@@ -327,6 +329,7 @@ public class ReportWebsite extends Report {
 	
 	protected void makeStartpage(Gedcom gedcom, File dir, Entity[] indis, Entity[] sources, Entity[] repos, Indi rootIndi) {
 		println("Making start-page");
+		Collator collator = gedcom.getCollator();
 		File startFile = new File(dir.getAbsolutePath() + File.separator + reportIndexFileName);
 		Html html = new Html(reportTitle, "");
 		Document doc = html.getDoc();
@@ -353,7 +356,7 @@ public class ReportWebsite extends Report {
 			String lastname = ((Indi)indi).getLastName();  
 			String letter = "?";
 			if (lastname != null && !lastname.isEmpty()) letter = lastname.substring(0, 1); // Get first letter of last name
-			if (! letter.equalsIgnoreCase(lastLetter)) {
+			if (! collator.equals(letter, lastLetter)) {
 				indiP.appendChild(html.link(listPersonFileName + "#" + letter, letter));				
 				indiP.appendChild(html.text(", "));				
 				lastLetter = letter;
@@ -397,7 +400,7 @@ public class ReportWebsite extends Report {
 			lastLetter = "";
 			for (Entity source : sources) { 
 				String letter = source.toString().substring(0, 1); // Get first letter
-				if (! letter.equalsIgnoreCase(lastLetter)) {
+				if (! collator.equals(letter, lastLetter)) {
 					sourceP.appendChild(html.link(listSourceFileName + "#" + letter, letter));				
 					sourceP.appendChild(html.text(", "));				
 					lastLetter = letter;
@@ -413,7 +416,7 @@ public class ReportWebsite extends Report {
 			lastLetter = "";
 			for (Entity repo : repos) { 
 				String letter = repo.toString().substring(0, 1); // Get first letter
-				if (! letter.equalsIgnoreCase(lastLetter)) {
+				if (! collator.equals(letter, lastLetter)) {
 					repoP.appendChild(html.link(listRepositoryFileName + "#" + letter, letter));				
 					repoP.appendChild(html.text(", "));				
 					lastLetter = letter;
@@ -438,7 +441,7 @@ public class ReportWebsite extends Report {
 		html.toFile(startFile);
 	}
 
-	protected void makeEntityIndex(File dir, Entity[] sources, String name, String fileName) {
+	protected void makeEntityIndex(File dir, Entity[] sources, String name, String fileName, Collator collator) {
 		name = translate(name);
 		println("Making "+ name);
 		File startFile = new File(dir.getAbsolutePath() + File.separator + fileName);
@@ -453,7 +456,7 @@ public class ReportWebsite extends Report {
 		for (Entity source : sources) { 
 			String text = source.toString();
 			String letter = text.substring(0, 1); // Get first letter
-			if (! letter.equalsIgnoreCase(lastLetter)) {
+			if (! collator.equals(letter, lastLetter)) {
 				div1.appendChild(html.anchor(letter));
 				div1.appendChild(html.h2(letter));
 				lastLetter = letter;
@@ -465,7 +468,7 @@ public class ReportWebsite extends Report {
 		html.toFile(startFile);
 	}
 
-	protected void makePersonIndex(File dir, Entity[] indis) {
+	protected void makePersonIndex(File dir, Entity[] indis, Collator collator) {
 		println("Making person index");
 		File startFile = new File(dir.getAbsolutePath() + File.separator + listPersonFileName);
 		Html html = new Html(translate("personIndex"), "");
@@ -480,7 +483,7 @@ public class ReportWebsite extends Report {
 			String lastname = ((Indi)indi).getLastName();  
 			String letter = "?";
 			if (lastname != null && !lastname.isEmpty()) letter = lastname.substring(0, 1); // Get first letter of last name
-			if (! letter.equalsIgnoreCase(lastLetter)) {
+			if (! collator.equals(letter, lastLetter)) {
 				div1.appendChild(html.anchor(letter));
 				div1.appendChild(html.h2(letter));
 				lastLetter = letter;
