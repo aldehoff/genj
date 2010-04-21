@@ -67,6 +67,7 @@ import org.w3c.dom.NodeList;
 
 public class ReportWebsite extends Report {
 	//public boolean reportPrivateData = false;
+	public boolean reportNotesInFullOnEntity = false;
 	public boolean reportLinksToMap = true;
 	public boolean reportNowLiving = false;
 	public String reportIndexFileName = "index.html";
@@ -1831,7 +1832,14 @@ public class ReportWebsite extends Report {
 		if (noteRef instanceof PropertyNote) {
 			// Reference
 			Note note = (Note)((PropertyNote)noteRef).getTargetEntity();
-			p.appendChild(html.link(linkPrefix + addressTo(note.getId()), note.toString()));
+			if (reportNotesInFullOnEntity) {
+				// Get the text
+				appendDisplayValue(p, note, false, html);
+				// Sources
+				processSourceRefs(p, note, linkPrefix, id, html);
+			} else {
+				p.appendChild(html.link(linkPrefix + addressTo(note.getId()), note.toString()));
+			}
 		} else {
 			// Direct text
 			appendDisplayValue(p, noteRef, false, html);
