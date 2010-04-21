@@ -976,7 +976,7 @@ public class BlueprintRenderer {
       Property prop = getProperty();
       if (prop==null)
         return new Dimension();
-      if (prop instanceof MultiLineProperty)
+      if (!(prop instanceof Entity)&&prop instanceof MultiLineProperty)
         return getSize((MultiLineProperty)prop);
       if (prop instanceof PropertyFile || prop instanceof PropertyBlob)
         return MediaRenderer.getSize(prop, getGraphics());
