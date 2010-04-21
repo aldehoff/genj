@@ -75,6 +75,7 @@ public class ReportWebsite extends Report {
 	public String listPersonFileName = "listing.html";
 	public String listSourceFileName = "sources.html";
 	public String listRepositoryFileName = "repositories.html";
+	public boolean reportDisplayIndividualMap = true;
 	
     public String reportTitle = "Relatives";
     protected String reportWelcomeText = "On these pages my ancestors are presented";
@@ -566,7 +567,7 @@ public class ReportWebsite extends Report {
 	protected String makeDescriptionEvent(PropertyEvent event) {
 		if (event == null) return null;
 		Property date = event.getProperty("DATE");
-		Property place = event.getProperty("PLACE");
+		Property place = event.getProperty("PLAC");
 		if (date == null && place == null) return null;
 		if (date == null) return Gedcom.getName(event.getTag()) + ": " + place.getDisplayValue();	
 		if (place == null) return Gedcom.getName(event.getTag()) + ": " + date.getDisplayValue();
@@ -581,7 +582,9 @@ public class ReportWebsite extends Report {
 	protected Html createIndiDoc(Indi indi) {
 		List<String> handledProperties = new ArrayList<String>();
 		resetNoteAndSourceList();
-				
+
+		StringBuffer mapPlaces = new StringBuffer(); 
+		
 		String linkPrefix = relativeLinkPrefix(indi.getId());
 
 		// Find out how much we may display		
@@ -831,8 +834,23 @@ public class ReportWebsite extends Report {
 		}
 		handledProperties.add("FAMS");
 
-		if (!isPrivate)
+		if (!isPrivate) {
 			processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indi.getId(), html, handledProperties);
+
+			// Display individual map, it's not that accurate...
+			// XXX Gather events and show here too, separate by | in url
+			if (reportDisplayIndividualMap) {
+				String birthPlace = getEventMapPosition(indi.getProperty("BIRT"));
+				String deathPlace = getEventMapPosition(indi.getProperty("DEAT"));
+				String url = "http://maps.google.com/maps/api/staticmap?size=200x200&maptype=roadmap&sensor=false&markers=";
+				if (birthPlace != null && deathPlace != null) 
+					div1.appendChild(html.img(url + birthPlace + "|" + deathPlace, ""));
+				if (birthPlace != null && deathPlace == null) 
+					div1.appendChild(html.img(url + birthPlace, ""));
+				if (birthPlace == null && deathPlace != null) 
+					div1.appendChild(html.img(url + deathPlace, ""));
+			}
+		}
 		addNoteAndSourceList(bodyNode);
 		
 		// Link to start and index-page
@@ -841,6 +859,37 @@ public class ReportWebsite extends Report {
 		return html;
 	}
 
+	/**
+	 * Get a string that may be used when linking to map
+	 * @param event
+	 * @return A sting that may be used in google maps 
+	 */
+	protected String getEventMapPosition(Property event) {
+		if (event == null) return null;
+		Property place = event.getProperty("PLAC"); 
+		if (place == null) return null;
+		// Check if there are LATI/LONG and use in first case
+		Property map = place.getProperty("MAP");
+		if (map != null) {
+			String latitude = map.getProperty("LATI").getDisplayValue();
+			String longitude = map.getProperty("LONG").getDisplayValue();
+			if (latitude.startsWith("S") || latitude.startsWith("s")) latitude = "-" + latitude.substring(1);
+			else latitude = latitude.substring(1);
+			if (longitude.startsWith("W") || longitude.startsWith("w")) longitude = "-" + longitude.substring(1);
+			else longitude = longitude.substring(1);
+			return latitude + "," + longitude;
+		}
+		
+		String value = place.getValue();
+		// /Replace chars to make it work with google maps
+		//value.replaceAll("[åääáàÅÄÂÁÀ]", "a");
+		//value.replaceAll("[öôóòÖÔÓÒ]", "o");
+		//value.replaceAll("[ëêéèËÊÉÈ]", "e");
+		value = value.replaceAll("[?&]", "");
+		value = value.replaceAll(" ", "+");
+		return value;
+	}
+	
 	/**
 	 * Construct a name based on PERSONAL_NAME_PIECES
 	 * NICK is not inserted here
