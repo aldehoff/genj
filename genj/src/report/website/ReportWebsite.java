@@ -118,6 +118,9 @@ public class ReportWebsite extends Report {
     protected List<Property> addedNoteProperty = null;
     protected int noteCounter = 0;
 
+    /** Used for building an individual map */
+    protected StringBuffer mapEventLocations = null;
+    
     /** The output directory */
     File destDir = null;
     
@@ -584,13 +587,13 @@ public class ReportWebsite extends Report {
 		List<String> handledProperties = new ArrayList<String>();
 		resetNoteAndSourceList();
 
-		StringBuffer mapPlaces = new StringBuffer(); 
-		
 		String linkPrefix = relativeLinkPrefix(indi.getId());
 
 		// Find out how much we may display		
 		boolean isPrivate = isPrivate(indi); 
-		
+
+		if (! isPrivate) mapEventLocations = new StringBuffer();
+
 		Html html = new Html(getName(indi), linkPrefix);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
@@ -841,17 +844,14 @@ public class ReportWebsite extends Report {
 			// Display individual map, it's not that accurate...
 			// XXX Gather events and show here too, separate by | in url
 			if (reportDisplayIndividualMap) {
-				String birthPlace = getEventMapPosition(indi.getProperty("BIRT"));
-				String deathPlace = getEventMapPosition(indi.getProperty("DEAT"));
-				String url = "http://maps.google.com/maps/api/staticmap?size=200x200&maptype=roadmap&sensor=false&markers=";
-				if (birthPlace != null && deathPlace != null) 
-					div1.appendChild(html.img(url + birthPlace + "|" + deathPlace, ""));
-				if (birthPlace != null && deathPlace == null) 
-					div1.appendChild(html.img(url + birthPlace, ""));
-				if (birthPlace == null && deathPlace != null) 
-					div1.appendChild(html.img(url + deathPlace, ""));
+				if (mapEventLocations != null && mapEventLocations.length() > 0) {
+					String url = "http://maps.google.com/maps/api/staticmap?size=200x200&maptype=roadmap&sensor=false&markers=";
+					div1.appendChild(html.img(url + mapEventLocations.toString(), ""));
+				}
 			}
 		}
+		mapEventLocations = null;
+		
 		addNoteAndSourceList(bodyNode);
 		
 		// Link to start and index-page
@@ -860,37 +860,6 @@ public class ReportWebsite extends Report {
 		return html;
 	}
 
-	/**
-	 * Get a string that may be used when linking to map
-	 * @param event
-	 * @return A sting that may be used in google maps 
-	 */
-	protected String getEventMapPosition(Property event) {
-		if (event == null) return null;
-		Property place = event.getProperty("PLAC"); 
-		if (place == null) return null;
-		// Check if there are LATI/LONG and use in first case
-		Property map = place.getProperty("MAP");
-		if (map != null) {
-			String latitude = map.getProperty("LATI").getDisplayValue();
-			String longitude = map.getProperty("LONG").getDisplayValue();
-			if (latitude.startsWith("S") || latitude.startsWith("s")) latitude = "-" + latitude.substring(1);
-			else latitude = latitude.substring(1);
-			if (longitude.startsWith("W") || longitude.startsWith("w")) longitude = "-" + longitude.substring(1);
-			else longitude = longitude.substring(1);
-			return latitude + "," + longitude;
-		}
-		
-		String value = place.getValue();
-		// /Replace chars to make it work with google maps
-		//value.replaceAll("[åääáàÅÄÂÁÀ]", "a");
-		//value.replaceAll("[öôóòÖÔÓÒ]", "o");
-		//value.replaceAll("[ëêéèËÊÉÈ]", "e");
-		value = value.replaceAll("[?&]", "");
-		value = value.replaceAll(" ", "+");
-		return value;
-	}
-	
 	/**
 	 * Construct a name based on PERSONAL_NAME_PIECES
 	 * NICK is not inserted here
@@ -1622,7 +1591,14 @@ public class ReportWebsite extends Report {
 		handledProperties.add("DATE");
 		// PLAC - PLACE STRUCTURE
 		Element place = processPlace(event.getProperty("PLAC"), linkPrefix, id, html);
-		if (place != null) p.appendChild(place);
+		if (place != null) {
+			p.appendChild(place);
+			if (mapEventLocations != null) {
+				if(mapEventLocations.length() > 0) mapEventLocations.append("|");
+				mapEventLocations.append(getEventMapPosition(event));
+			}
+		}
+		
 		handledProperties.add("PLAC");
 		// ADDRESS_STRUCTURE
 		processAddresses(p, event, html, handledProperties, false);
@@ -1678,6 +1654,37 @@ public class ReportWebsite extends Report {
 		handledProperties.add("OBJE");
 		reportUnhandledProperties(event, handledProperties.toArray(new String[0]));
 		return p;
+	}
+
+	/**
+	 * Get a string that may be used when linking to map
+	 * @param event
+	 * @return A sting that may be used in google maps 
+	 */
+	protected String getEventMapPosition(Property event) {
+		if (event == null) return null;
+		Property place = event.getProperty("PLAC"); 
+		if (place == null) return null;
+		// Check if there are LATI/LONG and use in first case
+		Property map = place.getProperty("MAP");
+		if (map != null) {
+			String latitude = map.getProperty("LATI").getDisplayValue();
+			String longitude = map.getProperty("LONG").getDisplayValue();
+			if (latitude.startsWith("S") || latitude.startsWith("s")) latitude = "-" + latitude.substring(1);
+			else latitude = latitude.substring(1);
+			if (longitude.startsWith("W") || longitude.startsWith("w")) longitude = "-" + longitude.substring(1);
+			else longitude = longitude.substring(1);
+			return latitude + "," + longitude;
+		}
+		
+		String value = place.getValue();
+		// /Replace chars to make it work with google maps
+		//value.replaceAll("[åääáàÅÄÂÁÀ]", "a");
+		//value.replaceAll("[öôóòÖÔÓÒ]", "o");
+		//value.replaceAll("[ëêéèËÊÉÈ]", "e");
+		value = value.replaceAll("[?&]", "");
+		value = value.replaceAll(" ", "+");
+		return value;
 	}
 
 	protected void makeLinkToFamily(Element appendTo, Fam fam, String memberOfFamily, String linkPrefix, Html html) {
