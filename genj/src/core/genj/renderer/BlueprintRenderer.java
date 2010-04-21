@@ -851,9 +851,9 @@ public class BlueprintRenderer {
     }
     
     private void render(Property prop, Graphics2D g, Rectangle r) {
-//      if (prop==null)
-//        return;
-      if (prop instanceof MultiLineProperty) {
+      
+      // entities (specifically NOTE) can be a multi-line - let fall through
+      if (!(prop instanceof Entity) && prop instanceof MultiLineProperty) {
         render((MultiLineProperty)prop, g, r);
         return;
       }
