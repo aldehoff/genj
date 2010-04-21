@@ -64,6 +64,13 @@ public class Html {
 		headNode.appendChild(script);
 	}
 	
+	public void setDescription(String description) {
+		Element meta = doc.createElement("meta");
+		meta.setAttribute("name", "description");
+		meta.setAttribute("content", description);
+		headNode.appendChild(meta);
+	}
+
 	public Document getDoc() {
 		return doc;
 	}

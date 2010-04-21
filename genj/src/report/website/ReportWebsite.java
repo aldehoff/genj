@@ -531,6 +531,45 @@ public class ReportWebsite extends Report {
 		return indiFile;
 	}
 
+	protected String makeDescription(Indi indi, boolean isPrivate) {
+		StringBuffer pageDescription = new StringBuffer(indi.getName());
+		if (! isPrivate) {
+			String birth = makeDescriptionEvent((PropertyEvent)indi.getProperty("BIRT"));
+			if (birth != null) pageDescription.append(", ").append(birth);
+			String death = makeDescriptionEvent((PropertyEvent)indi.getProperty("DEAT"));
+			if (death != null) pageDescription.append(", ").append(death);
+		}
+		Fam fam = indi.getFamilyWhereBiologicalChild();
+		if (fam != null) {
+			pageDescription.append(", ").append(translate("parents")).append(":");
+			Indi father = fam.getHusband();
+			if (father != null) pageDescription.append(' ').append(father.getName());
+			Indi mother = fam.getWife();
+			if (mother != null) pageDescription.append(' ').append(mother.getName());
+		}
+		Fam[] spouseFams = indi.getFamiliesWhereSpouse();
+		if (spouseFams.length > 0) {
+			pageDescription.append(", ").append(translate("spouses"));
+			for (Fam spouseFam : spouseFams) {
+				Indi spouse = spouseFam.getOtherSpouse(indi);
+				if (spouse != null) pageDescription.append(' ').append(spouse.getName());
+			}
+		}
+		return pageDescription.toString();
+	}
+	
+	protected String makeDescriptionEvent(PropertyEvent event) {
+		if (event == null) return null;
+		Property date = event.getProperty("DATE");
+		Property place = event.getProperty("PLACE");
+		if (date == null && place == null) return null;
+		if (date == null) return Gedcom.getName(event.getTag()) + ": " + place.getDisplayValue();	
+		if (place == null) return Gedcom.getName(event.getTag()) + ": " + date.getDisplayValue();
+		else return Gedcom.getName(event.getTag()) + ": " + 
+		  date.getDisplayValue() + " " + place.getDisplayValue();
+	}
+	
+	
 	/**
 	 * Create a document for each individual
 	 */
@@ -540,10 +579,13 @@ public class ReportWebsite extends Report {
 				
 		String linkPrefix = relativeLinkPrefix(indi.getId());
 
+		// Find out how much we may display		
+		boolean isPrivate = isPrivate(indi); 
+		
 		Html html = new Html(getName(indi), linkPrefix);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
-
+		html.setDescription(makeDescription(indi, isPrivate));
 		// Add a decendant tree
 		addDecendantTree(bodyNode, indi, "", linkPrefix, html);
 
@@ -551,8 +593,10 @@ public class ReportWebsite extends Report {
 		for (Property name : names) {
 			Element h1 = html.h1(getName(indi, name));
 			bodyNode.appendChild(h1);
-			processSourceRefs(h1, name, linkPrefix, indi.getId(), html);
-			processNoteRefs(h1, name, linkPrefix, indi.getId(), html);
+			if (! isPrivate) {
+				processSourceRefs(h1, name, linkPrefix, indi.getId(), html);
+				processNoteRefs(h1, name, linkPrefix, indi.getId(), html);
+			}
 			Property nick = name.getProperty("NICK");
 			if (nick != null) {
 				bodyNode.appendChild(html.p(Gedcom.getName("NICK") + ": " + nick.getDisplayValue()));
@@ -573,8 +617,10 @@ public class ReportWebsite extends Report {
 					if (constructedFoneName != null) p.appendChild(html.text(", " + constructedName));
 					if (foneNick != null) p.appendChild(html.text(", " + 
 							Gedcom.getName("NICK") + " " + foneNick.getDisplayValue()));
-					processSourceRefs(p, fone, linkPrefix, indi.getId(), html);
-					processNoteRefs(p, fone, linkPrefix, indi.getId(), html);
+					if (! isPrivate) {
+						processSourceRefs(p, fone, linkPrefix, indi.getId(), html);
+						processNoteRefs(p, fone, linkPrefix, indi.getId(), html);
+					}
 					reportUnhandledProperties(foneNick, new String[] {"TYPE", "SOUR", "NOTE", "NICK", "NPFX", "GIVN", "SPFX", "SURN", "NSFX"});
 				}
 			}
@@ -584,9 +630,6 @@ public class ReportWebsite extends Report {
 		if (names == null) bodyNode.appendChild(html.h1("("+translate("unknown")+")"));
 		handledProperties.add("NAME");
 
-		// Find out how much we may display		
-		boolean isPrivate = isPrivate(indi); 
-		
 		Element div1 = null;
 		if (! isPrivate) {
 			div1 = html.div("left");
