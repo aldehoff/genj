@@ -245,13 +245,14 @@ public class Html {
 		return tag(tagname, doc.createTextNode(text));
 	}
 
-	public void toFile(File file) {
+	public void toFile(File file, boolean omitXmlDeclaration) {
 		// Save the doc into the file
 		try {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//W3C//DTD XHTML 1.0 Strict//EN");
 			transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd");
+			if (omitXmlDeclaration) transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			StreamResult result = new StreamResult(file);
 			DOMSource source = new DOMSource(doc);
 			transformer.transform(source, result);

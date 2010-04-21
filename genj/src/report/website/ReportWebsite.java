@@ -76,6 +76,7 @@ public class ReportWebsite extends Report {
 	public String listSourceFileName = "sources.html";
 	public String listRepositoryFileName = "repositories.html";
 	public boolean reportDisplayIndividualMap = true;
+	public boolean omitXmlDeclaration = false;
 	
     public String reportTitle = "Relatives";
     protected String reportWelcomeText = "On these pages my ancestors are presented";
@@ -174,7 +175,7 @@ public class ReportWebsite extends Report {
 		for(Entity object : objects) {
 			println("Exporting object " + object.getId());
 			File objeFile = makeDirFor(object.getId());
-			createMultimediaDoc((Media)object).toFile(objeFile);
+			createMultimediaDoc((Media)object).toFile(objeFile, omitXmlDeclaration);
 		}
 
 	    // Iterate over all individuals
@@ -182,7 +183,7 @@ public class ReportWebsite extends Report {
 		for(Entity indi : indis) {
 			println("Exporting person " + indi.getId() + " " + getName((Indi)indi));
 			File indiFile = makeDirFor(indi.getId());
-			createIndiDoc((Indi)indi).toFile(indiFile);
+			createIndiDoc((Indi)indi).toFile(indiFile, omitXmlDeclaration);
 		}
 		
 	    // Iterate over all sources
@@ -190,7 +191,7 @@ public class ReportWebsite extends Report {
 		for(Entity source : sources) {
 			println("Exporting source " + source.getId());
 			File sourFile = makeDirFor(source.getId());
-			createSourceDoc((Source)source).toFile(sourFile);
+			createSourceDoc((Source)source).toFile(sourFile, omitXmlDeclaration);
 		}
 
 	    // Iterate over all sources
@@ -198,7 +199,7 @@ public class ReportWebsite extends Report {
 		for(Entity repo : repos) {
 			println("Exporting repository " + repo.getId());
 			File repoFile = makeDirFor(repo.getId());
-			createRepoDoc((Repository)repo).toFile(repoFile);
+			createRepoDoc((Repository)repo).toFile(repoFile, omitXmlDeclaration);
 		}
 
 	    // Iterate over all notes
@@ -206,7 +207,7 @@ public class ReportWebsite extends Report {
 		for(Entity note : notes) {
 			println("Exporting note " + note.getId());
 			File noteFile = makeDirFor(note.getId());
-			createNoteDoc((Note)note).toFile(noteFile);
+			createNoteDoc((Note)note).toFile(noteFile, omitXmlDeclaration);
 		}
 
 	    // Iterate over all submitters
@@ -214,7 +215,7 @@ public class ReportWebsite extends Report {
 		for(Entity submitter : submitters) {
 			println("Exporting submitter " + submitter.getId());
 			File submFile = makeDirFor(submitter.getId());
-			createSubmitterDoc((Submitter)submitter).toFile(submFile);
+			createSubmitterDoc((Submitter)submitter).toFile(submFile, omitXmlDeclaration);
 		}
 
 		// Make a start page and indexes
@@ -441,7 +442,7 @@ public class ReportWebsite extends Report {
 				" " + (new PropertyChange()).getDisplayValue())); 
 		
 		makeFooter(bodyNode, html);
-		html.toFile(startFile);
+		html.toFile(startFile, omitXmlDeclaration);
 	}
 
 	protected void makeEntityIndex(File dir, Entity[] sources, String name, String fileName, Collator collator) {
@@ -468,7 +469,7 @@ public class ReportWebsite extends Report {
 			div1.appendChild(html.br());
 		}				
 		makeFooter(bodyNode, html);
-		html.toFile(startFile);
+		html.toFile(startFile, omitXmlDeclaration);
 	}
 
 	protected void makePersonIndex(File dir, Entity[] indis, Collator collator) {
@@ -506,7 +507,7 @@ public class ReportWebsite extends Report {
 			div1.appendChild(html.br());
 		}				
 		makeFooter(bodyNode, html);
-		html.toFile(startFile);
+		html.toFile(startFile, omitXmlDeclaration);
 	}
 
 	protected class EntityComparator implements Comparator<Entity> {
