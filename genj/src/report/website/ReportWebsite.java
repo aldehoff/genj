@@ -110,8 +110,10 @@ public class ReportWebsite extends Report {
     
     /** Used for handling note and sources on a person/item */
     protected Element sourceDiv = null;
+    protected List<Property> addedSourceProperty = null;
     protected int sourceCounter = 0;
     protected Element noteDiv = null;
+    protected List<Property> addedNoteProperty = null;
     protected int noteCounter = 0;
 
     /** The output directory */
@@ -1748,6 +1750,7 @@ public class ReportWebsite extends Report {
 		if (sourceRefs.length > 0) {
 	    	if (sourceDiv == null) {
 	    		sourceDiv = html.div("left");
+	    		addedSourceProperty = new ArrayList<Property>();
 	    		sourceCounter = 1;
 	    	}
 			Element sup = html.sup("source");
@@ -1765,6 +1768,15 @@ public class ReportWebsite extends Report {
 	 * @return
 	 */
 	protected Element addSourceRef(Property sourceRef, String linkPrefix, String id, Html html) {
+		int i = 1;
+		for (Property alreadyAdded : addedSourceProperty) {
+			if (propertyStructEquals(sourceRef, alreadyAdded)) {
+				return html.link("#S" + i, "S" + i);
+			}
+			i++;
+		}
+		addedSourceProperty.add(sourceRef);
+
 		int number = sourceCounter++;
 		Element p = html.p();
 		sourceDiv.appendChild(p);
@@ -1835,7 +1847,7 @@ public class ReportWebsite extends Report {
 	   		reportUnhandledProperties(sourceRef, new String[] {"TEXT", "NOTE"});
 		}
 		// Notes
-		processNoteRefs(p, sourceRef, linkPrefix, id, html);  
+		processNoteRefs(p, sourceRef, linkPrefix, id, html);
 		return html.link("#S" + number, "S" + number);
 	}
 
@@ -1847,6 +1859,7 @@ public class ReportWebsite extends Report {
 		if (noteRefs.length > 0) {
 	    	if (noteDiv == null) {
 	    		noteDiv = html.div("left");
+	    		addedNoteProperty = new ArrayList<Property>();
 	    		noteCounter = 1;
 	    	}
 			Element sup = html.sup("note");
@@ -1868,6 +1881,15 @@ public class ReportWebsite extends Report {
 	 */
 	protected Element addNoteRef(Property noteRef, String linkPrefix, String id,
 			Html html) {
+		int i = 1;
+		for (Property alreadyAdded : addedNoteProperty) {
+			if (propertyStructEquals(noteRef, alreadyAdded)) {
+				return html.link("#N" + i, "N" + i);
+			}
+			i++;
+		}
+		addedNoteProperty.add(noteRef);
+
 		int number = noteCounter++;
 		Element p = html.p();
 		noteDiv.appendChild(p);
@@ -1897,6 +1919,21 @@ public class ReportWebsite extends Report {
 		return html.link("#N" + number, "N" + number);
 	}
 
+	/**
+	 * Checks wether two propery structures equals
+	 * @param a
+	 * @param b
+	 * @return true if equal, false if not equal or not sure
+	 */
+	protected boolean propertyStructEquals(Property a, Property b) {
+		if (a.compareTo(b) != 0) return false; 
+		Property[] aProps = a.getProperties();  
+		Property[] bProps = b.getProperties();  
+		if (aProps.length == 0 && bProps.length == 0) return true;
+		// XXX recurse down to do more check for equality?
+		return false;
+	}
+	
 	/**
 	 * Handle the value of multiline properties
 	 * @param appendTo
