@@ -112,7 +112,7 @@ public abstract class Report implements Cloneable {
   protected Registry registry;
 
   /** language we're trying to use */
-  private final static String lang = Locale.getDefault().getLanguage();
+  private final static String userLanguage = Locale.getDefault().getLanguage();
 
   /** translation resources common to all reports */
   static final Resources COMMON_RESOURCES = Resources.get(Report.class);
@@ -613,6 +613,10 @@ public abstract class Report implements Cloneable {
    * @param values values to replace %[0..] in resource strings
    */
   public final String translate(String key, Object... values) {
+    return translate(key, (Locale)null, values);
+  }
+  
+  public final String translate(String key, Locale locale, Object... values) {
 
     Resources resources = getResources();
     if (resources==null)
@@ -620,8 +624,9 @@ public abstract class Report implements Cloneable {
 
     // look it up in language
     String result = null;
-    if (lang!=null) {
-      String locKey = key+'.'+lang;
+    String lang = locale!=null ? locale.getLanguage() : userLanguage;
+    if (userLanguage!=null) {
+      String locKey = key+'.'+userLanguage;
       result = resources.getString(locKey, values);
       if (result!=locKey)
         return result;
