@@ -97,7 +97,7 @@ public class ReportNames extends Report {
 
 			// get place of birth
 			if(trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC"))).length()>0 ) {
-				str += trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC")));
+				str += trim(indi.getProperty(new TagPath("INDI:BIRT:PLAC")).getDisplayValue());
 			}
 		}
 		else if (reportAlwaysDetailSeparator) {
@@ -121,7 +121,7 @@ public class ReportNames extends Report {
 			str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
 
 			if (trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC"))).length()>0) {
-				str += trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")));
+				str += trim(indi.getProperty(new TagPath("INDI:DEAT:PLAC")).getDisplayValue());
 			}
 
 		}
@@ -144,9 +144,13 @@ public class ReportNames extends Report {
 
 				if((trim(families[i].getMarriageDate()).length()>0) || (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0)) {
 					str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
-					str += getDate(trim(families[i].getMarriageDate()));
-					str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
-					str += trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")));
+					if (trim(families[i].getMarriageDate()).length()>0) {
+						str += getDate(trim(families[i].getMarriageDate().getDisplayValue()));
+						str += (reportAlwaysDetailSeparator ? reportDetailSeparator : " ");
+					}
+					if (trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC"))).length()>0) {
+						str += trim(families[i].getProperty(new TagPath("FAM:MARR:PLAC")).getDisplayValue());
+					}
 				} else if (reportAlwaysDetailSeparator) {
 					str += reportDetailSeparator + reportDetailSeparator;
 				}
