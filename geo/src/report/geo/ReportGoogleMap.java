@@ -32,7 +32,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Locale;
 
 /**
@@ -54,7 +53,7 @@ public class ReportGoogleMap extends Report {
    * Our main method for a gedcom file
    */
   public void start(Gedcom ged) {
-    operate(ged, ged.getEntities());
+    operate(ged, ged.getIndis());
   }
 
   /**
@@ -74,10 +73,10 @@ public class ReportGoogleMap extends Report {
   /**
    * Working on a collection of individiuals
    */
-  private void operate(Gedcom ged, Collection indis) {
+  private void operate(Gedcom ged, Collection<Indi> indis) {
 
     // find locations
-    Collection locations = GeoLocation.parseEntities(indis, yearFilter.length()==0 ? null : new YearFilter());
+    Collection<GeoLocation> locations = GeoLocation.parseEntities(indis, yearFilter.length()==0 ? null : new YearFilter());
     
     // match locations
     try {
@@ -168,7 +167,7 @@ public class ReportGoogleMap extends Report {
   /**
    * write the xml file
    */
-  private boolean writeXML(Collection locations, File xml, File kml) {
+  private boolean writeXML(Collection<GeoLocation> locations, File xml, File kml) {
 
     // <ls>
     //   <l x="37.441" y="-122.141">foo</l>
@@ -196,10 +195,9 @@ public class ReportGoogleMap extends Report {
       kmlout.write("<kml xmlns=\"http://earth.google.com/kml/2.2\">");
       kmlout.write("<Folder>");
       
-      for (Iterator it=locations.iterator(); it.hasNext(); ) {
-        
+      for (GeoLocation location : locations) {
+
         // valid location?
-        GeoLocation location = (GeoLocation)it.next();
         if (!location.isValid()) 
           continue;
     
@@ -331,24 +329,28 @@ public class ReportGoogleMap extends Report {
       // done
     }
     
-    public String getFilterName() {
+    public String getName() {
       return "Filter by Years";
     }
+
+    public boolean veto(Entity entity) {
+      return false;
+    }
     
-    public boolean checkFilter(Property property) {
+    public boolean veto(Property property) {
       
       // check for a local date
       Property date = property.getProperty("DATE"); 
       if (date instanceof PropertyDate&&date.isValid()&&!isIn((PropertyDate)date))
-          return false;
+          return true;
 
       // try individual's birth
       Entity ent = property.getEntity();
       if ( (ent instanceof Indi) && isIn(((Indi)ent).getBirthDate()))
-        return true;
+        return false;
       
       // don't let it through
-      return false;
+      return true;
     }
     
     private boolean isIn(PropertyDate date) {

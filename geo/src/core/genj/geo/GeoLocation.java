@@ -53,7 +53,7 @@ import com.vividsolutions.jump.feature.FeatureSchema;
 public class GeoLocation extends Point implements Feature, Comparable {
 
   /** "locale to displayCountries to country-codes"*/
-  private static Map locale2displayCountry2code = new HashMap();
+  private static Map<String, Map<String,String>> locale2displayCountry2code = new HashMap<String, Map<String,String>>();
   
   /** 
    * our schema - could be more complicated like
@@ -70,11 +70,11 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /** city state and country */
   private String city;
   private Country country;
-  private List jurisdictions = new ArrayList(3);
+  private List<String> jurisdictions = new ArrayList<String>(3);
   private int hash;
   
   /** properties at that location */
-  protected List properties = new ArrayList();
+  protected List<Property> properties = new ArrayList<Property>();
   
   /** match count - 0 = couldn't be matched - 1 = exact match - n = too many matches */
   private int matches = 0;
@@ -166,7 +166,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * @param entitie entities to consider
    * @return set of GeoLocations
    */
-  public static Set parseEntities(Collection entities) {
+  public static Set<GeoLocation> parseEntities(Collection<Entity> entities) {
     return parseEntities(entities, null);
   }
   
@@ -175,15 +175,14 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * @param entitie entities to consider
    * @return set of GeoLocations
    */
-  public static Set parseEntities(Collection entities, Filter filter) {
+  public static Set<GeoLocation> parseEntities(Collection<? extends Entity> entities, Filter filter) {
     
     // loop over entities
-    List props = new ArrayList(100);
-    for (Iterator it=entities.iterator(); it.hasNext(); ) {
-      Entity entity = (Entity)it.next();
+    List<Property> props = new ArrayList<Property>(100);
+    for (Entity entity : entities) {
       for (int p=0; p<entity.getNoOfProperties(); p++) {
         Property prop = entity.getProperty(p);
-        if ( (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) && (filter==null||filter.checkFilter(prop))) 
+        if ( (prop.getProperty("PLAC")!=null||prop.getProperty("ADDR")!=null) && (filter==null||!filter.veto(prop))) 
           props.add(prop);
       }
     }
@@ -197,17 +196,13 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * @param properties the properties to match
    * @return set of GeoLocations
    */
-  public static Set parseProperties(Collection properties) {
+  public static Set<GeoLocation> parseProperties(Collection<Property> properties) {
     
     // prepare result
-    Map result = new HashMap(properties.size());
-    List todo = new ArrayList();
+    Map<GeoLocation,GeoLocation> result = new HashMap<GeoLocation,GeoLocation>(properties.size());
     
     // loop over properties
-    for (Iterator it = properties.iterator(); it.hasNext(); ) {
-      
-      Property prop = (Property)it.next();
-
+    for (Property prop : properties) {
       // create a new location
       GeoLocation location;
       try {
@@ -325,8 +320,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * Add poperties from another instance
    */
   public void add(GeoLocation other) {
-    for (Iterator it = other.properties.iterator(); it.hasNext(); ) {
-      Object prop = it.next();
+    for (Iterator<Property> it = other.properties.iterator(); it.hasNext(); ) {
+      Property prop = it.next();
       if (!properties.contains(prop))
         properties.add(prop);
     }
@@ -336,8 +331,8 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Remove properties for given entities from this location
    */
-  public void removeEntities(Set entities) {
-    for (ListIterator it = properties.listIterator(); it.hasNext(); ) {
+  public void removeEntities(Set<Entity> entities) {
+    for (ListIterator<Property> it = properties.listIterator(); it.hasNext(); ) {
       Property prop = (Property)it.next();
       if (entities.contains(prop.getEntity()))
         it.remove();
@@ -348,7 +343,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
    * Remove properties for given entity
    */
   public void removeEntity(Entity entity) {
-    for (ListIterator it = properties.listIterator(); it.hasNext(); ) {
+    for (ListIterator<Property> it = properties.listIterator(); it.hasNext(); ) {
       Property prop = (Property)it.next();
       if (entity == prop.getEntity())
         it.remove();
@@ -416,7 +411,7 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Identified Top Level Jurisdictions
    */
-  public List getJurisdictions() {
+  public List<String> getJurisdictions() {
     return jurisdictions;
   }
   
@@ -599,9 +594,11 @@ public class GeoLocation extends Point implements Feature, Comparable {
   /**
    * Feature - comparison
    */
-  public int compareTo(Object o) {
-    GeoLocation that = (GeoLocation)o;
-    return this.city.compareToIgnoreCase(that.city);
+  @Override
+  public int compareTo(Object that) {
+    if (!(that instanceof GeoLocation))
+      return super.compareTo(that);
+    return this.city.compareToIgnoreCase(((GeoLocation)that).city);
   }
   
 }
