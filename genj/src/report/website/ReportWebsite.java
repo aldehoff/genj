@@ -35,6 +35,8 @@ import genj.gedcom.MultiLineProperty.Iterator;
 import genj.option.CustomOption;
 import genj.option.Option;
 import genj.report.Report;
+import genj.util.Resources;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -55,6 +57,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -84,7 +87,7 @@ public class ReportWebsite extends Report {
 	protected HashMap<String, String> sosaStradonitzNumber = null; 
     public boolean displayGenJFooter = true;
 	public String placeDisplayFormat = "all";
-
+	public String secondaryLanguage = "en";
     public boolean removeAllFiles = false;
 
 	/** Base source file of the css */
@@ -92,7 +95,7 @@ public class ReportWebsite extends Report {
 
 	/** How the tree on each person should look like */
     public int treeType = 0;
-    public String[] treeTypes = {translate("treeLTR"), translate("treeRTL")}; //, translate("treeTopDown")};
+    public String[] treeTypes = {translateLocal("treeLTR"), translateLocal("treeRTL")}; //, translateLocal("treeTopDown")};
 	protected static final String[] cssTreeFile = {"html/treel2r.css", "html/treer2l.css"};
 
     /** Colors of the output */
@@ -104,7 +107,7 @@ public class ReportWebsite extends Report {
 
 	/** Select background image in the boxes */
     public int boxBackground = 0;
-    public String[] boxBackgrounds = {translate("green"), translate("blue")};
+    public String[] boxBackgrounds = {translateLocal("green"), translateLocal("blue")};
     protected static final String[] boxBackgroundImages = {"html/bkgr_green.png", "html/bkgr_blue.png"};
 	
     /** Collecting data to the index */
@@ -120,7 +123,14 @@ public class ReportWebsite extends Report {
 
     /** Used for building an individual map */
     protected StringBuffer mapEventLocations = null;
-    
+
+    /** used for output several languages */ 
+	protected Locale currentLocale = null;  /** Only set when running with the secondary language */ 
+	protected String currentLang = null; /** Always set to what the current lang is */
+	/** Always set to null or the secondary lang. Check this to know if we are having a second lang at all */
+	protected Locale secondaryLocale = null;  
+	protected Resources resources = null;
+	
     /** The output directory */
     File destDir = null;
     
@@ -128,34 +138,18 @@ public class ReportWebsite extends Report {
 	 * Main for argument Gedcom
 	 */
 	public void start(Gedcom gedcom) throws Exception {
-		// Reset some variables
-		sosaStradonitzNumber = new HashMap<String, String>();
-		personsWithImage = new ArrayList<Indi>();
-
-		// Ask for info
-		
-		destDir = getDirectoryFromUser(translate("qOutputDir"), translate("qOk"));
-		if (destDir == null) 
-		  return; // Operation canceled by user
-		
-		// make sure directory exists
-		destDir.mkdirs();
-		
-		// Ask if ok to overwrite if there were files
-		if (destDir.list().length > 0) {
-			if (! getOptionFromUser(translate("qOverwrite"), OPTION_OKCANCEL)) 
-				return; // Operation canceled by user
+		currentLang = Locale.getDefault().getLanguage();
+		// Validate some values set in options
+		secondaryLocale = null;
+		if (secondaryLanguage != null && !secondaryLanguage.equals("") && 
+				!secondaryLanguage.equals(currentLang)) { // We generating pages for more than one lang
+			secondaryLocale = new Locale(secondaryLanguage);
+			if (!secondaryLanguage.matches("[a-z]{2}") || secondaryLocale == null) {
+				getOptionFromUser(translateLocal("invalidLanguage", new Object[]{secondaryLanguage}), OPTION_OK);
+				return;
+			} 
 		}
-
-		Indi rootIndi = null;
-		if (displaySosaStradonitz) {
-			rootIndi = (Indi)getEntityFromUser(translate("selectSosaStradonitzRoot"), gedcom, Gedcom.INDI);
-			makeSosaStradonitzNumbering(rootIndi, 1);
-		}
-		
-		// Validate values
-		
-		// Try to make a translator for css values
+		// Try to make a translator for css/js-files
 		HashMap<String,String> translator;
 		try {
 			translator = makeCssAndJSSettings();
@@ -164,15 +158,85 @@ public class ReportWebsite extends Report {
 			return;
 		}
 		
+		// Reset some variables
+		sosaStradonitzNumber = new HashMap<String, String>();
+		personsWithImage = new ArrayList<Indi>();
+
+		// Ask for info
+		
+		destDir = getDirectoryFromUser(translateLocal("qOutputDir"), translateLocal("qOk"));
+		if (destDir == null) 
+		  return; // Operation canceled by user
+		
+		// make sure directory exists
+		destDir.mkdirs();
+		
+		// Ask if ok to overwrite if there were files
+		if (destDir.list().length > 0) {
+			if (! getOptionFromUser(translateLocal("qOverwrite"), OPTION_OKCANCEL)) 
+				return; // Operation canceled by user
+		}
+
+		Indi rootIndi = null;
+		if (displaySosaStradonitz) {
+			rootIndi = (Indi)getEntityFromUser(translateLocal("selectSosaStradonitzRoot"), gedcom, Gedcom.INDI);
+			makeSosaStradonitzNumbering(rootIndi, 1);
+		}
+		
 		// Start modifying things
 		if (removeAllFiles) deleteDirContent(destDir, false);
+		
+		// Make a css file with current settings
+		makeCss(destDir, translator);
+		makeJs(destDir, translator);
 		
 		// Copy the correct background image
 		copyImages(destDir);
 		
-		// Make a css file with current settings
-		makeCssAndJs(destDir, translator);
-		
+		generateFiles(gedcom, rootIndi);
+
+		if (secondaryLocale != null) {
+			Locale defaultLocale = Locale.getDefault();
+			// Reset some variables
+			personsWithImage = new ArrayList<Indi>();
+			// Run again with a new lang setting
+			currentLocale = secondaryLocale;
+			currentLang = secondaryLocale.getLanguage();
+			resources = new Resources(getClass().getResourceAsStream("/genj/gedcom/resources_"+currentLang+".properties"));
+			translator = makeCssAndJSSettings();
+			makeJs(destDir, translator);
+			generateFiles(gedcom, rootIndi);
+			currentLocale = null;
+
+		}
+	}
+
+	  /**
+	   * Returns a readable name for the given tag
+	   */
+	  public String getPropertyName(String tag) {
+		  return getPropertyName(tag, false);
+	  }
+
+	  /**
+	   * Returns the readable name for the given tag
+	   */
+	  public String getPropertyName(String tag, boolean plural) {
+		  if (currentLocale != null) { 
+			  if (plural) {
+				  String name = resources.getString(tag+".s.name", false);
+				  if (name!=null)
+					  return name;
+			  }
+			  String name = resources.getString(tag+".name", false);
+			  if (name!=null) return name;
+		  }
+		  return Gedcom.getName(tag, plural);
+	  }
+
+	
+	
+	protected void generateFiles(Gedcom gedcom, Indi rootIndi) throws Exception {
 	    // Iterate over all media objects, must be before individuals
 		Entity[] objects = gedcom.getEntities(Gedcom.OBJE, "");
 		for(Entity object : objects) {
@@ -233,9 +297,10 @@ public class ReportWebsite extends Report {
 		if (repos.length > 0)
 			makeEntityIndex(destDir, repos, "repositoryIndex", listRepositoryFileName, collator);
 		makeSearchDataPage(destDir, indis);
-		println("Report done!");
+		println("Report done!");		
 	}
-
+	
+	
 	protected void deleteDirContent(File dir, boolean deleteThisDir) {
 		for(String name : dir.list()) {
 			File curr = new File(dir, name);
@@ -295,7 +360,7 @@ public class ReportWebsite extends Report {
 			reportWelcomeText = text.getText();
 		}
 		public String getName() {
-			return translate("reportWelcomeText");
+			return translateLocal("reportWelcomeText");
 		}
 		public String getToolTip() {
 			return "Enter your page description here. It will be enclosed in <p>-tags.";
@@ -337,8 +402,8 @@ public class ReportWebsite extends Report {
 	protected void makeStartpage(Gedcom gedcom, File dir, Entity[] indis, Entity[] sources, Entity[] repos, Indi rootIndi) {
 		println("Making start-page");
 		Collator collator = gedcom.getCollator();
-		File startFile = new File(dir.getAbsolutePath() + File.separator + reportIndexFileName);
-		Html html = new Html(reportTitle, "");
+		File startFile = new File(dir.getAbsolutePath() + File.separator + getLocalizedFilename(reportIndexFileName, currentLocale));
+		Html html = new Html(reportTitle, "", currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 		bodyNode.appendChild(html.h1(reportTitle));
@@ -346,16 +411,16 @@ public class ReportWebsite extends Report {
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
 		
-		div1.appendChild(html.h2("Indi.png", Gedcom.getName("INDI", true)));
-		div1.appendChild(html.p(translate("indexPersonText1", 
+		div1.appendChild(html.h2("Indi.png", getPropertyName("INDI", true)));
+		div1.appendChild(html.p(translateLocal("indexPersonText1", 
 				new Object[]{indis.length, gedcom.getEntities(Gedcom.FAM, "").length})));
 		if (displaySosaStradonitz) {
-			Element p = html.p(translate("indexSosaDescriptionText") + " ");
+			Element p = html.p(translateLocal("indexSosaDescriptionText") + " ");
 			p.appendChild(html.link(addressTo(rootIndi.getId()), getName(rootIndi)));
 			div1.appendChild(p);
 		}
 
-		div1.appendChild(html.h2(translate("personIndex")));
+		div1.appendChild(html.h2(translateLocal("personIndex")));
 		Element indiP = html.p();
 		div1.appendChild(indiP);
 		String lastLetter = "";
@@ -371,28 +436,28 @@ public class ReportWebsite extends Report {
 		}
 		// Search form
 		// In head
-		html.addJSFile("search.js");
+		html.addJSFile(getLocalizedFilename("search.js", currentLocale));
 		html.addJSFile("searchData.js");
 		// Here
 		Element searchForm = html.form(null, "javascript:displayResult();", "return displayResult();"); //id, onsubmit
-		Element searchP = html.p(Gedcom.getName("NAME") + " ");
+		Element searchP = html.p(getPropertyName("NAME") + " ");
 		searchForm.appendChild(searchP);
 		searchP.appendChild(html.input("searchName", "name")); // id, name
-		searchP.appendChild(html.button(translate("searchButton"), "displayResult();")); // value, onclick
+		searchP.appendChild(html.button(translateLocal("searchButton"), "displayResult();")); // value, onclick
 		div1.appendChild(searchForm);
 		if (displaySosaStradonitz) {
 			Element searchSosaForm = html.form(null, "javascript:jumpToSosa();", "return jumpToSosa();"); //id, onsubmit
-			Element searchSosaP = html.p(translate("sosaNumber") + " ");
+			Element searchSosaP = html.p(translateLocal("sosaNumber") + " ");
 			searchSosaForm.appendChild(searchSosaP);
 			searchSosaP.appendChild(html.input("searchSosa", "sosa", 5)); // id, name
-			searchSosaP.appendChild(html.button(translate("searchButton"), "jumpToSosa();")); // value, onclick
+			searchSosaP.appendChild(html.button(translateLocal("searchButton"), "jumpToSosa();")); // value, onclick
 			div1.appendChild(searchSosaForm);
 		}
 		Element divResult = html.divId("searchResult");
 		divResult.appendChild(html.text(" "));
 		div1.appendChild(divResult);
 		
-		div1.appendChild(html.h2(translate("personGallery")));
+		div1.appendChild(html.h2(translateLocal("personGallery")));
 		for (Indi indi : personsWithImage) { 
 			div1.appendChild(html.link(addressTo(indi.getId()), html.img(addressToDir(indi.getId()) + "gallery.jpg", getName(indi))));				
 		}
@@ -401,7 +466,7 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(div2);
 		
 		if (sources.length > 0) {
-			div2.appendChild(html.h2("Source.png", translate("sourceIndex")));
+			div2.appendChild(html.h2("Source.png", translateLocal("sourceIndex")));
 			Element sourceP = html.p();
 			div2.appendChild(sourceP);
 			lastLetter = "";
@@ -417,7 +482,7 @@ public class ReportWebsite extends Report {
 		}
 
 		if (repos.length > 0) {
-			div2.appendChild(html.h2("Repository.png", translate("repositoryIndex")));
+			div2.appendChild(html.h2("Repository.png", translateLocal("repositoryIndex")));
 			Element repoP = html.p();
 			div2.appendChild(repoP);
 			lastLetter = "";
@@ -436,26 +501,28 @@ public class ReportWebsite extends Report {
 		// Info on who created the data
 		Submitter subm = gedcom.getSubmitter();
 		if (subm != null) {
-			div2.appendChild(html.h2(translate("dataGatheredBy")));
+			div2.appendChild(html.h2(translateLocal("dataGatheredBy")));
 			Element p = html.p(subm.getName());
 			div2.appendChild(p);
 			processAddresses(p, subm, html, new ArrayList<String>(), false);
 		}
-		div2.appendChild(html.p(translate("pageCreated") + 
+		div2.appendChild(html.p(translateLocal("pageCreated") + 
 				" " + (new PropertyChange()).getDisplayValue())); 
 		
+		Element backlink = backlink(reportIndexFileName, null, "", html);
+		if (backlink.hasChildNodes()) bodyNode.appendChild(backlink);
 		makeFooter(bodyNode, html);
 		html.toFile(startFile, omitXmlDeclaration);
 	}
 
 	protected void makeEntityIndex(File dir, Entity[] sources, String name, String fileName, Collator collator) {
-		name = translate(name);
+		name = translateLocal(name);
 		println("Making "+ name);
-		File startFile = new File(dir.getAbsolutePath() + File.separator + fileName);
-		Html html = new Html(name, "");
+		File startFile = new File(dir.getAbsolutePath() + File.separator + getLocalizedFilename(fileName, currentLocale));
+		Html html = new Html(name, "", currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
-		bodyNode.appendChild(backlink(null, "", html));
+		bodyNode.appendChild(backlink(fileName, null, "", html));
 		bodyNode.appendChild(html.h1(name));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
@@ -477,12 +544,13 @@ public class ReportWebsite extends Report {
 
 	protected void makePersonIndex(File dir, Entity[] indis, Collator collator) {
 		println("Making person index");
-		File startFile = new File(dir.getAbsolutePath() + File.separator + listPersonFileName);
-		Html html = new Html(translate("personIndex"), "");
+		File startFile = new File(dir.getAbsolutePath() + File.separator + 
+				getLocalizedFilename(listPersonFileName, currentLocale));
+		Html html = new Html(translateLocal("personIndex"), "", currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
-		bodyNode.appendChild(backlink(null, "", html));
-		bodyNode.appendChild(html.h1(translate("personIndex")));
+		bodyNode.appendChild(backlink(listPersonFileName, null, "", html));
+		bodyNode.appendChild(html.h1(translateLocal("personIndex")));
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
 		String lastLetter = "";
@@ -503,7 +571,7 @@ public class ReportWebsite extends Report {
 				PropertyDate death = ((Indi)indi).getDeathDate();
 				if (death != null && death.getStart().isValid()) text += death.getStart().getYear();
 			} else {
-				text += translate("notPublic");
+				text += translateLocal("notPublic");
 			}
 			text += ")";
 			div1.appendChild(html.link(addressTo(indi.getId()), text));
@@ -551,7 +619,7 @@ public class ReportWebsite extends Report {
 		}
 		Fam fam = indi.getFamilyWhereBiologicalChild();
 		if (fam != null) {
-			pageDescription.append(", ").append(translate("parents")).append(":");
+			pageDescription.append(", ").append(translateLocal("parents")).append(":");
 			Indi father = fam.getHusband();
 			if (father != null) pageDescription.append(' ').append(father.getName());
 			Indi mother = fam.getWife();
@@ -559,7 +627,7 @@ public class ReportWebsite extends Report {
 		}
 		Fam[] spouseFams = indi.getFamiliesWhereSpouse();
 		if (spouseFams.length > 0) {
-			pageDescription.append(", ").append(translate("spouses"));
+			pageDescription.append(", ").append(translateLocal("spouses"));
 			for (Fam spouseFam : spouseFams) {
 				Indi spouse = spouseFam.getOtherSpouse(indi);
 				if (spouse != null) pageDescription.append(' ').append(spouse.getName());
@@ -573,9 +641,9 @@ public class ReportWebsite extends Report {
 		Property date = event.getProperty("DATE");
 		Property place = event.getProperty("PLAC");
 		if (date == null && place == null) return null;
-		if (date == null) return Gedcom.getName(event.getTag()) + ": " + place.getDisplayValue();	
-		if (place == null) return Gedcom.getName(event.getTag()) + ": " + date.getDisplayValue();
-		else return Gedcom.getName(event.getTag()) + ": " + 
+		if (date == null) return getPropertyName(event.getTag()) + ": " + place.getDisplayValue();	
+		if (place == null) return getPropertyName(event.getTag()) + ": " + date.getDisplayValue();
+		else return getPropertyName(event.getTag()) + ": " + 
 		  date.getDisplayValue() + " " + place.getDisplayValue();
 	}
 	
@@ -594,7 +662,7 @@ public class ReportWebsite extends Report {
 
 		if (! isPrivate) mapEventLocations = new StringBuffer();
 
-		Html html = new Html(getName(indi), linkPrefix);
+		Html html = new Html(getName(indi), linkPrefix, currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 		html.setDescription(makeDescription(indi, isPrivate));
@@ -611,7 +679,7 @@ public class ReportWebsite extends Report {
 			}
 			Property nick = name.getProperty("NICK");
 			if (nick != null) {
-				bodyNode.appendChild(html.p(Gedcom.getName("NICK") + ": " + nick.getDisplayValue()));
+				bodyNode.appendChild(html.p(getPropertyName("NICK") + ": " + nick.getDisplayValue()));
 			}
 			String constructedName = constructName(name); //NPFX, GIVN, SPFX, SURN, NSFX
 			if (constructedName != null) bodyNode.appendChild(html.p(constructedName));
@@ -622,13 +690,13 @@ public class ReportWebsite extends Report {
 					String type = "";
 					Property typeProp = fone.getProperty("TYPE"); // Should be here according to spec
 					if (typeProp != null) type = typeProp.getDisplayValue(); 
-					Element p = html.p(Gedcom.getName(subTag) + " " + type + ": " + typeProp.getDisplayValue());
+					Element p = html.p(getPropertyName(subTag) + " " + type + ": " + typeProp.getDisplayValue());
 					bodyNode.appendChild(p);
 					Property foneNick = name.getProperty("NICK");
 					String constructedFoneName = constructName(fone); //NPFX, GIVN, SPFX, SURN, NSFX
 					if (constructedFoneName != null) p.appendChild(html.text(", " + constructedName));
 					if (foneNick != null) p.appendChild(html.text(", " + 
-							Gedcom.getName("NICK") + " " + foneNick.getDisplayValue()));
+							getPropertyName("NICK") + " " + foneNick.getDisplayValue()));
 					if (! isPrivate) {
 						processSourceRefs(p, fone, linkPrefix, indi.getId(), html);
 						processNoteRefs(p, fone, linkPrefix, indi.getId(), html);
@@ -639,7 +707,7 @@ public class ReportWebsite extends Report {
 
 			reportUnhandledProperties(name, new String[]{"SOUR", "NOTE", "NICK", "NPFX", "GIVN", "SPFX", "SURN", "NSFX"});
 		}
-		if (names == null) bodyNode.appendChild(html.h1("("+translate("unknown")+")"));
+		if (names == null) bodyNode.appendChild(html.h1("("+translateLocal("unknown")+")"));
 		handledProperties.add("NAME");
 
 		Element div1 = null;
@@ -647,11 +715,11 @@ public class ReportWebsite extends Report {
 			div1 = html.div("left");
 			bodyNode.appendChild(div1);
 
-			div1.appendChild(html.h2(translate("facts")));
+			div1.appendChild(html.h2(translateLocal("facts")));
 			// get sex
 			Property sex = indi.getProperty("SEX");
 			if (sex != null) {
-				div1.appendChild(html.p(Gedcom.getName("SEX") + ": " + 
+				div1.appendChild(html.p(getPropertyName("SEX") + ": " + 
 						PropertySex.getLabelForSex(indi.getSex())));
 				reportUnhandledProperties(sex, null);
 			}
@@ -674,7 +742,7 @@ public class ReportWebsite extends Report {
 			for (String tag : new String[]{"SUBM", "ALIA", "ANCI", "DESI"}) {
 				Property[] refs = indi.getProperties(tag);
 				if (refs.length > 0) {
-					div1.appendChild(html.h2(Gedcom.getName(tag)));
+					div1.appendChild(html.h2(getPropertyName(tag)));
 					Element p = html.p();
 					for (Property ref : refs) {
 						if (ref instanceof PropertyXRef) {
@@ -690,7 +758,7 @@ public class ReportWebsite extends Report {
 			}
 			Property[] refs = indi.getProperties("ASSO");
 			if (refs.length > 0) {
-				div1.appendChild(html.h2(Gedcom.getName("ASSO")));
+				div1.appendChild(html.h2(getPropertyName("ASSO")));
 				for (Property ref : refs) {
 					if (ref instanceof PropertyXRef) {
 						Property relation = ref.getProperty("RELA"); // Must exist according to spec
@@ -726,10 +794,10 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(div2);
 		
 		// Display parents
-		div2.appendChild(html.h2(translate("parents")));
+		div2.appendChild(html.h2(translateLocal("parents")));
 		List<PropertyFamilyChild> famRefs = indi.getProperties(PropertyFamilyChild.class);
 		if (famRefs.isEmpty()) {
-			div2.appendChild(html.p(translate("unknown")));
+			div2.appendChild(html.p(translateLocal("unknown")));
 		} else {
 			for (PropertyFamilyChild famRef : famRefs) {
 				Fam fam = famRef.getFamily();
@@ -745,7 +813,7 @@ public class ReportWebsite extends Report {
 				}
 				Property status = famRef.getProperty("STAT");
 				if (status != null) {
-			    	p.appendChild(html.text(Gedcom.getName("STAT") + ": " + status.getDisplayValue()));
+			    	p.appendChild(html.text(getPropertyName("STAT") + ": " + status.getDisplayValue()));
 			    	p.appendChild(html.br());
 				}
 				getReferenceLink(famRef, p, linkPrefix, html, true);
@@ -759,7 +827,7 @@ public class ReportWebsite extends Report {
 		List<PropertyFamilySpouse> famss = indi.getProperties(PropertyFamilySpouse.class);
 		if (!famss.isEmpty()) {
 			for (PropertyFamilySpouse pfs : famss) {
-				Element h2 = html.h2(Gedcom.getName("FAM") + " - ");
+				Element h2 = html.h2(getPropertyName("FAM") + " - ");
 				div2.appendChild(h2);
 				Fam fam = pfs.getFamily();
 				if (fam == null) {
@@ -771,7 +839,7 @@ public class ReportWebsite extends Report {
 				if (spouse != null) {
 					h2.appendChild(html.link(linkPrefix + addressTo(spouse.getId()),getName(spouse)));
 				} else {
-					h2.appendChild(html.text(translate("unknown")));
+					h2.appendChild(html.text(translateLocal("unknown")));
 				}
 				// Notes on the reference itself
 				processNoteRefs(h2, pfs, linkPrefix, fam.getId(), html);
@@ -791,7 +859,7 @@ public class ReportWebsite extends Report {
 					for (String tag : new String[] {"NCHI", "RESN"}) {
 						Property singleTag = fam.getProperty(tag);
 						if (singleTag != null) {
-							div2.appendChild(html.text(Gedcom.getName(tag) + ": " + singleTag.getDisplayValue()));
+							div2.appendChild(html.text(getPropertyName(tag) + ": " + singleTag.getDisplayValue()));
 						}
 						handledFamProperties.add(tag);
 					}
@@ -802,7 +870,7 @@ public class ReportWebsite extends Report {
 					for (String tag : new String[]{"SUBM"}) {
 						Property[] refs = indi.getProperties(tag);
 						if (refs.length > 0) {
-							div2.appendChild(html.h2(Gedcom.getName(tag)));
+							div2.appendChild(html.h2(getPropertyName(tag)));
 							Element p = html.p();
 							for (Property ref : refs) {
 								if (ref instanceof PropertyXRef) {
@@ -824,7 +892,7 @@ public class ReportWebsite extends Report {
 				}
 				Indi[] children = fam.getChildren(true);
 				if (children.length > 0) {
-					div2.appendChild(html.p(Gedcom.getName("CHIL", true) + ":"));
+					div2.appendChild(html.p(getPropertyName("CHIL", true) + ":"));
 					Element childrenList = doc.createElement("ul");
 					for (Indi child : children) {
 						Element childEl = doc.createElement("li");
@@ -842,7 +910,6 @@ public class ReportWebsite extends Report {
 			processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indi.getId(), html, handledProperties);
 
 			// Display individual map, it's not that accurate...
-			// XXX Gather events and show here too, separate by | in url
 			if (reportDisplayIndividualMap) {
 				if (mapEventLocations != null && mapEventLocations.length() > 0) {
 					String url = "http://maps.google.com/maps/api/staticmap?size=200x200&maptype=roadmap&sensor=false&markers=";
@@ -855,7 +922,7 @@ public class ReportWebsite extends Report {
 		addNoteAndSourceList(bodyNode);
 		
 		// Link to start and index-page
-		bodyNode.appendChild(backlink(listPersonFileName, linkPrefix, html));
+		bodyNode.appendChild(backlink(reportIndexFileName, listPersonFileName, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
@@ -886,7 +953,8 @@ public class ReportWebsite extends Report {
 		
 		String linkPrefix = relativeLinkPrefix(source.getId());
 
-		Html html = new Html(Gedcom.getName("SOUR") + " " + source.getId() + ": " + source.getTitle(), linkPrefix);
+		Html html = new Html(getPropertyName("SOUR") + " " + source.getId() + ": " + source.getTitle(), 
+				linkPrefix, currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 		
@@ -899,7 +967,7 @@ public class ReportWebsite extends Report {
 
 		// REPO
 		for (PropertyRepository repo : source.getProperties(PropertyRepository.class)) {
-			div1.appendChild(html.h2(Gedcom.getName("REPO")));
+			div1.appendChild(html.h2(getPropertyName("REPO")));
 			Element p = html.p();
 			div1.appendChild(p);
 			
@@ -923,11 +991,11 @@ public class ReportWebsite extends Report {
 		// DATA
 		Property data = source.getProperty("DATA");
 		if (data !=null) {
-			div1.appendChild(html.h2(Gedcom.getName("DATA")));
+			div1.appendChild(html.h2(getPropertyName("DATA")));
 			for (Property event : data.getProperties("EVEN")) {
-				Element p = html.p(Gedcom.getName("EVEN") + ": ");
+				Element p = html.p(getPropertyName("EVEN") + ": ");
 				for (String eventType : event.getValue().split(",")) {
-					p.appendChild(html.text(Gedcom.getName(eventType.trim()) + " "));
+					p.appendChild(html.text(getPropertyName(eventType.trim()) + " "));
 				}
 				// DATE
 				Property date = event.getProperty("DATE");
@@ -941,7 +1009,7 @@ public class ReportWebsite extends Report {
 			}
 			Property agency = data.getProperty("AGNC");
 			if (agency != null) {
-				div1.appendChild(html.p(Gedcom.getName("AGNC") + ": " + agency.getDisplayValue()));
+				div1.appendChild(html.p(getPropertyName("AGNC") + ": " + agency.getDisplayValue()));
 			}
 			this.processNoteRefs(div1, data, linkPrefix, source.getId(), html);
 			reportUnhandledProperties(data, new String[] {"EVEN", "AGNC", "NOTE"});
@@ -951,7 +1019,7 @@ public class ReportWebsite extends Report {
 		// OBJE - Images etc
 		Element images = processMultimediaLink(source, linkPrefix, source.getId(), html, false, false);
 		if (images != null) {			
-			div1.appendChild(html.h2(translate("images")));
+			div1.appendChild(html.h2(translateLocal("images")));
 			div1.appendChild(images);
 		}
 		handledProperties.add("OBJE");
@@ -963,7 +1031,7 @@ public class ReportWebsite extends Report {
 		processNumberNoteSourceChangeRest(source, linkPrefix, div1, source.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 
-		bodyNode.appendChild(backlink(listSourceFileName, linkPrefix, html));
+		bodyNode.appendChild(backlink(reportIndexFileName, listSourceFileName, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
@@ -973,7 +1041,8 @@ public class ReportWebsite extends Report {
 		String linkPrefix = relativeLinkPrefix(repo.getId());
 		resetNoteAndSourceList();
 
-		Html html = new Html(Gedcom.getName("REPO") + " " + repo.getId() + ": " + repo.toString(), linkPrefix);
+		Html html = new Html(getPropertyName("REPO") + " " + repo.getId() + ": " + repo.toString(), 
+				linkPrefix, currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 		
@@ -993,7 +1062,7 @@ public class ReportWebsite extends Report {
 		processNumberNoteSourceChangeRest(repo, linkPrefix, div1, repo.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
 
-		bodyNode.appendChild(backlink(listRepositoryFileName, linkPrefix, html));
+		bodyNode.appendChild(backlink(reportIndexFileName, listRepositoryFileName, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
@@ -1003,7 +1072,8 @@ public class ReportWebsite extends Report {
 		String linkPrefix = relativeLinkPrefix(object.getId());
 		resetNoteAndSourceList();
 
-		Html html = new Html(Gedcom.getName("OBJE") + " " + object.getId() + ": " + object.toString(), linkPrefix);
+		Html html = new Html(getPropertyName("OBJE") + " " + object.getId() + ": " + object.toString(), 
+				linkPrefix, currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 
@@ -1015,7 +1085,7 @@ public class ReportWebsite extends Report {
 		processSimpleTag(object, "TITL", div1, html, handledProperties);
 		processSimpleTag(object, "FORM", div1, html, handledProperties);
 		
-		/* XXX BLOBs not handled yet 
+		/* TODO BLOBs not handled yet 
 		 * Only in 5.5, not in 5.5.1
 	    +1 BLOB        {1:1}
 	      +2 CONT <ENCODED_MULTIMEDIA_LINE>  {1:M}
@@ -1049,7 +1119,7 @@ public class ReportWebsite extends Report {
 				}
 				Property type = formProp.getProperty("TYPE");
 				if (type != null) {
-					// XXX What to do with type?
+					// TODO What to do with type?
 					reportUnhandledProperties(type, null);
 				}
 				reportUnhandledProperties(formProp, new String[] {"TYPE"});
@@ -1102,7 +1172,7 @@ public class ReportWebsite extends Report {
 
 		processNumberNoteSourceChangeRest(object, linkPrefix, div1, object.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
-		bodyNode.appendChild(backlink(null, linkPrefix, html));
+		bodyNode.appendChild(backlink(reportIndexFileName, null, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
@@ -1112,11 +1182,12 @@ public class ReportWebsite extends Report {
 		String linkPrefix = relativeLinkPrefix(note.getId());
 		resetNoteAndSourceList();
 
-		Html html = new Html(Gedcom.getName("NOTE") + " " + note.getId() + ": " + note.toString(), linkPrefix);
+		Html html = new Html(getPropertyName("NOTE") + " " + note.getId() + ": " + note.toString(), 
+				linkPrefix, currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 
-		bodyNode.appendChild(html.h1(Gedcom.getName("NOTE") + note.getId() + ": " + note.toString()));
+		bodyNode.appendChild(html.h1(getPropertyName("NOTE") + note.getId() + ": " + note.toString()));
 		
 		Element div1 = html.div("left");
 		bodyNode.appendChild(div1);
@@ -1131,7 +1202,7 @@ public class ReportWebsite extends Report {
 		
 		processNumberNoteSourceChangeRest(note, linkPrefix, div1, note.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
-		bodyNode.appendChild(backlink(null, linkPrefix, html));
+		bodyNode.appendChild(backlink(reportIndexFileName, null, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
@@ -1141,7 +1212,8 @@ public class ReportWebsite extends Report {
 		String linkPrefix = relativeLinkPrefix(submitter.getId());
 		resetNoteAndSourceList();
 
-		Html html = new Html(Gedcom.getName("SUBM") + " " + submitter.getId() + ": " + submitter.getName(), linkPrefix);
+		Html html = new Html(getPropertyName("SUBM") + " " + submitter.getId() + ": " + submitter.getName(), 
+				linkPrefix, currentLang);
 		Document doc = html.getDoc();
 		Element bodyNode = html.getBody();
 
@@ -1169,17 +1241,32 @@ public class ReportWebsite extends Report {
 
 		processNumberNoteSourceChangeRest(submitter, linkPrefix, div1, submitter.getId(), html, handledProperties);
 		addNoteAndSourceList(bodyNode);
-		bodyNode.appendChild(backlink(null, linkPrefix, html));
+		bodyNode.appendChild(backlink(reportIndexFileName, null, linkPrefix, html));
 		makeFooter(bodyNode, html);
 		return html;
 	}
 
-	protected Element backlink(String indexFileName, String linkPrefix, Html html) {
+	protected Element backlink(String currentFileName, String indexFileName, String linkPrefix, Html html) {
 		Element divlink = html.div("backlink");
-		divlink.appendChild(html.link(linkPrefix + reportIndexFileName, translate("startPage")));
+		if (!linkPrefix.equals("") || !currentFileName.equals(reportIndexFileName)) { // avoid start page
+			divlink.appendChild(html.link(linkPrefix + getLocalizedFilename(reportIndexFileName, currentLocale), 
+					translateLocal("startPage")));
+		}
 		if (indexFileName != null) {
 			divlink.appendChild(html.text(" "));
-			divlink.appendChild(html.link(linkPrefix + indexFileName, translate("indexPage")));
+			divlink.appendChild(html.link(linkPrefix + getLocalizedFilename(indexFileName, currentLocale), 
+					translateLocal("indexPage")));
+		}
+		// Lang links
+		if (secondaryLocale != null) {
+			divlink.appendChild(html.br());
+			Locale linkToLocale = null;
+			String nameOfLang = Locale.getDefault().getDisplayLanguage(Locale.getDefault());
+			if (currentLocale == null) {
+				linkToLocale = secondaryLocale;
+				nameOfLang = secondaryLocale.getDisplayLanguage(secondaryLocale);
+			}
+			divlink.appendChild(html.link(getLocalizedFilename(currentFileName, linkToLocale), nameOfLang)); 
 		}
 		return divlink;
 	}
@@ -1189,7 +1276,7 @@ public class ReportWebsite extends Report {
 		if (displayGenJFooter) {
 			Element divFooter = html.div("footer");
 			appendTo.appendChild(divFooter);
-			Element p = html.p(translate("footerText") + " ");
+			Element p = html.p(translateLocal("footerText") + " ");
 			p.appendChild(html.link("http://genj.sourceforge.net/", "GenealogyJ"));
 			divFooter.appendChild(p);
 		}
@@ -1243,7 +1330,7 @@ public class ReportWebsite extends Report {
 		// List who is referencing this source, not part of the source file but exists when running the code  
 		List<PropertyXRef> refs = ent.getProperties(PropertyXRef.class);
 		if (refs.size() > 0) {
-			appendTo.appendChild(html.h2(translate("references")));
+			appendTo.appendChild(html.h2(translateLocal("references")));
 			Element p = html.p();
 			appendTo.appendChild(p);
 			for (PropertyXRef ref : refs) {
@@ -1308,7 +1395,7 @@ public class ReportWebsite extends Report {
 						// Check if the thumb exist first, otherwise just make a text link.
 						File mediaDir = new File(destDir, addressToDir(media.getId()));
 						File thumbFile = new File(mediaDir, "thumb_" + media.getFile().getName());
-						// XXX Assume just one image, even though gedcom 551 says it can be multiple
+						// TODO Now it assumes just one image, even though gedcom 551 says it can be multiple
 						// The GenJ code seems to assume just one.
 						if (thumbFile.exists()) {
 							p.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
@@ -1358,7 +1445,7 @@ public class ReportWebsite extends Report {
 					reportUnhandledProperties(formProp, null);
 				}
 				// Find file
-				// XXX May have several FILE properties in 5.5.1 
+				// TODO May have several FILE properties in 5.5.1 
 				PropertyFile file = (PropertyFile)objects[i].getProperty("FILE");
 				if (file != null) {
 					// Get form of object 5.5.1 style
@@ -1453,7 +1540,7 @@ public class ReportWebsite extends Report {
 			Element sourceP = html.p(); 
 			processSourceRefs(sourceP, prop, linkPrefix, id, html);
 			if (sourceP.hasChildNodes()) {
-				appendTo.appendChild(html.h2(Gedcom.getName("SOUR", true)));
+				appendTo.appendChild(html.h2(getPropertyName("SOUR", true)));
 				appendTo.appendChild(sourceP);
 			}
 		}
@@ -1463,7 +1550,7 @@ public class ReportWebsite extends Report {
 			Element noteP = html.p(); 
 			processNoteRefs(noteP, prop, linkPrefix, id, html);
 			if (noteP.hasChildNodes()) {
-				appendTo.appendChild(html.h2(Gedcom.getName("NOTE", true)));
+				appendTo.appendChild(html.h2(getPropertyName("NOTE", true)));
 				appendTo.appendChild(noteP);
 			}
 		}
@@ -1477,7 +1564,7 @@ public class ReportWebsite extends Report {
 		 *   +2 TYPE <USER_REFERENCE_TYPE>  {0:1}  */
 		Property[] refns = prop.getProperties("REFN");
 		if (refns.length > 0) {
-			appendTo.appendChild(html.h2(Gedcom.getName("REFN")));
+			appendTo.appendChild(html.h2(getPropertyName("REFN")));
 			for (Property refn : refns) {
 				Element p = html.p(refn.getDisplayValue());
 				Property type = refn.getProperty("TYPE");
@@ -1489,20 +1576,20 @@ public class ReportWebsite extends Report {
 		}
 
 		// CHAN
-		appendTo.appendChild(html.h2(translate("other")));
+		appendTo.appendChild(html.h2(translateLocal("other")));
 		PropertyChange lastUpdate = (PropertyChange)prop.getProperty("CHAN");
 		if (lastUpdate != null) {
-			Element p = html.p(translate("dataUpdated") + 
+			Element p = html.p(translateLocal("dataUpdated") + 
 					" " + lastUpdate.getDisplayValue());
 			appendTo.appendChild(p);
 			handledProperties.add("CHAN");
 			processNoteRefs(p, lastUpdate, linkPrefix, id, html);
 			reportUnhandledProperties(lastUpdate, new String[] {"NOTE"});
 			p.appendChild(html.br()); 
-			p.appendChild(html.text(translate("pageCreated") + 
+			p.appendChild(html.text(translateLocal("pageCreated") + 
 					" " + (new PropertyChange()).getDisplayValue()));
 		} else {
-			appendTo.appendChild(html.p(translate("pageCreated") + 
+			appendTo.appendChild(html.p(translateLocal("pageCreated") + 
 					" " + (new PropertyChange()).getDisplayValue()));
 		}
 		
@@ -1539,7 +1626,7 @@ public class ReportWebsite extends Report {
 	protected void processSimpleTag(Property prop, String tag, Element appendTo, Html html, List<String> handledProperties) {
 		Property[] subProps = prop.getProperties(tag);
 		if (subProps.length > 0) {
-			appendTo.appendChild(html.h2(Gedcom.getName(tag)));
+			appendTo.appendChild(html.h2(getPropertyName(tag)));
 			for (Property subProp : subProps) {
 				Element p = html.p();
 				this.appendDisplayValue(p, subProp, true, html);
@@ -1555,7 +1642,7 @@ public class ReportWebsite extends Report {
 			String id, Element appendTo, Html html) {
 		Property[] subProp = prop.getProperties(tag);
 		if (subProp.length == 0) return;
-		appendTo.appendChild(html.h2(Gedcom.getName(tag)));
+		appendTo.appendChild(html.h2(getPropertyName(tag)));
 		for (int i = 0; i < subProp.length; i++){
 			appendTo.appendChild(processEventDetail(subProp[i], linkPrefix, id, html, false));
 		}
@@ -1573,7 +1660,7 @@ public class ReportWebsite extends Report {
 		if (displayTagDescription) {
 			String description = "";
 			if (!event.getTag().equals("EVEN")) {
-				p.appendChild(html.text(Gedcom.getName(event.getTag()) + ": "));
+				p.appendChild(html.text(getPropertyName(event.getTag()) + ": "));
 			}
 		}
 		Property type = event.getProperty("TYPE");
@@ -1612,7 +1699,7 @@ public class ReportWebsite extends Report {
 		for (String tag : new String[] {"AGE", "AGNC", "CAUS", "RELI", "RESN"}) {
 			Property tagProp = event.getProperty(tag);
 			if (tagProp != null) {
-				p.appendChild(html.text(Gedcom.getName(tag) + " " + tagProp.getDisplayValue()));
+				p.appendChild(html.text(getPropertyName(tag) + " " + tagProp.getDisplayValue()));
 				reportUnhandledProperties(tagProp, null);
 			}
 			handledProperties.add(tag);
@@ -1623,7 +1710,7 @@ public class ReportWebsite extends Report {
 			if (tagProp != null) {
 				Property age = tagProp.getProperty("AGE");
 				if (age != null) {
-					p.appendChild(html.text(Gedcom.getName(tag) + " " + Gedcom.getName("AGE") + " " +
+					p.appendChild(html.text(getPropertyName(tag) + " " + getPropertyName("AGE") + " " +
 							age.getDisplayValue()));
 					this.reportUnhandledProperties(age, null);
 				}
@@ -1693,7 +1780,7 @@ public class ReportWebsite extends Report {
 		if (memberOfFamily == null || memberOfFamily.equals("BOTH")) {
 			if (husb != null) {
 				appendTo.appendChild(html.link(linkPrefix + addressTo(husb.getId()), getName(husb)));
-				if (wife != null) appendTo.appendChild(html.text(" " + translate("and") + " "));
+				if (wife != null) appendTo.appendChild(html.text(" " + translateLocal("and") + " "));
 			}
 			if (wife != null) appendTo.appendChild(html.link(linkPrefix + addressTo(wife.getId()), getName(wife)));
 		} else {
@@ -1721,7 +1808,7 @@ public class ReportWebsite extends Report {
 				String type = "";
 				Property typeProp = fone.getProperty("TYPE"); // Should be here according to spec
 				if (typeProp != null) type = typeProp.getDisplayValue(); 
-				span.appendChild(html.text(Gedcom.getName(subTag) + " " + type + ": " + 
+				span.appendChild(html.text(getPropertyName(subTag) + " " + type + ": " + 
 						(placeDisplayFormat.equals("all") ? fone.getValue() : fone.format(placeDisplayFormat).replaceAll("^(,|(, ))*", "").trim())));
 				reportUnhandledProperties(fone, new String[] {"TYPE"});
 			}
@@ -1736,8 +1823,8 @@ public class ReportWebsite extends Report {
 			if (longitude.startsWith("W") || longitude.startsWith("w")) longitude = "-" + longitude.substring(1);
 			else longitude = longitude.substring(1);
 			span.appendChild(html.text(" "));
-			span.appendChild(html.link(translate("mapLink", new Object[] {latitude, longitude}),
-					translate("linkToMap")));
+			span.appendChild(html.link(translateLocal("mapLink", new Object[] {latitude, longitude}),
+					translateLocal("linkToMap")));
 			reportUnhandledProperties(map, new String[]{"LATI", "LONG"});
 		}
 		reportUnhandledProperties(place, new String[]{"SOUR", "NOTE", "MAP"});
@@ -1756,7 +1843,7 @@ public class ReportWebsite extends Report {
 	
 	protected void processAddresses(Element appendTo, Property prop, Html html, List<String> handledProperties, boolean bigDisplayWithHeading) {
 		if (! processAddressesHasData(prop)) return;
-		if (bigDisplayWithHeading) appendTo.appendChild(html.h2(Gedcom.getName("ADDR")));
+		if (bigDisplayWithHeading) appendTo.appendChild(html.h2(getPropertyName("ADDR")));
 
 		Element span = html.span("address");
 		if (! bigDisplayWithHeading) appendTo.appendChild(span);
@@ -1787,7 +1874,7 @@ public class ReportWebsite extends Report {
 				if (tag.equals("EMAIL")) value = html.link("mailto:" + subProp.getDisplayValue(), subProp.getDisplayValue());
 				if (tag.equals("WWW")) value = html.link(subProp.getDisplayValue(), subProp.getDisplayValue());
 				if (bigDisplayWithHeading) {
-					Element p = html.p(Gedcom.getName(tag) + ": ");
+					Element p = html.p(getPropertyName(tag) + ": ");
 					p.appendChild(value);
 					appendTo.appendChild(p);
 				} else {
@@ -1848,22 +1935,22 @@ public class ReportWebsite extends Report {
 			if (source != null)
 				p.appendChild(html.link(linkPrefix + addressTo(source.getId()), source.toString()));
 			else 
-				p.appendChild(html.text("(" + translate("unknown") + ")"));
+				p.appendChild(html.text("(" + translateLocal("unknown") + ")"));
 			// PAGE
 			Property page = sourceRef.getProperty("PAGE");
 			if (page != null) {
-				p.appendChild(html.text(" " + Gedcom.getName("PAGE") + ": " + 
+				p.appendChild(html.text(" " + getPropertyName("PAGE") + ": " + 
 						page.getDisplayValue()));
 	       		reportUnhandledProperties(page, null);
 			}
 			// EVEN
 			Property even = sourceRef.getProperty("EVEN");
 			if (even != null) {
-				p.appendChild(html.text(" " + Gedcom.getName("EVEN") + ": " +
+				p.appendChild(html.text(" " + getPropertyName("EVEN") + ": " +
 						even.getDisplayValue()));
 				Property role = even.getProperty("ROLE");
 				if (role != null) {
-					p.appendChild(html.text(" " + Gedcom.getName("ROLE") + ": " +
+					p.appendChild(html.text(" " + getPropertyName("ROLE") + ": " +
 						role.getDisplayValue()));
 	           		reportUnhandledProperties(role, null);
 				}
@@ -1872,7 +1959,7 @@ public class ReportWebsite extends Report {
 			// DATA
 			Property data = sourceRef.getProperty("DATA");
 			if (data != null) {
-				p.appendChild(html.text(" " + Gedcom.getName("DATA") + ": " +
+				p.appendChild(html.text(" " + getPropertyName("DATA") + ": " +
 						data.getDisplayValue()));
 				Property date = data.getProperty("DATE");
 				if (date != null) p.appendChild(html.text(" " + date.getDisplayValue()));
@@ -1883,7 +1970,7 @@ public class ReportWebsite extends Report {
 			// QUAY
 			Property quay = sourceRef.getProperty("QUAY");
 			if (quay != null) {
-				p.appendChild(html.text(" " + Gedcom.getName("QUAY") + ": " + 
+				p.appendChild(html.text(" " + getPropertyName("QUAY") + ": " + 
 						quay.getDisplayValue()));
 	       		reportUnhandledProperties(quay, null);
 			}
@@ -1898,7 +1985,7 @@ public class ReportWebsite extends Report {
 			for (Property text : sourceRef.getProperties("TEXT")) {
 				Element sp = html.p();
 				sourceDiv.appendChild(sp);
-				sp.appendChild(html.text(Gedcom.getName("TEXT") + ": "));
+				sp.appendChild(html.text(getPropertyName("TEXT") + ": "));
 				appendDisplayValue(sp, text, false, html);
 			}
 	   		reportUnhandledProperties(sourceRef, new String[] {"TEXT", "NOTE"});
@@ -1988,7 +2075,8 @@ public class ReportWebsite extends Report {
 		Property[] aProps = a.getProperties();  
 		Property[] bProps = b.getProperties();  
 		if (aProps.length == 0 && bProps.length == 0) return true;
-		// XXX recurse down to do more check for equality?
+		if (aProps.length == 1 && bProps.length == 1) return propertyStructEquals(aProps[0], bProps[0]);
+		// TODO recurse down to do more check for equality?
 		return false;
 	}
 	
@@ -2130,8 +2218,8 @@ public class ReportWebsite extends Report {
 		addColorToMap(translator, "cssLinkColor", cssLinkColor);
 		addColorToMap(translator, "cssVistedLinkColor", cssVistedLinkColor);
 		addColorToMap(translator, "cssBorderColor", cssBorderColor);
-		translator.put("indexFile", reportIndexFileName);
-		translator.put("noSearchResults", translate("noSearchResults"));
+		translator.put("indexFile", getLocalizedFilename(reportIndexFileName, currentLocale));
+		translator.put("noSearchResults", translateLocal("noSearchResults"));
 		return translator;
 	}
 
@@ -2148,23 +2236,34 @@ public class ReportWebsite extends Report {
 	 * @param dir The output directory
 	 * @throws IOException in case of file error
 	 */
-	protected void makeCssAndJs(File dir, HashMap<String, String> translator) throws IOException {
+	protected void makeCss(File dir, HashMap<String, String> translator) throws IOException {
 		println("Making css-file");
 		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + cssBaseFile,
 				dir.getAbsolutePath() + File.separator + "style.css", translator, false);	
 		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + cssTreeFile[treeType],
 				dir.getAbsolutePath() + File.separator + "style.css", translator, true);	
-		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + "html/search.js",
-				dir.getAbsolutePath() + File.separator + "search.js", translator, false);	
 	}
 
+	protected void makeJs(File dir, HashMap<String, String> translator) throws IOException {
+		println("Making js-file");
+		copyTextFileModify(getFile().getParentFile().getAbsolutePath() + File.separator + "html/search.js",
+				dir.getAbsolutePath() + File.separator + getLocalizedFilename("search.js", currentLocale), translator, false);	
+	}
+
+	protected String getLocalizedFilename(String filename, Locale locale) {
+		if (locale != null) {
+			return filename.replaceFirst("\\.", "-" + locale.getLanguage() + ".");
+		}
+		return filename;
+	}
+	
 	/**
 	 * Calculate the address of an object
 	 * Make a directory structure that works for many objecs
 	 * @return the address excluding any leading /. For example "indi4/04/12/index.html"
 	 */
 	protected String addressTo(String id) {
-		return addressToDir(id) + reportIndexFileName;
+		return addressToDir(id) + getLocalizedFilename(reportIndexFileName, currentLocale);
 	}
 
 	/**
@@ -2277,7 +2376,14 @@ public class ReportWebsite extends Report {
 		}
 	}
 
-	
+	protected String translateLocal(String key, Object... values) {
+		if (currentLocale == null) return translate(key, values);
+    	return translate(key, currentLocale, values);
+    }
+
+	protected String translateLocal(String key) {
+		return translateLocal(key, (Object[])null);
+	}
 }
 
 	

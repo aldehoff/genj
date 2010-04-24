@@ -18,7 +18,7 @@ public class Html {
 	Element body = null;
 	Element headNode;
 	
-	public Html(String title, String linkPrefix) {
+	public Html(String title, String linkPrefix, String lang) {
 		String sPublicId = "-//W3C//DTD XHTML 1.0 Strict//EN";
 		String sSystemId = "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd";
 		try {
@@ -32,6 +32,8 @@ public class Html {
 			t.printStackTrace();
 		}
 		doc.getDocumentElement().setAttribute("xmlns","http://www.w3.org/1999/xhtml");
+		doc.getDocumentElement().setAttribute("lang", lang);
+		doc.getDocumentElement().setAttribute("xml:lang", lang);
 
 		// add head, title and body
 		//Text name = doc.createTextNode(indi.getName());
