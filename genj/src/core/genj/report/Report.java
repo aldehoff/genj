@@ -625,8 +625,8 @@ public abstract class Report implements Cloneable {
     // look it up in language
     String result = null;
     String lang = locale!=null ? locale.getLanguage() : userLanguage;
-    if (userLanguage!=null) {
-      String locKey = key+'.'+userLanguage;
+    if (lang!=null) {
+      String locKey = key+'.'+lang;
       result = resources.getString(locKey, values);
       if (result!=locKey)
         return result;
