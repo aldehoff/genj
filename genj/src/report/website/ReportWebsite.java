@@ -2214,10 +2214,8 @@ public class ReportWebsite extends Report {
 	}
 	
 	protected void reportUnhandledProperties(Property current, String[] handled) {
-		Property[] properties = current.getProperties();
-		if (properties.length == 0) return;
-		for (int i = 0; i < properties.length; i++) {
-			String tag = properties[i].getTag();
+		for (Property property : current.getProperties()) {
+			String tag = property.getTag();
 			if (! isIn(tag, handled)) {
 				println("  Unhandled tag:" + current.getTag() + ":" + tag);
 			}
@@ -2226,9 +2224,7 @@ public class ReportWebsite extends Report {
 
 	protected boolean isIn (String value, String[] list) {
 		if (list == null) return false;
-		for (int i = 0; i < list.length; i++) {
-			if (value.equals(list[i])) return true;
-		}
+		for (String element : list) if (value.equals(element)) return true;
 		return false;
 	}
 
