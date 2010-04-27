@@ -36,7 +36,6 @@ import genj.option.CustomOption;
 import genj.option.Option;
 import genj.report.Report;
 import genj.util.Resources;
-
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -80,7 +79,6 @@ public class ReportWebsite extends Report {
 	public String listRepositoryFileName = "repositories.html";
 	public boolean reportDisplayIndividualMap = true;
 	public boolean omitXmlDeclaration = false;
-	
     public String reportTitle = "Relatives";
     protected String reportWelcomeText = "On these pages my ancestors are presented";
     public boolean displaySosaStradonitz = false;
@@ -822,6 +820,11 @@ public class ReportWebsite extends Report {
 			}
 		}
 		handledProperties.add("FAMC");
+
+		if (! isPrivate) {
+			/*Element bpMap = getBirthPlaceMap(indi, html);
+			if (bpMap != null) div2.appendChild(bpMap);*/
+		}
 
 		// Find spouses and children
 		List<PropertyFamilySpouse> famss = indi.getProperties(PropertyFamilySpouse.class);
@@ -2076,7 +2079,7 @@ public class ReportWebsite extends Report {
 		Property[] bProps = b.getProperties();  
 		if (aProps.length == 0 && bProps.length == 0) return true;
 		if (aProps.length == 1 && bProps.length == 1) return propertyStructEquals(aProps[0], bProps[0]);
-		// TODO recurse down to do more check for equality?
+		// Maybe later: Recurse down to do more check for equality?
 		return false;
 	}
 	
@@ -2170,6 +2173,43 @@ public class ReportWebsite extends Report {
 	
 	}
 
+	/** Assumes isPrivate check outside */
+	protected Element getBirthPlaceMap(Indi indi, Html html) {
+		String lines = getBirthPlaceMapRec(indi, 0, html);
+		if (lines.equals("")) return null;
+		return html.img("http://maps.google.com/maps/api/staticmap?size=300x300&maptype=roadmap&sensor=false" + lines, 
+				translate("mapAncestorBirthPlace"));
+/*		return html.link("http://maps.google.com/maps/api/staticmap?size=500x500&maptype=roadmap&sensor=false" + lines, 
+				translate("mapAncestorBirthPlace"));*/
+	}
+	protected String getBirthPlaceMapRec(Indi indi, int depth, Html html) {
+		// "path=color:0x000000FF|weight:2|fbp|ipb|mbp"
+		if (indi == null) return "";
+		Indi f = indi.getBiologicalFather();
+		Indi m = indi.getBiologicalMother();
+		if (f == null || m == null) return "";
+		String ibp = getEventMapPosition(indi.getProperty("BIRT"));
+		String fbp = null;
+		if (f != null) fbp = getEventMapPosition(f.getProperty("BIRT"));
+		String mbp = null;
+		if (m != null) mbp = getEventMapPosition(m.getProperty("BIRT"));
+
+		String path = "";
+		if (ibp != null && (mbp != null || fbp != null)) {
+			String color = "000000";
+			if (depth > 0) color = Integer.toHexString(depth * 0x444444);
+			path = "&path=color:0x"+color+"FF|weight:2";
+			if (fbp != null) path += "|" + fbp;
+			path += "|" + ibp;
+			if (mbp != null) path += "|" + mbp;
+		}
+
+		if (depth > 1) return path;
+		if (f != null) path += getBirthPlaceMapRec(f, depth + 1, html);
+		if (m != null) path += getBirthPlaceMapRec(m, depth + 1, html);
+		return path;
+	}
+	
 	protected void reportUnhandledProperties(Property current, String[] handled) {
 		Property[] properties = current.getProperties();
 		if (properties.length == 0) return;
