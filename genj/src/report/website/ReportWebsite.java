@@ -1967,7 +1967,10 @@ public class ReportWebsite extends Report {
 				Property date = data.getProperty("DATE");
 				if (date != null) p.appendChild(html.text(" " + date.getDisplayValue()));
 				Property text = data.getProperty("TEXT");
-	   			if (text != null) p.appendChild(html.text(" " + text.getDisplayValue()));
+				if (text != null) {
+					p.appendChild(html.text(" "));
+					appendDisplayValue(p, text, false, html);
+				}
 	   			reportUnhandledProperties(data, new String[] {"DATE", "TEXT"});
 			}
 			// QUAY
