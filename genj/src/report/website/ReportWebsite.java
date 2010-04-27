@@ -1395,13 +1395,15 @@ public class ReportWebsite extends Report {
 				Media media = (Media)((PropertyMedia)objects[i]).getTargetEntity();
 				if (media != null) {
 					if (media.getFile() != null) {
+						Element mediaBox = html.span("imageBox");
+						p.appendChild(mediaBox);
 						// Check if the thumb exist first, otherwise just make a text link.
 						File mediaDir = new File(destDir, addressToDir(media.getId()));
 						File thumbFile = new File(mediaDir, "thumb_" + media.getFile().getName());
 						// TODO Now it assumes just one image, even though gedcom 551 says it can be multiple
 						// The GenJ code seems to assume just one.
 						if (thumbFile.exists()) {
-							p.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
+							mediaBox.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
 									html.img(linkPrefix + addressToDir(media.getId()) + "thumb_" + media.getFile().getName(), media.getTitle())));
 							// For the gallery
 							if (makeGalleryImage) {
@@ -1419,13 +1421,15 @@ public class ReportWebsite extends Report {
 								}
 							}
 						} else {
-							p.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
+							mediaBox.appendChild(html.link(linkPrefix + addressToDir(media.getId()) + media.getFile().getName(), 
 									media.getTitle()));
 						}
-						processNoteRefs(p, media, linkPrefix, id, html);
-						processSourceRefs(p, media, linkPrefix, id, html);
+						processNoteRefs(mediaBox, media, linkPrefix, id, html);
+						processSourceRefs(mediaBox, media, linkPrefix, id, html);
+						mediaBox.appendChild(html.br());
+						mediaBox.appendChild(html.link(linkPrefix + addressTo(media.getId()), translate("aboutMedia")));
 					} else {
-						println(" Media references are not handled yet...");
+						println(" Media reference to media without file.");
 					}
 					reportUnhandledProperties(objects[i], null);
 				} else {

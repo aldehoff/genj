@@ -51,6 +51,9 @@ span.note {
 a img {
 	border: 0px;
 }
+span.imageBox {
+	display: inline-block;
+}
 
 div.backlink {
 	position: fixed;
