@@ -101,6 +101,8 @@ public class EditNote extends Action2 {
           
     if (note instanceof PropertyNote)
       select.setSelection( ((PropertyNote)note).getTargetEntity() );
+    else
+      text.setText(note.getValue());
     
     if (0!=DialogHelper.openDialog(property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), e))
       return;
