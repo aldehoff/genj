@@ -500,7 +500,7 @@ public class ReportWebsite extends Report {
 		Submitter subm = gedcom.getSubmitter();
 		if (subm != null) {
 			div2.appendChild(html.h2(translateLocal("dataGatheredBy")));
-			Element p = html.p(subm.getName());
+			Element p = html.p(subm.getName() + ", ");
 			div2.appendChild(p);
 			processAddresses(p, subm, html, new ArrayList<String>(), false);
 		}
