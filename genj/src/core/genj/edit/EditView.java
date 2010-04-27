@@ -22,6 +22,7 @@ package genj.edit;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.UnitOfWork;
 import genj.util.Registry;
@@ -156,7 +157,7 @@ public class EditView extends View implements ContextProvider{
     commit(true);
   }
   
-  public void commit(boolean ask) {
+  private void commit(boolean ask) {
 
     // changes?
     if (!ok.isEnabled())
@@ -205,7 +206,7 @@ public class EditView extends View implements ContextProvider{
         editor.commit();
       else
         gedcom.doUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) {
+          public void perform(Gedcom gedcom) throws GedcomException {
             editor.commit();
           }
         });

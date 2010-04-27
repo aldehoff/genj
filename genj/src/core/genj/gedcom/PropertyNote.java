@@ -39,6 +39,10 @@ public class PropertyNote extends PropertyXRef {
     assertTag("NOTE");
   }
 
+  /*package*/ PropertyNote() {
+    super("NOTE");
+  }
+
   /**
    * check referenced note when finding properties by tag/value pattern
    */

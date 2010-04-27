@@ -19,10 +19,6 @@
   </col>
  </row>
  <col>
-  <fold key="NOTE"/>
-  <bean path="INDI:NOTE" gx="1" gy="1" wy="1" pad="8"/>
- </col>
- <col>
   <fold key="relationships"/>
   <bean path="." type="genj.edit.beans.RelationshipsBean" gy="1" gx="1" wy="1" pad="8"/>
  </col>

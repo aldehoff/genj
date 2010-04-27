@@ -19,10 +19,12 @@
  */
 package genj.edit;
 
+import genj.edit.actions.EditNote;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.util.Registry;
 import genj.view.ContextProvider;
@@ -141,7 +143,7 @@ import javax.swing.SwingUtilities;
   }
   
   @Override
-  public void commit() {
+  public void commit() throws GedcomException {
     
     // commit changes (without listing to the change itself)
     try {
@@ -180,12 +182,16 @@ import javax.swing.SwingUtilities;
     
     // remove all we've setup to this point
     beanPanel.setRoot(currentEntity);
+    
+    // add some actions
+    if (currentEntity!=null && currentEntity.getMetaProperty().allows(Gedcom.NOTE))
+      actions.add(new EditNote(currentEntity));
 
     // set focus
     if (focus!=null && view.isGrabFocus())
       beanPanel.select(focus);
 
-    
+    // start change tracking
     changes.setChanged(false);
     
     // done

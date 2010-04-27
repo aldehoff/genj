@@ -29,6 +29,8 @@ import genj.view.ViewFactory;
  * The factory for the TableView
  */
 public class EditViewFactory implements ViewFactory {
+  
+  public final static String NAME = EditView.RESOURCES.getString("title");
     
   /**
    * @see genj.view.ViewFactory#createView(genj.gedcom.Gedcom, genj.util.Registry, java.awt.Frame)
@@ -48,7 +50,7 @@ public class EditViewFactory implements ViewFactory {
    * @see genj.view.ViewFactory#getName(boolean)
    */
   public String getTitle() {
-    return EditView.RESOURCES.getString("title");
+    return NAME;
   }
 
 } //EditViewFactory

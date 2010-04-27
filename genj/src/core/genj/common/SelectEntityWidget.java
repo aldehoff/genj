@@ -56,6 +56,8 @@ public class SelectEntityWidget extends JPanel {
   
   private final static Resources RESOURCES = Resources.get(SelectEntityWidget.class);
   private final static Registry REGISTRY = Registry.get(SelectEntityWidget.class);
+  
+  public final static String NEW = RESOURCES.getString("select.new");
 
   /** type of entities to choose from */
   private String type = Gedcom.INDI;

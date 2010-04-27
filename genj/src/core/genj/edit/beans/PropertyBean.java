@@ -20,6 +20,7 @@
 package genj.edit.beans;
 
 import genj.gedcom.Entity;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyAge;
 import genj.gedcom.PropertyBlob;
@@ -304,7 +305,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   /**
    * Commit any changes made by the user
    */
-  public final void commit() {
+  public final void commit() throws GedcomException {
     // still need target?
     if (property==null)
       property = root.setValue(path, "");
@@ -315,7 +316,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
     // nothing more
   }
   
-  protected abstract void commitImpl(Property property);
+  protected abstract void commitImpl(Property property) throws GedcomException;
   
   /**
    * Editable? default is yes

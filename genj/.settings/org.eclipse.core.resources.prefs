@@ -1,4 +1,4 @@
-#Wed Mar 31 21:49:16 EDT 2010
+#Mon Apr 26 08:39:00 EDT 2010
 eclipse.preferences.version=1
 encoding//language/cs/genj/almanac/resources_cs.properties=UTF-8
 encoding//language/cs/genj/app/resources_cs.properties=UTF-8
@@ -126,6 +126,7 @@ encoding//language/fr/genj/tree/resources_fr.properties=UTF-8
 encoding//language/fr/genj/view/resources_fr.properties=UTF-8
 encoding//language/hu/genj/app/resources_hu.properties=UTF-8
 encoding//language/hu/genj/applet/resources_hu.properties=UTF-8
+encoding//language/hu/genj/common/resources_hu.properties=UTF-8
 encoding//language/hu/genj/edit/actions/resources_hu.properties=UTF-8
 encoding//language/hu/genj/edit/beans/resources_hu.properties=UTF-8
 encoding//language/hu/genj/edit/resources_hu.properties=UTF-8
@@ -231,6 +232,7 @@ encoding//src/report/ReportExec.properties=UTF-8
 encoding//src/report/ReportFamily.properties=UTF-8
 encoding//src/report/ReportFlashList.properties=UTF-8
 encoding//src/report/ReportGedcomStatistics.properties=UTF-8
+encoding//src/report/ReportLinesAscent.properties=UTF-8
 encoding//src/report/ReportLinesCirc.properties=UTF-8
 encoding//src/report/ReportLinesFan.properties=UTF-8
 encoding//src/report/ReportMultDesc.properties=UTF-8

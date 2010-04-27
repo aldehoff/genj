@@ -21,8 +21,8 @@ package genj.edit.beans;
 
 import genj.edit.BeanPanel;
 import genj.edit.ChoosePropertyBean;
-import genj.edit.EditView;
 import genj.edit.Images;
+import genj.edit.actions.EditNote;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
@@ -30,14 +30,12 @@ import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyComparator;
 import genj.gedcom.PropertyEvent;
-import genj.gedcom.PropertyNote;
 import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
-import genj.util.swing.DialogHelper.ComponentVisitor;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -83,11 +81,10 @@ public class EventsBean extends PropertyBean {
   private final static ImageIcon 
     SOURCE = Grammar.V551.getMeta(new TagPath("SOUR")).getImage(),
     NOSOURCE = SOURCE.getTransparent(64),
-    NOTE = Grammar.V551.getMeta(new TagPath("NOTE")).getImage(),
+    NOTE = EditNote.EDIT_NOTE,
     NONOTE = NOTE.getTransparent(64);
 
   private JTable table;
-  private Runnable commit;
   private Mouser mouser = new Mouser();
   
   public EventsBean() {
@@ -138,39 +135,12 @@ public class EventsBean extends PropertyBean {
   }
   
   @Override
-  protected void commitImpl(Property property) {
-    
-    if (commit!=null) {
-      Runnable r = commit;
-      commit = null;
-      r.run();
-    }
-    
+  protected void commitImpl(Property property) throws GedcomException {
   }
   
-  private void commit(final Runnable commit) {
-    
+  private void commit(Gedcom gedcom, UnitOfWork commit) {
     changeSupport.fireChangeEvent();
-    
-    EditView view = (EditView)DialogHelper.visitContainers(this, new ComponentVisitor() {
-      @Override
-      public Component visit(Component component, Component child) {
-        return component instanceof EditView ? component : null;
-      }
-    });
-    
-    if (view!=null) {
-      this.commit = commit;
-      view.commit(false);
-    } else {
-      if (root!=null)
-        root.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
-          public void perform(Gedcom gedcom) throws GedcomException {
-            commit.run();
-          }
-        });
-    }
-    
+    gedcom.doMuteUnitOfWork(commit);
   }
   
   private boolean isEvent(MetaProperty meta) {
@@ -200,9 +170,6 @@ public class EventsBean extends PropertyBean {
 
   @Override
   protected void setPropertyImpl(Property prop) {
-    
-    commit = null;
-    
     table.setModel(new Events(prop));
   }
   
@@ -335,8 +302,8 @@ public class EventsBean extends PropertyBean {
       
       final String add = choose.getSelectedTags()[0];
       
-      commit(new Runnable() {
-        public void run() {
+      commit(root.getGedcom(), new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
           added = root.addProperty(add, "");
           getModel().add(added);
         }
@@ -455,16 +422,11 @@ public class EventsBean extends PropertyBean {
     }
     @Override
     Object getValue(Property event) {
-      for (Property note : event.getProperties("NOTE")) {
-        if (note instanceof PropertyNote)
-          return NOTE;
-        if (note.getValue().length()>0)
-          return NOTE;
-      }
-      return NONOTE;
+      return EditNote.hasNote(event) ? NOTE : NONOTE;
     }
     @Override
-    void perform(Property property) {
+    void perform(final Property event) {
+      new EditNote(event).actionPerformed(new ActionEvent(EventsBean.this, 0, ""));
     }
   }
  
@@ -508,10 +470,9 @@ public class EventsBean extends PropertyBean {
       });
       
       if (0==DialogHelper.openDialog(RESOURCES.getString("even.edit"), DialogHelper.QUESTION_MESSAGE, panel, actions, EventsBean.this)) {
-        commit(new Runnable() {
-          public void run() {
+        commit(property.getGedcom(), new UnitOfWork() {
+          public void perform(Gedcom gedcom) throws GedcomException {
             panel.commit();
-            getModel().sort();
           }
         });
       }
@@ -541,8 +502,8 @@ public class EventsBean extends PropertyBean {
           Action2.okCancel(), EventsBean.this))
         return;
 
-      commit(new Runnable() {
-        public void run() {
+      commit(property.getGedcom(), new UnitOfWork() {
+        public void perform(Gedcom gedcom) {
           if (property.getParent()!=null) {
             property.getParent().delProperty(property);
             getModel().del(property);

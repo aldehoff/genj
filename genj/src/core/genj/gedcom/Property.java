@@ -175,6 +175,27 @@ public abstract class Property implements Comparable<Property> {
   }
   
   /**
+   * Associates a note object with this property
+   */
+  public boolean addNote(Note note) {
+    // NOTE? 
+    if (!getMetaProperty().allows("NOTE")) 
+      return false;
+    // add reference
+    PropertyNote xref = new PropertyNote();
+    addProperty(xref);
+    xref.setValue(note.getId());
+    try {
+      xref.link();
+    } catch (GedcomException e) {
+      Gedcom.LOG.log(Level.FINE, "unexpected", e);
+      delProperty(xref);
+      return false;
+    }
+    return true;
+  }
+  
+  /**
    * Associates a media object with this proprty
    */
   public boolean addMedia(Media media) {
@@ -309,6 +330,9 @@ public abstract class Property implements Comparable<Property> {
     if (children==null)
       throw new IndexOutOfBoundsException("no such child");
 
+    if (deletee==null)
+      throw new IllegalArgumentException("can't delete null property");
+    
     // find position (throw outofbounds if n/a)
     int pos = 0;
     for (;;pos++) {

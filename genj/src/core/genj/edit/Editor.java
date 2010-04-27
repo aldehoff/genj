@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.gedcom.Context;
+import genj.gedcom.GedcomException;
 import genj.util.ChangeSupport;
 import genj.view.ViewContext;
 
@@ -51,7 +52,7 @@ import javax.swing.event.ChangeListener;
   /**
    * commit changes
    */
-  public abstract void commit();
+  public abstract void commit() throws GedcomException;
   
   /**
    * Editor's actions

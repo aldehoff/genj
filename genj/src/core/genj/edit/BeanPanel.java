@@ -22,6 +22,7 @@ package genj.edit;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
@@ -158,7 +159,7 @@ public class BeanPanel extends JPanel {
   /**
    * commit beans - transaction has to be running already
    */
-  public void commit() {
+  public void commit() throws GedcomException {
     
     // commit beans' changes
     for (PropertyBean bean : beans) {

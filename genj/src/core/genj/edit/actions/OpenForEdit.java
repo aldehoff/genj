@@ -41,7 +41,7 @@ public class OpenForEdit extends Action2 {
     this.context = context;
     this.workbench = workbench;
     setImage(Images.imgView);
-    setText(AbstractChange.resources.getString("edit"));
+    setText(EditViewFactory.NAME);
   }
   
   /**

@@ -328,7 +328,7 @@ import javax.swing.tree.TreePath;
   }
 
   @Override
-  public void commit() {
+  public void commit() throws GedcomException {
     Property root = tree.getRoot();
     if (root==null)
       return;

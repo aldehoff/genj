@@ -7,7 +7,6 @@
     <bean path="FAM:MARR:DATE"/>
     <bean path="FAM:MARR:PLAC" gx="1"/>
    </col>
-   <bean path="FAM:NOTE" gx="1" gy="1"/>
   </col>
   <col gx="1" pad="8">
    <bean path="." type="genj.edit.beans.MediaBean" gx="1" gy="1"/>

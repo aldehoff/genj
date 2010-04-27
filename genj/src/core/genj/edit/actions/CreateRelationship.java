@@ -116,7 +116,7 @@ public abstract class CreateRelationship extends AbstractChange {
     JPanel result = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><text wx=\"1\" wy=\"1\"/></row><row><check/><text/></row></col>"));
 
     // create selector
-    final SelectEntityWidget select = new SelectEntityWidget(gedcom, targetType, resources.getString("select.new"));
+    final SelectEntityWidget select = new SelectEntityWidget(gedcom, targetType, SelectEntityWidget.NEW);
     existing = select.getSelection();
     
     // prepare id checkbox and textfield
