@@ -90,6 +90,8 @@ public class EditNote extends Action2 {
         RESOURCES.getString("new", Gedcom.getName(Gedcom.NOTE)));
     panel.add(select);
     final JTextArea text = new JTextArea(3,16);
+    text.setLineWrap(true);
+    text.setWrapStyleWord(true);
     panel.add(new JScrollPane(text));
     
     select.addActionListener(new ActionListener() {
@@ -101,7 +103,7 @@ public class EditNote extends Action2 {
           
     if (note instanceof PropertyNote)
       select.setSelection( ((PropertyNote)note).getTargetEntity() );
-    else
+    else if (note!=null)
       text.setText(note.getValue());
     
     if (0!=DialogHelper.openDialog(property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), e))
