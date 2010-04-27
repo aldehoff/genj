@@ -19,6 +19,7 @@
 	<classpathentry kind="lib" path="language/pl"/>
 	<classpathentry kind="lib" path="language/pt_BR"/>
 	<classpathentry kind="lib" path="language/ru"/>
+  <classpathentry kind="lib" path="language/sv"/>
 	<classpathentry kind="lib" path="contrib/fop/avalon-framework-4.2.0.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/commons-io-1.0.jar"/>
 	<classpathentry kind="lib" path="contrib/fop/fop.jar"/>
