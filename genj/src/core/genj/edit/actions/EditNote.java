@@ -36,12 +36,13 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 /**
  * Edit note for a property
@@ -89,9 +90,8 @@ public class EditNote extends Action2 {
     final SelectEntityWidget select = new SelectEntityWidget(property.getGedcom(), Gedcom.NOTE, 
         RESOURCES.getString("new", Gedcom.getName(Gedcom.NOTE)));
     panel.add(select);
-    final JTextArea text = new JTextArea(3,16);
-    text.setLineWrap(true);
-    text.setWrapStyleWord(true);
+    final JTextPane text = new JTextPane();
+    text.setPreferredSize(new Dimension(128,128));
     panel.add(new JScrollPane(text));
     
     select.addActionListener(new ActionListener() {
