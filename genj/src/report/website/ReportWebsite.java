@@ -891,7 +891,6 @@ public class ReportWebsite extends Report {
 					/* Ignoring 
                        +1 <<LDS_SPOUSE_SEALING>>  {0:M}
 				    */
-					processNumberNoteSourceChangeRest(fam, linkPrefix, div2, fam.getId(), html, handledFamProperties);
 				}
 				Indi[] children = fam.getChildren(true);
 				if (children.length > 0) {
@@ -905,12 +904,13 @@ public class ReportWebsite extends Report {
 					div2.appendChild(childrenList);
 				}
 				reportUnhandledProperties(pfs, null);
+				if (!isPrivate) processNumberNoteSourceChangeRest(fam, linkPrefix, div2, fam.getId(), html, handledFamProperties, false);
 			}
 		}
 		handledProperties.add("FAMS");
 
 		if (!isPrivate) {
-			processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indi.getId(), html, handledProperties);
+			processNumberNoteSourceChangeRest(indi, linkPrefix, div1, indi.getId(), html, handledProperties, true);
 
 			// Display individual map, it's not that accurate...
 			if (reportDisplayIndividualMap) {
@@ -1031,7 +1031,7 @@ public class ReportWebsite extends Report {
 		bodyNode.appendChild(div2);
 		processReferences(source, linkPrefix, div2, html, handledProperties);
 		
-		processNumberNoteSourceChangeRest(source, linkPrefix, div1, source.getId(), html, handledProperties);
+		processNumberNoteSourceChangeRest(source, linkPrefix, div1, source.getId(), html, handledProperties, true);
 		addNoteAndSourceList(bodyNode);
 
 		bodyNode.appendChild(backlink(reportIndexFileName, listSourceFileName, linkPrefix, html));
@@ -1062,7 +1062,7 @@ public class ReportWebsite extends Report {
 		processReferences(repo, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 		
-		processNumberNoteSourceChangeRest(repo, linkPrefix, div1, repo.getId(), html, handledProperties);
+		processNumberNoteSourceChangeRest(repo, linkPrefix, div1, repo.getId(), html, handledProperties, true);
 		addNoteAndSourceList(bodyNode);
 
 		bodyNode.appendChild(backlink(reportIndexFileName, listRepositoryFileName, linkPrefix, html));
@@ -1173,7 +1173,7 @@ public class ReportWebsite extends Report {
 		processReferences(object, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 
-		processNumberNoteSourceChangeRest(object, linkPrefix, div1, object.getId(), html, handledProperties);
+		processNumberNoteSourceChangeRest(object, linkPrefix, div1, object.getId(), html, handledProperties, true);
 		addNoteAndSourceList(bodyNode);
 		bodyNode.appendChild(backlink(reportIndexFileName, null, linkPrefix, html));
 		makeFooter(bodyNode, html);
@@ -1203,7 +1203,7 @@ public class ReportWebsite extends Report {
 		processReferences(note, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 		
-		processNumberNoteSourceChangeRest(note, linkPrefix, div1, note.getId(), html, handledProperties);
+		processNumberNoteSourceChangeRest(note, linkPrefix, div1, note.getId(), html, handledProperties, true);
 		addNoteAndSourceList(bodyNode);
 		bodyNode.appendChild(backlink(reportIndexFileName, null, linkPrefix, html));
 		makeFooter(bodyNode, html);
@@ -1242,7 +1242,7 @@ public class ReportWebsite extends Report {
 		processReferences(submitter, linkPrefix, div2, html, handledProperties);
 		if (div2.hasChildNodes()) bodyNode.appendChild(div2);
 
-		processNumberNoteSourceChangeRest(submitter, linkPrefix, div1, submitter.getId(), html, handledProperties);
+		processNumberNoteSourceChangeRest(submitter, linkPrefix, div1, submitter.getId(), html, handledProperties, true);
 		addNoteAndSourceList(bodyNode);
 		bodyNode.appendChild(backlink(reportIndexFileName, null, linkPrefix, html));
 		makeFooter(bodyNode, html);
@@ -1540,7 +1540,7 @@ public class ReportWebsite extends Report {
 	 * @param html
 	 */
 	protected void processNumberNoteSourceChangeRest(Property prop, String linkPrefix,
-			Element appendTo, String id, Html html, List<String> handledProperties) {
+			Element appendTo, String id, Html html, List<String> handledProperties, boolean showPageCreated) {
 
 		// SOUR
 		if (! prop.getTag().equals("SOUR")) {
@@ -1583,21 +1583,26 @@ public class ReportWebsite extends Report {
 		}
 
 		// CHAN
-		appendTo.appendChild(html.h2(translateLocal("other")));
 		PropertyChange lastUpdate = (PropertyChange)prop.getProperty("CHAN");
 		if (lastUpdate != null) {
+			appendTo.appendChild(html.h2(translateLocal("other")));
 			Element p = html.p(translateLocal("dataUpdated") + 
 					" " + lastUpdate.getDisplayValue());
 			appendTo.appendChild(p);
 			handledProperties.add("CHAN");
 			processNoteRefs(p, lastUpdate, linkPrefix, id, html);
 			reportUnhandledProperties(lastUpdate, new String[] {"NOTE"});
-			p.appendChild(html.br()); 
-			p.appendChild(html.text(translateLocal("pageCreated") + 
-					" " + (new PropertyChange()).getDisplayValue()));
+			if (showPageCreated) {
+				p.appendChild(html.br()); 
+				p.appendChild(html.text(translateLocal("pageCreated") + 
+						" " + (new PropertyChange()).getDisplayValue()));
+			}
 		} else {
-			appendTo.appendChild(html.p(translateLocal("pageCreated") + 
-					" " + (new PropertyChange()).getDisplayValue()));
+			if (showPageCreated) {
+				appendTo.appendChild(html.h2(translateLocal("other")));
+				appendTo.appendChild(html.p(translateLocal("pageCreated") + 
+						" " + (new PropertyChange()).getDisplayValue()));
+			}
 		}
 		
 		// Add all other attributes
