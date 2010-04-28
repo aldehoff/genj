@@ -80,9 +80,9 @@ public class EventsBean extends PropertyBean {
   
   private final static ImageIcon 
     SOURCE = Grammar.V551.getMeta(new TagPath("SOUR")).getImage(),
-    NOSOURCE = SOURCE.getTransparent(64),
+    NOSOURCE = SOURCE.getTransparent(128),
     NOTE = EditNote.EDIT_NOTE,
-    NONOTE = NOTE.getTransparent(64);
+    NONOTE = NOTE.getTransparent(128);
 
   private JTable table;
   private Mouser mouser = new Mouser();
