@@ -425,7 +425,8 @@ public class ThumbnailWidget extends JComponent {
     thumbSize = Math.max(size.width, size.height);
     topLeft.setLocation(0,0);
     Rectangle r = getRectangle(selection);
-    scrollTo( -(r.x+thumbBorder.left-(getWidth()-size.width)/2), -(r.y+thumbBorder.top+(getHeight()-size.height)/2) );
+    scrollTo( -(r.x+thumbBorder.left-(Math.max(thumbSize,getWidth ())-size.width )/2),
+              -(r.y+thumbBorder.top +(Math.max(thumbSize,getHeight())-size.height)/2) );
   }
   
   /**
@@ -732,6 +733,9 @@ public class ThumbnailWidget extends JComponent {
         return false;
 
       // sanitize what's renderer
+//      g.setColor(Color.RED);
+//      g.draw(bounds);
+      
       bounds = center(new Rectangle(fit(size, bounds.getSize())), bounds);
 
       // render what we have

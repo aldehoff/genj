@@ -1,4 +1,4 @@
-#Mon Apr 26 08:39:00 EDT 2010
+#Wed Apr 28 08:53:43 EDT 2010
 eclipse.preferences.version=1
 encoding//language/cs/genj/almanac/resources_cs.properties=UTF-8
 encoding//language/cs/genj/app/resources_cs.properties=UTF-8
@@ -45,9 +45,6 @@ encoding//language/en/genj/almanac/resources.properties=UTF-8
 encoding//language/en/genj/app/resources.properties=UTF-8
 encoding//language/en/genj/applet/resources.properties=UTF-8
 encoding//language/en/genj/common/resources.properties=UTF-8
-encoding//language/en/genj/edit/actions/resources.properties=UTF-8
-encoding//language/en/genj/edit/beans/resources.properties=UTF-8
-encoding//language/en/genj/edit/resources.properties=UTF-8
 encoding//language/en/genj/entity/resources.properties=UTF-8
 encoding//language/en/genj/fo/resources.properties=UTF-8
 encoding//language/en/genj/gedcom/resources.properties=UTF-8
