@@ -22,7 +22,6 @@ package genj.tree;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.ColorsWidget;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.FontChooser;
 import genj.util.swing.NestedBlockLayout;
 

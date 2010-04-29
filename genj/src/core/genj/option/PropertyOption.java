@@ -238,12 +238,14 @@ public abstract class PropertyOption extends Option {
     /** callback - text representation = none */
     public String getTextRepresentation() {
       Font font = (Font)option.getValue();
-      return font==null ? "..." : font.getFamily() + "," + font.getSize();
+      return font==null ? "" : font.getFamily() + "," + font.getSize();
     }
 
     /** callback - component representation */
     public JComponent getComponentRepresentation() {
-      chooser.setSelectedFont((Font)option.getValue());
+      Font value = (Font)option.getValue();
+      value = null;
+      chooser.setSelectedFont(value);
       return chooser;
     }
 
@@ -375,6 +377,7 @@ public abstract class PropertyOption extends Option {
     public void actionPerformed(ActionEvent e) {
       Object value = option.getValue();
       JTextArea text = new JTextArea(4,12);
+      text.setLineWrap(true);
       text.setText(value!=null?value.toString():"");
       int rc = DialogHelper.openDialog(option.getName(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(text), Action2.okCancel(), e);
       if (rc==0)

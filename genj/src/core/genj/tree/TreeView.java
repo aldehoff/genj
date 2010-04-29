@@ -311,7 +311,8 @@ public class TreeView extends View implements ContextProvider, ActionProvider {
    */
   public void setContentFont(Font set) {
     // change?
-    if (contentFont.equals(set)) return;
+    if (set==null||contentFont.equals(set)) 
+      return;
     // remember
     contentFont = set;
     // show

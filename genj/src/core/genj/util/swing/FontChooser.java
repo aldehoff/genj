@@ -97,6 +97,12 @@ public class FontChooser extends JPanel {
   /**
    * Accessor - selected font   */
   public void setSelectedFont(Font font) {
+    if (font==null) {
+      fonts.setSelectedIndex(-1);
+      size.setText("");
+      return;
+    }
+      
     String family = font.getFamily();
     Font[] fs = getAllFonts();
     for (int i = 0; i < fs.length; i++) {
@@ -114,7 +120,7 @@ public class FontChooser extends JPanel {
   public Font getSelectedFont() {
     Font font = (Font)fonts.getSelectedItem();
     if (font==null)
-      font = getFont();
+      return null;
     return font.deriveFont((float)getSelectedFontSize());
   }
   
@@ -122,7 +128,7 @@ public class FontChooser extends JPanel {
    * Calculates current selected size
    */
   private int getSelectedFontSize() {
-    int result = 2;
+    int result = 10;
     try {
       result = Integer.parseInt(size.getText());
     } catch (Throwable t) {
