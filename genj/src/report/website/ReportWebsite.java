@@ -32,10 +32,10 @@ import genj.gedcom.Repository;
 import genj.gedcom.Source;
 import genj.gedcom.Submitter;
 import genj.gedcom.MultiLineProperty.Iterator;
-import genj.option.CustomOption;
-import genj.option.Option;
+import genj.option.Multiline;
 import genj.report.Report;
 import genj.util.Resources;
+
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -52,17 +52,15 @@ import java.security.InvalidParameterException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.imageio.ImageIO;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -80,7 +78,7 @@ public class ReportWebsite extends Report {
 	public boolean reportDisplayIndividualMap = true;
 	public boolean omitXmlDeclaration = false;
     public String reportTitle = "Relatives";
-    protected String reportWelcomeText = "On these pages my ancestors are presented";
+    @Multiline public String reportWelcomeText = "On these pages my ancestors are presented";
     public boolean displaySosaStradonitz = false;
 	protected HashMap<String, String> sosaStradonitzNumber = null; 
     public boolean displayGenJFooter = true;
@@ -336,38 +334,6 @@ public class ReportWebsite extends Report {
 					new File(dir, "Repository.png"));
 		} catch (Exception e) {
 			println(" Failed to copy icons. Error:" + e.getMessage());
-		}
-	}
-
-	/**
-	 * To make it possible to enter a longer text
-	 */
-	protected List<? extends Option> getCustomOptions() {
-		return Collections.singletonList(new TextAreaOption());
-	}
-	/**
-	 * To make it possible to enter a longer text
-	 */
-	private class TextAreaOption extends CustomOption {
-		private JTextArea text = new JTextArea(reportWelcomeText);
-		protected JComponent getEditor() {
-			text.setLineWrap(true);
-			return new JScrollPane(text);
-		}
-		protected void commit(JComponent editor) {
-			reportWelcomeText = text.getText();
-		}
-		public String getName() {
-			return translateLocal("reportWelcomeText");
-		}
-		public String getToolTip() {
-			return "Enter your page description here. It will be enclosed in <p>-tags.";
-		}
-		public void persist() {
-			getRegistry().put("reportWelcomeText", text.getText());
-		}
-		public void restore() {
-			text.setText(getRegistry().get("reportWelcomeText", ""));
 		}
 	}
 
@@ -1778,9 +1744,10 @@ public class ReportWebsite extends Report {
 		
 		String value = place.getValue();
 		// /Replace chars to make it work with google maps
-		//value.replaceAll("[åääáàÅÄÂÁÀ]", "a");
-		//value.replaceAll("[öôóòÖÔÓÒ]", "o");
-		//value.replaceAll("[ëêéèËÊÉÈ]", "e");
+        // These have to be unicode encoded characters if included in source
+		//value.replaceAll("...", "a");
+		//value.replaceAll("...", "o");
+		//value.replaceAll("...", "e");
 		value = value.replaceAll("[?&]", "");
 		value = value.replaceAll(" ", "+");
 		return value;

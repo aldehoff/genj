@@ -21,11 +21,15 @@ package genj.option;
 
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.swing.Action2;
+import genj.util.swing.ButtonHelper;
+import genj.util.swing.DialogHelper;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.FontChooser;
 import genj.util.swing.TextFieldWidget;
 
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.font.TextAttribute;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -44,6 +48,8 @@ import java.util.Set;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /**
  * An option based on a simple accessible value
@@ -339,7 +345,42 @@ public abstract class PropertyOption extends Option {
     public void endRepresentation() {
       option.setValue(getText());
     }
-  } //BooleanUI
+  } //SimpleUI
+
+  /**
+   * A UI for multiline text
+   */
+  protected static class MultilineUI extends Action2 implements OptionUI {
+    /** option */
+    private PropertyOption option;
+
+    /** constructor */
+    public MultilineUI(PropertyOption option) {
+      this.option = option;
+    }
+    /** no text ui */
+    public String getTextRepresentation() {
+      return null;
+    }
+    /** component */
+    public JComponent getComponentRepresentation() {
+      setText("...");
+      return new ButtonHelper().setInsets(2).create(this);
+    }
+    /** commit */
+    public void endRepresentation() {
+    }
+    /** invoke UI */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Object value = option.getValue();
+      JTextArea text = new JTextArea(4,12);
+      text.setText(value!=null?value.toString():"");
+      int rc = DialogHelper.openDialog(option.getName(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(text), Action2.okCancel(), e);
+      if (rc==0)
+        option.setValue(text.getText());
+    }
+  } //SimpleUI
 
   /**
    * Impl base type
@@ -348,6 +389,7 @@ public abstract class PropertyOption extends Option {
 
     /** type */
     protected Class<?> type;
+    protected boolean multiline = false;
 
     /** a user readable name */
     private String name;
@@ -455,6 +497,9 @@ public abstract class PropertyOption extends Option {
       // a file?
       if (type==File.class)
         return new FileUI(this);
+      // multiline?
+      if (type==String.class&&multiline)
+        return new MultilineUI(this);
       // all else
       return new SimpleUI(this);
     }
@@ -551,6 +596,7 @@ public abstract class PropertyOption extends Option {
     /** Constructor */
     private FieldImpl(Object instance, Field field) {
       super(instance, field.getName(), field.getType());
+      multiline = field.getAnnotation(Multiline.class)!=null;
       this.field = field;
     }
 
@@ -597,6 +643,7 @@ public abstract class PropertyOption extends Option {
     /** Constructor */
     private BeanPropertyImpl(Object instance, PropertyDescriptor property) {
       super(instance, property.getName(), property.getPropertyType());
+      multiline = property.getReadMethod().getAnnotation(Multiline.class)!=null;
       this.descriptor = property;
     }
 

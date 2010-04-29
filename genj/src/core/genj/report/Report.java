@@ -48,7 +48,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -228,22 +227,10 @@ public abstract class Report implements Cloneable {
       options.add(prop);
     }
     
-    // add custom
-    for (Option option : getCustomOptions()) {
-      if (option.getCategory()==null)
-        option.setCategory(getName());
-      option.restore();
-      options.add(option);
-    }
-
     // done
     return options;
   }
   
-  protected List<? extends Option> getCustomOptions() {
-    return Collections.emptyList();
-  }
-
   /**
    * An image
    */
