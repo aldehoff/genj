@@ -317,8 +317,8 @@ public class DialogHelper {
 
       // check min size on dialog
       if (dlg!=null) {
-        Dimension c = content.getSize();
-        Dimension m = content.getMinimumSize();
+        Dimension c = getSize();
+        Dimension m = getMinimumSize();
         
         Dimension size = dlg.getSize();
         boolean set = false;
