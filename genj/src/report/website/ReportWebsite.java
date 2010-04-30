@@ -36,6 +36,7 @@ import genj.option.Multiline;
 import genj.report.Report;
 import genj.util.Resources;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -48,7 +49,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.channels.FileChannel;
-import java.security.InvalidParameterException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,11 +95,11 @@ public class ReportWebsite extends Report {
 	protected static final String[] cssTreeFile = {"html/treel2r.css", "html/treer2l.css"};
 
     /** Colors of the output */
-	public String cssTextColor = "000";
-	public String cssBackgroundColor = "FFF";
-	public String cssLinkColor = "009";
-	public String cssVistedLinkColor = "609";
-	public String cssBorderColor = "000";
+	public Color cssTextColor = Color.BLACK;
+	public Color cssBackgroundColor = Color.WHITE;
+	public Color cssLinkColor = new Color(0,0,0x99);
+	public Color cssVistedLinkColor = new Color(0x66, 0, 0x99);
+	public Color cssBorderColor = Color.BLACK;
 
 	/** Select background image in the boxes */
     public int boxBackground = 0;
@@ -128,7 +128,7 @@ public class ReportWebsite extends Report {
 	protected Resources resources = null;
 	
     /** The output directory */
-    File destDir = null;
+    protected File destDir = null;
     
     /**
 	 * Main for argument Gedcom
@@ -147,12 +147,7 @@ public class ReportWebsite extends Report {
 		}
 		// Try to make a translator for css/js-files
 		HashMap<String,String> translator;
-		try {
-			translator = makeCssAndJSSettings();
-		} catch (InvalidParameterException e) {
-			getOptionFromUser(e.getMessage(), OPTION_OK);
-			return;
-		}
+		translator = makeCssAndJSSettings();
 		
 		// Reset some variables
 		sosaStradonitzNumber = new HashMap<String, String>();
@@ -2238,12 +2233,18 @@ public class ReportWebsite extends Report {
 		return translator;
 	}
 
-	protected void addColorToMap(HashMap<String, String> translator, String name, String value) {
-		final Pattern colorPattern = Pattern.compile("[0-9a-fA-F]{3}|[0-9a-fA-F]{6}");
-		if (! colorPattern.matcher(value).matches()) {
-			throw new InvalidParameterException(name + " has incorrect value: " + value);
-		}
-		translator.put(name, value);
+	protected void addColorToMap(HashMap<String, String> translator, String name, Color color) {
+		StringBuffer value = new StringBuffer();
+		int r = color.getRed();
+		if (r < 0x10) value.append("0");
+		value.append(Integer.toHexString(r));
+		int g = color.getGreen();
+		if (g < 0x10) value.append("0");
+		value.append(Integer.toHexString(g));
+		int b = color.getBlue();
+		if (b < 0x10) value.append("0");
+		value.append(Integer.toHexString(b));
+		translator.put(name, value.toString());
 	}
 
 	/**
