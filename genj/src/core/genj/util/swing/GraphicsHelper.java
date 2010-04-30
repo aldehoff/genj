@@ -85,6 +85,11 @@ public class GraphicsHelper {
     return new Rectangle((int)x,(int)y,(int)w,(int)h);
   }
   
+  public static Icon getIcon(Shape shape, Color color) {
+    Dimension size = shape.getBounds().getSize();
+    return new ShapeAsIcon(Math.max(size.width, size.height), shape, color);
+  }
+  
   public static Icon getIcon(int size, Shape shape, Color color) {
     return new ShapeAsIcon(size, shape, color);
   }

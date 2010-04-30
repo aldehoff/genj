@@ -22,14 +22,18 @@ package genj.option;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
-import genj.util.swing.ButtonHelper;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.FileChooserWidget;
 import genj.util.swing.FontChooser;
+import genj.util.swing.GraphicsHelper;
 import genj.util.swing.TextFieldWidget;
 
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.font.TextAttribute;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -46,7 +50,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -244,7 +251,6 @@ public abstract class PropertyOption extends Option {
     /** callback - component representation */
     public JComponent getComponentRepresentation() {
       Font value = (Font)option.getValue();
-      value = null;
       chooser.setSelectedFont(value);
       return chooser;
     }
@@ -256,6 +262,42 @@ public abstract class PropertyOption extends Option {
 
   } //FontUI
 
+  /**
+   * A UI for a color
+   */
+  protected static class ColorUI extends DialogUI {
+
+    /** constructor */
+    public ColorUI(PropertyOption option) {
+      super(option);
+    }
+    
+    @Override
+    protected JComponent getEditor(Object value) {
+      JColorChooser editor = new JColorChooser();
+      if (value!=null)
+        editor.setColor((Color)value);
+      return editor;
+    }
+    
+    @Override
+    public JComponent getComponentRepresentation() {
+      JComponent c = super.getComponentRepresentation();
+      Object value = option.getValue();
+      if (c instanceof AbstractButton && value!=null) {
+        ((AbstractButton)c).setText(null);
+        ((AbstractButton)c).setIcon(GraphicsHelper.getIcon(new Rectangle(8,8), (Color)value));
+      }
+      return c;
+    }
+    
+    @Override
+    protected Object getValue(JComponent editor) {
+      return ((JColorChooser)editor).getColor();
+    }
+
+  } //ColorUI
+  
   /**
    * A UI for a file
    */
@@ -352,39 +394,69 @@ public abstract class PropertyOption extends Option {
   /**
    * A UI for multiline text
    */
-  protected static class MultilineUI extends Action2 implements OptionUI {
-    /** option */
-    private PropertyOption option;
-
+  protected static class MultilineUI extends DialogUI {
+    
     /** constructor */
     public MultilineUI(PropertyOption option) {
-      this.option = option;
+      super(option);
     }
-    /** no text ui */
+    @Override
+    protected JComponent getEditor(Object value) {
+      JTextArea text = new JTextArea(4,12);
+      text.setLineWrap(true);
+      text.setText(value!=null?value.toString():"");
+      return text;
+    }
+    @Override
+    protected Object getValue(JComponent editor) {
+      return ((JTextArea)editor).getText();
+    }
+  } //MultilineUI
+
+  /**
+   * A UI for in-dialog option editing
+   */
+  protected abstract static class DialogUI extends JButton implements ActionListener, OptionUI {
+    
+    /** option */
+    protected PropertyOption option;
+
+    /** constructor */
+    public DialogUI(PropertyOption option) {
+      this.option = option;
+      setMargin(new Insets(2,2,2,2));
+      addActionListener(this);
+    }
     public String getTextRepresentation() {
       return null;
     }
+    
     /** component */
     public JComponent getComponentRepresentation() {
       setText("...");
-      return new ButtonHelper().setInsets(2).create(this);
+      return this;
     }
     /** commit */
     public void endRepresentation() {
     }
+
+    protected abstract JComponent getEditor(Object value);
+    protected abstract Object getValue(JComponent editor);
+    
     /** invoke UI */
-    @Override
     public void actionPerformed(ActionEvent e) {
       Object value = option.getValue();
-      JTextArea text = new JTextArea(4,12);
-      text.setLineWrap(true);
-      text.setText(value!=null?value.toString():"");
-      int rc = DialogHelper.openDialog(option.getName(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(text), Action2.okCancel(), e);
-      if (rc==0)
-        option.setValue(text.getText());
-    }
-  } //SimpleUI
+      JComponent editor = getEditor(value);
+      int rc = DialogHelper.openDialog(option.getName(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(editor), Action2.okCancel(), e);
+      if (rc==0) {
+        option.setValue(getValue(editor));
 
+        // give any implementation a chance to re-set editing component
+        getComponentRepresentation();
+      }
+    }
+  } //DialogUI
+  
   /**
    * Impl base type
    */
@@ -491,6 +563,9 @@ public abstract class PropertyOption extends Option {
      */
     public OptionUI getUI(OptionsWidget widget) {
       // TODO Options - hardcoded UI
+      // a color?
+      if (Color.class.isAssignableFrom(type))
+        return new ColorUI(this);
       // a font?
       if (Font.class.isAssignableFrom(type))
         return new FontUI(this);
@@ -557,6 +632,7 @@ public abstract class PropertyOption extends Option {
     private static boolean isSupportedArgument(Class<?> type) {
       return
         Font.class.isAssignableFrom(type)   ||
+        Color.class.isAssignableFrom(type)   ||
         File.class.isAssignableFrom(type)   ||
         String.class.isAssignableFrom(type) ||
         Float.TYPE.isAssignableFrom(type) ||
