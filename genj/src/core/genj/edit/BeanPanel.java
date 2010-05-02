@@ -25,7 +25,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
@@ -349,10 +348,6 @@ public class BeanPanel extends JPanel {
 
     // try to resolve existing prop (first possible path to avoid merging of branches)
     Property prop = root.getProperty(path, false);
-    
-    // we don't want to look at links but inline stuff
-    if (prop instanceof PropertyXRef)
-      prop = null;
     
     // create bean for property
     PropertyBean bean;

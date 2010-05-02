@@ -1,0 +1,12 @@
+<col>
+ <row>
+  <label path=".:PAGE"/><bean path=".:PAGE" wx="1"/>
+  <label path=".:QUAY"/><bean path=".:QUAY" wx="1"/>
+  <label path=".:DATA:DATE"/><bean path=".:DATA:DATE" wx="1"/>
+ </row>
+ <label path=".:DATA:TEXT"/>
+ <bean path=".:DATA:TEXT" wx="1" wy="1"/>
+ <bean path="." type="genj.edit.beans.MediaBean" wx="1" wy="1"/>
+ <label path=".:NOTE"/>
+ <bean path=".:NOTE" wx="1" wy="1"/>
+</col>

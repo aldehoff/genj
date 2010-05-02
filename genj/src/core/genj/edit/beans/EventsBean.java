@@ -23,6 +23,7 @@ import genj.edit.BeanPanel;
 import genj.edit.ChoosePropertyBean;
 import genj.edit.Images;
 import genj.edit.actions.EditNote;
+import genj.edit.actions.EditSource;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
@@ -106,6 +107,8 @@ public class EventsBean extends PropertyBean {
     table.setPreferredScrollableViewportSize(new Dimension(32,32));
     table.setRowSelectionAllowed(true);
     table.setColumnSelectionAllowed(false);
+    table.setFillsViewportHeight(true);
+    table.getTableHeader().setReorderingAllowed(false);
     table.addMouseListener(mouser);
     table.addMouseMotionListener(mouser);
     
@@ -442,7 +445,8 @@ public class EventsBean extends PropertyBean {
       return NOSOURCE;
     }
     @Override
-    void perform(Property property) {
+    void perform(Property event) {
+      new EditSource(event).actionPerformed(new ActionEvent(EventsBean.this, 0, ""));
     }
   }
   

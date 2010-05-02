@@ -31,6 +31,7 @@ import genj.gedcom.PropertyFile;
 import genj.gedcom.PropertyMultilineValue;
 import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyPlace;
+import genj.gedcom.PropertyQuality;
 import genj.gedcom.PropertySex;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
@@ -73,6 +74,7 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   protected final static Registry REGISTRY = Registry.get(PropertyBean.class); 
   private final static Class<?>[] PROPERTY2BEANTYPE = { // TODO beans could be resolved dynamically to allow plugin overrides
     Entity.class                , EntityBean.class,
+    PropertyQuality.class       , QualityBean.class,
     PropertyPlace.class         , PlaceBean.class, // before choice!
     PropertyAge.class           , AgeBean.class,
     PropertyChoiceValue.class   , ChoiceBean.class,
