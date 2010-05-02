@@ -31,7 +31,7 @@
      <DATE type="PropertyDate" img="Date"/>
      <TEXT type="PropertyMultilineValue" img="Blob"/>
     </DATA>
-    <QUAY xref="1" type="PropertySimpleValue" img="Blob" cardinality="0:1"/>
+    <QUAY xref="1" type="PropertyQuality" img="Blob" cardinality="0:1"/>
     <OBJE xref="1" type="PropertyMedia|PropertySimpleReadOnly" img="Media">
      <TITL default="1" xref="0" type="PropertySimpleValue" img="Attribute" cardinality="0:1"/>
      <FORM default="1" hide="1" xref="0" type="PropertyChoiceValue" img="Format" cardinality="1:1"/>
