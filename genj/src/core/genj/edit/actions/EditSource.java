@@ -47,7 +47,8 @@ public class EditSource extends Action2 {
   
   public final static ImageIcon 
     EDIT_SOUR = Grammar.V551.getMeta(new TagPath("SOUR")).getImage(),
-    NEW_SOUR = EDIT_SOUR.getOverLayed(Images.imgNew);
+    NEW_SOUR = EDIT_SOUR.getOverLayed(Images.imgNew),
+    NO_SOUR = EDIT_SOUR.getTransparent(128);
   
   private Property property;
   
@@ -56,10 +57,19 @@ public class EditSource extends Action2 {
    * @param property the property the note is for
    */
   public EditSource(Property property) {
+    this(property, false);
+  }
+  
+  /**
+   * Constructor
+   * @param property the property the note is for
+   */
+  public EditSource(Property property, boolean showNone) {
+    
     this.property = property;
     
     boolean has = hasSource(property);
-    setImage(has ? EDIT_SOUR : NEW_SOUR);
+    setImage(has ? EDIT_SOUR : (showNone ? NO_SOUR : NEW_SOUR));
     setText(RESOURCES.getString(has ? "edit" : "new", Gedcom.getName(Gedcom.SOUR)));
     setTip(getText());
   }

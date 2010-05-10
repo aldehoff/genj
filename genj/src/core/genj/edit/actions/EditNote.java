@@ -53,7 +53,8 @@ public class EditNote extends Action2 {
   
   public final static ImageIcon 
     EDIT_NOTE = Grammar.V551.getMeta(new TagPath("NOTE")).getImage(),
-    NEW_NOTE = EDIT_NOTE.getOverLayed(Images.imgNew);
+    NEW_NOTE = EDIT_NOTE.getOverLayed(Images.imgNew),
+    NO_NOTE = EDIT_NOTE.getTransparent(128);
   
   private Property property;
   
@@ -62,10 +63,19 @@ public class EditNote extends Action2 {
    * @param property the property the note is for
    */
   public EditNote(Property property) {
+    this(property, false);
+  }
+  
+  /**
+   * Constructor
+   * @param property the property the note is for
+   */
+  public EditNote(Property property, boolean showNone) {
+    
     this.property = property;
     
     boolean has = hasNote(property);
-    setImage(has ? EDIT_NOTE : NEW_NOTE);
+    setImage(has ? EDIT_NOTE : (showNone?NO_NOTE:NEW_NOTE));
     setText(RESOURCES.getString(has ? "edit" : "new", Gedcom.getName(Gedcom.NOTE)));
     setTip(getText());
   }
