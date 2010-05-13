@@ -28,8 +28,12 @@ public class PropertyQuality extends Property {
 
   public final static String[] QUALITIES = Gedcom.resources.getString("QUAY.vals",false).split(",");
 
+  public PropertyQuality(String tag) {
+    super(tag);
+  }
+  
   public PropertyQuality() {
-    super("QUAY");
+    this("QUAY");
   }
 
   @Override
