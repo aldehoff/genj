@@ -80,7 +80,7 @@ public class EditNote extends Action2 {
     setTip(getText());
   }
   
-  public static boolean hasNote(Property property) {
+  private boolean hasNote(Property property) {
     for (Property note : property.getProperties(Gedcom.NOTE)) {
       if (note instanceof PropertyNote && note.isValid() && ((PropertyNote)note).getTargetEntity().getValue().length()>0)
         return true;

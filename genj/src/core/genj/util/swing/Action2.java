@@ -194,65 +194,65 @@ public class Action2 extends AbstractAction {
   }
 
   /**
-     * accessor - image 
-     */
+   * accessor - image 
+   */
   public Icon getImage() {
     return (Icon)super.getValue(KEY_ICON);
   }
 
   /** convenience factory */
-  public static Action yes() {
+  public static Action2 yes() {
     return new Constant(Action2.TXT_YES);
   }
 
   /** convenience factory */
-  public static Action no() {
+  public static Action2 no() {
     return new Constant(Action2.TXT_NO);
   }
 
   /** convenience factory */
-  public static Action ok() {
+  public static Action2 ok() {
     return new Constant(Action2.TXT_OK);
   }
 
   /** convenience factory */
-  public static Action cancel() {
+  public static Action2 cancel() {
     return new Constant(Action2.TXT_CANCEL);
   }
 
   /** convenience factory */
-  public static Action[] yesNo() {
-    return new Action[]{ yes(), no() };
+  public static Action2[] yesNo() {
+    return new Action2[]{ yes(), no() };
   }
   
   /** convenience factory */
-  public static Action[] yesNoCancel() {
-    return new Action[]{ yes(), no(), cancel() };
+  public static Action2[] yesNoCancel() {
+    return new Action2[]{ yes(), no(), cancel() };
   }
   
   /** convenience factory */
-  public static Action[] okCancel() {
-    return new Action[]{ ok(), cancel() };
+  public static Action2[] okCancel() {
+    return new Action2[]{ ok(), cancel() };
   }
   
   /** convenience factory */
-  public static Action[] andCancel(Action ok) {
-    return new Action[]{ ok, cancel() };
+  public static Action2[] andCancel(Action2 ok) {
+    return new Action2[]{ ok, cancel() };
   }
   
   /** convenience factory */
-  public static Action[] okAnd(Action action) {
-    return new Action[]{ ok(), action };
+  public static Action2[] okAnd(Action2 action) {
+    return new Action2[]{ ok(), action };
   }
   
   /** convenience factory */
-  public static Action[] okOnly() {
-    return new Action[]{ ok() };
+  public static Action2[] okOnly() {
+    return new Action2[]{ ok() };
   }
   
   /** convenience factory */
-  public static Action[] cancelOnly() {
-    return new Action[]{ cancel() };
+  public static Action2[] cancelOnly() {
+    return new Action2[]{ cancel() };
   }
   
   private static class Constant extends Action2 {

@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -284,7 +283,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
   private class Add extends Action2 implements ListSelectionListener, ChangeListener {
     
     private JList to;
-    private Action ok;
+    private Action2 ok;
     private FileChooserWidget chooser = new FileChooserWidget();
     
     Add(File file) {
@@ -397,7 +396,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
   private class Del extends Action2 implements PropertyChangeListener,ListSelectionListener {
     
     private JList from;
-    private Action ok;
+    private Action2 ok;
     
     public Del() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getGrayedOut().getOverLayed(Images.imgDel));

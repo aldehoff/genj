@@ -20,6 +20,7 @@
 package genj.edit;
 
 import genj.edit.actions.EditNote;
+import genj.edit.actions.EditSource;
 import genj.edit.beans.PropertyBean;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
@@ -186,6 +187,10 @@ import javax.swing.SwingUtilities;
     // add some actions
     if (currentEntity!=null && currentEntity.getMetaProperty().allows(Gedcom.NOTE))
       actions.add(new EditNote(currentEntity));
+
+    // add some actions
+    if (currentEntity!=null && currentEntity.getMetaProperty().allows(Gedcom.SOUR))
+      actions.add(new EditSource(currentEntity));
 
     // set focus
     if (focus!=null && view.isGrabFocus())
