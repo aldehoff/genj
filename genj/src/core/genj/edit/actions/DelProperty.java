@@ -21,9 +21,12 @@ package genj.edit.actions;
 
 import genj.edit.Images;
 import genj.gedcom.Context;
+import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.gedcom.Indi;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyXRef;
 
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
@@ -75,9 +78,26 @@ public class DelProperty extends AbstractChange {
    */
   protected Context execute(Gedcom gedcom, ActionEvent event) throws GedcomException {
     
-    for (Property prop : candidates) 
+    // leaving an orphan?
+    Set<Entity> orphans = new HashSet<Entity>();
+
+    for (Property prop : candidates) {
+      
+      if (prop instanceof PropertyXRef && prop.isValid()) {
+        orphans.add( ((PropertyXRef)prop).getTargetEntity() );
+        orphans.add( prop.getEntity() );
+      }
+      
       prop.getParent().delProperty(prop);
+    }
     
+    // check for and delete orphans
+    for (Entity orphan : orphans) {
+      if (!(orphan instanceof Indi || orphan.isConnected()))
+        gedcom.deleteEntity(orphan);
+    }
+
+    // nothing to go to
     return null;
   }
   

@@ -19,22 +19,27 @@
  */
 package genj.edit.actions;
 
+import genj.edit.BeanPanel;
 import genj.edit.Images;
 import genj.gedcom.Gedcom;
+import genj.gedcom.GedcomException;
 import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySource;
 import genj.gedcom.TagPath;
+import genj.gedcom.UnitOfWork;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
+import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TableWidget;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 /**
@@ -85,70 +90,91 @@ public class EditSource extends Action2 {
   @Override
   public void actionPerformed(ActionEvent e) {
     
-//    final Property source = property.getProperty("SOUR", true);
-//
-//    JPanel panel = new JPanel(new NestedBlockLayout("<col><entity/><beans gy=\"1\"/></col>"));
-//    
-//    final SelectEntityWidget sources = new SelectEntityWidget(property.getGedcom(), Gedcom.SOUR, 
-//        RESOURCES.getString("new", Gedcom.getName(Gedcom.SOUR)));
-//    panel.add(sources);
-//    
-//    BeanPanel beans = new BeanPanel();
-//    beans.setRoot(source);
-//    panel.add(beans);
-//        
-//    sources.addActionListener(new ActionListener() {
-//      public void actionPerformed(ActionEvent e) {
-//      }
-//    });
+    List<PropertySource> sources = getSources(property);
+    if (!sources.isEmpty()) {
     
-    TableWidget<PropertySource> sources = new TableWidget<PropertySource>();
-    
-    sources.new Column(Gedcom.getName("SOUR")) {
-      public Object getValue(PropertySource source) {
-        return source.getTargetEntity().getId();
-      }
-    };
-    
-    sources.new Column(Gedcom.getName("AUTH")) {
-      public Object getValue(PropertySource source) {
-        return source.getTargetEntity().getPropertyDisplayValue("AUTH");
-      }
-    };
-    
-    sources.new Column(Gedcom.getName("TITL")) {
-      public Object getValue(PropertySource source) {
-        return source.getTargetEntity().getPropertyDisplayValue("TITL");
-      }
-    };
-    
-    sources.new Column(Gedcom.getName("PAGE")) {
-      public Object getValue(PropertySource source) {
-        return source.getPropertyDisplayValue("PAGE");
-      }
-    };
-    
-    sources.new Column("", Action2.class) {
-      public Object getValue(PropertySource source) {
-        return new Edit(source);
-      }
-    };
-    
-    sources.setRows(getSources(property));
-    
-    Action2[] actions = new Action2[]{ new Action2(RESOURCES.getString("link", Gedcom.getName("SOUR"))), Action2.ok() };
-          
-    if (0!=DialogHelper.openDialog(property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(sources), actions, e))
-      return;
+      TableWidget<PropertySource> table = new TableWidget<PropertySource>();
+      table.new Column(Gedcom.getName("SOUR")) {
+        public Object getValue(PropertySource source) {
+          return source.getTargetEntity().getId();
+        }
+      };
+      table.new Column(Gedcom.getName("AUTH")) {
+        public Object getValue(PropertySource source) {
+          return source.getTargetEntity().getPropertyDisplayValue("AUTH");
+        }
+      };
+      table.new Column(Gedcom.getName("TITL")) {
+        public Object getValue(PropertySource source) {
+          return source.getTargetEntity().getPropertyDisplayValue("TITL");
+        }
+      };
+      table.new Column(Gedcom.getName("PAGE")) {
+        public Object getValue(PropertySource source) {
+          return source.getPropertyDisplayValue("PAGE");
+        }
+      };
+      table.new Column("", Action2.class) {
+        public Object getValue(PropertySource source) {
+          return new Edit(source);
+        }
+      };
+      table.new Column("", Action2.class) {
+        public Object getValue(PropertySource source) {
+          return new DelProperty(source);
+        }
+      };
+      table.setRows(sources);
+      Action2[] actions = new Action2[]{ Action2.ok(), new Action2(RESOURCES.getString("link", Gedcom.getName("SOUR"))) };
+      if (1>DialogHelper.openDialog(property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(table), actions, e))
+        return;
+      
+    }
 
-    // done
+    // create new source
+    CreateXReference create = new CreateXReference(property, "SOUR");
+    create.actionPerformed(e);
+    PropertySource source = (PropertySource)create.getReference();
+    if (source!=null)
+      new Edit(source).actionPerformed(e);
+
   }
   
   private class Edit extends Action2 {
+    
+    private PropertySource source;
+    
     public Edit(PropertySource source) {
       setText(RESOURCES.getString("edit", Gedcom.getName("SOUR")));
       setTip(getText());
       setImage(Images.imgView);
+      
+      this.source = source;
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      
+      JPanel panel = new JPanel(new NestedBlockLayout("<col><sour gy=\"1\"/><ref/></col>"));
+      
+      final BeanPanel entity = new BeanPanel();
+      entity.setRoot(source.getTargetEntity());
+      panel.add(entity);
+      
+      final BeanPanel citation = new BeanPanel();
+      citation.setRoot(source);
+      panel.add(citation);
+      
+      if (0!=DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(panel), Action2.okCancel(), e))
+        return;
+      
+      source.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
+        public void perform(Gedcom gedcom) throws GedcomException {
+          entity.commit();
+          citation.commit();
+        }
+      });
+          
     }
   }
 

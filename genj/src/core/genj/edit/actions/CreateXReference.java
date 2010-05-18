@@ -20,7 +20,8 @@ public class CreateXReference extends CreateRelationship {
   
   private Property source;
   private String sourceTag;
-
+  private PropertyXRef xref;
+  
   /** Constructor */
   public CreateXReference(Property source, String sourceTag) {
     super(getName(source, sourceTag),source.getGedcom(), getTargetType(source, sourceTag));
@@ -57,13 +58,14 @@ public class CreateXReference extends CreateRelationship {
   protected Property change(Entity target, boolean targetIsNew) throws GedcomException {
     
     // create a the source link
-    PropertyXRef xref = (PropertyXRef)source.addProperty(sourceTag, '@'+target.getId()+'@');
+    xref = (PropertyXRef)source.addProperty(sourceTag, '@'+target.getId()+'@');
     
     try {
       xref.link();
       xref.addDefaultProperties();
     } catch (GedcomException e) {
       source.delProperty(xref);
+      xref = null;
       throw e;
     }
     
@@ -72,4 +74,11 @@ public class CreateXReference extends CreateRelationship {
     
   }
 
+  /**
+   * The created reference
+   */
+  public PropertyXRef getReference() {
+    return xref;
+  }
+  
 }

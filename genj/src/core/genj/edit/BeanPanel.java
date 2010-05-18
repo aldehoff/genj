@@ -319,7 +319,7 @@ public class BeanPanel extends JPanel {
       MetaProperty meta = property.getMetaProperty().getNestedRecursively(path, false);
       
       // create bean
-      PropertyBean bean = createBean(property, path, meta, cell.getAttribute("type"));
+      PropertyBean bean = createBean(property, path, cell.getAttribute("type"));
       if (bean==null)
         return null;
       // patch it
@@ -344,7 +344,7 @@ public class BeanPanel extends JPanel {
    * @param path path to property we need bean for
    * @param explicit bean type
    */
-  private PropertyBean createBean(Property root, TagPath path, MetaProperty meta, String beanOverride) {
+  private PropertyBean createBean(Property root, TagPath path, String beanOverride) {
 
     // try to resolve existing prop (first possible path to avoid merging of branches)
     Property prop = root.getProperty(path, false);
