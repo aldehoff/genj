@@ -48,10 +48,8 @@ public interface SelectionSink {
         }
       });
       
-      if (sink==null)
-        throw new IllegalArgumentException("Can't find sink for "+source);
-
-      sink.fireSelection(context, isActionPerformed);
+      if (sink!=null)
+        sink.fireSelection(context, isActionPerformed);
     }
   }
 }
