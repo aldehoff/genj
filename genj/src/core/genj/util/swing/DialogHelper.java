@@ -68,6 +68,8 @@ public class DialogHelper {
   /** screen we're dealing with */
   private final static Rectangle screen = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
   
+  private static JDialog current;
+  
   /** message types*/
   public static final int  
     ERROR_MESSAGE = JOptionPane.ERROR_MESSAGE,
@@ -202,6 +204,13 @@ public class DialogHelper {
    * Dialog implementation
    */
   private static Object openDialogImpl(String title, int messageType, final JComponent content, Action[] actions, Object source) {
+    
+    // close any current dialog
+    if (current!=null) try {
+      current.dispose();
+    } finally {
+      current = null;
+    }
 
     // find window for source
     Component parent = null;
@@ -221,11 +230,11 @@ public class DialogHelper {
     final JOptionPane optionPane = new Content(messageType, content, actions);
     
     // create the dialog and content
-    final JDialog dlg = optionPane.createDialog(parent, title);
-    dlg.setResizable(true);
-    dlg.setModal(true);
-    dlg.pack();
-    dlg.setMinimumSize(content.getMinimumSize());
+    current = optionPane.createDialog(parent, title);
+    current.setResizable(true);
+    current.setModal(true);
+    current.pack();
+    current.setMinimumSize(content.getMinimumSize());
 
     // restore bounds
     StackTraceElement caller = getCaller();
@@ -233,22 +242,22 @@ public class DialogHelper {
     final String key = caller.getMethodName() + (caller.getLineNumber()>0?caller.getLineNumber():"") + ".dialog";
     Dimension bounds = registry.get(key, (Dimension)null);
     if (bounds!=null) {
-      bounds.width = Math.max(bounds.width, dlg.getWidth());
-      bounds.height = Math.max(bounds.height, dlg.getHeight());
-      dlg.setBounds(new Rectangle(bounds).intersection(screen));
+      bounds.width = Math.max(bounds.width, current.getWidth());
+      bounds.height = Math.max(bounds.height, current.getHeight());
+      current.setBounds(new Rectangle(bounds).intersection(screen));
     }
-    dlg.setLocationRelativeTo(parent);
+    current.setLocationRelativeTo(parent);
 
     // hook up to the dialog being hidden by the optionpane - that's what is being called after the user selected a button (setValue())
-    dlg.addComponentListener(new ComponentAdapter() {
+    current.addComponentListener(new ComponentAdapter() {
       public void componentHidden(ComponentEvent e) {
-        registry.put(key, dlg.getSize());
-        dlg.dispose();
+        registry.put(key, current.getSize());
+        current.dispose();
       }
     });
     
     // show it
-    dlg.setVisible(true);
+    current.setVisible(true);
     
     // return result
     return optionPane.getValue();
