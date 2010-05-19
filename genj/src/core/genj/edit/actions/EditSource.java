@@ -23,6 +23,8 @@ import genj.edit.BeanPanel;
 import genj.edit.Images;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.gedcom.GedcomListener;
+import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySource;
@@ -93,7 +95,7 @@ public class EditSource extends Action2 {
     List<PropertySource> sources = getSources(property);
     if (!sources.isEmpty()) {
     
-      TableWidget<PropertySource> table = new TableWidget<PropertySource>();
+      final TableWidget<PropertySource> table = new TableWidget<PropertySource>();
       table.new Column(Gedcom.getName("SOUR")) {
         public Object getValue(PropertySource source) {
           return source.getTargetEntity().getId();
@@ -125,8 +127,23 @@ public class EditSource extends Action2 {
         }
       };
       table.setRows(sources);
+      
+      GedcomListener update = new GedcomListenerAdapter() {
+        @Override
+        public void gedcomWriteLockReleased(Gedcom gedcom) {
+          table.setRows(getSources(property));
+        }
+      };
+      
+      property.getGedcom().addGedcomListener(update);
+      
       Action2[] actions = new Action2[]{ Action2.ok(), new Action2(RESOURCES.getString("link", Gedcom.getName("SOUR"))) };
-      if (1>DialogHelper.openDialog(property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(table), actions, e))
+      
+      int rc = DialogHelper.openDialog(property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(table), actions, e);
+
+      property.getGedcom().removeGedcomListener(update);
+
+      if (rc<1)
         return;
       
     }
