@@ -129,7 +129,7 @@ import spin.Spin;
     file.add(workbench.new ActionSave(true));
     file.add(workbench.new ActionClose());
     file.add(new ActionProvider.SeparatorAction());
-    int i=0; for (String recent : REGISTRY.get("history", new ArrayList<String>())) try {
+    int i=0; for (String recent : Registry.get(Workbench.class).get("history", new ArrayList<String>())) try {
       if (gedcom==null||!recent.equals(gedcom.getOrigin().toString()))
         file.add(workbench.new ActionOpen(i++, new URL(recent)));
     } catch (MalformedURLException e) { }
