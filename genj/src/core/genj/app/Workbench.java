@@ -80,6 +80,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -296,7 +297,7 @@ public class Workbench extends JPanel implements SelectionSink {
         dockingPane.putDockable("warnings", new GedcomDockable(this,
             RES.getString("cc.open.warnings", context.getGedcom().getName()), 
             IMG_OPEN,
-            new ContextListWidget(warnings))
+            new JScrollPane(new ContextListWidget(warnings)))
         );
       }
     } catch (GedcomIOException ex) {
