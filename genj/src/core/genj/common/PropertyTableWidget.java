@@ -914,12 +914,12 @@ public class PropertyTableWidget extends JPanel  {
         StringBuffer htmlBuf = new StringBuffer();
 
         htmlBuf.append("<html>\n<body>\n<table>\n");
-
+        
         for (int row = 0; row < rows.length; row++) {
           htmlBuf.append("<tr>\n");
-          for (int col = 0; col < cols.length; col++) {
-            Property obj = (Property)table.getValueAt(rows[row], cols[col]);
-            String val = ((obj == null) ? "" : obj.getDisplayValue());
+          for (int col = 0; col < cols.length; col++) { 
+            Property obj = (Property)table.getValueAt(sortableModel.viewIndex(rows[row]), cols[col]);
+            String val = AbstractPropertyTableModel.getDefaultCellValue(obj, row, col);
             plainBuf.append(val + "\t");
             htmlBuf.append("  <td>" + val + "</td>\n");
           }
