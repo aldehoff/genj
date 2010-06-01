@@ -28,6 +28,7 @@ import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySource;
+import genj.gedcom.Source;
 import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
 import genj.util.Resources;
@@ -118,12 +119,24 @@ public class EditSource extends Action2 {
       };
       table.new Column("", Action2.class) {
         public Object getValue(PropertySource source) {
-          return new Edit(source);
+          return new Edit(source,false) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+              DialogHelper.cancelDialog();
+              super.actionPerformed(event);
+            }
+          };
         }
       };
       table.new Column("", Action2.class) {
         public Object getValue(PropertySource source) {
-          return new DelProperty(source);
+          return new DelProperty(source) {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+              DialogHelper.cancelDialog();
+              super.actionPerformed(event);
+            }
+          };
         }
       };
       table.setRows(sources);
@@ -153,20 +166,24 @@ public class EditSource extends Action2 {
     create.actionPerformed(e);
     PropertySource source = (PropertySource)create.getReference();
     if (source!=null)
-      new Edit(source).actionPerformed(e);
+      new Edit(source, true).actionPerformed(e);
 
   }
   
   private class Edit extends Action2 {
     
-    private PropertySource source;
+    private boolean deleteOnCancel;
+    private PropertySource citation;
     
-    public Edit(PropertySource source) {
+    public Edit(PropertySource citation, boolean deleteOnCancel) {
+      
+      this.deleteOnCancel = deleteOnCancel;
+      
       setText(RESOURCES.getString("edit", Gedcom.getName("SOUR")));
       setTip(getText());
       setImage(Images.imgView);
       
-      this.source = source;
+      this.citation = citation;
     }
     
     @Override
@@ -174,23 +191,30 @@ public class EditSource extends Action2 {
       
       JPanel panel = new JPanel(new NestedBlockLayout("<col><sour gy=\"1\"/><ref/></col>"));
       
-      final BeanPanel entity = new BeanPanel();
-      entity.setRoot(source.getTargetEntity());
-      panel.add(entity);
+      final BeanPanel sourcePanel = new BeanPanel();
+      sourcePanel.setRoot(citation.getTargetEntity());
+      panel.add(sourcePanel);
       
-      final BeanPanel citation = new BeanPanel();
-      citation.setRoot(source);
-      panel.add(citation);
+      final BeanPanel citationPanel = new BeanPanel();
+      citationPanel.setRoot(citation);
+      panel.add(citationPanel);
       
-      if (0!=DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(panel), Action2.okCancel(), e))
-        return;
-      
-      source.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
-        public void perform(Gedcom gedcom) throws GedcomException {
-          entity.commit();
-          citation.commit();
-        }
-      });
+      if (0==DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(panel), Action2.okCancel(), e))
+        citation.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) throws GedcomException {
+            sourcePanel.commit();
+            citationPanel.commit();
+          }
+        });
+      else if (deleteOnCancel)
+        citation.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
+          public void perform(Gedcom gedcom) throws GedcomException {
+            Source source = (Source)citation.getTargetEntity();
+            citation.getParent().delProperty(citation);
+            if (!source.isConnected())
+              gedcom.deleteEntity(source);
+          }
+        });
           
     }
   }

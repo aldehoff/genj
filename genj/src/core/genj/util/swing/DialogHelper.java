@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -67,6 +68,8 @@ public class DialogHelper {
 
   /** screen we're dealing with */
   private final static Rectangle screen = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+  
+  private static List<JDialog> dialogs = new ArrayList<JDialog>();
   
   /** message types*/
   public static final int  
@@ -248,10 +251,24 @@ public class DialogHelper {
     });
     
     // show it
-    dlg.setVisible(true);
+    try {
+      dialogs.add(dlg);
+      dlg.setVisible(true);
+    } finally {
+      dialogs.remove(dlg);
+    }
     
     // return result
     return optionPane.getValue();
+  }
+
+  /**
+   * Cancels the last open dialog
+   */
+  public static void cancelDialog() {
+    if (dialogs.isEmpty())
+      throw new IllegalArgumentException("no dialog to close");
+    dialogs.get(dialogs.size()-1).dispose();
   }
   
   private static StackTraceElement getCaller() {
