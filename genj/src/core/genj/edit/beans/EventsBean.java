@@ -121,14 +121,14 @@ public class EventsBean extends PropertyBean {
     // Edit
     table.new Column("",Action2.class) {
       public Action2 getValue(Property event) {
-        return isEditable(event) ? new EditEvent(event) : null;
+        return new EditEvent(event);
       }
     };    
     
     // Delete
     table.new Column("",Action2.class) {
       public Action2 getValue(Property event) {
-        return isEditable(event) ? new DelProperty(event) : null;
+        return new DelProperty(event);
       }
     };
 
@@ -161,20 +161,6 @@ public class EventsBean extends PropertyBean {
       meta = meta.getSuper();
     }
     return false;
-  }
-
-  private boolean isEditable(Property property) {
-    return isEditable(property.getMetaProperty());
-  }
-  private boolean isEditable(MetaProperty meta) {
-    
-    // overedited?
-    for (PropertyBean bean : session) {
-      if (bean.path.contains(meta.getTag()))
-        return false;
-    }
-
-    return true;
   }
 
   @Override
@@ -221,7 +207,7 @@ public class EventsBean extends PropertyBean {
       MetaProperty[] metas = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
       List<MetaProperty> choices = new ArrayList<MetaProperty>(metas.length);
       for (MetaProperty meta : metas) {
-        if (isEvent(meta) && isEditable(meta))
+        if (isEvent(meta))
           choices.add(meta);
       }
       final ChoosePropertyBean choose = new ChoosePropertyBean(choices.toArray(new MetaProperty[choices.size()]));
