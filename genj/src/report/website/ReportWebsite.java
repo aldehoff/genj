@@ -301,7 +301,12 @@ public class ReportWebsite extends Report {
 	}
 	
 	protected void makeSosaStradonitzNumbering(Indi person, int number) {
-		sosaStradonitzNumber.put(person.getId(), Integer.toString(number));
+		String sosaId = sosaStradonitzNumber.get(person.getId());
+		if (sosaId == null) {
+			sosaStradonitzNumber.put(person.getId(), Integer.toString(number));
+		} else {
+			sosaStradonitzNumber.put(person.getId(), sosaId+";"+Integer.toString(number));
+		}
 		Fam fam = person.getFamilyWhereBiologicalChild();
 		if (fam != null) {
 			Indi father = fam.getHusband();
