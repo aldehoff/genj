@@ -200,6 +200,18 @@ public class DialogHelper {
       if (rc==actions[a]) return a;
     return -1;
   }
+
+  public static Window getWindow(EventObject event) {
+    if (!(event.getSource() instanceof Component))
+      throw new IllegalArgumentException("can't find window for event without component source");
+    if (event.getSource() instanceof Window)
+      return (Window)event.getSource();
+    return (Window)visitOwners( (Component)event.getSource(), new ComponentVisitor() {
+      public Component visit(Component parent, Component child) {
+        return parent instanceof Window ? parent : null;
+      }
+    });
+  }
   
   /**
    * Dialog implementation

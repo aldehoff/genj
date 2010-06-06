@@ -264,7 +264,7 @@ public class BeanPanel extends JPanel {
   /**
    * Create a component for given cell
    */
-  private JComponent createComponent(Property root, Property property, NestedBlockLayout.Cell cell, Set<String> beanifiedTags) {
+  protected JComponent createComponent(Property root, Property property, NestedBlockLayout.Cell cell, Set<String> beanifiedTags) {
     
     String element = cell.getElement();
     
