@@ -1122,6 +1122,7 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
           cells = Collections.singletonList(row);
         
         int x = avail.x;
+        int h = rowHeights.get(r) + (int)(rowWeights.get(r)*yWeightMultiplier);
         Block sub;
         for (int c=0;c<cells.size();) {
           sub = cells.get(c);
@@ -1129,12 +1130,12 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
           for (int i=0;i<sub.cols;i++,c++) 
             w += colWidths.get(c) + (int)(colWeights.get(c)*xWeightMultiplier);
           w = Math.min( avail.x+avail.width-x, w);
-          sub.layout(new Rectangle(x, avail.y, w, rowHeights.get(r)));
+          sub.layout(new Rectangle(x, avail.y, w, h));
           x += w;
         }
         
         // next row
-        avail.y += rowHeights.get(r);
+        avail.y += h;
       }
 
       // done
