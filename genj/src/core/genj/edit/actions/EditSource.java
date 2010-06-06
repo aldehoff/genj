@@ -21,6 +21,7 @@ package genj.edit.actions;
 
 import genj.edit.BeanPanel;
 import genj.edit.Images;
+import genj.edit.beans.ReferencesBean;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
@@ -37,13 +38,17 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.TableWidget;
+import genj.util.swing.NestedBlockLayout.Cell;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 
 /**
  * Edit note for a property
@@ -161,12 +166,15 @@ public class EditSource extends Action2 {
       
     }
 
+    // grab window now as current source component for e might go away during dialog/edit ops
+    Window win = DialogHelper.getWindow(e);
+    
     // create new source
     CreateXReference create = new CreateXReference(property, "SOUR");
     create.actionPerformed(e);
     PropertySource source = (PropertySource)create.getReference();
     if (source!=null)
-      new Edit(source, true).actionPerformed(e);
+      new Edit(source, true).actionPerformed(new ActionEvent(win, 0, ""));
 
   }
   
@@ -189,17 +197,23 @@ public class EditSource extends Action2 {
     @Override
     public void actionPerformed(ActionEvent e) {
       
-      JPanel panel = new JPanel(new NestedBlockLayout("<col><sour gy=\"1\"/><ref/></col>"));
-      
-      final BeanPanel sourcePanel = new BeanPanel();
-      sourcePanel.setRoot(citation.getTargetEntity());
-      panel.add(sourcePanel);
+      JTabbedPane tabs = new JTabbedPane();
       
       final BeanPanel citationPanel = new BeanPanel();
       citationPanel.setRoot(citation);
-      panel.add(citationPanel);
+      tabs.add(RESOURCES.getString("citation"), citationPanel);
       
-      if (0==DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(panel), Action2.okCancel(), e))
+      final BeanPanel sourcePanel = new BeanPanel() {
+        @Override
+        protected JComponent createComponent(Property root, Property property, Cell cell, Set<String> beanifiedTags) {
+          JComponent c = super.createComponent(root, property, cell, beanifiedTags);
+          return c instanceof ReferencesBean || c instanceof NestedBlockLayout.Expander ? null : c;
+        }
+      };
+      sourcePanel.setRoot(citation.getTargetEntity());
+      tabs.add(Gedcom.getName("SOUR"), sourcePanel);
+      
+      if (0==DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, tabs, Action2.okCancel(), e))
         citation.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
           public void perform(Gedcom gedcom) throws GedcomException {
             sourcePanel.commit();
