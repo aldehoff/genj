@@ -32,6 +32,8 @@ import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.PopupWidget;
+import genj.view.ContextProvider;
+import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -64,7 +66,7 @@ import javax.swing.event.ChangeListener;
 /**
  * A panel for laying out beans for an entity
  */
-public class BeanPanel extends JPanel {
+public class BeanPanel extends JPanel implements ContextProvider {
   
   private final static Resources RES = Resources.get(BeanPanel.class);
   private final static Registry REGISTRY = Registry.get(BeanPanel.class);
@@ -72,6 +74,7 @@ public class BeanPanel extends JPanel {
   /** keep a cache of descriptors */
   private static Map<String, NestedBlockLayout> DESCRIPTORCACHE = new HashMap<String, NestedBlockLayout>();
 
+  private Property root;
   protected ChangeSupport changeSupport = new ChangeSupport(this);
   private List<PropertyBean> beans = new ArrayList<PropertyBean>(32);
   
@@ -137,6 +140,11 @@ public class BeanPanel extends JPanel {
     setFocusCycleRoot(true);
   }
   
+  @Override
+  public ViewContext getContext() {
+    return root!=null ? new ViewContext(root) : null;
+  }
+
   public void addChangeListener(ChangeListener listener) {
     changeSupport.addChangeListener(listener);
   }
@@ -227,6 +235,9 @@ public class BeanPanel extends JPanel {
     }
     removeAll();
 
+    // keep
+    this.root = root;
+    
     // something to layout?
     if (root!=null) {
     
