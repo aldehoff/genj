@@ -48,6 +48,7 @@ import genj.util.swing.FileChooser;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.MacAdapter;
 import genj.util.swing.TextFieldWidget;
+import genj.util.swing.DialogHelper.ComponentVisitor;
 import genj.view.SelectionSink;
 import genj.view.View;
 import genj.view.ViewContext;
@@ -166,15 +167,61 @@ public class Workbench extends JPanel implements SelectionSink {
   @Override
   public void addNotify() {
     super.addNotify();
-    // install menu into frame
+    // install ourselves into frame
     DialogHelper.visitContainers(this, new DialogHelper.ComponentVisitor() {
       public Component visit(Component parent, Component child) {
-        if (parent instanceof JFrame)
-          ((JFrame)parent).setJMenuBar(menu);
+        if (parent instanceof JFrame) {
+          JFrame frame = (JFrame)parent;
+          frame.setJMenuBar(menu);
+          frame.getRootPane().putClientProperty(Workbench.class, Workbench.this);
+        }
         return null;
       }
     });
   }
+  
+  @Override
+  public void removeNotify() {
+    // de-install ourselves from frame
+    DialogHelper.visitContainers(this, new DialogHelper.ComponentVisitor() {
+      public Component visit(Component parent, Component child) {
+        if (parent instanceof JFrame) {
+          JFrame frame = (JFrame)parent;
+          frame.setJMenuBar(null);
+          frame.getRootPane().putClientProperty(Workbench.class, null);
+        }
+        return null;
+      }
+    });
+    super.removeNotify();
+  }
+  
+  
+  /**
+   * Find workbench for given component
+   * @return workbench or null
+   */
+  /*package*/ static Workbench getWorkbench(Component component) {
+    
+    Component result = DialogHelper.visitOwners(component, new ComponentVisitor() {
+      public Component visit(Component parent, Component child) {
+        if (parent instanceof Workbench)
+          return (Workbench)parent;
+        if (parent instanceof View) {
+          ViewDockable dockable = (ViewDockable) ((View)parent).getClientProperty(ViewDockable.class);
+          return dockable.getWorkbench();
+        }
+        if (parent instanceof JFrame) 
+          return (Workbench)((JFrame)parent).getRootPane().getClientProperty(Workbench.class);
+        // continue
+        return null;
+      }
+    });
+    
+    return result instanceof Workbench ? (Workbench)result : null;
+  }
+
+
   
   /**
    * get current layout

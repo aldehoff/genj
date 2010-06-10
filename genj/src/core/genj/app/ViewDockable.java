@@ -24,10 +24,8 @@ import genj.gedcom.Gedcom;
 import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.MenuHelper;
 import genj.util.swing.ToolbarWidget;
-import genj.util.swing.DialogHelper.ComponentVisitor;
 import genj.view.ActionProvider;
 import genj.view.ContextProvider;
 import genj.view.SelectionSink;
@@ -123,6 +121,10 @@ import swingx.docking.Docked;
     return (ViewDockable)view.getClientProperty(ViewDockable.class);
   }
   
+  public Workbench getWorkbench() {
+    return workbench;
+  }
+  
   public void close() {
     workbench.closeView(factory.getClass());
   }
@@ -189,28 +191,6 @@ import swingx.docking.Docked;
     }
     
     /**
-     * Find workbench for given component
-     * @return workbench or null
-     */
-    private static Workbench getWorkbench(Component component) {
-      
-      Component result = DialogHelper.visitOwners(component, new ComponentVisitor() {
-        public Component visit(Component parent, Component child) {
-          if (parent instanceof Workbench)
-            return (Workbench)parent;
-          if (parent instanceof View) {
-            ViewDockable dockable = (ViewDockable) ((View)parent).getClientProperty(ViewDockable.class);
-            return dockable.workbench;
-          }
-          // continue
-          return null;
-        }
-      });
-      
-      return result instanceof Workbench ? (Workbench)result : null;
-    }
-
-    /**
      * A Key press initiation of the context menu
      */
     public void actionPerformed(ActionEvent event) {
@@ -221,7 +201,7 @@ import swingx.docking.Docked;
       // look for ContextProvider and show menu if appropriate
       ViewContext context = new ContextProvider.Lookup(focus).getContext();
       if (context != null) {
-        JPopupMenu popup = getContextMenu(context, getWorkbench((Component)event.getSource()));
+        JPopupMenu popup = getContextMenu(context, Workbench.getWorkbench((Component)event.getSource()));
         if (popup != null)
           popup.show(focus, 0, 0);
       }
@@ -252,7 +232,7 @@ import swingx.docking.Docked;
       // everyone caught up to the event
       
       // find workbench now (popup menu might go away after this method call)
-      final Workbench workbench = getWorkbench((Component)me.getSource());
+      final Workbench workbench = Workbench.getWorkbench((Component)me.getSource());
       if (workbench==null)
         return;
       
@@ -262,7 +242,7 @@ import swingx.docking.Docked;
       if (lookup.getContext()==null)
         return;
 
-      final Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), workbench);
+      final Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), source);
       
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
@@ -277,7 +257,7 @@ import swingx.docking.Docked;
           }
 
           // a popup?
-          if (me.isPopupTrigger()) {
+          if (me.isPopupTrigger()&&source.isDisplayable()) {
 
             // cancel any menu
             MenuSelectionManager.defaultManager().clearSelectedPath();
@@ -285,7 +265,7 @@ import swingx.docking.Docked;
             // show context menu
             JPopupMenu popup = getContextMenu(lookup.getContext(), workbench);
             if (popup != null)
-              popup.show(workbench, point.x, point.y);
+              popup.show(source, point.x, point.y);
 
           }
         }
