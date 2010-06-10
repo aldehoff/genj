@@ -414,6 +414,8 @@ public class DialogHelper {
         parent = ((JMenu)component).getParent();
       else if (component instanceof JMenuItem)
         parent = ((JMenuItem)component).getParent();
+      else if (component instanceof JDialog)
+        parent = ((JDialog)component).getOwner();
       else if (component !=null)
         parent = component.getParent();
       else
