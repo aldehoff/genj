@@ -24,8 +24,6 @@ import genj.edit.Images;
 import genj.edit.beans.ReferencesBean;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
-import genj.gedcom.GedcomListener;
-import genj.gedcom.GedcomListenerAdapter;
 import genj.gedcom.Grammar;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySource;
@@ -100,8 +98,11 @@ public class EditSource extends Action2 {
     
     List<PropertySource> sources = getSources(property);
     if (!sources.isEmpty()) {
-    
+      
       final TableWidget<PropertySource> table = new TableWidget<PropertySource>();
+      Action2[] actions = new Action2[]{ Action2.ok(), new Action2(RESOURCES.getString("link", Gedcom.getName("SOUR"))) };
+      final GedcomDialog dlg = new GedcomDialog(property.getGedcom(), property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(table), actions, e);
+    
       table.new Column(Gedcom.getName("SOUR")) {
         public Object getValue(PropertySource source) {
           return source.getTargetEntity().getId();
@@ -127,7 +128,7 @@ public class EditSource extends Action2 {
           return new Edit(source,false) {
             @Override
             public void actionPerformed(ActionEvent event) {
-              DialogHelper.cancelDialog();
+              dlg.cancel();
               super.actionPerformed(event);
             }
           };
@@ -138,30 +139,15 @@ public class EditSource extends Action2 {
           return new DelProperty(source) {
             @Override
             public void actionPerformed(ActionEvent event) {
-              DialogHelper.cancelDialog();
+              dlg.cancel();
               super.actionPerformed(event);
             }
           };
         }
       };
       table.setRows(sources);
-      
-      GedcomListener update = new GedcomListenerAdapter() {
-        @Override
-        public void gedcomWriteLockReleased(Gedcom gedcom) {
-          table.setRows(getSources(property));
-        }
-      };
-      
-      property.getGedcom().addGedcomListener(update);
-      
-      Action2[] actions = new Action2[]{ Action2.ok(), new Action2(RESOURCES.getString("link", Gedcom.getName("SOUR"))) };
-      
-      int rc = DialogHelper.openDialog(property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(table), actions, e);
 
-      property.getGedcom().removeGedcomListener(update);
-
-      if (rc<1)
+      if (dlg.show()<1)
         return;
       
     }
@@ -213,14 +199,16 @@ public class EditSource extends Action2 {
       sourcePanel.setRoot(citation.getTargetEntity());
       tabs.add(Gedcom.getName("SOUR"), sourcePanel);
       
-      if (0==DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, tabs, Action2.okCancel(), e))
+      GedcomDialog dlg = new GedcomDialog(citation.getGedcom(), getText(), DialogHelper.QUESTION_MESSAGE, tabs, Action2.okCancel(), e);
+      if (0==dlg.show())
         citation.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
           public void perform(Gedcom gedcom) throws GedcomException {
             sourcePanel.commit();
             citationPanel.commit();
           }
         });
-      else if (deleteOnCancel)
+      else 
+        if (deleteOnCancel)
         citation.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
           public void perform(Gedcom gedcom) throws GedcomException {
             Source source = (Source)citation.getTargetEntity();
