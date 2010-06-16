@@ -262,15 +262,13 @@ public class DialogHelper {
         public void componentHidden(ComponentEvent e) {
           registry.put(key, dlg.getSize());
           dlg.dispose();
+          dlg.removeComponentListener(this);
+          dlg = null;
         }
       });
       
       // show it
-      try {
-        dlg.setVisible(true);
-      } finally {
-        dlg = null;
-      }
+      dlg.setVisible(true);
       
       // analyze - check which action was responsible for close
       Object rc = optionPane.getValue();
