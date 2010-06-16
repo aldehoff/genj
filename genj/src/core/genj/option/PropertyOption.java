@@ -187,12 +187,12 @@ public abstract class PropertyOption extends Option {
   /**
    * Accessor - option value
    */
-  protected abstract Object getValue();
+  public abstract Object getValue();
 
   /**
    * Accessor - option value
    */
-  protected abstract void setValue(Object set);
+  public abstract void setValue(Object set);
 
   /**
    * Setter - name
