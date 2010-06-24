@@ -5,7 +5,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
@@ -76,21 +75,8 @@ public class ReportSameValues extends Report {
 
     // collect parents of sameProps
     ArrayList<ViewContext> result = new ArrayList<ViewContext>();
-    for (int i=0; i<sameProps.length; i++) {
-
-      // "Birth, Meier, Nils (I001)"
-      Property prop = sameProps[i];
-      Property parent = prop.getParent();
-
-      String txt;
-      if (parent instanceof Entity)
-        txt = prop.getEntity().toString();
-      else
-        txt = parent.getPropertyName() + " | " +prop.getEntity();
-
-      // one annotation for each
-      result.add(new ViewContext(prop).setText(txt));
-    }
+    for (int i=0; i<sameProps.length; i++) 
+      result.add(new ViewContext(sameProps[i]));
 
     // sort 'em
     Collections.sort(result);

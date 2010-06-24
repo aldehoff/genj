@@ -23,6 +23,7 @@ import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyEvent;
 import genj.util.swing.Action2;
 import genj.util.swing.ImageIcon;
 
@@ -125,9 +126,22 @@ public class ViewContext extends Context implements Comparable<ViewContext> {
 
     List<? extends Property> ps = getProperties();
     List<? extends Entity> es = getEntities();
-    if (ps.size()==1) 
-      txt = Gedcom.getName(ps.get(0).getTag()) + "/" + ps.get(0).getEntity();
-    else if (!ps.isEmpty())
+    if (ps.size()==1) {
+      StringBuffer buf = new StringBuffer();
+      Property p = ps.get(0);
+      buf.append(p.getPropertyName());
+      while (!(p.getParent() instanceof Entity)) {
+        p = p.getParent();
+        if (p instanceof PropertyEvent) {
+          buf.append("|");
+          buf.append( ((PropertyEvent)p).getPropertyDisplayValue("DATE") );
+          break;
+        }
+      }
+      buf.append("|");
+      buf.append(p.getEntity());
+      txt = buf.toString();
+    } else if (!ps.isEmpty())
       txt = Property.getPropertyNames(ps, 5);
     else  if (es.size()==1)
       txt = es.get(0).toString();
