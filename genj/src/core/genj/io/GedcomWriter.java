@@ -24,7 +24,6 @@ import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.gedcom.PropertyXRef;
 import genj.gedcom.time.PointInTime;
 import genj.util.Trackable;
 
@@ -38,9 +37,9 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnmappableCharacterException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -64,7 +63,7 @@ public class GedcomWriter implements Trackable {
   private int line;
   private int entity;
   private boolean cancel = false;
-  private ArrayList<Filter> filters = new ArrayList<Filter>();
+  private Filter filter;
   private Enigma enigma = null;
 
   /**
@@ -83,6 +82,7 @@ public class GedcomWriter implements Trackable {
     line = 0;
     date = PointInTime.getNow().getValue();
     time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
+    filter = new Filter.Union(gedcom, Collections.<Filter>emptyList());
 
     CharsetEncoder encoder = getCharset(false, stream, ged.getEncoding()).newEncoder();
     encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
@@ -166,7 +166,7 @@ public class GedcomWriter implements Trackable {
    * entities/properties or not
    */
   public void setFilters(Collection<Filter> fs) {
-    filters.addAll(fs);
+    filter = new Filter.Union(gedcom, fs);
   }
   
   /**
@@ -262,10 +262,8 @@ public class GedcomWriter implements Trackable {
       if (cancel) 
         throw new GedcomIOException("Operation cancelled", line);
       // .. filtered?
-      for (Filter f : filters) {
-        if (f.veto(e))
-          continue es;
-      }
+      if (filter.veto(e))
+        continue es;
       // .. writing it and its subs
       try {
         line += new EntityWriter().write(0, e);
@@ -304,15 +302,8 @@ public class GedcomWriter implements Trackable {
       
       // check against filters
       if (!prop.isTransient() ) {
-        Entity target = null;
-        if (prop instanceof PropertyXRef) 
-          target = ((PropertyXRef) prop).getTargetEntity();
-        
-        for (Filter f : filters) {
-          if (f.veto(prop) || (target!=null&&f.veto(target)))
-            return;
-          
-        }
+        if (filter.veto(prop))
+          return;
       }
       // cont
       super.writeProperty(level, prop);
