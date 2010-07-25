@@ -103,7 +103,7 @@ public class Plugin extends WorkbenchAdapter implements ActionProvider {
     public void actionPerformed(ActionEvent event) {
       
       RelationshipFilter rela = new RelationshipFilter(gedcom);
-      DataFilter data = new DataFilter(gedcom);
+      DataFilter data = new DataFilter();
       List<Filter> filters = new ArrayList<Filter>();
       filters.add(rela);
       filters.add(data);
