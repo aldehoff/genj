@@ -420,7 +420,7 @@ public class PointInTime implements Comparable<PointInTime> {
     // check valid
     boolean
       v1 = isValid(),
-      v2 = other.isValid();
+      v2 = other!=null && other.isValid();
     if (!v1&&!v2)
       return 0;
     if (!v2)
