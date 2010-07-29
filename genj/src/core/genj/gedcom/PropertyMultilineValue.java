@@ -28,7 +28,6 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
   
   /** our value */
   private String lines = "";
-  private int firstLine = 0;
   
   /**
    * need tag-argument constructor for all properties
@@ -44,8 +43,6 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
   public void setValue(String setValue) {
     String old = getValue();
     lines = setValue;
-    firstLine = lines.indexOf('\n');
-    if (firstLine<0) firstLine = lines.length();
     propagatePropertyChanged(this, old);
   }
   
@@ -53,14 +50,14 @@ public class PropertyMultilineValue extends Property implements MultiLinePropert
    * A display value containing no newlines
    */
   public String getDisplayValue() {
-    return lines.substring(0, firstLine);
+    return getValue();
   }
 
   /**
    * Accessor Value
    */
   public String getValue() {
-    return lines;
+    return lines.toString();
   }
   
   /**
