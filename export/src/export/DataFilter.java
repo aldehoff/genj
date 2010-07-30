@@ -27,6 +27,7 @@ import genj.gedcom.Note;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.Repository;
 import genj.gedcom.Source;
 import genj.gedcom.time.PointInTime;
 import genj.io.Filter;
@@ -173,7 +174,7 @@ import javax.swing.JPanel;
       return true;
     
     // no sources?
-    if (!sources.isSelected()&&entity instanceof Source) 
+    if (!sources.isSelected()&&(entity instanceof Source||entity instanceof Repository)) 
       return true;
 
     return false;
