@@ -15,6 +15,7 @@
 	<classpathentry kind="lib" path="language/es"/>
 	<classpathentry kind="lib" path="language/fr"/>
 	<classpathentry kind="lib" path="language/hu"/>
+	<classpathentry kind="lib" path="language/it"/>
 	<classpathentry kind="lib" path="language/nl"/>
 	<classpathentry kind="lib" path="language/pl"/>
 	<classpathentry kind="lib" path="language/pt_BR"/>
