@@ -1,4 +1,4 @@
-#Wed Apr 28 08:53:43 EDT 2010
+#Sat Aug 07 14:19:00 CEST 2010
 eclipse.preferences.version=1
 encoding//language/cs/genj/almanac/resources_cs.properties=UTF-8
 encoding//language/cs/genj/app/resources_cs.properties=UTF-8
@@ -139,6 +139,30 @@ encoding//language/hu/genj/table/resources_hu.properties=UTF-8
 encoding//language/hu/genj/timeline/resources_hu.properties=UTF-8
 encoding//language/hu/genj/tree/resources_hu.properties=UTF-8
 encoding//language/hu/genj/view/resources_hu.properties=UTF-8
+encoding//language/it/genj/almanac/resources_it.properties=UTF-8
+encoding//language/it/genj/app/resources_it.properties=UTF-8
+encoding//language/it/genj/applet/resources_it.properties=UTF-8
+encoding//language/it/genj/common/resources_it.properties=UTF-8
+encoding//language/it/genj/edit/resources_it.properties=UTF-8
+encoding//language/it/genj/edit/actions/resources_it.properties=UTF-8
+encoding//language/it/genj/edit/beans/resources_it.properties=UTF-8
+encoding//language/it/genj/entity/resources_it.properties=UTF-8
+encoding//language/it/genj/fo/resources_it.properties=UTF-8
+encoding//language/it/genj/gedcom/resources_it.properties=UTF-8
+encoding//language/it/genj/gedcom/time/resources_it.properties=UTF-8
+encoding//language/it/genj/help/resources_it.properties=UTF-8
+encoding//language/it/genj/io/resources_it.properties=UTF-8
+encoding//language/it/genj/layout/resources_it.properties=UTF-8
+encoding//language/it/genj/nav/resources_it.properties=UTF-8
+encoding//language/it/genj/print/resources_it.properties=UTF-8
+encoding//language/it/genj/renderer/resources_it.properties=UTF-8
+encoding//language/it/genj/report/resources_it.properties=UTF-8
+encoding//language/it/genj/search/resources_it.properties=UTF-8
+encoding//language/it/genj/table/resources_it.properties=UTF-8
+encoding//language/it/genj/timeline/resources_it.properties=UTF-8
+encoding//language/it/genj/tree/resources_it.properties=UTF-8
+encoding//language/it/genj/util/resources_it.properties=UTF-8
+encoding//language/it/genj/view/resources_it.properties=UTF-8
 encoding//language/nl/genj/app/resources_nl.properties=UTF-8
 encoding//language/nl/genj/applet/resources_nl.properties=UTF-8
 encoding//language/nl/genj/edit/actions/resources_nl.properties=UTF-8
