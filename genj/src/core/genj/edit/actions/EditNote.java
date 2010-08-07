@@ -116,7 +116,7 @@ public class EditNote extends Action2 {
     else if (note!=null)
       text.setText(note.getValue());
 
-    if (0!=new GedcomDialog(note.getGedcom(), property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), e).show())
+    if (0!=new GedcomDialog(property.getGedcom(), property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), e).show())
       return;
 
     property.getGedcom().doMuteUnitOfWork(new UnitOfWork() {
