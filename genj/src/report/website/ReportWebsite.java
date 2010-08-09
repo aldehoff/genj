@@ -279,8 +279,8 @@ public class ReportWebsite extends Report {
 		// Make a start page and indexes
 		Collator collator = gedcom.getCollator();
 		Arrays.sort(indis, new PropertyComparator("INDI:NAME"));
-		Arrays.sort(sources, new EntityComparator());
-		Arrays.sort(repos, new EntityComparator());
+		Arrays.sort(sources, new PropertyComparator("SOUR:TITL"));
+		Arrays.sort(repos, new PropertyComparator("REPO:NAME"));
 		makeStartpage(gedcom, destDir, indis, sources, repos, rootIndi);
 		makePersonIndex(destDir, indis, collator);
 		if (sources.length > 0)
@@ -302,7 +302,7 @@ public class ReportWebsite extends Report {
 	
 	protected void makeSosaStradonitzNumbering(Indi person, int number) {
 		String sosaId = sosaStradonitzNumber.get(person.getId());
-		if (sosaId == null) {
+		if (sosaId==null) {
 			sosaStradonitzNumber.put(person.getId(), Integer.toString(number));
 		} else {
 			sosaStradonitzNumber.put(person.getId(), sosaId+";"+Integer.toString(number));
