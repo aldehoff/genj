@@ -39,23 +39,26 @@ public class AlignRightArranger extends AbstractArranger {
     }
 
     protected void arrangeChildren(IndiBox indibox) {
-        int currentX = indibox.width;
+        int currentX = indibox.wPlus;
         if (indibox.getDir() == Direction.PARENT)
             currentX = indibox.prev.width / 2 - indibox.x - spacing;
         for (int i = 0; i < indibox.children.length; i++) {
             IndiBox child = indibox.children[i];
-            child.x = currentX - child.width;
             child.y = 1;
             filter(child);
+            child.x = currentX - child.wPlus;
             currentX -= child.wPlus + child.wMinus + spacing;
         }
-        if (indibox.children.length == 1) {
-            IndiBox child = indibox.children[0];
-            int parentWidth = indibox.wMinus + indibox.wPlus;
-            int childWidth = child.wMinus + child.wPlus;
-            int centerX = (parentWidth - childWidth) / 2 - indibox.wMinus + child.wMinus;
-            if (child.x > centerX)
-                child.x = centerX;
+        
+        int childrenWidth = indibox.wPlus - currentX - spacing;
+        int parentWidth = indibox.wMinus + indibox.wPlus;
+        
+        if (parentWidth > childrenWidth) {
+        	int diff = (parentWidth - childrenWidth) / 2;
+	        for (int i = 0; i < indibox.children.length; i++) {
+    	        IndiBox child = indibox.children[i];
+        	    child.x -= diff;
+        	}
         }
     }
 
