@@ -70,8 +70,8 @@ public class AlignRightArranger extends AbstractArranger {
     }
 
     protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {
-        parent.x = indibox.width - parent.width;
         filter(parent);
+        parent.x = indibox.spouse.width - parent.wPlus;
         parent.y = -parent.hPlus;
     }
 

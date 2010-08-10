@@ -72,6 +72,7 @@ public class AlignLeftArranger extends AbstractArranger {
 
 	protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {
 		filter(parent);
+		parent.x = parent.wMinus;
 		parent.y = -parent.hPlus;
 	}
 
