@@ -35,6 +35,7 @@ import genj.gedcom.TagPath;
 import genj.io.InputSource;
 import genj.io.InputSource.FileInput;
 import genj.util.DefaultValueMap;
+import genj.util.EnvironmentChecker;
 import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -291,11 +292,6 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     }
     Add() {
       setImage(ThumbnailWidget.IMG_THUMBNAIL.getOverLayed(Images.imgNew));
-      
-      if (getProperty()!=null) {
-        Origin origin = getProperty().getGedcom().getOrigin();
-        chooser.setDirectory(origin.getFile()!=null ? origin.getFile().getParent() : null);
-      }
     }
     @Override
     public void setEnabled(boolean set) {
@@ -327,9 +323,13 @@ public class MediaBean extends PropertyBean implements ContextProvider {
     @Override
     public void actionPerformed(ActionEvent e) {
       
+      
       // ask user
       ThumbnailWidget preview = new ThumbnailWidget();
       preview.setPreferredSize(new Dimension(128,128));
+
+      Origin origin = getRoot().getGedcom().getOrigin();
+      chooser.setDirectory(REGISTRY.get(origin.getName()+".media", origin.getFile()==null?(String)EnvironmentChecker.getProperty("user.home", ".", "looking for media home"):origin.getFile().getParent()));
       chooser.setAccessory(preview);
       
       to = new JList(candidates());
@@ -357,6 +357,8 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       
       if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, options, Action2.andCancel(ok), MediaBean.this))
         return;
+
+      REGISTRY.put(origin.getName()+".media", chooser.getDirectory());
 
       // tell thumbnail widget
       FileInput source = new FileInput(title.getText(), getFile());
