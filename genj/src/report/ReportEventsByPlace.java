@@ -27,10 +27,6 @@ import java.util.TreeMap;
 
 public class ReportEventsByPlace extends Report {
 
-	private static final String NEITHER_LIVING_NOR_DECEASED = "please switch on either showLiving or showDeceased";
-
-	private static final String NO_EVENTS = "found no valid events with a place";
-
 	public boolean sortEventTypes = true;
 	public boolean showNotes = false;
 	public boolean showSources = false;
@@ -38,17 +34,17 @@ public class ReportEventsByPlace extends Report {
 	public boolean showEventSources = true;
 	public boolean showLiving = true;
 	public boolean showDeceased = true;
-	public String showEvents = "BIRT,BAPM,BAPL,CHR,CHRA,MARR,DIV,EMI,IMI,NATU,DEAT";
+	public String showEvents = "BIRT,BAPM,BAPL,CHR,CHRA,MARR,DIV,EMIG,IMMI,NATU,DEAT";
 
 	public void start(final Gedcom gedcom) throws IOException {
 
 		if (!showLiving && !showDeceased) {
-			println(NEITHER_LIVING_NOR_DECEASED);
+			println(translate("neither_living_nor_deceased"));
 			return;
 		}
 		final Map<String, List<Event>> eventsByPlace = collectEvents(gedcom);
 		if (eventsByPlace.isEmpty()) {
-			println(NO_EVENTS);
+			println(translate("no_events"));
 		}
 		for (final String placeName : eventsByPlace.keySet()) {
 			println(placeName);
@@ -57,9 +53,9 @@ public class ReportEventsByPlace extends Report {
 				final String date = event.getDate().getDisplayValue();
 				println("\t" + event.getPropertyName() + " " + date + " : " + entity);
 				printProperties("\t\t", event.getProperties("NOTE"), showEventNotes);
-				printProperties("\t\t", event.getProperties("SRC"), showEventSources);
+				printProperties("\t\t", event.getProperties("SOUR"), showEventSources);
 				printProperties("\t\t", entity.getProperties("NOTE"), showNotes);
-				printProperties("\t\t", entity.getProperties("SRC"), showSources);
+				printProperties("\t\t", entity.getProperties("SOUR"), showSources);
 			}
 		}
 	}
