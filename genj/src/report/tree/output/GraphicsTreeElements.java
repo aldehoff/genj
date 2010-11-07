@@ -349,8 +349,8 @@ public class GraphicsTreeElements implements TreeElements {
         String lastName = null;
 
         // generate LastName + Title
-        if (draw_title && i.getProperty(PATH_INDITITL) != null)
-        	lastName = i.getLastName() + " " + i.getProperty(PATH_INDITITL);
+        if (draw_title && i.getValue(PATH_INDITITL, null) != null)
+        	lastName = i.getLastName() + " " + i.getValue(PATH_INDITITL, "");
         else
         	lastName = i.getLastName();
 
@@ -751,8 +751,8 @@ public class GraphicsTreeElements implements TreeElements {
         // Text data width
         if (width + 2*TEXT_MARGIN > indibox.width)
             indibox.width = width + 2*TEXT_MARGIN;
-        if (draw_title && i.getProperty(PATH_INDITITL) != null)
-        	width = getTextWidth(i.getLastName() + " " + i.getProperty(PATH_INDITITL), NAME_FONT);
+        if (draw_title && i.getValue(PATH_INDITITL, null) != null)
+        	width = getTextWidth(i.getLastName() + " " + i.getValue(PATH_INDITITL, ""), NAME_FONT);
         else
         	width = getTextWidth(i.getLastName(), NAME_FONT);
 
