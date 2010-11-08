@@ -177,8 +177,8 @@ public class ReportLinesCirc extends Report {
     /******************/
     private PrintWriter writer;
     private int indicentre=1;
-    private int numindilines=0;
-    private int nummarr=-1;
+	private int numindilines; //init moved to initUserOptions
+	private int nummarr; // init moved to initUserOptions
     private final String version = "genj 1.0";
     private boolean transparent;
     /**
@@ -226,6 +226,8 @@ public class ReportLinesCirc extends Report {
 	  printmarr=(uprintmarr != 0);*/
 	marrest=false;
 	printmarr=true;
+	numindilines=0;
+	nummarr=-1;
 	alternating=(colouroption == 0);
 	gradient=(colouroption == 2);
 	maxlevel=umaxlevel + 5;
