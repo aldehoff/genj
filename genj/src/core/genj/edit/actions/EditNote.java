@@ -98,7 +98,7 @@ public class EditNote extends Action2 {
     JPanel panel = new JPanel(new NestedBlockLayout("<col><entity/><text gy=\"1\"/></col>"));
     
     final SelectEntityWidget select = new SelectEntityWidget(property.getGedcom(), Gedcom.NOTE, 
-        RESOURCES.getString("new", Gedcom.getName(Gedcom.NOTE)));
+        (note!=null&&!(note instanceof PropertyNote)) ? Gedcom.getName(Gedcom.NOTE) : RESOURCES.getString("new", Gedcom.getName(Gedcom.NOTE)));
     panel.add(select);
     final JTextPane text = new JTextPane();
     text.setPreferredSize(new Dimension(128,128));
@@ -107,7 +107,17 @@ public class EditNote extends Action2 {
     select.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         Note selection = (Note)select.getSelection();
-        text.setText(selection!=null ? selection.getDisplayValue() : "");
+        // selected an entity?
+        if (selection!=null) {
+          text.setText(selection.getDisplayValue());
+        } else {
+          
+          // existing inline or new
+          if (!(note instanceof PropertyNote))
+            text.setText(note.getValue());
+          else
+            text.setText("");
+        }
       }
     });
           
