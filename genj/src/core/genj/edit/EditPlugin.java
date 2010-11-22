@@ -65,7 +65,6 @@ import genj.gedcom.PropertySubmitter;
 import genj.gedcom.Submitter;
 import genj.gedcom.TagPath;
 import genj.gedcom.UnitOfWork;
-import genj.util.EnvironmentChecker;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
@@ -164,10 +163,6 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
       public void perform(Gedcom gedcom) throws GedcomException {
         // commit changes 
         panel.commit();
-        
-        // commit submitter as well
-        Submitter submitter = (Submitter) gedcom.createEntity(Gedcom.SUBM);
-        submitter.setName(EnvironmentChecker.getProperty("user.name", "?", "user name used as submitter in new gedcom"));
       }
     });
     

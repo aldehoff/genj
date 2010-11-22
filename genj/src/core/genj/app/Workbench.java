@@ -26,6 +26,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
+import genj.gedcom.Submitter;
 import genj.gedcom.UnitOfWork;
 import genj.io.Filter;
 import genj.io.GedcomEncodingException;
@@ -63,7 +64,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -270,8 +270,13 @@ public class Workbench extends JPanel implements SelectionSink {
     Gedcom gedcom;
     try {
       gedcom = new Gedcom(Origin.create(new URL("file:"+file.getAbsolutePath())));
-    } catch (MalformedURLException e) {
-      LOG.log(Level.WARNING, "unexpected exception creating new gedcom", e);
+      
+      // commit submitter as well
+      Submitter submitter = (Submitter) gedcom.createEntity(Gedcom.SUBM);
+      submitter.setName(EnvironmentChecker.getProperty("user.name", "?", "user name used as submitter in new gedcom"));
+      
+    } catch (Throwable t) {
+      LOG.log(Level.WARNING, "unexpected exception creating new gedcom", t);
       return;
     }
     
