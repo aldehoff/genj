@@ -82,12 +82,17 @@ public class CreateEntity extends AbstractChange {
    * @see genj.edit.EditViewFactory.Change#getConfirmMessage()
    */
   protected String getConfirmMessage() {
+    
     // You are about to create a {0} in {1}!
     String about = resources.getString("confirm.new", new Object[]{ Gedcom.getName(etag,false), gedcom});
-    // This entity will not be connected ... 
-    String detail = resources.getString("confirm.new.unrelated");
-    // done
-    return about + '\n' + detail;
+    
+    // unless it's the first person (who's inherently disconnected) - warn about it
+    if (!(Gedcom.INDI.equals(etag) && gedcom.getIndis().isEmpty())) {
+      // This entity will not be connected ... 
+      about = about + '\n' + resources.getString("confirm.new.unrelated");
+    }
+    
+    return about;
   }
   
   /**
