@@ -107,6 +107,9 @@ public abstract class AbstractChange extends Action2 {
    */
   public void actionPerformed(final ActionEvent event) {
     
+    // grab selection sink now since any, eg, menu is gone once the confirm dialog is shown
+    SelectionSink sink = SelectionSink.Dispatcher.getSink(event);
+    
     // cleanup first
     confirm = null;
 	  
@@ -138,8 +141,8 @@ public abstract class AbstractChange extends Action2 {
     }
     
     // propagate selection
-    if (selection!=null)
-    	SelectionSink.Dispatcher.fireSelection(event, selection);
+    if (selection!=null&&sink!=null)
+      sink.fireSelection(selection, true);
       
     // done
   }
