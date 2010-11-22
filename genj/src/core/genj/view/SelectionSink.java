@@ -26,6 +26,25 @@ public interface SelectionSink {
   public void fireSelection(Context context, boolean isActionPerformed);
 
   public class Dispatcher {
+    
+    public static SelectionSink getSink(AWTEvent event) {
+      return getSink((Component)event.getSource());
+    }
+    
+    public static SelectionSink getSink(Component source) {
+      SelectionSink sink = (SelectionSink)DialogHelper.visitOwners(source, new ComponentVisitor() {
+        public Component visit(Component parent, Component child) {
+          if (parent instanceof RootPaneContainer) {
+            Container contentPane = ((RootPaneContainer)parent).getContentPane();
+            if (contentPane.getComponentCount()>0 && contentPane.getComponent(0) instanceof SelectionSink)
+              return contentPane.getComponent(0);
+          }
+          return parent instanceof SelectionSink ? parent : null;
+        }
+      });
+      return sink;
+    }
+
     public static void fireSelection(AWTEvent event, Context context) {
       boolean isActionPerformed = false;
       if (event instanceof ActionEvent)
@@ -37,17 +56,7 @@ public interface SelectionSink {
 
     public static void fireSelection(Component source, Context context, boolean isActionPerformed) {
 
-      SelectionSink sink = (SelectionSink)DialogHelper.visitOwners(source, new ComponentVisitor() {
-        public Component visit(Component parent, Component child) {
-          if (parent instanceof RootPaneContainer) {
-            Container contentPane = ((RootPaneContainer)parent).getContentPane();
-            if (contentPane.getComponentCount()>0 && contentPane.getComponent(0) instanceof SelectionSink)
-              return contentPane.getComponent(0);
-          }
-          return parent instanceof SelectionSink ? parent : null;
-        }
-      });
-      
+      SelectionSink sink = getSink(source);
       if (sink!=null)
         sink.fireSelection(context, isActionPerformed);
     }
