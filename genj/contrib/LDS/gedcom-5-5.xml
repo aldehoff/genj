@@ -296,10 +296,10 @@
   <ADDR super="INDI:BIRT:ADDR"/>
   <PHON type="PropertySimpleValue" img="Phone"/>
   <LANG type="PropertySimpleValue" img="Place"/>
-  +++++++++++++ References +++++++++++++
-  <OBJE super="INDI:OBJE"/>
   <RFN super="INDI:RFN"/>
   <RIN super="INDI:RIN"/>
+  +++++++++++++ References +++++++++++++
+  <OBJE super="INDI:OBJE"/>
   +++++++++++++ change +++++++++++++
   <CHAN hide="1" super="INDI:CHAN"/>
  </SUBM>
