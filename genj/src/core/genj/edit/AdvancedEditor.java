@@ -221,7 +221,8 @@ import javax.swing.tree.TreePath;
    */
   @Override
   public void setContext(Context context) {
-    setContextImpl(context, true);
+    if (!ignoreTreeSelection)
+      setContextImpl(context, true);
   }
   
   private void setContextImpl(Context context, boolean pickFirstProperty) {
@@ -708,10 +709,15 @@ import javax.swing.tree.TreePath;
         return;
       List<Property> selection = tree.getSelection();
       Context ctx = new Context(gedcom, Collections.singletonList((Entity)tree.getRoot()), selection);
-      if (!selection.isEmpty())
-        SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
-      if (ctx.getProperties().size()!=1)
-        setContextImpl(ctx, false);
+      if (!selection.isEmpty()) {
+        try {
+          ignoreTreeSelection = true;
+          SelectionSink.Dispatcher.fireSelection(AdvancedEditor.this, ctx, false);
+        } finally {
+          ignoreTreeSelection = false;
+        }
+      }
+      setContextImpl(ctx, false);
     }
 
     public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
