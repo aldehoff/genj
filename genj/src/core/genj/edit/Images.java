@@ -32,8 +32,6 @@ final public class Images {
   
     imgView,
     
-    imgStickOn,
-    imgStickOff,
     imgFocus,
     
     imgUndo,
@@ -55,8 +53,6 @@ final public class Images {
     
     imgView      = new ImageIcon(this,"images/View");
 
-    imgStickOn   = new ImageIcon(this,"images/StickOn");
-    imgStickOff  = new ImageIcon(this,"images/StickOff");
     imgFocus     = new ImageIcon(this,"images/Focus");
 
     imgUndo      = new ImageIcon(this,"images/Undo");

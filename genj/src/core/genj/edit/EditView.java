@@ -61,7 +61,6 @@ public class EditView extends View implements ContextProvider{
   static final Resources RESOURCES = Resources.get(EditView.class);
   
   private Mode     mode = new Mode();
-  private Sticky sticky = new Sticky();
   private Focus focus = new Focus();
   private OK ok = new OK();
   private Cancel cancel = new Cancel();
@@ -236,7 +235,6 @@ public class EditView extends View implements ContextProvider{
     
     // clear?
     if (context.getGedcom()==null) {
-      sticky.setSelected(false);
       setEditor(null);
       populate(toolbar);
       ok.setEnabled(false);
@@ -258,15 +256,13 @@ public class EditView extends View implements ContextProvider{
     if (context.getEntities().size()==1) {
 
       if (editor==null) {
-        sticky.setSelected(false);
         if (mode.isSelected())
           setEditor(new AdvancedEditor(context.getGedcom(), this));
         else
           setEditor(new BasicEditor(context.getGedcom(), this));
       }
       
-      if (!sticky.isSelected()||isActionPerformed)
-        editor.setContext(context);
+      editor.setContext(context);
       
     } else {
       if (editor!=null)
@@ -301,7 +297,6 @@ public class EditView extends View implements ContextProvider{
     toolbar.addSeparator();
 
     // add sticky/focus/mode
-    toolbar.add(new JToggleButton(sticky));
     toolbar.add(new JToggleButton(focus));
     toolbar.add(new JToggleButton(mode));
     
@@ -343,27 +338,6 @@ public class EditView extends View implements ContextProvider{
 //    }
 //     
 //  } //ContextMenu
-  
-  /**
-   * Action - toggle sticky mode
-   */
-  private class Sticky extends Action2 {
-    /** constructor */
-    protected Sticky() {
-      super.setImage(Images.imgStickOff);
-      super.setTip(RESOURCES, "action.stick.tip");
-      super.setSelected(false);
-    }
-    /** run */
-    public void actionPerformed(ActionEvent event) {
-      setSelected(isSelected());
-    }
-    @Override
-    public boolean setSelected(boolean selected) {
-      super.setImage(selected ? Images.imgStickOn : Images.imgStickOff);
-      return super.setSelected(selected);
-    }
-  } //Sticky
   
   /**
    * Action - toggle focus mode
