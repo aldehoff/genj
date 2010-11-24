@@ -137,6 +137,14 @@ import javax.swing.SwingUtilities;
       }      
     }
     
+    // add some actions
+    if (currentEntity!=null && currentEntity.getMetaProperty().allows(Gedcom.NOTE))
+      actions.add(new EditNote(currentEntity));
+
+    // add some actions
+    if (currentEntity!=null && currentEntity.getMetaProperty().allows(Gedcom.SOUR))
+      actions.add(new EditSource(currentEntity));
+
     // grab actions
     actions.addAll(beanPanel.getActions());
     
@@ -184,14 +192,6 @@ import javax.swing.SwingUtilities;
     // remove all we've setup to this point
     beanPanel.setRoot(currentEntity);
     
-    // add some actions
-    if (currentEntity!=null && currentEntity.getMetaProperty().allows(Gedcom.NOTE))
-      actions.add(new EditNote(currentEntity));
-
-    // add some actions
-    if (currentEntity!=null && currentEntity.getMetaProperty().allows(Gedcom.SOUR))
-      actions.add(new EditSource(currentEntity));
-
     // set focus
     if (focus!=null && view.isGrabFocus())
       beanPanel.select(focus);
