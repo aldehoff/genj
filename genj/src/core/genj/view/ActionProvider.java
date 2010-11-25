@@ -92,7 +92,7 @@ public interface ActionProvider {
    */
   public final class ViewActionGroup extends Action2.Group {
     public ViewActionGroup() {
-      super(Resources.get(FileActionGroup.class).getString("group.view"));
+      super(Resources.get(FileActionGroup.class).getString("group.view"), null, true);
     }
     @Override
     public boolean equals(Object obj) {
