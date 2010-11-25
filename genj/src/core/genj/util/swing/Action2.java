@@ -340,10 +340,14 @@ public class Action2 extends AbstractAction {
       }
       // keep
       if (sort) {
-        for (int i=0;i<actions.size();i++) {
-          if (actions.get(i).getText().compareTo(action.getText())>0) {
-            actions.add(i, action);
-            return this;
+        if (action.getText()==null) {
+          sort = false;
+        } else {
+          for (int i=0;i<actions.size();i++) {
+            if (actions.get(i).getText().compareTo(action.getText())>0) {
+              actions.add(i, action);
+              return this;
+            }
           }
         }
       }
