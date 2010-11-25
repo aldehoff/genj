@@ -32,8 +32,6 @@ final public class Images {
   
     imgView,
     
-    imgFocus,
-    
     imgUndo,
     imgRedo,
     
@@ -52,8 +50,6 @@ final public class Images {
   private Images() {
     
     imgView      = new ImageIcon(this,"images/View");
-
-    imgFocus     = new ImageIcon(this,"images/Focus");
 
     imgUndo      = new ImageIcon(this,"images/Undo");
     imgRedo      = new ImageIcon(this,"images/Redo");

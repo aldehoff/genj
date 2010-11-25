@@ -126,15 +126,6 @@ import javax.swing.SwingUtilities;
       // change entity being edited
       setEntity(context.getEntity(), context.getProperty());
       
-    } else {
-
-      // simply change focus if possible
-      if (beanPanel!=null && view.isGrabFocus()) {
-        if (context.getProperties().size()==1)
-          beanPanel.select(context.getProperty());
-        else if (context.getProperties().isEmpty()&&context.getEntities().size()==1)
-          beanPanel.select(context.getEntity());
-      }      
     }
     
     // add some actions
@@ -166,10 +157,6 @@ import javax.swing.SwingUtilities;
     PropertyBean focussedBean = getFocus();
     Property focus = focussedBean !=null ? focussedBean.getProperty() : null;
     
-    // set selection
-    if (view.isGrabFocus())
-      beanPanel.select(focus);
-
   }
   
   /**
@@ -192,10 +179,6 @@ import javax.swing.SwingUtilities;
     // remove all we've setup to this point
     beanPanel.setRoot(currentEntity);
     
-    // set focus
-    if (focus!=null && view.isGrabFocus())
-      beanPanel.select(focus);
-
     // start change tracking
     changes.setChanged(false);
     

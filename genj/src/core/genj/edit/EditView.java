@@ -61,7 +61,6 @@ public class EditView extends View implements ContextProvider{
   static final Resources RESOURCES = Resources.get(EditView.class);
   
   private Mode     mode = new Mode();
-  private Focus focus = new Focus();
   private OK ok = new OK();
   private Cancel cancel = new Cancel();
   private Callback callback = new Callback();
@@ -91,7 +90,6 @@ public class EditView extends View implements ContextProvider{
     
     // check for current modes
     mode.setSelected(REGISTRY.get("advanced", false));
-    focus.setSelected(REGISTRY.get("focus", false));
 
     // Done
   }
@@ -135,13 +133,6 @@ public class EditView extends View implements ContextProvider{
     // show
     revalidate();
     repaint();
-  }
-  
-  /**
-   * Check whether editor should grab focus or not
-   */
-  /*package*/ boolean isGrabFocus() {
-    return focus.isSelected();
   }
   
   /**
@@ -297,7 +288,6 @@ public class EditView extends View implements ContextProvider{
     toolbar.addSeparator();
 
     // add sticky/focus/mode
-    toolbar.add(new JToggleButton(focus));
     toolbar.add(new JToggleButton(mode));
     
     // done
@@ -338,23 +328,6 @@ public class EditView extends View implements ContextProvider{
 //    }
 //     
 //  } //ContextMenu
-  
-  /**
-   * Action - toggle focus mode
-   */
-  private class Focus extends Action2 {
-    /** constructor */
-    protected Focus() {
-      super.setImage(Images.imgFocus);
-      super.setTip(RESOURCES, "action.focus.tip");
-      super.setSelected(false);
-    }
-    /** run */
-    public void actionPerformed(ActionEvent event) {
-      setSelected(isSelected());
-      REGISTRY.put("focus", isSelected());
-    }
-  } //Sticky
   
   /**
    * Action - advanced or basic

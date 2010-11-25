@@ -196,31 +196,31 @@ public class BeanPanel extends JPanel implements ContextProvider {
     return result;
   }
 
-  /**
-   * Select a property's bean
-   */
-  public void select(Property prop) {
-
-    if (prop==null||beans.isEmpty())
-      return;
-      
-    // look for appropriate bean showing prop
-    for (PropertyBean bean : beans) {
-      if (bean.getProperty()==prop && bean.requestFocusInWindow()) 
-        return;
-    }
-      
-    // check if one of the beans' properties is contained in prop
-    for (PropertyBean bean : beans) {
-      if (bean.isDisplayable() && bean.getProperty()!=null && bean.getProperty().isContained(prop) && bean.requestFocusInWindow()) 
-        return;
-    }
-      
-    // otherwise use first bean
-    beans.get(0).requestFocusInWindow();
-      
-    // done
-  }
+//  /**
+//   * Select a property's bean
+//   */
+//  public void select(Property prop) {
+//
+//    if (prop==null||beans.isEmpty())
+//      return;
+//      
+//    // look for appropriate bean showing prop
+//    for (PropertyBean bean : beans) {
+//      if (bean.getProperty()==prop && bean.requestFocusInWindow()) 
+//        return;
+//    }
+//      
+//    // check if one of the beans' properties is contained in prop
+//    for (PropertyBean bean : beans) {
+//      if (bean.isDisplayable() && bean.getProperty()!=null && bean.getProperty().isContained(prop) && bean.requestFocusInWindow()) 
+//        return;
+//    }
+//      
+//    // otherwise use first bean
+//    beans.get(0).requestFocusInWindow();
+//      
+//    // done
+//  }
   
   /** set context */
   public void setRoot(Property root) {

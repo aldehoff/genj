@@ -310,9 +310,9 @@ import javax.swing.tree.TreePath;
       changes.setChanged(false);
       bean.addChangeListener(changes);
       
-      // focus?
-      if (view.isGrabFocus()) 
-        bean.requestFocus();
+      // once we had grabbing focus here - that makes more sense for focusInWindow really
+      // so we're taking this out for now as confusing little options .. confuse
+      // bean.requestFocus();
 
     } catch (Throwable t) {
       EditView.LOG.log(Level.WARNING,  "Property bean "+bean, t);
