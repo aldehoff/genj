@@ -56,6 +56,7 @@ import genj.view.ToolBar;
 import genj.view.View;
 import genj.view.ViewContext;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -79,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
@@ -1005,7 +1007,11 @@ public class TreeView extends View implements ContextProvider, ActionProvider {
       
       // let the user choose an individual
       SelectEntityWidget select = new SelectEntityWidget(context.getGedcom(), Gedcom.INDI, null);
-      int rc = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, select, Action2.okCancel(), TreeView.this);
+ 
+      JPanel panel = new JPanel(new BorderLayout());
+      panel.add(BorderLayout.NORTH, select);
+      
+      int rc = DialogHelper.openDialog(getText(), DialogHelper.QUESTION_MESSAGE, panel, Action2.okCancel(), TreeView.this);
       if (rc==0) 
         setRoot(select.getSelection());
       
