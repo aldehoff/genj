@@ -27,6 +27,7 @@ import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
+import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -44,7 +45,8 @@ public class ContentRenderer {
   protected Point2D.Double dotSize = new Point2D.Double();
   
   /** a mark used for demarking time spans */
-  protected GeneralPath fromMark, toMark; 
+  protected GeneralPath fromMark, toMark;
+  protected Shape atMark; 
   
   /** whether we paint tags or not */
   /*package*/ boolean paintTags = false;
@@ -182,9 +184,13 @@ public class ContentRenderer {
     } else if (format==PropertyDate.BEFORE||format==PropertyDate.TO) {
       g.draw(toMark, event.from, level+1, true);
     } else {
-      g.draw(fromMark, event.from, level+1, true);
-      g.draw( event.from, level + 1 - dotSize.y, event.to, level + 1 - dotSize.y );
-      g.draw(toMark, event.to, level+1, true);
+      if (event.from==event.to) {
+        g.draw(atMark, event.from, level+1, false);
+      } else {
+        g.draw(fromMark, event.from, level+1, true);
+        g.draw( event.from, level + 1 - dotSize.y, event.to, level + 1 - dotSize.y );
+        g.draw(toMark, event.to, level+1, true);
+      }
     }
 
     // clipping from here    
@@ -247,6 +253,9 @@ public class ContentRenderer {
     toMark  .lineTo((float)( 1F*dotSize.x),(float)(-6F*dotSize.y));
     toMark  .lineTo((float)( 1F*dotSize.x),(float)(+4F*dotSize.y));
     toMark  .closePath();
+    
+    // calculate toMark
+    atMark = new Rectangle2D.Double(-1F*dotSize.x,-1F*dotSize.y,2*dotSize.x,2*dotSize.y);
     
     // done
   }

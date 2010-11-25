@@ -618,7 +618,7 @@ public class TimelineView extends View {
       UnitGraphics graphics = new UnitGraphics(
         g,
         DPC.getX()*cmPerYear, 
-        getFontMetrics(getFont()).getHeight()+1
+        g.getFontMetrics().getHeight()+1
       );
       graphics.translate(-model.min,0);
 
