@@ -103,6 +103,7 @@ public class EditNote extends Action2 {
     final JTextPane text = new JTextPane();
     text.setPreferredSize(new Dimension(128,128));
     panel.add(new JScrollPane(text));
+    panel.putClientProperty(DialogHelper.Dialog.CLIENT_PROPERTY_JCOMPONENT_RECEIVING_FOCUS, text);
     
     select.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {

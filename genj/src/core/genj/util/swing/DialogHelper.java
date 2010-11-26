@@ -202,6 +202,8 @@ public class DialogHelper {
   
   public static class Dialog {
     
+    public final static String CLIENT_PROPERTY_JCOMPONENT_RECEIVING_FOCUS = "CLIENT_PROPERTY_JCOMPONENT_RECEIVING_FOCUS"; 
+    
     private String title;
     private int messageType;
     private final JComponent content;
@@ -232,7 +234,7 @@ public class DialogHelper {
 
       // done for now
     }
-    
+
     public int show() {
       
       // create an option pane
@@ -259,6 +261,14 @@ public class DialogHelper {
 
       // hook up to the dialog being hidden by the optionpane - that's what is being called after the user selected a button (setValue())
       dlg.addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentShown(ComponentEvent e) {
+          Object focus = content.getClientProperty(CLIENT_PROPERTY_JCOMPONENT_RECEIVING_FOCUS);
+          if (focus instanceof JComponent)
+            ((JComponent)focus).requestFocus();
+          else
+            content.requestFocus();
+        }
         public void componentHidden(ComponentEvent e) {
           registry.put(key, dlg.getSize());
           dlg.dispose();

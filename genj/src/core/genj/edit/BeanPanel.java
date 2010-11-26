@@ -196,6 +196,22 @@ public class BeanPanel extends JPanel implements ContextProvider {
     return result;
   }
 
+  @Override
+  public void requestFocus() {
+    if (beans.isEmpty())
+      return;
+    beans.get(0).requestFocus();
+  }
+
+  @Override
+  public boolean requestFocusInWindow() {
+    if (beans.isEmpty())
+      return false;
+    beans.get(0).requestFocusInWindow();
+    return true;
+  }
+  
+  
 //  /**
 //   * Select a property's bean
 //   */
