@@ -170,7 +170,7 @@ public class SelectEntityWidget extends JPanel {
     Entity selection = getSelection();
     listWidget.setModel(new Model());
     sortWidget.setIcon(getPathImage(path));
-    sortWidget.setToolTipText(getPathText(path));
+    sortWidget.setToolTipText(RESOURCES.getString("select.sort", "..."));
     setSelection(selection);
   }
   
