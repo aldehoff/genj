@@ -344,7 +344,7 @@ public class Action2 extends AbstractAction {
           sort = false;
         } else {
           for (int i=0;i<actions.size();i++) {
-            if (actions.get(i).getText().compareTo(action.getText())>0) {
+            if (actions.get(i).getText().compareToIgnoreCase(action.getText())>0) {
               actions.add(i, action);
               return this;
             }
