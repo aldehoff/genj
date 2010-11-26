@@ -210,6 +210,7 @@ public class DialogHelper {
     private Action[] actions;
     private Component parent;
     private JDialog dlg;
+    private JOptionPane optionPane;
 
     public Dialog(String title, int messageType, final JComponent content, Action[] actions, Object source) {
       
@@ -238,7 +239,7 @@ public class DialogHelper {
     public int show() {
       
       // create an option pane
-      final JOptionPane optionPane = new Content(messageType, content, actions);
+      optionPane = new Content(messageType, content, actions);
       
       // create the dialog and content
       dlg = optionPane.createDialog(parent, title);
@@ -285,6 +286,11 @@ public class DialogHelper {
       for (int a=0; a<actions.length; a++) 
         if (rc==actions[a]) return a;
       return -1;
+    }
+    
+    public void close(int a) {
+      optionPane.setValue(actions[a]);
+      dlg.dispose();
     }
     
     public void cancel() {
