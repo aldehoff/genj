@@ -30,6 +30,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -43,6 +46,7 @@ import javax.swing.JTabbedPane;
  */
 class ReportSelector extends JPanel {
   
+  private ActionListener listener;
   private final static ImageIcon
     imgReload= new ImageIcon(ReportView.class,"Reload"     );
   
@@ -91,6 +95,15 @@ class ReportSelector extends JPanel {
       }
     });
     
+    list.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount()>1&&listener!=null)
+          listener.actionPerformed(new ActionEvent(ReportSelector.this, 0, "run"));
+          
+      }
+    });
+    
     if (list.getModel().getSize()>0)
       list.setSelectedIndex(0);
     
@@ -104,6 +117,9 @@ class ReportSelector extends JPanel {
       list.setSelection(report);
   }
   
+  public void setActionListener(ActionListener listener) {
+    this.listener = listener;
+  }
 
   /**
    * Action: RELOAD

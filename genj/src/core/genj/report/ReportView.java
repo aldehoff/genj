@@ -43,6 +43,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -270,8 +271,17 @@ public class ReportView extends View {
       selector.select(ReportLoader.getInstance().getReportByName(REGISTRY.get("lastreport", (String) null)));
     } catch (Throwable t) {
     }
-
-    if (0 != DialogHelper.openDialog(RESOURCES.getString("report.reports"), DialogHelper.QUESTION_MESSAGE, selector, Action2.okCancel(), ReportView.this))
+    
+    final DialogHelper.Dialog dlg =new DialogHelper.Dialog(RESOURCES.getString("report.reports"), DialogHelper.QUESTION_MESSAGE, selector, Action2.okCancel(), ReportView.this);
+    
+    selector.setActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        dlg.close(0);
+      }
+    });
+    
+    if (0 != dlg.show())
       return;
 
     Report report = selector.getReport();
