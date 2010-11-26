@@ -49,7 +49,7 @@ public class ReportPlugin extends WorkbenchAdapter implements ActionProvider {
   private boolean showReportPickerOnOpen = true;
   
   private Workbench workbench;
-  private Action2.Group workbenchActions = new Action2.Group(Resources.get(this).getString("report.reports"));
+  private Action2.Group workbenchActions = new Action2.Group(Resources.get(this).getString("report.reports"), null, true);
   
   public ReportPlugin(Workbench workbench) {
     this.workbench = workbench;
