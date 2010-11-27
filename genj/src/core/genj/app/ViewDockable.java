@@ -217,35 +217,24 @@ import swingx.docking.Docked;
       if (!(event instanceof MouseEvent))
         return;
       final MouseEvent me = (MouseEvent) event;
-      if (!(me.isPopupTrigger() || me.getID() == MouseEvent.MOUSE_CLICKED))
+      if (!(me.isPopupTrigger()))
         return;
 
-      // NM 20080130 do the component/context calculation in another event to
-      // allow everyone to catch up
-      // Peter reported that the context menu is the wrong one as
-      // PropertyTreeWidget
-      // changes the selection on mouse clicks (following right-clicks).
-      // It might be that eventDispatched() is called before the mouse click is
-      // propagated to the
-      // component thus calculates the menu before the selection changes.
-      // So I'm trying now to show the popup this in a later event to make sure
-      // everyone caught up to the event
-      
-      // find workbench now (popup menu might go away after this method call)
-      final Workbench workbench = Workbench.getWorkbench((Component)me.getSource());
-      if (workbench==null)
-        return;
-      
-      // find context at point
-      final Component source = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
-      final ContextProvider.Lookup lookup = new ContextProvider.Lookup(source);
-      if (lookup.getContext()==null)
-        return;
-
-      final Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), source);
-      
       SwingUtilities.invokeLater(new Runnable() {
         public void run() {
+          
+          // find workbench now (popup menu might go away after this method call)
+          final Workbench workbench = Workbench.getWorkbench((Component)me.getSource());
+          if (workbench==null)
+            return;
+          
+          // find context at point
+          final Component source = SwingUtilities.getDeepestComponentAt(me.getComponent(), me.getX(), me.getY());
+          final ContextProvider.Lookup lookup = new ContextProvider.Lookup(source);
+          if (lookup.getContext()==null)
+            return;
+
+          final Point point = SwingUtilities.convertPoint(me.getComponent(), me.getX(), me.getY(), source);
           
           // a double-click on provider?
           if (lookup.getProvider() == source
