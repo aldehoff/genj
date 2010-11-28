@@ -38,7 +38,9 @@ import genj.util.swing.DialogHelper;
 import genj.util.swing.TableWidget;
 
 import java.awt.BorderLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -202,6 +204,8 @@ public class EventsBean extends PropertyBean {
     @Override
     public void actionPerformed(ActionEvent event) {
       
+      Window win = DialogHelper.getWindow(event);      
+      
       final Property root = getProperty();
       
       MetaProperty[] metas = root.getNestedMetaProperties(MetaProperty.WHERE_NOT_HIDDEN | MetaProperty.WHERE_CARDINALITY_ALLOWS);
@@ -212,8 +216,15 @@ public class EventsBean extends PropertyBean {
       }
       final ChoosePropertyBean choose = new ChoosePropertyBean(choices.toArray(new MetaProperty[choices.size()]));
       choose.setSingleSelection(true);
-      if (0!=DialogHelper.openDialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
-          choose, Action2.okCancel(), EventsBean.this))
+      final DialogHelper.Dialog dlg = new DialogHelper.Dialog(getTip(), DialogHelper.QUESTION_MESSAGE, 
+          choose, Action2.okCancel(), EventsBean.this);
+      choose.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          dlg.close(0);
+        }
+      });
+      if (0!=dlg.show())
         return;
       
       final String add = choose.getSelectedTags()[0];
@@ -226,7 +237,7 @@ public class EventsBean extends PropertyBean {
       });
 
       if (added!=null)
-        new EditEvent(added).actionPerformed(event);
+        new EditEvent(added).actionPerformed(new ActionEvent(win, 0, ""));
             
     }
     
