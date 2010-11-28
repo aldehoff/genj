@@ -205,6 +205,7 @@ public class ReportView extends View {
 
     // clear the current output and show coming
     clear();
+    output.add(report.getName()+" - "+RESOURCES.getString("report.output")+":");
     show(CONSOLE);
     
     // set running
