@@ -654,8 +654,18 @@ import javax.swing.tree.TreePath;
         JLabel label = new JLabel(resources.getString("add.choose"));
         ChoosePropertyBean choose = new ChoosePropertyBean(parent);
         JCheckBox check = new JCheckBox(resources.getString("add.default_too"),addDefaults);
-        int option = DialogHelper.openDialog(resources.getString("add.title"),DialogHelper.QUESTION_MESSAGE,new JComponent[]{ label, choose, check },Action2.okCancel(),AdvancedEditor.this); 
-        if (option!=0)
+        final DialogHelper.Dialog dlg = new DialogHelper.Dialog(resources.getString("add.title"),
+            DialogHelper.QUESTION_MESSAGE,
+            new JComponent[]{ label, choose, check },
+            Action2.okCancel(),
+            AdvancedEditor.this);
+        choose.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent e) {
+            dlg.close(0);
+          }
+        });
+        if (dlg.show()!=0)
           return;
         // .. calculate chosen tags
         tags = choose.getSelectedTags();
