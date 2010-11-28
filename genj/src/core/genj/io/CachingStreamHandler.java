@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  */
 public class CachingStreamHandler extends URLStreamHandler {
   
-  private final static long EXPIRE_MILLIS = 24*60*60*1000;
+  private final static long EXPIRE_MILLIS = 0;// no caching for now 60*60*1000; 
   
   private final static Logger LOG = Logger.getLogger("genj.io");
   private File cache;
