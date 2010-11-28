@@ -120,17 +120,7 @@ public class DialogHelper {
    * @see genj.window.WindowManager#openDialog(java.lang.String, java.lang.String, javax.swing.Icon, java.awt.Dimension, javax.swing.JComponent[], java.lang.String[], javax.swing.JComponent)
    */
   public static int openDialog(String title, int messageType,  JComponent[] content, Action[] actions, Object source) {
-    // assemble content into Box (don't use Box here because
-    // Box extends Container in pre JDK 1.4)
-    JPanel box = new JPanel();
-    box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-    for (int i = 0; i < content.length; i++) {
-      if (content[i]==null) continue;
-      box.add(content[i]);
-      content[i].setAlignmentX(0F);
-    }
-    // delegate
-    return openDialog(title, messageType, box, actions, source);
+    return new Dialog(title, messageType, content, actions, source).show();
   }
 
   /**
@@ -212,6 +202,23 @@ public class DialogHelper {
     private JDialog dlg;
     private JOptionPane optionPane;
 
+    public Dialog(String title, int messageType, JComponent[] content, Action[] actions, Object source) {
+      this(title, messageType, box(content), actions, source);
+    }
+    
+    private static JComponent box(JComponent[] content) {
+      // assemble content into Box (don't use Box here because
+      // Box extends Container in pre JDK 1.4)
+      JPanel box = new JPanel();
+      box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
+      for (int i = 0; i < content.length; i++) {
+        if (content[i]==null) continue;
+        box.add(content[i]);
+        content[i].setAlignmentX(0F);
+      }
+      return box;
+    }
+    
     public Dialog(String title, int messageType, final JComponent content, Action[] actions, Object source) {
       
       this.title = title;
