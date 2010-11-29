@@ -27,6 +27,7 @@ import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.Trackable;
 import genj.util.swing.Action2;
+import genj.util.swing.ImageIcon;
 import genj.util.swing.MacAdapter;
 import genj.util.swing.MenuHelper;
 import genj.view.ActionProvider;
@@ -35,9 +36,11 @@ import genj.view.View;
 import genj.view.ViewFactory;
 import genj.view.ActionProvider.Purpose;
 
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -172,6 +175,7 @@ import spin.Spin;
     groups.add(edit);
 
     Action2.Group help = new ActionProvider.HelpActionGroup();
+    help.add(new ActionSupport());
     help.add(new ActionProvider.SeparatorAction());
     help.add(new ActionLog());
     if (!MacAdapter.isMac())
@@ -270,6 +274,24 @@ import spin.Spin;
     }
   };
   
+  
+  static class ActionSupport extends Action2 {
+    
+    private final static ImageIcon IMG = new ImageIcon(ActionAbout.class,"images/About.png");
+    
+    /** constructor */
+    protected ActionSupport() {
+      setText("Support");
+    }
+
+    /** run */
+    public void actionPerformed(ActionEvent event) {
+      try {
+        Desktop.getDesktop().browse(new URI("http://genj.sourceforge.net/wiki/en/support"));
+      } catch (Throwable t) {
+      }
+    }
+  }
   
 } // Menu
 
