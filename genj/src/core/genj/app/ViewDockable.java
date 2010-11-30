@@ -217,7 +217,7 @@ import swingx.docking.Docked;
       if (!(event instanceof MouseEvent))
         return;
       final MouseEvent me = (MouseEvent) event;
-      if (!(me.isPopupTrigger()))
+      if (!(me.isPopupTrigger() || me.getID() == MouseEvent.MOUSE_CLICKED))
         return;
 
       SwingUtilities.invokeLater(new Runnable() {
