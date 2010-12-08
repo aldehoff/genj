@@ -60,9 +60,6 @@ public class Options extends OptionProvider {
   /** the current language code */
   private int language = -1;
 
-  /** write BOM on save */
-  public boolean isWriteBOM = false;
-
   /** all available language codes */
   private static String[] languages;
 
