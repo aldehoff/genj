@@ -44,7 +44,7 @@ public class RunExternal extends Action2 {
     this.file = file;
     super.setImage(PropertyFile.DEFAULT_IMAGE);
     super.setText(Resources.get(this).getString("open"));
-    setEnabled(file.exists());
+    setEnabled(file!=null&&file.exists());
   }
   
   /**
