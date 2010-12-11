@@ -103,7 +103,6 @@ public class ReferencesBean extends PropertyBean {
     
     private List<PropertyXRef> rows;
     private TagPath[] columns = new TagPath[] {
-        new TagPath("..", Property.LABEL), 
         new TagPath(".", Gedcom.getName("REFN")), 
         new TagPath("*:..:..", "*"), 
       };
@@ -133,12 +132,8 @@ public class ReferencesBean extends PropertyBean {
     public String getCellValue(Property property, int row, int col) {
 
       switch (col) {
-        // first column - the owning parent 
-        case 0: 
-          return property!=getProperty() ? property.getPropertyName() : ""; 
-        
-        // 2nd column - the name of the reference xref - specially treat foreign xrefs
-        case 1:
+        // the name of the reference xref - specially treat foreign xrefs
+        case 0:
           if (property instanceof PropertyXRef) {
             PropertyXRef ref = (PropertyXRef)property;
             if (ref.isTransient())
@@ -146,7 +141,8 @@ public class ReferencesBean extends PropertyBean {
           }
           return property.getPropertyName();
 
-        // 3rd column - the referenced entity
+        // the referenced entity
+        case 1:
         default:
           return property.toString();
       }
