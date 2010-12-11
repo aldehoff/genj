@@ -21,6 +21,7 @@ package genj.util.swing;
 
 import genj.io.InputSource;
 import genj.io.InputSource.FileInput;
+import genj.util.Resources;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -80,6 +81,7 @@ import javax.swing.filechooser.FileSystemView;
  */
 public class ThumbnailWidget extends JComponent {
   
+  private final static Resources RES = Resources.get(ThumbnailWidget.class);
   private final static int MIN_THUMBNAIL = 32;
   
   public final static ImageIcon 
@@ -863,6 +865,7 @@ public class ThumbnailWidget extends JComponent {
   private class Fit extends Action2 implements PropertyChangeListener {
     public Fit() {
       setImage(IMG_ZOOM_FIT);
+      setTip(RES, "thumbnail.fit");
       setEnabled(false);
       ThumbnailWidget.this.addPropertyChangeListener("selection", this);
     }
@@ -882,6 +885,7 @@ public class ThumbnailWidget extends JComponent {
   private class One extends Action2 implements PropertyChangeListener {
     public One() {
       setText("1:1");
+      setTip(RES, "thumbnail.one");
       setEnabled(false);
       ThumbnailWidget.this.addPropertyChangeListener("selection", this);
     }
@@ -901,6 +905,7 @@ public class ThumbnailWidget extends JComponent {
   private class All extends Action2 implements PropertyChangeListener {
     public All() {
       setImage(IMG_ZOOM_ALL);
+      setTip(RES, "thumbnail.all");
       setEnabled(false);
       ThumbnailWidget.this.addPropertyChangeListener("content", this);
     }
