@@ -69,7 +69,7 @@ public class FileBean extends PropertyBean {
       REGISTRY.put("bean.file.dir", chooser.getDirectory());
       
       // show file
-      File file = getProperty().getGedcom().getOrigin().getFile(chooser.getFile().toString());
+      File file = getRoot().getGedcom().getOrigin().getFile(chooser.getFile().toString());
       if (file==null) {
         preview.setSource(null);
         return;
