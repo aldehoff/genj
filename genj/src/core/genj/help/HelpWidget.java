@@ -27,6 +27,7 @@ import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.net.URL;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,12 +55,13 @@ class HelpWidget extends JPanel {
   private final static Logger LOG = Logger.getLogger("genj.help");
   private final static Resources RESOURCES = Resources.get(HelpWidget.class);
   private final static CachingStreamHandler CACHE = new CachingStreamHandler("help");
+  private final static String BASE_URL = "http://genj.sourceforge.net/wiki/%s/manual/";
   
-  final static String BASE = "http://genj.sourceforge.net/wiki/en/manual/";
   final static String WELCOME = "welcome";
   final static String MANUAL = "overview";
   final static String EXPORT = "?do=export_xhtmlbody";
-  
+
+  private String base;
   private JEditorPane content;
   private String page = null;
 
@@ -82,6 +84,12 @@ class HelpWidget extends JPanel {
     // layout
     setLayout(new BorderLayout());
     add(BorderLayout.CENTER, new JScrollPane(content));
+    
+    // calculate base
+    String lang = Locale.getDefault().getLanguage();
+    if (!("en".equals(lang)||"de".equals(lang)))
+      lang = "en";
+    base = String.format(BASE_URL, lang);
 
     // done
   }
@@ -94,7 +102,7 @@ class HelpWidget extends JPanel {
     try {
       String old = this.page;
       this.page = page;
-      content.setPage(new URL(null, BASE+page+EXPORT, CACHE));
+      content.setPage(new URL(null, base+page+EXPORT, CACHE));
       firePropertyChange("url", old, page);
     } catch (Throwable t) {
       LOG.log(Level.WARNING, "can't set help content", t);
@@ -161,11 +169,11 @@ class HelpWidget extends JPanel {
       // an internal link?
       URL url = e.getURL();
       s = url.toString();
-      if (s.startsWith(BASE)) {
+      if (s.startsWith(base)) {
         // don't go where there's a ? already
         if (s.indexOf('?')>0)
           return;
-        setPage(s.substring(BASE.length()));
+        setPage(s.substring(base.length()));
         return;
       }      
       
