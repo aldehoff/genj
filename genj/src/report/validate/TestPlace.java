@@ -31,7 +31,7 @@ public class TestPlace extends Test {
   /**
    * test place for place format
    */
-  /*package*/ void test(Property prop, TagPath path, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report) {
     
     PropertyPlace place = (PropertyPlace)prop;
     

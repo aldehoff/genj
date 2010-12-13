@@ -33,7 +33,7 @@ public class TestBiologicalChild extends Test {
   /**
    * Test individual(s)'s being-child associations  
    */
-  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, List<ViewContext> issues, ReportValidate report) {
 
     // loop over all famc
     List famcs = prop.getProperties(PropertyFamilyChild.class);

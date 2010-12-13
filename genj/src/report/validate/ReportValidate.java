@@ -245,6 +245,9 @@ public class ReportValidate extends Report {
 
     // non-valid properties
     result.add(new TestValid(this));
+    
+    // incestus
+    result.add(new TestIncestus());
 
     // spouses with wrong gender
     result.add(new TestSpouseGender());

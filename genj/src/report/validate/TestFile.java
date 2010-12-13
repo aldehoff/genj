@@ -29,7 +29,7 @@ public class TestFile extends Test {
   /**
    * Do the test 
    */
-  void test(Property prop, TagPath path, List issues, ReportValidate report) {
+  void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report) {
     
     // assuming PropertyFile
     PropertyFile file = (PropertyFile)prop;

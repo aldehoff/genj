@@ -37,7 +37,7 @@ public class TestOrder extends Test {
   /**
    * Test properties for order
    */
-  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, List<ViewContext> issues, ReportValidate report) {
 
     List unsorted = new ArrayList(prop.getNoOfProperties());
     for (int i=0, j=prop.getNoOfProperties(); i<j; i++) {

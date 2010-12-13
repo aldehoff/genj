@@ -40,7 +40,7 @@ import java.util.List;
   /**
    * test a prop for existance
    */
-  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, List<ViewContext> issues, ReportValidate report) {
 
     // check for property by path1
     Property prop1 = prop.getProperty(path1);

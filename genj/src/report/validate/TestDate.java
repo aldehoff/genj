@@ -84,7 +84,7 @@ import java.util.List;
   /**
    * test a prop (PropertyDate.class) at given path
    */
-  /*package*/ void test(Property prop, TagPath trigger, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath trigger, List<ViewContext> issues, ReportValidate report) {
 
     Entity entity = prop.getEntity();
     PropertyDate date1;

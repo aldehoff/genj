@@ -34,7 +34,7 @@ public class TestUniqueIDs extends Test {
   /**
    * Do the test 
    */
-  void test(Property prop, TagPath path, List issues, ReportValidate report) {
+  void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report) {
     
     // need path mapping
     Map id2first = (Map)path2id2first.get(path);

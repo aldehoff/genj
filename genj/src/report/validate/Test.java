@@ -9,6 +9,7 @@ package validate;
 
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
+import genj.view.ViewContext;
 
 import java.util.List;
 
@@ -59,7 +60,7 @@ import java.util.List;
   /**
    * Perform Test on prop&path - fill issues with instances of Issue 
    */
-  /*package*/ abstract void test(Property prop, TagPath path, List issues, ReportValidate report);
+  /*package*/ abstract void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report);
    
 
 } //Test

@@ -31,7 +31,7 @@ public class TestCardinality extends Test {
   /**
    * Do the test 
    */
-  void test(Property prop, TagPath path, List issues, ReportValidate report) {
+  void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report) {
     
     MetaProperty itsmeta = prop.getMetaProperty();
 

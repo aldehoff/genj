@@ -33,7 +33,7 @@ import java.util.List;
   /**
    * @see validate.Test#test(genj.gedcom.Property, genj.gedcom.TagPath, java.util.List)
    */
-  /*package*/ void test(Property prop, TagPath path, List issues, ReportValidate report) {
+  /*package*/ void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report) {
     
     // always an issue with private
     if (!report.isPrivateValueValid&&prop.isPrivate()) {

@@ -35,7 +35,7 @@ public class TestFamilyClone extends Test {
   /**
    * Do the test 
    */
-  void test(Property prop, TagPath path, List issues, ReportValidate report) {
+  void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report) {
     
     // assuming Family
     Fam fam = (Fam)prop;
