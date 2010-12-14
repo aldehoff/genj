@@ -447,31 +447,20 @@ public class GedcomReaderFactory {
         if (!Enigma.isEncrypted(value))
           return;
   
-        // set property private
-        prop.setPrivate(true, false);
-  
-        // no need to do anything for unknown password
-        if (gedcom.getPassword()==Gedcom.PASSWORD_UNKNOWN) 
-          return;
-  
-        // try to decrypt until we have a good password or bailed
+        // absolutely try to decrypt until we have a good password or bailed
         while (enigma==null) {
 
           // ask for it
           String pwd = context.getPassword();
           
           // bail if not provided
-          if (pwd==null) {
-            context.handleWarning(getLines(), RESOURCES.getString("crypt.password.unknown"), new Context(prop));
-            gedcom.setPassword(Gedcom.PASSWORD_UNKNOWN);
-            return;
-          }
+          if (pwd==null) 
+            throw new GedcomIOException(RESOURCES.getString("crypt.password.required"), this.lines);
           
           // try it
           try {
             enigma = Enigma.getInstance(pwd);
             enigma.decrypt(value);
-            gedcom.setPassword(pwd);
           } catch (IOException e) {
             enigma = null;
           }
@@ -483,7 +472,7 @@ public class GedcomReaderFactory {
         try {
           prop.setValue(enigma.decrypt(value));
         } catch (IOException e) {
-          throw new GedcomIOException(RESOURCES.getString("crypt.password.invalid"), lines);
+          throw new GedcomIOException(RESOURCES.getString("crypt.password.mismatch"), lines);
         }
   
         // done

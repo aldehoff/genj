@@ -137,7 +137,7 @@ public class ChoiceBean extends PropertyBean {
     
     if (choice!=null) {
       choices.setValues(choice.getChoices(true));
-      choices.setText(choice.isSecret() ? "" : choice.getDisplayValue());
+      choices.setText(choice.getDisplayValue());
       sameChoices = choice.getSameChoices();
     } else {
       choices.setValues(PropertyChoiceValue.getSameChoices(getRoot().getGedcom(), getPath().getLast(), true));

@@ -23,7 +23,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListener;
-import genj.gedcom.MetaProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChange;
 import genj.gedcom.PropertyXRef;
@@ -706,8 +705,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
 
       // calc image        
       ImageIcon img = prop.getImage(true);
-      if (prop.isPrivate()) 
-        img = img.getOverLayed(MetaProperty.IMG_PRIVATE);
       setIcon(img);
 
       // calc text
@@ -730,15 +727,10 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
         result.append(' ');
       }
 
-      // private?
-      if (prop.isSecret()) {
-        result.append("*****");
-      } else {
-        String val = prop.getDisplayValue();
-        int nl = val.indexOf('\n');
-        if (nl>=0) val = val.substring(0, nl) + "...";
-        result.append(val);
-      }
+      String val = prop.getDisplayValue();
+      int nl = val.indexOf('\n');
+      if (nl>=0) val = val.substring(0, nl) + "...";
+      result.append(val);
       
       // done
       return result.toString();

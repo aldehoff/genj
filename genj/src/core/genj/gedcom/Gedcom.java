@@ -195,9 +195,6 @@ public class Gedcom {
   /** global place format */
   private String placeFormat = "";
 
-  /** password for private information */
-  private String password = null;
-
   /**
    * Gedcom's Constructor
    */
@@ -1290,27 +1287,6 @@ public class Gedcom {
    */
   public void setLanguage(String set) {
     language = set;
-  }
-  
-  /**
-   * Accessor - password
-   */
-  public void setPassword(String set) {
-    password = set;
-  }
-  
-  /**
-   * Accessor - password
-   */
-  public String getPassword() {
-    return password;
-  }
-  
-  /**
-   * Accessor - password
-   */
-  public boolean hasPassword() {
-    return password!=null;
   }
   
   /**

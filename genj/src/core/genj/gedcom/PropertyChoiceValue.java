@@ -19,7 +19,6 @@
  */
 package genj.gedcom;
 
-import genj.crypto.Enigma;
 import genj.util.ReferenceSet;
 
 import java.util.ArrayList;
@@ -48,9 +47,6 @@ public class PropertyChoiceValue extends PropertySimpleValue {
     ReferenceSet<String, Property> refSet = gedcom.getReferenceSet(getTag());
     // intern newValue - we expect the remembered values to be shared so we share the string instances for an upfront cost
     newValue = newValue.intern();
-    // check for secret values
-    if (Enigma.isEncrypted(oldValue)) oldValue = "";
-    if (Enigma.isEncrypted(newValue)) newValue = ""; 
     // forget old
     if (oldValue.length()>0) refSet.remove(oldValue, this);
     // remember new

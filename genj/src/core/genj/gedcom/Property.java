@@ -56,9 +56,6 @@ public abstract class Property implements Comparable<Property> {
   /** whether we're transient or not */
   protected boolean isTransient = false;
 
-  /** whether we're private or not */
-  private boolean isPrivate = false;
-  
   /** resources */
   protected final static Resources resources = Gedcom.resources;
 
@@ -1042,40 +1039,6 @@ public abstract class Property implements Comparable<Property> {
     return ps.toArray(new Property[ps.size()]);
   }
   
-  /**
-   * Accessor - private
-   */
-  public boolean isPrivate() {
-    return isPrivate;
-  }
-  
-  /**
-   * Accessor - secret is private and unknown password
-   */
-  public boolean isSecret() {
-    return isPrivate && getGedcom().getPassword()==Gedcom.PASSWORD_UNKNOWN;
-  }
-  
-  /**
-   * Accessor - private
-   */
-  public void setPrivate(boolean set, boolean recursively) {
-    
-    // change state
-    if (recursively) {
-      for (int c=0;c<getNoOfProperties();c++) {
-        Property child = getProperty(c);
-        child.setPrivate(set, recursively);
-      }
-    }
-    isPrivate = set;
-    
-    // bookkeeping
-    propagatePropertyChanged(this, getValue());
-    
-    // done
-  }
-
   /**
    * Resolves end-user information about this property - by
    * default whatever is in the language resource files

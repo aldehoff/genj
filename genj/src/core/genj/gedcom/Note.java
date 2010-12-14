@@ -123,18 +123,4 @@ public class Note extends Entity implements MultiLineProperty {
     return delegate.getLineCollector();
   }
   
-  /**
-   * @see genj.gedcom.Property#isPrivate()
-   */
-  public boolean isPrivate() {
-    return delegate.isPrivate();
-  }
-
-  /**
-   * @see genj.gedcom.Property#setPrivate(boolean, boolean)
-   */
-  public void setPrivate(boolean set, boolean recursively) {
-    delegate.setPrivate(set, recursively);
-  }
-
 } //Note

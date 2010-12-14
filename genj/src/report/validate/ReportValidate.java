@@ -36,9 +36,6 @@ public class ReportValidate extends Report {
   /** whether we consider an empty value to be valid */
   public boolean isEmptyValueValid = true;
 
-  /** whether we consider 'private' information valid or not */
-  public boolean isPrivateValueValid = true;
-
   /** whether we consider missing files as valid or not */
   public boolean isFileNotFoundValid = true;
 

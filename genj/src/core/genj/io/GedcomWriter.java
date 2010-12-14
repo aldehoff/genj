@@ -20,7 +20,6 @@
 package genj.io;
 
 import genj.Version;
-import genj.crypto.Enigma;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
@@ -64,7 +63,6 @@ public class GedcomWriter implements Trackable {
   private int entity;
   private boolean cancel = false;
   private Filter filter;
-  private Enigma enigma = null;
 
   /**
    * Constructor for a writer that will write gedcom-formatted output
@@ -309,42 +307,6 @@ public class GedcomWriter implements Trackable {
       super.writeProperty(level, prop);
     }
      
-    /** intercept value decoding to facilitate encryption */
-    protected String getValue(Property prop) throws IOException {
-      return prop.isPrivate() ? encrypt(prop.getValue()) : super.getValue(prop);
-    }
-    
-    /**
-     * encrypt a value
-     */
-    private String encrypt(String value) throws IOException {
-      
-      // not necessary for gedcom without password or empty values
-      if (gedcom.getPassword()==null || value.length()==0)
-        return value;
-      
-      // Make sure enigma is setup
-      if (enigma==null) {
-
-        // no need if password is unknown (data is already/still encrypted)
-        if (gedcom.getPassword()==Gedcom.PASSWORD_UNKNOWN)
-          return value;
-          
-        // error if password isn't set    
-        if (gedcom.getPassword()==null)
-          throw new IOException("Password not set - needed for encryption");
-          
-        // error if can't encrypt
-        enigma = Enigma.getInstance(gedcom.getPassword());
-        if (enigma==null) 
-          throw new IOException("Encryption not available");
-          
-      }
-      
-      // encrypt and done
-      return enigma.encrypt(value);
-    }
-
   } //EntityDecoder
   
 } //GedcomWriter

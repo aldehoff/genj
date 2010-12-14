@@ -35,12 +35,6 @@ import java.util.List;
    */
   /*package*/ void test(Property prop, TagPath path, List<ViewContext> issues, ReportValidate report) {
     
-    // always an issue with private
-    if (!report.isPrivateValueValid&&prop.isPrivate()) {
-      // got an issue with that
-      issues.add(new ViewContext(prop).setText(report.translate("err.private", path.toString())));
-    }
-
     // no issue if valid 
     if (prop.isValid())
       return;
