@@ -24,7 +24,7 @@ public class TestIncestus extends Test {
 		if (husband==null||wife==null)
 			return;
 		
-		if (husband.getParents().contains(wife)||wife.getParents().contains(husband) )
+		if (husband.getParents().contains(wife)||wife.getParents().contains(husband)||husband.isSiblingOf(wife))
 			issues.add(new ViewContext(fam).setText(report.translate("warn.incestus", husband.toString(), wife.toString())));
 
 	}

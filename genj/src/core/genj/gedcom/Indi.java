@@ -417,15 +417,28 @@ public class Indi extends Entity {
     p.setSex(sex);
   }
 
+  /** 
+   * Check whether this person is a sibling of the given person
+   */
+  public boolean isSiblingOf(Indi indi) {
+    Fam family = getFamilyWhereBiologicalChild();
+    if (family!=null)
+      for (Indi sibling : family.getChildren(false)) {
+        if (sibling==indi)
+          return true;
+    }
+    return false;
+  }
+  
   /**
-   * Check wether this person is descendant of given person
+   * Check whether this person is descendant of given person
    */
   public boolean isDescendantOf(Indi indi) {
     return indi.isAncestorOf(this);
   }
   
   /**
-   * Check wether this person is ancestor of given person
+   * Check whether this person is ancestor of given person
    */
   public boolean isAncestorOf(Indi indi) {
     // 20070115 while we make sure that no circle exists in our gedcom data (invariants) there are cases where sub-trees of a tree occur multiple times
@@ -625,5 +638,5 @@ public class Indi extends Entity {
     // not afaik
     return false;
   }
-  
+
 } //Indi
