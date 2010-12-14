@@ -81,7 +81,7 @@ public class ReportNarrativeTest extends TestCase {
     Document doc =
         (Document) report.startTest(gedcom, indi);
     Format formatter = Format.DEFAULT;
-    File file = new File("/tmp/narrativetest." + type + "."  + lang + ".html"); // how get temp dir?  C:/Temp/ under Windows, etc.
+    File file = File.createTempFile("narrativetest." + type + "."  + lang, ".html"); 
     formatter.format(doc, file);
     // and compare w expected file
     File expected = new File("src/tst/report/narrative/narrativetest."  + lang + ".html");
