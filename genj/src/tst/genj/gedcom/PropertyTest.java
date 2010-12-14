@@ -229,8 +229,6 @@ public class PropertyTest extends TestCase {
    */
   public void testPrivacyPolicy() {     
     
-    Options.getInstance().maskPrivate = "xxx";
-
     Indi indi = createIndi();
     
     Options options = Options.getInstance();
@@ -241,31 +239,13 @@ public class PropertyTest extends TestCase {
     birt.addProperty("PLAC", "Rendsburg");
     
     // normal: have date and place all public -> get all
-    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
+    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}"));
     
     // normal: have all with non applying policy -> get all back
-    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 10, "_SECRET")));
+    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}"));
     
     // case of privacy: the  info is there but event is too recent -> getting masks back
-    assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, "_SECRET")));
-
-    // special case: making date secret -> date is masked
-    date.addProperty("_SECRET", "");
-    assertEquals("born xxx Rendsburg", birt.format("born{ $D}{ $P}", new PrivacyPolicy(false, 0, "_SECRET")));
-
-    // broader case: the event is marked private -> with public policy all's there with sensitive policy everything collapses
-    birt.addProperty("_SECRET", "");
-    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", PrivacyPolicy.PUBLIC));
-    assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}", new PrivacyPolicy(false, 0, "_SECRET")));
-    
-    // ... note how only one mask is shown here since there's no prefix in {$P}
-    assertEquals("born xxx", birt.format("born{ $D}{ $P}", new PrivacyPolicy(false, 0, "_SECRET")));
-
-    // exception to the rule: the person is deceased -> everything is public IF infoOfDeceasedIsPublic
-    indi.addProperty("DEAT", "").addProperty("DATE", "(im Hohen Alter)");
-    assertEquals("born xxx in xxx", birt.format("born{ $D}{ in $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
-    assertEquals("born xxx", birt.format("born{ $D}{ $P}", new PrivacyPolicy(false, Integer.MAX_VALUE, null)));
-    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}", new PrivacyPolicy(true, Integer.MAX_VALUE, null)));
+    assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}"));
 
     // all good ;)
   }

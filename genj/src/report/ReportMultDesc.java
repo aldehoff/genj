@@ -10,14 +10,11 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PrivacyPolicy;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyMultilineValue;
 import genj.report.Report;
 
 import java.util.HashMap;
-
-import javax.swing.ImageIcon;
 
 /*
  * GenJ - ReportMultDesc
@@ -115,11 +112,9 @@ public class ReportMultDesc extends Report {
       default:
           throw new IllegalArgumentException("no such report type");
 	  }
-	  // keep track of who we looked at already
-    HashMap done = new HashMap();
-
-    // Init some stuff
-    PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
+	  
+	// keep track of who we looked at already
+    HashMap<Fam,String> done = new HashMap<Fam,String>();
 
     nbColumns = 2;
     if (reportPlaceOfBirth || reportDateOfBirth)
@@ -139,7 +134,7 @@ public class ReportMultDesc extends Report {
     for (int i = 0; i < indis.length; i++) {
       Indi indi = indis[i];
       output.title(indi,doc);
-      iterate(indi, 1, (new Integer(i+1).toString()), done, policy, doc);
+      iterate(indi, 1, (new Integer(i+1).toString()), done, doc);
     }
 
     output.statistiques(doc);
@@ -152,7 +147,7 @@ public class ReportMultDesc extends Report {
   /**
    * Generate descendants information for one individual
    */
-  private void iterate(Indi indi, int level, String num, HashMap done, PrivacyPolicy policy, Document doc) {
+  private void iterate(Indi indi, int level, String num, HashMap<Fam,String> done, Document doc) {
 
     nbIndi++;
     if (indi!=null&&!indi.isDeceased()) nbLiving ++;
@@ -161,11 +156,8 @@ public class ReportMultDesc extends Report {
     if (level > reportMaxGenerations)
       return;
 
-    // still in a public generation?
-    PrivacyPolicy localPolicy = level < publicGen + 1 ? PrivacyPolicy.PUBLIC : policy;
-
     output.startIndi(doc);
-    format(indi, (Fam)null, num, localPolicy, doc);
+    format(indi, (Fam)null, num, doc);
 
     // And we loop through its families
     Fam[] fams = indi.getFamiliesWhereSpouse();
@@ -179,9 +171,9 @@ public class ReportMultDesc extends Report {
       // output the spouse
       output.startSpouse(doc);
         if (fams.length==1)
-    	    format(spouse,fam,num+"x", localPolicy, doc);
+    	    format(spouse,fam,num+"x", doc);
     	else
-    	    format(spouse,fam,num+"x"+(f+1), localPolicy, doc);
+    	    format(spouse,fam,num+"x"+(f+1), doc);
 
       // put out a link if we've seen the spouse already
       if (done.containsKey(fam)) {
@@ -199,9 +191,9 @@ public class ReportMultDesc extends Report {
         for (int c = 0; c < children.length; c++) {
           // do the recursive step
           if (fams.length == 1)
-            iterate(children[c], level + 1, num+'.'+(c+1), done, policy, doc);
+            iterate(children[c], level + 1, num+'.'+(c+1), done, doc);
           else
-            iterate(children[c], level + 1, num+'x'+(f+1)+'.'+(c+1), done, policy, doc);
+            iterate(children[c], level + 1, num+'x'+(f+1)+'.'+(c+1), done, doc);
 
           // .. next child
         }
@@ -217,7 +209,7 @@ public class ReportMultDesc extends Report {
   /**
    * resolves the information of one Indi
    */
-  private void format(Indi indi, Fam fam, String prefix, PrivacyPolicy policy, Document doc) {
+  private void format(Indi indi, Fam fam, String prefix, Document doc) {
 
     // Might be null
     if (indi == null)
@@ -225,17 +217,16 @@ public class ReportMultDesc extends Report {
 
     // FIXME Nils re-enable anchors for individuals processes
     output.number(prefix,doc);
-    output.name(policy.getDisplayValue(indi, "NAME"),doc);
+    output.name(indi.getPropertyDisplayValue("NAME"),doc);
     if (reportIds)
       output.id(indi.getId(),doc);
 
-    String birt = output.format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy);
-    String marr = fam!=null ? output.format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "";
-    String deat = output.format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, policy);
-    String occu = output.format(indi, "OCCU", "{$T}", reportDateOfOccu, reportPlaceOfOccu, policy);
-    String resi = output.format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi, policy);
+    String birt = output.format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth);
+    String marr = fam!=null ? output.format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage) : "";
+    String deat = output.format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath);
+    String occu = output.format(indi, "OCCU", "{$T}", reportDateOfOccu, reportPlaceOfOccu);
+    String resi = output.format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi);
     PropertyMultilineValue addr = reportMailingAddress ? indi.getAddress() : null;
-    if (addr != null && policy.isPrivate(addr)) addr = null;
 
     // dump the information
 
@@ -274,27 +265,27 @@ public class ReportMultDesc extends Report {
 	  abstract void number(String num, Document doc);
 	  abstract void addressPrefix(Document doc);
 
-	  private HashMap format(Indi indi, Fam fam, String prefix, PrivacyPolicy policy) {
-		  HashMap result = new HashMap();
-		  // Might be null
-		  if (indi == null)
-			  return null;
-
-		  result.put("birt", format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth, policy));
-		  result.put("marr", fam!=null ? format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage, policy) : "");
-		  result.put("deat", format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath, policy));
-		  result.put("occu", format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu, policy));
-		  result.put("resi", format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi, policy));
-		  PropertyMultilineValue addr = reportMailingAddress ? indi.getAddress() : null;
-		  if (addr != null && policy.isPrivate(addr)) addr = null;
-		  result.put("addr", addr);
-		  return result;
-
-	  }
+//	  private HashMap<String,Object> format(Indi indi, Fam fam, String prefix) {
+//		  HashMap<String,Object> result = new HashMap<String,Object>();
+//		  // Might be null
+//		  if (indi == null)
+//			  return null;
+//
+//		  result.put("birt", format(indi, "BIRT", OPTIONS.getBirthSymbol(), reportDateOfBirth, reportPlaceOfBirth));
+//		  result.put("marr", fam!=null ? format(fam, "MARR", OPTIONS.getMarriageSymbol(), reportDateOfMarriage, reportPlaceOfMarriage) : "");
+//		  result.put("deat", format(indi, "DEAT", OPTIONS.getDeathSymbol(), reportDateOfDeath, reportPlaceOfDeath));
+//		  result.put("occu", format(indi, "OCCU", "{$T}{ $V}", reportDateOfOccu, reportPlaceOfOccu));
+//		  result.put("resi", format(indi, "RESI", "{$T}", reportDateOfResi, reportPlaceOfResi));
+//		  PropertyMultilineValue addr = reportMailingAddress ? indi.getAddress() : null;
+//		  result.put("addr", addr);
+//		  return result;
+//
+//	  }
+	  
 	  /**
 	   * convert given prefix, date and place switches into a format string
 	   */
-	  String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
+	  String format(Entity e, String tag, String prefix, boolean date, boolean place) {
 
 	    Property prop = e.getProperty(tag);
 	    if (prop == null)
@@ -304,7 +295,7 @@ public class ReportMultDesc extends Report {
 	        + (place && showAllPlaceJurisdictions ? "{ $P}" : "")
 	        + (place && !showAllPlaceJurisdictions ? "{ $p}" : "");
 
-	    return prop.format(format, policy);
+	    return prop.format(format);
 
 	  }
 
@@ -388,8 +379,8 @@ public class ReportMultDesc extends Report {
 
   class OutputTable extends Output{
 
-	  String format(Entity e, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
-		  return super.format(e,tag,"",date,place,policy);
+	  String format(Entity e, String tag, String prefix, boolean date, boolean place) {
+		  return super.format(e,tag,"",date,place);
 	  }
 
 	void title(Indi indi, Document doc) {

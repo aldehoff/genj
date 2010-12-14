@@ -82,9 +82,6 @@ public class Options extends OptionProvider {
   /** option - place hierarchy keys for city NOT EDITABLE ATM */
   protected Set<String> placeHierarchyCityKeys = new HashSet<String>(Arrays.asList(new String[]{ "city", "commune", "ville", "stadt"}));
   
-  /** option - private information mask */
-  public String maskPrivate = "...";
-    
   /** option - default encoding is the last one in gedcom's list available */
   protected int defaultEncoding = Gedcom.ENCODINGS.length-1;
   

@@ -10,7 +10,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.PrivacyPolicy;
 import genj.gedcom.Property;
 import genj.gedcom.PropertySource;
 import genj.gedcom.Source;
@@ -178,7 +177,6 @@ public class ReportSosa extends Report {
   public Document start(Indi indi) {
 
     // Init some stuff
-    PrivacyPolicy policy = OPTIONS.getPrivacyPolicy();
     InitVariables();
     assignColor(srcColor);
 //TODO: a reactiver plus tard    if (!getOptionsFromUser(translate("name"), this)) return;
@@ -219,7 +217,7 @@ public class ReportSosa extends Report {
     doc.startSection(title);
 
     // iterate into individual and all its ascendants
-    recursion.start(indi, policy, doc);
+    recursion.start(indi, doc);
 
     // Done
     return doc;
@@ -231,7 +229,7 @@ public class ReportSosa extends Report {
   abstract class Recursion {
 
     /** start the recursion */
-    abstract void start(Indi indi, PrivacyPolicy policy, Document doc);
+    abstract void start(Indi indi, Document doc);
 
     /**
      * title - implement in sub-class
@@ -246,7 +244,7 @@ public class ReportSosa extends Report {
     /**
      * recursion step for formatting an individual - implement in sub-classes
      */
-    abstract void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc);
+    abstract void formatIndi(Indi indi, Fam fam, int gen, int sosa, Document doc);
 
     /**
      * recursion step for formatting the end of the recursion - implement in sub-classes
@@ -256,12 +254,12 @@ public class ReportSosa extends Report {
      /**
       * Get description about an entity's event (represented by the tag)
       */
-     String getProperty(Entity entity, String tag, String prefix, boolean date, boolean place, PrivacyPolicy policy) {
+     String getProperty(Entity entity, String tag, String prefix, boolean date, boolean place) {
        Property prop = entity.getProperty(tag);
        if (prop == null)
          return "";
        String format = prefix + (date ? "{ $D}" : "") + (place && showAllPlaceJurisdictions ? "{ $P}" : "") + (place && !showAllPlaceJurisdictions ? "{ $p}" : "");
-       return prop.format(format, policy).trim();
+       return prop.format(format).trim();
      }
 
      /**
@@ -318,9 +316,9 @@ public class ReportSosa extends Report {
     /**
      * dump individual's name
      */
-    String getName(Indi indi, int sosa, PrivacyPolicy privacy) {
-      if(reportIndiNumber)return (sosa>0?sosa+" ":"") + privacy.getDisplayValue(indi, "NAME") + " (" + indi.getId() + ")";
-      	else return (sosa>0?sosa+" ":"") + privacy.getDisplayValue(indi, "NAME");
+    String getName(Indi indi, int sosa) {
+      if(reportIndiNumber)return (sosa>0?sosa+" ":"") + indi.getPropertyDisplayValue("NAME") + " (" + indi.getId() + ")";
+      	else return (sosa>0?sosa+" ":"") + indi.getPropertyDisplayValue("NAME");
       
     }
 
@@ -332,7 +330,7 @@ public class ReportSosa extends Report {
      * @param usePrefixes whether to user prefixes in info generation
      * @param returnEmpties whether to return or skip empty values
      */
-    void getProperties(Indi indi, Fam fam, PrivacyPolicy privacy, boolean usePrefixes, boolean returnEmpties, Map eDesc, Map eSrc) {
+    void getProperties(Indi indi, Fam fam, boolean usePrefixes, boolean returnEmpties, Map eDesc, Map eSrc) {
 
       // Variables
       String event = "";
@@ -344,7 +342,7 @@ public class ReportSosa extends Report {
       ev = 0;
       event = "BIRT";
       if (dispEv[ev]) {
-         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBirth, reportPlaceOfBirth, privacy);
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBirth, reportPlaceOfBirth);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
@@ -359,7 +357,7 @@ public class ReportSosa extends Report {
       ev = 1;
       event = "BAPM";
       if (dispEv[ev]) {
-         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBaptism, reportPlaceOfBaptism, privacy);
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBaptism, reportPlaceOfBaptism);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
@@ -376,7 +374,7 @@ public class ReportSosa extends Report {
       if (dispEv[ev]) {
          if (fam!=null) {
            String prefix = "";
-           description = getProperty(fam, event, prefix, reportDateOfMarriage, reportPlaceOfMarriage, privacy);
+           description = getProperty(fam, event, prefix, reportDateOfMarriage, reportPlaceOfMarriage);
            if (usePrefixes)
              prefix = symbols[ev] + (fam.getOtherSpouse(indi) != null ? " " + fam.getOtherSpouse(indi).getName() : "");
            if (returnEmpties||description.length()>0)
@@ -393,7 +391,7 @@ public class ReportSosa extends Report {
       ev = 3;
       event = "DEAT";
       if (dispEv[ev]) {
-         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfDeath, reportPlaceOfDeath, privacy);
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfDeath, reportPlaceOfDeath);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
@@ -408,7 +406,7 @@ public class ReportSosa extends Report {
       ev = 4;
       event = "BURI";
       if (dispEv[ev]) {
-         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBurial, reportPlaceOfBurial, privacy);
+         description = getProperty(indi, event, usePrefixes ? symbols[ev] : "", reportDateOfBurial, reportPlaceOfBurial);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
@@ -423,7 +421,7 @@ public class ReportSosa extends Report {
       ev = 5;
       event = "OCCU";
       if (reportOccu) {
-         description = getProperty(indi, event, (usePrefixes ? symbols[ev] : "")+"{ $V} ", reportDateOfOccu, reportPlaceOfOccu, privacy);
+         description = getProperty(indi, event, (usePrefixes ? symbols[ev] : "")+"{ $V} ", reportDateOfOccu, reportPlaceOfOccu);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
    
@@ -438,7 +436,7 @@ public class ReportSosa extends Report {
       ev = 6;
       event = "RESI";
       if (reportResi) {
-         description = getProperty(indi, event, (usePrefixes ? symbols[ev] : "")+"{ $V} ", reportDateOfResi, reportPlaceOfResi, privacy);
+         description = getProperty(indi, event, (usePrefixes ? symbols[ev] : "")+"{ $V} ", reportDateOfResi, reportPlaceOfResi);
          if (returnEmpties||description.length()>0)
            eDesc.put(event, description);
 
@@ -461,7 +459,7 @@ public class ReportSosa extends Report {
   abstract class DepthFirst  extends Recursion {
 
     /** start */
-    void start(Indi indi, PrivacyPolicy policy, Document doc) {
+    void start(Indi indi, Document doc) {
       formatStart(indi, doc);
       Fam[] fams = indi.getFamiliesWhereSpouse();
       Fam fam = null;
@@ -471,7 +469,7 @@ public class ReportSosa extends Report {
       else {
          fam = null;
          }
-      recursion(indi, fam, 0, startSosa, policy, doc);
+      recursion(indi, fam, 0, startSosa, doc);
       formatEnd(doc);
     }
 
@@ -484,14 +482,14 @@ public class ReportSosa extends Report {
      * @param sosa the sosa index
      * @param policy the privacy policy
      */
-    void recursion(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+    void recursion(Indi indi, Fam fam, int gen, int sosa, Document doc) { 
 
       // stop here?
       if (gen > reportMaxGenerations)
         return;
 
       // let implementation handle individual
-      formatIndi(indi, fam, gen, sosa, gen < privateGen ? PrivacyPolicy.PRIVATE : policy, doc);
+      formatIndi(indi, fam, gen, sosa, doc);
 
       // go one generation up to father and mother
       Fam famc = indi.getFamilyWhereBiologicalChild();
@@ -506,11 +504,11 @@ public class ReportSosa extends Report {
 
       // recurse into father
       if (father != null)
-        recursion(father, famc, gen+1,  sosa*2, policy, doc);
+        recursion(father, famc, gen+1,  sosa*2, doc);
 
       // recurse into mother
       if (mother != null)
-        recursion(mother, famc, gen+1, sosa*2+1, policy, doc);
+        recursion(mother, famc, gen+1, sosa*2+1, doc);
 
       // done
     }
@@ -522,7 +520,7 @@ public class ReportSosa extends Report {
   abstract class BreadthFirst extends Recursion {
 
     /** start */
-    void start(Indi indi, PrivacyPolicy policy, Document doc) {
+    void start(Indi indi, Document doc) {
       formatStart(indi, doc);
       List list = new ArrayList(3);
       list.add(new Integer(startSosa));
@@ -534,7 +532,7 @@ public class ReportSosa extends Report {
       else {
          list.add(null);
          }
-      recursion(list, 0, policy, doc);
+      recursion(list, 0, doc);
       formatEnd(doc);
     }
 
@@ -546,7 +544,7 @@ public class ReportSosa extends Report {
     * @param policy the privacy policy
     * @param doc the document to fill
     */
-   void recursion(List generation, int gen, PrivacyPolicy policy, Document doc) {
+   void recursion(List generation, int gen, Document doc) {
 
      // stop here?
      if (gen > reportMaxGenerations)
@@ -582,7 +580,7 @@ public class ReportSosa extends Report {
        }
 
        // let implementation handle individual
-       formatIndi(indi, fam, gen, sosa, gen < privateGen ? PrivacyPolicy.PRIVATE : policy, doc);
+       formatIndi(indi, fam, gen, sosa, doc);
      } // end of scanning generations
 
      // recurse into next generation
@@ -593,7 +591,7 @@ public class ReportSosa extends Report {
            globalSrcList.clear();
         }
      if (!nextGeneration.isEmpty()) {
-       recursion(nextGeneration, gen+1, policy, doc);
+       recursion(nextGeneration, gen+1, doc);
        }
 
      // done
@@ -649,7 +647,7 @@ public class ReportSosa extends Report {
     }
 
     /** this is called at each recursion step - output table rows */
-    void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+    void formatIndi(Indi indi, Fam fam, int gen, int sosa, Document doc) {
 
       // Go back if generation too low    
       if (gen < reportMinGenerations-1) return;
@@ -662,10 +660,10 @@ public class ReportSosa extends Report {
       doc.nextTableRow();
 
       // a cell with sosa# and name
-      doc.addText(getName(indi, sosa, policy)); // [sosa] name (id)
+      doc.addText(getName(indi, sosa)); // [sosa] name (id)
 
       // then a cell with properies
-      getProperties(indi, fam, policy, true, false, eventDesc, eventSources);
+      getProperties(indi, fam, true, false, eventDesc, eventSources);
       
       if (eventDesc.size()>0) {
         doc.nextTableCell();
@@ -708,13 +706,13 @@ public class ReportSosa extends Report {
     }
 
     /** how we format an individual */
-    void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+    void formatIndi(Indi indi, Fam fam, int gen, int sosa, Document doc) {
 
       if (gen < reportMinGenerations-1) return;
       
       // dump the indi's name
       doc.nextParagraph("space-after=10pt,space-before=10pt,start-indent="+(gen*20)+"pt");
-      doc.addText(getName(indi, sosa, policy)+" ", "font-weight=bold");
+      doc.addText(getName(indi, sosa)+" ", "font-weight=bold");
       doc.nextParagraph("start-indent="+(gen*20+10)+"pt");
 
       // dump its properties
@@ -722,7 +720,7 @@ public class ReportSosa extends Report {
       Map eventDesc = new TreeMap();     // Maps event to their descriptions
       Map eventSources = new TreeMap();  // Maps event to GenJ source list
       
-      getProperties(indi, fam, policy, true, false, eventDesc, eventSources);
+      getProperties(indi, fam, true, false, eventDesc, eventSources);
       if (eventDesc.size()>0) {
          writeEvents(doc, gen, eventDesc, eventSources, true);
          }
@@ -755,14 +753,14 @@ public class ReportSosa extends Report {
        * @param sosa the sosa index
        * @param policy the privacy policy
        */
-      void recursion(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+      void recursion(Indi indi, Fam fam, int gen, int sosa, Document doc) {
 
         // stop here?
         if (gen > reportMaxGenerations)
           return;
 
         // let implementation handle individual
-        formatIndi(indi, fam, gen, sosa, gen < privateGen ? PrivacyPolicy.PRIVATE : policy, doc);
+        formatIndi(indi, fam, gen, sosa, doc);
 
         // go one generation up to father and mother
         Fam famc = indi.getFamilyWhereBiologicalChild();
@@ -773,7 +771,7 @@ public class ReportSosa extends Report {
 
         // recurse into father
         if (father != null)
-          recursion(father, famc, gen+1,  sosa*2, policy, doc);
+          recursion(father, famc, gen+1,  sosa*2, doc);
 
         // done
       }
@@ -789,7 +787,7 @@ public class ReportSosa extends Report {
     }
 
     /** how we format an individual */
-    void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+    void formatIndi(Indi indi, Fam fam, int gen, int sosa, Document doc) {
       if (gen < reportMinGenerations-1) return;
 
       // only consider fathers
@@ -798,7 +796,7 @@ public class ReportSosa extends Report {
 
       // dump the indi's name
       doc.nextParagraph("space-after=10pt,space-before=10pt,start-indent="+(gen*20)+"pt");
-      doc.addText(getName(indi, sosa, policy)+" ", "font-weight=bold");
+      doc.addText(getName(indi, sosa)+" ", "font-weight=bold");
       doc.nextParagraph("start-indent="+(gen*20+10)+"pt");
 
       // dump its properties
@@ -806,7 +804,7 @@ public class ReportSosa extends Report {
       Map eventDesc = new TreeMap();     // Maps event to their descriptions
       Map eventSources = new TreeMap();  // Maps event to GenJ source list
       
-      getProperties(indi, fam, policy, true, false, eventDesc, eventSources);
+      getProperties(indi, fam, true, false, eventDesc, eventSources);
       
       if (eventDesc.size()>0) {
          writeEvents(doc, gen, eventDesc, eventSources, true);
@@ -866,7 +864,7 @@ public class ReportSosa extends Report {
     }
 
     /** this is called at each recursion step - output table rows */
-    void formatIndi(Indi indi, Fam fam, int gen, int sosa, PrivacyPolicy policy, Document doc) {
+    void formatIndi(Indi indi, Fam fam, int gen, int sosa, Document doc) {
 
       if (gen < reportMinGenerations-1) return;
     
@@ -874,13 +872,13 @@ public class ReportSosa extends Report {
       Map eventDesc = new TreeMap();     // Maps event to their descriptions
       Map eventSources = new TreeMap();  // Maps event to GenJ source list
       String[] props =  {""};
-      getProperties(indi, fam, policy, false, true, eventDesc, eventSources);
+      getProperties(indi, fam, false, true, eventDesc, eventSources);
 
       // start with a new row, sosa and name
       doc.nextTableRow();
       doc.addText(""+sosa);
       doc.nextTableCell();
-      doc.addText(getName(indi, 0, policy)); //pass in 0 as sosa - don't want it as part of name
+      doc.addText(getName(indi, 0)); //pass in 0 as sosa - don't want it as part of name
 
       if (eventDesc.size()>0) {
         doc.nextTableCell();

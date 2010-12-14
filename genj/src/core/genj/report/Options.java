@@ -22,7 +22,6 @@
 package genj.report;
 
 import genj.gedcom.Gedcom;
-import genj.gedcom.PrivacyPolicy;
 import genj.option.Option;
 import genj.option.OptionProvider;
 import genj.option.PropertyOption;
@@ -72,15 +71,6 @@ public class Options extends OptionProvider {
     
     /** child of symbol in reports */
     private String childOfSymbol = "/";
-    
-    /** tag marking private */
-    public  String privateTag = "_PRIV";
-    
-    /** whether information pertaining to deceased people is public */
-    public boolean deceasedIsPublic = true;
-    
-    /** number of years an event is private */
-    public int yearsEventsArePrivate = 0; 
     
     private String trim(String symbol, String fallback) {
       if (symbol==null)
@@ -213,13 +203,6 @@ public class Options extends OptionProvider {
         return getChildOfSymbol();
       
       return Gedcom.getName(tag);
-    }
-    
-    /**
-     * accessor - PrivacyPolicy configured by user
-     */
-    public PrivacyPolicy getPrivacyPolicy() {
-      return new PrivacyPolicy(deceasedIsPublic, yearsEventsArePrivate, privateTag);    
     }
     
     /**

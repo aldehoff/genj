@@ -1105,14 +1105,6 @@ public abstract class Property implements Comparable<Property> {
   
   /**
    * Generate a string representation based on given template.
-   * @see Property#format(String, PrivacyPolicy)
-   */
-  public String format(String format) {
-    return format(format, PrivacyPolicy.PUBLIC);
-  }
-  
-  /**
-   * Generate a string representation based on given template.
    * <pre>
    *   {$t} property tag (doesn't count as matched)
    *   {$T} property name(doesn't count as matched)
@@ -1124,16 +1116,14 @@ public abstract class Property implements Comparable<Property> {
    *   {$V} display value
    * </pre>
    * @param format as described
-   * @param policy applied privacy policy
    * @return formatted string if at least one marker matched, "" otherwise
    */
-  public String format(String format, PrivacyPolicy policy) {
+  public String format(String format) {
   
     // match format given
     Matcher matcher = FORMAT_PATTERN.matcher(format);
     // prepare running parameters
     StringBuffer result = new StringBuffer(format.length()+20);
-    int masked = 0;
     int matches = 0;
     int cursor = 0;
     // go through all matches in format
@@ -1158,11 +1148,6 @@ public abstract class Property implements Comparable<Property> {
         case 'T': { prop = null; value = Gedcom.getName(getTag()); break; }
         default:
           throw new IllegalArgumentException("unknown formatting marker "+marker);
-      }
-      // check property against policy if applicable
-      if (prop!=null && policy.isPrivate(prop)) {
-        // we didn't have a mask yet or the prefix is not empty? use mask
-        value = (masked++==0||prefix.trim().length()>0)  ? Options.getInstance().maskPrivate : "";
       }
       // append if value is good
       if (value.length()>0) {
