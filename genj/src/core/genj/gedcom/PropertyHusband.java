@@ -25,7 +25,7 @@ package genj.gedcom;
  */
 public class PropertyHusband extends PropertyXRef {
 
-  public final static String LABEL_FATHER = Gedcom.resources.getString("HUSB.father");
+  final static String LABEL_FATHER = Gedcom.resources.getString("HUSB.father");
 
   /**
    * Empty Constructor
@@ -59,6 +59,22 @@ public class PropertyHusband extends PropertyXRef {
    */
   public Indi getHusband() {
     return (Indi)getTargetEntity();
+  }
+  
+  /**
+   * A text representation for the husband reflected as a parent (either father or mother) derived of the persons gender
+   */
+  public String getPropertyNameAsParent() {
+    Indi indi = getHusband();
+    if (indi==null)
+      return LABEL_FATHER;
+    switch (indi.getSex()) {
+      default:
+      case PropertySex.MALE:
+        return LABEL_FATHER;
+      case PropertySex.FEMALE:
+        return PropertyWife.LABEL_MOTHER;
+    }
   }
 
   /**

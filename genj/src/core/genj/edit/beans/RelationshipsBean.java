@@ -103,13 +103,13 @@ public class RelationshipsBean extends PropertyBean {
     
     // father and mother
     Property husband = fam.getProperty("HUSB");
-    if (husband instanceof PropertyXRef && husband.isValid()) {
-      relationships.put(husband, PropertyHusband.LABEL_FATHER);
+    if (husband instanceof PropertyHusband && husband.isValid()) {
+      relationships.put(husband, ((PropertyHusband)husband).getPropertyNameAsParent() );
       rows.add(husband);
     }
     Property wife = fam.getProperty("WIFE");
     if (wife instanceof PropertyWife && wife.isValid()) {
-      relationships.put(wife, PropertyWife.LABEL_MOTHER);
+      relationships.put(wife, ((PropertyWife)wife).getPropertyNameAsParent() );
       rows.add(wife);
     }
     
@@ -140,12 +140,12 @@ public class RelationshipsBean extends PropertyBean {
     if (parental!=null) {
       Property husband = parental.getProperty("HUSB");
       if (husband instanceof PropertyXRef && husband.isValid()) {
-        relationships.put(husband, PropertyHusband.LABEL_FATHER);
+        relationships.put(husband, ((PropertyHusband)husband).getPropertyNameAsParent() );
         rows.add(husband);
       }
       Property wife = parental.getProperty("WIFE");
       if (wife instanceof PropertyWife && wife.isValid()) {
-        relationships.put(wife, PropertyWife.LABEL_MOTHER);
+        relationships.put(wife, ((PropertyWife)wife).getPropertyNameAsParent() );
         rows.add(wife);
       }
     }
