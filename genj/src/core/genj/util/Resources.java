@@ -190,19 +190,19 @@ public class Resources {
         // literate mode means we only look at comments
         if (literate) {
           
-          if (comment) {
-            int close = line.lastIndexOf("*/");
-            if (close>0) {
-              comment = false;
-              line = line.substring(close+2);
-            }
-          } else {
+          if (!comment) {
             int open = line.indexOf("/*");
             if (open<0)
               continue;
             comment = true;
             line = line.substring(open+2).trim();
           }        
+          
+          int close = line.lastIndexOf("*/");
+          if (close>0) {
+            comment = false;
+            line = line.substring(close+2);
+          }
         }
         
         // empty line stops continuation

@@ -44,8 +44,8 @@ public class ResourcesTest extends TestCase {
     
     r.load(getClass().getResourceAsStream("Literal.java.properties"), true);
 
-    String[] keys =   { "one",  "two",  "multi", "newline", "plus",    "and" };
-    String[] values = { "true", "also", "1 2 3", "1\n2\n3", "1\n2\n3", "123" };
+    String[] keys =   { "one",  "two",  "multi", "newline", "plus",    "and"};
+    String[] values = { "true", "also", "1 2 3", "1\n2\n3", "1\n2\n3", "123"};
     
     assertTrue(Arrays.equals(r.getKeys().toArray(new String[keys.length]), keys));
     for (int i=0;i<keys.length;i++) 
