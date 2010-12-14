@@ -40,7 +40,6 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.io.CharArrayWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -652,22 +651,9 @@ public abstract class Report implements Cloneable {
    * Access to report properties
    */
   protected Resources getResources() {
-    if (resources==null) {
-      // initialize resources with old way of pulling from .properties file
+    if (resources==null) 
+      // pull from associated .properties file
       resources = new Resources(getClass().getResourceAsStream(getTypeName()+".properties"));
-      // check if new style resources are available from .java src
-      try {
-        // ... checking filesystem in developer mode, resource otherwise
-        File reports = new File("./src/report");
-        String src = getClass().getName().replace('.', '/')+".java";
-        InputStream in = (reports.exists()&&reports.isDirectory()) ?
-            new FileInputStream(new File(reports, src)) :
-            getClass().getResourceAsStream(src);
-        resources.load(in, true);
-      } catch (IOException e) {
-        // ignore
-      }
-    }
     return resources;
   }
 

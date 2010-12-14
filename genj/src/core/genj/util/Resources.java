@@ -146,11 +146,7 @@ public class Resources {
    * Load more resources from stream
    */
   public void load(InputStream in) throws IOException {
-    load(in, keys, key2string, false);
-  }
-  
-  public void load(InputStream in, boolean literate) throws IOException {
-    load(in, keys, key2string, literate);
+    load(in, keys, key2string);
   }
   
   private static String trim(String s) {
@@ -168,7 +164,7 @@ public class Resources {
   /**
    * Loads key/value pairs from inputstream with unicode content
    */
-  private static void load(InputStream in, List<String> keys, Map<String,String> key2string, boolean literate) throws IOException {
+  private static void load(InputStream in, List<String> keys, Map<String,String> key2string) throws IOException {
     
     if (in==null)
       throw new IOException("can't load resources from null");
@@ -186,24 +182,6 @@ public class Resources {
         String line = lines.readLine();
         if (line==null) 
           break;
-        
-        // literate mode means we only look at comments
-        if (literate) {
-          
-          if (!comment) {
-            int open = line.indexOf("/*");
-            if (open<0)
-              continue;
-            comment = true;
-            line = line.substring(open+2).trim();
-          }        
-          
-          int close = line.lastIndexOf("*/");
-          if (close>0) {
-            comment = false;
-            line = line.substring(close+2);
-          }
-        }
         
         // empty line stops continuation
         String trimmed = trim(line);
@@ -242,7 +220,7 @@ public class Resources {
         if (i<=0) 
           continue;
         key = trimmed.substring(0, i).trim();
-        if (!literate&&!Character.isJavaIdentifierStart(line.charAt(0)))
+        if (!Character.isJavaIdentifierStart(line.charAt(0)))
           continue;
         val = trim(trimmed.substring(i+1));
         keys.add(key);
@@ -293,19 +271,19 @@ public class Resources {
 
       // loading english first (primary language)
       try {
-        load(getClass().getResourceAsStream(calcFile(pkg, null, null)), tmpKeys, tmpKey2Val, false);
+        load(getClass().getResourceAsStream(calcFile(pkg, null, null)), tmpKeys, tmpKey2Val);
       } catch (Throwable t) {
       }
       
       // trying to load language specific next
       try {
-        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), null)), tmpKeys, tmpKey2Val, false);
+        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), null)), tmpKeys, tmpKey2Val);
       } catch (Throwable t) {
       }
   
       // trying to load language and country specific next
       try {
-        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), locale.getCountry())), tmpKeys, tmpKey2Val, false);
+        load(getClass().getResourceAsStream(calcFile(pkg, locale.getLanguage(), locale.getCountry())), tmpKeys, tmpKey2Val);
       } catch (Throwable t) {
       }
 

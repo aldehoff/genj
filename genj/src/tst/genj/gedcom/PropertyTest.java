@@ -227,32 +227,6 @@ public class PropertyTest extends TestCase {
   /**
    * Test formatting 
    */
-  public void testPrivacyPolicy() {     
-    
-    Indi indi = createIndi();
-    
-    Options options = Options.getInstance();
-    options.dateFormat = PointInTime.FORMAT_GEDCOM;
-    
-    Property birt = indi.addProperty("BIRT", "");
-    Property date = birt.addProperty("DATE", "25 MAY 1970");
-    birt.addProperty("PLAC", "Rendsburg");
-    
-    // normal: have date and place all public -> get all
-    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}"));
-    
-    // normal: have all with non applying policy -> get all back
-    assertEquals("born 25 MAY 1970, Rendsburg", birt.format("born{ $D}{, $P}"));
-    
-    // case of privacy: the  info is there but event is too recent -> getting masks back
-    assertEquals("born xxx, xxx", birt.format("born{ $D}{, $P}"));
-
-    // all good ;)
-  }
-  
-  /**
-   * Test formatting 
-   */
   public void testFormatting() {     
     
     Options options = Options.getInstance();
