@@ -39,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -94,10 +93,7 @@ public class Almanac {
     new Thread(new Runnable() {
       public void run() {
         try {
-          if ("fr".equals(Locale.getDefault().getLanguage()))
-            new AlmanacLoader().load();
-          else
-            new WikipediaLoader().load();
+          new WikipediaLoader().load();
         } catch (Throwable t) {
         }
   	    LOG.info("Loaded "+events.size()+" events");
@@ -274,99 +270,6 @@ public class Almanac {
     
   } //Loader
  
-  /**
-	 * This class adds support for the ALMANAC style event repository
-	 * (our own invention)
-	 */
-  private class AlmanacLoader extends Loader {
-    /** only .almanac */
-    public boolean accept(File dir, String name) {
-      return name.toLowerCase().endsWith(".almanac");
-    }
-    /** look into ./contrib/almanac */
-    protected File getDirectory() {
-      return new File(EnvironmentChecker.getProperty(
-          new String[]{ "genj.almanac.dir", "user.dir/contrib/almanac"},
-          "contrib/almanac",
-          "find almanac files"
-        ));
-    }
-    /**
-     * get buffered reader from file
-     */
-    protected BufferedReader open(File file) throws IOException {
-      return new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
-    }
-    /** create an event */
-    protected Event load(String line) throws GedcomException {
-      // comment?
-      if (line.startsWith("#"))
-        return null;
-      // break it by ';'
-      StringTokenizer cols = new StringTokenizer(line, ";", true);
-      // #1 date YYYYMMDD
-      String date = cols.nextToken().trim();cols.nextToken();
-      if (date.length()<4)
-        return null;
-      int year  = Integer.parseInt(date.substring(0, 4));
-      int month = date.length()>=6 ? Integer.parseInt(date.substring(4, 6))-1 : PointInTime.UNKNOWN;
-      int day   = date.length()>=8 ? Integer.parseInt(date.substring(6, 8))-1 : PointInTime.UNKNOWN;
-      PointInTime time = new PointInTime(day, month, year);
-      if (!time.isValid())
-        return null;
-      // #2 date
-      String date2 = cols.nextToken();
-      if (!date2.equals(";")) {
-        cols.nextToken();
-      }
-      // #3 country
-      String country = cols.nextToken().trim();
-      if (!country.equals(";")) {
-        cols.nextToken();
-      }
-      // #4 significance
-      int sig = Integer.parseInt(cols.nextToken());
-      cols.nextToken();
-      // #5 type
-      List cats = getCategories(cols.nextToken().trim());
-      if (cats.isEmpty())
-        return null;
-      cols.nextToken();
-      // #6 and following description
-      String desc = null;
-      while (cols.hasMoreTokens()) {
-        String translation = cols.nextToken().trim();
-        if (translation.equals(";"))
-          continue;
-        int i = translation.indexOf('=');
-        if (i<0)
-          continue;
-        String lang = translation.substring(0,i);
-        if (desc==null||LANG.equals(lang)) 
-          desc = translation.substring(i+1);
-      }
-      // got a description?
-      if (desc==null)
-        return null;
-      // done
-      return new Event(cats, time, desc);
-    }
-    /** derive category names for key */
-    private List getCategories(String cats) {
-      
-      List result = new ArrayList();
-      for (int c=0;c<cats.length();c++) {
-        String key = cats.substring(c,c+1);
-        String cat = RESOURCES.getString("category."+key, false);
-        if (cat==null)
-          cat = RESOURCES.getString("category.*");
-        result.add(addCategory(cat));
-      }
-      
-      return result;
-    }
-  } //AlmanacLoader
-  
   /**
 	 * This class adds support for a CDAY style event repository with
 	 * entries one per line. This code respects births (B) and event (S)
