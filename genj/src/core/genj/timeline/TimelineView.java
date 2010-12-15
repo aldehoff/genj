@@ -19,20 +19,15 @@
  */
 package genj.timeline;
 
-import genj.almanac.Almanac;
-import genj.almanac.Event;
 import genj.gedcom.Context;
 import genj.gedcom.Gedcom;
-import genj.gedcom.GedcomException;
 import genj.gedcom.Property;
 import genj.gedcom.TagPath;
-import genj.gedcom.time.PointInTime;
 import genj.renderer.DPI;
 import genj.renderer.Options;
 import genj.renderer.RenderSelectionHintKey;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.WordBuffer;
 import genj.util.swing.ScrollPaneWidget;
 import genj.util.swing.SliderWidget;
 import genj.util.swing.UnitGraphics;
@@ -47,27 +42,23 @@ import genj.view.ViewContext;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -111,9 +102,6 @@ public class TimelineView extends View {
   
   /** the renderer we use for the content */
   private ContentRenderer contentRenderer = new ContentRenderer();
-  
-  /** almanac categories */
-  private List<String> ignoredAlmanacCategories = new ArrayList<String>();
   
   /** min/max's */
   /*package*/ final static double 
@@ -178,10 +166,6 @@ public class TimelineView extends View {
     colors.put("selected"  , Color.RED  );
     colors = REGISTRY.get("color", colors);
    
-    String[] ignored= REGISTRY.get("almanac.ignore", new String[0]);
-    for (int i=0;i<ignored.length;i++)
-      ignoredAlmanacCategories.add(ignored[i]);
-    
     // create/keep our sub-parts
     model = new Model();
     model.setTimePerEvent(cmBefEvent/cmPerYear, cmAftEvent/cmPerYear);
@@ -252,11 +236,6 @@ public class TimelineView extends View {
     REGISTRY.put("color", colors);
     REGISTRY.put("paths", model.getPaths());
     
-    String[] ignored = new String[ignoredAlmanacCategories.size()];
-    for (int i=0;i<ignored.length;i++)
-      ignored[i] = ignoredAlmanacCategories.get(i).toString();
-    REGISTRY.put("almanac.ignore", ignored);
-
     // done
     super.removeNotify();
   }
@@ -273,25 +252,6 @@ public class TimelineView extends View {
    */
   public Model getModel() {
     return model;
-  }
-  
-  /**
-   * Accessor - almanac categories
-   */
-  public Set<String> getAlmanacCategories() {
-    HashSet<String> result = new HashSet<String>(Almanac.getInstance().getCategories());
-    result.removeAll(ignoredAlmanacCategories);
-    return result;
-  }
-  
-  /**
-   * Accessor - hidden almanac category keys
-   */
-  public void setAlmanacCategories(Set<String> set) {
-    ignoredAlmanacCategories.clear();
-    ignoredAlmanacCategories.addAll(Almanac.getInstance().getCategories());
-    ignoredAlmanacCategories.removeAll(set);
-    repaint();
   }
   
   /**
@@ -446,7 +406,7 @@ public class TimelineView extends View {
   /**
    * The ruler 'at the top'
    */
-  private class Ruler extends JComponent implements MouseMotionListener, ChangeListener {
+  private class Ruler extends JComponent implements ChangeListener {
     
     /**
      * init on add
@@ -454,23 +414,6 @@ public class TimelineView extends View {
     public void addNotify() {
       // continue with super
       super.addNotify();
-      // setup listening
-      addMouseMotionListener(this);
-      Almanac.getInstance().addChangeListener(this);
-      // ok this might not be fair but we'll increase
-      // the tooltip dismiss delay now for everyone
-      ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
-    }
-    
-    /**
-     * un-init on remove
-     */
-    public void removeNotify() {
-      // setup listening
-      removeMouseMotionListener(this);
-      Almanac.getInstance().removeChangeListener(this);
-      // continue with super
-      super.removeNotify();
     }
     
     /**
@@ -489,7 +432,6 @@ public class TimelineView extends View {
       rulerRenderer.cText = (Color)colors.get("text");
       rulerRenderer.cTick = rulerRenderer.cText;
       rulerRenderer.cTimespan = (Color)colors.get("timespan");
-      rulerRenderer.acats = getAlmanacCategories();
       // prepare UnitGraphics
       UnitGraphics graphics = new UnitGraphics(
         g,
@@ -510,44 +452,6 @@ public class TimelineView extends View {
         content.getPreferredSize().width,
         getFontMetrics(getFont()).getHeight()+1
       );
-    }
-    
-    /**
-     * ignored
-     */
-    public void mouseDragged(MouseEvent e) {
-    }
-
-    /**
-     * update tip
-     */
-    public void mouseMoved(MouseEvent e) {
-      // calculate year
-      double year = pixel2year(e.getPoint().x);
-      // calculate time and days around it
-      PointInTime when = Model.toPointInTime(year);
-      int days = (int)Math.ceil(5F/DPC.getX()/cmPerYear*365);
-      // collect events and their text
-      WordBuffer text = new WordBuffer();
-      int cursor = Cursor.DEFAULT_CURSOR;
-      try {
-	      Iterator<Event> almanac = Almanac.getInstance().getEvents(when, days, getAlmanacCategories());
-	      if (almanac.hasNext()) {
-		      text.append("<html><body>");
-		      for (int i=0;i<10&&almanac.hasNext();i++) {
-		        text.append("<div width=\""+TimelineView.this.getWidth()/2+"\">");
-		        text.append(almanac.next());
-		        text.append("</div>");
-		      }
-		      text.append("</body></html>");
-          cursor = Cursor.TEXT_CURSOR;
-	      }
-      } catch (GedcomException ex) {
-      }
-      // set tooltip
-      setCursor(Cursor.getPredefinedCursor(cursor));
-      setToolTipText(text.length()==0 ? null : text.toString());
-      // done
     }
     
   } //Ruler

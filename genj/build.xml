@@ -195,9 +195,6 @@
     <!-- create genj_ll-xyz.zip -->
     <zip zipfile="./build/dist/genj_${language}-${version}.zip" update="True">
       <fileset dir="./build" includes="lib/genj_${language}.jar"/>
-      <fileset dir="." includes="contrib/wikipedia/${language}.wikipedia.zip"/>
-      <fileset dir="." includes="contrib/wikipedia/license.txt"/>
-      <fileset dir="." includes="contrib/almanac/${language}.almanac"/>
     </zip>
   </target>
 

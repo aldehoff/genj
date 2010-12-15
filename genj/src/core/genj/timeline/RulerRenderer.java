@@ -19,10 +19,6 @@
  */
 package genj.timeline;
 
-import genj.almanac.Almanac;
-import genj.almanac.Event;
-import genj.gedcom.GedcomException;
-import genj.gedcom.time.PointInTime;
 import genj.util.swing.UnitGraphics;
 
 import java.awt.Color;
@@ -31,8 +27,6 @@ import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * A renderer knowing how to render a ruler for the timeline
@@ -41,9 +35,6 @@ public class RulerRenderer extends ContentRenderer {
   
   /** ticks color */
   /*package*/ Color cTick = null;
-  
-  /** almanac categories */
-  /*package*/ Set acats = null;
   
   /** a tick */
   private Shape tickMark, eventMark;
@@ -76,48 +67,7 @@ public class RulerRenderer extends ContentRenderer {
     // recurse binary
     renderSpan(graphics, model, fm, from, to, width);
     
-    // render cday events
-    renderAlmanac(graphics);
-    
     // done
-  }
-  
-  /**
-   * Renders CDay event markers
-   */
-  private void renderAlmanac(UnitGraphics g) {
-    
-    // prepare drawing - color, clip, years etc.
-    g.setColor(cTimespan);
-    Rectangle2D clip = g.getClip();
-    PointInTime 
-      from = Model.toPointInTime(clip.getX()),
-      to   = Model.toPointInTime(clip.getMaxX());
-
-    // we calculate how much time is covered per pixel
-    double timePerPixel = dotSize.x;
-    
-    // iterate over according years
-    Iterator almanac = Almanac.getInstance().getEvents(from, to, acats);
-    double last = 0;
-    while (almanac.hasNext()) {
-      // event to handle
-      Event event = (Event)almanac.next();
-      try {
-        // calculate it's year
-        PointInTime time = event.getTime();
-        double year = Model.toDouble(time, false);
-        // check if this would be a new pixel - this is for
-        // efficiency reasons since we don't end up painting
-        // on the same pixel multiple times
-        if (year-last>=timePerPixel) {
-          g.draw(eventMark, year, 0, false);
-          last = year;
-        }
-      } catch (GedcomException e) {
-      }
-      // next
-    }
   }
   
   /**

@@ -19,14 +19,12 @@
  */
 package genj.timeline;
 
-import genj.almanac.Almanac;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Grammar;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.TagPath;
 import genj.util.Resources;
 import genj.util.swing.ColorsWidget;
-import genj.util.swing.DialogHelper;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.ListSelectionWidget;
 import genj.util.swing.NestedBlockLayout;
@@ -34,7 +32,6 @@ import genj.util.swing.NestedBlockLayout;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -55,9 +52,6 @@ public class TimelineViewSettings extends JTabbedPane {
   
   /** a widget for selecting paths to show */
   private ListSelectionWidget<TagPath> pathsList;
-  
-  /** a widget for selecting almanac event libraries / categories */
-  private ListSelectionWidget<String> almanacsList;
   
   /** Checkbox for options */
   private JCheckBox checkTags,checkDates,checkGrid;
@@ -92,20 +86,6 @@ public class TimelineViewSettings extends JTabbedPane {
       pathsList.setChoices(PropertyEvent.getTagPaths(gedcom));
     pathsList.setCheckedChoices(view.getModel().getPaths());
     pathsList.addChangeListener(commit);
-
-    // categories to select from
-    almanacsList = new ListSelectionWidget<String>() {
-      protected String getText(String choice) {
-        return "<html><body>"+choice+"</body></html>";
-      }
-    };
-    Almanac almanac = Almanac.getInstance();
-    almanac.waitLoaded();
-    List<String> cats = almanac.getCategories();
-    almanacsList.setChoices(cats);
-    almanacsList.setCheckedChoices(view.getAlmanacCategories());
-    almanacsList.addChangeListener(commit);
-    
 
     // create a panel for options
     JPanel panelOptions = new JPanel(new NestedBlockLayout(
@@ -144,7 +124,6 @@ public class TimelineViewSettings extends JTabbedPane {
     // layout 
     add(resources.getString("page.main")  , panelMain);
     add(resources.getString("page.colors"), colorWidget);
-    add(resources.getString("page.almanac"), almanacsList);
 
     // done
   }
@@ -188,8 +167,6 @@ public class TimelineViewSettings extends JTabbedPane {
       for (String key : view.colors.keySet()) 
         view.colors.put(key, colorWidget.getColor(key));
       
-      // almanac categories
-      view.setAlmanacCategories(almanacsList.getCheckedChoices());
     }
   }
   
