@@ -39,9 +39,6 @@ public class Options extends OptionProvider {
   /** singleton */
   private final static Options instance = new Options();
   
-  /** option - whether to use spaces in separating places */
-  public boolean isUseSpacedPlaces = true;
-  
   /** option - whether id-gaps should be filled */
   public boolean isFillGapsInIDs = false;
   
