@@ -181,7 +181,7 @@ public class Gedcom {
   private Map<String,Integer> propertyTag2valueCount = new HashMap<String,Integer>();
 
   /** encoding */
-  private String encoding = ENCODINGS[Math.min(ENCODINGS.length-1, Options.getInstance().defaultEncoding)];
+  private String encoding = UTF8;
     
   /** language */
   private String language = null;

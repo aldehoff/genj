@@ -79,9 +79,6 @@ public class Options extends OptionProvider {
   /** option - place hierarchy keys for city NOT EDITABLE ATM */
   protected Set<String> placeHierarchyCityKeys = new HashSet<String>(Arrays.asList(new String[]{ "city", "commune", "ville", "stadt"}));
   
-  /** option - default encoding is the last one in gedcom's list available */
-  protected int defaultEncoding = Gedcom.ENCODINGS.length-1;
-  
   /** option - how to display dates */
   public int dateFormat = 1;
   
@@ -163,25 +160,6 @@ public class Options extends OptionProvider {
    */
   public List<? extends Option> getOptions() {
     return PropertyOption.introspect(instance);
-  }
-
-  /**
-   * accessor - default encoding
-   */
-  public int getDefaultEncoding() {
-    return defaultEncoding;
-  }
-
-  /**
-   * accessor - default encoding
-   */
-  public void setDefaultEncoding(int setEncoding) {
-    if (setEncoding>=0&&setEncoding<Gedcom.ENCODINGS.length)
-      defaultEncoding = setEncoding;
-  }
-  
-  public static String[] getDefaultEncodings() {
-    return Gedcom.ENCODINGS;
   }
 
 } //Options
