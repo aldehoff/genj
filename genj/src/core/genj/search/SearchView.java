@@ -143,6 +143,7 @@ public class SearchView extends View {
         actionStop.setEnabled(true);
       }
       public void stopped() {
+        labelCount.setText(""+results.getSize());
         actionStop.setEnabled(false);
         actionStart.setEnabled(context.getGedcom()!=null);
       }
