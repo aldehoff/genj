@@ -19,7 +19,6 @@
  */
 package genj.edit.beans;
 
-import genj.edit.Options;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyPlace;
@@ -78,7 +77,7 @@ public class PlaceBean extends PropertyBean {
    */
   private String getCommitValue() {
     
-    boolean hierarchy = Options.getInstance().isSplitJurisdictions && ((PropertyPlace)getProperty()).getFormatAsString().length()>0;
+    boolean hierarchy = ((PropertyPlace)getProperty()).getFormatAsString().length()>0;
     
     // collect the result by looking at all of the choices
     StringBuffer result = new StringBuffer();
@@ -151,7 +150,7 @@ public class PlaceBean extends PropertyBean {
     }
    
     // either a simple value or broken down into comma separated jurisdictions
-    if (!Options.getInstance().isSplitJurisdictions || formatAsString.length()==0) {
+    if (formatAsString.length()==0) {
       createChoice(null, value, PropertyPlace.getAllJurisdictions(ged, -1, true), formatAsString);
     } else {
       String[] format = PropertyPlace.getFormat(ged);
