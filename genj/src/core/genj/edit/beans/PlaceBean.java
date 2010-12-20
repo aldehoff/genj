@@ -131,11 +131,13 @@ public class PlaceBean extends PropertyBean {
     PropertyPlace place = (PropertyPlace)prop;
     String value;
     String formatAsString;
+    String[] format;
     String[] jurisdictions;
     
     if (place==null) {
       sameChoices = new Property[0];
       value = "";
+      format = PropertyPlace.getFormat(ged);
       jurisdictions = new String[0];
       formatAsString = ged.getPlaceFormat();
     } else {
@@ -145,6 +147,7 @@ public class PlaceBean extends PropertyBean {
         works on values (PropertyChoiceValue stuff) - se we have to use getValue() here
        */
       value = place.getValue();
+      format = place.getFormat();
       formatAsString = place.getFormatAsString();
       jurisdictions = place.getJurisdictions();
     }
@@ -153,7 +156,6 @@ public class PlaceBean extends PropertyBean {
     if (formatAsString.length()==0) {
       createChoice(null, value, PropertyPlace.getAllJurisdictions(ged, -1, true), formatAsString);
     } else {
-      String[] format = PropertyPlace.getFormat(ged);
       for (int i=0;i<Math.max(format.length, jurisdictions.length); i++) {
         createChoice(i<format.length ? format[i] : "?", i<jurisdictions.length ? jurisdictions[i] : "", PropertyPlace.getAllJurisdictions(ged, i, true), null);
       }
