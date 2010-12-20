@@ -83,6 +83,7 @@ public class DateBean extends PropertyBean {
     // phrase
     phrase = new TextFieldWidget("",10);
     phrase.addChangeListener(changeSupport);
+    phrase.setToolTipText(RESOURCES.getString("date.interpreted"));
     add(phrase);
     
     // do the layout and format
