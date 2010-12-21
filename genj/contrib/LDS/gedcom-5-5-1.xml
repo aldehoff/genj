@@ -106,6 +106,7 @@
   <PROP hide="1" type="PropertyChoiceValue" img="Property" super="INDI:RELI" />
   <SSN  type="PropertySimpleValue" img="SSN" super="INDI:RELI" />
   <TITL type="PropertyChoiceValue" img="Title" super="INDI:RELI"/>
+  <FACT type="PropertySimpleValue" img="Title" super="INDI:BIRT" />
   <NMR  hide="1" type="PropertySimpleValue" img="Marriage" super="INDI:RELI" />
   +++++++++++++ More Events +++++++++++++
   <GRAD cardinality="0:M" img="Graduation" super="INDI:BIRT"/>
