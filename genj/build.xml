@@ -215,6 +215,8 @@
     <antcall target="dist.language"><param name="language" value="ru"/></antcall>
     <antcall target="dist.language"><param name="language" value="sv"/></antcall>
     <antcall target="dist.language"><param name="language" value="it"/></antcall>
+    <antcall target="dist.language"><param name="language" value="no"/></antcall>
+
   </target>
 
   <!--
