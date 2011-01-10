@@ -7,8 +7,6 @@
    <row><label path="SUBM:ADDR:CITY"/><bean path="SUBM:ADDR:CITY" wx="1"/></row>
    <row><label path="SUBM:ADDR:POST"/><bean path="SUBM:ADDR:POST" wx="1"/></row>
    <row><label path="SUBM:LANG"/><bean path="SUBM:LANG" wx="1"/></row>
-   <row><label path="SUBM:RFN"/><bean path="SUBM:RFN" wx="1"/></row>
-   <row><label path="SUBM:RIN"/><bean path="SUBM:RIN" wx="1"/></row>
   </table>
   <col>
    <bean path="." type="genj.edit.beans.MediaBean" wx="1" wy="1"/>
