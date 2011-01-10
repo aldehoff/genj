@@ -415,7 +415,9 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
 
     // add delete
     group.add(new ActionProvider.SeparatorAction());
-    group.add(new DelEntity(entity));
+    
+    if (entity!=entity.getGedcom().getSubmitter())
+      group.add(new DelEntity(entity));
     
     // done
   }
