@@ -76,7 +76,7 @@ public class EditNote extends Action2 {
     
     boolean has = hasNote(property);
     setImage(has ? EDIT_NOTE : (showNone?NO_NOTE:NEW_NOTE));
-    setText(RESOURCES.getString(has ? "edit" : "new", Gedcom.getName(Gedcom.NOTE)));
+    setText(RESOURCES.getString(has ? "edit" : "add", Gedcom.getName(Gedcom.NOTE)));
     setTip(getText());
   }
   
@@ -98,7 +98,7 @@ public class EditNote extends Action2 {
     JPanel panel = new JPanel(new NestedBlockLayout("<col><entity/><text gy=\"1\"/></col>"));
     
     final SelectEntityWidget select = new SelectEntityWidget(property.getGedcom(), Gedcom.NOTE, 
-        (note!=null&&!(note instanceof PropertyNote)) ? Gedcom.getName(Gedcom.NOTE) : RESOURCES.getString("new", Gedcom.getName(Gedcom.NOTE)));
+        (note!=null&&!(note instanceof PropertyNote)) ? Gedcom.getName(Gedcom.NOTE) : RESOURCES.getString("add", Gedcom.getName(Gedcom.NOTE)));
     panel.add(select);
     final JTextPane text = new JTextPane();
     text.setPreferredSize(new Dimension(128,128));

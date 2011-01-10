@@ -80,7 +80,7 @@ public class EditSource extends Action2 {
     
     boolean has = !getSources(property).isEmpty();
     setImage(has ? EDIT_SOUR : (showNone ? NO_SOUR : NEW_SOUR));
-    setText(has ? RESOURCES.getString("edit",Gedcom.getName(Gedcom.SOUR, true)) : RESOURCES.getString("new", Gedcom.getName(Gedcom.SOUR)));
+    setText(has ? RESOURCES.getString("edit",Gedcom.getName(Gedcom.SOUR, true)) : RESOURCES.getString("add", Gedcom.getName(Gedcom.SOUR)));
     setTip(getText());
   }
   
@@ -100,7 +100,7 @@ public class EditSource extends Action2 {
     if (!sources.isEmpty()) {
       
       final TableWidget<PropertySource> table = new TableWidget<PropertySource>();
-      Action2[] actions = new Action2[]{ Action2.ok(), new Action2(RESOURCES.getString("link", Gedcom.getName("SOUR"))) };
+      Action2[] actions = new Action2[]{ Action2.ok(), new Action2(RESOURCES.getString("add", Gedcom.getName("SOUR"))) };
       final GedcomDialog dlg = new GedcomDialog(property.getGedcom(), property.toString() + " - " + getTip(), DialogHelper.QUESTION_MESSAGE, new JScrollPane(table), actions, e);
     
       table.new Column(Gedcom.getName("SOUR")) {
