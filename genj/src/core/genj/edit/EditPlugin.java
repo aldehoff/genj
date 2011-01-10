@@ -112,9 +112,10 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
     // check if there's any individuals
     if (!gedcom.getEntities(Gedcom.INDI).isEmpty()) 
       return;
-
-    if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, RESOURCES.getString("wizard.empty", gedcom.getName()), Action2.yesNo(), workbench)) 
-      return;
+    
+    // Remove wizard prompt and go straight for editing of first person as we can assume the user just created an empty file 
+    //  if (0!=DialogHelper.openDialog(RESOURCES.getString("wizard.first", gedcom.getName()), DialogHelper.QUESTION_MESSAGE, RESOURCES.getString("wizard.empty", gedcom.getName()), Action2.yesNo(), workbench)) 
+    //    return;
     
     try {
       wizardFirst(workbench, gedcom);
