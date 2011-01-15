@@ -302,7 +302,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
       super.setEnabled(set);
       // update tip
       if (set)
-        setTip(RES.getString("file.add", getProperty().getPropertyName()));
+        setTip(RES.getString("file.add"));
       else
         setTip("");
     }
@@ -414,7 +414,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
         set = false;
       super.setEnabled(set);
       if (set)
-        setTip(RES.getString("file.del", getProperty().getPropertyName()));
+        setTip(RES.getString("file.del"));
       else
         setTip("");
     }
@@ -452,7 +452,7 @@ public class MediaBean extends PropertyBean implements ContextProvider {
         from.setSelectionInterval(0, choices.size()-1);
 
       JPanel options = new JPanel(new NestedBlockLayout("<col><l1 gx=\"1\"/><targets gx=\"1\" gy=\"1\"/></col>"));
-      options.add(new JLabel(RES.getString("file.del", "...")));
+      options.add(new JLabel(RES.getString("file.del")));
       options.add(new JScrollPane(from));
 
       ok = Action2.ok();
