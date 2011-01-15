@@ -179,6 +179,9 @@ public class ReportValidate extends Report {
       getOptionFromUser(translate("noissues"), Report.OPTION_OK);
       return null;
     }
+    
+    for (ViewContext context : issues)
+      println(context + " - " + context.getText());
 
     // wrap
     return issues;
