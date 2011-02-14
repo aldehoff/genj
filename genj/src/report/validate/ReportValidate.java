@@ -246,6 +246,9 @@ public class ReportValidate extends Report {
     // non-valid properties
     result.add(new TestValid(this));
     
+    // leftover records
+    result.add(new TestLeftover(this));
+    
     // incestus
     result.add(new TestIncestus());
 
