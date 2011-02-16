@@ -398,7 +398,7 @@ public abstract class Report implements Cloneable {
       return null;
 
     // keep it
-    registry.put(dir, result.toString());
+    registry.put("dir", result.toString());
     return result;
   }
 

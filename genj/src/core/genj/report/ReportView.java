@@ -25,6 +25,7 @@ import genj.fo.FormatOptionsWidget;
 import genj.gedcom.Context;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
+import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.Action2;
@@ -567,7 +568,8 @@ public class ReportView extends View {
       }
 
       // .. choose file
-      JFileChooser chooser = new JFileChooser(".");
+      String dir = REGISTRY.get("txtdir", EnvironmentChecker.getProperty("user.home", ".", "looking for txt output dir"));
+      JFileChooser chooser = new JFileChooser(dir);
       chooser.setDialogTitle(getTip());
       chooser.setFileFilter(new FileFilter() {
         @Override
@@ -583,9 +585,13 @@ public class ReportView extends View {
 
       if (JFileChooser.APPROVE_OPTION != chooser.showDialog(ReportView.this, "Save")) 
         return;
+      
       File file = chooser.getSelectedFile();
       if (file == null) 
         return;
+      
+      REGISTRY.put("txtdir", file.getParent());
+
       if (!file.getName().endsWith("*.txt"))
         file = new File(file.getAbsolutePath()+".txt");
 
