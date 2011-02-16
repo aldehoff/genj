@@ -28,6 +28,7 @@ import genj.gedcom.Gedcom;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 import genj.util.Resources;
+import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 import genj.util.swing.EditorHyperlinkSupport;
@@ -72,6 +73,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 
@@ -206,7 +209,7 @@ public class ReportView extends View {
 
     // clear the current output and show coming
     clear();
-    output.add(report.getName()+" - "+RESOURCES.getString("report.output")+":\n");
+    //output.add(report.getName()+" - "+RESOURCES.getString("report.output")+":\n");
     show(CONSOLE);
     
     // set running
@@ -404,6 +407,19 @@ public class ReportView extends View {
       result.setViewportView(c);
       actionShow.setEnabled(true);
       actionShow.setSelected(true);
+      
+      // dump context-list user might be looking at
+      if (c instanceof ContextListWidget) {
+        ContextListWidget list = (ContextListWidget)result.getViewport().getView();
+        WordBuffer buf = new WordBuffer("\n");
+        for (Context ctx : list.getContexts()) {
+          if (ctx instanceof ViewContext)
+            buf.append(ctx.getEntity()+":"+((ViewContext)ctx).getText());
+          else
+            buf.append(c.toString());
+        }
+      }
+      
       show(RESULT);
       return;
     }
@@ -541,32 +557,17 @@ public class ReportView extends View {
   /**
    * Action: SAVE
    */
-  private class ActionSave extends Action2 {
+  private class ActionSave extends Action2 implements DocumentListener {
+    
     protected ActionSave() {
       setImage(imgSave);
       setTip(RESOURCES, "report.save.tip");
+      output.getDocument().addDocumentListener(this);
+      setEnabled(false);
     }
 
     public void actionPerformed(ActionEvent event) {
       
-      // user looking at a context-list?
-      if (result.isVisible() && result.getViewport().getView() instanceof ContextListWidget) {
-        ContextListWidget list = (ContextListWidget)result.getViewport().getView();
-        String title = REGISTRY.get("lastreport", "Report");
-        genj.fo.Document doc = new genj.fo.Document(title);
-        doc.startSection(title);
-        for (Context c : list.getContexts()) {
-          if (c instanceof ViewContext)
-            doc.addText(c.getEntity()+":"+((ViewContext)c).getText());
-          else
-            doc.addText(c.toString());
-          doc.nextParagraph();
-        }
-        showResult(doc);
-        // done
-        return;
-      }
-
       // .. choose file
       String dir = REGISTRY.get("txtdir", EnvironmentChecker.getProperty("user.home", ".", "looking for txt output dir"));
       JFileChooser chooser = new JFileChooser(dir);
@@ -629,6 +630,21 @@ public class ReportView extends View {
       }
 
       // .. done
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+      setEnabled( e.getDocument().getLength()>0 );
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+      changedUpdate(e);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+      changedUpdate(e);
     }
 
   } // ActionSave
