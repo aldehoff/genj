@@ -87,7 +87,7 @@ class HelpWidget extends JPanel {
     
     // calculate base
     String lang = Locale.getDefault().getLanguage();
-    if (!("en".equals(lang)||"de".equals(lang)))
+    if (!("en".equals(lang)||"de".equals(lang)||"fr".equals(lang)))
       lang = "en";
     base = String.format(BASE_URL, lang);
 
