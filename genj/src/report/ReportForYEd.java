@@ -10,6 +10,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
+import genj.gedcom.Media;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
@@ -18,6 +19,7 @@ import genj.gedcom.time.PointInTime;
 import genj.report.Options;
 import genj.report.Report;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,6 +35,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 public class ReportForYEd extends Report {
 
@@ -89,6 +93,25 @@ public class ReportForYEd extends Report {
 
 			if (htmlFormat == null || htmlFormat.equals(""))
 				return null;
+			final Media media = new Media("OBJE",entity.getId());
+			if (media==null) return null;
+
+			final String value = getFileName(entity);
+			if (value==null) return null;
+			
+			final BufferedImage image = getImage(value);
+			image.getWidth();
+			image.getHeight();
+			
+			final String extension = value.toLowerCase()
+					.replaceAll(".*\\.", "");
+			if (imageExtensions.contains(extension)) {
+				return MessageFormat.format(htmlFormat, value);
+			}
+			return null;
+		}
+
+		private String getFileName(final Entity entity) {
 			final Property property = entity instanceof Indi ? entity
 					.getPropertyByPath("INDI:OBJE:FILE") : entity
 					.getPropertyByPath("FAM:OBJE:FILE");
@@ -97,10 +120,14 @@ public class ReportForYEd extends Report {
 			final String value = property.getValue();
 			if (value == null || value.equals(""))
 				return null;
-			final String extension = value.toLowerCase()
-					.replaceAll(".*\\.", "");
-			if (imageExtensions.contains(extension)) {
-				return MessageFormat.format(htmlFormat, value);
+			return value;
+		}
+
+		private BufferedImage getImage(final String value) {
+			try {
+				return ImageIO.read(new File(value));
+			} catch (IOException e) {
+				println("oops can't load image: "+value);
 			}
 			return null;
 		}
@@ -295,6 +322,13 @@ public class ReportForYEd extends Report {
 			@Override
 			public int compare(final Indi i1, final Indi i2) {
 
+				if (i1 == null && i2==null)
+					return 0;
+				if (i1 == null)
+					return 1;
+				if (i2 == null)
+					return -1;
+				
 				final Delta p1 = i1.getAge(pit);
 				final Delta p2 = i2.getAge(pit);
 
