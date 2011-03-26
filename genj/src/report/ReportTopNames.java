@@ -3,6 +3,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.time.PointInTime;
+import genj.gedcom.Property;
 import genj.report.Report;
 
 /**
@@ -13,13 +14,16 @@ import genj.report.Report;
 public class ReportTopNames extends Report {
 	 
 	public boolean showAllNames = true;
-	
+	public boolean useNameClasses = false;
+	public String nameClassTag="_CLAS";
+
 	//translate strings for output  
 	private String textTitle = translate("title");
 	private String textFileName = translate("filename");
 	private String textDate = translate("date");
 	private String textGivenNames = translate("givennames");
 	private String textSurnames = translate("surnames");
+	private String textNameClasses = translate("classes");
 	
 
 	
@@ -94,7 +98,16 @@ public class ReportTopNames extends Report {
 			//report on each
 			person = (Indi)individuals[loop];      
 			strGiven = person.getFirstName();
-			strSurname = person.getLastName();
+			if (!useNameClasses) {
+				strSurname = person.getLastName();
+			} else {
+				Property personClass = person.getProperty(nameClassTag);
+				if (personClass == null) {
+					strSurname = "";
+				} else {
+					strSurname = person.getProperty(nameClassTag).getDisplayValue();
+				}
+			}
 			
 			//consider only very first name i.e. not middle names or initials
 			firstSpace = strGiven.indexOf(" ");
@@ -132,6 +145,7 @@ public class ReportTopNames extends Report {
 			//surname:
 			//if this is the first object, add it to the list
 			//otherwise iterate list for name match
+			if (!strSurname.equals("")) { // if surname is empty or class tag does not exist for this person
 			if(alSurname.isEmpty()) {
 				objTemp = new objRec(strSurname, 1);
 				alSurname.add(objTemp);
@@ -155,7 +169,7 @@ public class ReportTopNames extends Report {
 				}
 		
 			}//else
-			
+			}//empty surname
 	    }//loop				
 			
 	
@@ -220,7 +234,11 @@ public class ReportTopNames extends Report {
 		//display surnames
 		//label
 		println();
-		println(textSurnames);
+		if (useNameClasses) {
+			println(textSurnames + " (" + textNameClasses + ")");
+		} else {
+			println(textSurnames);
+		}
 		strULine="";
 		for(loop=0 ;loop<textSurnames.length(); loop++)
 			  strULine += "-";
