@@ -57,11 +57,13 @@ public class ReportRdf extends Report {
 
 	/** main */
 	public void start(final Indi indi) throws IOException {
+		// TODO insert a line into the query like: "LET (?rootIndiId := "+indi.getId()+")"
 		toRdf(indi.getGedcom());
 	}
 
 	/** main */
 	public void start(final Fam fam) throws IOException {
+		// TODO insert a line into the query like: "LET (?rootFamId := "+fam.getId()+")"
 		toRdf(fam.getGedcom());
 	}
 
