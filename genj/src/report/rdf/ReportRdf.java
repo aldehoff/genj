@@ -44,10 +44,12 @@ public class ReportRdf extends Report {
 
 	public class QueryFormats {
 		public String styleSheet = "https://develop01.dans.knaw.nl/svn/mixed/alfalab/annotations/trunk/src/main/resources/query-playground.xsl";
-		public boolean showQuery;
-		public boolean showAsText;
-		public boolean showAsXml;
+		public boolean showQuery = true;
+		public boolean showAsText = true;
+		public boolean showAsXml = true;
 	};
+
+	private static final String SAMPLE_QUERY = "SELECT ?indi ?name { ?indi a t:INDI ; p:NAME [p:value ?name] .}";
 	
 	public String rdfFormat = "N3";
 	public UriFormats uriFormats = new UriFormats();
@@ -58,39 +60,44 @@ public class ReportRdf extends Report {
 	/** main */
 	public void start(final Indi indi) throws IOException {
 		// TODO insert a line into the query like: "LET (?rootIndiId := "+indi.getId()+")"
-		toRdf(indi.getGedcom());
+		run(indi.getGedcom(),SAMPLE_QUERY);
 	}
 
 	/** main */
 	public void start(final Fam fam) throws IOException {
 		// TODO insert a line into the query like: "LET (?rootFamId := "+fam.getId()+")"
-		toRdf(fam.getGedcom());
+		run(fam.getGedcom(),SAMPLE_QUERY);
 	}
 
+	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
-		toRdf(gedcom);
+		run(gedcom, SAMPLE_QUERY);
 	}
 
-	public void toRdf(final Gedcom gedcom) {
+	public void run(final Gedcom gedcom, String query) {
 		model = new SemanticGedcomUtil().toRdf(gedcom, new UriFormats().getURIs());
 
 		if (rdfFormat != null && rdfFormat.trim().length() > 0)
 			model.write(getOut(), rdfFormat);
 
-		final String query = assembleQuery();
+		final String fullQuery = assembleQuery(query);
 
 		if (queryFormats.showAsXml) {
 			separate();
-			getOut().println(ResultSetFormatter.asXMLString(execSelect(query)));
+			getOut().println(ResultSetFormatter.asXMLString(execSelect(fullQuery)));
 		}
 		if (queryFormats.showAsText) {
 			separate();
-			getOut().println(ResultSetFormatter.asText(execSelect(query)));
+			getOut().println(ResultSetFormatter.asText(execSelect(fullQuery)));
 		}
 		if (queryFormats.styleSheet != null && queryFormats.styleSheet.trim().length() > 0) {
 			separate();
-			getOut().println(ResultSetFormatter.asXMLString(execSelect(query), queryFormats.styleSheet));
+			getOut().println(ResultSetFormatter.asXMLString(execSelect(fullQuery), queryFormats.styleSheet));
 		}
+	}
+	
+	private void separate() {
+		getOut().println("---------------------------------------------");
 	}
 
 	private ResultSet execSelect(final String query) {
@@ -98,9 +105,9 @@ public class ReportRdf extends Report {
 		return queryExecution.execSelect();
 	}
 
-	private String assembleQuery() {
+	private String assembleQuery(final String queryString) {
 		final StringBuffer query = assemblePrefixes();
-		query.append("SELECT ?indi ?name { ?indi a t:INDI ; p:NAME [p:value ?name] .}");
+		query.append(queryString);
 		if (queryFormats.showQuery) {
 			separate();
 			getOut().println(query.toString());
@@ -108,11 +115,7 @@ public class ReportRdf extends Report {
 		return query.toString();
 	}
 
-	private void separate() {
-		getOut().println("---------------------------------------------");
-	}
-
-	private StringBuffer assemblePrefixes() {
+	public StringBuffer assemblePrefixes() {
 		Map<String, String> prefixMap = model.getNsPrefixMap();
 		StringBuffer query = new StringBuffer();
 		for (Object prefix : prefixMap.keySet().toArray())

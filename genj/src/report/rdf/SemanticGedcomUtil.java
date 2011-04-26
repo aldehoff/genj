@@ -6,9 +6,6 @@ import genj.gedcom.Property;
 
 import java.util.Map;
 
-import org.jfree.util.Log;
-
-
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -49,7 +46,6 @@ public class SemanticGedcomUtil {
 	public Model toRdf(final Gedcom gedcom,final  Map<String, String> uriFormats) {
 		rdfModel = new SemanticGedcomModel(uriFormats);
 		for (final Entity entity : gedcom.getEntities()) {
-			Log.info(entity.getId());
 			final Resource resource = rdfModel.addEntity(entity.getId(), entity.getTag());
 			addProperties(resource, entity.getProperties());
 		}
