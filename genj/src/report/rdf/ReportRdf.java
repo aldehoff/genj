@@ -5,8 +5,10 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +47,7 @@ public class ReportRdf extends Report {
 	}
 
 	public class DisplayFormats {
-		public String styleSheet = "https://develop01.dans.knaw.nl/svn/mixed/alfalab/annotations/trunk/src/main/resources/query-playground.xsl";
+		public String styleSheet = "http://www.w3.org/TR/rdf-sparql-XMLres/result-to-html.xsl";
 		public boolean showQuery = true;
 		public boolean showAsText = true;
 		public boolean showAsXml = true;
@@ -67,12 +69,12 @@ public class ReportRdf extends Report {
 
 	/** main */
 	public void start(final Indi indi) throws IOException {
-		run(indi.getGedcom(), String.format(queries.qIndi,indi.getId()));
+		run(indi.getGedcom(), String.format(queries.qIndi, indi.getId()));
 	}
 
 	/** main */
 	public void start(final Fam fam) throws IOException {
-		run(fam.getGedcom(), String.format(queries.qFam,fam.getId()));
+		run(fam.getGedcom(), String.format(queries.qFam, fam.getId()));
 	}
 
 	/** main */
@@ -80,26 +82,30 @@ public class ReportRdf extends Report {
 		run(gedcom, queries.qGedcom);
 	}
 
-	public void run(final Gedcom gedcom, String query) throws FileNotFoundException, IOException {
-		model = new SemanticGedcomUtil().toRdf(gedcom, new UriFormats().getURIs());
+	public void run(final Gedcom gedcom, final String query) throws FileNotFoundException, IOException {
+		getOut().println("started conversion");
+		model = new SemanticGedcomUtil().toRdf(gedcom, uriFormats.getURIs());
+		model.read(rulesAsStream(), null, "N3");
+		final String fullQuery = assemblePrefixes().append(query).toString();
+		getOut().println("finished conversion");
 
-		if (displayFormats.rdfFormat != null && displayFormats.rdfFormat.trim().length() > 0)
+		if (displayFormats.rdfFormat != null && displayFormats.rdfFormat.trim().length() > 0) {
+			separate();
 			model.write(getOut(), displayFormats.rdfFormat);
+		}
+		if (displayFormats.showQuery)
+			show(fullQuery);
+		if (displayFormats.showAsXml)
+			show(ResultSetFormatter.asXMLString(execSelect(fullQuery)));
+		if (displayFormats.showAsText)
+			show(ResultSetFormatter.asText(execSelect(fullQuery)));
+		if (displayFormats.styleSheet != null && displayFormats.styleSheet.trim().length() > 0)
+			show(ResultSetFormatter.asXMLString(execSelect(fullQuery), displayFormats.styleSheet));
+	}
 
-		final String fullQuery = assembleQuery(query);
-
-		if (displayFormats.showAsXml) {
-			separate();
-			getOut().println(ResultSetFormatter.asXMLString(execSelect(fullQuery)));
-		}
-		if (displayFormats.showAsText) {
-			separate();
-			getOut().println(ResultSetFormatter.asText(execSelect(fullQuery)));
-		}
-		if (displayFormats.styleSheet != null && displayFormats.styleSheet.trim().length() > 0) {
-			separate();
-			getOut().println(ResultSetFormatter.asXMLString(execSelect(fullQuery), displayFormats.styleSheet));
-		}
+	private void show(final String result) {
+		separate();
+		getOut().println(result);
 	}
 
 	private void separate() {
@@ -111,30 +117,20 @@ public class ReportRdf extends Report {
 		return queryExecution.execSelect();
 	}
 
-	private String assembleQuery(final String queryString) throws FileNotFoundException, IOException {
-		final StringBuffer query = assemblePrefixes();
-		query.append(queryString);
-		if (displayFormats.showQuery) {
-			separate();
-			getOut().println(query.toString());
-		}
-		return query.toString();
-	}
-
 	public StringBuffer assemblePrefixes() throws FileNotFoundException, IOException {
-		loadRules();
-		Map<String, String> prefixMap = model.getNsPrefixMap();
-		StringBuffer query = new StringBuffer();
-		for (Object prefix : prefixMap.keySet().toArray())
+		final Map<String, String> prefixMap = model.getNsPrefixMap();
+		final StringBuffer query = new StringBuffer();
+		for (final Object prefix : prefixMap.keySet().toArray())
 			query.append(String.format("PREFIX %s: <%s> \n", prefix.toString(), prefixMap.get(prefix).toString()));
 		query.append(getResources().getString("queryFunctions"));
 		return query;
 	}
 
-	private void loadRules() throws UnsupportedEncodingException {
+	private InputStream rulesAsStream() throws UnsupportedEncodingException {
 		// TODO see http://tech.groups.yahoo.com/group/jena-dev/message/42946
 		// TODO adjust the rules to our model
-		final byte[] bytes = getResources().getString("queryRules").getBytes("UTF-8");
-		//model.read(new ByteArrayInputStream(bytes),null,"N3");
+		final String rules = "";// getResources().getString("queryRules");
+		final byte[] bytes = rules.getBytes("UTF-8");
+		return new ByteArrayInputStream(bytes);
 	}
 }
