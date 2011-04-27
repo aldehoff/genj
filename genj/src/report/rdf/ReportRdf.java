@@ -127,7 +127,7 @@ public class ReportRdf extends Report {
 	}
 
 	private InputStream rulesAsStream() throws UnsupportedEncodingException {
-		// TODO see http://tech.groups.yahoo.com/group/jena-dev/message/42946
+		// TODO see http://tech.groups.yahoo.com/group/jena-dev/message/42968
 		// TODO adjust the rules to our model
 		final String rules = "";// getResources().getString("queryRules");
 		final byte[] bytes = rules.getBytes("UTF-8");
