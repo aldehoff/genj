@@ -5,7 +5,9 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,62 +44,66 @@ public class ReportRdf extends Report {
 		}
 	}
 
-	public class QueryFormats {
+	public class DisplayFormats {
 		public String styleSheet = "https://develop01.dans.knaw.nl/svn/mixed/alfalab/annotations/trunk/src/main/resources/query-playground.xsl";
 		public boolean showQuery = true;
 		public boolean showAsText = true;
 		public boolean showAsXml = true;
+		public String rdfFormat = "N3";
 	};
 
-	private static final String SAMPLE_QUERY = "SELECT ?indi ?name { ?indi a t:INDI ; p:NAME [p:value ?name] .}";
-	
-	public String rdfFormat = "N3";
+	public class Queries {
+		/** TODO rather read the queries from a file? */
+		public String qGedcom = "SELECT ?indi ?name { ?indi a t:INDI ; p:NAME [p:value ?name] .}";
+		public String qFam = "SELECT ?indi ?name { ?indi a t:INDI ; p:FAMC ?fam ; p:NAME [p:value ?name] . ?fam p:id '%s' .}";
+		public String qIndi = "SELECT ?indi ?name { ?indi a t:INDI ; p:id '%s' ; p:NAME [p:value ?name] .}";
+	}
+
 	public UriFormats uriFormats = new UriFormats();
-	public QueryFormats queryFormats = new QueryFormats();
+	public DisplayFormats displayFormats = new DisplayFormats();
+	public Queries queries = new Queries();
 
 	private Model model;
 
 	/** main */
 	public void start(final Indi indi) throws IOException {
-		// TODO insert a line into the query like: "LET (?rootIndiId := "+indi.getId()+")"
-		run(indi.getGedcom(),SAMPLE_QUERY);
+		run(indi.getGedcom(), String.format(queries.qIndi,indi.getId()));
 	}
 
 	/** main */
 	public void start(final Fam fam) throws IOException {
-		// TODO insert a line into the query like: "LET (?rootFamId := "+fam.getId()+")"
-		run(fam.getGedcom(),SAMPLE_QUERY);
+		run(fam.getGedcom(), String.format(queries.qFam,fam.getId()));
 	}
 
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
-		run(gedcom, SAMPLE_QUERY);
+		run(gedcom, queries.qGedcom);
 	}
 
-	public void run(final Gedcom gedcom, String query) {
+	public void run(final Gedcom gedcom, String query) throws FileNotFoundException, IOException {
 		model = new SemanticGedcomUtil().toRdf(gedcom, new UriFormats().getURIs());
 
-		if (rdfFormat != null && rdfFormat.trim().length() > 0)
-			model.write(getOut(), rdfFormat);
+		if (displayFormats.rdfFormat != null && displayFormats.rdfFormat.trim().length() > 0)
+			model.write(getOut(), displayFormats.rdfFormat);
 
 		final String fullQuery = assembleQuery(query);
 
-		if (queryFormats.showAsXml) {
+		if (displayFormats.showAsXml) {
 			separate();
 			getOut().println(ResultSetFormatter.asXMLString(execSelect(fullQuery)));
 		}
-		if (queryFormats.showAsText) {
+		if (displayFormats.showAsText) {
 			separate();
 			getOut().println(ResultSetFormatter.asText(execSelect(fullQuery)));
 		}
-		if (queryFormats.styleSheet != null && queryFormats.styleSheet.trim().length() > 0) {
+		if (displayFormats.styleSheet != null && displayFormats.styleSheet.trim().length() > 0) {
 			separate();
-			getOut().println(ResultSetFormatter.asXMLString(execSelect(fullQuery), queryFormats.styleSheet));
+			getOut().println(ResultSetFormatter.asXMLString(execSelect(fullQuery), displayFormats.styleSheet));
 		}
 	}
-	
+
 	private void separate() {
-		getOut().println("---------------------------------------------");
+		getOut().println("########################################################");
 	}
 
 	private ResultSet execSelect(final String query) {
@@ -105,24 +111,30 @@ public class ReportRdf extends Report {
 		return queryExecution.execSelect();
 	}
 
-	private String assembleQuery(final String queryString) {
+	private String assembleQuery(final String queryString) throws FileNotFoundException, IOException {
 		final StringBuffer query = assemblePrefixes();
 		query.append(queryString);
-		if (queryFormats.showQuery) {
+		if (displayFormats.showQuery) {
 			separate();
 			getOut().println(query.toString());
 		}
 		return query.toString();
 	}
 
-	public StringBuffer assemblePrefixes() {
+	public StringBuffer assemblePrefixes() throws FileNotFoundException, IOException {
+		loadRules();
 		Map<String, String> prefixMap = model.getNsPrefixMap();
 		StringBuffer query = new StringBuffer();
 		for (Object prefix : prefixMap.keySet().toArray())
 			query.append(String.format("PREFIX %s: <%s> \n", prefix.toString(), prefixMap.get(prefix).toString()));
-		query.append("PREFIX  fn: <http://www.w3.org/2005/xpath-functions#> \n");
-		query.append("PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#> \n");
-		query.append("PREFIX apf: <http://jena.hpl.hp.com/ARQ/property#> \n");
+		query.append(getResources().getString("queryFunctions"));
 		return query;
+	}
+
+	private void loadRules() throws UnsupportedEncodingException {
+		// TODO see http://tech.groups.yahoo.com/group/jena-dev/message/42946
+		// TODO adjust the rules to our model
+		final byte[] bytes = getResources().getString("queryRules").getBytes("UTF-8");
+		//model.read(new ByteArrayInputStream(bytes),null,"N3");
 	}
 }
