@@ -60,7 +60,7 @@ public class SemanticGedcomModel {
 		final Resource property = model.createResource(toType(tag));
 		resource.addProperty(toProperty(tag), property);
 		if (value != null && value.trim().length() > 0) {
-			resource.addProperty(valueProperty, value);
+			property.addProperty(valueProperty, value);
 			// TODO turn into addLiteral, but add prefix for the type such as: string/date
 		}
 		return property;

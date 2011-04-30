@@ -108,32 +108,37 @@ public class ReportRdf extends Report {
 		getOut().println(fullQuery);
 
 		if (displayFormats.asXml.trim().length() > 0) {
+			final ResultSet execSelect = execSelect(fullQuery, model);
 			if (displayFormats.styleSheet.trim().length() > 0)
-				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect(fullQuery, model), displayFormats.styleSheet));
+				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect, displayFormats.styleSheet));
 			else
-				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect(fullQuery, model)));
+				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect));
 		}
 		if (displayFormats.asText.trim().length() > 0) {
 			write(displayFormats.asText, ResultSetFormatter.asText(execSelect(fullQuery, model)));
 		}
-		if (displayFormats.converted.trim().length() != 0) {
-			final String language;
-			final String ext = displayFormats.converted.replaceAll(".*\\.", "").toLowerCase();
-			try {
-				language = Extension.valueOf(ext).getLanguage();
-			} catch (final IllegalArgumentException exception) {
-				getOut().write(MessageFormat.format(getResources().getString("extension.error"), ext));
-				return;
-			}
-			if (displayFormats.asText.startsWith("#")) {
-				model.write(getOut(), language);
-				return;
-			}
-			final File file = new File(displayFormats.converted);
-			if (!doNotOverwrite(file)) {
-				writeProgress(file);
-				model.write(new FileOutputStream(displayFormats.converted), language);
-			}
+		writeConvertedGedcom(model, displayFormats.converted);
+	}
+
+	private void writeConvertedGedcom(final Model model, final String fileName) throws FileNotFoundException {
+		if (fileName.trim().length() == 0)
+			return;
+		final String language;
+		final String ext = fileName.replaceAll(".*\\.", "").toLowerCase();
+		try {
+			language = Extension.valueOf(ext).getLanguage();
+		} catch (final IllegalArgumentException exception) {
+			getOut().write(MessageFormat.format(getResources().getString("extension.error"), ext));
+			return;
+		}
+		if (fileName.startsWith("#")) {
+			model.write(getOut(), language);
+			return;
+		}
+		final File file = new File(fileName);
+		if (!doNotOverwrite(file)) {
+			writeProgress(file);
+			model.write(new FileOutputStream(file), language);
 		}
 	}
 
