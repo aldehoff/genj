@@ -3,6 +3,9 @@ package rdf;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
+import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyDate.Format;
+import genj.gedcom.time.PointInTime;
 
 import java.util.Map;
 
@@ -26,8 +29,19 @@ public class SemanticGedcomUtil {
 		if (properties == null)
 			return;
 		for (final Property property : properties) {
-			final String value = property.getValue();
 			final String tag = property.getTag();
+			if (property instanceof PropertyDate){
+				PropertyDate date = (PropertyDate)property;
+				if (date.isValid() && !date.isRange()) {
+					final PointInTime start = date.getStart();
+					final Resource propertyResource = rdfModel.addProperty(resource, tag);
+					// TODO create a literal of type date
+					final String subtag = tag + "/" +property.getValue().replaceAll(" .*", "");
+					rdfModel.addPropertyValue(propertyResource, date.getStart().getValue());
+					continue;
+				} // TODO implement date ranges
+			}
+			final String value = property.getValue();
 			if (value.startsWith("@")){
 				final String id = value.replaceAll("@", "");
 				final Entity entity = property.getGedcom().getEntity(id);

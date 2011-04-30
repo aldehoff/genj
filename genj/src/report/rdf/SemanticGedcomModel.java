@@ -59,6 +59,7 @@ public class SemanticGedcomModel {
 	public void addPropertyValue(final Resource resource, final String value) {
 		if (value == null || value.trim().length() == 0)
 			return;
+		// TODO turn into addLiteral, but add prefix for the type such as: string/date
 		resource.addProperty(valueProperty, value);
 	}
 

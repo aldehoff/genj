@@ -10,7 +10,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.Media;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
@@ -19,6 +18,7 @@ import genj.gedcom.time.PointInTime;
 import genj.report.Options;
 import genj.report.Report;
 
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -85,50 +85,24 @@ public class ReportForYEd extends Report {
 
 	public class Images {
 
-		public String famImage = translate("imageSnippetDefault");
-		public String indiImage = translate("imageSnippetDefault");
-		public String imageExtensions = "jpg jpeg gif png";
+		public int maxWidth = 80;
+		public int maxHeight = 80;
+		// with single quotes, the place holders don't function
+		public String format = "<img src=\"file://{0}\" width=\"{1} height=\"{2}\">";
 
-		private String format(final Entity entity, final String htmlFormat) {
+		private String format(final Entity entity) {
 
-			if (htmlFormat == null || htmlFormat.equals(""))
+			if (format == null || format.equals(""))
 				return null;
-			final Media media = new Media("OBJE",entity.getId());
-			if (media==null) return null;
 
-			final String value = getFileName(entity);
-			if (value==null) return null;
-			
-			final BufferedImage image = getImage(value);
-			image.getWidth();
-			image.getHeight();
-			
-			final String extension = value.toLowerCase()
-					.replaceAll(".*\\.", "");
-			if (imageExtensions.contains(extension)) {
-				return MessageFormat.format(htmlFormat, value);
-			}
-			return null;
-		}
-
-		private String getFileName(final Entity entity) {
-			final Property property = entity instanceof Indi ? entity
-					.getPropertyByPath("INDI:OBJE:FILE") : entity
-					.getPropertyByPath("FAM:OBJE:FILE");
-			if (property == null)
+			final String fileName = getFileName(entity);
+			if (fileName == null)
 				return null;
-			final String value = property.getValue();
-			if (value == null || value.equals(""))
-				return null;
-			return value;
-		}
 
-		private BufferedImage getImage(final String value) {
-			try {
-				return ImageIO.read(new File(value));
-			} catch (IOException e) {
-				println("oops can't load image: "+value);
-			}
+			final Dimension dim = getDimension(getImage(fileName), new Dimension(maxWidth, maxHeight));
+			final String extension = fileName.toLowerCase().replaceAll(".*\\.", "");
+			if (imageExtensions.contains(extension))
+				return MessageFormat.format(format, fileName, dim.getWidth(), dim.getHeight());
 			return null;
 		}
 	}
@@ -157,8 +131,10 @@ public class ReportForYEd extends Report {
 	}
 
 	public boolean showOccupation = true;
+	public String imageExtensions = "jpg jpeg gif png";
+	public Images indiImages = new Images();
+	public Images famImages = new Images();
 	public Events events = new Events();
-	public Images images = new Images();
 	public Links links = new Links();
 	public Filter filter = new Filter();
 	public Gender gender = new Gender();
@@ -330,8 +306,8 @@ public class ReportForYEd extends Report {
 					return -1;
 				
 				final Delta p1 = i1.getAge(pit);
-				final Delta p2 = i2.getAge(pit);
 
+				final Delta p2 = i2.getAge(pit);
 				// null?
 				if (p1 == p2)
 					return 0;
@@ -359,6 +335,7 @@ public class ReportForYEd extends Report {
 	private String createIndiToFam(final Indi indi,
 			final Collection<Fam> families) {
 
+		if (indi==null) return "";
 		String s = "";
 		for (final Fam fam : indi.getFamiliesWhereSpouse()) {
 			if (families.contains(fam))
@@ -371,6 +348,7 @@ public class ReportForYEd extends Report {
 	private String createFamToIndi(final Indi indi,
 			final Collection<Fam> families) {
 
+		if (indi==null) return "";
 		String s = "";
 		for (final Fam fam : indi.getFamiliesWhereChild()) {
 			if (families.contains(fam))
@@ -382,6 +360,7 @@ public class ReportForYEd extends Report {
 
 	private String createNode(final Fam family) {
 
+		if (family==null) return "";
 		final String id = family.getId();
 		final String label = createLabel(family);
 		final String height = label.contains("<html>") ? "42.0" : "27.0";
@@ -390,7 +369,7 @@ public class ReportForYEd extends Report {
 	}
 
 	private String createNode(final Indi indi) {
-
+		if (indi==null) return "";
 		final String id = indi.getId();
 		final String label = createLabel(indi);
 		return MessageFormat.format(XML_INDI, id, escape(label), links.format(
@@ -400,7 +379,8 @@ public class ReportForYEd extends Report {
 
 	private String createLabel(final Fam family) {
 
-		final String image = images.format(family, images.famImage);
+		if (family==null) return "";
+		final String image = famImages.format(family);
 		final String mariage = events.format(OPTIONS.getMarriageSymbol(),
 				(PropertyEvent) family.getProperty("MARR"));
 		final String divorce = events.format(OPTIONS.getDivorceSymbol(),
@@ -421,7 +401,8 @@ public class ReportForYEd extends Report {
 
 	private String createLabel(final Indi indi) {
 
-		final String image = images.format(indi, images.indiImage);
+		if (indi==null) return "";
+		final String image = indiImages.format(indi);
 		final String sex = gender.format(indi);
 		final String name = indi.getPropertyDisplayValue("NAME");
 		final String occu = indi.getPropertyDisplayValue("OCCU");
@@ -433,15 +414,17 @@ public class ReportForYEd extends Report {
 
 		final String format;
 		if (image != null) {
-			format = "<html><table><tr><td>{5}<p>{0}<br>{1}<br>{2}<br>{3}</p></td><td>{4}</td></tr></table></body></html>";
+			format = "<html><table><tr><td><p>{5} {0}<br>{1}<br>{2}<br>{3}</p></td><td>{4}</td></tr></table></body></html>";
 		} else if (showOccupation && occu != null && !occu.trim().equals("")) {
-			format = "<html><body>{5}<p>{0}<br>{1}<br>{2}<br>{3}</p></body></html>";
-		} else if (!birth.equals("") || !death.equals("")) {
-			format = "<html><body>{5}<p>{0}<br>{1}<br>{2}</p></body></html>";
-		} else if (!sex.equals("")) {
-			format = "<html><body>{5}<p>{0}</p></body></html>";
+			format = "<html><body><p>{5} {0}<br>{1}<br>{2}<br>{3}</p></body></html>";
+		} else if (birth.equals("") && death.equals("")) {
+			format = "{5} {0}";
+		} else if (birth.equals("") ) {
+			format = "<html><body><p>{5} {0}<br>{2}</p></body></html>";
+		} else if (death.equals("") ) {
+			format = "<html><body><p>{5} {0}<br>{1}</p></body></html>";
 		} else {
-			format = "{0}";
+			format = "<html><body><p>{5} {0}<br>{1}<br>{2}</p></body></html>";
 		}
 		return wrap(format, name, birth, death, occu, image, sex);
 	}
@@ -487,5 +470,39 @@ public class ReportForYEd extends Report {
 		final OutputStreamWriter streamWriter = new OutputStreamWriter(
 				fileOutputStream, Charset.forName("UTF8"));
 		return new BufferedWriter(streamWriter);
+	}
+	
+	private String getFileName(final Entity entity) {
+		final Property property = entity.getPropertyByPath(entity.getPath() + "OBJE:FILE");
+		if (property == null)
+			return null;
+		return property.getGedcom().getOrigin().getFile(property.getValue()).getAbsoluteFile().getPath();
+	}
+
+	private Dimension getDimension(final BufferedImage image, final Dimension max) {
+		final Dimension actual = new Dimension(image.getWidth(), image.getHeight());
+		double width = image.getWidth();
+		double height = image.getHeight();
+		if (width > max.getWidth()) {
+			float delta = ((float) max.getWidth()) / image.getWidth();
+			width = max.getWidth();
+			height *= delta;
+		}
+		if (height > max.getHeight()) {
+			float delta = ((float) max.getHeight()) / image.getHeight();
+			height = max.getHeight();
+			width *= delta;
+		}
+		return new Dimension((int) width, (int) height);
+	}
+	
+	private BufferedImage getImage(final String value) {
+		final File file = new File(value);
+		try {
+			return ImageIO.read(file);
+		} catch (final IOException e) {
+			println("oops can't load image: "+file.getAbsolutePath());
+		}
+		return null;
 	}
 }
