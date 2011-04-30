@@ -4,12 +4,17 @@ import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.report.Report;
+import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,11 +53,25 @@ public class ReportRdf extends Report {
 
 	public class DisplayFormats {
 		public String styleSheet = "http://www.w3.org/TR/rdf-sparql-XMLres/result-to-html.xsl";
-		public boolean showQuery = true;
-		public boolean showAsText = true;
-		public boolean showAsXml = true;
-		public String rdfFormat = "N3";
+		public String asText = "query-result.txt";
+		public String asXml = "query-result.xml";
+		public String converted = "converted-gedcom.n3";
+		public boolean askForOverwrite = true;
 	};
+
+	public enum Extension {
+		ttl("TURTLE"), n3("N3"), nt("N-TRIPPLE"), rdf("RDF/XML-ABBREV");
+		// RDF/XML-ABBREV is less verbose, use RDF/XML for large models
+		private final String language;
+
+		private Extension(final String language) {
+			this.language = language;
+		}
+
+		public String getLanguage() {
+			return language;
+		}
+	}
 
 	public class Queries {
 		/** TODO rather read the queries from a file? */
@@ -64,8 +83,6 @@ public class ReportRdf extends Report {
 	public UriFormats uriFormats = new UriFormats();
 	public DisplayFormats displayFormats = new DisplayFormats();
 	public Queries queries = new Queries();
-
-	private Model model;
 
 	/** main */
 	public void start(final Indi indi) throws IOException {
@@ -83,41 +100,70 @@ public class ReportRdf extends Report {
 	}
 
 	public void run(final Gedcom gedcom, final String query) throws FileNotFoundException, IOException {
-		getOut().println("started conversion");
-		model = new SemanticGedcomUtil().toRdf(gedcom, uriFormats.getURIs());
+
+		final Model model = new SemanticGedcomUtil().toRdf(gedcom, uriFormats.getURIs());
 		model.read(rulesAsStream(), null, "N3");
-		final String fullQuery = assemblePrefixes().append(query).toString();
-		getOut().println("finished conversion");
 
-		if (displayFormats.rdfFormat != null && displayFormats.rdfFormat.trim().length() > 0) {
-			separate();
-			model.write(getOut(), displayFormats.rdfFormat);
+		final String fullQuery = assemblePrefixes(model).append(query).toString();
+		getOut().println(fullQuery);
+
+		if (displayFormats.asXml.trim().length() > 0) {
+			if (displayFormats.styleSheet.trim().length() > 0)
+				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect(fullQuery, model), displayFormats.styleSheet));
+			else
+				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect(fullQuery, model)));
 		}
-		if (displayFormats.showQuery)
-			show(fullQuery);
-		if (displayFormats.showAsXml)
-			show(ResultSetFormatter.asXMLString(execSelect(fullQuery)));
-		if (displayFormats.showAsText)
-			show(ResultSetFormatter.asText(execSelect(fullQuery)));
-		if (displayFormats.styleSheet != null && displayFormats.styleSheet.trim().length() > 0)
-			show(ResultSetFormatter.asXMLString(execSelect(fullQuery), displayFormats.styleSheet));
+		if (displayFormats.asText.trim().length() > 0) {
+			write(displayFormats.asText, ResultSetFormatter.asText(execSelect(fullQuery, model)));
+		}
+		if (displayFormats.converted.trim().length() > 0) {
+			final String language;
+			final String ext = displayFormats.converted.replaceAll(".*\\.", "").toLowerCase();
+			try {
+				language = Extension.valueOf(ext).getLanguage();
+			} catch (IllegalArgumentException exception) {
+				getOut().write(MessageFormat.format(getResources().getString("extension.error"),ext));
+				return;
+			}
+			if (displayFormats.asText.startsWith("#"))
+				model.write(getOut(), language);
+			else {
+				writeProgress(new File(displayFormats.converted));
+				model.write(new FileOutputStream(displayFormats.converted), language);
+			}
+		}
 	}
 
-	private void show(final String result) {
-		separate();
-		getOut().println(result);
+	private void write(final String name, final String content) throws IOException {
+		if (displayFormats.asText.equals("#")) {
+			getOut().write("############################################");
+			getOut().write(content);
+			return;
+		}
+		final File file = new File(name);
+		if (file.exists() && displayFormats.askForOverwrite) {
+			final String format = getResources().getString("overwrite.question");
+			final String prompt = MessageFormat.format(format,file.getAbsoluteFile());
+			int rc = DialogHelper.openDialog(getName(), DialogHelper.WARNING_MESSAGE, prompt, Action2.yesNo(), null);
+			if (rc != 0)
+				return;
+		}
+		writeProgress(file);
+		new FileOutputStream(name).write(content.getBytes());
 	}
 
-	private void separate() {
-		getOut().println("########################################################");
+	private void writeProgress(final File file) {
+		final String format = getResources().getString("progress.writing");
+		final String prompt = MessageFormat.format(format,file.getAbsoluteFile());
+		getOut().println(prompt);
 	}
 
-	private ResultSet execSelect(final String query) {
+	private static ResultSet execSelect(final String query, final Model model) {
 		final QueryExecution queryExecution = QueryExecutionFactory.create(query, Syntax.syntaxARQ, model, new QuerySolutionMap());
 		return queryExecution.execSelect();
 	}
 
-	public StringBuffer assemblePrefixes() throws FileNotFoundException, IOException {
+	private StringBuffer assemblePrefixes(final Model model) throws FileNotFoundException, IOException {
 		final Map<String, String> prefixMap = model.getNsPrefixMap();
 		final StringBuffer query = new StringBuffer();
 		for (final Object prefix : prefixMap.keySet().toArray())
@@ -126,7 +172,7 @@ public class ReportRdf extends Report {
 		return query;
 	}
 
-	private InputStream rulesAsStream() throws UnsupportedEncodingException {
+	private static InputStream rulesAsStream() throws UnsupportedEncodingException {
 		// TODO see http://tech.groups.yahoo.com/group/jena-dev/message/42968
 		// TODO adjust the rules to our model
 		final String rules = "";// getResources().getString("queryRules");
