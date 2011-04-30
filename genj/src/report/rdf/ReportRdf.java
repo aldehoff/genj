@@ -116,19 +116,22 @@ public class ReportRdf extends Report {
 		if (displayFormats.asText.trim().length() > 0) {
 			write(displayFormats.asText, ResultSetFormatter.asText(execSelect(fullQuery, model)));
 		}
-		if (displayFormats.converted.trim().length() > 0) {
+		if (displayFormats.converted.trim().length() != 0) {
 			final String language;
 			final String ext = displayFormats.converted.replaceAll(".*\\.", "").toLowerCase();
 			try {
 				language = Extension.valueOf(ext).getLanguage();
-			} catch (IllegalArgumentException exception) {
-				getOut().write(MessageFormat.format(getResources().getString("extension.error"),ext));
+			} catch (final IllegalArgumentException exception) {
+				getOut().write(MessageFormat.format(getResources().getString("extension.error"), ext));
 				return;
 			}
-			if (displayFormats.asText.startsWith("#"))
+			if (displayFormats.asText.startsWith("#")) {
 				model.write(getOut(), language);
-			else {
-				writeProgress(new File(displayFormats.converted));
+				return;
+			}
+			final File file = new File(displayFormats.converted);
+			if (!doNotOverwrite(file)) {
+				writeProgress(file);
 				model.write(new FileOutputStream(displayFormats.converted), language);
 			}
 		}
@@ -141,20 +144,25 @@ public class ReportRdf extends Report {
 			return;
 		}
 		final File file = new File(name);
-		if (file.exists() && displayFormats.askForOverwrite) {
-			final String format = getResources().getString("overwrite.question");
-			final String prompt = MessageFormat.format(format,file.getAbsoluteFile());
-			int rc = DialogHelper.openDialog(getName(), DialogHelper.WARNING_MESSAGE, prompt, Action2.yesNo(), null);
-			if (rc != 0)
-				return;
-		}
+		if (doNotOverwrite(file))
+			return;
 		writeProgress(file);
 		new FileOutputStream(name).write(content.getBytes());
 	}
 
+	private boolean doNotOverwrite(final File file) {
+		if (file.exists() && displayFormats.askForOverwrite) {
+			final String format = getResources().getString("overwrite.question");
+			final String prompt = MessageFormat.format(format, file.getAbsoluteFile());
+			final int rc = DialogHelper.openDialog(getName(), DialogHelper.WARNING_MESSAGE, prompt, Action2.yesNo(), null);
+			return (rc != 0);
+		}
+		return false;
+	}
+
 	private void writeProgress(final File file) {
 		final String format = getResources().getString("progress.writing");
-		final String prompt = MessageFormat.format(format,file.getAbsoluteFile());
+		final String prompt = MessageFormat.format(format, file.getAbsoluteFile());
 		getOut().println(prompt);
 	}
 

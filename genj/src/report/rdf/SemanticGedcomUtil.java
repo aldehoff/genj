@@ -4,11 +4,14 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyDate.Format;
+import genj.gedcom.PropertyPlace;
 import genj.gedcom.time.PointInTime;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Map;
 
+import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -31,30 +34,35 @@ public class SemanticGedcomUtil {
 		for (final Property property : properties) {
 			final String tag = property.getTag();
 			if (property instanceof PropertyDate){
-				PropertyDate date = (PropertyDate)property;
-				if (date.isValid() && !date.isRange()) {
+				final PropertyDate date = (PropertyDate)property;
+				// TODO after/before, ranges, julian etc
+				if (date.isValid() && date.getFormat().toString().equals("")) {
 					final PointInTime start = date.getStart();
-					final Resource propertyResource = rdfModel.addProperty(resource, tag);
-					// TODO create a literal of type date
-					final String subtag = tag + "/" +property.getValue().replaceAll(" .*", "");
-					rdfModel.addPropertyValue(propertyResource, date.getStart().getValue());
-					continue;
-				} // TODO implement date ranges
+					if (start.isComplete() && start.isGregorian()) {
+						rdfModel.addLiteral(resource, tag, toXsdDateTime(start));
+						continue;
+						// other dates get default treatment
+					}
+				}
 			}
 			final String value = property.getValue();
 			if (value.startsWith("@")){
 				final String id = value.replaceAll("@", "");
-				final Entity entity = property.getGedcom().getEntity(id);
-				rdfModel.addConnection(resource, id, tag, entity.getTag());
+				final String referredTag = property.getGedcom().getEntity(id).getTag();
+				rdfModel.addConnection(resource, id, tag, referredTag);
 			} else {
-				final Resource propertyResource = rdfModel.addProperty(resource, tag);
+				final Resource propertyResource = rdfModel.addProperty(resource, tag, value);
 				addProperties(propertyResource, property.getProperties());
-
-				// TODO convert dates to to typed literals
-				// TODO add lat/long for places using cached locations from the GEO report?
-				rdfModel.addPropertyValue(propertyResource, value);
+				if (property instanceof PropertyPlace){
+					// TODO add lat/long  using cached locations from the GEO report?
+				}
 			}
 		}
+	}
+
+	private static XSDDateTime toXsdDateTime(final PointInTime pit) {
+		final Calendar calendar = new GregorianCalendar(pit.getYear(), pit.getMonth(), pit.getDay());
+		return new XSDDateTime(calendar);
 	}
 
 	public Model toRdf(final Gedcom gedcom,final  Map<String, String> uriFormats) {

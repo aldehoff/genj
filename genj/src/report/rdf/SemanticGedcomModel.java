@@ -56,17 +56,19 @@ public class SemanticGedcomModel {
 		return MessageFormat.format(uriFormats.get(tag), id);
 	}
 
-	public void addPropertyValue(final Resource resource, final String value) {
-		if (value == null || value.trim().length() == 0)
-			return;
-		// TODO turn into addLiteral, but add prefix for the type such as: string/date
-		resource.addProperty(valueProperty, value);
-	}
-
-	public Resource addProperty(final Resource resource, final String tag) {
+	public Resource addProperty(final Resource resource, final String tag, String value) {
 		final Resource property = model.createResource(toType(tag));
 		resource.addProperty(toProperty(tag), property);
+		if (value != null && value.trim().length() > 0) {
+			resource.addProperty(valueProperty, value);
+			// TODO turn into addLiteral, but add prefix for the type such as: string/date
+		}
 		return property;
+	}
+
+	public void addLiteral(final Resource resource, final String tag, final Object value) {
+		final Resource property = model.createResource(toType(tag));
+		resource.addLiteral(toProperty(tag), value);
 	}
 
 	public Model getModel() {
