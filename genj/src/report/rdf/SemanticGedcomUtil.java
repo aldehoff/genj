@@ -4,6 +4,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.PropertyName;
 import genj.gedcom.PropertyPlace;
 import genj.gedcom.time.PointInTime;
 
@@ -53,6 +54,12 @@ public class SemanticGedcomUtil {
 			} else {
 				final Resource propertyResource = rdfModel.addProperty(resource, tag, value);
 				addProperties(propertyResource, property.getProperties());
+				if (property instanceof PropertyName){
+					final PropertyName name = (PropertyName)property;
+					rdfModel.addLiteral(propertyResource, "first", name.getFirstName());
+					rdfModel.addLiteral(propertyResource, "last", name.getLastName());
+					rdfModel.addLiteral(propertyResource, "suffix", name.getSuffix());
+				}
 				if (property instanceof PropertyPlace){
 					// TODO add lat/long  using cached locations from the GEO report?
 				}

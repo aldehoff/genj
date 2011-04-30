@@ -31,6 +31,8 @@ public class SemanticGedcomModel {
 		this.uriFormats = uriFormats;
 		prefixes.put("p", PREDICATE);
 		prefixes.put("t", TYPE);
+		prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#");
+
 		getModel().setNsPrefixes(prefixes);
 	}
 

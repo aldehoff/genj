@@ -128,7 +128,7 @@ public class ReportRdf extends Report {
 		try {
 			language = Extension.valueOf(ext).getLanguage();
 		} catch (final IllegalArgumentException exception) {
-			getOut().write(MessageFormat.format(getResources().getString("extension.error"), ext));
+			getOut().println(MessageFormat.format(getResources().getString("extension.error"), ext));
 			return;
 		}
 		if (fileName.startsWith("#")) {
@@ -143,9 +143,9 @@ public class ReportRdf extends Report {
 	}
 
 	private void write(final String name, final String content) throws IOException {
-		if (displayFormats.asText.equals("#")) {
-			getOut().write("############################################");
-			getOut().write(content);
+		if (name.equals("#")) {
+			getOut().println("############################################");
+			getOut().println(content);
 			return;
 		}
 		final File file = new File(name);
