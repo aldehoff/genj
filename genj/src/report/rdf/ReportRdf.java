@@ -7,12 +7,11 @@ import genj.report.Report;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -75,9 +74,9 @@ public class ReportRdf extends Report {
 
 	public class Queries {
 		/** TODO rather read the queries from a file? */
-		public String qGedcom = "SELECT ?indi ?name { ?indi a t:INDI ; p:NAME [p:value ?name] .}";
-		public String qFam = "SELECT ?indi ?name { ?indi a t:INDI ; p:FAMC ?fam ; p:NAME [p:value ?name] . ?fam p:id '%s' .}";
-		public String qIndi = "SELECT ?indi ?name { ?indi a t:INDI ; p:id '%s' ; p:NAME [p:value ?name] .}";
+		public String qGedcom = "";
+		public String qFam = "";
+		public String qIndi = "";
 	}
 
 	public UriFormats uriFormats = new UriFormats();
@@ -86,36 +85,41 @@ public class ReportRdf extends Report {
 
 	/** main */
 	public void start(final Indi indi) throws IOException {
+		if (queries.qIndi.trim().length() == 0)
+			queries.qIndi = getResources().getString("query.indi");
 		run(indi.getGedcom(), String.format(queries.qIndi, indi.getId()));
 	}
 
 	/** main */
 	public void start(final Fam fam) throws IOException {
+		if (queries.qFam.trim().length() == 0)
+			queries.qFam = getResources().getString("query.fam");
 		run(fam.getGedcom(), String.format(queries.qFam, fam.getId()));
 	}
 
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
+		if (queries.qGedcom.trim().length() == 0)
+			queries.qGedcom = getResources().getString("query.gedcom");
 		run(gedcom, queries.qGedcom);
 	}
 
 	public void run(final Gedcom gedcom, final String query) throws FileNotFoundException, IOException {
 
 		final Model model = new SemanticGedcomUtil().toRdf(gedcom, uriFormats.getURIs());
-		model.read(rulesAsStream(), null, "N3");
-
-		final String fullQuery = assemblePrefixes(model).append(query).toString();
-		getOut().println(fullQuery);
+		final String fullQuery = assembleQuery(query, model);
 
 		if (displayFormats.asXml.trim().length() > 0) {
-			final ResultSet execSelect = execSelect(fullQuery, model);
+			final ResultSet resultSet = execSelect(fullQuery, model);
 			if (displayFormats.styleSheet.trim().length() > 0)
-				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect, displayFormats.styleSheet));
+				write(displayFormats.asXml, ResultSetFormatter.asXMLString(resultSet, displayFormats.styleSheet));
 			else
-				write(displayFormats.asXml, ResultSetFormatter.asXMLString(execSelect));
+				write(displayFormats.asXml, ResultSetFormatter.asXMLString(resultSet));
 		}
 		if (displayFormats.asText.trim().length() > 0) {
-			write(displayFormats.asText, ResultSetFormatter.asText(execSelect(fullQuery, model)));
+			// can't reuse a previously consumed resultset
+			final ResultSet resultSet = execSelect(fullQuery, model);
+			write(displayFormats.asText, ResultSetFormatter.asText(resultSet));
 		}
 		writeConvertedGedcom(model, displayFormats.converted);
 	}
@@ -171,9 +175,22 @@ public class ReportRdf extends Report {
 		getOut().println(prompt);
 	}
 
-	private static ResultSet execSelect(final String query, final Model model) {
+	private ResultSet execSelect(final String query, final Model model) throws FileNotFoundException, IOException {
 		final QueryExecution queryExecution = QueryExecutionFactory.create(query, Syntax.syntaxARQ, model, new QuerySolutionMap());
 		return queryExecution.execSelect();
+	}
+
+	private String assembleQuery(final String query, final Model model) throws IOException, FileNotFoundException, UnsupportedEncodingException {
+		final StringBuffer fullQuery = assemblePrefixes(model);
+		final File file = new File(query);
+		if (file.isFile()) {
+			byte[] buffer = new byte[(int) file.length()];
+			new RandomAccessFile(query, "r").readFully(buffer);
+			fullQuery.append(new String(buffer, "UTF-8"));
+		} else
+			fullQuery.append(query);
+		getOut().println(fullQuery);
+		return fullQuery.toString();
 	}
 
 	private StringBuffer assemblePrefixes(final Model model) throws FileNotFoundException, IOException {
@@ -183,13 +200,5 @@ public class ReportRdf extends Report {
 			query.append(String.format("PREFIX %s: <%s> \n", prefix.toString(), prefixMap.get(prefix).toString()));
 		query.append(getResources().getString("queryFunctions"));
 		return query;
-	}
-
-	private static InputStream rulesAsStream() throws UnsupportedEncodingException {
-		// TODO see http://tech.groups.yahoo.com/group/jena-dev/message/42968
-		// TODO adjust the rules to our model
-		final String rules = "";// getResources().getString("queryRules");
-		final byte[] bytes = rules.getBytes("UTF-8");
-		return new ByteArrayInputStream(bytes);
 	}
 }
