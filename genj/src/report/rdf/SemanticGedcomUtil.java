@@ -45,7 +45,8 @@ public class SemanticGedcomUtil {
 				if (date.isValid() && date.getFormat().toString().equals("")) {
 					final PointInTime start = date.getStart();
 					if (start.isComplete() && start.isGregorian()) {
-						rdfModel.addLiteral(resource, tag, toXsdDateTime(start));
+						final Resource propertyResource = rdfModel.addProperty(resource, tag, null);
+						rdfModel.addLiteral(propertyResource, "value", toXsdDateTime(start));
 						continue;
 						// other dates get default treatment
 					}
@@ -89,8 +90,9 @@ public class SemanticGedcomUtil {
 
 	public Model getInfModel(final String rules) {
 		
-		PrintUtil.registerPrefix("p", SemanticGedcomModel.PREDICATE);
-		PrintUtil.registerPrefix("r", SemanticGedcomModel.RULE);
+		for (String key:SemanticGedcomModel.PREFIXES.keySet()) {
+			PrintUtil.registerPrefix(key, SemanticGedcomModel.PREFIXES.get(key));
+		}
 		final GenericRuleReasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
 		reasoner.setMode(GenericRuleReasoner.HYBRID);
 		

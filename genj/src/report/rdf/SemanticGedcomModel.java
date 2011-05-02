@@ -11,15 +11,19 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 public class SemanticGedcomModel {
 
-	public static final String TYPE = "http://genj.sourceforge.net/rdf/gedcom/type/";
-	public static final String PREDICATE = "http://genj.sourceforge.net/rdf/gedcom/predicate/";
-	public static final String RULE = "http://genj.sourceforge.net/rdf/gedcom/rule/";
+	private static final String PREDICATE = "http://genj.sourceforge.net/rdf/gedcom/predicate/";
+	public final static Map<String, String> PREFIXES = new HashMap<String, String>();
+	static {
+		PREFIXES.put("p", PREDICATE);
+		PREFIXES.put("t", "http://genj.sourceforge.net/rdf/gedcom/type/");
+		PREFIXES.put("r", "http://genj.sourceforge.net/rdf/gedcom/rule/");
+		PREFIXES.put("xsd", "http://www.w3.org/2001/XMLSchema#");
+	}
 	
 	private final Model model = ModelFactory.createDefaultModel();
 	private final Property valueProperty = model.createProperty(PREDICATE + "value");
 	private final Property idProperty = model.createProperty(PREDICATE + "id");
 	
-	private final Map<String, String> prefixes = new HashMap<String, String>();
 	private final Map<String, Property> properties = new HashMap<String, Property>();
 	private final Map<String, Resource> types = new HashMap<String, Resource>();
 	private final Map<String, String> uriFormats;
@@ -30,22 +34,19 @@ public class SemanticGedcomModel {
 	 */
 	public SemanticGedcomModel(final Map<String, String> uriFormats) {
 		this.uriFormats = uriFormats;
-		prefixes.put("p", PREDICATE);
-		prefixes.put("t", TYPE);
-		prefixes.put("xsd", "http://www.w3.org/2001/XMLSchema#");
 
-		getModel().setNsPrefixes(prefixes);
+		getModel().setNsPrefixes(PREFIXES);
 	}
 
 	private Resource toType(final String tag) {
 		if (!types.containsKey(tag))
-			types.put(tag, model.createResource(prefixes.get("t") + tag));
+			types.put(tag, model.createResource(PREFIXES.get("t") + tag));
 		return types.get(tag);
 	}
 
 	private Property toProperty(final String tag) {
 		if (!properties.containsKey(tag))
-			properties.put(tag, model.createProperty(prefixes.get("p") + tag));
+			properties.put(tag, model.createProperty(PREFIXES.get("p") + tag));
 		return properties.get(tag);
 	}
 
@@ -64,13 +65,15 @@ public class SemanticGedcomModel {
 		resource.addProperty(toProperty(tag), property);
 		if (value != null && value.trim().length() > 0) {
 			property.addProperty(valueProperty, value);
-			// TODO turn into addLiteral, but add prefix for the type such as: string/date
 		}
 		return property;
 	}
 
+	public void addLiteral(final Resource resource, final String tag, final String value) {
+		resource.addProperty(toProperty(tag), value);
+	}
+
 	public void addLiteral(final Resource resource, final String tag, final Object value) {
-		final Resource property = model.createResource(toType(tag));
 		resource.addLiteral(toProperty(tag), value);
 	}
 

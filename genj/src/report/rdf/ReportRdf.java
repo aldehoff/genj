@@ -73,10 +73,10 @@ public class ReportRdf extends Report {
 	}
 
 	public class Queries {
-		/** TODO rather read the queries from a file? */
 		public String qGedcom = "";
 		public String qFam = "";
 		public String qIndi = "";
+		public String qRules = "";
 	}
 
 	public UriFormats uriFormats = new UriFormats();
@@ -106,9 +106,12 @@ public class ReportRdf extends Report {
 
 	public void run(final Gedcom gedcom, final String query) throws FileNotFoundException, IOException {
 
-		SemanticGedcomUtil util = new SemanticGedcomUtil();
+		if (queries.qRules.trim().length() == 0)
+			queries.qRules = getResources().getString("query.rules");
+
+		final SemanticGedcomUtil util = new SemanticGedcomUtil();
 		final Model rawModel = util.toRdf(gedcom, uriFormats.getURIs());
-		final Model model = util.getInfModel(getResources().getString("rules"));
+		final Model model = util.getInfModel(getQueryPart(queries.qRules));
 		final String fullQuery = assembleQuery(query, model);
 
 		if (displayFormats.asXml.trim().length() > 0) {
@@ -184,23 +187,27 @@ public class ReportRdf extends Report {
 
 	private String assembleQuery(final String query, final Model model) throws IOException, FileNotFoundException, UnsupportedEncodingException {
 		final StringBuffer fullQuery = assemblePrefixes(model);
-		final File file = new File(query);
-		if (file.isFile()) {
-			byte[] buffer = new byte[(int) file.length()];
-			new RandomAccessFile(query, "r").readFully(buffer);
-			fullQuery.append(new String(buffer, "UTF-8"));
-		} else
-			fullQuery.append(query);
+		fullQuery.append(getResources().getString("queryFunctions"));
+		fullQuery.append(getQueryPart(query));
 		getOut().println(fullQuery);
 		return fullQuery.toString();
 	}
 
-	private StringBuffer assemblePrefixes(final Model model) throws FileNotFoundException, IOException {
+	private static String getQueryPart(final String queryPart) throws FileNotFoundException, IOException {
+		final File file = new File(queryPart);
+		if (file.isFile()) {
+			byte[] buffer = new byte[(int) file.length()];
+			new RandomAccessFile(queryPart, "r").readFully(buffer);
+			return new String(buffer, "UTF-8");
+		} else
+			return queryPart;
+	}
+
+	private static StringBuffer assemblePrefixes(final Model model) throws FileNotFoundException, IOException {
 		final Map<String, String> prefixMap = model.getNsPrefixMap();
 		final StringBuffer query = new StringBuffer();
 		for (final Object prefix : prefixMap.keySet().toArray())
 			query.append(String.format("PREFIX %s: <%s> \n", prefix.toString(), prefixMap.get(prefix).toString()));
-		query.append(getResources().getString("queryFunctions"));
 		return query;
 	}
 }
