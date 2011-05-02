@@ -13,8 +13,13 @@ import java.util.GregorianCalendar;
 import java.util.Map;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
+import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
+import com.hp.hpl.jena.reasoner.rulesys.Rule;
+import com.hp.hpl.jena.util.PrintUtil;
 
 public class SemanticGedcomUtil {
 
@@ -34,8 +39,8 @@ public class SemanticGedcomUtil {
 			return;
 		for (final Property property : properties) {
 			final String tag = property.getTag();
-			if (property instanceof PropertyDate){
-				final PropertyDate date = (PropertyDate)property;
+			if (property instanceof PropertyDate) {
+				final PropertyDate date = (PropertyDate) property;
 				// TODO after/before, ranges, julian etc
 				if (date.isValid() && date.getFormat().toString().equals("")) {
 					final PointInTime start = date.getStart();
@@ -47,21 +52,22 @@ public class SemanticGedcomUtil {
 				}
 			}
 			final String value = property.getValue();
-			if (value.startsWith("@")){
+			if (value.startsWith("@")) {
 				final String id = value.replaceAll("@", "");
 				final String referredTag = property.getGedcom().getEntity(id).getTag();
 				rdfModel.addConnection(resource, id, tag, referredTag);
 			} else {
 				final Resource propertyResource = rdfModel.addProperty(resource, tag, value);
 				addProperties(propertyResource, property.getProperties());
-				if (property instanceof PropertyName){
-					final PropertyName name = (PropertyName)property;
+				if (property instanceof PropertyName) {
+					final PropertyName name = (PropertyName) property;
 					rdfModel.addLiteral(propertyResource, "first", name.getFirstName());
 					rdfModel.addLiteral(propertyResource, "last", name.getLastName());
 					rdfModel.addLiteral(propertyResource, "suffix", name.getSuffix());
 				}
-				if (property instanceof PropertyPlace){
-					// TODO add lat/long  using cached locations from the GEO report?
+				if (property instanceof PropertyPlace) {
+					// TODO add lat/long using cached locations from the GEO
+					// report?
 				}
 			}
 		}
@@ -72,12 +78,24 @@ public class SemanticGedcomUtil {
 		return new XSDDateTime(calendar);
 	}
 
-	public Model toRdf(final Gedcom gedcom,final  Map<String, String> uriFormats) {
+	public Model toRdf(final Gedcom gedcom, final Map<String, String> uriFormats) {
 		rdfModel = new SemanticGedcomModel(uriFormats);
 		for (final Entity entity : gedcom.getEntities()) {
 			final Resource resource = rdfModel.addEntity(entity.getId(), entity.getTag());
 			addProperties(resource, entity.getProperties());
 		}
 		return rdfModel.getModel();
+	}
+
+	public Model getInfModel(final String rules) {
+		
+		PrintUtil.registerPrefix("p", SemanticGedcomModel.PREDICATE);
+		PrintUtil.registerPrefix("r", SemanticGedcomModel.RULE);
+		final GenericRuleReasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
+		reasoner.setMode(GenericRuleReasoner.HYBRID);
+		
+		final InfModel infModel = ModelFactory.createInfModel(reasoner, rdfModel.getModel());
+		infModel.prepare();
+		return infModel;
 	}
 }

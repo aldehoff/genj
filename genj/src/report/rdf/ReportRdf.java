@@ -106,7 +106,9 @@ public class ReportRdf extends Report {
 
 	public void run(final Gedcom gedcom, final String query) throws FileNotFoundException, IOException {
 
-		final Model model = new SemanticGedcomUtil().toRdf(gedcom, uriFormats.getURIs());
+		SemanticGedcomUtil util = new SemanticGedcomUtil();
+		final Model rawModel = util.toRdf(gedcom, uriFormats.getURIs());
+		final Model model = util.getInfModel(getResources().getString("rules"));
 		final String fullQuery = assembleQuery(query, model);
 
 		if (displayFormats.asXml.trim().length() > 0) {

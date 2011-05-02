@@ -11,8 +11,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 public class SemanticGedcomModel {
 
-	private static final String TYPE = "http://genj.sourceforge.net/rdf/gedcom/type/";
-	private static final String PREDICATE = "http://genj.sourceforge.net/rdf/gedcom/predicate/";
+	public static final String TYPE = "http://genj.sourceforge.net/rdf/gedcom/type/";
+	public static final String PREDICATE = "http://genj.sourceforge.net/rdf/gedcom/predicate/";
+	public static final String RULE = "http://genj.sourceforge.net/rdf/gedcom/rule/";
 	
 	private final Model model = ModelFactory.createDefaultModel();
 	private final Property valueProperty = model.createProperty(PREDICATE + "value");
