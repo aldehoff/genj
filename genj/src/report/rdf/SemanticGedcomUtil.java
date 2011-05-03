@@ -47,7 +47,7 @@ public class SemanticGedcomUtil {
 					if (start.isComplete() && start.isGregorian()) {
 						final Resource propertyResource = rdfModel.addProperty(resource, tag, null);
 						rdfModel.addLiteral(propertyResource, "value", toXsdDateTime(start));
-						//continue;
+						continue;
 						// other dates get default treatment
 					}
 				}
