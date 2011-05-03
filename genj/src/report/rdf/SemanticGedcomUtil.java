@@ -47,7 +47,7 @@ public class SemanticGedcomUtil {
 					if (start.isComplete() && start.isGregorian()) {
 						final Resource propertyResource = rdfModel.addProperty(resource, tag, null);
 						rdfModel.addLiteral(propertyResource, "value", toXsdDateTime(start));
-						continue;
+						//continue;
 						// other dates get default treatment
 					}
 				}
@@ -75,7 +75,8 @@ public class SemanticGedcomUtil {
 	}
 
 	private static XSDDateTime toXsdDateTime(final PointInTime pit) {
-		final Calendar calendar = new GregorianCalendar(pit.getYear(), pit.getMonth(), pit.getDay());
+		String x = pit.toString()+" "+pit.getValue()+" "+pit.getYear()+" "+ pit.getMonth()+" "+ pit.getDay();
+		final Calendar calendar = new GregorianCalendar(pit.getYear(), pit.getMonth(), pit.getDay()+2);
 		return new XSDDateTime(calendar);
 	}
 
