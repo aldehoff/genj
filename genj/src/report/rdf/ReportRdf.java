@@ -187,7 +187,7 @@ public class ReportRdf extends Report {
 
 	private String assembleQuery(final String query, final Model model) throws IOException, FileNotFoundException, UnsupportedEncodingException {
 		final StringBuffer fullQuery = assemblePrefixes(model);
-		fullQuery.append(getResources().getString("queryFunctions"));
+		fullQuery.append(getResources().getString("query.function.prefixes"));
 		fullQuery.append(getQueryPart(query));
 		getOut().println(fullQuery);
 		return fullQuery.toString();
