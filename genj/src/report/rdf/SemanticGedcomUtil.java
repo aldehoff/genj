@@ -12,7 +12,9 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
+import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
+import com.hp.hpl.jena.datatypes.xsd.impl.XSDYearMonthType;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -49,6 +51,13 @@ public class SemanticGedcomUtil {
 						rdfModel.addLiteral(propertyResource, "value", toXsdDateTime(start));
 						continue;
 						// other dates get default treatment
+
+						// TODO typed dates:
+						// see e.g. http://tech.groups.yahoo.com/group/jena-dev/message/33075
+//						String lex=null;
+//						RDFDatatype dtype=new XSDYearMonthType(typename);
+//						rdfModel.getModel().createTypedLiteral(lex, dtype);
+
 					}
 				}
 			}

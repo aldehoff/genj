@@ -13,7 +13,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -104,8 +107,11 @@ public class ReportRdf extends Report {
 	public void run(final Gedcom gedcom, final String query) throws FileNotFoundException, IOException {
 
 		final SemanticGedcomUtil util = new SemanticGedcomUtil();
+		progress("converting");
 		final Model rawModel = util.toRdf(gedcom, uriFormats.getURIs());
+		progress("applying rules");
 		final Model model = util.getInfModel(getQueryPart(queries.qRules,"query.rules"));
+		progress("rules completed");
 		final String fullQuery = assembleQuery(query, model);
 
 		if (displayFormats.asXml.trim().length() > 0) {
@@ -121,6 +127,13 @@ public class ReportRdf extends Report {
 			write(displayFormats.asText, ResultSetFormatter.asText(resultSet));
 		}
 		writeConvertedGedcom(model, displayFormats.converted);
+	}
+
+	private void progress(String string) {
+        DateFormat dateFormat = new SimpleDateFormat(" HH:mm:ss.SSS");
+        Date date = new Date();
+		getOut().println("######### " + string + " "+dateFormat.format(date));
+		getOut().flush();
 	}
 
 	private void writeConvertedGedcom(final Model model, final String fileName) throws FileNotFoundException {
@@ -149,6 +162,7 @@ public class ReportRdf extends Report {
 		if (name.equals("#")) {
 			getOut().println("############################################");
 			getOut().println(content);
+			getOut().flush();
 			return;
 		}
 		final File file = new File(name);
@@ -172,11 +186,14 @@ public class ReportRdf extends Report {
 		final String format = getResources().getString("progress.writing");
 		final String prompt = MessageFormat.format(format, file.getAbsoluteFile());
 		getOut().println(prompt);
+		getOut().flush();
 	}
 
 	private ResultSet execSelect(final String query, final Model model) throws FileNotFoundException, IOException {
 		final QueryExecution queryExecution = QueryExecutionFactory.create(query, Syntax.syntaxARQ, model, new QuerySolutionMap());
-		return queryExecution.execSelect();
+		ResultSet resultSet = queryExecution.execSelect();
+		progress("query executed");
+		return resultSet;
 	}
 
 	private String assembleQuery(final String query, final Model model) throws IOException, FileNotFoundException, UnsupportedEncodingException {
@@ -184,6 +201,7 @@ public class ReportRdf extends Report {
 		fullQuery.append(getResources().getString("query.function.prefixes"));
 		fullQuery.append(query);
 		getOut().println(fullQuery);
+		getOut().flush();
 		return fullQuery.toString();
 	}
 
