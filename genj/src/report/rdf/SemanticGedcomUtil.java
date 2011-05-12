@@ -98,7 +98,7 @@ public class SemanticGedcomUtil {
 		return rdfModel.getModel();
 	}
 
-	public Model getInfModel(final String rules) {
+	public InfModel getInfModel(final String rules) {
 		
 		for (String key:SemanticGedcomModel.PREFIXES.keySet()) {
 			PrintUtil.registerPrefix(key, SemanticGedcomModel.PREFIXES.get(key));
