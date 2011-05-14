@@ -23,9 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.text.MessageFormat;
 import java.util.List;
-
-import com.ibm.icu.text.MessageFormat;
 
 public class CommandLineCapabaleReport extends Report {
 
@@ -63,25 +62,25 @@ public class CommandLineCapabaleReport extends Report {
 			for (final String id : loadOptions(args[i])) {
 				if (id.toLowerCase().equals("gedcom")) {
 					if (accepts(gedcom) == null)
-						inputError("report.requires.entity",getName());
+						inputError("report.requires.entity", getName());
 					else
 						start(gedcom);
 				} else {
 					final Entity entity = gedcom.getEntity(id);
 					if (entity == null)
-						inputError("report.did.not.find",getName(),id,args[0]);
+						inputError("report.did.not.find", getName(), id, args[0]);
 					else if (accepts(entity) == null)
-						inputError("report.does.not.support",getName());
+						inputError("report.does.not.support", getName());
 					else
 						start(entity);
 				}
 			}
 		}
 	}
-	
-	private void inputError(final String key, final String...args  ){
+
+	private void inputError(final String key, final Object... args) {
 		final String msg = RESOURCES.getString(key);
-		System.err.println(MessageFormat.format(msg,args));
+		System.err.println(MessageFormat.format(msg, args));
 	}
 
 	private String[] loadOptions(final String fileName) throws IOException, FileNotFoundException {
