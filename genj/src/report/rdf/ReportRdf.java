@@ -1,17 +1,8 @@
 package rdf;
 
-import genj.gedcom.Context;
 import genj.gedcom.Entity;
-import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
-import genj.io.GedcomFormatException;
-import genj.io.GedcomIOException;
-import genj.io.GedcomReaderContext;
-import genj.io.GedcomReaderFactory;
-import genj.report.Report;
-import genj.util.Origin;
-import genj.util.Resources;
+import genj.report.CommandLineCapabaleReport;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 
@@ -19,13 +10,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +29,7 @@ import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 
-public class ReportRdf extends Report {
+public class ReportRdf extends CommandLineCapabaleReport {
 
 	public class UriFormats {
 		public String indi = "http://my.domain.com/gedcom/{0}.html";
@@ -97,28 +87,21 @@ public class ReportRdf extends Report {
 	public DisplayFormats displayFormats = new DisplayFormats();
 	public Queries queries = new Queries();
 
-	/** main */
-	public void start(final Indi indi) throws IOException {
-		final String query = getQueryPart(queries.qIndi, "query.indi");
-		run(convert(indi.getGedcom()), String.format(query, indi.getId()));
+	/** Command line version */
+	public static void main(final String args[]) throws Throwable {
+		new ReportRdf().startReports(args);
 	}
 
-	/** main */
-	public void start(final Fam fam) throws IOException {
-		final String query = getQueryPart(queries.qFam, "query.fam");
-		run(convert(fam.getGedcom()), String.format(query, fam.getId()));
-	}
-
-	/** main */
 	public void start(final Gedcom gedcom) throws IOException {
-		final String query = getQueryPart(queries.qGedcom, "query.gedcom");
+		final String query = getQuery(queries.qGedcom, "query.gedcom");
 		run(convert(gedcom), query);
 	}
 
-	/** main using default query, intended for command line version */
-	public void start(final Entity entity) throws IOException {
-		final String name = entity.getClass().getSimpleName().toLowerCase();
-		final String query = getQueryPart("", "query."+name);
+	public void start(final Entity entity) throws IOException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		final String name = entity.getClass().getSimpleName();
+		final String resourceKeyBase = "query." + name.toLowerCase();
+		final String value = (String) queries.getClass().getField("q" + name).get(queries);
+		final String query = getQuery(value, resourceKeyBase);
 		run(convert(entity.getGedcom()), String.format(query, entity.getId()));
 	}
 
@@ -143,10 +126,13 @@ public class ReportRdf extends Report {
 
 	private InfModel convert(final Gedcom gedcom) throws FileNotFoundException, IOException {
 		final SemanticGedcomUtil util = new SemanticGedcomUtil();
+		final String query = getQuery(queries.qRules, "query.rules");
+		// TODO cash converted model in a map
+		final String cashKey = Arrays.deepToString(uriFormats.getURIs().values().toArray())+query;
 		progress("converting");
 		final Model rawModel = util.toRdf(gedcom, uriFormats.getURIs());
 		progress("applying rules");
-		final InfModel model = util.getInfModel(getQueryPart(queries.qRules, "query.rules"));
+		final InfModel model = util.getInfModel(query);
 		progress("rules completed");
 		return model;
 	}
@@ -227,16 +213,16 @@ public class ReportRdf extends Report {
 		return fullQuery.toString();
 	}
 
-	private String getQueryPart(final String queryPart, final String key) throws FileNotFoundException, IOException {
+	private String getQuery(final String queryPart, final String resourceKeyBase) throws FileNotFoundException, IOException {
 		final File file = new File(queryPart);
 		if (file.isFile()) {
 			final byte[] buffer = new byte[(int) file.length()];
 			new RandomAccessFile(queryPart, "r").readFully(buffer);
 			return new String(buffer, "UTF-8");
 		} else if (queryPart.trim().equals("")) {
-			return getResources().getString(key + ".1");
+			return getResources().getString(resourceKeyBase + ".1");
 		} else if (queryPart.trim().matches("[0-9]*")) {
-			return getResources().getString(key + "." + queryPart.trim());
+			return getResources().getString(resourceKeyBase + "." + queryPart.trim());
 		}
 		return queryPart;
 	}
@@ -247,61 +233,5 @@ public class ReportRdf extends Report {
 		for (final Object prefix : prefixMap.keySet().toArray())
 			query.append(String.format("PREFIX %s: <%s> \n", prefix.toString(), prefixMap.get(prefix).toString()));
 		return query;
-	}
-
-	public static void main(final String args[]) throws Throwable {
-
-		final Gedcom gedcom = readGedcom(args[0]);
-		final ReportRdf report = createReport();
-		if (args.length == 1) {
-			// run a gedcom based report with the hard coded default options
-			report.start(gedcom);
-			return;
-		}
-		for (int i = 1; i < args.length; i++) {
-			// final Properties options = new Properties();
-			// options.load(new FileInputStream(args[i]));
-			// options.getProperty("context.id");
-			// TODO replace report defaults from options
-			final String id = args[i];
-			if (id == null || id.trim().length() == 0)
-				report.start(gedcom);
-			else {
-				Entity entity = gedcom.getEntity(id);
-				if (entity == null)
-					System.err.println(id + " not found in "+args[0]);
-				else
-					report.start(entity);
-			}
-		}
-	}
-
-	private static ReportRdf createReport() {
-		return new ReportRdf() {
-
-			private final PrintWriter printWriter = new PrintWriter(System.out);
-			private final Resources resources = new Resources(ReportRdf.class.getResourceAsStream(ReportRdf.class.getSimpleName() + ".properties"));
-
-			public PrintWriter getOut() {
-				return printWriter;
-			}
-
-			protected Resources getResources() {
-				return resources;
-			}
-		};
-	}
-
-	private static Gedcom readGedcom(final String url) throws MalformedURLException, GedcomIOException, GedcomFormatException, IOException {
-		final GedcomReaderContext context = new GedcomReaderContext() {
-			public String getPassword() {
-				throw new UnsupportedOperationException("passwords not implemented for command line reports");
-			}
-
-			public void handleWarning(final int line, final String warning, final Context context) {
-				System.err.println(line + ": " + warning);
-			}
-		};
-		return GedcomReaderFactory.createReader(Origin.create(url), context).read();
 	}
 }
