@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
@@ -80,6 +81,11 @@ public class ReportRdf extends CommandLineCapabaleReport {
 		public String qGedcom = "";
 		public String qFam = "";
 		public String qIndi = "";
+		public String qMedia = "";
+		public String qNote = "";
+		public String qRepository = "";
+		public String qSource = "";
+		public String qSubmitter = "";
 		public String qRules = "";
 	}
 
@@ -89,7 +95,7 @@ public class ReportRdf extends CommandLineCapabaleReport {
 
 	/** Command line version */
 	public static void main(final String args[]) throws Throwable {
-		new ReportRdf().startReports(args);
+		new ReportRdf().startReports(args, new PrintWriter(System.out));
 	}
 
 	public void start(final Gedcom gedcom) throws IOException {
@@ -101,12 +107,16 @@ public class ReportRdf extends CommandLineCapabaleReport {
 		final String name = entity.getClass().getSimpleName();
 		final String resourceKeyBase = "query." + name.toLowerCase();
 		final String value = (String) queries.getClass().getField("q" + name).get(queries);
+		if (value.equals("queries.q" + name))
+			return;
 		final String query = getQuery(value, resourceKeyBase);
 		run(convert(entity.getGedcom()), String.format(query, entity.getId()));
 	}
 
 	public void run(final InfModel model, final String query) throws FileNotFoundException, IOException {
 
+		if (query.trim().length() < 0)
+			return;
 		final String fullQuery = assembleQuery(query, model);
 
 		if (displayFormats.asXml.trim().length() > 0) {
@@ -128,7 +138,7 @@ public class ReportRdf extends CommandLineCapabaleReport {
 		final SemanticGedcomUtil util = new SemanticGedcomUtil();
 		final String query = getQuery(queries.qRules, "query.rules");
 		// TODO cash converted model in a map
-		final String cashKey = Arrays.deepToString(uriFormats.getURIs().values().toArray())+query;
+		final String cashKey = Arrays.deepToString(uriFormats.getURIs().values().toArray()) + query;
 		progress("converting");
 		final Model rawModel = util.toRdf(gedcom, uriFormats.getURIs());
 		progress("applying rules");

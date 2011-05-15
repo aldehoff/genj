@@ -15,8 +15,8 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
+import genj.report.CommandLineCapabaleReport;
 import genj.report.Options;
-import genj.report.Report;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -38,7 +39,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-public class ReportForYEd extends Report {
+public class ReportForYEd extends CommandLineCapabaleReport {
 
 	public class Events {
 
@@ -152,6 +153,14 @@ public class ReportForYEd extends Report {
 
 	private int edgeCount = 0;
 	private File reportFile;
+
+	/** Command line version */
+	public static void main(final String args[]) throws Throwable {
+		PrintWriter printWriter = new PrintWriter(System.out);
+		new ReportForYEd().startReports(args, printWriter);
+		printWriter.flush();
+		printWriter.close();
+	}
 
 	/** main */
 	public void start(final Gedcom gedcom) throws IOException {

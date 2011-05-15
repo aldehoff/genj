@@ -7,6 +7,7 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.Media;
 import genj.gedcom.Note;
+import genj.gedcom.Repository;
 import genj.gedcom.Source;
 import genj.gedcom.Submitter;
 import genj.io.GedcomFormatException;
@@ -18,6 +19,7 @@ import genj.util.Origin;
 import genj.util.Resources;
 import genj.util.swing.DialogHelper;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,46 +35,56 @@ public class CommandLineCapabaleReport extends Report {
 	private PrintWriter printWriter;
 
 	/**
-	 * To be called by the <code>public static void main(String[] args)</code>
-	 * method of the implementing class.
+	 * Called by ReportBatches to generate several reports in one go. Subclasses
+	 * can simplify testing with a
+	 * <code>public static void main(String[] args)</code> calling this method.
 	 * 
 	 * @param args
 	 *            First argument: url of gedcom file.<br>
 	 *            Subsequent arguments: configuration files.<br>
 	 *            Without any argument a sample configuration file is generated.
+	 * @param printWriter
+	 *            overrides getOut()
 	 * @throws Exception
 	 */
-	public void startReports(final String[] args) throws Throwable {
+	public void startReports(final String[] args, final PrintWriter printWriter) throws Throwable {
 
+		this.printWriter = printWriter;
 		if (args == null || args.length == 0) {
 			showOptions();
 			return;
 		}
 
-		// to override getOut()
-		printWriter = new PrintWriter(System.out);
-
 		final Gedcom gedcom = readGedcom(args[0]);
 		if (args.length == 1 && accepts(gedcom) != null) {
 
 			// run a gedcom based report with the hard coded default options
+			printWriter.println(getClass().getName() + " with default options");
+			printWriter.flush();
 			start(gedcom);
 		}
 		for (int i = 1; i < args.length; i++) {
-			for (final String id : loadOptions(args[i])) {
+			final String fileName = new File(args[i]).getAbsolutePath();
+			for (final String id : loadOptions(fileName)) {
 				if (id.toLowerCase().equals("gedcom")) {
 					if (accepts(gedcom) == null)
 						inputError("report.requires.entity", getName());
-					else
+					else {
+						printWriter.println(getClass().getName() + " with options from " + fileName);
+						printWriter.flush();
 						start(gedcom);
+					}
 				} else {
 					final Entity entity = gedcom.getEntity(id);
 					if (entity == null)
 						inputError("report.did.not.find", getName(), id, args[0]);
 					else if (accepts(entity) == null)
 						inputError("report.does.not.support", getName());
-					else
+					else {
+						printWriter.println(getClass().getName() + " for " + id + " with options from " + fileName);
+						printWriter.flush();
 						start(entity);
+					}
 				}
 			}
 		}
@@ -83,25 +95,34 @@ public class CommandLineCapabaleReport extends Report {
 		System.err.println(MessageFormat.format(msg, args));
 	}
 
-	private String[] loadOptions(final String fileName) throws IOException, FileNotFoundException {
-
-		final Resources options = new Resources(new FileInputStream(fileName));
-		final List<PropertyOption> props = PropertyOption.introspect(this, true);
-		options.load(new FileInputStream(fileName));
-		for (final PropertyOption prop : props) {
-			final String prefix = prop.getCategory() == null ? "" : prop.getCategory() + ".";
-			final String value = options.getString(prefix + prop.getProperty());
-			if (value != null) {
-				prop.setValue(value);
+	private String[] loadOptions(final String fileName) throws IOException {
+		try {
+			final Resources options = new Resources(new FileInputStream(fileName));
+			final List<PropertyOption> props = PropertyOption.introspect(this, true);
+			options.load(new FileInputStream(fileName));
+			for (final PropertyOption prop : props) {
+				final String prefix = prop.getCategory() == null ? "" : prop.getCategory() + ".";
+				final String value = options.getString(prefix + prop.getProperty());
+				if (value != null) {
+					prop.setValue(value);
+				}
 			}
+			final String ids = options.getString(ENTITY_KEY);
+			if (ids.equals(ENTITY_KEY) || ids.trim().length() == 0) {
+				inputError("report.missing.key", new File(fileName).getAbsolutePath(), ENTITY_KEY);
+				return new String[] {};
+			}
+			return ids.split("[^A-Za-z0-9]+");
+		} catch (FileNotFoundException e) {
+			inputError("report.configuration.missing", new File(fileName).getAbsolutePath());
+			return new String[] {};
 		}
-		return (options.getString(ENTITY_KEY)).split("[^A-Za-z0-9]+");
 	}
 
 	private void showOptions() {
 
 		showReportProperties(getName(), getCategory(), getAuthor(), getVersion(), getLastUpdate());
-		showSupportedEntities(new Indi(), new Fam("FAM", ""), new Media("OBJE", ""), new Note("NOTE", ""), new Submitter("SUBM", ""), new Source("SOUR", ""));
+		showSupportedEntities(new Indi(), new Fam("FAM", ""), new Media("OBJE", ""), new Note("NOTE", ""), new Submitter("SUBM", ""), new Source("SOUR", ""), new Repository("REPO",""));
 		final List<PropertyOption> props = PropertyOption.introspect(this, true);
 		String lastPrefix = "";
 		for (final PropertyOption prop : props) {
