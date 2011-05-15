@@ -1,5 +1,5 @@
 import genj.gedcom.Gedcom;
-import genj.report.CommandLineCapabaleReport;
+import genj.report.CommandLineCapableReport;
 import genj.report.Report;
 import genj.report.ReportLoader;
 
@@ -26,7 +26,7 @@ public class ReportBatches extends Report {
 			if (subDir.isDirectory()) {
 				try {
 					final Class<?> reportClass = Class.forName(subDir.getName());
-					if (CommandLineCapabaleReport.class.isAssignableFrom(reportClass)) {
+					if (CommandLineCapableReport.class.isAssignableFrom(reportClass)) {
 						final Method main = reportClass.getMethod(MAIN, String[].class,PrintWriter.class);
 						main.invoke(reportClass.newInstance(), getFileNames(gedcom,subDir), getOut());
 					}
@@ -52,7 +52,7 @@ public class ReportBatches extends Report {
 
 		final Report[] reports = ReportLoader.getInstance().getReports();
 		for (final Report report : reports) {
-			if (report instanceof CommandLineCapabaleReport) {
+			if (report instanceof CommandLineCapableReport) {
 				// TODO other slash for windows
 				final String subDir = dir.getPath() + "/" + report.getClass().getName();
 				final Method main = report.getClass().getMethod(MAIN, String[].class, PrintWriter.class);

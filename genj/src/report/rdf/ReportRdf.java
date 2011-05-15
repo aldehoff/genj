@@ -2,7 +2,7 @@ package rdf;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.report.CommandLineCapabaleReport;
+import genj.report.CommandLineCapableReport;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 
@@ -30,7 +30,7 @@ import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 
-public class ReportRdf extends CommandLineCapabaleReport {
+public class ReportRdf extends CommandLineCapableReport {
 
 	public class UriFormats {
 		public String indi = "http://my.domain.com/gedcom/{0}.html";

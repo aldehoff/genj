@@ -28,9 +28,9 @@ import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.List;
 
-public class CommandLineCapabaleReport extends Report {
+public class CommandLineCapableReport extends Report {
 
-	private static final Resources RESOURCES = Resources.get(CommandLineCapabaleReport.class);
+	private static final Resources RESOURCES = Resources.get(CommandLineCapableReport.class);
 	private static final String ENTITY_KEY = "reports.for.entities";
 	private PrintWriter printWriter;
 

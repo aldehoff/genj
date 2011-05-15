@@ -15,7 +15,7 @@ import genj.gedcom.PropertyEvent;
 import genj.gedcom.PropertySex;
 import genj.gedcom.time.Delta;
 import genj.gedcom.time.PointInTime;
-import genj.report.CommandLineCapabaleReport;
+import genj.report.CommandLineCapableReport;
 import genj.report.Options;
 
 import java.awt.Dimension;
@@ -39,7 +39,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-public class ReportForYEd extends CommandLineCapabaleReport {
+public class ReportForYEd extends CommandLineCapableReport {
 
 	public class Events {
 
