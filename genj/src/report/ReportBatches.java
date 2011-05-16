@@ -6,44 +6,48 @@ import genj.report.ReportLoader;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReportBatches extends Report {
 
-	private static final String MAIN = "startReports";
+	private static Map<String, CommandLineCapableReport> reportMap;
+	private static Method main;
 
-	public void start(final Gedcom gedcom) throws Exception, InvocationTargetException {
+	public String configDir = "";
 
-		final File directory = new Report() {
-		}.getDirectoryFromUser("directory with configuration directories", "OK");
+	public void start(final Gedcom gedcom) throws Exception {
+
+		final File directory;
+		if (configDir.trim().length() == 0) {
+			directory = new Report() {
+			}.getDirectoryFromUser(getResources().getString("configDir.dialog.title"), getResources().getString("configDir.dialog.button"));
+			if (directory == null)
+				return;
+			configDir = directory.getAbsolutePath();
+		} else
+			directory = new File(configDir);
 
 		if (!directory.exists()) {
 			generateConfigurationFiles(directory);
 			return;
 		}
 		for (final File subDir : directory.listFiles()) {
-			if (subDir.isDirectory()) {
-				try {
-					final Class<?> reportClass = Class.forName(subDir.getName());
-					if (CommandLineCapableReport.class.isAssignableFrom(reportClass)) {
-						final Method main = reportClass.getMethod(MAIN, String[].class,PrintWriter.class);
-						main.invoke(reportClass.newInstance(), getFileNames(gedcom,subDir), getOut());
-					}
-				} catch (ClassNotFoundException e) {
-
-				}
+			final String name = subDir.getName();
+			if (subDir.isDirectory() && getReportMap().containsKey(name)) {
+				getMain().invoke(getReportMap().get(name), createArgs(gedcom, subDir), getOut());
 			}
 		}
 	}
 
-	private String[] getFileNames(Gedcom gedcom, final File subDir) {
+	private String[] createArgs(Gedcom gedcom, final File subDir) {
 
 		final File[] files = subDir.listFiles();
-		final String fileNames[] = new String[files.length+1];
-		fileNames[0] = "file:"+gedcom.getOrigin().getFile().getAbsolutePath();
+		final String fileNames[] = new String[files.length + 1];
+		fileNames[0] = "file:" + gedcom.getOrigin().getFile().getAbsolutePath();
 		for (int i = 0; i < files.length; i++) {
-			fileNames[i+1] = files[i].getPath();
+			fileNames[i + 1] = files[i].getPath();
 		}
 		return fileNames;
 	}
@@ -51,15 +55,32 @@ public class ReportBatches extends Report {
 	private void generateConfigurationFiles(final File dir) throws Exception {
 
 		final Report[] reports = ReportLoader.getInstance().getReports();
-		for (final Report report : reports) {
+		for (final String reportName : getReportMap().keySet()) {
+			final CommandLineCapableReport report = reportMap.get(reportName);
+			// TODO other slash for windows
+			final String subDir = dir.getPath() + File.separator + reportName;
+			new File(subDir).mkdirs();
+			System.setOut(new PrintStream(subDir + File.separator + "config.txt"));
+			getMain().invoke(report, new String[] {}, getOut());
+		}
+	}
+
+	private static Method getMain() throws NoSuchMethodException {
+		if (main != null)
+			return main;
+		main = CommandLineCapableReport.class.getMethod("startReports", String[].class, PrintWriter.class);
+		return main;
+	}
+
+	private static Map<String, CommandLineCapableReport> getReportMap() {
+		if (reportMap != null)
+			return reportMap;
+		reportMap = new HashMap<String, CommandLineCapableReport>();
+		for (final Report report : ReportLoader.getInstance().getReports()) {
 			if (report instanceof CommandLineCapableReport) {
-				// TODO other slash for windows
-				final String subDir = dir.getPath() + "/" + report.getClass().getName();
-				final Method main = report.getClass().getMethod(MAIN, String[].class, PrintWriter.class);
-				new File(subDir).mkdirs();
-				System.setOut(new PrintStream(subDir + "/config.txt"));
-				main.invoke(report, new String[] {}, getOut());
+				reportMap.put(report.getClass().getName(), (CommandLineCapableReport) report);
 			}
 		}
+		return reportMap;
 	}
 }

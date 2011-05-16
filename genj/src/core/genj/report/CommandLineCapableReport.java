@@ -57,11 +57,7 @@ public class CommandLineCapableReport extends Report {
 
 		final Gedcom gedcom = readGedcom(args[0]);
 		if (args.length == 1 && accepts(gedcom) != null) {
-
-			// run a gedcom based report with the hard coded default options
-			printWriter.println(getClass().getName() + " with default options");
-			printWriter.flush();
-			start(gedcom);
+			startWithLog("system", "gedcom", gedcom);
 		}
 		for (int i = 1; i < args.length; i++) {
 			final String fileName = new File(args[i]).getAbsolutePath();
@@ -70,9 +66,7 @@ public class CommandLineCapableReport extends Report {
 					if (accepts(gedcom) == null)
 						inputError("report.requires.entity", getName());
 					else {
-						printWriter.println(getClass().getName() + " with options from " + fileName);
-						printWriter.flush();
-						start(gedcom);
+						startWithLog(fileName, id, gedcom);
 					}
 				} else {
 					final Entity entity = gedcom.getEntity(id);
@@ -80,14 +74,20 @@ public class CommandLineCapableReport extends Report {
 						inputError("report.did.not.find", getName(), id, args[0]);
 					else if (accepts(entity) == null)
 						inputError("report.does.not.support", getName());
-					else {
-						printWriter.println(getClass().getName() + " for " + id + " with options from " + fileName);
-						printWriter.flush();
-						start(entity);
-					}
+					else
+						startWithLog(fileName, id, entity);
 				}
 			}
 		}
+	}
+
+	private void startWithLog(final String fileName, final String id, final Object entity) throws Throwable {
+		// the logging can help to answer the dialogs
+		printWriter.println();
+		printWriter.println(getName());
+		printWriter.println(getClass().getName() + " for " + id + " with options from " + fileName);
+		printWriter.flush();
+		start(entity);
 	}
 
 	private void inputError(final String key, final Object... args) {
