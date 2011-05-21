@@ -63,8 +63,10 @@ public class ReportBatches extends Report {
 			final Resources config = new Resources(new FileInputStream(configFile.getPath()));
 			final String configPath = configFile.getAbsolutePath();
 			final Report report = getConfiguredReport(config);
+			if (report == null)
+				return;
 
-			for (final String id : config.getString(ENTITY_KEY).split(" +")) {
+			for (final String id : getDesiredContext(config)) {
 
 				if (id.toLowerCase().equals("gedcom")) {
 					runReport(report, gedcom, configPath);
@@ -85,10 +87,36 @@ public class ReportBatches extends Report {
 		println(translate("all.reports.finished"));
 	}
 
+	private String[] getDesiredContext(final Resources config) {
+
+		final String string = config.getString(ENTITY_KEY);
+		final String message = translate("no.entities", ENTITY_KEY);
+		if (string == null) {
+			println(message);
+			return new String[] {};
+		}
+		final String[] ids = string.split(" +");
+		if (ids == null || ids.length == 0) {
+			println(message);
+			return new String[] {};
+		}
+		return ids;
+	}
+
 	private Report getConfiguredReport(final Resources config) {
 
-		final Report report = getReportMap().get(config.getString(REPORT_CLASS_KEY));
+		final String reportClassName = config.getString(REPORT_CLASS_KEY);
+		if (reportClassName == null || reportClassName.trim().length() == 0) {
+			println(translate("no.report.class", REPORT_CLASS_KEY));
+			return null;
+		}
+		final Report report = getReportMap().get(reportClassName);
+		if (report == null) {
+			println(translate("wrong.report.class", REPORT_CLASS_KEY, report));
+			return null;
+		}
 
+		// reload the options
 		for (final PropertyOption option : PropertyOption.introspect(report, true)) {
 			final String key = (option.getCategory() != null ? option.getCategory() + "." : "") + option.getName();
 			option.setValue(config.getString(key));
@@ -211,11 +239,6 @@ public class ReportBatches extends Report {
 		out.println("");
 		out.println("# " + translate(ENTITY_KEY));
 		out.print(ENTITY_KEY + " = ");
-		for (final Entity entity : entities)
-			if (report.accepts(entity) != null)
-				out.print(" " + dummyGedcom.getNextAvailableID(entity.getTag()));
-		if (report.accepts(dummyGedcom) != null)
-			out.print(" gedcom");
 		out.println("");
 	}
 
