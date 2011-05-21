@@ -1,84 +1,275 @@
+import genj.gedcom.Entity;
+import genj.gedcom.Fam;
 import genj.gedcom.Gedcom;
-import genj.report.CommandLineCapableReport;
+import genj.gedcom.Indi;
+import genj.gedcom.Media;
+import genj.gedcom.Note;
+import genj.gedcom.Repository;
+import genj.gedcom.Source;
+import genj.gedcom.Submitter;
+import genj.option.PropertyOption;
+import genj.report.BatchCompatible;
+import genj.report.BatchRunner;
 import genj.report.Report;
 import genj.report.ReportLoader;
+import genj.util.Resources;
+import genj.util.swing.Action2;
+import genj.util.swing.DialogHelper;
 
+import java.io.CharArrayWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
+import java.net.URL;
+import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.swing.JFileChooser;
 
 public class ReportBatches extends Report {
 
-	private static Map<String, CommandLineCapableReport> reportMap;
-	private static Method main;
-
 	public String configDir = "";
+	public boolean generate = true;
 
-	public void start(final Gedcom gedcom) throws Exception {
+	private final Action2[] NO_YES_ALL_NONE = { //
+	new Action2(Action2.TXT_NO), //
+			new Action2(Action2.TXT_YES), //
+			new Action2(translate("overwrite.all")),//
+			new Action2(translate("overwrite.none")),//
+	};
+	private static final String REPORT_CLASS_KEY = "report.class";
+	private static final String ENTITY_KEY = "reports.for.entities";
 
-		final File directory;
-		if (configDir.trim().length() == 0) {
-			directory = new Report() {
-			}.getDirectoryFromUser(getResources().getString("configDir.dialog.title"), getResources().getString("configDir.dialog.button"));
-			if (directory == null)
-				return;
-			configDir = directory.getAbsolutePath();
-		} else
-			directory = new File(configDir);
+	/**
+	 * Lazy initialization avoids recursion (load reports while this one is
+	 * loaded)
+	 */
+	private static Map<String, Report> reportMap;
 
-		if (!directory.exists()) {
-			generateConfigurationFiles(directory);
+	public void start(final Gedcom gedcom) throws Throwable {
+
+		if (generate) {
+			createConfigFiles();
+			generate = false;
 			return;
 		}
-		for (final File subDir : directory.listFiles()) {
-			final String name = subDir.getName();
-			if (subDir.isDirectory() && getReportMap().containsKey(name)) {
-				getMain().invoke(getReportMap().get(name), createArgs(gedcom, subDir), getOut());
+		for (final File configFile : getFilesFromUser()) {
+
+			final Resources config = new Resources(new FileInputStream(configFile.getPath()));
+			final String configPath = configFile.getAbsolutePath();
+			final Report report = getConfiguredReport(config);
+
+			for (final String id : config.getString(ENTITY_KEY).split(" +")) {
+
+				if (id.toLowerCase().equals("gedcom")) {
+					runReport(report, gedcom, configPath);
+				} else if (id.matches("[A-Za-z0-9]+")) {
+					final Entity entity = gedcom.getEntity(id);
+					if (entity != null) {
+						runReport(report, entity, id + " " + configPath);
+					}
+				} else {
+					for (final Entity entity : gedcom.getEntities()) {
+						if (entity.getId().matches(id)) {
+							runReport(report, entity, entity.getId() + " " + configPath);
+						}
+					}
+				}
+			}
+		}
+		println(translate("all.reports.finished"));
+	}
+
+	private Report getConfiguredReport(final Resources config) {
+
+		final Report report = getReportMap().get(config.getString(REPORT_CLASS_KEY));
+
+		for (final PropertyOption option : PropertyOption.introspect(report, true)) {
+			final String key = (option.getCategory() != null ? option.getCategory() + "." : "") + option.getName();
+			option.setValue(config.getString(key));
+		}
+		return report;
+	}
+
+	private void runReport(final Report report, final Object context, final String logMessage) {
+
+		final String msg = logMessage + " --- " + report.getName();
+		println();
+		println(msg);
+		flush();
+
+		try {
+			final Object result = BatchRunner.run(report, context, getOut());
+			if (result == null)
+				;
+			else if (result instanceof InterruptedException)
+				println(translate("canceled"));
+			else if (result instanceof Throwable)
+				whoops((Throwable) result);
+			else if (result instanceof File || result instanceof URL)
+				println(translate("report.result.at", result));
+			else {
+				println(translate("result.not.implemented", result));
+				// TODO perhaps collect list to return by start
+				// object = new ContextListWidget((List<Context>)result);
+				// see also ReportView.showResult
+			}
+		} catch (final Throwable exception) {
+			LOG.fine(msg + ": " + exception);
+			whoops(exception);
+		}
+	}
+
+	private void whoops(final Throwable exception) {
+
+		final CharArrayWriter buf = new CharArrayWriter(256);
+		((Throwable) exception).printStackTrace(new PrintWriter(buf));
+		println("*** exception caught" + '\n' + buf);
+	}
+
+	private void createConfigFiles() throws FileNotFoundException {
+		if (getConfigDirFromUser() == null)
+			return;
+		println(configDir);
+		println();
+		for (final String reportName : getReportMap().keySet()) {
+			final Report report = getReportMap().get(reportName);
+			final String fileName = configDir + File.separator + report.getClass().getName() + ".txt";
+			final String format = translate("overwrite.config");
+			boolean overwriteAll = false;
+			if (!new File(fileName).exists() || overwriteAll)
+				createConfig(fileName, report);
+			else {
+				final String msg = MessageFormat.format(format, fileName, report.getName());
+				switch (getOptionFromUser(msg, NO_YES_ALL_NONE)) {
+				case 1:
+					createConfig(fileName, report);
+				case 0:
+					break;
+				case 2:
+					createConfig(fileName, report);
+					overwriteAll = true;
+					break;
+				case 3:
+					// break out of the loop
+					continue;
+				}
 			}
 		}
 	}
 
-	private String[] createArgs(Gedcom gedcom, final File subDir) {
+	private void createConfig(final String fileName, final Report report) throws FileNotFoundException {
 
-		final File[] files = subDir.listFiles();
-		final String fileNames[] = new String[files.length + 1];
-		fileNames[0] = "file:" + gedcom.getOrigin().getFile().getAbsolutePath();
-		for (int i = 0; i < files.length; i++) {
-			fileNames[i + 1] = files[i].getPath();
+		final String className = report.getClass().getName();
+		println(report.getName());
+		final PrintStream out = new PrintStream(new FileOutputStream(fileName));
+		out.println(REPORT_CLASS_KEY + " = " + className);
+		showReportProperties(out, report.getName(), report.getCategory(), report.getAuthor(), report.getVersion(), report.getLastUpdate());
+		showSupportedEntities(out, report, new Indi(), new Fam("FAM", ""), new Media("OBJE", ""), new Note("NOTE", ""), new Submitter("SUBM", ""), new Source(
+				"SOUR", ""), new Repository("REPO", ""));
+		showOptions(out, report);
+		out.flush();
+		out.close();
+	}
+
+	private static void showOptions(final PrintStream out, final Report report) {
+		final List<PropertyOption> props = PropertyOption.introspect(report, true);
+		String lastPrefix = "";
+		for (final PropertyOption prop : props) {
+			final String prefix = prop.getCategory() == null ? "" : prop.getCategory() + ".";
+			if (!prefix.equals(lastPrefix)) {
+				out.println();
+				out.println("############ " + report.translateOption(prop.getCategory()));
+				lastPrefix = prefix;
+			}
+			out.println();
+			out.println("# " + report.translateOption(prop.getProperty()));
+			out.println(prefix + prop.getProperty() + " = " + prop.getValue());
 		}
-		return fileNames;
 	}
 
-	private void generateConfigurationFiles(final File dir) throws Exception {
-
-		final Report[] reports = ReportLoader.getInstance().getReports();
-		for (final String reportName : getReportMap().keySet()) {
-			final CommandLineCapableReport report = reportMap.get(reportName);
-			// TODO other slash for windows
-			final String subDir = dir.getPath() + File.separator + reportName;
-			new File(subDir).mkdirs();
-			System.setOut(new PrintStream(subDir + File.separator + "config.txt"));
-			getMain().invoke(report, new String[] {}, getOut());
-		}
+	private static void showReportProperties(final PrintStream out, final String... names) {
+		for (final String name : names)
+			if (name != null)
+				out.println("# " + name);
 	}
 
-	private static Method getMain() throws NoSuchMethodException {
-		if (main != null)
-			return main;
-		main = CommandLineCapableReport.class.getMethod("startReports", String[].class, PrintWriter.class);
-		return main;
+	private void showSupportedEntities(final PrintStream out, final Report report, final Entity... entities) {
+
+		final Gedcom dummyGedcom = new Gedcom();
+		out.println("#");
+		for (final Entity entity : entities)
+			if (report.accepts(entity) != null) {
+				final String nextAvailableID = dummyGedcom.getNextAvailableID(entity.getTag());
+				out.println("# " + nextAvailableID + " " + entity.getPropertyName());
+			}
+		out.println("");
+		out.println("# " + translate(ENTITY_KEY));
+		out.print(ENTITY_KEY + " = ");
+		for (final Entity entity : entities)
+			if (report.accepts(entity) != null)
+				out.print(" " + dummyGedcom.getNextAvailableID(entity.getTag()));
+		if (report.accepts(dummyGedcom) != null)
+			out.print(" gedcom");
+		out.println("");
 	}
 
-	private static Map<String, CommandLineCapableReport> getReportMap() {
+	private int getOptionFromUser(final String msg, final Action2[] actions) {
+		return DialogHelper.openDialog(getName(), DialogHelper.QUESTION_MESSAGE, msg, actions, getOwner());
+	}
+
+	private File getConfigDirFromUser() {
+
+		final JFileChooser chooser = new JFileChooser();
+		chooser.setCurrentDirectory(new File(configDir).getParentFile());
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		chooser.setMultiSelectionEnabled(false);
+		chooser.setDialogTitle(translate("new.directory"));
+		final int rc = chooser.showDialog(getOwner(), Action2.TXT_OK);
+
+		// check result
+		final File result = chooser.getSelectedFile();
+		if (rc != JFileChooser.APPROVE_OPTION || result == null)
+			return null;
+
+		// keep it
+		configDir = result.getAbsolutePath();
+		result.mkdirs();
+		return result;
+	}
+
+	private File[] getFilesFromUser() {
+
+		final JFileChooser chooser = new JFileChooser();
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.setMultiSelectionEnabled(true);
+		chooser.setDialogTitle(translate("config.files"));
+		chooser.setCurrentDirectory(new File(configDir));
+		final int rc = chooser.showDialog(getOwner(), Action2.TXT_OK);
+
+		// check result
+		final File[] result = chooser.getSelectedFiles();
+		if (rc != JFileChooser.APPROVE_OPTION || result == null)
+			return new File[] {};
+
+		// keep it
+		configDir = chooser.getCurrentDirectory().getAbsolutePath();
+		return result;
+	}
+
+	private Map<String, Report> getReportMap() {
+
 		if (reportMap != null)
 			return reportMap;
-		reportMap = new HashMap<String, CommandLineCapableReport>();
+		reportMap = new HashMap<String, Report>();
 		for (final Report report : ReportLoader.getInstance().getReports()) {
-			if (report instanceof CommandLineCapableReport) {
-				reportMap.put(report.getClass().getName(), (CommandLineCapableReport) report);
+			if (report instanceof BatchCompatible) {
+				reportMap.put(report.getClass().getName(), report);
 			}
 		}
 		return reportMap;

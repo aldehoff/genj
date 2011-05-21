@@ -354,7 +354,7 @@ public abstract class Report implements Cloneable {
   public File getFileFromUser(String title, String button, boolean askForOverwrite, String extension) {
 
     // show filechooser
-    String dir = registry.get("file", EnvironmentChecker.getProperty("user.home", ".", "looking for report dir to let the user choose from"));
+    String dir = registry.get("file", EnvironmentChecker.getProperty("user.home", ".", "looking for report file to let the user choose from"));
     JFileChooser chooser = new JFileChooser(dir);
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setDialogTitle(title);
@@ -379,7 +379,6 @@ public abstract class Report implements Cloneable {
     registry.put("file", result.getParent().toString());
     return result;
   }
-
   /**
    * An implementation of Report can ask the user for a directory with this method.
    */
@@ -401,6 +400,32 @@ public abstract class Report implements Cloneable {
     registry.put("dir", result.toString());
     return result;
   }
+
+	/**
+	 * Allows a user to select a file while browsing the file system, yet the
+	 * selected file is saved as an option for the next time. Clear the option
+	 * to get the dialog again.
+	 * 
+	 * Typical usage: configField = initFile(configField,"title")
+	 * 
+	 * @param configuredValue
+	 *            previously configure value
+	 * @param title
+	 *            Title for the dialog explaining the purpose of the directory.
+	 *            If the result is indeed re-assigned to the configuration
+	 *            field, please explain the value is remembered for the time.
+	 * @return configuredValue if that was not blank, other wise the result of a
+	 *         dialog with the user. null if the user canceled the dialog.
+	 */
+	public final String initFile(final String configuredValue, final String title) {
+
+		if (configuredValue!= null && configuredValue.trim().length() != 0)
+			return configuredValue;
+		final File directory = getFileFromUser(title, Action2.TXT_OK);
+		if (directory == null)
+			return null;
+		return directory.getAbsolutePath();
+	}
 
   /**
    * A sub-class can ask the user for an entity (e.g. Individual) with this method
@@ -860,7 +885,11 @@ public abstract class Report implements Cloneable {
       return null;
     }
 
-    /**
+    public Component getOwner() {
+		return owner;
+	}
+
+	/**
      * Filters files using a specified extension.
      */
     private class FileExtensionFilter extends FileFilter {
