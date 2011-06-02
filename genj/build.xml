@@ -75,7 +75,7 @@
    -->
   <target name="compile.report" depends="init">
     <mkdir dir="./build/classes/report"/>
-    <javac srcdir="src/report" destdir="./build/classes/report"
+    <javac srcdir="src/report" destdir="./build/classes/report" excludes="rdf/**"
            debug="${javac.debug}" target="1.5" optimize="off" deprecation="on" encoding="UTF-8" >
       <classpath refid="project.class.path"/>
     </javac>
