@@ -94,6 +94,7 @@ public class SelectEntityWidget extends JPanel {
     "SOUR:AUTH", 
     "SOUR:REPO", 
     "SUBM", 
+    "SUBM:NAME", 
     "REPO",
     "REPO:NAME",
     "REPO:REFN",
