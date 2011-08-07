@@ -89,7 +89,7 @@ public class ReportForYEd extends Report implements BatchCompatible{
 		public int maxWidth = 80;
 		public int maxHeight = 80;
 		// with single quotes, the place holders don't function
-		public String format = "<img src=\"file://{0}\" width=\"{1} height=\"{2}\">";
+		public String format = "<img src=\"file://{0}\" width=\"{1}\" height=\"{2}\">";
 
 		private String format(final Entity entity) {
 
@@ -388,7 +388,7 @@ public class ReportForYEd extends Report implements BatchCompatible{
 				(PropertyEvent) family.getProperty("DIV"));
 
 		if (mariage.equals("") && divorce.equals("") && image == null)
-			return "";
+			return "   ";
 		final String format;
 		if (image != null) {
 			format = "<html><table><tr><td><p>{0}<br>{1}</p></td><td>{2}</td></tr></table></body></html>";
@@ -408,10 +408,16 @@ public class ReportForYEd extends Report implements BatchCompatible{
 		final String name = indi.getPropertyDisplayValue("NAME");
 		final String occu = indi.getPropertyDisplayValue("OCCU");
 
-		final String birth = events.format(OPTIONS.getBirthSymbol(),
+		String birth = events.format(OPTIONS.getBirthSymbol(),
 				(PropertyEvent) indi.getProperty("BIRT"));
-		final String death = events.format(OPTIONS.getDeathSymbol(),
+		if (birth.equals(""))
+			birth = events.format(OPTIONS.getBaptismSymbol(),
+					(PropertyEvent) indi.getProperty("BAPM"));
+		String death = events.format(OPTIONS.getDeathSymbol(),
 				(PropertyEvent) indi.getProperty("DEAT"));
+		if (death.equals(""))
+			death = events.format(OPTIONS.getBurialSymbol(),
+					(PropertyEvent) indi.getProperty("BURI"));
 
 		final String format;
 		if (image != null) {
@@ -474,7 +480,7 @@ public class ReportForYEd extends Report implements BatchCompatible{
 	}
 	
 	private String getFileName(final Entity entity) {
-		final Property property = entity.getPropertyByPath(entity.getPath() + "OBJE:FILE");
+		final Property property = entity.getPropertyByPath(entity.getPath() + ":OBJE:FILE");
 		if (property == null)
 			return null;
 		return property.getGedcom().getOrigin().getFile(property.getValue()).getAbsoluteFile().getPath();
@@ -488,7 +494,7 @@ public class ReportForYEd extends Report implements BatchCompatible{
 			float delta = ((float) max.getWidth()) / image.getWidth();
 			width = max.getWidth();
 			height *= delta;
-		}
+		} else 
 		if (height > max.getHeight()) {
 			float delta = ((float) max.getHeight()) / image.getHeight();
 			height = max.getHeight();
