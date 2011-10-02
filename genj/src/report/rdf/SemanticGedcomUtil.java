@@ -12,9 +12,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
-import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.xsd.XSDDateTime;
-import com.hp.hpl.jena.datatypes.xsd.impl.XSDYearMonthType;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -48,7 +46,7 @@ public class SemanticGedcomUtil {
 					final PointInTime start = date.getStart();
 					if (start.isComplete() && start.isGregorian()) {
 						final Resource propertyResource = rdfModel.addProperty(resource, tag, null);
-						rdfModel.addLiteral(propertyResource, "value", toXsdDateTime(start));
+						rdfModel.addLiteral(propertyResource, toXsdDateTime(start));
 						continue;
 						// other dates get default treatment
 
@@ -71,9 +69,9 @@ public class SemanticGedcomUtil {
 				addProperties(propertyResource, property.getProperties());
 				if (property instanceof PropertyName) {
 					final PropertyName name = (PropertyName) property;
-					rdfModel.addLiteral(propertyResource, "first", name.getFirstName());
-					rdfModel.addLiteral(propertyResource, "last", name.getLastName());
-					rdfModel.addLiteral(propertyResource, "suffix", name.getSuffix());
+					rdfModel.addLiteral(propertyResource, name.getFirstName());
+					rdfModel.addLiteral(propertyResource, name.getLastName());
+					rdfModel.addLiteral(propertyResource, name.getSuffix());
 				}
 				if (property instanceof PropertyPlace) {
 					// TODO add lat/long using cached locations from the GEO

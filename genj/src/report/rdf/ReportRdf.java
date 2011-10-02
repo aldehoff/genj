@@ -8,6 +8,7 @@ import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,10 +31,14 @@ import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.query.Syntax;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 public class ReportRdf extends Report implements BatchCompatible {
 
-	public class Queries {
+	static final String DEFAULT_URI = "http://my.domain.com/gedcom/{0}.html";
+	static final String DEFAULT_STYLE_SHEET = "http://www.w3.org/TR/rdf-sparql-XMLres/result-to-html.xsl";
+
+	static class Queries {
 		public String qGedcom = "";
 		public String qFam = "";
 		public String qIndi = "";
@@ -45,21 +50,23 @@ public class ReportRdf extends Report implements BatchCompatible {
 		public String qRules = "";
 	}
 
-	public class DisplayFormats {
-		public String styleSheet = "http://www.w3.org/TR/rdf-sparql-XMLres/result-to-html.xsl";
-		public String baseFileName = "rdf";
-		public String extensions = "n3 xml";
+	static class DisplayFormats {
+		public String styleSheet = DEFAULT_STYLE_SHEET;
+		public String convertedFileName = "gedcom.ttl";
+		public boolean reuseConversion = false;
+		public String reportFileName = "report.txt";
 		public boolean askForOverwrite = true;
 	};
 
-	public class UriFormats {
-		public String fam = "http://my.domain.com/gedcom/{0}.html";
-		public String indi = "http://my.domain.com/gedcom/{0}.html";
-		public String obje = "http://my.domain.com/gedcom/{0}.html";
-		public String note = "http://my.domain.com/gedcom/{0}.html";
-		public String repo = "http://my.domain.com/gedcom/{0}.html";
-		public String sour = "http://my.domain.com/gedcom/{0}.html";
-		public String subm = "http://my.domain.com/gedcom/{0}.html";
+	static class UriFormats {
+		
+		public String fam = DEFAULT_URI;
+		public String indi = DEFAULT_URI;
+		public String obje = DEFAULT_URI;
+		public String note = DEFAULT_URI;
+		public String repo = DEFAULT_URI;
+		public String sour = DEFAULT_URI;
+		public String subm = DEFAULT_URI;
 
 		private Map<String, String> getURIs() {
 			Map<String, String> uris;
@@ -75,7 +82,7 @@ public class ReportRdf extends Report implements BatchCompatible {
 		}
 	}
 
-	private enum Extension {
+	public enum Extension {
 		ttl("TURTLE"), n3("N3"), nt("N-TRIPPLE"), rdf("RDF/XML-ABBREV");
 		// RDF/XML-ABBREV is less verbose, use RDF/XML for large models
 		private final String language;
@@ -97,57 +104,66 @@ public class ReportRdf extends Report implements BatchCompatible {
 
 		final String query = getQuery(queries.qGedcom, "query.gedcom");
 		if (optionsOk(query))
-			run("", convert(gedcom), query);
+			run("", getModel(gedcom), query);
 	}
 
-	public void start(final Entity entity) throws IOException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+	public void start(final Entity entity) throws IOException,
+			SecurityException, NoSuchFieldException, IllegalArgumentException,
+			IllegalAccessException {
 
 		// use reflection to get the query option for the actual type of entity
 		final String name = entity.getClass().getSimpleName();
 		final String resourceKeyBase = "query." + name.toLowerCase();
-		final String value = (String) queries.getClass().getField("q" + name).get(queries);
+		final String value = (String) queries.getClass().getField("q" + name)
+				.get(queries);
 
 		final String query = getQuery(value, resourceKeyBase);
 		if (optionsOk(query))
-			run(entity.getId(), convert(entity.getGedcom()), String.format(query, entity.getId()));
+			run(entity.getId(), getModel(entity.getGedcom()), String.format(
+					query, entity.getId()));
 	}
 
-	public void run(final String id, final InfModel model, final String query) throws FileNotFoundException, IOException {
+	public void run(final String id, final Model model, final String query)
+			throws FileNotFoundException, IOException {
 
-		final String fullQuery = assembleQuery(query, model);
+		progress("executing query");
+		final ResultSet resultSet = execSelect(assembleQuery(query, model),
+				model);
+		if (resultSet == null || !resultSet.hasNext()) {
+			progress("no results");
+			return;
+		}
+		progress("query completed");
 
-		for (final String extension : output.extensions.toLowerCase().split("[^A-Za-z0-9]+")) {
-			final String fileName = output.baseFileName + "-" + id + "." + extension;
-			if (extension.equals("xml")) {
-				final ResultSet resultSet = execSelect(fullQuery, model);
-				if (resultSet != null) {
-					if (output.styleSheet.trim().length() > 0)
-						write(fileName, ResultSetFormatter.asXMLString(resultSet, output.styleSheet));
-					else
-						write(fileName, ResultSetFormatter.asXMLString(resultSet));
-				}
-			} else if (extension.equals("txt")) {
-				final ResultSet resultSet = execSelect(fullQuery, model);
-				if (resultSet != null)
-					write(fileName, ResultSetFormatter.asText(resultSet));
-			} else {
-				writeConvertedGedcom(model, fileName);
-			}
+		final String extension = extractExtension(output.reportFileName);
+		if (extension.equals("xml")) {
+			if (output.styleSheet.trim().length() > 0)
+				write(output.reportFileName, ResultSetFormatter.asXMLString(
+						resultSet, output.styleSheet));
+			else
+				write(output.reportFileName, ResultSetFormatter
+						.asXMLString(resultSet));
+		} else if (extension.equals("txt")) {
+			write(output.reportFileName, ResultSetFormatter.asText(resultSet));
 		}
 	}
 
 	private boolean optionsOk(final String query) {
 
 		boolean ok = true;
-		output.baseFileName = initFile(output.baseFileName, translate("base.output.file"));
-		if (output.baseFileName == null || output.baseFileName.trim().length() == 0) {
-			println("no output file name");
-			ok = false;
+		if (output.convertedFileName.trim().length() > 0) {
+			final String ext = extractExtension(output.convertedFileName);
+			try {
+				Extension.valueOf(ext);
+			} catch (final IllegalArgumentException e) {
+				println(output.convertedFileName
+						+ " should have one of the extensions "
+						+ Arrays.deepToString(Extension.values()));
+				ok = false;
+			}
 		}
-		if (output.extensions.trim().length() == 0) {
-			println("no output extension");
-			ok = false;
-		}
+		// TODO if not reuse there should be a convertedFileName
+		// [extension of] report output
 		if (query.trim().length() == 0) {
 			println("no query");
 			ok = false;
@@ -156,21 +172,43 @@ public class ReportRdf extends Report implements BatchCompatible {
 			println("no valid select query: " + query);
 			ok = false;
 		}
+		// TODO read messages from properties
 		return ok;
 	}
 
-	private InfModel convert(final Gedcom gedcom) throws FileNotFoundException, IOException {
+	private String extractExtension(final String reportFileName) {
+		return reportFileName.trim().replaceAll(".*\\.", "").toLowerCase();
+	}
+
+	private Model getModel(final Gedcom gedcom) throws FileNotFoundException,
+			IOException {
+
+		final Model model;
+		final String fileName = output.convertedFileName.trim();
+		final String extension = extractExtension(output.convertedFileName);
+		final String language = Extension.valueOf(extension).getLanguage();
+		if (output.reuseConversion) {
+			progress("reading "+fileName);
+			model = ModelFactory.createDefaultModel();
+			model.read(new FileInputStream(fileName), (String) null, language);
+			progress("reading completed");
+		} else {
+			model = convert(gedcom);
+			writeConvertedGedcom(model, fileName);
+		}
+		// TODO read the other RDF files from the folder and its sub-folders
+		return model;
+	}
+
+	public InfModel convert(final Gedcom gedcom) throws FileNotFoundException,
+			IOException {
 
 		final SemanticGedcomUtil util = new SemanticGedcomUtil();
-		final String query = getQuery(queries.qRules, "query.rules");
-
-		// TODO cash converted model in a map
-		final String cashKey = Arrays.deepToString(uriFormats.getURIs().values().toArray()) + query;
-
 		progress("converting");
 		final Model rawModel = util.toRdf(gedcom, uriFormats.getURIs());
 		progress("applying rules");
-		final InfModel model = util.getInfModel(query);
+		final InfModel model = util.getInfModel(getQuery(queries.qRules,
+				"query.rules"));
 		progress("rules completed");
 		return model;
 	}
@@ -183,12 +221,14 @@ public class ReportRdf extends Report implements BatchCompatible {
 		getOut().flush();
 	}
 
-	private void writeConvertedGedcom(final InfModel model, final String fileName) throws FileNotFoundException {
-
+	private void writeConvertedGedcom(final Model model, final String fileName)
+			throws FileNotFoundException {
+		if (fileName.length() == 0)
+			return;
 		final String language;
-		final String ext = fileName.replaceAll(".*\\.", "").toLowerCase();
 		try {
-			language = Extension.valueOf(ext).getLanguage();
+			language = Extension.valueOf(extractExtension(fileName))
+					.getLanguage();
 		} catch (final IllegalArgumentException exception) {
 			return;
 		}
@@ -203,7 +243,8 @@ public class ReportRdf extends Report implements BatchCompatible {
 		}
 	}
 
-	private void write(final String fileName, final String content) throws IOException {
+	private void write(final String fileName, final String content)
+			throws IOException {
 		if (fileName.startsWith("#")) {
 			getOut().println("############################################");
 			getOut().println(content);
@@ -219,9 +260,13 @@ public class ReportRdf extends Report implements BatchCompatible {
 
 	private boolean doNotOverwrite(final File file) {
 		if (file.exists() && output.askForOverwrite) {
-			final String format = getResources().getString("overwrite.question");
-			final String prompt = MessageFormat.format(format, file.getAbsoluteFile());
-			final int rc = DialogHelper.openDialog(getName(), DialogHelper.WARNING_MESSAGE, prompt, Action2.yesNo(), null);
+			final String format = getResources()
+					.getString("overwrite.question");
+			final String prompt = MessageFormat.format(format, file
+					.getAbsoluteFile());
+			final int rc = DialogHelper
+					.openDialog(getName(), DialogHelper.WARNING_MESSAGE,
+							prompt, Action2.yesNo(), null);
 			return (rc != 0);
 		}
 		return false;
@@ -229,19 +274,21 @@ public class ReportRdf extends Report implements BatchCompatible {
 
 	private void writeProgress(final File file) {
 		final String format = getResources().getString("progress.writing");
-		final String prompt = MessageFormat.format(format, file.getAbsoluteFile());
+		final String prompt = MessageFormat.format(format, file
+				.getAbsoluteFile());
 		getOut().println(prompt);
 		getOut().flush();
 	}
 
-	private ResultSet execSelect(final String query, final InfModel model) {
+	private ResultSet execSelect(final String query, final Model model) {
 		try {
-			final QueryExecution queryExecution = QueryExecutionFactory.create(query, Syntax.syntaxARQ, model, new QuerySolutionMap());
+			final QueryExecution queryExecution = QueryExecutionFactory.create(
+					query, Syntax.syntaxARQ, model, new QuerySolutionMap());
 			final ResultSet resultSet = queryExecution.execSelect();
 			progress("query executed");
 			flush();
 			return resultSet;
-		} catch (QueryParseException exception) {
+		} catch (final QueryParseException exception) {
 			println(exception.getMessage());
 			println(query);
 			flush();
@@ -249,14 +296,17 @@ public class ReportRdf extends Report implements BatchCompatible {
 		return null;
 	}
 
-	private String assembleQuery(final String query, final InfModel model) throws IOException, FileNotFoundException, UnsupportedEncodingException {
+	String assembleQuery(final String query, final Model model)
+			throws IOException, FileNotFoundException,
+			UnsupportedEncodingException {
 		final StringBuffer fullQuery = assemblePrefixes(model);
 		fullQuery.append(getResources().getString("query.function.prefixes"));
 		fullQuery.append(query);
 		return fullQuery.toString();
 	}
 
-	private String getQuery(final String queryPart, final String resourceKeyBase) throws FileNotFoundException, IOException {
+	private String getQuery(final String queryPart, final String resourceKeyBase)
+			throws FileNotFoundException, IOException {
 		final File file = new File(queryPart);
 		if (file.isFile()) {
 			final byte[] buffer = new byte[(int) file.length()];
@@ -265,16 +315,19 @@ public class ReportRdf extends Report implements BatchCompatible {
 		} else if (queryPart.trim().equals("")) {
 			return getResources().getString(resourceKeyBase + ".1");
 		} else if (queryPart.trim().matches("[0-9]*")) {
-			return getResources().getString(resourceKeyBase + "." + queryPart.trim());
+			return getResources().getString(
+					resourceKeyBase + "." + queryPart.trim());
 		}
 		return queryPart;
 	}
 
-	private static StringBuffer assemblePrefixes(final InfModel model) throws FileNotFoundException, IOException {
+	public static StringBuffer assemblePrefixes(final Model model)
+			throws FileNotFoundException, IOException {
 		final Map<String, String> prefixMap = model.getNsPrefixMap();
 		final StringBuffer query = new StringBuffer();
 		for (final Object prefix : prefixMap.keySet().toArray())
-			query.append(String.format("PREFIX %s: <%s> \n", prefix.toString(), prefixMap.get(prefix).toString()));
+			query.append(String.format("PREFIX %s: <%s> \n", prefix.toString(),
+					prefixMap.get(prefix).toString()));
 		return query;
 	}
 }

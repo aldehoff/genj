@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -12,17 +11,19 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 public class SemanticGedcomModel {
 
-	private static final String PREDICATE = "http://genj.sourceforge.net/rdf/gedcom/predicate/";
+	private static final String PREDICATE = "http://genj.sourceforge.net/rdf/GedcomTags/predicate#";
 	public final static Map<String, String> PREFIXES = new HashMap<String, String>();
 	static {
 		PREFIXES.put("p", PREDICATE);
-		PREFIXES.put("t", "http://genj.sourceforge.net/rdf/gedcom/type/");
-		PREFIXES.put("r", "http://genj.sourceforge.net/rdf/gedcom/rule/");
+		PREFIXES.put("t", "http://genj.sourceforge.net/rdf/GedcomTags/type#");
+		PREFIXES.put("r", "http://genj.sourceforge.net/rdf/GedcomTags/rule#");
 		PREFIXES.put("xsd", "http://www.w3.org/2001/XMLSchema#");
+		PREFIXES.put("rdfs","http://www.w3.org/2000/01/rdf-schema#");
+
 	}
 	
 	private final Model model = ModelFactory.createDefaultModel();
-	private final Property valueProperty = model.createProperty(PREDICATE + "value");
+	final Property valueProperty = model.createProperty(PREFIXES.get("rdfs")+"label");
 	private final Property idProperty = model.createProperty(PREDICATE + "id");
 	
 	private final Map<String, Property> properties = new HashMap<String, Property>();
@@ -70,12 +71,12 @@ public class SemanticGedcomModel {
 		return property;
 	}
 
-	public void addLiteral(final Resource resource, final String tag, final String value) {
-		resource.addProperty(toProperty(tag), value);
+	public void addLiteral(final Resource resource, final String value) {
+		resource.addProperty(valueProperty, value);
 	}
 
-	public void addLiteral(final Resource resource, final String tag, final Object value) {
-		resource.addLiteral(toProperty(tag), value);
+	public void addLiteral(final Resource resource, final Object value) {
+		resource.addLiteral(valueProperty, value);
 	}
 
 	public Model getModel() {
