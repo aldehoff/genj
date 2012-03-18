@@ -1,7 +1,6 @@
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
-import genj.gedcom.TagPath;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.time.PointInTime;
 import genj.report.Report;
@@ -14,6 +13,8 @@ public class ReportContemporaries extends Report {
 	 
 	// check all relevant tags by default	
 	public int optionLifeSpan = 70;
+	public boolean showId = false;
+	public String sortPath = "INDI:NAME";
   
 	//translate strings for output  
 	private String textTitle = translate("title");
@@ -94,18 +95,18 @@ public class ReportContemporaries extends Report {
 	  println(textContemps + " " + indi.getName() + " " + strSpan);
 	  println();
 	  
-	  //list anyone inn the file who was born or died during the life span of the subject
-	  individuals = indi.getGedcom().getEntities(Gedcom.INDI,"");
+	  //list anyone in the file who was born or died during the life span of the subject
+	  individuals = indi.getGedcom().getEntities(Gedcom.INDI,sortPath);
       
-	  for(loop=0; loop<individuals.length; loop++) {	  
-	  
+	  for(Entity individual:individuals) {	  
+		  Indi contemporary = (Indi) individual;
 		  //don't check self ;)
-		  if((Indi)(individuals[loop]) != indi ) {
+		  if((Indi)contemporary != indi ) {
 
 		  	  //get birth
-			  tempDOBYear = getYear(((Indi)individuals[loop]).getBirthDate());
+			  tempDOBYear = getYear(contemporary.getBirthDate());
 			  //get death
-			  tempDODYear = getYear(((Indi)individuals[loop]).getDeathDate());
+			  tempDODYear = getYear(contemporary.getDeathDate());
 			  
 			  //no birth or death year?
 			  if((tempDOBYear ==-1) && (tempDODYear ==-1)) { 
@@ -133,7 +134,7 @@ public class ReportContemporaries extends Report {
 					 
 				  }
 				  else {
-					  strSpan = ((Indi)(individuals[loop])).getName() + " " + strSpan; 
+					  strSpan = (showId?"(" + contemporary.getId() + ") ":"")+contemporary.getName() + " " + strSpan; 
 					  println(strSpan);
 				  }
 			  
