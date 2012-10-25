@@ -74,6 +74,7 @@ import genj.view.SelectionSink;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -342,6 +343,22 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
               result.add(group);
             cursor = cursor.getParent();
           }
+        }
+        
+        // sub-menu for entities
+        if (context.getEntities().size()>1) {
+        	
+            List<Fam> fams = new ArrayList<Fam>();
+            for (Entity e : context.getEntities()) {
+                if (e instanceof Fam && ((Fam)e).getNoOfSpouses()!=0)
+                	fams.add((Fam)e);
+            }
+            if (!fams.isEmpty()) {
+                Action2.Group group = new ActionProvider.EntitiesActionGroup(context.getEntities());
+                group.add(new SwapSpouses(fams));
+                result.add(group);
+            }
+            
         }
      
         // sub-menu for entity
