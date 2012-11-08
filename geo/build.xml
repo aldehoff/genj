@@ -79,6 +79,7 @@
      <fileset dir="./images"/>
      <fileset dir="./language/en"/>
      <fileset dir="./language/fr"/>
+   	 <fileset dir="./language/it"/>
      <fileset dir="./src/core" includes="META-INF/**"/>
     <fileset dir="./src/core" includes="**/*.properties"/>
    </jar>
