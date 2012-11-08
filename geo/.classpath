@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="language/fr"/>
 	<classpathentry kind="lib" path="language/nl"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/genj"/>
+	<classpathentry kind="lib" path="language/it"/>
 	<classpathentry kind="output" path="build/eclipse"/>
 </classpath>
