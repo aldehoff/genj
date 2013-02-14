@@ -157,7 +157,8 @@ public class ChoosePropertyBean extends JComponent {
 
     // list of selected properties
     if (rbChoose.isSelected() == true) {
-      Object[] objs = lChoose.getSelectedValues();
+      @SuppressWarnings("deprecation")
+	  Object[] objs = lChoose.getSelectedValues();
       result = new String[objs.length];
       for (int i=0;i<objs.length;i++) {
         result[i] = ((MetaProperty)objs[i]).getTag();
@@ -244,7 +245,8 @@ public class ChoosePropertyBean extends JComponent {
     public void valueChanged(ListSelectionEvent e) {
     
       // Check selection
-      Object[] selection = lChoose.getSelectedValues();
+      @SuppressWarnings("deprecation")
+ 	  Object[] selection = lChoose.getSelectedValues();
     
       // None selected
       if ((selection==null)||(selection.length==0)) {

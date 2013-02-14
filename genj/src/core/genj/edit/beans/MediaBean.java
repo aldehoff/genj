@@ -366,8 +366,10 @@ public class MediaBean extends PropertyBean implements ContextProvider {
         thumbs.addSource(source);
       
       // keep track of all sources
-      Set<Property> props = propsNeedingOBJEs.get(source); 
-      for (Object prop : to.getSelectedValues())
+      Set<Property> props = propsNeedingOBJEs.get(source);
+      @SuppressWarnings("deprecation")
+      Object[] selection = to.getSelectedValues();
+      for (Object prop : selection)
         props.add((Property)prop);
       
       // mark

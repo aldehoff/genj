@@ -74,7 +74,8 @@ public class ContextListWidget extends JList implements ContextProvider {
    */
   public ViewContext getContext() {
     
-    Object[] selection = getSelectedValues();
+    @SuppressWarnings("deprecation")
+	Object[] selection = getSelectedValues();
     
     // one selected?
     if (selection.length==1&&selection[0] instanceof ViewContext)

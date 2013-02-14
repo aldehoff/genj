@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" output="build/eclipse/core" path="src/core"/>
 	<classpathentry kind="src" output="build/eclipse/run" path="src/launcher"/>
-	<classpathentry kind="src" output="build/eclipse/report" path="src/report"/>
+	<classpathentry excluding="rdf/*" kind="src" output="build/eclipse/report" path="src/report"/>
 	<classpathentry kind="src" output="build/eclipse/contrib" path="src/contrib"/>
 	<classpathentry kind="src" output="build/eclipse/tst" path="src/tst"/>
 	<classpathentry exported="true" kind="lib" path="images"/>

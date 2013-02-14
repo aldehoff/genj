@@ -601,7 +601,8 @@ public class SearchView extends View {
         return null;
       
       List<Property> properties = new ArrayList<Property>();
-      Object[] selection = getSelectedValues();
+      @SuppressWarnings("deprecation")
+	  Object[] selection = getSelectedValues();
       for (int i = 0; i < selection.length; i++) {
         Hit hit = (Hit)selection[i];
         properties.add(hit.getProperty());
