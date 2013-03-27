@@ -109,6 +109,11 @@
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_hu-@version@.zip" unpack="true"/>
    </pack>
    
+  <pack name="Italian" required="no" preselected="no">
+   <description>Italian Resources and Help</description> 
+    <file targetdir="$INSTALL_PATH" src="build/dist/genj_it-@version@.zip" unpack="true"/>
+   </pack>
+   
   <pack name="Polish" required="no" preselected="no">
    <description>Polish Resources and Help</description> 
     <file targetdir="$INSTALL_PATH" src="build/dist/genj_pl-@version@.zip" unpack="true"/>
