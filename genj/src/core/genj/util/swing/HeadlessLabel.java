@@ -19,6 +19,8 @@
  */
 package genj.util.swing;
 
+import genj.util.EnvironmentChecker;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -148,6 +150,13 @@ public class HeadlessLabel extends JComponent {
     FontMetrics fm = getFontMetrics(getFont());
     width = fm.stringWidth(txt);
     height = fm.getHeight();
+    // check override
+    String heightOverride = EnvironmentChecker.getProperty("genj.label.height", "", "check overriden label height");
+    if (heightOverride!=null) try {
+      height = Math.max(height, Integer.parseInt(heightOverride));
+    } catch (NumberFormatException e) {
+      // ignored
+    }
     // check image
     if (icon!=null) {
       width += icon.getIconWidth();
