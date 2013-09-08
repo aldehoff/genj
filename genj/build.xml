@@ -44,7 +44,7 @@
   <target name="compile.launcher" depends="init">
     <mkdir dir="./build/classes/launcher"/>
     <javac srcdir="src/launcher" destdir="./build/classes/launcher"
-      debug="${javac.debug}" target="1.5" optimize="off" deprecation="on" encoding="ASCII" >
+      debug="${javac.debug}" source="1.5" target="1.5" optimize="off" deprecation="on" encoding="ASCII" >
     </javac>
   </target>
 	
@@ -54,7 +54,7 @@
   <target name="compile.contrib" depends="init">
     <mkdir dir="./build/classes/contrib"/>
     <javac srcdir="src/contrib" destdir="./build/classes/contrib"
-           debug="${javac.debug}" target="1.5" optimize="off" deprecation="on" encoding="ASCII" >
+           debug="${javac.debug}" source="1.5" target="1.5" optimize="off" deprecation="on" encoding="ASCII" >
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -65,7 +65,7 @@
   <target name="compile.core" depends="init">
     <mkdir dir="./build/classes/core"/>
     <javac srcdir="src/core" destdir="./build/classes/core"
-           debug="${javac.debug}" target="1.5" optimize="on" deprecation="on" encoding="ASCII" >
+           debug="${javac.debug}" source="1.5" target="1.5" optimize="on" deprecation="on" encoding="ASCII" >
       <classpath refid="project.class.path"/>
     </javac>
   </target>
@@ -76,7 +76,7 @@
   <target name="compile.report" depends="init">
     <mkdir dir="./build/classes/report"/>
     <javac srcdir="src/report" destdir="./build/classes/report" excludes="rdf/**"
-           debug="${javac.debug}" target="1.5" optimize="off" deprecation="on" encoding="UTF-8" >
+           debug="${javac.debug}" source="1.5" target="1.5" optimize="off" deprecation="on" encoding="UTF-8" >
       <classpath refid="project.class.path"/>
     </javac>
   	<copy todir="./build/classes/report">
@@ -85,7 +85,7 @@
   </target>
 
   <!--
-   Report Compilation
+   Tests Compilation
    -->
   <target name="compile.tst" depends="init">
     <mkdir dir="./build/classes/tst"/>
