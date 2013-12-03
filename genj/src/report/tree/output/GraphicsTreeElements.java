@@ -77,6 +77,8 @@ public class GraphicsTreeElements implements TreeElements {
     private static final TagPath PATH_INDIBIRTPLAC = new TagPath("INDI:BIRT:PLAC");
     private static final TagPath PATH_INDIDEATPLAC = new TagPath("INDI:DEAT:PLAC");
     private static final TagPath PATH_INDIOCCU = new TagPath("INDI:OCCU");
+    private static final TagPath PATH_INDIRESI = new TagPath("INDI:RESI:ADDR");
+    private static final TagPath PATH_INDIRESICITY = new TagPath("INDI:RESI:ADDR:CITY");
     private static final TagPath PATH_INDITITL = new TagPath("INDI:TITL");
     private static final TagPath PATH_FAMMARRPLAC = new TagPath("FAM:MARR:PLAC");
     private static final TagPath PATH_FAMDIVPLAC = new TagPath("FAM:DIV:PLAC");
@@ -238,6 +240,11 @@ public class GraphicsTreeElements implements TreeElements {
     public boolean draw_occupation = true;
 
     /**
+     * Whether to display place of residence.
+     */
+    public boolean draw_residence = false;
+
+    /**
      * Whether to display images.
      */
     public boolean draw_images = true;
@@ -317,7 +324,7 @@ public class GraphicsTreeElements implements TreeElements {
         int imageHeight = indibox.height;
         if (draw_images) {
           Dimension d = MediaRenderer.getSize(i, graphics);
-          if (d.width>0&&d.height>0)
+          if (d.width > 0 && d.height > 0)
             imageWidth = d.width * indibox.height / d.height;
             if (imageWidth > MAX_IMAGE_WIDTH) {
                 imageWidth = MAX_IMAGE_WIDTH;
@@ -391,6 +398,7 @@ public class GraphicsTreeElements implements TreeElements {
         PropertyPlace birthPlace = null;
         PropertyPlace deathPlace = null;
         Property occupation = null;
+        Property residence = null;
 
         if (draw_dates) {
             birthDate = i.getBirthDate();
@@ -412,6 +420,18 @@ public class GraphicsTreeElements implements TreeElements {
 
         if (draw_occupation)
             occupation = i.getProperty(PATH_INDIOCCU);
+
+        if (draw_residence) {
+            residence = i.getProperty(PATH_INDIRESICITY);
+            if (residence == null || residence.getDisplayValue().trim() == "")
+                residence = i.getProperty(PATH_INDIRESI);
+        }
+
+        // Place of residence
+        if (residence != null) {
+            graphics.drawString(residence.getDisplayValue(), x + 6, currentY);
+            currentY += LINE_HEIGHT;
+        }
 
         // Date and place of birth
         if (birthDate != null || birthPlace != null) {
@@ -444,9 +464,8 @@ public class GraphicsTreeElements implements TreeElements {
         // Occupation
         if (occupation != null) {
             graphics.drawString(occupation.getDisplayValue(), x + 6, currentY);
+            currentY += LINE_HEIGHT;
         }
-
-
 
         // Sex symbol
         if (draw_sex_symbols) {
@@ -463,7 +482,7 @@ public class GraphicsTreeElements implements TreeElements {
         }
 
         // Photo
-        if(imageWidth > 0)
+        if (imageWidth > 0)
         {
             AffineTransform transform = null;
             double scale = 1;
@@ -474,8 +493,9 @@ public class GraphicsTreeElements implements TreeElements {
                 scale = IMAGE_SCALE_FACTOR;
             }
 
-            MediaRenderer.render(graphics, 
-                new Rectangle((int)(x + dataWidth*scale), (int)(y), (int)(imageWidth*scale), (int)(imageHeight*scale)), 
+            MediaRenderer.render(
+                graphics,
+                new Rectangle((int)(x + dataWidth*scale), y, (int)(imageWidth*scale), (int)(imageHeight*scale)),
                 i);
 
             if (high_quality_images)
@@ -487,7 +507,7 @@ public class GraphicsTreeElements implements TreeElements {
     }
     /**
      * Outputs a family box.
-     * @param i  individual
+     * @param fambox  the family box
      * @param x  x coordinate
      * @param y  y coordinate
      * @param gen generation number
@@ -730,6 +750,9 @@ public class GraphicsTreeElements implements TreeElements {
         }
         if (draw_occupation && i.getProperty(PATH_INDIOCCU) != null)
             lines++;
+        if (draw_residence && i.getProperty(PATH_INDIRESI) != null)
+            lines++;
+
         if (lines - DEFAULT_INDIBOX_LINES > 0)
             indibox.height += (lines - DEFAULT_INDIBOX_LINES) * LINE_HEIGHT;
 
@@ -792,6 +815,15 @@ public class GraphicsTreeElements implements TreeElements {
                 indibox.width = width + 7+TEXT_MARGIN;
         }
 
+        if (draw_residence && i.getProperty(PATH_INDIRESI) != null) {
+            Property residence = i.getProperty(PATH_INDIRESICITY);
+            if (residence == null || residence.getDisplayValue().trim() == "")
+                residence = i.getProperty(PATH_INDIRESI);
+            width = getTextWidth(residence.getDisplayValue(), DETAILS_FONT);
+            if (width + 7+TEXT_MARGIN > indibox.width)
+                indibox.width = width + 7+TEXT_MARGIN;
+        }
+
         if (draw_indi_ids) {
             width = getTextWidth(i.getId(), ID_FONT);
             if (draw_sex_symbols)
@@ -804,8 +836,8 @@ public class GraphicsTreeElements implements TreeElements {
         if(draw_images)
         {
           Dimension d = MediaRenderer.getSize(i, graphics);
-          if(d.width>0&&d.height>0) {
-              int newWidth = d.width * DEFAULT_INDIBOX_HEIGHT / d.height;
+          if (d.width > 0 && d.height > 0) {
+              int newWidth = d.width * indibox.height / d.height;
               if (newWidth < MAX_IMAGE_WIDTH)
                   indibox.width += newWidth;
               else
