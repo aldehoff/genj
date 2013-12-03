@@ -40,25 +40,32 @@ public class AlignRightArranger extends AbstractArranger {
 
     protected void arrangeChildren(IndiBox indibox) {
         int currentX = indibox.wPlus;
-        if (indibox.getDir() == Direction.PARENT)
+        if (indibox.getDir() == Direction.PARENT) {
             currentX = indibox.prev.width / 2 - indibox.x - spacing;
+            System.out.println("FOOO " + indibox.individual.getId());
+            System.out.println(indibox.prev.width / 2);
+            System.out.println(indibox.x);
+
+        }
         for (int i = 0; i < indibox.children.length; i++) {
             IndiBox child = indibox.children[i];
             child.y = 1;
             filter(child);
             child.x = currentX - child.wPlus;
+            System.out.println(child.x + " " + indibox.children[i].individual.getName());
             currentX -= child.wPlus + child.wMinus + spacing;
         }
-        
-        int childrenWidth = indibox.wPlus - currentX - spacing;
-        int parentWidth = indibox.wMinus + indibox.wPlus;
-        
-        if (parentWidth > childrenWidth) {
-        	int diff = (parentWidth - childrenWidth) / 2;
-	        for (int i = 0; i < indibox.children.length; i++) {
-    	        IndiBox child = indibox.children[i];
-        	    child.x -= diff;
-        	}
+        if (indibox.getDir() != Direction.PARENT) {
+            int childrenWidth = indibox.wPlus - currentX - spacing;
+            int parentWidth = indibox.wMinus + indibox.wPlus;
+
+            if (parentWidth > childrenWidth) {
+                int diff = (parentWidth - childrenWidth) / 2;
+                for (int i = 0; i < indibox.children.length; i++) {
+                    IndiBox child = indibox.children[i];
+                    child.x -= diff;
+                }
+            }
         }
     }
 
@@ -70,8 +77,8 @@ public class AlignRightArranger extends AbstractArranger {
     }
 
     protected void arrangeSpouseParent(IndiBox indibox, IndiBox parent) {
+        parent.x = indibox.width - parent.width;
         filter(parent);
-        parent.x = indibox.spouse.width - parent.wPlus;
         parent.y = -parent.hPlus;
     }
 

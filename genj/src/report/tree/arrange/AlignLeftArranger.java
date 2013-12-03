@@ -40,8 +40,9 @@ public class AlignLeftArranger extends AbstractArranger {
 
 	protected void arrangeChildren(IndiBox indibox) {
 		int currentX = 0;
-		if (indibox.getDir() == Direction.PARENT)
+		if (indibox.getDir() == Direction.PARENT) {
             currentX = indibox.prev.width / 2 - indibox.x + spacing;
+        }
 
 		for (int i = 0; i < indibox.children.length; i++) {
 			IndiBox child = indibox.children[i];
@@ -50,16 +51,17 @@ public class AlignLeftArranger extends AbstractArranger {
             child.x = currentX + child.wMinus;
 			currentX += child.wMinus + child.wPlus + spacing;
 		}
-		//int min = indibox.children[0].x - indibox.children[0].wMinus;
-		int childrenWidth = currentX - spacing;
-        int parentWidth = indibox.wMinus + indibox.wPlus;
-        
-        if (parentWidth > childrenWidth) {
-        	int diff = (parentWidth - childrenWidth) / 2 - indibox.wMinus;
-	        for (int i = 0; i < indibox.children.length; i++) {
-    	        IndiBox child = indibox.children[i];
-        	    child.x += diff;
-        	}
+        if (indibox.getDir() != Direction.PARENT) {
+            int childrenWidth = currentX - spacing;
+            int parentWidth = indibox.wMinus + indibox.wPlus;
+
+            if (parentWidth > childrenWidth) {
+                int diff = (parentWidth - childrenWidth) / 2 - indibox.wMinus;
+                for (int i = 0; i < indibox.children.length; i++) {
+                    IndiBox child = indibox.children[i];
+                    child.x += diff;
+                }
+            }
         }
 	}
 
