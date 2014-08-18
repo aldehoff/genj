@@ -187,12 +187,9 @@ public class BasicTreeBuilder implements TreeBuilder {
      * not be found.
      */
 	private Indi getParent(Indi i) {
-		Fam[] fs = i.getFamiliesWhereChild();
-		if (fs.length == 0)
+		Fam f = i.getFamilyWhereBiologicalChild();
+		if (f==null)
 			return null;
-		Fam f = fs[0];
-		if (f.getHusband() != null)
-			return f.getHusband();
-		return f.getWife();
+		return f.getHusband() != null ? f.getHusband(): f.getWife();
 	}
 }
