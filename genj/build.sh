@@ -7,5 +7,5 @@ if [ ! -d "$JAVA_HOME" ]; then
   JAVA_HOME=${BIN%/*}
 fi 
 
-$JAVA_HOME/bin/java -cp $JAVA_HOME/lib/tools.jar:./contrib/ant/ant.jar org.apache.tools.ant.Main $1 $2 $3
+"$JAVA_HOME/bin/java" -cp ./contrib/ant/ant.jar org.apache.tools.ant.Main $1 $2 $3
 
