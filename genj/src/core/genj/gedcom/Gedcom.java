@@ -1174,12 +1174,6 @@ public class Gedcom {
       // .. instantiate if necessary
       result = new ReferenceSet<String, Property>();
       tags2refsets.put(tag, result);
-      // .. and pre-fill
-      String defaults = Gedcom.resources.getString(tag+".vals",false);
-      if (defaults!=null) {
-        StringTokenizer tokens = new StringTokenizer(defaults,",");
-        while (tokens.hasMoreElements()) result.add(tokens.nextToken().trim(), null);
-      }
     }
     // done
     return result;

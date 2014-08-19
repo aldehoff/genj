@@ -58,10 +58,10 @@ public class PropertyFamilyChild extends PropertyXRef {
     Property pedi = getProperty("PEDI");
     if (pedi!=null) {
       String value = pedi.getValue();
-      if ("birth".equals(value)) return Boolean.TRUE;
-      if ("adopted".equals(value)) return Boolean.FALSE;
-      if ("foster".equals(value)) return Boolean.FALSE; 
-      if ("sealing".equals(value)) return Boolean.FALSE;
+      if (value.indexOf("birth")>=0) return Boolean.TRUE;
+      if (value.indexOf("adopted")>=0) return Boolean.FALSE;
+      if (value.indexOf("foster")>=0) return Boolean.FALSE; 
+      if (value.indexOf("sealing")>=0) return Boolean.FALSE;
     }
     // dunno
     return null;

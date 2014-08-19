@@ -19,6 +19,7 @@
  */
 package genj.edit.beans;
 
+import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyChoiceValue;
 import genj.util.GridBagHelper;
@@ -28,6 +29,9 @@ import genj.util.swing.DialogHelper;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.swing.JCheckBox;
 import javax.swing.border.EmptyBorder;
@@ -116,12 +120,33 @@ public class ChoiceBean extends PropertyBean {
     choice.setValue(text, global.isSelected());
     
     // reset
-    choices.setValues(((PropertyChoiceValue)property).getChoices(true));
+    choices.setValues(getChoicesToShow((PropertyChoiceValue)property));
     choices.setText(text);
     global.setSelected(false);
     global.setVisible(false);
       
     // Done
+  }
+  
+  private List<String> getChoicesToShow(PropertyChoiceValue property) {
+
+	  List<String> vals = property.getChoices(true);
+	  
+	  List<String> defaults = property.getDefaults();
+	  if (!defaults.isEmpty()) {
+		  gotdefault: for (String def : defaults) {
+			  for (String val : vals) {
+				  if (val.indexOf(def)>=0)
+					  continue gotdefault;
+			  }
+			  vals.add(def);
+		  }
+	  }
+	  
+	  Collections.sort(vals, property.getGedcom().getCollator());
+      
+      return vals;
+	  
   }
 
   /**
@@ -136,7 +161,7 @@ public class ChoiceBean extends PropertyBean {
     // e.g. witness@INDI:BIRT
     
     if (choice!=null) {
-      choices.setValues(choice.getChoices(true));
+      choices.setValues(getChoicesToShow((PropertyChoiceValue)property));
       choices.setText(choice.getDisplayValue());
       sameChoices = choice.getSameChoices();
     } else {
