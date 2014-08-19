@@ -662,7 +662,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
       // a reference update?
       if (property instanceof PropertyXRef) {
         update = true;
-        return;
+      }
+      // a pedigree update?
+      if ("PEDI".equals(property.getTag())) {
+    	  update = true;
       }
       // something visible?
       Node node = getNode(property.getEntity());
