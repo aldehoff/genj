@@ -141,7 +141,7 @@ public class GedcomToRdfConverter {
 
 		// takes a few seconds to run
 		final String uriPattern = "http://my.domain.com/gedcom/{0}.html";
-		final String url = new File("gedcom/example.ged").toURI().toURL().toString();
+		final String url = new File("gedcom/royal92.ged").toURI().toURL().toString();
 		final String setOfRules = "2";
 		main(new String[] { "-rules", setOfRules, "-uri", uriPattern, "-gedcom", url });
 	}

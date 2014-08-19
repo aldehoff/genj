@@ -20,7 +20,7 @@ public class OriginTest extends TestCase {
   public void testRelative() throws Throwable {
     
     String dir = new File("./gedcom").getCanonicalPath();
-    Origin origin = Origin.create(new File(dir, "example.ged").toURL());
+    Origin origin = Origin.create(new File(dir, "royal92.ged").toURL());
 
     assertEquals(null, origin.calcRelativeLocation("foo.jpg"));
     assertEquals("foo.jpg", origin.calcRelativeLocation(new File(dir, "foo.jpg").toString()));
@@ -34,17 +34,17 @@ public class OriginTest extends TestCase {
     assertEquals(null, origin.calcRelativeLocation("right?"));
     
     // handle file:/foo/bar/... this means file /foo/bar/... and apparently happens for File.toURL() on Unix
-    origin = Origin.create(new URL("file:/foo/bar/example.ged"));
+    origin = Origin.create(new URL("file:/foo/bar/royal92.ged"));
     assertEquals("foo.jpg", origin.calcRelativeLocation("/foo/bar/foo.jpg"));
     assertEquals(null, origin.calcRelativeLocation("/foo.jpg"));
 
     // handle file://foo/bar/... this means file /foo/bar/... what I'd normally expect
-    origin = Origin.create(new URL("file://foo/bar/example.ged"));
+    origin = Origin.create(new URL("file://foo/bar/royal92.ged"));
     assertEquals("foo.jpg", origin.calcRelativeLocation("/foo/bar/foo.jpg"));
     assertEquals(null, origin.calcRelativeLocation("/foo.jpg"));
     
     // handle file:foo/bar/... this means file ./foo/bar/... relative shouldn't but could happen for origin
-    origin = Origin.create(new URL("file:foo/bar/example.ged"));
+    origin = Origin.create(new URL("file:foo/bar/royal92.ged"));
     assertEquals("foo.jpg", origin.calcRelativeLocation(System.getProperty("user.dir")+"/foo/bar/foo.jpg"));
     assertEquals(null, origin.calcRelativeLocation("/foo.jpg"));
   }

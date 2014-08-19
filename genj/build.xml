@@ -338,7 +338,7 @@
     <echo file="./build/run/applet.html"><![CDATA[
       <html><body>
        <applet code="genj.applet.Applet.class" width="200" height="200">
-        <param name="gedcom" value="file:/${basedir}/gedcom/example.ged">
+        <param name="gedcom" value="file:/${basedir}/gedcom/royal92.ged">
        </applet>
       </body></html>
     ]]></echo>

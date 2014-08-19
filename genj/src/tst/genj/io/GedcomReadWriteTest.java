@@ -60,7 +60,7 @@ public class GedcomReadWriteTest extends TestCase {
     Logger.getLogger("").setLevel(Level.OFF);
 
     // read/write file
-    File original = new File("./gedcom/example.ged");
+    File original = new File("./gedcom/royal92.ged");
     File temp = File.createTempFile("test", ".ged");
     
     // read it

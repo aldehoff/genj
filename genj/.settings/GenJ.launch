@@ -12,7 +12,7 @@
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="genj.app.App"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="gedcom/example.ged"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="gedcom/royal92.ged"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="genj"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgenj.debug.level=FINE -Duser.language=DE -Xmx1024m -Dgenj.edit.beans.cache=false -Dcom.sun.management.jmxremote"/>
 </launchConfiguration>
