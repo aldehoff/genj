@@ -173,7 +173,7 @@ public class ViewPortOverview extends JPanel {
       // check for resize
       isResize = isResize(p);
       // check for a drag offset
-      dragOffset = last.contains(p) ? new Point(last.x-p.x, last.y-p.y) : null;
+      dragOffset = last.contains(p) ? new Point(last.x-p.x, last.y-p.y) : new Point(-last.width/2, -last.height/2);
       // done
     }
     /**
