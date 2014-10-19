@@ -21,13 +21,14 @@ public class CreateXReference extends CreateRelationship {
   private Property source;
   private String sourceTag;
   private PropertyXRef xref;
-  
-  /** Constructor */
+
   public CreateXReference(Property source, String sourceTag) {
     super(getName(source, sourceTag),source.getGedcom(), getTargetType(source, sourceTag));
     this.source = source;
     this.sourceTag = sourceTag;
   }
+
+
   
   /** figure out target type for given source+tag */
   private static String getTargetType(Property source, String sourceTag) {
