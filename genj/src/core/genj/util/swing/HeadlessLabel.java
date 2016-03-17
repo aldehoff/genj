@@ -54,6 +54,19 @@ public class HeadlessLabel extends JComponent {
   private boolean isOpaque = false;
   private Font font;
   private int horizontalAlignment = SwingConstants.LEFT;
+  
+  private final static Integer heightOverride = initHeightOverride();
+  
+  private static Integer initHeightOverride() {
+	  String override = EnvironmentChecker.getProperty("genj.label.height", "", "check overriden label height");
+	  if (override!=null) try {
+		  return new Integer(Integer.parseInt(override));
+	  } catch (NumberFormatException e) {
+	    // ignored
+	  }
+	  return null;
+  }
+  
 
   /**
    * Constructor
@@ -151,12 +164,8 @@ public class HeadlessLabel extends JComponent {
     width = fm.stringWidth(txt);
     height = fm.getHeight();
     // check override
-    String heightOverride = EnvironmentChecker.getProperty("genj.label.height", "", "check overriden label height");
-    if (heightOverride!=null) try {
-      height = Math.max(height, Integer.parseInt(heightOverride));
-    } catch (NumberFormatException e) {
-      // ignored
-    }
+    if (heightOverride!=null)
+    	height = Math.max(height, heightOverride.intValue());
     // check image
     if (icon!=null) {
       width += icon.getIconWidth();

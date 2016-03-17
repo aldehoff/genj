@@ -277,17 +277,17 @@ public abstract class PropertyXRef extends Property {
    * Comparison based on target
    */  
   public int compareTo(Property other) {
-    
-    // safety check
-    PropertyXRef that = (PropertyXRef)other;
+	  
+	if (!(other instanceof PropertyXRef))
+		return super.compareTo(other);
     
     // got the references?
+    PropertyXRef that = (PropertyXRef)other;
     if (this.getTargetEntity()==null||that.getTargetEntity()==null)
       return super.compareTo(that);
 
     // compare references - using toString() but it should really depend
     // on what the renderer renders
-    
     return compare(getTargetEntity().toString(), that.getTargetEntity().toString());
   }
 
