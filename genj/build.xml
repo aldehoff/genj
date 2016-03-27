@@ -121,6 +121,7 @@
   	<exec failifexecutionfails="false" failonerror="true" executable="svnversion" spawn="false" dir="." outputproperty="revision">
   	  <arg line="-n"/>
   	</exec>
+	<property name="revision" value="dev"/>
 
     <tstamp><format property="now" pattern="yyyy/MM/dd HH:mm:ss"/></tstamp>
 
