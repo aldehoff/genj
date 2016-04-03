@@ -92,6 +92,9 @@
     <javac srcdir="src/tst" destdir="./build/classes/tst"
            debug="${javac.debug}" target="1.5" optimize="off" deprecation="on" encoding="ASCII" >
       <classpath refid="project.class.path"/>
+    	<classpath>
+        <pathelement path ="./build/classes/report"/>
+    	</classpath>
     </javac>
   </target>
 
