@@ -73,6 +73,23 @@ public class PropertyDateTest extends TestCase {
     
   }
   
+  public void testJulian() throws GedcomException {
+    
+
+    // 29.2.1700 + 1 = 1.3.1700
+    assertEquals(
+        new PointInTime(29-1, 2-1, 1700, JULIAN).getJulianDay(),
+        new PointInTime(1-1, 3-1, 1700, JULIAN).getJulianDay() - 1
+        );
+
+    // 28.2.1700 + 1 = 1.3.1700
+    assertEquals(
+        new PointInTime(28-1, 2-1, 1699, JULIAN).getJulianDay(),
+        new PointInTime(1-1, 3-1, 1699, JULIAN).getJulianDay() - 1
+        );
+  }
+  
+  
   /**
    * Test dates
    */
