@@ -58,11 +58,11 @@ public class EnvironmentChecker {
   
   
   /**
-   * Check for Java 1.6 and higher
+   * Check for Java 8 and higher
    */
-  public static boolean isJava16() {
+  public static boolean isJava8OrHigher() {
     String version = getProperty("java.version", "", "Checking Java VM version");
-    return version.matches("1\\.[6789].*");
+    return version.matches("1\\.[89].*");
   }
   
   /**
