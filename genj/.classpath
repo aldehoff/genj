@@ -8,7 +8,8 @@
 	<classpathentry exported="true" kind="lib" path="images"/>
 	<classpathentry exported="true" kind="lib" path="lib/graphj.jar"/>
 	<classpathentry exported="true" kind="lib" path="language/en"/>
-	<classpathentry exported="true" kind="lib" path="lib/junit.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/arq-2.8.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jena-2.6.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jfreechart-1.0.19.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jcommon-1.0.23.jar"/>
 	<classpathentry kind="lib" path="language/de"/>
