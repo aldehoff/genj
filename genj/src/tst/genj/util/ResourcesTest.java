@@ -78,16 +78,17 @@ public class ResourcesTest extends TestCase {
     
   private static void diff(String translation) {
     
-    System.out.println("Diffing en against "+translation);
+    System.out.println("---Diffing en against "+translation);
     try  {
-      List<String> diffs = new ResourcesTest().diff("en", translation);
+      List<Diff> diffs = new ResourcesTest().diff("en", translation);
       if (diffs.isEmpty())
         System.out.println("No differences found - Good Job!");
       else {
         System.out.println(diffs.size()+" differences found:");
-        for (String s : diffs)
+        for (Diff s : diffs) {
           System.out.println(s);
-      }      
+        }
+      }
     } catch (IOException e) {
       System.out.println("IOException during diff: "+e.getMessage());
     }
@@ -96,16 +97,16 @@ public class ResourcesTest extends TestCase {
   /**
    * Diff directories
    */
-  private List<String> diff(String original, String translation) throws IOException {
+  private List<Diff> diff(String original, String translation) throws IOException {
     return diffResources(loadResources(original), loadResources(translation));
   }
   
   /** 
    * Diff resources of the original vs the translation
    */
-  private List<String> diffResources(Map<String,Resources> originals, Map<String,Resources> translations) {
+  private List<Diff> diffResources(Map<String,Resources> originals, Map<String,Resources> translations) {
     
-    List<String> diffs = new ArrayList<String>();
+    List<Diff> diffs = new ArrayList<Diff>();
 
     // go package by package
     for (String pckg : originals.keySet()) {
@@ -113,7 +114,7 @@ public class ResourcesTest extends TestCase {
       Resources original = (Resources)originals.get(pckg);
       Resources translation = (Resources)translations.get(pckg);
       if (translation==null)
-        diffs.add(pckg+",*,not translated");
+        diffs.add(new Diff(pckg, "*", Diff.NOT_TRANSLATED));
       else
         diffResource(pckg, original, translation, diffs);
     }
@@ -124,7 +125,7 @@ public class ResourcesTest extends TestCase {
   
   private final static Pattern PATTERN_IGNORE = Pattern.compile(".*[A-Z]{2}.*");
   
-  private void diffResource(String pckg, Resources original, Resources translation, List<String> diffs) {
+  private void diffResource(String pckg, Resources original, Resources translation, List<Diff> diffs) {
     // go key bey key
     for (String key : original.getKeys()) {
       // grab key, original value and translated value
@@ -135,13 +136,13 @@ public class ResourcesTest extends TestCase {
         continue;
       // check translation
       if (val2==null) {
-        diffs.add(pckg+","+key+",not translated");
+        diffs.add(new Diff(pckg, key, Diff.NOT_TRANSLATED, val1));
       } else {
         try {
           int fs1 = Resources.getMessageFormat(val1).getFormats().length;
           int fs2 = Resources.getMessageFormat(val2).getFormats().length;
           if (fs1!=fs2) {
-            diffs.add(pckg+","+key+",wrong # of {n}s");
+            diffs.add(new Diff(pckg, key, Diff.WRONG, val1, val2));
           }
         } catch (IllegalArgumentException e) {
           // some values contain e.g. '{n}' which doesn't go with MessageFormat - ignored
@@ -156,7 +157,7 @@ public class ResourcesTest extends TestCase {
         continue;
       // compare!
       if (!original.contains(key)) {
-        diffs.add(pckg+","+key+",translated but not in original");
+        diffs.add(new Diff(pckg, key, Diff.NOT_ORIGINAL));
       }
     }
     // done
@@ -185,5 +186,53 @@ public class ResourcesTest extends TestCase {
     // done
     return result;
   }
-  
+
+  public class Diff {
+
+		final static String NOT_TRANSLATED = "not translated";
+		final static String WRONG = "wrong # of {n}s";
+		final static String NOT_ORIGINAL = "translated but not in original";
+			
+		private String pckg;
+		private String key;
+		private String type;
+		private String originalsValue;
+		private String translationValue;
+		
+		Diff(String pckg, String key, String type) {
+			this(pckg, key, type, null);
+		}
+
+		Diff(String pckg, String key, String type, String originalsValue) {
+			this(pckg, key, type, originalsValue, null);
+		}
+
+		Diff(String pckg, String key, String type, String originalsValue, String translationValue) {
+			this.pckg = pckg;
+			this.key = key;
+			this.type = type;
+			this.originalsValue = originalsValue;
+			this.translationValue = translationValue;
+		}
+
+		public String getPckg() {
+			return pckg;
+		}
+
+		public String getKey() {
+			return key;
+		}
+
+		public String getType() {
+			return type;
+		}
+
+		@Override
+		public String toString() {
+			return pckg + ", " + key + ", " + type
+					+ (originalsValue != null ? ", [" + originalsValue + "]" : "")
+					+ (translationValue != null ? ", [" + translationValue + "]" : "");
+		}
+	}
+
 }
