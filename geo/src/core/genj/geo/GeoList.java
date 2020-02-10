@@ -189,7 +189,8 @@ import swingx.tree.AbstractTreeModel;
       setText( fold ? "+" : "-");
       this.fold = fold;
     }
-    protected void execute() {
+    @Override
+    public void actionPerformed(ActionEvent event) {
       TreePath[] paths = ((Model)tree.getModel()).getPathsToLocations();
       for (int i=0;i<paths.length;i++) {
         if (!fold) tree.collapsePath(paths[i]); else tree.expandPath(paths[i]); 

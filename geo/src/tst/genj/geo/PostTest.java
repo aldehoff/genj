@@ -53,7 +53,7 @@ public class PostTest {
       new GeoLocation("Lohmar", null, null),
       new GeoLocation("Siegburg", "Nordrhein-Westfalen", null),
       new GeoLocation("Siegburg", "Rhein-Sieg-Kreis", null).addJurisdiction("Nordrhein-Westfalen"),
-      new GeoLocation("Köln", null, Country.get("de")),
+      new GeoLocation("K\u00F6ln", null, Country.get("de")),
       new GeoLocation("Rendsburg", null, null),
       new GeoLocation("Celle", null, null),
       new GeoLocation("Celle", "Niedersachsen", Country.get("de")),
