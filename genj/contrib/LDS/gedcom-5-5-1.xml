@@ -169,7 +169,7 @@
   <ALIA hide="1" type="PropertyAlias" img="Indi"/>
   +++++++++++++ numbers / processing +++++++++++++
   <RFN hide="1" type="PropertySimpleValue" img="Code" cardinality="0:1"/>
-  <AFN hide="1" type="PropertyNumericValue" img="Code"/>
+  <AFN hide="1" type="PropertySimpleValue" img="Code"/>
   <REFN type="PropertySimpleValue" img="Code">
    <TYPE type="PropertySimpleValue" img="Type"/>
   </REFN>

@@ -22,6 +22,7 @@ package genj.report;
 import genj.util.EnvironmentChecker;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -29,8 +30,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -44,6 +47,8 @@ public class ReportLoader {
   /** report files */
   private Map<File,String> file2reportclass = new HashMap<File, String>(10);
   
+  /** other dynamically loaded classes (nested, anonymous, helper...) */
+  private Set<String> otherClasses = new HashSet<String>(10);
   /** classpath */
   private List<URL> classpath = new ArrayList<URL>(10);
   
@@ -138,6 +143,23 @@ public class ReportLoader {
         ReportView.LOG.log(Level.WARNING, "Failed to instantiate "+clazz, t);
       }
     }
+
+    if (!isReportsInClasspath) {
+      for (String clazz : otherClasses) {
+        try {
+          cl.loadClass(clazz);
+        } catch (ClassNotFoundException e) {
+          // clazz should be something we just found, something wrong with directory parsing?
+          ReportView.LOG.log(Level.WARNING, "Attempted to load non-existent class", e);
+        }
+      }
+    }
+
+    try {
+      cl.close();
+    } catch (IOException e) {
+      ReportView.LOG.log(Level.WARNING, "Failed to close class loader", e);
+    }
     
     // sort 'em
     Collections.sort(instances, new Comparator<Report>() { 
@@ -175,9 +197,12 @@ public class ReportLoader {
       }
 
       // report class file?
-      String report = isReport(file, pkg);
-      if (report!=null) {
-        file2reportclass.put(file, report);
+      String className = isClassToLoad(file, pkg);
+      if (className != null) {
+        if (file.getName().startsWith("Report") && file.getName().indexOf("$") < 0)
+          file2reportclass.put(file, className);
+        else
+          otherClasses.add(className);
         continue;
       } 
       
@@ -207,14 +232,13 @@ public class ReportLoader {
   }
   
   /**
-   * Criteria for report
+   * Criteria for class we want to load
    */
-  private String isReport(File file, String pkg) {
+  private String isClassToLoad(File file, String pkg) {
     if ( (pkg!=null&&pkg.startsWith("genj")) || 
          file.isDirectory() ||
-         !file.getName().endsWith(".class") ||
-         !file.getName().startsWith("Report") ||
-         file.getName().indexOf("$")>0 )
+         !file.getName().endsWith(".class")
+    )
       return null;
     String name = file.getName();
     return (pkg==null?"":pkg+".") + name.substring(0, name.length()-".class".length());

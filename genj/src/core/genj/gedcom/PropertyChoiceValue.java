@@ -24,7 +24,6 @@ import genj.util.ReferenceSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Gedcom Property : simple value with choices
@@ -69,15 +68,7 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   }
   
   public List<String> getDefaults() {
-	  List<String> result = new ArrayList<String>(10);
-      String defaults = Gedcom.resources.getString(getTag()+".vals",false);
-      if (defaults!=null) {
-        StringTokenizer tokens = new StringTokenizer(defaults,",");
-        while (tokens.hasMoreElements()) {
-        	result.add(tokens.nextToken().trim()); 
-        }
-      }
-      return result;
+    return getDefaults(getTag());
   }
   
   /**
@@ -88,7 +79,21 @@ public class PropertyChoiceValue extends PropertySimpleValue {
   }
   
   /**
-   * Returns all properties with given tag that contain the same value
+   * Returns the default vals for the given tag
+   */
+  public static List<String> getDefaults(String tag) {
+    List<String> result = new ArrayList<String>(10);
+    String defaults = Gedcom.resources.getString(tag + ".vals", false);
+    if (defaults != null) {
+      for (String token : defaults.split(",")) {
+        result.add(token.trim());
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns all properties with given tag, optionally sorted by the value of the tag
    */
   public static Property[] getSameChoices(Gedcom gedcom, String tag, boolean sort) {
     

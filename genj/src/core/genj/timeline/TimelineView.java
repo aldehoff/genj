@@ -357,6 +357,7 @@ public class TimelineView extends View {
     } else {
       model.setGedcom(context.getGedcom());
       selection = model.getEvents(context);
+      if (!selection.isEmpty()) makeVisible(selection);
     }
     
     // do a repaint, too
@@ -394,12 +395,17 @@ public class TimelineView extends View {
   /**
    * Make sure the given event is visible
    */
-  protected void makeVisible(Model.Event event) {
+  protected void makeVisible(Set<Model.Event> events) {
     double 
       min = model.min + scrollContent.getHorizontalScrollBar().getValue()/DPC.getX()/cmPerYear,
       max = min + scrollContent.getViewport().getWidth()/DPC.getX()/cmPerYear;
 
-    if (event.to>max || event.from<min)      
+    Model.Event event = null;
+    for (Model.Event eventInSet : events) {
+      if (event == null || eventInSet.from < event.from)
+        event = eventInSet;
+    }
+    if (event != null && (event.from > max || event.from < min))
       scroll2year(event.from);
   }
     

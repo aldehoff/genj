@@ -56,11 +56,30 @@ public class EnvironmentChecker {
   private final static Set<String> NOOVERRIDE = new HashSet<String>();
   
   /**
+   * Check for Java 7 and higher
+   *
+   * @return <code>true</code> Java is version 7 (1.7) or higher
+   * <code>false</code> Java version is below 7
+   */
+  public static boolean isJava7OrHigher() {
+    String versionProperty = getProperty("java.version", "", "Checking Java VM version");
+    if (versionProperty.startsWith("1."))
+      return versionProperty.matches("1\\.[789].*");
+    try {
+      int versionNum = Integer.valueOf(versionProperty.split("\\.")[0]);
+      return versionNum >= 7;
+    } catch (NumberFormatException e) {
+      throw new RuntimeException("Could not parse java.version " + versionProperty);
+    }
+  }
+
+  /**
    * Check for Java 8 and higher
      *
      * @return <code>true</code> Java is version 8 (1.8) or higher
      * <code>false</code> Java version is below 8
    */
+  @Deprecated
   public static boolean isJava8OrHigher() {
         boolean retVal;
         int numCheck;

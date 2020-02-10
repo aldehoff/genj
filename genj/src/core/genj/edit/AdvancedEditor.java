@@ -797,9 +797,6 @@ import javax.swing.tree.TreePath;
     /** constructor */
     private Tree() {
       super(gedcom);
-      // this makes the tree not grab focus on selection changes with mouse
-      // thus not killing our grabFocus functionality
-      setRequestFocusEnabled(false);
       // shortcuts
       new Cut().install(this, ACC_CUT, JComponent.WHEN_FOCUSED);
       new Copy().install(this, ACC_COPY, JComponent.WHEN_FOCUSED);

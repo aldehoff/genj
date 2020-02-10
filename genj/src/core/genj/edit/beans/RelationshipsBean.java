@@ -48,7 +48,11 @@ public class RelationshipsBean extends PropertyBean {
 
   public static Icon IMG = Grammar.V55.getMeta(new TagPath("FAM")).getImage().getOverLayed(MetaProperty.IMG_LINK);
     
+  private static final String INDI_COLUMN_LAYOUT_RESOURCE_KEY = "relcols";
+  private static final String FAM_COLUMN_LAYOUT_RESOURCE_KEY = "famrelcols";
+
   private PropertyTableWidget table;
+  private String columnLayoutResourceKey;
   private Map<Property,String> relationships = new HashMap<Property,String>();
   
   public RelationshipsBean() {
@@ -64,7 +68,7 @@ public class RelationshipsBean extends PropertyBean {
   
   @Override
   public void removeNotify() {
-    REGISTRY.put("relcols", table.getColumnLayout());
+    REGISTRY.put(columnLayoutResourceKey, table.getColumnLayout());
     super.removeNotify();
   }
   
@@ -81,13 +85,19 @@ public class RelationshipsBean extends PropertyBean {
     relationships.clear();
 
     Model model = null;
-    if (prop instanceof Indi)
+    if (prop instanceof Indi) {
       model = getModel((Indi)prop);
-    if (prop instanceof Fam)
+      columnLayoutResourceKey = INDI_COLUMN_LAYOUT_RESOURCE_KEY;
+    }
+    if (prop instanceof Fam) {
       model = getModel((Fam)prop);
+      columnLayoutResourceKey = FAM_COLUMN_LAYOUT_RESOURCE_KEY;
+    }
       
     table.setModel(model);
-    table.setColumnLayout(REGISTRY.get("relcols",""));
+    String columnLayout = REGISTRY.get(columnLayoutResourceKey, "");
+    if (columnLayout != "")
+      table.setColumnLayout(columnLayout);
   }
   
   private Model getModel(Fam fam) {

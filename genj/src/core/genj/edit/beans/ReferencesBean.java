@@ -80,7 +80,9 @@ public class ReferencesBean extends PropertyBean {
       model = getModel(prop);
       
     table.setModel(model);
-    table.setColumnLayout(REGISTRY.get("refcols",""));
+    String columnLayout = REGISTRY.get("refcols", "");
+    if (columnLayout != "")
+      table.setColumnLayout(columnLayout);
   }
   
   private Model getModel(Property root) {

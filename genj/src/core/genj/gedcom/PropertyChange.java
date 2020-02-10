@@ -154,6 +154,20 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
 
   /**
+   * Gets the Gedcom value for the DATE part of the change
+   */
+  public String getDateValue() {
+    return time < 0 ? "" : PointInTime.getPointInTime(time).getValue();
+  }
+
+  /**
+   * Gets the Gedcom value for the TIME part of the change
+   */
+  public String getTimeValue() {
+    return time < 0 ? "" : toString(time);
+  }
+
+  /**
    * Interpret a gedcom value as "date, UTF" as passed in by DateTimeCollector
    * @see genj.gedcom.Property#setValue(java.lang.String)
    */
@@ -161,31 +175,42 @@ public class PropertyChange extends Property implements MultiLineProperty {
 
     String old = getValue();
 
-    // must look like 19 DEC 2003,14:50
-    int i = value.indexOf(',');
-    if (i<0)
+    if (value.equals(""))
       return;
 
     try {
       time = 0;
 
-      // parse time hh:mm:ss
-      StringTokenizer tokens = new StringTokenizer(value.substring(i+1), ":");
-      if (tokens.hasMoreTokens())
-        time += Integer.parseInt(tokens.nextToken()) * 60 * 60 * 1000;
-      if (tokens.hasMoreTokens())
-        time += Integer.parseInt(tokens.nextToken()) * 60 * 1000;
-      if (tokens.hasMoreTokens())
-        time += Integer.parseInt(tokens.nextToken()) * 1000;
+      int i = value.indexOf(',');
+      String datePart;
+      if (i == -1) {
+        datePart = value;
+      } else {
+        datePart = value.substring(0, i);
+
+        // parse time hh:mm:ss
+        StringTokenizer tokens = new StringTokenizer(value.substring(i + 1), ":");
+        if (tokens.hasMoreTokens())
+          time += Integer.parseInt(tokens.nextToken()) * 60 * 60 * 1000;
+        if (tokens.hasMoreTokens())
+          time += Integer.parseInt(tokens.nextToken()) * 60 * 1000;
+        if (tokens.hasMoreTokens())
+          time += Integer.parseInt(tokens.nextToken()) * 1000;
+      }
 
       // parse date
-      time += PointInTime.getPointInTime(value.substring(0,i)).getTimeMillis();
+      PointInTime date = new PointInTime(PointInTime.UNKNOWN, PointInTime.UNKNOWN, PointInTime.UNKNOWN, PointInTime.GREGORIAN);
+      if (date.set(datePart)) {
+        time += date.getTimeMillis();
+      } else {
+        throw new IllegalArgumentException("Could not parse date of CHAN");
+      }
 
       // update gedcom's last change time
       getGedcom().updateLastChange(this);
 
-    } catch (Throwable t) {
-
+    } catch (IllegalArgumentException | GedcomException t) {
+      Gedcom.LOG.info("Invalid CHAN value: " + value);
       time = -1;
     }
 
@@ -199,7 +224,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
    * Gedcom value - this is an intermittend value only that won't be saved (it's not Gedcom compliant but contains a valid gedcom date)
    */
   public String getValue() {
-    return time<0 ? "" : PointInTime.getPointInTime(time).getValue() +','+toString(time);
+    return time < 0 ? "" : getDateValue() + ',' + getTimeValue();
   }
 
   /**
@@ -253,7 +278,9 @@ public class PropertyChange extends Property implements MultiLineProperty {
      * @see genj.gedcom.MultiLineProperty.Collector#getValue()
      */
     public String getValue() {
-      return dateCollected+','+timeCollected;
+      if (dateCollected != null) {
+        return (timeCollected != null) ? (dateCollected + ',' + timeCollected) : dateCollected;
+      } else return "";
     }
 
   } //MyContinuation
@@ -269,7 +296,7 @@ public class PropertyChange extends Property implements MultiLineProperty {
     /** lines */
     private String[]
       tags = { CHAN, DATE, TIME  },
-      values = { "", PointInTime.getPointInTime(time).getValue(), PropertyChange.this.toString(time) };
+      values = { "", getDateValue(), getTimeValue() };
 
     /**
      * @see genj.gedcom.MultiLineProperty.Iterator#setValue(java.lang.String)

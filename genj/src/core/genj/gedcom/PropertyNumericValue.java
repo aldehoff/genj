@@ -23,6 +23,7 @@ package genj.gedcom;
 /**
  * Gedcom Property for simple values
  */
+@Deprecated
 public class PropertyNumericValue extends Property {
   
   private Class<?> box = Integer.class; 

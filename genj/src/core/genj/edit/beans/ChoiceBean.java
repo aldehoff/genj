@@ -130,9 +130,18 @@ public class ChoiceBean extends PropertyBean {
   
   private List<String> getChoicesToShow(PropertyChoiceValue property) {
 
-	  List<String> vals = property.getChoices(true);
+    Gedcom gedcom;
+    String tag;
+    if (property == null) {
+      gedcom = getRoot().getGedcom();
+      tag = getPath().getLast();
+    } else {
+      gedcom = property.getGedcom();
+      tag = property.getTag();
+    }
+    List<String> vals = PropertyChoiceValue.getChoices(gedcom, tag, true);
 	  
-	  List<String> defaults = property.getDefaults();
+    List<String> defaults = PropertyChoiceValue.getDefaults(tag);
 	  if (!defaults.isEmpty()) {
 		  gotdefault: for (String def : defaults) {
 			  for (String val : vals) {
@@ -143,7 +152,7 @@ public class ChoiceBean extends PropertyBean {
 		  }
 	  }
 	  
-	  Collections.sort(vals, property.getGedcom().getCollator());
+    Collections.sort(vals, gedcom.getCollator());
       
       return vals;
 	  
@@ -165,7 +174,7 @@ public class ChoiceBean extends PropertyBean {
       choices.setText(choice.getDisplayValue());
       sameChoices = choice.getSameChoices();
     } else {
-      choices.setValues(PropertyChoiceValue.getSameChoices(getRoot().getGedcom(), getPath().getLast(), true));
+      choices.setValues(getChoicesToShow(null));
       choices.setText("");
       sameChoices = new Property[0];
     }

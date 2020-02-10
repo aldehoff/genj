@@ -41,6 +41,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -252,6 +253,19 @@ public class NavigatorView extends View {
     return result;
   }
 
+  private static final int getActionModifiers(InputEvent e) {
+    int ret = 0;
+    if (e.isAltDown())
+      ret |= ActionEvent.ALT_MASK;
+    if (e.isControlDown())
+      ret |= ActionEvent.CTRL_MASK;
+    if (e.isMetaDown())
+      ret |= ActionEvent.META_MASK;
+    if (e.isShiftDown())
+      ret |= ActionEvent.SHIFT_MASK;
+    return ret;
+  }
+
   private final static MouseListener CLICK = new MouseAdapter() {
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -262,7 +276,7 @@ public class NavigatorView extends View {
         SelectionSink.Dispatcher.fireSelection(e, new Context(target));
       Action action = (Action)label.getClientProperty(Action.class);
       if (action!=null)
-        action.actionPerformed(new ActionEvent(e.getSource(), 0, "", e.getModifiers()));
+        action.actionPerformed(new ActionEvent(e.getSource(), 0, "", getActionModifiers(e)));
 
     }
   };

@@ -19,6 +19,7 @@
  */
 package genj.io;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -144,7 +145,7 @@ import java.util.logging.Logger;
       }
       
       // update position
-      in.position(pos);
+      ((Buffer)in).position(pos); // the cast makes bytecode produced on Java >=9 run on Java <9 (otherwise the covariant implementation would be used)
        
       // done
       return rc;
@@ -598,7 +599,7 @@ import java.util.logging.Logger;
       }
       
       // move position
-      in.position(pos);
+      ((Buffer)in).position(pos);
       
       // done
       return rc;

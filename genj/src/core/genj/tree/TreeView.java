@@ -826,12 +826,13 @@ public class TreeView extends View implements ContextProvider, ActionProvider {
       if (content instanceof Entity) {
         Entity entity = (Entity)content;
         // change current!
-        if ((e.getModifiers()&MouseEvent.CTRL_DOWN_MASK)!=0) {
+        if ((e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0) {
           List<Entity> entities = new ArrayList<Entity>(context.getEntities());
           if (entities.contains(entity))
             entities.remove(entity);
           else
             entities.add(entity);
+          context = new Context(entity.getGedcom(), entities);
         } else {
           context = new Context(entity);
         }

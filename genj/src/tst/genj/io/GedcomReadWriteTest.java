@@ -5,6 +5,7 @@ package genj.io;
 
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
+import genj.gedcom.Options;
 import genj.util.Origin;
 
 import java.io.BufferedReader;
@@ -28,15 +29,22 @@ import junit.framework.TestCase;
  * Testing Gedcom read/write diff
  */
 public class GedcomReadWriteTest extends TestCase {
+
+  final static Logger LOG = Logger.getLogger("test.gedcom.readwrite");
+  
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    
+    Options.getInstance().setValueLineBreak(255);
+    
+  }
   
   /**
    * Read a stress file
    */
   public void testStressFile() throws IOException, GedcomException {
     
-    // we don't need log output for this
-    Logger.getLogger("").setLevel(Level.OFF);
-
     // try to read file
     Gedcom ged = GedcomReaderFactory.createReader(getClass().getResourceAsStream("stress.ged"), null).read();
     
@@ -47,7 +55,7 @@ public class GedcomReadWriteTest extends TestCase {
     out.close();
     
     // compare line by line
-    assertEquals( Collections.singletonList("2 _TAG<>"), diff(temp, getClass().getResourceAsStream("stress.ged")) );
+    assertEquals(Collections.singletonList("2 _TAG<>"), diff(temp, getClass().getResourceAsStream("stress.ged")) );
   }
   
   /**
@@ -56,12 +64,11 @@ public class GedcomReadWriteTest extends TestCase {
   @SuppressWarnings("deprecation")
   public void testReadWrite() throws IOException, GedcomException {
     
-    // we don't need log output for this
-    Logger.getLogger("").setLevel(Level.OFF);
-
     // read/write file
     File original = new File("./gedcom/royal92.ged");
     File temp = File.createTempFile("test", ".ged");
+    LOG.info("Temp file generated :"+temp);
+    
     
     // read it
     Gedcom ged = GedcomReaderFactory.createReader(Origin.create(original.toURL()), null).read();
@@ -72,7 +79,7 @@ public class GedcomReadWriteTest extends TestCase {
     out.close();
     
     // diff files and there should be one difference
-    assertEquals(Collections.EMPTY_LIST, diff(original, temp));
+    assertEquals(original + " <> " + temp, Collections.EMPTY_LIST, diff(original, temp));
     
   }
   
@@ -126,6 +133,8 @@ public class GedcomReadWriteTest extends TestCase {
         
       // assert equal
       if (!matches(lineLeft, lineRight)) {
+        
+        LOG.warning(lineLeft + "<>" + lineRight);
         
         // maybe next line matches again?
         left.mark(256);

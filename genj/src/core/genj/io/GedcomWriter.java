@@ -23,7 +23,7 @@ import genj.Version;
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
-import genj.gedcom.time.PointInTime;
+import genj.gedcom.PropertyChange;
 import genj.util.Trackable;
 
 import java.io.BufferedWriter;
@@ -35,8 +35,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnmappableCharacterException;
 import java.nio.charset.UnsupportedCharsetException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -72,14 +70,14 @@ public class GedcomWriter implements Trackable {
    */
   public GedcomWriter(Gedcom ged, OutputStream stream) throws IOException, GedcomEncodingException  {
     
-    Calendar now = Calendar.getInstance();
+    PropertyChange now = new PropertyChange();
 
     // init data
     gedcom = ged;
     file = ged.getOrigin()==null ? "Uknown" : ged.getOrigin().getFileName();
     line = 0;
-    date = PointInTime.getNow().getValue();
-    time = new SimpleDateFormat("HH:mm:ss").format(now.getTime());
+    date = now.getDateValue();
+    time = now.getTimeValue();
     filter = new Filter.Union(gedcom, Collections.<Filter>emptyList());
 
     CharsetEncoder encoder = getCharset(false, stream, ged.getEncoding()).newEncoder();

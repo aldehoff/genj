@@ -50,7 +50,7 @@ public interface SelectionSink {
       if (event instanceof ActionEvent)
         isActionPerformed |= (((ActionEvent)event).getModifiers()&ActionEvent.CTRL_MASK)!=0;
       if (event instanceof MouseEvent)
-        isActionPerformed |= (((MouseEvent)event).getModifiers()&MouseEvent.CTRL_DOWN_MASK)!=0;
+        isActionPerformed |= (((MouseEvent)event).getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0;
       fireSelection((Component)event.getSource(), context, isActionPerformed);
     }
 

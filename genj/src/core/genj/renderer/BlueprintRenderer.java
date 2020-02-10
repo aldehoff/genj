@@ -813,6 +813,10 @@ public class BlueprintRenderer {
       return cachedProperty;
     }
     
+    private ImageIcon getIcon(Property prop) {
+      return (prop instanceof PropertyDate) ? prop.getParent().getImage(false) : prop.getImage(false);
+    }
+
     /**
      * @see javax.swing.text.View#paint(Graphics, Shape)
      */
@@ -861,7 +865,7 @@ public class BlueprintRenderer {
       }
       // image?
       if (HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) 
-        render(prop instanceof PropertyDate ? prop.getParent().getImage(false) : prop.getImage(false), g, r);
+        render(getIcon(prop), g, r);
       // text?
       if (!HINT_VALUE_FALSE.equals(attributes.get(HINT_KEY_TXT))) 
         render(getText(prop), g, r);
@@ -996,7 +1000,7 @@ public class BlueprintRenderer {
       }
       // add image size
       if (HINT_VALUE_TRUE.equals(attributes.get(HINT_KEY_IMG))) {
-        ImageIcon img = prop.getImage(false);
+        ImageIcon img = getIcon(prop);
         float max = fm.getHeight();
         float scale = 1F;
         if (max<img.getIconHeight()) 

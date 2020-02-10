@@ -84,7 +84,7 @@ public class Grammar {
     		in = new FileInputStream(new File(EnvironmentChecker.getProperty("user.dir", ".", "current directory for grammar"),descriptor));
     	} catch(FileNotFoundException e) {
     		/* when executing dev\geo\src\tst\genj\geo\App.java  in Eclipse */
-    		in = new FileInputStream(new File("../app/"+descriptor));
+    		in = new FileInputStream(new File("../genj/" + descriptor));
     	}
       }
 

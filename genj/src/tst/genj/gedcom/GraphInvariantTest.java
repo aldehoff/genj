@@ -37,8 +37,6 @@ public class GraphInvariantTest extends TestCase {
 
   /** setup a clean gedcom before every test */
   protected void setUp() throws IOException {
-    // we don't need log output for this
-    Logger.getLogger("").setLevel(Level.OFF);
 
     // try to read our sample file
     gedcom = GedcomReaderFactory.createReader(getClass().getResourceAsStream("graphinvariants.ged"), null).read();

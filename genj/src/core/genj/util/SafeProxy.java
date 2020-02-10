@@ -97,14 +97,21 @@ public class SafeProxy {
       this.logger = logger;
     }
     
-    @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
       
       // equals check?
-      if ("equals".equals(method.getName()) && args.length==1) try {
-        return impl.equals( ((SafeHandler<T>)Proxy.getInvocationHandler(args[0])).impl );
-      } catch (IllegalArgumentException e) {
-        return false;
+      if ("equals".equals(method.getName()) && args.length == 1) {
+        Object arg = args[0];
+        if (proxy == args[0]) return true;
+
+        InvocationHandler otherHandler;
+        try {
+          otherHandler = Proxy.getInvocationHandler(arg);
+        } catch (IllegalArgumentException e) {
+          return impl.equals(arg);
+        }
+
+        return otherHandler.invoke(arg, method, new Object[]{impl});
       }
       
       Throwable t;

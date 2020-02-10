@@ -52,6 +52,7 @@ import java.awt.event.MouseEvent;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -296,17 +297,28 @@ public class PropertyTableWidget extends JPanel  {
    * Set column layout
    */
   public void setColumnLayout(String layout) {
-    
     SortableTableModel model = (SortableTableModel)table.getModel();
     TableColumnModel columns = table.getColumnModel();
 
+    if (layout == null || layout.equals("")) {
+      LOG.warning("Attempted to set column layout with empty definition");
+      model.cancelSorting();
+      return;
+    }
+    
+
+    StringTokenizer tokens = new StringTokenizer(layout, ",");
     try {
-      StringTokenizer tokens = new StringTokenizer(layout, ",");
       int n = Integer.parseInt(tokens.nextToken());
   
-      for (int i=0;i<n&&i<columns.getColumnCount();i++) {
+      for (int i=0; i<n; i++) {
+        String columnWidthToken = tokens.nextToken();
+        if (i >= columns.getColumnCount())
+          // Probably some columns have been removed, and we still have an old layout string
+          continue;
+
         TableColumn col = columns.getColumn(i);
-        int w = Integer.parseInt(tokens.nextToken());
+        int w = Integer.parseInt(columnWidthToken);
         col.setWidth(w);
         col.setPreferredWidth(w);
       }
@@ -319,8 +331,10 @@ public class PropertyTableWidget extends JPanel  {
           model.setSortingStatus(c, d);
       }
 
-    } catch (Throwable t) {
-      // ignore
+    } catch (NoSuchElementException e) {
+      throw new IllegalArgumentException("Invalid column layout specification: " + layout);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Non-integer token in column layout " + layout);
     }
   }
   
@@ -456,6 +470,10 @@ public class PropertyTableWidget extends JPanel  {
       
       TableModel model = getModel();
       Collator collator = propertyModel.getGedcom().getCollator();
+
+      /* Set proper row height so getCellRect returns correct values even if table rendering has not started
+         (e.g. table is in in a non-visible tab) */
+      new Renderer().setMetrics(table);
 
       // loop over rows and create actions
       List<Action2> actions = new ArrayList<Action2>(26);
@@ -853,14 +871,19 @@ public class PropertyTableWidget extends JPanel  {
         setPadding(2);
       }
       
+      public void setMetrics(JTable table) {
+        setFont(table.getFont());
+        int preferredHeight = getPreferredSize().height;
+        if (getRowHeight() != preferredHeight)
+          setRowHeight(preferredHeight);
+      }
+
       /**
        * @see javax.swing.table.TableCellRenderer#getTableCellRendererComponent(JTable, Object, boolean, boolean, int, int)
        */
       public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focs, int row, int col) {
 
-        setFont(table.getFont());
-        if (getRowHeight()!=getPreferredSize().height)
-          setRowHeight(getPreferredSize().height);
+        setMetrics(table);
         
         // figure out value and alignment
         if (propertyModel instanceof AbstractPropertyTableModel) {

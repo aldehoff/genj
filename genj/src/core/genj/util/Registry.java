@@ -36,14 +36,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Properties;
+import java.util.Queue;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -748,6 +753,115 @@ public class Registry implements PropertyChangeListener {
   }
 
   private static class SortingProperties extends Properties {
+    private static final Comparator<Map.Entry<? extends Object, ? extends Object>> entryComparator = new Comparator<Map.Entry<? extends Object, ? extends Object>>() {
+      @Override
+      public int compare(Map.Entry<? extends Object, ? extends Object> o1, Map.Entry<? extends Object, ? extends Object> o2) {
+        return o1.getKey().toString().compareTo(o2.getKey().toString());
+      }
+    };
+
+    @Override
+    public synchronized Set<Map.Entry<Object, Object>> entrySet() {
+      // This method is used starting from Java 9 by the store routine, and the keys method on older Java versions
+      final Set<Map.Entry<Object, Object>> delegate = super.entrySet();
+      /* Hashtable::entryset "is backed by the map, so changes to the map are reflected in the set, and vice-versa"
+        which means we can not simply return new TreeSet(super.entrySet()) */
+      return new Set<Map.Entry<Object, Object>>() {
+        @Override
+        public boolean add(Map.Entry<Object, Object> e) {
+          return delegate.add(e);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends Map.Entry<Object, Object>> c) {
+          return delegate.addAll(c);
+        }
+
+        @Override
+        public void clear() {
+          delegate.clear();
+        }
+
+        @Override
+        public boolean contains(Object e) {
+          return delegate.contains(e);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+          return delegate.containsAll(c);
+        }
+
+        @Override
+        public boolean isEmpty() {
+          return delegate.isEmpty();
+        }
+
+        @Override
+        public Iterator<Map.Entry<Object, Object>> iterator() {
+          return new Iterator<Map.Entry<Object, Object>>() {
+            private Queue<Map.Entry<Object, Object>> entries = null;
+            private Map.Entry<Object, Object> latestEntry = null;
+
+            @Override
+            public boolean hasNext() {
+              return !((entries == null) ? delegate : entries).isEmpty();
+            }
+
+            @Override
+            public Map.Entry<Object, Object> next() {
+              if (entries == null) {
+                entries = new PriorityQueue<Map.Entry<Object, Object>>(delegate.size(), entryComparator);
+                entries.addAll(delegate);
+              };
+              latestEntry = entries.remove();
+              return latestEntry;
+            }
+
+            @Override
+            public void remove() {
+              delegate.remove(latestEntry);
+            }
+          };
+        }
+
+        @Override
+        public boolean remove(Object o) {
+          return delegate.remove(o);
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+          return delegate.removeAll(c);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+          return delegate.retainAll(c);
+        }
+
+        @Override
+        public int size() {
+          return delegate.size();
+        }
+
+        @Override
+        public Object[] toArray() {
+          @SuppressWarnings("unchecked") Map.Entry<? extends Object, ? extends Object>[] ret = (Map.Entry<? extends Object, ? extends Object>[])delegate.toArray();
+          Arrays.sort(ret, entryComparator);
+          return ret;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T[] toArray(T[] a) {
+          T[] ret = delegate.toArray(a);
+          Arrays.sort((Map.Entry<? extends Object, ? extends Object>[])ret, entryComparator);
+          return ret;
+        }
+      };
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public synchronized Enumeration<Object> keys() {

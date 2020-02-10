@@ -181,7 +181,8 @@ public class TableView extends View {
     // new gedcom?
     if (old==null||old.getGedcom()!=context.getGedcom()) {
       propertyTable.setModel(new Model(context.getGedcom(), currentMode));
-      propertyTable.setColumnLayout(currentMode.layout);
+      if (currentMode.layout != null)
+        propertyTable.setColumnLayout(currentMode.layout);
     }
     
     // pick good mode

@@ -3,6 +3,7 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Indi;
 import genj.gedcom.PropertyDate;
+import genj.gedcom.time.PointInTime;
 import genj.report.Report;
 
 /**
@@ -201,9 +202,8 @@ public int getYear(PropertyDate someDate) {
 		  return -1;
 	  
 	  //get year of time of birth
-	  strYear = (someDate.getDisplayValue().trim());
-	  strYear = strYear.substring(strYear.length()-4);
-	  return Integer.parseInt(strYear);
+	  int year = someDate.getStart().getYear();
+	  return (year == PointInTime.UNKNOWN) ? -1 : year;
   }  
     
  

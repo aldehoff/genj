@@ -57,6 +57,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.plaf.TreeUI;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -77,6 +78,8 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   
   /** stored gedcom */
   private Gedcom gedcom;
+
+  private boolean initialized = false;
 
   /**
    * Constructor
@@ -111,6 +114,7 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
     setExpandsSelectedPaths(true);
     ToolTipManager.sharedInstance().registerComponent(this);
     
+    initialized = true;
     // done
   }
   
@@ -134,8 +138,10 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   /**
    * Dont' allow to change the underlying model
    */
-  public void setModel() {
-    throw new IllegalArgumentException();
+  @Override
+  public void setModel(TreeModel newModel) {
+    if (initialized)
+      throw new IllegalArgumentException();
   }
 
   /**

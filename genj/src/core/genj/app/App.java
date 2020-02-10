@@ -131,9 +131,9 @@ public class App {
       }
       
       // check VM version
-      if (!EnvironmentChecker.isJava8OrHigher()) {
+      if (!EnvironmentChecker.isJava7OrHigher()) {
         if (EnvironmentChecker.getProperty("genj.forcevm", null, "Check force of VM")==null) {
-          LOG.severe("Need Java 8 to run GenJ");
+          LOG.severe("Need Java >=7 to run GenJ");
           System.exit(1);
           return;
         }

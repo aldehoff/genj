@@ -67,6 +67,8 @@ public class BlueprintEditor extends JSplitPane {
   
   /** faked values */
   private final static Map<String,String> SAMPLES = new HashMap<String, String>();
+
+  private static final Logger LOG = Logger.getLogger("genj.renderer");
   
   static {
     SAMPLES.put("NAME", "John /Doe/");
@@ -181,7 +183,7 @@ public class BlueprintEditor extends JSplitPane {
         // mark unchanged
         isChanged = false;
       } catch (IOException e) {
-        Logger.getLogger("genj.renderer").log(Level.WARNING, "can't save blueprint", e);
+        LOG.log(Level.WARNING, "can't save blueprint", e);
       }
     }
   }
@@ -263,14 +265,27 @@ public class BlueprintEditor extends JSplitPane {
           if (sample==null)
             sample = Gedcom.getName(path.getLast());
             
+          /* We need to provide property->entity->gedcom->grammar chain because
+             Property::getImage determines the image to use from grammar (which it gets via parent entity),
+             and because for <prop path=*:DATE img=yes> the renderer uses property.getParent().getImage() */
+          Gedcom context = new Gedcom();
+          context.setGrammar(grammar);
           MetaProperty meta = grammar.getMeta(path, false);
           if (PropertyXRef.class.isAssignableFrom(meta.getType()))
             sample = "@...@";
+          Entity delegator;
           try {
-            return meta.create(sample);
+            delegator = context.createEntity(entity.getTag(), entity.getId());
           } catch (GedcomException e) {
+            LOG.log(Level.WARNING, "Could not construct sample entity for blueprint editor", e);
             return new PropertySimpleReadOnly(path.getLast(), sample);
           }
+          Property prop = delegator;
+          for (int i = 1; i < path.length(); ++i) {
+            String value = (i == path.length() - 1) ? sample : "";
+            prop = prop.addProperty(path.get(i), value);
+          }
+          return prop;
         }
       };
       renderer.setDebug(true);

@@ -623,6 +623,9 @@ public class SearchView extends View {
       
       // show hit document (includes image and text)
       text.setDocument(hit.getDocument());
+      /* Without this, rows other than the first one get rendered with a too small height on Java >=9
+         See https://stackoverflow.com/questions/49273118/jeditorpane-getpreferredsize-not-always-working-in-java-9 */
+      text.setSize(text.getPreferredSize().width, 9999);
       
       // done
       return text;

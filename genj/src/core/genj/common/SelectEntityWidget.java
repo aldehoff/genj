@@ -217,7 +217,7 @@ public class SelectEntityWidget extends JPanel {
    * Number of entities
    */
   public int getEntityCount() {
-    return listWidget.getItemCount()-1;
+    return list.length;
   }
   
   /**

@@ -255,13 +255,15 @@ public class Launcher {
             // become a server with default port
             try {
 
-                CallHandler handler = msg -> {
+                CallHandler handler = new CallHandler() {
+                  public String handleCall(String msg) {
                     try {
                         callMain(decode(msg), cl);
                     } catch (Throwable t) {
                         return "ERR";
                     }
                     return "OK";
+                  }
                 };
 
                 for (int i = 0; i < 10; port++, i++) {

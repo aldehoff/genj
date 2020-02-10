@@ -24,7 +24,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomListener;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
-import genj.gedcom.PropertyNumericValue;
 import genj.gedcom.PropertySex;
 
 import java.util.List;
@@ -165,8 +164,6 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
     if (property instanceof Entity) 
       return RIGHT;
     if (property instanceof PropertyDate) 
-      return RIGHT;
-    if (property instanceof PropertyNumericValue) 
       return RIGHT;
     if (property instanceof PropertySex) 
       return CENTER;
