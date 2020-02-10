@@ -162,8 +162,10 @@ public class LongestPathLA implements LayerAssignment {
   private void sinkToSource(Edge edge, Vertex vertex, Stack<Cell> path) throws GraphNotSupportedException{
     
     // check if we're back at a vertex we've seen in this iteration
-    if (path.contains(vertex))
-      throw new GraphNotSupportedException("graph has to be acyclic");
+    for (Cell previouslySeen : path) {
+      if (previouslySeen.vertex.equals(vertex))
+        throw new GraphNotSupportedException("graph has to be acyclic");
+    }
     
     // make sure we have enough layers
     if (layers.size()<path.size()+1)
