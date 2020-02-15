@@ -221,21 +221,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       }
     }
   }
-    
- 
-//  /**
-//   * Expand 'under' path
-//   */
-//  public void expandAll(TreePath root) {
-//    
-//    //collapsePath(root);
-//    expandPath(root);
-//    
-//    Model model = getPropertyModel();
-//    Object node = root.getLastPathComponent();
-//    for (int i=0;i<model.getChildCount(node);i++)
-//      expandAll(root.pathByAddingChild(model.getChild(node, i)));
-//  }
   
   /**
    * The current root

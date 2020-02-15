@@ -308,27 +308,6 @@ public class EditView extends View implements ContextProvider{
     return editor.getContext().getEntity();
   }
     
-//  /**
-//   * ContextMenu
-//   */
-//  private class ContextMenu extends PopupWidget {
-//    
-//    /** constructor */
-//    private ContextMenu() {
-//      setIcon(Gedcom.getImage());
-//      setToolTipText(resources.getString( "action.context.tip" ));
-//    }
-//    
-//    /** override - popup creation */
-//    protected JPopupMenu createPopup() {
-//      // force editor to commit
-//      editor.setContext(editor.getContext());
-//      // create popup
-//      return manager.getContextMenu(editor.getContext(), this);
-//    }
-//     
-//  } //ContextMenu
-  
   /**
    * Action - advanced or basic
    */

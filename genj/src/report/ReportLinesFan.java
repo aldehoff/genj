@@ -89,8 +89,6 @@ public class ReportLinesFan extends Report {
 	    ioe.printStackTrace();
 	}
 
-	//	indiList.add(indi);
-	//indiList.add(new Integer(1));
 	indiList.add(indi);
 	indiList.add(new Integer(1));
 	pageNo = 1;
