@@ -147,12 +147,6 @@ public class Html {
 		return span;
 	}
 
-	public Element spanNewlines(String className, String text) {
-		Element span = span(className);
-		handleNewlines(span, text);
-		return span;
-	}
-	
 	public void handleNewlines(Element appendTo, String text) {
 		String[] lines = text.split("\r\n|\r|\n");
 		for (String line : lines) {

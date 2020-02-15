@@ -258,10 +258,6 @@ private String put_given_name(Indi person,int length){
 	return fullname(person,sur_upper,n_order,length);
 
 }
-    private void endline(int ahnen,int offset,int info,int max){
-	writer.println(") "+ahnen+" "+offset+" "+info+" "+max+"} addind");
-    }
-
     private void putperson(Fam family, Indi person, int level, int ahnen, int info, int dateformat) {
 
 	int[] levellength = {25,26,23,16,15,15,21,21,21,21,21};
@@ -329,7 +325,6 @@ private String put_given_name(Indi person,int length){
 	else return intarray[offset];
     }
     String d(int i){ return(""+i);}
-    String d(boolean b){ return(b?"1":"0");}
     PropertyDate birth(Indi entity){
 		// prop exists?
 	if (entity==null)

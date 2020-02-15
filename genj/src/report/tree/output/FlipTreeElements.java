@@ -8,8 +8,6 @@
 
 package tree.output;
 
-import java.awt.Graphics2D;
-
 import tree.FamBox;
 import tree.IndiBox;
 
@@ -21,13 +19,6 @@ import tree.IndiBox;
 public class FlipTreeElements extends FilterTreeElements {
 
     public boolean flip = false;
-
-    /**
-     * Constructs the object.
-     */
-    public FlipTreeElements(Graphics2D graphics, TreeElements elements) {
-        super(graphics, elements);
-    }
 
     public FlipTreeElements(TreeElements elements)
     {

@@ -33,8 +33,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.io.File;
 
-import javax.swing.ImageIcon;
-
 /**
  * ReportNarrative generates a text document containing the ancestors
  * or descendants of a particular individual.

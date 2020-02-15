@@ -180,21 +180,6 @@ public class Phonex implements Phonetics {
         }
     }
 
-    /**
-     * Returns the maxCodeLen.
-     */
-    public int getMaxCodeLen() {
-        return maxCodeLen;
-    }
-
-    /**
-     * Sets the maxCodeLen.
-     * @param maxCodeLen The maxCodeLen to set
-     */
-    public void setMaxCodeLen(int maxCodeLen) {
-        this.maxCodeLen = maxCodeLen;
-    }
-    
     public String toString() {
       return "Phonex";
     }

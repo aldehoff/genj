@@ -25,8 +25,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.swing.ImageIcon;
-
 /**
  * GenJ - Report
  * @author Daniel ANDRE <daniel.andre@free.fr>

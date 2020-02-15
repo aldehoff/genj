@@ -24,8 +24,6 @@ import genj.gedcom.PropertyXRef;
 import genj.gedcom.TagPath;
 import genj.report.Report;
 
-import javax.swing.ImageIcon;
-
 /**
  * GenJ - Report
  * @author Nils Meier <nils@meiers.net>

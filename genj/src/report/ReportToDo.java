@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import javax.swing.ImageIcon;
-
 /**
  * GenJ - Report
  *

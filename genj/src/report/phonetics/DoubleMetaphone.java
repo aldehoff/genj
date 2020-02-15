@@ -69,33 +69,6 @@ public class DoubleMetaphone implements Phonetics {
     public DoubleMetaphone() {
     }
 
-    public String getPrimary() {
-        return primary.toString();
-    }
-
-    public StringBuffer getPrimaryBuffer() {
-        return primary;
-    }
-
-    public String getAlternate() {
-        return alternate.toString();
-    }
-
-    public StringBuffer getAlternateBuffer() {
-        return alternate;
-    }
-
-    public int getEncodeLimit() {
-        return encodeLimit;
-    }
-
-    public boolean setEncodeLimit(int newLimit) {
-        if (newLimit < 1)
-            return false;
-        encodeLimit = newLimit;
-        return true;
-    }
-
     void setInput(String in) {
         if (in != null) {
             input = in.toUpperCase() + "     ";

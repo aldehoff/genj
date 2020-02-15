@@ -32,7 +32,6 @@ import genj.gedcom.Repository;
 import genj.gedcom.Source;
 import genj.gedcom.Submitter;
 import genj.gedcom.MultiLineProperty.Iterator;
-import genj.option.Multiline;
 import genj.report.Report;
 import genj.util.Resources;
 
@@ -52,7 +51,6 @@ import java.nio.channels.FileChannel;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -76,8 +74,6 @@ public class ReportWebsite extends Report {
 	public String listRepositoryFileName = "repositories.html";
 	public boolean reportDisplayIndividualMap = true;
 	public boolean omitXmlDeclaration;
-    public String reportTitle;
-    @Multiline public String reportWelcomeText;
     public boolean displaySosaStradonitz;
 	protected HashMap<String, String> sosaStradonitzNumber;
     public boolean displayGenJFooter = true;
@@ -542,13 +538,6 @@ public class ReportWebsite extends Report {
 		}
 		makeFooter(bodyNode, html);
 		html.toFile(startFile, omitXmlDeclaration);
-	}
-
-	protected class EntityComparator implements Comparator<Entity> {
-		@Override
-		public int compare(Entity arg0, Entity arg1) {
-			return arg0.toString().compareTo(arg1.toString());
-		}
 	}
 
 	/**
@@ -2148,44 +2137,6 @@ public class ReportWebsite extends Report {
 			whereToAdd.appendChild(p);
 		}
 
-	}
-
-	/** Assumes isPrivate check outside */
-	protected Element getBirthPlaceMap(Indi indi, Html html) {
-		String lines = getBirthPlaceMapRec(indi, 0, html);
-		if (lines.equals("")) return null;
-		return html.img("http://maps.google.com/maps/api/staticmap?size=300x300&maptype=roadmap&sensor=false" + lines,
-				translate("mapAncestorBirthPlace"));
-/*		return html.link("http://maps.google.com/maps/api/staticmap?size=500x500&maptype=roadmap&sensor=false" + lines,
-				translate("mapAncestorBirthPlace"));*/
-	}
-
-	protected String getBirthPlaceMapRec(Indi indi, int depth, Html html) {
-		// "path=color:0x000000FF|weight:2|fbp|ipb|mbp"
-		if (indi == null) return "";
-		Indi f = indi.getBiologicalFather();
-		Indi m = indi.getBiologicalMother();
-		if (f == null || m == null) return "";
-		String ibp = getEventMapPosition(indi.getProperty("BIRT"));
-		String fbp = null;
-		if (f != null) fbp = getEventMapPosition(f.getProperty("BIRT"));
-		String mbp = null;
-		if (m != null) mbp = getEventMapPosition(m.getProperty("BIRT"));
-
-		String path = "";
-		if (ibp != null && (mbp != null || fbp != null)) {
-			String color = "000000";
-			if (depth > 0) color = Integer.toHexString(depth * 0x444444);
-			path = "&path=color:0x"+color+"FF|weight:2";
-			if (fbp != null) path += "|" + fbp;
-			path += "|" + ibp;
-			if (mbp != null) path += "|" + mbp;
-		}
-
-		if (depth > 1) return path;
-		if (f != null) path += getBirthPlaceMapRec(f, depth + 1, html);
-		if (m != null) path += getBirthPlaceMapRec(m, depth + 1, html);
-		return path;
 	}
 
 	protected void reportUnhandledProperties(Property current, String[] handled) {

@@ -116,12 +116,4 @@ public class ScreenOutput implements GraphicsOutput {
     public Object result(Report report) {
         return pane;
     }
-
-    /**
-     * Return null because no file is produced.
-     */
-	public String getFileExtension()
-	{
-		return null;
-	}
 }

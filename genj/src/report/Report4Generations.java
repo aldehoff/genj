@@ -202,37 +202,6 @@ public class Report4Generations extends Report {
         return null;
     }
 
-    /**
-     * resolves the information of one Indi
-     */
-    private String format(Indi indi) {
-
-        // Might be null
-        if (indi==null) {
-            return "?";
-        }
-
-        // name
-        String n = indi.getName();
-
-        // birth?
-        String b = " "+OPTIONS.getBirthSymbol() + indi.getBirthAsString();
-
-        // death?
-        String d = " "+OPTIONS.getDeathSymbol() + indi.getDeathAsString();
-
-        Property place = indi.getProperty(new TagPath("INDI:BIRT:PLAC"));
-
-        //
-        Property propTitle = indi.getProperty(new TagPath("INDI:TITL"));
-
-        // String t = indi.getProperty(new TagPath("INDI:TITL"),true).toString();
-        String title = (propTitle == null)?"":propTitle.getDisplayValue();
-        if (title.length() > 0)
-            title = " TITL: "+title;
-        return n + b + d + " PLAC: "+place+title;
-    }
-
 
     private String lineone(Indi indi) {
 

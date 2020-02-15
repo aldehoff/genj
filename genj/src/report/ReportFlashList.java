@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.swing.ImageIcon;
-
     //
     // Flash lists are structured lists with locations and individual lastnames
     // The following report allows 3 keys to sort the items in the report.
@@ -718,22 +716,6 @@ public class ReportFlashList extends Report {
          else nbOther++;
     }
     
-    void add(Range rangeElt) {
-      firstYear = Math.min(firstYear, rangeElt.getValueFirst());
-      lastYear  = Math.max(lastYear, rangeElt.getValueLast());
-      nbSosa += rangeElt.getValueSosa();
-      nbBirth += rangeElt.getValueBirth();
-      nbChris += rangeElt.getValueChris();
-      nbMarr += rangeElt.getValueMarr();
-      nbDeath += rangeElt.getValueDeath();
-      nbOther += rangeElt.getValueOther();
-    }
-    
-    void setGeo(double lat, double lon) {
-      geoLat = lat;
-      geoLon = lon;
-    }
-    
     String getFirst() {
       // check for valid year - this might still be UNKNOWN even though a date was valid
       if (firstYear==Integer.MAX_VALUE|| lastYear==Integer.MAX_VALUE)
@@ -777,44 +759,8 @@ public class ReportFlashList extends Report {
       return (lastYear-firstYear);
     }
   
-    int getValueFirst() {
-      return (firstYear);
-    }
-  
-    int getValueLast() {
-      return (lastYear);
-    }
-  
     int getValueSosa() {
       return (nbSosa);
-    }
-  
-    int getValueBirth() {
-      return (nbBirth);
-    }
-  
-    int getValueChris() {
-      return (nbChris);
-    }
-  
-    int getValueMarr() {
-      return (nbMarr);
-    }
-  
-    int getValueDeath() {
-      return (nbDeath);
-    }
-  
-    int getValueOther() {
-      return (nbOther);
-    }
-  
-    double getValueLat() {
-      return (geoLat);
-    }
-  
-    double getValueLon() {
-      return (geoLon);
     }
   
   }
