@@ -24,7 +24,6 @@ import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.io.Filter;
-import genj.util.Registry;
 import genj.util.Resources;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
@@ -45,7 +44,6 @@ import javax.swing.border.BevelBorder;
  */
 /*package*/ class RelationshipFilter extends JPanel implements Filter {
   
-  private final static Registry REGISTRY = Registry.get(RelationshipFilter.class);
   private final static Resources RESOURCES = Resources.get(Plugin.class);
   private final static ImageIcon LEGEND = new ImageIcon(Plugin.class, "legend.png");
   private final static String LAYOUT = 
