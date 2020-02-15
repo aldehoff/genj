@@ -306,14 +306,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
     TreeNode node = getNodeAt(x, y);
     return node!=null ? node.getContent() : null;
   }
-
-  /**
-   * An entity by position
-   */
-  public Entity getEntityAt(int x, int y) {
-    Object content = getContentAt(x, y);
-    return content instanceof Entity ? (Entity)content : null;
-  }
   
   /**
    * A node for entity (might be null)
@@ -383,16 +375,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
   }
 
   /**
-   * Helper - get ids from collection of entities
-   */  
-  private Collection<String> getIds(Collection<Entity> entities) {
-    List<String> result = new ArrayList<String>();
-    for (Entity e : entities) 
-      result.add(e.getId());
-    return result;    
-  }
-  
-  /**
    * Whether we're hiding descendants of given entity
    */
   /*package*/ boolean isHideDescendants(Indi indi) {
@@ -443,13 +425,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
   /*package*/ TreeArc add(TreeArc arc) {
     arcs.add(arc);
     return arc;
-  }
-  
-  /**
-   * Currently shown entities
-   */
-  /*package*/ Set getEntities() {
-    return entities2nodes.keySet();
   }
 
   /**

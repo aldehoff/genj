@@ -71,9 +71,6 @@ public class EntityView extends View implements ContextProvider {
   /** the blueprints we're using */
   private Map<String, Blueprint> type2blueprint = new HashMap<String, Blueprint>();
   
-  /** whether we do antialiasing */
-  private boolean isAntialiasing = true;
-  
   private transient GedcomListener callback = new GedcomListenerAdapter() {
     public void gedcomEntityDeleted(Gedcom gedcom, Entity entity) {
       if (context.getEntity()==entity)
@@ -102,7 +99,6 @@ public class EntityView extends View implements ContextProvider {
       String tag = Gedcom.ENTITIES[t];
       type2blueprint.put(tag, bpm.getBlueprint(tag, REGISTRY.get("blueprint."+tag, "")));
     }
-    isAntialiasing  = REGISTRY.get("antial"  , false);
     
     // done    
   }
@@ -192,7 +188,7 @@ public class EntityView extends View implements ContextProvider {
     
       ((Graphics2D)g).setRenderingHint(
         RenderingHints.KEY_ANTIALIASING,
-        isAntialiasing ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF
+        RenderingHints.VALUE_ANTIALIAS_OFF
       );
 
     renderer.render(g, context.getEntity(), new Rectangle(0,0,bounds.width,bounds.height));
@@ -210,18 +206,4 @@ public class EntityView extends View implements ContextProvider {
     return result;
   }
   
-  /**
-   * Sets isAntialiasing   */
-  public void setAntialiasing(boolean set) {
-    isAntialiasing = set;
-    repaint();
-  }
-  
-  /**
-   * Gets isAntialiasing
-   */
-  public boolean isAntialiasing() {
-    return isAntialiasing;
-  }
-
 } //EntityView

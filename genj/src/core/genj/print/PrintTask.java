@@ -39,7 +39,6 @@ import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -81,25 +80,18 @@ import javax.print.attribute.standard.OrientationRequested;
   /** current page */
   private int page = 0;
 
-  /** any problem that might occur async */
-  private Throwable throwable;
-
   /** the title */
   private String title;
   
   /** registry */
   private PrintRegistry registry;
 
-  /** progress key */
-  private String progress;
-  
   /** settings */
   private PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
   
   /** pages */
   private Dimension pages;
   private double zoomx = 1.0D, zoomy = 1.0D;
-  private boolean printEmpties = false;
 
   /**
    * Constructor
@@ -233,19 +225,6 @@ import javax.print.attribute.standard.OrientationRequested;
   }
 
   /**
-   * Calculate printable in inches
-   */
-  /*package*/ Rectangle2D getPrintable(Rectangle2D page) {
-    Rectangle2D printable = getPrintable();
-    return new Rectangle2D.Double(
-      page.getMinX() + printable.getX(), 
-      page.getMinY() + printable.getY(), 
-      printable.getWidth(), 
-      printable.getHeight()
-    );
-  }
-  
-  /**
    * Resolve page size (in inches)
    */
   /*package*/ Dimension2D getPageSize() {
@@ -306,15 +285,6 @@ import javax.print.attribute.standard.OrientationRequested;
       if (zoomx>zoomy) zoomx=zoomy;
       if (zoomy>zoomx) zoomy=zoomx;
     }
-  }
-  
-  /*package*/ boolean isPrintEmpties() {
-    return printEmpties;
-  }
-  
-  
-  /*package*/ void setPrintEmpties(boolean set) {
-    this.printEmpties  = set;
   }
   
   /*package*/ void setZoom(double zoom) {

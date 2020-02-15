@@ -73,7 +73,7 @@ public class PrintWidget extends JTabbedPane {
   private ScalingWidget scaling;
   private Preview preview;
   private Apply apply = new Apply();
-  private JCheckBox fit, empties;
+  private JCheckBox fit;
   
   /**
    * Constructor   */

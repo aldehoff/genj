@@ -36,13 +36,6 @@ public class EntityBean extends PropertyBean {
   private Preview preview;
   private JLabel changed;
 
-  /**
-   * Nothing to edit
-   */  
-  public boolean isEditable() {
-    return false;
-  }
-
   public EntityBean() {
     
     preview = new Preview();

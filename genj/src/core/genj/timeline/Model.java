@@ -183,29 +183,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
   }
   
   /**
-   * Returns a point in time for a year (double)
-   */
-  /*package*/ static PointInTime toPointInTime(double year) {
-
-    Calendar calendar = PointInTime.GREGORIAN;
-    
-    int months = calendar.getMonths();
-    
-    int y = (int)Math.floor(year);
-    
-    year = year%1;
-    if (year<0) year = 1+year;
-    
-    int m = (int)Math.floor(year * months);
-
-    int days = calendar.getDays(m, y);
-    
-    int d = (int)Math.floor((year*months)%1 * days);
-    
-    return new PointInTime(d, m, y);
-  }
-  
-  /**
    * Returns an event by year/layer
    */
   protected Event getEvent(double year, int layer) {

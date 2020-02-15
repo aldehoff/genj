@@ -74,13 +74,6 @@ public class EventBean extends PropertyBean {
   }
 
   /**
-   * Nothing to edit
-   */  
-  public boolean isEditable() {
-    return cKnown.isVisible();
-  }
-
-  /**
    * Set context to edit
    */
   public void setPropertyImpl(Property prop) {

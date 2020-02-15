@@ -231,7 +231,6 @@ public class TimelineView extends View {
     REGISTRY.put("paintdates" , isPaintDates);
     REGISTRY.put("paintgrid"  , isPaintGrid);
     REGISTRY.put("painttags"  , isPaintTags);
-    REGISTRY.put("filter"     , model.getPaths());
     REGISTRY.put("centeryear" , (float)centeredYear);
     REGISTRY.put("color", colors);
     REGISTRY.put("paths", model.getPaths());

@@ -20,7 +20,6 @@
 package genj.edit;
 
 import genj.gedcom.Context;
-import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
 import genj.gedcom.GedcomException;
 import genj.gedcom.GedcomListenerAdapter;
@@ -301,13 +300,6 @@ public class EditView extends View implements ContextProvider{
     return new Dimension(256,480);
   }
   
-  /**
-   * Current entity
-   */
-  public Entity getEntity() {
-    return editor.getContext().getEntity();
-  }
-    
   /**
    * Action - advanced or basic
    */

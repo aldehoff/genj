@@ -29,21 +29,13 @@ import genj.gedcom.TagPath;
 import genj.util.ChangeSupport;
 import genj.util.Registry;
 import genj.util.Resources;
-import genj.util.swing.ImageIcon;
 import genj.util.swing.NestedBlockLayout;
-import genj.util.swing.PopupWidget;
 import genj.view.ContextProvider;
 import genj.view.ViewContext;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.ContainerOrderFocusTraversalPolicy;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,8 +51,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutFocusTraversalPolicy;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeListener;
 
 /**
@@ -400,116 +390,5 @@ public class BeanPanel extends JPanel implements ContextProvider {
       return beans.isEmpty() ? null : super.getDefaultComponent(container);
     }
   } //FocusPolicy
-  
-  /**
-   * A 'bean' we use for groups
-   */
-  private class PopupBean extends PopupWidget implements MouseMotionListener, MouseListener {
-    
-    private PropertyBean wrapped;
-    private JPanel content;
-    
-    /**
-     * constructor
-     */
-    private PopupBean(PropertyBean wrapped) {
-      
-      // fix button's looks
-      setFocusable(false);
-      setBorder(null);
-      
-      // remember wrapped bean
-      this.wrapped = wrapped;
-      
-      // setup button's look
-      Property prop = wrapped.getProperty();
-      setToolTipText(prop.getPropertyName());
-      ImageIcon img = prop.getImage(false);
-      if (prop.getValue().length()==0)
-        img = img.getGrayedOut();
-      setIcon(img);
-      
-      // prepare panel we're going to show
-      content = new JPanel(new BorderLayout());
-      content.setAlignmentX(0);
-      content.setBorder(new TitledBorder(prop.getPropertyName()));
-      content.addMouseMotionListener(this);
-      content.addMouseListener(this);
-      content.add(wrapped);
-      content.setFocusCycleRoot(true);
-      
-      // prepare 'actions'
-      addItem(content);
-  
-      // done
-    }
-    
-    private ImageIcon getImage(Property prop) {
-      while (prop.getParent()!=null && !(prop.getParent() instanceof Entity)) {
-        prop = prop.getParent();
-      }
-      return prop.getImage(false);
-    }
-    
-    /**
-     * intercept popup
-     */
-    public void showPopup() {
-      // let super do its thing
-      super.showPopup();
-      // resize if available
-      Dimension d = BasicEditor.REGISTRY.get("popup."+wrapped.getProperty().getTag(), (Dimension)null);
-      if (d!=null) 
-        setPopupSize(d);
-      // request focus
-      SwingUtilities.getWindowAncestor(wrapped).setFocusableWindowState(true);
-      wrapped.requestFocus();
-      // update image
-      setIcon(wrapped.getProperty().getImage(false));
-    }
-    
-    public void mouseDragged(MouseEvent e) {
-      // allow to resize 
-      if (content.getCursor()==Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR)) {
-        Dimension d = new Dimension(e.getPoint().x, e.getPoint().y);
-        BasicEditor.REGISTRY.put("popup."+wrapped.getProperty().getTag(), d);
-        setPopupSize(d);
-      }
-    }
-  
-    public void mouseMoved(MouseEvent e) {
-      // resize?
-      if (e.getX()>content.getWidth()-content.getInsets().right
-        &&e.getY()>content.getHeight()-content.getInsets().bottom) {
-        content.setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-        return;
-      }
-      // close?
-      if (e.getY()<content.getInsets().top) try {
-        content.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return;
-      } catch (Throwable t) {}
-      // default
-      content.setCursor(Cursor.getDefaultCursor());
-    }
-
-    public void mouseClicked(MouseEvent e) {
-      if (content.getCursor()==Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)) 
-        cancelPopup();
-    }
-
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
-
-    public void mousePressed(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-  
-  } //PopupBean
 
  }

@@ -22,8 +22,6 @@ package genj.edit;
 import genj.app.Priority;
 import genj.app.Workbench;
 import genj.app.WorkbenchAdapter;
-import genj.common.SelectEntityWidget;
-import genj.edit.actions.AbstractChange;
 import genj.edit.actions.CreateAlias;
 import genj.edit.actions.CreateAssociation;
 import genj.edit.actions.CreateChild;
@@ -66,14 +64,11 @@ import genj.gedcom.UnitOfWork;
 import genj.util.Resources;
 import genj.util.swing.Action2;
 import genj.util.swing.DialogHelper;
-import genj.util.swing.NestedBlockLayout;
 import genj.util.swing.Action2.Group;
 import genj.view.ActionProvider;
 import genj.view.SelectionSink;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -168,73 +163,6 @@ public class EditPlugin extends WorkbenchAdapter implements ActionProvider {
     SelectionSink.Dispatcher.fireSelection(workbench, new Context(gedcom.getFirstEntity(Gedcom.INDI)), true);
 
     // done
-  }
-
-  /** 
-   * Frederic - a test action showing cross-gedcom work 
-   */
-  private static class CopyIndividual extends AbstractChange {
-    
-    private Gedcom source;
-    private Indi existing;
-  
-    public CopyIndividual(Gedcom dest, Gedcom source) {
-      super(dest, Gedcom.getEntityImage(Gedcom.INDI), "Copy individual from "+source);
-      this.source = source;
-    }
-    
-    /**
-     * Override content components to show to user 
-     */
-    @Override
-    protected JPanel getDialogContent() {
-      
-      JPanel result = new JPanel(new NestedBlockLayout("<col><row><select wx=\"1\"/></row><row><text wx=\"1\" wy=\"1\"/></row><row><check/><text/></row></col>"));
-  
-      // create selector
-      final SelectEntityWidget select = new SelectEntityWidget(source, Gedcom.INDI, null);
-  
-      // wrap it up
-      result.add(select);
-      result.add(getConfirmComponent());
-  
-      // add listening
-      select.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          // grab current selection (might be null)
-          existing = (Indi)select.getSelection();
-          refresh();
-        }
-      });
-      
-      existing = (Indi)select.getSelection();
-      refresh();
-      
-      // done
-      return result;
-    }
-    
-    private boolean dupe() {
-      return gedcom.getEntity(existing.getId())!=null;
-    }
-    
-    @Override
-    protected String getConfirmMessage() {
-      if (existing==null)
-        return "Please select an individual";
-      String result = "Copying individual "+existing+" from "+source.getName()+" to "+gedcom.getName();
-      if (dupe())
-        result += "\n\nNote: Duplicate ID - a new ID will be assigned";
-      return result;
-    }
-    
-    @Override
-    protected Context execute(Gedcom gedcom, ActionEvent event) throws GedcomException {
-      Entity e = gedcom.createEntity(Gedcom.INDI, dupe() ? null : existing.getId());
-      e.copyProperties(existing.getProperties(), true);
-      return new Context(e);
-    }
-  
   }
 
   /**

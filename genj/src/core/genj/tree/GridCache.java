@@ -30,9 +30,6 @@ import java.util.Set;
  * GridCache - caching information in a 2d grid */
 public class GridCache {
   
-  /** an empty list */
-  private final static List EMPTY = new ArrayList(0);
-
   /** the grids */
   private Object[][] grid;
  

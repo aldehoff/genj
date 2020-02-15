@@ -149,11 +149,6 @@ public class EventsBean extends PropertyBean {
   protected void commitImpl(Property property) throws GedcomException {
   }
   
-  private void commit(Gedcom gedcom, UnitOfWork commit) {
-    changeSupport.fireChangeEvent();
-    gedcom.doMuteUnitOfWork(commit);
-  }
-  
   private boolean isEvent(MetaProperty meta) {
     
     // crude filter
@@ -178,14 +173,6 @@ public class EventsBean extends PropertyBean {
     }
     Collections.sort(events, new PropertyComparator(".:DATE"));
     table.setRows(events);
-  }
-    
-  private void add(Property event) {
-    table.addRow(event);
-  }
-    
-  private void del(Property event) {
-    table.deleteRow(event);
   }
     
   

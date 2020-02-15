@@ -1105,8 +1105,6 @@ public class TreeView extends View implements ContextProvider, ActionProvider {
   
   private class Print extends PrintAction {
     
-    public boolean yes;
-    
     protected Print() {
       super(TITLE);
     }

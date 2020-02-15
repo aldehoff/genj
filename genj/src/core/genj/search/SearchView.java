@@ -30,7 +30,6 @@ import genj.util.Resources;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
 import genj.util.swing.ChoiceWidget;
-import genj.util.swing.HeadlessLabel;
 import genj.util.swing.ImageIcon;
 import genj.util.swing.PopupWidget;
 import genj.view.ContextProvider;
@@ -71,12 +70,6 @@ import spin.Spin;
  */
 public class SearchView extends View {
   
-  /** formatting */
-  private final static String
-   OPEN = "<font color=red>",
-   CLOSE = "</font>",
-   NEWLINE = "<br>";
-  
   /** default values */
   private final static String[]
     DEFAULT_VALUES = {
@@ -102,9 +95,6 @@ public class SearchView extends View {
   /** shown results */
   private Results results = new Results();
   private ResultWidget listResults = new ResultWidget();
-
-  /** headless label used for view creation */
-  private HeadlessLabel viewFactory = new HeadlessLabel(listResults.getFont()); 
 
   /** criterias */
   private ChoiceWidget choiceTag, choiceValue;

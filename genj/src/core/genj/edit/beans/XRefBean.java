@@ -139,13 +139,6 @@ public class XRefBean extends PropertyBean {
   }
   
   /**
-   * Nothing to edit
-   */  
-  public boolean isEditable() {
-    return false;
-  }
-  
-  /**
    * Set context to edit
    */
   public void setPropertyImpl(Property prop) {

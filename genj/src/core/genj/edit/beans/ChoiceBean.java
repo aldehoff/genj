@@ -31,7 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.swing.JCheckBox;
 import javax.swing.border.EmptyBorder;

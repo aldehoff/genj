@@ -320,13 +320,6 @@ public abstract class PropertyBean extends JPanel implements ContextProvider {
   
   protected abstract void commitImpl(Property property) throws GedcomException;
   
-  /**
-   * Editable? default is yes
-   */
-  public boolean isEditable() {
-    return true;
-  }
-  
   /** 
    * overridden requestFocusInWindow()
    */

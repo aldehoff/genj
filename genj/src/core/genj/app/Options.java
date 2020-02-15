@@ -135,7 +135,7 @@ public class Options extends OptionProvider {
       set = 0;
 
     // set it - 20091134 making this a restart only change
-    lnfs[set].apply(null);
+    lnfs[set].apply();
 
     // remember for restart
     lookAndFeel = set;

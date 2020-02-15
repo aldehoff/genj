@@ -110,10 +110,6 @@ public class TableView extends View {
     return model!=null ? model.getGedcom() : null;
   }
   
-  /*package*/ PropertyTableWidget getTable() {
-    return propertyTable;
-  }
-  
   /**
    * @see javax.swing.JComponent#getPreferredSize()
    */

@@ -52,13 +52,6 @@ public class SimpleValueBean extends PropertyBean {
   }
   
   /**
-   * Editable depends on property
-   */  
-  public boolean isEditable() {
-    return tfield.isEditable();
-  }
-  
-  /**
    * Set context to edit
    */
   public void setPropertyImpl(Property property) {

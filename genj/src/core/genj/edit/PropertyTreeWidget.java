@@ -37,7 +37,6 @@ import genj.view.ViewContext;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -199,14 +198,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
   }
   
   /**
-   * Expand all rows
-   */
-  public void expandAllRows() {
-    for (int i=0;i<getRowCount();i++)
-      expandRow(i); 
-  }
-  
-  /**
    * Expand by path
    */
   public void expand(TagPath path) {
@@ -287,13 +278,6 @@ public class PropertyTreeWidget extends DnDTree implements ContextProvider {
       return null;
     // done
     return (Property)path.getLastPathComponent();
-  }
-
-  /**
-   * Resolve property at given point
-   */
-  public Property getPropertyAt(Point pos) {
-    return getPropertyAt(pos.x, pos.y);
   }
   
   /**

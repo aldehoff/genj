@@ -23,7 +23,6 @@ import genj.gedcom.Property;
 
 import java.awt.Color;
 
-import javax.swing.ImageIcon;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -46,9 +45,6 @@ import javax.swing.text.StyledDocument;
   /** the property */
   private Property property;
   
-  /** an image (cached) */
-  private ImageIcon img; 
-  
   /** a document (cached) */
   private StyledDocument doc;
   
@@ -61,8 +57,6 @@ import javax.swing.text.StyledDocument;
   /*package*/ Hit(Property setProp, String value, Matcher.Match[] matches, int setEntity, boolean isID) {
     // keep property
     property = setProp;
-    // cache img
-    img = property.getImage(false);
     // keep sequence
     entity = setEntity;
     // prepare document
@@ -111,13 +105,6 @@ import javax.swing.text.StyledDocument;
    */
   /*package*/ Property getProperty() {
     return property;
-  }
-  
-  /**
-   * Image
-   */
-  /*package*/ ImageIcon getImage() {
-    return img;
   }
   
   /**

@@ -22,7 +22,6 @@ package genj.lnf;
 import genj.util.EnvironmentChecker;
 import genj.util.Registry;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,12 +29,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -248,7 +244,7 @@ public class LnF {
   /**
    * Applies the LnF
    */
-  public boolean apply(final List rootComponents) {
+  public boolean apply() {
     
     // try to load LnF
     String prefix = "Look and feel #"+this+" of type "+type;
@@ -276,19 +272,6 @@ public class LnF {
     } catch (Throwable t) {
       LOG.warning(prefix+" couldn't be set ("+t.getClass()+")");
       return false;
-    }
-    
-    // reflect it    
-    if (rootComponents!=null) {
-      SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-          Iterator e = rootComponents.iterator();
-          while (e.hasNext()) try {
-            SwingUtilities.updateComponentTreeUI((Component)e.next());
-          } catch (Throwable t) {
-          }
-        }
-      });
     }
     
     // done
