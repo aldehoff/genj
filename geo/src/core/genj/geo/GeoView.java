@@ -437,15 +437,6 @@ public class GeoView extends View {
       initStyles();
     }
     
-    private void reset() {
-      for (Iterator it = model.getLocations().iterator(); it.hasNext(); ) {
-        GeoLocation location = (GeoLocation)it.next();
-        if (location.isValid())
-          locations.add(location);
-      }
-      updateTimer.start();
-    }
-    
     /** initializer */
     protected void initStyles() {
       

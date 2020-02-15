@@ -64,9 +64,7 @@ import swingx.tree.AbstractTreeModel;
 /*package*/ class GeoList extends JPanel {
   
   private static final String
-    TXT_LOCATION = GeoView.RESOURCES.getString("location"),
     TXT_CHANGE = GeoView.RESOURCES.getString("location.change"),
-    TXT_LATLON = GeoView.RESOURCES.getString("location.latlon"),
     TXT_UNKNOWN = GeoView.RESOURCES.getString("location.unknown");
   
   /** view  */

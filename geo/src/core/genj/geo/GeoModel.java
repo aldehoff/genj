@@ -27,7 +27,6 @@ import genj.gedcom.Property;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -133,13 +132,6 @@ import com.vividsolutions.jts.geom.Coordinate;
       GeoService.getInstance().remember(gedcom, loc);
       fireLocationUpdated(loc);
     }
-  }
-  
-  /**
-   * Accessor - locations
-   */
-  public synchronized int getNumLocations() {
-    return locations.size();
   }
   
   /**

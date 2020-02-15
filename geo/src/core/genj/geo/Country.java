@@ -21,7 +21,6 @@ package genj.geo;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,17 +34,12 @@ public class Country implements Comparable {
   
   public final static Country HERE = Country.get(Locale.getDefault().getCountry());
   
-  private static Country[] ALL_COUNTRIES = null;
-  
-  private static Country DEFAULT_COUNTRY = null;
-  
   private final static Map locale2countries = new HashMap();
   
   private final static Map displayName2Country = new WeakHashMap();
   
   /** state */
   private String iso;
-  private String fips;
   private String displayName;
   
   /** constructor */
@@ -92,39 +86,6 @@ public class Country implements Comparable {
     if (obj==null) return false;
     Country that = (Country)obj;
     return iso.equals(that.iso);
-  }
-  
-  /**
-   * Get default country
-   */
-  public static Country getDefaultCountry() {
-    getAllCountries();
-    return DEFAULT_COUNTRY;
-  }
-  
-  /**
-   * Get all countries
-   */
-  public static Country[] getAllCountries() {
-    
-    // known?
-    if (ALL_COUNTRIES==null) {
-    
-      // grab all country codes
-      String[] codes = Locale.getISOCountries(); 
-      ALL_COUNTRIES = new Country[codes.length];
-      for (int i=0;i<codes.length;i++) 
-        ALL_COUNTRIES[i] = new Country(codes[i]);
-    
-      Arrays.sort(ALL_COUNTRIES);
-      
-      // grab default country
-      DEFAULT_COUNTRY = get(Locale.getDefault().getCountry());
-      
-    }    
-    
-    // done
-    return ALL_COUNTRIES;
   }
   
   /**
