@@ -19,7 +19,6 @@
  */
 package gj.shell.factory;
 
-import gj.shell.model.EditableEdge;
 import gj.shell.model.EditableGraph;
 import gj.shell.model.EditableVertex;
 
@@ -47,13 +46,6 @@ public abstract class AbstractGraphFactory {
    * Create a graph
    */
   public abstract EditableGraph create(Rectangle2D bounds);
-
-  /**
-   * Helper that returns Point2D for given args
-   */
-  protected Point2D getPoint(double x, double y) {
-    return new Point2D.Double(x, y);
-  }
 
   /**
    * Helper that returns the node with minimum degree from a list
@@ -88,14 +80,6 @@ public abstract class AbstractGraphFactory {
    * Helper that returns a random DefaultNode from a list
    */
   protected EditableVertex getRandomNode(List<EditableVertex> list, boolean remove) {
-    int i = getRandomIndex(list.size());
-    return remove ? list.remove(i) : list.get(i);
-  }
-  
-  /**
-   * Helper that returns a random DefaultArc from a list
-   */
-  protected Object getRandomArc(List<EditableEdge> list, boolean remove) {
     int i = getRandomIndex(list.size());
     return remove ? list.remove(i) : list.get(i);
   }

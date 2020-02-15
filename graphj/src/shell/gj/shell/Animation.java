@@ -54,9 +54,6 @@ import java.util.List;
   /**
    * Constructor
    */
-  public Animation(EditableGraph graph) {
-    this(graph, 1000);
-  }
   public Animation(EditableGraph graph, long totalTime) {
     this.graph = graph;
     this.totalTime = totalTime;

@@ -24,7 +24,6 @@ import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
@@ -176,13 +175,6 @@ public abstract class Action2 extends AbstractAction implements Runnable {
   
   public String getName() {
     return (String)super.getValue(NAME);
-  }
-  
-  /**
-   * Sets the icon of the action
-   */
-  public void setIcon(Icon icon) {
-    super.putValue(SMALL_ICON, icon);
   }
   
   /**

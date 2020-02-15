@@ -136,52 +136,6 @@ public class ReflectHelper {
     }
   }
   
-  /*
-  public static Property[] getProperties(Object instance, boolean declared) {
-    
-    // prepare a result
-    List list = new ArrayList();
-    
-    // loop over public fields
-    Field[] fields = declared ? instance.getClass().getDeclaredFields() : instance.getClass().getFields();
-      
-    for (int f=0; f<fields.length; f++) {
-      Field field = fields[f];
-      if (!Modifier.isPublic(field.getModifiers())) continue;
-      if (Modifier.isStatic(field.getModifiers())) continue;
-      try {
-        list.add(new Property(field.getName(), field.get(instance)));
-      } catch (IllegalAccessException iae) {
-        // ignored
-      }
-    }
-    
-    // done
-    Property[] result = new Property[list.size()];
-    list.toArray(result);
-    return result;
-  }
-  
-  public static void setProperties(Object instance, Property[] properties) {
-    
-    // loop through all values
-    for (int p=0; p<properties.length; p++) {
-      
-      // and set it 
-      try {
-        Field field = instance.getClass().getField(properties[p].name);
-        field.set(instance, wrap(properties[p].value,field.getType()));
-      } catch (Throwable t) {
-        // ignored
-      }
-      
-      // next
-    }
-    
-    // done
-  }
-  */
-  
   /**
    * Wraps a given value into an single-argument constructor 
    * of given type
@@ -254,14 +208,6 @@ public class ReflectHelper {
     /** name */
     public String getName() {
       return name;
-    }
-    /** type */
-    public Class<?> getType() {
-      return getter.getReturnType();
-    }
-    /** instance */
-    public Object getInstance() {
-      return instance;
     }
     /** get */
     public Object getValue() throws IllegalAccessException, InvocationTargetException {

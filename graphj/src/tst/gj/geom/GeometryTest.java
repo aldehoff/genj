@@ -468,7 +468,6 @@ public class GeometryTest extends TestCase {
     }
     if (b==null) {
       assertNull("expected null but got "+a,a);
-      return;
     }
       
     if (!equals(a,b))

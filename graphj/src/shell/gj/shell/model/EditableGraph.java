@@ -24,7 +24,6 @@ import gj.layout.Port;
 import gj.layout.Routing;
 import gj.model.Edge;
 import gj.model.Vertex;
-import gj.util.LayoutHelper;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
@@ -33,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -58,14 +56,6 @@ public class EditableGraph implements Graph2D {
   }
 
   /**
-   * Constructor
-   */
-  public EditableGraph(EditableGraph other) {
-    this.vertices.addAll(other.vertices);
-    this.edges.addAll(other.edges);
-  }
-  
-  /**
    * add an edge
    */
   public EditableEdge addEdge(EditableVertex from, EditableVertex to) {
@@ -84,16 +74,6 @@ public class EditableGraph implements Graph2D {
   }
   public Collection<EditableEdge> getEdges() {
     return Collections.unmodifiableCollection(edges);
-  }
-  
-  /**
-   * Edges for a vertex
-   */
-  public int getNumEdges(Vertex vertex) {
-    return ((EditableVertex)vertex).getEdges().size();
-  }
-  public Iterable<EditableEdge> getEdges(Vertex vertex) {
-    return ((EditableVertex)vertex).getEdges();
   }
   
   /**
@@ -203,20 +183,6 @@ public class EditableGraph implements Graph2D {
     return null;
   }
   
-  public Collection<?> getVerticesOfEdge(Object edge) {
-    List<EditableVertex> result = new ArrayList<EditableVertex>(2);
-    result.add( ((EditableEdge)edge).getStart() );
-    result.add( ((EditableEdge)edge).getEnd() );
-    return result;
-  }
-  
-  /**
-   * 
-   */
-  public int getDirectionOfEdge(Object from, Object to) {
-    return ((EditableVertex)from).getEdge((EditableVertex)to).getStart()==from ? 1 : -1;
-  }
-  
   /**
    * interface implementation
    */
@@ -232,60 +198,6 @@ public class EditableGraph implements Graph2D {
    */
   public int getNumAdjacentVertices(Vertex vertex) {
     return ((EditableVertex)vertex).getNumNeighbours();
-  }
-  
-  /**
-   * interface implementation
-   */
-  public Set<Vertex> getNeighbours(Vertex vertex) {
-    return LayoutHelper.getNeighbours(vertex);
-  }
-  
-  /**
-   * interface implementation
-   */
-  public int getNumDirectPredecessors(Vertex vertex) {
-    int result = 0;
-    for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
-      if (edge.getEnd() == vertex) result++;
-    }  
-    return result;
-  }
-  
-  /**
-   * interface implementation
-   */
-  public Iterable<EditableVertex> getDirectPredecessors(Vertex vertex) {
-
-    List<EditableVertex> predecessors = new ArrayList<EditableVertex>();
-    for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
-      if (edge.getEnd() == vertex)
-        predecessors.add(edge.getStart());
-    }  
-    return predecessors;
-  }
-  
-  /**
-   * interface implementation
-   */
-  public int getNumDirectSuccessors(Vertex vertex) {
-    int result = 0;
-    for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
-      if (edge.getStart() == vertex) result++;
-    }  
-    return result;
-  }
-  
-  /**
-   * interface implementation
-   */
-  public Iterable<EditableVertex> getDirectSuccessors(EditableVertex vertex) {
-    List<EditableVertex> successors = new ArrayList<EditableVertex>();
-    for (EditableEdge edge : ((EditableVertex)vertex).getEdges()) {
-      if (edge.getStart() == vertex)
-        successors.add(edge.getEnd());
-    }  
-    return successors;
   }
 
   /**

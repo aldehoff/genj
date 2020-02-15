@@ -108,9 +108,6 @@ public class Shell {
   /** whether we perform an animation after layout */
   private boolean isAnimation = true;
   
-  /** an animation that is going on */
-  private Animation animation;
-  
   /** our properties */
   private Properties properties = new Properties(Shell.class, "shell.properties");
   
