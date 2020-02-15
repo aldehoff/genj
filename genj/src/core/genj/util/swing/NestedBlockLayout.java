@@ -130,13 +130,6 @@ public class NestedBlockLayout implements LayoutManager2, Cloneable {
   /**
    * Constructor
    */
-  private NestedBlockLayout(Block root) {
-    this.root = root;
-  }
-
-  /**
-   * Constructor
-   */
   public NestedBlockLayout(String descriptor) {
     try {
       init(new StringReader(descriptor));

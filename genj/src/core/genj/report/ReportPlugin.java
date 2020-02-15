@@ -219,10 +219,6 @@ public class ReportPlugin extends WorkbenchAdapter implements ActionProvider {
     /** report */
     private Report report;
     /** constructor */
-    private ActionRun(Report report) {
-      this(report.getName(), null, report);
-    }
-    /** constructor */
     private ActionRun(String txt, Object context, Report report) {
       // remember
       this.context = context;

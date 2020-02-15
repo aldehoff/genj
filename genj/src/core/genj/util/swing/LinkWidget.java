@@ -4,7 +4,6 @@
 package genj.util.swing;
 
 
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -25,9 +24,6 @@ public class LinkWidget extends JLabel {
 
   /** action */
   private Action2 action;
-  
-  /** normal color */
-  private Color normal;
   
   /**
    * Constructor

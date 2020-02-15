@@ -22,8 +22,6 @@ public class GedcomEncodingSniffer extends BufferedInputStream {
   private boolean deterministic = true;
   private String encoding;
   private Charset charset;
-  private String header;
-  private String warning;
 
   /**
    * Constructor

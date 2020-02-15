@@ -128,7 +128,6 @@ public class CachingStreamHandler extends URLStreamHandler {
 
     private URL url;
     private File tmp, cached;
-    private int len;
     private URLConnection con;
     private OutputStream out;
     private InputStream in;

@@ -28,14 +28,11 @@ import genj.util.swing.ImageIcon;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -194,20 +191,6 @@ import javax.swing.border.EmptyBorder;
       }
     
     } // CopyrightPanel
-    
-    private class Log extends Action2 {
-      Log() {
-        setText("Log");
-      }
-      public void actionPerformed(ActionEvent event) {
-        try {
-          Desktop.getDesktop().open(App.LOGFILE);
-        } catch (Throwable t) {
-          Logger.getLogger("genj.io").log(Level.INFO, "can't open logfile", t);
-        }
-      }
-    }
-    
     
   } //Content
   

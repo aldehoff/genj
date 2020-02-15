@@ -22,7 +22,6 @@ package genj.chart;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jfree.data.category.CategoryDataset;
@@ -286,13 +285,6 @@ public class IndexedSeries {
      */
     public int getSeriesCount() {
       return series.length;
-    }
-
-    /**
-     * series by index 
-     */
-    public String getSeriesName(int s) {
-      return series[s].name;
     }
 
     /**

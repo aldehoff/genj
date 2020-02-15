@@ -192,13 +192,6 @@ public class MetaProperty implements Comparable<MetaProperty> {
   }
   
   /**
-   * Test tag 
-   */
-  /*package*/ void assertTag(String tag) throws GedcomException {
-    if (!this.tag.equals(tag)) throw new GedcomException("Tag should be "+tag+" but is "+this.tag);
-  }
-  
-  /**
    * Check if this is an entity
    */
   public boolean isEntity() {

@@ -25,9 +25,6 @@ package genj.gedcom;
  */
 public class PropertyRepository extends PropertyXRef {
 
-  /** the repository's content */
-  private String repository;
-  
   /**
    * need tag-argument constructor for all properties
    */

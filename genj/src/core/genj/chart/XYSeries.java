@@ -154,13 +154,6 @@ public class XYSeries {
     }
 
     /**
-     * series by index 
-     */
-    public String getSeriesName(int s) {
-      return series[s].name;
-    }
-
-    /**
      * # of items in series
      */
     public int getItemCount(int s) {

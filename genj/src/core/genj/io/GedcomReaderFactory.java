@@ -83,7 +83,6 @@ public class GedcomReaderFactory {
     private int entity = 0;
     private int state;
     private int length;
-    private String gedcomLine;
     private ArrayList<LazyLink> lazyLinks = new ArrayList<LazyLink>();
     private String tempSubmitter;
     private boolean cancel=false;

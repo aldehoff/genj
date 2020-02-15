@@ -21,7 +21,6 @@ package genj.renderer;
 
 import genj.gedcom.Entity;
 import genj.gedcom.Gedcom;
-import genj.gedcom.Indi;
 import genj.gedcom.MultiLineProperty;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyBlob;
@@ -62,7 +61,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.Segment;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
@@ -99,14 +97,6 @@ public class BlueprintRenderer {
   static {
     new ParserDelegator();
   }
-  
-  /** the property image width */
-  private static final int 
-    PROP_IMAGE_WIDTH  = Indi.IMG_MALE.getIconWidth()+4,
-    PROP_IMAGE_HEIGHT = Indi.IMG_MALE.getIconHeight();
-  
-  /** a no value char array */
-  private static final Segment EMPTY_SEGMENT = new Segment(); 
   
   /** the root of our rendering view */
   private RootView root;
@@ -784,20 +774,6 @@ public class BlueprintRenderer {
       }
       
       // done
-    }
-    
-    /**
-     * Gets an int value from attributes
-     */
-    private int getAttribute(String key, int min, int max, int def) {
-      // grab a value and try to parse
-      String val = attributes.get(key);
-      if (val!=null) try {
-        return Math.max(min, Math.min(max, Integer.parseInt(val)));
-      } catch (NumberFormatException e) {
-      }
-      // not found
-      return def;
     }
     
     /**

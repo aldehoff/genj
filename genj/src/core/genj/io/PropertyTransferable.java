@@ -47,9 +47,6 @@ public class PropertyTransferable implements Transferable {
   /** properties */
   private List props;
   
-  /** string representation */
-  private String string;
-  
   /**
    * Constructor
    */

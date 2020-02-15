@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -309,13 +308,6 @@ public class Gedcom {
     // for now
     listeners.remove(SafeProxy.harden(listener));
     LOG.log(Level.FINER, "removeGedcomListener() from "+new Throwable().getStackTrace()[1]+" (now "+listeners.size()+")");
-  }
-  
-  /**
-   * the current undo set
-   */
-  private List<Undo> getCurrentUndoSet() {
-    return undoHistory.get(undoHistory.size()-1);
   }
   
   /**

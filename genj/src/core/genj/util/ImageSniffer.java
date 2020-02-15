@@ -451,13 +451,6 @@ public class ImageSniffer {
   }
 
   /**
-   * Sniffer - check magic
-   */
-  private boolean sniff(InputStream in, String magic) throws IOException {
-    return sniff(in, magic.getBytes());
-  }
-  
-  /**
    * Sniffer - int as intel or motorola
    */
   private int sniffInt(InputStream in, boolean intel) throws IOException {

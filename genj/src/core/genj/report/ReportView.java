@@ -94,9 +94,6 @@ public class ReportView extends View {
     RESULT = "result";
   private String currentPage = WELCOME;
 
-  /** time between flush of output writer to output text area */
-  private final static String EOL = System.getProperty("line.separator");
-
   /** statics */
   private final static ImageIcon 
     imgStart = new ImageIcon(ReportView.class, "Start"), 
@@ -502,15 +499,6 @@ public class ReportView extends View {
    * Action: START
    */
   private class ActionStart extends Action2 {
-
-    /** context to run on */
-    private Object context;
-
-    /** the running report */
-    private Report report;
-
-    /** an output writer */
-    private PrintWriter out;
 
     /** constructor */
     protected ActionStart() {

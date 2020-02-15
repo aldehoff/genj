@@ -627,17 +627,6 @@ public class ThumbnailWidget extends JComponent {
     
   } // paint
   
-  private void center(Point pos) {
-    
-//    JViewport port = (JViewport)getParent();
-//    
-//    port.setViewPosition(new Point(
-//      (int)(Math.min(getSize().width-port.getSize().width, Math.max(0, pos.x - port.getSize().width/2))),
-//      (int)(Math.min(getSize().height-port.getSize().height, Math.max(0, pos.y - port.getSize().height/2)))
-//    ));
-    
-  }
-  
   class Validation implements Runnable {
     
     private Thumbnail thumb;
@@ -662,10 +651,6 @@ public class ThumbnailWidget extends JComponent {
     }
   }
   
-  private static Rectangle grow(Rectangle r, int by) {
-    return new Rectangle(r.x-by/2, r.y-by/2, r.width+by, r.height+by);
-  }
-
   private static Rectangle center(Rectangle a, Rectangle b) {
     return new Rectangle(b.x + (b.width - a.width) / 2, b.y + (b.height - a.height) / 2, a.width, a.height);
   }

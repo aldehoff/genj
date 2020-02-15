@@ -25,7 +25,6 @@ import genj.gedcom.Gedcom;
 import genj.gedcom.Property;
 import genj.gedcom.PropertyDate;
 import genj.gedcom.PropertyName;
-import genj.gedcom.TagPath;
 import genj.io.BasicTransferable;
 import genj.util.WordBuffer;
 import genj.util.swing.Action2;
@@ -734,10 +733,6 @@ public class PropertyTableWidget extends JPanel  {
         // done
       }
       
-      private Gedcom getGedcom() {
-        return model!=null ? model.getGedcom() : null;
-      }
-      
       public void handleRowsAdded(PropertyTableModel model, int rowStart, int rowEnd) {
         
         // flush cell state
@@ -809,30 +804,6 @@ public class PropertyTableWidget extends JPanel  {
         return model!=null ? model.getNumRows() : 0;
       }
       
-      /** path in column */
-      private TagPath getPath(int col) {
-        return model!=null ? model.getColPath(col) : null;
-      }
-      
-      /** context */
-      private Context getContextAt(int row, int col) {
-        // nothing to do?
-        if (model==null)
-          return null;
-        // selected property?
-        Property prop = getPropertyAt(row, col);
-        if (prop!=null)
-          return new Context(prop);
-        
-        // selected row at least?
-        Property root = model.getRowRoot(row);
-        if (root!=null)
-          return new Context(root.getEntity());
-
-        // fallback
-        return new Context(model.getGedcom());
-      }
-      
       /** property */
       private Property getPropertyAt(int row, int col) {
         
@@ -851,13 +822,6 @@ public class PropertyTableWidget extends JPanel  {
       /** value */
       public Object getValueAt(int row, int col) {
         return getPropertyAt(row, col);
-      }
-      
-      /**
-       * get property by row
-       */
-      private Property getProperty(int row) {
-        return model.getRowRoot(row);
       }
       
     } //Model

@@ -132,10 +132,6 @@ import swingx.docking.Docked;
   public View getView() {
     return (View)getContent();
   }
-
-  public ViewFactory getViewFactory() {
-    return factory;
-  }
   
   @Override
   public void docked(final Docked docked) {

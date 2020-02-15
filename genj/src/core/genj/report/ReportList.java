@@ -19,15 +19,11 @@
  */
 package genj.report;
 
-import genj.util.Registry;
-import genj.util.Resources;
-
 import java.awt.Component;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
@@ -48,16 +44,6 @@ import javax.swing.event.ListSelectionListener;
    */
   private ReportSelectionListener selectionListener = null;
 
-  /**
-   * Registry for storing configuration.
-   */
-  private Registry registry;
-
-  /**
-   * Language resources.
-   */
-  private static final Resources RESOURCES = Resources.get(ReportView.class);
-  
   private boolean byGroup;
 
   /**

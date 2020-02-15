@@ -265,15 +265,6 @@ public abstract class PropertyXRef extends Property {
   }
   
   /**
-   * Patched to now allow private - would require that
-   * the opposite link is made private, too
-   * @see genj.gedcom.Property#setPrivate(boolean, boolean)
-   */
-  public void setPrivate(boolean set, boolean recursively) {
-    // ignored
-  }
-
-  /**
    * Comparison based on target
    */  
   public int compareTo(Property other) {

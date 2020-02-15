@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import javax.imageio.spi.ServiceRegistry;
-
 /**
  * A service that can provide options
  */

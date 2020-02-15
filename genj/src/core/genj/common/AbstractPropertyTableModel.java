@@ -45,7 +45,6 @@ public abstract class AbstractPropertyTableModel implements PropertyTableModel, 
   
   private List<PropertyTableModelListener> listeners = new CopyOnWriteArrayList<PropertyTableModelListener>();
   private Gedcom gedcom = null;
-  private GedcomListener callback;
   
   protected AbstractPropertyTableModel(Gedcom gedcom) {
     this.gedcom = gedcom;

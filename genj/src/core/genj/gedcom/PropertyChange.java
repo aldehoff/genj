@@ -240,13 +240,6 @@ public class PropertyChange extends Property implements MultiLineProperty {
   }
 
   /**
-   * @see genj.gedcom.Property#setPrivate(boolean, boolean)
-   */
-  public void setPrivate(boolean set, boolean recursively) {
-    // ignored
-  }
-
-  /**
    * Continuation for handling multiple lines concerning this change
    */
   private class DateTimeCollector implements MultiLineProperty.Collector {

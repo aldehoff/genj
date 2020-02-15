@@ -28,7 +28,6 @@ import genj.gedcom.Property;
 import genj.gedcom.PropertyXRef;
 import genj.gedcom.Submitter;
 import genj.gedcom.UnitOfWork;
-import genj.io.Filter;
 import genj.io.GedcomEncodingException;
 import genj.io.GedcomIOException;
 import genj.io.GedcomReader;
@@ -968,22 +967,8 @@ public class Workbench extends JPanel implements SelectionSink {
   /*package*/ class ActionSave extends WorkbenchAction {
     /** whether to ask user */
     private boolean saveAs;
-    /** gedcom */
-    protected Gedcom gedcomBeingSaved;
-    /** writer */
-    private GedcomWriter gedWriter;
-    /** origin to load after successfull save */
-    private Origin newOrigin;
-    /** filters we're using */
-    private Filter[] filters;
-    /** progress key */
-    private String progress;
     /** exception we might encounter */
     private GedcomIOException ioex = null;
-    /** temporary and target file */
-    private File temp, file;
-    /** password used */
-    private String password;
 
     /**
      * Constructor for saving gedcom 
