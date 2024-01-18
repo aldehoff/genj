@@ -121,8 +121,8 @@
       	
     <echo level="info">Generating version number</echo>
     	
-  	<exec failifexecutionfails="false" failonerror="true" executable="svnversion" spawn="false" dir="." outputproperty="revision">
-  	  <arg line="-n"/>
+  	<exec failifexecutionfails="false" failonerror="true" executable="git" spawn="false" dir="." outputproperty="revision">
+  	  <arg line="describe --tags"/>
   	</exec>
 	<property name="revision" value="dev"/>
 
